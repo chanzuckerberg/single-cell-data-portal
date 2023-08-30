@@ -26,10 +26,21 @@ export const MainWrapper = styled.div`
   margin-top: ${HEADER_HEIGHT_PX}px; /* positions content below fixed header */
 `;
 
-export const DefaultMainWrapper = styled(MainWrapper)`
+export const DefaultMainWrapper = styled(MainWrapper)<{ isCellGuide: boolean }>`
   main {
     overflow: auto;
   }
+  ${(props) => {
+    // CellGuide does not need margin-top in the layout
+    // Targeting cell guide specifically to not affect other pages
+    if (props.isCellGuide) {
+      return `
+        @media (min-width: 769px) {
+          margin-top: unset;
+        }
+      `;
+    }
+  }}
 `;
 
 export const SidebarMainWrapper = styled(MainWrapper)`

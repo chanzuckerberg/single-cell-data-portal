@@ -20,7 +20,7 @@ export default function LandingPage(): JSX.Element {
 
   const handleResize = useCallback(() => {
     setSkinnyMode(
-      window.innerWidth < 768 // Global nav max width
+      window.innerWidth < 768 // This is the value the global header nav condenses for mobile
     );
   }, []);
 
@@ -95,7 +95,7 @@ export default function LandingPage(): JSX.Element {
           {!openSearch && <CellGuideCardSearchBar />}
         </div>
       </Wrapper>
-      <CellGuideBottomBanner />
+      <CellGuideBottomBanner includeSurveyLink={!skinnyMode} />
     </div>
   );
 }

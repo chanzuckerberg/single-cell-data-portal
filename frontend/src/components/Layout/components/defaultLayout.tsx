@@ -21,7 +21,9 @@ const DefaultLayout = ({ children }: Props): JSX.Element => {
   } else {
     return (
       <Layout>
-        <DefaultMainWrapper>
+        <DefaultMainWrapper
+          isCellGuide={pathname.startsWith(ROUTES.CELL_GUIDE)}
+        >
           <main>{children}</main>
         </DefaultMainWrapper>
       </Layout>
