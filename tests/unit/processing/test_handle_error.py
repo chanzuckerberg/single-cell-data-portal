@@ -441,7 +441,7 @@ class TestCleanupArtifacts:
         mock_delete_many_from_s3.assert_any_call(mock_env_vars["ARTIFACT_BUCKET"], dataset_id + "/")
         mock_delete_many_from_s3.assert_any_call(mock_env_vars["DATASETS_BUCKET"], dataset_id + ".")
         mock_delete_many_from_s3.assert_any_call(mock_env_vars["CELLXGENE_BUCKET"], dataset_id + ".cxg/")
-        assert mock_delete_many_from_s3.call_count == 2
+        assert mock_delete_many_from_s3.call_count == 3
         assert FAILED_ARTIFACT_CLEANUP_MESSAGE in caplog.text
         assert FAILED_CXG_CLEANUP_MESSAGE in caplog.text
         assert FAILED_DATASET_CLEANUP_MESSAGE in caplog.text
