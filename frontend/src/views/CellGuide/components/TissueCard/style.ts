@@ -21,6 +21,7 @@ export const Wrapper = styled.div`
   margin: auto;
   padding: ${TOP_PADDING_PX}px ${LEFT_RIGHT_PADDING_PX}px 0px
     ${LEFT_RIGHT_PADDING_PX}px;
+  margin-bottom: 80px;
 
   ${(props: TissueViewProps) => {
     const { skinnyMode } = props;
