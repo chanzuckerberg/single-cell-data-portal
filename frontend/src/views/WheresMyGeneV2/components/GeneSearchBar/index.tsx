@@ -36,6 +36,7 @@ import {
 } from "@mui/base";
 import { pull, uniq } from "lodash";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
 
 const MAX_ITEMS_TO_SHOW = 9.5;
 const LISTBOX_ITEM_HEIGHT_PX = 48;
