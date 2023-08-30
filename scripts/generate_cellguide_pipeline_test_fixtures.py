@@ -23,7 +23,11 @@ from tests.unit.cellguide_pipeline.constants import (
     TISSUE_METADATA_FIXTURE_FILENAME,
     TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME,
 )
-from tests.unit.cellguide_pipeline.mocks import mock_get_asctb_master_sheet
+from tests.unit.cellguide_pipeline.mocks import (
+    mock_get_asctb_master_sheet,
+    mock_get_collections_from_curation_endpoint,
+    mock_get_datasets_from_curation_endpoint,
+)
 
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
@@ -80,7 +84,14 @@ def run_cellguide_pipeline():
             canonical_marker_genes = get_canonical_marker_genes(snapshot=snapshot, ontology_tree=ontology_tree)
 
         # Get source data
-        source_collections = get_source_collections_data(ontology_tree=ontology_tree)
+        with patch(
+            "backend.cellguide.pipeline.source_collections.source_collections_generator.get_datasets_from_curation_api",
+            new=mock_get_datasets_from_curation_endpoint,
+        ), patch(
+            "backend.cellguide.pipeline.source_collections.source_collections_generator.get_collections_from_curation_api",
+            new=mock_get_collections_from_curation_endpoint,
+        ):
+            source_collections = get_source_collections_data(ontology_tree=ontology_tree)
 
         # Get computatoinal marker genes
         computational_marker_genes = get_computational_marker_genes(snapshot=snapshot, ontology_tree=ontology_tree)
