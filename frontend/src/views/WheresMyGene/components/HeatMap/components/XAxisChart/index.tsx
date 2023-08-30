@@ -36,6 +36,7 @@ import {
 } from "src/views/WheresMyGene/common/constants";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 import GeneSearchBar from "src/views/WheresMyGeneV2/components/GeneSearchBar";
+import { isSSR } from "src/common/utils/isSSR";
 
 interface Props {
   geneNames: string[];
@@ -136,7 +137,9 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
       left={Y_AXIS_CHART_WIDTH_PX + CHART_PADDING_PX}
       height={xAxisHeight}
     >
-      <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
+      {!isSSR() && (
+        <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
+      )}
       <XAxisContainer
         data-testid="gene-labels"
         width={heatmapWidth}

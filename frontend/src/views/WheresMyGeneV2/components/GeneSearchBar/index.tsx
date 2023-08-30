@@ -223,6 +223,7 @@ export default function GeneSearchBar({
                 ? "You can add multiple genes using a comma-separated list. Press enter to add."
                 : "No options"
             }
+            data-testid="add-gene-btn"
           />
         </AutocompleteWrapper>
         {/* Clear Genes button */}

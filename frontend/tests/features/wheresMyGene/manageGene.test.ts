@@ -24,7 +24,7 @@ describe("Manage gene tests", () => {
     const GENE = "TNMD";
     await goToWMG(page);
     // click +Gene button
-    await page.getByTestId(ADD_GENE_BTN).click();
+    await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).click();
 
     // use arrow down buttons to select the 2nd option
     await selectNthOption(page, 3);
@@ -47,9 +47,6 @@ describe("Manage gene tests", () => {
     const TEST_GENES = "DMP1,SCYL3,CFH";
 
     await goToWMG(page);
-
-    // click +Gene button
-    await page.getByTestId(ADD_GENE_BTN).click();
 
     // copy & paste clipboard contents into search
     // we will first write into search field so we have what to copy & paste
