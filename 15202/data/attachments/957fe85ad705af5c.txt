@@ -1,0 +1,51 @@
+  pw:api => selectors.setTestIdAttribute started +4s
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +42ms
+  pw:api   "commit" event fired +20ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +5ms
+  pw:api   "domcontentloaded" event fired +0ms
+  pw:api <= browser.newContext succeeded +13ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +75ms
+  pw:api => page.waitForLoadState started +3ms
+  pw:api => page.goto started +6ms
+  pw:api navigating to "https://localhost:3000/collections", waiting until "load" +16ms
+  pw:api   "commit" event fired +241ms
+  pw:api   navigated to "https://localhost:3000/collections" +0ms
+  pw:api   "commit" event fired +2ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForLoadState succeeded +4ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/collections" +4ms
+  pw:api   "networkidle" event fired +520ms
+  pw:api <= page.goto succeeded +6s
+  pw:api => locator.evaluate started +2ms
+  pw:api waiting for getByTestId('global-layout-wrapper') +310ms
+  pw:api   locator resolved to visible <div data-testid="global-layout-wrapper" class="css-1…>…</div> +193ms
+  pw:api <= locator.evaluate succeeded +71ms
+  pw:api => locator.click started +3ms
+  pw:api waiting for getByTestId('global-layout-wrapper') +46ms
+  pw:api   locator resolved to <div data-testid="global-layout-wrapper" class="css-1…>…</div> +30ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +21ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +43ms
+  pw:api   click action done +54ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +28ms
+  pw:api <= locator.click succeeded +80ms
+  pw:api => mouse.wheel started +1ms
+  pw:api <= mouse.wheel succeeded +133ms
+  pw:api => locator.evaluate started +2ms
+  pw:api waiting for getByTestId('global-layout-wrapper') +117ms
+  pw:api   locator resolved to visible <div data-testid="global-layout-wrapper" class="css-1…>…</div> +131ms
+  pw:api <= locator.evaluate succeeded +161ms
+  pw:api taking page screenshot +16ms
