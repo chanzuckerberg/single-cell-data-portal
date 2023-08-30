@@ -3,14 +3,14 @@ import { removeOntologyTermIdPrefix } from "src/common/hooks/useCategoryFilter/c
 import { COLLATOR_CASE_INSENSITIVE } from "src/components/common/Filter/common/constants";
 import {
   Categories,
+  CATEGORY_FILTER_ID,
   CategoryFilter,
   CategoryFilterConfig,
   CategorySetValue,
   CategoryValueId,
-  CATEGORY_FILTER_ID,
-  SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL,
   PUBLICATION_DATE_LABELS,
   SelectCategoryValueView,
+  SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL,
 } from "src/components/common/Filter/common/entities";
 
 /**
