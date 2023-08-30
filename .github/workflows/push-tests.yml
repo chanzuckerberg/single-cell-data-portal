@@ -37,7 +37,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - uses: actions/setup-python@v3
       - name: check backend
         uses: pre-commit/action@v3.0.0
@@ -107,7 +107,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - name: Install dependencies
         run: |
           npm ci
@@ -190,7 +190,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -246,7 +246,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35.8.0
@@ -299,7 +299,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35.8.0
@@ -352,7 +352,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35.8.0
@@ -410,7 +410,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35.8.0
@@ -464,7 +464,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35.8.0
@@ -519,7 +519,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35.8.0
@@ -572,7 +572,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35.8.0
@@ -634,7 +634,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - uses: actions/download-artifact@v3
         with:
           name: coverage
@@ -677,7 +677,7 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
-          fetch-depth: 0
+          fetch-depth: 1
 
       # Create test results history as an Allure report
       - name: Create test results history as an Allure report
