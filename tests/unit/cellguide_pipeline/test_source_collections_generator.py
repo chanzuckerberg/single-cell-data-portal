@@ -1,5 +1,6 @@
 import json
 import unittest
+from unittest.mock import patch
 
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.source_collections.source_collections_generator import generate_source_collections_data
@@ -12,6 +13,10 @@ from tests.unit.cellguide_pipeline.constants import (
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
     SOURCE_COLLECTIONS_FIXTURE_FILENAME,
 )
+from tests.unit.cellguide_pipeline.mocks import (
+    mock_get_collections_from_curation_endpoint,
+    mock_get_datasets_from_curation_endpoint,
+)
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
@@ -23,10 +28,16 @@ class TestSourceCollectionsGenerator(unittest.TestCase):
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             cell_counts_df = snapshot.cell_counts_cube.df[:]
             tree_builder = OntologyTreeBuilder(cell_counts_df)
-
-            source_collections = generate_source_collections_data(
-                all_cell_type_ids_in_corpus=tree_builder.all_cell_type_ids_in_corpus
-            )
+            with patch(
+                "backend.cellguide.pipeline.source_collections.source_collections_generator.get_datasets_from_curation_api",
+                new=mock_get_datasets_from_curation_endpoint,
+            ), patch(
+                "backend.cellguide.pipeline.source_collections.source_collections_generator.get_collections_from_curation_api",
+                new=mock_get_collections_from_curation_endpoint,
+            ):
+                source_collections = generate_source_collections_data(
+                    all_cell_type_ids_in_corpus=tree_builder.all_cell_type_ids_in_corpus
+                )
 
             self.assertTrue(
                 compare_dicts(
