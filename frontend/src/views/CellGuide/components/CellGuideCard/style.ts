@@ -141,6 +141,7 @@ export const MobileTooltipWrapper = styled.div`
   display: flex;
   flex-direction: column;
   height: calc(100vh - ${HEADER_HEIGHT_PX}px);
+  width: 100vw;
   padding: ${spacesL}px;
   gap: ${spacesL}px;
 `;

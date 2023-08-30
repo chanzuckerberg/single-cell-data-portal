@@ -59,11 +59,13 @@ const HelpTooltip = ({
         isAllCaps={false}
       >
         <StyledIconImage
-          onTouchEnd={() => {
-            setTooltipContent({
-              title: title,
-              element: <StyledTooltip>{text}</StyledTooltip>,
-            });
+          onClick={() => {
+            if (skinnyMode) {
+              setTooltipContent({
+                title: title,
+                element: <StyledTooltip>{text}</StyledTooltip>,
+              });
+            }
           }}
           src={questionMarkIcon}
         />
