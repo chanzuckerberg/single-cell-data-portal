@@ -171,9 +171,11 @@ export default function GeneSearchBar({
         !(nativeEvent.relatedTarget instanceof Element)) ||
       !(nativeEvent instanceof FocusEvent)
     ) {
-      setOpen((open) => !open);
+      // reset focus
+      const target = nativeEvent.target as HTMLElement;
+      target.blur();
+      setOpen(false);
     }
-
     setInput("");
   };
 
@@ -209,7 +211,7 @@ export default function GeneSearchBar({
             onInputChange={handleInputChange}
             label="Add Genes"
             search
-            onFocus={() => setOpen(true)}
+            onFocus={() => setOpen((open) => !open)}
             onClose={handleClose}
             onKeyDownCapture={handleEnter}
             open={open}
