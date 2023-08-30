@@ -36,7 +36,6 @@ import {
 } from "src/views/WheresMyGene/common/constants";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 import GeneSearchBar from "src/views/WheresMyGeneV2/components/GeneSearchBar";
-import { isSSR } from "src/common/utils/isSSR";
 
 interface Props {
   geneNames: string[];
