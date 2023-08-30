@@ -256,7 +256,7 @@ export default function OntologyDagView({
         );
 
         if (
-          hiddenChildren.length <
+          hiddenChildren.length <=
           MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE
         ) {
           newChildren.push(...hiddenChildren);
