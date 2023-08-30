@@ -28,7 +28,7 @@ const Layout = ({ children }: Props) => {
         {children}
       </Wrapper>
     );
-  } else if (pathname === ROUTES.CELL_GUIDE + "/[cellTypeId]") {
+  } else if (pathname.startsWith(ROUTES.CELL_GUIDE)) {
     return (
       <>
         <LandingHeader title="CellGuide" homeUrl={ROUTES.CELL_GUIDE} />

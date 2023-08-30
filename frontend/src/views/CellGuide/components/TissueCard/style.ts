@@ -1,19 +1,38 @@
 import styled from "@emotion/styled";
-import { fontHeaderXxl, Tag } from "@czi-sds/components";
+import {
+  CommonThemeProps,
+  fontHeaderXxl,
+  getSpaces,
+  Tag,
+} from "@czi-sds/components";
 
 export const TOP_PADDING_PX = 32;
 export const LEFT_RIGHT_PADDING_PX = 40;
 export const TISSUE_CARD_MAX_WIDTH = 1440;
 
+interface TissueViewProps extends CommonThemeProps {
+  skinnyMode: boolean;
+}
+
 export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-self: stretch;
-  min-width: 640px;
-  max-width: ${TISSUE_CARD_MAX_WIDTH}px;
   margin: auto;
   padding: ${TOP_PADDING_PX}px ${LEFT_RIGHT_PADDING_PX}px 0px
     ${LEFT_RIGHT_PADDING_PX}px;
+
+  ${(props: TissueViewProps) => {
+    const { skinnyMode } = props;
+    const spaces = getSpaces(props);
+    const space = skinnyMode ? spaces?.l : spaces?.xxl;
+    const maxWidth = skinnyMode ? "100vw" : "1440px";
+
+    return `
+      max-width: ${maxWidth};
+      padding: ${TOP_PADDING_PX}px ${space}px 0px ${space}px;
+    `;
+  }}
 `;
 
 export const TissueCardHeaderInnerWrapper = styled.div`
@@ -23,7 +42,7 @@ export const TissueCardHeaderInnerWrapper = styled.div`
 `;
 
 export const DescriptionWrapper = styled.div`
-  margin-bottom: 16px;
+  margin-bottom: 0;
 `;
 
 export const TissueCardHeader = styled.div`

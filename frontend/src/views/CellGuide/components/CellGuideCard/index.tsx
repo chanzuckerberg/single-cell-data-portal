@@ -262,7 +262,7 @@ export default function CellGuideCard({
           <FlexContainer>
             {skinnyMode && (
               <StyledOntologyId
-                cellTypeIdRaw={cellTypeIdRaw}
+                url={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
                 ontologyId={cellTypeId}
               />
             )}

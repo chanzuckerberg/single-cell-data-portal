@@ -8,12 +8,12 @@ import Link from "src/views/CellGuide/components/CellGuideCard/components/common
 
 interface Props {
   ontologyId: string;
-  cellTypeIdRaw: string | string[] | undefined;
+  url: string;
 }
 
 export default function OntologyId({
   ontologyId = "",
-  cellTypeIdRaw = "",
+  url = "",
   ...rest
 }: Props) {
   return (
@@ -21,10 +21,7 @@ export default function OntologyId({
       <Label>Ontology ID</Label>
       <StyledOntologyId>
         <SourceLink>
-          <Link
-            url={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
-            label={ontologyId}
-          />
+          <Link url={url} label={ontologyId} />
         </SourceLink>
       </StyledOntologyId>
     </Wrapper>

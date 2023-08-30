@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import {
   TISSUE_CARD_MAX_WIDTH,
@@ -28,6 +28,18 @@ import {
   TISSUE_CARD_HEADER_TAG,
   TISSUE_CARD_UBERON_DESCRIPTION,
 } from "src/views/CellGuide/components/TissueCard/constants";
+import { Global } from "@emotion/react";
+import { StickySidebarStyle } from "../CellGuideCard/components/CellGuideCardSidebar/style";
+import CellGuideMobileHeader from "../CellGuideMobileHeader";
+import { SKINNY_MODE_BREAKPOINT_WIDTH } from "../CellGuideCard/constants";
+import { throttle } from "lodash";
+import CellGuideCardSidebar from "../CellGuideCard/components/CellGuideCardSidebar";
+import React from "react";
+import { StyledOntologyId } from "../CellGuideCard/style";
+import {
+  TableTitleWrapper,
+  TableTitle,
+} from "../CellGuideCard/components/common/style";
 
 interface Props {
   // From getServerSideProps
@@ -57,9 +69,53 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
   const title = `${titleizedName} Tissue - CZ CELLxGENE CellGuide`;
   const seoDescription = `Find comprehensive information about ${tissueName} tissue: ${description}`;
 
+  const [skinnyMode, setSkinnyMode] = useState<boolean>(false);
+
+  const handleResize = useCallback(() => {
+    setSkinnyMode(
+      window.innerWidth <
+        SKINNY_MODE_BREAKPOINT_WIDTH + 2 * LEFT_RIGHT_PADDING_PX
+    );
+  }, []);
+
+  const throttledHandleResize = useMemo(() => {
+    return throttle(handleResize, 100);
+  }, [handleResize]);
+
+  useEffect(() => {
+    throttledHandleResize();
+    window.addEventListener("resize", throttledHandleResize);
+
+    return () => window.removeEventListener("resize", throttledHandleResize);
+  }, [throttledHandleResize]);
+
+  // Navigation
+  const sectionRef0 = React.useRef(null);
+  const sectionRef1 = React.useRef(null);
+
   return (
     <>
-      <Wrapper>
+      {/* Intro section */}
+      <div ref={sectionRef0} id="section-0" data-testid="section-0" />
+      {skinnyMode && (
+        <CellGuideMobileHeader
+          title={titleizedName}
+          pageNav={
+            <CellGuideCardSidebar
+              skinnyMode={skinnyMode}
+              items={[
+                { elementRef: sectionRef0, title: "Intro" },
+                { elementRef: sectionRef1, title: "Ontology" },
+              ]}
+            />
+          }
+        />
+      )}
+
+      <Wrapper skinnyMode={skinnyMode}>
+        {/* This is a fix that overrides a global overflow css prop to get sticky elements to work */}
+        <Global styles={StickySidebarStyle} />
+
         <Head>
           <title>{title}</title>
           <meta property="title" key="title" content={title} />
@@ -77,30 +133,44 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
             key="twitter:description"
             content={seoDescription}
           />
+
+          {/* This prevents auto zooming on the input box on mobile */}
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1"
+          />
         </Head>
-        <TissueCardHeader>
-          <TissueCardHeaderInnerWrapper>
-            <TissueCardName data-testid={TISSUE_CARD_HEADER_NAME}>
-              {titleizedName}
-            </TissueCardName>
-            <a
-              href={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${tissueIdRaw}`}
-              target="_blank"
-            >
-              <StyledTag
-                data-testid={TISSUE_CARD_HEADER_TAG}
-                label={tissueId}
-                sdsType="secondary"
-                sdsStyle="square"
-                color="gray"
-                hover
-              />
-            </a>
-          </TissueCardHeaderInnerWrapper>
-        </TissueCardHeader>
-        <SearchBarWrapper>
-          <CellGuideCardSearchBar />
-        </SearchBarWrapper>
+
+        {!skinnyMode && (
+          <TissueCardHeader>
+            <TissueCardHeaderInnerWrapper>
+              <TissueCardName data-testid={TISSUE_CARD_HEADER_NAME}>
+                {titleizedName}
+              </TissueCardName>
+              <a
+                href={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${tissueIdRaw}`}
+                target="_blank"
+              >
+                <StyledTag
+                  data-testid={TISSUE_CARD_HEADER_TAG}
+                  label={tissueId}
+                  sdsType="secondary"
+                  sdsStyle="square"
+                  color="gray"
+                  hover
+                />
+              </a>
+            </TissueCardHeaderInnerWrapper>
+          </TissueCardHeader>
+        )}
+
+        {/* Don't show search on page for mobile view */}
+        {!skinnyMode && (
+          <SearchBarWrapper>
+            <CellGuideCardSearchBar />
+          </SearchBarWrapper>
+        )}
+
         <DescriptionWrapper>
           <CellGuideCardDescription
             data-testid={TISSUE_CARD_UBERON_DESCRIPTION}
@@ -110,25 +180,39 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
               <SourceLink>
                 {"Source: "}
                 <Link
-                  url={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${tissueIdRaw}`}
+                  url={`https://www.ebi.ac.uk/ols/ontologies/uberon/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2F${tissueIdRaw}`}
                   label={"UBERON Ontology"}
                 />
               </SourceLink>
             </Source>
           </CellGuideCardDescription>
         </DescriptionWrapper>
-        <FullScreenProvider>
-          <OntologyDagView
-            key={tissueId}
-            tissueId={tissueId}
-            tissueName={tissueName}
-            skinnyMode={false}
-            initialWidth={TISSUE_CARD_MAX_WIDTH - LEFT_RIGHT_PADDING_PX * 2}
-            initialHeight={height}
+
+        {skinnyMode && (
+          <StyledOntologyId
+            url={`https://www.ebi.ac.uk/ols/ontologies/uberon/terms?iri=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2F${tissueIdRaw}`}
+            ontologyId={tissueId}
           />
-        </FullScreenProvider>
+        )}
+
+        {/* Ontology section */}
+        <div ref={sectionRef1} id="section-1" data-testid="section-1">
+          <TableTitleWrapper>
+            <TableTitle>Ontology</TableTitle>
+          </TableTitleWrapper>
+          <FullScreenProvider>
+            <OntologyDagView
+              key={tissueId}
+              tissueId={tissueId}
+              tissueName={tissueName}
+              skinnyMode={false}
+              initialWidth={TISSUE_CARD_MAX_WIDTH - LEFT_RIGHT_PADDING_PX * 2}
+              initialHeight={height}
+            />
+          </FullScreenProvider>
+        </div>
       </Wrapper>
-      <CellGuideBottomBanner />
+      <CellGuideBottomBanner includeSurveyLink={!skinnyMode} />
     </>
   );
 }
