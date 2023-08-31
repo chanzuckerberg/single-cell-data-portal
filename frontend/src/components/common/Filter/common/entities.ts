@@ -737,6 +737,7 @@ export interface SelectCategoryView {
   isDisabled?: boolean;
   categoryFilterId: CATEGORY_FILTER_ID;
   label: string;
+  pinnedPosition?: PINNED_POSITION;
   pinnedValues: SelectCategoryValueView[];
   tooltip?: string;
   unpinnedValues: SelectCategoryValueView[];
