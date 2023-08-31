@@ -36,6 +36,8 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
       - uses: actions/setup-python@v3
       - name: check backend
         uses: pre-commit/action@v3.0.0
@@ -61,7 +63,8 @@ jobs:
       matrix:
         # Only run Chrome for now, since GHA only has 250 workers and will cancel jobs if it runs out
         project: [chromium]
-        shardCurrent: [
+        shardCurrent:
+          [
             1,
             2,
             3,
@@ -82,18 +85,8 @@ jobs:
             18,
             19,
             20,
-            21,
-            22,
-            23,
-            24,
-            25,
-            26.
-            27,
-            28,
-            29,
-            30,
           ]
-        shardTotal: [30]
+        shardTotal: [20]
 
     defaults:
       run:
@@ -113,6 +106,8 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
       - name: Install dependencies
         run: |
           npm ci
@@ -194,6 +189,8 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -249,7 +246,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35.8.0
@@ -302,7 +299,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35.8.0
@@ -355,7 +352,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35.8.0
@@ -413,7 +410,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35.8.0
@@ -467,7 +464,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35.8.0
@@ -522,7 +519,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35.8.0
@@ -575,7 +572,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v35.8.0
@@ -623,6 +620,7 @@ jobs:
       - backend-wmg-unit-test
       - wmg-processing-unit-test
       - processing-unit-test
+      - cellguide-pipeline-unit-test
     runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
@@ -637,7 +635,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2
       - uses: actions/download-artifact@v3
         with:
           name: coverage
@@ -663,6 +661,7 @@ jobs:
       - wmg-processing-unit-test
       - processing-unit-test
       - e2e-test
+      - cellguide-pipeline-unit-test
     runs-on: ubuntu-22.04
     permissions:
       contents: write
@@ -680,6 +679,7 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
+          fetch-depth: 2
 
       # Create test results history as an Allure report
       - name: Create test results history as an Allure report

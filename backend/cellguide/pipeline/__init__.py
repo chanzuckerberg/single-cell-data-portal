@@ -14,6 +14,7 @@ from backend.cellguide.pipeline.metadata import run as run_metadata_pipeline
 from backend.cellguide.pipeline.ontology_tree import run as run_ontology_tree_pipeline
 from backend.cellguide.pipeline.providers.s3_provider import S3Provider
 from backend.cellguide.pipeline.source_collections import run as run_source_collections_pipeline
+from backend.cellguide.pipeline.utils import get_bucket_path, get_object_key
 from backend.common.utils.cloudfront import create_invalidation_for_cellguide_data
 
 logger = logging.getLogger(__name__)
@@ -64,29 +65,12 @@ def upload_cellguide_pipeline_output_to_s3(*, output_directory: str):
     If the pipeline is running in a deployed environment, then this function uploads
     the CellGuide snapshot to the corresponding environment's CellGuide data bucket.
     """
-    deployment_stage = os.getenv("DEPLOYMENT_STAGE")
-    remote_dev_prefix = os.getenv("REMOTE_DEV_PREFIX")
+
     s3_provider = S3Provider()
+    bucket = CellGuideConfig().bucket
 
-    if not deployment_stage:
-        logger.warning(f"Not uploading the pipeline output at {output_directory} to S3 as DEPLOYMENT_STAGE is not set.")
-        return
-
-    if deployment_stage == "rdev" and remote_dev_prefix is None:
-        logger.warning(
-            f"Not uploading the pipeline output at {output_directory} to S3 as REMOTE_DEV_PREFIX is not set when DEPLOYMENT_STAGE is rdev."
-        )
-        return
-    elif deployment_stage == "rdev":
-        bucket = CellGuideConfig().bucket
-        bucket_path = f"s3://{bucket}/{remote_dev_prefix}/"
-    elif deployment_stage in ["dev", "staging", "prod"]:
-        bucket = CellGuideConfig().bucket
-        bucket_path = f"s3://{bucket}/"
-    else:
-        logger.warning(
-            f"Invalid DEPLOYMENT_STAGE value: {deployment_stage}. Please set DEPLOYMENT_STAGE to one of rdev, dev, staging, or prod"
-        )
+    bucket_path = get_bucket_path()
+    if bucket_path is None:
         return
 
     logger.info(f"Uploading the pipeline output at {output_directory} to {bucket_path}")
@@ -94,7 +78,9 @@ def upload_cellguide_pipeline_output_to_s3(*, output_directory: str):
 
     with open("latest_snapshot_identifier", "w") as file:
         file.write(output_directory)
-    s3_provider.upload_file("latest_snapshot_identifier", bucket, "latest_snapshot_identifier", {})
+
+    object_key = get_object_key(object="latest_snapshot_identifier")
+    s3_provider.upload_file("latest_snapshot_identifier", bucket, object_key, {})
 
     # Create an empty file named 404
     with open("404", "w") as file:
@@ -105,17 +91,18 @@ def upload_cellguide_pipeline_output_to_s3(*, output_directory: str):
 
 
 def upload_gpt_descriptions_to_s3(*, gpt_output_directory: str, gpt_seo_output_directory: str) -> None:
-    bucket_name = CellGuideConfig().bucket
+    bucket_path = get_bucket_path()
+
     s3_provider = S3Provider()
     for src_directory, dst_directory in zip(
         [gpt_output_directory, gpt_seo_output_directory],
         [GPT_OUTPUT_DIRECTORY_FOLDERNAME, GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME],
     ):
         # upload to s3
-        s3_provider.sync_directory(src_dir=src_directory, s3_uri=f"s3://{bucket_name}/{dst_directory}/")
+        s3_provider.sync_directory(src_dir=src_directory, s3_uri=f"{bucket_path}{dst_directory}/")
 
         num_descriptions = len(glob(f"{src_directory}/*.json"))
-        logger.info(f"Uploaded {num_descriptions} GPT descriptions to s3://{bucket_name}/{dst_directory}/")
+        logger.info(f"Uploaded {num_descriptions} GPT descriptions to {bucket_path}{dst_directory}/")
 
 
 def cleanup(*, output_directory: str):

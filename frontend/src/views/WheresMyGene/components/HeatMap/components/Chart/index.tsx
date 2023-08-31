@@ -1,5 +1,4 @@
 import { Tooltip } from "@czi-sds/components";
-import { ECharts, ElementEvent } from "echarts";
 import { capitalize } from "lodash";
 import cloneDeep from "lodash/cloneDeep";
 import debounce from "lodash/debounce";
@@ -42,8 +41,8 @@ import {
   getHeatmapWidth,
   hyphenize,
 } from "../../utils";
-import { StyledTooltipTable, tooltipCss } from "./style";
-import RawChart from "./components/Chart";
+import { StyledHeatmapChart, StyledTooltipTable, tooltipCss } from "./style";
+
 import {
   dataToChartFormat,
   grid,
@@ -119,7 +118,7 @@ export default memo(function Chart({
   }, [dataRows, selectedGeneData, setIsLoading, tissue]);
 
   const handleChartMouseMove = useMemo(() => {
-    return throttle((params: ElementEvent, chart: ECharts) => {
+    return throttle((params, chart) => {
       const { offsetX, offsetY, event } = params;
       const { pageX, pageY } = event as MouseEvent;
 
@@ -400,7 +399,7 @@ export default memo(function Chart({
       onMouseMove={handleMouseMove}
       PopperProps={tooltipPopperProps}
     >
-      <RawChart
+      <StyledHeatmapChart
         height={heatmapHeight}
         width={heatmapWidth}
         ref={ref}

@@ -20,6 +20,9 @@ class S3ProviderInterface:
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         pass
 
+    def restore_object(self, bucket_name: str, object_key: str) -> None:
+        pass
+
     def upload_directory(self, src_dir: str, s3_uri: str):
         pass
 

@@ -2,11 +2,7 @@ export const HOMO_SAPIENS = "Homo sapiens";
 
 export const ALL_TISSUES = "All Tissues";
 
-export const CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGANISM =
-  "cell-guide-card-marker-genes-table-dropdown-organism";
-
-export const CELL_GUIDE_CARD_MARKER_GENES_TABLE_DROPDOWN_ORGAN =
-  "cell-guide-card-marker-genes-table-dropdown-organ";
+export const NO_ORGAN_ID = "";
 
 export const CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE =
   "cell-guide-card-canonical-marker-genes-table";
