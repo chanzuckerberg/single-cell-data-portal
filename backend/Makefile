@@ -54,15 +54,15 @@ db/check:
 # ARGS usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect ARGS="-c \"select * from dataset_artifact where filetype='CXG'\""
 db/connect:
 ifeq ($(DEPLOYMENT_STAGE), rdev)
-	$(MAKE) db/connect_internal DB_NAME=/${STACK} USER_NAME=dataportal
+	$(MAKE) db/connect_internal DB_NAME=/${STACK} DB_USER=dataportal
 else
-	$(MAKE) db/connect_internal DB_NAME=corpora_${DEPLOYMENT_STAGE} USER_NAME=corpora_${DEPLOYMENT_STAGE}
+	$(MAKE) db/connect_internal DB_NAME=corpora_${DEPLOYMENT_STAGE} DB_USER=corpora_${DEPLOYMENT_STAGE}
 endif
 
 db/connect_internal:
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
 	$(MAKE) db/tunnel/up
-	PGOPTIONS='-csearch_path=persistence_schema' PGPASSWORD=${DB_PW} psql --dbname ${DB_NAME} --username ${USER_NAME} --host 0.0.0.0 $(ARGS)
+	PGOPTIONS='-csearch_path=persistence_schema' PGPASSWORD=${DB_PW} psql --dbname ${DB_NAME} --username ${DB_USER} --host 0.0.0.0 $(ARGS)
 	$(MAKE) db/tunnel/down
 
 db/console: db/connect # alias
@@ -141,5 +141,5 @@ mirror_env_data:
 	# THIS IS DESTRUCTIVE for the DEST_ENV env! The SRC_ENV env will
 	# never be modified, but the DEST_ENV env's data will be replaced.
 	#
-	# Usage: make mirror_env_data [DEST_ENV={dev|staging}] [SRC_ENV={prod|staging|dev}] 
-	scripts/mirror_env_data.sh $(SRC_ENV) $(DEST_ENV)
+	# Usage: make mirror_env_data [SRC_ENV={prod|staging|dev}] [DEST_ENV={dev|staging|rdev}] [STACK=<rdev_stack_name>]
+	scripts/mirror_env_data.sh $(SRC_ENV) $(DEST_ENV) $(STACK)

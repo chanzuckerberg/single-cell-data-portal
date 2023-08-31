@@ -30,22 +30,34 @@ make db/dump OUTFILE=$DB_DUMP_FILE
 export DEPLOYMENT_STAGE=$DEST_ENV
 export AWS_PROFILE=single-cell-dev
 
-#  For safety, also dump the destination db to a local file, just in case.
-DEST_DB_BACKUP_DUMP_FILE="${DEST_ENV}_"`date +%Y%m%d_%H%M%S`".sqlc"
-echo "Backing up the destination database to $DEST_DB_BACKUP_DUMP_FILE. Just in case!"
-make db/dump OUTFILE=$DEST_DB_BACKUP_DUMP_FILE
+if [[ ! $DEST_ENV == 'rdev' ]]; then
+   #  For safety, also dump the destination db to a local file, just in case.
+   DEST_DB_BACKUP_DUMP_FILE="${DEST_ENV}_"`date +%Y%m%d_%H%M%S`".sqlc"
+   echo "Backing up the destination database to $DEST_DB_BACKUP_DUMP_FILE. Just in case!"
+   make db/dump OUTFILE=$DEST_DB_BACKUP_DUMP_FILE
+fi
 
 DB_PW=`aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'`
 
-DB_NAME="corpora_${DEPLOYMENT_STAGE}"
-DB_USER=corpora_${DEPLOYMENT_STAGE}
+if [[ $DEST_ENV == 'rdev' ]]; then
+   DB_NAME="/${STACK}"
+   DB_USER="dataportal"
+else
+   DB_NAME="corpora_${DEPLOYMENT_STAGE}"
+   DB_USER=corpora_${DEPLOYMENT_STAGE}
+fi
 
 read -n 1 -p "ATTENTION: Proceed to replace the destination database \"${DB_NAME}\"? (Y/n) " ANS
 echo
 [[ $ANS == 'Y' ]] || exit 1
 
+function load_src_dump_to_dest_db() {
+  PGPASSWORD=${DB_PW} pg_restore --clean --if-exists --no-owner --no-privileges --no-comments --dbname=${DB_NAME} \
+  --host 0.0.0.0 --username ${DB_USER} --schema=persistence_schema ${DB_DUMP_FILE}
+}
+
 make db/tunnel/up
-PGPASSWORD=${DB_PW} pg_restore --clean --if-exists --no-owner --no-privileges --no-comments --dbname=${DB_NAME} --host 0.0.0.0 --username ${DB_USER} --schema=persistence_schema ${DB_DUMP_FILE}
+load_src_dump_to_dest_db || load_src_dump_to_dest_db  # Hack for rdev, where it fails on first and succeeds on retry
 make db/tunnel/down
 
 DB_UPDATE_CMDS=$(cat <<EOF

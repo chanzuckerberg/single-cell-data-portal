@@ -16,6 +16,11 @@ export NO_PROMPT=1
 # db; this can occur if new artifacts are created and recorded in the
 # src env after the S3 mirroring object set has been computed.
 $SCRIPTS_DIR/mirror_rds_data.sh $@
-$SCRIPTS_DIR/mirror_s3_data.sh $@
+if [[ ! $DEST_ENV == 'rdev' ]]; then
+  $SCRIPTS_DIR/mirror_s3_data.sh $@
+else
+  echo "DEST_ENV is set to rdev -- will NOT copy s3 assets"
+fi
+
 
 echo "Done!"
