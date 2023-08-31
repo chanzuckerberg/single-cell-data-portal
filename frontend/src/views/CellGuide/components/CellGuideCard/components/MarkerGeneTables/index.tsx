@@ -43,6 +43,7 @@ import {
 } from "src/common/queries/cellGuide";
 import { useComputationalMarkerGenesTableRowsAndFilters } from "./hooks/computational_markers";
 import { useCanonicalMarkerGenesTableRowsAndFilters } from "./hooks/canonical_markers";
+import { useIsComponentPastBreakpoint } from "./hooks/common";
 import HelpTooltip from "../common/HelpTooltip";
 import { ROUTES } from "src/common/constants/routes";
 import { track } from "src/common/analytics";
@@ -58,8 +59,11 @@ import {
   MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID,
   MARKER_SCORE_TOOLTIP_TEST_ID,
   PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
+  MARKER_GENES_CANONICAL_BREAKPOINT_PX,
+  MARKER_GENES_COMPUTATIONAL_BREAKPOINT_PX,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
+import { PaddingType } from "../common/Table/style";
 
 function getEmptyComputationalMarkerGenesTableUIMessageDetail(
   allFilteredByLowMarkerScore: boolean
@@ -89,13 +93,6 @@ interface TableRowEnrichedGenes {
   me: string;
   pc: string;
 }
-const tableColumnsEnrichedGenes: Array<keyof TableRowEnrichedGenes> = [
-  "symbol",
-  "name",
-  "marker_score",
-  "me",
-  "pc",
-];
 
 // Canonical marker gene table types
 interface TableRowCanonicalGenes {
@@ -103,21 +100,6 @@ interface TableRowCanonicalGenes {
   name: string;
   references: ReactNode;
 }
-const tableColumnsCanonicalGenes: Array<keyof TableRowCanonicalGenes> = [
-  "symbol",
-  "name",
-  "references",
-];
-
-// Canonical marker gene table column names
-const tableColumnNamesCanonicalGenes: Record<
-  keyof TableRowCanonicalGenes,
-  string
-> = {
-  symbol: "Symbol",
-  name: "Name",
-  references: "References",
-};
 
 // Table row type
 type TableRow = (TableRowEnrichedGenes | TableRowCanonicalGenes) & {
@@ -199,6 +181,13 @@ const MarkerGeneTables = ({
   const [activeTable, setActiveTable] = useState(0);
   const [computationalMarkerGenes, setComputationalMarkerGenes] =
     useState<ComputationalMarkersQueryResponse>([]);
+
+  const { isPastBreakpoint, containerRef } = useIsComponentPastBreakpoint(
+    activeTable
+      ? MARKER_GENES_COMPUTATIONAL_BREAKPOINT_PX
+      : MARKER_GENES_CANONICAL_BREAKPOINT_PX
+  );
+
   const [canonicalMarkerGenes, setCanonicalMarkerGenes] =
     useState<CanonicalMarkersQueryResponse>([]);
 
@@ -249,7 +238,7 @@ const MarkerGeneTables = ({
       ),
       me: (
         <StyledHeadCellContent>
-          Expression Score
+          {!isPastBreakpoint ? "Expression Score" : "Exp. Score"}
           <HelpTooltip
             skinnyMode={skinnyMode}
             title="Expression Score"
@@ -299,7 +288,7 @@ const MarkerGeneTables = ({
         </StyledHeadCellContent>
       ),
     }),
-    [setTooltipContent, skinnyMode]
+    [setTooltipContent, skinnyMode, isPastBreakpoint]
   );
 
   const allTissuesLabelToIdMap = useAllTissuesLookupTables(cellTypeId);
@@ -428,35 +417,94 @@ const MarkerGeneTables = ({
     .join("%2C")}&cellTypes=${cellTypeName.replace(" ", "+")}`;
 
   const pageCount = Math.ceil(tableRows.length / ROWS_PER_PAGE);
-  const tableComponent = useMemo(
-    () =>
-      activeTable ? (
-        <Table<TableRowEnrichedGenes>
-          testId={CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}
-          columns={tableColumnsEnrichedGenes}
-          rows={
-            tableRows.slice(
-              (page - 1) * ROWS_PER_PAGE,
-              page * ROWS_PER_PAGE
-            ) as TableRowEnrichedGenes[]
-          }
-          columnIdToName={tableColumnNamesEnrichedGenes}
-        />
-      ) : (
-        <Table<TableRowCanonicalGenes>
-          testId={CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}
-          columns={tableColumnsCanonicalGenes}
-          rows={
-            tableRows.slice(
-              (page - 1) * ROWS_PER_PAGE,
-              page * ROWS_PER_PAGE
-            ) as TableRowCanonicalGenes[]
-          }
-          columnIdToName={tableColumnNamesCanonicalGenes}
-        />
-      ),
-    [activeTable, page, tableRows, tableColumnNamesEnrichedGenes]
-  );
+  const tableComponent = useMemo(() => {
+    const minWidthsEnrichedGenes = !isPastBreakpoint
+      ? [80, 200, 104, 136, 88]
+      : [undefined, undefined, 96, undefined];
+    const maxWidthsEnrichedGenes = !isPastBreakpoint
+      ? [120, 640, 104, 136, 88]
+      : [undefined, undefined, 96, undefined];
+    const paddingRightEnrichedGenes = !isPastBreakpoint
+      ? [
+          PaddingType.Medium,
+          PaddingType.Medium,
+          PaddingType.MediumLarge,
+          PaddingType.MediumLarge,
+          PaddingType.Large,
+        ]
+      : [
+          PaddingType.None,
+          PaddingType.None,
+          PaddingType.Large,
+          PaddingType.None,
+        ];
+
+    const minWidthsCanonicalGenes = !isPastBreakpoint
+      ? [80, 200, 120]
+      : undefined;
+    const maxWidthsCanonicalGenes = !isPastBreakpoint
+      ? [120, 640, 160]
+      : undefined;
+    const paddingRightCanonicalGenes = !isPastBreakpoint
+      ? [PaddingType.Medium, PaddingType.Medium, PaddingType.None]
+      : undefined;
+
+    const tableColumnsEnrichedGenes: Array<keyof TableRowEnrichedGenes> =
+      !isPastBreakpoint
+        ? ["symbol", "name", "marker_score", "me", "pc"]
+        : ["symbol", "marker_score", "me", "pc"];
+
+    const tableColumnsCanonicalGenes: Array<keyof TableRowCanonicalGenes> =
+      !isPastBreakpoint
+        ? ["symbol", "name", "references"]
+        : ["symbol", "references"];
+    // Canonical marker gene table column names
+    const tableColumnNamesCanonicalGenes: Record<
+      keyof TableRowCanonicalGenes,
+      string
+    > = {
+      symbol: "Symbol",
+      name: "Name",
+      references: "References",
+    };
+    return activeTable ? (
+      <Table<TableRowEnrichedGenes>
+        testId={CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}
+        columns={tableColumnsEnrichedGenes}
+        minWidths={minWidthsEnrichedGenes}
+        maxWidths={maxWidthsEnrichedGenes}
+        rightPaddings={paddingRightEnrichedGenes}
+        rows={
+          tableRows.slice(
+            (page - 1) * ROWS_PER_PAGE,
+            page * ROWS_PER_PAGE
+          ) as TableRowEnrichedGenes[]
+        }
+        columnIdToName={tableColumnNamesEnrichedGenes}
+      />
+    ) : (
+      <Table<TableRowCanonicalGenes>
+        testId={CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}
+        columns={tableColumnsCanonicalGenes}
+        rows={
+          tableRows.slice(
+            (page - 1) * ROWS_PER_PAGE,
+            page * ROWS_PER_PAGE
+          ) as TableRowCanonicalGenes[]
+        }
+        columnIdToName={tableColumnNamesCanonicalGenes}
+        minWidths={minWidthsCanonicalGenes}
+        maxWidths={maxWidthsCanonicalGenes}
+        rightPaddings={paddingRightCanonicalGenes}
+      />
+    );
+  }, [
+    activeTable,
+    page,
+    tableRows,
+    tableColumnNamesEnrichedGenes,
+    isPastBreakpoint,
+  ]);
 
   const tableUnavailableComponent = (
     <TableUnavailableContainer>
@@ -530,7 +578,7 @@ const MarkerGeneTables = ({
         </TableSelectorRow>
       </TableTitleOuterWrapper>
       {tableRows.length > 0 ? (
-        <div>
+        <div ref={containerRef}>
           {tableComponent}
           <MarkerGenePagination>
             <Pagination

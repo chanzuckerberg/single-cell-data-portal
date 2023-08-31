@@ -6,6 +6,7 @@ import {
   StyledRow,
   StyledCell,
   TableWrapper,
+  PaddingType,
 } from "./style";
 
 interface TableProps<T> {
@@ -16,6 +17,9 @@ interface TableProps<T> {
     string | React.ReactElement
   >;
   testId?: string;
+  minWidths?: (number | undefined)[];
+  maxWidths?: (number | undefined)[];
+  rightPaddings?: PaddingType[];
 }
 
 // This is a generic table component that can be used to render any type of data.
@@ -24,6 +28,9 @@ function Table<T extends object>({
   rows,
   columnIdToName,
   testId,
+  minWidths,
+  maxWidths,
+  rightPaddings,
 }: TableProps<T>) {
   return (
     <TableWrapper data-testid={testId}>
@@ -47,7 +54,12 @@ function Table<T extends object>({
           {rows.map((row, rowIndex) => (
             <StyledRow key={rowIndex} highlight={rowIndex % 2 === 1}>
               {columns.map((column, cellIndex) => (
-                <StyledCell key={cellIndex}>
+                <StyledCell
+                  key={cellIndex}
+                  minWidth={minWidths?.[cellIndex]}
+                  maxWidth={maxWidths?.[cellIndex]}
+                  addPadding={rightPaddings?.[cellIndex]}
+                >
                   {row[column] as ReactNode}
                 </StyledCell>
               ))}
