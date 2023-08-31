@@ -28,13 +28,14 @@ import {
   HoverContainer,
   DeleteButtonWrapper,
 } from "./style";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
 import { StyledImage } from "../YAxisChart/style";
 import InfoSVG from "../YAxisChart/icons/info-sign-icon.svg";
 import {
   X_AXIS_CHART_HEIGHT_PX,
   X_AXIS_HOVER_CONTAINER_HEIGHT_PX,
 } from "src/views/WheresMyGene/common/constants";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
+import GeneSearchBar from "src/views/WheresMyGeneV2/components/GeneSearchBar";
 
 interface Props {
   geneNames: string[];
@@ -135,6 +136,7 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
       left={Y_AXIS_CHART_WIDTH_PX + CHART_PADDING_PX}
       height={xAxisHeight}
     >
+      <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
       <XAxisContainer
         data-testid="gene-labels"
         width={heatmapWidth}

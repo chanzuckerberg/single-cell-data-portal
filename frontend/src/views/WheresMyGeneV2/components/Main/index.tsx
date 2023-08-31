@@ -35,8 +35,6 @@ import {
 import CellInfoSideBar from "src/views/WheresMyGene/components/CellInfoSideBar";
 import Filters from "src/views/WheresMyGene/components/Filters";
 import GeneInfoSideBar from "src/components/GeneInfoSideBar";
-import GeneSearchBar from "src/views/WheresMyGeneV2/components/GeneSearchBar";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 
 import InfoPanel from "src/views/WheresMyGene/components/InfoPanel";
 import Legend from "src/views/WheresMyGene/components/InfoPanel/components/Legend";
@@ -341,7 +339,6 @@ export default function WheresMyGene(): JSX.Element {
           )}
 
           <Top id="top-legend">
-            <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
             <Legend
               selectedCellTypes={cellTypesByTissueName}
               selectedGenes={selectedGenes}

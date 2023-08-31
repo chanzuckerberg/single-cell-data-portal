@@ -7,8 +7,9 @@ import {
 import { FOOTER_HEIGHT_PX } from "src/components/Footer/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import { SidebarMainWrapper } from "src/components/Layout/style";
-import { Container } from "./components/GeneSearchBar/style";
+
 import { LegendWrapper } from "./components/InfoPanel/components/Legend/style";
+import { Container } from "../WheresMyGeneV2/components/GeneSearchBar/style";
 
 export const LEGEND_MARGIN_BOTTOM_PX = 20;
 
@@ -25,8 +26,7 @@ export const Gap = styled.div`
 
 export const Top = styled.div`
   display: flex;
-  justify-content: space-between;
-  margin-bottom: ${LEGEND_MARGIN_BOTTOM_PX}px;
+  justify-content: end;
 
   /* The CSS below is to center the legend in the PNG output */
 
