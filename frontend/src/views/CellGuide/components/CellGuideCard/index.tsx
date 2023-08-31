@@ -204,18 +204,6 @@ export default function CellGuideCard({
               </a>
             </CellGuideCardHeaderInnerWrapper>
             <CellGuideCardHeaderInnerWrapper>
-              {/*<DropdownSelect
-                handleChange={handleChangeOrganism}
-                options={organismsList}
-                selectedOption={selectedOrganism}
-                testId={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
-              />
-              <DropdownSelect
-                handleChange={handleChangeOrgan}
-                options={uniqueOrgans}
-                selectedOption={selectedOrgan}
-                testId={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}
-            />*/}
               <Dropdown
                 InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
                 search
