@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Page, expect, test } from "@playwright/test";
-import { LATEST_SHARE_LINK_VERSION } from "src/views/WheresMyGene/components/GeneSearchBar/components/ShareButton/utils";
+import { LATEST_SHARE_LINK_VERSION } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/ShareButton/utils";
+
 import { TEST_URL } from "tests/common/constants";
 import { tryUntil } from "tests/utils/helpers";
 

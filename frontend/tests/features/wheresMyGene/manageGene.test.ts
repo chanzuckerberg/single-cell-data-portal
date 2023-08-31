@@ -1,5 +1,4 @@
 import { expect, test } from "@playwright/test";
-import { ADD_GENE_BTN } from "tests/common/constants";
 import {
   ADD_GENE_SEARCH_PLACEHOLDER_TEXT,
   goToWMG,
@@ -8,7 +7,6 @@ import {
 } from "tests/utils/geneUtils";
 import { selectNthOption } from "tests/utils/helpers";
 import { conditionallyRunTests } from "tests/utils/wmgUtils";
-import uaParser from "ua-parser-js";
 const { describe } = test;
 
 describe("Manage gene tests", () => {
@@ -24,7 +22,7 @@ describe("Manage gene tests", () => {
     const GENE = "TNMD";
     await goToWMG(page);
     // click +Gene button
-    await page.getByTestId(ADD_GENE_BTN).click();
+    await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).click();
 
     // use arrow down buttons to select the 2nd option
     await selectNthOption(page, 3);
@@ -41,33 +39,15 @@ describe("Manage gene tests", () => {
     await verifyAddedGene(page, GENE);
   });
 
-  test("Should select gene by copy pasting", async ({ page, browserName }) => {
-    test.skip(browserName === "firefox", "No Clipboard read permission");
-
+  test("Should select gene by comma separated list", async ({ page }) => {
     const TEST_GENES = "DMP1,SCYL3,CFH";
 
     await goToWMG(page);
 
-    // click +Gene button
-    await page.getByTestId(ADD_GENE_BTN).click();
-
-    // copy & paste clipboard contents into search
-    // we will first write into search field so we have what to copy & paste
     await page
       .getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT)
       .type(TEST_GENES);
 
-    const getUA = await page.evaluate(() => navigator.userAgent);
-    const userAgentInfo = uaParser(getUA);
-    const modifier = userAgentInfo.os.name?.includes("Mac")
-      ? "Meta"
-      : "Control";
-
-    await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).focus();
-    await page.keyboard.press(`${modifier}+KeyA`);
-    await page.keyboard.press(`${modifier}+KeyC`);
-    await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).click();
-    await page.keyboard.press(`${modifier}+KeyV`);
     await page.keyboard.press("Enter");
 
     // verify selected tissue details
