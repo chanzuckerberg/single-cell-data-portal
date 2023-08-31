@@ -60,6 +60,5 @@ export const StyledCell = styled.td<StyledCellProps>`
 
   a {
     display: inline-block;
-    white-space: nowrap;
   }
 `;
