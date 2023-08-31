@@ -1,0 +1,87 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +16ms
+  pw:api <= selectors.setTestIdAttribute succeeded +5ms
+  pw:api <= browserType.launch succeeded +211ms
+  pw:api => browser.newContext started +6ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +67ms
+  pw:api   "commit" event fired +25ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +16ms
+  pw:api => tracing.start started +7ms
+  pw:api <= tracing.start succeeded +5ms
+  pw:api => browserContext.newPage started +5ms
+  pw:api <= browserContext.newPage succeeded +46ms
+  pw:api => page.waitForLoadState started +21ms
+  pw:api => page.goto started +5ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000084", waiting until "load" +13ms
+  pw:api   "commit" event fired +6s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000084" +0ms
+  pw:api   "commit" event fired +24ms
+  pw:api   "networkidle" event fired +5s
+  pw:api <= page.waitForLoadState succeeded +4ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000084" +4ms
+  pw:api   navigated to "about:blank" +40ms
+  pw:api <= page.goto succeeded +887ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-enriched-genes-table-selector') +151ms
+  pw:api   locator resolved to <button class="css-c7lv9m-TableSelectorButton e1mdzv35" …>Computational</button> +118ms
+  pw:api attempting click action +21ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +22ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +69ms
+  pw:api   click action done +144ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +22ms
+  pw:api <= locator.click succeeded +47ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-enriched-genes-table\']') to be visible +33ms
+  pw:api   locator resolved to visible <div class="css-n08b0e-TableWrapper e161gt4e1" data-t…>…</div> +21ms
+  pw:api <= locator.waitFor succeeded +24ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +27ms
+  pw:api => locator.textContent started +10ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-enriched-genes-table\'] tbody tr').first() +41ms
+  pw:api   locator resolved to <tr class="css-2oko1s-StyledRow e161gt4e4">…</tr> +6ms
+  pw:api <= locator.textContent succeeded +35ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-global-organism-filter-dropdown') to be visible +40ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-global-organism-fil…>…</div> +23ms
+  pw:api <= locator.waitFor succeeded +15ms
+  pw:api => locator.click started +3ms
+  pw:api waiting for getByTestId('cell-guide-card-global-organism-filter-dropdown') +14ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-global-organism-fil…>…</div> +6ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +29ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   "networkidle" event fired +95ms
+  pw:api   performing click action +88ms
+  pw:api   click action done +133ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +3ms
+  pw:api <= locator.click succeeded +31ms
+  pw:api => locator.press started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-global-organism-filter-dropdown') +26ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-global-organism-fil…>…</div> +12ms
+  pw:api elementHandle.press("ArrowDown") +7ms
+  pw:api <= locator.press succeeded +88ms
+  pw:api => locator.press started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-global-organism-filter-dropdown') +36ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-global-organism-fil…>…</div> +18ms
+  pw:api elementHandle.press("Enter") +9ms
+  pw:api <= locator.press succeeded +285ms
+  pw:api => locator.all started +0ms
+  pw:api <= locator.all succeeded +35ms
+  pw:api => locator.textContent started +2ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-enriched-genes-table\'] tbody tr').first() +56ms
+  pw:api   locator resolved to <tr class="css-2oko1s-StyledRow e161gt4e4">…</tr> +34ms
+  pw:api <= locator.textContent succeeded +29ms
+  pw:api taking page screenshot +18ms
