@@ -9,13 +9,19 @@ import {
 } from "../common/style";
 import Table from "../common/Table";
 import Link from "../common/Link";
-import { SourceDataTableWrapper, StyledTag } from "./style";
+import {
+  SourceDataTableWrapper,
+  StyledTag,
+  MobileSourceDataTableWrapper,
+  MobileSourceDataTableEntry,
+  MobileSourceDataTableEntryRow,
+} from "./style";
 import {
   SourceCollectionsQueryResponseEntry,
   useSourceData,
 } from "src/common/queries/cellGuide";
 import { Pagination } from "@mui/material";
-
+import useIsComponentPastBreakpoint from "../common/hooks/useIsComponentPastBreakpoint";
 import { CELL_GUIDE_CARD_SOURCE_DATA_TABLE } from "src/views/CellGuide/components/CellGuideCard/components/SourceDataTable/constants";
 import { useDataSourceFilter } from "./hooks/useDataSourceFilter";
 
@@ -51,6 +57,7 @@ const SourceDataTable = ({
 }: Props) => {
   const { data: collections } = useSourceData(cellTypeId);
   const [page, setPage] = useState(1);
+  const { isPastBreakpoint, containerRef } = useIsComponentPastBreakpoint(800);
 
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
@@ -72,8 +79,10 @@ const SourceDataTable = ({
   });
 
   const tableRows: TableRow[] = useMemo(() => {
-    return filteredCollections.map(createTableRow);
-  }, [filteredCollections]);
+    return filteredCollections.map((collections, index) =>
+      createTableRow(collections, index, isPastBreakpoint)
+    );
+  }, [filteredCollections, isPastBreakpoint]);
 
   const pageCount = Math.ceil(tableRows.length / ROWS_PER_PAGE);
 
@@ -87,7 +96,23 @@ const SourceDataTable = ({
     </TableUnavailableContainer>
   );
 
-  const tableComponent = (
+  const tableComponent = isPastBreakpoint ? (
+    <MobileSourceDataTableWrapper>
+      {tableRows.map((row, index) => {
+        return (
+          <MobileSourceDataTableEntry key={index} index={index}>
+            {row.collection}
+            {row.publication}
+            <MobileSourceDataTableEntryRow>
+              {row.tissue}
+              {row.disease}
+              {row.organism}
+            </MobileSourceDataTableEntryRow>
+          </MobileSourceDataTableEntry>
+        );
+      })}
+    </MobileSourceDataTableWrapper>
+  ) : (
     <Table<TableRow>
       columns={tableColumns}
       rows={
@@ -106,7 +131,7 @@ const SourceDataTable = ({
       </TableTitleWrapper>
 
       {tableRows.length > 0 ? (
-        <div>
+        <div ref={containerRef}>
           {tableComponent}
           <Pagination
             count={pageCount}
@@ -123,16 +148,19 @@ const SourceDataTable = ({
 
 function createTableRow(
   collection: SourceCollectionsQueryResponseEntry,
-  index: number
+  index: number,
+  isPastBreakpoint: boolean
 ) {
   const tissueNames = collection.tissue.map((tissue) => tissue.label);
   const diseaseNames = collection.disease.map((disease) => disease.label);
   const organismNames = collection.organism.map((organism) => organism.label);
 
   const tissueContent =
-    tissueNames.length <= 2 ? (
+    tissueNames.length <= (isPastBreakpoint ? 1 : 3) ? (
       tissueNames.map((tissue) => (
-        <div key={`tissue-${tissue}-${index}`}>{tissue}</div>
+        <span key={`tissue-${tissue}-${index}`}>
+          <StyledTag color="gray" sdsType="secondary" label={tissue} />
+        </span>
       ))
     ) : (
       <Tooltip
@@ -155,15 +183,21 @@ function createTableRow(
     );
 
   const diseaseContent =
-    diseaseNames.length <= 2 ? (
-      diseaseNames.map((disease) => (
-        <div key={`disease-${disease}-${index}`}>{disease}</div>
-      ))
+    diseaseNames.length <= (isPastBreakpoint ? 1 : 3) ? (
+      diseaseNames
+        .sort((a, b) => (a === "normal" ? -1 : b === "normal" ? 1 : 0))
+        .map((disease) => (
+          <span key={`disease-${disease}-${index}`}>
+            {<StyledTag color="gray" sdsType="secondary" label={disease} />}
+          </span>
+        ))
     ) : (
       <>
         {/* If 'normal' exists then have it outside of the overflow tag */}
-        {diseaseNames.includes("normal") && (
-          <div key={`disease-normal`}>normal</div>
+        {diseaseNames.includes("normal") && !isPastBreakpoint && (
+          <span>
+            <StyledTag color="gray" sdsType="secondary" label="normal" />
+          </span>
         )}
         <Tooltip
           sdsStyle="light"
@@ -171,7 +205,7 @@ function createTableRow(
           width="wide"
           leaveDelay={0}
           title={diseaseNames
-            .filter((disease) => disease !== "normal")
+            .filter((disease) => isPastBreakpoint || disease !== "normal")
             .map((disease) => (
               <div key={`disease-${disease}-${index}`}>{disease}</div>
             ))}
@@ -187,44 +221,61 @@ function createTableRow(
       </>
     );
 
+  const organismContent =
+    organismNames.length <= (isPastBreakpoint ? 1 : 3) ? (
+      organismNames.map((organism) => (
+        <span key={`organism-${organism}-${index}`}>
+          {<StyledTag color="gray" sdsType="secondary" label={organism} />}
+        </span>
+      ))
+    ) : (
+      <>
+        <Tooltip
+          sdsStyle="light"
+          placement="top"
+          width="wide"
+          leaveDelay={0}
+          title={organismNames.map((organism) => (
+            <div key={`organism-${organism}-${index}`}>{organism}</div>
+          ))}
+        >
+          <span>
+            <StyledTag
+              color="gray"
+              sdsType="secondary"
+              label={generateTagLabel(organismNames, "organism", "organisms")}
+            />
+          </span>
+        </Tooltip>
+      </>
+    );
+
   return {
     collection: generateLink(
       `collection-name-${collection.collection_name}-${index}`,
       collection.collection_name,
       collection.collection_url
     ),
-    publication: collection.publication_url
-      ? generateLink(
-          `publication-url-${collection.publication_title}-${index}`,
-          collection.publication_title,
-          `https://doi.org/${collection.publication_url}`
-        )
-      : "No publication",
+    publication: <div>{collection.publication_title}</div>,
     tissue: <div>{tissueContent}</div>,
     disease: <div>{diseaseContent}</div>,
-    organism: (
-      <div>
-        {organismNames.map((organism) => (
-          <div key={`organism-${organism}-${index}`}>{organism}</div>
-        ))}
-      </div>
-    ),
+    organism: <div>{organismContent}</div>,
   };
+}
 
-  function generateLink(key: string, label: string, url: string) {
-    return <Link key={key} label={label} url={url} />;
-  }
+function generateLink(key: string, label: string, url: string) {
+  return <Link key={key} label={label} url={url} />;
+}
 
-  function generateTagLabel(
-    names: string[],
-    singularLabel: string,
-    pluralLabel: string
-  ) {
-    if (names.includes(singularLabel)) {
-      return singularLabel;
-    } else {
-      return `${names.length} ${pluralLabel}`;
-    }
+function generateTagLabel(
+  names: string[],
+  singularLabel: string,
+  pluralLabel: string
+) {
+  if (names.includes(singularLabel)) {
+    return singularLabel;
+  } else {
+    return `${names.length} ${pluralLabel}`;
   }
 }
 

@@ -1,4 +1,4 @@
-import { useMemo, useLayoutEffect, useState } from "react";
+import { useMemo } from "react";
 import {
   useComputationalMarkers,
   useAllOrgansLookupTables,
@@ -68,28 +68,4 @@ export function useOrganAndOrganismFilterListForCelltype(cellTypeId: string): {
       organismsList: sortedOrganismList,
     };
   }, [computationalMarkers, organLabelToIdMap]);
-}
-
-export function useIsComponentPastBreakpoint(breakpoint: number) {
-  const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null);
-  const [isPastBreakpoint, setIsPastBreakpoint] = useState(false);
-
-  useLayoutEffect(() => {
-    const handleResize = () => {
-      if (containerRef) {
-        setIsPastBreakpoint(containerRef.offsetWidth < breakpoint);
-      }
-    };
-
-    const resizeObserver = new ResizeObserver(handleResize);
-    if (containerRef) {
-      resizeObserver.observe(containerRef);
-    }
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [breakpoint, containerRef]);
-
-  return { isPastBreakpoint, containerRef: setContainerRef };
 }

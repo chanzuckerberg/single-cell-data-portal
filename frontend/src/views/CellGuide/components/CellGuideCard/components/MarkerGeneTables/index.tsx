@@ -46,7 +46,7 @@ import {
 } from "src/common/queries/cellGuide";
 import { useComputationalMarkerGenesTableRowsAndFilters } from "./hooks/computational_markers";
 import { useCanonicalMarkerGenesTableRowsAndFilters } from "./hooks/canonical_markers";
-import { useIsComponentPastBreakpoint } from "./hooks/common";
+import useIsComponentPastBreakpoint from "../common/hooks/useIsComponentPastBreakpoint";
 import HelpTooltip from "../common/HelpTooltip";
 import { ROUTES } from "src/common/constants/routes";
 import { track } from "src/common/analytics";
