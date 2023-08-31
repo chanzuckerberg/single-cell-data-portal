@@ -22,7 +22,10 @@ import {
 } from "src/common/queries/cellGuide";
 import { Pagination } from "@mui/material";
 import useIsComponentPastBreakpoint from "../common/hooks/useIsComponentPastBreakpoint";
-import { CELL_GUIDE_CARD_SOURCE_DATA_TABLE } from "src/views/CellGuide/components/CellGuideCard/components/SourceDataTable/constants";
+import {
+  CELL_GUIDE_CARD_SOURCE_DATA_TABLE,
+  SOURCE_DATA_TABLE_BREAKPOINT_PX,
+} from "./constants";
 import { useDataSourceFilter } from "./hooks/useDataSourceFilter";
 
 interface TableRow {
@@ -57,7 +60,9 @@ const SourceDataTable = ({
 }: Props) => {
   const { data: collections } = useSourceData(cellTypeId);
   const [page, setPage] = useState(1);
-  const { isPastBreakpoint, containerRef } = useIsComponentPastBreakpoint(800);
+  const { isPastBreakpoint, containerRef } = useIsComponentPastBreakpoint(
+    SOURCE_DATA_TABLE_BREAKPOINT_PX
+  );
 
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
