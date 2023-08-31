@@ -301,7 +301,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
     "https://api.cellxgene.cziscience.com/dp/v1/collections/index"
   );
 
-  const collections: any[] = await response.json();
+  const collections: Collection[] = await response.json();
   const docPaths = getDocPaths();
 
   return {
@@ -375,12 +375,13 @@ const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
 
   const cellGuideLetters = Object.keys(cellGuideMap);
 
-  const [cgAccordionsOpen, setCgAccordionsOpen] = useState(Array());
+  const [cgAccordionsOpen, setCgAccordionsOpen] = useState<string[]>([]);
 
   useEffect(() => {
     if (window.innerWidth > 768) {
       setCgAccordionsOpen([cellGuideLetters[0]]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cellTypes]);
 
   return (

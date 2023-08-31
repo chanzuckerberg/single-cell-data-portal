@@ -54,7 +54,8 @@
     "rehype-mathjax": "^4.0.2",
     "rehype-slug": "^5.1.0",
     "remark-math": "^5.1.1",
-    "sass": "^1.63.6"
+    "sass": "^1.63.6",
+    "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "@aws-sdk/client-secrets-manager": "^3.369.0",
@@ -77,6 +78,7 @@
     "@types/react-window": "^1.8.5",
     "@types/sharp": "^0.32.0",
     "@types/ua-parser-js": "^0.7.36",
+    "@types/xml2js": "^0.4.12",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "adm-zip": "^0.5.10",
