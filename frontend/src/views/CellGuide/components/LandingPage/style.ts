@@ -1,8 +1,16 @@
 import styled from "@emotion/styled";
-import { fontHeaderL, fontHeaderXl } from "@czi-sds/components";
+import {
+  CommonThemeProps,
+  fontHeaderL,
+  fontHeaderXl,
+} from "@czi-sds/components";
 import { SKINNY_MODE_BREAKPOINT_WIDTH } from "../CellGuideCard/constants";
 
-export const Wrapper = styled.div`
+interface WrapperProps extends CommonThemeProps {
+  searchBarOpen: boolean;
+}
+
+export const Wrapper = styled.div<WrapperProps>`
   display: flex;
   flex-direction: column;
   margin-top: 222px;
@@ -15,7 +23,10 @@ export const Wrapper = styled.div`
     max-width: 100vw;
     padding-left: 24px;
     padding-right: 24px;
-    margin-top: 16px;
+    justify-content: ${({ searchBarOpen }) =>
+      searchBarOpen ? "flex-start" : "center"};
+    height: 100vh;
+    margin-top: ${({ searchBarOpen }) => (searchBarOpen ? "0" : "-10vh")};
   }
 `;
 

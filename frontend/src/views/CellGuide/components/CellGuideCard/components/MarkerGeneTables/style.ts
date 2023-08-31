@@ -6,8 +6,14 @@ import {
 } from "@czi-sds/components";
 import styled from "@emotion/styled";
 import { gray200, gray400, gray500, primary400 } from "src/common/theme";
+import Link from "../common/Link";
 
 const DIVIDER_WIDTH = 2;
+
+export const StyledLink = styled(Link)`
+  min-width: 2.25ch;
+  max-width: 3.25ch;
+`;
 
 export const TableTitleOuterWrapper = styled.div`
   display: flex;
@@ -15,6 +21,10 @@ export const TableTitleOuterWrapper = styled.div`
   align-items: center;
   width: 100%;
   flex-wrap: wrap;
+`;
+
+export const NoWrapWrapper = styled.span`
+  white-space: nowrap;
 `;
 
 export const PublicationLinkWrapper = styled.div`
@@ -25,6 +35,14 @@ export const PublicationLinkWrapper = styled.div`
 export const StyledHeadCellContent = styled.div`
   display: flex;
   flex-direction: row;
+  justify-content: flex-end;
+`;
+
+export const StyledCellNumerical = styled.span`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-right: 12px;
 `;
 
 export const TableSelectorRow = styled.div`

@@ -78,7 +78,7 @@ export default function LandingPage(): JSX.Element {
         />
       )}
 
-      <Wrapper>
+      <Wrapper searchBarOpen={openSearch}>
         <StyledHeader data-testid={LANDING_PAGE_HEADER}>
           CellGuide is a <br />
           comprehensive resource for <br />

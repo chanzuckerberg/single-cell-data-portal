@@ -54,12 +54,7 @@ function Table<T extends object>({
           {rows.map((row, rowIndex) => (
             <StyledRow key={rowIndex} highlight={rowIndex % 2 === 1}>
               {columns.map((column, cellIndex) => (
-                <StyledCell
-                  key={cellIndex}
-                  minWidth={minWidths?.[cellIndex]}
-                  maxWidth={maxWidths?.[cellIndex]}
-                  addPadding={rightPaddings?.[cellIndex]}
-                >
+                <StyledCell key={cellIndex}>
                   {row[column] as ReactNode}
                 </StyledCell>
               ))}

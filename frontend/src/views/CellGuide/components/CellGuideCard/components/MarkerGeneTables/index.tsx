@@ -31,6 +31,9 @@ import {
   MarkerGeneTooltipText,
   MarkerGeneTooltipSubtext,
   MarkerGeneTableWrapper,
+  StyledCellNumerical,
+  NoWrapWrapper,
+  StyledLink,
 } from "./style";
 import Table from "../common/Table";
 import { Pagination } from "@mui/material";
@@ -63,7 +66,6 @@ import {
   MARKER_GENES_COMPUTATIONAL_BREAKPOINT_PX,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
-import { PaddingType } from "../common/Table/style";
 
 function getEmptyComputationalMarkerGenesTableUIMessageDetail(
   allFilteredByLowMarkerScore: boolean
@@ -88,10 +90,10 @@ const ROWS_PER_PAGE = 10;
 // Computational marker gene table types
 interface TableRowEnrichedGenes {
   symbol: ReactNode;
-  name: string;
-  marker_score: string;
-  me: string;
-  pc: string;
+  name: ReactNode;
+  marker_score: ReactNode;
+  me: ReactNode;
+  pc: ReactNode;
 }
 
 // Canonical marker gene table types
@@ -330,9 +332,14 @@ const MarkerGeneTables = ({
       activeTable
         ? computationalMarkerGeneTableData.map((row) => ({
             ...row,
+            me: <StyledCellNumerical> {row.me} </StyledCellNumerical>,
+            pc: <StyledCellNumerical> {row.pc} </StyledCellNumerical>,
+            marker_score: (
+              <StyledCellNumerical> {row.marker_score} </StyledCellNumerical>
+            ),
             symbolId: row.symbol,
             symbol: (
-              <>
+              <NoWrapWrapper>
                 {row.symbol}{" "}
                 <ButtonIcon
                   aria-label={`display gene info for ${row.symbol}`}
@@ -341,14 +348,14 @@ const MarkerGeneTables = ({
                   sdsType="secondary"
                   onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
                 />
-              </>
+              </NoWrapWrapper>
             ),
           }))
         : canonicalMarkerGeneTableData.map((row) => ({
             ...row,
             symbolId: row.symbol,
             symbol: (
-              <>
+              <NoWrapWrapper>
                 {row.symbol}{" "}
                 <ButtonIcon
                   aria-label={`display gene info for ${row.symbol}`}
@@ -357,7 +364,7 @@ const MarkerGeneTables = ({
                   sdsType="secondary"
                   onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
                 />
-              </>
+              </NoWrapWrapper>
             ),
             references: (
               <PublicationLinkWrapper>
@@ -390,7 +397,7 @@ const MarkerGeneTables = ({
                           <span
                             key={`${row.referenceData.publications[index]}-${index}-span`}
                           >
-                            <Link
+                            <StyledLink
                               key={`${row.referenceData.publications[index]}-${index}`}
                               label={`[${referenceIndexLabel}]`}
                               url={`https://doi.org/${row.referenceData.publications[index]}`}
@@ -418,37 +425,6 @@ const MarkerGeneTables = ({
 
   const pageCount = Math.ceil(tableRows.length / ROWS_PER_PAGE);
   const tableComponent = useMemo(() => {
-    const minWidthsEnrichedGenes = !isPastBreakpoint
-      ? [80, 200, 104, 136, 88]
-      : [undefined, undefined, 96, undefined];
-    const maxWidthsEnrichedGenes = !isPastBreakpoint
-      ? [120, 640, 104, 136, 88]
-      : [undefined, undefined, 96, undefined];
-    const paddingRightEnrichedGenes = !isPastBreakpoint
-      ? [
-          PaddingType.Medium,
-          PaddingType.Medium,
-          PaddingType.MediumLarge,
-          PaddingType.MediumLarge,
-          PaddingType.Large,
-        ]
-      : [
-          PaddingType.None,
-          PaddingType.None,
-          PaddingType.Large,
-          PaddingType.None,
-        ];
-
-    const minWidthsCanonicalGenes = !isPastBreakpoint
-      ? [80, 200, 120]
-      : undefined;
-    const maxWidthsCanonicalGenes = !isPastBreakpoint
-      ? [120, 640, 160]
-      : undefined;
-    const paddingRightCanonicalGenes = !isPastBreakpoint
-      ? [PaddingType.Medium, PaddingType.Medium, PaddingType.None]
-      : undefined;
-
     const tableColumnsEnrichedGenes: Array<keyof TableRowEnrichedGenes> =
       !isPastBreakpoint
         ? ["symbol", "name", "marker_score", "me", "pc"]
@@ -471,9 +447,6 @@ const MarkerGeneTables = ({
       <Table<TableRowEnrichedGenes>
         testId={CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}
         columns={tableColumnsEnrichedGenes}
-        minWidths={minWidthsEnrichedGenes}
-        maxWidths={maxWidthsEnrichedGenes}
-        rightPaddings={paddingRightEnrichedGenes}
         rows={
           tableRows.slice(
             (page - 1) * ROWS_PER_PAGE,
@@ -493,9 +466,6 @@ const MarkerGeneTables = ({
           ) as TableRowCanonicalGenes[]
         }
         columnIdToName={tableColumnNamesCanonicalGenes}
-        minWidths={minWidthsCanonicalGenes}
-        maxWidths={maxWidthsCanonicalGenes}
-        rightPaddings={paddingRightCanonicalGenes}
       />
     );
   }, [
