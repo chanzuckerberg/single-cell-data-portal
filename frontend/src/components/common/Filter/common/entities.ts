@@ -690,7 +690,6 @@ export enum PUBLICATION_DATE_LABELS {
  * Publication-related filterable values of collections and datasets.
  */
 export interface PublisherMetadataCategories {
-  // publicationAuthors?: string[];
   publicationDateValues?: number[]; // Set of date bins that publication date falls within
   summaryCitation: string;
 }
