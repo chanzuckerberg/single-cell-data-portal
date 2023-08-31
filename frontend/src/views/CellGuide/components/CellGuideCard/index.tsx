@@ -41,6 +41,15 @@ import {
   ALL_TISSUES,
   NO_ORGAN_ID,
 } from "./components/MarkerGeneTables/constants";
+import {
+  DefaultDropdownMenuOption,
+  Dropdown,
+  InputDropdownProps,
+} from "@czi-sds/components";
+
+const INPUT_DROPDOWN_PROPS: InputDropdownProps = {
+  sdsStyle: "square",
+} as InputDropdownProps;
 
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
@@ -103,18 +112,30 @@ export default function CellGuideCard({
 
   const uniqueOrgans = Array.from(organsMap.keys());
 
-  const [selectedOrgan, setSelectedOrgan] = useState(ALL_TISSUES);
+  const organismOptions = organismsList.map((organism) => ({
+    name: organism,
+  }));
+
+  const organOptions = uniqueOrgans.map((organ) => ({
+    name: organ,
+  }));
+
+  const [selectedOrgan, setSelectedOrgan] =
+    useState<DefaultDropdownMenuOption | null>(organOptions[0]);
   const [selectedOrganId, setSelectedOrganId] = useState(NO_ORGAN_ID);
 
-  const handleChangeOrgan = (event: SelectChangeEvent<unknown>) => {
-    setSelectedOrgan(event.target.value as string);
-    setSelectedOrganId(organsMap.get(event.target.value as string) ?? "");
+  const handleChangeOrgan = (option: DefaultDropdownMenuOption | null) => {
+    if (!option) return;
+
+    setSelectedOrgan(option);
+    setSelectedOrganId(organsMap.get(option.name) ?? "");
   };
 
-  const [selectedOrganism, setSelectedOrganism] = useState(organismsList[0]);
+  const [selectedOrganism, setSelectedOrganism] =
+    useState<DefaultDropdownMenuOption | null>(organismOptions[0]);
 
-  const handleChangeOrganism = (event: SelectChangeEvent<unknown>) => {
-    setSelectedOrganism(event.target.value as string);
+  const handleChangeOrganism = (option: DefaultDropdownMenuOption | null) => {
+    setSelectedOrganism(option);
   };
 
   function handleCloseGeneInfoSideBar() {
@@ -184,17 +205,23 @@ export default function CellGuideCard({
               </a>
             </CellGuideCardHeaderInnerWrapper>
             <CellGuideCardHeaderInnerWrapper>
-              <DropdownSelect
-                handleChange={handleChangeOrganism}
-                options={organismsList}
-                selectedOption={selectedOrganism}
-                testId={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
+              <Dropdown
+                InputDropdownProps={INPUT_DROPDOWN_PROPS}
+                search
+                label={selectedOrganism?.name}
+                onChange={handleChangeOrganism}
+                options={organismOptions}
+                value={selectedOrganism}
+                data-testid={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
               />
-              <DropdownSelect
-                handleChange={handleChangeOrgan}
-                options={uniqueOrgans}
-                selectedOption={selectedOrgan}
-                testId={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}
+              <Dropdown
+                InputDropdownProps={INPUT_DROPDOWN_PROPS}
+                search
+                label={selectedOrgan?.name}
+                onChange={handleChangeOrgan}
+                options={organOptions}
+                value={selectedOrgan}
+                data-testid={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}
               />
             </CellGuideCardHeaderInnerWrapper>
           </CellGuideCardHeader>
@@ -216,7 +243,7 @@ export default function CellGuideCard({
               <OntologyDagView
                 key={`${cellTypeId}-${selectedOrganId}`}
                 cellTypeId={cellTypeId}
-                tissueName={selectedOrgan}
+                tissueName={selectedOrgan?.name}
                 tissueId={selectedOrganId}
                 skinnyMode={skinnyMode}
               />
@@ -230,9 +257,9 @@ export default function CellGuideCard({
             cellTypeId={cellTypeId}
             setGeneInfoGene={setGeneInfoGene}
             cellTypeName={cellTypeName}
-            organName={selectedOrgan}
+            organName={selectedOrgan?.name || ""}
             organId={selectedOrganId}
-            organismName={selectedOrganism}
+            organismName={selectedOrganism.name || ""}
           />
 
           {/* Source Data section */}
