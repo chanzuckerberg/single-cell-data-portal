@@ -62,6 +62,7 @@ describe("Manage gene tests", () => {
     await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).focus();
     await page.keyboard.press(`${modifier}+KeyA`);
     await page.keyboard.press(`${modifier}+KeyC`);
+    await (await page.$("body"))?.focus();
     await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).click();
     await page.keyboard.press(`${modifier}+KeyV`);
     await page.keyboard.press("Enter");
