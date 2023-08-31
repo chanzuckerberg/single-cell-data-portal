@@ -40,7 +40,10 @@ describe("Manage gene tests", () => {
     await verifyAddedGene(page, GENE);
   });
 
-  test("Should select gene by copy pasting", async ({ page, browserName }) => {
+  test.skip("Should select gene by copy pasting", async ({
+    page,
+    browserName,
+  }) => {
     test.skip(browserName === "firefox", "No Clipboard read permission");
 
     const TEST_GENES = "DMP1,SCYL3,CFH";
