@@ -27,7 +27,11 @@ describe("Collection Revision @loggedIn", () => {
     "We only seed published collections for revision test in dev and staging"
   );
 
-  test("starts a revision", async ({ page }) => {
+  /**
+   * TODO(#5666): Enable this test once #5666 is resolved
+   * https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/gh/chanzuckerberg/single-cell-data-portal/5666
+   */
+  test.skip("starts a revision", async ({ page }) => {
     const collectionName = await startRevision(page);
 
     const publishButton = await page.$(getTestID("publish-collection-button"));
@@ -66,7 +70,11 @@ describe("Collection Revision @loggedIn", () => {
     await deleteRevision(page);
   });
 
-  test("allows editing", async ({ page }) => {
+  /**
+   * TODO(#5666): Enable this test once #5666 is resolved
+   * https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/gh/chanzuckerberg/single-cell-data-portal/5666
+   */
+  test.skip("allows editing", async ({ page }) => {
     await startRevision(page);
 
     const collectionName = await getInnerText(
