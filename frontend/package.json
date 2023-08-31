@@ -77,7 +77,6 @@
     "@types/react-table": "^7.7.14",
     "@types/react-window": "^1.8.5",
     "@types/sharp": "^0.32.0",
-    "@types/ua-parser-js": "^0.7.36",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "adm-zip": "^0.5.10",
@@ -105,8 +104,7 @@
     "stylelint": "^13.13.1",
     "stylelint-config-recommended": "^3.0.0",
     "stylelint-config-standard": "^20.0.0",
-    "typescript": "^4.9.5",
-    "ua-parser-js": "^1.0.35"
+    "typescript": "^4.9.5"
   },
   "engines": {
     "node": "v16.14.2"

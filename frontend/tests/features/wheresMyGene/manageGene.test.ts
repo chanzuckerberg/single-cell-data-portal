@@ -7,7 +7,6 @@ import {
 } from "tests/utils/geneUtils";
 import { selectNthOption } from "tests/utils/helpers";
 import { conditionallyRunTests } from "tests/utils/wmgUtils";
-import uaParser from "ua-parser-js";
 const { describe } = test;
 
 describe("Manage gene tests", () => {
@@ -40,34 +39,15 @@ describe("Manage gene tests", () => {
     await verifyAddedGene(page, GENE);
   });
 
-  test.skip("Should select gene by copy pasting", async ({
-    page,
-    browserName,
-  }) => {
-    test.skip(browserName === "firefox", "No Clipboard read permission");
-
+  test("Should select gene by comma separated list", async ({ page }) => {
     const TEST_GENES = "DMP1,SCYL3,CFH";
 
     await goToWMG(page);
 
-    // copy & paste clipboard contents into search
-    // we will first write into search field so we have what to copy & paste
     await page
       .getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT)
       .type(TEST_GENES);
 
-    const getUA = await page.evaluate(() => navigator.userAgent);
-    const userAgentInfo = uaParser(getUA);
-    const modifier = userAgentInfo.os.name?.includes("Mac")
-      ? "Meta"
-      : "Control";
-
-    await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).focus();
-    await page.keyboard.press(`${modifier}+KeyA`);
-    await page.keyboard.press(`${modifier}+KeyC`);
-    await (await page.$("body"))?.focus();
-    await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).click();
-    await page.keyboard.press(`${modifier}+KeyV`);
     await page.keyboard.press("Enter");
 
     // verify selected tissue details
