@@ -286,8 +286,6 @@ export const checkPlotSize = async (page: Page) => {
 };
 
 export async function searchAndAddGene(page: Page, geneName: string) {
-  // click +Tissue button
-  await page.getByTestId(ADD_GENE_BTN).click();
   await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).type(geneName);
   await page.getByText(geneName).click();
 

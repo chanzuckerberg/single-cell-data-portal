@@ -8,7 +8,7 @@
     "@blueprintjs/core": "^4.20.2",
     "@blueprintjs/icons": "^4.16.0",
     "@blueprintjs/select": "^4.9.24",
-    "@czi-sds/components": "^15.1.1",
+    "@czi-sds/components": "^15.4.2",
     "@czi-sds/data-viz": "^0.3.0",
     "@emotion/css": "^11.11.2",
     "@emotion/react": "^11.11.1",
