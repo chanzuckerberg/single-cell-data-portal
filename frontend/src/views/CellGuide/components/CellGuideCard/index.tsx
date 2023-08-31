@@ -34,18 +34,25 @@ import {
   CELL_GUIDE_CARD_HEADER_TAG,
   CELL_GUIDE_CARD_SYNONYMS,
 } from "src/views/CellGuide/components/CellGuideCard/constants";
-import DropdownSelect from "./components/common/DropdownSelect";
-import { SelectChangeEvent } from "@mui/material/Select";
 import { useOrganAndOrganismFilterListForCelltype } from "./components/MarkerGeneTables/hooks/common";
 import {
   ALL_TISSUES,
   NO_ORGAN_ID,
 } from "./components/MarkerGeneTables/constants";
+import {
+  DefaultDropdownMenuOption,
+  Dropdown,
+  InputDropdownProps,
+} from "@czi-sds/components";
 
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
 // This is the desired width of the CellGuideCard components right after the sidebar is hidden.
 const BREAKPOINT_WIDTH = 960;
+
+const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
+  sdsStyle: "square",
+} as InputDropdownProps;
 
 interface Props {
   name: string;
@@ -101,20 +108,33 @@ export default function CellGuideCard({
   const { organismsList, organsMap } =
     useOrganAndOrganismFilterListForCelltype(cellTypeId);
 
-  const uniqueOrgans = Array.from(organsMap.keys());
+  const sdsOrganismsList = organismsList.map((organism) => ({
+    name: organism,
+  }));
 
-  const [selectedOrgan, setSelectedOrgan] = useState(ALL_TISSUES);
+  const sdsOrgansList = Array.from(organsMap.keys()).map((organ) => ({
+    name: organ,
+  }));
+
+  const [selectedOrgan, setSelectedOrgan] = useState<DefaultDropdownMenuOption>(
+    {
+      name: ALL_TISSUES,
+    } as DefaultDropdownMenuOption
+  );
   const [selectedOrganId, setSelectedOrganId] = useState(NO_ORGAN_ID);
 
-  const handleChangeOrgan = (event: SelectChangeEvent<unknown>) => {
-    setSelectedOrgan(event.target.value as string);
-    setSelectedOrganId(organsMap.get(event.target.value as string) ?? "");
+  const handleChangeOrgan = (option: DefaultDropdownMenuOption | null) => {
+    if (!option) return;
+    setSelectedOrgan(option);
+    setSelectedOrganId(organsMap.get(option.name) ?? "");
   };
 
-  const [selectedOrganism, setSelectedOrganism] = useState(organismsList[0]);
+  const [selectedOrganism, setSelectedOrganism] =
+    useState<DefaultDropdownMenuOption>(sdsOrganismsList[0]);
 
-  const handleChangeOrganism = (event: SelectChangeEvent<unknown>) => {
-    setSelectedOrganism(event.target.value as string);
+  const handleChangeOrganism = (option: DefaultDropdownMenuOption | null) => {
+    if (!option) return;
+    setSelectedOrganism(option);
   };
 
   function handleCloseGeneInfoSideBar() {
@@ -184,7 +204,7 @@ export default function CellGuideCard({
               </a>
             </CellGuideCardHeaderInnerWrapper>
             <CellGuideCardHeaderInnerWrapper>
-              <DropdownSelect
+              {/*<DropdownSelect
                 handleChange={handleChangeOrganism}
                 options={organismsList}
                 selectedOption={selectedOrganism}
@@ -195,6 +215,24 @@ export default function CellGuideCard({
                 options={uniqueOrgans}
                 selectedOption={selectedOrgan}
                 testId={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}
+            />*/}
+              <Dropdown
+                InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
+                search
+                label={selectedOrganism?.name}
+                onChange={handleChangeOrganism}
+                options={sdsOrganismsList}
+                value={selectedOrganism}
+                data-testid={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
+              />
+              <Dropdown
+                InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
+                search
+                label={selectedOrgan?.name}
+                onChange={handleChangeOrgan}
+                options={sdsOrgansList}
+                value={selectedOrgan}
+                data-testid={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}
               />
             </CellGuideCardHeaderInnerWrapper>
           </CellGuideCardHeader>
@@ -216,7 +254,7 @@ export default function CellGuideCard({
               <OntologyDagView
                 key={`${cellTypeId}-${selectedOrganId}`}
                 cellTypeId={cellTypeId}
-                tissueName={selectedOrgan}
+                tissueName={selectedOrgan.name}
                 tissueId={selectedOrganId}
                 skinnyMode={skinnyMode}
               />
@@ -230,18 +268,18 @@ export default function CellGuideCard({
             cellTypeId={cellTypeId}
             setGeneInfoGene={setGeneInfoGene}
             cellTypeName={cellTypeName}
-            organName={selectedOrgan}
+            organName={selectedOrgan.name}
             organId={selectedOrganId}
-            organismName={selectedOrganism}
+            organismName={selectedOrganism.name}
           />
 
           {/* Source Data section */}
           <div ref={sectionRef3} id="section-3" data-testid="section-3" />
           <SourceDataTable
             cellTypeId={cellTypeId}
-            organName={selectedOrgan}
+            organName={selectedOrgan.name}
             organId={selectedOrganId}
-            organismName={selectedOrganism}
+            organismName={selectedOrganism.name}
           />
         </Wrapper>
         {!skinnyMode && (
