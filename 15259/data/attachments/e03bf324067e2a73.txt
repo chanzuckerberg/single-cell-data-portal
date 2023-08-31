@@ -1,0 +1,142 @@
+  pw:api => selectors.setTestIdAttribute started +4s
+  pw:api => browser.newContext started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +47ms
+  pw:api   "commit" event fired +19ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +13ms
+  pw:api => tracing.start started +6ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +51ms
+  pw:api => page.waitForLoadState started +3ms
+  pw:api => page.goto started +5ms
+  pw:api navigating to "https://localhost:3000/cellguide/tissues/UBERON_0002048", waiting until "load" +11ms
+  pw:api   "commit" event fired +4s
+  pw:api   navigated to "https://localhost:3000/cellguide/tissues/UBERON_0002048" +0ms
+  pw:api   "commit" event fired +2ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForLoadState succeeded +6ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/tissues/UBERON_0002048" +7ms
+  pw:api   navigated to "about:blank" +36ms
+  pw:api <= page.goto succeeded +453ms
+  pw:api => locator.all started +2ms
+  pw:api   "networkidle" event fired +51ms
+  pw:api <= locator.all succeeded +232ms
+  pw:api => locator.evaluate started +2ms
+  pw:api => locator.evaluate started +4ms
+  pw:api => locator.evaluate started +8ms
+  pw:api => locator.evaluate started +4ms
+  pw:api => locator.evaluate started +8ms
+  pw:api => locator.evaluate started +9ms
+  pw:api => locator.evaluate started +4ms
+  pw:api => locator.evaluate started +4ms
+  pw:api => locator.evaluate started +4ms
+  pw:api => locator.evaluate started +5ms
+  pw:api => locator.evaluate started +11ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +4ms
+  pw:api => locator.evaluate started +22ms
+  pw:api => locator.evaluate started +4ms
+  pw:api => locator.evaluate started +3ms
+  pw:api => locator.evaluate started +12ms
+  pw:api => locator.evaluate started +3ms
+  pw:api waiting for locator('meta').first() +30ms
+  pw:api waiting for locator('meta').nth(1) +15ms
+  pw:api waiting for locator('meta').nth(2) +40ms
+  pw:api waiting for locator('meta').nth(3) +28ms
+  pw:api waiting for locator('meta').nth(4) +11ms
+  pw:api waiting for locator('meta').nth(5) +7ms
+  pw:api waiting for locator('meta').nth(6) +7ms
+  pw:api waiting for locator('meta').nth(7) +7ms
+  pw:api waiting for locator('meta').nth(8) +7ms
+  pw:api waiting for locator('meta').nth(9) +7ms
+  pw:api waiting for locator('meta').nth(10) +7ms
+  pw:api waiting for locator('meta').nth(11) +6ms
+  pw:api waiting for locator('meta').nth(12) +7ms
+  pw:api waiting for locator('meta').nth(13) +13ms
+  pw:api waiting for locator('meta').nth(14) +6ms
+  pw:api waiting for locator('meta').nth(15) +7ms
+  pw:api waiting for locator('meta').nth(16) +7ms
+  pw:api waiting for locator('meta').nth(17) +6ms
+  pw:api   locator resolved to hidden <meta charset="utf-8"/> +45ms
+  pw:api   locator resolved to hidden <meta property="og:url" content="https://cellxgene.czi…/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:creator" content="@cziscience"/> +11ms
+  pw:api   locator resolved to hidden <meta property="og:site" content="@cziscience"/> +1ms
+  pw:api   locator resolved to hidden <meta property="og:site_name" content="Cellxgene Data …/> +0ms
+  pw:api   locator resolved to hidden <meta property="og:image" content="https://cellxgene.c…/> +1ms
+  pw:api   locator resolved to hidden <meta property="twitter:image" content="https://cellxg…/> +0ms
+  pw:api   locator resolved to hidden <meta content="summary" property="twitter:card"/> +0ms
+  pw:api   locator resolved to hidden <meta content="website" property="og:type"/> +0ms
+  pw:api   locator resolved to hidden <meta property="title" content="Lung Tissue - CZ CELLx…/> +17ms
+  pw:api   locator resolved to hidden <meta property="og:title" content="Lung Tissue - CZ CE…/> +0ms
+  pw:api   locator resolved to hidden <meta property="twitter:title" content="Lung Tissue - …/> +6ms
+  pw:api   locator resolved to hidden <meta name="description" content="Find comprehensive i…/> +0ms
+  pw:api   locator resolved to hidden <meta property="og:description" content="Find comprehe…/> +2ms
+  pw:api   locator resolved to hidden <meta property="twitter:description" content="Find com…/> +0ms
+  pw:api   locator resolved to hidden <meta name="viewport" id="newsletter-signup-meta" cont…/> +1ms
+  pw:api   locator resolved to hidden <meta content="17" name="next-head-count"/> +1ms
+  pw:api   locator resolved to hidden <meta content="#000000" name="theme-color"/> +1ms
+  pw:api <= locator.evaluate succeeded +283ms
+  pw:api <= locator.evaluate succeeded +3ms
+  pw:api <= locator.evaluate succeeded +9ms
+  pw:api <= locator.evaluate succeeded +28ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api <= locator.evaluate succeeded +5ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +2ms
+  pw:api <= locator.evaluate succeeded +0ms
+  pw:api <= locator.evaluate succeeded +1ms
+  pw:api => locator.waitFor started +14ms
+  pw:api waiting for getByTestId('tissue-card-header-name') to be visible +10ms
+  pw:api   locator resolved to visible <div data-testid="tissue-card-header-name" class="css…>Lung</div> +7ms
+  pw:api <= locator.waitFor succeeded +9ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('tissue-card-header-name') +17ms
+  pw:api <= locator.isVisible succeeded +12ms
+  pw:api => locator.waitFor started +3ms
+  pw:api waiting for getByTestId('tissue-card-header-tag') to be visible +11ms
+  pw:api   locator resolved to visible <div data-testid="tissue-card-header-tag" class="MuiC…>…</div> +4ms
+  pw:api <= locator.waitFor succeeded +8ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('tissue-card-header-tag') +10ms
+  pw:api <= locator.isVisible succeeded +11ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view') to be visible +13ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-ontology-dag-view">…</div> +5ms
+  pw:api <= locator.waitFor succeeded +7ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-ontology-dag-view') +9ms
+  pw:api <= locator.isVisible succeeded +21ms
+  pw:api => locator.waitFor started +3ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar') to be visible +25ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-search-bar">…</div> +5ms
+  pw:api <= locator.waitFor succeeded +9ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-search-bar') +12ms
+  pw:api <= locator.isVisible succeeded +14ms
+  pw:api => locator.waitFor started +3ms
+  pw:api waiting for getByTestId('tissue-card-uberon-description') to be visible +13ms
+  pw:api   locator resolved to visible <div data-testid="tissue-card-uberon-description" cla…>…</div> +6ms
+  pw:api <= locator.waitFor succeeded +10ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('tissue-card-uberon-description') +13ms
+  pw:api <= locator.isVisible succeeded +12ms
+  pw:api => locator.textContent started +2ms
+  pw:api waiting for getByTestId('tissue-card-header-name') +27ms
+  pw:api   locator resolved to <div data-testid="tissue-card-header-name" class="css…>Lung</div> +5ms
+  pw:api <= locator.textContent succeeded +10ms
+  pw:api taking page screenshot +8ms
