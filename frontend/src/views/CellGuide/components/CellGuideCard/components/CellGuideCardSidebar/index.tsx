@@ -28,7 +28,15 @@ export default function CellGuideCardSidebar({
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    let isMounted = true; // add this line
+
+    if (isMounted) {
+      setIsClient(true);
+    }
+
+    return () => {
+      isMounted = false; // add this line
+    };
   }, []);
 
   return (
