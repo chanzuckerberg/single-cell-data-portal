@@ -26,10 +26,10 @@ import {
 import { SELECTED_STYLE } from "../../style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
 import { COMPARE_OPTION_ID_FOR_AGGREGATED } from "src/common/queries/wheresMyGene";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
 import { Tooltip } from "@czi-sds/components";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 
 interface Props {
   cellTypes?: CellType[];

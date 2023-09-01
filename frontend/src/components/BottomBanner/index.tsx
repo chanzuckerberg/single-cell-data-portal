@@ -2,7 +2,6 @@ import Image from "next/image";
 import Script from "next/script";
 import { ReactElement, useEffect, useMemo, useRef, useState } from "react";
 import { useLocalStorage } from "react-use";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGene/components/GeneSearchBar/components/SaveExport";
 import {
   BOTTOM_BANNER_ID,
   NewsletterModal,
@@ -25,6 +24,7 @@ import cellxgeneLogoSvg from "./CellxGene.svg";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import Head from "next/head";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 
 export const FORM_CONTAINER_ID = "hubspot-form-container";
 export const FORM_CONTAINER_ID_QUERY = `#${FORM_CONTAINER_ID}`;

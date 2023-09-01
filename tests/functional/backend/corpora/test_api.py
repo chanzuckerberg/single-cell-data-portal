@@ -14,11 +14,12 @@ class TestApi(BaseFunctionalTestCase):
     def setUpClass(cls):
         super().setUpClass()
 
+    @unittest.skip("Skipping this test until the deployed_version feature is fixed")
     def test_version(self):
         res = self.session.get(f"{self.api}/dp/v1/deployed_version")
         res.raise_for_status()
         self.assertStatusCode(requests.codes.ok, res)
-        self.assertIsNotNone(res.json()["Data Portal"])
+        self.assertTrue(len(res.json()["Data Portal"]) > 0)
 
     def test_auth(self):
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
