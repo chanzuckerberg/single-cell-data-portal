@@ -34,7 +34,7 @@ import {
   CELL_GUIDE_CARD_HEADER_TAG,
   CELL_GUIDE_CARD_SYNONYMS,
 } from "src/views/CellGuide/components/CellGuideCard/constants";
-import { useOrganAndOrganismFilterListForCelltype } from "./components/MarkerGeneTables/hooks/common";
+import { useOrganAndOrganismFilterListForCellType } from "./components/MarkerGeneTables/hooks/common";
 import {
   ALL_TISSUES,
   NO_ORGAN_ID,
@@ -106,21 +106,30 @@ export default function CellGuideCard({
   const [geneInfoGene, setGeneInfoGene] = useState<Gene["name"] | null>(null);
 
   const { organismsList, organsMap } =
-    useOrganAndOrganismFilterListForCelltype(cellTypeId);
+    useOrganAndOrganismFilterListForCellType(cellTypeId);
 
-  const sdsOrganismsList = organismsList.map((organism) => ({
-    name: organism,
-  }));
+  const sdsOrganismsList = useMemo(
+    () =>
+      organismsList.map((organism) => ({
+        name: organism,
+      })),
+    [organismsList]
+  );
 
-  const sdsOrgansList = Array.from(organsMap.keys()).map((organ) => ({
-    name: organ,
-  }));
+  const sdsOrgansList = useMemo(
+    () =>
+      Array.from(organsMap.keys()).map((organ) => ({
+        name: organ,
+      })),
+    [organsMap]
+  );
 
   const [selectedOrgan, setSelectedOrgan] = useState<DefaultDropdownMenuOption>(
-    {
-      name: ALL_TISSUES,
-    } as DefaultDropdownMenuOption
+    sdsOrgansList.find(
+      (organ) => organ.name === ALL_TISSUES
+    ) as DefaultDropdownMenuOption
   );
+
   const [selectedOrganId, setSelectedOrganId] = useState(NO_ORGAN_ID);
 
   const handleChangeOrgan = (option: DefaultDropdownMenuOption | null) => {
