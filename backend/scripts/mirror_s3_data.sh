@@ -28,14 +28,19 @@ if [[ ! -z "$COLLECTIONS" ]]; then
   IFS=$'\n'
   uris=($res)
   IFS=$old_ifs
-  for uri in "${uris[@]}"; do
-    bucket=$(sed )
-    if [[ "${uri: -1}" == "/" ]]; then
-      aws s3 cp --recursive
-    else
-      aws s3 cp
-    fi
-  done
+#  for uri in "${uris[@]}"; do
+#    bucket=$(sed -E 's/s3:\/\/([^\/]+).*/\1/' <<< $uri)
+#    if [[ ! -z `grep 'hosted-cellxgene' $bucket` ]]; then
+#      rdev_bucket_suffix="cellxgene"
+#    elif [[ ! -z `grep 'corpora-data' $bucket`]]; then
+#      rdev_bucket_suffix="artifacts"
+#    key=$(sed -E 's/s3:\/\/([^\/]+)\/(.*)/\2/' <<< $uri)
+#    if [[ "${key: -1}" == "/" ]]; then
+#      aws s3 cp --recursive $uri s3://env-rdev-${rdev_bucket_suffix}/${STACK}/${key}
+#    else
+#      aws s3 cp $uri s3://env-rdev-${rdev_bucket_suffix}/${STACK}/${key}
+#    fi
+#  done
 fi
 
 ## TODO: Add --delete once we confirm that is no data in the folders

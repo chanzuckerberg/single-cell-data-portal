@@ -60,10 +60,20 @@ make db/tunnel/up
 load_src_dump_to_dest_db || load_src_dump_to_dest_db  # Hack for rdev, where it fails on first and succeeds on retry
 make db/tunnel/down
 
-DB_UPDATE_CMDS=$(cat <<EOF
--c "UPDATE persistence_schema.\"DatasetArtifact\" SET uri = regexp_replace(uri, '(s3:\\/\\/)([[:alpha:]]+-[[:alpha:]]+-)([[:alpha:]]+)(\\/.+)', '\\1\\2${DEPLOYMENT_STAGE}\\4') WHERE uri IS NOT NULL;"
+if [[ ! $DEST_ENV == 'rdev' ]]; then
+  echo -e "\n\nNOTTTT USING RDEV SUB\n\n"
+  DB_UPDATE_CMDS=$(cat <<EOF
+    -c "UPDATE persistence_schema.\"DatasetArtifact\" SET uri = regexp_replace(uri, '(s3:\\/\\/)([[:alpha:]]+-[[:alpha:]]+-)([[:alpha:]]+)(\\/.+)', '\\1\\2${DEPLOYMENT_STAGE}\\4') WHERE uri IS NOT NULL;"
+  EOF
+  )
+else
+  echo -e "\n\nUSING RDEV SUB\n\n"
+  rdev_bucket_prefix="env-rdev"
+  DB_UPDATE_CMDS=$(cat <<EOF
+-c "UPDATE persistence_schema.\"DatasetArtifact\" SET uri = regexp_replace(uri, '(s3:\\/\\/)([[:alpha:]]+-[[:alpha:]]+-)([[:alpha:]]+)(\\/.+)', '\\1${rdev_bucket_prefix}-artifacts/${STACK}\\4') WHERE uri ~ 's3://corpora-data'; UPDATE persistence_schema.\"DatasetArtifact\" SET uri = regexp_replace(uri, '(s3:\\/\\/)([[:alpha:]]+-[[:alpha:]]+-)([[:alpha:]]+)(\\/.+)', '\\1${rdev_bucket_prefix}-cellxgene/${STACK}\\4') WHERE uri ~ 's3://hosted-cellxgene';"
 EOF
 )
+fi
                  
 make db/connect ARGS="${DB_UPDATE_CMDS}"
 
