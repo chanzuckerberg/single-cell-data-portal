@@ -1,0 +1,286 @@
+  pw:api => selectors.setTestIdAttribute started +423ms
+  pw:api => browser.newContext started +4ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +53ms
+  pw:api   "commit" event fired +15ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +7ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +16ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +6ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +53ms
+  pw:api => page.waitForResponse started +3ms
+  pw:api => page.goto started +8ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +6ms
+  pw:api   "commit" event fired +187ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +1ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +31ms
+  pw:api   navigated to "about:blank" +39ms
+  pw:api <= page.goto succeeded +68ms
+  pw:api   "networkidle" event fired +3s
+  pw:api <= page.waitForResponse succeeded +720ms
+  pw:api => expect.toBeDisabled started +4ms
+  pw:api waiting for getByTestId('share-button') +100ms
+  pw:api   locator resolved to visible <button disabled tabindex="-1" type="button" data-testid…>…</button> +308ms
+  pw:api <= expect.toBeDisabled succeeded +106ms
+  pw:api => expect.toBeDisabled started +1ms
+  pw:api waiting for locator(':scope') +21ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" data-testid…>…</button> +16ms
+  pw:api <= expect.toBeDisabled succeeded +21ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('tissue-filter').getByRole('button').first() +42ms
+  pw:api   locator resolved to <button tabindex="0" type="button" label="Tissue" class=…>…</button> +42ms
+  pw:api attempting click action +16ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +49ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +34ms
+  pw:api   click action done +566ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +27ms
+  pw:api <= locator.click succeeded +62ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByRole('tooltip') to be visible +50ms
+  pw:api   locator resolved to visible <div role="tooltip" data-popper-placement="bottom-sta…>…</div> +67ms
+  pw:api <= locator.waitFor succeeded +28ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByRole('tooltip').getByText('blood').first() +31ms
+  pw:api   locator resolved to <div class="css-1iyoj2o">blood</div> +53ms
+  pw:api attempting click action +8ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +52ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +592ms
+  pw:api   click action done +181ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +6ms
+  pw:api <= locator.click succeeded +71ms
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +392ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('tissue-filter').getByRole('button').first() +15ms
+  pw:api   locator resolved to <button tabindex="0" type="button" label="Tissue" class=…>…</button> +15ms
+  pw:api attempting click action +18ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +20ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +19ms
+  pw:api   click action done +315ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +6ms
+  pw:api <= locator.click succeeded +371ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByRole('tooltip') to be visible +153ms
+  pw:api   locator resolved to visible <div role="tooltip" data-popper-placement="bottom-sta…>…</div> +147ms
+  pw:api <= locator.waitFor succeeded +40ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByRole('tooltip').getByText('lung').first() +31ms
+  pw:api   locator resolved to <div class="css-1iyoj2o">lung</div> +12ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +19ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +47ms
+  pw:api   click action done +142ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +13ms
+  pw:api <= locator.click succeeded +22ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +259ms
+  pw:api => locator.waitFor started +1ms
+  pw:api => locator.type started +3ms
+  pw:api waiting for getByText('Loading').first() to be hidden +88ms
+  pw:api waiting for getByPlaceholder('Add Genes') +2ms
+  pw:api   locator resolved to <input value="" id="mui-9" type="search" role="combobox…/> +29ms
+  pw:api elementHandle.type("DPM1") +92ms
+  pw:api <= locator.waitFor succeeded +1ms
+  pw:api <= locator.type succeeded +2s
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByText('DPM1') +16ms
+  pw:api   locator resolved to <div class="css-1iyoj2o">DPM1</div> +10ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +34ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +12ms
+  pw:api   click action done +368ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +23ms
+  pw:api <= locator.click succeeded +46ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +145ms
+  pw:api => locator.waitFor started +1ms
+  pw:api => locator.type started +2ms
+  pw:api waiting for getByText('Loading').first() to be hidden +55ms
+  pw:api waiting for getByPlaceholder('Add Genes') +13ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +58ms
+  pw:api   locator resolved to <input value="" id="mui-9" type="search" role="combobox…/> +1ms
+  pw:api elementHandle.type("TNMD") +11ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +9ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +2s
+  pw:api <= locator.type succeeded +27ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByText('TNMD') +41ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +42ms
+  pw:api   locator resolved to <div class="css-1iyoj2o">TNMD</div> +18ms
+  pw:api attempting click action +22ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +80ms
+  pw:api   element is visible, enabled and stable +2ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +34ms
+  pw:api   click action done +477ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +15ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +42ms
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +122ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +341ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +516ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +535ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +528ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +511ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +518ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +517ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +843ms
+  pw:api <= locator.waitFor succeeded +516ms
+  pw:api => locator.waitFor started +1ms
+  pw:api => locator.type started +2ms
+  pw:api waiting for getByText('Loading').first() to be hidden +29ms
+  pw:api waiting for getByPlaceholder('Add Genes') +14ms
+  pw:api   locator resolved to <input value="" id="mui-9" type="search" role="combobox…/> +9ms
+  pw:api elementHandle.type("TSPAN6") +4ms
+  pw:api <= locator.waitFor succeeded +2ms
+  pw:api <= locator.type succeeded +2s
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByText('TSPAN6') +8ms
+  pw:api   locator resolved to <div class="css-1iyoj2o">TSPAN6</div> +6ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +13ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +11ms
+  pw:api   click action done +666ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +34ms
+  pw:api <= locator.click succeeded +48ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +86ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('share-button') +33ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="share-bu…>…</button> +30ms
+  pw:api attempting click action +36ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +90ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +15ms
+  pw:api   performing click action +98ms
+  pw:api   click action done +118ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +19ms
+  pw:api <= locator.click succeeded +56ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByTestId('share-button') +44ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="share-bu…>…</button> +27ms
+  pw:api attempting click action +30ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +65ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   <div class="css-qtrc62-StyledNotificationDetails e1rb…>We regularly expand our single cell data corpus t…</div> from <div class="css-1cqa3re-NotificationWrapper-StyledNot…>…</div> subtree intercepts pointer events +66ms
+  pw:api retrying click action, attempt #1 +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +82ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +53ms
+  pw:api   <div class="css-qtrc62-StyledNotificationDetails e1rb…>We regularly expand our single cell data corpus t…</div> from <div class="css-1cqa3re-NotificationWrapper-StyledNot…>…</div> subtree intercepts pointer events +115ms
+  pw:api retrying click action, attempt #2 +2ms
+  pw:api   waiting 20ms +0ms
+  pw:api   waiting for element to be visible, enabled and stable +33ms
+  pw:api   element is visible, enabled and stable +47ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +3ms
+  pw:api   <div class="css-qtrc62-StyledNotificationDetails e1rb…>We regularly expand our single cell data corpus t…</div> from <div class="css-1cqa3re-NotificationWrapper-StyledNot…>…</div> subtree intercepts pointer events +25ms
+  pw:api retrying click action, attempt #3 +0ms
+  pw:api   waiting 100ms +1ms
+  pw:api   waiting for element to be visible, enabled and stable +117ms
+  pw:api   element is visible, enabled and stable +57ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   <div class="css-qtrc62-StyledNotificationDetails e1rb…>We regularly expand our single cell data corpus t…</div> from <div class="css-1cqa3re-NotificationWrapper-StyledNot…>…</div> subtree intercepts pointer events +58ms
+  pw:api retrying click action, attempt #4 +0ms
+  pw:api   waiting 100ms +0ms
+  pw:api   waiting for element to be visible, enabled and stable +122ms
+  pw:api   element is visible, enabled and stable +67ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +3ms
+  pw:api   <div class="css-qtrc62-StyledNotificationDetails e1rb…>We regularly expand our single cell data corpus t…</div> from <div class="css-1cqa3re-NotificationWrapper-StyledNot…>…</div> subtree intercepts pointer events +10ms
+  pw:api retrying click action, attempt #5 +0ms
+  pw:api   waiting 500ms +0ms
+  pw:api   waiting for element to be visible, enabled and stable +508ms
+  pw:api   element is visible, enabled and stable +51ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   <div class="css-qtrc62-StyledNotificationDetails e1rb…>We regularly expand our single cell data corpus t…</div> from <div class="css-1cqa3re-NotificationWrapper-StyledNot…>…</div> subtree intercepts pointer events +19ms
+  pw:api retrying click action, attempt #6 +0ms
+  pw:api   waiting 500ms +0ms
+  pw:api   waiting for element to be visible, enabled and stable +513ms
+  pw:api   element is visible, enabled and stable +54ms
+  pw:api   scrolling into view if needed +2ms
+  pw:api   done scrolling +9ms
+  pw:api   <div class="css-qtrc62-StyledNotificationDetails e1rb…>We regularly expand our single cell data corpus t…</div> from <div class="css-1cqa3re-NotificationWrapper-StyledNot…>…</div> subtree intercepts pointer events +87ms
+  pw:api retrying click action, attempt #7 +10ms
+  pw:api   waiting 500ms +1ms
+  pw:api   waiting for element to be visible, enabled and stable +514ms
+  pw:api   element is visible, enabled and stable +84ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +17ms
+  pw:api   <div class="css-qtrc62-StyledNotificationDetails e1rb…>We regularly expand our single cell data corpus t…</div> from <div class="css-1cqa3re-NotificationWrapper-StyledNot…>…</div> subtree intercepts pointer events +294ms
+  pw:api retrying click action, attempt #8 +4ms
+  pw:api   waiting 500ms +0ms
+  pw:api   waiting for element to be visible, enabled and stable +716ms
+  pw:api   element is visible, enabled and stable +20ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   <div class="css-qtrc62-StyledNotificationDetails e1rb…>We regularly expand our single cell data corpus t…</div> from <div class="css-1cqa3re-NotificationWrapper-StyledNot…>…</div> subtree intercepts pointer events +20ms
+  pw:api retrying click action, attempt #9 +0ms
+  pw:api   waiting 500ms +0ms
+  pw:api   waiting for element to be visible, enabled and stable +502ms
+  pw:api   element is visible, enabled and stable +9ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   <div class="css-qtrc62-StyledNotificationDetails e1rb…>We regularly expand our single cell data corpus t…</div> from <div class="css-1cqa3re-NotificationWrapper-StyledNot…>…</div> subtree intercepts pointer events +11ms
+  pw:api retrying click action, attempt #10 +0ms
+  pw:api   waiting 500ms +0ms
+  pw:api   waiting for element to be visible, enabled and stable +501ms
+  pw:api   element is visible, enabled and stable +32ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   <div class="css-1cqa3re-NotificationWrapper-StyledNot…>…</div> intercepts pointer events +21ms
+  pw:api retrying click action, attempt #11 +1ms
+  pw:api   waiting 500ms +0ms
+  pw:api   waiting for element to be visible, enabled and stable +513ms
+  pw:api   element is visible, enabled and stable +19ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +12ms
+  pw:api   click action done +43ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +20ms
+  pw:api => page.evaluate started +2ms
+  pw:api <= page.evaluate succeeded +83ms
+  pw:api taking page screenshot +42ms
