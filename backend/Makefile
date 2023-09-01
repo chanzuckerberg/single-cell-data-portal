@@ -138,8 +138,14 @@ mirror_env_data:
 	# Mirrors the SRC_ENV env's AWS RDS database and S3 data to
 	# DEST_ENV. Defaults to prod->dev.
 	#
+	# If DEST_ENV = 'rdev':
+	# - STACK arg must be included accordingly
+	# - A comma-separated list of Collection id uuids may be passed as the COLLECTIONS arg to determine which Dataset
+	# assets are mirrored from SRC_ENV s3 to the specified rdev STACK. All Dataset assets for each Collection are
+	# copied. Ignored for mirrors where DEST_ENV != rdev.
+	#
 	# THIS IS DESTRUCTIVE for the DEST_ENV env! The SRC_ENV env will
 	# never be modified, but the DEST_ENV env's data will be replaced.
 	#
-	# Usage: make mirror_env_data [SRC_ENV={prod|staging|dev}] [DEST_ENV={dev|staging|rdev}] [STACK=<rdev_stack_name>]
-	scripts/mirror_env_data.sh $(SRC_ENV) $(DEST_ENV) $(STACK)
+	# Usage: make mirror_env_data [SRC_ENV={prod|staging|dev}] [DEST_ENV={dev|staging|rdev}] [STACK=<rdev_stack_name> [COLLECTIONS=<uuid1,uuid2,...>]]
+	scripts/mirror_env_data.sh $(SRC_ENV) $(DEST_ENV) $(STACK) $(COLLECTIONS)

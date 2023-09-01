@@ -44,7 +44,7 @@ if [[ $DEST_ENV == 'rdev' ]]; then
    DB_USER="dataportal"
 else
    DB_NAME="corpora_${DEPLOYMENT_STAGE}"
-   DB_USER=corpora_${DEPLOYMENT_STAGE}
+   DB_USER="corpora_${DEPLOYMENT_STAGE}"
 fi
 
 read -n 1 -p "ATTENTION: Proceed to replace the destination database \"${DB_NAME}\"? (Y/n) " ANS
