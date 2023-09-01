@@ -80,7 +80,9 @@ target/
 # IDEs
 .idea
 tags
-.vscode
+.vscode/*
+!.vscode/extensions.json
+frontend/.vscode/
 
 # macOS
 .DS_Store
