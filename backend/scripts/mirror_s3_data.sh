@@ -18,9 +18,7 @@ DEPLOYMENT_STAGE=$SRC_ENV
 if [[ ! -z "$COLLECTIONS" ]]; then
   DEPLOYMENT_STAGE=$DEPLOYMENT_STAGE make db/tunnel/up
   echo "Copying S3 Dataset assets for ${#COLLECTIONS[@]} Collections..."
-  echo "DEPLOYMENT_STAGE is $DEPLOYMENT_STAGE"
   DB_PW=$(aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string')
-  echo "password is $DB_PW"
   query_arg="-c select uri from \"DatasetArtifact\" where id in (select unnest(artifacts) from \"DatasetVersion\" where id in (select unnest(datasets) from \"CollectionVersion\" where collection_id in ('$COLLECTIONS')))"
   res=$(PGOPTIONS='-csearch_path=persistence_schema' PGPASSWORD=${DB_PW} psql --dbname corpora_${DEPLOYMENT_STAGE} --username corpora_${DEPLOYMENT_STAGE} --host 0.0.0.0 --csv --tuples-only "$query_arg")
   DEPLOYMENT_STAGE=$DEPLOYMENT_STAGE make db/tunnel/down
@@ -37,7 +35,6 @@ if [[ ! -z "$COLLECTIONS" ]]; then
     fi
     key=$(sed -E 's/s3:\/\/([^\/]+)\/(.*)/\2/' <<< $uri)
     recursive_flag=$([[ ! "${key: -1}" == "/" ]] || echo "--recursive ")
-    echo "copying ${recursive_flag}$uri to s3://env-rdev-${rdev_bucket_suffix}/${STACK}/${key}"
     aws s3 cp ${recursive_flag}${uri} s3://env-rdev-${rdev_bucket_suffix}/${STACK}/${key}
   done
   exit 0
