@@ -10,6 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
+
 import {
   EMPTY_ARRAY,
   EMPTY_OBJECT,
@@ -52,9 +53,7 @@ import {
   Container,
   ContainerWrapper,
   StyledTag,
-  TopLeftCornerMask,
   XAxisMask,
-  XAxisWrapper,
   YAxisWrapper,
 } from "src/views/WheresMyGene/components/HeatMap/style";
 import { CellCountLabel } from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart/style";
@@ -70,6 +69,7 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 import { Autocomplete, DefaultAutocompleteOption } from "@czi-sds/components";
+import { Divider, TopLeftCornerMask, XAxisWrapper } from "./style";
 
 interface Props {
   className?: string;
@@ -510,6 +510,7 @@ export default memo(function HeatMap({
             })}
           </ChartWrapper>
         </Container>
+        <Divider className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
       </ContainerWrapper>
     </>
   );

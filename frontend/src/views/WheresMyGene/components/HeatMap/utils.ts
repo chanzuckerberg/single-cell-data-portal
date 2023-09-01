@@ -12,7 +12,7 @@ import {
 } from "../../common/types";
 import { TISSUE_CELL_TYPE_DIVIDER } from "./hooks/useSortedGeneNames";
 
-export const Y_AXIS_CHART_WIDTH_PX = 400;
+export const Y_AXIS_CHART_WIDTH_PX = 352;
 
 /**
  * Used to calculate text pixel widths. Should be only created once.
