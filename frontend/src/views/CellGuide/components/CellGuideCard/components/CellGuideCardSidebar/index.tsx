@@ -11,9 +11,11 @@ import { CELL_GUIDE_CARD_NAVIGATION_SIDEBAR } from "src/views/CellGuide/componen
 export default function CellGuideCardSidebar({
   items,
   skinnyMode,
+  sectionClickHandler,
 }: {
   items: { elementRef: React.MutableRefObject<null>; title: string }[];
   skinnyMode: boolean;
+  sectionClickHandler?: () => void;
 }): JSX.Element {
   /**
    * (thuang): SDS `NavigationJumpTo` currently assumes `window` is always available,
@@ -45,6 +47,7 @@ export default function CellGuideCardSidebar({
               track(EVENTS.CG_VIEW_SECTION, {
                 section: (event.target as HTMLElement).innerText,
               });
+              sectionClickHandler && sectionClickHandler();
             }}
           />
         )}

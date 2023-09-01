@@ -70,6 +70,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
   const seoDescription = `Find comprehensive information about ${tissueName} tissue: ${description}`;
 
   const [skinnyMode, setSkinnyMode] = useState<boolean>(false);
+  const [pageNavIsOpen, setPageNavIsOpen] = useState(false);
 
   const handleResize = useCallback(() => {
     setSkinnyMode(
@@ -109,6 +110,8 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
               ]}
             />
           }
+          pageNavIsOpen={pageNavIsOpen}
+          setPageNavIsOpen={setPageNavIsOpen}
         />
       )}
 

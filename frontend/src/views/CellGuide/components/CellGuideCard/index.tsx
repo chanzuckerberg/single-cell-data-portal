@@ -15,6 +15,7 @@ import {
   MobileTooltipTitle,
   MobileTooltipWrapper,
   MobileTooltipHeader,
+  NavBarDropdownWrapper,
 } from "./style";
 import Description from "./components/Description";
 import MarkerGeneTables from "./components/MarkerGeneTables";
@@ -64,6 +65,8 @@ export default function CellGuideCard({
 }: Props): JSX.Element {
   const router = useRouter();
 
+  const [pageNavIsOpen, setPageNavIsOpen] = useState(false);
+
   // Navigation
   const sectionRef0 = React.useRef(null);
   const sectionRef1 = React.useRef(null);
@@ -75,6 +78,7 @@ export default function CellGuideCard({
   const cellGuideSideBar = useMemo(() => {
     return (
       <CellGuideCardSidebar
+        sectionClickHandler={() => setPageNavIsOpen(false)}
         skinnyMode={skinnyMode}
         items={[
           { elementRef: sectionRef0, title: "Intro" },
@@ -152,6 +156,28 @@ export default function CellGuideCard({
     synonyms?.join(", ") || "N/A"
   }). ${rawSeoDescription}`;
 
+  const dropdownComponents = (
+    <CellGuideCardHeaderInnerWrapper>
+      <DropdownSelect
+        handleChange={handleChangeOrganism}
+        options={organismsList}
+        selectedOption={selectedOrganism}
+        testId={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
+      />
+      <DropdownSelect
+        handleChange={handleChangeOrgan}
+        options={uniqueOrgans}
+        selectedOption={selectedOrgan}
+        testId={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}
+      />
+    </CellGuideCardHeaderInnerWrapper>
+  );
+  const pageNav = (
+    <div>
+      {cellGuideSideBar}
+      <NavBarDropdownWrapper>{dropdownComponents}</NavBarDropdownWrapper>
+    </div>
+  );
   return (
     <>
       {/* This is a fix that overrides a global overflow css prop to get sticky elements to work */}
@@ -186,7 +212,9 @@ export default function CellGuideCard({
       {skinnyMode && (
         <CellGuideMobileHeader
           title={titleizedCellTypeName}
-          pageNav={cellGuideSideBar}
+          pageNav={pageNav}
+          pageNavIsOpen={pageNavIsOpen}
+          setPageNavIsOpen={setPageNavIsOpen}
         />
       )}
 
@@ -235,20 +263,7 @@ export default function CellGuideCard({
                   />
                 </a>
               </CellGuideCardHeaderInnerWrapper>
-              <CellGuideCardHeaderInnerWrapper>
-                <DropdownSelect
-                  handleChange={handleChangeOrganism}
-                  options={organismsList}
-                  selectedOption={selectedOrganism}
-                  testId={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
-                />
-                <DropdownSelect
-                  handleChange={handleChangeOrgan}
-                  options={uniqueOrgans}
-                  selectedOption={selectedOrgan}
-                  testId={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}
-                />
-              </CellGuideCardHeaderInnerWrapper>
+              {dropdownComponents}
             </CellGuideCardHeader>
           )}
 

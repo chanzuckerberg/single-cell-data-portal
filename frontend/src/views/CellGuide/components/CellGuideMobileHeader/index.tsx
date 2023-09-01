@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import CellGuideCardSearchBar from "../CellGuideCardSearchBar";
 import { ButtonIcon } from "@czi-sds/components";
 import {
@@ -16,6 +16,8 @@ import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 interface Props {
   title: string;
   pageNav: JSX.Element | null;
+  pageNavIsOpen?: boolean;
+  setPageNavIsOpen?: (isOpen: boolean) => void;
   openSearch?: boolean; // Used on landing page
   top?: number; // Used on landing page
 }
@@ -25,9 +27,10 @@ const CellGuideMobileHeader = ({
   pageNav,
   openSearch = false,
   top = HEADER_HEIGHT_PX,
+  pageNavIsOpen,
+  setPageNavIsOpen,
 }: Props) => {
   const [searchIsOpen, setSearchIsOpen] = useState(openSearch);
-  const [pageNavIsOpen, setPageNavIsOpen] = useState(false);
 
   const search = (
     <MobileSearchBarWrapper
@@ -70,13 +73,28 @@ const CellGuideMobileHeader = ({
       <div id="cellguide-nav-dropdown">
         <ButtonIcon
           sdsIcon={pageNavIsOpen ? "chevronUp" : "chevronDown"}
-          onClick={() => {
-            setPageNavIsOpen(!pageNavIsOpen);
-          }}
+          onClick={() => setPageNavIsOpen && setPageNavIsOpen(!pageNavIsOpen)}
         />
       </div>
     </>
   );
+
+  const navRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setPageNavIsOpen && setPageNavIsOpen(false);
+      }
+    }
+
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [navRef, setPageNavIsOpen]);
 
   return (
     <>
@@ -88,12 +106,7 @@ const CellGuideMobileHeader = ({
         <MobileHeader>{searchIsOpen ? search : navigation}</MobileHeader>
 
         {/* CellGuide Page Nav - Second Row */}
-        <MobilePageNavWrapper
-          onClick={() => {
-            // Close nav when clicking on a section
-            setPageNavIsOpen(false);
-          }}
-        >
+        <MobilePageNavWrapper ref={navRef}>
           {pageNavIsOpen && pageNav}
         </MobilePageNavWrapper>
       </MobileHeaderWrapper>

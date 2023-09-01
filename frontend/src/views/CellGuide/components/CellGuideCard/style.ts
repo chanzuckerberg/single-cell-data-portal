@@ -10,7 +10,7 @@ import {
 import RightSideBar from "src/components/common/RightSideBar";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import Synonyms from "src/components/Synonyms";
-import { spacesL, spacesXxs } from "src/common/theme";
+import { spacesL, spacesM, spacesXxs } from "src/common/theme";
 import { StyledDiv } from "src/views/WheresMyGene/components/ScreenTint/style";
 import OntologyId from "src/components/OntologyId";
 
@@ -52,6 +52,14 @@ export const Wrapper = styled.div`
   flex-direction: column;
   align-self: stretch;
   margin-bottom: 80px;
+`;
+
+export const NavBarDropdownWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: ${spacesM}px;
 `;
 
 export const CellGuideCardHeaderInnerWrapper = styled.div`

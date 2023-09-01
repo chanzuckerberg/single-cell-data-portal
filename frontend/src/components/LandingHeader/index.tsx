@@ -25,10 +25,12 @@ import { LinkWrapper } from "src/components/Header/components/Nav/style";
 interface Props {
   title?: string;
   homeUrl?: string;
+  labelUrl?: string;
 }
 
-const LandingHeader: FC<Props> = ({ title = "", homeUrl }) => {
-  const { pathname } = useRouter();
+const LandingHeader: FC<Props> = ({ title = "", homeUrl, labelUrl }) => {
+  const router = useRouter();
+  const { pathname } = router;
 
   const mobileNavTray = useRef<HTMLDivElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -42,6 +44,11 @@ const LandingHeader: FC<Props> = ({ title = "", homeUrl }) => {
       setMobileMenuOpen(false);
     }
   }
+  const handleLabelClick = () => {
+    if (labelUrl) {
+      router.push(labelUrl);
+    }
+  };
 
   return (
     <MobileNavWrapper>
@@ -51,7 +58,7 @@ const LandingHeader: FC<Props> = ({ title = "", homeUrl }) => {
       </MobileHomeLink>
 
       {/* Middle */}
-      <HeaderTitle>{title}</HeaderTitle>
+      <HeaderTitle onClick={handleLabelClick}>{title}</HeaderTitle>
 
       {/* Right */}
       <MobileMenuButton onClick={() => mobileNavHandler(mobileMenuOpen)}>
