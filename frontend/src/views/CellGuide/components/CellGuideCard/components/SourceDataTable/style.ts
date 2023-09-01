@@ -1,9 +1,12 @@
 import styled from "@emotion/styled";
 import { CommonThemeProps, Tag, fontBodyXs } from "@czi-sds/components";
-import { spacesM, spacesS, gray300 } from "src/common/theme";
+import { spacesM, spacesS } from "src/common/theme";
 
 export const StyledTag = styled(Tag)`
   ${fontBodyXs}
+  font-weight: 400;
+  padding: 2px 8px;
+  background-color: rgba(0, 0, 0, 0.05);
   & .MuiChip-label {
     color: #000000;
   }
@@ -21,16 +24,17 @@ export const MobileSourceDataTableWrapper = styled.div`
 `;
 
 interface MobileSourceDataTableEntryProps extends CommonThemeProps {
-  index: number;
+  highlight: boolean;
 }
+
 export const MobileSourceDataTableEntry = styled.div<MobileSourceDataTableEntryProps>`
   row-gap: ${spacesS}px;
   padding-top: ${spacesM}px;
   padding-bottom: ${spacesM}px;
+  padding-left: ${spacesM}px;
   display: flex;
   flex-direction: column;
-  border-top: ${(props) =>
-    props.index >= 1 ? `0.5px solid ${gray300(props)}` : "unset"};
+  background-color: ${(props) => (props.highlight ? "#F8F8F8" : "white")};
 `;
 
 export const MobileSourceDataTableEntryRow = styled.div`

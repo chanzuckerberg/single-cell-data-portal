@@ -103,19 +103,21 @@ const SourceDataTable = ({
 
   const tableComponent = isPastBreakpoint ? (
     <MobileSourceDataTableWrapper>
-      {tableRows.map((row, index) => {
-        return (
-          <MobileSourceDataTableEntry key={index} index={index}>
-            {row.collection}
-            {row.publication}
-            <MobileSourceDataTableEntryRow>
-              {row.tissue}
-              {row.disease}
-              {row.organism}
-            </MobileSourceDataTableEntryRow>
-          </MobileSourceDataTableEntry>
-        );
-      })}
+      {tableRows
+        .slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE)
+        .map((row, index) => {
+          return (
+            <MobileSourceDataTableEntry key={index} highlight={index % 2 === 1}>
+              {row.collection}
+              {row.publication}
+              <MobileSourceDataTableEntryRow>
+                {row.tissue}
+                {row.disease}
+                {row.organism}
+              </MobileSourceDataTableEntryRow>
+            </MobileSourceDataTableEntry>
+          );
+        })}
     </MobileSourceDataTableWrapper>
   ) : (
     <Table<TableRow>
