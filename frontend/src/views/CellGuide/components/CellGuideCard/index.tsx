@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
+import { Global } from "@emotion/react";
 import {
   Wrapper,
   CellGuideCardName,
@@ -23,12 +24,14 @@ import OntologyDagView from "../common/OntologyDagView";
 import FullScreenProvider from "../common/FullScreenProvider";
 import SourceDataTable from "./components/SourceDataTable";
 import CellGuideCardSidebar from "./components/CellGuideCardSidebar";
+import CellGuideMobileHeader from "../CellGuideMobileHeader";
 import { Gene } from "src/views/WheresMyGene/common/types";
 import { throttle } from "lodash";
 import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 import { titleize } from "src/common/utils/string";
 import Head from "next/head";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
+import { StickySidebarStyle } from "./components/CellGuideCardSidebar/style";
 import { useCellTypeMetadata } from "src/common/queries/cellGuide";
 import {
   SKINNY_MODE_BREAKPOINT_WIDTH,
@@ -47,6 +50,7 @@ import {
   DefaultDropdownMenuOption,
   Dropdown,
   InputDropdownProps,
+  ButtonIcon,
 } from "@czi-sds/components";
 
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
@@ -54,7 +58,6 @@ const RIGHT_SIDEBAR_WIDTH_PX = 400;
 const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
   sdsStyle: "square",
 } as InputDropdownProps;
-
 
 interface Props {
   name: string;

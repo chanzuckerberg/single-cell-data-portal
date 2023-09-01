@@ -13,6 +13,7 @@ import Synonyms from "src/components/Synonyms";
 import { spacesL, spacesM, spacesXxs } from "src/common/theme";
 import { StyledDiv } from "src/views/WheresMyGene/components/ScreenTint/style";
 import OntologyId from "src/components/OntologyId";
+import { keyframes } from "@emotion/react";
 
 export const TOP_PADDING_PX = 32;
 export const SIDEBAR_COLUMN_GAP_PX = 120;
@@ -97,15 +98,29 @@ export const SearchBarWrapper = styled.div`
   width: 100%;
 `;
 
-export const StyledRightSideBar = styled(RightSideBar)`
+const slideIn = keyframes`
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+`;
+
+interface StyledRightSideBarProps extends CommonThemeProps {
+  skinnyMode: boolean;
+}
+
+export const StyledRightSideBar = styled(RightSideBar)<StyledRightSideBarProps>`
   position: fixed;
   right: 0;
   height: 100vh;
   background-color: white;
   z-index: 10; // Must be over mobile cell guide nav bar
   top: ${HEADER_HEIGHT_PX}px;
+  animation: ${slideIn} 0.2s ease-in-out forwards;
 
-  ${(props: { skinnyMode: boolean }) => {
+  ${(props) => {
     if (props.skinnyMode) {
       return `
         width: 100vw;

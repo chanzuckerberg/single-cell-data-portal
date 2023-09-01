@@ -83,6 +83,19 @@ const CellGuideMobileHeader = ({
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      let targetElement = event.target as Element;
+      // this is a hack to prevent the page nav from closing when clicking on child dropdowns
+      do {
+        if (
+          targetElement &&
+          targetElement.classList?.contains("MuiPopper-root")
+        ) {
+          return;
+        }
+        // Go up the DOM
+        targetElement = targetElement.parentNode as Element;
+      } while (targetElement);
+
       if (navRef.current && !navRef.current.contains(event.target as Node)) {
         setPageNavIsOpen && setPageNavIsOpen(false);
       }
