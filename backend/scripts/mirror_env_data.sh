@@ -19,7 +19,7 @@ $SCRIPTS_DIR/mirror_rds_data.sh $@
 if [[ ! $DEST_ENV == 'rdev' ]]; then
 #  $SCRIPTS_DIR/mirror_s3_data.sh $@
   echo "ok"
-elif [[ ! -z "$COLLECTIONS" ]]; then
+elif [[ ! -z "$COLLECTIONS" && $DEST_ENV == 'rdev' ]]; then
   echo -e "\nCopying assets for the following Collections:\n$(tr ',' '\n' <<< $COLLECTIONS)"
   $SCRIPTS_DIR/mirror_s3_data.sh $@
 else

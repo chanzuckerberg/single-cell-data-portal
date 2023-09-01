@@ -15,7 +15,7 @@ echo Mirroring S3 data from $SRC_ENV to $DEST_ENV
 
 DEPLOYMENT_STAGE=$SRC_ENV
 
-if [[ ! -z "$COLLECTIONS" ]]; then
+if [[ $DEST_ENV == 'rdev' ]]; then
   DEPLOYMENT_STAGE=$DEPLOYMENT_STAGE make db/tunnel/up
   echo "Copying S3 Dataset assets for ${#COLLECTIONS[@]} Collections..."
   DB_PW=$(aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string')
