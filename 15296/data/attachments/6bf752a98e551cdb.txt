@@ -1,0 +1,110 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +4ms
+  pw:api <= browserType.launch succeeded +194ms
+  pw:api => browser.newContext started +5ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +73ms
+  pw:api   "commit" event fired +22ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +4ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +15ms
+  pw:api => tracing.start started +5ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +37ms
+  pw:api => page.waitForResponse started +3ms
+  pw:api => page.goto started +7ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +18ms
+  pw:api   "commit" event fired +8s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +5ms
+  pw:api   navigated to "about:blank" +47ms
+  pw:api <= page.goto succeeded +83ms
+  pw:api   "networkidle" event fired +3s
+  pw:api <= page.waitForResponse succeeded +934ms
+  pw:api => expect.toBeVisible started +12ms
+  pw:api expect.toBeVisible with timeout 10000ms +48ms
+  pw:api waiting for getByTestId('add-gene-btn') +9ms
+  pw:api   locator resolved to <div label="Add Genes" data-testid="add-gene-btn" cla…>…</div> +41ms
+  pw:api <= expect.toBeVisible succeeded +21ms
+  pw:api => expect.toContainText started +5ms
+  pw:api expect.toContainText with timeout 10000ms +127ms
+  pw:api waiting for getByTestId('newsletter-modal-banner-wrapper') +1ms
+  pw:api   locator resolved to <div id="bottom-banner" data-testid="newsletter-modal…>…</div> +51ms
+  pw:api <= expect.toContainText succeeded +16ms
+  pw:api => expect.toHaveAttribute started +3ms
+  pw:api expect.toHaveAttribute with timeout 10000ms +25ms
+  pw:api waiting for getByText('quick survey') +0ms
+  pw:api   locator resolved to <a rel="noopener" target="_blank" class="css-le1m4y…>quick survey</a> +26ms
+  pw:api <= expect.toHaveAttribute succeeded +17ms
+  pw:api => expect.toContainText started +2ms
+  pw:api expect.toContainText with timeout 10000ms +13ms
+  pw:api waiting for getByTestId('add-organism') +0ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" label="Homo…>…</button> +13ms
+  pw:api <= expect.toContainText succeeded +15ms
+  pw:api => expect.toContainText started +3ms
+  pw:api expect.toContainText with timeout 10000ms +13ms
+  pw:api waiting for getByTestId('legend-wrapper') +1ms
+  pw:api   locator resolved to <div data-testid="legend-wrapper" class="css-88hqs7-L…>…</div> +17ms
+  pw:api <= expect.toContainText succeeded +12ms
+  pw:api => expect.toBeDisabled started +2ms
+  pw:api waiting for getByTestId('download-button') +11ms
+  pw:api   locator resolved to visible <button disabled tabindex="-1" type="button" data-testid…>…</button> +31ms
+  pw:api <= expect.toBeDisabled succeeded +27ms
+  pw:api => expect.toBeDisabled started +1ms
+  pw:api waiting for locator(':scope') +22ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" data-testid…>…</button> +10ms
+  pw:api <= expect.toBeDisabled succeeded +9ms
+  pw:api => expect.toContainText started +2ms
+  pw:api expect.toContainText with timeout 10000ms +14ms
+  pw:api waiting for getByTestId('legend-wrapper') +1ms
+  pw:api   locator resolved to <div data-testid="legend-wrapper" class="css-88hqs7-L…>…</div> +2ms
+  pw:api <= expect.toContainText succeeded +5ms
+  pw:api => expect.toBeDisabled started +3ms
+  pw:api waiting for getByTestId('share-button') +7ms
+  pw:api   locator resolved to visible <button disabled tabindex="-1" type="button" data-testid…>…</button> +5ms
+  pw:api <= expect.toBeDisabled succeeded +11ms
+  pw:api => expect.toBeDisabled started +1ms
+  pw:api waiting for locator(':scope') +14ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" data-testid…>…</button> +12ms
+  pw:api <= expect.toBeDisabled succeeded +10ms
+  pw:api => expect.toContainText started +4ms
+  pw:api expect.toContainText with timeout 10000ms +31ms
+  pw:api waiting for getByTestId('legend-wrapper') +1ms
+  pw:api   locator resolved to <div data-testid="legend-wrapper" class="css-88hqs7-L…>…</div> +3ms
+  pw:api <= expect.toContainText succeeded +9ms
+  pw:api => expect.toBeEnabled started +3ms
+  pw:api waiting for getByTestId('source-data-button').locator('svg') +14ms
+  pw:api   locator resolved to visible <svg width="22" height="22" focusable="false" aria-hi…>…</svg> +6ms
+  pw:api <= expect.toBeEnabled succeeded +25ms
+  pw:api => expect.toBeEnabled started +0ms
+  pw:api waiting for locator(':scope') +16ms
+  pw:api   locator resolved to <svg width="22" height="22" focusable="false" aria-hi…>…</svg> +10ms
+  pw:api <= expect.toBeEnabled succeeded +21ms
+  pw:api => expect.toContainText started +5ms
+  pw:api expect.toContainText with timeout 10000ms +14ms
+  pw:api waiting for getByTestId('legend-wrapper') +1ms
+  pw:api   locator resolved to <div data-testid="legend-wrapper" class="css-88hqs7-L…>…</div> +7ms
+  pw:api <= expect.toContainText succeeded +11ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api expect.toBeVisible with timeout 10000ms +22ms
+  pw:api waiting for locator('[id="visualization-color-scale"]') +1ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" id="visua…/> +3ms
+  pw:api <= expect.toBeVisible succeeded +5ms
+  pw:api => expect.toContainText started +2ms
+  pw:api expect.toContainText with timeout 10000ms +6ms
+  pw:api waiting for getByTestId('legend-wrapper') +0ms
+  pw:api   locator resolved to <div data-testid="legend-wrapper" class="css-88hqs7-L…>…</div> +22ms
+  pw:api <= expect.toContainText succeeded +15ms
+  pw:api => expect.toBeVisible started +3ms
+  pw:api expect.toBeVisible with timeout 10000ms +25ms
+  pw:api waiting for locator('[id="expressed-in-cells-dots"]') +0ms
+  pw:api   locator resolved to <div id="expressed-in-cells-dots" class="css-1d14xw9-…>…</div> +3ms
+  pw:api <= expect.toBeVisible succeeded +15ms
+  pw:api => page.$$eval started +1ms
+  pw:api <= page.$$eval succeeded +56ms
+  pw:api taking page screenshot +22ms
