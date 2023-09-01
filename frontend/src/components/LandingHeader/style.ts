@@ -165,4 +165,5 @@ export const Navigation = styled(Nav)`
 export const HeaderTitle = styled.div`
   ${fontHeaderM}
   color: white;
+  cursor: pointer;
 `;
