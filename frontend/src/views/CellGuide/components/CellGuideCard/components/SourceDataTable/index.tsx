@@ -21,7 +21,7 @@ import {
   useSourceData,
 } from "src/common/queries/cellGuide";
 import { Pagination } from "@mui/material";
-import useIsComponentPastBreakpoint from "../common/hooks/useIsComponentPastBreakpoint";
+import { useIsComponentPastBreakpointWidth } from "../common/hooks/useIsComponentPastBreakpoint";
 import {
   CELL_GUIDE_CARD_SOURCE_DATA_TABLE,
   SOURCE_DATA_TABLE_BREAKPOINT_PX,
@@ -60,7 +60,7 @@ const SourceDataTable = ({
 }: Props) => {
   const { data: collections } = useSourceData(cellTypeId);
   const [page, setPage] = useState(1);
-  const { isPastBreakpoint, containerRef } = useIsComponentPastBreakpoint(
+  const { isPastBreakpoint, containerRef } = useIsComponentPastBreakpointWidth(
     SOURCE_DATA_TABLE_BREAKPOINT_PX
   );
 
