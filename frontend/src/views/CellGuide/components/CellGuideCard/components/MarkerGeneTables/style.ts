@@ -5,7 +5,13 @@ import {
   fontBodyXxs,
 } from "@czi-sds/components";
 import styled from "@emotion/styled";
-import { gray200, gray400, gray500, primary400 } from "src/common/theme";
+import {
+  gray200,
+  gray400,
+  gray500,
+  primary400,
+  spacesL,
+} from "src/common/theme";
 import Link from "../common/Link";
 
 const DIVIDER_WIDTH = 2;
@@ -23,6 +29,11 @@ export const TableTitleOuterWrapper = styled.div`
   flex-wrap: wrap;
 `;
 
+export const ReferenceTooltipWrapper = styled.div`
+  row-gap: ${spacesL}px;
+  display: flex;
+  flex-direction: column;
+`;
 export const NoWrapWrapper = styled.span`
   white-space: nowrap;
 `;

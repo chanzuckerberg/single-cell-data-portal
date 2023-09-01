@@ -162,6 +162,13 @@ export default function Description({
               setTimerId(null);
             }
           }}
+          onClick={() => {
+            skinnyMode &&
+              setTooltipContent({
+                title: "ChatGPT Descriptions",
+                element: tooltipContent,
+              });
+          }}
           onTouchEnd={() => {
             setTooltipContent({
               title: "ChatGPT Descriptions",

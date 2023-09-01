@@ -38,12 +38,10 @@ export const CellGuideView = styled.div`
     const spaces = getSpaces(props);
     const space = skinnyMode ? spaces?.l : spaces?.xxl;
     const maxWidth = skinnyMode ? "100vw" : "1440px";
-
     return `
     max-width: ${maxWidth};
     padding: ${TOP_PADDING_PX}px ${space}px 0px
       ${space}px;
-
     `;
   }}
 `;
@@ -167,6 +165,7 @@ export const MobileTooltipWrapper = styled.div`
   width: 100vw;
   padding: ${spacesL}px;
   gap: ${spacesL}px;
+  overflow: auto;
 `;
 
 export const MobileTooltipHeader = styled.div`

@@ -34,6 +34,7 @@ import {
   StyledCellNumerical,
   NoWrapWrapper,
   StyledLink,
+  ReferenceTooltipWrapper,
 } from "./style";
 import Table from "../common/Table";
 import { Pagination } from "@mui/material";
@@ -45,7 +46,10 @@ import {
   useComputationalMarkers,
 } from "src/common/queries/cellGuide";
 import { useComputationalMarkerGenesTableRowsAndFilters } from "./hooks/computational_markers";
-import { useCanonicalMarkerGenesTableRowsAndFilters } from "./hooks/canonical_markers";
+import {
+  CanonicalMarkerGeneTableData,
+  useCanonicalMarkerGenesTableRowsAndFilters,
+} from "./hooks/canonical_markers";
 import { useIsComponentPastBreakpointWidth } from "../common/hooks/useIsComponentPastBreakpoint";
 import HelpTooltip from "../common/HelpTooltip";
 import { ROUTES } from "src/common/constants/routes";
@@ -327,97 +331,141 @@ const MarkerGeneTables = ({
       selectedOrganismLabel: organismName,
     });
 
-  const tableRows: TableRow[] = useMemo(
-    () =>
-      activeTable
-        ? computationalMarkerGeneTableData.map((row) => ({
-            ...row,
-            me: <StyledCellNumerical> {row.me} </StyledCellNumerical>,
-            pc: <StyledCellNumerical> {row.pc} </StyledCellNumerical>,
-            marker_score: (
-              <StyledCellNumerical> {row.marker_score} </StyledCellNumerical>
-            ),
-            symbolId: row.symbol,
-            symbol: (
-              <NoWrapWrapper>
-                {row.symbol}{" "}
-                <ButtonIcon
-                  aria-label={`display gene info for ${row.symbol}`}
-                  sdsIcon="infoCircle"
-                  sdsSize="small"
-                  sdsType="secondary"
-                  onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
-                />
-              </NoWrapWrapper>
-            ),
-          }))
-        : canonicalMarkerGeneTableData.map((row) => ({
-            ...row,
-            symbolId: row.symbol,
-            symbol: (
-              <NoWrapWrapper>
-                {row.symbol}{" "}
-                <ButtonIcon
-                  aria-label={`display gene info for ${row.symbol}`}
-                  sdsIcon="infoCircle"
-                  sdsSize="small"
-                  sdsType="secondary"
-                  onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
-                />
-              </NoWrapWrapper>
-            ),
-            references: (
-              <PublicationLinkWrapper>
-                {row.referenceData.publicationTitles.map(
-                  (publicationTitle, index) => {
-                    if (
-                      publicationTitle &&
-                      row.referenceData.publications[index]
-                    ) {
-                      const referenceIndexLabel =
-                        (row.referenceData.publicationTitlesToIndex.get(
-                          publicationTitle
-                        ) ?? 0) + 1;
-                      return (
-                        <Tooltip
-                          key={`${row.referenceData.publications[index]}-${index}-tooltip`}
-                          placement="top"
-                          width="default"
-                          arrow={false}
-                          title={
-                            <div>
-                              {publicationTitle.split("\n\n").at(0)}
-                              <br />
-                              <br />
-                              <i>{publicationTitle.split("\n\n").at(1)}</i>
-                            </div>
+  const tableRows: TableRow[] = useMemo(() => {
+    const referenceClickHandlerMobileView = (
+      row: CanonicalMarkerGeneTableData
+    ) => {
+      return (event: React.MouseEvent<HTMLSpanElement>) => {
+        event.preventDefault();
+        setTooltipContent({
+          title: `${row.symbol} marker gene references`,
+          element: (
+            <ReferenceTooltipWrapper>
+              {row.referenceData.publicationTitles.map(
+                (publicationTitle, index) => {
+                  const referenceIndexLabel =
+                    (row.referenceData.publicationTitlesToIndex.get(
+                      publicationTitle
+                    ) ?? 0) + 1;
+                  return (
+                    <div
+                      key={`${row.referenceData.publications[index]}-${index}-tooltip`}
+                    >
+                      <StyledLink
+                        key={`${row.referenceData.publications[index]}-${index}`}
+                        label={`[${referenceIndexLabel}] ${publicationTitle
+                          .split("\n\n")
+                          .at(0)}`}
+                        url={`https://doi.org/${row.referenceData.publications[index]}`}
+                      />
+                      <br />
+                      <i>{publicationTitle.split("\n\n").at(1)}</i>
+                    </div>
+                  );
+                }
+              )}
+            </ReferenceTooltipWrapper>
+          ),
+        });
+      };
+    };
+
+    return activeTable
+      ? computationalMarkerGeneTableData.map((row) => ({
+          ...row,
+          me: <StyledCellNumerical> {row.me} </StyledCellNumerical>,
+          pc: <StyledCellNumerical> {row.pc} </StyledCellNumerical>,
+          marker_score: (
+            <StyledCellNumerical> {row.marker_score} </StyledCellNumerical>
+          ),
+          symbolId: row.symbol,
+          symbol: (
+            <NoWrapWrapper>
+              {row.symbol}{" "}
+              <ButtonIcon
+                aria-label={`display gene info for ${row.symbol}`}
+                sdsIcon="infoCircle"
+                sdsSize="small"
+                sdsType="secondary"
+                onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
+              />
+            </NoWrapWrapper>
+          ),
+        }))
+      : canonicalMarkerGeneTableData.map((row) => ({
+          ...row,
+          symbolId: row.symbol,
+          symbol: (
+            <NoWrapWrapper>
+              {row.symbol}{" "}
+              <ButtonIcon
+                aria-label={`display gene info for ${row.symbol}`}
+                sdsIcon="infoCircle"
+                sdsSize="small"
+                sdsType="secondary"
+                onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
+              />
+            </NoWrapWrapper>
+          ),
+          references: (
+            <PublicationLinkWrapper>
+              {row.referenceData.publicationTitles.map(
+                (publicationTitle, index) => {
+                  if (
+                    publicationTitle &&
+                    row.referenceData.publications[index]
+                  ) {
+                    const referenceIndexLabel =
+                      (row.referenceData.publicationTitlesToIndex.get(
+                        publicationTitle
+                      ) ?? 0) + 1;
+                    return (
+                      <Tooltip
+                        key={`${row.referenceData.publications[index]}-${index}-tooltip`}
+                        placement="top"
+                        disableHoverListener={skinnyMode}
+                        width="default"
+                        arrow={false}
+                        title={
+                          <div>
+                            {publicationTitle.split("\n\n").at(0)}
+                            <br />
+                            <br />
+                            <i>{publicationTitle.split("\n\n").at(1)}</i>
+                          </div>
+                        }
+                        leaveDelay={0}
+                      >
+                        <span
+                          key={`${row.referenceData.publications[index]}-${index}-span`}
+                          onClick={
+                            skinnyMode
+                              ? referenceClickHandlerMobileView(row)
+                              : undefined
                           }
-                          leaveDelay={0}
                         >
-                          <span
-                            key={`${row.referenceData.publications[index]}-${index}-span`}
-                          >
-                            <StyledLink
-                              key={`${row.referenceData.publications[index]}-${index}`}
-                              label={`[${referenceIndexLabel}]`}
-                              url={`https://doi.org/${row.referenceData.publications[index]}`}
-                            />
-                          </span>
-                        </Tooltip>
-                      );
-                    }
+                          <StyledLink
+                            key={`${row.referenceData.publications[index]}-${index}`}
+                            label={`[${referenceIndexLabel}]`}
+                            url={`https://doi.org/${row.referenceData.publications[index]}`}
+                          />
+                        </span>
+                      </Tooltip>
+                    );
                   }
-                )}
-              </PublicationLinkWrapper>
-            ),
-          })),
-    [
-      activeTable,
-      canonicalMarkerGeneTableData,
-      computationalMarkerGeneTableData,
-      setGeneInfoGene,
-    ]
-  );
+                }
+              )}
+            </PublicationLinkWrapper>
+          ),
+        }));
+  }, [
+    activeTable,
+    canonicalMarkerGeneTableData,
+    computationalMarkerGeneTableData,
+    setGeneInfoGene,
+    setTooltipContent,
+    skinnyMode,
+  ]);
 
   const genesForShareUrl = `${tableRows
     .map((row) => row.symbolId)

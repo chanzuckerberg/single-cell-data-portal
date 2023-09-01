@@ -1,4 +1,11 @@
-import React, { ReactElement, useEffect, useMemo, useState } from "react";
+import React, {
+  ReactElement,
+  useEffect,
+  useMemo,
+  useState,
+  SetStateAction,
+  Dispatch,
+} from "react";
 import { Tooltip } from "@czi-sds/components";
 import {
   TableTitle,
@@ -48,6 +55,13 @@ interface Props {
   organName: string;
   organId: string;
   organismName: string;
+  skinnyMode: boolean;
+  setTooltipContent: Dispatch<
+    SetStateAction<{
+      title: string;
+      element: JSX.Element;
+    } | null>
+  >;
 }
 
 const ROWS_PER_PAGE = 10;
@@ -57,6 +71,8 @@ const SourceDataTable = ({
   organName,
   organId,
   organismName,
+  skinnyMode,
+  setTooltipContent,
 }: Props) => {
   const { data: collections } = useSourceData(cellTypeId);
   const [page, setPage] = useState(1);
@@ -84,10 +100,32 @@ const SourceDataTable = ({
   });
 
   const tableRows: TableRow[] = useMemo(() => {
+    const createTooltipClickHandler = (names: string[], title: string) => {
+      return () => {
+        if (skinnyMode) {
+          setTooltipContent({
+            title,
+            element: (
+              <div>
+                {names.map((name, index) => (
+                  <div key={`name-${name}-${index}`}>{name}</div>
+                ))}
+              </div>
+            ),
+          });
+        }
+      };
+    };
     return filteredCollections.map((collections, index) =>
-      createTableRow(collections, index, isPastBreakpoint)
+      createTableRow(
+        collections,
+        index,
+        isPastBreakpoint,
+        skinnyMode,
+        createTooltipClickHandler
+      )
     );
-  }, [filteredCollections, isPastBreakpoint]);
+  }, [filteredCollections, isPastBreakpoint, skinnyMode, setTooltipContent]);
 
   const pageCount = Math.ceil(tableRows.length / ROWS_PER_PAGE);
 
@@ -153,109 +191,153 @@ const SourceDataTable = ({
   );
 };
 
-function createTableRow(
-  collection: SourceCollectionsQueryResponseEntry,
-  index: number,
-  isPastBreakpoint: boolean
+function createTissueContent(
+  tissueNames: string[],
+  isPastBreakpoint: boolean,
+  skinnyMode: boolean,
+  createTooltipClickHandler: (names: string[], title: string) => () => void
 ) {
-  const tissueNames = collection.tissue.map((tissue) => tissue.label);
-  const diseaseNames = collection.disease.map((disease) => disease.label);
-  const organismNames = collection.organism.map((organism) => organism.label);
+  return tissueNames.length <= (isPastBreakpoint ? 1 : 3) ? (
+    tissueNames.map((tissue, index) => (
+      <span key={`tissue-${tissue}-${index}`}>
+        <StyledTag color="gray" sdsType="secondary" label={tissue} />
+      </span>
+    ))
+  ) : (
+    <Tooltip
+      sdsStyle="light"
+      placement="top"
+      width="wide"
+      disableHoverListener={skinnyMode}
+      leaveDelay={0}
+      title={tissueNames.map((tissue, index) => (
+        <div key={`tissue-${tissue}-${index}`}>{tissue}</div>
+      ))}
+    >
+      <span onClick={createTooltipClickHandler(tissueNames, "Tissues")}>
+        <StyledTag
+          color="gray"
+          sdsType="secondary"
+          label={generateTagLabel(tissueNames, "tissue", "tissues")}
+        />
+      </span>
+    </Tooltip>
+  );
+}
 
-  const tissueContent =
-    tissueNames.length <= (isPastBreakpoint ? 1 : 3) ? (
-      tissueNames.map((tissue) => (
-        <span key={`tissue-${tissue}-${index}`}>
-          <StyledTag color="gray" sdsType="secondary" label={tissue} />
+function createDiseaseContent(
+  diseaseNames: string[],
+  isPastBreakpoint: boolean,
+  skinnyMode: boolean,
+  createTooltipClickHandler: (names: string[], title: string) => () => void
+) {
+  return diseaseNames.length <= (isPastBreakpoint ? 1 : 3) ? (
+    diseaseNames
+      .sort((a, b) => (a === "normal" ? -1 : b === "normal" ? 1 : 0))
+      .map((disease, index) => (
+        <span key={`disease-${disease}-${index}`}>
+          {<StyledTag color="gray" sdsType="secondary" label={disease} />}
         </span>
       ))
-    ) : (
+  ) : (
+    <>
+      {/* If 'normal' exists then have it outside of the overflow tag */}
+      {diseaseNames.includes("normal") && !isPastBreakpoint && (
+        <span>
+          <StyledTag color="gray" sdsType="secondary" label="normal" />
+        </span>
+      )}
       <Tooltip
         sdsStyle="light"
         placement="top"
         width="wide"
         leaveDelay={0}
-        title={tissueNames.map((tissue) => (
-          <div key={`tissue-${tissue}-${index}`}>{tissue}</div>
-        ))}
+        disableHoverListener={skinnyMode}
+        title={diseaseNames
+          .filter((disease) => isPastBreakpoint || disease !== "normal")
+          .map((disease, index) => (
+            <div key={`disease-${disease}-${index}`}>{disease}</div>
+          ))}
       >
-        <span>
+        <span onClick={createTooltipClickHandler(diseaseNames, "Diseases")}>
           <StyledTag
             color="gray"
             sdsType="secondary"
-            label={generateTagLabel(tissueNames, "tissue", "tissues")}
+            label={generateTagLabel(diseaseNames, "disease", "diseases")}
           />
         </span>
       </Tooltip>
-    );
+    </>
+  );
+}
 
-  const diseaseContent =
-    diseaseNames.length <= (isPastBreakpoint ? 1 : 3) ? (
-      diseaseNames
-        .sort((a, b) => (a === "normal" ? -1 : b === "normal" ? 1 : 0))
-        .map((disease) => (
-          <span key={`disease-${disease}-${index}`}>
-            {<StyledTag color="gray" sdsType="secondary" label={disease} />}
-          </span>
-        ))
-    ) : (
-      <>
-        {/* If 'normal' exists then have it outside of the overflow tag */}
-        {diseaseNames.includes("normal") && !isPastBreakpoint && (
-          <span>
-            <StyledTag color="gray" sdsType="secondary" label="normal" />
-          </span>
-        )}
-        <Tooltip
-          sdsStyle="light"
-          placement="top"
-          width="wide"
-          leaveDelay={0}
-          title={diseaseNames
-            .filter((disease) => isPastBreakpoint || disease !== "normal")
-            .map((disease) => (
-              <div key={`disease-${disease}-${index}`}>{disease}</div>
-            ))}
-        >
-          <span>
-            <StyledTag
-              color="gray"
-              sdsType="secondary"
-              label={generateTagLabel(diseaseNames, "disease", "diseases")}
-            />
-          </span>
-        </Tooltip>
-      </>
-    );
-
-  const organismContent =
-    organismNames.length <= (isPastBreakpoint ? 1 : 3) ? (
-      organismNames.map((organism) => (
-        <span key={`organism-${organism}-${index}`}>
-          {<StyledTag color="gray" sdsType="secondary" label={organism} />}
+const createOrganismContent = (
+  organismNames: string[],
+  isPastBreakpoint: boolean,
+  skinnyMode: boolean,
+  createTooltipClickHandler: (names: string[], title: string) => () => void
+) => {
+  return organismNames.length <= (isPastBreakpoint ? 1 : 3) ? (
+    organismNames.map((organism, index) => (
+      <span key={`organism-${organism}-${index}`}>
+        {<StyledTag color="gray" sdsType="secondary" label={organism} />}
+      </span>
+    ))
+  ) : (
+    <>
+      <Tooltip
+        sdsStyle="light"
+        placement="top"
+        width="wide"
+        leaveDelay={0}
+        disableHoverListener={skinnyMode}
+        title={organismNames.map((organism, index) => (
+          <div key={`organism-${organism}-${index}`}>{organism}</div>
+        ))}
+      >
+        <span onClick={createTooltipClickHandler(organismNames, "Organisms")}>
+          <StyledTag
+            color="gray"
+            sdsType="secondary"
+            label={generateTagLabel(organismNames, "organism", "organisms")}
+          />
         </span>
-      ))
-    ) : (
-      <>
-        <Tooltip
-          sdsStyle="light"
-          placement="top"
-          width="wide"
-          leaveDelay={0}
-          title={organismNames.map((organism) => (
-            <div key={`organism-${organism}-${index}`}>{organism}</div>
-          ))}
-        >
-          <span>
-            <StyledTag
-              color="gray"
-              sdsType="secondary"
-              label={generateTagLabel(organismNames, "organism", "organisms")}
-            />
-          </span>
-        </Tooltip>
-      </>
-    );
+      </Tooltip>
+    </>
+  );
+};
+
+function createTableRow(
+  collection: SourceCollectionsQueryResponseEntry,
+  index: number,
+  isPastBreakpoint: boolean,
+  skinnyMode: boolean,
+  createTooltipClickHandler: (names: string[], title: string) => () => void
+) {
+  const tissueNames = collection.tissue.map((tissue) => tissue.label);
+  const diseaseNames = collection.disease.map((disease) => disease.label);
+  const organismNames = collection.organism.map((organism) => organism.label);
+
+  const tissueContent = createTissueContent(
+    tissueNames,
+    isPastBreakpoint,
+    skinnyMode,
+    createTooltipClickHandler
+  );
+
+  const diseaseContent = createDiseaseContent(
+    diseaseNames,
+    isPastBreakpoint,
+    skinnyMode,
+    createTooltipClickHandler
+  );
+
+  const organismContent = createOrganismContent(
+    organismNames,
+    isPastBreakpoint,
+    skinnyMode,
+    createTooltipClickHandler
+  );
 
   return {
     collection: generateLink(

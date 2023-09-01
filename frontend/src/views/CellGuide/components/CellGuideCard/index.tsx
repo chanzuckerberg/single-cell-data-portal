@@ -204,6 +204,7 @@ export default function CellGuideCard({
       <NavBarDropdownWrapper>{dropdownComponents}</NavBarDropdownWrapper>
     </div>
   );
+
   return (
     <>
       {/* This is a fix that overrides a global overflow css prop to get sticky elements to work */}
@@ -350,6 +351,8 @@ export default function CellGuideCard({
             organName={selectedOrgan.name}
             organId={selectedOrganId}
             organismName={selectedOrganism.name}
+            skinnyMode={skinnyMode}
+            setTooltipContent={setTooltipContent}
           />
         </Wrapper>
 
