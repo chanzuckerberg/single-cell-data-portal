@@ -58,7 +58,7 @@ REMAP_DIMENSION_NAMES = {
 
 
 def remap_dimension_names(criteria: dict[str, list[str]]) -> dict[str, list[str]]:
-    return {REMAP_DIMENSION_NAMES.get(k, k): v for k, v in criteria.items()}
+    return {REMAP_DIMENSION_NAMES.get(k, k): build_ontology_term_id_label_mapping(v) for k, v in criteria.items()}
 
 
 def getDeQuery():
