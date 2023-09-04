@@ -21,8 +21,7 @@ import Organism from "./components/Organism";
 import {
   copyCellGroup1,
   selectOrganism,
-  setQueryGroup1Filters,
-  setQueryGroup2Filters,
+  setQueryGroupFilters,
   submitQueryGroups,
 } from "src/views/DifferentialExpression/common/store/actions";
 import DeResults from "./components/DeResults";
@@ -40,7 +39,7 @@ export default function DifferentialExpression(): JSX.Element {
   useEffect(() => {
     setIsLoadingGetDeQuery(isLoadingGetDeQuery);
   }, [isLoadingGetDeQuery]);
-
+  const { organismId } = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
   const { queryGroups, queryGroupsWithNames } = useContext(StateContext);
   const { queryGroup1, queryGroup2 } = queryGroups;
@@ -53,8 +52,15 @@ export default function DifferentialExpression(): JSX.Element {
     if (!dispatch) return;
     dispatch(copyCellGroup1());
   };
-
-  const canRunDifferentialExpression = !isLoading;
+  // check if any values in queryGroup1 are not empty
+  const isQueryGroup1NotEmpty = Object.values(queryGroup1).some(
+    (value) => value.length > 0
+  );
+  const isQueryGroup2NotEmpty = Object.values(queryGroup1).some(
+    (value) => value.length > 0
+  );
+  const canRunDifferentialExpression =
+    !isLoading && isQueryGroup1NotEmpty && isQueryGroup2NotEmpty;
 
   const handleRunDifferentialExpression = () => {
     if (!dispatch) return;
@@ -75,6 +81,8 @@ export default function DifferentialExpression(): JSX.Element {
     organism,
     queryCriteria1,
     queryCriteria2,
+    queryCriteriaNames1,
+    queryCriteriaNames2,
     isLoading: isLoadingGetDeQueryRaw,
   } = useNaturalLanguageDeQuery(inputText);
 
@@ -84,10 +92,25 @@ export default function DifferentialExpression(): JSX.Element {
 
   useEffect(() => {
     if (!dispatch || isLoadingGetDeQuery || organism === "") return;
-    dispatch(selectOrganism(organism));
-    dispatch(setQueryGroup1Filters(queryCriteria1));
-    dispatch(setQueryGroup2Filters(queryCriteria2));
-  }, [organism, queryCriteria1, queryCriteria2, isLoadingGetDeQuery, dispatch]);
+    if (organismId !== organism) dispatch(selectOrganism(organism));
+    dispatch(
+      setQueryGroupFilters({
+        queryGroup1: queryCriteria1,
+        queryGroup2: queryCriteria2,
+        queryGroupNames1: queryCriteriaNames1,
+        queryGroupNames2: queryCriteriaNames2,
+      })
+    );
+  }, [
+    organism,
+    organismId,
+    queryCriteria1,
+    queryCriteria2,
+    queryCriteriaNames1,
+    queryCriteriaNames2,
+    isLoadingGetDeQuery,
+    dispatch,
+  ]);
 
   return (
     <Wrapper>

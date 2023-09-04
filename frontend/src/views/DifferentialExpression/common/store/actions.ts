@@ -74,21 +74,15 @@ export function clearQueryGroup2Filters(): GetActionTypeOfReducer<
   };
 }
 
-export function setQueryGroup1Filters(
-  payload: QueryGroup
-): GetActionTypeOfReducer<typeof REDUCERS["setQueryGroup1Filters"]> {
+export function setQueryGroupFilters(payload: {
+  queryGroup1: QueryGroup;
+  queryGroup2: QueryGroup;
+  queryGroupNames1: QueryGroup;
+  queryGroupNames2: QueryGroup;
+}): GetActionTypeOfReducer<typeof REDUCERS["setQueryGroupFilters"]> {
   return {
     payload,
-    type: "setQueryGroup1Filters",
-  };
-}
-
-export function setQueryGroup2Filters(
-  payload: QueryGroup
-): GetActionTypeOfReducer<typeof REDUCERS["setQueryGroup2Filters"]> {
-  return {
-    payload,
-    type: "setQueryGroup2Filters",
+    type: "setQueryGroupFilters",
   };
 }
 

@@ -57,8 +57,7 @@ export const REDUCERS = {
   setSnapshotId,
   selectQueryGroup1Filters,
   selectQueryGroup2Filters,
-  setQueryGroup1Filters,
-  setQueryGroup2Filters,
+  setQueryGroupFilters,
   clearQueryGroup1Filters,
   clearQueryGroup2Filters,
   copyCellGroup1,
@@ -66,27 +65,27 @@ export const REDUCERS = {
   clearSubmittedQueryGroups,
 };
 
-function setQueryGroup1Filters(
+function setQueryGroupFilters(
   state: State,
-  action: PayloadAction<QueryGroup>
+  action: PayloadAction<{
+    queryGroup1: QueryGroup;
+    queryGroup2: QueryGroup;
+    queryGroupNames1: QueryGroup;
+    queryGroupNames2: QueryGroup;
+  }>
 ): State {
   const { payload } = action;
 
   return {
     ...state,
-    queryGroups: { ...state.queryGroups, queryGroup1: payload },
-  };
-}
-
-function setQueryGroup2Filters(
-  state: State,
-  action: PayloadAction<QueryGroup>
-): State {
-  const { payload } = action;
-
-  return {
-    ...state,
-    queryGroups: { ...state.queryGroups, queryGroup2: payload },
+    queryGroups: {
+      queryGroup1: payload.queryGroup1,
+      queryGroup2: payload.queryGroup2,
+    },
+    queryGroupsWithNames: {
+      queryGroup1: payload.queryGroupNames1,
+      queryGroup2: payload.queryGroupNames2,
+    },
   };
 }
 

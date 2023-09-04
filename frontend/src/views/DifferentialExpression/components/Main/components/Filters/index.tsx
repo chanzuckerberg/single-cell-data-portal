@@ -86,7 +86,6 @@ export default memo(function Filters({
     ethnicities,
     sexes,
     tissues,
-    developmentStages,
     cellTypes,
   } = queryGroup;
 
@@ -140,10 +139,7 @@ export default memo(function Filters({
     const newEthnicities = rawEthnicities.map(mapTermToFilterOption);
     newEthnicities.sort((a, b) => a.name.localeCompare(b.name));
 
-    const newDevelopmentStages = rawDevelopmentStages.map(
-      mapTermToFilterOption
-    );
-    newDevelopmentStages.sort((a, b) => a.name.localeCompare(b.name));
+    const newDevelopmentStages = rawDevelopmentStages;
 
     const newAvailableFilters = {
       datasets: newDatasets,
@@ -160,12 +156,13 @@ export default memo(function Filters({
     setAvailableFilters(newAvailableFilters);
   }, [
     rawDatasets,
-    rawDevelopmentStages,
     rawDiseases,
     rawEthnicities,
     rawSexes,
     rawCellTypes,
     rawIsLoading,
+    rawDevelopmentStages,
+    rawTissues,
     availableFilters,
     setAvailableFilters,
   ]);
@@ -176,7 +173,6 @@ export default memo(function Filters({
     self_reported_ethnicity_terms = EMPTY_ARRAY,
     sex_terms = EMPTY_ARRAY,
     tissue_terms = EMPTY_ARRAY,
-    development_stage_terms = EMPTY_ARRAY,
     cell_type_terms = EMPTY_ARRAY,
   } = availableFilters;
 
@@ -198,12 +194,6 @@ export default memo(function Filters({
     return sex_terms.filter((sex) => sexes?.includes(sex.id));
   }, [sex_terms, sexes]);
 
-  const selectedDevelopmentStages = useMemo(() => {
-    return development_stage_terms.filter((stage) =>
-      developmentStages?.includes(stage.id)
-    );
-  }, [development_stage_terms, developmentStages]);
-
   const selectedTissues = useMemo(() => {
     return tissue_terms.filter((tissue) => tissues?.includes(tissue.id));
   }, [tissue_terms, tissues]);
@@ -224,6 +214,7 @@ export default memo(function Filters({
         if (
           !dispatch ||
           !options ||
+          !rawIsLoading ||
           // If the options are the same
           JSON.stringify(options.sort(sortOptions)) ===
             JSON.stringify(currentOptions?.sort(sortOptions)) ||
@@ -242,7 +233,7 @@ export default memo(function Filters({
         dispatch(selectQueryGroupFilters(key, optionsWithNames));
       };
     },
-    [dispatch]
+    [dispatch, selectQueryGroupFilters, rawIsLoading]
   );
 
   const handleDatasetsChange = useMemo(
@@ -267,11 +258,6 @@ export default memo(function Filters({
 
   const handleTissuesChange = useMemo(
     () => handleFilterChange("tissues"),
-    [handleFilterChange]
-  );
-
-  const handleDevelopmentStagesChange = useMemo(
-    () => handleFilterChange("developmentStages"),
     [handleFilterChange]
   );
 
@@ -317,7 +303,11 @@ export default memo(function Filters({
       <TagWrapper>
         {isActive ? (
           tagsToShow.map((tag, index) => (
-            <StyledTagFilter onDelete={deleteHandlers[index]} label={tag} />
+            <StyledTagFilter
+              key={index}
+              onDelete={deleteHandlers[index]}
+              label={tag}
+            />
           ))
         ) : (
           <EmptyRectangle />
@@ -368,28 +358,6 @@ export default memo(function Filters({
         InputDropdownProps={InputDropdownProps}
         PopperComponent={StyledPopper}
       />
-      {/* (alec) disable development stage filter for now */}
-      {false && (
-        <StyledComplexFilter
-          multiple
-          data-testid="de-qg-development-filter"
-          search
-          label="Development Stage"
-          options={
-            development_stage_terms as unknown as DefaultMenuSelectOption[]
-          }
-          onChange={handleDevelopmentStagesChange}
-          value={
-            selectedDevelopmentStages as unknown as DefaultMenuSelectOption[]
-          }
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
-          DropdownMenuProps={DropdownMenuProps}
-          InputDropdownProps={InputDropdownProps}
-          PopperComponent={StyledPopper}
-        />
-      )}
       <StyledComplexFilter
         multiple
         data-testid="de-qg-disease-filter"

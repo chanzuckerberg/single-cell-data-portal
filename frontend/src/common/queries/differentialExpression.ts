@@ -410,6 +410,8 @@ interface NaturalLanguageDeQuery {
   organism: string;
   queryCriteria1: QueryGroup;
   queryCriteria2: QueryGroup;
+  queryCriteriaNames1: QueryGroup;
+  queryCriteriaNames2: QueryGroup;
   isLoading: boolean;
 }
 
@@ -425,6 +427,8 @@ export function useNaturalLanguageDeQuery(
         organism: "",
         queryCriteria1: EMPTY_FILTERS,
         queryCriteria2: EMPTY_FILTERS,
+        queryCriteriaNames1: EMPTY_FILTERS,
+        queryCriteriaNames2: EMPTY_FILTERS,
         isLoading,
       };
     let organism = organismId;
@@ -433,31 +437,43 @@ export function useNaturalLanguageDeQuery(
     } else if (data.query_criteria2.organism_terms) {
       organism = data.query_criteria2.organism_terms.map(toId)[0];
     }
-    const queryCriteria1 = _formatQueryCriteria(data.query_criteria1);
-    const queryCriteria2 = _formatQueryCriteria(data.query_criteria2);
+    const queryCriteria1 = _formatQueryCriteria(data.query_criteria1, toId);
+    const queryCriteria2 = _formatQueryCriteria(data.query_criteria2, toId);
+    const queryCriteriaNames1 = _formatQueryCriteria(
+      data.query_criteria1,
+      toName
+    );
+    const queryCriteriaNames2 = _formatQueryCriteria(
+      data.query_criteria2,
+      toName
+    );
 
     return {
       organism,
       queryCriteria1,
       queryCriteria2,
+      queryCriteriaNames1,
+      queryCriteriaNames2,
       isLoading: false,
     };
   }, [data, isLoading, organismId]);
 }
 
 function _formatQueryCriteria(
-  queryCriteria: GetDeQueryResponse["query_criteria1"]
+  queryCriteria: GetDeQueryResponse["query_criteria1"],
+  mapper: (item: RawOntologyTerm) => string
 ) {
   return {
     datasets: [],
-    diseases: queryCriteria.disease_terms?.map(toId) ?? [],
-    cellTypes: queryCriteria.cell_type_terms?.map(toId) ?? [],
-    developmentStages: queryCriteria.development_stage_terms?.map(toId) ?? [],
-    ethnicities: queryCriteria.self_reported_ethnicity_terms?.map(toId) ?? [],
-    sexes: queryCriteria.sex_terms?.map(toId) ?? [],
-    tissues: queryCriteria.tissue_terms?.map(toId) ?? [],
+    diseases: queryCriteria.disease_terms?.map(mapper) ?? [],
+    cellTypes: queryCriteria.cell_type_terms?.map(mapper) ?? [],
+    developmentStages: queryCriteria.development_stage_terms?.map(mapper) ?? [],
+    ethnicities: queryCriteria.self_reported_ethnicity_terms?.map(mapper) ?? [],
+    sexes: queryCriteria.sex_terms?.map(mapper) ?? [],
+    tissues: queryCriteria.tissue_terms?.map(mapper) ?? [],
   };
 }
+
 function useDEQueryRequestBody() {
   const { organismId, submittedQueryGroups: queryGroups } =
     useContext(StateContext);
@@ -520,7 +536,6 @@ export function useQueryGroupFilterDimensions(queryGroup: QueryGroup): {
     const sortedDatasets = Object.values(
       aggregateCollectionsFromDatasets(datasets)
     ).flatMap(({ datasets }) => datasets);
-
     return {
       data: {
         datasets: sortedDatasets.map((dataset) => ({
@@ -600,6 +615,9 @@ function toEntity(item: RawOntologyTerm) {
 
 function toId(item: RawOntologyTerm) {
   return Object.keys(item)[0];
+}
+function toName(item: RawOntologyTerm) {
+  return Object.values(item)[0];
 }
 
 function useSnapshotId(): string | null {
