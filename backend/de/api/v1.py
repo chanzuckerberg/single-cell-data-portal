@@ -67,7 +67,7 @@ def getDeQuery():
 
     with ServerTiming.time("translate user input to query criteria"):
         snapshot: DeSnapshot = load_snapshot()
-        query_criteria1, query_criteria2 = get_query_from_user_input(user_query)
+        query_criteria1, query_criteria2 = get_query_from_user_input(user_query, snapshot)
 
         response = jsonify(
             dict(

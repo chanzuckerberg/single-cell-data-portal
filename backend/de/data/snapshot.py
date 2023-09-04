@@ -4,6 +4,7 @@ import os
 from dataclasses import dataclass
 from typing import Dict, Optional
 
+import numpy as np
 import tiledb
 from tiledb import Array
 
@@ -83,6 +84,14 @@ def _load_snapshot(new_snapshot_identifier) -> DeSnapshot:
     filter_relationships = _load_filter_graph_data(new_snapshot_identifier)
     cardinality_per_dimension = _load_cardinality_per_dimension_data(new_snapshot_identifier)
     metadata_value_embeddings = _load_metadata_value_embeddings(new_snapshot_identifier)
+
+    for key in metadata_value_embeddings:
+        v = metadata_value_embeddings[key]
+        if isinstance(v, list):
+            metadata_value_embeddings[key] = np.array(v)
+        elif isinstance(v, dict):
+            for k in v:
+                v[k] = np.array(v[k])
 
     snapshot_base_uri = _build_snapshot_base_uri(new_snapshot_identifier)
     logger.info(f"Loading DE snapshot at {snapshot_base_uri}")
