@@ -13,8 +13,7 @@ RUN apt-get update && \
 WORKDIR /single-cell-data-portal
 ADD requirements.txt requirements-base.txt
 ADD backend/api_server/requirements.txt requirements-api.txt
-ADD backend/de/requirements.txt requirements-de.txt
-RUN python3 -m pip install -r requirements-base.txt -r requirements-api.txt -r requirements-de.txt
+RUN python3 -m pip install -r requirements-base.txt -r requirements-api.txt
 EXPOSE 5000
 
 # Install utilities to /single-cell-data-portal so we can run db migrations.

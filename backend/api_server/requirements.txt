@@ -20,3 +20,4 @@ SQLAlchemy-Utils>=0.36.8
 SQLAlchemy>=1.4.0,<1.5
 flask-server-timing==0.1.2
 Werkzeug==2.2.3
+openai==0.28.0
