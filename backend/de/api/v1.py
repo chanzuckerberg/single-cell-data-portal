@@ -50,7 +50,7 @@ REMAP_DIMENSION_NAMES = {
     "disease_ontology_term_ids": "disease_terms",
     "cell_type_ontology_term_ids": "cell_type_terms",
     "tissue_ontology_term_ids": "tissue_terms",
-    "organism_ontology_term_ids": "organism_terms",
+    "organism_ontology_term_id": "organism_terms",
     "development_stage_ontology_term_ids": "development_stage_terms",
     "sex_ontology_term_ids": "sex_terms",
     "self_reported_ethnicity_ontology_term_ids": "self_reported_ethnicity_terms",

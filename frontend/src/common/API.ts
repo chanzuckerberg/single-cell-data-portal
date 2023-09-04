@@ -22,4 +22,5 @@ export enum API {
   WMG_GENE_INFO = "/gene_info/v1/gene_info",
   DE_FILTERS_QUERY = "/de/v1/filters",
   DE_QUERY = "/de/v1/differentialExpression",
+  DE_GET_QUERY = "/de/v1/deQuery",
 }

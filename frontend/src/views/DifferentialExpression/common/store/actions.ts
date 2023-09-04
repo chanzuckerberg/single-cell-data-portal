@@ -74,6 +74,24 @@ export function clearQueryGroup2Filters(): GetActionTypeOfReducer<
   };
 }
 
+export function setQueryGroup1Filters(
+  payload: QueryGroup
+): GetActionTypeOfReducer<typeof REDUCERS["setQueryGroup1Filters"]> {
+  return {
+    payload,
+    type: "setQueryGroup1Filters",
+  };
+}
+
+export function setQueryGroup2Filters(
+  payload: QueryGroup
+): GetActionTypeOfReducer<typeof REDUCERS["setQueryGroup2Filters"]> {
+  return {
+    payload,
+    type: "setQueryGroup2Filters",
+  };
+}
+
 export function setSnapshotId(
   snapshotId: State["snapshotId"]
 ): GetActionTypeOfReducer<typeof REDUCERS["setSnapshotId"]> {

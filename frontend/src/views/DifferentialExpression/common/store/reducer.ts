@@ -13,9 +13,7 @@ export interface Filters {
   cellTypes: string[];
 }
 
-export interface QueryGroup extends Filters {
-  cellTypes: string[];
-}
+export type QueryGroup = Filters;
 
 export interface QueryGroups {
   queryGroup1: QueryGroup;
@@ -59,12 +57,38 @@ export const REDUCERS = {
   setSnapshotId,
   selectQueryGroup1Filters,
   selectQueryGroup2Filters,
+  setQueryGroup1Filters,
+  setQueryGroup2Filters,
   clearQueryGroup1Filters,
   clearQueryGroup2Filters,
   copyCellGroup1,
   submitQueryGroups,
   clearSubmittedQueryGroups,
 };
+
+function setQueryGroup1Filters(
+  state: State,
+  action: PayloadAction<QueryGroup>
+): State {
+  const { payload } = action;
+
+  return {
+    ...state,
+    queryGroups: { ...state.queryGroups, queryGroup1: payload },
+  };
+}
+
+function setQueryGroup2Filters(
+  state: State,
+  action: PayloadAction<QueryGroup>
+): State {
+  const { payload } = action;
+
+  return {
+    ...state,
+    queryGroups: { ...state.queryGroups, queryGroup2: payload },
+  };
+}
 
 function setSnapshotId(
   state: State,
@@ -112,7 +136,6 @@ function selectQueryGroup1Filters(
 
   const newQueryGroupWithNames = { ...queryGroupWithNames1 };
   newQueryGroupWithNames[key] = options.map((option) => option.name);
-
   return {
     ...state,
     queryGroups: { ...queryGroups, queryGroup1: newQueryGroup },

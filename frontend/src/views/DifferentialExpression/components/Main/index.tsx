@@ -1,4 +1,7 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import TextField from "@mui/material/TextField";
+import InputAdornment from "@mui/material/InputAdornment";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import {
   DispatchContext,
   StateContext,
@@ -17,13 +20,26 @@ import QueryGroupFilters from "./components/Filters";
 import Organism from "./components/Organism";
 import {
   copyCellGroup1,
+  selectOrganism,
+  setQueryGroup1Filters,
+  setQueryGroup2Filters,
   submitQueryGroups,
 } from "src/views/DifferentialExpression/common/store/actions";
 import DeResults from "./components/DeResults";
 import Loader from "./components/Loader";
+import { useNaturalLanguageDeQuery } from "src/common/queries/differentialExpression";
+import { CircularProgress } from "@mui/material";
 
 export default function DifferentialExpression(): JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoadingGetDeQuery, setIsLoadingGetDeQuery] =
+    useState<boolean>(false);
+  const [inputText, setInputText] = useState<string>("");
+  const [tempInput, setTempInput] = useState<string>("");
+
+  useEffect(() => {
+    setIsLoadingGetDeQuery(isLoadingGetDeQuery);
+  }, [isLoadingGetDeQuery]);
 
   const dispatch = useContext(DispatchContext);
   const { queryGroups, queryGroupsWithNames } = useContext(StateContext);
@@ -44,6 +60,34 @@ export default function DifferentialExpression(): JSX.Element {
     if (!dispatch) return;
     dispatch(submitQueryGroups());
   };
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setTempInput(event.target.value);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === "Enter") {
+      setInputText(tempInput);
+    }
+  };
+
+  const {
+    organism,
+    queryCriteria1,
+    queryCriteria2,
+    isLoading: isLoadingGetDeQueryRaw,
+  } = useNaturalLanguageDeQuery(inputText);
+
+  useEffect(() => {
+    setIsLoadingGetDeQuery(isLoadingGetDeQueryRaw);
+  }, [isLoadingGetDeQueryRaw]);
+
+  useEffect(() => {
+    if (!dispatch || isLoadingGetDeQuery || organism === "") return;
+    dispatch(selectOrganism(organism));
+    dispatch(setQueryGroup1Filters(queryCriteria1));
+    dispatch(setQueryGroup2Filters(queryCriteria2));
+  }, [organism, queryCriteria1, queryCriteria2, isLoadingGetDeQuery, dispatch]);
 
   return (
     <Wrapper>
@@ -66,6 +110,25 @@ export default function DifferentialExpression(): JSX.Element {
             ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
             aliquip ex ea commodo consequat.
           </StepSubHeader>
+          <TextField
+            label="Ex: Find me differentially expressed genes between plasma cells in lung and plasma cells in blood"
+            variant="outlined"
+            fullWidth
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            sx={{ height: "60px" }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  {isLoadingGetDeQuery ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    <ArrowForwardIosIcon />
+                  )}
+                </InputAdornment>
+              ),
+            }}
+          />
           <Organism />
           <CellGroupTitle>Cell Group 1</CellGroupTitle>
           <QueryGroupFilters

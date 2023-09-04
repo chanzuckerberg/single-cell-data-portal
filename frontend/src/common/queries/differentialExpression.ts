@@ -86,6 +86,28 @@ interface FiltersQueryResponse {
   snapshot_id: string;
 }
 
+interface GetDeQueryResponse {
+  query_criteria1: {
+    disease_terms: { [id: string]: string }[];
+    sex_terms: { [id: string]: string }[];
+    development_stage_terms: { [id: string]: string }[];
+    self_reported_ethnicity_terms: { [id: string]: string }[];
+    tissue_terms: { [id: string]: string }[];
+    cell_type_terms: { [id: string]: string }[];
+    organism_terms: { [id: string]: string }[];
+  };
+  query_criteria2: {
+    disease_terms: { [id: string]: string }[];
+    sex_terms: { [id: string]: string }[];
+    development_stage_terms: { [id: string]: string }[];
+    self_reported_ethnicity_terms: { [id: string]: string }[];
+    tissue_terms: { [id: string]: string }[];
+    cell_type_terms: { [id: string]: string }[];
+    organism_terms: { [id: string]: string }[];
+  };
+  snapshot_id: string;
+}
+
 export interface DifferentialExpressionResult {
   gene_ontology_term_id: string;
   gene_symbol: string;
@@ -127,7 +149,7 @@ async function fetchFiltersQuery({
   if (!query) return;
 
   const url = API_URL + API.DE_FILTERS_QUERY;
-  console.log(query);
+
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
@@ -176,9 +198,40 @@ async function fetchDifferentialExpressionQuery({
   return json;
 }
 
+async function fetchGetDeQuery({
+  query,
+  signal,
+}: {
+  query: { user_query: string };
+  signal?: AbortSignal;
+}): Promise<GetDeQueryResponse | undefined> {
+  if (!query) return;
+
+  const url = API_URL + API.DE_GET_QUERY;
+
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    body: JSON.stringify(query),
+    method: "POST",
+    signal,
+  });
+  const json: GetDeQueryResponse = await response.json();
+  if (!response.ok) {
+    throw json;
+  }
+
+  return json;
+}
+
 export const USE_DE_QUERY = {
   entities: [ENTITIES.DE_QUERY],
   id: "de-query",
+};
+
+export const USE_GET_DE_QUERY = {
+  entities: [ENTITIES.GET_DE_QUERY],
+  id: "get-de-query",
 };
 
 export function useWMGFiltersQuery(
@@ -319,6 +372,92 @@ export function useDifferentialExpression(): {
   }, [data, isLoading]);
 }
 
+function useGetDeQueryRequestBody(userInput: string) {
+  return {
+    user_query: userInput,
+  };
+}
+
+export function useGetDeQuery(query: {
+  user_query: string;
+}): UseQueryResult<GetDeQueryResponse> {
+  const dispatch = useContext(DispatchContext);
+
+  // (thuang): Refresh query when the snapshotId changes
+  const currentSnapshotId = useSnapshotId();
+
+  return useQuery(
+    [USE_GET_DE_QUERY, query, currentSnapshotId],
+    ({ signal }) => fetchGetDeQuery({ query, signal }),
+    {
+      enabled: query.user_query !== "",
+      onSuccess(response) {
+        if (!response || !dispatch) return;
+
+        const { snapshot_id } = response;
+
+        if (currentSnapshotId !== snapshot_id) {
+          dispatch(setSnapshotId(snapshot_id));
+        }
+      },
+      // (thuang): We don't need to refetch during the session
+      staleTime: Infinity,
+    }
+  );
+}
+
+interface NaturalLanguageDeQuery {
+  organism: string;
+  queryCriteria1: QueryGroup;
+  queryCriteria2: QueryGroup;
+  isLoading: boolean;
+}
+
+export function useNaturalLanguageDeQuery(
+  userInput: string
+): NaturalLanguageDeQuery {
+  const { organismId } = useContext(StateContext);
+  const requestBody = useGetDeQueryRequestBody(userInput);
+  const { data, isLoading } = useGetDeQuery(requestBody);
+  return useMemo(() => {
+    if (isLoading || !data || !organismId)
+      return {
+        organism: "",
+        queryCriteria1: EMPTY_FILTERS,
+        queryCriteria2: EMPTY_FILTERS,
+        isLoading,
+      };
+    let organism = organismId;
+    if (data.query_criteria1.organism_terms) {
+      organism = data.query_criteria1.organism_terms.map(toId)[0];
+    } else if (data.query_criteria2.organism_terms) {
+      organism = data.query_criteria2.organism_terms.map(toId)[0];
+    }
+    const queryCriteria1 = _formatQueryCriteria(data.query_criteria1);
+    const queryCriteria2 = _formatQueryCriteria(data.query_criteria2);
+
+    return {
+      organism,
+      queryCriteria1,
+      queryCriteria2,
+      isLoading: false,
+    };
+  }, [data, isLoading, organismId]);
+}
+
+function _formatQueryCriteria(
+  queryCriteria: GetDeQueryResponse["query_criteria1"]
+) {
+  return {
+    datasets: [],
+    diseases: queryCriteria.disease_terms?.map(toId) ?? [],
+    cellTypes: queryCriteria.cell_type_terms?.map(toId) ?? [],
+    developmentStages: queryCriteria.development_stage_terms?.map(toId) ?? [],
+    ethnicities: queryCriteria.self_reported_ethnicity_terms?.map(toId) ?? [],
+    sexes: queryCriteria.sex_terms?.map(toId) ?? [],
+    tissues: queryCriteria.tissue_terms?.map(toId) ?? [],
+  };
+}
 function useDEQueryRequestBody() {
   const { organismId, submittedQueryGroups: queryGroups } =
     useContext(StateContext);
@@ -457,6 +596,10 @@ function toEntity(item: RawOntologyTerm) {
   const [id, name] = Object.entries(item)[0];
 
   return { id, name: name || id || "" };
+}
+
+function toId(item: RawOntologyTerm) {
+  return Object.keys(item)[0];
 }
 
 function useSnapshotId(): string | null {
