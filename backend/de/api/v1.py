@@ -9,6 +9,7 @@ from scipy import stats
 from scipy.stats import rankdata
 from server_timing import Timing as ServerTiming
 
+from backend.de.api.openai_utils import get_query_from_user_input
 from backend.de.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.de.data.query import (
     DeQuery,
@@ -40,6 +41,39 @@ def filters():
             dict(
                 snapshot_id=snapshot.snapshot_identifier,
                 filter_dims=response_filter_dims_values,
+            )
+        )
+    return response
+
+
+REMAP_DIMENSION_NAMES = {
+    "disease_ontology_term_ids": "disease_terms",
+    "cell_type_ontology_term_ids": "cell_type_terms",
+    "tissue_ontology_term_ids": "tissue_terms",
+    "organism_ontology_term_id": "organism_term",
+    "development_stage_ontology_term_ids": "development_stage_terms",
+    "sex_ontology_term_ids": "sex_terms",
+    "self_reported_ethnicity_ontology_term_ids": "self_reported_ethnicity_terms",
+}
+
+
+def remap_dimension_names(criteria: dict[str, list[str]]) -> dict[str, list[str]]:
+    return {REMAP_DIMENSION_NAMES.get(k, k): v for k, v in criteria.items()}
+
+
+def getDeQuery():
+    request = connexion.request.json
+    user_query = request["user_query"]
+
+    with ServerTiming.time("translate user input to query criteria"):
+        snapshot: DeSnapshot = load_snapshot()
+        query_criteria1, query_criteria2 = get_query_from_user_input(user_query)
+
+        response = jsonify(
+            dict(
+                snapshot_id=snapshot.snapshot_identifier,
+                query_criteria1=remap_dimension_names(query_criteria1),
+                query_criteria2=remap_dimension_names(query_criteria2),
             )
         )
     return response

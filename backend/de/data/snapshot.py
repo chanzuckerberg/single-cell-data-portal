@@ -23,6 +23,7 @@ EXPRESSION_SUMMARY_CUBE_NAMES = [
 CELL_COUNTS_CUBE_NAME = "cell_counts"
 FILTER_RELATIONSHIPS_FILENAME = "filter_relationships.json"
 CARDINALITY_PER_DIMENSION_FILENAME = "cardinality_per_dimension.json"
+METADATA_VALUE_EMBEDDINGS_FILENAME = "metadata_value_embeddings.json"
 
 logger = logging.getLogger("de")
 
@@ -44,6 +45,8 @@ class DeSnapshot:
     filter_relationships: Dict
 
     cardinality_per_dimension: Dict
+
+    metadata_value_embeddings: Dict
 
     def __hash__(self):
         return hash(None)  # hash is not used for DeSnapshot
@@ -79,6 +82,7 @@ def load_snapshot() -> DeSnapshot:
 def _load_snapshot(new_snapshot_identifier) -> DeSnapshot:
     filter_relationships = _load_filter_graph_data(new_snapshot_identifier)
     cardinality_per_dimension = _load_cardinality_per_dimension_data(new_snapshot_identifier)
+    metadata_value_embeddings = _load_metadata_value_embeddings(new_snapshot_identifier)
 
     snapshot_base_uri = _build_snapshot_base_uri(new_snapshot_identifier)
     logger.info(f"Loading DE snapshot at {snapshot_base_uri}")
@@ -94,6 +98,7 @@ def _load_snapshot(new_snapshot_identifier) -> DeSnapshot:
         cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
         filter_relationships=filter_relationships,
         cardinality_per_dimension=cardinality_per_dimension,
+        metadata_value_embeddings=metadata_value_embeddings,
     )
 
 
@@ -111,6 +116,13 @@ def _load_filter_graph_data(snapshot_identifier: str):
 def _load_cardinality_per_dimension_data(snapshot_identifier: str):
     try:
         return json.loads(_read_s3obj(f"{snapshot_identifier}/{CARDINALITY_PER_DIMENSION_FILENAME}"))
+    except Exception:
+        return None
+
+
+def _load_metadata_value_embeddings(snapshot_identifier: str):
+    try:
+        return json.loads(_read_s3obj(f"{snapshot_identifier}/{METADATA_VALUE_EMBEDDINGS_FILENAME}"))
     except Exception:
         return None
 

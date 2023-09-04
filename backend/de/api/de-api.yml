@@ -98,6 +98,70 @@ paths:
                         $ref: "#/components/schemas/de_ontology_term_id_label_list"
                       organism_terms:
                         $ref: "#/components/schemas/de_ontology_term_id_label_list"
+  /v1/deQuery:
+    post:
+      summary: Given a user query string, return the translated DE query criteria
+      tags:
+        - deQuery
+      operationId: backend.de.api.v1.getDeQuery
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_query:
+                  type: string
+              required:
+                - user_query
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - query_criteria1
+                  - query_criteria2
+                properties:
+                  snapshot_id:
+                    $ref: "#/components/schemas/de_snapshot_id"
+                  query_criteria1:
+                    type: object
+                    properties:
+                      disease_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      sex_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      development_stage_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      self_reported_ethnicity_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      tissue_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      cell_type_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      organism_term:
+                        type: string
+                  query_criteria2:
+                    type: object
+                    properties:
+                      disease_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      sex_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      development_stage_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      self_reported_ethnicity_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      tissue_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      cell_type_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      organism_term:
+                        type: string
 
   /v1/differentialExpression:
     post:

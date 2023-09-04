@@ -5,7 +5,7 @@ from backend.common.utils.secret_config import SecretConfig
 
 class DeConfig(SecretConfig):
     def __init__(self, *args, **kwargs):
-        super().__init__("backend", secret_name="wmg_config", **kwargs)
+        super().__init__("backend", secret_name="de_config", **kwargs)
 
     def get_defaults_template(self):
         deployment_stage = os.getenv("DEPLOYMENT_STAGE", "test")
