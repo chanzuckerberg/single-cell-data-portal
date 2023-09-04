@@ -143,8 +143,8 @@ paths:
                         $ref: "#/components/schemas/de_ontology_term_id_label_list"
                       cell_type_terms:
                         $ref: "#/components/schemas/de_ontology_term_id_label_list"
-                      organism_term:
-                        type: string
+                      organism_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
                   query_criteria2:
                     type: object
                     properties:
@@ -160,8 +160,8 @@ paths:
                         $ref: "#/components/schemas/de_ontology_term_id_label_list"
                       cell_type_terms:
                         $ref: "#/components/schemas/de_ontology_term_id_label_list"
-                      organism_term:
-                        type: string
+                      organism_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
 
   /v1/differentialExpression:
     post:

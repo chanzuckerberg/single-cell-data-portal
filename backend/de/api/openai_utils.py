@@ -124,12 +124,8 @@ def get_query_from_user_input(query: str, snapshot: DeSnapshot):
         query1 = json.loads(json.dumps(query1).replace('["all"]', "[]"))
         query2 = json.loads(json.dumps(query2).replace('["all"]', "[]"))
         if "organism_ontology_term_id" not in query1:
-            query1["organism_ontology_term_id"] = "NCBITaxon:9606"
-        else:
-            query1["organism_ontology_term_id"] = query1["organism_ontology_term_id"][0]
+            query1["organism_ontology_term_id"] = ["NCBITaxon:9606"]
         if "organism_ontology_term_id" not in query2:
-            query2["organism_ontology_term_id"] = "NCBITaxon:9606"
-        else:
-            query2["organism_ontology_term_id"] = query2["organism_ontology_term_id"][0]
+            query2["organism_ontology_term_id"] = ["NCBITaxon:9606"]
 
         return query1, query2
