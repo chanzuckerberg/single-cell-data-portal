@@ -9,7 +9,9 @@ from backend.de.data.snapshot import DeSnapshot
 
 def get_embedding(text, model="text-embedding-ada-002"):
     text = text.replace("\n", " ")
-    return np.array(openai.Embedding.create(input=[text], model=model)["data"][0]["embedding"])
+    return np.array(
+        openai.Embedding.create(input=[text], model=model, api_key=DeConfig().openai_api_key)["data"][0]["embedding"]
+    )
 
 
 def find_most_similar_key(key, embeddings):
