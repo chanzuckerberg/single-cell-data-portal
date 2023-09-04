@@ -31,7 +31,7 @@ export DEPLOYMENT_STAGE=$DEST_ENV
 export AWS_PROFILE=single-cell-dev
 
 if [[ ! $DEST_ENV == 'rdev' ]]; then
-   #  For safety, also dump the destination db to a local file, just in case.
+   #  For safety, dump the destination db to a local file, just in case. Not necessary if destination is rdev.
    DEST_DB_BACKUP_DUMP_FILE="${DEST_ENV}_"`date +%Y%m%d_%H%M%S`".sqlc"
    echo "Backing up the destination database to $DEST_DB_BACKUP_DUMP_FILE. Just in case!"
    make db/dump OUTFILE=$DEST_DB_BACKUP_DUMP_FILE
