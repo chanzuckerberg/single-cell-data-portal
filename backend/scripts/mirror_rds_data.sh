@@ -30,7 +30,7 @@ make db/dump OUTFILE=$DB_DUMP_FILE
 export DEPLOYMENT_STAGE=$DEST_ENV
 export AWS_PROFILE=single-cell-dev
 
-if [[ ! $DEST_ENV == 'rdev' ]]; then
+if [[ $DEST_ENV != 'rdev' ]]; then
    #  For safety, dump the destination db to a local file, just in case. Not necessary if destination is rdev.
    DEST_DB_BACKUP_DUMP_FILE="${DEST_ENV}_"`date +%Y%m%d_%H%M%S`".sqlc"
    echo "Backing up the destination database to $DEST_DB_BACKUP_DUMP_FILE. Just in case!"
@@ -60,7 +60,7 @@ make db/tunnel/up
 load_src_dump_to_dest_db || load_src_dump_to_dest_db  # Hack for rdev, where it fails on first and succeeds on retry
 make db/tunnel/down
 
-if [[ ! $DEST_ENV == 'rdev' ]]; then
+if [[ $DEST_ENV != 'rdev' ]]; then
   DB_UPDATE_CMDS=$(cat <<EOF
     -c "UPDATE persistence_schema.\"DatasetArtifact\" SET uri = regexp_replace(uri, '(s3:\\/\\/)([[:alpha:]]+-[[:alpha:]]+-)([[:alpha:]]+)(\\/.+)', '\\1\\2${DEPLOYMENT_STAGE}\\4') WHERE uri IS NOT NULL;"
   EOF
