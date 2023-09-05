@@ -1,6 +1,6 @@
 import { Page, expect } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
-import { TEST_URL, ADD_GENE_BTN } from "tests/common/constants";
+import { TEST_URL } from "tests/common/constants";
 
 const FMG_EXCLUDE_TISSUES = ["blood"];
 const CELL_COUNT_ID = "cell-count";
@@ -8,8 +8,7 @@ const CELL_TYPE_NAME_ID = "cell-type-name";
 const MARKER_GENE_BUTTON_ID = "marker-gene-button";
 const REGEX = /^\d+\.?\d{0,2}$/;
 
-export const ADD_GENE_SEARCH_PLACEHOLDER_TEXT =
-  "Search or paste comma separated gene names";
+export const ADD_GENE_SEARCH_PLACEHOLDER_TEXT = "Add Genes";
 
 export async function goToWMG(page: Page) {
   return Promise.all([
@@ -22,8 +21,6 @@ export async function goToWMG(page: Page) {
 }
 export async function searchAndAddGene(page: Page, geneName: string) {
   await goToWMG(page);
-  // click +Gene button
-  await page.getByTestId(ADD_GENE_BTN).click();
   await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).type(geneName);
   await page.getByText(geneName).click();
 

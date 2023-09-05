@@ -166,7 +166,7 @@ jobs:
 
   run-e2e-tests:
     timeout-minutes: 60
-    name: e2e-tests-${{ matrix.project }}-${{ matrix.shardCurrent }}-${{ matrix.shardTotal }}
+    name: e2e-tests ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
@@ -231,13 +231,17 @@ jobs:
           PROJECT: ${{ matrix.project }}
           SHARD: ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
-        run: DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}
+        run: |
+          if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
+            export DEPLOYMENT_STAGE=staging
+          fi
+          DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}
 
       - name: Upload FE test results as an artifact
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: playwright-report ${{ matrix.project }} ${{ matrix.shardCurrent }}-${{ matrix.shardTotal }}
+          name: playwright-report ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
           retention-days: 14
 

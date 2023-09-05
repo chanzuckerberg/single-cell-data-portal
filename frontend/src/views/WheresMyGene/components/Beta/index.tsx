@@ -1,11 +1,12 @@
 import { noop } from "src/common/constants/utils";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
+
 import {
   BETA_NOTIFICATION_ID,
   StyledNotification,
   StyledNotificationWrapper,
   SubmitIssue,
 } from "./style";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 
 export default function Beta(): JSX.Element {
   return (

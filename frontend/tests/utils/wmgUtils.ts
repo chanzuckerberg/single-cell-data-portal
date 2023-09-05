@@ -125,7 +125,11 @@ export async function addTissuesAndGenes(
     await searchAndAddTissue(page, tissueName);
   }
   for await (const gene of genes) {
-    await searchAndAddGene(page, gene);
+    await Promise.all([
+      // wait till loading is complete
+      page.getByText("Loading").first().waitFor({ state: "hidden" }),
+      searchAndAddGene(page, gene),
+    ]);
   }
 }
 export const selectSecondaryFilterOption = async (
@@ -286,8 +290,6 @@ export const checkPlotSize = async (page: Page) => {
 };
 
 export async function searchAndAddGene(page: Page, geneName: string) {
-  // click +Tissue button
-  await page.getByTestId(ADD_GENE_BTN).click();
   await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).type(geneName);
   await page.getByText(geneName).click();
 

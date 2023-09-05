@@ -5,38 +5,25 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "lib": [
-      "dom",
-      "es2020"
-    ],
+    "lib": ["dom", "es2020"],
     "module": "esnext",
     "moduleResolution": "node",
     "noEmit": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "paths": {
-      "src/*": [
-        "./src/*"
-      ],
-      "tests/*": [
-        "./tests/*"
-      ],
+      "src/*": ["./src/*"],
+      "tests/*": ["./tests/*"]
     },
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext",
-    "types": [
-      "expect-playwright"
-    ],
+    "types": ["expect-playwright"],
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "incremental": true
   },
-  "exclude": [
-    "node_modules",
-    "public",
-    ".cache"
-  ],
+  "exclude": ["node_modules", "public", ".cache"],
   "include": [
     "next-env.d.ts",
     "**/*.ts",
