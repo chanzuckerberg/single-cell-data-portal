@@ -263,5 +263,11 @@ export default function GeneSearchBar({
     if (!dispatch) return;
 
     dispatch(selectGenes(genes?.map((gene) => gene.name) || EMPTY_ARRAY));
+
+    if (genes && genes.length > 0) {
+      track(EVENTS.WMG_SELECT_GENE, {
+        genes: genes.map((gene) => gene.name),
+      });
+    }
   }
 }
