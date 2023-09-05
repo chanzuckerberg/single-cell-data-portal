@@ -1,0 +1,54 @@
+  pw:api => selectors.setTestIdAttribute started +326ms
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +38ms
+  pw:api   "commit" event fired +15ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +9ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +34ms
+  pw:api => page.waitForResponse started +3ms
+  pw:api => page.goto started +5ms
+  pw:api navigating to "https://localhost:3000/gene-expression?compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2", waiting until "load" +13ms
+  pw:api   "commit" event fired +134ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +3ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +3ms
+  pw:api   navigated to "about:blank" +30ms
+  pw:api <= page.goto succeeded +97ms
+  pw:api   "networkidle" event fired +3s
+  pw:api <= page.waitForResponse succeeded +2s
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('share-button') +24ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" data-testid…>…</button> +369ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +4ms
+  pw:api attempting click action +447ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +84ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +44ms
+  pw:api   click action done +413ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +3ms
+  pw:api <= locator.click succeeded +57ms
+  pw:api => page.evaluate started +2ms
+  pw:api <= page.evaluate succeeded +76ms
+  pw:api => expect.toBeVisible started +7ms
+  pw:api => expect.toBeVisible started +29ms
+  pw:api expect.toBeVisible with timeout 10000ms +61ms
+  pw:api waiting for getByText('A molecular single-cell lung atlas of lethal COVID-19') +9ms
+  pw:api taking page screenshot +1ms
+  pw:api expect.toBeVisible with timeout 10000ms +4ms
+  pw:api waiting for getByText('Immunophenotyping of COVID-19 and influenza highlights the role of type I interferons in development of severe COVID-19') +0ms
+  pw:api   locator resolved to <span class="MuiChip-label MuiChip-labelMedium css-6od…>A molecular single-cell lung atlas of lethal COVI…</span> +21ms
+  pw:api <= expect.toBeVisible succeeded +0ms
+  pw:api   locator resolved to <span class="MuiChip-label MuiChip-labelMedium css-6od…>Immunophenotyping of COVID-19 and influenza highl…</span> +3ms
+  pw:api <= expect.toBeVisible succeeded +0ms
