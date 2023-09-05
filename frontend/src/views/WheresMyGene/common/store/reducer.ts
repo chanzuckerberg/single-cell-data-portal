@@ -2,6 +2,7 @@ import isEqual from "lodash/isEqual";
 import { CompareId, X_AXIS_CHART_HEIGHT_PX } from "../constants";
 import { CellType, SORT_BY } from "../types";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { GENE_SEARCH_BAR_HEIGHT_PX } from "src/views/WheresMyGeneV2/components/GeneSearchBar/style";
 
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
@@ -65,7 +66,7 @@ export const INITIAL_STATE: State = {
     genes: SORT_BY.USER_ENTERED,
     scaled: SORT_BY.COLOR_SCALED,
   },
-  xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
+  xAxisHeight: X_AXIS_CHART_HEIGHT_PX + GENE_SEARCH_BAR_HEIGHT_PX,
   filteredCellTypes: [],
 };
 
@@ -135,7 +136,7 @@ function deleteSingleGene(
   return {
     ...state,
     selectedGenes: newSelectedGenes,
-    xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
+    xAxisHeight: INITIAL_STATE.xAxisHeight,
   };
 }
 
@@ -143,7 +144,7 @@ function deleteAllGenes(state: State, _: PayloadAction<null>): State {
   return {
     ...state,
     selectedGenes: [],
-    xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
+    xAxisHeight: INITIAL_STATE.xAxisHeight,
   };
 }
 
@@ -411,7 +412,7 @@ function selectCompare(
 function setXAxisHeight(state: State, action: PayloadAction<number>): State {
   return {
     ...state,
-    xAxisHeight: action.payload,
+    xAxisHeight: action.payload + GENE_SEARCH_BAR_HEIGHT_PX,
   };
 }
 

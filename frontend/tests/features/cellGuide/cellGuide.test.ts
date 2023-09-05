@@ -369,8 +369,7 @@ describe("Cell Guide", () => {
               CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN
             );
             await waitForElementAndClick(dropdown);
-            await dropdown.press("ArrowDown"); // selects Macaca Mulatta
-            await dropdown.press("Enter");
+            await page.getByRole("option").getByText("Macaca mulatta").click();
 
             const rowElementsAfter = await page
               .locator(`${tableSelector} tbody tr`)
@@ -465,8 +464,7 @@ describe("Cell Guide", () => {
               CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN
             );
             await waitForElementAndClick(dropdown);
-            await dropdown.press("ArrowDown");
-            await dropdown.press("Enter");
+            await page.getByRole("option").getByText("Macaca mulatta").click();
 
             const rowElementsAfter = await page
               .locator(`${tableSelector} tbody tr`)
@@ -510,9 +508,7 @@ describe("Cell Guide", () => {
               CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN
             );
             await waitForElementAndClick(dropdown);
-            await dropdown.press("ArrowDown");
-            await dropdown.press("ArrowDown"); // selects Abdominal Wall
-            await dropdown.press("Enter");
+            await page.getByRole("option").getByText("abdominal wall").click();
 
             const rowElementsAfter = await page
               .locator(`${tableSelector} tbody tr`)

@@ -55,7 +55,7 @@ const Header: FC = () => {
             sdsStage="default"
             onClick={handleHelpOpen}
             sdsStyle="minimal"
-            sdsType="singleSelect"
+            sdsType="label"
             data-testid="InputDropdown"
           />
 

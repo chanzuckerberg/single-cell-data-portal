@@ -4,11 +4,8 @@ import {
   OntologyTerm,
 } from "src/common/queries/wheresMyGene";
 import { CellType, ChartProps } from "src/views/WheresMyGene/common/types";
-import SaveExport from "../../../GeneSearchBar/components/SaveExport";
-import SaveExportV2 from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
-import ShareButton from "../../../GeneSearchBar/components/ShareButton";
-import ShareButtonV2 from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/ShareButton";
-import SourceDataButton from "../../../GeneSearchBar/components/SourceDataButton";
+import SaveExport from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
+import ShareButton from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/ShareButton";
 import ExpressedInCells from "../ExpressedInCells";
 import RelativeGeneExpression from "../RelativeGeneExpression";
 import { LegendWrapper } from "./style";
@@ -17,6 +14,7 @@ import {
   EMPTY_OBJECT,
   EMPTY_SET,
 } from "src/common/constants/utils";
+import SourceDataButton from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SourceDataButton";
 
 interface Props {
   isScaled: boolean;
@@ -40,7 +38,6 @@ interface Props {
 export default memo(function Legend({
   isScaled,
   handleRightSidebarButtonClick,
-  selectedTissues,
   selectedGenes,
   selectedCellTypes,
   setDownloadStatus,
@@ -53,35 +50,18 @@ export default memo(function Legend({
 }: Props): JSX.Element {
   return (
     <LegendWrapper data-testid="legend-wrapper">
-      {selectedTissues ? (
-        <>
-          <SaveExport
-            selectedTissues={selectedTissues}
-            selectedGenes={selectedGenes}
-            selectedCellTypes={selectedCellTypes}
-            setDownloadStatus={setDownloadStatus}
-            setEchartsRendererMode={setEchartsRendererMode}
-            allChartProps={allChartProps}
-            availableFilters={availableFilters}
-          />
-          <ShareButton />
-        </>
-      ) : (
-        <>
-          <SaveExportV2
-            selectedGenes={selectedGenes}
-            selectedCellTypes={selectedCellTypes}
-            setDownloadStatus={setDownloadStatus}
-            setEchartsRendererMode={setEchartsRendererMode}
-            allChartProps={allChartProps}
-            availableFilters={availableFilters}
-            tissues={tissues || EMPTY_OBJECT}
-            expandedTissues={expandedTissues ?? (EMPTY_SET as Set<string>)}
-            filteredCellTypes={filteredCellTypes ?? EMPTY_ARRAY}
-          />
-          <ShareButtonV2 />
-        </>
-      )}
+      <SaveExport
+        selectedGenes={selectedGenes}
+        selectedCellTypes={selectedCellTypes}
+        setDownloadStatus={setDownloadStatus}
+        setEchartsRendererMode={setEchartsRendererMode}
+        allChartProps={allChartProps}
+        availableFilters={availableFilters}
+        tissues={tissues || EMPTY_OBJECT}
+        expandedTissues={expandedTissues ?? (EMPTY_SET as Set<string>)}
+        filteredCellTypes={filteredCellTypes ?? EMPTY_ARRAY}
+      />
+      <ShareButton />
       <SourceDataButton
         handleRightSidebarButtonClick={handleRightSidebarButtonClick}
       />

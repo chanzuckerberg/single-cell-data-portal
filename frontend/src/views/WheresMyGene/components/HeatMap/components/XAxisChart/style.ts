@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { SELECTED_STYLE } from "../../style";
 import { HEAT_MAP_BASE_CELL_WIDTH_PX } from "../../utils";
+import { GENE_SEARCH_BAR_HEIGHT_PX } from "src/views/WheresMyGeneV2/components/GeneSearchBar/style";
 
 export const ECHART_AXIS_LABEL_COLOR_HEX = "#000000";
 export const ECHART_AXIS_LABEL_FONT_SIZE_PX = 12;
@@ -14,8 +15,7 @@ interface XAxisContainerProps {
 export const XAxisContainer = styled.div<XAxisContainerProps>`
   ${xAxisWidth}
   background-color: white;
-  height: ${(props) => props.height}px;
-  top: 0px;
+  height: ${(props) => props.height - GENE_SEARCH_BAR_HEIGHT_PX}px;
   position: absolute;
   display: flex;
   flex-direction: row;
