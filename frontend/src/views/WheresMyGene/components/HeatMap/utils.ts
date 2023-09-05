@@ -12,7 +12,28 @@ import {
 } from "../../common/types";
 import { TISSUE_CELL_TYPE_DIVIDER } from "./hooks/useSortedGeneNames";
 
-export const Y_AXIS_CHART_WIDTH_PX = 352;
+/**
+ * (thuang): Instead of using the full width, we only want enough space for the
+ * filter box + the widest scrollbar across different browsers.
+ */
+export const CELL_TYPE_FILTER_WIDTH_PX = 300;
+
+export const DIVIDER_MARGIN_PX = 12;
+const CELL_COUNT_COLUMN_WIDTH_PX = 40;
+/**
+ * This is needed to ensure the divider is 12px away from the cell count column
+ */
+const DIVIDER_MARGIN_OFFSET_PX = 4;
+
+/**
+ * (thuang): Enough space for the y-axis divider to have 12px from the cell type
+ * searchbar and the cell count column
+ */
+export const Y_AXIS_CHART_WIDTH_PX =
+  CELL_TYPE_FILTER_WIDTH_PX +
+  CELL_COUNT_COLUMN_WIDTH_PX +
+  DIVIDER_MARGIN_PX * 2 -
+  DIVIDER_MARGIN_OFFSET_PX;
 
 /**
  * Used to calculate text pixel widths. Should be only created once.

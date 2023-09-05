@@ -1,7 +1,11 @@
 import styled from "@emotion/styled";
 import { gray300 } from "src/common/theme";
 import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGene/common/constants";
-import { Y_AXIS_CHART_WIDTH_PX } from "src/views/WheresMyGene/components/HeatMap/utils";
+import {
+  CELL_TYPE_FILTER_WIDTH_PX,
+  DIVIDER_MARGIN_PX,
+  Y_AXIS_CHART_WIDTH_PX,
+} from "src/views/WheresMyGene/components/HeatMap/utils";
 
 enum ZIndex {
   XAxisWrapper = 2,
@@ -9,10 +13,15 @@ enum ZIndex {
   Divider = 4,
 }
 
+export const CellTypeFilterContainer = styled.div`
+  height: 100%;
+  width: ${CELL_TYPE_FILTER_WIDTH_PX}px;
+`;
+
 export const Divider = styled.div`
   height: 100%;
   position: absolute;
-  left: 24%;
+  left: ${CELL_TYPE_FILTER_WIDTH_PX + DIVIDER_MARGIN_PX}px;
   width: 1px;
   top: 0;
   border-right: solid 0.5px ${gray300};
