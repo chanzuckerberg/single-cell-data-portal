@@ -11,9 +11,21 @@ set -e
 SCRIPTS_DIR=`dirname $0`
 . $SCRIPTS_DIR/set_src_dest_envs.sh
 
-echo Mirroring S3 data from $SRC_ENV to $DEST_ENV
-
 DEPLOYMENT_STAGE=$SRC_ENV
+
+echo Copying WMG cube snapshot...
+
+latest_snapshot=$(aws s3 cp s3://cellxgene-wmg-${SRC_ENV}/latest_snapshot_run -)
+if [[ $DEST_ENV == 'rdev' ]]; then
+  s3_destination="env-rdev-wmg/${STACK}"
+else
+  s3_destination="cellxgene-wmg-${DEST_ENV}"
+fi
+echo -n $latest_snapshot | aws s3 cp - s3://${s3_destination}/latest_snapshot_run
+aws s3 cp --recursive s3://cellxgene-wmg-${SRC_ENV}/${latest_snapshot} s3://${s3_destination}/${latest_snapshot}
+
+
+echo Mirroring S3 Dataset data from $SRC_ENV to $DEST_ENV...
 
 if [[ $DEST_ENV == 'rdev' ]]; then
   DEPLOYMENT_STAGE=$DEPLOYMENT_STAGE make db/tunnel/up
