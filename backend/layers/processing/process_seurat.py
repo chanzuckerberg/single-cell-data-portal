@@ -14,6 +14,8 @@ from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
+logger: logging.Logger = logging.getLogger("processing")
+
 
 class ProcessSeurat(ProcessingLogic):
     """
@@ -92,7 +94,7 @@ class ProcessSeurat(ProcessingLogic):
             completed_process = subprocess.run(
                 ["Rscript", "-e", "\"installed.packages()[, c('Package', 'Version')]\""], capture_output=True
             )
-            logging.debug({"stdout": completed_process.stdout, "args": completed_process.args})
+            logger.debug({"stdout": completed_process.stdout, "args": completed_process.args})
 
             subprocess.run(
                 [

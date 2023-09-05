@@ -34,7 +34,7 @@ class SchemaMigrate(ProcessingLogic):
         self.s3_provider = business_logic.s3_provider  # For compatiblity with ProcessingLogic
         self.artifact_bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
         self.execution_id = os.environ.get("EXECUTION_ID", "test-execution-arn")
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger("processing")
         self.local_path: str = "."  # Used for testing
         self.limit_migration = os.environ.get("LIMIT_MIGRATION", False)  # Run a small migration for testing
         self.limit_select = 2  # Number of collections to migrate

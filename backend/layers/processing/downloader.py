@@ -9,7 +9,7 @@ from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import DatasetStatusKey, DatasetUploadStatus, DatasetVersionId
 from backend.layers.processing.exceptions import UploadFailed
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("processing")
 
 
 class ProgressTracker:
