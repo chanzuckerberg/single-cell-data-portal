@@ -51,7 +51,6 @@ import {
   ChartWrapper,
   Container,
   ContainerWrapper,
-  StyledAutocomplete,
   StyledTag,
   TopLeftCornerMask,
   XAxisMask,
