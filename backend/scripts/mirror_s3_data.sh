@@ -19,13 +19,10 @@ if [[ $DEST_ENV == 'rdev' ]]; then
   DEPLOYMENT_STAGE=$DEPLOYMENT_STAGE make db/tunnel/up
   echo "Copying S3 Dataset assets for ${#COLLECTIONS[@]} Collections..."
   DB_PW=$(aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string')
-  query_arg="-c select uri from \"DatasetArtifact\" where id in (select unnest(artifacts) from \"DatasetVersion\" where id in (select unnest(datasets) from \"CollectionVersion\" where collection_id in ('$COLLECTIONS')))"
-  res=$(PGOPTIONS='-csearch_path=persistence_schema' PGPASSWORD=${DB_PW} psql --dbname corpora_${DEPLOYMENT_STAGE} --username corpora_${DEPLOYMENT_STAGE} --host 0.0.0.0 --csv --tuples-only "$query_arg")
-  DEPLOYMENT_STAGE=$DEPLOYMENT_STAGE make db/tunnel/down
-  old_ifs=$IFS
-  IFS=$'\n'
-  uris=($res)
-  IFS=$old_ifs
+
+  # Copy artifacts
+  uri_query="select uri from \"DatasetArtifact\" where id in (select unnest(artifacts) from \"DatasetVersion\" where id in (select unnest(datasets) from \"CollectionVersion\" where collection_id in ('$(sed "s/,/','/g" <<< $COLLECTIONS)')))"
+  uris=($(PGOPTIONS='-csearch_path=persistence_schema' PGPASSWORD=${DB_PW} psql --dbname corpora_${DEPLOYMENT_STAGE} --username corpora_${DEPLOYMENT_STAGE} --host 0.0.0.0 --csv --tuples-only -c "$uri_query"))
   for uri in "${uris[@]}"; do
     bucket=$(sed -E 's/s3:\/\/([^\/]+).*/\1/' <<< $uri)
     if [[ ! -z `grep 'hosted-cellxgene' <<< $bucket` ]]; then
@@ -37,6 +34,18 @@ if [[ $DEST_ENV == 'rdev' ]]; then
     recursive_flag=$([[ ! "${key: -1}" == "/" ]] || echo "--recursive ")
     aws s3 cp ${recursive_flag}${uri} s3://env-rdev-${rdev_bucket_suffix}/${STACK}/${key}
   done
+
+  # Copy public assets
+  dv_id_query="select unnest(datasets) from \"CollectionVersion\" where collection_id in ('$(sed "s/,/','/g" <<< $COLLECTIONS)')"
+  dataset_version_ids=($(PGOPTIONS='-csearch_path=persistence_schema' PGPASSWORD=${DB_PW} psql --dbname corpora_${DEPLOYMENT_STAGE} --username corpora_${DEPLOYMENT_STAGE} --host 0.0.0.0 --csv --tuples-only -c "$dv_id_query"))
+  DEPLOYMENT_STAGE=$DEPLOYMENT_STAGE make db/tunnel/down
+  exts=("rds" "h5ad")
+  for dv_id in "${dataset_version_ids[@]}"; do
+    for ext in "${exts[@]}"; do
+      aws s3 cp s3://dataset-assets-public-${DEPLOYMENT_STAGE}/${dv_id}.${ext} s3://env-rdev-datasets/${STACK}/${dv_id}.${ext}
+    done
+  done
+
   exit 0
 fi
 
