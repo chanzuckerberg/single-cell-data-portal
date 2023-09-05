@@ -41,15 +41,26 @@ export const CellGuideView = styled.div<CellGuideViewProps>`
   ${(props) => {
     const { skinnyMode } = props;
     const space = skinnyMode ? spacesL(props) : spacesXxl(props);
+    // For some reason in skinny mode we need to set the height to 100vh, setting
+    // only min-height doesn't work. But if we set it to 100vh in normal mode,
+    // then that screws up normal mode.
+    const height = skinnyMode ? "100vh" : "auto";
+
     return `
-    padding: ${TOP_PADDING_PX}px ${space}px 0px
-      ${space}px;
+    padding: 0px ${space}px;
+    height: ${height};
     `;
   }}
 `;
 
 export const CellGuideWrapper = styled.div<CellGuideViewProps>`
   margin: 0 auto 80px;
+  position: sticky;
+  top: ${HEADER_HEIGHT_PX}px;
+  padding-bottom: 24px;
+  padding-top: ${TOP_PADDING_PX}px;
+  background: linear-gradient(180deg, #fff 89.82%, rgba(255, 255, 255, 0) 100%);
+  z-index: 10;
   width: ${(props) =>
     props.skinnyMode
       ? `${DEFAULT_ONTOLOGY_WIDTH}px`
