@@ -1,0 +1,82 @@
+  pw:api => selectors.setTestIdAttribute started +10s
+  pw:api => browser.newContext started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +4ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +54ms
+  pw:api   "commit" event fired +19ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +11ms
+  pw:api => tracing.start started +11ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +64ms
+  pw:api => page.waitForLoadState started +3ms
+  pw:api => page.goto started +5ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +6ms
+  pw:api   "commit" event fired +166ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +0ms
+  pw:api   "commit" event fired +12ms
+  pw:api   "networkidle" event fired +3s
+  pw:api <= page.waitForLoadState succeeded +4ms
+  pw:api   "networkidle" event fired +0ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +12ms
+  pw:api   navigated to "about:blank" +54ms
+  pw:api <= page.goto succeeded +12ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') to be visible +75ms
+  pw:api   "networkidle" event fired +552ms
+  pw:api   locator resolved to visible <input value="" type="text" role="combobox" autocomplet…/> +1s
+  pw:api <= locator.waitFor succeeded +154ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') +30ms
+  pw:api   locator resolved to <input value="" type="text" role="combobox" autocomplet…/> +8ms
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +14ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +19ms
+  pw:api   click action done +253ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +9ms
+  pw:api <= locator.click succeeded +103ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +90ms
+  pw:api => locator.all started +12ms
+  pw:api <= locator.all succeeded +58ms
+  pw:api => locator.type started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-search-bar-text-input').locator('input') +57ms
+  pw:api   locator resolved to <input value="" type="text" role="combobox" autocomplet…/> +9ms
+  pw:api elementHandle.type("acinar cell") +2ms
+  pw:api <= locator.type succeeded +597ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +16ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +28ms
+  pw:api => locator.textContent started +1ms
+  pw:api waiting for getByRole('option').first() +17ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" data-option-index="0…>acinar cell</li> +8ms
+  pw:api <= locator.textContent succeeded +14ms
+  pw:api => page.waitForURL started +2ms
+  pw:api => locator.click started +6ms
+  pw:api waiting for navigation to "https://localhost:3000/cellguide/CL_0000622" until "load" +3ms
+  pw:api waiting for getByRole('option').first() +37ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" data-option-index="0…>acinar cell</li> +38ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +10ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +39ms
+  pw:api   click action done +56ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +3ms
+  pw:api <= locator.click succeeded +38ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000622" +26ms
+  pw:api <= page.waitForURL succeeded +4ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000622" +15ms
+  pw:api taking page screenshot +7ms
+  pw:api   navigated to "about:blank" +406ms
