@@ -67,10 +67,12 @@ export const StyledAutocomplete = styled(Autocomplete)`
 export const StyledTag = styled(Tag)`
   max-width: 258px;
 `;
+// copied to frontend/src/views/WheresMyGeneV2/components/HeatMap/style.ts
 interface TopLeftCornerMaskProps {
   height: number;
 }
 
+// copied to frontend/src/views/WheresMyGeneV2/components/HeatMap/style.ts
 export const TopLeftCornerMask = styled.div<TopLeftCornerMaskProps>`
   position: absolute;
   background-color: white;
@@ -129,6 +131,7 @@ export const XAxisMask = styled.div<XAxisMaskProps>`
   height: ${(props) => props.height}px;
 `;
 
+// copied to frontend/src/views/WheresMyGeneV2/components/HeatMap/style.ts
 export const XAxisWrapper = styled.div`
   display: flex;
   background-color: white;
