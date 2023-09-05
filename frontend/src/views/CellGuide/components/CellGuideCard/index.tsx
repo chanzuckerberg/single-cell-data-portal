@@ -44,6 +44,8 @@ import {
   Dropdown,
   InputDropdownProps,
 } from "@czi-sds/components";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
@@ -136,6 +138,7 @@ export default function CellGuideCard({
     if (!option) return;
     setSelectedOrgan(option);
     setSelectedOrganId(organsMap.get(option.name) ?? "");
+    track(EVENTS.CG_SELECT_TISSUE, { tissue: option.name });
   };
 
   const [selectedOrganism, setSelectedOrganism] =
@@ -144,6 +147,7 @@ export default function CellGuideCard({
   const handleChangeOrganism = (option: DefaultDropdownMenuOption | null) => {
     if (!option) return;
     setSelectedOrganism(option);
+    track(EVENTS.CG_SELECT_ORGANISM, { organism: option.name });
   };
 
   function handleCloseGeneInfoSideBar() {
