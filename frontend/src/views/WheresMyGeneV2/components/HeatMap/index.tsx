@@ -10,7 +10,6 @@ import {
   useRef,
   useState,
 } from "react";
-import SearchIcon from "@mui/icons-material/Search";
 import {
   EMPTY_ARRAY,
   EMPTY_OBJECT,
@@ -70,7 +69,6 @@ import Chart from "src/views/WheresMyGene/components/HeatMap/components/Chart";
 import { hyphenize } from "src/views/WheresMyGene/components/HeatMap/utils";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { InputAdornment, TextField } from "@mui/material";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 import { Autocomplete, DefaultAutocompleteOption } from "@czi-sds/components";
 
