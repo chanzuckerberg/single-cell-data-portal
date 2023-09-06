@@ -2,47 +2,32 @@ import { GetServerSideProps } from "next";
 import { getServerSideSitemap, ISitemapField } from "next-sitemap";
 import { convertTimestamp } from "src/common/sitemaps/utils";
 import { CELLGUIDE_DATA_URL } from "src/configs/configs";
-import xml2js from "xml2js";
-
-interface CellGuideData {
-  ListBucketResult: {
-    Contents: {
-      Key: string;
-      LastModified: string;
-    };
-  };
-}
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const response = await fetch(CELLGUIDE_DATA_URL);
-
-  const xmlData = await response.text();
-
-  const cellTypeData = new Promise<CellGuideData>((resolve, reject) => {
-    xml2js.parseString(xmlData, (err, jsonData) => {
-      if (err) {
-        console.error("Error parsing XML:", err);
-        reject(err);
-      } else {
-        resolve(jsonData);
-      }
-    });
-  });
-
-  const cellTypeEntriesArray = Object.values(
-    (await cellTypeData).ListBucketResult.Contents
+  const latestSnapshotRes = await fetch(
+    `${CELLGUIDE_DATA_URL}/latest_snapshot_identifier`
   );
 
-  const fields: ISitemapField[] = cellTypeEntriesArray.map((entry: any) => {
-    const endpointSplitArr = entry.Key.toString().split("/");
+  const latestSnapshotId = await latestSnapshotRes.json();
 
-    const endpointDotJson = endpointSplitArr[endpointSplitArr.length - 1];
+  const response = await fetch(
+    `${CELLGUIDE_DATA_URL}/${latestSnapshotId}/celltype_metadata.json`
+  );
 
-    const endpoint = endpointDotJson.split(".json")[0];
+  if (!response.ok) {
+    throw new Error(`Failed to fetch data. Status: ${response.status}`);
+  }
+
+  const cellGuideData = await response.json();
+
+  const cellGuideIds = Object.keys(cellGuideData);
+
+  const fields: ISitemapField[] = cellGuideIds.map((id: string) => {
+    const date = new Date().getTime();
 
     return {
-      loc: `https://www.cellxgene.cziscience.com/cellguide/${endpoint}`,
-      lastmod: convertTimestamp(entry.LastModified),
+      loc: `https://cellxgene.cziscience.com/cellguide/${id}`,
+      lastmod: convertTimestamp(date.toString()),
     };
   });
 
