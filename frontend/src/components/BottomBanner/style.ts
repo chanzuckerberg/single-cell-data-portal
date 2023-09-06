@@ -14,7 +14,7 @@ import { SKINNY_MODE_BREAKPOINT_WIDTH } from "src/views/CellGuide/components/Cel
 
 export const BOTTOM_BANNER_ID = "bottom-banner";
 
-export const HiddenHubspotForm = styled.div`
+export const HiddenHubSpotForm = styled.div`
   display: none;
 `;
 
@@ -58,6 +58,8 @@ export const StyledBottomBannerWrapper = styled.div`
 
   /* Right behind modal overlay */
   z-index: 19;
+
+  background-color: purple;
 `;
 
 export const StyledLink = styled.a`
@@ -77,7 +79,12 @@ export const HeaderContainer = styled.div`
   align-items: flex-start;
 `;
 
-export const StyledCloseButtonIcon = styled(ButtonIcon)`
+const STYLED_CLOSE_BUTTON_ICON_DENY_PROPS = ["hideCloseButton"];
+
+export const StyledCloseButtonIcon = styled(ButtonIcon, {
+  shouldForwardProp: (prop) =>
+    !STYLED_CLOSE_BUTTON_ICON_DENY_PROPS.includes(prop),
+})`
   /* Only hide close button if mobile view and is a direct link */
   @media only screen and (max-width: 600px) {
     ${hideCloseButton}

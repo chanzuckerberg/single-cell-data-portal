@@ -16,7 +16,7 @@ import {
   StyledSubmitButton,
   HeaderContainer,
   StyledErrorMessage,
-  HiddenHubspotForm,
+  HiddenHubSpotForm,
   FooterContentWrapper,
   StyledCloseButtonIcon,
 } from "./style";
@@ -25,6 +25,7 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import Head from "next/head";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
+import { noop } from "src/common/constants/utils";
 
 export const FORM_CONTAINER_ID = "hubspot-form-container";
 export const FORM_CONTAINER_ID_QUERY = `#${FORM_CONTAINER_ID}`;
@@ -40,6 +41,22 @@ export interface Props {
   customSurveyLinkPrefix?: ReactElement;
   analyticsHandler?: () => void;
   airtableLink: string;
+  /**
+   * (thuang): Since the homepage has two newsletter banners (footer and banner),
+   * we need to give each banner a unique id to differentiate them.
+   */
+  id?: string;
+  /**
+   * (thuang): This is needed for homepage, because we have two instances of BottomBanner
+   * and the HubSpot script is only loaded once, so only the first instance of BottomBanner
+   * gets the onReady callback.
+   */
+  isHubSpotReady?: boolean;
+  /**
+   * (thuang): The first instance of BottomBanner in the UI needs to call onHubSpotReady(),
+   * so the second BottomBanner knows when HubSpot is ready via `isHubSpotReady` prop.
+   */
+  onHubSpotReady?: () => void;
 }
 const BOTTOM_BANNER_EXPIRATION_TIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const BOTTOM_BANNER_LAST_CLOSED_TIME_KEY = "bottomBannerLastClosedTime";
@@ -50,6 +67,9 @@ export default function BottomBanner({
   customSurveyLinkPrefix,
   analyticsHandler,
   airtableLink,
+  id = "newsletter-banner",
+  isHubSpotReady: isHubSpotReadyProp = false,
+  onHubSpotReady = noop,
 }: Props): JSX.Element | null {
   const [bottomBannerLastClosedTime, setBottomBannerLastClosedTime] =
     useLocalStorage<number>(BOTTOM_BANNER_LAST_CLOSED_TIME_KEY, 0);
@@ -60,6 +80,12 @@ export default function BottomBanner({
   const [email, setEmail] = useState("");
   const [emailValidationError, setError] = useState("");
   const [isDirectLink, setIsDirectLink] = useState(false);
+
+  useEffect(() => {
+    if (isHubSpotReadyProp === isHubSpotReady) return;
+
+    setIsHubSpotReady(isHubSpotReadyProp);
+  }, [isHubSpotReady, isHubSpotReadyProp]);
 
   // For analytics if submit button was made enabled by user input
   const [submitButtonEnabledOnce, setSubmitButtonEnabledOnce] = useState(false);
@@ -75,10 +101,13 @@ export default function BottomBanner({
     setNewsletterModalIsOpen(!newsletterModalIsOpen);
   }
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
+  /**
+   * Reads a query parameter from the URL to auto open the newsletter signup modal
+   * Allows sharing of a URL to lead directly to the newsletter signup, specifically for conferences
+   */
   useEffect(() => {
-    // Reads a query parameter from the URL to auto open the newsletter signup modal
-    // Allows sharing of a URL to lead directly to the newsletter signup, specifically for conferences
+    if (!isHubSpotReady) return;
+
     if (!asFooter && window) {
       const openModalParam = new URLSearchParams(window.location.search).get(
         "newsletter_signup"
@@ -95,8 +124,14 @@ export default function BottomBanner({
         });
       }
     }
+  }, [asFooter, isDirectLink, isHubSpotReady]);
 
-    // Observer to observe changes in the Hubspot embedded form, which is hidden from the user in order to use our own form view
+  const formContainerQueryId = useMemo(() => {
+    return `[data-id="${id}"] ${FORM_CONTAINER_ID_QUERY}`;
+  }, [id]);
+
+  useEffect(() => {
+    // Observer to observe changes in the HubSpot embedded form, which is hidden from the user in order to use our own form view
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         // Loop through all added nodes that were detected
@@ -113,12 +148,12 @@ export default function BottomBanner({
             track(EVENTS.NEWSLETTER_SIGNUP_SUCCESS);
           }
 
-          // Hubspot email validation failure flow
+          // HubSpot email validation failure flow
           else if (
             node?.textContent?.includes("Please enter a valid email address.")
           ) {
-            // HTML email validation may pass, but may not pass validation for Hubspot
-            // ex. "ashintest_04252023_invalid_email@contractor.chanzuckerberg" does not validate with Hubspot but does with HTML email validation
+            // HTML email validation may pass, but may not pass validation for HubSpot
+            // ex. "ashintest_04252023_invalid_email@contractor.chanzuckerberg" does not validate with HubSpot but does with HTML email validation
             setError(FAILED_EMAIL_VALIDATION_STRING);
 
             track(EVENTS.NEWSLETTER_SIGNUP_FAILURE);
@@ -132,10 +167,17 @@ export default function BottomBanner({
         region: "na1",
         portalId: "7272273",
         formId: "eb65b811-0451-414d-8304-7b9b6f468ce5",
-        target: FORM_CONTAINER_ID_QUERY,
+        target: formContainerQueryId,
+        /**
+         * (thuang): Since the homepage has two newsletter banners (footer and banner),
+         * we need to give each banner a unique id to differentiate them.
+         * https://legacydocs.hubspot.com/docs/methods/forms/advanced_form_options
+         */
+        formInstanceId: id,
       });
 
-      const form = document.querySelector(FORM_CONTAINER_ID_QUERY);
+      const form = document.querySelector(formContainerQueryId);
+
       if (form) {
         observer.observe(form, {
           childList: true,
@@ -145,7 +187,7 @@ export default function BottomBanner({
     }
 
     return () => observer.disconnect();
-  }, [asFooter, isDirectLink, isHubSpotReady]);
+  }, [asFooter, isDirectLink, isHubSpotReady, formContainerQueryId, id]);
 
   const emailRef = useRef<HTMLInputElement | null>(null);
 
@@ -169,7 +211,7 @@ export default function BottomBanner({
     event.preventDefault();
     const isValid = validate();
     const form: HTMLFormElement | null = isValid
-      ? document.querySelector(`${FORM_CONTAINER_ID_QUERY} form`)
+      ? document.querySelector(`${formContainerQueryId} form`)
       : null;
 
     if (!isValid || !form) {
@@ -177,6 +219,7 @@ export default function BottomBanner({
     }
 
     const input = form.querySelector("input");
+
     if (!input) {
       return;
     }
@@ -250,6 +293,8 @@ export default function BottomBanner({
   );
 
   const showBanner = useMemo(() => {
+    if (asFooter) return true;
+
     const show =
       !bottomBannerLastClosedTime ||
       Date.now() - bottomBannerLastClosedTime >
@@ -258,7 +303,7 @@ export default function BottomBanner({
       setBottomBannerLastClosedTime(0);
     }
     return show;
-  }, [bottomBannerLastClosedTime, setBottomBannerLastClosedTime]);
+  }, [asFooter, bottomBannerLastClosedTime, setBottomBannerLastClosedTime]);
 
   if (!showBanner) return null;
 
@@ -279,6 +324,7 @@ export default function BottomBanner({
       <Script
         onReady={() => {
           setIsHubSpotReady(true);
+          onHubSpotReady();
         }}
         type="text/javascript"
         src="https://js.hsforms.net/forms/v2.js"
@@ -293,9 +339,10 @@ export default function BottomBanner({
           dismissible={!asFooter}
           sdsType={"primary"}
           onClose={() => setBottomBannerLastClosedTime(Date.now())}
+          data-id={id}
         >
-          {/* Hidden form for submitting the data to Hubspot */}
-          <HiddenHubspotForm id={FORM_CONTAINER_ID} />
+          {/* Hidden form for submitting the data to HubSpot */}
+          <HiddenHubSpotForm id={FORM_CONTAINER_ID} />
 
           {asFooter ? (
             <FooterContentWrapper>{modalContent}</FooterContentWrapper>
