@@ -1,0 +1,57 @@
+  pw:api => selectors.setTestIdAttribute started +2s
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +41ms
+  pw:api   "commit" event fired +13ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +4ms
+  pw:api <= browser.newContext succeeded +7ms
+  pw:api => tracing.start started +8ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +41ms
+  pw:api => page.waitForLoadState started +5ms
+  pw:api => page.goto started +3ms
+  pw:api navigating to "https://localhost:3000/cellguide/tissues/UBERON_0002048", waiting until "load" +10ms
+  pw:api   "commit" event fired +81ms
+  pw:api   navigated to "https://localhost:3000/cellguide/tissues/UBERON_0002048" +0ms
+  pw:api   "commit" event fired +2ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForLoadState succeeded +3ms
+  pw:api   "networkidle" event fired +0ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/tissues/UBERON_0002048" +3ms
+  pw:api   navigated to "about:blank" +22ms
+  pw:api <= page.goto succeeded +28ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view') to be visible +30ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-ontology-dag-view">…</div> +666ms
+  pw:api <= locator.waitFor succeeded +71ms
+  pw:api => locator.hover started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-rect-or-circle-CL:0000066__0-has-children-isTargetNode=false') +22ms
+  pw:api   locator resolved to <circle r="8" fill="#0073FF" stroke-width="0.5" class="c…></circle> +11ms
+  pw:api attempting hover action +1ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +9ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing hover action +13ms
+  pw:api   hover action done +176ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   "networkidle" event fired +20ms
+  pw:api   navigations have finished +56ms
+  pw:api <= locator.hover succeeded +30ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-tooltip') to be visible +11ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-ontology-dag-view-t…>…</div> +5ms
+  pw:api <= locator.waitFor succeeded +8ms
+  pw:api => locator.isVisible started +0ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-ontology-dag-view-tooltip') +13ms
+  pw:api <= locator.isVisible succeeded +10ms
+  pw:api => locator.textContent started +3ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-tooltip') +8ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-ontology-dag-view-t…>…</div> +4ms
+  pw:api <= locator.textContent succeeded +12ms
+  pw:api taking page screenshot +6ms
