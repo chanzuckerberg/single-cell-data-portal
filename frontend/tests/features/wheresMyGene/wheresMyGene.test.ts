@@ -17,6 +17,7 @@ import AdmZip from "adm-zip";
 import {
   WMG_WITH_SEEDED_GENES,
   conditionallyRunTests,
+  goToWMG,
   goToWMGWithSeededState,
   waitForHeatmapToRender,
 } from "tests/utils/wmgUtils";
@@ -517,16 +518,15 @@ describe("Where's My Gene", () => {
   });
 
   describe("Export CSV ", () => {
-    test("Download CSV and validate length - no compare", async ({ page }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
-
+    test.only("Download CSV and validate length - no compare", async ({
+      page,
+    }) => {
+      await goToWMG(page);
       const SELECT_N_GENES = 3;
 
       // Select gene
       await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
       await selectFirstNOptions(SELECT_N_GENES, page);
-
-      await waitForHeatmapToRender(page);
 
       await clickUntilDownloadModalShowsUp({
         page,
