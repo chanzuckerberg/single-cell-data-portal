@@ -62,9 +62,9 @@ make db/tunnel/down
 
 if [[ $DEST_ENV != 'rdev' ]]; then
   DB_UPDATE_CMDS=$(cat <<EOF
-    -c "UPDATE persistence_schema.\"DatasetArtifact\" SET uri = regexp_replace(uri, '(s3:\\/\\/)([[:alpha:]]+-[[:alpha:]]+-)([[:alpha:]]+)(\\/.+)', '\\1\\2${DEPLOYMENT_STAGE}\\4') WHERE uri IS NOT NULL;"
-  EOF
-  )
+-c "UPDATE persistence_schema.\"DatasetArtifact\" SET uri = regexp_replace(uri, '(s3:\\/\\/)([[:alpha:]]+-[[:alpha:]]+-)([[:alpha:]]+)(\\/.+)', '\\1\\2${DEPLOYMENT_STAGE}\\4') WHERE uri IS NOT NULL;"
+EOF
+)
 else
   rdev_bucket_prefix="env-rdev"
   DB_UPDATE_CMDS=$(cat <<EOF
