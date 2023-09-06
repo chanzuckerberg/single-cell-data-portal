@@ -352,6 +352,19 @@ export const useCellTypeMetadata =
     );
   };
 
+// this naked fetch is used for SSR
+export const fetchCellTypeMetadata =
+  async (): Promise<CellTypeMetadataQueryResponse> => {
+    const url = `${CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX}/${
+      QUERY_MAPPING[TYPES.CELLTYPE_METADATA].urlSuffix
+    }`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  };
+
 /* ========== tissue_cards ========== */
 export const USE_TISSUE_METADATA_QUERY = {
   entities: [ENTITIES.CELL_GUIDE_TISSUE_METADATA],
