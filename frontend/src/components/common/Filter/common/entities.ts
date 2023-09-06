@@ -128,7 +128,7 @@ export enum CATEGORY_FILTER_ID {
   "SELF_REPORTED_ETHNICITY" = "SELF_REPORTED_ETHNICITY",
   "GENE_COUNT" = "GENE_COUNT",
   "ORGANISM" = "ORGANISM",
-  "PUBLICATION_AUTHORS" = "PUBLICATION_AUTHORS",
+  "PUBLICATION" = "PUBLICATION",
   "PUBLICATION_DATE_VALUES" = "PUBLICATION_DATE_VALUES",
   "SEX" = "SEX",
   "STATUS" = "STATUS",
@@ -149,6 +149,7 @@ export interface BaseCategoryFilterConfig {
   label: string;
   multiselect: boolean; // True if category can have multiple values selected.
   pinnedCategoryValues?: CATEGORY_VALUE_KEY[];
+  pinnedPosition?: PINNED_POSITION;
   tooltip?: string;
 }
 
@@ -316,6 +317,7 @@ export type FilterKey = keyof CollectionRow | keyof DatasetRow;
  * Category value keys.
  */
 export enum CATEGORY_VALUE_KEY {
+  NO_PUBLICATION = "No publication",
   NORMAL = "normal",
 }
 
@@ -402,7 +404,6 @@ export interface CollectionRow
   revised_at?: number;
   revisedBy?: string; // Curator view.
   status?: COLLECTION_STATUS[]; // Curator view.
-  summaryCitation: string;
   testId: string; // Test ID for e2e tests, facilitates easy look-ups of rows.
 }
 
@@ -666,6 +667,14 @@ export interface RangeCategoryView {
 }
 
 /**
+ * Possible locations of pinned values in filter menu.
+ */
+export enum PINNED_POSITION {
+  "BOTTOM" = "BOTTOM",
+  "TOP" = "TOP",
+}
+
+/**
  * Display values of publicationDateValue labels. Enum must be non-numeric key for reverse lookup.
  */
 export enum PUBLICATION_DATE_LABELS {
@@ -681,8 +690,8 @@ export enum PUBLICATION_DATE_LABELS {
  * Publication-related filterable values of collections and datasets.
  */
 export interface PublisherMetadataCategories {
-  publicationAuthors?: string[];
   publicationDateValues?: number[]; // Set of date bins that publication date falls within
+  summaryCitation: string;
 }
 
 /**
@@ -727,6 +736,7 @@ export interface SelectCategoryView {
   isDisabled?: boolean;
   categoryFilterId: CATEGORY_FILTER_ID;
   label: string;
+  pinnedPosition?: PINNED_POSITION;
   pinnedValues: SelectCategoryValueView[];
   tooltip?: string;
   unpinnedValues: SelectCategoryValueView[];
