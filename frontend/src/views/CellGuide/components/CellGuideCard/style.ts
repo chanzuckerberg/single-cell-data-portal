@@ -133,7 +133,7 @@ export const StyledRightSideBar = styled(RightSideBar)<StyledRightSideBarProps>`
   right: 0;
   height: 100vh;
   background-color: white;
-  z-index: 10; // Must be over mobile cell guide nav bar
+  z-index: 10;
   top: ${HEADER_HEIGHT_PX}px;
   animation: ${slideIn} 0.2s ease-in-out forwards;
 

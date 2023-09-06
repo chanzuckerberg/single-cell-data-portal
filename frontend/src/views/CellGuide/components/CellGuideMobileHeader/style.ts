@@ -54,6 +54,6 @@ export const StyledCancelButton = styled(Button)`
   ${fontBodyS}
   font-weight: 500;
   padding: 0;
-  top: 2px; // Centering text
+  top: 2px;
   color: ${primary400};
 `;
