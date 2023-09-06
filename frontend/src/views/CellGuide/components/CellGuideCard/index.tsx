@@ -8,7 +8,7 @@ import {
   StyledTag,
   CellGuideView,
   CellGuideCardHeaderInnerWrapper,
-  LEFT_RIGHT_PADDING_PX,
+  LEFT_RIGHT_PADDING_PX_XXL,
   StyledRightSideBar,
   StyledSynonyms,
   FlexContainer,
@@ -17,6 +17,7 @@ import {
   MobileTooltipWrapper,
   MobileTooltipHeader,
   NavBarDropdownWrapper,
+  CellGuideWrapper,
 } from "./style";
 import Description from "./components/Description";
 import MarkerGeneTables from "./components/MarkerGeneTables";
@@ -52,6 +53,8 @@ import {
   InputDropdownProps,
   ButtonIcon,
 } from "@czi-sds/components";
+import { useComponentWidth } from "./components/common/hooks/useIsComponentPastBreakpoint";
+import { DEFAULT_ONTOLOGY_HEIGHT } from "../common/OntologyDagView/common/constants";
 
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
@@ -118,7 +121,7 @@ export default function CellGuideCard({
   const handleResize = useCallback(() => {
     setSkinnyMode(
       window.innerWidth <
-        SKINNY_MODE_BREAKPOINT_WIDTH + 2 * LEFT_RIGHT_PADDING_PX
+        SKINNY_MODE_BREAKPOINT_WIDTH + 2 * LEFT_RIGHT_PADDING_PX_XXL
     );
   }, []);
 
@@ -213,6 +216,7 @@ export default function CellGuideCard({
       <NavBarDropdownWrapper>{dropdownComponents}</NavBarDropdownWrapper>
     </div>
   );
+  const { width, containerRef } = useComponentWidth();
 
   return (
     <>
@@ -269,105 +273,107 @@ export default function CellGuideCard({
           <div>{tooltipContent.element}</div>
         </MobileTooltipWrapper>
       )}
-
-      <CellGuideView skinnyMode={skinnyMode}>
-        {/* Flex item left */}
-        <Wrapper>
-          {/* (thuang): Somehow we need a parent to prevent error:
+      <CellGuideWrapper skinnyMode={skinnyMode}>
+        <CellGuideView skinnyMode={skinnyMode}>
+          {/* Flex item left */}
+          <Wrapper skinnyMode={skinnyMode} ref={containerRef}>
+            {/* (thuang): Somehow we need a parent to prevent error:
           NotFoundError: Failed to execute 'insertBefore' on 'Node'
          */}
-          {/* Intro section */}
-          <div ref={sectionRef0} id="section-0" data-testid="section-0" />
-          {!skinnyMode && (
-            <CellGuideCardHeader>
-              <CellGuideCardHeaderInnerWrapper>
-                <CellGuideCardName data-testid={CELL_GUIDE_CARD_HEADER_NAME}>
-                  {titleizedCellTypeName}
-                </CellGuideCardName>
-                <a
-                  href={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  <StyledTag
-                    data-testid={CELL_GUIDE_CARD_HEADER_TAG}
-                    label={cellTypeId}
-                    sdsType="secondary"
-                    sdsStyle="square"
-                    color="gray"
-                    hover
-                  />
-                </a>
-              </CellGuideCardHeaderInnerWrapper>
-              {dropdownComponents}
-            </CellGuideCardHeader>
-          )}
-          <Description
-            cellTypeId={cellTypeId}
-            cellTypeName={cellTypeName}
-            skinnyMode={skinnyMode}
-            setTooltipContent={setTooltipContent}
-          />
-
-          <FlexContainer>
-            {skinnyMode && (
-              <StyledOntologyId
-                url={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
-                ontologyId={cellTypeId}
-              />
+            {/* Intro section */}
+            <div ref={sectionRef0} id="section-0" data-testid="section-0" />
+            {!skinnyMode && (
+              <CellGuideCardHeader>
+                <CellGuideCardHeaderInnerWrapper>
+                  <CellGuideCardName data-testid={CELL_GUIDE_CARD_HEADER_NAME}>
+                    {titleizedCellTypeName}
+                  </CellGuideCardName>
+                  <a
+                    href={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
+                    <StyledTag
+                      data-testid={CELL_GUIDE_CARD_HEADER_TAG}
+                      label={cellTypeId}
+                      sdsType="secondary"
+                      sdsStyle="square"
+                      color="gray"
+                      hover
+                    />
+                  </a>
+                </CellGuideCardHeaderInnerWrapper>
+                {dropdownComponents}
+              </CellGuideCardHeader>
             )}
-            <StyledSynonyms
-              synonyms={synonyms}
-              data-testid={CELL_GUIDE_CARD_SYNONYMS}
+            <Description
+              cellTypeId={cellTypeId}
+              cellTypeName={cellTypeName}
+              skinnyMode={skinnyMode}
+              setTooltipContent={setTooltipContent}
             />
-          </FlexContainer>
 
-          {/* Cell Ontology section */}
-          <div ref={sectionRef1} id="section-1" data-testid="section-1" />
-          {/* (thuang): Somehow we need a parent <div /> to prevent error:
+            <FlexContainer>
+              {skinnyMode && (
+                <StyledOntologyId
+                  url={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
+                  ontologyId={cellTypeId}
+                />
+              )}
+              <StyledSynonyms
+                synonyms={synonyms}
+                data-testid={CELL_GUIDE_CARD_SYNONYMS}
+              />
+            </FlexContainer>
+
+            {/* Cell Ontology section */}
+            <div ref={sectionRef1} id="section-1" data-testid="section-1" />
+            {/* (thuang): Somehow we need a parent <div /> to prevent error:
           NotFoundError: Failed to execute 'insertBefore' on 'Node'
          */}
-          <div>
-            <FullScreenProvider>
-              <OntologyDagView
-                key={`${cellTypeId}-${selectedOrganId}`}
-                cellTypeId={cellTypeId}
-                tissueName={selectedOrgan.name}
-                tissueId={selectedOrganId}
-                skinnyMode={skinnyMode}
-              />
-            </FullScreenProvider>
-          </div>
+            <div>
+              <FullScreenProvider>
+                <OntologyDagView
+                  key={`${cellTypeId}-${selectedOrganId}`}
+                  cellTypeId={cellTypeId}
+                  tissueName={selectedOrgan.name}
+                  tissueId={selectedOrganId}
+                  inputWidth={width}
+                  inputHeight={DEFAULT_ONTOLOGY_HEIGHT}
+                />
+              </FullScreenProvider>
+            </div>
 
-          {/* Marker Genes section */}
-          <div ref={sectionRef2} id="section-2" data-testid="section-2" />
-          <MarkerGeneTables
-            setTooltipContent={setTooltipContent}
-            key={cellTypeId}
-            cellTypeId={cellTypeId}
-            setGeneInfoGene={setGeneInfoGene}
-            cellTypeName={cellTypeName}
-            skinnyMode={skinnyMode}
-            organName={selectedOrgan.name}
-            organId={selectedOrganId}
-            organismName={selectedOrganism.name}
-          />
+            {/* Marker Genes section */}
+            <div ref={sectionRef2} id="section-2" data-testid="section-2" />
+            <MarkerGeneTables
+              setTooltipContent={setTooltipContent}
+              key={cellTypeId}
+              cellTypeId={cellTypeId}
+              setGeneInfoGene={setGeneInfoGene}
+              cellTypeName={cellTypeName}
+              skinnyMode={skinnyMode}
+              organName={selectedOrgan.name}
+              organId={selectedOrganId}
+              organismName={selectedOrganism.name}
+            />
 
-          {/* Source Data section */}
-          <div ref={sectionRef3} id="section-3" data-testid="section-3" />
-          <SourceDataTable
-            cellTypeId={cellTypeId}
-            organName={selectedOrgan.name}
-            organId={selectedOrganId}
-            organismName={selectedOrganism.name}
-            skinnyMode={skinnyMode}
-            setTooltipContent={setTooltipContent}
-          />
-        </Wrapper>
+            {/* Source Data section */}
+            <div ref={sectionRef3} id="section-3" data-testid="section-3" />
+            <SourceDataTable
+              cellTypeId={cellTypeId}
+              organName={selectedOrgan.name}
+              organId={selectedOrganId}
+              organismName={selectedOrganism.name}
+              skinnyMode={skinnyMode}
+              setTooltipContent={setTooltipContent}
+            />
+          </Wrapper>
 
-        {/* Side bar */}
-        {!skinnyMode && cellGuideSideBar}
-      </CellGuideView>
+          {/* Side bar */}
+          {!skinnyMode && cellGuideSideBar}
+        </CellGuideView>
+      </CellGuideWrapper>
       <StyledRightSideBar
         width={RIGHT_SIDEBAR_WIDTH_PX}
         skinnyMode={skinnyMode}

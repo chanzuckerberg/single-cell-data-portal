@@ -1,39 +1,53 @@
 import styled from "@emotion/styled";
-import {
-  CommonThemeProps,
-  fontHeaderXxl,
-  getSpaces,
-  Tag,
-} from "@czi-sds/components";
+import { CommonThemeProps, fontHeaderXxl, Tag } from "@czi-sds/components";
+import { DEFAULT_ONTOLOGY_WIDTH } from "../common/OntologyDagView/common/constants";
+import { spacesL, spacesXxl } from "src/common/theme";
 
 export const TOP_PADDING_PX = 32;
-export const LEFT_RIGHT_PADDING_PX = 40;
-export const TISSUE_CARD_MAX_WIDTH = 1440;
+export const LEFT_RIGHT_PADDING_PX_XXL = 40;
+const TISSUE_CARD_MAX_WIDTH = 1440;
 
 interface TissueViewProps extends CommonThemeProps {
   skinnyMode: boolean;
 }
 
-export const Wrapper = styled.div`
+export const TissueCardView = styled.div<TissueViewProps>`
+  display: flex;
+  flex-direction: row;
+  max-width: 100vw;
+
+  ${(props) => {
+    const { skinnyMode } = props;
+    const space = skinnyMode ? spacesL(props) : spacesXxl(props);
+    return `
+    padding: ${TOP_PADDING_PX}px ${space}px 0px
+      ${space}px;
+    `;
+  }}
+`;
+
+export const Wrapper = styled.div<TissueViewProps>`
   display: flex;
   flex-direction: column;
   align-self: stretch;
-  margin: auto;
-  padding: ${TOP_PADDING_PX}px ${LEFT_RIGHT_PADDING_PX}px 0px
-    ${LEFT_RIGHT_PADDING_PX}px;
-  margin-bottom: 80px;
-
-  ${(props: TissueViewProps) => {
+  overflow-x: hidden;
+  ${(props) => {
     const { skinnyMode } = props;
-    const spaces = getSpaces(props);
-    const space = skinnyMode ? spaces?.l : spaces?.xxl;
-    const maxWidth = skinnyMode ? "100vw" : "1440px";
-
+    const maxWidth = skinnyMode
+      ? `${DEFAULT_ONTOLOGY_WIDTH}px`
+      : `${TISSUE_CARD_MAX_WIDTH}px`;
     return `
-      max-width: ${maxWidth};
-      padding: ${TOP_PADDING_PX}px ${space}px 0px ${space}px;
+    max-width: ${maxWidth};
     `;
   }}
+`;
+
+export const TissueCardWrapper = styled.div<TissueViewProps>`
+  margin: 0 auto 80px;
+  width: ${(props) =>
+    props.skinnyMode
+      ? `${DEFAULT_ONTOLOGY_WIDTH}px`
+      : `${TISSUE_CARD_MAX_WIDTH}px`};
 `;
 
 export const TissueCardHeaderInnerWrapper = styled.div`

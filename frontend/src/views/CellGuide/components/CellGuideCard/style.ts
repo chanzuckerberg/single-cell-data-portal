@@ -3,54 +3,67 @@ import {
   CommonThemeProps,
   fontHeaderXl,
   fontHeaderXxl,
-  getSpaces,
   Tag,
 } from "@czi-sds/components";
 
 import RightSideBar from "src/components/common/RightSideBar";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import Synonyms from "src/components/Synonyms";
-import { spacesL, spacesM, spacesXxs } from "src/common/theme";
+import { spacesL, spacesM, spacesXxl, spacesXxs } from "src/common/theme";
 import { StyledDiv } from "src/views/WheresMyGene/components/ScreenTint/style";
 import OntologyId from "src/components/OntologyId";
 import { keyframes } from "@emotion/react";
+import { DEFAULT_ONTOLOGY_WIDTH } from "../common/OntologyDagView/common/constants";
+import { SKINNY_MODE_BREAKPOINT_WIDTH } from "./constants";
 
 export const TOP_PADDING_PX = 32;
 export const SIDEBAR_COLUMN_GAP_PX = 120;
-
+export const CELLGUIDE_CARD_MAX_WIDTH = 1440;
 // spacing.xxl and spacing.xl
-export const LEFT_RIGHT_PADDING_PX = 40;
-export const LEFT_RIGHT_PADDING_PX_SKINNY_MODE = 24;
+export const LEFT_RIGHT_PADDING_PX_XXL = 40;
 
 interface CellGuideViewProps extends CommonThemeProps {
   skinnyMode: boolean;
 }
 
-export const CellGuideView = styled.div`
+export const CellGuideView = styled.div<CellGuideViewProps>`
   display: flex;
   flex-direction: row;
   column-gap: ${SIDEBAR_COLUMN_GAP_PX}px;
-  margin: auto;
-  margin-bottom: 80px;
+  max-width: 100vw;
 
-  ${(props: CellGuideViewProps) => {
+  ${(props) => {
     const { skinnyMode } = props;
-    const spaces = getSpaces(props);
-    const space = skinnyMode ? spaces?.l : spaces?.xxl;
-    const maxWidth = skinnyMode ? "100vw" : "1440px";
+    const space = skinnyMode ? spacesL(props) : spacesXxl(props);
     return `
-    max-width: ${maxWidth};
     padding: ${TOP_PADDING_PX}px ${space}px 0px
       ${space}px;
     `;
   }}
 `;
 
-export const Wrapper = styled.div`
+export const CellGuideWrapper = styled.div<CellGuideViewProps>`
+  margin: 0 auto 80px;
+  width: ${(props) =>
+    props.skinnyMode
+      ? `${DEFAULT_ONTOLOGY_WIDTH}px`
+      : `${CELLGUIDE_CARD_MAX_WIDTH}px`};
+`;
+
+export const Wrapper = styled.div<CellGuideViewProps>`
   display: flex;
   flex-direction: column;
   align-self: stretch;
-  margin-bottom: 80px;
+  overflow-x: hidden;
+  ${(props) => {
+    const { skinnyMode } = props;
+    const maxWidth = skinnyMode
+      ? `${DEFAULT_ONTOLOGY_WIDTH}px`
+      : `${SKINNY_MODE_BREAKPOINT_WIDTH + SIDEBAR_COLUMN_GAP_PX}px`;
+    return `
+    max-width: ${maxWidth};
+    `;
+  }}
 `;
 
 export const NavBarDropdownWrapper = styled.div`

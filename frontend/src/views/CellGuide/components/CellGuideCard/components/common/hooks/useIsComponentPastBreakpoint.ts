@@ -47,3 +47,27 @@ export function useIsComponentPastBreakpointHeight(breakpoint: number) {
 
   return { isPastBreakpoint, containerRef: setContainerRef };
 }
+
+export function useComponentWidth() {
+  const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null);
+  const [width, setWidth] = useState(0);
+
+  useLayoutEffect(() => {
+    const handleResize = () => {
+      if (containerRef) {
+        setWidth(containerRef.offsetWidth);
+      }
+    };
+
+    const resizeObserver = new ResizeObserver(handleResize);
+    if (containerRef) {
+      resizeObserver.observe(containerRef);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [containerRef]);
+
+  return { width, containerRef: setContainerRef };
+}
