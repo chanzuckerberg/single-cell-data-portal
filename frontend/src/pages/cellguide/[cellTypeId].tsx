@@ -8,13 +8,20 @@ import {
 const Page = ({
   seoDescription,
   name,
+  synonyms,
 }: InferGetServerSidePropsType<typeof getServerSideProps>): JSX.Element => (
-  <CellGuideCard key={name} name={name} seoDescription={seoDescription} />
+  <CellGuideCard
+    key={name}
+    name={name}
+    seoDescription={seoDescription}
+    synonyms={synonyms}
+  />
 );
 
 export const getServerSideProps: GetServerSideProps<{
   seoDescription: string;
   name: string;
+  synonyms?: string[];
 }> = async (context) => {
   const { params } = context;
   const { cellTypeId: rawCellTypeId } = params ?? {};

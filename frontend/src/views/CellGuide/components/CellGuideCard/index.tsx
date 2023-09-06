@@ -70,7 +70,6 @@ export default function CellGuideCard({
   synonyms,
 }: Props): JSX.Element {
   const router = useRouter();
-
   // Navigation
   const sectionRef0 = React.useRef(null);
   const sectionRef1 = React.useRef(null);

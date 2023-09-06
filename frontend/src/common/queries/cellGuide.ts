@@ -355,7 +355,16 @@ export const useCellTypeMetadata =
 // this naked fetch is used for SSR
 export const fetchCellTypeMetadata =
   async (): Promise<CellTypeMetadataQueryResponse> => {
-    const url = `${CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX}/${
+    // This function is used server-side to fetch the GPT SEO description.
+    const latestSnapshotIdentifierUrl = `${CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX}/${
+      QUERY_MAPPING[TYPES.LATEST_SNAPSHOT_IDENTIFIER].urlSuffix
+    }`;
+    const latestSnapshotIdentifierResponse = await fetch(
+      latestSnapshotIdentifierUrl
+    );
+    const latestSnapshotIdentifier =
+      await latestSnapshotIdentifierResponse.text();
+    const url = `${CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX}/${latestSnapshotIdentifier}/${
       QUERY_MAPPING[TYPES.CELLTYPE_METADATA].urlSuffix
     }`;
     const response = await fetch(url);
