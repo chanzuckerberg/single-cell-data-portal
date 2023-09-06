@@ -26,7 +26,6 @@ import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 import { titleize } from "src/common/utils/string";
 import Head from "next/head";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
-import { useCellTypeMetadata } from "src/common/queries/cellGuide";
 import {
   CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN,
@@ -59,6 +58,7 @@ const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
 interface Props {
   name: string;
   seoDescription: string;
+  synonyms?: string[];
 }
 
 export default function CellGuideCard({
@@ -66,9 +66,10 @@ export default function CellGuideCard({
   name,
   // From getServerSideProps
   seoDescription: rawSeoDescription,
+  // From getServerSideProps
+  synonyms,
 }: Props): JSX.Element {
   const router = useRouter();
-
   // Navigation
   const sectionRef0 = React.useRef(null);
   const sectionRef1 = React.useRef(null);
@@ -81,12 +82,6 @@ export default function CellGuideCard({
   const cellTypeId = (cellTypeIdRaw as string)?.replace("_", ":") ?? "";
   const cellTypeName = name || "";
   const titleizedCellTypeName = titleize(cellTypeName);
-
-  const { data: cellTypesById } = useCellTypeMetadata();
-
-  const cellType = cellTypesById && cellTypesById[cellTypeId];
-
-  const { synonyms } = cellType || {};
 
   const handleResize = useCallback(() => {
     setSkinnyMode(
