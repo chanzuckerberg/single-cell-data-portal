@@ -192,6 +192,8 @@ export default function Description({
             descriptionMaxHeight
               ? setDescriptionMaxHeight(undefined)
               : setDescriptionMaxHeight(DESCRIPTION_BREAKPOINT_HEIGHT_PX);
+            descriptionMaxHeight &&
+              track(EVENTS.CG_DESCRIPTION_READ_MORE_CLICKED);
           }}
         >
           {descriptionMaxHeight ? "Read More" : "Read Less"}

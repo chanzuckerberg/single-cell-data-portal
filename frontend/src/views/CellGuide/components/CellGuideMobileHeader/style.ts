@@ -7,6 +7,7 @@ import {
   getSpaces,
 } from "@czi-sds/components";
 import styled from "@emotion/styled";
+import { spacesL } from "src/common/theme";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
 export const MobileHeaderWrapper = styled.div<{ top: number }>`
@@ -25,7 +26,7 @@ export const MobileHeader = styled.div`
   align-items: center;
   align-content: center;
   background-color: white;
-  padding: 0 16px;
+  padding: 0 ${spacesL}px;
   gap: 16px;
 `;
 
@@ -40,7 +41,7 @@ export const MobilePageNavWrapper = styled.div`
   top: ${HEADER_HEIGHT_PX}px;
   background-color: white;
   border-bottom: 1px solid lightgrey;
-  padding: 0px 16px;
+  padding: 0px ${spacesL}px;
 `;
 
 export const SearchBarWrapper = styled.div`
