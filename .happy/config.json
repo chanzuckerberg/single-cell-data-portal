@@ -80,5 +80,8 @@
   "tasks": {
     "migrate": ["migrate_db_task_definition_arn"],
     "delete": ["delete_db_task_definition_arn"]
+  },
+  "features": {
+    "enable_dynamo_locking": true
   }
 }
