@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import {
+  Button,
   CommonThemeProps,
   Tooltip,
   fontBodyS,
@@ -16,6 +17,12 @@ export const CellGuideCardDescription = styled.div`
   background-color: ${gray100};
   padding: 12px 16px 12px 16px;
   border-radius: 8px;
+`;
+
+export const StyledButton = styled(Button)`
+  ${fontBodyS}
+  font-weight: 500;
+  text-transform: none;
 `;
 
 export const Wrapper = styled.div`

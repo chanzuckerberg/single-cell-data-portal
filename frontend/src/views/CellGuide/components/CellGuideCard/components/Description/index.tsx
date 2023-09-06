@@ -9,6 +9,7 @@ import {
   StyledTooltip,
   Wrapper,
   DescriptionWrapper,
+  StyledButton,
 } from "./style";
 import {
   useGptDescription,
@@ -28,7 +29,6 @@ import {
   DESCRIPTION_BREAKPOINT_HEIGHT_PX,
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 import { useIsComponentPastBreakpointHeight } from "../common/hooks/useIsComponentPastBreakpoint";
-import { Button } from "@czi-sds/components";
 
 interface DescriptionProps {
   cellTypeName: string;
@@ -185,7 +185,7 @@ export default function Description({
   const sourceComponent = (
     <Source>
       {isPastBreakpoint ? (
-        <Button
+        <StyledButton
           sdsType="primary"
           sdsStyle="minimal"
           onClick={() => {
@@ -195,7 +195,7 @@ export default function Description({
           }}
         >
           {descriptionMaxHeight ? "Read More" : "Read Less"}
-        </Button>
+        </StyledButton>
       ) : (
         disclaimerMessage
       )}

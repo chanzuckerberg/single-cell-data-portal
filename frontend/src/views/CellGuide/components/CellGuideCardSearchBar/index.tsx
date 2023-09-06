@@ -27,8 +27,10 @@ const TISSUE_PREFIX = "UBERON:";
 
 export default function CellGuideCardSearchBar({
   autoFocus = false,
+  skinnyModeBreakpointWidth = SKINNY_MODE_BREAKPOINT_WIDTH,
 }: {
   autoFocus?: boolean;
+  skinnyModeBreakpointWidth?: number;
 }): JSX.Element {
   const router = useRouter();
   const { data: cellTypes } = useCellTypeMetadata();
@@ -88,7 +90,7 @@ export default function CellGuideCardSearchBar({
       <StyledAutocomplete
         // This is used to style the autocomplete dropdown for mobile
         sx={{
-          [`@media (max-width: ${SKINNY_MODE_BREAKPOINT_WIDTH}px)`]: {
+          [`@media (max-width: ${skinnyModeBreakpointWidth}px)`]: {
             "& + .MuiAutocomplete-popper": {
               width: "100% !important",
             },

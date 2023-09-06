@@ -4,7 +4,6 @@ import {
   fontHeaderL,
   fontHeaderXl,
 } from "@czi-sds/components";
-import { SKINNY_MODE_BREAKPOINT_WIDTH } from "../CellGuideCard/constants";
 
 interface WrapperProps extends CommonThemeProps {
   searchBarOpen: boolean;
@@ -19,7 +18,7 @@ export const Wrapper = styled.div<WrapperProps>`
   margin-right: auto;
 
   // Mobile landing page styling
-  @media (max-width: ${SKINNY_MODE_BREAKPOINT_WIDTH}px) {
+  @media (max-width: 768px) {
     max-width: 100vw;
     padding-left: 24px;
     padding-right: 24px;
@@ -34,7 +33,7 @@ export const StyledHeader = styled.div`
   ${fontHeaderXl}
   margin: 0 0 16px 8px;
 
-  @media (max-width: ${SKINNY_MODE_BREAKPOINT_WIDTH}px) {
+  @media (max-width: 768px) {
     ${fontHeaderL}
   }
 `;

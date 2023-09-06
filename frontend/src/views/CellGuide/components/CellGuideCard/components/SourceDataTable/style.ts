@@ -3,12 +3,12 @@ import { CommonThemeProps, Tag, fontBodyXs } from "@czi-sds/components";
 import { spacesM, spacesS } from "src/common/theme";
 
 export const StyledTag = styled(Tag)`
-  ${fontBodyXs}
   font-weight: 400;
   padding: 2px 8px;
   background-color: rgba(0, 0, 0, 0.05);
   & .MuiChip-label {
     color: #000000;
+    ${fontBodyXs}
   }
 `;
 
