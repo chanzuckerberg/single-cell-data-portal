@@ -1,12 +1,12 @@
 import styled from "@emotion/styled";
 import { fontBodyXxs, fontBodyS, fontHeaderL } from "@czi-sds/components";
 import { Divider } from "@mui/material";
-import { gray500 } from "src/common/theme";
+import { fontWeightSemibold, gray500 } from "src/common/theme";
 
 export const TableTitle = styled.div`
   ${fontHeaderL}
   cursor: default;
-  font-weight: 600;
+  font-weight: ${fontWeightSemibold};
 `;
 
 export const TableTitleWrapper = styled.div`

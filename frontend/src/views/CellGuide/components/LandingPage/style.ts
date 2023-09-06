@@ -4,6 +4,7 @@ import {
   fontHeaderL,
   fontHeaderXl,
 } from "@czi-sds/components";
+import { MAX_WIDTH_BREAKPOINT_PX } from "src/components/LandingHeader/style";
 
 interface WrapperProps extends CommonThemeProps {
   searchBarOpen: boolean;
@@ -17,8 +18,7 @@ export const Wrapper = styled.div<WrapperProps>`
   margin-left: auto;
   margin-right: auto;
 
-  // Mobile landing page styling
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     max-width: 100vw;
     padding-left: 24px;
     padding-right: 24px;
@@ -33,7 +33,7 @@ export const StyledHeader = styled.div`
   ${fontHeaderXl}
   margin: 0 0 16px 8px;
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     ${fontHeaderL}
   }
 `;

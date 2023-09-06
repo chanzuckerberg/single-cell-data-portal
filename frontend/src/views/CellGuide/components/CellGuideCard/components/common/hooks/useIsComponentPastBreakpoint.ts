@@ -1,13 +1,15 @@
 import { useState, useLayoutEffect } from "react";
 
-export function useIsComponentPastBreakpointWidth(breakpoint: number) {
+type Condition = (containerRef: HTMLDivElement) => boolean;
+
+function useIsComponentPastBreakpoint(condition: Condition) {
   const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null);
   const [isPastBreakpoint, setIsPastBreakpoint] = useState(false);
 
   useLayoutEffect(() => {
     const handleResize = () => {
       if (containerRef) {
-        setIsPastBreakpoint(containerRef.offsetWidth < breakpoint);
+        setIsPastBreakpoint(condition(containerRef));
       }
     };
 
@@ -19,33 +21,21 @@ export function useIsComponentPastBreakpointWidth(breakpoint: number) {
     return () => {
       resizeObserver.disconnect();
     };
-  }, [breakpoint, containerRef]);
+  }, [containerRef, condition]);
 
   return { isPastBreakpoint, containerRef: setContainerRef };
 }
 
+export function useIsComponentPastBreakpointWidth(breakpoint: number) {
+  const condition = (containerRef: HTMLDivElement) =>
+    containerRef.offsetWidth < breakpoint;
+  return useIsComponentPastBreakpoint(condition);
+}
+
 export function useIsComponentPastBreakpointHeight(breakpoint: number) {
-  const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null);
-  const [isPastBreakpoint, setIsPastBreakpoint] = useState(false);
-
-  useLayoutEffect(() => {
-    const handleResize = () => {
-      if (containerRef) {
-        setIsPastBreakpoint(containerRef.offsetHeight >= breakpoint);
-      }
-    };
-
-    const resizeObserver = new ResizeObserver(handleResize);
-    if (containerRef) {
-      resizeObserver.observe(containerRef);
-    }
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [breakpoint, containerRef]);
-
-  return { isPastBreakpoint, containerRef: setContainerRef };
+  const condition = (containerRef: HTMLDivElement) =>
+    containerRef.offsetHeight >= breakpoint;
+  return useIsComponentPastBreakpoint(condition);
 }
 
 export function useComponentWidth() {

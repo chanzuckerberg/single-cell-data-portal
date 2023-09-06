@@ -2,7 +2,7 @@ import {
   Label,
   StyledOntologyId,
   Wrapper,
-} from "src/components/OntologyId/style";
+} from "src/views/CellGuide/components/OntologyId/style";
 import { SourceLink } from "src/views/CellGuide/components/CellGuideCard/components/Description/style";
 import Link from "src/views/CellGuide/components/CellGuideCard/components/common/Link";
 

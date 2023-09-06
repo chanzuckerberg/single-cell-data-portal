@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { CommonThemeProps, fontBodyS, getColors } from "@czi-sds/components";
-import { spacesS } from "src/common/theme";
+import { gray100, spacesS } from "src/common/theme";
 
 export const StyledTable = styled.table`
   width: 100%;
@@ -31,27 +31,14 @@ export const StyledHeadCell = styled.th`
   }}
 `;
 
-interface StyledRowProps {
+interface StyledRowProps extends CommonThemeProps {
   highlight: boolean;
 }
 export const StyledRow = styled.tr<StyledRowProps>`
-  background-color: ${(props) => (props.highlight ? "#F8F8F8" : "white")};
+  background-color: ${(props) => (props.highlight ? gray100(props) : "white")};
 `;
 
-export enum PaddingType {
-  None = 0,
-  Medium = 1,
-  Large = 2,
-  MediumLarge = 3,
-}
-
-interface StyledCellProps extends CommonThemeProps {
-  minWidth?: number;
-  maxWidth?: number;
-  addPadding?: PaddingType;
-}
-
-export const StyledCell = styled.td<StyledCellProps>`
+export const StyledCell = styled.td`
   ${fontBodyS}
   font-weight: 400;
   padding-top: ${spacesS}px;

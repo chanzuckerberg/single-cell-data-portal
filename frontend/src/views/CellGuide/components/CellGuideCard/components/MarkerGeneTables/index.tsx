@@ -45,7 +45,10 @@ import {
   useCanonicalMarkers,
   useComputationalMarkers,
 } from "src/common/queries/cellGuide";
-import { useComputationalMarkerGenesTableRowsAndFilters } from "./hooks/computational_markers";
+import {
+  ComputationalMarkerGeneTableData,
+  useComputationalMarkerGenesTableRowsAndFilters,
+} from "./hooks/computational_markers";
 import {
   CanonicalMarkerGeneTableData,
   useCanonicalMarkerGenesTableRowsAndFilters,
@@ -343,16 +346,15 @@ const MarkerGeneTables = ({
             <ReferenceTooltipWrapper>
               {row.referenceData.publicationTitles.map(
                 (publicationTitle, index) => {
+                  const keyVal = `${row.referenceData.publications[index]}-${index}}`;
                   const referenceIndexLabel =
                     (row.referenceData.publicationTitlesToIndex.get(
                       publicationTitle
                     ) ?? 0) + 1;
                   return (
-                    <div
-                      key={`${row.referenceData.publications[index]}-${index}-tooltip`}
-                    >
+                    <div key={`${keyVal}-tooltip`}>
                       <StyledLink
-                        key={`${row.referenceData.publications[index]}-${index}`}
+                        key={`${keyVal}`}
                         label={`[${referenceIndexLabel}] ${publicationTitle
                           .split("\n\n")
                           .at(0)}`}
@@ -369,7 +371,20 @@ const MarkerGeneTables = ({
         });
       };
     };
-
+    const getSymbol = (
+      row: ComputationalMarkerGeneTableData | CanonicalMarkerGeneTableData
+    ) => (
+      <NoWrapWrapper>
+        {row.symbol}{" "}
+        <ButtonIcon
+          aria-label={`display gene info for ${row.symbol}`}
+          sdsIcon="infoCircle"
+          sdsSize="small"
+          sdsType="secondary"
+          onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
+        />
+      </NoWrapWrapper>
+    );
     return activeTable
       ? computationalMarkerGeneTableData.map((row) => ({
           ...row,
@@ -379,34 +394,12 @@ const MarkerGeneTables = ({
             <StyledCellNumerical> {row.marker_score} </StyledCellNumerical>
           ),
           symbolId: row.symbol,
-          symbol: (
-            <NoWrapWrapper>
-              {row.symbol}{" "}
-              <ButtonIcon
-                aria-label={`display gene info for ${row.symbol}`}
-                sdsIcon="infoCircle"
-                sdsSize="small"
-                sdsType="secondary"
-                onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
-              />
-            </NoWrapWrapper>
-          ),
+          symbol: getSymbol(row),
         }))
       : canonicalMarkerGeneTableData.map((row) => ({
           ...row,
           symbolId: row.symbol,
-          symbol: (
-            <NoWrapWrapper>
-              {row.symbol}{" "}
-              <ButtonIcon
-                aria-label={`display gene info for ${row.symbol}`}
-                sdsIcon="infoCircle"
-                sdsSize="small"
-                sdsType="secondary"
-                onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
-              />
-            </NoWrapWrapper>
-          ),
+          symbol: getSymbol(row),
           references: (
             <PublicationLinkWrapper>
               {row.referenceData.publicationTitles.map(
@@ -419,9 +412,10 @@ const MarkerGeneTables = ({
                       (row.referenceData.publicationTitlesToIndex.get(
                         publicationTitle
                       ) ?? 0) + 1;
+                    const keyVal = `${row.referenceData.publications[index]}-${index}}`;
                     return (
                       <Tooltip
-                        key={`${row.referenceData.publications[index]}-${index}-tooltip`}
+                        key={`${keyVal}-tooltip`}
                         placement="top"
                         disableHoverListener={skinnyMode}
                         width="default"
@@ -437,7 +431,7 @@ const MarkerGeneTables = ({
                         leaveDelay={0}
                       >
                         <span
-                          key={`${row.referenceData.publications[index]}-${index}-span`}
+                          key={`${keyVal}-span`}
                           onClick={
                             skinnyMode
                               ? referenceClickHandlerMobileView(row)
@@ -445,7 +439,7 @@ const MarkerGeneTables = ({
                           }
                         >
                           <StyledLink
-                            key={`${row.referenceData.publications[index]}-${index}`}
+                            key={`${keyVal}`}
                             label={`[${referenceIndexLabel}]`}
                             url={`https://doi.org/${row.referenceData.publications[index]}`}
                           />

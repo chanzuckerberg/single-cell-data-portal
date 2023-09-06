@@ -1,13 +1,6 @@
-import {
-  Button,
-  CommonThemeProps,
-  fontBodyS,
-  fontHeaderM,
-  getColors,
-  getSpaces,
-} from "@czi-sds/components";
+import { Button, fontBodyS, fontHeaderM } from "@czi-sds/components";
 import styled from "@emotion/styled";
-import { spacesL } from "src/common/theme";
+import { primary400, spacesL, spacesM } from "src/common/theme";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
 export const MobileHeaderWrapper = styled.div<{ top: number }>`
@@ -54,14 +47,7 @@ export const MobileSearchBarWrapper = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-
-  ${(props: CommonThemeProps) => {
-    const spaces = getSpaces(props);
-
-    return `
-      gap: ${spaces?.m}px
-    `;
-  }}
+  gap: ${spacesM}px;
 `;
 
 export const StyledCancelButton = styled(Button)`
@@ -69,11 +55,5 @@ export const StyledCancelButton = styled(Button)`
   font-weight: 500;
   padding: 0;
   top: 2px; // Centering text
-  ${(props) => {
-    const colors = getColors(props);
-
-    return `
-      color: ${colors?.primary[400]}
-    `;
-  }}
+  color: ${primary400};
 `;

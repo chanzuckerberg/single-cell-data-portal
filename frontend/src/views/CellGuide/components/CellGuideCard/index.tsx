@@ -257,7 +257,8 @@ export default function CellGuideCard({
           setPageNavIsOpen={setPageNavIsOpen}
         />
       )}
-
+      {/* when tooltipContent is null, remove the tooltip */}
+      {/* setTooltipContent sets the title and content element */}
       {skinnyMode && tooltipContent && (
         <MobileTooltipWrapper>
           <MobileTooltipHeader>
@@ -282,6 +283,7 @@ export default function CellGuideCard({
          */}
             {/* Intro section */}
             <div ref={sectionRef0} id="section-0" data-testid="section-0" />
+            {/* Don't show title of the cell card if we're on mobile, since the title is already in the header nav */}
             {!skinnyMode && (
               <CellGuideCardHeader>
                 <CellGuideCardHeaderInnerWrapper>
@@ -386,6 +388,7 @@ export default function CellGuideCard({
           />
         )}
       </StyledRightSideBar>
+      {/* dont include long survey link text if in mobile view */}
       <CellGuideBottomBanner includeSurveyLink={!skinnyMode} />
     </>
   );

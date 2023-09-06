@@ -8,7 +8,12 @@ import {
   fontBodyXxs,
   fontCapsXxs,
 } from "@czi-sds/components";
-import { gray100, gray500, gray400 } from "src/common/theme";
+import {
+  gray100,
+  gray500,
+  gray400,
+  fontWeightSemibold,
+} from "src/common/theme";
 
 export const CellGuideCardDescription = styled.div`
   ${fontBodyS}
@@ -72,7 +77,7 @@ export const SourceLink = styled.div`
 
 export const DescriptionHeader = styled.div`
   ${fontCapsXxs}
-  font-weight: 600;
+  font-weight: ${fontWeightSemibold};
   color: ${gray500};
   margin-bottom: 8px;
 `;

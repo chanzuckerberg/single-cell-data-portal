@@ -9,9 +9,15 @@ import {
 import RightSideBar from "src/components/common/RightSideBar";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import Synonyms from "src/components/Synonyms";
-import { spacesL, spacesM, spacesXxl, spacesXxs } from "src/common/theme";
+import {
+  fontWeightSemibold,
+  spacesL,
+  spacesM,
+  spacesXxl,
+  spacesXxs,
+} from "src/common/theme";
 import { StyledDiv } from "src/views/WheresMyGene/components/ScreenTint/style";
-import OntologyId from "src/components/OntologyId";
+import OntologyId from "src/views/CellGuide/components/OntologyId";
 import { keyframes } from "@emotion/react";
 import { DEFAULT_ONTOLOGY_WIDTH } from "../common/OntologyDagView/common/constants";
 import { SKINNY_MODE_BREAKPOINT_WIDTH } from "./constants";
@@ -164,7 +170,7 @@ export const FlexContainer = styled.div`
 
 export const MobileTooltipTitle = styled.div`
   ${fontHeaderXl}
-  font-weight: 600;
+  font-weight: ${fontWeightSemibold};
 `;
 
 export const MobileTooltipWrapper = styled.div`

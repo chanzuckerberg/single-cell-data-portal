@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { CommonThemeProps, Tag, fontBodyXs } from "@czi-sds/components";
-import { spacesM, spacesS } from "src/common/theme";
+import { gray100, spacesL, spacesM, spacesS } from "src/common/theme";
 
 export const StyledTag = styled(Tag)`
   font-weight: 400;
@@ -11,13 +11,12 @@ export const StyledTag = styled(Tag)`
     ${fontBodyXs}
   }
 `;
-
 export const SourceDataTableWrapper = styled.div`
-  max-width: calc(100vw - 32px);
+  max-width: calc(100vw - ${spacesL}px - ${spacesL}px);
 `;
 
 export const MobileSourceDataTableWrapper = styled.div`
-  max-width: calc(100vw - 32px);
+  max-width: calc(100vw - ${spacesL}px - ${spacesL}px);
   display: flex;
   flex-direction: column;
   min-width: 320px;
@@ -34,7 +33,7 @@ export const MobileSourceDataTableEntry = styled.div<MobileSourceDataTableEntryP
   padding-left: ${spacesM}px;
   display: flex;
   flex-direction: column;
-  background-color: ${(props) => (props.highlight ? "#F8F8F8" : "white")};
+  background-color: ${(props) => (props.highlight ? gray100(props) : "white")};
 `;
 
 export const MobileSourceDataTableEntryRow = styled.div`

@@ -6,6 +6,7 @@ import { LANDING_PAGE_HEADER } from "src/views/CellGuide/components/LandingPage/
 import CellGuideMobileHeader from "../CellGuideMobileHeader";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { throttle } from "lodash";
+import { MAX_WIDTH_BREAKPOINT_PX } from "src/components/LandingHeader/style";
 
 const TITLE = "CellGuide Cell Types and Cell Tissues - CZ CELLxGENE";
 
@@ -14,13 +15,13 @@ const DESCRIPTION =
 
 export default function LandingPage(): JSX.Element {
   // This is for mobile only
-  const [openSearch, setOpenSearch] = useState(false);
+  const [openMobileSearch, setOpenMobileSearch] = useState(false);
 
   const [skinnyMode, setSkinnyMode] = useState<boolean>(false);
 
   const handleResize = useCallback(() => {
     setSkinnyMode(
-      window.innerWidth < 768 // This is the value the global header nav condenses for mobile
+      window.innerWidth < MAX_WIDTH_BREAKPOINT_PX // This is the value the global header nav condenses for mobile
     );
   }, []);
 
@@ -38,8 +39,8 @@ export default function LandingPage(): JSX.Element {
   return (
     <div
       onBlur={() => {
-        if (openSearch) {
-          setOpenSearch(false);
+        if (openMobileSearch) {
+          setOpenMobileSearch(false);
         }
       }}
     >
@@ -69,7 +70,7 @@ export default function LandingPage(): JSX.Element {
       </Head>
 
       {/* When clicking landing page input box, open the search at the top */}
-      {skinnyMode && openSearch && (
+      {skinnyMode && openMobileSearch && (
         <CellGuideMobileHeader
           title=""
           pageNav={null}
@@ -78,7 +79,7 @@ export default function LandingPage(): JSX.Element {
         />
       )}
 
-      <Wrapper searchBarOpen={openSearch}>
+      <Wrapper searchBarOpen={openMobileSearch}>
         <StyledHeader data-testid={LANDING_PAGE_HEADER}>
           CellGuide is a <br />
           comprehensive resource for <br />
@@ -87,13 +88,15 @@ export default function LandingPage(): JSX.Element {
         <div
           onClick={() => {
             if (skinnyMode) {
-              setOpenSearch(true);
+              setOpenMobileSearch(true);
             }
           }}
         >
           {/* Search will open at top of page for mobile */}
-          {!openSearch && (
-            <CellGuideCardSearchBar skinnyModeBreakpointWidth={768} />
+          {!openMobileSearch && (
+            <CellGuideCardSearchBar
+              skinnyModeBreakpointWidth={MAX_WIDTH_BREAKPOINT_PX}
+            />
           )}
         </div>
       </Wrapper>

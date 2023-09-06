@@ -26,21 +26,19 @@ export const MainWrapper = styled.div`
   margin-top: ${HEADER_HEIGHT_PX}px; /* positions content below fixed header */
 `;
 
-export const DefaultMainWrapper = styled(MainWrapper)<{ isCellGuide: boolean }>`
+export const DefaultMainWrapper = styled(MainWrapper)`
   main {
     overflow: auto;
+    margin-top: unset;
   }
-  ${(props) => {
-    // CellGuide does not need margin-top in the layout
-    // Targeting cell guide specifically to not affect other pages
-    if (props.isCellGuide) {
-      return `
-        @media (min-width: 769px) {
-          margin-top: unset;
-        }
-      `;
-    }
-  }}
+`;
+
+// CellGuide does not need margin-top in the layout
+// Targeting cell guide specifically to not affect other pages
+export const CellGuideMainWrapper = styled(DefaultMainWrapper)`
+  @media (min-width: 769px) {
+    margin-top: unset;
+  }
 `;
 
 export const SidebarMainWrapper = styled(MainWrapper)`

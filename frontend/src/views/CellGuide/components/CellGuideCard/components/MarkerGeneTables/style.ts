@@ -6,6 +6,7 @@ import {
 } from "@czi-sds/components";
 import styled from "@emotion/styled";
 import {
+  fontWeightSemibold,
   gray200,
   gray400,
   gray500,
@@ -78,7 +79,7 @@ export const TableSelectorButton = styled.button<TableSelectorButtonProps>`
   cursor: pointer;
   padding: 0;
   margin: 0;
-  font-weight: 600;
+  font-weight: ${fontWeightSemibold};
   color: ${(props) => `${props.isActive ? "#000000" : gray500(props)}`};
 
   &::after {
@@ -118,5 +119,5 @@ export const MarkerGeneTooltipSubtext = styled.div`
 `;
 
 export const MarkerGeneTableWrapper = styled.div`
-  max-width: calc(100vw - 32px);
+  max-width: calc(100vw - ${spacesL}px - ${spacesL}px);
 `;

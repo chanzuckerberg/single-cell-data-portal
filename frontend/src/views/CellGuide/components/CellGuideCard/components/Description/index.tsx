@@ -1,4 +1,5 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { TooltipProps } from "@czi-sds/components";
 import {
   CellGuideCardDescription,
   ChatGptTooltipSubtext,
@@ -29,6 +30,15 @@ import {
   DESCRIPTION_BREAKPOINT_HEIGHT_PX,
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 import { useIsComponentPastBreakpointHeight } from "../common/hooks/useIsComponentPastBreakpoint";
+
+const SLOT_PROPS: TooltipProps["slotProps"] = {
+  tooltip: {
+    style: {
+      maxWidth: 550, // This is needed because SDS bug where width prop doesn't affect dark sdsStyle
+      textAlign: "start", // Also dark sdsStyle aligns content to center by default
+    },
+  },
+};
 
 interface DescriptionProps {
   cellTypeName: string;
@@ -138,14 +148,7 @@ export default function Description({
         placement="left"
         width="wide"
         arrow
-        slotProps={{
-          tooltip: {
-            style: {
-              maxWidth: 550, // This is needed because SDS bug where width prop doesn't affect dark sdsStyle
-              textAlign: "start", // Also dark sdsStyle aligns content to center by default
-            },
-          },
-        }}
+        slotProps={SLOT_PROPS}
         title={!skinnyMode && tooltipContent}
       >
         <StyledLink
@@ -153,7 +156,7 @@ export default function Description({
           onMouseOver={() => {
             const id = setTimeout(() => {
               track(EVENTS.CG_CHAT_GPT_HOVER);
-            }, 2000);
+            }, 2 * 1000);
             setTimerId(id);
           }}
           onMouseOut={() => {
@@ -169,6 +172,7 @@ export default function Description({
                 element: tooltipContent,
               });
           }}
+          // only setting mobile Tooltip View on touch and not click
           onTouchEnd={() => {
             setTooltipContent({
               title: "ChatGPT Descriptions",

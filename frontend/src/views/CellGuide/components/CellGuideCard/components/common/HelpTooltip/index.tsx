@@ -4,6 +4,14 @@ import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { TooltipButton, StyledTooltip, StyledIconImage } from "./style";
 import { Dispatch, ReactElement, SetStateAction } from "react";
 
+const getSlotProps = (dark?: boolean) => {
+  return {
+    tooltip: {
+      style: dark ? { maxWidth: 550 } : {}, // Fixes SDS bug where "wide" property doesn't affect dark sdsStyle
+    },
+  };
+};
+
 interface Props {
   text: string | ReactElement;
   placement?:
@@ -46,11 +54,7 @@ const HelpTooltip = ({
       width="wide"
       arrow
       title={!skinnyMode && <StyledTooltip>{text}</StyledTooltip>}
-      slotProps={{
-        tooltip: {
-          style: dark ? { maxWidth: 550 } : {}, // Fixes SDS bug where "wide" property doesn't affect dark sdsStyle
-        },
-      }}
+      slotProps={getSlotProps(dark)}
     >
       <TooltipButton
         data-testid={buttonDataTestId}
