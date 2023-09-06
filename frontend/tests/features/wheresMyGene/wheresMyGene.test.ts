@@ -7,6 +7,7 @@ import {
   goToPage,
   selectNthOption,
   tryUntil,
+  waitForLoadingSpinnerToResolve,
 } from "tests/utils/helpers";
 import { TEST_URL } from "../../common/constants";
 import { TISSUE_DENY_LIST } from "../../fixtures/wheresMyGene/tissueRollup";
@@ -17,10 +18,10 @@ import {
   WMG_WITH_SEEDED_GENES,
   conditionallyRunTests,
   goToWMGWithSeededState,
-  searchAndAddGene,
   waitForHeatmapToRender,
 } from "tests/utils/wmgUtils";
 import { getCurrentDate } from "tests/utils/downloadUtils";
+import { searchAndAddGene } from "tests/utils/geneUtils";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
@@ -134,9 +135,10 @@ describe("Where's My Gene", () => {
 
   test("Primary and secondary filter crossfiltering", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+    await waitForLoadingSpinnerToResolve(page);
 
     const numberOfTissuesBefore = await countLocator(
-      page.getByTestId("tissue-name")
+      page.getByTestId(TISSUE_LABELS_ID)
     );
 
     await clickUntilOptionsShowUp({
@@ -161,7 +163,7 @@ describe("Where's My Gene", () => {
     await waitForLoadingSpinnerToResolve(page);
 
     const numberOfTissuesAfter = await countLocator(
-      page.getByTestId("tissue-name")
+      page.getByTestId(TISSUE_LABELS_ID)
     );
 
     await clickUntilOptionsShowUp({
@@ -454,8 +456,6 @@ describe("Where's My Gene", () => {
     const TEST_GENE = "DMP1";
 
     test("Display gene info panel in sidebar", async ({ page }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
-
       await searchAndAddGene(page, TEST_GENE);
 
       await waitForHeatmapToRender(page);
@@ -478,11 +478,9 @@ describe("Where's My Gene", () => {
     test("Display gene info bottom drawer in cell info sidebar", async ({
       page,
     }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+      await searchAndAddGene(page, TEST_GENE);
 
       await expandTissue(page, "lung");
-
-      await searchAndAddGene(page, TEST_GENE);
 
       await waitForHeatmapToRender(page);
 
@@ -1058,8 +1056,4 @@ async function getTissueNames(page: Page) {
 // when counting
 async function countLocator(locator: Locator) {
   return (await locator.elementHandles()).length;
-}
-
-async function waitForLoadingSpinnerToResolve(page: Page) {
-  await waitForElementToBeRemoved(page, "loading-spinner");
 }

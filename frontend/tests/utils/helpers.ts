@@ -313,6 +313,8 @@ export async function getNames({
   } else {
     throw Error(ERROR_NO_TESTID_OR_LOCATOR);
   }
+
+  if ((await labelsLocator.count()) === 0) return [];
   await tryUntil(
     async () => {
       const names = await labelsLocator.allTextContents();
@@ -448,4 +450,8 @@ export async function expandTissue(page: Page, tissueName: string) {
     },
     { page }
   );
+}
+
+export async function waitForLoadingSpinnerToResolve(page: Page) {
+  await waitForElementToBeRemoved(page, "loading-spinner");
 }

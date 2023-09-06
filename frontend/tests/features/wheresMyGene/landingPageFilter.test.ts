@@ -7,8 +7,13 @@ import {
   deSelectSecondaryFilterOption,
   goToWMG,
   selectSecondaryFilterOption,
+  waitForHeatmapToRender,
 } from "tests/utils/wmgUtils";
-import { goToPage, tryUntil } from "tests/utils/helpers";
+import {
+  goToPage,
+  tryUntil,
+  waitForLoadingSpinnerToResolve,
+} from "tests/utils/helpers";
 import {
   COLOR_SCALE_TOOLTIP_TEXT,
   GROUP_BY_TOOLTIP_TEXT,
@@ -48,6 +53,7 @@ describe("Left side bar", () => {
     }) => {
       await goToPage(WMG_WITH_SEEDED_GENES.URL, page);
 
+      await waitForHeatmapToRender(page);
       await tryUntil(
         async () => {
           // check the count of source data displayed before adding a filter

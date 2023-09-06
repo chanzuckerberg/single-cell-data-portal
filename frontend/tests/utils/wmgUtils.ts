@@ -70,9 +70,9 @@ export async function goToWMG(page: Page, url?: string) {
 
 export async function goToWMGWithSeededState(page: Page) {
   await goToWMG(page, WMG_WITH_SEEDED_GENES.URL);
+  await waitForHeatmapToRender(page);
   await expandTissue(page, "lung");
   await expandTissue(page, "blood");
-  await waitForHeatmapToRender(page);
 }
 
 export async function waitForHeatmapToRender(page: Page) {
