@@ -10,25 +10,25 @@
 
 ## Development
 
-See [DEV_ENV.md](DEV_ENV.md) for local dev quick start using Docker containers
-
-### Option: Without Docker
-
 The following steps will start a FE server that connects to `dev` API. (See [useful tips](#useful-tips) section to connect to a different API)
 
-1.  Install [`nvm`](https://github.com/nvm-sh/nvm)
-    - Example: `brew install nvm`
-1.  Check `.nvmrc` to see which version of node to download.
-    - Example: `nvm install 16.14.2 && nvm use 16.14.2`
-1.  Install npm packages
-    - Example: `npm i`
-1.  Copy configs file `frontend/src/configs/local.js` to `frontend/src/configs/configs.js`
-    - Example: `cp ./src/configs/local.js ./src/configs/configs.js`
-1.  Start FE server
-    - Example: `npm run dev`
-1.  Navigate to `http://localhost:3000/`
+1. Install [`nvm`](https://github.com/nvm-sh/nvm)
+   - Example: `brew install nvm`
+1. Check `.nvmrc` to see which version of node to download.
+   - Example: `nvm install 16.14.2 && nvm use 16.14.2`
+1. Install npm packages
+   - Example: `npm i`
+1. Copy configs file `frontend/src/configs/local.js` to `frontend/src/configs/configs.js`
+   - Example: `cp ./src/configs/local.js ./src/configs/configs.js`
+1. Start FE server
+   - Example: `npm run dev`
+1. Navigate to `http://localhost:3000/`
 
-#### Useful tips
+### Option: With Docker
+
+See [DEV_ENV.md](DEV_ENV.md) for local dev quick start using Docker containers
+
+### Useful tips
 
 1. Test FE app production build locally: `npm run build && npm run serve`
 1. Connect FE app to a different deployed env API
