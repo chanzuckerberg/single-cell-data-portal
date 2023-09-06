@@ -48,7 +48,7 @@ if [[ $DEST_ENV == 'rdev' ]]; then
     fi
     key=$(sed -E 's/s3:\/\/([^\/]+)\/(.*)/\2/' <<< $uri)
     [[ "${key: -1}" == "/" ]] && s3_cmd=$S3_SYNC_CMD || s3_cmd=$S3_COPY_CMD  # use 'sync' if recursive, 'cp' otherwise
-    $s3_cmd $uri s3://env-rdev-${rdev_bucket_suffix}/${STACK}/${key}
+    $s3_cmd $uri s3://env-rdev-${rdev_bucket_suffix}/${STACK}/${key} || echo "$uri does not exist -- skipping..."
   done
 
   # Copy public assets
@@ -58,7 +58,8 @@ if [[ $DEST_ENV == 'rdev' ]]; then
   exts=("rds" "h5ad")
   for dv_id in "${dataset_version_ids[@]}"; do
     for ext in "${exts[@]}"; do
-      $S3_COPY_CMD s3://dataset-assets-public-${DEPLOYMENT_STAGE}/${dv_id}.${ext} s3://env-rdev-datasets/${STACK}/${dv_id}.${ext}
+      uri="s3://dataset-assets-public-${DEPLOYMENT_STAGE}/${dv_id}.${ext}"
+      $S3_COPY_CMD $uri s3://env-rdev-datasets/${STACK}/${dv_id}.${ext} || echo "$uri does not exist -- skipping..."
     done
   done
 else
