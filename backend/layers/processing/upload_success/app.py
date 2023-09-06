@@ -7,7 +7,7 @@ from backend.layers.persistence.persistence import DatabaseProvider
 database_provider = DatabaseProvider()
 business_logic = BusinessLogic(database_provider, None, None, None, None)
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("processing")
 
 
 def success_handler(event: dict, context) -> None:

@@ -33,7 +33,6 @@ import { titleize } from "src/common/utils/string";
 import Head from "next/head";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
 import { StickySidebarStyle } from "./components/CellGuideCardSidebar/style";
-import { useCellTypeMetadata } from "src/common/queries/cellGuide";
 import {
   SKINNY_MODE_BREAKPOINT_WIDTH,
   CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN,
@@ -55,6 +54,8 @@ import {
 } from "@czi-sds/components";
 import { useComponentWidth } from "./components/common/hooks/useIsComponentPastBreakpoint";
 import { DEFAULT_ONTOLOGY_HEIGHT } from "../common/OntologyDagView/common/constants";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
@@ -65,6 +66,7 @@ const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
 interface Props {
   name: string;
   seoDescription: string;
+  synonyms?: string[];
 }
 
 export default function CellGuideCard({
@@ -72,6 +74,8 @@ export default function CellGuideCard({
   name,
   // From getServerSideProps
   seoDescription: rawSeoDescription,
+  // From getServerSideProps
+  synonyms,
 }: Props): JSX.Element {
   const router = useRouter();
 
@@ -111,12 +115,6 @@ export default function CellGuideCard({
   const cellTypeId = (cellTypeIdRaw as string)?.replace("_", ":") ?? "";
   const cellTypeName = name || "";
   const titleizedCellTypeName = titleize(cellTypeName);
-
-  const { data: cellTypesById } = useCellTypeMetadata();
-
-  const cellType = cellTypesById && cellTypesById[cellTypeId];
-
-  const { synonyms } = cellType || {};
 
   const handleResize = useCallback(() => {
     setSkinnyMode(
@@ -169,6 +167,7 @@ export default function CellGuideCard({
     if (!option) return;
     setSelectedOrgan(option);
     setSelectedOrganId(organsMap.get(option.name) ?? "");
+    track(EVENTS.CG_SELECT_TISSUE, { tissue: option.name });
   };
 
   const [selectedOrganism, setSelectedOrganism] =
@@ -177,6 +176,7 @@ export default function CellGuideCard({
   const handleChangeOrganism = (option: DefaultDropdownMenuOption | null) => {
     if (!option) return;
     setSelectedOrganism(option);
+    track(EVENTS.CG_SELECT_ORGANISM, { organism: option.name });
   };
 
   function handleCloseGeneInfoSideBar() {

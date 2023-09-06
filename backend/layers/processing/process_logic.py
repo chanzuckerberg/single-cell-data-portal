@@ -26,7 +26,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
     uri_provider: UriProviderInterface
     s3_provider: S3ProviderInterface
     downloader: Downloader
-    logger: logging
+    logger: logging.Logger
 
     def __init__(self) -> None:
         self.logger = logging.getLogger("processing")
