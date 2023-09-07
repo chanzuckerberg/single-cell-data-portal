@@ -30,13 +30,13 @@ jobs:
       - name: Push Tag with latest branch commit SHA
         uses: rickstaa/action-create-tag@v1
         with:
-          tag: ${{ github.sha }}
+          tag: ${GITHUB_SHA:0:8}
           tag_exists_error: false
       - name: Produce Github Pre-Release for Branch
         uses: softprops/action-gh-release@v1
         if: steps.tag_create.outputs.tag_exists == 'false'
         with:
-          tag_name: ${{ github.sha }}
+          tag_name: ${GITHUB_SHA:0:8}
           prerelease: true
           generate_release_notes: true
   lint:
