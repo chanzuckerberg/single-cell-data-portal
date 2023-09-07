@@ -1,0 +1,75 @@
+  pw:api => selectors.setTestIdAttribute started +3s
+  pw:api => browser.newContext started +4ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +43ms
+  pw:api   "commit" event fired +12ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +5ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +41ms
+  pw:api => page.waitForResponse started +4ms
+  pw:api => page.goto started +13ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +20ms
+  pw:api   "commit" event fired +144ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +7ms
+  pw:api   navigated to "about:blank" +36ms
+  pw:api <= page.goto succeeded +68ms
+  pw:api <= page.waitForResponse succeeded +8s
+  pw:api => locator.click started +3ms
+  pw:api waiting for getByPlaceholder('Add Genes') +31ms
+  pw:api   locator resolved to <input value="" id="mui-7" type="search" role="combobox…/> +50ms
+  pw:api attempting click action +16ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +491ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +72ms
+  pw:api   "networkidle" event fired +76ms
+  pw:api   click action done +806ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +24ms
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +28ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +29ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +3s
+  pw:api => keyboard.press started +3ms
+  pw:api <= keyboard.press succeeded +114ms
+  pw:api => locator.textContent started +4ms
+  pw:api waiting for getByTestId('gene-name-TNMD') +56ms
+  pw:api   locator resolved to <span data-testid="gene-name-TNMD" class="gene-name-TN…>TNMD</span> +22ms
+  pw:api <= locator.textContent succeeded +19ms
+  pw:api => locator.hover started +5ms
+  pw:api waiting for getByTestId('gene-name-TNMD') +27ms
+  pw:api   locator resolved to <span data-testid="gene-name-TNMD" class="gene-name-TN…>TNMD</span> +30ms
+  pw:api attempting hover action +2ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +51ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing hover action +20ms
+  pw:api   hover action done +21ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.hover succeeded +33ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api expect.toBeVisible with timeout 10000ms +42ms
+  pw:api waiting for getByTestId('gene-info-icon-TNMD') +0ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" alt="disp…/> +22ms
+  pw:api <= expect.toBeVisible succeeded +27ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api expect.toBeVisible with timeout 10000ms +24ms
+  pw:api waiting for getByTestId('gene-delete-icon-TNMD') +0ms
+  pw:api   locator resolved to <div data-testid="gene-delete-icon-TNMD" class="gene-…>…</div> +24ms
+  pw:api <= expect.toBeVisible succeeded +30ms
+  pw:api taking page screenshot +6ms
