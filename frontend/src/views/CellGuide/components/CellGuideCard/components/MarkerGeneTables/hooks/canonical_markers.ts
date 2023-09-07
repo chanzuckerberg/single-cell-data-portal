@@ -3,7 +3,12 @@ import {
   CanonicalMarkersQueryResponse,
   CanonicalMarkersQueryResponseEntry,
 } from "src/common/queries/cellGuide";
-import { ALL_TISSUES, HOMO_SAPIENS } from "../constants";
+import {
+  ALL_TISSUES,
+  HOMO_SAPIENS,
+  NO_ORGAN_ID,
+  TISSUE_AGNOSTIC,
+} from "../constants";
 import { isTissueIdDescendantOfAncestorTissueId } from "src/views/CellGuide/common/utils";
 
 export interface CanonicalMarkerGeneTableData {
@@ -71,17 +76,15 @@ function _getReferenceData(
 function _passSelectionCriteria({
   markerGene,
   allTissuesLabelToIdMap,
-  selectedOrganLabel,
   selectedOrganId,
 }: {
   markerGene: CanonicalMarkersQueryResponseEntry;
   allTissuesLabelToIdMap: Map<string, string>;
-  selectedOrganLabel: string;
   selectedOrganId: string;
 }): boolean {
   // There are marker genes tissues labeled as "All Tissues"
   // so select them only when selectedOrganLabel is "All Tissues"
-  if (selectedOrganLabel === ALL_TISSUES) {
+  if (selectedOrganId === NO_ORGAN_ID) {
     return markerGene.tissue === ALL_TISSUES;
   }
 
@@ -117,9 +120,10 @@ export function useCanonicalMarkerGenesTableRowsAndFilters({
 
     const rows: CanonicalMarkerGeneTableData[] = [];
 
+    const organLabel = TISSUE_AGNOSTIC ? ALL_TISSUES : selectedOrganLabel;
     const publicationTitlesToIndex = _getPublicationTitlesToIndex(
       genes,
-      selectedOrganLabel
+      organLabel
     );
 
     for (const markerGene of genes) {
@@ -127,7 +131,6 @@ export function useCanonicalMarkerGenesTableRowsAndFilters({
         !_passSelectionCriteria({
           markerGene: markerGene,
           allTissuesLabelToIdMap: allTissuesLabelToIdMap,
-          selectedOrganLabel: selectedOrganLabel,
           selectedOrganId: selectedOrganId,
         })
       )

@@ -68,7 +68,6 @@ const ROWS_PER_PAGE = 10;
 
 const SourceDataTable = ({
   cellTypeId,
-  organName,
   organId,
   organismName,
   skinnyMode,
@@ -95,7 +94,6 @@ const SourceDataTable = ({
   const filteredCollections = useDataSourceFilter({
     collections: collections ?? [],
     selectedOrganismLabel: organismName,
-    selectedOrganLabel: organName,
     selectedOrganId: organId,
   });
 
