@@ -1035,6 +1035,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     "collection_id": f"{first_version.collection_id.id}",
                     "collection_version_id": f"{first_version.version_id.id}",
                     "cell_count": 10,
+                    "primary_cell_count": 5,
                     "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
                     "dataset_id": f"{first_version.datasets[0].dataset_id.id}",
                     "dataset_version_id": f"{first_version.datasets[0].version_id.id}",
