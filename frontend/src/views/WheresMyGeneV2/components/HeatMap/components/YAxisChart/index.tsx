@@ -151,8 +151,8 @@ const TissueHeaderButton = ({
 
   return (
     <FlexRowJustified
-      className="cell-type-label-count"
-      data-testid="cell-type-label-count"
+      className="tissue-label-count"
+      data-testid="tissue-label-count"
     >
       <FlexRow
         onClick={useCallback(() => {
@@ -167,10 +167,7 @@ const TissueHeaderButton = ({
         />
         <TissueHeaderLabelStyle>
           <div>
-            <TissueLabel
-              className="cell-type-name"
-              data-testid="cell-type-name"
-            >
+            <TissueLabel className="tissue-name" data-testid="tissue-name">
               {capitalize(formattedName)}
             </TissueLabel>
           </div>
