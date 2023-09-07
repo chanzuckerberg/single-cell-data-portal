@@ -39,6 +39,7 @@ import GeneSearchBar from "src/views/WheresMyGeneV2/components/GeneSearchBar";
 
 interface Props {
   geneNames: string[];
+  sidebarWidth: number;
 }
 
 export const GENE_LABEL_HOVER_CONTAINER_ID = "gene-hover-container";
@@ -115,7 +116,10 @@ function GeneButton({
   );
 }
 
-export default function XAxisChart({ geneNames }: Props): JSX.Element {
+export default function XAxisChart({
+  geneNames,
+  sidebarWidth,
+}: Props): JSX.Element {
   const { genesToDelete, handleGeneClick } = useDeleteGenes();
   const [heatmapWidth, setHeatmapWidth] = useState(getHeatmapWidth(geneNames));
   const { xAxisHeight } = useContext(StateContext);
@@ -136,7 +140,10 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
       left={Y_AXIS_CHART_WIDTH_PX + CHART_PADDING_PX}
       height={xAxisHeight}
     >
-      <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
+      <GeneSearchBar
+        sidebarWidth={sidebarWidth}
+        className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+      />
       <XAxisContainer
         data-testid="gene-labels"
         width={heatmapWidth}
