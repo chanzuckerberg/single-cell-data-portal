@@ -1,2 +1,0 @@
-{"levelname": "INFO", "asctime": "2023-09-06T23:33:51.006Z", "name": "processing", "message": "Start extract_metadata", "lineno": 26, "pathname": "/single-cell-data-portal/backend/layers/processing/logger.py", "type": "METRIC"}
-{"levelname": "INFO", "asctime": "2023-09-06T23:33:51.006Z", "name": "processing", "message": "Complete extract_metadata", "lineno": 28, "pathname": "/single-cell-data-portal/backend/layers/processing/logger.py", "type": "METRIC"}
