@@ -222,7 +222,6 @@ def reshape_dataset_for_curation_api(
 
     ds["dataset_id"] = dataset_version.dataset_id.id
     ds["dataset_version_id"] = dataset_version.version_id.id
-    ds["primary_cell_count"] = dataset_version.metadata.primary_cell_count
     # Get none preview specific dataset fields
     if not preview:
         ds["assets"] = extract_dataset_assets(dataset_version)
@@ -305,6 +304,7 @@ class EntityColumns:
         "development_stage",
         "cell_type",
         "cell_count",
+        "primary_cell_count",
         "x_approximate_distribution",
         "batch_condition",
         "mean_genes_per_cell",
