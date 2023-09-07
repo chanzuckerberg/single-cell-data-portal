@@ -26,6 +26,7 @@ import {
 } from "src/components/common/Filter/common/constants";
 import {
   Categories,
+  CATEGORY_VALUE_KEY,
   CollectionRow,
   DatasetRow,
 } from "src/components/common/Filter/common/entities";
@@ -98,10 +99,10 @@ export type ProcessedCollectionResponse = (
   | CollectionResponse
   | UserCollectionResponse
 ) & {
-  publicationAuthors: string[];
   publicationDateValues: number[];
   revisedBy?: string;
   status?: COLLECTION_STATUS[];
+  summaryCitation: string;
 };
 
 /**
@@ -413,11 +414,6 @@ function buildCollectionRows(
       collection?.publisher_metadata
     );
 
-    // Build the summary citation from the collection's publication metadata, if any.
-    const summaryCitation = buildSummaryCitation(
-      collection?.publisher_metadata
-    );
-
     // Calculate test ID
     const testId = createCollectionRowTestId(collection);
 
@@ -426,7 +422,6 @@ function buildCollectionRows(
       ...collection,
       ...aggregatedCategoryValues,
       recency,
-      summaryCitation,
       testId,
     });
     collectionRows.push(collectionRow);
@@ -490,9 +485,10 @@ function buildDatasetRow(
     cell_count: dataset.cell_count ?? 0,
     collection_name: collection?.name ?? "-",
     isOverMaxCellCount: checkIsOverMaxCellCount(dataset.cell_count),
-    publicationAuthors: collection?.publicationAuthors,
     publicationDateValues,
     recency,
+    summaryCitation:
+      collection?.summaryCitation ?? CATEGORY_VALUE_KEY.NO_PUBLICATION,
   };
   return sortCategoryValues(datasetRow);
 }
@@ -506,7 +502,7 @@ export function buildSummaryCitation(
   publisherMetadata?: PublisherMetadata
 ): string {
   if (!publisherMetadata) {
-    return "";
+    return CATEGORY_VALUE_KEY.NO_PUBLICATION;
   }
 
   const citationTokens = [];
@@ -622,18 +618,6 @@ export function deletePrivateCollectionsById(
     }
   }
   return publishedCollectionsById;
-}
-
-/**
- * Concat author first and last names to facilitate filter. Ignore authors with a `name` attribute as this indicates
- * author is a consortium which are not to be included in the filter.
- * @param authors - Array of collection publication authors.
- * @returns Array of strings containing author first and last names.
- */
-function expandPublicationAuthors(authors: (Author | Consortium)[]): string[] {
-  return authors
-    .filter(isAuthorPerson)
-    .map((author: Author) => `${author.family}, ${author.given}`);
 }
 
 /**
@@ -931,15 +915,13 @@ function processCollectionResponse(
     publicationYear
   );
 
-  // Determine the set of authors of the publication.
-  const publicationAuthors = expandPublicationAuthors(
-    collection?.publisher_metadata?.authors ?? []
-  );
+  // Build the summary citation from the collection's publication metadata, if any.
+  const summaryCitation = buildSummaryCitation(collection?.publisher_metadata);
 
   return {
     ...collection,
-    publicationAuthors,
     publicationDateValues,
+    summaryCitation,
   };
 }
 

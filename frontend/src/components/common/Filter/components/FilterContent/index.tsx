@@ -77,12 +77,14 @@ function buildBasicFilterContent(
 
   // Handle select categories
   if (isSelectCategoryView(categoryView)) {
-    const { pinnedValues, unpinnedValues, values } = categoryView;
+    const { pinnedPosition, pinnedValues, unpinnedValues, values } =
+      categoryView;
     return (
       <FilterMenu
         categoryFilterId={categoryFilterId}
         isSearchable={values.length > MAX_DISPLAYABLE_MENU_ITEMS}
         onFilter={onFilter}
+        pinnedPosition={pinnedPosition}
         pinnedValues={filterCategoryValuesWithCount(pinnedValues)}
         searchValue={searchValue}
         setSearchValue={setSearchValue}

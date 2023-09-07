@@ -20,8 +20,12 @@ const serializeProps = (
 
 export function track(event: EVENTS, props?: Record<string, unknown>): void {
   const options = serializeProps(props);
-
-  window.plausible(event, options);
+  try {
+    window.plausible(event, options);
+  } catch (e) {
+    // adding this to catch errors in tests
+    console.error(e);
+  }
 
   if (API_URL !== "https://api.cellxgene.cziscience.com") {
     console.info(`Tracking event: ${event}`, options);

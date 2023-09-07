@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
-import SearchIcon from "@mui/icons-material/Search";
+
 import {
   EMPTY_ARRAY,
   EMPTY_OBJECT,
@@ -47,16 +47,12 @@ import {
 } from "src/views/WheresMyGene/components/HeatMap/hooks/useSortedGeneNames";
 import { useSortedCellTypesByTissueName } from "src/views/WheresMyGene/components/HeatMap/hooks/useSortedCellTypesByTissueName";
 import {
-  CellTypeFilterContainer,
   CellTypeTagContainer,
   ChartWrapper,
   Container,
   ContainerWrapper,
-  StyledAutocomplete,
   StyledTag,
-  TopLeftCornerMask,
   XAxisMask,
-  XAxisWrapper,
   YAxisWrapper,
 } from "src/views/WheresMyGene/components/HeatMap/style";
 import { CellCountLabel } from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart/style";
@@ -70,8 +66,14 @@ import Chart from "src/views/WheresMyGene/components/HeatMap/components/Chart";
 import { hyphenize } from "src/views/WheresMyGene/components/HeatMap/utils";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { InputAdornment, TextField } from "@mui/material";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
+import { Autocomplete, DefaultAutocompleteOption } from "@czi-sds/components";
+import {
+  CellTypeFilterContainer,
+  Divider,
+  TopLeftCornerMask,
+  XAxisWrapper,
+} from "./style";
 
 interface Props {
   className?: string;
@@ -127,6 +129,12 @@ export default memo(function HeatMap({
     selectedFilters: { tissues: filteredTissueIds },
     filteredCellTypes,
   } = useContext(StateContext);
+
+  const selectedCellTypeOptions = useMemo(() => {
+    return filteredCellTypes.map((cellType) => ({
+      name: cellType,
+    }));
+  }, [filteredCellTypes]);
 
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
@@ -287,14 +295,19 @@ export default memo(function HeatMap({
         result.add(cellType.cellTypeName);
       });
     });
-    return [...result].sort();
+    return [...result].sort().map((cellType) => ({ name: cellType }));
   }, [sortedCellTypesByTissueName]);
+
   const handleFilteredCellTypesChange = (
     _: unknown,
-    rawNewFilteredCellTypes: unknown
+    rawNewFilteredCellTypes: DefaultAutocompleteOption[]
   ) => {
     if (!dispatch) return;
-    dispatch(setFilteredCellTypes(rawNewFilteredCellTypes as string[]));
+    dispatch(
+      setFilteredCellTypes(
+        rawNewFilteredCellTypes.map((cellType) => cellType.name)
+      )
+    );
   };
 
   // Reset `displayedCellTypes` and `expandedTissues` when the user clears `filteredCellTypes`
@@ -401,26 +414,13 @@ export default memo(function HeatMap({
       <ContainerWrapper>
         <TopLeftCornerMask height={xAxisHeight}>
           <CellTypeFilterContainer id="celltype-filter-container">
-            <StyledAutocomplete
+            <Autocomplete
               className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
               multiple
-              value={filteredCellTypes}
+              label="Search cell types"
+              value={selectedCellTypeOptions}
+              search
               onChange={handleFilteredCellTypesChange}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  InputProps={{
-                    ...params.InputProps,
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon />
-                      </InputAdornment>
-                    ),
-                    endAdornment: undefined,
-                  }}
-                  placeholder="Search cell types"
-                ></TextField>
-              )}
               options={uniqueCellTypes}
             />
             <CellTypeTagContainer>
@@ -514,6 +514,7 @@ export default memo(function HeatMap({
             })}
           </ChartWrapper>
         </Container>
+        <Divider className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
       </ContainerWrapper>
     </>
   );

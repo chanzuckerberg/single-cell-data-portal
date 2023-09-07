@@ -11,9 +11,9 @@ import {
 } from "src/components/common/Filter/common/constants";
 import {
   Categories,
+  CATEGORY_FILTER_ID,
   CategoryFilterConfig,
   CategoryValueId,
-  CATEGORY_FILTER_ID,
   FilterState,
   KeyedSelectCategoryValue,
   ORGANISM,
@@ -44,7 +44,7 @@ export function buildSelectCategoryView(
   const { categoryFilterId } = config;
 
   // Grab the config for this category.
-  const { pinnedCategoryValues, tooltip } =
+  const { pinnedCategoryValues, pinnedPosition, tooltip } =
     CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId];
 
   const allCategoryValueViews = buildSelectCategoryValueViews(
@@ -63,6 +63,7 @@ export function buildSelectCategoryView(
   const selectView: SelectCategoryView = {
     categoryFilterId: categoryFilterId,
     label: config.label,
+    pinnedPosition,
     pinnedValues,
     unpinnedValues,
     values: allCategoryValueViews,
