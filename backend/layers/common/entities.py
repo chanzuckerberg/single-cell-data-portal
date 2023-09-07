@@ -172,7 +172,7 @@ class DatasetMetadata:
     development_stage: List[OntologyTermId]
     cell_type: List[OntologyTermId]
     cell_count: int
-    primary_cell_count: int
+    primary_cell_count: Optional[int] = None
     mean_genes_per_cell: float
     batch_condition: List[str]
     suspension_type: List[str]
