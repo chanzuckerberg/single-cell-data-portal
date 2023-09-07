@@ -22,6 +22,16 @@ permissions:
   contents: read
 
 jobs:
+  # TODO: remove before merging, test step in branch
+  github-release:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Produce Github Release for Prod Deployments
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.deployment.payload.tag }}
+          prerelease: true
+          generate_release_notes: true
   lint:
     runs-on: ubuntu-22.04
     steps:

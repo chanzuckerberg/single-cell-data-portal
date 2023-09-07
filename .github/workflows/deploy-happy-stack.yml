@@ -95,6 +95,18 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
 
+  github-release:
+    runs-on: ubuntu-22.04
+    needs:
+      - upgrade
+    steps:
+      - name: Produce Github Release for Prod Deployments
+        uses: softprops/action-gh-release@v1
+        if: github.event.deployment.environment == 'prod'
+        with:
+          tag_name: ${{ github.event.deployment.payload.tag }}
+          generate_release_notes: true
+
   e2e-logged-in-test:
     timeout-minutes: 30
     runs-on: ubuntu-22.04
