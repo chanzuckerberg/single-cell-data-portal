@@ -103,6 +103,7 @@ interface Props {
   >;
   expandedTissues: Set<string>;
   setExpandedTissues: Dispatch<SetStateAction<Set<string>>>;
+  sidebarWidth: number;
 }
 
 export default memo(function HeatMap({
@@ -123,6 +124,7 @@ export default memo(function HeatMap({
   setTissuesByName,
   expandedTissues,
   setExpandedTissues,
+  sidebarWidth,
 }: Props): JSX.Element {
   const {
     xAxisHeight,
@@ -446,7 +448,10 @@ export default memo(function HeatMap({
           {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
           <XAxisWrapper id="x-axis-wrapper">
             <XAxisMask data-testid="x-axis-mask" height={xAxisHeight} />
-            <XAxisChart geneNames={sortedGeneNames} />
+            <XAxisChart
+              geneNames={sortedGeneNames}
+              sidebarWidth={sidebarWidth}
+            />
           </XAxisWrapper>
           <YAxisWrapper top={0}>
             {allTissueCellTypes.map(
