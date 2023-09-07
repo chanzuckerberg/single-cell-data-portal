@@ -341,7 +341,6 @@ export default function OntologyDagView({
                 data-testid={
                   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON
                 }
-                isFullScreen={isFullScreen}
                 onClick={isFullScreen ? disableFullScreen : enableFullScreen}
               >
                 {isFullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
