@@ -150,6 +150,7 @@ class ProcessDownloadValidate(ProcessingLogic):
             self_reported_ethnicity=_get_term_pairs("self_reported_ethnicity"),
             development_stage=_get_term_pairs("development_stage"),
             cell_count=adata.shape[0],
+            primary_cell_count=adata.obs["is_primary_data"].astype("int").sum(),
             mean_genes_per_cell=numerator / denominator,
             is_primary_data=_get_is_primary_data(),
             cell_type=_get_term_pairs("cell_type"),
