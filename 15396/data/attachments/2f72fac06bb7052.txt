@@ -1,0 +1,32 @@
+  pw:api => selectors.setTestIdAttribute started +35ms
+  pw:api => browserType.launch started +6ms
+  pw:api <= selectors.setTestIdAttribute succeeded +5ms
+  pw:api <= browserType.launch succeeded +3s
+  pw:api => browser.newContext started +15ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +145ms
+  pw:api   "commit" event fired +31ms
+  pw:api   navigated to "https://localhost:3000/" +3ms
+  pw:api   "load" event fired +4ms
+  pw:api   "domcontentloaded" event fired +4ms
+  pw:api <= browser.newContext succeeded +19ms
+  pw:api => tracing.start started +11ms
+  pw:api <= tracing.start succeeded +9ms
+  pw:api => browserContext.newPage started +5ms
+  pw:api <= browserContext.newPage succeeded +80ms
+  pw:api => page.waitForLoadState started +37ms
+  pw:api => page.goto started +7ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +9ms
+  pw:api   "commit" event fired +52s
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "commit" event fired +4ms
+  pw:api   "networkidle" event fired +19s
+  pw:api <= page.waitForLoadState succeeded +12ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +4s
+  pw:api   navigated to "https://localhost:3000/" +25ms
+  pw:api   navigated to "about:blank" +40ms
+  pw:api <= page.goto succeeded +13ms
+  pw:api => page.evaluate started +2ms
+  pw:api <= page.evaluate succeeded +95ms
+  pw:api taking page screenshot +20ms
