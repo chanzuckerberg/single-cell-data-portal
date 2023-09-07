@@ -1,6 +1,13 @@
 import Image from "next/image";
 import Script from "next/script";
-import { ReactElement, useEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  ReactElement,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useLocalStorage } from "react-use";
 import {
   BOTTOM_BANNER_ID,
@@ -35,6 +42,9 @@ export const SUBMIT_ISSUE_URL = "https://airtable.com/shrLwepDSEX1HI6bo";
 export const FAILED_EMAIL_VALIDATION_STRING =
   "Please provide a valid email address.";
 
+const HIDDEN_NEWSLETTER_SUCCESS_MESSAGE =
+  "Thank you for joining our newsletter.";
+
 export interface Props {
   includeSurveyLink?: boolean;
   asFooter?: boolean;
@@ -61,7 +71,7 @@ export interface Props {
 const BOTTOM_BANNER_EXPIRATION_TIME_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const BOTTOM_BANNER_LAST_CLOSED_TIME_KEY = "bottomBannerLastClosedTime";
 
-export default function BottomBanner({
+export default memo(function BottomBanner({
   includeSurveyLink = false,
   asFooter = false,
   customSurveyLinkPrefix,
@@ -82,9 +92,9 @@ export default function BottomBanner({
   const [isDirectLink, setIsDirectLink] = useState(false);
 
   useEffect(() => {
-    if (isHubSpotReadyProp === isHubSpotReady) return;
+    if (!isHubSpotReadyProp) return;
 
-    setIsHubSpotReady(isHubSpotReadyProp);
+    setIsHubSpotReady(true);
   }, [isHubSpotReady, isHubSpotReadyProp]);
 
   // For analytics if submit button was made enabled by user input
@@ -131,6 +141,8 @@ export default function BottomBanner({
   }, [id]);
 
   useEffect(() => {
+    if (!isHubSpotReady) return;
+
     // Observer to observe changes in the HubSpot embedded form, which is hidden from the user in order to use our own form view
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
@@ -139,9 +151,7 @@ export default function BottomBanner({
           const node = mutation.addedNodes.item(i);
 
           // Submission success flow
-          if (
-            node?.textContent?.includes("Thank you for joining our newsletter.")
-          ) {
+          if (node?.textContent?.includes(HIDDEN_NEWSLETTER_SUCCESS_MESSAGE)) {
             setIsSubmitted(true);
             setError("");
 
@@ -162,31 +172,31 @@ export default function BottomBanner({
       }
     });
 
-    if (isHubSpotReady) {
-      hbspt.forms.create({
-        region: "na1",
-        portalId: "7272273",
-        formId: "eb65b811-0451-414d-8304-7b9b6f468ce5",
-        target: formContainerQueryId,
-        /**
-         * (thuang): Since the homepage has two newsletter banners (footer and banner),
-         * we need to give each banner a unique id to differentiate them.
-         * https://legacydocs.hubspot.com/docs/methods/forms/advanced_form_options
-         */
-        formInstanceId: id,
+    hbspt.forms.create({
+      region: "na1",
+      portalId: "7272273",
+      formId: "eb65b811-0451-414d-8304-7b9b6f468ce5",
+      target: formContainerQueryId,
+      /**
+       * (thuang): Since the homepage has two newsletter banners (footer and banner),
+       * we need to give each banner a unique id to differentiate them.
+       * https://legacydocs.hubspot.com/docs/methods/forms/advanced_form_options
+       */
+      formInstanceId: id,
+    });
+
+    const form = document.querySelector(formContainerQueryId);
+
+    if (form) {
+      observer.observe(form, {
+        childList: true,
+        subtree: true,
       });
-
-      const form = document.querySelector(formContainerQueryId);
-
-      if (form) {
-        observer.observe(form, {
-          childList: true,
-          subtree: true,
-        });
-      }
     }
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+    };
   }, [asFooter, isDirectLink, isHubSpotReady, formContainerQueryId, id]);
 
   const emailRef = useRef<HTMLInputElement | null>(null);
@@ -398,4 +408,4 @@ export default function BottomBanner({
       </StyledBottomBannerWrapper>
     </>
   );
-}
+});
