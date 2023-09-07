@@ -103,14 +103,15 @@ jobs:
       - uses: actions/checkout@v3
       - name: Push Tag with latest prod commit SHA
         uses: rickstaa/action-create-tag@v1
+        id: "tag_create"
         with:
-          tag: ${{ env.payload.tag }}
+          tag: ${{ github.event.deployment.payload.tag }}
           tag_exists_error: false
       - name: Produce Github Release for Prod Deployments
         uses: softprops/action-gh-release@v1
         if: steps.tag_create.outputs.tag_exists == 'false' && github.event.deployment.environment == 'prod'
         with:
-          tag_name: ${{ env.payload.tag }}
+          tag_name: ${{ github.event.deployment.payload.tag }}
           generate_release_notes: true
 
   e2e-logged-in-test:
