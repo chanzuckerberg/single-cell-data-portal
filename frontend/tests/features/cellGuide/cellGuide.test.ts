@@ -824,6 +824,8 @@ describe("Cell Guide", () => {
         // scroll to the bottom
         const section3 = page.getByTestId("section-3");
         await section3.scrollIntoViewIfNeeded();
+        // wait for three seconds to give time for scroll to complete
+        await new Promise((resolve) => setTimeout(resolve, 2 * 1000));
 
         // check that source data is in viewport
         const sourceData = page.getByTestId(CELL_GUIDE_CARD_SOURCE_DATA_TABLE);
@@ -836,6 +838,8 @@ describe("Cell Guide", () => {
           .all();
         const tab = elements[1];
         await tab.click();
+        // wait for three seconds to give time for scroll to complete
+        await new Promise((resolve) => setTimeout(resolve, 2 * 1000));
 
         // check that ontology is in viewport
         const ontologyView = page.getByTestId(
