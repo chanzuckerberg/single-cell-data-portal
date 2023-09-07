@@ -321,7 +321,14 @@ export default function WheresMyGene(): JSX.Element {
           )}
 
           <Top id="top-legend">
-            <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
+            <GeneSearchBar
+              /**
+               * (thuang): Since this WMGv1 file is going to be deleted, I'm just
+               * passing a dummy value
+               */
+              sidebarWidth={0}
+              className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+            />
             <Legend
               selectedCellTypes={cellTypesByTissueName}
               selectedGenes={selectedGenes}
