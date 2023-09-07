@@ -1,0 +1,74 @@
+  pw:api => selectors.setTestIdAttribute started +4s
+  pw:api => browser.newContext started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +54ms
+  pw:api   "commit" event fired +18ms
+  pw:api   navigated to "https://localhost:3000/" +2ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +7ms
+  pw:api => tracing.start started +6ms
+  pw:api <= tracing.start succeeded +20ms
+  pw:api => browserContext.newPage started +6ms
+  pw:api <= browserContext.newPage succeeded +62ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api => page.goto started +4ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +13ms
+  pw:api   "commit" event fired +208ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +2ms
+  pw:api   "commit" event fired +7ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForLoadState succeeded +8ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +2ms
+  pw:api   navigated to "about:blank" +40ms
+  pw:api <= page.goto succeeded +15ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-enriched-genes-table-selector') +28ms
+  pw:api   locator resolved to <button class="css-c7lv9m-TableSelectorButton e1mdzv39" …>Computational</button> +65ms
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api     element is not stable - waiting... +111ms
+  pw:api   "networkidle" event fired +501ms
+  pw:api   element is visible, enabled and stable +798ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +64ms
+  pw:api   performing click action +224ms
+  pw:api   click action done +212ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +17ms
+  pw:api <= locator.click succeeded +56ms
+  pw:api => locator.waitFor started +11ms
+  pw:api waiting for getByTestId('marker-genes-computational-help-tooltip') to be visible +55ms
+  pw:api   locator resolved to visible <button tabindex="0" type="button" data-mui-internal-clo…>…</button> +51ms
+  pw:api <= locator.waitFor succeeded +45ms
+  pw:api => locator.isVisible started +0ms
+  pw:api   checking visibility of getByTestId('marker-genes-computational-help-tooltip') +39ms
+  pw:api <= locator.isVisible succeeded +17ms
+  pw:api => locator.hover started +5ms
+  pw:api waiting for getByTestId('marker-genes-computational-help-tooltip') +16ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-mui-internal-clo…>…</button> +6ms
+  pw:api attempting hover action +1ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +11ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing hover action +185ms
+  pw:api   hover action done +123ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +82ms
+  pw:api <= locator.hover succeeded +43ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByRole('tooltip') to be visible +66ms
+  pw:api   locator resolved to visible <div id="mui-40" role="tooltip" data-popper-placement…>…</div> +48ms
+  pw:api <= locator.waitFor succeeded +27ms
+  pw:api => locator.isVisible started +2ms
+  pw:api   checking visibility of getByRole('tooltip') +31ms
+  pw:api <= locator.isVisible succeeded +35ms
+  pw:api => locator.textContent started +2ms
+  pw:api waiting for getByRole('tooltip') +31ms
+  pw:api   locator resolved to <div id="mui-40" role="tooltip" data-popper-placement…>…</div> +15ms
+  pw:api <= locator.textContent succeeded +14ms
+  pw:api taking page screenshot +15ms

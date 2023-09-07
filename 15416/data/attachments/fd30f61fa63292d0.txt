@@ -1,0 +1,62 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +4ms
+  pw:api <= browserType.launch succeeded +192ms
+  pw:api => browser.newContext started +4ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +55ms
+  pw:api   "commit" event fired +15ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +12ms
+  pw:api => tracing.start started +6ms
+  pw:api <= tracing.start succeeded +5ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +49ms
+  pw:api => page.waitForLoadState started +23ms
+  pw:api => page.goto started +5ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +9ms
+  pw:api   "commit" event fired +316ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +1ms
+  pw:api   "commit" event fired +2ms
+  pw:api   "networkidle" event fired +3s
+  pw:api <= page.waitForLoadState succeeded +6ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +6ms
+  pw:api   navigated to "about:blank" +26ms
+  pw:api <= page.goto succeeded +36ms
+  pw:api => locator.waitFor started +3ms
+  pw:api waiting for getByTestId('cell-guide-card-gpt-tooltip-link') to be visible +70ms
+  pw:api   locator resolved to visible <a data-mui-internal-clone-element="true" data-test…>…</a> +2s
+  pw:api <= locator.waitFor succeeded +133ms
+  pw:api => locator.isVisible started +2ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-gpt-tooltip-link') +15ms
+  pw:api <= locator.isVisible succeeded +24ms
+  pw:api => locator.hover started +5ms
+  pw:api waiting for getByTestId('cell-guide-card-gpt-tooltip-link') +35ms
+  pw:api   locator resolved to <a data-mui-internal-clone-element="true" data-test…>…</a> +16ms
+  pw:api attempting hover action +9ms
+  pw:api   waiting for element to be visible and stable +3ms
+  pw:api   element is visible and stable +20ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing hover action +19ms
+  pw:api   hover action done +27ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.hover succeeded +46ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByRole('tooltip') to be visible +14ms
+  pw:api   locator resolved to visible <div id="mui-1" role="tooltip" data-popper-placement=…>…</div> +86ms
+  pw:api <= locator.waitFor succeeded +29ms
+  pw:api => locator.isVisible started +0ms
+  pw:api   "networkidle" event fired +14ms
+  pw:api   checking visibility of getByRole('tooltip') +9ms
+  pw:api <= locator.isVisible succeeded +48ms
+  pw:api => locator.textContent started +2ms
+  pw:api waiting for getByRole('tooltip') +31ms
+  pw:api   locator resolved to <div id="mui-1" role="tooltip" data-popper-placement=…>…</div> +19ms
+  pw:api <= locator.textContent succeeded +39ms
+  pw:api taking page screenshot +15ms
