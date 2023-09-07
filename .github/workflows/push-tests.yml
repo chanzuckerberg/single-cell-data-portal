@@ -26,7 +26,9 @@ jobs:
   github-release:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.sha }}
       - name: Generate tag
         run: |
           echo "tag=sha-${GITHUB_SHA:0:8}" >> $GITHUB_ENV
@@ -43,6 +45,7 @@ jobs:
           tag_name: ${{ env.tag }}
           prerelease: true
           generate_release_notes: true
+          target_commitish: prod
   lint:
     runs-on: ubuntu-22.04
     steps:
