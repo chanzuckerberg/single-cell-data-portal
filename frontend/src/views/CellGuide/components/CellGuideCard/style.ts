@@ -61,14 +61,15 @@ export const Wrapper = styled.div<CellGuideViewProps>`
   display: flex;
   flex-direction: column;
   align-self: stretch;
-  height: 100%;
   ${(props) => {
     const { skinnyMode } = props;
     const maxWidth = skinnyMode
       ? `${DEFAULT_ONTOLOGY_WIDTH}px`
       : `${SKINNY_MODE_BREAKPOINT_WIDTH + SIDEBAR_COLUMN_GAP_PX}px`;
+    const overflowX = skinnyMode ? "hidden" : "visible";
     return `
     max-width: ${maxWidth};
+    overflow-x: ${overflowX};
     `;
   }}
 `;
