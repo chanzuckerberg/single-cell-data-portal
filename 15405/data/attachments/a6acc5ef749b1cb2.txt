@@ -1,0 +1,77 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +6ms
+  pw:api <= selectors.setTestIdAttribute succeeded +5ms
+  pw:api <= browserType.launch succeeded +217ms
+  pw:api => browser.newContext started +5ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +71ms
+  pw:api   "commit" event fired +23ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +4ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +15ms
+  pw:api => tracing.start started +8ms
+  pw:api <= tracing.start succeeded +7ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +55ms
+  pw:api => page.waitForLoadState started +23ms
+  pw:api => page.goto started +8ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +27ms
+  pw:api   "commit" event fired +7s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +1ms
+  pw:api   "commit" event fired +20ms
+  pw:api   "networkidle" event fired +5s
+  pw:api <= page.waitForLoadState succeeded +6ms
+  pw:api   "networkidle" event fired +6ms
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +4ms
+  pw:api   navigated to "about:blank" +33ms
+  pw:api <= page.goto succeeded +151ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +2s
+  pw:api => locator.scrollIntoViewIfNeeded started +5ms
+  pw:api waiting for getByTestId('section-3') +183ms
+  pw:api   locator resolved to hidden <div id="section-3" data-testid="section-3"></div> +13ms
+  pw:api   waiting for element to be  and stable +26ms
+  pw:api   element is  and stable +11ms
+  pw:api <= locator.scrollIntoViewIfNeeded succeeded +4ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-source-data-table') to be visible +183ms
+  pw:api   "networkidle" event fired +97ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-source-data-table" …>…</div> +27ms
+  pw:api <= locator.waitFor succeeded +48ms
+  pw:api => expect.toBeInViewport started +10ms
+  pw:api => locator.all started +15ms
+  pw:api expect.toBeInViewport with timeout 10000ms +59ms
+  pw:api waiting for getByTestId('cell-guide-card-source-data-table') +1ms
+  pw:api <= locator.all succeeded +16ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-navigation-sidebar').locator('.MuiButtonBase-root.MuiTab-root').nth(1) +67ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-source-data-table" …>…</div> +3ms
+  pw:api <= expect.toBeInViewport succeeded +32ms
+  pw:api   locator resolved to <button role="tab" tabindex="-1" type="button" aria-sele…>Cell Ontology</button> +4ms
+  pw:api attempting click action +5ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +25ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +27ms
+  pw:api   click action done +33ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +3ms
+  pw:api <= locator.click succeeded +43ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view') to be visible +217ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-ontology-dag-view">…</div> +443ms
+  pw:api <= locator.waitFor succeeded +214ms
+  pw:api => expect.toBeInViewport started +3ms
+  pw:api => expect.not.toBeInViewport started +8ms
+  pw:api taking page screenshot +52ms
+  pw:api expect.toBeInViewport with timeout 10000ms +39ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view') +0ms
+  pw:api expect.not.toBeInViewport with timeout 10000ms +45ms
+  pw:api waiting for getByTestId('cell-guide-card-source-data-table') +1ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-ontology-dag-view">…</div> +18ms
+  pw:api <= expect.toBeInViewport succeeded +1ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-source-data-table" …>…</div> +0ms
+  pw:api <= expect.not.toBeInViewport succeeded +1ms
