@@ -18,6 +18,7 @@ import {
   MobileTooltipHeader,
   NavBarDropdownWrapper,
   CellGuideWrapper,
+  CellGuideCardHeaderStickyWrapper,
 } from "./style";
 import Description from "./components/Description";
 import MarkerGeneTables from "./components/MarkerGeneTables";
@@ -279,8 +280,8 @@ export default function CellGuideCard({
           {/* Flex item left */}
           <Wrapper skinnyMode={skinnyMode} ref={containerRef}>
             {/* (thuang): Somehow we need a parent to prevent error:
-          NotFoundError: Failed to execute 'insertBefore' on 'Node'
-         */}
+              NotFoundError: Failed to execute 'insertBefore' on 'Node'
+            */}
             {/* Intro section */}
             <div ref={sectionRef0} id="section-0" data-testid="section-0" />
             {/* Don't show title of the cell card if we're on mobile, since the title is already in the header nav */}

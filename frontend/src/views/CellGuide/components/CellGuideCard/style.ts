@@ -13,6 +13,7 @@ import {
   fontWeightSemibold,
   spacesL,
   spacesM,
+  spacesS,
   spacesXxl,
   spacesXxs,
 } from "src/common/theme";
@@ -37,30 +38,19 @@ export const CellGuideView = styled.div<CellGuideViewProps>`
   flex-direction: row;
   column-gap: ${SIDEBAR_COLUMN_GAP_PX}px;
   max-width: 100vw;
+  height: auto;
 
   ${(props) => {
     const { skinnyMode } = props;
     const space = skinnyMode ? spacesL(props) : spacesXxl(props);
-    // For some reason in skinny mode we need to set the height to 100vh, setting
-    // only min-height doesn't work. But if we set it to 100vh in normal mode,
-    // then that screws up normal mode.
-    const height = skinnyMode ? "100vh" : "auto";
-
     return `
-    padding: 0px ${space}px;
-    height: ${height};
+      padding: 0px ${space}px;
     `;
   }}
 `;
 
 export const CellGuideWrapper = styled.div<CellGuideViewProps>`
   margin: 0 auto 80px;
-  position: sticky;
-  top: ${HEADER_HEIGHT_PX}px;
-  padding-bottom: 24px;
-  padding-top: ${TOP_PADDING_PX}px;
-  background: linear-gradient(180deg, #fff 89.82%, rgba(255, 255, 255, 0) 100%);
-  z-index: 10;
   width: ${(props) =>
     props.skinnyMode
       ? `${DEFAULT_ONTOLOGY_WIDTH}px`
@@ -71,7 +61,7 @@ export const Wrapper = styled.div<CellGuideViewProps>`
   display: flex;
   flex-direction: column;
   align-self: stretch;
-  overflow-x: hidden;
+  height: 100%;
   ${(props) => {
     const { skinnyMode } = props;
     const maxWidth = skinnyMode
@@ -93,16 +83,22 @@ export const NavBarDropdownWrapper = styled.div`
 
 export const CellGuideCardHeaderInnerWrapper = styled.div`
   display: flex;
-  column-gap: 8px;
+  column-gap: ${spacesS}px;
   align-items: center;
 `;
 
 export const CellGuideCardHeader = styled.div`
   display: flex;
-  column-gap: 8px;
+  column-gap: ${spacesS}px;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
+  position: sticky;
+  top: ${HEADER_HEIGHT_PX}px;
+  padding-bottom: 24px;
+  padding-top: ${TOP_PADDING_PX}px;
+  background: linear-gradient(180deg, #fff 89.82%, rgba(255, 255, 255, 0) 100%);
+  z-index: 10;
 `;
 
 export const CellGuideCardName = styled.h1`
