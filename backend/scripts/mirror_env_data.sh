@@ -15,7 +15,7 @@ export NO_PROMPT=1
 # of having dangling references to S3 data artifacts in the dest env
 # db; this can occur if new artifacts are created and recorded in the
 # src env after the S3 mirroring object set has been computed.
-$SCRIPTS_DIR/mirror_rds_data.sh $@
+#$SCRIPTS_DIR/mirror_rds_data.sh $@
 if [[ $DEST_ENV != 'rdev' ]]; then
   $SCRIPTS_DIR/mirror_s3_data.sh $@
 elif [[ -n "$COLLECTIONS" ]]; then  # For rdev

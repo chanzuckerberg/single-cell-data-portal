@@ -13,6 +13,13 @@ SCRIPTS_DIR=`dirname $0`
 
 DEPLOYMENT_STAGE=$SRC_ENV
 
+# Set AWS_PROFILE according to SRC_ENV
+if [[ $SRC_ENV == 'staging' ]]; then
+  src_aws_profile=single-cell-dev
+else
+  src_aws_profile=single-cell-${SRC_ENV}
+fi
+
 echo Copying WMG cube snapshot...
 
 AWS_OPTIONS="--copy-props metadata-directive --no-progress"
@@ -32,13 +39,18 @@ $S3_SYNC_CMD s3://cellxgene-wmg-${SRC_ENV}/${latest_snapshot} s3://${s3_destinat
 echo Mirroring S3 Dataset data from $SRC_ENV to $DEST_ENV...
 
 if [[ $DEST_ENV == 'rdev' ]]; then
-  echo "Copying S3 Dataset assets for ${#COLLECTIONS[@]} Collections..."
+  echo "Copying S3 Dataset assets for $(tr ',' '\n' <<< $COLLECTIONS | wc -l) Collections..."
+
+  export AWS_PROFILE=$src_aws_profile  # For SRC_ENV
   DB_PW=$(aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string')
 
   # Copy artifacts
   uri_query="select uri from \"DatasetArtifact\" where id in (select unnest(artifacts) from \"DatasetVersion\" where id in (select unnest(datasets) from \"CollectionVersion\" where collection_id in ('$(sed "s/,/','/g" <<< $COLLECTIONS)')))"
   DEPLOYMENT_STAGE=$DEPLOYMENT_STAGE make db/tunnel/up
   uris=($(PGOPTIONS='-csearch_path=persistence_schema' PGPASSWORD=${DB_PW} psql --dbname corpora_${DEPLOYMENT_STAGE} --username corpora_${DEPLOYMENT_STAGE} --host 0.0.0.0 --csv --tuples-only -c "$uri_query"))
+
+  export AWS_PROFILE=single-cell-dev  # For DEST_ENV
+
   for uri in "${uris[@]}"; do
     bucket=$(sed -E 's/s3:\/\/([^\/]+).*/\1/' <<< $uri)
     if [[ ! -z `grep 'hosted-cellxgene' <<< $bucket` ]]; then
@@ -51,10 +63,13 @@ if [[ $DEST_ENV == 'rdev' ]]; then
     $s3_cmd $uri s3://env-rdev-${rdev_bucket_suffix}/${STACK}/${key} || echo "$uri does not exist -- skipping..."
   done
 
+  export AWS_PROFILE=$src_aws_profile  # For SRC_ENV
   # Copy public assets
   dv_id_query="select unnest(datasets) from \"CollectionVersion\" where collection_id in ('$(sed "s/,/','/g" <<< $COLLECTIONS)')"
   dataset_version_ids=($(PGOPTIONS='-csearch_path=persistence_schema' PGPASSWORD=${DB_PW} psql --dbname corpora_${DEPLOYMENT_STAGE} --username corpora_${DEPLOYMENT_STAGE} --host 0.0.0.0 --csv --tuples-only -c "$dv_id_query"))
   DEPLOYMENT_STAGE=$DEPLOYMENT_STAGE make db/tunnel/down  # db access no longer needed
+  export AWS_PROFILE=single-cell-dev  # For DEST_ENV
+
   exts=("rds" "h5ad")
   for dv_id in "${dataset_version_ids[@]}"; do
     for ext in "${exts[@]}"; do
