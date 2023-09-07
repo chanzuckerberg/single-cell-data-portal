@@ -61,15 +61,14 @@ export const Wrapper = styled.div<CellGuideViewProps>`
   display: flex;
   flex-direction: column;
   align-self: stretch;
+  overflow-x: hidden;
   ${(props) => {
     const { skinnyMode } = props;
     const maxWidth = skinnyMode
       ? `${DEFAULT_ONTOLOGY_WIDTH}px`
       : `${SKINNY_MODE_BREAKPOINT_WIDTH + SIDEBAR_COLUMN_GAP_PX}px`;
-    const overflowX = skinnyMode ? "hidden" : "visible";
     return `
     max-width: ${maxWidth};
-    overflow-x: ${overflowX};
     `;
   }}
 `;
@@ -88,18 +87,28 @@ export const CellGuideCardHeaderInnerWrapper = styled.div`
   align-items: center;
 `;
 
-export const CellGuideCardHeader = styled.div`
+interface CellGuideCardHeaderProps extends CommonThemeProps {
+  width: number;
+}
+
+export const CellGuideCardHeader = styled.div<CellGuideCardHeaderProps>`
   display: flex;
   column-gap: ${spacesS}px;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  position: sticky;
+  position: fixed;
   top: ${HEADER_HEIGHT_PX}px;
   padding-bottom: 24px;
   padding-top: ${TOP_PADDING_PX}px;
+  margin-left: ${spacesXxl}px;
   background: linear-gradient(180deg, #fff 89.82%, rgba(255, 255, 255, 0) 100%);
   z-index: 10;
+  width: ${(props) => `${props.width}px`};
+  left: ${(props) => `calc(50vw - ${props.width / 2}px-180px)`};
+  @media (min-width: ${CELLGUIDE_CARD_MAX_WIDTH}px) {
+    left: calc(50vw - ${CELLGUIDE_CARD_MAX_WIDTH / 2}px);
+  }
 `;
 
 export const CellGuideCardName = styled.h1`
