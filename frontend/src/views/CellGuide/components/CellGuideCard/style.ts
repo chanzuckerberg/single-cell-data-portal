@@ -111,10 +111,10 @@ export const CellGuideCardHeader = styled.div<CellGuideCardHeaderProps>`
   padding-bottom: ${CELLGUIDE_HEADER_PADDING_BOTTOM_PX}px;
   line-height: ${CELLGUIDE_HEADER_LINE_HEIGHT_PX}px;
   padding-top: ${TOP_PADDING_PX}px;
-  margin-left: ${spacesXxl}px;
+  padding-left: ${spacesXxl}px;
   background: linear-gradient(180deg, #fff 89.82%, rgba(255, 255, 255, 0) 100%);
   z-index: 10;
-  width: ${(props) => `${props.width}px`};
+  width: ${(props) => `${props.width + LEFT_RIGHT_PADDING_PX_XXL}px`};
   left: ${(props) =>
     `calc(50vw - ${props.width / 2}px-${
       (SIDEBAR_COLUMN_GAP_PX + CELL_GUIDE_SIDE_BAR_WIDTH_PX) / 2
