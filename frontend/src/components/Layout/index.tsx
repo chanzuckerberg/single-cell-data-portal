@@ -21,6 +21,24 @@ const Layout = ({ children }: Props) => {
         <LandingFooter />
       </>
     );
+  } else if (pathname === ROUTES.CELL_GUIDE) {
+    return (
+      <Wrapper data-testid="global-layout-wrapper">
+        <LandingHeader title="CellGuide" />
+        {children}
+      </Wrapper>
+    );
+  } else if (pathname.startsWith(ROUTES.CELL_GUIDE)) {
+    return (
+      <>
+        <LandingHeader
+          title="CellGuide"
+          homeUrl={ROUTES.HOMEPAGE}
+          labelUrl={ROUTES.CELL_GUIDE}
+        />
+        {children}
+      </>
+    );
   } else {
     return (
       <Wrapper data-testid="global-layout-wrapper">

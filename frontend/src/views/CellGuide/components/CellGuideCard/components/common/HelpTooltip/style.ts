@@ -15,7 +15,7 @@ export const StyledTooltip = styled.div`
 export const TooltipButton = styled(Button)`
   font-weight: 500;
   font-size: 12px;
-  min-width: unset;
+  min-width: 12px;
   margin-left: 2.5px;
 `;
 
