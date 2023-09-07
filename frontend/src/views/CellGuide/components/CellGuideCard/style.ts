@@ -32,6 +32,9 @@ export const CELLGUIDE_CARD_MAX_WIDTH = 1440;
 // spacing.xxl and spacing.xl
 export const LEFT_RIGHT_PADDING_PX_XXL = 40;
 
+const CELLGUIDE_HEADER_PADDING_BOTTOM_PX = 24;
+const CELLGUIDE_HEADER_LINE_HEIGHT_PX = 36;
+
 interface CellGuideViewProps extends CommonThemeProps {
   skinnyMode: boolean;
 }
@@ -65,6 +68,9 @@ export const Wrapper = styled.div<CellGuideViewProps>`
   flex-direction: column;
   align-self: stretch;
   overflow-x: hidden;
+  margin-top: ${CELLGUIDE_HEADER_LINE_HEIGHT_PX +
+  CELLGUIDE_HEADER_PADDING_BOTTOM_PX +
+  TOP_PADDING_PX}px;
   ${(props) => {
     const { skinnyMode } = props;
     const maxWidth = skinnyMode
@@ -102,7 +108,8 @@ export const CellGuideCardHeader = styled.div<CellGuideCardHeaderProps>`
   justify-content: space-between;
   position: fixed;
   top: ${HEADER_HEIGHT_PX}px;
-  padding-bottom: 24px;
+  padding-bottom: ${CELLGUIDE_HEADER_PADDING_BOTTOM_PX}px;
+  line-height: ${CELLGUIDE_HEADER_LINE_HEIGHT_PX}px;
   padding-top: ${TOP_PADDING_PX}px;
   margin-left: ${spacesXxl}px;
   background: linear-gradient(180deg, #fff 89.82%, rgba(255, 255, 255, 0) 100%);
