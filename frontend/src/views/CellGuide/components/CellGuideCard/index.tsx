@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
+import { Global } from "@emotion/react";
 import {
   Wrapper,
   CellGuideCardName,
@@ -7,27 +8,33 @@ import {
   StyledTag,
   CellGuideView,
   CellGuideCardHeaderInnerWrapper,
-  SearchBarWrapper,
-  LEFT_RIGHT_PADDING_PX,
-  SearchBarPositioner,
+  LEFT_RIGHT_PADDING_PX_XXL,
   StyledRightSideBar,
   StyledSynonyms,
+  FlexContainer,
+  StyledOntologyId,
+  MobileTooltipTitle,
+  MobileTooltipWrapper,
+  MobileTooltipHeader,
+  NavBarDropdownWrapper,
+  CellGuideWrapper,
 } from "./style";
 import Description from "./components/Description";
-import CellGuideCardSearchBar from "../CellGuideCardSearchBar";
 import MarkerGeneTables from "./components/MarkerGeneTables";
 import OntologyDagView from "../common/OntologyDagView";
 import FullScreenProvider from "../common/FullScreenProvider";
 import SourceDataTable from "./components/SourceDataTable";
 import CellGuideCardSidebar from "./components/CellGuideCardSidebar";
+import CellGuideMobileHeader from "../CellGuideMobileHeader";
 import { Gene } from "src/views/WheresMyGene/common/types";
 import { throttle } from "lodash";
 import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 import { titleize } from "src/common/utils/string";
 import Head from "next/head";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
-import { useCellTypeMetadata } from "src/common/queries/cellGuide";
+import { StickySidebarStyle } from "./components/CellGuideCardSidebar/style";
 import {
+  SKINNY_MODE_BREAKPOINT_WIDTH,
   CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_HEADER_NAME,
@@ -43,14 +50,14 @@ import {
   DefaultDropdownMenuOption,
   Dropdown,
   InputDropdownProps,
+  ButtonIcon,
 } from "@czi-sds/components";
+import { useComponentWidth } from "./components/common/hooks/useIsComponentPastBreakpoint";
+import { DEFAULT_ONTOLOGY_HEIGHT } from "../common/OntologyDagView/common/constants";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
-
-// This is the desired width of the CellGuideCard components right after the sidebar is hidden.
-const BREAKPOINT_WIDTH = 960;
 
 const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
   sdsStyle: "square",
@@ -59,6 +66,7 @@ const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
 interface Props {
   name: string;
   seoDescription: string;
+  synonyms?: string[];
 }
 
 export default function CellGuideCard({
@@ -66,8 +74,12 @@ export default function CellGuideCard({
   name,
   // From getServerSideProps
   seoDescription: rawSeoDescription,
+  // From getServerSideProps
+  synonyms,
 }: Props): JSX.Element {
   const router = useRouter();
+
+  const [pageNavIsOpen, setPageNavIsOpen] = useState(false);
 
   // Navigation
   const sectionRef0 = React.useRef(null);
@@ -76,21 +88,38 @@ export default function CellGuideCard({
   const sectionRef3 = React.useRef(null);
 
   const [skinnyMode, setSkinnyMode] = useState<boolean>(false);
+
+  const cellGuideSideBar = useMemo(() => {
+    return (
+      <CellGuideCardSidebar
+        sectionClickHandler={() => setPageNavIsOpen(false)}
+        skinnyMode={skinnyMode}
+        items={[
+          { elementRef: sectionRef0, title: "Intro" },
+          { elementRef: sectionRef1, title: "Cell Ontology" },
+          { elementRef: sectionRef2, title: "Marker Genes" },
+          { elementRef: sectionRef3, title: "Data" },
+        ]}
+      />
+    );
+  }, [skinnyMode]);
+
+  // Set the mobile tooltip view content
+  const [tooltipContent, setTooltipContent] = useState<{
+    title: string;
+    element: JSX.Element;
+  } | null>(null);
+
   // cell type id
   const { cellTypeId: cellTypeIdRaw } = router.query;
   const cellTypeId = (cellTypeIdRaw as string)?.replace("_", ":") ?? "";
   const cellTypeName = name || "";
   const titleizedCellTypeName = titleize(cellTypeName);
 
-  const { data: cellTypesById } = useCellTypeMetadata();
-
-  const cellType = cellTypesById && cellTypesById[cellTypeId];
-
-  const { synonyms } = cellType || {};
-
   const handleResize = useCallback(() => {
     setSkinnyMode(
-      window.innerWidth < BREAKPOINT_WIDTH + 2 * LEFT_RIGHT_PADDING_PX
+      window.innerWidth <
+        SKINNY_MODE_BREAKPOINT_WIDTH + 2 * LEFT_RIGHT_PADDING_PX_XXL
     );
   }, []);
 
@@ -159,8 +188,41 @@ export default function CellGuideCard({
     synonyms?.join(", ") || "N/A"
   }). ${rawSeoDescription}`;
 
+  const dropdownComponents = (
+    <CellGuideCardHeaderInnerWrapper>
+      <Dropdown
+        InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
+        search
+        label={selectedOrganism?.name}
+        onChange={handleChangeOrganism}
+        options={sdsOrganismsList}
+        value={selectedOrganism}
+        data-testid={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
+      />
+      <Dropdown
+        InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
+        search
+        label={selectedOrgan?.name}
+        onChange={handleChangeOrgan}
+        options={sdsOrgansList}
+        value={selectedOrgan}
+        data-testid={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}
+      />
+    </CellGuideCardHeaderInnerWrapper>
+  );
+  const pageNav = (
+    <div>
+      {cellGuideSideBar}
+      <NavBarDropdownWrapper>{dropdownComponents}</NavBarDropdownWrapper>
+    </div>
+  );
+  const { width, containerRef } = useComponentWidth();
+
   return (
     <>
+      {/* This is a fix that overrides a global overflow css prop to get sticky elements to work */}
+      <Global styles={StickySidebarStyle} />
+
       <Head>
         <title>{title}</title>
         <meta property="title" key="title" content={title} />
@@ -178,123 +240,146 @@ export default function CellGuideCard({
           key="twitter:description"
           content={seoDescription}
         />
+
+        {/* This prevents auto zooming on the input box on mobile */}
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1"
+        />
       </Head>
-      <CellGuideView skinnyMode={skinnyMode}>
-        {/* Flex item left */}
-        <Wrapper>
-          {/* (thuang): Somehow we need a parent to prevent error:
+
+      {/* Cell Guide Mobile Navigation */}
+      {skinnyMode && (
+        <CellGuideMobileHeader
+          title={titleizedCellTypeName}
+          pageNav={pageNav}
+          pageNavIsOpen={pageNavIsOpen}
+          setPageNavIsOpen={setPageNavIsOpen}
+        />
+      )}
+      {/* when tooltipContent is null, remove the tooltip */}
+      {/* setTooltipContent sets the title and content element */}
+      {skinnyMode && tooltipContent && (
+        <MobileTooltipWrapper>
+          <MobileTooltipHeader>
+            <MobileTooltipTitle>{tooltipContent.title}</MobileTooltipTitle>
+            <ButtonIcon
+              onClick={() => {
+                setTooltipContent(null);
+              }}
+              sdsIcon="xMark"
+              sdsSize="medium"
+            />
+          </MobileTooltipHeader>
+          <div>{tooltipContent.element}</div>
+        </MobileTooltipWrapper>
+      )}
+      <CellGuideWrapper skinnyMode={skinnyMode}>
+        <CellGuideView skinnyMode={skinnyMode}>
+          {/* Flex item left */}
+          <Wrapper skinnyMode={skinnyMode} ref={containerRef}>
+            {/* (thuang): Somehow we need a parent to prevent error:
           NotFoundError: Failed to execute 'insertBefore' on 'Node'
          */}
-          <div>
-            {skinnyMode && (
-              <SearchBarPositioner>
-                <SearchBarWrapper>
-                  <CellGuideCardSearchBar />
-                </SearchBarWrapper>
-              </SearchBarPositioner>
+            {/* Intro section */}
+            <div ref={sectionRef0} id="section-0" data-testid="section-0" />
+            {/* Don't show title of the cell card if we're on mobile, since the title is already in the header nav */}
+            {!skinnyMode && (
+              <CellGuideCardHeader>
+                <CellGuideCardHeaderInnerWrapper>
+                  <CellGuideCardName data-testid={CELL_GUIDE_CARD_HEADER_NAME}>
+                    {titleizedCellTypeName}
+                  </CellGuideCardName>
+                  <a
+                    href={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
+                    <StyledTag
+                      data-testid={CELL_GUIDE_CARD_HEADER_TAG}
+                      label={cellTypeId}
+                      sdsType="secondary"
+                      sdsStyle="square"
+                      color="gray"
+                      hover
+                    />
+                  </a>
+                </CellGuideCardHeaderInnerWrapper>
+                {dropdownComponents}
+              </CellGuideCardHeader>
             )}
-          </div>
-          {/* Intro section */}
-          <div ref={sectionRef0} id="section-0" data-testid="section-0" />
-          <CellGuideCardHeader>
-            <CellGuideCardHeaderInnerWrapper>
-              <CellGuideCardName data-testid={CELL_GUIDE_CARD_HEADER_NAME}>
-                {titleizedCellTypeName}
-              </CellGuideCardName>
-              <a
-                href={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                <StyledTag
-                  data-testid={CELL_GUIDE_CARD_HEADER_TAG}
-                  label={cellTypeId}
-                  sdsType="secondary"
-                  sdsStyle="square"
-                  color="gray"
-                  hover
+            <Description
+              cellTypeId={cellTypeId}
+              cellTypeName={cellTypeName}
+              skinnyMode={skinnyMode}
+              setTooltipContent={setTooltipContent}
+            />
+
+            <FlexContainer>
+              {skinnyMode && (
+                <StyledOntologyId
+                  url={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
+                  ontologyId={cellTypeId}
                 />
-              </a>
-            </CellGuideCardHeaderInnerWrapper>
-            <CellGuideCardHeaderInnerWrapper>
-              <Dropdown
-                InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
-                search
-                label={selectedOrganism?.name}
-                onChange={handleChangeOrganism}
-                options={sdsOrganismsList}
-                value={selectedOrganism}
-                data-testid={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
+              )}
+              <StyledSynonyms
+                synonyms={synonyms}
+                data-testid={CELL_GUIDE_CARD_SYNONYMS}
               />
-              <Dropdown
-                InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
-                search
-                label={selectedOrgan?.name}
-                onChange={handleChangeOrgan}
-                options={sdsOrgansList}
-                value={selectedOrgan}
-                data-testid={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}
-              />
-            </CellGuideCardHeaderInnerWrapper>
-          </CellGuideCardHeader>
+            </FlexContainer>
 
-          <Description cellTypeId={cellTypeId} cellTypeName={cellTypeName} />
-
-          <StyledSynonyms
-            synonyms={synonyms}
-            data-testid={CELL_GUIDE_CARD_SYNONYMS}
-          />
-
-          {/* Cell Ontology section */}
-          <div ref={sectionRef1} id="section-1" data-testid="section-1" />
-          {/* (thuang): Somehow we need a parent <div /> to prevent error:
+            {/* Cell Ontology section */}
+            <div ref={sectionRef1} id="section-1" data-testid="section-1" />
+            {/* (thuang): Somehow we need a parent <div /> to prevent error:
           NotFoundError: Failed to execute 'insertBefore' on 'Node'
          */}
-          <div>
-            <FullScreenProvider>
-              <OntologyDagView
-                key={`${cellTypeId}-${selectedOrganId}`}
-                cellTypeId={cellTypeId}
-                tissueName={selectedOrgan.name}
-                tissueId={selectedOrganId}
-                skinnyMode={skinnyMode}
-              />
-            </FullScreenProvider>
-          </div>
+            <div>
+              <FullScreenProvider>
+                <OntologyDagView
+                  key={`${cellTypeId}-${selectedOrganId}`}
+                  cellTypeId={cellTypeId}
+                  tissueName={selectedOrgan.name}
+                  tissueId={selectedOrganId}
+                  inputWidth={width}
+                  inputHeight={DEFAULT_ONTOLOGY_HEIGHT}
+                />
+              </FullScreenProvider>
+            </div>
 
-          {/* Marker Genes section */}
-          <div ref={sectionRef2} id="section-2" data-testid="section-2" />
-          <MarkerGeneTables
-            key={cellTypeId}
-            cellTypeId={cellTypeId}
-            setGeneInfoGene={setGeneInfoGene}
-            cellTypeName={cellTypeName}
-            organName={selectedOrgan.name}
-            organId={selectedOrganId}
-            organismName={selectedOrganism.name}
-          />
+            {/* Marker Genes section */}
+            <div ref={sectionRef2} id="section-2" data-testid="section-2" />
+            <MarkerGeneTables
+              setTooltipContent={setTooltipContent}
+              key={cellTypeId}
+              cellTypeId={cellTypeId}
+              setGeneInfoGene={setGeneInfoGene}
+              cellTypeName={cellTypeName}
+              skinnyMode={skinnyMode}
+              organName={selectedOrgan.name}
+              organId={selectedOrganId}
+              organismName={selectedOrganism.name}
+            />
 
-          {/* Source Data section */}
-          <div ref={sectionRef3} id="section-3" data-testid="section-3" />
-          <SourceDataTable
-            cellTypeId={cellTypeId}
-            organName={selectedOrgan.name}
-            organId={selectedOrganId}
-            organismName={selectedOrganism.name}
-          />
-        </Wrapper>
-        {!skinnyMode && (
-          <CellGuideCardSidebar
-            items={[
-              { elementRef: sectionRef0, title: "Intro" },
-              { elementRef: sectionRef1, title: "Cell Ontology" },
-              { elementRef: sectionRef2, title: "Marker Genes" },
-              { elementRef: sectionRef3, title: "Data" },
-            ]}
-          />
-        )}
-      </CellGuideView>
-      <StyledRightSideBar width={RIGHT_SIDEBAR_WIDTH_PX}>
+            {/* Source Data section */}
+            <div ref={sectionRef3} id="section-3" data-testid="section-3" />
+            <SourceDataTable
+              cellTypeId={cellTypeId}
+              organName={selectedOrgan.name}
+              organId={selectedOrganId}
+              organismName={selectedOrganism.name}
+              skinnyMode={skinnyMode}
+              setTooltipContent={setTooltipContent}
+            />
+          </Wrapper>
+
+          {/* Side bar */}
+          {!skinnyMode && cellGuideSideBar}
+        </CellGuideView>
+      </CellGuideWrapper>
+      <StyledRightSideBar
+        width={RIGHT_SIDEBAR_WIDTH_PX}
+        skinnyMode={skinnyMode}
+      >
         {geneInfoGene && (
           <GeneInfoSideBar
             geneInfoGene={geneInfoGene}
@@ -303,7 +388,8 @@ export default function CellGuideCard({
           />
         )}
       </StyledRightSideBar>
-      <CellGuideBottomBanner />
+      {/* dont include long survey link text if in mobile view */}
+      <CellGuideBottomBanner includeSurveyLink={!skinnyMode} />
     </>
   );
 }

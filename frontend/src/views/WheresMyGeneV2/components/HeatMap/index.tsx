@@ -47,7 +47,6 @@ import {
 } from "src/views/WheresMyGene/components/HeatMap/hooks/useSortedGeneNames";
 import { useSortedCellTypesByTissueName } from "src/views/WheresMyGene/components/HeatMap/hooks/useSortedCellTypesByTissueName";
 import {
-  CellTypeFilterContainer,
   CellTypeTagContainer,
   ChartWrapper,
   Container,
@@ -69,7 +68,12 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 import { Autocomplete, DefaultAutocompleteOption } from "@czi-sds/components";
-import { Divider, TopLeftCornerMask, XAxisWrapper } from "./style";
+import {
+  CellTypeFilterContainer,
+  Divider,
+  TopLeftCornerMask,
+  XAxisWrapper,
+} from "./style";
 
 interface Props {
   className?: string;

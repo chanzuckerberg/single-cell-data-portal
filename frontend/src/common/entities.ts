@@ -102,7 +102,7 @@ export interface Collection {
   updated_at: number;
   publisher_metadata: PublisherMetadata;
   revision_diff: boolean;
-  summaryCitation?: string;
+  summaryCitation: string;
   tombstone?: boolean;
   revising_in?: Collection["id"];
   revision_of?: Collection["id"];

@@ -1,7 +1,9 @@
 /* eslint-disable react/no-unescaped-entities */
 import React, {
+  Dispatch,
   ReactElement,
   ReactNode,
+  SetStateAction,
   useEffect,
   useMemo,
   useState,
@@ -28,6 +30,11 @@ import {
   MarkerGeneInfo,
   MarkerGeneTooltipText,
   MarkerGeneTooltipSubtext,
+  MarkerGeneTableWrapper,
+  StyledCellNumerical,
+  NoWrapWrapper,
+  StyledLink,
+  ReferenceTooltipWrapper,
 } from "./style";
 import Table from "../common/Table";
 import { Pagination } from "@mui/material";
@@ -38,8 +45,15 @@ import {
   useCanonicalMarkers,
   useComputationalMarkers,
 } from "src/common/queries/cellGuide";
-import { useComputationalMarkerGenesTableRowsAndFilters } from "./hooks/computational_markers";
-import { useCanonicalMarkerGenesTableRowsAndFilters } from "./hooks/canonical_markers";
+import {
+  ComputationalMarkerGeneTableData,
+  useComputationalMarkerGenesTableRowsAndFilters,
+} from "./hooks/computational_markers";
+import {
+  CanonicalMarkerGeneTableData,
+  useCanonicalMarkerGenesTableRowsAndFilters,
+} from "./hooks/canonical_markers";
+import { useIsComponentPastBreakpointWidth } from "../common/hooks/useIsComponentPastBreakpoint";
 import HelpTooltip from "../common/HelpTooltip";
 import { ROUTES } from "src/common/constants/routes";
 import { track } from "src/common/analytics";
@@ -55,6 +69,8 @@ import {
   MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID,
   MARKER_SCORE_TOOLTIP_TEST_ID,
   PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
+  MARKER_GENES_CANONICAL_BREAKPOINT_PX,
+  MARKER_GENES_COMPUTATIONAL_BREAKPOINT_PX,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 
@@ -81,103 +97,11 @@ const ROWS_PER_PAGE = 10;
 // Computational marker gene table types
 interface TableRowEnrichedGenes {
   symbol: ReactNode;
-  name: string;
-  marker_score: string;
-  me: string;
-  pc: string;
+  name: ReactNode;
+  marker_score: ReactNode;
+  me: ReactNode;
+  pc: ReactNode;
 }
-const tableColumnsEnrichedGenes: Array<keyof TableRowEnrichedGenes> = [
-  "symbol",
-  "name",
-  "marker_score",
-  "me",
-  "pc",
-];
-
-// Computational marker gene table column names
-const tableColumnNamesEnrichedGenes: Record<
-  keyof TableRowEnrichedGenes,
-  ReactElement | string
-> = {
-  symbol: "Symbol",
-  name: "Name",
-  marker_score: (
-    <div>
-      <StyledHeadCellContent>
-        Marker Score
-        <HelpTooltip
-          dark
-          buttonDataTestId={MARKER_SCORE_TOOLTIP_TEST_ID}
-          text={
-            <>
-              Marker score interpretation:
-              <br />
-              <MarkerStrengthContainer>
-                {"Low: <1 | Medium: 1-2 | High: >2"}
-              </MarkerStrengthContainer>
-              <br />
-              <div>
-                Marker genes are highly and uniquely expressed in the cell type
-                relative to all other cell types.
-              </div>
-              <br />
-              <div>
-                <a href={ROUTES.FMG_DOCS} rel="noopener" target="_blank">
-                  Click to read more about the identification method.
-                </a>
-              </div>
-            </>
-          }
-        />
-      </StyledHeadCellContent>
-    </div>
-  ),
-  me: (
-    <StyledHeadCellContent>
-      Expression Score
-      <HelpTooltip
-        dark
-        buttonDataTestId={EXPRESSION_SCORE_TOOLTIP_TEST_ID}
-        text={
-          <div>
-            The expression score is the average{" "}
-            <a
-              href={ROUTES.WMG_DOCS_DATA_PROCESSING}
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              rankit-normalized gene expression
-            </a>{" "}
-            among cells in the cell type that have non-zero values.
-          </div>
-        }
-      />
-    </StyledHeadCellContent>
-  ),
-  pc: (
-    <StyledHeadCellContent>
-      % of Cells
-      <HelpTooltip
-        dark
-        buttonDataTestId={PERCENT_OF_CELLS_TOOLTIP_TEST_ID}
-        text={
-          <div>
-            Percentage of cells expressing a gene in the cell type. These
-            numbers are calculated after cells with{" "}
-            <a
-              href={ROUTES.WMG_DOCS_DATA_PROCESSING}
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              low coverage and low expression values
-            </a>{" "}
-            have been filtered out.
-          </div>
-        }
-      />
-    </StyledHeadCellContent>
-  ),
-};
 
 // Canonical marker gene table types
 interface TableRowCanonicalGenes {
@@ -185,21 +109,6 @@ interface TableRowCanonicalGenes {
   name: string;
   references: ReactNode;
 }
-const tableColumnsCanonicalGenes: Array<keyof TableRowCanonicalGenes> = [
-  "symbol",
-  "name",
-  "references",
-];
-
-// Canonical marker gene table column names
-const tableColumnNamesCanonicalGenes: Record<
-  keyof TableRowCanonicalGenes,
-  string
-> = {
-  symbol: "Symbol",
-  name: "Name",
-  references: "References",
-};
 
 // Table row type
 type TableRow = (TableRowEnrichedGenes | TableRowCanonicalGenes) & {
@@ -255,6 +164,13 @@ interface Props {
   cellTypeId: string;
   setGeneInfoGene: React.Dispatch<React.SetStateAction<string | null>>;
   cellTypeName: string;
+  skinnyMode: boolean;
+  setTooltipContent: Dispatch<
+    SetStateAction<{
+      title: string;
+      element: JSX.Element;
+    } | null>
+  >;
   organName: string;
   organId: string;
   organismName: string;
@@ -264,6 +180,8 @@ const MarkerGeneTables = ({
   cellTypeId,
   cellTypeName,
   setGeneInfoGene,
+  skinnyMode,
+  setTooltipContent,
   organName,
   organId,
   organismName,
@@ -272,11 +190,116 @@ const MarkerGeneTables = ({
   const [activeTable, setActiveTable] = useState(0);
   const [computationalMarkerGenes, setComputationalMarkerGenes] =
     useState<ComputationalMarkersQueryResponse>([]);
+
+  const { isPastBreakpoint, containerRef } = useIsComponentPastBreakpointWidth(
+    activeTable
+      ? MARKER_GENES_COMPUTATIONAL_BREAKPOINT_PX
+      : MARKER_GENES_CANONICAL_BREAKPOINT_PX
+  );
+
   const [canonicalMarkerGenes, setCanonicalMarkerGenes] =
     useState<CanonicalMarkersQueryResponse>([]);
 
   const { data: enrichedGenes } = useComputationalMarkers(cellTypeId);
   const { data: canonicalMarkers } = useCanonicalMarkers(cellTypeId);
+
+  // Computational marker gene table column names
+  const tableColumnNamesEnrichedGenes: Record<
+    keyof TableRowEnrichedGenes,
+    ReactElement | string
+  > = useMemo(
+    () => ({
+      symbol: "Symbol",
+      name: "Name",
+      marker_score: (
+        <div>
+          <StyledHeadCellContent>
+            Marker Score
+            <HelpTooltip
+              skinnyMode={skinnyMode}
+              title="Marker Score"
+              setTooltipContent={setTooltipContent}
+              dark
+              buttonDataTestId={MARKER_SCORE_TOOLTIP_TEST_ID}
+              text={
+                <>
+                  Marker score interpretation:
+                  <br />
+                  <MarkerStrengthContainer>
+                    {"Low: <1 | Medium: 1-2 | High: >2"}
+                  </MarkerStrengthContainer>
+                  <br />
+                  <div>
+                    Marker genes are highly and uniquely expressed in the cell
+                    type relative to all other cell types.
+                  </div>
+                  <br />
+                  <div>
+                    <a href={ROUTES.FMG_DOCS} rel="noopener" target="_blank">
+                      Click to read more about the identification method.
+                    </a>
+                  </div>
+                </>
+              }
+            />
+          </StyledHeadCellContent>
+        </div>
+      ),
+      me: (
+        <StyledHeadCellContent>
+          {!isPastBreakpoint ? "Expression Score" : "Exp. Score"}
+          <HelpTooltip
+            skinnyMode={skinnyMode}
+            title="Expression Score"
+            setTooltipContent={setTooltipContent}
+            dark
+            buttonDataTestId={EXPRESSION_SCORE_TOOLTIP_TEST_ID}
+            text={
+              <div>
+                The expression score is the average{" "}
+                <a
+                  href={ROUTES.WMG_DOCS_DATA_PROCESSING}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  rankit-normalized gene expression
+                </a>{" "}
+                among cells in the cell type that have non-zero values.
+              </div>
+            }
+          />
+        </StyledHeadCellContent>
+      ),
+      pc: (
+        <StyledHeadCellContent>
+          % of Cells
+          <HelpTooltip
+            skinnyMode={skinnyMode}
+            title="% of Cells"
+            setTooltipContent={setTooltipContent}
+            dark
+            buttonDataTestId={PERCENT_OF_CELLS_TOOLTIP_TEST_ID}
+            text={
+              <div>
+                Percentage of cells expressing a gene in the cell type. These
+                numbers are calculated after cells with{" "}
+                <a
+                  href={ROUTES.WMG_DOCS_DATA_PROCESSING}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  low coverage and low expression values
+                </a>{" "}
+                have been filtered out.
+              </div>
+            }
+          />
+        </StyledHeadCellContent>
+      ),
+    }),
+    [setTooltipContent, skinnyMode, isPastBreakpoint]
+  );
+
   const allTissuesLabelToIdMap = useAllTissuesLookupTables(cellTypeId);
 
   useEffect(() => {
@@ -311,127 +334,189 @@ const MarkerGeneTables = ({
       selectedOrganismLabel: organismName,
     });
 
-  const tableRows: TableRow[] = useMemo(
-    () =>
-      activeTable
-        ? computationalMarkerGeneTableData.map((row) => ({
-            ...row,
-            symbolId: row.symbol,
-            symbol: (
-              <>
-                {row.symbol}{" "}
-                <ButtonIcon
-                  aria-label={`display gene info for ${row.symbol}`}
-                  sdsIcon="infoCircle"
-                  sdsSize="small"
-                  sdsType="secondary"
-                  onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
-                />
-              </>
-            ),
-          }))
-        : canonicalMarkerGeneTableData.map((row) => ({
-            ...row,
-            symbolId: row.symbol,
-            symbol: (
-              <>
-                {row.symbol}{" "}
-                <ButtonIcon
-                  aria-label={`display gene info for ${row.symbol}`}
-                  sdsIcon="infoCircle"
-                  sdsSize="small"
-                  sdsType="secondary"
-                  onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
-                />
-              </>
-            ),
-            references: (
-              <PublicationLinkWrapper>
-                {row.referenceData.publicationTitles.map(
-                  (publicationTitle, index) => {
-                    if (
-                      publicationTitle &&
-                      row.referenceData.publications[index]
-                    ) {
-                      const referenceIndexLabel =
-                        (row.referenceData.publicationTitlesToIndex.get(
-                          publicationTitle
-                        ) ?? 0) + 1;
-                      return (
-                        <Tooltip
-                          key={`${row.referenceData.publications[index]}-${index}-tooltip`}
-                          placement="top"
-                          width="default"
-                          arrow={false}
-                          title={
-                            <div>
-                              {publicationTitle.split("\n\n").at(0)}
-                              <br />
-                              <br />
-                              <i>{publicationTitle.split("\n\n").at(1)}</i>
-                            </div>
+  const tableRows: TableRow[] = useMemo(() => {
+    const referenceClickHandlerMobileView = (
+      row: CanonicalMarkerGeneTableData
+    ) => {
+      return (event: React.MouseEvent<HTMLSpanElement>) => {
+        event.preventDefault();
+        setTooltipContent({
+          title: `${row.symbol} marker gene references`,
+          element: (
+            <ReferenceTooltipWrapper>
+              {row.referenceData.publicationTitles.map(
+                (publicationTitle, index) => {
+                  const keyVal = `${row.referenceData.publications[index]}-${index}}`;
+                  const referenceIndexLabel =
+                    (row.referenceData.publicationTitlesToIndex.get(
+                      publicationTitle
+                    ) ?? 0) + 1;
+                  return (
+                    <div key={`${keyVal}-tooltip`}>
+                      <StyledLink
+                        key={`${keyVal}`}
+                        label={`[${referenceIndexLabel}] ${publicationTitle
+                          .split("\n\n")
+                          .at(0)}`}
+                        url={`https://doi.org/${row.referenceData.publications[index]}`}
+                      />
+                      <br />
+                      <i>{publicationTitle.split("\n\n").at(1)}</i>
+                    </div>
+                  );
+                }
+              )}
+            </ReferenceTooltipWrapper>
+          ),
+        });
+      };
+    };
+    const getSymbol = (
+      row: ComputationalMarkerGeneTableData | CanonicalMarkerGeneTableData
+    ) => (
+      <NoWrapWrapper>
+        {row.symbol}{" "}
+        <ButtonIcon
+          aria-label={`display gene info for ${row.symbol}`}
+          sdsIcon="infoCircle"
+          sdsSize="small"
+          sdsType="secondary"
+          onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
+        />
+      </NoWrapWrapper>
+    );
+    return activeTable
+      ? computationalMarkerGeneTableData.map((row) => ({
+          ...row,
+          me: <StyledCellNumerical> {row.me} </StyledCellNumerical>,
+          pc: <StyledCellNumerical> {row.pc} </StyledCellNumerical>,
+          marker_score: (
+            <StyledCellNumerical> {row.marker_score} </StyledCellNumerical>
+          ),
+          symbolId: row.symbol,
+          symbol: getSymbol(row),
+        }))
+      : canonicalMarkerGeneTableData.map((row) => ({
+          ...row,
+          symbolId: row.symbol,
+          symbol: getSymbol(row),
+          references: (
+            <PublicationLinkWrapper>
+              {row.referenceData.publicationTitles.map(
+                (publicationTitle, index) => {
+                  if (
+                    publicationTitle &&
+                    row.referenceData.publications[index]
+                  ) {
+                    const referenceIndexLabel =
+                      (row.referenceData.publicationTitlesToIndex.get(
+                        publicationTitle
+                      ) ?? 0) + 1;
+                    const keyVal = `${row.referenceData.publications[index]}-${index}}`;
+                    return (
+                      <Tooltip
+                        key={`${keyVal}-tooltip`}
+                        placement="top"
+                        disableHoverListener={skinnyMode}
+                        width="default"
+                        arrow={false}
+                        title={
+                          <div>
+                            {publicationTitle.split("\n\n").at(0)}
+                            <br />
+                            <br />
+                            <i>{publicationTitle.split("\n\n").at(1)}</i>
+                          </div>
+                        }
+                        leaveDelay={0}
+                      >
+                        <span
+                          key={`${keyVal}-span`}
+                          onClick={
+                            skinnyMode
+                              ? referenceClickHandlerMobileView(row)
+                              : undefined
                           }
-                          leaveDelay={0}
                         >
-                          <span
-                            key={`${row.referenceData.publications[index]}-${index}-span`}
-                          >
-                            <Link
-                              key={`${row.referenceData.publications[index]}-${index}`}
-                              label={`[${referenceIndexLabel}]`}
-                              url={`https://doi.org/${row.referenceData.publications[index]}`}
-                            />
-                          </span>
-                        </Tooltip>
-                      );
-                    }
+                          <StyledLink
+                            key={`${keyVal}`}
+                            label={`[${referenceIndexLabel}]`}
+                            url={`https://doi.org/${row.referenceData.publications[index]}`}
+                          />
+                        </span>
+                      </Tooltip>
+                    );
                   }
-                )}
-              </PublicationLinkWrapper>
-            ),
-          })),
-    [
-      activeTable,
-      canonicalMarkerGeneTableData,
-      computationalMarkerGeneTableData,
-      setGeneInfoGene,
-    ]
-  );
+                }
+              )}
+            </PublicationLinkWrapper>
+          ),
+        }));
+  }, [
+    activeTable,
+    canonicalMarkerGeneTableData,
+    computationalMarkerGeneTableData,
+    setGeneInfoGene,
+    setTooltipContent,
+    skinnyMode,
+  ]);
 
   const genesForShareUrl = `${tableRows
     .map((row) => row.symbolId)
     .join("%2C")}&cellTypes=${cellTypeName.replace(" ", "+")}`;
 
   const pageCount = Math.ceil(tableRows.length / ROWS_PER_PAGE);
-  const tableComponent = useMemo(
-    () =>
-      activeTable ? (
-        <Table<TableRowEnrichedGenes>
-          testId={CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}
-          columns={tableColumnsEnrichedGenes}
-          rows={
-            tableRows.slice(
-              (page - 1) * ROWS_PER_PAGE,
-              page * ROWS_PER_PAGE
-            ) as TableRowEnrichedGenes[]
-          }
-          columnIdToName={tableColumnNamesEnrichedGenes}
-        />
-      ) : (
-        <Table<TableRowCanonicalGenes>
-          testId={CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}
-          columns={tableColumnsCanonicalGenes}
-          rows={
-            tableRows.slice(
-              (page - 1) * ROWS_PER_PAGE,
-              page * ROWS_PER_PAGE
-            ) as TableRowCanonicalGenes[]
-          }
-          columnIdToName={tableColumnNamesCanonicalGenes}
-        />
-      ),
-    [activeTable, page, tableRows]
-  );
+  const tableComponent = useMemo(() => {
+    const tableColumnsEnrichedGenes: Array<keyof TableRowEnrichedGenes> =
+      !isPastBreakpoint
+        ? ["symbol", "name", "marker_score", "me", "pc"]
+        : ["symbol", "marker_score", "me", "pc"];
+
+    const tableColumnsCanonicalGenes: Array<keyof TableRowCanonicalGenes> =
+      !isPastBreakpoint
+        ? ["symbol", "name", "references"]
+        : ["symbol", "references"];
+    // Canonical marker gene table column names
+    const tableColumnNamesCanonicalGenes: Record<
+      keyof TableRowCanonicalGenes,
+      string
+    > = {
+      symbol: "Symbol",
+      name: "Name",
+      references: "References",
+    };
+    return activeTable ? (
+      <Table<TableRowEnrichedGenes>
+        testId={CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}
+        columns={tableColumnsEnrichedGenes}
+        rows={
+          tableRows.slice(
+            (page - 1) * ROWS_PER_PAGE,
+            page * ROWS_PER_PAGE
+          ) as TableRowEnrichedGenes[]
+        }
+        columnIdToName={tableColumnNamesEnrichedGenes}
+      />
+    ) : (
+      <Table<TableRowCanonicalGenes>
+        testId={CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}
+        columns={tableColumnsCanonicalGenes}
+        rows={
+          tableRows.slice(
+            (page - 1) * ROWS_PER_PAGE,
+            page * ROWS_PER_PAGE
+          ) as TableRowCanonicalGenes[]
+        }
+        columnIdToName={tableColumnNamesCanonicalGenes}
+      />
+    );
+  }, [
+    activeTable,
+    page,
+    tableRows,
+    tableColumnNamesEnrichedGenes,
+    isPastBreakpoint,
+  ]);
 
   const tableUnavailableComponent = (
     <TableUnavailableContainer>
@@ -456,17 +541,19 @@ const MarkerGeneTables = ({
   };
 
   return (
-    <div>
+    <MarkerGeneTableWrapper>
       <TableTitleWrapper>
         <TableTitleOuterWrapper>
           <TableTitleInnerWrapper columnGap={4}>
             <TableTitle>Marker Genes</TableTitle>
           </TableTitleInnerWrapper>
           <TableTitleInnerWrapper>
-            <Link
-              url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
-              label="Open in Gene Expression"
-            />
+            {!skinnyMode && (
+              <Link
+                url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
+                label="Open in Gene Expression"
+              />
+            )}
           </TableTitleInnerWrapper>
         </TableTitleOuterWrapper>
       </TableTitleWrapper>
@@ -503,7 +590,7 @@ const MarkerGeneTables = ({
         </TableSelectorRow>
       </TableTitleOuterWrapper>
       {tableRows.length > 0 ? (
-        <div>
+        <div ref={containerRef}>
           {tableComponent}
           <MarkerGenePagination>
             <Pagination
@@ -515,6 +602,9 @@ const MarkerGeneTables = ({
               <MarkerGeneInfo>
                 Source: HuBMAP
                 <HelpTooltip
+                  skinnyMode={skinnyMode}
+                  title="Canonical Marker Genes"
+                  setTooltipContent={setTooltipContent}
                   dark
                   placement="top-end"
                   buttonDataTestId={MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID}
@@ -525,6 +615,9 @@ const MarkerGeneTables = ({
               <MarkerGeneInfo>
                 Source: CZI
                 <HelpTooltip
+                  skinnyMode={skinnyMode}
+                  title="Computational Marker Genes"
+                  setTooltipContent={setTooltipContent}
                   dark
                   placement="top-end"
                   buttonDataTestId={MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID}
@@ -537,7 +630,7 @@ const MarkerGeneTables = ({
       ) : (
         tableUnavailableComponent
       )}
-    </div>
+    </MarkerGeneTableWrapper>
   );
 };
 
