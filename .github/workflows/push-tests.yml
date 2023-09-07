@@ -27,16 +27,19 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
+      - name: Generate tag
+        run: |
+          echo "tag=\"sha-${GITHUB_SHA:0:8}\"" >> $GITHUB_ENV
       - name: Push Tag with latest branch commit SHA
         uses: rickstaa/action-create-tag@v1
         with:
-          tag: ${GITHUB_SHA:0:8}
+          tag: ${{ env.tag }}
           tag_exists_error: false
       - name: Produce Github Pre-Release for Branch
         uses: softprops/action-gh-release@v1
         if: steps.tag_create.outputs.tag_exists == 'false'
         with:
-          tag_name: ${GITHUB_SHA:0:8}
+          tag_name: ${{ env.tag }}
           prerelease: true
           generate_release_notes: true
   lint:
