@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
-import { TOP_PADDING_PX } from "../../style";
 
+export const TOP_PADDING_PX = 32;
 export const CELL_GUIDE_SIDE_BAR_WIDTH_PX = 240;
 
 export const CellGuideSidebarWrapper = styled.div`

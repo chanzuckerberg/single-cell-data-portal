@@ -22,9 +22,11 @@ import OntologyId from "src/views/CellGuide/components/OntologyId";
 import { keyframes } from "@emotion/react";
 import { DEFAULT_ONTOLOGY_WIDTH } from "../common/OntologyDagView/common/constants";
 import { SKINNY_MODE_BREAKPOINT_WIDTH } from "./constants";
-import { CELL_GUIDE_SIDE_BAR_WIDTH_PX } from "./components/CellGuideCardSidebar/style";
+import {
+  CELL_GUIDE_SIDE_BAR_WIDTH_PX,
+  TOP_PADDING_PX,
+} from "./components/CellGuideCardSidebar/style";
 
-export const TOP_PADDING_PX = 32;
 export const SIDEBAR_COLUMN_GAP_PX = 120;
 export const CELLGUIDE_CARD_MAX_WIDTH = 1440;
 // spacing.xxl and spacing.xl
