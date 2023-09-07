@@ -116,7 +116,7 @@ export const CellGuideCardHeader = styled.div<CellGuideCardHeaderProps>`
   z-index: 10;
   width: ${(props) => `${props.width + LEFT_RIGHT_PADDING_PX_XXL}px`};
   left: ${(props) =>
-    `calc(50vw - ${props.width / 2}px-${
+    `calc(50vw - ${props.width / 2}px - ${
       (SIDEBAR_COLUMN_GAP_PX + CELL_GUIDE_SIDE_BAR_WIDTH_PX) / 2
     }px)`};
   @media (min-width: ${CELLGUIDE_CARD_MAX_WIDTH}px) {
