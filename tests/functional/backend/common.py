@@ -15,6 +15,7 @@ API_URL = {
     "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
     "dev": "https://api.cellxgene.dev.single-cell.czi.technology",
     "test": "https://localhost:5000",
+    "rdev": f"https://{os.getenv('RDEV-NAME', '')}-backend.rdev.single-cell.czi.technology",
 }
 
 AUDIENCE = {
@@ -22,6 +23,7 @@ AUDIENCE = {
     "staging": "api.cellxgene.staging.single-cell.czi.technology",
     "test": "api.cellxgene.dev.single-cell.czi.technology",
     "dev": "api.cellxgene.dev.single-cell.czi.technology",
+    "rdev": "api.cellxgene.dev.single-cell.czi.technology",
 }
 
 
@@ -41,6 +43,8 @@ class BaseFunctionalTestCase(unittest.TestCase):
             allowed_methods={"DELETE", "GET", "HEAD", "PUT" "POST"},
         )
         cls.session.mount("https://", HTTPAdapter(max_retries=retry_config))
+        if cls.deployment_stage == "rdev":
+            cls.get_oauth2_proxy_access_token()
         token = cls.get_auth_token(cls.config.functest_account_username, cls.config.functest_account_password)
         cls.curator_cookie = cls.make_cookie(token)
         cls.api = API_URL.get(cls.deployment_stage)
@@ -53,10 +57,24 @@ class BaseFunctionalTestCase(unittest.TestCase):
     @classmethod
     def get_curation_api_access_token(cls):
         response = cls.session.post(
-            f"https://api.cellxgene.{cls.deployment_stage}.single-cell.czi.technology/curation/v1/auth/token",
+            f"{cls.api}/curation/v1/auth/token",
             headers={"x-api-key": cls.config.super_curator_api_key},
         )
         return response.json()["access_token"]
+
+    @classmethod
+    def get_oauth2_proxy_access_token(cls):
+        payload = {
+            "client_id": cls.config.test_app_id,
+            "client_secret": cls.config.test_app_secret,
+            "grant_type": "client_credentials",
+            "audience": "https://api.cellxgene.dev.single-cell.czi.technology/dp/v1/curator",
+        }
+        headers = {"content-type": "application/json"}
+
+        res = cls.session.post("https://czi-cellxgene-dev.us.auth0.com/oauth/token", json=payload, headers=headers)
+        cls.proxy_access_token = res.json()["access_token"]
+        cls.session.headers["Authorization"] = f"Bearer {cls.proxy_access_token}"
 
     @classmethod
     def get_auth_token(cls, username: str, password: str, additional_claims: list = None):
