@@ -808,6 +808,8 @@ paths:
                         type: string
                     cell_count:
                       type: integer
+                    primary_cell_count:
+                      type: integer
                     cell_type:
                       $ref: "#/components/schemas/ontology_element_array"
                     cell_type_ancestors:
@@ -1185,6 +1187,8 @@ components:
         cell_type:
           $ref: "#/components/schemas/ontology_element_array"
         cell_count:
+          type: integer
+        primary_cell_count:
           type: integer
         X_approximate_distribution:
           $ref: "#/components/schemas/distribution"
