@@ -19,15 +19,22 @@ env:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
 
 jobs:
   # TODO: remove before merging, test step in branch
   github-release:
     runs-on: ubuntu-22.04
     steps:
-      - name: Produce Github Release for Prod Deployments
+      - uses: actions/checkout@v3
+      - name: Push Tag with latest branch commit SHA
+        uses: rickstaa/action-create-tag@v2
+        with:
+          tag: ${{ github.event.deployment.payload.tag }}
+          tag_exists_error: false
+      - name: Produce Github Pre-Release for Branch
         uses: softprops/action-gh-release@v1
+        if: steps.tag_create.outputs.tag_exists == 'false'
         with:
           tag_name: ${{ github.event.deployment.payload.tag }}
           prerelease: true

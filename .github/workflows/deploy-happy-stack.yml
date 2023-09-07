@@ -9,7 +9,7 @@ env:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
   deployments: write
 
 jobs:
@@ -95,14 +95,20 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
 
-  github-release:
+  github-tag-and-release:
     runs-on: ubuntu-22.04
     needs:
       - upgrade
     steps:
+      - uses: actions/checkout@v3
+      - name: Push Tag with latest prod commit SHA
+        uses: rickstaa/action-create-tag@v2
+        with:
+          tag: ${{ github.event.deployment.payload.tag }}
+          tag_exists_error: false
       - name: Produce Github Release for Prod Deployments
         uses: softprops/action-gh-release@v1
-        if: github.event.deployment.environment == 'prod'
+        if: steps.tag_create.outputs.tag_exists == 'false' && github.event.deployment.environment == 'prod'
         with:
           tag_name: ${{ github.event.deployment.payload.tag }}
           generate_release_notes: true
