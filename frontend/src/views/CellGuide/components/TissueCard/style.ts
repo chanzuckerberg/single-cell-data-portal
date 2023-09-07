@@ -15,7 +15,6 @@ export const TissueCardView = styled.div<TissueViewProps>`
   display: flex;
   flex-direction: row;
   max-width: 100vw;
-
   ${(props) => {
     const { skinnyMode } = props;
     const space = skinnyMode ? spacesL(props) : spacesXxl(props);
@@ -31,6 +30,7 @@ export const Wrapper = styled.div<TissueViewProps>`
   flex-direction: column;
   align-self: stretch;
   overflow-x: hidden;
+  width: 100%;
   ${(props) => {
     const { skinnyMode } = props;
     const maxWidth = skinnyMode

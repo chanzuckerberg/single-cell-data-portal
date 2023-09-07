@@ -274,40 +274,42 @@ export default function CellGuideCard({
           <div>{tooltipContent.element}</div>
         </MobileTooltipWrapper>
       )}
+      <div>
+        {/* Intro section */}
+        <div ref={sectionRef0} id="section-0" data-testid="section-0" />
+        {/* Don't show title of the cell card if we're on mobile, since the title is already in the header nav */}
+        {!skinnyMode && (
+          <CellGuideCardHeader width={width}>
+            <CellGuideCardHeaderInnerWrapper>
+              <CellGuideCardName data-testid={CELL_GUIDE_CARD_HEADER_NAME}>
+                {titleizedCellTypeName}
+              </CellGuideCardName>
+              <a
+                href={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                <StyledTag
+                  data-testid={CELL_GUIDE_CARD_HEADER_TAG}
+                  label={cellTypeId}
+                  sdsType="secondary"
+                  sdsStyle="square"
+                  color="gray"
+                  hover
+                />
+              </a>
+            </CellGuideCardHeaderInnerWrapper>
+            {dropdownComponents}
+          </CellGuideCardHeader>
+        )}
+      </div>
       <CellGuideWrapper skinnyMode={skinnyMode}>
         <CellGuideView skinnyMode={skinnyMode}>
           {/* Flex item left */}
           <Wrapper skinnyMode={skinnyMode} ref={containerRef}>
             {/* (thuang): Somehow we need a parent to prevent error:
-          NotFoundError: Failed to execute 'insertBefore' on 'Node'
-         */}
-            {/* Intro section */}
-            <div ref={sectionRef0} id="section-0" data-testid="section-0" />
-            {/* Don't show title of the cell card if we're on mobile, since the title is already in the header nav */}
-            {!skinnyMode && (
-              <CellGuideCardHeader>
-                <CellGuideCardHeaderInnerWrapper>
-                  <CellGuideCardName data-testid={CELL_GUIDE_CARD_HEADER_NAME}>
-                    {titleizedCellTypeName}
-                  </CellGuideCardName>
-                  <a
-                    href={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                  >
-                    <StyledTag
-                      data-testid={CELL_GUIDE_CARD_HEADER_TAG}
-                      label={cellTypeId}
-                      sdsType="secondary"
-                      sdsStyle="square"
-                      color="gray"
-                      hover
-                    />
-                  </a>
-                </CellGuideCardHeaderInnerWrapper>
-                {dropdownComponents}
-              </CellGuideCardHeader>
-            )}
+              NotFoundError: Failed to execute 'insertBefore' on 'Node'
+            */}
             <Description
               cellTypeId={cellTypeId}
               cellTypeName={cellTypeName}
