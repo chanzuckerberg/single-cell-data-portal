@@ -2,7 +2,7 @@ import isEqual from "lodash/isEqual";
 import { CompareId, X_AXIS_CHART_HEIGHT_PX } from "../constants";
 import { CellType, SORT_BY } from "../types";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
-import { GENE_SEARCH_BAR_HEIGHT_PX } from "src/views/WheresMyGeneV2/components/GeneSearchBar/style";
+import { GENE_SEARCH_BAR_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/constants";
 
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
