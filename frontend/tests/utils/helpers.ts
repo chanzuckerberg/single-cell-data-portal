@@ -453,5 +453,5 @@ export async function expandTissue(page: Page, tissueName: string) {
 }
 
 export async function waitForLoadingSpinnerToResolve(page: Page) {
-  await waitForElementToBeRemoved(page, "loading-spinner");
+  await page.getByText("Loading").first().waitFor({ state: "hidden" });
 }

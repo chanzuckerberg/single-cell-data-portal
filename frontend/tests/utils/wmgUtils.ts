@@ -2,7 +2,12 @@ import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
 import { expect, Page, test } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
-import { expandTissue, selectFirstOption, tryUntil } from "./helpers";
+import {
+  expandTissue,
+  selectFirstOption,
+  tryUntil,
+  waitForLoadingSpinnerToResolve,
+} from "./helpers";
 import { ADD_GENE_BTN, ADD_TISSUE_ID } from "../common/constants";
 import { ADD_GENE_SEARCH_PLACEHOLDER_TEXT } from "tests/utils/geneUtils";
 
@@ -110,7 +115,7 @@ export async function addTissuesAndGenes(
   for await (const gene of genes) {
     await Promise.all([
       // wait till loading is complete
-      page.getByText("Loading").first().waitFor({ state: "hidden" }),
+      waitForLoadingSpinnerToResolve(page),
       searchAndAddGene(page, gene),
     ]);
   }

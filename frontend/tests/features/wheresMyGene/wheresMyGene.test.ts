@@ -76,7 +76,7 @@ describe("Where's My Gene", () => {
   conditionallyRunTests({ forceRun: true });
 
   test("renders the getting started UI", async ({ page }) => {
-    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+    await goToWMG(page);
 
     await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
     await selectFirstOption(page);
@@ -135,7 +135,7 @@ describe("Where's My Gene", () => {
   });
 
   test("Primary and secondary filter crossfiltering", async ({ page }) => {
-    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+    await goToWMG(page);
     await waitForLoadingSpinnerToResolve(page);
 
     const numberOfTissuesBefore = await countLocator(
@@ -195,7 +195,7 @@ describe("Where's My Gene", () => {
   });
 
   test("Source Data", async ({ page }) => {
-    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+    await goToWMG(page);
 
     await clickUntilSidebarShowsUp({ page, testId: SOURCE_DATA_BUTTON_ID });
     await expect(
@@ -405,7 +405,7 @@ describe("Where's My Gene", () => {
     test("Marker gene panel opens and can add genes to dotplot", async ({
       page,
     }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+      await goToWMG(page);
 
       await expandTissue(page, "lung");
 
@@ -423,7 +423,7 @@ describe("Where's My Gene", () => {
     test("Cell types with no marker genes display warning", async ({
       page,
     }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+      await goToWMG(page);
 
       await expandTissue(page, "heart");
 
@@ -435,7 +435,7 @@ describe("Where's My Gene", () => {
     test(`Marker scores are always greater than or equal to ${FMG_GENE_STRENGTH_THRESHOLD}`, async ({
       page,
     }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+      await goToWMG(page);
 
       await expandTissue(page, "lung");
 
@@ -518,9 +518,7 @@ describe("Where's My Gene", () => {
   });
 
   describe("Export CSV ", () => {
-    test.only("Download CSV and validate length - no compare", async ({
-      page,
-    }) => {
+    test("Download CSV and validate length - no compare", async ({ page }) => {
       await goToWMG(page);
       const SELECT_N_GENES = 3;
 
@@ -572,7 +570,7 @@ describe("Where's My Gene", () => {
     });
 
     test("Download CSV and validate length - compare", async ({ page }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+      await goToWMG(page);
 
       const SELECT_N_GENES = 3;
 
@@ -640,7 +638,7 @@ describe("Where's My Gene", () => {
     test("Download zip of all outputs (png,svg,csv) for one tissue", async ({
       page,
     }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+      await goToWMG(page);
 
       await expandTissue(page, "blood");
 
@@ -753,7 +751,7 @@ describe("Where's My Gene", () => {
       "Please provide a valid email address.";
 
     test("Newsletter Modal - Open/Close", async ({ page }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+      await goToWMG(page);
 
       // Open modal
       await getButtonAndClick(page, NEWSLETTER_MODAL_OPEN_BUTTON);
@@ -780,7 +778,7 @@ describe("Where's My Gene", () => {
     });
 
     test("Newsletter Modal - Validate Email", async ({ page }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+      await goToWMG(page);
 
       // Open modal
       await getButtonAndClick(page, NEWSLETTER_MODAL_OPEN_BUTTON);
