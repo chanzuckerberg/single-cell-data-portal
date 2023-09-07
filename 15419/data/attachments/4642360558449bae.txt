@@ -1,0 +1,66 @@
+⚠️  tryUntil error-----------------START
+expect(received).toBe(expected) // Object.is equality
+
+Expected: true
+Received: false
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+locator.waitFor: Timeout 30000ms exceeded.
+=========================== logs ===========================
+waiting for getByRole('tooltip') to be visible
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+locator.waitFor: Timeout 30000ms exceeded.
+=========================== logs ===========================
+waiting for getByRole('tooltip') to be visible
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+locator.waitFor: Timeout 30000ms exceeded.
+=========================== logs ===========================
+waiting for getByRole('tooltip') to be visible
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+locator.waitFor: Timeout 30000ms exceeded.
+=========================== logs ===========================
+waiting for getByRole('tooltip') to be visible
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+locator.waitFor: Timeout 30000ms exceeded.
+=========================== logs ===========================
+waiting for getByRole('tooltip') to be visible
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+locator.waitFor: Timeout 30000ms exceeded.
+=========================== logs ===========================
+waiting for getByRole('tooltip') to be visible
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+locator.waitFor: Timeout 30000ms exceeded.
+=========================== logs ===========================
+waiting for getByRole('tooltip') to be visible
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+locator.waitFor: Timeout 30000ms exceeded.
+=========================== logs ===========================
+waiting for getByRole('tooltip') to be visible
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+locator.waitFor: Timeout 30000ms exceeded.
+=========================== logs ===========================
+waiting for getByRole('tooltip') to be visible
+============================================================
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+locator.waitFor: Target closed
+=========================== logs ===========================
+waiting for getByRole('tooltip') to be visible
+============================================================
+⚠️  tryUntil error-----------------END
