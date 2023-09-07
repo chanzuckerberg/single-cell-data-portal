@@ -18,7 +18,6 @@ import {
   MobileTooltipHeader,
   NavBarDropdownWrapper,
   CellGuideWrapper,
-  CellGuideCardHeaderStickyWrapper,
 } from "./style";
 import Description from "./components/Description";
 import MarkerGeneTables from "./components/MarkerGeneTables";
