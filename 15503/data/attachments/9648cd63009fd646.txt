@@ -1,0 +1,41 @@
+  pw:api => selectors.setTestIdAttribute started +3s
+  pw:api => browser.newContext started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +48ms
+  pw:api   "commit" event fired +18ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +5ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +51ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api => page.goto started +5ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +9ms
+  pw:api   "commit" event fired +252ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "commit" event fired +2ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForLoadState succeeded +6ms
+  pw:api   "networkidle" event fired +5ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/" +3ms
+  pw:api   navigated to "about:blank" +13ms
+  pw:api <= page.goto succeeded +11ms
+  pw:api => locator.innerText started +2ms
+  pw:api waiting for getByTestId('landing-page-cells-hero-num') +280ms
+  pw:api   locator resolved to <p data-testid="landing-page-cells-hero-num">49.9M</p> +31ms
+  pw:api <= locator.innerText succeeded +10ms
+  pw:api => locator.innerText started +1ms
+  pw:api waiting for getByTestId('landing-page-celltypes-hero-num') +12ms
+  pw:api   locator resolved to <p data-testid="landing-page-celltypes-hero-num">709</p> +4ms
+  pw:api <= locator.innerText succeeded +16ms
+  pw:api => locator.innerText started +1ms
+  pw:api waiting for getByTestId('landing-page-datasets-hero-num') +30ms
+  pw:api   locator resolved to <p data-testid="landing-page-datasets-hero-num">917</p> +4ms
+  pw:api <= locator.innerText succeeded +12ms
+  pw:api taking page screenshot +42ms
+  pw:api   "networkidle" event fired +47ms

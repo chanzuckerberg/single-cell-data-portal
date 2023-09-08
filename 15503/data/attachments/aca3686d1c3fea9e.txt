@@ -1,0 +1,88 @@
+  pw:api => selectors.setTestIdAttribute started +3s
+  pw:api => browser.newContext started +8ms
+  pw:api <= selectors.setTestIdAttribute succeeded +11ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +57ms
+  pw:api   "commit" event fired +17ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +0ms
+  pw:api <= browser.newContext succeeded +11ms
+  pw:api => tracing.start started +9ms
+  pw:api <= tracing.start succeeded +3ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +42ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api => page.goto started +7ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +5ms
+  pw:api   "commit" event fired +138ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +0ms
+  pw:api   "commit" event fired +2ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForLoadState succeeded +5ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +3ms
+  pw:api   navigated to "about:blank" +14ms
+  pw:api <= page.goto succeeded +26ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-canonical-marker-genes-table-selector') +32ms
+  pw:api   locator resolved to <button class="css-1xhv06f-TableSelectorButton e1mdzv39"…>Canonical</button> +28ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +29ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   <div class="css-1879pua">…</div> from <div id="bottom-banner" data-testid="newsletter-modal…>…</div> subtree intercepts pointer events +10ms
+  pw:api retrying click action, attempt #1 +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +21ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   <div class="css-1879pua">…</div> from <div id="bottom-banner" data-testid="newsletter-modal…>…</div> subtree intercepts pointer events +12ms
+  pw:api retrying click action, attempt #2 +0ms
+  pw:api   waiting 20ms +0ms
+  pw:api   waiting for element to be visible, enabled and stable +22ms
+  pw:api   element is visible, enabled and stable +31ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +4ms
+  pw:api   performing click action +33ms
+  pw:api   click action done +52ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +39ms
+  pw:api <= locator.click succeeded +274ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +40ms
+  pw:api => page.waitForTimeout started +33ms
+  pw:api <= page.waitForTimeout succeeded +2s
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-canonical-marker-genes-table-selector') +15ms
+  pw:api   locator resolved to <button class="css-1xhv06f-TableSelectorButton e1mdzv39"…>Canonical</button> +6ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +15ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +148ms
+  pw:api   click action done +71ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +14ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +11ms
+  pw:api => locator.textContent started +1ms
+  pw:api => locator.textContent started +2ms
+  pw:api => locator.textContent started +3ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-canonical-marker-genes-table\'] thead th').first() +21ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-canonical-marker-genes-table\'] thead th').nth(1) +31ms
+  pw:api   "networkidle" event fired +15ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-canonical-marker-genes-table\'] thead th').nth(2) +9ms
+  pw:api   locator resolved to <th id="Symbol-header-cell" class="css-pfz13a-Styled…>Symbol</th> +5ms
+  pw:api   locator resolved to <th id="Name-header-cell" class="css-pfz13a-StyledHe…>Name</th> +6ms
+  pw:api   locator resolved to <th id="References-header-cell" class="css-pfz13a-St…>References</th> +7ms
+  pw:api <= locator.textContent succeeded +11ms
+  pw:api <= locator.textContent succeeded +22ms
+  pw:api <= locator.textContent succeeded +15ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +18ms
+  pw:api taking page screenshot +15ms
