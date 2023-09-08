@@ -66,7 +66,7 @@ export default function AnimatedNodes({
       track(EVENTS.CG_TREE_NODE_HOVER, {
         cell_type: datum.name,
       });
-    }, 2000);
+    }, 2 * 1000);
     setTimerId(id);
 
     if (

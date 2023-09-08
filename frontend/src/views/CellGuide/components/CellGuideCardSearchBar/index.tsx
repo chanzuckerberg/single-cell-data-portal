@@ -15,6 +15,7 @@ import {
   CELL_GUIDE_CARD_SEARCH_BAR,
   CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT,
 } from "src/views/CellGuide/components/CellGuideCardSearchBar/constants";
+import { SKINNY_MODE_BREAKPOINT_WIDTH } from "../CellGuideCard/constants";
 
 interface Entity {
   id: string;
@@ -24,7 +25,13 @@ interface Entity {
 
 const TISSUE_PREFIX = "UBERON:";
 
-export default function CellGuideCardSearchBar(): JSX.Element {
+export default function CellGuideCardSearchBar({
+  autoFocus = false,
+  skinnyModeBreakpointWidth = SKINNY_MODE_BREAKPOINT_WIDTH,
+}: {
+  autoFocus?: boolean;
+  skinnyModeBreakpointWidth?: number;
+}): JSX.Element {
   const router = useRouter();
   const { data: cellTypes } = useCellTypeMetadata();
   const { data: tissueData } = useTissueMetadata();
@@ -81,6 +88,17 @@ export default function CellGuideCardSearchBar(): JSX.Element {
   return (
     <div data-testid={CELL_GUIDE_CARD_SEARCH_BAR}>
       <StyledAutocomplete
+        // This is used to style the autocomplete dropdown for mobile
+        sx={{
+          [`@media (max-width: ${skinnyModeBreakpointWidth}px)`]: {
+            "& + .MuiAutocomplete-popper": {
+              width: "100% !important",
+            },
+            "& + .MuiAutocomplete-popper .MuiPaper-root": {
+              boxShadow: "0 4px 4px 0 rgba(0,0,0, 0.25)", // Hides top shadow for seamless look
+            },
+          },
+        }}
         open={open}
         value={inputValue}
         onChange={() => {
@@ -114,6 +132,7 @@ export default function CellGuideCardSearchBar(): JSX.Element {
         }}
         renderInput={(params) => (
           <TextField
+            autoFocus={autoFocus}
             {...params}
             data-testid={CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT}
             onFocus={handleFocus}
@@ -159,7 +178,7 @@ export default function CellGuideCardSearchBar(): JSX.Element {
             .filter((option) => {
               const entity = option as Entity;
               const searchTerm = state.inputValue.toLowerCase();
-              // Determine if each item starts with any of the snyonyms
+              // Determine if each item starts with any of the synonyms
               const synonyms = entity.synonyms ?? [];
               const synonymStartsWithSearch = synonyms.some((synonym) =>
                 synonym.toLowerCase().startsWith(searchTerm)

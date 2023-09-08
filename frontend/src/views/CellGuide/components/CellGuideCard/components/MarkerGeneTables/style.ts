@@ -5,15 +5,38 @@ import {
   fontBodyXxs,
 } from "@czi-sds/components";
 import styled from "@emotion/styled";
-import { gray200, gray400, gray500, primary400 } from "src/common/theme";
+import {
+  fontWeightSemibold,
+  gray200,
+  gray400,
+  gray500,
+  primary400,
+  spacesL,
+} from "src/common/theme";
+import Link from "../common/Link";
 
 const DIVIDER_WIDTH = 2;
+
+export const StyledLink = styled(Link)`
+  min-width: 2.25ch;
+  max-width: 3.25ch;
+`;
 
 export const TableTitleOuterWrapper = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  flex-wrap: wrap;
+`;
+
+export const ReferenceTooltipWrapper = styled.div`
+  row-gap: ${spacesL}px;
+  display: flex;
+  flex-direction: column;
+`;
+export const NoWrapWrapper = styled.span`
+  white-space: nowrap;
 `;
 
 export const PublicationLinkWrapper = styled.div`
@@ -24,6 +47,14 @@ export const PublicationLinkWrapper = styled.div`
 export const StyledHeadCellContent = styled.div`
   display: flex;
   flex-direction: row;
+  justify-content: flex-end;
+`;
+
+export const StyledCellNumerical = styled.span`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-right: 12px;
 `;
 
 export const TableSelectorRow = styled.div`
@@ -48,7 +79,7 @@ export const TableSelectorButton = styled.button<TableSelectorButtonProps>`
   cursor: pointer;
   padding: 0;
   margin: 0;
-  font-weight: 600;
+  font-weight: ${fontWeightSemibold};
   color: ${(props) => `${props.isActive ? "#000000" : gray500(props)}`};
 
   &::after {
@@ -67,6 +98,7 @@ export const TableSelectorButton = styled.button<TableSelectorButtonProps>`
 export const MarkerGenePagination = styled.div`
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
 `;
 
 export const MarkerGeneInfo = styled.div`
@@ -84,4 +116,8 @@ export const MarkerGeneTooltipText = styled.div`
 export const MarkerGeneTooltipSubtext = styled.div`
   ${fontBodyXxs}
   color: ${gray400};
+`;
+
+export const MarkerGeneTableWrapper = styled.div`
+  max-width: calc(100vw - ${spacesL}px - ${spacesL}px);
 `;
