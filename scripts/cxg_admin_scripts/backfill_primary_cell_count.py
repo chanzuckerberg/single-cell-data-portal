@@ -12,7 +12,7 @@ from backend.layers.common.entities import DatasetMetadata, DatasetVersionId
 
 def backfill_primary_cell_count(ctx: Context, mapping: dict[str, int]) -> None:
     business_logic: BusinessLogic = ctx.obj["business_logic"]
-    dataset_versions = business_logic.get_dataset_versions_by_id([DatasetVersionId(key) for key in map])
+    dataset_versions = business_logic.get_dataset_versions_by_id([DatasetVersionId(key) for key in mapping])
     for dv in dataset_versions:
         dataset_metadata = DatasetMetadata(**dv.dataset_metadata)
         dataset_metadata.primary_cell_count = mapping.get(dv.id, dataset_metadata.primary_cell_count)
