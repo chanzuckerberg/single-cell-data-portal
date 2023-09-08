@@ -50,7 +50,7 @@ if [[ $DEST_ENV == 'rdev' ]]; then
   # - s3://env-rdev-datasets/${STACK}/
 
   # Clean up semaphores state directory ahead of using sem in case it was not cleared properly before
-  rm -r ~/.parallel/semaphores/
+  [[ -d "~/.parallel/semaphores" ]] && rm -r ~/.parallel/semaphores
   sample_data_name="schema_3_0_0"
   echo "Copying sample data for S3 Dataset assets for $(tr ',' '\n' <<< $COLLECTIONS | wc -l) Collections..."
 
@@ -71,7 +71,11 @@ if [[ $DEST_ENV == 'rdev' ]]; then
       rdev_bucket_suffix="artifacts"
     fi
     key_dir=$(sed -E 's/s3:\/\/([^\/]+)\/(.*)/\2/' <<< $uri)
-    sem -j+0 $S3_SYNC_CMD s3://env-rdev-dataportal/s3/${rdev_bucket_suffix}/${sample_data_name}/ s3://env-rdev-${rdev_bucket_suffix}/${STACK}/${key_dir}
+    if [[ -n "$DATA" ]]; then
+      sem -j+0 $S3_SYNC_CMD s3://${bucket}/${key_dir} s3://env-rdev-${rdev_bucket_suffix}/${STACK}/${key_dir}
+    else
+      sem -j+0 $S3_SYNC_CMD s3://env-rdev-dataportal/s3/${rdev_bucket_suffix}/${sample_data_name}/ s3://env-rdev-${rdev_bucket_suffix}/${STACK}/${key_dir}
+    fi
   done
 
 
@@ -87,7 +91,13 @@ if [[ $DEST_ENV == 'rdev' ]]; then
     for ext in "${exts[@]}"; do
       uri="s3://dataset-assets-public-${SRC_ENV}/${dv_id}.${ext}"
       # Only copy if file exists in SRC_ENV public assets bucket (necessary to replicate tombstoned Dataset behavior)
-      sem -j+0 "aws s3 ls $uri && $S3_COPY_CMD s3://env-rdev-dataportal/s3/datasets/${sample_data_name}.${ext} s3://env-rdev-datasets/${STACK}/${dv_id}.${ext}"
+      if [[ -n `aws s3 ls $uri` ]]; then
+        if [[ -n "$DATA" ]]; then
+          sem -j+0 $S3_COPY_CMD $uri s3://env-rdev-datasets/${STACK}/${dv_id}.${ext}
+        else
+          sem -j+0 $S3_COPY_CMD s3://env-rdev-dataportal/s3/datasets/${sample_data_name}.${ext} s3://env-rdev-datasets/${STACK}/${dv_id}.${ext}
+        fi
+      fi
     done
   done
   sem --wait
