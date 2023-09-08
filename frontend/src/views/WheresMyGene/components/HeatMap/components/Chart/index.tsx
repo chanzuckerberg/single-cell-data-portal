@@ -207,8 +207,10 @@ export default memo(function Chart({
         };
 
         setAllChartProps((allChartProps) => {
-          allChartProps[tissue] = result;
-          return { ...allChartProps };
+          const newAllChartProps = { ...allChartProps };
+          newAllChartProps[tissue] = result;
+
+          return newAllChartProps;
         });
 
         setIsLoading((isLoading) => {
