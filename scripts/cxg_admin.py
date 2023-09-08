@@ -296,12 +296,7 @@ def backfill_processing_status_for_datasets(ctx):
 @click.pass_context
 def backfill_primary_cell_count_for_datasets(ctx: click.Context, primary_cell_count_mapping_file: str):
     """
-    Backfills the primary cell count a public Collection specified by collection_id.
-    To run:
-        ./scripts/cxg_admin.py --deployment prod tombstone-collection 01234567-89ab-cdef-0123-456789abcdef
-
-    :param ctx: command context
-    :param collection_id: uuid that identifies the Collection to tombstone
+    Backfills the primary cell count for datasets
     """
     with open(primary_cell_count_mapping_file) as f:
         primary_cell_count_mapping = json.load(f)
