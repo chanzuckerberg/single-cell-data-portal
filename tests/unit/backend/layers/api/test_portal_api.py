@@ -82,7 +82,6 @@ class TestCollection(BaseAPIPortalTest):
                     "assay": [{"label": "test_assay_label", "ontology_term_id": "test_assay_term_id"}],
                     "batch_condition": ["test_batch_1", "test_batch_2"],
                     "cell_count": 10,
-                    "primary_cell_count": 5,
                     "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
                     "collection_id": collection.collection_id.id,
                     "created_at": mock.ANY,
@@ -133,7 +132,6 @@ class TestCollection(BaseAPIPortalTest):
                     "assay": [{"label": "test_assay_label", "ontology_term_id": "test_assay_term_id"}],
                     "batch_condition": ["test_batch_1", "test_batch_2"],
                     "cell_count": 10,
-                    "primary_cell_count": 5,
                     "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
                     "collection_id": collection.collection_id.id,
                     "created_at": mock.ANY,
@@ -1663,7 +1661,6 @@ class TestDataset(BaseAPIPortalTest):
                 actual_dataset["development_stage"], convert_ontology(persisted_dataset.metadata.development_stage)
             )
             self.assertEqual(actual_dataset["cell_count"], persisted_dataset.metadata.cell_count)
-            self.assertEqual(actual_dataset["primary_cell_count"], persisted_dataset.metadata.primary_cell_count)
             self.assertEqual(actual_dataset["cell_type"], convert_ontology(persisted_dataset.metadata.cell_type))
             self.assertEqual(actual_dataset["is_primary_data"], persisted_dataset.metadata.is_primary_data)
             self.assertEqual(actual_dataset["mean_genes_per_cell"], persisted_dataset.metadata.mean_genes_per_cell)

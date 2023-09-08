@@ -977,10 +977,6 @@ components:
           description: The number of cells in the Dataset.
           nullable: true
           type: integer
-        primary_cell_count:
-          description: The number of primary cells in the Dataset.
-          nullable: true
-          type: integer
         cell_type:
           description: |
             [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#cell_type)
@@ -1067,10 +1063,6 @@ components:
           $ref: "#/components/schemas/batch_condition"
         cell_count:
           description: The number of cells in the Dataset.
-          nullable: true
-          type: integer
-        primary_cell_count:
-          description: The number of primary cells in the Dataset.
           nullable: true
           type: integer
         cell_type:
@@ -1164,10 +1156,6 @@ components:
           $ref: "#/components/schemas/batch_condition"
         cell_count:
           description: The number of cells in the Dataset.
-          nullable: true
-          type: integer
-        primary_cell_count:
-          description: The number of primary cells in the Dataset.
           nullable: true
           type: integer
         cell_type:

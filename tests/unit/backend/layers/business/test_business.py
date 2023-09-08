@@ -142,7 +142,6 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             ],
             cell_type=[OntologyTermId(label="test_cell_type_label", ontology_term_id="test_cell_type_term_id")],
             cell_count=10,
-            primary_cell_count=5,
             schema_version="3.0.0",
             mean_genes_per_cell=0.5,
             batch_condition=["test_batch_1", "test_batch_2"],

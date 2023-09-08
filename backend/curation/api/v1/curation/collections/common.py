@@ -304,7 +304,6 @@ class EntityColumns:
         "development_stage",
         "cell_type",
         "cell_count",
-        "primary_cell_count",
         "x_approximate_distribution",
         "batch_condition",
         "mean_genes_per_cell",
