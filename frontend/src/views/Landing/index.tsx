@@ -28,6 +28,11 @@ import SingleCellDataIconInactive from "./icons/single-cell-data-inactive";
 import styles from "./index.module.scss";
 import { useViewMode } from "src/common/hooks/useViewMode";
 import { useFetchDatasets } from "src/common/queries/filter";
+import {
+  LANDING_PAGE_FALLBACK_CELLS_HERO_NUM,
+  LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM,
+  LANDING_PAGE_FALLBACK_DATASETS_HERO_NUM,
+} from "./constants";
 
 const ROOT_MARGIN = "-50% 0px -50% 0px";
 
@@ -61,7 +66,8 @@ const LandingPage = (): JSX.Element => {
   const { data, isLoading, isSuccess } = useFetchDatasets(mode, status);
 
   const cellsHeroNum: string | null = useMemo(() => {
-    if (!data || isLoading || !isSuccess) return null;
+    if (isLoading) return null;
+    if (!data || !isSuccess) return LANDING_PAGE_FALLBACK_CELLS_HERO_NUM;
     const total = data.reduce(
       (acc, curr) => acc + (curr.primary_cell_count ?? 0),
       0
@@ -75,7 +81,8 @@ const LandingPage = (): JSX.Element => {
   }, [data, isLoading, isSuccess]);
 
   const cellTypesHeroNum: string | null = useMemo(() => {
-    if (!data || isLoading || !isSuccess) return null;
+    if (isLoading) return null;
+    if (!data || !isSuccess) return LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM;
     // add the cell types to the set and then get the length of the set
     const unique_cell_types = new Set();
     data.forEach((dataset) => {
@@ -87,7 +94,8 @@ const LandingPage = (): JSX.Element => {
   }, [data, isLoading, isSuccess]);
 
   const datasetsHeroNum: string | null = useMemo(() => {
-    if (!data || isLoading || !isSuccess) return null;
+    if (isLoading) return null;
+    if (!data || !isSuccess) return LANDING_PAGE_FALLBACK_DATASETS_HERO_NUM;
     // add the cell types to the set and then get the length of the set
     return `${Object.keys(data).length}`;
   }, [data, isLoading, isSuccess]);

@@ -2,6 +2,14 @@ import { expect, Page, test } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "tests/common/constants";
 import { goToPage, tryUntil } from "tests/utils/helpers";
+import {
+  LANDING_PAGE_FALLBACK_CELLS_HERO_NUM,
+  LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM,
+  LANDING_PAGE_FALLBACK_DATASETS_HERO_NUM,
+  LANDING_PAGE_CELLS_HERO_NUM_ID,
+  LANDING_PAGE_CELLTYPES_HERO_NUM_ID,
+  LANDING_PAGE_DATASETS_HERO_NUM_ID,
+} from "src/views/Landing/constants";
 
 const { describe } = test;
 const COLLECTIONS_LINK_ID = "collections-link";
@@ -25,6 +33,30 @@ describe("Homepage", () => {
     await page.waitForURL("**" + ROUTES.COLLECTIONS);
 
     await isGlobalLayoutWrapperScrollable(page);
+  });
+  test("Hero numbers are rendered", async ({ page }) => {
+    const cellsHeroNum = await page
+      .getByTestId(LANDING_PAGE_CELLS_HERO_NUM_ID)
+      .innerText();
+    const cellTypesHeroNum = await page
+      .getByTestId(LANDING_PAGE_CELLTYPES_HERO_NUM_ID)
+      .innerText();
+    const datasetsHeroNum = await page
+      .getByTestId(LANDING_PAGE_DATASETS_HERO_NUM_ID)
+      .innerText();
+
+    await tryUntil(
+      async () => {
+        expect(cellsHeroNum).not.toEqual(LANDING_PAGE_FALLBACK_CELLS_HERO_NUM);
+        expect(cellTypesHeroNum).not.toEqual(
+          LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM
+        );
+        expect(datasetsHeroNum).not.toEqual(
+          LANDING_PAGE_FALLBACK_DATASETS_HERO_NUM
+        );
+      },
+      { page }
+    );
   });
   test("Should render the ToS Page", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.TOS}`, page);
