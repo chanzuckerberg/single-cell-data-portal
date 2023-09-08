@@ -22,6 +22,7 @@ from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
 from backend.layers.thirdparty.uri_provider import UriProvider
 from scripts.cxg_admin_scripts import (
+    backfill_primary_cell_count,
     dataset_details,
     deletions,
     migrate,
@@ -288,6 +289,24 @@ def backfill_processing_status_for_datasets(ctx):
     Backfills the `dataset_processing_status` table for datasets that do not have a matching record.
     """
     migrate.backfill_processing_status_for_datasets(ctx)
+
+
+@cli.command()
+@click.argument("primary_cell_count_mapping_file")
+@click.pass_context
+def backfill_primary_cell_count_for_datasets(ctx: click.Context, primary_cell_count_mapping_file: str):
+    """
+    Backfills the primary cell count a public Collection specified by collection_id.
+    To run:
+        ./scripts/cxg_admin.py --deployment prod tombstone-collection 01234567-89ab-cdef-0123-456789abcdef
+
+    :param ctx: command context
+    :param collection_id: uuid that identifies the Collection to tombstone
+    """
+    with open(primary_cell_count_mapping_file) as f:
+        primary_cell_count_mapping = json.load(f)
+
+    backfill_primary_cell_count.backfill_primary_cell_count(ctx, primary_cell_count_mapping)
 
 
 # Commands to reprocess dataset artifacts (seurat or cxg)
