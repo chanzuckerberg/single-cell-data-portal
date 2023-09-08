@@ -1,0 +1,77 @@
+  pw:api => selectors.setTestIdAttribute started +3s
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +39ms
+  pw:api   "commit" event fired +15ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => tracing.start started +8ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +35ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api => page.goto started +4ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +35ms
+  pw:api   "commit" event fired +177ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +0ms
+  pw:api   "commit" event fired +1ms
+  pw:api   "networkidle" event fired +3s
+  pw:api <= page.waitForLoadState succeeded +5ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +3ms
+  pw:api   navigated to "about:blank" +31ms
+  pw:api <= page.goto succeeded +27ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view') to be visible +18ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-ontology-dag-view">…</div> +32ms
+  pw:api <= locator.waitFor succeeded +7ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +10ms
+  pw:api => page.waitForTimeout started +18ms
+  pw:api   "networkidle" event fired +686ms
+  pw:api <= page.waitForTimeout succeeded +3s
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +55ms
+  pw:api => locator.waitFor started +9ms
+  pw:api waiting for getByTestId('cell-guide-card-rect-or-circle-CL:0000540__0-has-children-isTargetNode=true') to be visible +17ms
+  pw:api   locator resolved to visible <circle r="8" fill="#3CB371" stroke-width="0.5" class="c…></circle> +38ms
+  pw:api <= locator.waitFor succeeded +28ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByTestId('cell-guide-card-rect-or-circle-CL:0000540__0-has-children-isTargetNode=true') +44ms
+  pw:api   locator resolved to <circle r="8" fill="#3CB371" stroke-width="0.5" class="c…></circle> +37ms
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +26ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +6ms
+  pw:api   performing click action +235ms
+  pw:api   click action done +604ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +46ms
+  pw:api <= locator.click succeeded +33ms
+  pw:api => locator.all started +0ms
+  pw:api <= locator.all succeeded +18ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-rect-or-circle-CL:0000540__0-has-children-isTargetNode=true') to be visible +37ms
+  pw:api   locator resolved to visible <circle r="8" fill="#3CB371" stroke-width="0.5" class="c…></circle> +13ms
+  pw:api <= locator.waitFor succeeded +16ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByTestId('cell-guide-card-rect-or-circle-CL:0000540__0-has-children-isTargetNode=true') +21ms
+  pw:api   locator resolved to <circle r="8" fill="#3CB371" stroke-width="0.5" class="c…></circle> +5ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +11ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +18ms
+  pw:api   click action done +282ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +129ms
+  pw:api <= locator.click succeeded +85ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +230ms
+  pw:api taking page screenshot +14ms

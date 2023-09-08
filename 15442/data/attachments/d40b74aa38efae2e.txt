@@ -1,0 +1,60 @@
+  pw:api => selectors.setTestIdAttribute started +2s
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +55ms
+  pw:api   "commit" event fired +16ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +7ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +5ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +45ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api => page.goto started +4ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +17ms
+  pw:api   "commit" event fired +140ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +0ms
+  pw:api   "commit" event fired +3ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForLoadState succeeded +4ms
+  pw:api   "networkidle" event fired +23ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +3ms
+  pw:api   navigated to "about:blank" +38ms
+  pw:api <= page.goto succeeded +53ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('marker-genes-canonical-help-tooltip') to be visible +102ms
+  pw:api   "networkidle" event fired +552ms
+  pw:api   locator resolved to visible <button tabindex="0" type="button" data-mui-internal-clo…>…</button> +2s
+  pw:api <= locator.waitFor succeeded +125ms
+  pw:api => locator.isVisible started +2ms
+  pw:api   checking visibility of getByTestId('marker-genes-canonical-help-tooltip') +13ms
+  pw:api <= locator.isVisible succeeded +36ms
+  pw:api => locator.hover started +10ms
+  pw:api waiting for getByTestId('marker-genes-canonical-help-tooltip') +24ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-mui-internal-clo…>…</button> +5ms
+  pw:api attempting hover action +1ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +22ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing hover action +295ms
+  pw:api   hover action done +262ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +202ms
+  pw:api <= locator.hover succeeded +108ms
+  pw:api => locator.waitFor started +3ms
+  pw:api waiting for getByRole('tooltip') to be visible +83ms
+  pw:api   locator resolved to visible <div id="mui-37" role="tooltip" data-popper-placement…>…</div> +126ms
+  pw:api <= locator.waitFor succeeded +60ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByRole('tooltip') +47ms
+  pw:api <= locator.isVisible succeeded +66ms
+  pw:api => locator.textContent started +3ms
+  pw:api waiting for getByRole('tooltip') +37ms
+  pw:api   locator resolved to <div id="mui-37" role="tooltip" data-popper-placement…>…</div> +37ms
+  pw:api <= locator.textContent succeeded +29ms
+  pw:api taking page screenshot +21ms
