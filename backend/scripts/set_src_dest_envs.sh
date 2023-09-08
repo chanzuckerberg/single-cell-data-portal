@@ -4,8 +4,8 @@ export SRC_ENV=${1:-prod}
 export DEST_ENV=${2:-dev}
 
 # require DEST_ENV=rdev when STACK is set
-if [[ ! -z "$STACK" ]]; then
-    if [[ ! "$DEST_ENV" == rdev ]]; then
+if [[ -n "$STACK" ]]; then
+    if [[ "$DEST_ENV" != rdev ]]; then
         echo "ERROR: when STACK var is set, DEST_ENV must be 'rdev'"
         exit 1
     fi
