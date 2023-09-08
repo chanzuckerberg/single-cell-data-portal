@@ -42,6 +42,12 @@ $S3_SYNC_CMD s3://cellxgene-wmg-${SRC_ENV}/${latest_snapshot} s3://${s3_destinat
 echo Mirroring S3 Dataset data from $SRC_ENV to $DEST_ENV...
 
 if [[ $DEST_ENV == 'rdev' ]]; then
+  # The code in this block implements Collection subsetting for rdev stacks. For every Dataset (current and prior
+  # versions) in every Collection whose uuid is passed into the commma-separated $COLLECTIONS arg, a sample valid
+  # Dataset is copied to all relevant s3 locations:
+  # - s3://env-rdev-artifacts/${STACK}/
+  # - s3://env-rdev-cellxgene/${STACK}/
+  # - s3://env-rdev-datasets/${STACK}/
 
   # Clean up semaphores state directory ahead of using sem in case it was not cleared properly before
   rm -r ~/.parallel/semaphores/
