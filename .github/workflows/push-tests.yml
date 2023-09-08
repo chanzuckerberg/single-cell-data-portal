@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: ${{ github.sha }}
+          ref: 5f4dda835bcd9342bdd46bf3fa6810dca4e7603f
       - name: Generate tag
         run: |
           echo "tag=sha-${GITHUB_SHA:0:8}" >> $GITHUB_ENV
