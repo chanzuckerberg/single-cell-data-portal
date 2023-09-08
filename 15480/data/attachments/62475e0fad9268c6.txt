@@ -1,0 +1,57 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +9ms
+  pw:api <= browserType.launch succeeded +189ms
+  pw:api => browser.newContext started +5ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +64ms
+  pw:api   "commit" event fired +23ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +12ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +44ms
+  pw:api => page.waitForResponse started +28ms
+  pw:api => page.goto started +7ms
+  pw:api navigating to "https://localhost:3000/gene-expression?compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2", waiting until "load" +11ms
+  pw:api   "commit" event fired +8s
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +2ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +38ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +6ms
+  pw:api   navigated to "about:blank" +43ms
+  pw:api <= page.goto succeeded +33ms
+  pw:api <= page.waitForResponse succeeded +13s
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('share-button') +92ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="button" data-testid…>…</button> +112ms
+  pw:api attempting click action +63ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api     element is not enabled - waiting... +73ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +2s
+  pw:api   "networkidle" event fired +177ms
+  pw:api   element is visible, enabled and stable +397ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +59ms
+  pw:api   click action done +97ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +4ms
+  pw:api <= locator.click succeeded +42ms
+  pw:api => page.evaluate started +1ms
+  pw:api <= page.evaluate succeeded +59ms
+  pw:api => expect.toBeVisible started +30ms
+  pw:api => expect.toBeVisible started +4ms
+  pw:api taking page screenshot +74ms
+  pw:api expect.toBeVisible with timeout 10000ms +35ms
+  pw:api waiting for getByText('A molecular single-cell lung atlas of lethal COVID-19') +0ms
+  pw:api expect.toBeVisible with timeout 10000ms +9ms
+  pw:api waiting for getByText('Immunophenotyping of COVID-19 and influenza highlights the role of type I interferons in development of severe COVID-19') +0ms
+  pw:api   locator resolved to <span class="MuiChip-label MuiChip-labelMedium css-6od…>A molecular single-cell lung atlas of lethal COVI…</span> +45ms
+  pw:api <= expect.toBeVisible succeeded +0ms
+  pw:api   locator resolved to <span class="MuiChip-label MuiChip-labelMedium css-6od…>Immunophenotyping of COVID-19 and influenza highl…</span> +5ms
+  pw:api <= expect.toBeVisible succeeded +0ms
