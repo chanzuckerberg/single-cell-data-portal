@@ -269,7 +269,6 @@ class TestPostCollection(BaseAPIPortalTest):
             self.assertEqual(len(response.json["invalid_parameters"]), num_expected_errors)
 
     def test__create_collection__strip_string_fields(self):
-
         collection_metadata = dict(
             name="collection   ",
             description="   description",
@@ -728,6 +727,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
 
         # test
         res = self.app.get(f"/curation/v1/collections/{collection_version.collection_id}")
+
         self.assertEqual(200, res.status_code)
         res_body = res.json
         del res_body["created_at"]  # too finicky; ignore
@@ -1035,6 +1035,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     "collection_id": f"{first_version.collection_id.id}",
                     "collection_version_id": f"{first_version.version_id.id}",
                     "cell_count": 10,
+                    "primary_cell_count": 5,
                     "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
                     "dataset_id": f"{first_version.datasets[0].dataset_id.id}",
                     "dataset_version_id": f"{first_version.datasets[0].version_id.id}",
