@@ -31,7 +31,7 @@ jobs:
           ref: 5f4dda835bcd9342bdd46bf3fa6810dca4e7603f
       - name: Generate tag
         run: |
-          echo "tag=sha-${GITHUB_SHA:0:8}" >> $GITHUB_ENV
+          echo "tag=sha-5f4dda8" >> $GITHUB_ENV
       - name: Push Tag with latest branch commit SHA
         id: "tag_create"
         uses: rickstaa/action-create-tag@v1
