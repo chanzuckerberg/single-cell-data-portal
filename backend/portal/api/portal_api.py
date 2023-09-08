@@ -187,6 +187,7 @@ def _dataset_to_response(
             "assay": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.assay),
             "batch_condition": None if dataset.metadata is None else dataset.metadata.batch_condition,
             "cell_count": None if dataset.metadata is None else dataset.metadata.cell_count,
+            "primary_cell_count": None if dataset.metadata is None else dataset.metadata.primary_cell_count,
             "cell_type": None
             if dataset.metadata is None
             else _ontology_term_ids_to_response(dataset.metadata.cell_type),

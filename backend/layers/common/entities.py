@@ -178,6 +178,7 @@ class DatasetMetadata:
     donor_id: List[str]
     is_primary_data: str
     x_approximate_distribution: Optional[str]
+    primary_cell_count: Optional[int] = None
 
 
 @dataclass
