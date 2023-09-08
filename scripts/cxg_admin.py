@@ -307,7 +307,9 @@ def backfill_primary_cell_count_for_datasets(ctx: click.Context, primary_cell_co
     with open(primary_cell_count_mapping_file) as f:
         primary_cell_count_mapping = json.load(f)
 
-    backfill_primary_cell_count.backfill_primary_cell_count(ctx, primary_cell_count_mapping)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=RuntimeWarning)
+        backfill_primary_cell_count.backfill_primary_cell_count(ctx, primary_cell_count_mapping)
 
 
 # Commands to reprocess dataset artifacts (seurat or cxg)
