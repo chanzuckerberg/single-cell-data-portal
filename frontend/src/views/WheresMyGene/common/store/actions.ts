@@ -200,8 +200,13 @@ export function setXAxisHeight(
   };
 }
 
+interface SetFilteredCellTypesPayload {
+  filteredCellTypes: State["filteredCellTypes"];
+  filteredCellTypeIds: State["filteredCellTypeIds"];
+}
+
 export function setFilteredCellTypes(
-  payload: State["filteredCellTypes"]
+  payload: SetFilteredCellTypesPayload
 ): GetActionTypeOfReducer<(typeof REDUCERS)["setFilteredCellTypes"]> {
   return {
     payload,

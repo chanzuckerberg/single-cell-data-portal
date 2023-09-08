@@ -130,6 +130,7 @@ export default memo(function HeatMap({
     xAxisHeight,
     selectedFilters: { tissues: filteredTissueIds },
     filteredCellTypes,
+    filteredCellTypeIds,
   } = useContext(StateContext);
 
   const selectedCellTypeOptions = useMemo(() => {
@@ -305,10 +306,17 @@ export default memo(function HeatMap({
     rawNewFilteredCellTypes: DefaultAutocompleteOption[]
   ) => {
     if (!dispatch) return;
+
+    const cellTypeNames = rawNewFilteredCellTypes.map(
+      (cellType) => cellType.name
+    );
+    const cellTypeIds = cellTypeNames.map((name) => cellTypesByName[name].id);
+
     dispatch(
-      setFilteredCellTypes(
-        rawNewFilteredCellTypes.map((cellType) => cellType.name)
-      )
+      setFilteredCellTypes({
+        filteredCellTypes: cellTypeNames,
+        filteredCellTypeIds: cellTypeIds,
+      })
     );
   };
   useEffect(() => {
@@ -364,6 +372,7 @@ export default memo(function HeatMap({
   }, [
     cellTypesByName,
     filteredCellTypes,
+    filteredCellTypeIds,
     filteredTissueIds,
     initialDisplayedCellTypeIds,
     setExpandedTissues,
@@ -373,10 +382,20 @@ export default memo(function HeatMap({
 
   const handleCellTypeDelete = (cellTypeToDelete: string) => () => {
     if (!dispatch) return;
-    const newValue = filteredCellTypes.filter(
+    const cellTypeIdToDelete = cellTypesByName[cellTypeToDelete].id;
+    const newCellTypeNames = filteredCellTypes.filter(
       (cellType) => !(cellTypeToDelete === cellType)
     );
-    dispatch(setFilteredCellTypes(newValue));
+    const newCellTypeIds = filteredCellTypeIds.filter(
+      (cellTypeId) => !(cellTypeIdToDelete === cellTypeId)
+    );
+
+    dispatch(
+      setFilteredCellTypes({
+        filteredCellTypes: newCellTypeNames,
+        filteredCellTypeIds: newCellTypeIds,
+      })
+    );
   };
 
   useTrackHeatMapLoaded({
