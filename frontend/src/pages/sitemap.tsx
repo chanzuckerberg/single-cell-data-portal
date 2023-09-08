@@ -4,7 +4,10 @@ import { GetServerSideProps } from "next";
 import Head from "next/head";
 import pathTool from "path";
 import { ROUTES } from "src/common/constants/routes";
-import { useCellTypeMetadata } from "src/common/queries/cellGuide";
+import {
+  useCellTypeMetadata,
+  useTissueMetadata,
+} from "src/common/queries/cellGuide";
 import { useMemo, useState, useEffect } from "react";
 
 const DOC_SITE_FOLDER_NAME = "doc-site";
@@ -340,14 +343,20 @@ interface CellTypeMetadata {
 const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
   const { files, subDirectories } = docPaths;
 
-  const { data: cellTypeMetadata } = useCellTypeMetadata();
+  const { data: cellTypes } = useCellTypeMetadata();
+  const { data: tissueData } = useTissueMetadata();
 
-  const cellTypes: CellTypeMetadata[] = useMemo(() => {
-    if (!cellTypeMetadata) return [];
+  const cellGuideData: CellTypeMetadata[] = useMemo(() => {
+    if (!cellTypes || !tissueData) return [];
     const entities: CellTypeMetadata[] = [];
-    for (const cellType in cellTypeMetadata) {
+    for (const cellType in cellTypes) {
       entities.push({
-        ...cellTypeMetadata[cellType],
+        ...cellTypes[cellType],
+      });
+    }
+    for (const tissue in tissueData) {
+      entities.push({
+        ...tissueData[tissue],
       });
     }
     return entities.sort((a, b) =>
@@ -355,7 +364,7 @@ const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
         sensitivity: "base",
       })
     );
-  }, [cellTypeMetadata]);
+  }, [cellTypes, tissueData]);
 
   function splitMetadataByInitialLetter(sortedArray: CellTypeMetadata[]) {
     const result = Object({});
@@ -371,7 +380,7 @@ const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
     return result;
   }
 
-  const cellGuideMap = splitMetadataByInitialLetter(cellTypes);
+  const cellGuideMap = splitMetadataByInitialLetter(cellGuideData);
 
   const cellGuideLetters = Object.keys(cellGuideMap);
 
@@ -515,7 +524,11 @@ const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
                     {cellGuideMap[letter].map(
                       (item: CellTypeMetadata, index: string) => (
                         <a
-                          href={`${ROUTES.CELL_GUIDE}/${item.id}`}
+                          href={
+                            item.id.includes("UBERON")
+                              ? `${ROUTES.CELL_GUIDE}/tissues/${item.id}`
+                              : `${ROUTES.CELL_GUIDE}/${item.id}`
+                          }
                           key={`cellGuideLink-${index}`}
                         >
                           {item.name}
