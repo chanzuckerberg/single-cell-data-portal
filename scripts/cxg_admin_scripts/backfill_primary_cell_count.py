@@ -7,13 +7,12 @@ pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # no
 sys.path.insert(0, pkg_root)  # noqa
 
 from backend.layers.business.business import BusinessLogic
-from backend.layers.common.entities import DatasetMetadata, DatasetVersionId
+from backend.layers.common.entities import DatasetId
 
 
 def backfill_primary_cell_count(ctx: Context, mapping: dict[str, int]) -> None:
     business_logic: BusinessLogic = ctx.obj["business_logic"]
-    dataset_versions = business_logic.get_dataset_versions_by_id([DatasetVersionId(key) for key in mapping])
-    for dv in dataset_versions:
-        dataset_metadata = DatasetMetadata(**dv.dataset_metadata)
-        dataset_metadata.primary_cell_count = mapping.get(dv.id, dataset_metadata.primary_cell_count)
-        business_logic.set_dataset_metadata(dv.id, dataset_metadata)
+    for key in mapping:
+        dv = business_logic.get_dataset_version_from_canonical(DatasetId(key))
+        dv.metadata.primary_cell_count = mapping.get(str(dv.dataset_id), dv.metadata.primary_cell_count)
+        business_logic.set_dataset_metadata(dv.dataset_id, dv.metadata)
