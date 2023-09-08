@@ -2,6 +2,8 @@ export const HOMO_SAPIENS = "Homo sapiens";
 
 export const ALL_TISSUES = "All Tissues";
 
+export const TISSUE_AGNOSTIC = "Tissue Agnostic";
+
 export const NO_ORGAN_ID = "";
 
 export const CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE =
