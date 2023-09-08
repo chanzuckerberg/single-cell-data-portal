@@ -1,0 +1,83 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +40ms
+  pw:api <= selectors.setTestIdAttribute succeeded +37ms
+  pw:api <= browserType.launch succeeded +569ms
+  pw:api => browser.newContext started +7ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +183ms
+  pw:api   "commit" event fired +48ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +14ms
+  pw:api   "domcontentloaded" event fired +3ms
+  pw:api <= browser.newContext succeeded +17ms
+  pw:api => tracing.start started +18ms
+  pw:api <= tracing.start succeeded +14ms
+  pw:api => browserContext.newPage started +5ms
+  pw:api <= browserContext.newPage succeeded +121ms
+  pw:api => page.waitForLoadState started +40ms
+  pw:api => page.goto started +10ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +38ms
+  pw:api   "commit" event fired +19s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "commit" event fired +41ms
+  pw:api   "networkidle" event fired +5s
+  pw:api <= page.waitForLoadState succeeded +12ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +5s
+  pw:api   "load" event fired +4s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +8ms
+  pw:api   navigated to "about:blank" +39ms
+  pw:api <= page.goto succeeded +23ms
+  pw:api => locator.count started +3ms
+  pw:api <= locator.count succeeded +76ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('cell-type-labels-blood').getByTestId('tissue-name') +16ms
+  pw:api   "networkidle" event fired +16s
+  pw:api   locator resolved to <div data-testid="tissue-name" class="tissue-name css…>Blood</div> +27s
+  pw:api attempting click action +4ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +27ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +84ms
+  pw:api   click action done +622ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +44ms
+  pw:api => locator.count started +3ms
+  pw:api <= locator.count succeeded +26ms
+  pw:api => locator.allTextContents started +3ms
+  pw:api <= locator.allTextContents succeeded +88ms
+  pw:api => locator.allTextContents started +25ms
+  pw:api <= locator.allTextContents succeeded +161ms
+  pw:api => locator.count started +6ms
+  pw:api <= locator.count succeeded +15ms
+  pw:api => locator.allTextContents started +9ms
+  pw:api <= locator.allTextContents succeeded +142ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +101ms
+  pw:api => locator.textContent started +2ms
+  pw:api waiting for getByTestId('cell-type-label-count').nth(4).getByTestId('cell-type-full-name') +60ms
+  pw:api   locator resolved to <div data-testid="cell-type-full-name" class="css-neg…>CD34-positive, CD38-negative hematopoietic stem c…</div> +9ms
+  pw:api <= locator.textContent succeeded +74ms
+  pw:api => locator.hover started +1ms
+  pw:api waiting for getByTestId('cell-type-name').nth(4) +58ms
+  pw:api   locator resolved to <div class="cell-type-name" data-testid="cell-type-na…>CD34-positive, CD38-n...ematopoietic stem cell</div> +19ms
+  pw:api attempting hover action +2ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +25ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing hover action +89ms
+  pw:api   hover action done +19ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.hover succeeded +59ms
+  pw:api => expect.toBeVisible started +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +50ms
+  pw:api waiting for getByText('CD34-positive, CD38-negative hematopoietic stem cell') +1ms
+  pw:api <= expect.toBeVisible failed +1s
+  pw:api => page.screenshot started +16ms
+  pw:api taking page screenshot +98ms
+  pw:api <= page.screenshot succeeded +390ms
+  pw:api => video.saveAs started +2s
+  pw:api <= video.saveAs succeeded +5ms
