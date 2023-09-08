@@ -820,36 +820,40 @@ describe("Cell Guide", () => {
         );
 
         const navbar = page.getByTestId(CELL_GUIDE_CARD_NAVIGATION_SIDEBAR);
-
+        const sourceData = page.getByTestId(CELL_GUIDE_CARD_SOURCE_DATA_TABLE);
+        const ontologyView = page.getByTestId(
+          CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW
+        );
         // scroll to the bottom
+
         const section3 = page.getByTestId("section-3");
         await section3.scrollIntoViewIfNeeded();
-        // wait for three seconds to give time for scroll to complete
-        await new Promise((resolve) => setTimeout(resolve, 2 * 1000));
-
-        // check that source data is in viewport
-        const sourceData = page.getByTestId(CELL_GUIDE_CARD_SOURCE_DATA_TABLE);
-        await sourceData.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
-        expect(sourceData).toBeInViewport();
-
+        await tryUntil(
+          async () => {
+            // check that source data is in viewport
+            expect(sourceData).toBeInViewport();
+            // 1 second in between retries or we hit the retry limit too fast
+            await page.waitForTimeout(1000);
+          },
+          { page }
+        );
         // get the second navbar tab (ontology) and click to scroll
         const elements = await navbar
           .locator(".MuiButtonBase-root.MuiTab-root")
           .all();
         const tab = elements[1];
         await tab.click();
-        // wait for three seconds to give time for scroll to complete
-        await new Promise((resolve) => setTimeout(resolve, 2 * 1000));
-
-        // check that ontology is in viewport
-        const ontologyView = page.getByTestId(
-          CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW
+        await tryUntil(
+          async () => {
+            // check that ontology is in viewport
+            expect(ontologyView).toBeInViewport();
+            // check that source data is not in viewport
+            expect(sourceData).not.toBeInViewport();
+            // 1 second in between retries or we hit the retry limit too fast
+            await page.waitForTimeout(1000);
+          },
+          { page }
         );
-        await ontologyView.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
-        expect(ontologyView).toBeInViewport();
-
-        // check that source data is not in viewport
-        expect(sourceData).not.toBeInViewport();
       });
     });
   });
