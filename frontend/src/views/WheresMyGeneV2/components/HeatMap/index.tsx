@@ -309,12 +309,21 @@ export default memo(function HeatMap({
       )
     );
   };
-
-  // Reset `displayedCellTypes` and `expandedTissues` when the user clears `filteredCellTypes`
   useEffect(() => {
     if (filteredCellTypes.length === 0) {
       setDisplayedCellTypes(initialDisplayedCellTypeIds);
       setExpandedTissues(EMPTY_SET as Set<string>);
+    }
+  }, [
+    filteredCellTypes.length,
+    initialDisplayedCellTypeIds,
+    setExpandedTissues,
+  ]);
+
+  // Reset `displayedCellTypes` and `expandedTissues` when the user clears `filteredCellTypes`
+  useEffect(() => {
+    if (filteredCellTypes.length === 0) {
+      // This is handled in the above useEffect, but we need to return early here so we don't do the work below
       return;
     }
 
@@ -352,9 +361,7 @@ export default memo(function HeatMap({
     setExpandedTissues(newExpandedTissues);
   }, [
     cellTypesByName,
-    dispatch,
     filteredCellTypes,
-    filteredCellTypes.length,
     filteredTissueIds,
     initialDisplayedCellTypeIds,
     setExpandedTissues,
