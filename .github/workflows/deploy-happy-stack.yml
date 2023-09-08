@@ -115,10 +115,6 @@ jobs:
         with:
           configurationJson: |
             {
-              "sort": {
-                "order": "DESC",
-                "on_property": "mergedAt"
-              },
               "tag_resolver": {
                 "method": "sort",
                 "filter": {
