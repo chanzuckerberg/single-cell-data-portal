@@ -111,6 +111,7 @@ export type ProcessedCollectionResponse = (
 export interface DatasetResponse {
   assay: Ontology[];
   cell_count: number | null;
+  primary_cell_count: number | null;
   cell_type: Ontology[];
   cell_type_ancestors: string[];
   collection_id: string;
