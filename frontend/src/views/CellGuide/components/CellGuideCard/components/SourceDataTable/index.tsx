@@ -52,7 +52,6 @@ const tableColumns: Array<keyof TableRow> = [
 
 interface Props {
   cellTypeId: string;
-  organName: string;
   organId: string;
   organismName: string;
   skinnyMode: boolean;
