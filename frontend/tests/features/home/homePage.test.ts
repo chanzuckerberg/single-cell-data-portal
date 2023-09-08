@@ -34,7 +34,7 @@ describe("Homepage", () => {
 
     await isGlobalLayoutWrapperScrollable(page);
   });
-  test.only("Hero numbers are rendered", async ({ page }) => {
+  test("Hero numbers are rendered", async ({ page }) => {
     await goToPage(undefined, page);
 
     await tryUntil(
