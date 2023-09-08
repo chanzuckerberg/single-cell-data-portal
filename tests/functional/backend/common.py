@@ -15,7 +15,7 @@ API_URL = {
     "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
     "dev": "https://api.cellxgene.dev.single-cell.czi.technology",
     "test": "https://localhost:5000",
-    "rdev": f"https://{os.getenv('RDEV-NAME', '')}-backend.rdev.single-cell.czi.technology",
+    "rdev": f"https://{os.getenv('STACK_NAME', '')}-backend.rdev.single-cell.czi.technology",
 }
 
 AUDIENCE = {
