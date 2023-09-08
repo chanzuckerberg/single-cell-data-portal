@@ -52,7 +52,6 @@ const tableColumns: Array<keyof TableRow> = [
 
 interface Props {
   cellTypeId: string;
-  organName: string;
   organId: string;
   organismName: string;
   skinnyMode: boolean;
@@ -68,7 +67,6 @@ const ROWS_PER_PAGE = 10;
 
 const SourceDataTable = ({
   cellTypeId,
-  organName,
   organId,
   organismName,
   skinnyMode,
@@ -95,7 +93,6 @@ const SourceDataTable = ({
   const filteredCollections = useDataSourceFilter({
     collections: collections ?? [],
     selectedOrganismLabel: organismName,
-    selectedOrganLabel: organName,
     selectedOrganId: organId,
   });
 

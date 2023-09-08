@@ -1,16 +1,11 @@
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import { IconButton } from "@mui/material";
-import { HEADER_HEIGHT_PX } from "src/components/LandingHeader/style";
 
-interface FullscreenButtonProps {
-  isFullScreen: boolean;
-}
-export const FullscreenButton = styled(IconButton)<FullscreenButtonProps>`
+export const FullscreenButton = styled(IconButton)`
   visibility: hidden;
   transition: visibility 0.2s;
-  z-index: 99;
-  margin-top: ${(props) => (props.isFullScreen ? HEADER_HEIGHT_PX : 0)}px;
+  z-index: 2;
 `;
 
 interface HoverContainerProps {
@@ -30,7 +25,7 @@ export const HoverContainer = styled.div<HoverContainerProps>`
           width: 100%;
           height: 100%;
           overflow: auto;
-          z-index: 1;
+          z-index: 9999;
         `
       : css`
           height: ${height}px;

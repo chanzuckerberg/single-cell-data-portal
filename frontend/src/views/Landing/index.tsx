@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { useInView } from "react-intersection-observer";
 // 4513(thuang): Comment out frameSrc for now until we figure out a compliant way to embed
 // import TweetEmbed from "react-tweet-embed";
@@ -26,6 +26,16 @@ import GeneExpressionIcon from "./icons/gene-expression";
 import SingleCellDataIconActive from "./icons/single-cell-data-active";
 import SingleCellDataIconInactive from "./icons/single-cell-data-inactive";
 import styles from "./index.module.scss";
+import { useViewMode } from "src/common/hooks/useViewMode";
+import { useFetchDatasets } from "src/common/queries/filter";
+import {
+  LANDING_PAGE_CELLS_HERO_NUM_ID,
+  LANDING_PAGE_CELLTYPES_HERO_NUM_ID,
+  LANDING_PAGE_DATASETS_HERO_NUM_ID,
+  LANDING_PAGE_FALLBACK_CELLS_HERO_NUM,
+  LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM,
+  LANDING_PAGE_FALLBACK_DATASETS_HERO_NUM,
+} from "./constants";
 
 const ROOT_MARGIN = "-50% 0px -50% 0px";
 
@@ -55,9 +65,43 @@ const LandingPage = (): JSX.Element => {
   });
   const scrollSection5 = useRef<HTMLDivElement>(null);
 
-  const [cellsHeroNum] = useState("45M");
-  const [datasetsHeroNum] = useState("842");
-  const [cellTypesHeroNum] = useState("682");
+  const { mode, status } = useViewMode();
+  const { data, isLoading, isSuccess } = useFetchDatasets(mode, status);
+
+  const cellsHeroNum: string | null = useMemo(() => {
+    if (isLoading) return null;
+    if (!data || !isSuccess) return LANDING_PAGE_FALLBACK_CELLS_HERO_NUM;
+    const total = data.reduce(
+      (acc, curr) => acc + (curr.primary_cell_count ?? 0),
+      0
+    );
+    const formatter = new Intl.NumberFormat("en", {
+      notation: "compact",
+      compactDisplay: "short",
+      maximumFractionDigits: 1,
+    });
+    return formatter.format(total);
+  }, [data, isLoading, isSuccess]);
+
+  const cellTypesHeroNum: string | null = useMemo(() => {
+    if (isLoading) return null;
+    if (!data || !isSuccess) return LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM;
+    // add the cell types to the set and then get the length of the set
+    const unique_cell_types = new Set();
+    data.forEach((dataset) => {
+      dataset.cell_type.forEach((cell_type) => {
+        unique_cell_types.add(cell_type.ontology_term_id);
+      });
+    });
+    return `${unique_cell_types.size}`;
+  }, [data, isLoading, isSuccess]);
+
+  const datasetsHeroNum: string | null = useMemo(() => {
+    if (isLoading) return null;
+    if (!data || !isSuccess) return LANDING_PAGE_FALLBACK_DATASETS_HERO_NUM;
+    // add the cell types to the set and then get the length of the set
+    return `${Object.keys(data).length}`;
+  }, [data, isLoading, isSuccess]);
 
   const SUB_HEADING = "13.05.22 - CZ CELLxGENE";
 
@@ -266,15 +310,21 @@ const LandingPage = (): JSX.Element => {
             <div className={styles.heroStatsContainer}>
               <div>
                 <span>unique cells</span>
-                <p>{cellsHeroNum}</p>
+                <p data-testid={LANDING_PAGE_CELLS_HERO_NUM_ID}>
+                  {cellsHeroNum}
+                </p>
               </div>
               <div>
                 <span>datasets</span>
-                <p>{datasetsHeroNum}</p>
+                <p data-testid={LANDING_PAGE_DATASETS_HERO_NUM_ID}>
+                  {datasetsHeroNum}
+                </p>
               </div>
               <div>
                 <span>cell types</span>
-                <p>{cellTypesHeroNum}</p>
+                <p data-testid={LANDING_PAGE_CELLTYPES_HERO_NUM_ID}>
+                  {cellTypesHeroNum}
+                </p>
               </div>
             </div>
           </div>

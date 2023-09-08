@@ -691,9 +691,8 @@ describe("Cell Guide", () => {
           CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER
         );
         await ontologyDagView.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
-
         const ontologyDagViewSizeBefore = await ontologyDagView.boundingBox();
-
+        await page.getByTestId("section-1").scrollIntoViewIfNeeded();
         await ontologyDagView.hover();
 
         const fullScreenButton = page.getByTestId(

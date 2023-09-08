@@ -320,7 +320,6 @@ const MarkerGeneTables = ({
     useComputationalMarkerGenesTableRowsAndFilters({
       genes: computationalMarkerGenes,
       allTissuesLabelToIdMap: allTissuesLabelToIdMap,
-      selectedOrganLabel: organName,
       selectedOrganId: organId,
       selectedOrganismLabel: organismName,
     });
