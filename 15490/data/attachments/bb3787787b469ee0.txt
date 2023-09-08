@@ -1,0 +1,48 @@
+  pw:api => selectors.setTestIdAttribute started +3s
+  pw:api => browser.newContext started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +6ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +106ms
+  pw:api   "commit" event fired +17ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +0ms
+  pw:api <= browser.newContext succeeded +10ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +2ms
+  pw:api <= browserContext.newPage succeeded +63ms
+  pw:api => page.waitForResponse started +2ms
+  pw:api => page.goto started +11ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +4ms
+  pw:api   "commit" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +3ms
+  pw:api   navigated to "about:blank" +25ms
+  pw:api <= page.goto succeeded +51ms
+  pw:api   "networkidle" event fired +56s
+  pw:api <= page.waitForResponse succeeded +20s
+  pw:api => locator.click started +3ms
+  pw:api waiting for getByTestId('add-gene-btn') +119ms
+  pw:api   locator resolved to <div label="Add Genes" data-testid="add-gene-btn" cla…>…</div> +78ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +12ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +17ms
+  pw:api   click action done +1s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +4ms
+  pw:api <= locator.click succeeded +19ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +12ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +55ms
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +3s
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +107ms
+  pw:api taking page screenshot +45ms
