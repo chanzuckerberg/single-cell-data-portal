@@ -1,0 +1,70 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +5ms
+  pw:api <= browserType.launch succeeded +226ms
+  pw:api => browser.newContext started +10ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +56ms
+  pw:api   "commit" event fired +24ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +4ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +14ms
+  pw:api => tracing.start started +6ms
+  pw:api <= tracing.start succeeded +5ms
+  pw:api => browserContext.newPage started +13ms
+  pw:api <= browserContext.newPage succeeded +51ms
+  pw:api => page.waitForResponse started +8ms
+  pw:api => page.goto started +9ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +11ms
+  pw:api   "commit" event fired +9s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +5ms
+  pw:api   navigated to "about:blank" +59ms
+  pw:api <= page.goto succeeded +106ms
+  pw:api <= page.waitForResponse succeeded +20s
+  pw:api => locator.count started +3ms
+  pw:api <= locator.count succeeded +69ms
+  pw:api => locator.click started +8ms
+  pw:api waiting for getByTestId('cell-type-labels-lung').getByTestId('tissue-name') +26ms
+  pw:api   locator resolved to <div data-testid="tissue-name" class="tissue-name css…>Lung</div> +2s
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +28ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +66ms
+  pw:api   "networkidle" event fired +91ms
+  pw:api   click action done +556ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +10ms
+  pw:api <= locator.click succeeded +86ms
+  pw:api => locator.count started +2ms
+  pw:api <= locator.count succeeded +86ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +230ms
+  pw:api => locator.allTextContents started +7ms
+  pw:api <= locator.allTextContents succeeded +126ms
+  pw:api => expect.not.toHaveCount started +7ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +17ms
+  pw:api waiting for getByTestId('cell-type-name') +0ms
+  pw:api   locator resolved to 161 elements +8ms
+  pw:api <= expect.not.toHaveCount succeeded +52ms
+  pw:api => locator.click started +3ms
+  pw:api waiting for getByRole('img', { name: 'display marker genes for club cell' }) +32ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="fixed" data-testid="…/> +22ms
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +22ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +25ms
+  pw:api   click action done +403ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +9ms
+  pw:api <= locator.click succeeded +68ms
+  pw:api => locator.allTextContents started +11ms
+  pw:api <= locator.allTextContents succeeded +71ms
+  pw:api taking page screenshot +10ms
