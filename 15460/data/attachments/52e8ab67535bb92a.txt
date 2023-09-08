@@ -1,0 +1,58 @@
+⚠️  tryUntil error-----------------START
+expect(received).toMatchObject(expected)
+
+- Expected  - 1
++ Received  + 1
+
+  Array [
+-   "UBERON:0000178",
+    "UBERON:0002048",
++   "UBERON:0000178",
+  ]
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect(received).toMatchObject(expected)
+
+- Expected  - 1
++ Received  + 1
+
+  Array [
+-   "UBERON:0000178",
+    "UBERON:0002048",
++   "UBERON:0000178",
+  ]
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect(received).toMatchObject(expected)
+
+- Expected  - 1
++ Received  + 1
+
+  Array [
+-   "UBERON:0000178",
+    "UBERON:0002048",
++   "UBERON:0000178",
+  ]
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+locator.click: Target closed
+=========================== logs ===========================
+waiting for getByTestId('share-button')
+  locator resolved to <button tabindex="0" type="button" data-testid="share-bu…>…</button>
+attempting click action
+  waiting for element to be visible, enabled and stable
+  element is visible, enabled and stable
+  scrolling into view if needed
+  done scrolling
+  <div class="css-qtrc62-StyledNotificationDetails e1rb…>We regularly expand our single cell data corpus t…</div> from <div class="css-1cqa3re-NotificationWrapper-StyledNot…>…</div> subtree intercepts pointer events
+retrying click action, attempt #1
+  waiting for element to be visible, enabled and stable
+  element is visible, enabled and stable
+  scrolling into view if needed
+  done scrolling
+  <div class="css-qtrc62-StyledNotificationDetails e1rb…>We regularly expand our single cell data corpus t…</div> from <div class="css-1cqa3re-NotificationWrapper-StyledNot…>…</div> subtree intercepts pointer events
+retrying click action, attempt #2
+  waiting 20ms
+  waiting for element to be visible, enabled and stable
+============================================================
+⚠️  tryUntil error-----------------END
