@@ -45,7 +45,6 @@ import {
   StyledBannerContainer,
   StyledSidebarDrawer,
 } from "src/views/WheresMyGene/components/Main/style";
-import RightSideBar from "src/components/common/RightSideBar";
 import ScreenTint from "src/views/WheresMyGene/components/ScreenTint";
 import {
   SideBarPositioner,
@@ -59,6 +58,7 @@ import BottomBanner from "src/components/BottomBanner";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "src/views/WheresMyGene/components/CellInfoSideBar/style";
 import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
 import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
+import { StyledRightSideBar } from "./style";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -302,7 +302,7 @@ export default function WheresMyGene(): JSX.Element {
         />
       </SideBar>
       {cellInfoCellType && tissuesByID ? (
-        <RightSideBar width={CELL_INFO_SIDEBAR_WIDTH_PX}>
+        <StyledRightSideBar width={CELL_INFO_SIDEBAR_WIDTH_PX}>
           <CellInfoSideBar
             generateGeneInfo={generateGeneInfo}
             cellInfoCellType={cellInfoCellType}
@@ -321,17 +321,17 @@ export default function WheresMyGene(): JSX.Element {
               />
             )
           }
-        </RightSideBar>
+        </StyledRightSideBar>
       ) : (
         // Gene info full right sidebar length
         geneInfoGene && (
-          <RightSideBar>
+          <StyledRightSideBar>
             <GeneInfoSideBar
               geneInfoGene={geneInfoGene}
               handleClose={handleCloseGeneInfoSideBar}
               title={geneInfoGene}
             />
-          </RightSideBar>
+          </StyledRightSideBar>
         )
       )}
 
