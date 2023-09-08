@@ -510,11 +510,7 @@ export default memo(function HeatMap({
                   key={`${tissueName}-${echartsRendererMode}`}
                   tissue={tissueName}
                   cellTypes={tissueCellTypes}
-                  selectedGeneData={
-                    orderedSelectedGeneExpressionSummariesByTissueName[
-                      tissueName
-                    ]
-                  }
+                  selectedGeneData={selectedGeneData}
                   setIsLoading={setIsLoading}
                   scaledMeanExpressionMax={scaledMeanExpressionMax}
                   scaledMeanExpressionMin={scaledMeanExpressionMin}

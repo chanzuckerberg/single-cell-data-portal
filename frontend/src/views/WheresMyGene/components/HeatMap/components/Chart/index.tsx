@@ -208,7 +208,7 @@ export default memo(function Chart({
 
         setAllChartProps((allChartProps) => {
           allChartProps[tissue] = result;
-          return allChartProps;
+          return { ...allChartProps };
         });
 
         setIsLoading((isLoading) => {
