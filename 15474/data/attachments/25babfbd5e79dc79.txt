@@ -1,0 +1,122 @@
+  pw:api => selectors.setTestIdAttribute started +4s
+  pw:api => browser.newContext started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +42ms
+  pw:api   "commit" event fired +21ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +13ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +45ms
+  pw:api => page.waitForLoadState started +3ms
+  pw:api => page.goto started +4ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +4ms
+  pw:api   "commit" event fired +3s
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "commit" event fired +3ms
+  pw:api   "networkidle" event fired +5s
+  pw:api <= page.waitForLoadState succeeded +3ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +4s
+  pw:api   navigated to "https://localhost:3000/" +3ms
+  pw:api   navigated to "about:blank" +13ms
+  pw:api <= page.goto succeeded +11ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByText('Help & Documentation') +432ms
+  pw:api   locator resolved to <span class="bp4-button-text">Help & Documentation</span> +57ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api attempting click action +5ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +25ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +13ms
+  pw:api   click action done +84ms
+  pw:api   waiting for scheduled navigations to finish +4ms
+  pw:api   navigations have finished +28ms
+  pw:api <= locator.click succeeded +15ms
+  pw:api => browserContext.waitForEvent started +2ms
+  pw:api   "commit" event fired +17s
+  pw:api   "commit" event fired +14ms
+  pw:api   navigated to "https://localhost:3000/docs/01__CellxGene" +1ms
+  pw:api <= browserContext.waitForEvent succeeded +4ms
+  pw:api => expect.toBeVisible started +4ms
+  pw:api expect.toBeVisible with timeout 10000ms +5ms
+  pw:api waiting for getByText('Welcome to CZ CELLxGENE') +0ms
+  pw:api   locator resolved to <h1 id="welcome-to-cz-cellxgene" class="css-oojown-M…>Welcome to CZ CELLxGENE</h1> +74ms
+  pw:api   unexpected value "hidden" +0ms
+  pw:api   locator resolved to <h1 id="welcome-to-cz-cellxgene" class="css-oojown-M…>Welcome to CZ CELLxGENE</h1> +8ms
+  pw:api   unexpected value "hidden" +1ms
+  pw:api   locator resolved to <h1 id="welcome-to-cz-cellxgene" class="css-oojown-M…>Welcome to CZ CELLxGENE</h1> +117ms
+  pw:api   unexpected value "hidden" +1ms
+  pw:api   locator resolved to <h1 id="welcome-to-cz-cellxgene" class="css-oojown-M…>Welcome to CZ CELLxGENE</h1> +255ms
+  pw:api   unexpected value "hidden" +0ms
+  pw:api   locator resolved to <h1 id="welcome-to-cz-cellxgene" class="css-oojown-M…>Welcome to CZ CELLxGENE</h1> +2s
+  pw:api   unexpected value "hidden" +0ms
+  pw:api   locator resolved to <h1 id="welcome-to-cz-cellxgene" class="css-oojown-M…>Welcome to CZ CELLxGENE</h1> +1s
+  pw:api   unexpected value "hidden" +0ms
+  pw:api   "networkidle" event fired +1s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   locator resolved to <h1 id="welcome-to-cz-cellxgene" class="css-oojown-M…>Welcome to CZ CELLxGENE</h1> +3s
+  pw:api   unexpected value "hidden" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   navigated to "https://localhost:3000/docs/01__CellxGene" +3ms
+  pw:api <= expect.toBeVisible succeeded +52ms
+  pw:api => page.waitForTimeout started +4ms
+  pw:api <= page.waitForTimeout succeeded +238ms
+  pw:api => expect.toBeVisible started +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +5ms
+  pw:api waiting for getByText('Welcome to CZ CELLxGENE') +1ms
+  pw:api   locator resolved to <h1 id="welcome-to-cz-cellxgene" class="css-oojown-M…>Welcome to CZ CELLxGENE</h1> +5ms
+  pw:api <= expect.toBeVisible succeeded +6ms
+  pw:api => locator.evaluate started +2ms
+  pw:api waiting for getByTestId('global-layout-wrapper') +5ms
+  pw:api   locator resolved to visible <div data-testid="global-layout-wrapper" class="css-1…>…</div> +18ms
+  pw:api <= locator.evaluate succeeded +53ms
+  pw:api => locator.click started +5ms
+  pw:api waiting for getByTestId('global-layout-wrapper') +9ms
+  pw:api   locator resolved to <div data-testid="global-layout-wrapper" class="css-1…>…</div> +12ms
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +17ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +11ms
+  pw:api   click action done +9ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +5ms
+  pw:api => mouse.wheel started +1ms
+  pw:api <= mouse.wheel succeeded +10ms
+  pw:api => locator.evaluate started +2ms
+  pw:api waiting for getByTestId('global-layout-wrapper') +9ms
+  pw:api   locator resolved to visible <div data-testid="global-layout-wrapper" class="css-1…>…</div> +4ms
+  pw:api <= locator.evaluate succeeded +12ms
+  pw:api => page.waitForTimeout started +21ms
+  pw:api   "networkidle" event fired +87ms
+  pw:api <= page.waitForTimeout succeeded +155ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('global-layout-wrapper') +15ms
+  pw:api   locator resolved to <div data-testid="global-layout-wrapper" class="css-1…>…</div> +4ms
+  pw:api attempting click action +4ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +11ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +7ms
+  pw:api   click action done +12ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +4ms
+  pw:api => mouse.wheel started +1ms
+  pw:api <= mouse.wheel succeeded +11ms
+  pw:api => locator.evaluate started +1ms
+  pw:api waiting for getByTestId('global-layout-wrapper') +6ms
+  pw:api   locator resolved to visible <div data-testid="global-layout-wrapper" class="css-1…>…</div> +4ms
+  pw:api <= locator.evaluate succeeded +12ms
+  pw:api taking page screenshot +13ms
+  pw:api taking page screenshot +2ms
