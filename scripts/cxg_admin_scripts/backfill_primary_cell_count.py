@@ -3,6 +3,8 @@ import sys
 
 from click import Context
 
+from backend.layers.thirdparty.cloudfront_provider import CloudfrontProvider
+
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
@@ -18,3 +20,5 @@ def backfill_primary_cell_count(ctx: Context, mapping: dict[str, int]) -> None:
             dv.metadata.primary_cell_count = mapping.get(str(dv.dataset_id), dv.metadata.primary_cell_count)
             print(key, dv.metadata.primary_cell_count, f"({i+1}/{len(mapping)})")
             business_logic.set_dataset_metadata(dv.version_id, dv.metadata)
+    cloudfront_provider: CloudfrontProvider = ctx.obj["cloudfront_provider"]
+    cloudfront_provider.create_invalidation_for_index_paths()
