@@ -10,6 +10,7 @@ import {
   VISIBILITY_TYPE,
 } from "src/common/entities";
 import { getUrlHost } from "src/common/utils/getUrlHost";
+import { CATEGORY_VALUE_KEY } from "src/components/common/Filter/common/entities";
 
 /**
  * Copied from src/components/Collection/components/CollectionMetadata
@@ -35,16 +36,16 @@ const LINK_ORDER: COLLECTION_LINK_TYPE[] = [
 /**
  * Returns collection metadata in preferred order of display.
  * @param links - links associated with collection.
+ * @param summaryCitation - Summary citation format of collection publication metadata.
  * @param contactName - Name of collection contact.
  * @param contactEmail - Email of collection contact.
- * @param summaryCitation - Summary citation format of collection publication metadata.
  * @returns Array of collection metadata in preferred order of display.
  */
 export function buildCollectionMetadataLinks(
   links: Link[],
+  summaryCitation: string,
   contactName?: Collection["contact_name"],
-  contactEmail?: Collection["contact_email"],
-  summaryCitation?: string
+  contactEmail?: Collection["contact_email"]
 ): CollectionMetadataLink[] {
   const collectionMetadataLinks = [];
 
@@ -96,7 +97,7 @@ export function buildCollectionMetadataLinks(
  */
 function buildDoiMetadataLink(
   doiLink: Link,
-  summaryCitation?: string
+  summaryCitation: string
 ): CollectionMetadataLink | undefined {
   // Build display model of DOI link.
   const doiMetadataLink = buildCollectionMetadataLink(doiLink);
@@ -105,7 +106,7 @@ function buildDoiMetadataLink(
   }
 
   // If there's no summary citation for the collection, return the DOI link with the label "DOI".
-  if (!summaryCitation) {
+  if (summaryCitation === CATEGORY_VALUE_KEY.NO_PUBLICATION) {
     return {
       ...doiMetadataLink,
       label: "DOI",

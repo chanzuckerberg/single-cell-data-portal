@@ -213,7 +213,7 @@ def reshape_dataset_for_curation_api(
     # Metadata can be None if the dataset isn't still fully processed, so we account for that
     if dataset_version.metadata is not None:
         for column in columns:
-            col = getattr(dataset_version.metadata, column)
+            col = getattr(dataset_version.metadata, column, None)
             if isinstance(col, OntologyTermId):
                 col = [asdict(col)]
             elif isinstance(col, list) and len(col) != 0 and isinstance(col[0], OntologyTermId):
@@ -304,6 +304,7 @@ class EntityColumns:
         "development_stage",
         "cell_type",
         "cell_count",
+        "primary_cell_count",
         "x_approximate_distribution",
         "batch_condition",
         "mean_genes_per_cell",

@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
-import { fontBodyS, getColors, getSpaces } from "@czi-sds/components";
-import { spacesM, spacesS } from "src/common/theme";
+import { CommonThemeProps, fontBodyS, getColors } from "@czi-sds/components";
+import { gray100, spacesS } from "src/common/theme";
 
 export const StyledTable = styled.table`
   width: 100%;
@@ -19,34 +19,33 @@ export const StyledHead = styled.thead`
 export const StyledHeadCell = styled.th`
   ${fontBodyS}
   font-weight: 500;
+  white-space: nowrap;
+  padding-top: ${spacesS}px;
+  padding-bottom: ${spacesS}px;
   ${(props) => {
     const colors = getColors(props);
-    const spacings = getSpaces(props);
 
     return `
     color: ${colors?.gray[500]};
-    padding: ${spacings?.s}px ${spacings?.m}px ${spacings?.s}px ${spacings?.m}px;`;
+    `;
   }}
 `;
 
-interface StyledRowProps {
+interface StyledRowProps extends CommonThemeProps {
   highlight: boolean;
 }
 export const StyledRow = styled.tr<StyledRowProps>`
-  background-color: ${(props) => (props.highlight ? "#F8F8F8" : "white")};
+  background-color: ${(props) => (props.highlight ? gray100(props) : "white")};
 `;
 
 export const StyledCell = styled.td`
   ${fontBodyS}
   font-weight: 400;
-  padding: ${spacesS}px ${spacesM}px;
-  min-width: 120px;
-  word-break: break-word;
-  overflow-wrap: break-word;
+  padding-top: ${spacesS}px;
+  padding-bottom: ${spacesS}px;
   vertical-align: top;
 
   a {
     display: inline-block;
-    overflow-wrap: break-word;
   }
 `;

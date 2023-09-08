@@ -3,6 +3,10 @@ STACK_NAME=""
 SRC_DEPLOYMENT="staging"
 POPULATE_ONLY_GPT=false
 
+# TODO: this script will be deleted once powerusers are forbidden from writing to private/public-proxied buckets
+# please make an issue to track this
+# ask for guidance about gene-expression assets
+
 function usage {
     echo "Usage: $0 [-s|--src_deployment <src_deployment>] [-g|--gpt_only] <stack_name>"
     echo "Make sure AWS_PROFILE is set to single-cell-dev prior to running this command."

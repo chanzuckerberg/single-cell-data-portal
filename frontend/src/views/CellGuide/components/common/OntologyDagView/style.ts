@@ -5,7 +5,7 @@ import { IconButton } from "@mui/material";
 export const FullscreenButton = styled(IconButton)`
   visibility: hidden;
   transition: visibility 0.2s;
-  z-index: 1;
+  z-index: 2;
 `;
 
 interface HoverContainerProps {
@@ -25,7 +25,7 @@ export const HoverContainer = styled.div<HoverContainerProps>`
           width: 100%;
           height: 100%;
           overflow: auto;
-          z-index: 1;
+          z-index: 9999;
         `
       : css`
           height: ${height}px;

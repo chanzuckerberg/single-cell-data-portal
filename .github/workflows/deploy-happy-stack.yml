@@ -168,6 +168,8 @@ jobs:
     timeout-minutes: 30
     name: e2e-tests ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
     runs-on: ubuntu-22.04
+    needs:
+      - upgrade
     strategy:
       fail-fast: false
       matrix:

@@ -142,6 +142,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             ],
             cell_type=[OntologyTermId(label="test_cell_type_label", ontology_term_id="test_cell_type_term_id")],
             cell_count=10,
+            primary_cell_count=5,
             schema_version="3.0.0",
             mean_genes_per_cell=0.5,
             batch_condition=["test_batch_1", "test_batch_2"],
@@ -228,7 +229,6 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         published_at: datetime = None,
         num_datasets: int = 2,
     ) -> Tuple[CollectionVersionWithDatasets, CollectionVersionWithDatasets]:
-
         # Published with a published revision.
         published_version = self.initialize_published_collection(owner, curator_name, published_at, num_datasets)
         revision = self.business_logic.create_collection_version(published_version.collection_id)
@@ -245,7 +245,6 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         published_at: datetime = None,
         num_datasets: int = 2,
     ) -> Tuple[CollectionVersionWithDatasets, CollectionVersionWithDatasets]:
-
         # Published with an unpublished revision
         published_version = self.initialize_published_collection(owner, curator_name, published_at, num_datasets)
         revision = self.business_logic.create_collection_version(published_version.collection_id)

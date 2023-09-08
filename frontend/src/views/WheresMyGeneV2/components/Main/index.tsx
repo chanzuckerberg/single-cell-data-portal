@@ -16,7 +16,9 @@ import {
   useGeneExpressionSummariesByTissueName,
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
-import SideBar from "src/components/common/SideBar";
+import SideBar, {
+  FILTERS_PANEL_EXPANDED_WIDTH_PX,
+} from "src/components/common/SideBar";
 import {
   DispatchContext,
   StateContext,
@@ -273,6 +275,11 @@ export default function WheresMyGene(): JSX.Element {
     dispatch(addGeneInfoGene(gene));
   };
 
+  // Sidebar width
+  const [sidebarWidth, setSidebarWidth] = useState(
+    FILTERS_PANEL_EXPANDED_WIDTH_PX
+  );
+
   return (
     <>
       <Head>
@@ -285,6 +292,7 @@ export default function WheresMyGene(): JSX.Element {
         SideBarPositionerComponent={SideBarPositioner}
         testId="filters-panel"
         wmgSideBar
+        onWidthChange={setSidebarWidth}
       >
         <Filters
           isLoading={isLoading}
@@ -391,6 +399,11 @@ export default function WheresMyGene(): JSX.Element {
             tissuesByName={tissuesByName}
             expandedTissues={expandedTissues}
             setExpandedTissues={setExpandedTissues}
+            /**
+             * (thuang): This is needed to reposition gene search bar when the
+             * sidebar width expands/collapses
+             */
+            sidebarWidth={sidebarWidth}
           />
         </Wrapper>
       </View>

@@ -8,6 +8,7 @@ import AuthButtons from "src/components/Header/components/AuthButtons";
 import { HomepageLink } from "../common/HomepageLink";
 import {
   DesktopHomeLink,
+  HeaderTitle,
   Left,
   MainWrapper,
   MobileHomeLink,
@@ -21,8 +22,15 @@ import {
 } from "./style";
 import { LinkWrapper } from "src/components/Header/components/Nav/style";
 
-const LandingHeader: FC = () => {
-  const { pathname } = useRouter();
+interface Props {
+  title?: string;
+  homeUrl?: string;
+  labelUrl?: string;
+}
+
+const LandingHeader: FC<Props> = ({ title = "", homeUrl, labelUrl }) => {
+  const router = useRouter();
+  const { pathname } = router;
 
   const mobileNavTray = useRef<HTMLDivElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -36,12 +44,23 @@ const LandingHeader: FC = () => {
       setMobileMenuOpen(false);
     }
   }
+  const handleLabelClick = () => {
+    if (labelUrl) {
+      router.push(labelUrl);
+    }
+  };
 
   return (
     <MobileNavWrapper>
+      {/* Left */}
       <MobileHomeLink>
-        <HomepageLink />
+        <HomepageLink homeUrl={homeUrl} />
       </MobileHomeLink>
+
+      {/* Middle */}
+      <HeaderTitle onClick={handleLabelClick}>{title}</HeaderTitle>
+
+      {/* Right */}
       <MobileMenuButton onClick={() => mobileNavHandler(mobileMenuOpen)}>
         <MobileMenuButtonBar className={mobileMenuOpen ? "open" : ""} />
         <MobileMenuButtonBar className={mobileMenuOpen ? "open" : ""} />

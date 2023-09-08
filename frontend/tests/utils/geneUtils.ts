@@ -1,6 +1,5 @@
 import { Page, expect } from "@playwright/test";
-import { ROUTES } from "src/common/constants/routes";
-import { TEST_URL } from "tests/common/constants";
+import { goToWMG } from "./wmgUtils";
 
 const FMG_EXCLUDE_TISSUES = ["blood"];
 const CELL_COUNT_ID = "cell-count";
@@ -10,15 +9,6 @@ const REGEX = /^\d+\.?\d{0,2}$/;
 
 export const ADD_GENE_SEARCH_PLACEHOLDER_TEXT = "Add Genes";
 
-export async function goToWMG(page: Page) {
-  return Promise.all([
-    page.waitForResponse(
-      (resp: { url: () => string | string[]; status: () => number }) =>
-        resp.url().includes("/wmg/v2/filters") && resp.status() === 200
-    ),
-    page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
-  ]);
-}
 export async function searchAndAddGene(page: Page, geneName: string) {
   await goToWMG(page);
   await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).type(geneName);

@@ -47,7 +47,6 @@ import {
 } from "src/views/WheresMyGene/components/HeatMap/hooks/useSortedGeneNames";
 import { useSortedCellTypesByTissueName } from "src/views/WheresMyGene/components/HeatMap/hooks/useSortedCellTypesByTissueName";
 import {
-  CellTypeFilterContainer,
   CellTypeTagContainer,
   ChartWrapper,
   Container,
@@ -69,7 +68,12 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 import { Autocomplete, DefaultAutocompleteOption } from "@czi-sds/components";
-import { Divider, TopLeftCornerMask, XAxisWrapper } from "./style";
+import {
+  CellTypeFilterContainer,
+  Divider,
+  TopLeftCornerMask,
+  XAxisWrapper,
+} from "./style";
 
 interface Props {
   className?: string;
@@ -99,6 +103,7 @@ interface Props {
   >;
   expandedTissues: Set<string>;
   setExpandedTissues: Dispatch<SetStateAction<Set<string>>>;
+  sidebarWidth: number;
 }
 
 export default memo(function HeatMap({
@@ -119,6 +124,7 @@ export default memo(function HeatMap({
   setTissuesByName,
   expandedTissues,
   setExpandedTissues,
+  sidebarWidth,
 }: Props): JSX.Element {
   const {
     xAxisHeight,
@@ -305,12 +311,21 @@ export default memo(function HeatMap({
       )
     );
   };
-
-  // Reset `displayedCellTypes` and `expandedTissues` when the user clears `filteredCellTypes`
   useEffect(() => {
     if (filteredCellTypes.length === 0) {
       setDisplayedCellTypes(initialDisplayedCellTypeIds);
       setExpandedTissues(EMPTY_SET as Set<string>);
+    }
+  }, [
+    filteredCellTypes.length,
+    initialDisplayedCellTypeIds,
+    setExpandedTissues,
+  ]);
+
+  // Reset `displayedCellTypes` and `expandedTissues` when the user clears `filteredCellTypes`
+  useEffect(() => {
+    if (filteredCellTypes.length === 0) {
+      // This is handled in the above useEffect, but we need to return early here so we don't do the work below
       return;
     }
 
@@ -348,9 +363,7 @@ export default memo(function HeatMap({
     setExpandedTissues(newExpandedTissues);
   }, [
     cellTypesByName,
-    dispatch,
     filteredCellTypes,
-    filteredCellTypes.length,
     filteredTissueIds,
     initialDisplayedCellTypeIds,
     setExpandedTissues,
@@ -435,7 +448,10 @@ export default memo(function HeatMap({
           {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
           <XAxisWrapper id="x-axis-wrapper">
             <XAxisMask data-testid="x-axis-mask" height={xAxisHeight} />
-            <XAxisChart geneNames={sortedGeneNames} />
+            <XAxisChart
+              geneNames={sortedGeneNames}
+              sidebarWidth={sidebarWidth}
+            />
           </XAxisWrapper>
           <YAxisWrapper top={0}>
             {allTissueCellTypes.map(
