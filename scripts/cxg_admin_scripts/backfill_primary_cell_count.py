@@ -17,7 +17,6 @@ def backfill_primary_cell_count(ctx: Context, mapping: dict[str, int]) -> None:
             dv = business_logic.get_dataset_version_from_canonical(DatasetId(key))
             dv.metadata.primary_cell_count = mapping.get(str(dv.dataset_id), dv.metadata.primary_cell_count)
             print(key, dv.metadata.primary_cell_count, f"({i+1}/{len(mapping)})")
-            print(dv.metadata)
             business_logic.set_dataset_metadata(dv.version_id, dv.metadata)
         except KeyboardInterrupt:
             print("Interrupted by user")
