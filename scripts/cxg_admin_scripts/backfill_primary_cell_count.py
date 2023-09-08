@@ -13,14 +13,8 @@ from backend.layers.common.entities import DatasetId
 def backfill_primary_cell_count(ctx: Context, mapping: dict[str, int]) -> None:
     business_logic: BusinessLogic = ctx.obj["business_logic"]
     for i, key in enumerate(mapping):
-        try:
-            dv = business_logic.get_dataset_version_from_canonical(DatasetId(key))
+        dv = business_logic.get_dataset_version_from_canonical(DatasetId(key))
+        if dv is not None:
             dv.metadata.primary_cell_count = mapping.get(str(dv.dataset_id), dv.metadata.primary_cell_count)
             print(key, dv.metadata.primary_cell_count, f"({i+1}/{len(mapping)})")
             business_logic.set_dataset_metadata(dv.version_id, dv.metadata)
-        except KeyboardInterrupt:
-            print("Interrupted by user")
-            break
-        except Exception as e:
-            print(f"Error: {e}")
-            continue
