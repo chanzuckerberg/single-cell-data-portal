@@ -9,6 +9,8 @@ import {
   useTissueMetadata,
 } from "src/common/queries/cellGuide";
 import { useMemo, useState, useEffect } from "react";
+import { fontWeightSemibold } from "src/common/theme";
+import { MAX_WIDTH_BREAKPOINT_PX } from "src/components/LandingHeader/style";
 
 const DOC_SITE_FOLDER_NAME = "doc-site";
 
@@ -64,7 +66,7 @@ const SitemapLayout = styled.div`
   padding-left: 120px;
   padding-right: 120px;
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     padding: 40px 25px;
   }
 `;
@@ -73,9 +75,9 @@ const SitemapTitle = styled.h1`
   margin-bottom: 0;
   font-size: 42px;
   line-height: 56.7px;
-  font-weight: 600;
+  font-weight: ${fontWeightSemibold};
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     font-size: 28px;
   }
 `;
@@ -85,7 +87,7 @@ const SitemapNav = styled.nav`
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   white-space: nowrap;
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     grid-template-columns: repeat(auto-fill, 50%);
     margin-top: 10px;
   }
@@ -96,7 +98,7 @@ const SitemapPageLink = styled.a`
   margin-top: 40px;
   font-size: 22px;
   line-height: 28px;
-  font-weight: 600;
+  font-weight: ${fontWeightSemibold};
   color: #000000;
 
   &:hover {
@@ -104,7 +106,7 @@ const SitemapPageLink = styled.a`
     color: #000000;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     font-size: 14px;
     line-height: 28px;
     margin-top: 10px;
@@ -114,7 +116,7 @@ const SitemapPageLink = styled.a`
     width: 12px;
     margin-left: 12px;
 
-    @media (max-width: 768px) {
+    @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
       width: 10px;
       margin-left: 10px;
     }
@@ -126,7 +128,7 @@ const SitemapNavLink = styled.a`
   margin-top: 40px;
   font-size: 22px;
   line-height: 28px;
-  font-weight: 600;
+  font-weight: ${fontWeightSemibold};
   color: #0073ff;
 
   &:hover {
@@ -134,7 +136,7 @@ const SitemapNavLink = styled.a`
     color: #0056c6;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     font-size: 14px;
     line-height: 28px;
     margin-top: 10px;
@@ -146,7 +148,7 @@ const SitemapSection = styled.section`
   padding-top: 75px;
   margin-top: 75px;
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     padding-top: 40px;
     margin-top: 40px;
   }
@@ -154,7 +156,7 @@ const SitemapSection = styled.section`
   h2,
   h2 a {
     font-size: 22px;
-    font-weight: 600;
+    font-weight: ${fontWeightSemibold};
     line-height: 28px;
     color: #0073ff;
 
@@ -170,7 +172,7 @@ const SitemapSectionGrid = styled.div`
   grid-template-columns: 1fr 1fr;
   grid-gap: 0 60px;
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     grid-template-columns: 1fr;
   }
 
@@ -186,7 +188,7 @@ const SitemapSectionGrid = styled.div`
       color: #0056c6;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
       font-size: 14px;
     }
   }
@@ -199,7 +201,7 @@ const SitemapSectionGrid = styled.div`
     color: #545454;
     margin-bottom: 0;
 
-    @media (max-width: 768px) {
+    @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
       font-size: 14px;
     }
   }

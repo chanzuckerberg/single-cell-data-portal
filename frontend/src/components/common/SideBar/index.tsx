@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Button, Icon } from "@czi-sds/components";
 import {
   Position,
@@ -8,6 +8,7 @@ import {
   SideBarPositioner,
   ToggleButtonText,
 } from "src/components/common/SideBar/style";
+import { noop } from "src/common/constants/utils";
 
 const COLLAPSED_WIDTH_PX = 36;
 export const FILTERS_PANEL_EXPANDED_WIDTH_PX = 240;
@@ -31,6 +32,7 @@ export interface Props {
   disabled?: boolean;
   wmgSideBar?: boolean;
   truncatedLabel?: string;
+  onWidthChange?: (width: number) => void;
 }
 
 export default function SideBar({
@@ -47,6 +49,7 @@ export default function SideBar({
   disabled,
   wmgSideBar,
   truncatedLabel = "",
+  onWidthChange = noop,
 }: Props): JSX.Element {
   // seve: wmgSideBar does not have isOpen prop, so we need to set default to true/open
   const [isExpanded, setIsExpanded] = useState(isOpen || !!wmgSideBar);
@@ -65,6 +68,10 @@ export default function SideBar({
       onToggle(nextExpanded);
     }
   };
+
+  useEffect(() => {
+    onWidthChange(sideBarWidth);
+  }, [sideBarWidth, onWidthChange]);
 
   return (
     <SideBarWrapperComponent

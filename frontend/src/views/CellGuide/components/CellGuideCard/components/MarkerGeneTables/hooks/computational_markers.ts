@@ -7,7 +7,7 @@ import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/const
 import { isTissueIdDescendantOfAncestorTissueId } from "src/views/CellGuide/common/utils";
 import { ALL_TISSUES } from "../constants";
 
-interface ComputationalMarkerGeneTableData {
+export interface ComputationalMarkerGeneTableData {
   symbol: string;
   name: string;
   marker_score: string;
