@@ -1,0 +1,303 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +8ms
+  pw:api <= selectors.setTestIdAttribute succeeded +6ms
+  pw:api <= browserType.launch succeeded +204ms
+  pw:api => browser.newContext started +6ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +74ms
+  pw:api   "commit" event fired +17ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +18ms
+  pw:api => tracing.start started +11ms
+  pw:api <= tracing.start succeeded +9ms
+  pw:api => browserContext.newPage started +6ms
+  pw:api <= browserContext.newPage succeeded +79ms
+  pw:api => page.waitForResponse started +9ms
+  pw:api => page.goto started +24ms
+  pw:api navigating to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2", waiting until "load" +19ms
+  pw:api   "commit" event fired +206ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +0ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +9ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +46ms
+  pw:api   navigated to "about:blank" +50ms
+  pw:api <= page.goto succeeded +27ms
+  pw:api   "networkidle" event fired +3s
+  pw:api <= page.waitForResponse succeeded +2s
+  pw:api => expect.not.toHaveCount started +23ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +555ms
+  pw:api waiting for locator('canvas') +3ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +29ms
+  pw:api   locator resolved to 0 elements +742ms
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 0 elements +27ms
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 0 elements +130ms
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 0 elements +253ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +510ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +2s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 63 elements +7s
+  pw:api <= expect.not.toHaveCount succeeded +49ms
+  pw:api => page.waitForTimeout started +8ms
+  pw:api <= page.waitForTimeout succeeded +230ms
+  pw:api => expect.not.toHaveCount started +3ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +17ms
+  pw:api waiting for locator('canvas') +3ms
+  pw:api   locator resolved to 63 elements +6ms
+  pw:api <= expect.not.toHaveCount succeeded +14ms
+  pw:api => locator.count started +1ms
+  pw:api <= locator.count succeeded +8ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('cell-type-labels-lung').getByTestId('tissue-name') +12ms
+  pw:api   locator resolved to <div data-testid="tissue-name" class="tissue-name css…>Lung</div> +5ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +17ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +20ms
+  pw:api   click action done +1s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +17s
+  pw:api <= locator.click succeeded +103ms
+  pw:api => locator.count started +1ms
+  pw:api <= locator.count succeeded +13ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +68ms
+  pw:api => locator.allTextContents started +23ms
+  pw:api <= locator.allTextContents succeeded +45ms
+  pw:api => locator.count started +5ms
+  pw:api <= locator.count succeeded +9ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +40ms
+  pw:api => locator.allTextContents started +5ms
+  pw:api <= locator.allTextContents succeeded +43ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('cell-type-labels-blood').getByTestId('tissue-name') +16ms
+  pw:api   locator resolved to <div data-testid="tissue-name" class="tissue-name css…>Blood</div> +9ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +10ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +41ms
+  pw:api   click action done +1s
+  pw:api   waiting for scheduled navigations to finish +3ms
+  pw:api   navigations have finished +21s
+  pw:api <= locator.click succeeded +65ms
+  pw:api => locator.count started +2ms
+  pw:api <= locator.count succeeded +25ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +63ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +54ms
+  pw:api => expect.not.toHaveCount started +7ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +29ms
+  pw:api waiting for locator('canvas') +1ms
+  pw:api   locator resolved to 63 elements +7ms
+  pw:api <= expect.not.toHaveCount succeeded +22ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +54ms
+  pw:api => locator.allTextContents started +7ms
+  pw:api <= locator.allTextContents succeeded +47ms
+  pw:api => locator.click started +4ms
+  pw:api waiting for getByTestId('compare-dropdown') +21ms
+  pw:api   locator resolved to <button tabindex="0" label="None" type="button" data-tes…>…</button> +11ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +9ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +0ms
+  pw:api   performing click action +26ms
+  pw:api   click action done +256ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +131ms
+  pw:api => locator.click started +7ms
+  pw:api waiting for getByRole('option').filter({ hasText: 'Disease' }) +44ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-95-option-1"…>…</li> +63ms
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +20ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +34ms
+  pw:api   click action done +481ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +7ms
+  pw:api <= locator.click succeeded +57ms
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +179ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByText('Loading').first() to be hidden +68ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +97ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +97ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +193ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +165ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +180ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +202ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +559ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +545ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +548ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +571ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +626ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +589ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +568ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +558ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +568ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +558ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +566ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +46s
+  pw:api <= locator.waitFor succeeded +679ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +128ms
+  pw:api => locator.allTextContents started +5ms
+  pw:api <= locator.allTextContents succeeded +139ms
+  pw:api => locator.click started +3ms
+  pw:api waiting for getByTestId('compare-dropdown') +55ms
+  pw:api   locator resolved to <button tabindex="0" type="button" label="Disease" data-…>…</button> +14ms
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +17ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +66ms
+  pw:api   click action done +74ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +65ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByRole('option').filter({ hasText: 'Sex' }) +82ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-96-option-4"…>…</li> +61ms
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +27ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +6ms
+  pw:api   performing click action +86ms
+  pw:api   click action done +802ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +7ms
+  pw:api <= locator.click succeeded +64ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +179ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByText('Loading').first() to be hidden +117ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +95ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +120ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +143ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +172ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +178ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +174ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +572ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +576ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +572ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +563ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +558ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +552ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +579ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +567ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +44s
+  pw:api <= locator.waitFor succeeded +684ms
+  pw:api => locator.allTextContents started +3ms
+  pw:api <= locator.allTextContents succeeded +127ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +120ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('compare-dropdown') +47ms
+  pw:api   locator resolved to <button label="Sex" tabindex="0" type="button" data-test…>…</button> +16ms
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +17ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +53ms
+  pw:api   click action done +99ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +88ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByRole('option').filter({ hasText: 'Ethnicity' }) +76ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-97-option-2"…>…</li> +67ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +12ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +63ms
+  pw:api   click action done +792ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +5ms
+  pw:api <= locator.click succeeded +117ms
+  pw:api => keyboard.press started +5ms
+  pw:api <= keyboard.press succeeded +178ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByText('Loading').first() to be hidden +76ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +121ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +112ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +127ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +148ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +167ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +148ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +566ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +566ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +553ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +545ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +561ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +573ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +561ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +551ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +548ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +553ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +573ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +575ms
+  pw:api   locator resolved to visible <span class="css-ypvms2">Loading</span> +60s
+  pw:api <= locator.waitFor succeeded +713ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +164ms
+  pw:api => locator.allTextContents started +5ms
+  pw:api <= locator.allTextContents succeeded +177ms
+  pw:api => locator.click started +5ms
+  pw:api waiting for getByTestId('compare-dropdown') +70ms
+  pw:api   locator resolved to <button tabindex="0" type="button" label="Ethnicity" dat…>…</button> +16ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +9ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +70ms
+  pw:api   click action done +80ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +17ms
+  pw:api <= locator.click succeeded +112ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByRole('option').filter({ hasText: 'None' }) +127ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-98-option-0"…>…</li> +72ms
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +17ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +74ms
+  pw:api   click action done +24s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +7ms
+  pw:api <= locator.click succeeded +83ms
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +63ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +88ms
+  pw:api => locator.allTextContents started +4ms
+  pw:api <= locator.allTextContents succeeded +62ms
+  pw:api taking page screenshot +20ms
