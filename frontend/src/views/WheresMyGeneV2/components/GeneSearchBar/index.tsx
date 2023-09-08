@@ -94,8 +94,10 @@ const ListboxComponent = React.forwardRef<HTMLDivElement, ListboxProps>(
 
 export default function GeneSearchBar({
   className,
+  sidebarWidth,
 }: {
   className?: string;
+  sidebarWidth: number;
 }): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedGenes, selectedOrganismId } = useContext(StateContext);
@@ -198,10 +200,15 @@ export default function GeneSearchBar({
   };
 
   return (
-    <Container {...{ className }}>
+    <Container sidebarWidth={sidebarWidth} {...{ className }}>
       <ActionWrapper>
         <AutocompleteWrapper>
           <Autocomplete
+            /**
+             * (thuang): Use React Portal to avoid z-index issues, causing partial
+             * of the dropdown to be behind the XAxisChart
+             */
+            disablePortal={false}
             value={selectedGeneOptions}
             multiple
             fullWidth

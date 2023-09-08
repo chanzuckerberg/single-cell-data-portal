@@ -1,0 +1,1 @@
+export const GENE_SEARCH_BAR_HEIGHT_PX = 32;

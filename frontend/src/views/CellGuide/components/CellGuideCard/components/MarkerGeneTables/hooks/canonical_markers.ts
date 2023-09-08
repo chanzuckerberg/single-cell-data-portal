@@ -6,7 +6,7 @@ import {
 import { ALL_TISSUES, HOMO_SAPIENS } from "../constants";
 import { isTissueIdDescendantOfAncestorTissueId } from "src/views/CellGuide/common/utils";
 
-interface CanonicalMarkerGeneTableData {
+export interface CanonicalMarkerGeneTableData {
   symbol: string;
   name: string;
   referenceData: {

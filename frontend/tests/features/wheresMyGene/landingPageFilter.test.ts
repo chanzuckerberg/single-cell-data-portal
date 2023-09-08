@@ -7,6 +7,7 @@ import {
   deSelectSecondaryFilterOption,
   goToWMG,
   selectSecondaryFilterOption,
+  waitForHeatmapToRender,
 } from "tests/utils/wmgUtils";
 import { goToPage, tryUntil } from "tests/utils/helpers";
 import {
@@ -15,7 +16,6 @@ import {
   SORT_CELL_TYPES_TOOLTIP_TEXT,
   SORT_GENES_TOOLTIP_TEXT,
 } from "src/views/WheresMyGene/common/constants";
-import { CELL_TYPE_LABELS_ID } from "tests/common/constants";
 
 const SIDE_BAR_TOGGLE_BUTTON_ID = "side-bar-toggle-button";
 
@@ -49,9 +49,7 @@ describe("Left side bar", () => {
     }) => {
       await goToPage(WMG_WITH_SEEDED_GENES.URL, page);
 
-      // (thuang): This expands the first tissue
-      await page.getByTestId(CELL_TYPE_LABELS_ID).first().click();
-
+      await waitForHeatmapToRender(page);
       await tryUntil(
         async () => {
           // check the count of source data displayed before adding a filter

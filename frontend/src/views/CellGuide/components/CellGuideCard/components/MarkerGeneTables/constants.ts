@@ -29,3 +29,6 @@ export const MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID =
   "marker-genes-computational-help-tooltip";
 export const MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID =
   "marker-genes-canonical-help-tooltip";
+
+export const MARKER_GENES_COMPUTATIONAL_BREAKPOINT_PX = 660;
+export const MARKER_GENES_CANONICAL_BREAKPOINT_PX = 420;

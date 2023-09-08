@@ -3,9 +3,13 @@ import { FC } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Logo } from "../Logo";
 
-export const HomepageLink: FC = () => {
+interface Props {
+  homeUrl?: string;
+}
+
+export const HomepageLink: FC<Props> = ({ homeUrl }) => {
   return (
-    <Link href={ROUTES.HOMEPAGE} passHref>
+    <Link href={homeUrl || ROUTES.HOMEPAGE} passHref>
       <a href="passHref">
         <Logo />
       </a>

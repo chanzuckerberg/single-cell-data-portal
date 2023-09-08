@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { Autocomplete } from "@mui/material";
 import { fontBodyXs, fontCapsXxxs } from "@czi-sds/components";
-import { gray500 } from "src/common/theme";
+import { fontWeightSemibold, gray500 } from "src/common/theme";
 
 export const StyledAutocomplete = styled(Autocomplete)`
   height: 32px;
@@ -28,7 +28,7 @@ export const StyledAutocomplete = styled(Autocomplete)`
 
 export const SectionTitle = styled.div`
   ${fontCapsXxxs}
-  font-weight: 600;
+  font-weight: ${fontWeightSemibold};
   margin-bottom: 0px !important;
   cursor: default;
   padding-left: 12px !important;

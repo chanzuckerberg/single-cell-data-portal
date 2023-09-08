@@ -2,26 +2,33 @@ import { expect, Page, test, Locator } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
-import { goToPage, selectNthOption, tryUntil } from "tests/utils/helpers";
+import {
+  expandTissue,
+  goToPage,
+  selectNthOption,
+  tryUntil,
+  waitForLoadingSpinnerToResolve,
+} from "tests/utils/helpers";
 import { TEST_URL } from "../../common/constants";
 import { TISSUE_DENY_LIST } from "../../fixtures/wheresMyGene/tissueRollup";
 import fs from "fs";
 import { parse } from "csv-parse/sync";
 import AdmZip from "adm-zip";
 import {
-  WMG_WITH_SEEDED_TISSUES_AND_GENES,
+  WMG_WITH_SEEDED_GENES,
   conditionallyRunTests,
+  goToWMG,
   goToWMGWithSeededState,
-  searchAndAddGene,
   waitForHeatmapToRender,
 } from "tests/utils/wmgUtils";
 import { getCurrentDate } from "tests/utils/downloadUtils";
+import { searchAndAddGene } from "tests/utils/geneUtils";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
 const GENE_LABELS_ID = "[data-testid^=gene-label-]";
 const CELL_TYPE_LABELS_ID = "cell-type-name";
-const ADD_TISSUE_ID = "add-tissue-btn";
+const TISSUE_LABELS_ID = "tissue-name";
 const ADD_GENE_ID = "add-gene-btn";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
 const SOURCE_DATA_LIST_SELECTOR = `[data-testid="source-data-list"]`;
@@ -66,12 +73,10 @@ const ERROR_NO_TESTID_OR_LOCATOR = "Either testId or locator must be defined";
 const { describe } = test;
 
 describe("Where's My Gene", () => {
-  conditionallyRunTests();
+  conditionallyRunTests({ forceRun: true });
 
   test("renders the getting started UI", async ({ page }) => {
-    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
-
-    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
+    await goToWMG(page);
 
     await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
     await selectFirstOption(page);
@@ -84,6 +89,8 @@ describe("Where's My Gene", () => {
       filtersPanel.getByText("Self-Reported Ethnicity")
     ).toBeTruthy();
     await expect(filtersPanel.getByText("Sex")).toBeTruthy();
+    await expect(filtersPanel.getByText("Publication")).toBeTruthy();
+    await expect(filtersPanel.getByText("Tissue")).toBeTruthy();
 
     // Legend
     const Legend = page.getByTestId("legend-wrapper");
@@ -128,11 +135,12 @@ describe("Where's My Gene", () => {
   });
 
   test("Primary and secondary filter crossfiltering", async ({ page }) => {
-    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+    await goToWMG(page);
+    await waitForLoadingSpinnerToResolve(page);
 
-    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-    const numberOfTissuesBefore = await countLocator(page.getByRole("option"));
-    await page.keyboard.press("Escape");
+    const numberOfTissuesBefore = await countLocator(
+      page.getByTestId(TISSUE_LABELS_ID)
+    );
 
     await clickUntilOptionsShowUp({
       page,
@@ -152,9 +160,12 @@ describe("Where's My Gene", () => {
     await datasetOptions[0].click();
     await page.keyboard.press("Escape");
 
-    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-    const numberOfTissuesAfter = await countLocator(page.getByRole("option"));
-    await page.keyboard.press("Escape");
+    // wait for spinner to disappear, coincides with y-axis update
+    await waitForLoadingSpinnerToResolve(page);
+
+    const numberOfTissuesAfter = await countLocator(
+      page.getByTestId(TISSUE_LABELS_ID)
+    );
 
     await clickUntilOptionsShowUp({
       page,
@@ -183,21 +194,8 @@ describe("Where's My Gene", () => {
     }
   });
 
-  test("Selected tissue and no genes displays cell types", async ({ page }) => {
-    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
-
-    await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-    await selectFirstOption(page);
-
-    await waitForElement(page, CELL_TYPE_LABELS_ID);
-    const numCellTypes = await countLocator(
-      page.getByTestId(CELL_TYPE_LABELS_ID)
-    );
-    expect(numCellTypes).toBeGreaterThan(0);
-  });
-
   test("Source Data", async ({ page }) => {
-    await goToWMGWithSeededState(page);
+    await goToWMG(page);
 
     await clickUntilSidebarShowsUp({ page, testId: SOURCE_DATA_BUTTON_ID });
     await expect(
@@ -242,9 +240,7 @@ describe("Where's My Gene", () => {
     const beforeGeneNames = await getGeneNames(page);
     const beforeCellTypeNames = await getCellTypeNames(page);
 
-    expect(beforeGeneNames.length).toBe(
-      WMG_WITH_SEEDED_TISSUES_AND_GENES.genes.length
-    );
+    expect(beforeGeneNames.length).toBe(WMG_WITH_SEEDED_GENES.genes.length);
 
     // (thuang): Sometimes when API response is slow, we'll not capture all the
     // cell type names, so a sanity check that we expect at least 100 names
@@ -304,7 +300,6 @@ describe("Where's My Gene", () => {
       page,
     }) => {
       await goToWMGWithSeededState(page);
-
       await waitForHeatmapToRender(page);
 
       await tryUntil(
@@ -321,28 +316,30 @@ describe("Where's My Gene", () => {
 
           /**
            * (thuang): Make sure the default y axis is not stratified by checking
-           * that there are no 2 spaces in the cell type names for indentation
+           * that there are no 4 spaces in the cell type names for indentation
            */
           expect(
-            beforeCellTypeNames.find((name) => name.includes("  "))
+            beforeCellTypeNames.find((name) => name.includes("    "))
           ).toBeFalsy();
         },
         { page }
       );
 
       // Check all 3 Compare options work
+      // Wait for loading spinner to disappear before checking (compare data is slow to load)
       await clickDropdownOptionByName({
         name: "Disease",
         page,
         testId: COMPARE_DROPDOWN_ID,
       });
 
+      await waitForLoadingSpinnerToResolve(page);
+
       await tryUntil(
         async () => {
           const afterCellTypeNames = await getCellTypeNames(page);
-
           expect(
-            afterCellTypeNames.find((name) => name.includes("  normal"))
+            afterCellTypeNames.find((name) => name.includes("    normal"))
           ).toBeTruthy();
         },
         { page }
@@ -354,12 +351,14 @@ describe("Where's My Gene", () => {
         testId: COMPARE_DROPDOWN_ID,
       });
 
+      await waitForLoadingSpinnerToResolve(page);
+
       await tryUntil(
         async () => {
           const afterCellTypeNames = await getCellTypeNames(page);
 
           expect(
-            afterCellTypeNames.find((name) => name.includes("  female"))
+            afterCellTypeNames.find((name) => name.includes("    female"))
           ).toBeTruthy();
         },
         { page }
@@ -371,12 +370,14 @@ describe("Where's My Gene", () => {
         testId: COMPARE_DROPDOWN_ID,
       });
 
+      await waitForLoadingSpinnerToResolve(page);
+
       await tryUntil(
         async () => {
           const afterCellTypeNames = await getCellTypeNames(page);
 
           expect(
-            afterCellTypeNames.find((name) => name.includes("  multiethnic"))
+            afterCellTypeNames.find((name) => name.includes("    multiethnic"))
           ).toBeTruthy();
         },
         { page }
@@ -392,7 +393,7 @@ describe("Where's My Gene", () => {
       await tryUntil(
         async () => {
           expect(
-            (await getCellTypeNames(page)).find((name) => name.includes("  "))
+            (await getCellTypeNames(page)).find((name) => name.includes("    "))
           ).toBeFalsy();
         },
         { page }
@@ -404,13 +405,9 @@ describe("Where's My Gene", () => {
     test("Marker gene panel opens and can add genes to dotplot", async ({
       page,
     }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+      await goToWMG(page);
 
-      await clickDropdownOptionByName({
-        page,
-        testId: ADD_TISSUE_ID,
-        name: "lung",
-      });
+      await expandTissue(page, "lung");
 
       await getCellTypeFmgButtonAndClick(page, "memory B cell");
 
@@ -426,13 +423,9 @@ describe("Where's My Gene", () => {
     test("Cell types with no marker genes display warning", async ({
       page,
     }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+      await goToWMG(page);
 
-      await clickDropdownOptionByName({
-        page,
-        testId: ADD_TISSUE_ID,
-        name: "heart",
-      });
+      await expandTissue(page, "heart");
 
       await getCellTypeFmgButtonAndClick(page, "dendritic cell");
 
@@ -442,13 +435,9 @@ describe("Where's My Gene", () => {
     test(`Marker scores are always greater than or equal to ${FMG_GENE_STRENGTH_THRESHOLD}`, async ({
       page,
     }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+      await goToWMG(page);
 
-      await clickDropdownOptionByName({
-        page,
-        testId: ADD_TISSUE_ID,
-        name: "lung",
-      });
+      await expandTissue(page, "lung");
 
       await getCellTypeFmgButtonAndClick(page, "club cell");
 
@@ -468,11 +457,6 @@ describe("Where's My Gene", () => {
     const TEST_GENE = "DMP1";
 
     test("Display gene info panel in sidebar", async ({ page }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
-
-      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-      await selectFirstNOptions(1, page);
-
       await searchAndAddGene(page, TEST_GENE);
 
       await waitForHeatmapToRender(page);
@@ -495,15 +479,9 @@ describe("Where's My Gene", () => {
     test("Display gene info bottom drawer in cell info sidebar", async ({
       page,
     }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
-
-      await clickDropdownOptionByName({
-        page,
-        testId: ADD_TISSUE_ID,
-        name: "lung",
-      });
-
       await searchAndAddGene(page, TEST_GENE);
+
+      await expandTissue(page, "lung");
 
       await waitForHeatmapToRender(page);
 
@@ -541,19 +519,12 @@ describe("Where's My Gene", () => {
 
   describe("Export CSV ", () => {
     test("Download CSV and validate length - no compare", async ({ page }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
-
+      await goToWMG(page);
       const SELECT_N_GENES = 3;
-
-      // Select tissue
-      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-      await selectFirstOption(page);
 
       // Select gene
       await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
       await selectFirstNOptions(SELECT_N_GENES, page);
-
-      await waitForHeatmapToRender(page);
 
       await clickUntilDownloadModalShowsUp({
         page,
@@ -573,7 +544,9 @@ describe("Where's My Gene", () => {
 
       const fileName = download.suggestedFilename();
 
-      expect(fileName).toBe("blood.csv");
+      expect(fileName).toBe(
+        `CELLxGENE_gene_expression_${getCurrentDate()}.csv`
+      );
 
       const filePath = EXPORT_OUTPUT_DIR + fileName;
 
@@ -590,17 +563,19 @@ describe("Where's My Gene", () => {
 
       // Validate number of rows
       const cellTypes = await getCellTypeNames(page);
-      expect(data.length).toBe(cellTypes.length * SELECT_N_GENES);
+      const tissues = await getTissueNames(page);
+      expect(data.length).toBe(
+        (cellTypes.length + tissues.length) * SELECT_N_GENES
+      );
     });
 
     test("Download CSV and validate length - compare", async ({ page }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+      await goToWMG(page);
 
       const SELECT_N_GENES = 3;
 
-      // Select tissue
-      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-      await selectFirstOption(page);
+      // Expand Tissue
+      await expandTissue(page, "blood");
 
       // Select gene
       await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
@@ -633,7 +608,9 @@ describe("Where's My Gene", () => {
 
       const fileName = download.suggestedFilename();
 
-      expect(fileName).toBe("blood.csv");
+      expect(fileName).toBe(
+        `CELLxGENE_gene_expression_${getCurrentDate()}.csv`
+      );
 
       const filePath = EXPORT_OUTPUT_DIR + fileName;
 
@@ -650,7 +627,10 @@ describe("Where's My Gene", () => {
 
       // Validate number of rows
       const cellTypes = await getCellTypeNames(page);
-      expect(data.length).toBe(cellTypes.length * SELECT_N_GENES);
+      const tissues = await getTissueNames(page);
+      expect(data.length).toBe(
+        (cellTypes.length + tissues.length) * SELECT_N_GENES
+      );
     });
   });
 
@@ -658,10 +638,9 @@ describe("Where's My Gene", () => {
     test("Download zip of all outputs (png,svg,csv) for one tissue", async ({
       page,
     }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+      await goToWMG(page);
 
-      await clickUntilOptionsShowUp({ page, testId: ADD_TISSUE_ID });
-      await selectFirstOption(page);
+      await expandTissue(page, "blood");
 
       await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
       await selectFirstOption(page);
@@ -696,7 +675,11 @@ describe("Where's My Gene", () => {
 
       const zipEntries = zip.getEntries();
 
-      const files = ["blood.csv", "blood.png", "blood.svg"];
+      const files = [
+        `CELLxGENE_gene_expression_${getCurrentDate()}.csv`,
+        `CELLxGENE_gene_expression_${getCurrentDate()}.png`,
+        `CELLxGENE_gene_expression_${getCurrentDate()}.svg`,
+      ];
 
       expect(zipEntries.length).toBe(files.length);
 
@@ -744,10 +727,8 @@ describe("Where's My Gene", () => {
 
       const files = [
         `CELLxGENE_gene_expression_${getCurrentDate()}.csv`,
-        "blood.png",
-        "blood.svg",
-        "lung.png",
-        "lung.svg",
+        `CELLxGENE_gene_expression_${getCurrentDate()}.png`,
+        `CELLxGENE_gene_expression_${getCurrentDate()}.svg`,
       ];
 
       expect(zipEntries.length).toBe(files.length);
@@ -770,7 +751,7 @@ describe("Where's My Gene", () => {
       "Please provide a valid email address.";
 
     test("Newsletter Modal - Open/Close", async ({ page }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+      await goToWMG(page);
 
       // Open modal
       await getButtonAndClick(page, NEWSLETTER_MODAL_OPEN_BUTTON);
@@ -797,7 +778,7 @@ describe("Where's My Gene", () => {
     });
 
     test("Newsletter Modal - Validate Email", async ({ page }) => {
-      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+      await goToWMG(page);
 
       // Open modal
       await getButtonAndClick(page, NEWSLETTER_MODAL_OPEN_BUTTON);
@@ -853,9 +834,7 @@ describe("Where's My Gene", () => {
 
       // Genes before clear
       const beforeGeneNames = await getGeneNames(page);
-      expect(beforeGeneNames.length).toBe(
-        WMG_WITH_SEEDED_TISSUES_AND_GENES.genes.length
-      );
+      expect(beforeGeneNames.length).toBe(WMG_WITH_SEEDED_GENES.genes.length);
 
       // Click clear all button
       await page.getByTestId(CLEAR_GENES_BUTTON_ID).click();
@@ -1065,6 +1044,10 @@ async function getGeneNames(page: Page) {
 
 async function getCellTypeNames(page: Page) {
   return getNames({ page, testId: CELL_TYPE_LABELS_ID });
+}
+
+async function getTissueNames(page: Page) {
+  return getNames({ page, testId: TISSUE_LABELS_ID });
 }
 
 // (alec) use this instead of locator.count() to make sure that the element is actually present

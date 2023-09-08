@@ -58,7 +58,6 @@ class DatasetData:
 
 
 class BaseTest(unittest.TestCase):
-
     business_logic: BusinessLogic
     crossref_provider: CrossrefProviderInterface  # Can be mocked from the tests
     uri_provider: UriProviderInterface
@@ -125,6 +124,7 @@ class BaseTest(unittest.TestCase):
             ],
             cell_type=[OntologyTermId(label="test_cell_type_label", ontology_term_id="test_cell_type_term_id")],
             cell_count=10,
+            primary_cell_count=5,
             schema_version="3.0.0",
             mean_genes_per_cell=0.5,
             batch_condition=["test_batch_1", "test_batch_2"],
@@ -180,7 +180,6 @@ class BaseTest(unittest.TestCase):
         collection = self.business_logic.create_collection(owner, curator_name, metadata)
 
         for _ in range(add_datasets):
-
             metadata = copy.deepcopy(self.sample_dataset_metadata)
             metadata.schema_version = dataset_schema_version
             # TODO: generate a real dataset, with artifact and processing status
