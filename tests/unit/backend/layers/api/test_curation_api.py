@@ -707,6 +707,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 "x_approximate_distribution": "NORMAL",
             }
         )
+        del expect_dataset["primary_cell_count"]  # not used for any APIs
         expected_body = asdict(collection_version.metadata)
         expected_body.update(
             **{
