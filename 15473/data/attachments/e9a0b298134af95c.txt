@@ -1,0 +1,261 @@
+  pw:api => selectors.setTestIdAttribute started +634ms
+  pw:api => browser.newContext started +4ms
+  pw:api <= selectors.setTestIdAttribute succeeded +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +48ms
+  pw:api   "commit" event fired +17ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +12ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +61ms
+  pw:api => page.waitForResponse started +2ms
+  pw:api => page.goto started +10ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +9ms
+  pw:api   "commit" event fired +201ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +20s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +37ms
+  pw:api   navigated to "about:blank" +57ms
+  pw:api <= page.goto succeeded +35ms
+  pw:api   "networkidle" event fired +2s
+  pw:api <= page.waitForResponse succeeded +456ms
+  pw:api => locator.type started +2ms
+  pw:api waiting for getByPlaceholder('Add Genes') +40ms
+  pw:api   locator resolved to <input value="" id="mui-7" type="search" role="combobox…/> +265ms
+  pw:api elementHandle.type("DMP1") +42ms
+  pw:api <= locator.type succeeded +2s
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByText('DMP1') +477ms
+  pw:api   locator resolved to <div class="css-1iyoj2o">DMP1</div> +28ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +21ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +3ms
+  pw:api   performing click action +25ms
+  pw:api   click action done +665ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +31ms
+  pw:api <= locator.click succeeded +93ms
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +163ms
+  pw:api => locator.count started +1ms
+  pw:api <= locator.count succeeded +31ms
+  pw:api => locator.click started +6ms
+  pw:api waiting for getByTestId('cell-type-labels-lung').getByTestId('tissue-name') +53ms
+  pw:api   locator resolved to <div data-testid="tissue-name" class="tissue-name css…>Lung</div> +22ms
+  pw:api attempting click action +23ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +65ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +57ms
+  pw:api   click action done +890ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +79ms
+  pw:api <= locator.click succeeded +110ms
+  pw:api => locator.count started +1ms
+  pw:api <= locator.count succeeded +34ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +138ms
+  pw:api => locator.allTextContents started +5ms
+  pw:api <= locator.allTextContents succeeded +143ms
+  pw:api => expect.not.toHaveCount started +16ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +66ms
+  pw:api waiting for locator('canvas') +1ms
+  pw:api   locator resolved to 0 elements +44ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +17ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +118ms
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 0 elements +264ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +514ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +2s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 30 elements +8s
+  pw:api <= expect.not.toHaveCount succeeded +31ms
+  pw:api => page.waitForTimeout started +7ms
+  pw:api <= page.waitForTimeout succeeded +246ms
+  pw:api => expect.not.toHaveCount started +11ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +21ms
+  pw:api waiting for locator('canvas') +1ms
+  pw:api   locator resolved to 30 elements +6ms
+  pw:api <= expect.not.toHaveCount succeeded +36ms
+  pw:api => locator.hover started +1ms
+  pw:api waiting for getByTestId('gene-name-DMP1') +26ms
+  pw:api   locator resolved to <span data-testid="gene-name-DMP1" class="gene-name-DM…>DMP1</span> +7ms
+  pw:api attempting hover action +2ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +16ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing hover action +31ms
+  pw:api   hover action done +33ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.hover succeeded +28ms
+  pw:api => expect.not.toHaveCount started +5ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +21ms
+  pw:api waiting for locator('canvas') +0ms
+  pw:api   locator resolved to 30 elements +11ms
+  pw:api <= expect.not.toHaveCount succeeded +18ms
+  pw:api => expect.not.toHaveCount started +3ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +19ms
+  pw:api waiting for getByTestId('cell-type-name') +0ms
+  pw:api   locator resolved to 161 elements +8ms
+  pw:api <= expect.not.toHaveCount succeeded +25ms
+  pw:api => locator.click started +3ms
+  pw:api waiting for getByRole('img', { name: 'display marker genes for muscle cell' }) +22ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="fixed" data-testid="…/> +28ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +22ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +40ms
+  pw:api   click action done +412ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +5ms
+  pw:api <= locator.click succeeded +42ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api <= locator.elementHandles succeeded +16ms
+  pw:api => page.waitForTimeout started +1ms
+  pw:api <= page.waitForTimeout succeeded +242ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +9ms
+  pw:api => page.waitForTimeout started +1ms
+  pw:api <= page.waitForTimeout succeeded +240ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +18ms
+  pw:api => page.waitForTimeout started +0ms
+  pw:api <= page.waitForTimeout succeeded +238ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +9ms
+  pw:api => page.waitForTimeout started +2ms
+  pw:api <= page.waitForTimeout succeeded +240ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +13ms
+  pw:api => page.waitForTimeout started +1ms
+  pw:api <= page.waitForTimeout succeeded +240ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +11ms
+  pw:api => page.waitForTimeout started +2ms
+  pw:api <= page.waitForTimeout succeeded +344ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api <= locator.elementHandles succeeded +103ms
+  pw:api => elementHandle.click started +1ms
+  pw:api attempting click action +21ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +22ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +34ms
+  pw:api   click action done +472ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +12ms
+  pw:api <= elementHandle.click succeeded +43ms
+  pw:api => expect.not.toHaveCount started +2ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +19ms
+  pw:api waiting for getByTestId('gene-info-header') +1ms
+  pw:api   locator resolved to 0 elements +11ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +5ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 1 element +106ms
+  pw:api <= expect.not.toHaveCount succeeded +22ms
+  pw:api => expect.not.toHaveCount started +4ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +21ms
+  pw:api waiting for getByTestId('gene-info-gene-synonyms') +0ms
+  pw:api   locator resolved to 1 element +8ms
+  pw:api <= expect.not.toHaveCount succeeded +16ms
+  pw:api => expect.not.toHaveCount started +3ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +61ms
+  pw:api waiting for getByTestId('gene-info-ncbi-link') +1ms
+  pw:api   locator resolved to 1 element +7ms
+  pw:api <= expect.not.toHaveCount succeeded +19ms
+  pw:api => expect.not.toHaveCount started +3ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +19ms
+  pw:api waiting for getByTestId('gene-info-title-split') +0ms
+  pw:api   locator resolved to 1 element +6ms
+  pw:api <= expect.not.toHaveCount succeeded +16ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('gene-info-close-button-split') +19ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="gene-inf…>…</button> +7ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +8ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +20ms
+  pw:api   click action done +408ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +42ms
+  pw:api => expect.toHaveCount started +2ms
+  pw:api expect.toHaveCount with timeout 10000ms +18ms
+  pw:api waiting for getByTestId('gene-info-title-split') +1ms
+  pw:api   locator resolved to 0 elements +5ms
+  pw:api <= expect.toHaveCount succeeded +16ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('right-sidebar-close-button') +16ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="right-si…>…</button> +6ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +8ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +27ms
+  pw:api   click action done +361ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +21ms
+  pw:api => expect.toHaveCount started +3ms
+  pw:api expect.toHaveCount with timeout 10000ms +20ms
+  pw:api waiting for getByTestId('right-sidebar-title') +0ms
+  pw:api   locator resolved to 0 elements +6ms
+  pw:api <= expect.toHaveCount succeeded +15ms
+  pw:api => locator.hover started +1ms
+  pw:api waiting for getByTestId('gene-name-DMP1') +32ms
+  pw:api   locator resolved to <span data-testid="gene-name-DMP1" class="gene-name-DM…>DMP1</span> +11ms
+  pw:api attempting hover action +1ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +25ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing hover action +40ms
+  pw:api   hover action done +14ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.hover succeeded +36ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +23ms
+  pw:api => elementHandle.click started +1ms
+  pw:api attempting click action +39ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +17ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +37ms
+  pw:api   click action done +483ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +8ms
+  pw:api <= elementHandle.click succeeded +42ms
+  pw:api => expect.not.toHaveCount started +2ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +22ms
+  pw:api waiting for getByTestId('gene-info-header') +0ms
+  pw:api   locator resolved to 1 element +17ms
+  pw:api <= expect.not.toHaveCount succeeded +28ms
+  pw:api => expect.not.toHaveCount started +5ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +19ms
+  pw:api waiting for getByTestId('right-sidebar-title') +0ms
+  pw:api   locator resolved to 1 element +6ms
+  pw:api <= expect.not.toHaveCount succeeded +16ms
+  pw:api taking page screenshot +9ms
