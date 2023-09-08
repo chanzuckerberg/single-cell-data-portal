@@ -92,7 +92,7 @@ if [[ $DEST_ENV == 'rdev' ]]; then
   done
   sem --wait
 else  # i.e., if DEST_ENV != 'rdev'
-  # TODO: Add --delete once we confirm that is no data in the folders
+  # TODO: Add --delete once we confirm that there is no data in the folders
   # that needs to be kept around (buckets are versioned, so we're not in
   # jeopardy of losing anything permanently). This would make the
   # operation more destructive, of course!
