@@ -54,7 +54,6 @@ export const CellGuideView = styled.div<CellGuideViewProps>`
 
 export const CellGuideWrapper = styled.div<CellGuideViewProps>`
   margin: 0 auto 80px;
-  overflow-x: hidden;
   max-width: ${(props) =>
     props.skinnyMode
       ? `${DEFAULT_ONTOLOGY_WIDTH}px`
