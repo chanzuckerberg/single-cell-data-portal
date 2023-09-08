@@ -34,19 +34,21 @@ describe("Homepage", () => {
 
     await isGlobalLayoutWrapperScrollable(page);
   });
-  test("Hero numbers are rendered", async ({ page }) => {
-    const cellsHeroNum = await page
-      .getByTestId(LANDING_PAGE_CELLS_HERO_NUM_ID)
-      .innerText();
-    const cellTypesHeroNum = await page
-      .getByTestId(LANDING_PAGE_CELLTYPES_HERO_NUM_ID)
-      .innerText();
-    const datasetsHeroNum = await page
-      .getByTestId(LANDING_PAGE_DATASETS_HERO_NUM_ID)
-      .innerText();
+  test.only("Hero numbers are rendered", async ({ page }) => {
+    await goToPage(undefined, page);
 
     await tryUntil(
       async () => {
+        const cellsHeroNum = await page
+          .getByTestId(LANDING_PAGE_CELLS_HERO_NUM_ID)
+          .innerText();
+        const cellTypesHeroNum = await page
+          .getByTestId(LANDING_PAGE_CELLTYPES_HERO_NUM_ID)
+          .innerText();
+        const datasetsHeroNum = await page
+          .getByTestId(LANDING_PAGE_DATASETS_HERO_NUM_ID)
+          .innerText();
+
         expect(cellsHeroNum).not.toEqual(LANDING_PAGE_FALLBACK_CELLS_HERO_NUM);
         expect(cellTypesHeroNum).not.toEqual(
           LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM

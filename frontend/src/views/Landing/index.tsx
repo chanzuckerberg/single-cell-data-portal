@@ -29,6 +29,9 @@ import styles from "./index.module.scss";
 import { useViewMode } from "src/common/hooks/useViewMode";
 import { useFetchDatasets } from "src/common/queries/filter";
 import {
+  LANDING_PAGE_CELLS_HERO_NUM_ID,
+  LANDING_PAGE_CELLTYPES_HERO_NUM_ID,
+  LANDING_PAGE_DATASETS_HERO_NUM_ID,
   LANDING_PAGE_FALLBACK_CELLS_HERO_NUM,
   LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM,
   LANDING_PAGE_FALLBACK_DATASETS_HERO_NUM,
@@ -307,15 +310,21 @@ const LandingPage = (): JSX.Element => {
             <div className={styles.heroStatsContainer}>
               <div>
                 <span>unique cells</span>
-                <p>{cellsHeroNum}</p>
+                <p data-testid={LANDING_PAGE_CELLS_HERO_NUM_ID}>
+                  {cellsHeroNum}
+                </p>
               </div>
               <div>
                 <span>datasets</span>
-                <p>{datasetsHeroNum}</p>
+                <p data-testid={LANDING_PAGE_DATASETS_HERO_NUM_ID}>
+                  {datasetsHeroNum}
+                </p>
               </div>
               <div>
                 <span>cell types</span>
-                <p>{cellTypesHeroNum}</p>
+                <p data-testid={LANDING_PAGE_CELLTYPES_HERO_NUM_ID}>
+                  {cellTypesHeroNum}
+                </p>
               </div>
             </div>
           </div>
