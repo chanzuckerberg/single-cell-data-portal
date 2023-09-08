@@ -1,0 +1,105 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +8ms
+  pw:api <= selectors.setTestIdAttribute succeeded +4ms
+  pw:api <= browserType.launch succeeded +158ms
+  pw:api => browser.newContext started +4ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +46ms
+  pw:api   "commit" event fired +18ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +8ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +35ms
+  pw:api => page.waitForLoadState started +18ms
+  pw:api => page.goto started +3ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +9ms
+  pw:api   "commit" event fired +402ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +1ms
+  pw:api   "commit" event fired +3ms
+  pw:api   "networkidle" event fired +3s
+  pw:api <= page.waitForLoadState succeeded +3ms
+  pw:api   "networkidle" event fired +0ms
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +3ms
+  pw:api <= page.goto succeeded +33ms
+  pw:api => locator.waitFor started +3ms
+  pw:api waiting for getByTestId('cell-guide-card-gpt-tooltip-link') to be visible +66ms
+  pw:api   navigated to "about:blank" +30ms
+  pw:api   locator resolved to visible <a data-mui-internal-clone-element="true" data-test…>…</a> +20ms
+  pw:api <= locator.waitFor succeeded +10ms
+  pw:api => locator.isVisible started +2ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-gpt-tooltip-link') +6ms
+  pw:api <= locator.isVisible succeeded +7ms
+  pw:api => locator.hover started +3ms
+  pw:api waiting for getByTestId('cell-guide-card-gpt-tooltip-link') +9ms
+  pw:api   locator resolved to <a data-mui-internal-clone-element="true" data-test…>…</a> +4ms
+  pw:api attempting hover action +2ms
+  pw:api   waiting for element to be visible and stable +2ms
+  pw:api   element is visible and stable +21ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing hover action +21ms
+  pw:api   hover action done +172ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +45ms
+  pw:api <= locator.hover succeeded +1s
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByRole('tooltip') to be visible +147ms
+  pw:api   "networkidle" event fired +501ms
+  pw:api <= locator.waitFor failed +30s
+  pw:api => page.waitForTimeout started +1ms
+  pw:api <= page.waitForTimeout succeeded +238ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByRole('tooltip') to be visible +27ms
+  pw:api <= locator.waitFor failed +30s
+  pw:api => page.waitForTimeout started +1ms
+  pw:api <= page.waitForTimeout succeeded +225ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByRole('tooltip') to be visible +13ms
+  pw:api <= locator.waitFor failed +30s
+  pw:api => page.waitForTimeout started +3ms
+  pw:api <= page.waitForTimeout succeeded +244ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByRole('tooltip') to be visible +34ms
+  pw:api <= locator.waitFor failed +30s
+  pw:api => page.waitForTimeout started +3ms
+  pw:api <= page.waitForTimeout succeeded +231ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByRole('tooltip') to be visible +14ms
+  pw:api <= locator.waitFor failed +30s
+  pw:api => page.waitForTimeout started +1ms
+  pw:api <= page.waitForTimeout succeeded +223ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByRole('tooltip') to be visible +12ms
+  pw:api <= locator.waitFor failed +30s
+  pw:api => page.waitForTimeout started +1ms
+  pw:api <= page.waitForTimeout succeeded +228ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByRole('tooltip') to be visible +15ms
+  pw:api <= locator.waitFor failed +30s
+  pw:api => page.waitForTimeout started +1ms
+  pw:api <= page.waitForTimeout succeeded +224ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByRole('tooltip') to be visible +12ms
+  pw:api <= locator.waitFor failed +30s
+  pw:api => page.waitForTimeout started +2ms
+  pw:api <= page.waitForTimeout succeeded +231ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByRole('tooltip') to be visible +13ms
+  pw:api <= locator.waitFor failed +30s
+  pw:api => page.waitForTimeout started +1ms
+  pw:api <= page.waitForTimeout succeeded +224ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByRole('tooltip') to be visible +12ms
+  pw:api => page.screenshot started +18s
+  pw:api taking page screenshot +18ms
+  pw:api <= page.screenshot succeeded +114ms
+  pw:api <= locator.waitFor failed +300ms
+  pw:api => page.waitForTimeout started +0ms
+  pw:api <= page.waitForTimeout failed +1ms
+  pw:api => video.saveAs started +2m
+  pw:api <= video.saveAs succeeded +21ms
