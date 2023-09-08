@@ -22,6 +22,9 @@ fi
 # Copy WMB cube
 echo "Copying WMG cube snapshot..."
 
+# Note: "--copy-props metadata-directive" copies s3 object metadata, but not tags.
+# We have not granted s3:GetObjectTagging perm to dev AWS account on prod buckets,
+# so this avoids errors. As none of the s3 objects contain tags, this is acceptable.
 AWS_OPTIONS="--copy-props metadata-directive --no-progress"
 S3_COPY_CMD="aws s3 cp $AWS_OPTIONS"
 S3_SYNC_CMD="aws s3 sync $AWS_OPTIONS"
@@ -82,15 +85,11 @@ if [[ $DEST_ENV == 'rdev' ]]; then
     done
   done
   sem --wait
-else
+else  # i.e., if DEST_ENV != 'rdev'
   # TODO: Add --delete once we confirm that is no data in the folders
   # that needs to be kept around (buckets are versioned, so we're not in
   # jeopardy of losing anything permanently). This would make the
   # operation more destructive, of course!
-  #
-  # Note: "--copy-props metadata-directive" copies s3 object metadata, but not tags.
-  # We have not granted s3:GetObjectTagging perm to dev AWS account on prod buckets,
-  # so this avoids errors. As none of the s3 objects contain tags, this is acceptable.
 
   PARALLEL_CMD="parallel --ungroup --jobs 16"  # '--ungroup' permits stdout to stream continuously from all jobs
 
