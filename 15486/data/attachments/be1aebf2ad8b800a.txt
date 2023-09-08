@@ -1,0 +1,169 @@
+  pw:api => selectors.setTestIdAttribute started +5s
+  pw:api => browser.newContext started +4ms
+  pw:api <= selectors.setTestIdAttribute succeeded +22ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +40ms
+  pw:api   "commit" event fired +14ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +13ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +40ms
+  pw:api => page.waitForResponse started +2ms
+  pw:api => page.goto started +7ms
+  pw:api navigating to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2", waiting until "load" +8ms
+  pw:api   "commit" event fired +154ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +9ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +4ms
+  pw:api   navigated to "about:blank" +25ms
+  pw:api <= page.goto succeeded +74ms
+  pw:api   "networkidle" event fired +19s
+  pw:api <= page.waitForResponse succeeded +3s
+  pw:api => expect.not.toHaveCount started +11ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +64ms
+  pw:api waiting for locator('canvas') +1ms
+  pw:api   locator resolved to 0 elements +191ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +195ms
+  pw:api   locator resolved to 0 elements +559ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +129ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +258ms
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 0 elements +505ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 49 elements +5s
+  pw:api <= expect.not.toHaveCount succeeded +1s
+  pw:api => page.waitForTimeout started +9ms
+  pw:api <= page.waitForTimeout succeeded +227ms
+  pw:api => expect.not.toHaveCount started +2ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +9ms
+  pw:api waiting for locator('canvas') +0ms
+  pw:api   locator resolved to 63 elements +3ms
+  pw:api <= expect.not.toHaveCount succeeded +12ms
+  pw:api => locator.count started +1ms
+  pw:api <= locator.count succeeded +5ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-type-labels-lung').getByTestId('tissue-name') +13ms
+  pw:api   locator resolved to <div data-testid="tissue-name" class="tissue-name css…>Lung</div> +9ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +20ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +19ms
+  pw:api   click action done +817ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +13s
+  pw:api <= locator.click succeeded +63ms
+  pw:api => locator.count started +3ms
+  pw:api <= locator.count succeeded +16ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +54ms
+  pw:api => locator.allTextContents started +8ms
+  pw:api <= locator.allTextContents succeeded +55ms
+  pw:api => locator.count started +2ms
+  pw:api <= locator.count succeeded +7ms
+  pw:api => locator.allTextContents started +0ms
+  pw:api <= locator.allTextContents succeeded +38ms
+  pw:api => locator.allTextContents started +3ms
+  pw:api <= locator.allTextContents succeeded +38ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-type-labels-blood').getByTestId('tissue-name') +13ms
+  pw:api   locator resolved to <div data-testid="tissue-name" class="tissue-name css…>Blood</div> +10ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +19ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +28ms
+  pw:api   click action done +798ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +16s
+  pw:api <= locator.click succeeded +84ms
+  pw:api => locator.count started +1ms
+  pw:api <= locator.count succeeded +29ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +46ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +49ms
+  pw:api => expect.not.toHaveCount started +6ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +17ms
+  pw:api waiting for locator('canvas') +2ms
+  pw:api   locator resolved to 63 elements +5ms
+  pw:api <= expect.not.toHaveCount succeeded +26ms
+  pw:api => locator.click started +3ms
+  pw:api waiting for getByTestId('download-button') +19ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="download…>…</button> +6ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +16ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +21ms
+  pw:api   click action done +106ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +86ms
+  pw:api => locator.elementHandle started +1ms
+  pw:api waiting for locator('.bp4-dialog') +64ms
+  pw:api   locator resolved to visible <div role="dialog" aria-labelledby="title-bp-dialog-0…>…</div> +14ms
+  pw:api <= locator.elementHandle succeeded +53ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('svg-checkbox') +73ms
+  pw:api   locator resolved to <span data-testid="svg-checkbox" class="MuiButtonBase-…>…</span> +26ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +43ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +39ms
+  pw:api   click action done +35ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +52ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByTestId('csv-checkbox') +66ms
+  pw:api   locator resolved to <span data-testid="csv-checkbox" class="MuiButtonBase-…>…</span> +8ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +21ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +23ms
+  pw:api   click action done +21ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +22ms
+  pw:api => page.waitForEvent started +3ms
+  pw:api => locator.click started +6ms
+  pw:api waiting for event "download" +6ms
+  pw:api waiting for getByTestId('dialog-download-button') +34ms
+  pw:api   locator resolved to <button tabindex="0" type="button" sdssize="large" data-…>Download</button> +7ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +6ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +25ms
+  pw:api   click action done +18s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +64ms
+  pw:api <= locator.click succeeded +161ms
+  pw:api <= page.waitForEvent succeeded +22s
+  pw:api => download.saveAs started +2ms
+  pw:api <= download.saveAs succeeded +28ms
+  pw:api taking page screenshot +32ms
