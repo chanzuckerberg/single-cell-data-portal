@@ -1,0 +1,145 @@
+  pw:api => selectors.setTestIdAttribute started +5s
+  pw:api => browser.newContext started +4ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +43ms
+  pw:api   "commit" event fired +17ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => tracing.start started +5ms
+  pw:api <= tracing.start succeeded +7ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +57ms
+  pw:api => page.waitForResponse started +2ms
+  pw:api => page.goto started +6ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +23ms
+  pw:api   "commit" event fired +183ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +30ms
+  pw:api   navigated to "about:blank" +14ms
+  pw:api <= page.goto succeeded +111ms
+  pw:api   "networkidle" event fired +18s
+  pw:api <= page.waitForResponse succeeded +5s
+  pw:api => locator.click started +4ms
+  pw:api waiting for getByTestId('newsletter-modal-open-button') +54ms
+  pw:api   locator resolved to <a class="css-le1m4y-StyledLink ecafy0i3" data-test…>Subscribe</a> +253ms
+  pw:api attempting click action +14ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +57ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +6ms
+  pw:api   performing click action +47ms
+  pw:api   click action done +154ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +10ms
+  pw:api <= locator.click succeeded +15ms
+  pw:api => expect.not.toHaveCount started +5ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +7ms
+  pw:api waiting for getByTestId('newsletter-modal-content') +0ms
+  pw:api   locator resolved to 1 element +4ms
+  pw:api <= expect.not.toHaveCount succeeded +38ms
+  pw:api => locator.isDisabled started +2ms
+  pw:api => locator.fill started +3ms
+  pw:api => locator.isEnabled started +14ms
+  pw:api => locator.click started +3ms
+  pw:api waiting for getByTestId('newsletter-subscribe-button') +59ms
+  pw:api waiting for getByTestId('newsletter-email-input') +23ms
+  pw:api waiting for getByTestId('newsletter-subscribe-button') +6ms
+  pw:api waiting for getByTestId('newsletter-subscribe-button') +36ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="submit" name="subsc…>Subscribe</button> +7ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="submit" name="subsc…>Subscribe</button> +17ms
+  pw:api <= locator.isDisabled succeeded +10ms
+  pw:api   locator resolved to <input value="" required="" type="email" id="email-inpu…/> +1ms
+  pw:api <= locator.isEnabled succeeded +8ms
+  pw:api   locator resolved to <button disabled tabindex="-1" type="submit" name="subsc…>Subscribe</button> +1ms
+  pw:api elementHandle.fill("test") +2ms
+  pw:api attempting click action +16ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   waiting for element to be visible, enabled and editable +12ms
+  pw:api     element is not enabled - waiting... +106ms
+  pw:api   element is visible, enabled and editable +30ms
+  pw:api <= locator.fill succeeded +81ms
+  pw:api   element is visible, enabled and stable +55ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +17ms
+  pw:api   click action done +137ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +5ms
+  pw:api <= locator.click succeeded +25ms
+  pw:api => locator.fill started +3ms
+  pw:api => locator.isDisabled started +1ms
+  pw:api => locator.fill started +3ms
+  pw:api => locator.isEnabled started +7ms
+  pw:api => locator.click started +18ms
+  pw:api waiting for getByTestId('newsletter-email-input') +30ms
+  pw:api waiting for getByTestId('newsletter-subscribe-button') +6ms
+  pw:api waiting for getByTestId('newsletter-email-input') +28ms
+  pw:api waiting for getByTestId('newsletter-subscribe-button') +7ms
+  pw:api waiting for getByTestId('newsletter-subscribe-button') +6ms
+  pw:api   locator resolved to <button tabindex="0" type="submit" name="subscribe" data…>Subscribe</button> +9ms
+  pw:api   locator resolved to <button tabindex="0" type="submit" name="subscribe" data…>Subscribe</button> +16ms
+  pw:api   locator resolved to <input required="" type="email" value="test" id="email-…/> +4ms
+  pw:api <= locator.isDisabled succeeded +11ms
+  pw:api   locator resolved to <input required="" type="email" value="test" id="email-…/> +1ms
+  pw:api <= locator.isEnabled succeeded +24ms
+  pw:api   locator resolved to <button tabindex="0" type="submit" name="subscribe" data…>Subscribe</button> +1ms
+  pw:api elementHandle.fill("") +2ms
+  pw:api elementHandle.fill("test@test") +1ms
+  pw:api attempting click action +12ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   waiting for element to be visible, enabled and editable +14ms
+  pw:api   waiting for element to be visible, enabled and editable +18ms
+  pw:api   element is visible, enabled and editable +95ms
+  pw:api   element is visible, enabled and editable +61ms
+  pw:api   element is visible, enabled and stable +63ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api <= locator.fill succeeded +7ms
+  pw:api <= locator.fill succeeded +32ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +39ms
+  pw:api   click action done +90ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +10ms
+  pw:api => locator.fill started +2ms
+  pw:api => locator.isDisabled started +2ms
+  pw:api => locator.fill started +8ms
+  pw:api => locator.isEnabled started +21ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('newsletter-email-input') +11ms
+  pw:api waiting for getByTestId('newsletter-subscribe-button') +8ms
+  pw:api waiting for getByTestId('newsletter-email-input') +20ms
+  pw:api waiting for getByTestId('newsletter-subscribe-button') +5ms
+  pw:api waiting for getByTestId('newsletter-subscribe-button') +5ms
+  pw:api   locator resolved to <button tabindex="0" type="submit" name="subscribe" data…>Subscribe</button> +29ms
+  pw:api   locator resolved to <button tabindex="0" type="submit" name="subscribe" data…>Subscribe</button> +6ms
+  pw:api   locator resolved to <input required="" type="email" id="email-input" value=…/> +1ms
+  pw:api <= locator.isDisabled succeeded +23ms
+  pw:api   locator resolved to <input required="" type="email" id="email-input" value=…/> +7ms
+  pw:api <= locator.isEnabled succeeded +7ms
+  pw:api   locator resolved to <button tabindex="0" type="submit" name="subscribe" data…>Subscribe</button> +9ms
+  pw:api elementHandle.fill("") +1ms
+  pw:api elementHandle.fill("test@test.chanzuckerberg") +19ms
+  pw:api   navigated to "https://forms.hsforms.com/submissions/v3/public/submit/formsnext/multipart/7272273/eb65b811-0451-414d-8304-7b9b6f468ce5" +6ms
+  pw:api attempting click action +8ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   waiting for element to be visible, enabled and editable +11ms
+  pw:api   waiting for element to be visible, enabled and editable +24ms
+  pw:api   element is visible, enabled and editable +122ms
+  pw:api   element is visible, enabled and editable +66ms
+  pw:api   element is visible, enabled and stable +44ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api <= locator.fill succeeded +16ms
+  pw:api   done scrolling +22ms
+  pw:api <= locator.fill succeeded +13ms
+  pw:api   performing click action +26ms
+  pw:api   click action done +27ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +11ms
+  pw:api taking page screenshot +6ms

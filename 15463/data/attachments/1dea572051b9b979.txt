@@ -1,0 +1,90 @@
+  pw:api => selectors.setTestIdAttribute started +238ms
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +36ms
+  pw:api   "commit" event fired +12ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +5ms
+  pw:api <= tracing.start succeeded +1ms
+  pw:api => browserContext.newPage started +2ms
+  pw:api <= browserContext.newPage succeeded +36ms
+  pw:api => page.waitForResponse started +1ms
+  pw:api => page.goto started +5ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +7ms
+  pw:api   "commit" event fired +196ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +8ms
+  pw:api   navigated to "about:blank" +48ms
+  pw:api <= page.goto succeeded +57ms
+  pw:api <= page.waitForResponse succeeded +13s
+  pw:api => locator.click started +7ms
+  pw:api waiting for getByTestId('source-data-button') +32ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="source-d…>…</button> +42ms
+  pw:api attempting click action +7ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +535ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +4ms
+  pw:api   performing click action +68ms
+  pw:api   "networkidle" event fired +87ms
+  pw:api   click action done +200ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +29ms
+  pw:api => locator.elementHandle started +2ms
+  pw:api waiting for locator('.bp4-drawer-header') +115ms
+  pw:api   locator resolved to visible <div class="bp4-drawer-header">…</div> +45ms
+  pw:api <= locator.elementHandle succeeded +41ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api <= locator.elementHandles succeeded +466ms
+  pw:api => mouse.click started +3ms
+  pw:api <= mouse.click succeeded +109ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +6ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('filters-panel').getByTestId('dataset-filter') +47ms
+  pw:api   locator resolved to <div data-testid="dataset-filter" class="e126xv132 cs…>…</div> +8ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +39ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +22ms
+  pw:api   click action done +55ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +3ms
+  pw:api <= locator.click succeeded +18ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +19ms
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +38ms
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +376ms
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +151ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('source-data-button') +24ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="source-d…>…</button> +14ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +48ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +5ms
+  pw:api   performing click action +56ms
+  pw:api   click action done +115ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +26ms
+  pw:api => locator.elementHandle started +0ms
+  pw:api waiting for locator('.bp4-drawer-header') +40ms
+  pw:api   locator resolved to visible <div class="bp4-drawer-header">…</div> +13ms
+  pw:api <= locator.elementHandle succeeded +33ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +558ms
+  pw:api taking page screenshot +18ms
