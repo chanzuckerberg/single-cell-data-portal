@@ -1115,6 +1115,7 @@ function useWMGFiltersQueryRequestBody(
     ethnicities,
     publications,
     sexes,
+    filteredCellTypeIds,
   ]);
 }
 
