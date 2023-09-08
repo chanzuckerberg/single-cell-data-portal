@@ -42,8 +42,10 @@ jobs:
               "tag_resolver": {
                 "method": "sort",
                 "filter": {
-                  "pattern": "sha-(.+)"
+                  "pattern": "sha-(.+)",
+                  "flags": "gu"
                 }
+              }
             }
       - name: Generate tag
         run: |

@@ -116,8 +116,10 @@ jobs:
               "tag_resolver": {
                 "method": "sort",
                 "filter": {
-                  "pattern": "sha-(.+)"
+                  "pattern": "sha-(.+)",
+                  "flags": "gu"
                 }
+              }
             }
       - name: Push Tag with latest prod commit SHA
         uses: rickstaa/action-create-tag@v1
