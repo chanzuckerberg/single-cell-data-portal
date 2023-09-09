@@ -1,0 +1,53 @@
+⚠️  tryUntil error-----------------START
+Timed out 10000ms waiting for expect(received).not.toHaveCount(expected) // deep equality
+
+Expected: not 0
+
+Call log:
+  - expect.not.toHaveCount with timeout 10000ms
+  - waiting for locator('canvas')
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+Cannot read properties of undefined (reading 'click')
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+Cannot read properties of undefined (reading 'click')
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+Cannot read properties of undefined (reading 'click')
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+Cannot read properties of undefined (reading 'click')
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+Cannot read properties of undefined (reading 'click')
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+Cannot read properties of undefined (reading 'click')
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+Cannot read properties of undefined (reading 'click')
+⚠️  tryUntil error-----------------END
