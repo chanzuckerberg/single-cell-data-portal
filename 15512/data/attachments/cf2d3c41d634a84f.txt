@@ -1,0 +1,35 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +4ms
+  pw:api <= browserType.launch succeeded +155ms
+  pw:api => browser.newContext started +4ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +56ms
+  pw:api   "commit" event fired +19ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +0ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +14ms
+  pw:api => tracing.start started +6ms
+  pw:api <= tracing.start succeeded +10ms
+  pw:api => browserContext.newPage started +13ms
+  pw:api <= browserContext.newPage succeeded +41ms
+  pw:api => page.waitForResponse started +7ms
+  pw:api => page.goto started +6ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +14ms
+  pw:api   "commit" event fired +150ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +7ms
+  pw:api   navigated to "about:blank" +24ms
+  pw:api <= page.goto succeeded +62ms
+  pw:api   "networkidle" event fired +2m
+  pw:api => page.screenshot started +3m
+  pw:api taking page screenshot +9ms
+  pw:api <= page.screenshot succeeded +147ms
+  pw:api <= page.waitForResponse failed +196ms
+  pw:api => page.waitForTimeout started +9ms
+  pw:api <= page.waitForTimeout failed +4ms
+  pw:api => video.saveAs started +1m
+  pw:api <= video.saveAs succeeded +7ms
