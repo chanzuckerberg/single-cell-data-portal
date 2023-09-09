@@ -339,7 +339,10 @@ const MarkerGeneTables = ({
     });
 
   const getSymbol = useCallback(
-    (row: ComputationalMarkerGeneTableData | CanonicalMarkerGeneTableData) => (
+    (
+      row: ComputationalMarkerGeneTableData | CanonicalMarkerGeneTableData,
+      showEye = false
+    ) => (
       <NoWrapWrapper isSelected={row.symbol === selectedGene}>
         {row.symbol}{" "}
         <ButtonIcon
@@ -349,14 +352,16 @@ const MarkerGeneTables = ({
           sdsType="secondary"
           onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
         />
-        <ButtonIcon
-          className="hover-button"
-          aria-label={`activate ontology marker gene mode for ${row.symbol}`}
-          sdsIcon="eyeOpen"
-          sdsSize="small"
-          sdsType="secondary"
-          onClick={() => selectGene(row.symbol)}
-        />
+        {showEye && (
+          <ButtonIcon
+            className="hover-button"
+            aria-label={`activate ontology marker gene mode for ${row.symbol}`}
+            sdsIcon="eyeOpen"
+            sdsSize="small"
+            sdsType="secondary"
+            onClick={() => selectGene(row.symbol)}
+          />
+        )}
       </NoWrapWrapper>
     ),
     [selectedGene, setGeneInfoGene, selectGene]
@@ -409,7 +414,7 @@ const MarkerGeneTables = ({
             <StyledCellNumerical> {row.marker_score} </StyledCellNumerical>
           ),
           symbolId: row.symbol,
-          symbol: getSymbol(row),
+          symbol: getSymbol(row, true),
         }))
       : canonicalMarkerGeneTableData.map((row) => ({
           ...row,

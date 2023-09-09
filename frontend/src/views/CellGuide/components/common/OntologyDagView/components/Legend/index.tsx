@@ -1,33 +1,71 @@
-import { backgroundColor } from "../../common/constants";
-import InCorpusLegend from "./components/InCorpusLegend";
-import DescendantsLegend from "./components/DescendantsLegend";
-import HasMarkerGeneLegend from "./components/HasMarkerGeneLegend";
+import {
+  CenterText,
+  FlexColumn,
+  HasDescendants,
+  HasNoDescendants,
+  IsInCorpus,
+  IsNotInCorpus,
+  LegendItem,
+  LegendItemWrapper,
+  LegendWrapper,
+  NoMarkerGene,
+  YesMarkergene,
+} from "./style";
 
 interface LegendProps {
-  width: number;
   selectedGene: string | undefined;
 }
-export default function Legend({ width, selectedGene }: LegendProps) {
+export default function Legend({ selectedGene }: LegendProps) {
+  const descendantsLegendComponent = (
+    <LegendItemWrapper>
+      Descendants
+      <LegendItem>
+        <FlexColumn>
+          <HasDescendants />
+          <CenterText>Yes</CenterText>
+        </FlexColumn>
+        <FlexColumn>
+          <HasNoDescendants />
+          <CenterText>No</CenterText>
+        </FlexColumn>
+      </LegendItem>
+    </LegendItemWrapper>
+  );
+  const corpusLegendComponent = (
+    <LegendItemWrapper>
+      In Corpus
+      <LegendItem>
+        <FlexColumn>
+          <IsInCorpus />
+          <CenterText>Yes</CenterText>
+        </FlexColumn>
+        <FlexColumn>
+          <IsNotInCorpus />
+          <CenterText>No</CenterText>
+        </FlexColumn>
+      </LegendItem>
+    </LegendItemWrapper>
+  );
+  const hasMarkerGeneLegend = (
+    <LegendItemWrapper>
+      {selectedGene} Is Marker
+      <LegendItem>
+        <FlexColumn>
+          <YesMarkergene />
+          <CenterText>Yes</CenterText>
+        </FlexColumn>
+        <FlexColumn>
+          <NoMarkerGene />
+          <CenterText>No</CenterText>
+        </FlexColumn>
+      </LegendItem>
+    </LegendItemWrapper>
+  );
+
   return (
-    <g>
-      <rect
-        x={width - 180}
-        y={-10}
-        width={180}
-        height={60}
-        fill={backgroundColor}
-        rx={4}
-      />
-      {selectedGene ? (
-        <HasMarkerGeneLegend
-          selectedGene={selectedGene}
-          xPos={width - 160}
-          yPos={10}
-        />
-      ) : (
-        <InCorpusLegend xPos={width - 160} yPos={10} />
-      )}
-      <DescendantsLegend xPos={width - 80} yPos={10} />
-    </g>
+    <LegendWrapper>
+      {selectedGene ? hasMarkerGeneLegend : corpusLegendComponent}
+      {descendantsLegendComponent}
+    </LegendWrapper>
   );
 }
