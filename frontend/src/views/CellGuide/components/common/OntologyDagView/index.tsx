@@ -135,9 +135,9 @@ export default function OntologyDagView({
     )
       return null;
     return (
-      markerGenePresence[selectedGene][selectedOrganism][selectedTissue]?.map(
-        (cellType) => `${cellType}__0`
-      ) ?? []
+      markerGenePresence?.[selectedGene]?.[selectedOrganism]?.[
+        selectedTissue
+      ]?.map((cellType) => `${cellType}__0`) ?? []
     );
   }, [
     markerGenePresence,
