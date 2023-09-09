@@ -4,15 +4,17 @@ import {
   primaryColor,
   tertiaryColor,
 } from "../../common/constants";
-import { spacesL } from "src/common/theme";
+import { spacesL, spacesM } from "src/common/theme";
 
 const SQUARE_SIZE = 14;
 export const LegendWrapper = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: right;
   column-gap: ${spacesL}px;
-  padding-right: ${spacesL}px;
+  padding-left: ${spacesL}px;
+  padding-top: ${spacesM}px;
+  position: absolute;
+  z-index: 2;
 `;
 
 export const LegendItemWrapper = styled.div`

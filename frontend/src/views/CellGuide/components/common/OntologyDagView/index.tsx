@@ -32,6 +32,7 @@ import {
   TooltipInPortalStyle,
   StyledSVG,
   StyledButtonIcon,
+  RightAligned,
 } from "./style";
 import { useFullScreen } from "../FullScreenProvider";
 import {
@@ -361,9 +362,7 @@ export default function OntologyDagView({
           <TableTitle>Cell Ontology</TableTitle>
         </TableTitleWrapper>
       )}
-
       <Legend selectedGene={selectedGene} />
-
       {data && initialTreeState ? (
         <Zoom<SVGSVGElement>
           key={centeredNodeCoords ? "centered" : "initial"}
@@ -390,23 +389,26 @@ export default function OntologyDagView({
               isFullScreen={isFullScreen}
               data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER}
             >
-              <FullscreenButton
-                data-testid={
-                  CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON
-                }
-                onClick={isFullScreen ? disableFullScreen : enableFullScreen}
-              >
-                {isFullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-              </FullscreenButton>
-              {selectedGene && (
-                <StyledButtonIcon
-                  aria-label={`deactivate ${selectedGene} marker gene ontology view mode`}
-                  sdsIcon="eyeClosed"
-                  sdsSize="small"
-                  sdsType="secondary"
-                  onClick={() => selectGene && selectGene(selectedGene)}
-                />
-              )}
+              <RightAligned>
+                <FullscreenButton
+                  data-testid={
+                    CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON
+                  }
+                  onClick={isFullScreen ? disableFullScreen : enableFullScreen}
+                >
+                  {isFullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+                </FullscreenButton>
+                {selectedGene && (
+                  <StyledButtonIcon
+                    aria-label={`deactivate ${selectedGene} marker gene ontology view mode`}
+                    sdsIcon="eyeClosed"
+                    sdsSize="small"
+                    sdsType="secondary"
+                    onClick={() => selectGene && selectGene(selectedGene)}
+                  />
+                )}
+              </RightAligned>
+
               {tooltipOpen && (
                 <TooltipInPortal
                   // set this to random so it correctly updates with parent bounds

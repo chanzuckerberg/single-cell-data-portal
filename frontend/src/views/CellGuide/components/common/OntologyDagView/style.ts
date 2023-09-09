@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import { IconButton } from "@mui/material";
 import { ButtonIcon } from "@czi-sds/components";
+import { spacesL } from "src/common/theme";
 
 export const FullscreenButton = styled(IconButton)`
   visibility: hidden;
@@ -14,6 +15,14 @@ interface HoverContainerProps {
   height: number;
   width: number;
 }
+
+export const RightAligned = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-right: ${spacesL}px;
+`;
 
 export const StyledButtonIcon = styled(ButtonIcon)`
   z-index: 1;
