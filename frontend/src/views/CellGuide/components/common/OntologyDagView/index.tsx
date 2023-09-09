@@ -18,6 +18,7 @@ import {
   useCellOntologyTree,
   useCellOntologyTreeStateCellType,
   useCellOntologyTreeStateTissue,
+  useMarkerGenePresenceQuery,
 } from "src/common/queries/cellGuide";
 import {
   TableUnavailableContainer,
@@ -47,33 +48,21 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
   MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
+import {
+  ALL_TISSUES,
+  TISSUE_AGNOSTIC,
+} from "../../CellGuideCard/components/MarkerGeneTables/constants";
 
-interface BaseTreeProps {
+interface TreeProps {
   skinnyMode?: boolean;
   inputWidth: number;
   inputHeight: number;
-}
-
-interface CellTypeIdProps extends BaseTreeProps {
-  cellTypeId: string;
-  tissueId?: never;
-  tissueName?: never;
-}
-
-interface TissueIdProps extends BaseTreeProps {
-  cellTypeId?: never;
+  selectedGene?: string;
+  selectedOrganism?: string;
+  cellTypeId?: string;
   tissueId: string;
   tissueName: string;
 }
-
-// Both cellTypeId and tissueId (with tissueName) are mandatory.
-interface BothCellAndTissueIdProps extends BaseTreeProps {
-  cellTypeId: string;
-  tissueId: string;
-  tissueName: string;
-}
-
-type TreeProps = BothCellAndTissueIdProps | CellTypeIdProps | TissueIdProps;
 
 // This determines the initial Zoom position and scale
 const initialTransformMatrixDefault = {
@@ -91,6 +80,8 @@ export default function OntologyDagView({
   tissueName,
   inputWidth,
   inputHeight,
+  selectedGene,
+  selectedOrganism,
 }: TreeProps) {
   const [width, setWidth] = useState(inputWidth);
   const [height, setHeight] = useState(inputHeight);
@@ -124,6 +115,29 @@ export default function OntologyDagView({
     setWidth(newWidth);
     setHeight(newHeight);
   }, [screenDimensions, isFullScreen, inputWidth, inputHeight]);
+
+  const { data: markerGenePresence, isLoading: isLoadingMarkerGenePresence } =
+    useMarkerGenePresenceQuery();
+
+  const selectedTissue =
+    tissueName === TISSUE_AGNOSTIC ? ALL_TISSUES : tissueName;
+
+  const cellTypesWithMarkerGene = useMemo(() => {
+    if (
+      isLoadingMarkerGenePresence ||
+      !markerGenePresence ||
+      !selectedGene ||
+      !selectedOrganism
+    )
+      return null;
+    return markerGenePresence[selectedGene][selectedOrganism][selectedTissue];
+  }, [
+    markerGenePresence,
+    isLoadingMarkerGenePresence,
+    selectedGene,
+    selectedOrganism,
+    selectedTissue,
+  ]);
 
   // This is used to trigger a re-render of the ontology view
   const [triggerRender, setTriggerRender] = useState(false);

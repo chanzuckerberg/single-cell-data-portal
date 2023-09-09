@@ -81,6 +81,9 @@ export default function CellGuideCard({
   const router = useRouter();
 
   const [pageNavIsOpen, setPageNavIsOpen] = useState(false);
+  const [selectedGene, setSelectedGene] = useState<string | undefined>(
+    undefined
+  );
 
   // Navigation
   const sectionRef0 = React.useRef(null);
@@ -348,6 +351,8 @@ export default function CellGuideCard({
                   tissueId={selectedOrganId}
                   inputWidth={width}
                   inputHeight={DEFAULT_ONTOLOGY_HEIGHT}
+                  selectedOrganism={selectedOrganism.name}
+                  selectedGene={selectedGene}
                 />
               </FullScreenProvider>
             </div>
@@ -364,6 +369,8 @@ export default function CellGuideCard({
               organName={selectedOrgan.name}
               organId={selectedOrganId}
               organismName={selectedOrganism.name}
+              selectedGene={selectedGene}
+              setSelectedGene={setSelectedGene}
             />
 
             {/* Source Data section */}

@@ -35,11 +35,11 @@ def run_cellguide_pipeline():
     # Generate canonical marker genes from ASCT-B (HUBMAP)
     run_canonical_marker_gene_pipeline(output_directory=output_directory)
 
-    # Generate source data for each cell type
-    run_source_collections_pipeline(output_directory=output_directory)
-
     # Generate computational marker genes from the CZI corpus
     run_computational_marker_gene_pipeline(output_directory=output_directory)
+
+    # Generate source data for each cell type
+    run_source_collections_pipeline(output_directory=output_directory)
 
     # Generate ChatGPT descriptions for any new cell ids
     run_gpt_description_pipeline(

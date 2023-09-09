@@ -14,6 +14,7 @@ export enum TYPES {
   CELL_ONTOLOGY_TREE_STATE_TISSUE = "CELL_ONTOLOGY_TREE_STATE_TISSUE",
   TISSUE_METADATA = "TISSUE_METADATA",
   CELLTYPE_METADATA = "CELLTYPE_METADATA",
+  MARKER_GENE_PRESENCE = "MARKER_GENE_PRESENCE",
   GPT_SEO_DESCRIPTION = "GPT_SEO_DESCRIPTION",
   LATEST_SNAPSHOT_IDENTIFIER = "LATEST_SNAPSHOT_IDENTIFIER",
 }
@@ -330,6 +331,27 @@ export const fetchGptSeoDescription = async (
   return await response.json();
 };
 
+/* ========== marker_gene_presence ========== */
+export const USE_MARKER_GENE_PRESENCE_QUERY = {
+  entities: [ENTITIES.CELL_GUIDE_MARKER_GENE_PRESENCE],
+  id: "cell-guide-marker-gene-presence-query",
+};
+
+interface MarkerGenePresenceQueryResponse {
+  [gene: string]: {
+    [organism: string]: {
+      [tissue: string]: string[];
+    };
+  };
+}
+
+export const useMarkerGenePresenceQuery =
+  (): UseQueryResult<MarkerGenePresenceQueryResponse> => {
+    return useCellGuideQuery<MarkerGenePresenceQueryResponse>(
+      TYPES.MARKER_GENE_PRESENCE
+    );
+  };
+
 /* ========== cell_guide_cards ========== */
 export const USE_CELLTYPE_METADATA_QUERY = {
   entities: [ENTITIES.CELL_GUIDE_CELLTYPE_METADATA],
@@ -482,6 +504,10 @@ const QUERY_MAPPING: {
   COMPUTATIONAL_MARKERS: {
     queryKey: USE_COMPUTATIONAL_MARKERS_QUERY,
     urlSuffix: `computational_marker_genes/%s.json`,
+  },
+  MARKER_GENE_PRESENCE: {
+    queryKey: USE_MARKER_GENE_PRESENCE_QUERY,
+    urlSuffix: `computational_marker_genes/marker_gene_presence.json`,
   },
   CANONICAL_MARKERS: {
     queryKey: USE_CANONICAL_MARKERS_QUERY,

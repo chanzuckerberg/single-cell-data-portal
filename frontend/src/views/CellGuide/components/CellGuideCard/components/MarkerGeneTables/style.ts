@@ -12,6 +12,7 @@ import {
   gray500,
   primary400,
   spacesL,
+  spacesS,
 } from "src/common/theme";
 import Link from "../common/Link";
 
@@ -35,8 +36,23 @@ export const ReferenceTooltipWrapper = styled.div`
   display: flex;
   flex-direction: column;
 `;
-export const NoWrapWrapper = styled.span`
+
+interface NoWrapWrapperProps extends CommonThemeProps {
+  isSelected: boolean;
+}
+export const NoWrapWrapper = styled.span<NoWrapWrapperProps>`
   white-space: nowrap;
+  display: flex;
+  column-gap: ${spacesS}px;
+
+  &:hover .hover-button {
+    visibility: visible;
+  }
+
+  .hover-button {
+    visibility: ${(props) => (props.isSelected ? "visible" : "hidden")};
+    transition: visibility 0.3s ease;
+  }
 `;
 
 export const PublicationLinkWrapper = styled.div`

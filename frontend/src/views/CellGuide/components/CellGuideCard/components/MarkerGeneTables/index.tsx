@@ -4,6 +4,7 @@ import React, {
   ReactElement,
   ReactNode,
   SetStateAction,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -174,6 +175,8 @@ interface Props {
   organName: string;
   organId: string;
   organismName: string;
+  selectedGene?: string;
+  setSelectedGene: (gene: string | undefined) => void;
 }
 
 const MarkerGeneTables = ({
@@ -185,6 +188,8 @@ const MarkerGeneTables = ({
   organName,
   organId,
   organismName,
+  selectedGene,
+  setSelectedGene,
 }: Props) => {
   // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(0);
@@ -333,6 +338,34 @@ const MarkerGeneTables = ({
       selectedOrganismLabel: organismName,
     });
 
+  const getSymbol = useCallback(
+    (row: ComputationalMarkerGeneTableData | CanonicalMarkerGeneTableData) => (
+      <NoWrapWrapper isSelected={row.symbol === selectedGene}>
+        {row.symbol}{" "}
+        <ButtonIcon
+          aria-label={`display gene info for ${row.symbol}`}
+          sdsIcon="infoCircle"
+          sdsSize="small"
+          sdsType="secondary"
+          onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
+        />
+        <ButtonIcon
+          className="hover-button"
+          aria-label={`display gene info for ${row.symbol}`}
+          sdsIcon="eyeOpen"
+          sdsSize="small"
+          sdsType="secondary"
+          onClick={() =>
+            row.symbol === selectedGene
+              ? setSelectedGene(undefined)
+              : setSelectedGene(row.symbol)
+          }
+        />
+      </NoWrapWrapper>
+    ),
+    [selectedGene, setGeneInfoGene, setSelectedGene]
+  );
+
   const tableRows: TableRow[] = useMemo(() => {
     const referenceClickHandlerMobileView = (
       row: CanonicalMarkerGeneTableData
@@ -370,20 +403,7 @@ const MarkerGeneTables = ({
         });
       };
     };
-    const getSymbol = (
-      row: ComputationalMarkerGeneTableData | CanonicalMarkerGeneTableData
-    ) => (
-      <NoWrapWrapper>
-        {row.symbol}{" "}
-        <ButtonIcon
-          aria-label={`display gene info for ${row.symbol}`}
-          sdsIcon="infoCircle"
-          sdsSize="small"
-          sdsType="secondary"
-          onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
-        />
-      </NoWrapWrapper>
-    );
+
     return activeTable
       ? computationalMarkerGeneTableData.map((row) => ({
           ...row,
@@ -455,8 +475,8 @@ const MarkerGeneTables = ({
     activeTable,
     canonicalMarkerGeneTableData,
     computationalMarkerGeneTableData,
-    setGeneInfoGene,
     setTooltipContent,
+    getSymbol,
     skinnyMode,
   ]);
 
