@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import { IconButton } from "@mui/material";
+import { ButtonIcon } from "@czi-sds/components";
 
 export const FullscreenButton = styled(IconButton)`
   visibility: hidden;
@@ -13,6 +14,10 @@ interface HoverContainerProps {
   height: number;
   width: number;
 }
+
+export const StyledButtonIcon = styled(ButtonIcon)`
+  z-index: 1;
+`;
 
 export const HoverContainer = styled.div<HoverContainerProps>`
   position: relative;

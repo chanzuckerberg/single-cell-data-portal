@@ -351,7 +351,7 @@ const MarkerGeneTables = ({
         />
         <ButtonIcon
           className="hover-button"
-          aria-label={`display gene info for ${row.symbol}`}
+          aria-label={`activate ontology marker gene mode for ${row.symbol}`}
           sdsIcon="eyeOpen"
           sdsSize="small"
           sdsType="secondary"

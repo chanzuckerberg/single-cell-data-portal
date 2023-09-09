@@ -369,6 +369,7 @@ export default function CellGuideCard({
                   inputHeight={DEFAULT_ONTOLOGY_HEIGHT}
                   selectedOrganism={selectedOrganism.name}
                   selectedGene={selectedGene}
+                  selectGene={selectGene}
                 />
               </FullScreenProvider>
             </div>

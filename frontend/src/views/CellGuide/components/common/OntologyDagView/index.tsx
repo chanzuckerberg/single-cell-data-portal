@@ -31,6 +31,7 @@ import {
   HoverContainer,
   TooltipInPortalStyle,
   StyledSVG,
+  StyledButtonIcon,
 } from "./style";
 import { useFullScreen } from "../FullScreenProvider";
 import {
@@ -53,6 +54,7 @@ import {
   ALL_TISSUES,
   TISSUE_AGNOSTIC,
 } from "../../CellGuideCard/components/MarkerGeneTables/constants";
+import { ButtonIcon } from "@czi-sds/components";
 
 interface TreeProps {
   skinnyMode?: boolean;
@@ -63,6 +65,7 @@ interface TreeProps {
   cellTypeId?: string;
   tissueId: string;
   tissueName: string;
+  selectGene?: (gene: string) => void;
 }
 
 // This determines the initial Zoom position and scale
@@ -82,6 +85,7 @@ export default function OntologyDagView({
   inputWidth,
   inputHeight,
   selectedGene,
+  selectGene,
   selectedOrganism,
 }: TreeProps) {
   const [width, setWidth] = useState(inputWidth);
@@ -390,6 +394,15 @@ export default function OntologyDagView({
               >
                 {isFullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
               </FullscreenButton>
+              {selectedGene && (
+                <StyledButtonIcon
+                  aria-label={`deactivate ${selectedGene} marker gene ontology view mode`}
+                  sdsIcon="eyeClosed"
+                  sdsSize="small"
+                  sdsType="secondary"
+                  onClick={() => selectGene && selectGene(selectedGene)}
+                />
+              )}
               {tooltipOpen && (
                 <TooltipInPortal
                   // set this to random so it correctly updates with parent bounds
