@@ -54,7 +54,6 @@ import {
   ALL_TISSUES,
   TISSUE_AGNOSTIC,
 } from "../../CellGuideCard/components/MarkerGeneTables/constants";
-import { ButtonIcon } from "@czi-sds/components";
 
 interface TreeProps {
   skinnyMode?: boolean;
@@ -461,7 +460,7 @@ export default function OntologyDagView({
                     )}
                   </Tree>
                 </g>
-                <Legend width={width} />
+                <Legend width={width} markerGeneMode={!!selectedGene} />
               </StyledSVG>
             </HoverContainer>
           )}
