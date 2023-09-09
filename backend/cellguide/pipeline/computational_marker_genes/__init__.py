@@ -1,6 +1,7 @@
 import logging
 
 from backend.cellguide.pipeline.computational_marker_genes.computational_markers import MarkerGenesCalculator
+from backend.cellguide.pipeline.computational_marker_genes.constants import MARKER_SCORE_THRESHOLD
 from backend.cellguide.pipeline.constants import COMPUTATIONAL_MARKER_GENES_FOLDERNAME, MARKER_GENE_PRESENCE_FILENAME
 from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
@@ -20,7 +21,8 @@ def run(*, output_directory: str):
     )
     output_json_per_key(marker_genes, f"{output_directory}/{COMPUTATIONAL_MARKER_GENES_FOLDERNAME}")
     output_json(
-        marker_genes, f"{output_directory}/{COMPUTATIONAL_MARKER_GENES_FOLDERNAME}/{MARKER_GENE_PRESENCE_FILENAME}"
+        reformatted_marker_genes,
+        f"{output_directory}/{COMPUTATIONAL_MARKER_GENES_FOLDERNAME}/{MARKER_GENE_PRESENCE_FILENAME}",
     )
 
 
@@ -63,17 +65,18 @@ def get_computational_marker_genes(*, snapshot: WmgSnapshot, ontology_tree: Onto
     reformatted_marker_genes = {}
     for cell_type_id, marker_gene_stats_list in marker_genes.items():
         for marker_gene_stats in marker_gene_stats_list:
-            symbol = marker_gene_stats["symbol"]
-            tissue = marker_gene_stats["groupby_dims"].get("tissue_ontology_term_label", "All Tissues")
-            organism = marker_gene_stats["groupby_dims"]["organism_ontology_term_label"]
+            if marker_gene_stats.marker_score > MARKER_SCORE_THRESHOLD:
+                symbol = marker_gene_stats.symbol
+                tissue = marker_gene_stats.groupby_dims.get("tissue_ontology_term_label", "All Tissues")
+                organism = marker_gene_stats.groupby_dims["organism_ontology_term_label"]
 
-            if symbol not in reformatted_marker_genes:
-                reformatted_marker_genes[symbol] = {}
-            if organism not in reformatted_marker_genes[symbol]:
-                reformatted_marker_genes[symbol][organism] = {}
-            if tissue not in reformatted_marker_genes[symbol][organism]:
-                reformatted_marker_genes[symbol][organism][tissue] = []
-            reformatted_marker_genes[symbol][organism][tissue].append(cell_type_id)
+                if symbol not in reformatted_marker_genes:
+                    reformatted_marker_genes[symbol] = {}
+                if organism not in reformatted_marker_genes[symbol]:
+                    reformatted_marker_genes[symbol][organism] = {}
+                if tissue not in reformatted_marker_genes[symbol][organism]:
+                    reformatted_marker_genes[symbol][organism][tissue] = []
+                reformatted_marker_genes[symbol][organism][tissue].append(cell_type_id)
 
     # make the lists unique in reformatted_marker_genes
     for symbol in reformatted_marker_genes:

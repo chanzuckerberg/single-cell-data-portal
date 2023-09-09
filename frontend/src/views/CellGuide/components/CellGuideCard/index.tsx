@@ -86,11 +86,27 @@ export default function CellGuideCard({
   );
 
   // Navigation
-  const sectionRef0 = React.useRef(null);
-  const sectionRef1 = React.useRef(null);
-  const sectionRef2 = React.useRef(null);
-  const sectionRef3 = React.useRef(null);
+  const sectionRef0 = React.useRef<HTMLDivElement>(null);
+  const sectionRef1 = React.useRef<HTMLDivElement>(null);
+  const sectionRef2 = React.useRef<HTMLDivElement>(null);
+  const sectionRef3 = React.useRef<HTMLDivElement>(null);
 
+  const selectGene = (gene: string) => {
+    if (gene === selectedGene) {
+      setSelectedGene(undefined);
+    } else {
+      setSelectedGene(gene);
+      if (sectionRef1.current) {
+        window.scrollTo({
+          top:
+            sectionRef1.current.getBoundingClientRect().top +
+            window.scrollY -
+            50,
+          behavior: "smooth",
+        });
+      }
+    }
+  };
   const [skinnyMode, setSkinnyMode] = useState<boolean>(false);
 
   const cellGuideSideBar = useMemo(() => {
@@ -370,7 +386,7 @@ export default function CellGuideCard({
               organId={selectedOrganId}
               organismName={selectedOrganism.name}
               selectedGene={selectedGene}
-              setSelectedGene={setSelectedGene}
+              selectGene={selectGene}
             />
 
             {/* Source Data section */}

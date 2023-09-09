@@ -6,6 +6,7 @@ import {
   highlightColor,
   smallSize,
   largeSize,
+  markerGeneModeColor,
 } from "../../../../common/constants";
 import { StyledRect, StyledCircle } from "./style";
 import { CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/views/CellGuide/components/common/OntologyDagView/components/Node/components/RectOrCircle/constants";
@@ -22,6 +23,8 @@ interface RectOrCircleProps {
   ) => void;
   handleMouseOut: () => void;
   animationKey: string;
+  inMarkerGeneMode: boolean;
+  hasMarkerGene: boolean;
 }
 
 export default function RectOrCircle({
@@ -31,6 +34,8 @@ export default function RectOrCircle({
   handleMouseOver,
   handleMouseOut,
   animationKey,
+  inMarkerGeneMode,
+  hasMarkerGene,
 }: RectOrCircleProps) {
   let color = tertiaryColor;
   if (node.n_cells > 0) {
@@ -39,9 +44,16 @@ export default function RectOrCircle({
   if (isTargetNode) {
     color = highlightColor;
   }
+
   const size = node.n_cells === 0 ? smallSize : largeSize;
   if (node.id.startsWith(DUMMY_CHILD)) {
     color = primaryColor;
+  }
+
+  if (inMarkerGeneMode && hasMarkerGene) {
+    color = markerGeneModeColor;
+  } else if (inMarkerGeneMode) {
+    color = tertiaryColor;
   }
 
   const onMouseOver = node.id.startsWith(DUMMY_CHILD)

@@ -176,7 +176,7 @@ interface Props {
   organId: string;
   organismName: string;
   selectedGene?: string;
-  setSelectedGene: (gene: string | undefined) => void;
+  selectGene: (gene: string) => void;
 }
 
 const MarkerGeneTables = ({
@@ -189,7 +189,7 @@ const MarkerGeneTables = ({
   organId,
   organismName,
   selectedGene,
-  setSelectedGene,
+  selectGene,
 }: Props) => {
   // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(0);
@@ -355,15 +355,11 @@ const MarkerGeneTables = ({
           sdsIcon="eyeOpen"
           sdsSize="small"
           sdsType="secondary"
-          onClick={() =>
-            row.symbol === selectedGene
-              ? setSelectedGene(undefined)
-              : setSelectedGene(row.symbol)
-          }
+          onClick={() => selectGene(row.symbol)}
         />
       </NoWrapWrapper>
     ),
-    [selectedGene, setGeneInfoGene, setSelectedGene]
+    [selectedGene, setGeneInfoGene, selectGene]
   );
 
   const tableRows: TableRow[] = useMemo(() => {

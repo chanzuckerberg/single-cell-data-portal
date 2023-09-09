@@ -13,7 +13,10 @@ export default function CellGuideCardSidebar({
   skinnyMode,
   sectionClickHandler,
 }: {
-  items: { elementRef: React.MutableRefObject<null>; title: string }[];
+  items: {
+    elementRef: React.RefObject<HTMLDivElement>;
+    title: string;
+  }[];
   skinnyMode: boolean;
   sectionClickHandler?: () => void;
 }): JSX.Element {

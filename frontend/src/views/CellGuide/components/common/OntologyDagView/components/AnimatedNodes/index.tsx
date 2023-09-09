@@ -25,6 +25,7 @@ interface AnimatedNodesProps {
     };
   }) => void;
   hideTooltip: () => void;
+  cellTypesWithMarkerGenes: string[] | null;
 }
 
 interface AnimationState {
@@ -48,6 +49,7 @@ export default function AnimatedNodes({
   toggleTriggerRender,
   showTooltip,
   hideTooltip,
+  cellTypesWithMarkerGenes,
 }: AnimatedNodesProps) {
   const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For hover event
 
@@ -129,15 +131,18 @@ export default function AnimatedNodes({
         return { opacity: [0], timing: { duration: 0 } };
       }}
     >
-      {(nodes) => renderNodes(nodes)}
+      {(nodes) => renderNodes(nodes, cellTypesWithMarkerGenes)}
     </NodeGroup>
   );
 
-  function renderNode(animatedNode: {
-    key: string;
-    data: HierarchyPointNode<TreeNodeWithState>;
-    state: AnimationState;
-  }) {
+  function renderNode(
+    animatedNode: {
+      key: string;
+      data: HierarchyPointNode<TreeNodeWithState>;
+      state: AnimationState;
+    },
+    cellTypesWithMarkerGenes: string[] | null
+  ) {
     const { key, data: node, state } = animatedNode;
 
     const isInCorpus =
@@ -150,6 +155,7 @@ export default function AnimatedNodes({
         isInCorpus={isInCorpus}
         animationKey={key}
         node={node}
+        cellTypesWithMarkerGenes={cellTypesWithMarkerGenes}
         isTargetNode={cellTypeId === node.data.id.split("__")[0]}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
@@ -196,8 +202,15 @@ export default function AnimatedNodes({
     }
   }
 
-  function renderNodes(nodes: AnimationNode[]) {
-    return <Group>{nodes.map((node) => renderNode(node))}</Group>;
+  function renderNodes(
+    nodes: AnimationNode[],
+    cellTypesWithMarkerGenes: AnimatedNodesProps["cellTypesWithMarkerGenes"]
+  ) {
+    return (
+      <Group>
+        {nodes.map((node) => renderNode(node, cellTypesWithMarkerGenes))}
+      </Group>
+    );
   }
 }
 

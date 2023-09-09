@@ -27,6 +27,7 @@ interface NodeProps {
   animationKey: string;
   maxWidth: number;
   isInCorpus: boolean;
+  cellTypesWithMarkerGenes: string[] | null;
 }
 
 export default function Node({
@@ -41,6 +42,7 @@ export default function Node({
   opacity,
   maxWidth,
   isInCorpus,
+  cellTypesWithMarkerGenes,
 }: NodeProps) {
   const router = useRouter();
 
@@ -51,7 +53,8 @@ export default function Node({
   const textCursor = node.data.id.startsWith("dummy-child")
     ? "pointer"
     : "default";
-
+  const inMarkerGeneMode = !!cellTypesWithMarkerGenes;
+  const hasMarkerGene = !!cellTypesWithMarkerGenes?.includes(node.data.id);
   return (
     <StyledGroup top={top} left={left} key={animationKey} opacity={opacity}>
       {isInCorpus ? (
@@ -94,6 +97,8 @@ export default function Node({
         isTargetNode={isTargetNode}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
+        inMarkerGeneMode={inMarkerGeneMode}
+        hasMarkerGene={hasMarkerGene}
       />
     </StyledGroup>
   );

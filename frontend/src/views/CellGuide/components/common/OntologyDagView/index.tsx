@@ -6,6 +6,7 @@ import { Tree, hierarchy } from "@visx/hierarchy";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import { CellOntologyTreeResponse as TreeNode } from "src/common/queries/cellGuide";
 import {
   TableTitleWrapper,
   TableTitle,
@@ -130,7 +131,9 @@ export default function OntologyDagView({
       !selectedOrganism
     )
       return null;
-    return markerGenePresence[selectedGene][selectedOrganism][selectedTissue];
+    return markerGenePresence[selectedGene][selectedOrganism][
+      selectedTissue
+    ].map((cellType) => `${cellType}__0`);
   }, [
     markerGenePresence,
     isLoadingMarkerGenePresence,
@@ -159,10 +162,32 @@ export default function OntologyDagView({
     tissueId ?? ""
   );
 
+  const parentMap = useMemo(() => {
+    if (!rawTree) return null;
+    const queue: TreeNodeWithState[] = [rawTree];
+    const map = new Map<string, string>();
+    while (queue.length > 0) {
+      const node = queue.pop() as TreeNodeWithState;
+      if (node.children) {
+        for (const child of node.children) {
+          map.set(child.id, node.id);
+          queue.push(child);
+        }
+      }
+    }
+    return map;
+  }, [rawTree]);
+
   const initialTreeState: CellOntologyTreeStateResponse | undefined =
     useMemo(() => {
       let initialTreeState;
-      if (initialTreeStateCell && initialTreeStateTissue) {
+      if (cellTypesWithMarkerGene && parentMap) {
+        initialTreeState = getInitialStateForSelectedGene(
+          rawTree as TreeNode,
+          parentMap,
+          cellTypesWithMarkerGene
+        );
+      } else if (initialTreeStateCell && initialTreeStateTissue) {
         // When both cell and tissue tree states are available, inject the tissue tree counts
         // into the cell tree state.
         initialTreeState = {
@@ -175,7 +200,13 @@ export default function OntologyDagView({
         initialTreeState = initialTreeStateTissue;
       }
       return initialTreeState;
-    }, [initialTreeStateCell, initialTreeStateTissue]);
+    }, [
+      initialTreeStateCell,
+      initialTreeStateTissue,
+      rawTree,
+      parentMap,
+      cellTypesWithMarkerGene,
+    ]);
 
   // Populate the tree data structure nodes with "isExpanded".
   const treeData: TreeNodeWithState | null = useMemo(() => {
@@ -411,6 +442,7 @@ export default function OntologyDagView({
                           toggleTriggerRender={toggleTriggerRender}
                           showTooltip={showTooltip}
                           hideTooltip={hideTooltip}
+                          cellTypesWithMarkerGenes={cellTypesWithMarkerGene}
                         />
                       </Group>
                     )}
@@ -474,4 +506,127 @@ function deleteNodesWithNoDescendantsForTissueCardOntologyView(
       return child.n_cells_rollup !== 0;
     });
   }
+}
+
+function getInitialStateForSelectedGene(
+  rawTree: TreeNodeWithState,
+  parentMap: Map<string, string>,
+  validCellTypes: string[]
+): CellOntologyTreeStateResponse {
+  // first get all the ancestors of each node in validCellTypes
+  const ancestors = new Set<string>();
+  for (const cellType of validCellTypes) {
+    let current: string | undefined = cellType;
+    while (current) {
+      ancestors.add(current);
+      current = parentMap.get(current);
+    }
+  }
+  const validNodes = Array.from(ancestors);
+  const tree: OntologyTree = JSON.parse(JSON.stringify(rawTree));
+
+  truncateGraph(tree, validNodes);
+
+  const isExpandedNodes = Array.from(new Set(getExpandedData(tree)));
+  const notShownWhenExpandedNodes = getShownData(tree);
+
+  let notShownWhenExpanded: ShownData = {};
+  for (const i of notShownWhenExpandedNodes) {
+    notShownWhenExpanded = { ...notShownWhenExpanded, ...i };
+  }
+  return {
+    isExpandedNodes,
+    notShownWhenExpandedNodes: notShownWhenExpanded,
+  };
+}
+
+interface OntologyTree extends TreeNode {
+  invalid_children_ids?: string[];
+  parent?: string;
+}
+
+function filterChildren(
+  graph: OntologyTree,
+  validNodes: string[]
+): OntologyTree[] {
+  const newChildren: OntologyTree[] = [];
+  const invalidChildrenIds: string[] = [];
+
+  for (const child of graph.children ?? []) {
+    if (validNodes.includes(child.id)) {
+      newChildren.push(child);
+    } else {
+      invalidChildrenIds.push(child.id);
+    }
+  }
+
+  if (invalidChildrenIds.length > 0) {
+    newChildren.push({
+      id: "",
+      name: "",
+      n_cells: 0,
+      n_cells_rollup: 0,
+      invalid_children_ids: invalidChildrenIds,
+      parent: graph.id,
+    });
+  }
+
+  return newChildren;
+}
+
+function truncateGraph(graph: OntologyTree, validNodes: string[]): void {
+  const children = filterChildren(graph, validNodes);
+
+  if (children.length === 0) {
+    graph.children = undefined;
+  } else {
+    graph.children = children;
+  }
+
+  for (const child of graph.children ?? []) {
+    if (child.id !== "") {
+      truncateGraph(child, validNodes);
+    }
+  }
+}
+
+function getExpandedData(
+  ontologyGraph: OntologyTree,
+  isExpandedNodes: string[] = []
+): string[] {
+  if (ontologyGraph.children) {
+    isExpandedNodes.push(ontologyGraph.id);
+    for (const child of ontologyGraph.children) {
+      getExpandedData(child, isExpandedNodes);
+    }
+  }
+  return isExpandedNodes;
+}
+
+interface ShownData {
+  [key: string]: string[];
+}
+
+function getShownData(
+  graph: OntologyTree,
+  notShownWhenExpandedNodes: ShownData[] = []
+): ShownData[] {
+  if (graph.children) {
+    for (const child of graph.children) {
+      if (
+        child.id === "" &&
+        child.invalid_children_ids &&
+        child.invalid_children_ids.length > 0
+      ) {
+        notShownWhenExpandedNodes.push({
+          [child.parent as string]: Array.from(
+            new Set(child.invalid_children_ids)
+          ),
+        });
+      } else {
+        getShownData(child, notShownWhenExpandedNodes);
+      }
+    }
+  }
+  return notShownWhenExpandedNodes;
 }
