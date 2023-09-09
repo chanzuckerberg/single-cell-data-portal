@@ -206,6 +206,10 @@ export default function CellGuideCard({
     setGeneInfoGene(null);
   }
 
+  useEffect(() => {
+    setSelectedGene(undefined);
+  }, [selectedOrgan, selectedOrganism, setSelectedGene]);
+
   const title = `${titleizedCellTypeName} Cell Types - CZ CELLxGENE CellGuide`;
   const seoDescription = `Find comprehensive information about "${cellTypeName}" cell types (synonyms: ${
     synonyms?.join(", ") || "N/A"
