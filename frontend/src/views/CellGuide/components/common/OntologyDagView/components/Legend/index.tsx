@@ -5,9 +5,9 @@ import HasMarkerGeneLegend from "./components/HasMarkerGeneLegend";
 
 interface LegendProps {
   width: number;
-  markerGeneMode: boolean;
+  selectedGene: string | undefined;
 }
-export default function Legend({ width, markerGeneMode }: LegendProps) {
+export default function Legend({ width, selectedGene }: LegendProps) {
   return (
     <g>
       <rect
@@ -18,8 +18,12 @@ export default function Legend({ width, markerGeneMode }: LegendProps) {
         fill={backgroundColor}
         rx={4}
       />
-      {markerGeneMode ? (
-        <HasMarkerGeneLegend xPos={width - 160} yPos={10} />
+      {selectedGene ? (
+        <HasMarkerGeneLegend
+          selectedGene={selectedGene}
+          xPos={width - 160}
+          yPos={10}
+        />
       ) : (
         <InCorpusLegend xPos={width - 160} yPos={10} />
       )}

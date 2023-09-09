@@ -134,9 +134,11 @@ export default function OntologyDagView({
       !selectedOrganism
     )
       return null;
-    return markerGenePresence[selectedGene][selectedOrganism][
-      selectedTissue
-    ].map((cellType) => `${cellType}__0`);
+    return (
+      markerGenePresence[selectedGene][selectedOrganism][selectedTissue]?.map(
+        (cellType) => `${cellType}__0`
+      ) ?? []
+    );
   }, [
     markerGenePresence,
     isLoadingMarkerGenePresence,
@@ -460,7 +462,7 @@ export default function OntologyDagView({
                     )}
                   </Tree>
                 </g>
-                <Legend width={width} markerGeneMode={!!selectedGene} />
+                <Legend width={width} selectedGene={selectedGene} />
               </StyledSVG>
             </HoverContainer>
           )}

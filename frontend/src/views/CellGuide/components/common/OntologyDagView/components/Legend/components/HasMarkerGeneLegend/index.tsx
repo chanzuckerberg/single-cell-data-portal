@@ -6,7 +6,14 @@ import {
   markerGeneModeColor,
 } from "../../../../common/constants";
 
-const InCorpusLegend = ({ xPos, yPos }: LegendProps) => {
+interface HasMarkerGeneLegendProps extends LegendProps {
+  selectedGene: string;
+}
+const HasMarkerGeneLegend = ({
+  xPos,
+  yPos,
+  selectedGene,
+}: HasMarkerGeneLegendProps) => {
   return (
     <g>
       <StyledLegendText x={xPos + 2.5} y={yPos + 30}>
@@ -18,8 +25,8 @@ const InCorpusLegend = ({ xPos, yPos }: LegendProps) => {
         fill={markerGeneModeColor}
         r={largeSize}
       />
-      <StyledLegendText x={xPos - 20} y={yPos}>
-        Has Marker Gene
+      <StyledLegendText x={xPos} y={yPos}>
+        {selectedGene}
       </StyledLegendText>
       <StyledLegendText x={xPos + 33} y={yPos + 30}>
         No
@@ -34,4 +41,4 @@ const InCorpusLegend = ({ xPos, yPos }: LegendProps) => {
   );
 };
 
-export default InCorpusLegend;
+export default HasMarkerGeneLegend;
