@@ -44,14 +44,12 @@ export const NoWrapWrapper = styled.span<NoWrapWrapperProps>`
   white-space: nowrap;
   display: flex;
   column-gap: ${spacesS}px;
-
-  &:hover .hover-button {
-    visibility: visible;
-  }
-
   .hover-button {
     visibility: ${(props) => (props.isSelected ? "visible" : "hidden")};
     transition: visibility 0.3s ease;
+  }
+  &:hover .hover-button {
+    visibility: visible;
   }
 `;
 

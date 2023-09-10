@@ -19,6 +19,7 @@ from tests.unit.cellguide_pipeline.constants import (
     CELLTYPE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME,
     COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME,
     ONTOLOGY_GRAPH_FIXTURE_FILENAME,
+    REFORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME,
     SOURCE_COLLECTIONS_FIXTURE_FILENAME,
     TISSUE_METADATA_FIXTURE_FILENAME,
     TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME,
@@ -94,7 +95,9 @@ def run_cellguide_pipeline():
             source_collections = get_source_collections_data(ontology_tree=ontology_tree)
 
         # Get computatoinal marker genes
-        computational_marker_genes = get_computational_marker_genes(snapshot=snapshot, ontology_tree=ontology_tree)
+        computational_marker_genes, reformatted_marker_genes = get_computational_marker_genes(
+            snapshot=snapshot, ontology_tree=ontology_tree
+        )
 
         output_json(
             ontology_tree_data.ontology_graph,
@@ -124,7 +127,10 @@ def run_cellguide_pipeline():
             computational_marker_genes,
             f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}",
         )
-
+        output_json(
+            reformatted_marker_genes,
+            f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{REFORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}",
+        )
         output_json(
             source_collections,
             f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{SOURCE_COLLECTIONS_FIXTURE_FILENAME}",
