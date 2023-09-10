@@ -442,13 +442,15 @@ export default function OntologyDagView({
                   <div data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP}>
                     <b>{tooltipData?.n_cells}</b>
                     {" cells"}
-                    {tissueName ? ` in ${tissueName.toLowerCase()}` : ""}
+                    {tissueName ? ` in ${selectedTissue.toLowerCase()}` : ""}
                     {tooltipData?.n_cells !== tooltipData?.n_cells_rollup && (
                       <>
                         <br />
                         <b>{tooltipData?.n_cells_rollup}</b>
                         {" descendant cells"}
-                        {tissueName ? ` in ${tissueName.toLowerCase()}` : ""}
+                        {tissueName
+                          ? ` in ${selectedTissue.toLowerCase()}`
+                          : ""}
                       </>
                     )}
                     {tooltipData &&
