@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import {
+  highlightColor,
   markerGeneModeColor,
   primaryColor,
   tertiaryColor,
@@ -98,4 +99,11 @@ export const NoMarkerGene = styled.div`
   width: ${SQUARE_SIZE}px;
   height: ${SQUARE_SIZE}px;
   background-color: ${tertiaryColor};
+`;
+
+export const IsTargetNode = styled.div`
+  border-radius: 50%;
+  width: ${SQUARE_SIZE}px;
+  height: ${SQUARE_SIZE}px;
+  background-color: ${highlightColor};
 `;

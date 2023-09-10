@@ -362,7 +362,7 @@ export default function OntologyDagView({
           <TableTitle>Cell Ontology</TableTitle>
         </TableTitleWrapper>
       )}
-      <Legend selectedGene={selectedGene} />
+      {data && initialTreeState && <Legend selectedGene={selectedGene} />}
       {data && initialTreeState ? (
         <Zoom<SVGSVGElement>
           key={centeredNodeCoords ? "centered" : "initial"}

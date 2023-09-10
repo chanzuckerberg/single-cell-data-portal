@@ -41,21 +41,18 @@ export default function RectOrCircle({
   if (node.n_cells > 0) {
     color = primaryColor;
   }
-  if (isTargetNode) {
-    color = highlightColor;
-  }
-
   const size = node.n_cells === 0 ? smallSize : largeSize;
   if (node.id.startsWith(DUMMY_CHILD)) {
     color = primaryColor;
   }
-
   if (inMarkerGeneMode && hasMarkerGene) {
     color = markerGeneModeColor;
   } else if (inMarkerGeneMode) {
     color = tertiaryColor;
   }
-
+  if (isTargetNode) {
+    color = highlightColor;
+  }
   const onMouseOver = node.id.startsWith(DUMMY_CHILD)
     ? undefined
     : (event: React.MouseEvent<SVGElement>) => {

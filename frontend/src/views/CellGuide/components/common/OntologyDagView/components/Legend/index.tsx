@@ -5,6 +5,7 @@ import {
   HasNoDescendants,
   IsInCorpus,
   IsNotInCorpus,
+  IsTargetNode,
   LegendItem,
   LegendItemWrapper,
   LegendWrapper,
@@ -16,6 +17,12 @@ interface LegendProps {
   selectedGene: string | undefined;
 }
 export default function Legend({ selectedGene }: LegendProps) {
+  const targetNodeLegendComponent = (
+    <LegendItemWrapper>
+      Current
+      <IsTargetNode />
+    </LegendItemWrapper>
+  );
   const descendantsLegendComponent = (
     <LegendItemWrapper>
       Descendants
@@ -64,6 +71,7 @@ export default function Legend({ selectedGene }: LegendProps) {
 
   return (
     <LegendWrapper>
+      {targetNodeLegendComponent}
       {selectedGene ? hasMarkerGeneLegend : corpusLegendComponent}
       {descendantsLegendComponent}
     </LegendWrapper>
