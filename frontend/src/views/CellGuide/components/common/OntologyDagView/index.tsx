@@ -458,7 +458,7 @@ export default function OntologyDagView({
                         <>
                           <br />
                           <br />
-                          <b>Marker gene stats</b>
+                          <b>{selectedGene} stats</b>
                           <br />
                           {"Marker score: "}
                           <b>{tooltipData.marker_score.toFixed(2)}</b>
