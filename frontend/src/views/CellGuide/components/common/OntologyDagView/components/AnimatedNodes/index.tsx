@@ -22,10 +22,20 @@ interface AnimatedNodesProps {
     tooltipData: {
       n_cells: number;
       n_cells_rollup: number;
+      marker_score?: number;
+      me?: number;
+      pc?: number;
     };
   }) => void;
   hideTooltip: () => void;
   cellTypesWithMarkerGenes: string[] | null;
+  cellTypesWithMarkerGeneStats: {
+    [cellTypeId: string]: {
+      me: number;
+      pc: number;
+      marker_score: number;
+    };
+  } | null;
 }
 
 interface AnimationState {
@@ -50,6 +60,7 @@ export default function AnimatedNodes({
   showTooltip,
   hideTooltip,
   cellTypesWithMarkerGenes,
+  cellTypesWithMarkerGeneStats,
 }: AnimatedNodesProps) {
   const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For hover event
 
@@ -77,12 +88,19 @@ export default function AnimatedNodes({
     ) {
       const coords = localPoint(event.target.ownerSVGElement, event);
       if (coords) {
+        const marker_score =
+          cellTypesWithMarkerGeneStats?.[datum.id]?.marker_score;
+        const me = cellTypesWithMarkerGeneStats?.[datum.id]?.me;
+        const pc = cellTypesWithMarkerGeneStats?.[datum.id]?.pc;
         showTooltip({
           tooltipLeft: coords.x,
           tooltipTop: coords.y,
           tooltipData: {
             n_cells: datum.n_cells,
             n_cells_rollup: datum.n_cells_rollup,
+            marker_score,
+            me,
+            pc,
           },
         });
       }

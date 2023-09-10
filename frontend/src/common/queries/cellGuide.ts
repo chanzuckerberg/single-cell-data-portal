@@ -1,3 +1,4 @@
+import pako from "pako";
 import { useMemo, useEffect, useState } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
@@ -64,13 +65,20 @@ async function fetchQuery({
   if (response.headers.get("Content-Length") === "0") {
     return undefined;
   }
-  const json: CellGuideResponse = await response.json();
 
-  if (!response.ok) {
-    throw json;
+  // need to include access-controle-expose-headers in the response header
+  // to use Content-Encoding. For now, check if file ends with .gz.
+  if (url.endsWith(".gz")) {
+    const arrayBuffer = await response.arrayBuffer();
+    const decompressedData = pako.inflate(new Uint8Array(arrayBuffer), {
+      to: "string",
+    });
+    const json: CellGuideResponse = JSON.parse(decompressedData);
+    return json;
+  } else {
+    const json: CellGuideResponse = await response.json();
+    return json;
   }
-
-  return json;
 }
 
 /**
@@ -340,7 +348,12 @@ export const USE_MARKER_GENE_PRESENCE_QUERY = {
 interface MarkerGenePresenceQueryResponse {
   [gene: string]: {
     [organism: string]: {
-      [tissue: string]: string[];
+      [tissue: string]: {
+        me: number;
+        pc: number;
+        marker_score: number;
+        cell_type_id: string;
+      }[];
     };
   };
 }
@@ -507,7 +520,7 @@ const QUERY_MAPPING: {
   },
   MARKER_GENE_PRESENCE: {
     queryKey: USE_MARKER_GENE_PRESENCE_QUERY,
-    urlSuffix: `computational_marker_genes/marker_gene_presence.json`,
+    urlSuffix: `computational_marker_genes/marker_gene_presence.json.gz`,
   },
   CANONICAL_MARKERS: {
     queryKey: USE_CANONICAL_MARKERS_QUERY,

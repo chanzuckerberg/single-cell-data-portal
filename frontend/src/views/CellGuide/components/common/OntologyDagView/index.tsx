@@ -127,7 +127,13 @@ export default function OntologyDagView({
   const selectedTissue =
     tissueName === TISSUE_AGNOSTIC ? ALL_TISSUES : tissueName;
 
-  const cellTypesWithMarkerGene = useMemo(() => {
+  const cellTypesWithMarkerGeneStats: {
+    [cellTypeId: string]: {
+      me: number;
+      pc: number;
+      marker_score: number;
+    };
+  } | null = useMemo(() => {
     if (
       isLoadingMarkerGenePresence ||
       !markerGenePresence ||
@@ -138,7 +144,13 @@ export default function OntologyDagView({
     return (
       markerGenePresence?.[selectedGene]?.[selectedOrganism]?.[
         selectedTissue
-      ]?.map((cellType) => `${cellType}__0`) ?? []
+      ]?.reduce((acc, markerGeneStats) => {
+        const { cell_type_id, ...rest } = markerGeneStats;
+        return {
+          ...acc,
+          [`${cell_type_id}__0`]: rest,
+        };
+      }, {}) ?? {}
     );
   }, [
     markerGenePresence,
@@ -147,6 +159,11 @@ export default function OntologyDagView({
     selectedOrganism,
     selectedTissue,
   ]);
+
+  const cellTypesWithMarkerGene = useMemo(() => {
+    if (!cellTypesWithMarkerGeneStats) return null;
+    return Object.keys(cellTypesWithMarkerGeneStats);
+  }, [cellTypesWithMarkerGeneStats]);
 
   // This is used to trigger a re-render of the ontology view
   const [triggerRender, setTriggerRender] = useState(false);
@@ -344,7 +361,13 @@ export default function OntologyDagView({
     tooltipOpen,
     showTooltip,
     hideTooltip,
-  } = useTooltip<{ n_cells: number; n_cells_rollup: number }>();
+  } = useTooltip<{
+    n_cells: number;
+    n_cells_rollup: number;
+    marker_score?: number;
+    me?: number;
+    pc?: number;
+  }>();
 
   const { TooltipInPortal, containerRef } = useTooltipInPortal({
     detectBounds: true,
@@ -428,6 +451,26 @@ export default function OntologyDagView({
                         {tissueName ? ` in ${tissueName.toLowerCase()}` : ""}
                       </>
                     )}
+                    {tooltipData &&
+                      tooltipData.marker_score &&
+                      tooltipData.me &&
+                      tooltipData.pc && (
+                        <>
+                          <br />
+                          <br />
+                          <b>Marker gene stats</b>
+                          <br />
+                          {"Marker score: "}
+                          <b>{tooltipData.marker_score.toFixed(2)}</b>
+
+                          <br />
+                          {"Expression score: "}
+                          <b>{tooltipData.me.toFixed(2)}</b>
+                          <br />
+                          {"% of cells: "}
+                          <b>{(tooltipData.pc * 100).toFixed(2)}</b>
+                        </>
+                      )}
                   </div>
                 </TooltipInPortal>
               )}
@@ -462,6 +505,9 @@ export default function OntologyDagView({
                           showTooltip={showTooltip}
                           hideTooltip={hideTooltip}
                           cellTypesWithMarkerGenes={cellTypesWithMarkerGene}
+                          cellTypesWithMarkerGeneStats={
+                            cellTypesWithMarkerGeneStats
+                          }
                         />
                       </Group>
                     )}
