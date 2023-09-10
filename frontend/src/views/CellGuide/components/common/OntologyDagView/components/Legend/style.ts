@@ -14,7 +14,10 @@ export const LegendWrapper = styled.div`
   padding-left: ${spacesL}px;
   padding-top: ${spacesM}px;
   position: absolute;
-  z-index: 2;
+  z-index: 1;
+  user-select: none;
+  background-color: #f8f8f8;
+  border-radius: 14px;
 `;
 
 export const LegendItemWrapper = styled.div`
