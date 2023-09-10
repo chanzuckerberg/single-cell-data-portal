@@ -49,6 +49,7 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
+  CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE,
   MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
 import {
@@ -424,6 +425,9 @@ export default function OntologyDagView({
                 {selectedGene && (
                   <StyledButtonIcon
                     aria-label={`deactivate ${selectedGene} marker gene ontology view mode`}
+                    data-testid={
+                      CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
+                    }
                     sdsIcon="eyeClosed"
                     sdsSize="small"
                     sdsType="secondary"

@@ -13,8 +13,9 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
+  CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
-
+import { CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID } from "src/views/CellGuide/components/common/OntologyDagView/components/Legend/constants";
 import { CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/CellGuide/components/common/OntologyDagView/components/Node/constants";
 
 import { CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/views/CellGuide/components/common/OntologyDagView/components/Node/components/RectOrCircle/constants";
@@ -58,6 +59,7 @@ import {
   MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID,
   MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID,
   PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
+  MARKER_GENES_EYE_ICON_BUTTON_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
 
 const { describe } = test;
@@ -726,6 +728,93 @@ describe("Cell Guide", () => {
         );
         await node.hover();
         await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+      });
+
+      test("Clicking on a computational marker gene eye enters marker gene mode in a CellGuide Card", async ({
+        page,
+      }) => {
+        await goToPage(
+          `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`,
+          page
+        );
+        await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+
+        const tableSelector = `[data-testid='${CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}']`;
+
+        await tryUntil(
+          async () => {
+            // set enriched marker genes table as active
+            await page
+              .getByTestId(CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR)
+              .click();
+
+            await page
+              .locator(tableSelector)
+              .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+          },
+          { page }
+        );
+
+        const rowElements = await page
+          .locator(`${tableSelector} tbody tr`)
+          .all();
+        const rowText = await rowElements[0].textContent();
+        const geneSymbol = rowText?.split(" ").at(0);
+        expect(geneSymbol).toBeDefined();
+        const eyeIcon = page.getByTestId(
+          MARKER_GENES_EYE_ICON_BUTTON_TEST_ID(geneSymbol as string)
+        );
+
+        await rowElements[0].locator("td").nth(0).hover();
+        await eyeIcon.click();
+
+        // check that the eyeClosed button is visible
+        await isElementVisible(
+          page,
+          CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
+        );
+
+        // hover over the node
+        const node = page.getByTestId(
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0002319__0-has-children-isTargetNode=false`
+        );
+        await node.hover();
+        await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+
+        // assert that the tooltip text contains the marker gene information
+        const tooltipText = await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP)
+          .textContent();
+
+        expect(tooltipText).toContain(`${geneSymbol} stats`);
+
+        const legendText = await page
+          .getByTestId(CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID)
+          .textContent();
+        expect(legendText).toContain(`${geneSymbol} Is Marker`);
+
+        // deactivate marker gene mode and check that the legend and tooltips reverted
+        await page
+          .getByTestId(
+            CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
+          )
+          .click();
+
+        await node.hover();
+        await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+
+        const newTooltipText = await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP)
+          .textContent();
+
+        const newLegendText = await page
+          .getByTestId(CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID)
+          .textContent();
+
+        expect(newTooltipText).not.toContain(`${geneSymbol} stats`);
+        expect(newLegendText).not.toContain(`${geneSymbol} Is Marker`);
       });
     });
     describe("Tissue Card", () => {

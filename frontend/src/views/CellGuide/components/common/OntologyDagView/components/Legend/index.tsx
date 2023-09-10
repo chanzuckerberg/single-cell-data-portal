@@ -12,7 +12,7 @@ import {
   NoMarkerGene,
   YesMarkergene,
 } from "./style";
-
+import { CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID } from "./constants";
 interface LegendProps {
   selectedGene: string | undefined;
 }
@@ -70,7 +70,7 @@ export default function Legend({ selectedGene }: LegendProps) {
   );
 
   return (
-    <LegendWrapper>
+    <LegendWrapper data-testid={CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID}>
       {targetNodeLegendComponent}
       {selectedGene ? hasMarkerGeneLegend : corpusLegendComponent}
       {descendantsLegendComponent}
