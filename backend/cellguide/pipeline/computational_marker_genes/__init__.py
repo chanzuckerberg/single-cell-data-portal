@@ -91,7 +91,7 @@ def get_computational_marker_genes(*, snapshot: WmgSnapshot, ontology_tree: Onto
     for symbol in reformatted_marker_genes:
         for organism in reformatted_marker_genes[symbol]:
             for tissue in reformatted_marker_genes[symbol][organism]:
-                x = [i["cell_type_id"] for i in reformatted_marker_genes[symbol][organism][tissue]]
-                assert len(x) == len(list(set(x)))
+                cell_type_ids = [i["cell_type_id"] for i in reformatted_marker_genes[symbol][organism][tissue]]
+                assert len(cell_type_ids) == len(list(set(cell_type_ids)))
 
     return marker_genes, reformatted_marker_genes
