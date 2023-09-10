@@ -1,6 +1,7 @@
 import logging
 
 from backend.cellguide.pipeline.computational_marker_genes.computational_markers import MarkerGenesCalculator
+from backend.cellguide.pipeline.computational_marker_genes.constants import MARKER_SCORE_THRESHOLD
 from backend.cellguide.pipeline.constants import COMPUTATIONAL_MARKER_GENES_FOLDERNAME, MARKER_GENE_PRESENCE_FILENAME
 from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
@@ -68,7 +69,7 @@ def get_computational_marker_genes(*, snapshot: WmgSnapshot, ontology_tree: Onto
             tissue = marker_gene_stats.groupby_dims.get("tissue_ontology_term_label", "All Tissues")
             organism = marker_gene_stats.groupby_dims["organism_ontology_term_label"]
 
-            if marker_score <= 0.5:
+            if marker_score <= MARKER_SCORE_THRESHOLD:
                 continue
 
             if symbol not in reformatted_marker_genes:
