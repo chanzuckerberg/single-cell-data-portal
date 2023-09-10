@@ -1,0 +1,75 @@
+  pw:api => selectors.setTestIdAttribute started +2s
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +28ms
+  pw:api   "commit" event fired +14ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +10ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +3ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +36ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api => page.goto started +3ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +8ms
+  pw:api   "commit" event fired +2s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +0ms
+  pw:api   "commit" event fired +5ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForLoadState succeeded +4ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +3ms
+  pw:api   navigated to "about:blank" +35ms
+  pw:api <= page.goto succeeded +28ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +345ms
+  pw:api => page.waitForTimeout started +6ms
+  pw:api   "networkidle" event fired +2s
+  pw:api <= page.waitForTimeout succeeded +1s
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +109ms
+  pw:api => locator.scrollIntoViewIfNeeded started +5ms
+  pw:api waiting for getByTestId('section-3') +21ms
+  pw:api   locator resolved to hidden <div id="section-3" data-testid="section-3"></div> +18ms
+  pw:api   waiting for element to be  and stable +26ms
+  pw:api   element is  and stable +57ms
+  pw:api <= locator.scrollIntoViewIfNeeded succeeded +3ms
+  pw:api => expect.toBeInViewport started +4ms
+  pw:api => page.waitForTimeout started +1ms
+  pw:api expect.toBeInViewport with timeout 10000ms +166ms
+  pw:api waiting for getByTestId('cell-guide-card-source-data-table') +0ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-source-data-table" …>…</div> +140ms
+  pw:api <= expect.toBeInViewport succeeded +25ms
+  pw:api <= page.waitForTimeout succeeded +876ms
+  pw:api => locator.all started +0ms
+  pw:api <= locator.all succeeded +9ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-navigation-sidebar').locator('.MuiButtonBase-root.MuiTab-root').nth(1) +22ms
+  pw:api   locator resolved to <button role="tab" tabindex="-1" type="button" aria-sele…>Cell Ontology</button> +9ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +11ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +31ms
+  pw:api   click action done +39ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +26ms
+  pw:api => expect.toBeInViewport started +2ms
+  pw:api => expect.not.toBeInViewport started +5ms
+  pw:api => page.waitForTimeout started +1ms
+  pw:api expect.toBeInViewport with timeout 10000ms +191ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view') +1ms
+  pw:api expect.not.toBeInViewport with timeout 10000ms +25ms
+  pw:api waiting for getByTestId('cell-guide-card-source-data-table') +0ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-source-data-table" …>…</div> +351ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-ontology-dag-view">…</div> +2ms
+  pw:api <= expect.not.toBeInViewport succeeded +163ms
+  pw:api <= expect.toBeInViewport succeeded +25ms
+  pw:api <= page.waitForTimeout succeeded +497ms
+  pw:api taking page screenshot +5ms
