@@ -138,7 +138,7 @@ mirror_env_data:
 	# Mirrors the SRC_ENV env's AWS RDS database and S3 data to
 	# DEST_ENV. Defaults to prod->dev.
 	#
-	# If CUBE is set to any non-null value, copy the WMG cube from SRC_ENV to DEST_ENV. Works for DEST_ENV=rdev.
+	# If WMG_CUBE is set to any non-null value, copy the WMG cube from SRC_ENV to DEST_ENV. Works for DEST_ENV=rdev.
 	#
 	# If DEST_ENV = 'rdev':
 	# - STACK arg must be included accordingly
@@ -151,5 +151,5 @@ mirror_env_data:
 	# THIS IS DESTRUCTIVE for the DEST_ENV env! The SRC_ENV env will
 	# never be modified, but the DEST_ENV env's data will be replaced.
 	#
-	# Usage: make mirror_env_data [SRC_ENV={prod|staging|dev}] [DEST_ENV={dev|staging|rdev}] [CUBE=1] [STACK=<rdev_stack_name> [COLLECTIONS=<uuid1,uuid2,...> [DATA=1]]]
-	scripts/mirror_env_data.sh $(SRC_ENV) $(DEST_ENV) $(CUBE) $(STACK) $(COLLECTIONS) $(DATA)
+	# Usage: make mirror_env_data [SRC_ENV={prod|staging|dev}] [DEST_ENV={dev|staging|rdev}] [WMG_CUBE=1] [STACK=<rdev_stack_name> [COLLECTIONS=<uuid1,uuid2,...> [DATA=1]]]
+	scripts/mirror_env_data.sh $(SRC_ENV) $(DEST_ENV) $(WMG_CUBE) $(STACK) $(COLLECTIONS) $(DATA)

@@ -26,7 +26,7 @@ AWS_OPTIONS="--copy-props metadata-directive --no-progress"
 S3_COPY_CMD="aws s3 cp $AWS_OPTIONS"
 S3_SYNC_CMD="aws s3 sync $AWS_OPTIONS"
 
-if [[ -n "$CUBE" ]]; then
+if [[ -n "$WMG_CUBE" ]]; then
   # Copy WMB cube
   echo "Copying WMG cube snapshot..."
 
