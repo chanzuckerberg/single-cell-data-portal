@@ -77,10 +77,10 @@ interface NoDescendantsProps {
 }
 export const NoDescendantsLine = styled.div<NoDescendantsProps>`
   position: absolute;
-  width: ${(props) => `${props.size / 2 + 2 * leftBorderSpacing}px`};
+  width: ${(props) => props.size / 2 + 2 * leftBorderSpacing}px;
   height: 1px;
   background-color: ${secondaryColor};
   left: -${leftBorderSpacing}px;
-  top: ${(props) => `${props.size / 2 - 1}px`};
+  top: ${(props) => props.size / 2 - 1}px;
   z-index: -1;
 `;
