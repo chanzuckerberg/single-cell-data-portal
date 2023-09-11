@@ -8,11 +8,14 @@ interface StyledPieProps {
   degree: number;
   size: number;
   fill: number | string;
+  opacity?: number;
+  center?: boolean;
 }
 export const StyledPie = styled.div<StyledPieProps>`
   cursor: pointer;
+
   ${(props) => {
-    const { degree, size, fill } = props;
+    const { degree, size, fill, opacity, center } = props;
     const fillColor = typeof fill === "number" ? colorScale(fill) : fill;
     return `
         width: ${size}px;
@@ -23,30 +26,12 @@ export const StyledPie = styled.div<StyledPieProps>`
           #fff0 0deg,
           #fff0 360deg
         );
+        opacity: ${opacity || 1};   
+        position: ${center ? "relative" : "unset"};
+        left: ${center ? "50%" : "unset"};
+        top: ${center ? "50%" : "unset"};
+        transform: ${center ? "translate(-50%, -50%)" : "unset"};
       `;
   }}
   border-radius: 50%;
-`;
-
-interface StyledCircleProps {
-  fill: number | string;
-  size: number;
-  opacity?: number;
-}
-export const StyledCircle = styled.div<StyledCircleProps>`
-  border-radius: 50%;
-  position: relative;
-  ${(props) => {
-    const { size, fill, opacity } = props;
-    const fillColor = typeof fill === "number" ? colorScale(fill) : fill;
-    return `
-        width: ${size}px;
-        height: ${size}px;
-        background-color: ${fillColor};
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);    
-        opacity: ${opacity || 1};    
-      `;
-  }}
 `;

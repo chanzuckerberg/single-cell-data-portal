@@ -10,7 +10,7 @@ import {
   nodePieChartCircleScaler,
 } from "../../../../common/constants";
 import { StyledRect } from "./style";
-import { StyledCircle, StyledPie } from "../../../../common/style";
+import { StyledPie } from "../../../../common/style";
 import { CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/views/CellGuide/components/common/OntologyDagView/components/Node/components/RectOrCircle/constants";
 
 const DUMMY_CHILD = "dummy-child";
@@ -103,22 +103,23 @@ export default function RectOrCircle({
           onClick={handleClick}
           onMouseOver={onMouseOver}
           onMouseOut={onMouseOut}
+          key={animationKey}
         >
           <StyledPie
-            key={animationKey}
             degree={cellTypeMarkerGeneStats.pc * 360}
             size={size}
             fill={cellTypeMarkerGeneStats.marker_score}
           >
-            <StyledCircle
+            <StyledPie
               size={size * sizeScaler}
               fill={
                 cellTypeMarkerGeneStats
                   ? cellTypeMarkerGeneStats.marker_score
                   : color
               }
-              key={animationKey}
               opacity={0.5}
+              degree={360}
+              center
             />
           </StyledPie>
         </foreignObject>
@@ -132,12 +133,9 @@ export default function RectOrCircle({
           onClick={handleClick}
           onMouseOver={onMouseOver}
           onMouseOut={onMouseOut}
+          key={animationKey}
         >
-          <StyledCircle
-            size={size * sizeScaler}
-            fill={color}
-            key={animationKey}
-          />
+          <StyledPie size={size * sizeScaler} fill={color} degree={360} />
         </foreignObject>
       )}
     </g>

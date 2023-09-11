@@ -11,7 +11,7 @@ import {
   LegendWrapper,
   MarkerScoreWrapper,
 } from "./style";
-import { StyledPie, StyledCircle } from "../../common/style";
+import { StyledPie } from "../../common/style";
 import { CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID } from "./constants";
 import { largeSize, nodePieChartCircleScaler } from "../../common/constants";
 interface LegendProps {
@@ -56,13 +56,15 @@ export default function Legend({ selectedGene }: LegendProps) {
   );
   const size = largeSize * 2;
   const numPies = 5;
+  const numMarkerScores = 4;
+
   const fill = "#999999";
-  const hasMarkerGeneLegend = (
+  const expressedInCellsPercLegendComponent = (
     <LegendItemWrapper>
-      Marker Score({selectedGene})
+      Expressed in Cells(%)
       <MarkerScoreWrapper>
         {Array.from({ length: numPies }).map((_, i) => (
-          <MarkerScoreLegendItem
+          <ExpressedInCells
             key={i}
             degree={(360 / numPies) * i}
             fill={fill}
@@ -73,6 +75,22 @@ export default function Legend({ selectedGene }: LegendProps) {
     </LegendItemWrapper>
   );
 
+  const markerScoreLegendComponent = (
+    <LegendItemWrapper>
+      Marker Score ({selectedGene})
+      <MarkerScoreWrapper>
+        {Array.from({ length: numMarkerScores }).map((_, i) => (
+          <MarkerScore key={i} fill={i} size={size} />
+        ))}
+      </MarkerScoreWrapper>
+    </LegendItemWrapper>
+  );
+  const hasMarkerGeneLegend = (
+    <>
+      {markerScoreLegendComponent}
+      {expressedInCellsPercLegendComponent}
+    </>
+  );
   return (
     <LegendWrapper data-testid={CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID}>
       {!selectedGene && targetNodeLegendComponent}
@@ -82,17 +100,27 @@ export default function Legend({ selectedGene }: LegendProps) {
   );
 }
 
-interface MarkerScoreLegendItemProps {
+interface ExpressedInCellsProps {
   degree: number;
-  fill: string | number;
+  fill: string;
   size: number;
 }
-const MarkerScoreLegendItem = ({
-  degree,
-  fill,
-  size,
-}: MarkerScoreLegendItemProps) => (
+const ExpressedInCells = ({ degree, fill, size }: ExpressedInCellsProps) => (
   <StyledPie degree={degree} fill={fill} size={size}>
-    <StyledCircle fill={`${fill}80`} size={size * nodePieChartCircleScaler} />
+    <StyledPie
+      degree={360}
+      fill={fill}
+      size={size * nodePieChartCircleScaler}
+      opacity={0.5}
+      center
+    />
   </StyledPie>
+);
+
+interface MarkerScoreProps {
+  fill: number;
+  size: number;
+}
+const MarkerScore = ({ fill, size }: MarkerScoreProps) => (
+  <StyledPie degree={360} fill={fill} size={size} />
 );
