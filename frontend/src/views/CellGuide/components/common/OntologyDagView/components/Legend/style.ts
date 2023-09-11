@@ -27,6 +27,12 @@ export const LegendItemWrapper = styled.div`
   align-items: center;
 `;
 
+export const MarkerScoreWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+`;
+
 export const LegendItem = styled.div`
   display: flex;
   justify-content: space-between;

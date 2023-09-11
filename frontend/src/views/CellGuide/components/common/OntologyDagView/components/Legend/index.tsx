@@ -9,10 +9,11 @@ import {
   LegendItem,
   LegendItemWrapper,
   LegendWrapper,
-  NoMarkerGene,
-  YesMarkergene,
+  MarkerScoreWrapper,
 } from "./style";
+import { StyledPie, StyledCircle } from "../../common/style";
 import { CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID } from "./constants";
+import { largeSize, nodePieChartCircleScaler } from "../../common/constants";
 interface LegendProps {
   selectedGene: string | undefined;
 }
@@ -53,27 +54,45 @@ export default function Legend({ selectedGene }: LegendProps) {
       </LegendItem>
     </LegendItemWrapper>
   );
+  const size = largeSize * 2;
+  const numPies = 5;
+  const fill = "#999999";
   const hasMarkerGeneLegend = (
     <LegendItemWrapper>
-      {selectedGene} Is Marker
-      <LegendItem>
-        <FlexColumn>
-          <YesMarkergene />
-          <CenterText>Yes</CenterText>
-        </FlexColumn>
-        <FlexColumn>
-          <NoMarkerGene />
-          <CenterText>No</CenterText>
-        </FlexColumn>
-      </LegendItem>
+      Marker Score({selectedGene})
+      <MarkerScoreWrapper>
+        {Array.from({ length: numPies }).map((_, i) => (
+          <MarkerScoreLegendItem
+            key={i}
+            degree={(360 / numPies) * i}
+            fill={fill}
+            size={size}
+          />
+        ))}
+      </MarkerScoreWrapper>
     </LegendItemWrapper>
   );
 
   return (
     <LegendWrapper data-testid={CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID}>
-      {targetNodeLegendComponent}
+      {!selectedGene && targetNodeLegendComponent}
       {selectedGene ? hasMarkerGeneLegend : corpusLegendComponent}
-      {descendantsLegendComponent}
+      {!selectedGene && descendantsLegendComponent}
     </LegendWrapper>
   );
 }
+
+interface MarkerScoreLegendItemProps {
+  degree: number;
+  fill: string | number;
+  size: number;
+}
+const MarkerScoreLegendItem = ({
+  degree,
+  fill,
+  size,
+}: MarkerScoreLegendItemProps) => (
+  <StyledPie degree={degree} fill={fill} size={size}>
+    <StyledCircle fill={`${fill}80`} size={size * nodePieChartCircleScaler} />
+  </StyledPie>
+);

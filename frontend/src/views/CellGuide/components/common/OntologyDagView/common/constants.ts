@@ -7,6 +7,7 @@ export const defaultTextColor = "#000000";
 export const markerGeneModeColor = "#000000";
 export const smallSize = 4;
 export const largeSize = 8;
+export const nodePieChartCircleScaler = 0.8;
 export const defaultMargin = { top: 50, left: 0, right: 0, bottom: 0 };
 export const DEFAULT_ONTOLOGY_WIDTH = 800;
 export const DEFAULT_ONTOLOGY_HEIGHT = 500;

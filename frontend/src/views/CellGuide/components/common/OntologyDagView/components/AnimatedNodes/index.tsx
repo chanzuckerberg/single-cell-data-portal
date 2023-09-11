@@ -77,16 +77,10 @@ export default function AnimatedNodes({
     }, 2 * 1000);
     setTimerId(id);
     if (
-      (event.target instanceof SVGElement &&
-        event.target.ownerSVGElement !== null) ||
-      (event.target instanceof HTMLDivElement &&
-        event.target.parentNode instanceof SVGElement)
+      event.target instanceof HTMLDivElement &&
+      event.target.parentNode instanceof SVGElement
     ) {
-      const ownerSVGElement = (
-        event.target instanceof SVGElement
-          ? event.target.ownerSVGElement
-          : event.target.parentNode
-      ) as Element;
+      const ownerSVGElement = event.target.parentNode as Element;
       const coords = localPoint(ownerSVGElement, event);
       if (coords) {
         const marker_score =
@@ -183,7 +177,7 @@ export default function AnimatedNodes({
         top={state.top}
         opacity={state.opacity}
         handleClick={
-          handleNodeClick as unknown as MouseEventHandler<SVGGElement>
+          handleNodeClick as unknown as MouseEventHandler<SVGElement>
         }
       />
     );
