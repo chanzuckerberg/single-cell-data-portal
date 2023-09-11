@@ -67,7 +67,7 @@ export default function AnimatedNodes({
 
   const { data: cellTypeMetadata } = useCellTypeMetadata() || {};
   const handleMouseOver = (
-    event: React.MouseEvent<SVGElement>,
+    event: React.MouseEvent<HTMLDivElement>,
     datum: TreeNodeWithState
   ) => {
     const id = setTimeout(() => {
@@ -177,7 +177,7 @@ export default function AnimatedNodes({
         top={state.top}
         opacity={state.opacity}
         handleClick={
-          handleNodeClick as unknown as MouseEventHandler<SVGElement>
+          handleNodeClick as unknown as MouseEventHandler<HTMLDivElement>
         }
       />
     );

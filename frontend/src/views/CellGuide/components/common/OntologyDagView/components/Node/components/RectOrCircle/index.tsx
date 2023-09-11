@@ -16,11 +16,11 @@ import { CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID } from "src/
 const DUMMY_CHILD = "dummy-child";
 
 interface RectOrCircleProps {
-  handleClick?: MouseEventHandler<SVGGElement>;
+  handleClick?: MouseEventHandler<HTMLDivElement>;
   isTargetNode: boolean;
   node: TreeNodeWithState;
   handleMouseOver: (
-    event: React.MouseEvent<SVGElement>,
+    event: React.MouseEvent<HTMLDivElement>,
     datum: TreeNodeWithState
   ) => void;
   handleMouseOut: () => void;
@@ -28,6 +28,7 @@ interface RectOrCircleProps {
   cellTypeMarkerGeneStats: MarkerGeneStats | undefined;
   inMarkerGeneMode: boolean;
 }
+
 const getColor = (
   node: TreeNodeWithState,
   inMarkerGeneMode: boolean,
@@ -59,7 +60,7 @@ const getMouseOverHandler = (
 ) => {
   return node.id.startsWith(DUMMY_CHILD)
     ? undefined
-    : (event: React.MouseEvent<SVGElement>) => {
+    : (event: React.MouseEvent<HTMLDivElement>) => {
         handleMouseOver(event, node);
       };
 };
@@ -100,15 +101,15 @@ export default function RectOrCircle({
           y={-size / 2}
           width={size}
           height={size}
-          onClick={handleClick}
-          onMouseOver={onMouseOver}
-          onMouseOut={onMouseOut}
           key={animationKey}
         >
           <StyledPie
             degree={cellTypeMarkerGeneStats.pc * 360}
             size={size}
             fill={cellTypeMarkerGeneStats.marker_score}
+            onClick={handleClick}
+            onMouseOver={onMouseOver}
+            onMouseLeave={onMouseOut}
           >
             <StyledPie
               size={size * sizeScaler}
@@ -130,28 +131,37 @@ export default function RectOrCircle({
           y={-size / 2}
           width={size}
           height={size}
-          onClick={handleClick}
-          onMouseOver={onMouseOver}
-          onMouseOut={onMouseOut}
           key={animationKey}
         >
-          <StyledPie size={size * sizeScaler} fill={color} degree={360} />
+          <StyledPie
+            onMouseLeave={onMouseOut}
+            onClick={handleClick}
+            onMouseOver={onMouseOver}
+            size={size * sizeScaler}
+            fill={color}
+            degree={360}
+          />
         </foreignObject>
       )}
     </g>
   ) : (
-    <StyledRect
+    <foreignObject
       data-testid={dataTestId}
-      height={size}
-      width={size}
-      y={-size / 2}
       x={-size / 2}
+      y={-size / 2}
+      width={size}
+      height={size}
       key={animationKey}
-      fill={color}
-      onClick={handleClick}
-      strokeWidth={0.5}
-      onMouseOver={onMouseOver}
-      onMouseOut={onMouseOut}
-    />
+    >
+      <StyledRect
+        data-testid={dataTestId}
+        key={animationKey}
+        size={size}
+        fillColor={color}
+        onClick={handleClick}
+        onMouseOver={onMouseOver}
+        onMouseLeave={onMouseOut}
+      />
+    </foreignObject>
   );
 }

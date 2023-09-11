@@ -17,10 +17,10 @@ type HierarchyNode = HierarchyPointNode<TreeNodeWithState>;
 
 interface NodeProps {
   node: HierarchyNode;
-  handleClick?: MouseEventHandler<SVGGElement>;
+  handleClick?: MouseEventHandler<HTMLDivElement>;
   isTargetNode: boolean;
   handleMouseOver: (
-    event: React.MouseEvent<SVGElement>,
+    event: React.MouseEvent<HTMLDivElement>,
     datum: TreeNodeWithState
   ) => void;
   handleMouseOut: () => void;
@@ -51,7 +51,7 @@ export default function Node({
 
   // text labels should only collapse/expand node for dummy nodes
   const onClick = node.data.id.startsWith("dummy-child")
-    ? handleClick
+    ? (handleClick as unknown as MouseEventHandler<SVGElement>)
     : undefined;
   const textCursor = node.data.id.startsWith("dummy-child")
     ? "pointer"

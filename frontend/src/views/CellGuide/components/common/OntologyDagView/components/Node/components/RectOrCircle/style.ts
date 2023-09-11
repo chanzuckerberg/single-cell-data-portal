@@ -1,5 +1,12 @@
 import styled from "@emotion/styled";
 
-export const StyledRect = styled.rect`
+interface StyledRectProps {
+  size: number;
+  fillColor: string;
+}
+export const StyledRect = styled.div<StyledRectProps>`
   cursor: pointer;
+  height: ${(props) => props.size}px;
+  width: ${(props) => props.size}px;
+  background-color: ${(props) => props.fillColor};
 `;
