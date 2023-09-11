@@ -538,7 +538,6 @@ const MarkerGeneTables = ({
   ) => {
     setPage(page);
     track(EVENTS.CG_MARKER_GENE_PAGINATION_CLICKED, {
-      cell_type: cellTypeId,
       page: page,
       type: activeTable ? "computational" : "canonical",
     });
@@ -558,7 +557,6 @@ const MarkerGeneTables = ({
                 label="Open in Gene Expression"
                 onClick={() => {
                   track(EVENTS.CG_OPEN_IN_WMG_CLICKED, {
-                    cell_type: cellTypeId,
                     type: activeTable ? "computational" : "canonical",
                   });
                 }}

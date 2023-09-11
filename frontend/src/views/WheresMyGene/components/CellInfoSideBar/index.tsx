@@ -102,7 +102,7 @@ function CellInfoSideBar({
       <Link
         href={`${ROUTES.CELL_GUIDE}/${cellInfoCellType.cellType.id}`}
         onClick={() =>
-          track(EVENTS.WMG_OPEN_IN_CELL_GUIDE_CLICKED, {
+          track(EVENTS.WMG_OPEN_IN_CG_CLICKED, {
             cell_type: cellInfoCellType.cellType.id,
           })
         }

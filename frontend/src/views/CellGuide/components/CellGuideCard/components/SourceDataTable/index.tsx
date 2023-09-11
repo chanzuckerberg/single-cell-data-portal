@@ -358,7 +358,7 @@ function generateLink(key: string, label: string, url: string) {
       label={label}
       url={url}
       onClick={() =>
-        track(EVENTS.CG_DATA_COLLECTION_CLICKED, { collection: label })
+        track(EVENTS.VIEW_COLLECTION_PAGE_CLICKED, { collection_name: label })
       }
     />
   );
