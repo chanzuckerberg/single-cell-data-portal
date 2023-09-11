@@ -9,13 +9,17 @@ const REGEX = /^\d+\.?\d{0,2}$/;
 
 export const ADD_GENE_SEARCH_PLACEHOLDER_TEXT = "Add Genes";
 
-export async function searchAndAddGene(page: Page, geneName: string) {
-  await goToWMG(page);
+export async function addGene(page: Page, geneName: string) {
   await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).type(geneName);
   await page.getByText(geneName).click();
 
   // close dropdown
   await page.keyboard.press("Escape");
+}
+
+export async function searchAndAddGene(page: Page, geneName: string) {
+  await goToWMG(page);
+  await addGene(page, geneName);
 }
 export async function verifyAddedTissue(page: Page, tissue: string) {
   // selected tissue should be visible

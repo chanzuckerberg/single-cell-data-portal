@@ -22,7 +22,7 @@ import {
   waitForHeatmapToRender,
 } from "tests/utils/wmgUtils";
 import { getCurrentDate } from "tests/utils/downloadUtils";
-import { searchAndAddGene } from "tests/utils/geneUtils";
+import { addGene, searchAndAddGene } from "tests/utils/geneUtils";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
@@ -850,6 +850,41 @@ describe("Where's My Gene", () => {
         { page }
       );
     });
+  });
+
+  /**
+   * https://github.com/chanzuckerberg/single-cell-data-portal/issues/5715
+   */
+  test("Bug fix #5715: Adding a gene collapses open tissues", async ({
+    page,
+  }) => {
+    await goToWMG(page);
+    await expandTissue(page, "lung");
+
+    await waitForLoadingSpinnerToResolve(page);
+
+    await tryUntil(
+      async () => {
+        expect((await getCellTypeNames(page)).length).toBeGreaterThan(0);
+      },
+      { page }
+    );
+
+    const beforeAddGeneCellTypeCount = (await getCellTypeNames(page)).length;
+
+    await Promise.all([
+      waitForLoadingSpinnerToResolve(page),
+      addGene(page, "MALAT1"),
+    ]);
+
+    await tryUntil(
+      async () => {
+        const afterAddGeneCellTypeCount = (await getCellTypeNames(page)).length;
+
+        expect(afterAddGeneCellTypeCount).toBe(beforeAddGeneCellTypeCount);
+      },
+      { page }
+    );
   });
 });
 
