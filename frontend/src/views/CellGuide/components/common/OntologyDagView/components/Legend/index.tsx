@@ -35,7 +35,7 @@ export default function Legend({ selectedGene, isTissue }: LegendProps) {
     <LegendItemWrapper>
       <FlexColumn>
         No Descendents
-        <NodeWrapper columnGap={leftBorderSpacing}>
+        <NodeWrapper>
           <NoDescendantsLine size={size} />
           <Border width={leftBorderSpacing} height={size} />
           <IsNotInCorpus />

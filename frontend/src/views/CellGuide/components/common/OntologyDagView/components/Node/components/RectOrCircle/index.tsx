@@ -90,7 +90,7 @@ export default function RectOrCircle({
   const hasDescendants =
     node?.children?.length || node.id.startsWith(DUMMY_CHILD);
 
-  const xOffset = hasDescendants ? 0 : -leftBorderSpacing * 2;
+  const xOffset = hasDescendants ? 0 : -leftBorderSpacing;
   return (
     <foreignObject
       data-testid={dataTestId}
@@ -105,7 +105,7 @@ export default function RectOrCircle({
         onClick={handleClick}
         onMouseOver={onMouseOver}
       >
-        <NodeWrapper columnGap={leftBorderSpacing}>
+        <NodeWrapper>
           {!hasDescendants && (
             <Border width={leftBorderSpacing} height={size} />
           )}
