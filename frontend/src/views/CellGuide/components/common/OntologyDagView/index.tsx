@@ -161,11 +161,6 @@ export default function OntologyDagView({
     selectedTissue,
   ]);
 
-  const cellTypesWithMarkerGene = useMemo(() => {
-    if (!cellTypesWithMarkerGeneStats) return null;
-    return Object.keys(cellTypesWithMarkerGeneStats);
-  }, [cellTypesWithMarkerGeneStats]);
-
   // This is used to trigger a re-render of the ontology view
   const [triggerRender, setTriggerRender] = useState(false);
   const toggleTriggerRender = () => {
@@ -205,7 +200,10 @@ export default function OntologyDagView({
   const initialTreeState: CellOntologyTreeStateResponse | undefined =
     useMemo(() => {
       let initialTreeState;
-      if (cellTypesWithMarkerGene && parentMap) {
+      if (cellTypesWithMarkerGeneStats && parentMap) {
+        const cellTypesWithMarkerGene = Object.keys(
+          cellTypesWithMarkerGeneStats
+        );
         initialTreeState = getInitialStateForSelectedGene(
           rawTree as TreeNode,
           parentMap,
@@ -229,7 +227,7 @@ export default function OntologyDagView({
       initialTreeStateTissue,
       rawTree,
       parentMap,
-      cellTypesWithMarkerGene,
+      cellTypesWithMarkerGeneStats,
     ]);
 
   // Populate the tree data structure nodes with "isExpanded".
@@ -510,7 +508,6 @@ export default function OntologyDagView({
                           toggleTriggerRender={toggleTriggerRender}
                           showTooltip={showTooltip}
                           hideTooltip={hideTooltip}
-                          cellTypesWithMarkerGenes={cellTypesWithMarkerGene}
                           cellTypesWithMarkerGeneStats={
                             cellTypesWithMarkerGeneStats
                           }

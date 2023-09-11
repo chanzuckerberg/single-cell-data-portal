@@ -2,7 +2,10 @@ import { MouseEventHandler } from "react";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import { useRouter } from "next/router";
 import { ROUTES } from "src/common/constants/routes";
-import { TreeNodeWithState } from "../../common/types";
+import {
+  MarkerGeneStatsByCellType,
+  TreeNodeWithState,
+} from "../../common/types";
 import Text from "./components/Text";
 import RectOrCircle from "./components/RectOrCircle";
 import { StyledGroup } from "./style";
@@ -27,7 +30,7 @@ interface NodeProps {
   animationKey: string;
   maxWidth: number;
   isInCorpus: boolean;
-  cellTypesWithMarkerGenes: string[] | null;
+  cellTypesWithMarkerGeneStats: MarkerGeneStatsByCellType | null;
 }
 
 export default function Node({
@@ -42,7 +45,7 @@ export default function Node({
   opacity,
   maxWidth,
   isInCorpus,
-  cellTypesWithMarkerGenes,
+  cellTypesWithMarkerGeneStats,
 }: NodeProps) {
   const router = useRouter();
 
@@ -53,8 +56,8 @@ export default function Node({
   const textCursor = node.data.id.startsWith("dummy-child")
     ? "pointer"
     : "default";
-  const inMarkerGeneMode = !!cellTypesWithMarkerGenes;
-  const hasMarkerGene = !!cellTypesWithMarkerGenes?.includes(node.data.id);
+  const inMarkerGeneMode = !!cellTypesWithMarkerGeneStats;
+  const cellTypeMarkerGeneStats = cellTypesWithMarkerGeneStats?.[node.data.id];
   return (
     <StyledGroup top={top} left={left} key={animationKey} opacity={opacity}>
       {isInCorpus ? (
@@ -98,7 +101,7 @@ export default function Node({
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
         inMarkerGeneMode={inMarkerGeneMode}
-        hasMarkerGene={hasMarkerGene}
+        cellTypeMarkerGeneStats={cellTypeMarkerGeneStats}
       />
     </StyledGroup>
   );

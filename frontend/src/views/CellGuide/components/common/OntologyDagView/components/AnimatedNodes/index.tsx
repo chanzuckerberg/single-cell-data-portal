@@ -3,7 +3,10 @@ import { Group } from "@visx/group";
 import { localPoint } from "@visx/event";
 import Node from "../Node";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
-import { TreeNodeWithState } from "../../common/types";
+import {
+  MarkerGeneStatsByCellType,
+  TreeNodeWithState,
+} from "../../common/types";
 import { useCellTypeMetadata } from "src/common/queries/cellGuide";
 import { NODE_SPACINGS, TREE_ANIMATION_DURATION } from "../../common/constants";
 import { EVENTS } from "src/common/analytics/events";
@@ -28,14 +31,7 @@ interface AnimatedNodesProps {
     };
   }) => void;
   hideTooltip: () => void;
-  cellTypesWithMarkerGenes: string[] | null;
-  cellTypesWithMarkerGeneStats: {
-    [cellTypeId: string]: {
-      me: number;
-      pc: number;
-      marker_score: number;
-    };
-  } | null;
+  cellTypesWithMarkerGeneStats: MarkerGeneStatsByCellType | null;
 }
 
 interface AnimationState {
@@ -59,7 +55,6 @@ export default function AnimatedNodes({
   toggleTriggerRender,
   showTooltip,
   hideTooltip,
-  cellTypesWithMarkerGenes,
   cellTypesWithMarkerGeneStats,
 }: AnimatedNodesProps) {
   const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For hover event
@@ -149,7 +144,7 @@ export default function AnimatedNodes({
         return { opacity: [0], timing: { duration: 0 } };
       }}
     >
-      {(nodes) => renderNodes(nodes, cellTypesWithMarkerGenes)}
+      {(nodes) => renderNodes(nodes, cellTypesWithMarkerGeneStats)}
     </NodeGroup>
   );
 
@@ -159,7 +154,7 @@ export default function AnimatedNodes({
       data: HierarchyPointNode<TreeNodeWithState>;
       state: AnimationState;
     },
-    cellTypesWithMarkerGenes: string[] | null
+    cellTypesWithMarkerGeneStats: MarkerGeneStatsByCellType | null
   ) {
     const { key, data: node, state } = animatedNode;
 
@@ -173,7 +168,7 @@ export default function AnimatedNodes({
         isInCorpus={isInCorpus}
         animationKey={key}
         node={node}
-        cellTypesWithMarkerGenes={cellTypesWithMarkerGenes}
+        cellTypesWithMarkerGeneStats={cellTypesWithMarkerGeneStats}
         isTargetNode={cellTypeId === node.data.id.split("__")[0]}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
@@ -222,11 +217,11 @@ export default function AnimatedNodes({
 
   function renderNodes(
     nodes: AnimationNode[],
-    cellTypesWithMarkerGenes: AnimatedNodesProps["cellTypesWithMarkerGenes"]
+    cellTypesWithMarkerGeneStats: AnimatedNodesProps["cellTypesWithMarkerGeneStats"]
   ) {
     return (
       <Group>
-        {nodes.map((node) => renderNode(node, cellTypesWithMarkerGenes))}
+        {nodes.map((node) => renderNode(node, cellTypesWithMarkerGeneStats))}
       </Group>
     );
   }
