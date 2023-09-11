@@ -21,8 +21,9 @@ import {
 import { Border, NodeWrapper } from "../Node/components/RectOrCircle/style";
 interface LegendProps {
   selectedGene: string | undefined;
+  isTissue?: boolean;
 }
-export default function Legend({ selectedGene }: LegendProps) {
+export default function Legend({ selectedGene, isTissue }: LegendProps) {
   const targetNodeLegendComponent = (
     <LegendItemWrapper>
       Current
@@ -105,7 +106,7 @@ export default function Legend({ selectedGene }: LegendProps) {
   );
   return (
     <LegendWrapper data-testid={CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID}>
-      {!selectedGene && targetNodeLegendComponent}
+      {!selectedGene && !isTissue && targetNodeLegendComponent}
       {selectedGene ? hasMarkerGeneLegend : corpusLegendComponent}
       {descendantsLegendComponent}
     </LegendWrapper>
