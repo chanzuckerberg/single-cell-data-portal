@@ -77,7 +77,6 @@
     "@types/react-table": "^7.7.14",
     "@types/react-window": "^1.8.5",
     "@types/sharp": "^0.32.0",
-    "@types/xml2js": "^0.4.12",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "adm-zip": "^0.5.10",
