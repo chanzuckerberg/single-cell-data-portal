@@ -47,7 +47,7 @@ export const NoWrapWrapper = styled.span<NoWrapWrapperProps>`
   column-gap: ${spacesS}px;
   .hover-button {
     visibility: hidden;
-    transition: visibility 0.3s ease;
+    transition: visibility 0.1s ease;
   }
   &:hover .hover-button {
     visibility: visible;
