@@ -1,12 +1,13 @@
 import { Page, expect } from "@playwright/test";
 import { goToWMG } from "./wmgUtils";
 import {
+  CELL_COUNT_LABEL_CLASS_NAME,
   CELL_TYPE_NAME_LABEL_CLASS_NAME,
   CELL_TYPE_ROW_CLASS_NAME,
 } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 
 const FMG_EXCLUDE_TISSUES = ["blood"];
-const CELL_COUNT_ID = "cell-count";
+const CELL_COUNT_ID = CELL_COUNT_LABEL_CLASS_NAME;
 const CELL_TYPE_NAME_ID = CELL_TYPE_NAME_LABEL_CLASS_NAME;
 const MARKER_GENE_BUTTON_ID = "marker-gene-button";
 const REGEX = /^\d+\.?\d{0,2}$/;
