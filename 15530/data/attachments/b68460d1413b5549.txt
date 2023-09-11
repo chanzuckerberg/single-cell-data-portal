@@ -1,0 +1,36 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +6ms
+  pw:api <= selectors.setTestIdAttribute succeeded +9ms
+  pw:api <= browserType.launch succeeded +204ms
+  pw:api => browser.newContext started +4ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +60ms
+  pw:api   "commit" event fired +20ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +3ms
+  pw:api <= browser.newContext succeeded +11ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +5ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +39ms
+  pw:api => page.waitForResponse started +23ms
+  pw:api => page.goto started +7ms
+  pw:api navigating to "https://localhost:3000/gene-expression?compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2", waiting until "load" +20ms
+  pw:api   "commit" event fired +8s
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +0ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +5ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +6ms
+  pw:api   navigated to "about:blank" +56ms
+  pw:api <= page.goto succeeded +111ms
+  pw:api   "networkidle" event fired +3m
+  pw:api => page.screenshot started +2m
+  pw:api taking page screenshot +11ms
+  pw:api <= page.screenshot succeeded +117ms
+  pw:api <= page.waitForResponse failed +183ms
+  pw:api => page.waitForTimeout started +1ms
+  pw:api <= page.waitForTimeout failed +5ms
+  pw:api => video.saveAs started +1m
+  pw:api <= video.saveAs succeeded +7ms
