@@ -17,6 +17,7 @@ import {
   leftBorderSpacing,
   maxMarkerScore,
   nodePieChartCircleScaler,
+  secondaryColor,
 } from "../../common/constants";
 import { Border, NodeWrapper } from "../Node/components/RectOrCircle/style";
 interface LegendProps {
@@ -62,7 +63,6 @@ export default function Legend({ selectedGene, isTissue }: LegendProps) {
   const numPies = 6;
   const numMarkerScores = maxMarkerScore + 1;
 
-  const fill = "#999999";
   const expressedInCellsPercLegendComponent = (
     <LegendItemWrapper>
       Expressed in Cells(%)
@@ -71,7 +71,7 @@ export default function Legend({ selectedGene, isTissue }: LegendProps) {
           <FlexColumn key={i}>
             <ExpressedInCells
               degree={(360 / (numPies - 1)) * i}
-              fill={fill}
+              fill={secondaryColor}
               size={size}
             />
             {(i == 0 || i == numPies - 1) && (

@@ -139,5 +139,4 @@ export const MarkerGeneTableWrapper = styled.div`
 
 export const StyledIconImage = styled(Image)`
   cursor: pointer;
-  fill: black;
 `;
