@@ -23,11 +23,12 @@ import {
 } from "tests/utils/wmgUtils";
 import { getCurrentDate } from "tests/utils/downloadUtils";
 import { searchAndAddGene } from "tests/utils/geneUtils";
+import { CELL_TYPE_NAME_LABEL_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
 const GENE_LABELS_ID = "[data-testid^=gene-label-]";
-const CELL_TYPE_LABELS_ID = "cell-type-name";
+const CELL_TYPE_LABELS_ID = CELL_TYPE_NAME_LABEL_CLASS_NAME;
 const TISSUE_LABELS_ID = "tissue-name";
 const ADD_GENE_ID = "add-gene-btn";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
