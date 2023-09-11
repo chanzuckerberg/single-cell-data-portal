@@ -211,13 +211,18 @@ local-unit-test-cxg-admin:
 #     | jq -r '"AWS_ACCESS_KEY_ID=\(.Credentials.AccessKeyId) AWS_SECRET_ACCESS_KEY=\(.Credentials.SecretAccessKey) AWS_SESSION_TOKEN=\(.Credentials.SessionToken)"') \
 # 	AWS_REGION=us-west-2 BOTO_ENDPOINT_URL= DEPLOYMENT_STAGE=staging make local-functional-test)
 .PHONY: local-functional-test
-local-functional-test: export AWS_PROFILE=$(TEST_AWS_PROFILE)
 local-functional-test: ## Run functional tests in the dev environment
 	if [ -n "$${BOTO_ENDPOINT_URL+set}" ]; then \
 		EXTRA_ARGS="-e BOTO_ENDPOINT_URL"; \
 	fi; \
 	chamber -b secretsmanager exec corpora/backend/$${DEPLOYMENT_STAGE}/auth0-secret -- \
-		docker-compose $(COMPOSE_OPTS) run --rm -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_USERNAME -e TEST_ACCOUNT_PASSWORD -e DEPLOYMENT_STAGE -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} \
+		docker-compose $(COMPOSE_OPTS) run --rm -T \
+		-e CLIENT_ID -e CLIENT_SECRET \
+		-e FUNCTEST_ACCOUNT_USERNAME -e FUNCTEST_ACCOUNT_PASSWORD \
+		-e TEST_AUTH0_USER_ACCOUNT_PASSWORD -e TEST_APP_ID -e TEST_APP_SECRET \
+		-e SUPER_CURATOR_API_KEY -e AUTH0_DOMAIN \
+		-e DEPLOYMENT_STAGE  -e STACK_NAME -e API_BASE_URL \
+		-e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} \
 		backend bash -c "cd /single-cell-data-portal && make container-functionaltest"
 
 .PHONY: local-smoke-test

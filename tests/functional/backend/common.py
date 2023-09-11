@@ -3,6 +3,7 @@ import json
 import os
 import time
 import unittest
+from typing import Optional
 
 import requests
 from requests.adapters import HTTPAdapter, Response
@@ -25,14 +26,21 @@ AUDIENCE = {
     "dev": "api.cellxgene.dev.single-cell.czi.technology",
     "rdev": "api.cellxgene.dev.single-cell.czi.technology",
 }
+dummy_config = "./dummy.json"
+with open(dummy_config, "w") as fp:
+    json.dump({"api_base_url": os.getenv("API_BASE_URL")}, fp)
 
 
 class BaseFunctionalTestCase(unittest.TestCase):
+    session: requests.Session
+    config: CorporaAuthConfig
+    deployment_stage: str
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
-        cls.config = CorporaAuthConfig()
+        cls.config = CorporaAuthConfig(source=dummy_config)
         cls.session = requests.Session()
         # apply retry config to idempotent http methods we use + POST requests, which are currently all either
         # idempotent (wmg queries) or low risk to rerun in dev/staging. Update if this changes in functional tests.
@@ -77,7 +85,7 @@ class BaseFunctionalTestCase(unittest.TestCase):
         cls.session.headers["Authorization"] = f"Bearer {cls.proxy_access_token}"
 
     @classmethod
-    def get_auth_token(cls, username: str, password: str, additional_claims: list = None):
+    def get_auth_token(cls, username: str, password: str, additional_claims: Optional[list] = None):
         standard_claims = "openid profile email offline"
         if additional_claims:
             additional_claims.append(standard_claims)
@@ -108,6 +116,8 @@ class BaseFunctionalTestCase(unittest.TestCase):
 
     def upload_and_wait(self, collection_id, dropbox_url, existing_dataset_id=None, cleanup=True):
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
+        if self.deployment_stage == "rdev":
+            headers["Authorization"] = f"Bearer {self.proxy_access_token}"
         body = {"url": dropbox_url}
 
         if existing_dataset_id is None:
@@ -149,4 +159,4 @@ class BaseFunctionalTestCase(unittest.TestCase):
 
     def assertStatusCode(self, actual: int, expected_response: Response):
         request_id = expected_response.headers.get("X-Request-Id")
-        self.assertEqual(actual, expected_response.status_code, msg=f"{request_id=}")
+        assert actual == expected_response.status_code, f"{request_id=}"
