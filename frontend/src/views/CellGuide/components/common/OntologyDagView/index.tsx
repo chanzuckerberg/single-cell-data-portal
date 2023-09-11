@@ -426,12 +426,17 @@ export default function OntologyDagView({
                     }
                     label={selectedGene}
                     sx={{
-                      backgroundColor: "gray",
+                      backgroundColor: "#E0F0FF",
                       padding: 0,
                       margin: 0,
                     }}
                     deleteIcon={
-                      <Icon sdsIcon="xMark" sdsSize="xs" sdsType="button" />
+                      <Icon
+                        sdsIcon="xMark"
+                        sdsSize="xs"
+                        sdsType="button"
+                        color="error"
+                      />
                     }
                     onDelete={() => selectGene && selectGene(selectedGene)}
                     onClick={() => selectGene && selectGene(selectedGene)}

@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import { IconButton } from "@mui/material";
 import { ButtonIcon, TagFilter } from "@czi-sds/components";
-import { spacesL } from "src/common/theme";
+import { primary400, spacesL } from "src/common/theme";
 
 export const FullscreenButton = styled(IconButton)`
   visibility: hidden;
@@ -72,7 +72,19 @@ export const StyledSVG = styled.svg<StyledSVGProps>`
 
 export const StyledTagFilter = styled(TagFilter)`
   z-index: 1;
+  .MuiChip-label {
+    color: ${primary400};
+  }
+  .MuiSvgIcon-root {
+    fill: ${primary400};
+  }
   &:hover {
-    background-color: gray;
+    background-color: #e0f0ff;
+    .MuiChip-label {
+      color: ${primary400};
+    }
+    .MuiSvgIcon-root {
+      fill: ${primary400};
+    }
   }
 `;
