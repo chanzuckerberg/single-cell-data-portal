@@ -3,6 +3,7 @@ import { conditionallyRunTests } from "../../utils/wmgUtils";
 import { expandTissue, getCellTypeNames, goToPage } from "tests/utils/helpers";
 import { TEST_URL } from "tests/common/constants";
 import { ROUTES } from "src/common/constants/routes";
+import { CELL_TYPE_ROW_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 const { describe } = test;
 
 describe("cell tooltip", () => {
@@ -34,7 +35,7 @@ describe("cell tooltip", () => {
       // get the text displayed when user hovers over truncated cell names
       const hoverText =
         (await page
-          .getByTestId("cell-type-label-count")
+          .getByTestId(CELL_TYPE_ROW_CLASS_NAME)
           .nth(i)
           .getByTestId("cell-type-full-name")
           .textContent()) || "no text";
