@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { scaleSequential } from "d3-scale";
 import { interpolateMagma } from "d3-scale-chromatic";
 
-const colorScale = scaleSequential(interpolateMagma).domain([0, 4]).clamp(true);
+const colorScale = scaleSequential(interpolateMagma).domain([4, 0]).clamp(true);
 
 export const StyledRect = styled.rect`
   cursor: pointer;

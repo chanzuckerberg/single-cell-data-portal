@@ -85,17 +85,13 @@ export default function RectOrCircle({
           y={`-${size}`}
           width={`${size * 2}`}
           height={`${size * 2}`}
+          onClick={handleClick}
+          onMouseOver={onMouseOver}
+          onMouseOut={onMouseOut}
         >
           <StyledPie
             data-testid={`${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-${node.id}-has-children-isTargetNode=${isTargetNode}`}
             key={animationKey}
-            onClick={
-              handleClick as MouseEventHandler<HTMLDivElement> | undefined
-            }
-            onMouseOver={
-              onMouseOver as MouseEventHandler<HTMLDivElement> | undefined
-            }
-            onMouseOut={onMouseOut}
             degree={cellTypeMarkerGeneStats.pc * 360}
             size={size * 2}
             fill={cellTypeMarkerGeneStats.marker_score}
