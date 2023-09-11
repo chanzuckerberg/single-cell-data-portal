@@ -235,7 +235,11 @@ export default function OntologyDagView({
     const newTree = rawTree ? JSON.parse(JSON.stringify(rawTree)) : null;
     if (newTree && initialTreeState) {
       if (initialTreeState.isExpandedNodes) {
-        setIsExpandedInRawTree(newTree, initialTreeState.isExpandedNodes);
+        setIsExpandedInRawTree(
+          newTree,
+          initialTreeState.isExpandedNodes,
+          initialTreeState.notShownWhenExpandedNodes
+        );
       }
       if (initialTreeState.tissueCounts) {
         setCellCountsInRawTreeForTissueCardOntologyView(
@@ -275,7 +279,9 @@ export default function OntologyDagView({
             !notShownWhenExpandedNodes[d.id]?.includes(child.id)
         );
 
-        if (
+        if (newChildren.length === 0) {
+          return hiddenChildren;
+        } else if (
           hiddenChildren.length <=
           MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE
         ) {
@@ -537,12 +543,19 @@ export default function OntologyDagView({
 
 function setIsExpandedInRawTree(
   graph: TreeNodeWithState,
-  isExpandedNodes: string[]
+  isExpandedNodes: string[],
+  notShownWhenExpandedNodes: ShownData
 ) {
   graph.isExpanded = isExpandedNodes.includes(graph.id);
   if (graph.children) {
+    const hiddenNodes = notShownWhenExpandedNodes[graph.id] ?? [];
+    // are all children contained in hiddenNodes?
+    const allChildrenHidden = graph.children.every((child) =>
+      hiddenNodes.includes(child.id)
+    );
+    graph.isExpanded = graph.isExpanded && !allChildrenHidden;
     for (const child of graph.children) {
-      setIsExpandedInRawTree(child, isExpandedNodes);
+      setIsExpandedInRawTree(child, isExpandedNodes, notShownWhenExpandedNodes);
     }
   }
 }
