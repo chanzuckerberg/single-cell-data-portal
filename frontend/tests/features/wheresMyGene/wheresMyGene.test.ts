@@ -425,9 +425,9 @@ describe("Where's My Gene", () => {
     }) => {
       await goToWMG(page);
 
-      await expandTissue(page, "heart");
+      await expandTissue(page, "brain");
 
-      await getCellTypeFmgButtonAndClick(page, "dendritic cell");
+      await getCellTypeFmgButtonAndClick(page, "smooth muscle cell");
 
       await waitForElement(page, NO_MARKER_GENES_WARNING_TEST_ID);
     });
