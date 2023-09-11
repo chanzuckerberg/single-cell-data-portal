@@ -74,7 +74,7 @@ import {
   PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
   MARKER_GENES_CANONICAL_BREAKPOINT_PX,
   MARKER_GENES_COMPUTATIONAL_BREAKPOINT_PX,
-  MARKER_GENES_EYE_ICON_BUTTON_TEST_ID,
+  MARKER_GENES_TREE_ICON_BUTTON_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 
@@ -358,7 +358,7 @@ const MarkerGeneTables = ({
         />
         {showEye && (
           <StyledIconImage
-            data-testid={MARKER_GENES_EYE_ICON_BUTTON_TEST_ID(row.symbol)}
+            data-testid={MARKER_GENES_TREE_ICON_BUTTON_TEST_ID(row.symbol)}
             className="hover-button"
             src={treeDendrogram}
             onClick={() => selectGene(row.symbol)}

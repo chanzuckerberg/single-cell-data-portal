@@ -84,7 +84,8 @@ export default function RectOrCircle({
   const onMouseOver = getMouseOverHandler(node, handleMouseOver);
   const onMouseOut = getMouseOutHandler(node, handleMouseOut);
   const sizeScaler = cellTypeMarkerGeneStats ? nodePieChartCircleScaler : 1;
-  const word = node?.children?.length ? "has" : "no";
+  const word =
+    node?.children?.length || node.id.startsWith(DUMMY_CHILD) ? "has" : "no";
   const dataTestId = `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-${node.id}-${word}-children-isTargetNode=${isTargetNode}`;
   const hasDescendants =
     node?.children?.length || node.id.startsWith(DUMMY_CHILD);

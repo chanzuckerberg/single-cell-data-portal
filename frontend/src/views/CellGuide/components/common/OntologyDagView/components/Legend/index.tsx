@@ -85,7 +85,7 @@ export default function Legend({ selectedGene, isTissue }: LegendProps) {
 
   const markerScoreLegendComponent = (
     <LegendItemWrapper>
-      Marker Score ({selectedGene})
+      Marker Score
       <MarkerScoreWrapper>
         {Array.from({ length: numMarkerScores }).map((_, i) => (
           <FlexColumn key={i}>

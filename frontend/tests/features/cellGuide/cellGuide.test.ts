@@ -59,7 +59,7 @@ import {
   MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID,
   MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID,
   PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
-  MARKER_GENES_EYE_ICON_BUTTON_TEST_ID,
+  MARKER_GENES_TREE_ICON_BUTTON_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
 
 const { describe } = test;
@@ -730,7 +730,7 @@ describe("Cell Guide", () => {
         await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
       });
 
-      test("Clicking on a computational marker gene eye enters marker gene mode in a CellGuide Card", async ({
+      test("Clicking on a computational marker gene tree icon enters marker gene mode in a CellGuide Card", async ({
         page,
       }) => {
         await goToPage(
@@ -763,12 +763,12 @@ describe("Cell Guide", () => {
         const rowText = await rowElements[0].textContent();
         const geneSymbol = rowText?.split(" ").at(0);
         expect(geneSymbol).toBeDefined();
-        const eyeIcon = page.getByTestId(
-          MARKER_GENES_EYE_ICON_BUTTON_TEST_ID(geneSymbol as string)
+        const treeIcon = page.getByTestId(
+          MARKER_GENES_TREE_ICON_BUTTON_TEST_ID(geneSymbol as string)
         );
 
         await rowElements[0].locator("td").nth(0).hover();
-        await eyeIcon.click();
+        await treeIcon.click();
 
         // check that the eyeClosed button is visible
         await isElementVisible(
@@ -793,7 +793,8 @@ describe("Cell Guide", () => {
         const legendText = await page
           .getByTestId(CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID)
           .textContent();
-        expect(legendText).toContain(`${geneSymbol} Is Marker`);
+        expect(legendText).toContain("Marker Score");
+        expect(legendText).toContain("Expressed in Cells(%)");
 
         // deactivate marker gene mode and check that the legend and tooltips reverted
         await page
@@ -809,12 +810,7 @@ describe("Cell Guide", () => {
           .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP)
           .textContent();
 
-        const newLegendText = await page
-          .getByTestId(CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID)
-          .textContent();
-
         expect(newTooltipText).not.toContain(`${geneSymbol} stats`);
-        expect(newLegendText).not.toContain(`${geneSymbol} Is Marker`);
       });
     });
     describe("Tissue Card", () => {
