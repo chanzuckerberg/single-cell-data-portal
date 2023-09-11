@@ -285,7 +285,10 @@ const CellTypeButton = ({
             </InfoButtonWrapper>
           )}
       </FlexRow>
-      <CellCountLabelStyle className="cell-count" data-testid="cell-count">
+      <CellCountLabelStyle
+        className={CELL_COUNT_LABEL_CLASS_NAME}
+        data-testid={CELL_COUNT_LABEL_CLASS_NAME}
+      >
         {countString}
       </CellCountLabelStyle>
     </FlexRowJustified>

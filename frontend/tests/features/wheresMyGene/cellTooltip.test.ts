@@ -3,7 +3,10 @@ import { conditionallyRunTests } from "../../utils/wmgUtils";
 import { expandTissue, getCellTypeNames, goToPage } from "tests/utils/helpers";
 import { TEST_URL } from "tests/common/constants";
 import { ROUTES } from "src/common/constants/routes";
-import { CELL_TYPE_ROW_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
+import {
+  CELL_TYPE_NAME_LABEL_CLASS_NAME,
+  CELL_TYPE_ROW_CLASS_NAME,
+} from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 const { describe } = test;
 
 describe("cell tooltip", () => {
@@ -16,7 +19,7 @@ describe("cell tooltip", () => {
   test(`Should verify cell tooltip hover`, async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
-    const cellName = "cell-type-name";
+    const cellName = CELL_TYPE_NAME_LABEL_CLASS_NAME;
 
     // (thuang): Expand blood tissue to find truncated cell names
     await expandTissue(page, "blood");
