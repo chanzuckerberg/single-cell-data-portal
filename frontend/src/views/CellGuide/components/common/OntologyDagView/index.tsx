@@ -31,8 +31,8 @@ import {
   HoverContainer,
   TooltipInPortalStyle,
   StyledSVG,
-  StyledButtonIcon,
   RightAligned,
+  StyledTagFilter,
 } from "./style";
 import { useFullScreen } from "../FullScreenProvider";
 import {
@@ -56,6 +56,7 @@ import {
   ALL_TISSUES,
   TISSUE_AGNOSTIC,
 } from "../../CellGuideCard/components/MarkerGeneTables/constants";
+import { Icon } from "@czi-sds/components";
 
 interface TreeProps {
   skinnyMode?: boolean;
@@ -418,6 +419,24 @@ export default function OntologyDagView({
               data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER}
             >
               <RightAligned>
+                {selectedGene && (
+                  <StyledTagFilter
+                    data-testid={
+                      CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
+                    }
+                    label={selectedGene}
+                    sx={{
+                      backgroundColor: "gray",
+                      padding: 0,
+                      margin: 0,
+                    }}
+                    deleteIcon={
+                      <Icon sdsIcon="xMark" sdsSize="xs" sdsType="button" />
+                    }
+                    onDelete={() => selectGene && selectGene(selectedGene)}
+                    onClick={() => selectGene && selectGene(selectedGene)}
+                  />
+                )}
                 <FullscreenButton
                   data-testid={
                     CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON
@@ -426,18 +445,6 @@ export default function OntologyDagView({
                 >
                   {isFullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
                 </FullscreenButton>
-                {selectedGene && (
-                  <StyledButtonIcon
-                    aria-label={`deactivate ${selectedGene} marker gene ontology view mode`}
-                    data-testid={
-                      CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
-                    }
-                    sdsIcon="eyeClosed"
-                    sdsSize="small"
-                    sdsType="secondary"
-                    onClick={() => selectGene && selectGene(selectedGene)}
-                  />
-                )}
               </RightAligned>
 
               {tooltipOpen && (

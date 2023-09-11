@@ -34,6 +34,7 @@ export const StyledPie = styled.div<StyledPieProps>`
         left: ${center ? "50%" : "unset"};
         top: ${center ? "50%" : "unset"};
         transform: ${center ? "translate(-50%, -50%)" : "unset"};
+        background-color: ${!center ? "#f8f8f8" : "unset"};
       `;
   }}
   border-radius: 50%;

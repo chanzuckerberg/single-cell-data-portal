@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import { IconButton } from "@mui/material";
-import { ButtonIcon } from "@czi-sds/components";
+import { ButtonIcon, TagFilter } from "@czi-sds/components";
 import { spacesL } from "src/common/theme";
 
 export const FullscreenButton = styled(IconButton)`
@@ -68,4 +68,11 @@ export const StyledSVG = styled.svg<StyledSVGProps>`
   position: absolute;
   top: 0;
   left: 0;
+`;
+
+export const StyledTagFilter = styled(TagFilter)`
+  z-index: 1;
+  &:hover {
+    background-color: gray;
+  }
 `;

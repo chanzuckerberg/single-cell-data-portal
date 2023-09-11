@@ -56,7 +56,6 @@ export default function Node({
   const textCursor = node.data.id.startsWith("dummy-child")
     ? "pointer"
     : "default";
-  const inMarkerGeneMode = !!cellTypesWithMarkerGeneStats;
   const cellTypeMarkerGeneStats = cellTypesWithMarkerGeneStats?.[node.data.id];
   return (
     <StyledGroup top={top} left={left} key={animationKey} opacity={opacity}>
@@ -100,8 +99,8 @@ export default function Node({
         isTargetNode={isTargetNode}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
-        inMarkerGeneMode={inMarkerGeneMode}
         cellTypeMarkerGeneStats={cellTypeMarkerGeneStats}
+        inMarkerGeneMode={!!cellTypesWithMarkerGeneStats}
       />
     </StyledGroup>
   );

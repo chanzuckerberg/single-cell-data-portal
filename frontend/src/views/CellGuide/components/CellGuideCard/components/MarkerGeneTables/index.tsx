@@ -36,6 +36,7 @@ import {
   NoWrapWrapper,
   StyledLink,
   ReferenceTooltipWrapper,
+  StyledIconImage,
 } from "./style";
 import Table from "../common/Table";
 import { Pagination } from "@mui/material";
@@ -50,6 +51,7 @@ import {
   ComputationalMarkerGeneTableData,
   useComputationalMarkerGenesTableRowsAndFilters,
 } from "./hooks/computational_markers";
+import treeDendrogram from "src/common/images/TreeDendogram.svg";
 import {
   CanonicalMarkerGeneTableData,
   useCanonicalMarkerGenesTableRowsAndFilters,
@@ -348,19 +350,17 @@ const MarkerGeneTables = ({
         {row.symbol}{" "}
         <ButtonIcon
           aria-label={`display gene info for ${row.symbol}`}
+          className="hover-button"
           sdsIcon="infoCircle"
           sdsSize="small"
           sdsType="secondary"
           onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
         />
         {showEye && (
-          <ButtonIcon
+          <StyledIconImage
             data-testid={MARKER_GENES_EYE_ICON_BUTTON_TEST_ID(row.symbol)}
             className="hover-button"
-            aria-label={`activate ontology marker gene mode for ${row.symbol}`}
-            sdsIcon="eyeOpen"
-            sdsSize="small"
-            sdsType="secondary"
+            src={treeDendrogram}
             onClick={() => selectGene(row.symbol)}
           />
         )}

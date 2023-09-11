@@ -76,11 +76,8 @@ export default function AnimatedNodes({
       });
     }, 2 * 1000);
     setTimerId(id);
-    if (
-      event.target instanceof HTMLDivElement &&
-      event.target.parentNode instanceof SVGElement
-    ) {
-      const ownerSVGElement = event.target.parentNode as Element;
+    const ownerSVGElement = findSVGParent(event.target as Node);
+    if (event.target instanceof HTMLDivElement && ownerSVGElement) {
       const coords = localPoint(ownerSVGElement, event);
       if (coords) {
         const marker_score =
@@ -234,4 +231,14 @@ function collapseAllDescendants(node: HierarchyPointNode<TreeNodeWithState>) {
       collapseAllDescendants(child);
     }
   }
+}
+
+function findSVGParent(node: Node | null): SVGElement | undefined {
+  while (node) {
+    if (node instanceof SVGElement) {
+      return node;
+    }
+    node = node.parentNode;
+  }
+  return undefined;
 }

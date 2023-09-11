@@ -1,8 +1,9 @@
 import styled from "@emotion/styled";
 import {
   highlightColor,
-  markerGeneModeColor,
+  leftBorderSpacing,
   primaryColor,
+  secondaryColor,
   tertiaryColor,
 } from "../../common/constants";
 import { spacesL, spacesM } from "src/common/theme";
@@ -64,52 +65,22 @@ export const CenterText = styled.div`
   text-align: center;
 `;
 
-export const HasDescendants = styled.div`
-  border-radius: 50%;
-  width: ${SQUARE_SIZE}px;
-  height: ${SQUARE_SIZE}px;
-
-  background: repeating-linear-gradient(
-    -45deg,
-    #999999,
-    #999999 1px,
-    transparent 1px,
-    transparent 4px
-  );
-  border: 1px solid #999999;
-`;
-
-export const HasNoDescendants = styled.div`
-  width: ${SQUARE_SIZE}px;
-  height: ${SQUARE_SIZE}px;
-
-  background: repeating-linear-gradient(
-    -45deg,
-    #999999,
-    #999999 1px,
-    transparent 1px,
-    transparent 4px
-  );
-  border: 1px solid #999999;
-`;
-
-export const YesMarkergene = styled.div`
-  border-radius: 50%;
-  width: ${SQUARE_SIZE}px;
-  height: ${SQUARE_SIZE}px;
-  background-color: ${markerGeneModeColor};
-`;
-
-export const NoMarkerGene = styled.div`
-  border-radius: 50%;
-  width: ${SQUARE_SIZE}px;
-  height: ${SQUARE_SIZE}px;
-  background-color: ${tertiaryColor};
-`;
-
 export const IsTargetNode = styled.div`
   border-radius: 50%;
   width: ${SQUARE_SIZE}px;
   height: ${SQUARE_SIZE}px;
   background-color: ${highlightColor};
+`;
+
+interface NoDescendantsProps {
+  size: number;
+}
+export const NoDescendantsLine = styled.div<NoDescendantsProps>`
+  position: absolute;
+  width: ${(props) => `${props.size / 2 + 2 * leftBorderSpacing}px`};
+  height: 1px;
+  background-color: ${secondaryColor};
+  left: -${leftBorderSpacing}px;
+  top: ${(props) => `${props.size / 2 - 1}px`};
+  z-index: -1;
 `;

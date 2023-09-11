@@ -15,6 +15,7 @@ import {
   spacesS,
 } from "src/common/theme";
 import Link from "../common/Link";
+import Image from "next/image";
 
 const DIVIDER_WIDTH = 2;
 
@@ -45,7 +46,7 @@ export const NoWrapWrapper = styled.span<NoWrapWrapperProps>`
   display: flex;
   column-gap: ${spacesS}px;
   .hover-button {
-    visibility: ${(props) => (props.isSelected ? "visible" : "hidden")};
+    visibility: hidden;
     transition: visibility 0.3s ease;
   }
   &:hover .hover-button {
@@ -134,4 +135,9 @@ export const MarkerGeneTooltipSubtext = styled.div`
 
 export const MarkerGeneTableWrapper = styled.div`
   max-width: calc(100vw - ${spacesL}px - ${spacesL}px);
+`;
+
+export const StyledIconImage = styled(Image)`
+  cursor: pointer;
+  fill: black;
 `;

@@ -1,8 +1,6 @@
 import {
   CenterText,
   FlexColumn,
-  HasDescendants,
-  HasNoDescendants,
   IsInCorpus,
   IsNotInCorpus,
   IsTargetNode,
@@ -10,14 +8,17 @@ import {
   LegendItemWrapper,
   LegendWrapper,
   MarkerScoreWrapper,
+  NoDescendantsLine,
 } from "./style";
 import { StyledPie } from "../../common/style";
 import { CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID } from "./constants";
 import {
   largeSize,
+  leftBorderSpacing,
   maxMarkerScore,
   nodePieChartCircleScaler,
 } from "../../common/constants";
+import { Border, NodeWrapper } from "../Node/components/RectOrCircle/style";
 interface LegendProps {
   selectedGene: string | undefined;
 }
@@ -28,19 +29,17 @@ export default function Legend({ selectedGene }: LegendProps) {
       <IsTargetNode />
     </LegendItemWrapper>
   );
+  const size = largeSize * 2;
   const descendantsLegendComponent = (
     <LegendItemWrapper>
-      Descendants
-      <LegendItem>
-        <FlexColumn>
-          <HasDescendants />
-          <CenterText>Yes</CenterText>
-        </FlexColumn>
-        <FlexColumn>
-          <HasNoDescendants />
-          <CenterText>No</CenterText>
-        </FlexColumn>
-      </LegendItem>
+      <FlexColumn>
+        No Descendents
+        <NodeWrapper columnGap={leftBorderSpacing}>
+          <NoDescendantsLine size={size} />
+          <Border width={leftBorderSpacing} height={size} />
+          <IsNotInCorpus />
+        </NodeWrapper>
+      </FlexColumn>
     </LegendItemWrapper>
   );
   const corpusLegendComponent = (
@@ -58,7 +57,7 @@ export default function Legend({ selectedGene }: LegendProps) {
       </LegendItem>
     </LegendItemWrapper>
   );
-  const size = largeSize * 2;
+
   const numPies = 6;
   const numMarkerScores = maxMarkerScore + 1;
 
@@ -108,7 +107,7 @@ export default function Legend({ selectedGene }: LegendProps) {
     <LegendWrapper data-testid={CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID}>
       {!selectedGene && targetNodeLegendComponent}
       {selectedGene ? hasMarkerGeneLegend : corpusLegendComponent}
-      {!selectedGene && descendantsLegendComponent}
+      {descendantsLegendComponent}
     </LegendWrapper>
   );
 }
