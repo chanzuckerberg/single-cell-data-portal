@@ -1,8 +1,11 @@
 import styled from "@emotion/styled";
 import { scaleSequential } from "d3-scale";
 import { interpolateMagma } from "d3-scale-chromatic";
+import { maxMarkerScore } from "./constants";
 
-const colorScale = scaleSequential(interpolateMagma).domain([4, 0]).clamp(true);
+const colorScale = scaleSequential(interpolateMagma)
+  .domain([maxMarkerScore, 0])
+  .clamp(true);
 
 interface StyledPieProps {
   degree: number;

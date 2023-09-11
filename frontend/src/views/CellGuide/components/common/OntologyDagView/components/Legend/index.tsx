@@ -13,7 +13,11 @@ import {
 } from "./style";
 import { StyledPie } from "../../common/style";
 import { CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID } from "./constants";
-import { largeSize, nodePieChartCircleScaler } from "../../common/constants";
+import {
+  largeSize,
+  maxMarkerScore,
+  nodePieChartCircleScaler,
+} from "../../common/constants";
 interface LegendProps {
   selectedGene: string | undefined;
 }
@@ -55,8 +59,8 @@ export default function Legend({ selectedGene }: LegendProps) {
     </LegendItemWrapper>
   );
   const size = largeSize * 2;
-  const numPies = 5;
-  const numMarkerScores = 4;
+  const numPies = 6;
+  const numMarkerScores = maxMarkerScore + 1;
 
   const fill = "#999999";
   const expressedInCellsPercLegendComponent = (
@@ -64,12 +68,16 @@ export default function Legend({ selectedGene }: LegendProps) {
       Expressed in Cells(%)
       <MarkerScoreWrapper>
         {Array.from({ length: numPies }).map((_, i) => (
-          <ExpressedInCells
-            key={i}
-            degree={(360 / numPies) * i}
-            fill={fill}
-            size={size}
-          />
+          <FlexColumn key={i}>
+            <ExpressedInCells
+              degree={(360 / (numPies - 1)) * i}
+              fill={fill}
+              size={size}
+            />
+            {(i == 0 || i == numPies - 1) && (
+              <CenterText>{(100 / (numPies - 1)) * i}</CenterText>
+            )}
+          </FlexColumn>
         ))}
       </MarkerScoreWrapper>
     </LegendItemWrapper>
@@ -80,7 +88,12 @@ export default function Legend({ selectedGene }: LegendProps) {
       Marker Score ({selectedGene})
       <MarkerScoreWrapper>
         {Array.from({ length: numMarkerScores }).map((_, i) => (
-          <MarkerScore key={i} fill={i} size={size} />
+          <FlexColumn key={i}>
+            <MarkerScore fill={i} size={size} />
+            {(i == 0 || i == numMarkerScores - 1) && (
+              <CenterText>{i}</CenterText>
+            )}
+          </FlexColumn>
         ))}
       </MarkerScoreWrapper>
     </LegendItemWrapper>
