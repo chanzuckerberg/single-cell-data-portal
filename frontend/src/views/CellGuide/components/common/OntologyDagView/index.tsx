@@ -47,6 +47,10 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
   MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
+import {
+  ALL_TISSUES,
+  TISSUE_AGNOSTIC,
+} from "../../CellGuideCard/components/MarkerGeneTables/constants";
 
 interface BaseTreeProps {
   skinnyMode?: boolean;
@@ -88,10 +92,12 @@ const initialTransformMatrixDefault = {
 export default function OntologyDagView({
   cellTypeId,
   tissueId,
-  tissueName,
+  tissueName: tissueNameRaw,
   inputWidth,
   inputHeight,
 }: TreeProps) {
+  const tissueName =
+    tissueNameRaw === TISSUE_AGNOSTIC ? ALL_TISSUES : tissueNameRaw;
   const [width, setWidth] = useState(inputWidth);
   const [height, setHeight] = useState(inputHeight);
 
