@@ -22,10 +22,7 @@ import OntologyId from "src/views/CellGuide/components/OntologyId";
 import { keyframes } from "@emotion/react";
 import { DEFAULT_ONTOLOGY_WIDTH } from "../common/OntologyDagView/common/constants";
 import { SKINNY_MODE_BREAKPOINT_WIDTH } from "./constants";
-import {
-  CELL_GUIDE_SIDE_BAR_WIDTH_PX,
-  TOP_PADDING_PX,
-} from "./components/CellGuideCardSidebar/style";
+import { TOP_PADDING_PX } from "./components/CellGuideCardSidebar/style";
 
 export const SIDEBAR_COLUMN_GAP_PX = 120;
 export const CELLGUIDE_CARD_MAX_WIDTH = 1440;
@@ -57,7 +54,7 @@ export const CellGuideView = styled.div<CellGuideViewProps>`
 
 export const CellGuideWrapper = styled.div<CellGuideViewProps>`
   margin: 0 auto 80px;
-  width: ${(props) =>
+  max-width: ${(props) =>
     props.skinnyMode
       ? `${DEFAULT_ONTOLOGY_WIDTH}px`
       : `${CELLGUIDE_CARD_MAX_WIDTH}px`};
@@ -115,10 +112,6 @@ export const CellGuideCardHeader = styled.div<CellGuideCardHeaderProps>`
   background: linear-gradient(180deg, #fff 89.82%, rgba(255, 255, 255, 0) 100%);
   z-index: 10;
   width: ${(props) => `${props.width + LEFT_RIGHT_PADDING_PX_XXL}px`};
-  left: ${(props) =>
-    `calc(50vw - ${props.width / 2}px - ${
-      (SIDEBAR_COLUMN_GAP_PX + CELL_GUIDE_SIDE_BAR_WIDTH_PX) / 2
-    }px)`};
   @media (min-width: ${CELLGUIDE_CARD_MAX_WIDTH}px) {
     left: calc(50vw - ${CELLGUIDE_CARD_MAX_WIDTH / 2}px);
   }
@@ -211,6 +204,7 @@ export const MobileTooltipWrapper = styled.div`
   display: flex;
   flex-direction: column;
   height: calc(100vh - ${HEADER_HEIGHT_PX}px);
+  overscroll-behavior: contain;
   width: 100vw;
   padding: ${spacesL}px;
   gap: ${spacesL}px;
