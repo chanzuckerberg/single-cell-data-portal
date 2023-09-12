@@ -101,6 +101,11 @@ function CellInfoSideBar({
       <TissueName>{tissueInfo.name}</TissueName>
       <Link
         href={`${ROUTES.CELL_GUIDE}/${cellInfoCellType.cellType.id}`}
+        onClick={() =>
+          track(EVENTS.WMG_OPEN_IN_CG_CLICKED, {
+            cell_type: cellInfoCellType.cellType.id,
+          })
+        }
         target="_blank"
         rel="noreferrer noopener"
       >

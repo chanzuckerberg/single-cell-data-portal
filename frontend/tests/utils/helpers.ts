@@ -10,6 +10,7 @@ import {
   ERROR_NO_TESTID_OR_LOCATOR,
   GENE_LABELS_ID,
 } from "../common/constants";
+import { TISSUE_NAME_LABEL_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 
 /**
  * (thuang): From oauth/users.json
@@ -441,7 +442,7 @@ export async function expandTissue(page: Page, tissueName: string) {
       const beforeCellTypeNames = await getCellTypeNames(page);
       await page
         .getByTestId(`cell-type-labels-${tissueName}`)
-        .getByTestId("tissue-name")
+        .getByTestId(TISSUE_NAME_LABEL_CLASS_NAME)
         .click();
       const afterCellTypeNames = await getCellTypeNames(page);
       expect(afterCellTypeNames.length).toBeGreaterThan(

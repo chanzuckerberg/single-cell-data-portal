@@ -537,6 +537,10 @@ const MarkerGeneTables = ({
     page: number
   ) => {
     setPage(page);
+    track(EVENTS.CG_MARKER_GENE_PAGINATION_CLICKED, {
+      page: page,
+      type: activeTable ? "computational" : "canonical",
+    });
   };
 
   return (
@@ -551,6 +555,11 @@ const MarkerGeneTables = ({
               <Link
                 url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
                 label="Open in Gene Expression"
+                onClick={() => {
+                  track(EVENTS.CG_OPEN_IN_WMG_CLICKED, {
+                    type: activeTable ? "computational" : "canonical",
+                  });
+                }}
               />
             )}
           </TableTitleInnerWrapper>
