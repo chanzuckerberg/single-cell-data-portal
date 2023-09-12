@@ -34,6 +34,8 @@ import {
   SOURCE_DATA_TABLE_BREAKPOINT_PX,
 } from "./constants";
 import { useDataSourceFilter } from "./hooks/useDataSourceFilter";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 interface TableRow {
   collection: ReactElement;
@@ -350,7 +352,16 @@ function createTableRow(
 }
 
 function generateLink(key: string, label: string, url: string) {
-  return <Link key={key} label={label} url={url} />;
+  return (
+    <Link
+      key={key}
+      label={label}
+      url={url}
+      onClick={() =>
+        track(EVENTS.VIEW_COLLECTION_PAGE_CLICKED, { collection_name: label })
+      }
+    />
+  );
 }
 
 function generateTagLabel(
