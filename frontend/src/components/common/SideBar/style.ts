@@ -36,6 +36,7 @@ export const SideBar = styled.div<Props>`
   width: ${(props) => `${props.sideBarWidth}px`};
   grid-area: ${(props) =>
     props.position === Position.LEFT ? "leftsidebar" : "rightsidebar"};
+  background-color: white;
 `;
 
 export const SideBarPositioner = styled.div<PositionerProps>`
