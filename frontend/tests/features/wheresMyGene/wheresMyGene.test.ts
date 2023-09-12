@@ -23,12 +23,16 @@ import {
 } from "tests/utils/wmgUtils";
 import { getCurrentDate } from "tests/utils/downloadUtils";
 import { searchAndAddGene } from "tests/utils/geneUtils";
+import {
+  CELL_TYPE_NAME_LABEL_CLASS_NAME,
+  TISSUE_NAME_LABEL_CLASS_NAME,
+} from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
 const GENE_LABELS_ID = "[data-testid^=gene-label-]";
-const CELL_TYPE_LABELS_ID = "cell-type-name";
-const TISSUE_LABELS_ID = "tissue-name";
+const CELL_TYPE_LABELS_ID = CELL_TYPE_NAME_LABEL_CLASS_NAME;
+const TISSUE_LABELS_ID = TISSUE_NAME_LABEL_CLASS_NAME;
 const ADD_GENE_ID = "add-gene-btn";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
 const SOURCE_DATA_LIST_SELECTOR = `[data-testid="source-data-list"]`;
@@ -425,9 +429,9 @@ describe("Where's My Gene", () => {
     }) => {
       await goToWMG(page);
 
-      await expandTissue(page, "heart");
+      await expandTissue(page, "brain");
 
-      await getCellTypeFmgButtonAndClick(page, "dendritic cell");
+      await getCellTypeFmgButtonAndClick(page, "smooth muscle cell");
 
       await waitForElement(page, NO_MARKER_GENES_WARNING_TEST_ID);
     });
