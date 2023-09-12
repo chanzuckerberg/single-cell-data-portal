@@ -27,6 +27,7 @@ interface LegendProps {
 export default function Legend({ selectedGene, isTissue }: LegendProps) {
   const targetNodeLegendComponent = (
     <LegendItemWrapper>
+      Cell Type
       <IsTargetNode />
       Selected
     </LegendItemWrapper>
@@ -48,7 +49,6 @@ export default function Legend({ selectedGene, isTissue }: LegendProps) {
       <LegendItemWrapper>
         <LegendItem>
           <FlexColumn>
-            Cell Type
             <IsInCorpus />
             <CenterText>In Census</CenterText>
           </FlexColumn>
