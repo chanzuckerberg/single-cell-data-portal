@@ -1,12 +1,12 @@
 import styled from "@emotion/styled";
 import {
   highlightColor,
-  leftBorderSpacing,
   primaryColor,
   secondaryColor,
   tertiaryColor,
 } from "../../common/constants";
 import { spacesL, spacesM } from "src/common/theme";
+import { Border } from "../Node/components/RectOrCircle/style";
 
 const SQUARE_SIZE = 14;
 export const LegendWrapper = styled.div`
@@ -77,10 +77,15 @@ interface NoDescendantsProps {
 }
 export const NoDescendantsLine = styled.div<NoDescendantsProps>`
   position: absolute;
-  width: ${(props) => props.size / 2 + 2 * leftBorderSpacing}px;
+  width: ${(props) => props.size}px;
   height: 1px;
   background-color: ${secondaryColor};
-  left: -${leftBorderSpacing}px;
+  left: ${(props) => -props.size}px;
   top: ${(props) => props.size / 2 - 1}px;
   z-index: -1;
+  border: 1px solid ${secondaryColor};
+`;
+
+export const StyledBorder = styled(Border)`
+  border-left: 2px solid ${secondaryColor};
 `;

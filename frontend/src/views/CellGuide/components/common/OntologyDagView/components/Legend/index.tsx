@@ -9,17 +9,17 @@ import {
   LegendWrapper,
   MarkerScoreWrapper,
   NoDescendantsLine,
+  StyledBorder,
 } from "./style";
 import { StyledPie } from "../../common/style";
 import { CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID } from "./constants";
 import {
   largeSize,
-  leftBorderSpacing,
   maxMarkerScore,
   nodePieChartCircleScaler,
   secondaryColor,
 } from "../../common/constants";
-import { Border, NodeWrapper } from "../Node/components/RectOrCircle/style";
+import { NodeWrapper } from "../Node/components/RectOrCircle/style";
 interface LegendProps {
   selectedGene: string | undefined;
   isTissue?: boolean;
@@ -27,19 +27,19 @@ interface LegendProps {
 export default function Legend({ selectedGene, isTissue }: LegendProps) {
   const targetNodeLegendComponent = (
     <LegendItemWrapper>
-      Current
+      Cell Type
       <IsTargetNode />
+      Selected
     </LegendItemWrapper>
   );
   const size = largeSize * 2;
   const descendantsLegendComponent = (
     <LegendItemWrapper>
       <FlexColumn>
-        No Descendents
+        No Descendants
         <NodeWrapper>
           <NoDescendantsLine size={size} />
-          <Border width={leftBorderSpacing} height={size} />
-          <IsNotInCorpus />
+          <StyledBorder width={1} height={size * 2} />
         </NodeWrapper>
       </FlexColumn>
     </LegendItemWrapper>
