@@ -34,6 +34,13 @@ import {
   Wrapper,
   TissueLabel,
 } from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/style";
+import {
+  CELL_COUNT_LABEL_CLASS_NAME,
+  CELL_TYPE_ROW_CLASS_NAME,
+  TISSUE_ROW_CLASS_NAME,
+  TISSUE_NAME_LABEL_CLASS_NAME,
+  CELL_TYPE_NAME_LABEL_CLASS_NAME,
+} from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 
 interface Props {
   cellTypes: CellTypeRow[];
@@ -151,8 +158,8 @@ const TissueHeaderButton = ({
 
   return (
     <FlexRowJustified
-      className="cell-type-label-count"
-      data-testid="cell-type-label-count"
+      className={TISSUE_ROW_CLASS_NAME}
+      data-testid={TISSUE_ROW_CLASS_NAME}
     >
       <FlexRow
         onClick={useCallback(() => {
@@ -168,15 +175,18 @@ const TissueHeaderButton = ({
         <TissueHeaderLabelStyle>
           <div>
             <TissueLabel
-              className="cell-type-name"
-              data-testid="cell-type-name"
+              className={TISSUE_NAME_LABEL_CLASS_NAME}
+              data-testid={TISSUE_NAME_LABEL_CLASS_NAME}
             >
               {capitalize(formattedName)}
             </TissueLabel>
           </div>
         </TissueHeaderLabelStyle>
       </FlexRow>
-      <CellCountLabelStyle className="cell-count" data-testid="cell-count">
+      <CellCountLabelStyle
+        className={CELL_COUNT_LABEL_CLASS_NAME}
+        data-testid={CELL_COUNT_LABEL_CLASS_NAME}
+      >
         {countString}
       </CellCountLabelStyle>
     </FlexRowJustified>
@@ -210,8 +220,8 @@ const CellTypeButton = ({
 
   return (
     <FlexRowJustified
-      className="cell-type-label-count"
-      data-testid="cell-type-label-count"
+      className={CELL_TYPE_ROW_CLASS_NAME}
+      data-testid={CELL_TYPE_ROW_CLASS_NAME}
     >
       <FlexRow>
         <CellTypeLabelStyle>
@@ -235,7 +245,10 @@ const CellTypeButton = ({
                   {name}
                 </HiddenCellTypeLabelStyle>
               )}
-              <div className="cell-type-name" data-testid="cell-type-name">
+              <div
+                className={CELL_TYPE_NAME_LABEL_CLASS_NAME}
+                data-testid={CELL_TYPE_NAME_LABEL_CLASS_NAME}
+              >
                 {formattedName}
               </div>
             </div>
@@ -272,7 +285,10 @@ const CellTypeButton = ({
             </InfoButtonWrapper>
           )}
       </FlexRow>
-      <CellCountLabelStyle className="cell-count" data-testid="cell-count">
+      <CellCountLabelStyle
+        className={CELL_COUNT_LABEL_CLASS_NAME}
+        data-testid={CELL_COUNT_LABEL_CLASS_NAME}
+      >
         {countString}
       </CellCountLabelStyle>
     </FlexRowJustified>

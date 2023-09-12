@@ -54,15 +54,15 @@ db/check:
 # ARGS usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect ARGS="-c \"select * from dataset_artifact where filetype='CXG'\""
 db/connect:
 ifeq ($(DEPLOYMENT_STAGE), rdev)
-	$(MAKE) db/connect_internal DB_NAME=/${STACK} USER_NAME=dataportal
+	$(MAKE) db/connect_internal DB_NAME=/${STACK} DB_USER=dataportal
 else
-	$(MAKE) db/connect_internal DB_NAME=corpora_${DEPLOYMENT_STAGE} USER_NAME=corpora_${DEPLOYMENT_STAGE}
+	$(MAKE) db/connect_internal DB_NAME=corpora_${DEPLOYMENT_STAGE} DB_USER=corpora_${DEPLOYMENT_STAGE}
 endif
 
 db/connect_internal:
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
 	$(MAKE) db/tunnel/up
-	PGOPTIONS='-csearch_path=persistence_schema' PGPASSWORD=${DB_PW} psql --dbname ${DB_NAME} --username ${USER_NAME} --host 0.0.0.0 $(ARGS)
+	PGOPTIONS='-csearch_path=persistence_schema' PGPASSWORD=${DB_PW} psql --dbname ${DB_NAME} --username ${DB_USER} --host 0.0.0.0 $(ARGS)
 	$(MAKE) db/tunnel/down
 
 db/console: db/connect # alias
@@ -138,8 +138,18 @@ mirror_env_data:
 	# Mirrors the SRC_ENV env's AWS RDS database and S3 data to
 	# DEST_ENV. Defaults to prod->dev.
 	#
+	# If WMG_CUBE is set to any non-null value, copy the WMG cube from SRC_ENV to DEST_ENV. Works for DEST_ENV=rdev.
+	#
+	# If DEST_ENV = 'rdev':
+	# - STACK arg must be included accordingly
+	# - A comma-separated list of Collection id uuids may be passed as the COLLECTIONS arg to determine which Dataset
+	# assets are mirrored from SRC_ENV s3 to the specified rdev STACK -- pass any non-null value for the DATA arg
+	# (e.g., DATA=1) to copy the real datafiles, otherwise a sample Dataset is used to populate all relevant s3 asset
+	# keys for all corresponding Datasets (faster). Covers all Dataset versions in each Collection. Ignored for mirrors
+	# where DEST_ENV != rdev.
+	#
 	# THIS IS DESTRUCTIVE for the DEST_ENV env! The SRC_ENV env will
 	# never be modified, but the DEST_ENV env's data will be replaced.
 	#
-	# Usage: make mirror_env_data [DEST_ENV={dev|staging}] [SRC_ENV={prod|staging|dev}] 
-	scripts/mirror_env_data.sh $(SRC_ENV) $(DEST_ENV)
+	# Usage: make mirror_env_data [SRC_ENV={prod|staging|dev}] [DEST_ENV={dev|staging|rdev}] [WMG_CUBE=1] [STACK=<rdev_stack_name> [COLLECTIONS=<uuid1,uuid2,...> [DATA=1]]]
+	scripts/mirror_env_data.sh $(SRC_ENV) $(DEST_ENV) $(WMG_CUBE) $(STACK) $(COLLECTIONS) $(DATA)

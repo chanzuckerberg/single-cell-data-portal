@@ -22,7 +22,7 @@ export function useExplainTombstoned(): void {
         icon: IconNames.ISSUE,
         intent: Intent.PRIMARY,
         message:
-          "This collection was withdrawn. You’ve been redirected to the cellxgene Data Portal homepage.",
+          "This collection was withdrawn. You’ve been redirected to Collections.",
       });
       removeParams("tombstoned_collection_id");
     }

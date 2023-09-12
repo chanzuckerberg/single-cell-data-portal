@@ -34,8 +34,6 @@ import { useFullScreen } from "../FullScreenProvider";
 import {
   defaultMargin,
   backgroundColor,
-  DEFAULT_ONTOLOGY_HEIGHT,
-  DEFAULT_ONTOLOGY_WIDTH,
   NODE_SPACINGS,
 } from "./common/constants";
 import { TreeNodeWithState } from "./common/types";
@@ -43,22 +41,21 @@ import Legend from "./components/Legend";
 import AnimatedNodes from "./components/AnimatedNodes";
 import AnimatedLinks from "./components/AnimatedLinks";
 import {
-  LEFT_RIGHT_PADDING_PX,
-  LEFT_RIGHT_PADDING_PX_SKINNY_MODE,
-  SIDEBAR_COLUMN_GAP_PX,
-} from "../../CellGuideCard/style";
-import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
   MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
+import {
+  ALL_TISSUES,
+  TISSUE_AGNOSTIC,
+} from "../../CellGuideCard/components/MarkerGeneTables/constants";
 
 interface BaseTreeProps {
   skinnyMode?: boolean;
-  initialWidth?: number;
-  initialHeight?: number;
+  inputWidth: number;
+  inputHeight: number;
 }
 
 interface CellTypeIdProps extends BaseTreeProps {
@@ -95,17 +92,14 @@ const initialTransformMatrixDefault = {
 export default function OntologyDagView({
   cellTypeId,
   tissueId,
-  tissueName,
-  skinnyMode,
-  initialHeight,
-  initialWidth,
+  tissueName: tissueNameRaw,
+  inputWidth,
+  inputHeight,
 }: TreeProps) {
-  skinnyMode = cellTypeId ? skinnyMode : true;
-  const defaultHeight = initialHeight ?? DEFAULT_ONTOLOGY_HEIGHT;
-  const defaultWidth = initialWidth ?? DEFAULT_ONTOLOGY_WIDTH;
-
-  const [width, setWidth] = useState(defaultWidth);
-  const [height, setHeight] = useState(defaultHeight);
+  const tissueName =
+    tissueNameRaw === TISSUE_AGNOSTIC ? ALL_TISSUES : tissueNameRaw;
+  const [width, setWidth] = useState(inputWidth);
+  const [height, setHeight] = useState(inputHeight);
 
   const [initialTransformMatrix, setInitialTransformMatrix] = useState<
     typeof initialTransformMatrixDefault
@@ -116,10 +110,6 @@ export default function OntologyDagView({
   // take effect.
   const [centeredNodeCoords, setCenteredNodeCoords] = useState<boolean>(false);
 
-  // This is used to store the desired resized width of the ontology view
-  // while full screen mode is active.
-  const [resizeWidth, setResizeWidth] = useState(defaultWidth);
-
   const {
     isFullScreen,
     screenDimensions,
@@ -127,41 +117,10 @@ export default function OntologyDagView({
     disableFullScreen,
   } = useFullScreen();
 
-  // Handle the resizing of the ontology view when the screen is resized
-  useEffect(() => {
-    const skinnyAdjustment = skinnyMode ? 0 : SIDEBAR_COLUMN_GAP_PX + 240;
-
-    const leftRightPadding = skinnyMode
-      ? LEFT_RIGHT_PADDING_PX_SKINNY_MODE
-      : LEFT_RIGHT_PADDING_PX;
-
-    const width = Math.min(
-      defaultWidth,
-      window.innerWidth - leftRightPadding * 2 - skinnyAdjustment
-    );
-    setResizeWidth(width);
-    if (!isFullScreen) setWidth(width);
-
-    const handleResize = () => {
-      const skinnyAdjustment = skinnyMode ? 0 : SIDEBAR_COLUMN_GAP_PX + 240;
-
-      // Account for the padding on the left and right of the CellGuideCard component
-      const width = Math.min(
-        defaultWidth,
-        window.innerWidth - leftRightPadding * 2 - skinnyAdjustment
-      );
-      // Always set the resize width, but only set the width if not in full screen mode
-      setResizeWidth(width);
-      if (!isFullScreen) setWidth(width);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [isFullScreen, skinnyMode, defaultWidth]);
-
   // Handle the resizing of the ontology view when full screen mode is toggled
   useEffect(() => {
-    let newWidth = resizeWidth;
-    let newHeight = defaultHeight;
+    let newWidth = inputWidth;
+    let newHeight = inputHeight;
     if (screenDimensions.width > 0 && isFullScreen) {
       newWidth = screenDimensions.width;
     }
@@ -170,7 +129,7 @@ export default function OntologyDagView({
     }
     setWidth(newWidth);
     setHeight(newHeight);
-  }, [screenDimensions, isFullScreen, resizeWidth, defaultHeight]);
+  }, [screenDimensions, isFullScreen, inputWidth, inputHeight]);
 
   // This is used to trigger a re-render of the ontology view
   const [triggerRender, setTriggerRender] = useState(false);

@@ -16,7 +16,9 @@ import {
   useGeneExpressionSummariesByTissueName,
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
-import SideBar from "src/components/common/SideBar";
+import SideBar, {
+  FILTERS_PANEL_EXPANDED_WIDTH_PX,
+} from "src/components/common/SideBar";
 import {
   DispatchContext,
   StateContext,
@@ -43,7 +45,6 @@ import {
   StyledBannerContainer,
   StyledSidebarDrawer,
 } from "src/views/WheresMyGene/components/Main/style";
-import RightSideBar from "src/components/common/RightSideBar";
 import ScreenTint from "src/views/WheresMyGene/components/ScreenTint";
 import {
   SideBarPositioner,
@@ -57,6 +58,7 @@ import BottomBanner from "src/components/BottomBanner";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "src/views/WheresMyGene/components/CellInfoSideBar/style";
 import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
 import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
+import { StyledRightSideBar } from "./style";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -273,6 +275,11 @@ export default function WheresMyGene(): JSX.Element {
     dispatch(addGeneInfoGene(gene));
   };
 
+  // Sidebar width
+  const [sidebarWidth, setSidebarWidth] = useState(
+    FILTERS_PANEL_EXPANDED_WIDTH_PX
+  );
+
   return (
     <>
       <Head>
@@ -285,6 +292,7 @@ export default function WheresMyGene(): JSX.Element {
         SideBarPositionerComponent={SideBarPositioner}
         testId="filters-panel"
         wmgSideBar
+        onWidthChange={setSidebarWidth}
       >
         <Filters
           isLoading={isLoading}
@@ -294,7 +302,7 @@ export default function WheresMyGene(): JSX.Element {
         />
       </SideBar>
       {cellInfoCellType && tissuesByID ? (
-        <RightSideBar width={CELL_INFO_SIDEBAR_WIDTH_PX}>
+        <StyledRightSideBar width={CELL_INFO_SIDEBAR_WIDTH_PX}>
           <CellInfoSideBar
             generateGeneInfo={generateGeneInfo}
             cellInfoCellType={cellInfoCellType}
@@ -313,17 +321,17 @@ export default function WheresMyGene(): JSX.Element {
               />
             )
           }
-        </RightSideBar>
+        </StyledRightSideBar>
       ) : (
         // Gene info full right sidebar length
         geneInfoGene && (
-          <RightSideBar>
+          <StyledRightSideBar>
             <GeneInfoSideBar
               geneInfoGene={geneInfoGene}
               handleClose={handleCloseGeneInfoSideBar}
               title={geneInfoGene}
             />
-          </RightSideBar>
+          </StyledRightSideBar>
         )
       )}
 
@@ -391,6 +399,11 @@ export default function WheresMyGene(): JSX.Element {
             tissuesByName={tissuesByName}
             expandedTissues={expandedTissues}
             setExpandedTissues={setExpandedTissues}
+            /**
+             * (thuang): This is needed to reposition gene search bar when the
+             * sidebar width expands/collapses
+             */
+            sidebarWidth={sidebarWidth}
           />
         </Wrapper>
       </View>

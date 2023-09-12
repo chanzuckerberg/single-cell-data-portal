@@ -10,10 +10,11 @@ import {
 } from "@czi-sds/components";
 import Modal from "../common/Modal";
 import { beta100, beta400, error400, gray500 } from "src/common/theme";
+import { SKINNY_MODE_BREAKPOINT_WIDTH } from "src/views/CellGuide/components/CellGuideCard/constants";
 
 export const BOTTOM_BANNER_ID = "bottom-banner";
 
-export const HiddenHubspotForm = styled.div`
+export const HiddenHubSpotForm = styled.div`
   display: none;
 `;
 
@@ -23,6 +24,11 @@ export const StyledBanner = styled(Banner)`
   letter-spacing: -0.006em;
 
   height: auto;
+
+  @media (max-width: ${SKINNY_MODE_BREAKPOINT_WIDTH}px) {
+    padding: 8px 16px;
+    box-shadow: 0px 0px 4px 0px rgba(50, 50, 50, 0.75);
+  }
 
   /**
    * beta intent does not exist for SDS banner, but the colors do targeting
@@ -52,6 +58,8 @@ export const StyledBottomBannerWrapper = styled.div`
 
   /* Right behind modal overlay */
   z-index: 19;
+
+  background-color: purple;
 `;
 
 export const StyledLink = styled.a`
@@ -71,7 +79,12 @@ export const HeaderContainer = styled.div`
   align-items: flex-start;
 `;
 
-export const StyledCloseButtonIcon = styled(ButtonIcon)`
+const STYLED_CLOSE_BUTTON_ICON_DENY_PROPS = ["hideCloseButton"];
+
+export const StyledCloseButtonIcon = styled(ButtonIcon, {
+  shouldForwardProp: (prop) =>
+    !STYLED_CLOSE_BUTTON_ICON_DENY_PROPS.includes(prop),
+})`
   /* Only hide close button if mobile view and is a direct link */
   @media only screen and (max-width: 600px) {
     ${hideCloseButton}
@@ -209,7 +222,7 @@ function asFooter({ asFooter }: { asFooter: boolean }) {
     `;
   } else {
     return `
-      position: absolute;
+      position: fixed;
       bottom: 0;
     `;
   }

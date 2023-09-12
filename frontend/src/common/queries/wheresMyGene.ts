@@ -1072,7 +1072,8 @@ function useWMGQueryRequestBody(version: 1 | 2) {
 function useWMGFiltersQueryRequestBody(
   version: 1 | 2 = 2
 ): FiltersQuery | null {
-  const { selectedOrganismId, selectedFilters } = useContext(StateContext);
+  const { selectedOrganismId, selectedFilters, filteredCellTypeIds } =
+    useContext(StateContext);
 
   const { data } = usePrimaryFilterDimensions(version);
 
@@ -1101,6 +1102,7 @@ function useWMGFiltersQueryRequestBody(
         sex_ontology_term_ids: sexes,
         tissue_ontology_term_ids: tissues,
         publication_citations: publications,
+        cell_type_ontology_term_ids: filteredCellTypeIds,
       },
     };
   }, [
@@ -1113,6 +1115,7 @@ function useWMGFiltersQueryRequestBody(
     ethnicities,
     publications,
     sexes,
+    filteredCellTypeIds,
   ]);
 }
 

@@ -103,6 +103,7 @@ interface Props {
   >;
   expandedTissues: Set<string>;
   setExpandedTissues: Dispatch<SetStateAction<Set<string>>>;
+  sidebarWidth: number;
 }
 
 export default memo(function HeatMap({
@@ -123,11 +124,13 @@ export default memo(function HeatMap({
   setTissuesByName,
   expandedTissues,
   setExpandedTissues,
+  sidebarWidth,
 }: Props): JSX.Element {
   const {
     xAxisHeight,
     selectedFilters: { tissues: filteredTissueIds },
     filteredCellTypes,
+    filteredCellTypeIds,
   } = useContext(StateContext);
 
   const selectedCellTypeOptions = useMemo(() => {
@@ -303,18 +306,34 @@ export default memo(function HeatMap({
     rawNewFilteredCellTypes: DefaultAutocompleteOption[]
   ) => {
     if (!dispatch) return;
+
+    const cellTypeNames = rawNewFilteredCellTypes.map(
+      (cellType) => cellType.name
+    );
+    const cellTypeIds = cellTypeNames.map((name) => cellTypesByName[name].id);
+
     dispatch(
-      setFilteredCellTypes(
-        rawNewFilteredCellTypes.map((cellType) => cellType.name)
-      )
+      setFilteredCellTypes({
+        filteredCellTypes: cellTypeNames,
+        filteredCellTypeIds: cellTypeIds,
+      })
     );
   };
-
-  // Reset `displayedCellTypes` and `expandedTissues` when the user clears `filteredCellTypes`
   useEffect(() => {
     if (filteredCellTypes.length === 0) {
       setDisplayedCellTypes(initialDisplayedCellTypeIds);
       setExpandedTissues(EMPTY_SET as Set<string>);
+    }
+  }, [
+    filteredCellTypes.length,
+    initialDisplayedCellTypeIds,
+    setExpandedTissues,
+  ]);
+
+  // Reset `displayedCellTypes` and `expandedTissues` when the user clears `filteredCellTypes`
+  useEffect(() => {
+    if (filteredCellTypes.length === 0) {
+      // This is handled in the above useEffect, but we need to return early here so we don't do the work below
       return;
     }
 
@@ -352,9 +371,8 @@ export default memo(function HeatMap({
     setExpandedTissues(newExpandedTissues);
   }, [
     cellTypesByName,
-    dispatch,
     filteredCellTypes,
-    filteredCellTypes.length,
+    filteredCellTypeIds,
     filteredTissueIds,
     initialDisplayedCellTypeIds,
     setExpandedTissues,
@@ -362,12 +380,22 @@ export default memo(function HeatMap({
     tissuesByName,
   ]);
 
-  const handleCellTypeDelete = (cellTypeToDelete: string) => () => {
+  const handleCellTypeDelete = (cellTypeNameToDelete: string) => () => {
     if (!dispatch) return;
-    const newValue = filteredCellTypes.filter(
-      (cellType) => !(cellTypeToDelete === cellType)
+    const cellTypeIdToDelete = cellTypesByName[cellTypeNameToDelete].id;
+    const newCellTypeNames = filteredCellTypes.filter(
+      (cellType) => !(cellTypeNameToDelete === cellType)
     );
-    dispatch(setFilteredCellTypes(newValue));
+    const newCellTypeIds = filteredCellTypeIds.filter(
+      (cellTypeId) => !(cellTypeIdToDelete === cellTypeId)
+    );
+
+    dispatch(
+      setFilteredCellTypes({
+        filteredCellTypes: newCellTypeNames,
+        filteredCellTypeIds: newCellTypeIds,
+      })
+    );
   };
 
   useTrackHeatMapLoaded({
@@ -439,7 +467,10 @@ export default memo(function HeatMap({
           {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
           <XAxisWrapper id="x-axis-wrapper">
             <XAxisMask data-testid="x-axis-mask" height={xAxisHeight} />
-            <XAxisChart geneNames={sortedGeneNames} />
+            <XAxisChart
+              geneNames={sortedGeneNames}
+              sidebarWidth={sidebarWidth}
+            />
           </XAxisWrapper>
           <YAxisWrapper top={0}>
             {allTissueCellTypes.map(
@@ -498,11 +529,7 @@ export default memo(function HeatMap({
                   key={`${tissueName}-${echartsRendererMode}`}
                   tissue={tissueName}
                   cellTypes={tissueCellTypes}
-                  selectedGeneData={
-                    orderedSelectedGeneExpressionSummariesByTissueName[
-                      tissueName
-                    ]
-                  }
+                  selectedGeneData={selectedGeneData}
                   setIsLoading={setIsLoading}
                   scaledMeanExpressionMax={scaledMeanExpressionMax}
                   scaledMeanExpressionMin={scaledMeanExpressionMin}

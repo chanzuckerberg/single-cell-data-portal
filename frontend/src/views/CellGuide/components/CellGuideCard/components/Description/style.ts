@@ -1,12 +1,19 @@
 import styled from "@emotion/styled";
 import {
+  Button,
+  CommonThemeProps,
   Tooltip,
   fontBodyS,
   fontBodyXs,
   fontBodyXxs,
   fontCapsXxs,
 } from "@czi-sds/components";
-import { gray100, gray500, gray400 } from "src/common/theme";
+import {
+  gray100,
+  gray500,
+  gray400,
+  fontWeightSemibold,
+} from "src/common/theme";
 
 export const CellGuideCardDescription = styled.div`
   ${fontBodyS}
@@ -17,15 +24,47 @@ export const CellGuideCardDescription = styled.div`
   border-radius: 8px;
 `;
 
+export const StyledButton = styled(Button)`
+  ${fontBodyS}
+  font-weight: 500;
+  text-transform: none;
+`;
+
 export const Wrapper = styled.div`
   margin-top: 8px;
 `;
 
+interface DescriptionWrapperProps extends CommonThemeProps {
+  maxHeight?: number;
+}
+export const DescriptionWrapper = styled.div<DescriptionWrapperProps>`
+  ${(props) => `max-height: ${props.maxHeight}px;`}
+  overflow: hidden;
+  position: relative;
+  ${(props) =>
+    props.maxHeight &&
+    `
+    &:after {
+      content: "";
+      text-align: right;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 100%;
+      height: 40px;
+      background: linear-gradient(
+        to bottom,
+        rgba(248, 248, 248, 0),
+        rgba(248, 248, 248, 1) 100%
+      );
+    }
+  `}
+`;
 export const Source = styled.div`
   ${fontBodyS}
   margin-top: 16px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 20px;
   color: ${gray500};
 `;
@@ -38,7 +77,7 @@ export const SourceLink = styled.div`
 
 export const DescriptionHeader = styled.div`
   ${fontCapsXxs}
-  font-weight: 600;
+  font-weight: ${fontWeightSemibold};
   color: ${gray500};
   margin-bottom: 8px;
 `;
@@ -49,7 +88,6 @@ export const StyledTooltip = styled(Tooltip)`
 
 export const ChatGptTooltipText = styled.div`
   ${fontBodyXs}
-  color: #FFFFFF;
   font-weight: 500;
 `;
 

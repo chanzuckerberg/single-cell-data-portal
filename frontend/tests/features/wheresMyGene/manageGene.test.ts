@@ -1,12 +1,11 @@
 import { expect, test } from "@playwright/test";
 import {
   ADD_GENE_SEARCH_PLACEHOLDER_TEXT,
-  goToWMG,
   searchAndAddGene,
   verifyAddedGene,
 } from "tests/utils/geneUtils";
 import { selectNthOption } from "tests/utils/helpers";
-import { conditionallyRunTests } from "tests/utils/wmgUtils";
+import { conditionallyRunTests, goToWMG } from "tests/utils/wmgUtils";
 const { describe } = test;
 
 describe("Manage gene tests", () => {

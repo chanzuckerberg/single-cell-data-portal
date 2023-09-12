@@ -5,9 +5,9 @@ import {
 } from "src/common/queries/cellGuide";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 import { isTissueIdDescendantOfAncestorTissueId } from "src/views/CellGuide/common/utils";
-import { ALL_TISSUES } from "../constants";
+import { ALL_TISSUES, NO_ORGAN_ID } from "../constants";
 
-interface ComputationalMarkerGeneTableData {
+export interface ComputationalMarkerGeneTableData {
   symbol: string;
   name: string;
   marker_score: string;
@@ -30,12 +30,10 @@ function _applyOrderedSelectionCriteria({
   markerGene,
   allTissuesLabelToIdMap,
   selectedOrganismLabel,
-  selectedOrganLabel,
   selectedOrganId,
 }: {
   markerGene: ComputationalMarkersQueryResponseEntry;
   selectedOrganismLabel: string;
-  selectedOrganLabel: string;
   selectedOrganId: string;
   allTissuesLabelToIdMap: Map<string, string>;
 }): { pass: boolean; errorCode: selectionCriteriaErrorCode } {
@@ -60,7 +58,7 @@ function _applyOrderedSelectionCriteria({
   // as ALL_TISSUES. Select them only when selectedOrganLabel is "All Tissues"
   let pass = false;
 
-  if (selectedOrganLabel === ALL_TISSUES) {
+  if (selectedOrganId === NO_ORGAN_ID) {
     pass = tissue_ontology_term_label === ALL_TISSUES;
   } else {
     const tissueId = allTissuesLabelToIdMap.get(tissue_ontology_term_label);
@@ -95,13 +93,11 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
   genes,
   allTissuesLabelToIdMap,
   selectedOrganismLabel,
-  selectedOrganLabel,
   selectedOrganId,
 }: {
   genes: ComputationalMarkersQueryResponse;
   allTissuesLabelToIdMap: Map<string, string>;
   selectedOrganismLabel: string;
-  selectedOrganLabel: string;
   selectedOrganId: string;
 }): {
   computationalMarkerGeneTableData: ComputationalMarkerGeneTableData[];
@@ -122,7 +118,6 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
         markerGene: markerGene,
         allTissuesLabelToIdMap: allTissuesLabelToIdMap,
         selectedOrganismLabel: selectedOrganismLabel,
-        selectedOrganLabel: selectedOrganLabel,
         selectedOrganId: selectedOrganId,
       });
 
@@ -159,11 +154,5 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
       computationalMarkerGeneTableData: rows,
       allFilteredByLowMarkerScore: allFilteredByLowMarkerScore,
     };
-  }, [
-    genes,
-    allTissuesLabelToIdMap,
-    selectedOrganismLabel,
-    selectedOrganLabel,
-    selectedOrganId,
-  ]);
+  }, [genes, allTissuesLabelToIdMap, selectedOrganismLabel, selectedOrganId]);
 }

@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react";
+import { ReactNode } from "react";
 import { StyledDialog } from "./style";
 
 interface Props {
@@ -10,14 +10,14 @@ interface Props {
   children: ReactNode;
 }
 
-const Modal: FC<Props> = ({
+const Modal = ({
   className,
   onClose,
   title,
   isOpen,
   children,
   isCloseButtonShown,
-}) => {
+}: Props) => {
   return (
     <StyledDialog
       title={title}

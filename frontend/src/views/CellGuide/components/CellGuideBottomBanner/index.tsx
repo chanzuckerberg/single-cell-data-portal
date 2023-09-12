@@ -4,10 +4,14 @@ import { CELL_GUIDE_BANNER_SURVEY_LINK } from "src/common/constants/airtableLink
 import BottomBanner from "src/components/BottomBanner";
 import { StyledLink } from "src/components/BottomBanner/style";
 
-export default function CellGuideBottomBanner(): JSX.Element {
+export default function CellGuideBottomBanner({
+  includeSurveyLink = true,
+}: {
+  includeSurveyLink?: boolean;
+}): JSX.Element {
   return (
     <BottomBanner
-      includeSurveyLink
+      includeSurveyLink={includeSurveyLink}
       airtableLink={CELL_GUIDE_BANNER_SURVEY_LINK}
       customSurveyLinkPrefix={
         <span>

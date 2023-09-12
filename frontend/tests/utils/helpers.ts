@@ -10,6 +10,7 @@ import {
   ERROR_NO_TESTID_OR_LOCATOR,
   GENE_LABELS_ID,
 } from "../common/constants";
+import { TISSUE_NAME_LABEL_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 
 /**
  * (thuang): From oauth/users.json
@@ -313,6 +314,8 @@ export async function getNames({
   } else {
     throw Error(ERROR_NO_TESTID_OR_LOCATOR);
   }
+
+  if ((await labelsLocator.count()) === 0) return [];
   await tryUntil(
     async () => {
       const names = await labelsLocator.allTextContents();
@@ -431,4 +434,25 @@ export async function takeSnapshotOfMetaTags(name: string, page: Page) {
     },
     { page }
   );
+}
+
+export async function expandTissue(page: Page, tissueName: string) {
+  await tryUntil(
+    async () => {
+      const beforeCellTypeNames = await getCellTypeNames(page);
+      await page
+        .getByTestId(`cell-type-labels-${tissueName}`)
+        .getByTestId(TISSUE_NAME_LABEL_CLASS_NAME)
+        .click();
+      const afterCellTypeNames = await getCellTypeNames(page);
+      expect(afterCellTypeNames.length).toBeGreaterThan(
+        beforeCellTypeNames.length
+      );
+    },
+    { page }
+  );
+}
+
+export async function waitForLoadingSpinnerToResolve(page: Page) {
+  await page.getByText("Loading").first().waitFor({ state: "hidden" });
 }

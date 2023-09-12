@@ -2,6 +2,8 @@ export const HOMO_SAPIENS = "Homo sapiens";
 
 export const ALL_TISSUES = "All Tissues";
 
+export const TISSUE_AGNOSTIC = "Tissue Agnostic";
+
 export const NO_ORGAN_ID = "";
 
 export const CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE =
@@ -29,3 +31,6 @@ export const MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID =
   "marker-genes-computational-help-tooltip";
 export const MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID =
   "marker-genes-canonical-help-tooltip";
+
+export const MARKER_GENES_COMPUTATIONAL_BREAKPOINT_PX = 660;
+export const MARKER_GENES_CANONICAL_BREAKPOINT_PX = 420;
