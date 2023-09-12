@@ -19,9 +19,6 @@ else
 fi
 
 
-# Copy WMB cube
-echo "Copying WMG cube snapshot..."
-
 # Note: "--copy-props metadata-directive" copies s3 object metadata, but not tags.
 # We have not granted s3:GetObjectTagging perm to dev AWS account on prod buckets,
 # so this avoids errors. As none of the s3 objects contain tags, this is acceptable.
@@ -29,14 +26,19 @@ AWS_OPTIONS="--copy-props metadata-directive --no-progress"
 S3_COPY_CMD="aws s3 cp $AWS_OPTIONS"
 S3_SYNC_CMD="aws s3 sync $AWS_OPTIONS"
 
-latest_snapshot=$(aws s3 cp s3://cellxgene-wmg-${SRC_ENV}/latest_snapshot_run -)
-if [[ $DEST_ENV == 'rdev' ]]; then
-  s3_destination="env-rdev-wmg/${STACK}"
-else
-  s3_destination="cellxgene-wmg-${DEST_ENV}"
+if [[ -n "$WMG_CUBE" ]]; then
+  # Copy WMB cube
+  echo "Copying WMG cube snapshot..."
+
+  latest_snapshot=$(aws s3 cp s3://cellxgene-wmg-${SRC_ENV}/latest_snapshot_run -)
+  if [[ $DEST_ENV == 'rdev' ]]; then
+    s3_destination="env-rdev-wmg/${STACK}"
+  else
+    s3_destination="cellxgene-wmg-${DEST_ENV}"
+  fi
+  echo -n $latest_snapshot | aws s3 cp - s3://${s3_destination}/latest_snapshot_run
+  $S3_SYNC_CMD s3://cellxgene-wmg-${SRC_ENV}/${latest_snapshot} s3://${s3_destination}/${latest_snapshot}
 fi
-echo -n $latest_snapshot | aws s3 cp - s3://${s3_destination}/latest_snapshot_run
-$S3_SYNC_CMD s3://cellxgene-wmg-${SRC_ENV}/${latest_snapshot} s3://${s3_destination}/${latest_snapshot}
 
 
 echo Mirroring S3 Dataset data from $SRC_ENV to $DEST_ENV...
