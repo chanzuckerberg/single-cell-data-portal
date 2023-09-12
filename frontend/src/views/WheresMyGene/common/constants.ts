@@ -20,7 +20,9 @@ export const getCompareOptionNameById = (id?: CompareId) => {
   return option?.name || "None";
 };
 
-// This is used as the default/initial height of the x-axis
+/**
+ * This is used as the default/initial height of the x-axis
+ */
 export const X_AXIS_CHART_HEIGHT_PX = 80;
 export const X_AXIS_CHART_HEIGHT_PX_SVG = 30;
 
