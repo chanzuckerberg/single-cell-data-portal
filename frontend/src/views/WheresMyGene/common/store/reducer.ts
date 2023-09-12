@@ -8,6 +8,12 @@ export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
   payload: Payload;
 }
+
+export interface SetFilteredCellTypesPayload {
+  filteredCellTypes: State["filteredCellTypes"];
+  filteredCellTypeIds: State["filteredCellTypeIds"];
+}
+
 export interface State {
   genesToDelete: string[];
   selectedGenes: string[];
@@ -38,6 +44,7 @@ export interface State {
   compare?: CompareId;
   xAxisHeight: number;
   filteredCellTypes: string[];
+  filteredCellTypeIds: string[];
 }
 
 const EMPTY_FILTERS: State["selectedFilters"] = {
@@ -68,6 +75,7 @@ export const INITIAL_STATE: State = {
   },
   xAxisHeight: X_AXIS_CHART_HEIGHT_PX + GENE_SEARCH_BAR_HEIGHT_PX,
   filteredCellTypes: [],
+  filteredCellTypeIds: [],
 };
 
 export const REDUCERS = {
@@ -418,10 +426,11 @@ function setXAxisHeight(state: State, action: PayloadAction<number>): State {
 
 function setFilteredCellTypes(
   state: State,
-  action: PayloadAction<State["filteredCellTypes"]>
+  action: PayloadAction<SetFilteredCellTypesPayload>
 ): State {
   return {
     ...state,
-    filteredCellTypes: action.payload,
+    filteredCellTypes: action.payload.filteredCellTypes,
+    filteredCellTypeIds: action.payload.filteredCellTypeIds,
   };
 }
