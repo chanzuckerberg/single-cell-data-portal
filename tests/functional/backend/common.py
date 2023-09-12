@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+import tempfile
 import time
 import unittest
 from typing import Optional
@@ -26,9 +27,6 @@ AUDIENCE = {
     "dev": "api.cellxgene.dev.single-cell.czi.technology",
     "rdev": "api.cellxgene.dev.single-cell.czi.technology",
 }
-dummy_config = "./dummy.json"
-with open(dummy_config, "w") as fp:
-    json.dump({"api_base_url": os.getenv("API_BASE_URL")}, fp)
 
 
 class BaseFunctionalTestCase(unittest.TestCase):
@@ -40,6 +38,12 @@ class BaseFunctionalTestCase(unittest.TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
+
+        # configure CorporaAuthConfig to use a temporary directory for the config file
+        cls.tempdir = tempfile.TemporaryDirectory()
+        dummy_config = f"{cls.tempdir.name}/dummy.json"
+        with open(dummy_config, "w") as fp:
+            json.dump({"api_base_url": os.getenv("API_BASE_URL")}, fp)
         cls.config = CorporaAuthConfig(source=dummy_config)
         cls.session = requests.Session()
         # apply retry config to idempotent http methods we use + POST requests, which are currently all either
@@ -61,6 +65,12 @@ class BaseFunctionalTestCase(unittest.TestCase):
         cls.bad_collection_id = "DNE"
         cls.bad_file_id = "DNE"
         cls.curation_api_access_token = cls.get_curation_api_access_token()
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        cls.session.close()
+        cls.tempdir.cleanup()
 
     @classmethod
     def get_curation_api_access_token(cls):
