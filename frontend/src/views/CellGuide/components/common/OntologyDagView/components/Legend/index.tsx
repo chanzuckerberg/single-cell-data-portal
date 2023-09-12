@@ -27,7 +27,6 @@ interface LegendProps {
 export default function Legend({ selectedGene, isTissue }: LegendProps) {
   const targetNodeLegendComponent = (
     <LegendItemWrapper>
-      Cell Type
       <IsTargetNode />
       Selected
     </LegendItemWrapper>
@@ -36,28 +35,34 @@ export default function Legend({ selectedGene, isTissue }: LegendProps) {
   const descendantsLegendComponent = (
     <LegendItemWrapper>
       <FlexColumn>
-        No Descendants
         <NodeWrapper>
           <NoDescendantsLine size={size} />
           <StyledBorder width={1} height={size * 2} />
         </NodeWrapper>
+        No Descendants
       </FlexColumn>
     </LegendItemWrapper>
   );
   const corpusLegendComponent = (
-    <LegendItemWrapper>
-      In Corpus
-      <LegendItem>
-        <FlexColumn>
-          <IsInCorpus />
-          <CenterText>Yes</CenterText>
-        </FlexColumn>
-        <FlexColumn>
-          <IsNotInCorpus />
-          <CenterText>No</CenterText>
-        </FlexColumn>
-      </LegendItem>
-    </LegendItemWrapper>
+    <>
+      <LegendItemWrapper>
+        <LegendItem>
+          <FlexColumn>
+            Cell Type
+            <IsInCorpus />
+            <CenterText>In Census</CenterText>
+          </FlexColumn>
+        </LegendItem>
+      </LegendItemWrapper>
+      <LegendItemWrapper>
+        <LegendItem>
+          <FlexColumn>
+            <IsNotInCorpus />
+            <CenterText>Not In Census</CenterText>
+          </FlexColumn>
+        </LegendItem>
+      </LegendItemWrapper>
+    </>
   );
 
   const numPies = 6;

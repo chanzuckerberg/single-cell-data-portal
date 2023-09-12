@@ -20,6 +20,7 @@ export const LegendWrapper = styled.div`
   user-select: none;
   background-color: #f8f8f8;
   border-radius: 14px;
+  align-items: flex-end;
 `;
 
 export const LegendItemWrapper = styled.div`
@@ -38,7 +39,6 @@ export const LegendItem = styled.div`
   display: flex;
   justify-content: space-between;
   width: 100%;
-  max-width: ${SQUARE_SIZE * 5}px;
 `;
 
 export const IsInCorpus = styled.div`
