@@ -15,6 +15,7 @@ import {
   getCompareOptionNameById,
   HEATMAP_CONTAINER_ID,
   X_AXIS_CHART_HEIGHT_PX,
+  X_AXIS_CHART_HEIGHT_PX_SVG,
 } from "src/views/WheresMyGene/common/constants";
 import { CellType, ChartProps } from "src/views/WheresMyGene/common/types";
 
@@ -374,8 +375,9 @@ function generateSvg({
     // If tissue is NOT expanded, then just add padding
 
     const heatmapHeight = expandedTissues.has(tissuesByName[tissueName].id)
-      ? getHeatmapHeight(selectedCellTypes[tissueName]) + X_AXIS_CHART_HEIGHT_PX
-      : X_AXIS_CHART_HEIGHT_PX;
+      ? getHeatmapHeight(selectedCellTypes[tissueName]) +
+        X_AXIS_CHART_HEIGHT_PX_SVG
+      : X_AXIS_CHART_HEIGHT_PX_SVG;
 
     // Render elements to SVG
     const yAxisSvg = renderYAxis({
