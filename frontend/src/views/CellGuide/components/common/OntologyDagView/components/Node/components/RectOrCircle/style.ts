@@ -16,7 +16,7 @@ interface BorderProps extends CommonThemeProps {
 export const Border = styled.div<BorderProps>`
   border-left: 1px solid ${secondaryColor};
   background-color: #f8f8f8;
-  width: ${(props) => `${props.width}px`};
-  height: ${(props) => `${props.height / 2}px`};
+  width: ${(props) => props.width}px;
+  height: ${(props) => props.height / 2}px;
   margin: auto 0;
 `;
