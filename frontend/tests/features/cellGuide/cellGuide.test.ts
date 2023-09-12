@@ -508,7 +508,7 @@ describe("Cell Guide", () => {
               CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN
             );
             await waitForElementAndClick(dropdown);
-            await page.getByRole("option").getByText("abdominal wall").click();
+            await page.getByRole("option").getByText("abdomen").click();
 
             const rowElementsAfter = await page
               .locator(`${tableSelector} tbody tr`)
@@ -819,32 +819,40 @@ describe("Cell Guide", () => {
         );
 
         const navbar = page.getByTestId(CELL_GUIDE_CARD_NAVIGATION_SIDEBAR);
-
+        const sourceData = page.getByTestId(CELL_GUIDE_CARD_SOURCE_DATA_TABLE);
+        const ontologyView = page.getByTestId(
+          CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW
+        );
         // scroll to the bottom
+
         const section3 = page.getByTestId("section-3");
         await section3.scrollIntoViewIfNeeded();
-
-        // check that source data is in viewport
-        const sourceData = page.getByTestId(CELL_GUIDE_CARD_SOURCE_DATA_TABLE);
-        await sourceData.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
-        expect(sourceData).toBeInViewport();
-
+        await tryUntil(
+          async () => {
+            // check that source data is in viewport
+            expect(sourceData).toBeInViewport();
+            // 1 second in between retries or we hit the retry limit too fast
+            await page.waitForTimeout(1000);
+          },
+          { page }
+        );
         // get the second navbar tab (ontology) and click to scroll
         const elements = await navbar
           .locator(".MuiButtonBase-root.MuiTab-root")
           .all();
         const tab = elements[1];
         await tab.click();
-
-        // check that ontology is in viewport
-        const ontologyView = page.getByTestId(
-          CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW
+        await tryUntil(
+          async () => {
+            // check that ontology is in viewport
+            expect(ontologyView).toBeInViewport();
+            // check that source data is not in viewport
+            expect(sourceData).not.toBeInViewport();
+            // 1 second in between retries or we hit the retry limit too fast
+            await page.waitForTimeout(1000);
+          },
+          { page }
         );
-        await ontologyView.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
-        expect(ontologyView).toBeInViewport();
-
-        // check that source data is not in viewport
-        expect(sourceData).not.toBeInViewport();
       });
     });
   });

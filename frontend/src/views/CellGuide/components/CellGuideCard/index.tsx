@@ -45,6 +45,7 @@ import { useOrganAndOrganismFilterListForCellType } from "./components/MarkerGen
 import {
   ALL_TISSUES,
   NO_ORGAN_ID,
+  TISSUE_AGNOSTIC,
 } from "./components/MarkerGeneTables/constants";
 import {
   DefaultDropdownMenuOption,
@@ -150,14 +151,14 @@ export default function CellGuideCard({
   const sdsOrgansList = useMemo(
     () =>
       Array.from(organsMap.keys()).map((organ) => ({
-        name: organ,
+        name: organ === ALL_TISSUES ? TISSUE_AGNOSTIC : organ,
       })),
     [organsMap]
   );
 
   const [selectedOrgan, setSelectedOrgan] = useState<DefaultDropdownMenuOption>(
     sdsOrgansList.find(
-      (organ) => organ.name === ALL_TISSUES
+      (organ) => organ.name === TISSUE_AGNOSTIC
     ) as DefaultDropdownMenuOption
   );
 
@@ -166,8 +167,11 @@ export default function CellGuideCard({
   const handleChangeOrgan = (option: DefaultDropdownMenuOption | null) => {
     if (!option) return;
     setSelectedOrgan(option);
-    setSelectedOrganId(organsMap.get(option.name) ?? "");
-    track(EVENTS.CG_SELECT_TISSUE, { tissue: option.name });
+    const optionName =
+      option.name === TISSUE_AGNOSTIC ? ALL_TISSUES : option.name;
+    setSelectedOrganId(organsMap.get(optionName) ?? "");
+    // Continue tracking the analytics event as All Tissues
+    track(EVENTS.CG_SELECT_TISSUE, { tissue: optionName });
   };
 
   const [selectedOrganism, setSelectedOrganism] =
@@ -366,7 +370,6 @@ export default function CellGuideCard({
             <div ref={sectionRef3} id="section-3" data-testid="section-3" />
             <SourceDataTable
               cellTypeId={cellTypeId}
-              organName={selectedOrgan.name}
               organId={selectedOrganId}
               organismName={selectedOrganism.name}
               skinnyMode={skinnyMode}

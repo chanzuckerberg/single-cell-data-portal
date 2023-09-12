@@ -3,7 +3,7 @@ import {
   SourceCollectionsQueryResponse,
   SourceCollectionsQueryResponseEntry,
 } from "src/common/queries/cellGuide";
-import { ALL_TISSUES } from "../../MarkerGeneTables/constants";
+import { NO_ORGAN_ID } from "../../MarkerGeneTables/constants";
 import { filterDescendantsOfAncestorTissueId } from "src/views/CellGuide/common/utils";
 
 // The predicate function used by the filter function to filter the list of
@@ -11,12 +11,10 @@ import { filterDescendantsOfAncestorTissueId } from "src/views/CellGuide/common/
 function _passSelectionCriteria({
   collection,
   selectedOrganismLabel,
-  selectedOrganLabel,
   selectedOrganId,
 }: {
   collection: SourceCollectionsQueryResponseEntry;
   selectedOrganismLabel: string;
-  selectedOrganLabel: string;
   selectedOrganId: string;
 }): boolean {
   const collectionOrganismLabels = collection.organism.map(
@@ -28,7 +26,7 @@ function _passSelectionCriteria({
 
   if (!collectionOrganismLabels.includes(selectedOrganismLabel)) return false;
 
-  if (selectedOrganLabel === ALL_TISSUES) {
+  if (selectedOrganId === NO_ORGAN_ID) {
     return true;
   }
 
@@ -43,12 +41,10 @@ function _passSelectionCriteria({
 function _filterCollections({
   collections,
   selectedOrganismLabel,
-  selectedOrganLabel,
   selectedOrganId,
 }: {
   collections: SourceCollectionsQueryResponse;
   selectedOrganismLabel: string;
-  selectedOrganLabel: string;
   selectedOrganId: string;
 }): SourceCollectionsQueryResponse {
   const filteredCollections: SourceCollectionsQueryResponse = [];
@@ -58,7 +54,6 @@ function _filterCollections({
       _passSelectionCriteria({
         collection: collection,
         selectedOrganismLabel: selectedOrganismLabel,
-        selectedOrganLabel: selectedOrganLabel,
         selectedOrganId: selectedOrganId,
       })
     )
@@ -92,12 +87,10 @@ export function useDataSourceFilter({
   collections,
   selectedOrganismLabel,
   selectedOrganId,
-  selectedOrganLabel,
 }: {
   collections: SourceCollectionsQueryResponse;
   selectedOrganismLabel: string;
   selectedOrganId: string;
-  selectedOrganLabel: string;
 }): SourceCollectionsQueryResponseEntry[] {
   return useMemo(() => {
     if (!collections) return [];
@@ -105,9 +98,8 @@ export function useDataSourceFilter({
     const filteredCollections = _filterCollections({
       collections,
       selectedOrganismLabel,
-      selectedOrganLabel,
       selectedOrganId,
     });
     return _sortCollections(filteredCollections);
-  }, [collections, selectedOrganismLabel, selectedOrganLabel, selectedOrganId]);
+  }, [collections, selectedOrganismLabel, selectedOrganId]);
 }

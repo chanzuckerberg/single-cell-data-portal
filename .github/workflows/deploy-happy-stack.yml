@@ -9,7 +9,7 @@ env:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
   deployments: write
 
 jobs:
@@ -94,6 +94,42 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
+
+  github-tag-and-release:
+    runs-on: ubuntu-22.04
+    if: github.event.deployment.environment == 'prod'
+    needs:
+      - upgrade
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.deployment.sha }}
+      - name: Push Tag with latest prod commit SHA
+        uses: rickstaa/action-create-tag@v1
+        id: "tag_create"
+        with:
+          tag: ${{ github.event.deployment.payload.tag }}
+          tag_exists_error: false
+      - name: Build Changelog
+        id: build_changelog
+        uses: mikepenz/release-changelog-builder-action@v4
+        with:
+          configurationJson: |
+            {
+              "tag_resolver": {
+                "method": "sort",
+                "filter": {
+                  "pattern": "sha-(.+)",
+                  "flags": "gu"
+                }
+              }
+            }
+      - name: Produce Github Release for Prod Deployments
+        uses: softprops/action-gh-release@v1
+        if: steps.tag_create.outputs.tag_exists == 'false'
+        with:
+          tag_name: ${{ github.event.deployment.payload.tag }}
+          body: ${{steps.build_changelog.outputs.changelog}}
 
   e2e-logged-in-test:
     timeout-minutes: 30
