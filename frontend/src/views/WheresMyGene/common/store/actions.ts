@@ -7,6 +7,7 @@ import {
   AddCellInfoCellTypePayload,
   LoadStateFromURLPayload,
   REDUCERS,
+  SetFilteredCellTypesPayload,
   State,
 } from "./reducer";
 
@@ -198,11 +199,6 @@ export function setXAxisHeight(
     payload,
     type: "setXAxisHeight",
   };
-}
-
-interface SetFilteredCellTypesPayload {
-  filteredCellTypes: State["filteredCellTypes"];
-  filteredCellTypeIds: State["filteredCellTypeIds"];
 }
 
 export function setFilteredCellTypes(

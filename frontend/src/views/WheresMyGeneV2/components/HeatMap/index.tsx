@@ -380,11 +380,11 @@ export default memo(function HeatMap({
     tissuesByName,
   ]);
 
-  const handleCellTypeDelete = (cellTypeToDelete: string) => () => {
+  const handleCellTypeDelete = (cellTypeNameToDelete: string) => () => {
     if (!dispatch) return;
-    const cellTypeIdToDelete = cellTypesByName[cellTypeToDelete].id;
+    const cellTypeIdToDelete = cellTypesByName[cellTypeNameToDelete].id;
     const newCellTypeNames = filteredCellTypes.filter(
-      (cellType) => !(cellTypeToDelete === cellType)
+      (cellType) => !(cellTypeNameToDelete === cellType)
     );
     const newCellTypeIds = filteredCellTypeIds.filter(
       (cellTypeId) => !(cellTypeIdToDelete === cellTypeId)
