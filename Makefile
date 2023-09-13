@@ -202,22 +202,18 @@ local-unit-test-cxg-admin:
 # the empty string (in which case we override the existing variable
 # defined in docker-compose.yml to be empty string), and not being
 # set (in which case the default from docker-compose is untouched)
-#
-# Unfortunately, this isn't working properly if DEPLOYMENT_STAGE is not test.
-# If you want to run this locally against staging, use the following mouthful of a
-# command, replacing IAM_ROLE with a role you have access to:
-# export IAM_ROLE=insert_iam_arn_here
-# eval $(echo $(AWS_PROFILE=single-cell-dev aws sts assume-role --role-arn ${IAM_ROLE} --role-session-name functional-test \
-#     | jq -r '"AWS_ACCESS_KEY_ID=\(.Credentials.AccessKeyId) AWS_SECRET_ACCESS_KEY=\(.Credentials.SecretAccessKey) AWS_SESSION_TOKEN=\(.Credentials.SessionToken)"') \
-# 	AWS_REGION=us-west-2 BOTO_ENDPOINT_URL= DEPLOYMENT_STAGE=staging make local-functional-test)
 .PHONY: local-functional-test
-local-functional-test: export AWS_PROFILE=$(TEST_AWS_PROFILE)
 local-functional-test: ## Run functional tests in the dev environment
 	if [ -n "$${BOTO_ENDPOINT_URL+set}" ]; then \
 		EXTRA_ARGS="-e BOTO_ENDPOINT_URL"; \
 	fi; \
 	chamber -b secretsmanager exec corpora/backend/$${DEPLOYMENT_STAGE}/auth0-secret -- \
-		docker-compose $(COMPOSE_OPTS) run --rm -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_USERNAME -e TEST_ACCOUNT_PASSWORD -e DEPLOYMENT_STAGE -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} \
+		docker-compose $(COMPOSE_OPTS) run --rm -T \
+		-e CLIENT_ID -e CLIENT_SECRET \
+		-e FUNCTEST_ACCOUNT_USERNAME -e FUNCTEST_ACCOUNT_PASSWORD \
+		-e TEST_AUTH0_USER_ACCOUNT_PASSWORD -e TEST_APP_ID -e TEST_APP_SECRET \
+		-e SUPER_CURATOR_API_KEY -e AUTH0_DOMAIN \
+		-e DEPLOYMENT_STAGE  -e STACK_NAME -e API_BASE_URL $${EXTRA_ARGS} \
 		backend bash -c "cd /single-cell-data-portal && make container-functionaltest"
 
 .PHONY: local-smoke-test
