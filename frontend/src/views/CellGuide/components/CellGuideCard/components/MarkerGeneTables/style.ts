@@ -12,8 +12,10 @@ import {
   gray500,
   primary400,
   spacesL,
+  spacesS,
 } from "src/common/theme";
 import Link from "../common/Link";
+import Image from "next/image";
 
 const DIVIDER_WIDTH = 2;
 
@@ -35,8 +37,21 @@ export const ReferenceTooltipWrapper = styled.div`
   display: flex;
   flex-direction: column;
 `;
-export const NoWrapWrapper = styled.span`
+
+interface NoWrapWrapperProps extends CommonThemeProps {
+  isSelected: boolean;
+}
+export const NoWrapWrapper = styled.span<NoWrapWrapperProps>`
   white-space: nowrap;
+  display: flex;
+  column-gap: ${spacesS}px;
+  .hover-button {
+    visibility: hidden;
+    transition: visibility 0.1s ease;
+  }
+  &:hover .hover-button {
+    visibility: visible;
+  }
 `;
 
 export const PublicationLinkWrapper = styled.div`
@@ -120,4 +135,8 @@ export const MarkerGeneTooltipSubtext = styled.div`
 
 export const MarkerGeneTableWrapper = styled.div`
   max-width: calc(100vw - ${spacesL}px - ${spacesL}px);
+`;
+
+export const StyledIconImage = styled(Image)`
+  cursor: pointer;
 `;

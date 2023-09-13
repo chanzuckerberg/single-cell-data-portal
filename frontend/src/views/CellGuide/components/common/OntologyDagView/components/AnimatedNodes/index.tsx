@@ -3,7 +3,10 @@ import { Group } from "@visx/group";
 import { localPoint } from "@visx/event";
 import Node from "../Node";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
-import { TreeNodeWithState } from "../../common/types";
+import {
+  MarkerGeneStatsByCellType,
+  TreeNodeWithState,
+} from "../../common/types";
 import { useCellTypeMetadata } from "src/common/queries/cellGuide";
 import { NODE_SPACINGS, TREE_ANIMATION_DURATION } from "../../common/constants";
 import { EVENTS } from "src/common/analytics/events";
@@ -22,9 +25,13 @@ interface AnimatedNodesProps {
     tooltipData: {
       n_cells: number;
       n_cells_rollup: number;
+      marker_score?: number;
+      me?: number;
+      pc?: number;
     };
   }) => void;
   hideTooltip: () => void;
+  cellTypesWithMarkerGeneStats: MarkerGeneStatsByCellType | null;
 }
 
 interface AnimationState {
@@ -48,6 +55,7 @@ export default function AnimatedNodes({
   toggleTriggerRender,
   showTooltip,
   hideTooltip,
+  cellTypesWithMarkerGeneStats,
 }: AnimatedNodesProps) {
   const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For hover event
 
@@ -59,7 +67,7 @@ export default function AnimatedNodes({
 
   const { data: cellTypeMetadata } = useCellTypeMetadata() || {};
   const handleMouseOver = (
-    event: React.MouseEvent<SVGElement>,
+    event: React.MouseEvent<HTMLDivElement>,
     datum: TreeNodeWithState
   ) => {
     const id = setTimeout(() => {
@@ -68,19 +76,23 @@ export default function AnimatedNodes({
       });
     }, 2 * 1000);
     setTimerId(id);
-
-    if (
-      event.target instanceof SVGElement &&
-      event.target.ownerSVGElement !== null
-    ) {
-      const coords = localPoint(event.target.ownerSVGElement, event);
+    const ownerSVGElement = findSVGParent(event.target as Node);
+    if (event.target instanceof HTMLDivElement && ownerSVGElement) {
+      const coords = localPoint(ownerSVGElement, event);
       if (coords) {
+        const marker_score =
+          cellTypesWithMarkerGeneStats?.[datum.id]?.marker_score;
+        const me = cellTypesWithMarkerGeneStats?.[datum.id]?.me;
+        const pc = cellTypesWithMarkerGeneStats?.[datum.id]?.pc;
         showTooltip({
           tooltipLeft: coords.x,
           tooltipTop: coords.y,
           tooltipData: {
             n_cells: datum.n_cells,
             n_cells_rollup: datum.n_cells_rollup,
+            marker_score,
+            me,
+            pc,
           },
         });
       }
@@ -129,15 +141,18 @@ export default function AnimatedNodes({
         return { opacity: [0], timing: { duration: 0 } };
       }}
     >
-      {(nodes) => renderNodes(nodes)}
+      {(nodes) => renderNodes(nodes, cellTypesWithMarkerGeneStats)}
     </NodeGroup>
   );
 
-  function renderNode(animatedNode: {
-    key: string;
-    data: HierarchyPointNode<TreeNodeWithState>;
-    state: AnimationState;
-  }) {
+  function renderNode(
+    animatedNode: {
+      key: string;
+      data: HierarchyPointNode<TreeNodeWithState>;
+      state: AnimationState;
+    },
+    cellTypesWithMarkerGeneStats: MarkerGeneStatsByCellType | null
+  ) {
     const { key, data: node, state } = animatedNode;
 
     const isInCorpus =
@@ -150,6 +165,7 @@ export default function AnimatedNodes({
         isInCorpus={isInCorpus}
         animationKey={key}
         node={node}
+        cellTypesWithMarkerGeneStats={cellTypesWithMarkerGeneStats}
         isTargetNode={cellTypeId === node.data.id.split("__")[0]}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
@@ -158,7 +174,7 @@ export default function AnimatedNodes({
         top={state.top}
         opacity={state.opacity}
         handleClick={
-          handleNodeClick as unknown as MouseEventHandler<SVGGElement>
+          handleNodeClick as unknown as MouseEventHandler<HTMLDivElement>
         }
       />
     );
@@ -196,8 +212,15 @@ export default function AnimatedNodes({
     }
   }
 
-  function renderNodes(nodes: AnimationNode[]) {
-    return <Group>{nodes.map((node) => renderNode(node))}</Group>;
+  function renderNodes(
+    nodes: AnimationNode[],
+    cellTypesWithMarkerGeneStats: AnimatedNodesProps["cellTypesWithMarkerGeneStats"]
+  ) {
+    return (
+      <Group>
+        {nodes.map((node) => renderNode(node, cellTypesWithMarkerGeneStats))}
+      </Group>
+    );
   }
 }
 
@@ -208,4 +231,14 @@ function collapseAllDescendants(node: HierarchyPointNode<TreeNodeWithState>) {
       collapseAllDescendants(child);
     }
   }
+}
+
+function findSVGParent(node: Node | null): SVGElement | undefined {
+  while (node) {
+    if (node instanceof SVGElement) {
+      return node;
+    }
+    node = node.parentNode;
+  }
+  return undefined;
 }

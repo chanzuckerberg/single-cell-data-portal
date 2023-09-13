@@ -1,3 +1,4 @@
+import gzip
 import json
 import logging
 import os
@@ -27,8 +28,13 @@ def output_json(data, path):
     data = convert_dataclass_to_dict_and_strip_nones(data)
 
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f)
+
+    if path.endswith(".gz"):
+        with gzip.open(path, "wt") as f:
+            json.dump(data, f)
+    else:
+        with open(path, "w") as f:
+            json.dump(data, f)
 
 
 def output_json_per_key(data, path):

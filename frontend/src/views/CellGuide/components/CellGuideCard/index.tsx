@@ -81,13 +81,32 @@ export default function CellGuideCard({
   const router = useRouter();
 
   const [pageNavIsOpen, setPageNavIsOpen] = useState(false);
+  const [selectedGene, setSelectedGene] = useState<string | undefined>(
+    undefined
+  );
 
   // Navigation
-  const sectionRef0 = React.useRef(null);
-  const sectionRef1 = React.useRef(null);
-  const sectionRef2 = React.useRef(null);
-  const sectionRef3 = React.useRef(null);
+  const sectionRef0 = React.useRef<HTMLDivElement>(null);
+  const sectionRef1 = React.useRef<HTMLDivElement>(null);
+  const sectionRef2 = React.useRef<HTMLDivElement>(null);
+  const sectionRef3 = React.useRef<HTMLDivElement>(null);
 
+  const selectGene = (gene: string) => {
+    if (gene === selectedGene) {
+      setSelectedGene(undefined);
+    } else {
+      setSelectedGene(gene);
+      if (sectionRef1.current) {
+        window.scrollTo({
+          top:
+            sectionRef1.current.getBoundingClientRect().top +
+            window.scrollY -
+            50,
+          behavior: "smooth",
+        });
+      }
+    }
+  };
   const [skinnyMode, setSkinnyMode] = useState<boolean>(false);
 
   const cellGuideSideBar = useMemo(() => {
@@ -186,6 +205,10 @@ export default function CellGuideCard({
   function handleCloseGeneInfoSideBar() {
     setGeneInfoGene(null);
   }
+
+  useEffect(() => {
+    setSelectedGene(undefined);
+  }, [selectedOrgan, selectedOrganism, setSelectedGene]);
 
   const title = `${titleizedCellTypeName} Cell Types - CZ CELLxGENE CellGuide`;
   const seoDescription = `Find comprehensive information about "${cellTypeName}" cell types (synonyms: ${
@@ -348,6 +371,9 @@ export default function CellGuideCard({
                   tissueId={selectedOrganId}
                   inputWidth={width}
                   inputHeight={DEFAULT_ONTOLOGY_HEIGHT}
+                  selectedOrganism={selectedOrganism.name}
+                  selectedGene={selectedGene}
+                  selectGene={selectGene}
                 />
               </FullScreenProvider>
             </div>
@@ -364,6 +390,8 @@ export default function CellGuideCard({
               organName={selectedOrgan.name}
               organId={selectedOrganId}
               organismName={selectedOrganism.name}
+              selectedGene={selectedGene}
+              selectGene={selectGene}
             />
 
             {/* Source Data section */}

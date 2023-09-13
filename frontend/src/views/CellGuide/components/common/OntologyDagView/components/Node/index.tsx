@@ -2,7 +2,10 @@ import { MouseEventHandler } from "react";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import { useRouter } from "next/router";
 import { ROUTES } from "src/common/constants/routes";
-import { TreeNodeWithState } from "../../common/types";
+import {
+  MarkerGeneStatsByCellType,
+  TreeNodeWithState,
+} from "../../common/types";
 import Text from "./components/Text";
 import RectOrCircle from "./components/RectOrCircle";
 import { StyledGroup } from "./style";
@@ -14,10 +17,10 @@ type HierarchyNode = HierarchyPointNode<TreeNodeWithState>;
 
 interface NodeProps {
   node: HierarchyNode;
-  handleClick?: MouseEventHandler<SVGGElement>;
+  handleClick?: MouseEventHandler<HTMLDivElement>;
   isTargetNode: boolean;
   handleMouseOver: (
-    event: React.MouseEvent<SVGElement>,
+    event: React.MouseEvent<HTMLDivElement>,
     datum: TreeNodeWithState
   ) => void;
   handleMouseOut: () => void;
@@ -27,6 +30,7 @@ interface NodeProps {
   animationKey: string;
   maxWidth: number;
   isInCorpus: boolean;
+  cellTypesWithMarkerGeneStats: MarkerGeneStatsByCellType | null;
 }
 
 export default function Node({
@@ -41,17 +45,18 @@ export default function Node({
   opacity,
   maxWidth,
   isInCorpus,
+  cellTypesWithMarkerGeneStats,
 }: NodeProps) {
   const router = useRouter();
 
   // text labels should only collapse/expand node for dummy nodes
   const onClick = node.data.id.startsWith("dummy-child")
-    ? handleClick
+    ? (handleClick as unknown as MouseEventHandler<SVGElement>)
     : undefined;
   const textCursor = node.data.id.startsWith("dummy-child")
     ? "pointer"
     : "default";
-
+  const cellTypeMarkerGeneStats = cellTypesWithMarkerGeneStats?.[node.data.id];
   return (
     <StyledGroup top={top} left={left} key={animationKey} opacity={opacity}>
       {isInCorpus ? (
@@ -94,6 +99,8 @@ export default function Node({
         isTargetNode={isTargetNode}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
+        cellTypeMarkerGeneStats={cellTypeMarkerGeneStats}
+        inMarkerGeneMode={!!cellTypesWithMarkerGeneStats}
       />
     </StyledGroup>
   );
