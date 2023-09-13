@@ -16,28 +16,28 @@
   ],
   "slices": {
     "frontend": {
-        "build_image": "frontend"
+        "build_images": ["frontend"]
     },
     "backend": {
-        "build_image": "backend"
+        "build_images": ["backend"]
     },
     "cellguide_pipeline": {
-        "build_image": "cellguide_pipeline"
+        "build_images": ["cellguide_pipeline"]
     },
     "processing": {
-        "build_image": "processing"
+        "build_images": ["processing"]
     },
     "wmg_processing": {
-        "build_image": "wmg_processing"
+        "build_images": ["wmg_processing"]
     },
     "dataset_submissions": {
-        "build_image": "dataset_submissions"
+        "build_images": ["dataset_submissions"]
     },
     "upload_failures": {
-        "build_image": "upload_failures"
+        "build_images": ["upload_failures"]
     },
     "upload_success": {
-        "build_image": "upload_success"
+        "build_images": ["upload_success"]
     }
   },
   "environments": {
