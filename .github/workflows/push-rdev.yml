@@ -52,3 +52,54 @@ jobs:
           echo "### Happy Commands :rocket: :upside_down_face:" >> $GITHUB_STEP_SUMMARY
           echo "* \`happy create <_stack-name_> --tag ${GITHUB_SHA:0:7} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
           echo "* \`happy update <_stack-name_> --tag ${GITHUB_SHA:0:7} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
+
+  functional-test:
+    runs-on: ubuntu-22.04
+    needs:
+      - build-push-images
+    steps:
+      - name: Configure AWS Prod Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        if: github.event.deployment.environment == 'prod'
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        if: github.event.deployment.environment != 'prod'
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      # Login to ECR needed solely to be able to retrieve cached layers
+      - name: Login to Prod ECR
+        uses: docker/login-action@v1
+        if: github.event.deployment.environment == 'prod'
+        with:
+          registry: ${{ secrets.ECR_REPO_PROD }}
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.deployment.sha }}
+          fetch-depth: 1
+      - name: Run functional test
+        env:
+          TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
+          DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
+        if: github.event.deployment.environment != 'prod'
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          mkdir -p .local/bin
+          curl -Ls https://github.com/segmentio/chamber/releases/download/v2.9.1/chamber-v2.9.1-linux-amd64 > .local/bin/chamber &&
+          chmod +x .local/bin/chamber
+          PATH="$PATH:$(pwd)/.local/bin"
+          if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
+            export DEPLOYMENT_STAGE=staging
+          fi
+          echo DEPLOYMENT_STAGE ${DEPLOYMENT_STAGE}
+          docker-compose up --no-deps -d backend
+          BOTO_ENDPOINT_URL= make local-functional-test

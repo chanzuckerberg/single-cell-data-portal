@@ -1,0 +1,49 @@
+# After pull request that is connected to an RDEV is closed, the RDEV is cleaned up.
+name: Clean up Rdev on close
+on:
+  pull_request:
+    types:
+      - closed
+    tags:
+      - "*rdev"
+      - "rdev*"
+    branches:
+      - "rdev-*"
+      - "**/rdev-*"
+      - "**-rdev"
+      - "!main"
+      - "!staging"
+      - "!prod"
+
+jobs:
+  cleanup-rdev:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 900
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        with:
+          happy_version: "0.59.0"
+      - name: Create Summary With Happy Commands
+        run: |
+          echo "### Happy Commands :rocket: :upside_down_face:" >> $GITHUB_STEP_SUMMARY
+          echo "* \`happy delete <_stack-name_> --tag ${GITHUB_SHA:0:7} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
+
+#  if_merged:
+#    if: github.event.pull_request.merged == true
+#    runs-on: ubuntu-latest
+#    steps:
+#    - run: |
+#        echo The PR was merged
