@@ -39,7 +39,6 @@ services:
     platform: linux/amd64
     profiles:
       - frontend
-      - backend
     build:
       context: frontend
       cache_from:
