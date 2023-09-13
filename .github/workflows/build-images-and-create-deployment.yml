@@ -27,8 +27,7 @@ jobs:
     strategy:
       matrix:
         image:
-          - frontend
-          - backend
+          - frontend # pushed both the frontend and backend images
           - upload_failures
           - upload_success
           - dataset_submissions
@@ -58,7 +57,8 @@ jobs:
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
-          happy push deploy --slice ${{ matrix.image }} --docker-compose-env-file envfile --aws-profile "" \
+          happy push devstack --env dev --slice ${{ matrix.image }} \
+          --docker-compose-env-file envfile --aws-profile "" \
           --tags sha-${GITHUB_SHA:0:8},branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
       - uses: 8398a7/action-slack@v3
         with:
