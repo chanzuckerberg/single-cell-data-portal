@@ -6,6 +6,7 @@ on:
       - main
       - staging
       - prod
+      - tsmith/image-matrix #TODO remove after PR approved
 
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
