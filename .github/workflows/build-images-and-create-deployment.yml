@@ -53,7 +53,7 @@ jobs:
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
-          happy_version: "0.59.0"
+          happy_version: "0.92.0"
       - name: Push images
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
@@ -89,7 +89,7 @@ jobs:
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
-          happy_version: "0.59.0"
+          happy_version: "0.92.0"
       - name: Docker re-tag
         shell: bash
         run: |
