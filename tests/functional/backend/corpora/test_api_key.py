@@ -1,6 +1,8 @@
 import time
 import unittest
 
+from tenacity import retry, stop_after_attempt, wait_incrementing
+
 from tests.functional.backend.common import BaseFunctionalTestCase
 
 
@@ -33,10 +35,12 @@ class TestApiKey(BaseFunctionalTestCase):
         self.assertTrue(access_token)
 
         # wait for auth0 User-Api-Key link to update
-        time.sleep(30)
+        @retry(wait=wait_incrementing(0, 10, 30), stop=stop_after_attempt(4))
+        def get_key():
+            response = self.session.get(f"{self.api}/dp/v1/auth/key", headers=headers)
+            self.assertStatusCode(200, response)
 
-        response = self.session.get(f"{self.api}/dp/v1/auth/key", headers=headers)
-        self.assertStatusCode(200, response)
+        get_key()  # wait for auth0 User-Api-Key link to update
 
         response = self.session.post(f"{self.api}/dp/v1/auth/key", headers=headers)
         self.assertStatusCode(201, response)

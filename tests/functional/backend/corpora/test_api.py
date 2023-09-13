@@ -135,6 +135,7 @@ class TestApi(BaseFunctionalTestCase):
             res = self.session.get(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
             self.assertStatusCode(requests.codes.ok, res)
 
+    @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
     def test_delete_private_collection(self):
         # create collection
         data = {
@@ -178,6 +179,7 @@ class TestApi(BaseFunctionalTestCase):
         collection_ids = [x["id"] for x in data["collections"]]
         self.assertNotIn(collection_id, collection_ids)
 
+    @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
     def test_dataset_upload_flow(self):
         body = {
             "contact_email": "lisbon@gmail.com",
