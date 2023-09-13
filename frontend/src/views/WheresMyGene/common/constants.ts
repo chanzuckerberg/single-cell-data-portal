@@ -22,6 +22,7 @@ export const getCompareOptionNameById = (id?: CompareId) => {
 
 // This is used as the default/initial height of the x-axis
 export const X_AXIS_CHART_HEIGHT_PX = 80;
+export const X_AXIS_CHART_HEIGHT_PX_SVG = 30;
 
 // This is the height of the container for the gene delete and hover icons
 // Increasing this value adds more space between the gene label and icons
