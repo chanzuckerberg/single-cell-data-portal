@@ -24,6 +24,10 @@ import {
 import { getCurrentDate } from "tests/utils/downloadUtils";
 import { addGene, searchAndAddGene } from "tests/utils/geneUtils";
 import {
+  searchAndAddFilterCellType,
+  searchAndAddGene,
+} from "tests/utils/geneUtils";
+import {
   CELL_TYPE_NAME_LABEL_CLASS_NAME,
   TISSUE_NAME_LABEL_CLASS_NAME,
 } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
@@ -854,6 +858,14 @@ describe("Where's My Gene", () => {
       },
       { page }
     );
+  });
+  describe("Cell Type FIltering", () => {
+    test("Filter to single cell type and then clear", async ({ page }) => {
+      searchAndAddFilterCellType(page, "B cell");
+    });
+    test("Filter to multiple cell types and then clear", async ({ page }) => {
+      await goToWMG(page);
+    });
   });
 });
 
