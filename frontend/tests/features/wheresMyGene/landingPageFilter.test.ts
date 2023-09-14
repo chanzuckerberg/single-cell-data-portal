@@ -126,7 +126,7 @@ describe("Left side bar", () => {
     "publication-filter",
     "tissue-filter",
   ].forEach((testId) => {
-    test(`Ensure that cell type filter crossfilters with ${testId}`, async ({
+    test(`Ensure that cell type filter cross-filters with ${testId}`, async ({
       page,
     }) => {
       await goToPage(WMG_WITH_SEEDED_GENES.URL, page);
