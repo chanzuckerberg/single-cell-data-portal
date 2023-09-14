@@ -52,6 +52,10 @@ jobs:
           state: in_progress
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Docker envfile
+        run: |
+          echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
+          echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
       - name: Update deployment
         uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
         with:
@@ -61,6 +65,7 @@ jobs:
           tag: ${{ github.event.deployment.payload.tag }}
           env: ${{ github.event.deployment.environment }}
           happy_version: "0.92.0"
+          env-file: envfile
       - name: Invalidate CloudFront
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
