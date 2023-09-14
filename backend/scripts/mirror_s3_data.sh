@@ -64,7 +64,7 @@ if [[ $DEST_ENV == 'rdev' && -n "$COLLECTIONS" ]]; then
   # Clean up semaphores state directory ahead of using sem in case it was not cleared properly before
   [[ -d "~/.parallel/semaphores" ]] && rm -r ~/.parallel/semaphores
   sample_data_name="schema_3_0_0"
-  echo "Copying sample data for S3 Dataset assets for $(tr ',' '\n' <<< $COLLECTIONS | wc -l | awk '{$1=$1};1') Collections..."
+  echo "Copying sample data for S3 Dataset assets for $(tr ',' '\n' <<< $COLLECTIONS | wc -l | sed -e 's/ *//g') Collections..."
 
   # Copy artifacts
   export AWS_PROFILE=$src_aws_profile  # For SRC_ENV
