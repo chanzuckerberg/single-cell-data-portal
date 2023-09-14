@@ -148,8 +148,8 @@ describe("Left side bar", () => {
   async function countRecords(page: Page, testId: string) {
     await page.getByTestId(testId).getByRole("button").click();
     await expect(page.locator("option")).not.toHaveCount(0);
-    const numberOfDatasets = await page.getByRole("option").count();
+    const numberOfRecords = await page.getByRole("option").count();
     await page.keyboard.press("Escape");
-    return numberOfDatasets;
+    return numberOfRecords;
   }
 });
