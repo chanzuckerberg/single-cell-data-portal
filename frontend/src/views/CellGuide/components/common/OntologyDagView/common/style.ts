@@ -24,7 +24,7 @@ export const StyledPie = styled.div<StyledPieProps>`
     // in safari. Instead, if opacity is defined, we convert hex to rgba and set alpha
     // to opacity.
     if (opacity) {
-      const hexMatch = hexColor.slice(1).match(/.{2}/g);
+      const hexMatch = fillColor.slice(1).match(/.{2}/g);
       const [r, g, b] = hexMatch
         ? hexMatch.map((hex) => parseInt(hex, 16))
         : [0, 0, 0];
