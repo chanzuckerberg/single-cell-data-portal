@@ -10,6 +10,7 @@ import {
   MarkerScoreWrapper,
   NoDescendantsLine,
   StyledBorder,
+  StyledNodeWrapper,
 } from "./style";
 import { StyledPie } from "../../common/style";
 import { CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID } from "./constants";
@@ -19,7 +20,6 @@ import {
   nodePieChartCircleScaler,
   secondaryColor,
 } from "../../common/constants";
-import { NodeWrapper } from "../Node/components/RectOrCircle/style";
 interface LegendProps {
   selectedGene: string | undefined;
   isTissue?: boolean;
@@ -36,10 +36,10 @@ export default function Legend({ selectedGene, isTissue }: LegendProps) {
   const descendantsLegendComponent = (
     <LegendItemWrapper>
       <FlexColumn>
-        <NodeWrapper>
+        <StyledNodeWrapper>
           <NoDescendantsLine size={size} />
           <StyledBorder width={1} height={size * 2} />
-        </NodeWrapper>
+        </StyledNodeWrapper>
         No Descendants
       </FlexColumn>
     </LegendItemWrapper>
@@ -124,13 +124,12 @@ interface ExpressedInCellsProps {
   size: number;
 }
 const ExpressedInCells = ({ degree, fill, size }: ExpressedInCellsProps) => (
-  <StyledPie degree={degree} fill={fill} size={size}>
+  <StyledPie center degree={degree} fill={fill} size={size}>
     <StyledPie
       degree={360}
       fill={fill}
       size={size * nodePieChartCircleScaler}
       opacity={0.5}
-      center
     />
   </StyledPie>
 );

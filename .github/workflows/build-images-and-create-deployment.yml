@@ -22,7 +22,17 @@ permissions:
   deployments: write
 
 jobs:
-  build-frontend-backend-images:
+  build-images:
+    strategy:
+      matrix:
+        image:
+          - frontend # pushed both the frontend and backend images
+          - upload_failures
+          - upload_success
+          - dataset_submissions
+          - processing
+          - wmg_processing
+          - cellguide_pipeline
     runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
@@ -41,81 +51,14 @@ jobs:
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
-          happy_version: "0.59.0"
+          happy_version: "0.92.0"
       - name: Push images
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
-          happy push --docker-compose-env-file envfile --aws-profile "" --tag sha-${GITHUB_SHA:0:8} frontend backend
-      - uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          fields: repo,commit,author,eventName,workflow,job,mention
-          mention: "here"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
-
-  build-batch-job-images:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 1800
-      - name: Login to ECR
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
-      - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
-        with:
-          happy_version: "0.59.0"
-      - name: Docker build, push, and tag
-        shell: bash
-        run: |
-          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} upload_failures upload_success dataset_submissions processing wmg_processing cellguide_pipeline
-      - uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          fields: repo,commit,author,eventName,workflow,job,mention
-          mention: "here"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
-
-  add-image-tags:
-    needs:
-      - build-frontend-backend-images
-      - build-batch-job-images
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 1800
-      - name: Login to ECR
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
-      - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
-        with:
-          happy_version: "0.59.0"
-      - name: Docker re-tag
-        shell: bash
-        run: |
-          happy addtags --aws-profile "" --source-tag sha-${GITHUB_SHA:0:8} --dest-tag branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
+          happy push devstack --env dev --slice ${{ matrix.image }} \
+          --docker-compose-env-file envfile --aws-profile "" \
+          --tags sha-${GITHUB_SHA:0:8},branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -127,7 +70,7 @@ jobs:
 
   create_deployment:
     needs:
-      - add-image-tags
+      - build-images
     runs-on: ubuntu-22.04
     steps:
       - name: Generate payload
