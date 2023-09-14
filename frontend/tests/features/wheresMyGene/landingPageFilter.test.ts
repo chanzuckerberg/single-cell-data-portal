@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, Page } from "@playwright/test";
 import {
   WMG_WITH_SEEDED_GENES,
   checkPlotSize,
@@ -18,6 +18,7 @@ import {
 } from "src/views/WheresMyGene/common/constants";
 
 const SIDE_BAR_TOGGLE_BUTTON_ID = "side-bar-toggle-button";
+const CELL_TYPE_FILTER = "naive B cell";
 
 const { describe } = test;
 
@@ -118,4 +119,37 @@ describe("Left side bar", () => {
     await page.getByTestId("sort-genes-tooltip-icon").hover();
     expect(page.getByText(SORT_GENES_TOOLTIP_TEXT)).toBeTruthy();
   });
+
+  [
+    "dataset-filter",
+    "disease-filter",
+    "publication-filter",
+    "tissue-filter",
+  ].forEach((testId) => {
+    test(`Ensure that cell type filter crossfilters with the ${testId}`, async ({
+      page,
+    }) => {
+      await goToPage(WMG_WITH_SEEDED_GENES.URL, page);
+
+      await waitForHeatmapToRender(page);
+
+      const numberOfRecordsBefore = await countRecords(page, testId);
+
+      await page.getByRole("combobox").first().click();
+      await page.getByRole("option", { name: CELL_TYPE_FILTER }).click();
+      await page.keyboard.press("Escape");
+
+      const numberOfRecordsAfter = await countRecords(page, testId);
+
+      expect(numberOfRecordsBefore).toBeGreaterThan(numberOfRecordsAfter);
+    });
+  });
+
+  async function countRecords(page: Page, testId: string) {
+    await page.getByTestId(testId).getByRole("button").click();
+    await expect(page.locator("option")).not.toHaveCount(0);
+    const numberOfDatasets = await page.getByRole("option").count();
+    await page.keyboard.press("Escape");
+    return numberOfDatasets;
+  }
 });
