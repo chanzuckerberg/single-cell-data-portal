@@ -9,7 +9,10 @@ import {
   waitForLoadingSpinnerToResolve,
 } from "./helpers";
 import { ADD_GENE_BTN, ADD_TISSUE_ID } from "../common/constants";
-import { ADD_GENE_SEARCH_PLACEHOLDER_TEXT } from "tests/utils/geneUtils";
+import {
+  ADD_GENE_SEARCH_PLACEHOLDER_TEXT,
+  CELL_TYPE_SEARCH_PLACEHOLDER_TEXT,
+} from "tests/utils/geneUtils";
 
 const { skip, beforeEach } = test;
 
@@ -283,4 +286,16 @@ export async function searchAndAddGene(page: Page, geneName: string) {
 
   // close dropdown
   await page.keyboard.press("Escape");
+}
+
+export async function searchAndAddFilterCellType(page: Page, cellType: string) {
+  await page.getByPlaceholder(CELL_TYPE_SEARCH_PLACEHOLDER_TEXT).type(cellType);
+  await page.getByText(cellType, { exact: true }).click();
+  await page.keyboard.press("Escape");
+}
+export async function removeFilteredCellType(page: Page, cellType: string) {
+  await page
+    .getByTestId(`cell-type-tag-${cellType}`)
+    .getByTestId("CancelIcon")
+    .click();
 }

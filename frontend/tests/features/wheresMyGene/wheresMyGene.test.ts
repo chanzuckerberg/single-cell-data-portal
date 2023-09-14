@@ -19,14 +19,12 @@ import {
   conditionallyRunTests,
   goToWMG,
   goToWMGWithSeededState,
+  removeFilteredCellType,
+  searchAndAddFilterCellType,
   waitForHeatmapToRender,
 } from "tests/utils/wmgUtils";
 import { getCurrentDate } from "tests/utils/downloadUtils";
 import { addGene, searchAndAddGene } from "tests/utils/geneUtils";
-import {
-  searchAndAddFilterCellType,
-  searchAndAddGene,
-} from "tests/utils/geneUtils";
 import {
   CELL_TYPE_NAME_LABEL_CLASS_NAME,
   TISSUE_NAME_LABEL_CLASS_NAME,
@@ -861,10 +859,21 @@ describe("Where's My Gene", () => {
   });
   describe("Cell Type FIltering", () => {
     test("Filter to single cell type and then clear", async ({ page }) => {
-      searchAndAddFilterCellType(page, "B cell");
+      await goToWMG(page);
+      const beforeCellTypeNames = await getCellTypeNames(page);
+      await searchAndAddFilterCellType(page, "B cell");
+      const afterCellTypeNames = await getCellTypeNames(page);
+      expect(afterCellTypeNames.length).toBeGreaterThan(
+        beforeCellTypeNames.length
+      );
+      await removeFilteredCellType(page, "B cell");
+      const afterClearCellTypeNames = await getCellTypeNames(page);
+      expect(afterClearCellTypeNames.length).toEqual(
+        beforeCellTypeNames.length
+      );
     });
     test("Filter to multiple cell types and then clear", async ({ page }) => {
-      await goToWMG(page);
+      await searchAndAddGene(page, "DMP1");
     });
   });
 });

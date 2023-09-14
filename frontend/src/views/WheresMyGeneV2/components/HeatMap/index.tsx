@@ -458,6 +458,7 @@ export default memo(function HeatMap({
                   label={cellType}
                   key={cellType}
                   onDelete={handleCellTypeDelete(cellType)}
+                  data-testid={`cell-type-tag-${cellType}`}
                 />
               ))}
             </CellTypeTagContainer>
