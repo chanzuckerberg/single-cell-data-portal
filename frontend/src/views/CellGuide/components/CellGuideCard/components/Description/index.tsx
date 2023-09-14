@@ -28,8 +28,11 @@ import {
   CELL_GUIDE_CARD_GPT_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_TOOLTIP_LINK,
   DESCRIPTION_BREAKPOINT_HEIGHT_PX,
+  DESCRIPTION_BREAKPOINT_HEIGHT_SIDEBAR_PX,
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 import { useIsComponentPastBreakpointHeight } from "../common/hooks/useIsComponentPastBreakpoint";
+import { useRouter } from "next/router";
+import { ROUTES } from "src/common/constants/routes";
 
 const SLOT_PROPS: TooltipProps["slotProps"] = {
   tooltip: {
@@ -44,7 +47,8 @@ interface DescriptionProps {
   cellTypeName: string;
   cellTypeId: string;
   skinnyMode: boolean;
-  setTooltipContent: Dispatch<
+  inSideBar?: boolean;
+  setTooltipContent?: Dispatch<
     SetStateAction<{
       title: string;
       element: JSX.Element;
@@ -56,12 +60,15 @@ export default function Description({
   cellTypeName,
   skinnyMode,
   setTooltipContent,
+  inSideBar,
 }: DescriptionProps): JSX.Element {
   const [descriptionGpt, setDescriptionGpt] = useState<string>("");
   const [descriptionCl, setDescriptionCl] = useState<string>("");
   const [descriptionMaxHeight, setDescriptionMaxHeight] = useState<
     number | undefined
   >(DESCRIPTION_BREAKPOINT_HEIGHT_PX);
+
+  const router = useRouter();
 
   const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For chatgpt hover event
   const { isPastBreakpoint, containerRef } = useIsComponentPastBreakpointHeight(
@@ -70,11 +77,15 @@ export default function Description({
 
   useEffect(() => {
     if (isPastBreakpoint) {
-      setDescriptionMaxHeight(DESCRIPTION_BREAKPOINT_HEIGHT_PX);
+      setDescriptionMaxHeight(
+        inSideBar
+          ? DESCRIPTION_BREAKPOINT_HEIGHT_SIDEBAR_PX
+          : DESCRIPTION_BREAKPOINT_HEIGHT_PX
+      );
     } else {
       setDescriptionMaxHeight(undefined);
     }
-  }, [isPastBreakpoint]);
+  }, [isPastBreakpoint, inSideBar]);
 
   const { data: rawDescriptionGpt } = useGptDescription(cellTypeId);
   const { data: cellTypesById } = useCellTypeMetadata();
@@ -139,7 +150,7 @@ export default function Description({
     </div>
   );
 
-  const sourceLink = (
+  const sourceLink = !inSideBar && setTooltipContent && (
     <SourceLink>
       {"Source: ChatGPT "}
       <StyledTooltip
@@ -188,20 +199,35 @@ export default function Description({
 
   const sourceComponent = (
     <Source>
-      {isPastBreakpoint ? (
-        <StyledButton
-          sdsType="primary"
-          sdsStyle="minimal"
-          onClick={() => {
-            descriptionMaxHeight
-              ? setDescriptionMaxHeight(undefined)
-              : setDescriptionMaxHeight(DESCRIPTION_BREAKPOINT_HEIGHT_PX);
-            descriptionMaxHeight &&
-              track(EVENTS.CG_DESCRIPTION_READ_MORE_CLICKED);
-          }}
-        >
-          {descriptionMaxHeight ? "Read More" : "Read Less"}
-        </StyledButton>
+      {isPastBreakpoint || inSideBar ? (
+        <>
+          <StyledButton
+            sdsType="primary"
+            sdsStyle="minimal"
+            onClick={() => {
+              descriptionMaxHeight
+                ? setDescriptionMaxHeight(undefined)
+                : setDescriptionMaxHeight(DESCRIPTION_BREAKPOINT_HEIGHT_PX);
+              descriptionMaxHeight &&
+                track(EVENTS.CG_DESCRIPTION_READ_MORE_CLICKED);
+            }}
+          >
+            {descriptionMaxHeight ? "Read More" : "Read Less"}
+          </StyledButton>
+          {inSideBar && (
+            <StyledButton
+              sdsType="primary"
+              sdsStyle="minimal"
+              onClick={() => {
+                router.push(
+                  `${ROUTES.CELL_GUIDE}/${cellTypeId.replace(":", "_")}`
+                );
+              }}
+            >
+              View CellGuide Page
+            </StyledButton>
+          )}
+        </>
       ) : (
         disclaimerMessage
       )}
@@ -211,27 +237,29 @@ export default function Description({
 
   return (
     <Wrapper>
-      {descriptionCl && (
-        <CellGuideCardDescription
-          data-testid={CELL_GUIDE_CARD_CL_DESCRIPTION}
-          onCopy={copyHandler}
-        >
-          {descriptionCl}
-          <Source>
-            <SourceLink>
-              {"Source: "}
-              <Link
-                url={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeId.replace(
-                  ":",
-                  "_"
-                )}`}
-                label={"Cell Ontology"}
-              />
-            </SourceLink>
-          </Source>
-        </CellGuideCardDescription>
+      {descriptionCl && !inSideBar && (
+        <>
+          <CellGuideCardDescription
+            data-testid={CELL_GUIDE_CARD_CL_DESCRIPTION}
+            onCopy={copyHandler}
+          >
+            {descriptionCl}
+            <Source>
+              <SourceLink>
+                {"Source: "}
+                <Link
+                  url={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeId.replace(
+                    ":",
+                    "_"
+                  )}`}
+                  label={"Cell Ontology"}
+                />
+              </SourceLink>
+            </Source>
+          </CellGuideCardDescription>
+          <br />
+        </>
       )}
-      <br />
       <CellGuideCardDescription
         data-testid={CELL_GUIDE_CARD_GPT_DESCRIPTION}
         onCopy={copyHandler}
@@ -239,11 +267,13 @@ export default function Description({
         <DescriptionWrapper
           maxHeight={isPastBreakpoint ? descriptionMaxHeight : undefined}
         >
-          <DescriptionHeader>Experimental Description</DescriptionHeader>
+          {!inSideBar && (
+            <DescriptionHeader>Experimental Description</DescriptionHeader>
+          )}
           <div ref={containerRef}>{descriptionGpt}</div>
         </DescriptionWrapper>
         {sourceComponent}
-        {isPastBreakpoint && <Source>{disclaimerMessage}</Source>}
+        {isPastBreakpoint && !inSideBar && <Source>{disclaimerMessage}</Source>}
       </CellGuideCardDescription>
     </Wrapper>
   );

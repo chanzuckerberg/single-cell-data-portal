@@ -180,6 +180,7 @@ interface Props {
   organismName: string;
   selectedGene?: string;
   selectGene: (gene: string) => void;
+  inSideBar?: boolean;
 }
 
 const MarkerGeneTables = ({
@@ -193,6 +194,7 @@ const MarkerGeneTables = ({
   organismName,
   selectedGene,
   selectGene,
+  inSideBar,
 }: Props) => {
   // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(0);
@@ -574,7 +576,7 @@ const MarkerGeneTables = ({
             <TableTitle>Marker Genes</TableTitle>
           </TableTitleInnerWrapper>
           <TableTitleInnerWrapper>
-            {!skinnyMode && (
+            {!skinnyMode && !inSideBar && (
               <Link
                 url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
                 label="Open in Gene Expression"

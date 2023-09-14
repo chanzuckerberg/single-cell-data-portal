@@ -23,3 +23,8 @@ export interface MarkerGeneStats {
 export interface MarkerGeneStatsByCellType {
   [cellType: string]: MarkerGeneStats;
 }
+
+export interface CellType {
+  cellTypeId: string;
+  cellTypeName: string;
+}

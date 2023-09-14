@@ -57,6 +57,8 @@ import { useComponentWidth } from "./components/common/hooks/useIsComponentPastB
 import { DEFAULT_ONTOLOGY_HEIGHT } from "../common/OntologyDagView/common/constants";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import CellGuideInfoSideBar from "../CellGuideInfoSideBar";
+import { CellType } from "../common/OntologyDagView/common/types";
 
 const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
@@ -155,6 +157,9 @@ export default function CellGuideCard({
   }, [throttledHandleResize]);
 
   const [geneInfoGene, setGeneInfoGene] = useState<Gene["name"] | null>(null);
+  const [cellInfoCellType, setCellInfoCellType] = useState<CellType | null>(
+    null
+  );
 
   const { organismsList, organsMap } =
     useOrganAndOrganismFilterListForCellType(cellTypeId);
@@ -204,6 +209,10 @@ export default function CellGuideCard({
 
   function handleCloseGeneInfoSideBar() {
     setGeneInfoGene(null);
+  }
+  function handleCloseCellGuideInfoSideBar() {
+    setGeneInfoGene(null);
+    setCellInfoCellType(null);
   }
 
   useEffect(() => {
@@ -370,6 +379,7 @@ export default function CellGuideCard({
                   tissueName={selectedOrgan.name}
                   tissueId={selectedOrganId}
                   inputWidth={width}
+                  setCellInfoCellType={setCellInfoCellType}
                   inputHeight={DEFAULT_ONTOLOGY_HEIGHT}
                   selectedOrganism={selectedOrganism.name}
                   selectedGene={selectedGene}
@@ -409,18 +419,51 @@ export default function CellGuideCard({
           {!skinnyMode && cellGuideSideBar}
         </CellGuideView>
       </CellGuideWrapper>
-      <StyledRightSideBar
-        width={RIGHT_SIDEBAR_WIDTH_PX}
-        skinnyMode={skinnyMode}
-      >
-        {geneInfoGene && (
-          <GeneInfoSideBar
-            geneInfoGene={geneInfoGene}
-            handleClose={handleCloseGeneInfoSideBar}
-            title={geneInfoGene}
+      {cellInfoCellType ? (
+        <StyledRightSideBar
+          width={RIGHT_SIDEBAR_WIDTH_PX}
+          skinnyMode={skinnyMode}
+        >
+          <CellGuideInfoSideBar
+            cellInfoCellType={cellInfoCellType}
+            handleClose={handleCloseCellGuideInfoSideBar}
+            title={titleize(cellInfoCellType.cellTypeName)}
+            setGeneInfoGene={setGeneInfoGene}
+            selectedOrganName={selectedOrgan.name}
+            selectedOrganId={selectedOrganId}
+            organismName={selectedOrganism.name}
+            selectedGene={selectedGene}
+            selectGene={selectGene}
+            setTooltipContent={setTooltipContent}
+            skinnyMode={skinnyMode}
           />
-        )}
-      </StyledRightSideBar>
+
+          {
+            // Split right sidebar view if fmg AND gene info is populated
+            geneInfoGene && (
+              <GeneInfoSideBar
+                geneInfoGene={geneInfoGene}
+                handleClose={handleCloseGeneInfoSideBar}
+                title={`${geneInfoGene}`}
+              />
+            )
+          }
+        </StyledRightSideBar>
+      ) : (
+        // Gene info full right sidebar length
+        geneInfoGene && (
+          <StyledRightSideBar
+            width={RIGHT_SIDEBAR_WIDTH_PX}
+            skinnyMode={skinnyMode}
+          >
+            <GeneInfoSideBar
+              geneInfoGene={geneInfoGene}
+              handleClose={handleCloseGeneInfoSideBar}
+              title={geneInfoGene}
+            />
+          </StyledRightSideBar>
+        )
+      )}
       {/* dont include long survey link text if in mobile view */}
       <CellGuideBottomBanner includeSurveyLink={!skinnyMode} />
     </>
