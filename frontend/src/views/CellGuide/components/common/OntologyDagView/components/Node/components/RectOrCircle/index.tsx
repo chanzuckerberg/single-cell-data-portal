@@ -114,6 +114,7 @@ export default function RectOrCircle({
               degree={cellTypeMarkerGeneStats.pc * 360}
               size={size}
               fill={cellTypeMarkerGeneStats.marker_score}
+              center
             >
               <StyledPie
                 size={size * sizeScaler}
@@ -124,7 +125,6 @@ export default function RectOrCircle({
                 }
                 opacity={0.5}
                 degree={360}
-                center
               />
             </StyledPie>
           ) : (

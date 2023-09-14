@@ -124,13 +124,12 @@ interface ExpressedInCellsProps {
   size: number;
 }
 const ExpressedInCells = ({ degree, fill, size }: ExpressedInCellsProps) => (
-  <StyledPie degree={degree} fill={fill} size={size}>
+  <StyledPie degree={degree} fill={fill} size={size} center>
     <StyledPie
       degree={360}
       fill={fill}
       size={size * nodePieChartCircleScaler}
       opacity={0.5}
-      center
     />
   </StyledPie>
 );

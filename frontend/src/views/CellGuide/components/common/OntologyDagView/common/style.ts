@@ -19,7 +19,18 @@ export const StyledPie = styled.div<StyledPieProps>`
 
   ${(props) => {
     const { degree, size, fill, opacity, center } = props;
-    const fillColor = typeof fill === "number" ? colorScale(fill) : fill;
+    const hexColor = typeof fill === "number" ? colorScale(fill) : fill;
+    let fillColor = hexColor;
+    // we cannot use `opacity` directly as it does not work with `foreignObject`
+    // in safari. Instead, if opacity is defined, we convert hex to rgba and set alpha
+    // to opacity.
+    if (opacity) {
+      const hexMatch = hexColor.slice(1).match(/.{2}/g);
+      const [r, g, b] = hexMatch
+        ? hexMatch.map((hex) => parseInt(hex, 16))
+        : [0, 0, 0];
+      fillColor = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
     return `
         width: ${size}px;
         height: ${size}px;
@@ -29,12 +40,10 @@ export const StyledPie = styled.div<StyledPieProps>`
           #fff0 0deg,
           #fff0 360deg
         );
-        opacity: ${opacity || 1};   
-        position: ${center ? "relative" : "unset"};
-        left: ${center ? "50%" : "unset"};
-        top: ${center ? "50%" : "unset"};
-        transform: ${center ? "translate(-50%, -50%)" : "unset"};
-        background-color: ${!center ? "#f8f8f8" : "unset"};
+        display: ${center ? "flex" : "unset"};
+        justify-content: ${center ? "center" : "unset"};
+        align-items: ${center ? "center" : "unset"};
+        background-color: ${center ? "#f8f8f8" : "unset"};
       `;
   }}
   border-radius: 50%;
