@@ -45,13 +45,6 @@ export const NoWrapWrapper = styled.span<NoWrapWrapperProps>`
   white-space: nowrap;
   display: flex;
   column-gap: ${spacesS}px;
-  .hover-button {
-    visibility: hidden;
-    transition: visibility 0.1s ease;
-  }
-  &:hover .hover-button {
-    visibility: visible;
-  }
 `;
 
 export const PublicationLinkWrapper = styled.div`

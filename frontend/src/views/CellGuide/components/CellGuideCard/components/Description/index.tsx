@@ -31,8 +31,6 @@ import {
   DESCRIPTION_BREAKPOINT_HEIGHT_SIDEBAR_PX,
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 import { useIsComponentPastBreakpointHeight } from "../common/hooks/useIsComponentPastBreakpoint";
-import { useRouter } from "next/router";
-import { ROUTES } from "src/common/constants/routes";
 
 const SLOT_PROPS: TooltipProps["slotProps"] = {
   tooltip: {
@@ -67,8 +65,6 @@ export default function Description({
   const [descriptionMaxHeight, setDescriptionMaxHeight] = useState<
     number | undefined
   >(DESCRIPTION_BREAKPOINT_HEIGHT_PX);
-
-  const router = useRouter();
 
   const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For chatgpt hover event
   const { isPastBreakpoint, containerRef } = useIsComponentPastBreakpointHeight(
@@ -214,19 +210,6 @@ export default function Description({
           >
             {descriptionMaxHeight ? "Read More" : "Read Less"}
           </StyledButton>
-          {inSideBar && (
-            <StyledButton
-              sdsType="primary"
-              sdsStyle="minimal"
-              onClick={() => {
-                router.push(
-                  `${ROUTES.CELL_GUIDE}/${cellTypeId.replace(":", "_")}`
-                );
-              }}
-            >
-              View CellGuide Page
-            </StyledButton>
-          )}
         </>
       ) : (
         disclaimerMessage

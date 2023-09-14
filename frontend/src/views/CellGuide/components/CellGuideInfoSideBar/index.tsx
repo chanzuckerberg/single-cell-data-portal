@@ -3,7 +3,9 @@ import { RightSidebarProperties } from "src/components/common/RightSideBar";
 import { CellType } from "../common/OntologyDagView/common/types";
 import Description from "../CellGuideCard/components/Description";
 import MarkerGeneTables from "../CellGuideCard/components/MarkerGeneTables";
-
+import { StyledButton } from "../CellGuideCard/components/Description/style";
+import { useRouter } from "next/router";
+import { ROUTES } from "src/common/constants/routes";
 export interface CellGuideInfoBarProps extends RightSidebarProperties {
   cellInfoCellType: CellType;
   setGeneInfoGene: React.Dispatch<React.SetStateAction<string | null>>;
@@ -32,8 +34,23 @@ function CellGuideInfoBar({
   skinnyMode,
   selectGene,
 }: CellGuideInfoBarProps): JSX.Element | null {
+  const router = useRouter();
   return (
     <div>
+      <StyledButton
+        sdsType="primary"
+        sdsStyle="minimal"
+        onClick={() => {
+          router.push(
+            `${ROUTES.CELL_GUIDE}/${cellInfoCellType.cellTypeId.replace(
+              ":",
+              "_"
+            )}`
+          );
+        }}
+      >
+        View CellGuide Page
+      </StyledButton>
       <Description
         cellTypeId={cellInfoCellType.cellTypeId}
         cellTypeName={cellInfoCellType.cellTypeName}
