@@ -46,6 +46,7 @@ if [[ $DEST_ENV == 'rdev' && -n "$CELLGUIDE" ]]; then
   echo "Copying CellGuide snapshot..."
 
   latest_snapshot=$(aws s3 cp s3://cellguide-data-public-${SRC_ENV}/latest_snapshot_identifier -)
+  # CellGuide uses a hack for rdev: reads from the env-rdev-cellguide/ subpath within the cellguide-data-public-dev bucket
   echo -n $latest_snapshot | aws s3 cp - s3://cellguide-data-public-dev/env-rdev-cellguide/${STACK}/latest_snapshot_identifier
   $S3_SYNC_CMD s3://cellguide-data-public-${SRC_ENV}/${latest_snapshot} s3://cellguide-data-public-dev/env-rdev-cellguide/${STACK}/${latest_snapshot}
 fi
