@@ -5,7 +5,6 @@ import { secondaryColor } from "../../../../common/constants";
 export const NodeWrapper = styled.div`
   display: flex;
   flex-direction: row;
-  position: relative;
 `;
 
 interface BorderProps extends CommonThemeProps {
