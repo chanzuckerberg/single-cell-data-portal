@@ -39,6 +39,7 @@ services:
     platform: linux/amd64
     profiles:
       - frontend
+      - fullstack
     build:
       context: frontend
       cache_from:
@@ -291,6 +292,7 @@ services:
     platform: linux/amd64
     profiles:
       - backend
+      - fullstack
     build:
       context: .
       cache_from:
