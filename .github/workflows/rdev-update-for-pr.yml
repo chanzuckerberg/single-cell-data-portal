@@ -87,9 +87,9 @@ jobs:
         id: sho
         run: |
           if [[ "${{ github.event.action }}" == "open" ]]; then
-            echo"operation=create" >> $GITHUB_OUTPUT
+            echo "operation=create" >> $GITHUB_OUTPUT
           else
-            echo"operation=update" >> $GITHUB_OUTPUT
+            echo "operation=update" >> $GITHUB_OUTPUT
           fi
       - name: Create/Update deployment
         uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
