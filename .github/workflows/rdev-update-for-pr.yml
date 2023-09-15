@@ -98,3 +98,9 @@ jobs:
           operation: ${{ steps.pre_happy.outputs.operation }}
           tag: ${{ steps.pre_happy.outputs.IMAGE_TAG }}
           happy_version: "0.92.0"
+      - name: Happy Deployment Summary
+        run: |
+          echo "backend_url: https://${{ env.STACK_NAME }}-backend.rdev.single-cell.czi.technology" >> $GITHUB_STEP_SUMMARY
+          echo "delete_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-deletion:1" >> $GITHUB_STEP_SUMMARY
+          echo "frontend_url: https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology" >> $GITHUB_STEP_SUMMARY
+          echo "migrate_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME }}-migration:1" >> $GITHUB_STEP_SUMMARY
