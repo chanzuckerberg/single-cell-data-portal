@@ -4,15 +4,17 @@ on:
   schedule:
     # Runs "every 55th minute" (see https://crontab.guru)
     - cron: "55 * * * *"
-
-permissions:
-  id-token: write
-  contents: read
+  push:
+    branches:
+      - "*"
 
 jobs:
   build:
     name: Clean happy stacks
     runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -25,6 +27,7 @@ jobs:
         uses: chanzuckerberg/github-actions/.github/actions/happy-cleanup@happy-cleanup-v1.1.5
         with:
           tfe_token: ${{secrets.TFE_TOKEN}}
+          happy_version: 0.92.0
           # the default stale period to delete a stack is 2 weeks
           # override like this:
           #time: 3 weeks
