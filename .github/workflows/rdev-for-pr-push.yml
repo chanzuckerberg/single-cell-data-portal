@@ -1,0 +1,90 @@
+name: Create rdev for PR
+
+on:
+  push:
+    branches:
+      - "!main"
+      - "!prod"
+      - "!staging"
+    types:
+      - open
+
+env:
+  # Force using BuildKit instead of normal Docker, required so that metadata
+  # is written/read to allow us to use layers of previous builds as cache.
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+  DOCKER_REPO: ${{ secrets.ECR_REPO }}/
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-images:
+    strategy:
+      matrix:
+        image:
+          - frontend # pushed both the frontend and backend images
+          - upload_failures
+          - upload_success
+          - dataset_submissions
+          - processing
+          - wmg_processing
+          - cellguide_pipeline
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        with:
+          happy_version: "0.92.0"
+      - name: Push images
+        run: |
+          echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
+          echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
+          happy push devstack --env dev --slice ${{ matrix.image }} \
+          --docker-compose-env-file envfile --aws-profile "" \
+          --tags sha-${GITHUB_SHA:0:8},branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
+
+  create-rdev:
+    runs-on: ubuntu-22.04
+    needs:
+      - build-images
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 900
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        with:
+          happy_version: "0.59.0"
+      - name: Create Summary With Happy Commands
+        run: |
+          export STACK_NAME=$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
+          echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
+          echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
+          echo "### Happy Commands :rocket: :upside_down_face:" >> $GITHUB_STEP_SUMMARY
+          echo "* \`happy update ${STACK_NAME} --docker-compose-env-file envfile --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY

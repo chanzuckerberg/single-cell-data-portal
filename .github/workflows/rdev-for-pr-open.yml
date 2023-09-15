@@ -61,6 +61,8 @@ jobs:
 
   create-rdev:
     runs-on: ubuntu-22.04
+    needs:
+      - build-images
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -86,4 +88,3 @@ jobs:
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
           echo "### Happy Commands :rocket: :upside_down_face:" >> $GITHUB_STEP_SUMMARY
           echo "* \`happy create ${STACK_NAME} --docker-compose-env-file envfile --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
-          echo "* \`happy update ${STACK_NAME} --docker-compose-env-file envfile --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
