@@ -1,13 +1,13 @@
-name: Create rdev for PR
+name: Update the rdev for a PR
 
 on:
-  push:
+  pull_request:
     branches:
       - "!main"
       - "!prod"
       - "!staging"
     types:
-      - open
+      - synchronize
 
 env:
   # Force using BuildKit instead of normal Docker, required so that metadata
