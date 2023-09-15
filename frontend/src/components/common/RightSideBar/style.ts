@@ -8,7 +8,7 @@ export const SIDEBAR_BOX_SHADOW_COLOR = "rgba(16, 22, 26, 0.15)";
 export const RightSideBarPositioner = styled(RawSideBarPositioner)`
   max-height: ${sectionMaxheight};
   box-shadow: inset 0px 1px 0px ${SIDEBAR_BOX_SHADOW_COLOR};
-  overscroll-behavior: contain;
+  overscroll-behavior: none;
 `;
 
 export const HeaderContainer = styled.div`

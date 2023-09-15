@@ -15,7 +15,6 @@ import {
   spacesS,
 } from "src/common/theme";
 import Link from "../common/Link";
-import Image from "next/image";
 
 const DIVIDER_WIDTH = 2;
 
@@ -41,11 +40,10 @@ export const ReferenceTooltipWrapper = styled.div`
 interface NoWrapWrapperProps extends CommonThemeProps {
   isSelected: boolean;
 }
-export const NoWrapWrapper = styled.span<NoWrapWrapperProps>`
+export const NoWrapWrapper = styled.div<NoWrapWrapperProps>`
   white-space: nowrap;
   display: flex;
   column-gap: ${spacesS}px;
-  width: 100%;
 `;
 
 export const PublicationLinkWrapper = styled.div`
@@ -131,11 +129,8 @@ export const MarkerGeneTableWrapper = styled.div`
   max-width: calc(100vw - ${spacesL}px - ${spacesL}px);
 `;
 
-export const StyledIconImage = styled(Image)`
+export const StyledImageWrapper = styled.div`
   cursor: pointer;
-  span {
-    width: 120px;
-    height: 12px;
-    display: inline-block;
-  }
+  min-width: 12px;
+  min-height: 12px;
 `;

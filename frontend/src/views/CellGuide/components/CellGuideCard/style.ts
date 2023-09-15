@@ -220,7 +220,7 @@ export const MobileTooltipWrapper = styled.div`
   display: flex;
   flex-direction: column;
   height: calc(100vh - ${HEADER_HEIGHT_PX}px);
-  overscroll-behavior: contain;
+  overscroll-behavior: none;
   width: 100vw;
   padding: ${spacesL}px;
   gap: ${spacesL}px;

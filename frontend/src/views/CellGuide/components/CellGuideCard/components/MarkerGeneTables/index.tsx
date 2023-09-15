@@ -36,7 +36,7 @@ import {
   NoWrapWrapper,
   StyledLink,
   ReferenceTooltipWrapper,
-  StyledIconImage,
+  StyledImageWrapper,
 } from "./style";
 import Table from "../common/Table";
 import { Pagination } from "@mui/material";
@@ -77,6 +77,7 @@ import {
   MARKER_GENES_TREE_ICON_BUTTON_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
+import Image from "next/image";
 
 function getEmptyComputationalMarkerGenesTableUIMessageDetail(
   allFilteredByLowMarkerScore: boolean
@@ -359,12 +360,18 @@ const MarkerGeneTables = ({
           onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
         />
         {showEye && (
-          <StyledIconImage
-            data-testid={MARKER_GENES_TREE_ICON_BUTTON_TEST_ID(row.symbol)}
+          <StyledImageWrapper
             className="hover-button"
-            src={treeDendrogram}
             onClick={() => selectGene(row.symbol)}
-          />
+          >
+            <Image
+              data-testid={MARKER_GENES_TREE_ICON_BUTTON_TEST_ID(row.symbol)}
+              src={treeDendrogram}
+              alt={`activate marker gene mode for ${row.symbol}`}
+              width="12px"
+              height="12px"
+            />
+          </StyledImageWrapper>
         )}
       </NoWrapWrapper>
     ),
