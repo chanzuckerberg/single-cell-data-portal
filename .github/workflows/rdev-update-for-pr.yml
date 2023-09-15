@@ -17,7 +17,6 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
   STACK_NAME: pr-${{ github.event.number }}
-  IMAGE_TAG: sha-${{ github.sha:0:8 }}
 
 permissions:
   id-token: write
@@ -85,6 +84,7 @@ jobs:
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
+          echo "IMAGE_STAGE=sha-${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
           if [[ "${{ github.event.action }}" == "open" ]]; then
             echo "operation=create" >> $GITHUB_OUTPUT
           else
@@ -96,6 +96,6 @@ jobs:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ env.STACK_NAME }}
           operation: ${{ steps.pre_happy.outputs.operation }}
-          tag: ${{ env.IMAGE_TAG }}
+          tag: ${{ steps.pre_happy.outputs.IMAGE_TAG }}
           happy_version: "0.92.0"
           env-file: envfile
