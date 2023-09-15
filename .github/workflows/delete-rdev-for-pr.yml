@@ -1,0 +1,49 @@
+name: Create rdev for PR
+
+on:
+  pull_request:
+    branches:
+      - "!main"
+      - "!prod"
+      - "!staging"
+    types:
+      - close
+
+env:
+  DEPLOYMENT_STAGE: test
+  # Force using BuildKit instead of normal Docker, required so that metadata
+  # is written/read to allow us to use layers of previous builds as cache.
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+  DOCKER_REPO: ${{ secrets.ECR_REPO }}/
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  create-rdev:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 900
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        with:
+          happy_version: "0.59.0"
+      - name: Create Summary With Happy Commands
+        run: |
+          export STACK_NAME=$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
+          echo "### Happy Commands :rocket: :upside_down_face:" >> $GITHUB_STEP_SUMMARY
+          echo "* \`happy delete ${STACK_NAME} \`" >>  $GITHUB_STEP_SUMMARY
