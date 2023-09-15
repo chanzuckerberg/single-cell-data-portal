@@ -3,11 +3,8 @@ name: Create/Update rdev for PR
 on:
   pull_request:
     branches:
-      - "*"
-    #      - "!main"
-    #      - "!prod"
-    #      - "!staging"
-    #      - "tsmith/*"
+      - !staging
+      - !prod
     types:
       - open
       - synchronize
