@@ -15,7 +15,6 @@ env:
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
-  PR_NUMBER: ${{ github.event.number }}
 
 permissions:
   id-token: write
@@ -58,7 +57,7 @@ jobs:
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
           happy push devstack --env dev --slice ${{ matrix.image }} \
           --docker-compose-env-file envfile --aws-profile "" \
-          --tags sha-${GITHUB_SHA:0:8},pr-${PR_NUMBER},branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
+          --tags sha-${GITHUB_SHA:0:8},pr-${{ github.event.number }},branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
 
   create-rdev:
     runs-on: ubuntu-22.04
@@ -81,11 +80,10 @@ jobs:
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
-          happy_version: "0.59.0"
+          happy_version: "0.92.0"
       - name: Create Summary With Happy Commands
         run: |
-          export STACK_NAME=$(echo pr-$GITHUB_REF_NAME | sed 's/[\+\/]/-/g')
-          echo $STACK_NAME >> $GITHUB_STEP_SUMMARY
+          export STACK_NAME=$(echo pr-${{ github.event.number }})
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
           echo "### Happy Commands :rocket: :upside_down_face:" >> $GITHUB_STEP_SUMMARY
