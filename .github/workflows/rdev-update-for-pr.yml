@@ -17,6 +17,7 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
   STACK_NAME: pr-${{ github.event.number }}
+  IMAGE_TAG: sha-${{ github.sha:0:8 }}
 
 permissions:
   id-token: write
@@ -59,7 +60,7 @@ jobs:
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
           happy push devstack --env dev --slice ${{ matrix.image }} \
           --docker-compose-env-file envfile --aws-profile "" \
-          --tags sha-${GITHUB_SHA:0:8},pr-${{ github.event.number }},branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
+          --tags ${IMAGE_TAG},${STACK_NAME},branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
 
   create-rdev:
     runs-on: ubuntu-22.04
@@ -79,13 +80,11 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
-      - name: Create Docker envfile
+      - name: Prepare happy parameters
+        id: pre_happy
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
-      - name: Set happy operation
-        id: sho
-        run: |
           if [[ "${{ github.event.action }}" == "open" ]]; then
             echo "operation=create" >> $GITHUB_OUTPUT
           else
@@ -95,8 +94,8 @@ jobs:
         uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
-          stack-name: ${STACK_NAME}
-          operation: ${{ steps.sho.outputs.operation }}
-          tag: sha-${GITHUB_SHA:0:8}
+          stack-name: ${{ env.STACK_NAME }}
+          operation: ${{ steps.pre_happy.outputs.operation }}
+          tag: ${{ env.IMAGE_TAG }}
           happy_version: "0.92.0"
           env-file: envfile
