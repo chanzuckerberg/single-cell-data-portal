@@ -57,6 +57,7 @@ jobs:
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
+          export IMAGE_TAG=sha-${GITHUB_SHA:0:8}
           happy push devstack --env dev --slice ${{ matrix.image }} \
           --docker-compose-env-file envfile --aws-profile "" \
           --tags ${IMAGE_TAG},${STACK_NAME},branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
@@ -82,7 +83,7 @@ jobs:
       - name: Prepare happy parameters
         id: pre_happy
         run: |
-          echo "IMAGE_STAGE=sha-${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
+          echo "IMAGE_TAG=sha-${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
           if [[ "${{ github.event.action }}" != "synchronize" ]]; then
             echo "operation=create" >> $GITHUB_OUTPUT
           else
