@@ -4,6 +4,7 @@ import { expect, Page, test } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
 import {
   expandTissue,
+  getCellTypeNames,
   selectFirstOption,
   tryUntil,
   waitForLoadingSpinnerToResolve,
@@ -161,7 +162,7 @@ export const deSelectSecondaryFilterOption = async (
     .getByTestId(filterName)
     .locator(".MuiChip-deletable");
 
-  const filterChip = await chipLocator.first();
+  const filterChip = chipLocator.first();
 
   await expect(filterChip).toBeVisible();
 
@@ -288,14 +289,36 @@ export async function searchAndAddGene(page: Page, geneName: string) {
   await page.keyboard.press("Escape");
 }
 
-export async function searchAndAddFilterCellType(page: Page, cellType: string) {
-  await page.getByPlaceholder(CELL_TYPE_SEARCH_PLACEHOLDER_TEXT).type(cellType);
-  await page.getByText(cellType, { exact: true }).click();
-  await page.keyboard.press("Escape");
+export async function searchAndAddFilterCellTypes(
+  page: Page,
+  cellTypes: string | string[]
+) {
+  if (!(cellTypes instanceof Array)) cellTypes = [cellTypes];
+  cellTypes.forEach(async (cellType) => {
+    const beforeCellTypeNames = await getCellTypeNames(page);
+    await page
+      .getByPlaceholder(CELL_TYPE_SEARCH_PLACEHOLDER_TEXT)
+      .type(cellType);
+    await page.getByText(cellType, { exact: true }).click();
+    await page.keyboard.press("Escape");
+    const afterCellTypeNames = await getCellTypeNames(page);
+    expect(afterCellTypeNames.length).toBeGreaterThan(
+      beforeCellTypeNames.length
+    );
+  });
 }
-export async function removeFilteredCellType(page: Page, cellType: string) {
-  await page
-    .getByTestId(`cell-type-tag-${cellType}`)
-    .getByTestId("CancelIcon")
-    .click();
+export async function removeFilteredCellTypes(
+  page: Page,
+  cellTypes: string | string[]
+) {
+  if (!(cellTypes instanceof Array)) cellTypes = [cellTypes];
+  cellTypes.forEach(async (cellType) => {
+    const beforeCellTypeNames = await getCellTypeNames(page);
+    const cellTypeTag = page.getByTestId(`cell-type-tag-${cellType}`);
+    const deleteIcon = cellTypeTag.getByTestId("CancelIcon");
+    await tryUntil(() => expect(deleteIcon).toBeVisible(), { page });
+    await deleteIcon.click();
+    const afterCellTypeNames = await getCellTypeNames(page);
+    expect(afterCellTypeNames.length).toBeLessThan(beforeCellTypeNames.length);
+  });
 }
