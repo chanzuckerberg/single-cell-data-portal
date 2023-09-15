@@ -18,6 +18,7 @@ env:
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
+  PR_NUMBER: ${{ github.event.number }}
 
 permissions:
   id-token: write
@@ -60,7 +61,7 @@ jobs:
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
           happy push devstack --env dev --slice ${{ matrix.image }} \
           --docker-compose-env-file envfile --aws-profile "" \
-          --tags sha-${GITHUB_SHA:0:8},branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
+          --tags sha-${GITHUB_SHA:0:8},pr-${PR_NUMBER},branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
 
   create-rdev:
     runs-on: ubuntu-22.04
@@ -86,9 +87,12 @@ jobs:
           happy_version: "0.59.0"
       - name: Create Summary With Happy Commands
         run: |
-          export STACK_NAME=$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
+          export STACK_NAME=$(echo pr-$GITHUB_REF_NAME | sed 's/[\+\/]/-/g')
+          echo $STACK_NAME >> $GITHUB_STEP_SUMMARY
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
           echo "### Happy Commands :rocket: :upside_down_face:" >> $GITHUB_STEP_SUMMARY
-          echo "* \`happy create ${STACK_NAME} --docker-compose-env-file envfile --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
-          echo "* \`happy update ${STACK_NAME} --docker-compose-env-file envfile --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
+
+#          echo "* \`happy create $STACK_NAME --docker-compose-env-file envfile --tag sha-${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
+#          echo "* \`happy update $STACK_NAME --docker-compose-env-file envfile --tag sha-${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
+
