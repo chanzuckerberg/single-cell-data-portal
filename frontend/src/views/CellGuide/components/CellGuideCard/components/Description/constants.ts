@@ -7,4 +7,3 @@ export const CELL_GUIDE_CARD_GPT_TOOLTIP_LINK =
   "cell-guide-card-gpt-tooltip-link";
 
 export const DESCRIPTION_BREAKPOINT_HEIGHT_PX = 400;
-export const DESCRIPTION_BREAKPOINT_HEIGHT_SIDEBAR_PX = 250;

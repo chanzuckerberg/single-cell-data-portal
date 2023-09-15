@@ -28,7 +28,6 @@ import {
   CELL_GUIDE_CARD_GPT_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_TOOLTIP_LINK,
   DESCRIPTION_BREAKPOINT_HEIGHT_PX,
-  DESCRIPTION_BREAKPOINT_HEIGHT_SIDEBAR_PX,
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 import { useIsComponentPastBreakpointHeight } from "../common/hooks/useIsComponentPastBreakpoint";
 
@@ -73,15 +72,11 @@ export default function Description({
 
   useEffect(() => {
     if (isPastBreakpoint) {
-      setDescriptionMaxHeight(
-        inSideBar
-          ? DESCRIPTION_BREAKPOINT_HEIGHT_SIDEBAR_PX
-          : DESCRIPTION_BREAKPOINT_HEIGHT_PX
-      );
+      setDescriptionMaxHeight(DESCRIPTION_BREAKPOINT_HEIGHT_PX);
     } else {
       setDescriptionMaxHeight(undefined);
     }
-  }, [isPastBreakpoint, inSideBar]);
+  }, [isPastBreakpoint]);
 
   const { data: rawDescriptionGpt } = useGptDescription(cellTypeId);
   const { data: cellTypesById } = useCellTypeMetadata();
@@ -146,7 +141,7 @@ export default function Description({
     </div>
   );
 
-  const sourceLink = !inSideBar && setTooltipContent && (
+  const sourceLink = setTooltipContent && (
     <SourceLink>
       {"Source: ChatGPT "}
       <StyledTooltip
@@ -195,7 +190,7 @@ export default function Description({
 
   const sourceComponent = (
     <Source>
-      {isPastBreakpoint || inSideBar ? (
+      {isPastBreakpoint ? (
         <>
           <StyledButton
             sdsType="primary"
@@ -246,16 +241,20 @@ export default function Description({
       <CellGuideCardDescription
         data-testid={CELL_GUIDE_CARD_GPT_DESCRIPTION}
         onCopy={copyHandler}
+        inSideBar={inSideBar}
       >
         <DescriptionWrapper
+          inSideBar={inSideBar}
           maxHeight={isPastBreakpoint ? descriptionMaxHeight : undefined}
         >
           {!inSideBar && (
             <DescriptionHeader>Experimental Description</DescriptionHeader>
           )}
-          <div ref={containerRef}>{descriptionGpt}</div>
+          <div ref={containerRef}>
+            {inSideBar ? descriptionGpt.split("\n").at(0) : descriptionGpt}
+          </div>
         </DescriptionWrapper>
-        {sourceComponent}
+        {!inSideBar && sourceComponent}
         {isPastBreakpoint && !inSideBar && <Source>{disclaimerMessage}</Source>}
       </CellGuideCardDescription>
     </Wrapper>
