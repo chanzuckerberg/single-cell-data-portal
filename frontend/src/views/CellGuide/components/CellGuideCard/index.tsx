@@ -18,6 +18,7 @@ import {
   MobileTooltipHeader,
   NavBarDropdownWrapper,
   CellGuideWrapper,
+  StyledTagSideBar,
 } from "./style";
 import Description from "./components/Description";
 import MarkerGeneTables from "./components/MarkerGeneTables";
@@ -40,6 +41,7 @@ import {
   CELL_GUIDE_CARD_HEADER_NAME,
   CELL_GUIDE_CARD_HEADER_TAG,
   CELL_GUIDE_CARD_SYNONYMS,
+  RIGHT_SIDEBAR_WIDTH_PX,
 } from "src/views/CellGuide/components/CellGuideCard/constants";
 import { useOrganAndOrganismFilterListForCellType } from "./components/MarkerGeneTables/hooks/common";
 import {
@@ -59,8 +61,6 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import CellGuideInfoSideBar from "../CellGuideInfoSideBar";
 import { CellType } from "../common/OntologyDagView/common/types";
-
-const RIGHT_SIDEBAR_WIDTH_PX = 400;
 
 const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
   sdsStyle: "square",
@@ -254,6 +254,18 @@ export default function CellGuideCard({
   );
   const { width, containerRef } = useComponentWidth();
 
+  const geneInfoGeneTitle = (
+    <span>
+      {geneInfoGene}{" "}
+      <StyledTagSideBar
+        label="Gene"
+        sdsType="secondary"
+        sdsStyle="square"
+        color="info"
+        tagColor="info"
+      />
+    </span>
+  );
   return (
     <>
       {/* This is a fix that overrides a global overflow css prop to get sticky elements to work */}
@@ -372,7 +384,7 @@ export default function CellGuideCard({
           NotFoundError: Failed to execute 'insertBefore' on 'Node'
          */}
             <div>
-              <FullScreenProvider>
+              <FullScreenProvider cellInfoSideBarDisplayed={!!cellInfoCellType}>
                 <OntologyDagView
                   key={`${cellTypeId}-${selectedOrganId}`}
                   cellTypeId={cellTypeId}
@@ -427,7 +439,18 @@ export default function CellGuideCard({
           <CellGuideInfoSideBar
             cellInfoCellType={cellInfoCellType}
             handleClose={handleCloseCellGuideInfoSideBar}
-            title={titleize(cellInfoCellType.cellTypeName)}
+            title={
+              <span>
+                {titleize(cellInfoCellType.cellTypeName)}{" "}
+                <StyledTagSideBar
+                  label="Cell Type"
+                  sdsType="secondary"
+                  sdsStyle="square"
+                  color="info"
+                  tagColor="info"
+                />
+              </span>
+            }
             setGeneInfoGene={setGeneInfoGene}
             selectedOrganName={selectedOrgan.name}
             selectedOrganId={selectedOrganId}
@@ -444,7 +467,7 @@ export default function CellGuideCard({
               <GeneInfoSideBar
                 geneInfoGene={geneInfoGene}
                 handleClose={handleCloseGeneInfoSideBar}
-                title={`${geneInfoGene}`}
+                title={geneInfoGeneTitle}
               />
             )
           }
@@ -459,7 +482,7 @@ export default function CellGuideCard({
             <GeneInfoSideBar
               geneInfoGene={geneInfoGene}
               handleClose={handleCloseGeneInfoSideBar}
-              title={geneInfoGene}
+              title={geneInfoGeneTitle}
             />
           </StyledRightSideBar>
         )

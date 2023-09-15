@@ -6,6 +6,7 @@ import MarkerGeneTables from "../CellGuideCard/components/MarkerGeneTables";
 import { StyledButton } from "../CellGuideCard/components/Description/style";
 import { useRouter } from "next/router";
 import { ROUTES } from "src/common/constants/routes";
+import { MarkerGeneTableWrapper } from "./style";
 export interface CellGuideInfoBarProps extends RightSidebarProperties {
   cellInfoCellType: CellType;
   setGeneInfoGene: React.Dispatch<React.SetStateAction<string | null>>;
@@ -57,20 +58,22 @@ function CellGuideInfoBar({
         skinnyMode={true}
         inSideBar
       />
-      <MarkerGeneTables
-        setTooltipContent={setTooltipContent}
-        key={cellInfoCellType.cellTypeId}
-        cellTypeId={cellInfoCellType.cellTypeId}
-        setGeneInfoGene={setGeneInfoGene}
-        cellTypeName={cellInfoCellType.cellTypeName}
-        skinnyMode={skinnyMode}
-        inSideBar
-        organName={selectedOrganName}
-        organId={selectedOrganId}
-        organismName={organismName}
-        selectedGene={selectedGene}
-        selectGene={selectGene}
-      />
+      <MarkerGeneTableWrapper>
+        <MarkerGeneTables
+          setTooltipContent={setTooltipContent}
+          key={cellInfoCellType.cellTypeId}
+          cellTypeId={cellInfoCellType.cellTypeId}
+          setGeneInfoGene={setGeneInfoGene}
+          cellTypeName={cellInfoCellType.cellTypeName}
+          skinnyMode={skinnyMode}
+          inSideBar
+          organName={selectedOrganName}
+          organId={selectedOrganId}
+          organismName={organismName}
+          selectedGene={selectedGene}
+          selectGene={selectGene}
+        />
+      </MarkerGeneTableWrapper>
     </div>
   );
 }

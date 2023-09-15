@@ -510,7 +510,7 @@ export default function OntologyDagView({
                 <rect
                   width={width}
                   height={height}
-                  rx={14}
+                  rx={isFullScreen ? 0 : 14}
                   fill={backgroundColor}
                 />
                 <g transform={zoom.toString()}>

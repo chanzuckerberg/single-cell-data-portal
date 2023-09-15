@@ -45,6 +45,7 @@ export const NoWrapWrapper = styled.span<NoWrapWrapperProps>`
   white-space: nowrap;
   display: flex;
   column-gap: ${spacesS}px;
+  width: 100%;
 `;
 
 export const PublicationLinkWrapper = styled.div`
@@ -132,4 +133,9 @@ export const MarkerGeneTableWrapper = styled.div`
 
 export const StyledIconImage = styled(Image)`
   cursor: pointer;
+  span {
+    width: 120px;
+    height: 12px;
+    display: inline-block;
+  }
 `;

@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import {
   CommonThemeProps,
+  fontBodyXs,
   fontHeaderXl,
   fontHeaderXxl,
   Tag,
@@ -11,6 +12,7 @@ import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import Synonyms from "src/components/Synonyms";
 import {
   fontWeightSemibold,
+  primary400,
   spacesL,
   spacesM,
   spacesS,
@@ -128,6 +130,21 @@ export const StyledTag = styled(Tag)`
   margin: 0;
 `;
 
+export const StyledTagSideBar = styled(Tag)`
+  .MuiChip-label {
+    color: ${primary400};
+    font-weight: 500;
+    ${fontBodyXs}
+  }
+  background-color: #e0f0ff;
+  &:hover {
+    cursor: default;
+    background-color: #e0f0ff;
+    .MuiChip-label {
+      color: ${primary400};
+    }
+  }
+`;
 export const SearchBarPositioner = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -159,7 +176,6 @@ export const StyledRightSideBar = styled(RightSideBar)<StyledRightSideBarProps>`
   z-index: 10;
   top: ${HEADER_HEIGHT_PX}px;
   animation: ${slideIn} 0.2s ease-in-out forwards;
-
   ${(props) => {
     if (props.skinnyMode) {
       return `
