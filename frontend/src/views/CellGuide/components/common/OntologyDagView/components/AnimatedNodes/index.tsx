@@ -13,6 +13,8 @@ import { NODE_SPACINGS, TREE_ANIMATION_DURATION } from "../../common/constants";
 import { EVENTS } from "src/common/analytics/events";
 import { track } from "src/common/analytics";
 import { MouseEventHandler, useState } from "react";
+import { useRouter } from "next/router";
+import { ROUTES } from "src/common/constants/routes";
 
 interface AnimatedNodesProps {
   tree: HierarchyPointNode<TreeNodeWithState>;
@@ -33,7 +35,7 @@ interface AnimatedNodesProps {
   }) => void;
   hideTooltip: () => void;
   cellTypesWithMarkerGeneStats: MarkerGeneStatsByCellType | null;
-  setCellInfoCellType: (props: CellType | null) => void;
+  setCellInfoCellType?: (props: CellType | null) => void;
 }
 
 interface AnimationState {
@@ -61,7 +63,7 @@ export default function AnimatedNodes({
   setCellInfoCellType,
 }: AnimatedNodesProps) {
   const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For hover event
-
+  const router = useRouter();
   const handleAnimationEnd = (node: HierarchyPointNode<TreeNodeWithState>) => {
     // Update the starting position of the node to be its current position
     node.data.x0 = node.x;
@@ -69,7 +71,11 @@ export default function AnimatedNodes({
   };
   const { data: cellTypeMetadata } = useCellTypeMetadata() || {};
   const handleNodeLabelClick = ({ cellTypeId, cellTypeName }: CellType) => {
-    setCellInfoCellType({ cellTypeId, cellTypeName });
+    if (setCellInfoCellType) {
+      setCellInfoCellType({ cellTypeId, cellTypeName });
+    } else {
+      router.push(`${ROUTES.CELL_GUIDE}/${cellTypeId.replace(":", "_")}`);
+    }
   };
 
   const handleMouseOver = (

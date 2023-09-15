@@ -68,7 +68,7 @@ interface TreeProps {
   tissueId: string;
   tissueName: string;
   selectGene?: (gene: string) => void;
-  setCellInfoCellType: (props: CellType | null) => void;
+  setCellInfoCellType?: (props: CellType | null) => void;
 }
 
 // This determines the initial Zoom position and scale
