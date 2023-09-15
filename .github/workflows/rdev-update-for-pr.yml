@@ -82,13 +82,14 @@ jobs:
       - name: Prepare happy parameters
         id: pre_happy
         run: |
-          echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
-          echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
+          echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> ./envfile
+          echo "HAPPY_BRANCH=$(git branch --show-current)" >> ./envfile
           echo "IMAGE_STAGE=sha-${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
-          if [[ "${{ github.event.action }}" == "open" ]]; then
+          if [[ "${{ github.event.action }}" != "synchronize" ]]; then
             echo "operation=create" >> $GITHUB_OUTPUT
           else
             echo "operation=update" >> $GITHUB_OUTPUT
+            # Check if the pull request was recently created, in the last 5min. If so skip updating the rdev.
           fi
       - name: Create/Update deployment
         uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
