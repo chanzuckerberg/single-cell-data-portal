@@ -5,7 +5,7 @@ on:
     branches-ignore:
       - prod
     types:
-      - close
+      - closed
 
 env:
   # Force using BuildKit instead of normal Docker, required so that metadata
