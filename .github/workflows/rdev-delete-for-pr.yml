@@ -37,6 +37,6 @@ jobs:
         uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
-          stack-name: ${STACK_NAME}
+          stack-name: ${{ env.STACK_NAME }}
           operation: delete
           happy_version: "0.92.0"
