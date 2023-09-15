@@ -6,8 +6,8 @@ import {
   tertiaryColor,
 } from "../../common/constants";
 import { gray500, spacesL, spacesM } from "src/common/theme";
-import { Border } from "../Node/components/RectOrCircle/style";
 import { fontBodyXxxs } from "@czi-sds/components";
+import { Border, NodeWrapper } from "../Node/components/RectOrCircle/style";
 
 const SQUARE_SIZE = 14;
 export const LegendWrapper = styled.div`
@@ -92,4 +92,8 @@ export const NoDescendantsLine = styled.div<NoDescendantsProps>`
 
 export const StyledBorder = styled(Border)`
   border-left: 2px solid ${secondaryColor};
+`;
+
+export const StyledNodeWrapper = styled(NodeWrapper)`
+  position: relative;
 `;

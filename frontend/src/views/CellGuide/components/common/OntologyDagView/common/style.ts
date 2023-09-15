@@ -19,13 +19,12 @@ export const StyledPie = styled.div<StyledPieProps>`
 
   ${(props) => {
     const { degree, size, fill, opacity, center } = props;
-    const hexColor = typeof fill === "number" ? colorScale(fill) : fill;
-    let fillColor = hexColor;
+    let fillColor = typeof fill === "number" ? colorScale(fill) : fill;
     // we cannot use `opacity` directly as it does not work with `foreignObject`
     // in safari. Instead, if opacity is defined, we convert hex to rgba and set alpha
     // to opacity.
     if (opacity) {
-      const hexMatch = hexColor.slice(1).match(/.{2}/g);
+      const hexMatch = fillColor.slice(1).match(/.{2}/g);
       const [r, g, b] = hexMatch
         ? hexMatch.map((hex) => parseInt(hex, 16))
         : [0, 0, 0];
