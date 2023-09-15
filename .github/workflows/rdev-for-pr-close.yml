@@ -1,4 +1,4 @@
-name: Create rdev for PR
+name: Delete rdev for PR
 
 on:
   pull_request:
@@ -21,7 +21,7 @@ permissions:
   contents: read
 
 jobs:
-  create-rdev:
+  delete-rdev:
     runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
