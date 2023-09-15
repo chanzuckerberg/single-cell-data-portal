@@ -3,7 +3,6 @@ name: Create/Update rdev for PR
 on:
   pull_request:
     branches-ignore:
-      - staging
       - prod
     types:
       - open
