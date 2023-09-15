@@ -82,8 +82,6 @@ jobs:
       - name: Prepare happy parameters
         id: pre_happy
         run: |
-          echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> ./envfile
-          echo "HAPPY_BRANCH=$(git branch --show-current)" >> ./envfile
           echo "IMAGE_STAGE=sha-${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
           if [[ "${{ github.event.action }}" != "synchronize" ]]; then
             echo "operation=create" >> $GITHUB_OUTPUT
@@ -99,4 +97,3 @@ jobs:
           operation: ${{ steps.pre_happy.outputs.operation }}
           tag: ${{ steps.pre_happy.outputs.IMAGE_TAG }}
           happy_version: "0.92.0"
-          env-file: envfile
