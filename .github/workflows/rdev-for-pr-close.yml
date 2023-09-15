@@ -3,10 +3,11 @@ name: Delete rdev for PR
 on:
   pull_request:
     branches:
-      - "!main"
-      - "!prod"
-      - "!staging"
-      - "tsmith/*"
+      - "*"
+    #      - "!main"
+    #      - "!prod"
+    #      - "!staging"
+    #      - "tsmith/*"
     types:
       - close
 

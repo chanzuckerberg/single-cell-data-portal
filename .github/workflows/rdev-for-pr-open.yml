@@ -3,6 +3,7 @@ name: Create rdev for PR
 on:
   pull_request:
     branches:
+      - "*"
       - "!main"
       - "!prod"
       - "!staging"
@@ -60,32 +61,32 @@ jobs:
           --docker-compose-env-file envfile --aws-profile "" \
           --tags sha-${GITHUB_SHA:0:8},branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
 
-  create-rdev:
-    runs-on: ubuntu-22.04
-    needs:
-      - build-images
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 900
-      - name: Login to ECR
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
-      - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
-        with:
-          happy_version: "0.59.0"
-      - name: Create Summary With Happy Commands
-        run: |
-          export STACK_NAME=$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
-          echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
-          echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
-          echo "### Happy Commands :rocket: :upside_down_face:" >> $GITHUB_STEP_SUMMARY
-          echo "* \`happy create ${STACK_NAME} --docker-compose-env-file envfile --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
+#  create-rdev:
+#    runs-on: ubuntu-22.04
+#    needs:
+#      - build-images
+#    steps:
+#      - name: Configure AWS Credentials
+#        uses: aws-actions/configure-aws-credentials@v2
+#        with:
+#          aws-region: us-west-2
+#          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+#          role-duration-seconds: 900
+#      - name: Login to ECR
+#        uses: docker/login-action@v1
+#        with:
+#          registry: ${{ secrets.ECR_REPO }}
+#      - uses: actions/checkout@v2
+#        with:
+#          fetch-depth: 1
+#      - name: Install happy
+#        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+#        with:
+#          happy_version: "0.59.0"
+#      - name: Create Summary With Happy Commands
+#        run: |
+#          export STACK_NAME=$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
+#          echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
+#          echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
+#          echo "### Happy Commands :rocket: :upside_down_face:" >> $GITHUB_STEP_SUMMARY
+#          echo "* \`happy create ${STACK_NAME} --docker-compose-env-file envfile --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
