@@ -5,8 +5,9 @@ import {
   secondaryColor,
   tertiaryColor,
 } from "../../common/constants";
-import { spacesL, spacesM } from "src/common/theme";
+import { gray500, spacesL, spacesM } from "src/common/theme";
 import { Border } from "../Node/components/RectOrCircle/style";
+import { fontBodyXxxs } from "@czi-sds/components";
 
 const SQUARE_SIZE = 14;
 export const LegendWrapper = styled.div`
@@ -24,9 +25,12 @@ export const LegendWrapper = styled.div`
 `;
 
 export const LegendItemWrapper = styled.div`
+  ${fontBodyXxxs}
   display: flex;
   flex-direction: column;
   align-items: center;
+  color: ${gray500};
+  font-weight: 500;
 `;
 
 export const MarkerScoreWrapper = styled.div`
