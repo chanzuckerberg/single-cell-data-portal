@@ -83,19 +83,20 @@ jobs:
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
-      - name: Choose create or update rdev
+      - name: Set happy operation
+        id: sho
         run: |
           if [[ "${{ github.event.action }}" == "open" ]]; then
-            echo"::set-env name:HAPPY_OPERATION::create"
+            echo"operation=create" >> $GITHUB_OUTPUT
           else
-            echo"::set-env name:HAPPY_OPERATION::update"
+            echo"operation=update" >> $GITHUB_OUTPUT
           fi
       - name: Create/Update deployment
         uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${STACK_NAME}
-          operation: ${HAPPY_OPERATION}
+          operation: ${{ steps.sho.outputs.operation }}
           tag: sha-${GITHUB_SHA:0:8}
           happy_version: "0.92.0"
           env-file: envfile
