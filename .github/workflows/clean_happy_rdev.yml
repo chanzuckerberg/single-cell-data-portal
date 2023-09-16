@@ -4,7 +4,7 @@ on:
   #  schedule:
   #    # Runs "every 55th minute" (see https://crontab.guru)
   #    - cron: "55 * * * *"
-  push:
+  pull_request:
     branches:
       - "*"
 
