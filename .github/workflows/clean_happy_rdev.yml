@@ -1,9 +1,9 @@
 name: Clean up stale happy stacks every hour
 
 on:
-  schedule:
-    # Runs "every 55th minute" (see https://crontab.guru)
-    - cron: "55 * * * *"
+  #  schedule:
+  #    # Runs "every 55th minute" (see https://crontab.guru)
+  #    - cron: "55 * * * *"
   push:
     branches:
       - "*"
