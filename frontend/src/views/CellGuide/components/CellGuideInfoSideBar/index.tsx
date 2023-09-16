@@ -7,6 +7,10 @@ import { StyledButton } from "../CellGuideCard/components/Description/style";
 import { useRouter } from "next/router";
 import { ROUTES } from "src/common/constants/routes";
 import { MarkerGeneTableWrapper } from "./style";
+import {
+  CELLGUIDE_VIEW_PAGE_SIDEBAR_BUTTON_TEST_ID,
+  CELLGUIDE_INFO_SIDEBAR_TEST_ID,
+} from "./constants";
 export interface CellGuideInfoBarProps extends RightSidebarProperties {
   cellInfoCellType: CellType;
   setGeneInfoGene: React.Dispatch<React.SetStateAction<string | null>>;
@@ -37,8 +41,9 @@ function CellGuideInfoBar({
 }: CellGuideInfoBarProps): JSX.Element | null {
   const router = useRouter();
   return (
-    <div>
+    <div data-testid={CELLGUIDE_INFO_SIDEBAR_TEST_ID}>
       <StyledButton
+        data-testid={CELLGUIDE_VIEW_PAGE_SIDEBAR_BUTTON_TEST_ID}
         sdsType="primary"
         sdsStyle="minimal"
         onClick={() => {
