@@ -61,6 +61,7 @@ function CellGuideInfoBar({
         cellTypeId={cellInfoCellType.cellTypeId}
         cellTypeName={cellInfoCellType.cellTypeName}
         skinnyMode={true}
+        setTooltipContent={setTooltipContent}
         inSideBar
       />
       <MarkerGeneTableWrapper>

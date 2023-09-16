@@ -40,7 +40,7 @@ export const ReferenceTooltipWrapper = styled.div`
 interface NoWrapWrapperProps extends CommonThemeProps {
   isSelected: boolean;
 }
-export const NoWrapWrapper = styled.div<NoWrapWrapperProps>`
+export const NoWrapWrapper = styled.span<NoWrapWrapperProps>`
   white-space: nowrap;
   display: flex;
   column-gap: ${spacesS}px;

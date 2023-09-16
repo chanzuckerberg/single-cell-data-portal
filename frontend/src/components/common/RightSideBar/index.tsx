@@ -20,7 +20,7 @@ interface Props {
 const FULL_MAX_HEIGHT_VH = 100;
 const UPPER_SECTION_MAX_HEIGHT_VH = 60;
 const DRAWER_MAX_HEIGHT_VH = FULL_MAX_HEIGHT_VH - UPPER_SECTION_MAX_HEIGHT_VH;
-export const DEFAULT_WIDTH_PX = 400;
+const DEFAULT_WIDTH_PX = 400;
 
 export default memo(function RightSideBar({
   children,

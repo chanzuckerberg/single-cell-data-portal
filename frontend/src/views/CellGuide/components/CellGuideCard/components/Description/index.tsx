@@ -44,20 +44,20 @@ interface DescriptionProps {
   cellTypeName: string;
   cellTypeId: string;
   skinnyMode: boolean;
-  inSideBar?: boolean;
-  setTooltipContent?: Dispatch<
+  setTooltipContent: Dispatch<
     SetStateAction<{
       title: string;
       element: JSX.Element;
     } | null>
   >;
+  inSideBar?: boolean;
 }
 export default function Description({
   cellTypeId,
   cellTypeName,
   skinnyMode,
-  setTooltipContent,
   inSideBar,
+  setTooltipContent,
 }: DescriptionProps): JSX.Element {
   const [descriptionGpt, setDescriptionGpt] = useState<string>("");
   const [descriptionCl, setDescriptionCl] = useState<string>("");
@@ -141,7 +141,7 @@ export default function Description({
     </div>
   );
 
-  const sourceLink = setTooltipContent && (
+  const sourceLink = (
     <SourceLink>
       {"Source: ChatGPT "}
       <StyledTooltip
@@ -191,21 +191,19 @@ export default function Description({
   const sourceComponent = (
     <Source>
       {isPastBreakpoint ? (
-        <>
-          <StyledButton
-            sdsType="primary"
-            sdsStyle="minimal"
-            onClick={() => {
-              descriptionMaxHeight
-                ? setDescriptionMaxHeight(undefined)
-                : setDescriptionMaxHeight(DESCRIPTION_BREAKPOINT_HEIGHT_PX);
-              descriptionMaxHeight &&
-                track(EVENTS.CG_DESCRIPTION_READ_MORE_CLICKED);
-            }}
-          >
-            {descriptionMaxHeight ? "Read More" : "Read Less"}
-          </StyledButton>
-        </>
+        <StyledButton
+          sdsType="primary"
+          sdsStyle="minimal"
+          onClick={() => {
+            descriptionMaxHeight
+              ? setDescriptionMaxHeight(undefined)
+              : setDescriptionMaxHeight(DESCRIPTION_BREAKPOINT_HEIGHT_PX);
+            descriptionMaxHeight &&
+              track(EVENTS.CG_DESCRIPTION_READ_MORE_CLICKED);
+          }}
+        >
+          {descriptionMaxHeight ? "Read More" : "Read Less"}
+        </StyledButton>
       ) : (
         disclaimerMessage
       )}
