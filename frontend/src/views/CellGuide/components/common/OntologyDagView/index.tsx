@@ -393,9 +393,7 @@ export default function OntologyDagView({
           <TableTitle>Cell Ontology</TableTitle>
         </TableTitleWrapper>
       )}
-      {data && initialTreeState && (
-        <Legend isTissue={!cellTypeId} selectedGene={selectedGene} />
-      )}
+
       {data && initialTreeState ? (
         <Zoom<SVGSVGElement>
           key={centeredNodeCoords ? "centered" : "initial"}
@@ -422,6 +420,9 @@ export default function OntologyDagView({
               isFullScreen={isFullScreen}
               data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER}
             >
+              {data && initialTreeState && (
+                <Legend isTissue={!cellTypeId} selectedGene={selectedGene} />
+              )}
               <RightAligned>
                 {selectedGene && (
                   <StyledTagFilter
