@@ -31,6 +31,7 @@ export const LegendItemWrapper = styled.div`
   align-items: center;
   color: ${gray500};
   font-weight: 500;
+  min-width: 100px;
 `;
 
 export const MarkerScoreWrapper = styled.div`
