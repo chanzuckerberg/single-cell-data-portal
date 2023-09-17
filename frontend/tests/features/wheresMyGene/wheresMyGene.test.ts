@@ -494,7 +494,7 @@ describe("Where's My Gene", () => {
       // Select gene
       await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
       await selectFirstNOptions(SELECT_N_GENES, page);
-
+      await waitForHeatmapToRender(page);
       await clickUntilDownloadModalShowsUp({
         page,
         testId: DOWNLOAD_BUTTON_ID,
