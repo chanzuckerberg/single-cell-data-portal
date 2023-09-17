@@ -1,0 +1,70 @@
+  pw:api => selectors.setTestIdAttribute started +5s
+  pw:api => browser.newContext started +7ms
+  pw:api <= selectors.setTestIdAttribute succeeded +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +49ms
+  pw:api   "commit" event fired +14ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +1ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +10ms
+  pw:api => tracing.start started +5ms
+  pw:api <= tracing.start succeeded +3ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +58ms
+  pw:api => page.waitForResponse started +3ms
+  pw:api => page.goto started +8ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +5ms
+  pw:api   "commit" event fired +175ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +1ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +12ms
+  pw:api   navigated to "about:blank" +53ms
+  pw:api <= page.goto succeeded +120ms
+  pw:api   "networkidle" event fired +14s
+  pw:api <= page.waitForResponse succeeded +15s
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('newsletter-modal-open-button') +49ms
+  pw:api   locator resolved to <a class="css-le1m4y-StyledLink ecafy0i3" data-test…>Subscribe</a> +75ms
+  pw:api attempting click action +13ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +443ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +65ms
+  pw:api   performing click action +96ms
+  pw:api   click action done +140ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +10ms
+  pw:api <= locator.click succeeded +20ms
+  pw:api => expect.not.toHaveCount started +8ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +22ms
+  pw:api waiting for getByTestId('newsletter-modal-content') +0ms
+  pw:api   locator resolved to 1 element +13ms
+  pw:api <= expect.not.toHaveCount succeeded +32ms
+  pw:api => locator.click started +16ms
+  pw:api waiting for getByTestId('newsletter-modal-close-button') +27ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="newslett…>…</button> +22ms
+  pw:api attempting click action +15ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api     element is not stable - waiting... +125ms
+  pw:api   element is visible, enabled and stable +72ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +62ms
+  pw:api   click action done +30ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +15ms
+  pw:api => expect.toHaveCount started +2ms
+  pw:api expect.toHaveCount with timeout 10000ms +13ms
+  pw:api waiting for getByTestId('newsletter-modal-content') +1ms
+  pw:api   locator resolved to 1 element +3ms
+  pw:api   unexpected value "1" +0ms
+  pw:api   locator resolved to 1 element +3ms
+  pw:api   unexpected value "1" +0ms
+  pw:api   locator resolved to 1 element +103ms
+  pw:api   unexpected value "1" +0ms
+  pw:api   locator resolved to 0 elements +254ms
+  pw:api <= expect.toHaveCount succeeded +19ms
+  pw:api taking page screenshot +35ms
