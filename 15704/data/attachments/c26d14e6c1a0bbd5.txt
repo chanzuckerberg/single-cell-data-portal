@@ -1,0 +1,73 @@
+  pw:api => selectors.setTestIdAttribute started +2s
+  pw:api => browser.newContext started +6ms
+  pw:api <= selectors.setTestIdAttribute succeeded +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +46ms
+  pw:api   "commit" event fired +17ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +10ms
+  pw:api => tracing.start started +6ms
+  pw:api <= tracing.start succeeded +10ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +48ms
+  pw:api => page.waitForLoadState started +3ms
+  pw:api => page.goto started +4ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +7ms
+  pw:api   "commit" event fired +157ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +0ms
+  pw:api   "commit" event fired +3ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForLoadState succeeded +5ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +3ms
+  pw:api   navigated to "about:blank" +29ms
+  pw:api <= page.goto succeeded +118ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view') to be visible +28ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-ontology-dag-view">…</div> +35ms
+  pw:api <= locator.waitFor succeeded +9ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-clickable-text-label-CL:0000878__4') +9ms
+  pw:api   locator resolved to <g data-testid="cell-guide-card-ontology-dag-view-c…>…</g> +3s
+  pw:api   "networkidle" event fired +378ms
+  pw:api attempting click action +880ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +138ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +622ms
+  pw:api   click action done +678ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +339ms
+  pw:api <= locator.click succeeded +180ms
+  pw:api => locator.waitFor started +3ms
+  pw:api waiting for getByTestId('cellguide-info-sidebar') to be visible +34ms
+  pw:api   locator resolved to visible <div data-testid="cellguide-info-sidebar">…</div> +40ms
+  pw:api <= locator.waitFor succeeded +37ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cellguide-info-sidebar') +17ms
+  pw:api <= locator.isVisible succeeded +28ms
+  pw:api => locator.click started +13ms
+  pw:api waiting for getByTestId('cellguide-view-page-sidebar-button') +17ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="cellguid…>View CellGuide Page</button> +7ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +13ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +3ms
+  pw:api   performing click action +21ms
+  pw:api   click action done +48ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +5ms
+  pw:api <= locator.click succeeded +65ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-rect-or-circle-CL:0000878__4-has-children-isTargetNode=true') to be visible +114ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000878" +24ms
+  pw:api   navigated to "about:blank" +520ms
+  pw:api   "networkidle" event fired +603ms
+  pw:api   locator resolved to visible <foreignobject x="-8" y="-8" width="16" height="16" data-testid…>…</foreignobject> +418ms
+  pw:api <= locator.waitFor succeeded +146ms
+  pw:api taking page screenshot +15ms
