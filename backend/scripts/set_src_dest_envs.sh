@@ -3,6 +3,13 @@
 export SRC_ENV=${1:-prod}
 export DEST_ENV=${2:-dev}
 
+
+# Forbid rdev as SRC_ENV
+if [[ "$SRC_ENV" == rdev ]]; then
+  echo "ERROR: mirroring FROM rdev is not supported; only mirroring TO rdev is supported."
+  exit 1
+fi
+
 # require DEST_ENV=rdev when STACK is set
 if [[ -n "$STACK" ]]; then
     if [[ "$DEST_ENV" != rdev ]]; then
