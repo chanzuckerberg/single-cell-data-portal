@@ -1,0 +1,139 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +6ms
+  pw:api <= selectors.setTestIdAttribute succeeded +6ms
+  pw:api <= browserType.launch succeeded +232ms
+  pw:api => browser.newContext started +7ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +83ms
+  pw:api   "commit" event fired +21ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +22ms
+  pw:api => tracing.start started +7ms
+  pw:api <= tracing.start succeeded +26ms
+  pw:api => browserContext.newPage started +5ms
+  pw:api <= browserContext.newPage succeeded +64ms
+  pw:api => page.waitForResponse started +9ms
+  pw:api => page.goto started +10ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +18ms
+  pw:api   "commit" event fired +233ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +1ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +4ms
+  pw:api   navigated to "about:blank" +70ms
+  pw:api <= page.goto succeeded +95ms
+  pw:api   "networkidle" event fired +37s
+  pw:api <= page.waitForResponse succeeded +4s
+  pw:api => locator.count started +7ms
+  pw:api <= locator.count succeeded +741ms
+  pw:api => locator.click started +7ms
+  pw:api waiting for getByTestId('cell-type-labels-lung').getByTestId('tissue-name') +24ms
+  pw:api   locator resolved to <div data-testid="tissue-name" class="tissue-name css…>Lung</div> +16ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +2ms
+  pw:api   element is visible, enabled and stable +24ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +56ms
+  pw:api   click action done +961ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +4ms
+  pw:api <= locator.click succeeded +105ms
+  pw:api => locator.count started +2ms
+  pw:api <= locator.count succeeded +29ms
+  pw:api => locator.allTextContents started +10ms
+  pw:api <= locator.allTextContents succeeded +117ms
+  pw:api => locator.allTextContents started +9ms
+  pw:api <= locator.allTextContents succeeded +62ms
+  pw:api => expect.not.toHaveCount started +8ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +33ms
+  pw:api waiting for getByTestId('cell-type-name') +1ms
+  pw:api   locator resolved to 161 elements +18ms
+  pw:api <= expect.not.toHaveCount succeeded +46ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByRole('img', { name: 'display marker genes for memory B cell' }) +19ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="fixed" data-testid="…/> +38ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +10ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +50ms
+  pw:api   click action done +560ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +73ms
+  pw:api <= locator.click succeeded +67ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('add-to-dotplot-fmg-button') +39ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="add-to-d…>…</button> +2s
+  pw:api attempting click action +4ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +12ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +43ms
+  pw:api   click action done +1s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +37ms
+  pw:api <= locator.click succeeded +115ms
+  pw:api => expect.not.toHaveCount started +27ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +72ms
+  pw:api waiting for locator('canvas') +3ms
+  pw:api   locator resolved to 0 elements +27ms
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 0 elements +19ms
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 0 elements +107ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +295ms
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 0 elements +530ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +1ms
+  pw:api <= expect.not.toHaveCount succeeded +964ms
+  pw:api => page.waitForTimeout started +26ms
+  pw:api <= page.waitForTimeout succeeded +376ms
+  pw:api => expect.not.toHaveCount started +13ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +48ms
+  pw:api waiting for locator('canvas') +1ms
+  pw:api   locator resolved to 0 elements +22ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +29ms
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 0 elements +129ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +343ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +4s
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 36 elements +24s
+  pw:api <= expect.not.toHaveCount succeeded +17s
+  pw:api => page.waitForTimeout started +13ms
+  pw:api <= page.waitForTimeout succeeded +286ms
+  pw:api => expect.not.toHaveCount started +7ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +27ms
+  pw:api waiting for locator('canvas') +2ms
+  pw:api   locator resolved to 64 elements +14ms
+  pw:api <= expect.not.toHaveCount succeeded +31ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +59ms
+  pw:api => locator.allTextContents started +6ms
+  pw:api <= locator.allTextContents succeeded +51ms
+  pw:api taking page screenshot +21ms
