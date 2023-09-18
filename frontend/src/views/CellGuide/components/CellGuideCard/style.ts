@@ -130,10 +130,10 @@ export const StyledTag = styled(Tag)`
   margin: 0;
 `;
 
-export const StyledTagSideBar = styled(Tag)`
+export const StyledCellTagSideBar = styled(Tag)`
   .MuiChip-label {
     color: ${primary400};
-    font-weight: 500;
+    font-weight: 500 !important;
     ${fontBodyXs}
   }
   background-color: #e0f0ff;
@@ -145,6 +145,23 @@ export const StyledTagSideBar = styled(Tag)`
     }
   }
 `;
+
+export const StyledGeneTagSideBar = styled(Tag)`
+  .MuiChip-label {
+    color: #8f5aff;
+    font-weight: 500 !important;
+    ${fontBodyXs}
+  }
+  background-color: #8f5aff26;
+  &:hover {
+    cursor: default;
+    background-color: #8f5aff26;
+    .MuiChip-label {
+      color: #8f5aff;
+    }
+  }
+`;
+
 export const SearchBarPositioner = styled.div`
   display: flex;
   justify-content: flex-end;

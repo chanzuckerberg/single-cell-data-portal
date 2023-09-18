@@ -18,7 +18,8 @@ import {
   MobileTooltipHeader,
   NavBarDropdownWrapper,
   CellGuideWrapper,
-  StyledTagSideBar,
+  StyledCellTagSideBar,
+  StyledGeneTagSideBar,
 } from "./style";
 import Description from "./components/Description";
 import MarkerGeneTables from "./components/MarkerGeneTables";
@@ -257,7 +258,7 @@ export default function CellGuideCard({
   const geneInfoGeneTitle = (
     <span>
       {geneInfoGene}{" "}
-      <StyledTagSideBar
+      <StyledGeneTagSideBar
         label="Gene"
         sdsType="secondary"
         sdsStyle="square"
@@ -443,7 +444,7 @@ export default function CellGuideCard({
             title={
               <span>
                 {titleize(cellInfoCellType.cellTypeName)}{" "}
-                <StyledTagSideBar
+                <StyledCellTagSideBar
                   label="Cell Type"
                   sdsType="secondary"
                   sdsStyle="square"
