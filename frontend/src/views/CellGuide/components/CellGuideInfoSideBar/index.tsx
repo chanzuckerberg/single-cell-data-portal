@@ -11,6 +11,8 @@ import {
   CELLGUIDE_VIEW_PAGE_SIDEBAR_BUTTON_TEST_ID,
   CELLGUIDE_INFO_SIDEBAR_TEST_ID,
 } from "./constants";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 export interface CellGuideInfoBarProps extends RightSidebarProperties {
   cellInfoCellType: CellType;
   setGeneInfoGene: React.Dispatch<React.SetStateAction<string | null>>;
@@ -49,6 +51,9 @@ function CellGuideInfoBar({
         sdsType="primary"
         sdsStyle="minimal"
         onClick={() => {
+          track(EVENTS.CG_VIEW_CELLGUIDE_PAGE_CLICKED, {
+            cellType: cellInfoCellType.cellTypeName,
+          });
           router.push(
             `${ROUTES.CELL_GUIDE}/${cellInfoCellType.cellTypeId.replace(
               ":",
@@ -75,7 +80,7 @@ function CellGuideInfoBar({
           setCellInfoCellType={setCellInfoCellType}
           cellTypeName={cellInfoCellType.cellTypeName}
           skinnyMode={skinnyMode}
-          inSideBar
+          cellInfoCellType={cellInfoCellType}
           organName={selectedOrganName}
           organId={selectedOrganId}
           organismName={organismName}
