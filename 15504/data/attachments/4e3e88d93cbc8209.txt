@@ -1,2 +1,0 @@
-{"levelname": "INFO", "asctime": "2023-09-08T22:05:59.008Z", "name": "processing", "message": "Error files found", "lineno": 299, "pathname": "/single-cell-data-portal/backend/layers/processing/schema_migration.py", "error_files": 3}
-{"levelname": "INFO", "asctime": "2023-09-08T22:05:59.008Z", "name": "processing", "message": "Report", "lineno": 306, "pathname": "/single-cell-data-portal/backend/layers/processing/schema_migration.py", "errors": [{"error": "files_0.json"}, {"error": "files_1.json"}, {"error": "files_2.json"}]}
