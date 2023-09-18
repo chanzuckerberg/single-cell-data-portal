@@ -56,7 +56,7 @@ export const HoverContainer = styled.div<HoverContainerProps>`
 
 export const TooltipInPortalStyle = css`
   .visx-tooltip {
-    z-index: 1;
+    z-index: 99999;
   }
 `;
 
