@@ -3,16 +3,16 @@ import { RightSidebarProperties } from "src/components/common/RightSideBar";
 import { CellType } from "../common/OntologyDagView/common/types";
 import Description from "../CellGuideCard/components/Description";
 import MarkerGeneTables from "../CellGuideCard/components/MarkerGeneTables";
-import { StyledButton } from "../CellGuideCard/components/Description/style";
-import { useRouter } from "next/router";
 import { ROUTES } from "src/common/constants/routes";
-import { MarkerGeneTableWrapper } from "./style";
+import { MarkerGeneTableWrapper, StyledLink } from "./style";
 import {
   CELLGUIDE_VIEW_PAGE_SIDEBAR_BUTTON_TEST_ID,
   CELLGUIDE_INFO_SIDEBAR_TEST_ID,
 } from "./constants";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import { useRouter } from "next/router";
+
 export interface CellGuideInfoBarProps extends RightSidebarProperties {
   cellInfoCellType: CellType;
   setGeneInfoGene: React.Dispatch<React.SetStateAction<string | null>>;
@@ -46,24 +46,26 @@ function CellGuideInfoBar({
   const router = useRouter();
   return (
     <div data-testid={CELLGUIDE_INFO_SIDEBAR_TEST_ID}>
-      <StyledButton
+      <StyledLink
         data-testid={CELLGUIDE_VIEW_PAGE_SIDEBAR_BUTTON_TEST_ID}
-        sdsType="primary"
-        sdsStyle="minimal"
-        onClick={() => {
+        href={`${ROUTES.CELL_GUIDE}/${cellInfoCellType.cellTypeId.replace(
+          ":",
+          "_"
+        )}`}
+        onClick={(e) => {
+          if (!e.metaKey && !e.ctrlKey) {
+            e.preventDefault();
+            const href = e.currentTarget.getAttribute("href");
+            if (!href) return;
+            router.push(href);
+          }
           track(EVENTS.CG_VIEW_CELLGUIDE_PAGE_CLICKED, {
             cellType: cellInfoCellType.cellTypeName,
           });
-          router.push(
-            `${ROUTES.CELL_GUIDE}/${cellInfoCellType.cellTypeId.replace(
-              ":",
-              "_"
-            )}`
-          );
         }}
       >
         View CellGuide Page
-      </StyledButton>
+      </StyledLink>
       <Description
         cellTypeId={cellInfoCellType.cellTypeId}
         cellTypeName={cellInfoCellType.cellTypeName}
