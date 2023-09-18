@@ -16,10 +16,10 @@
   ],
   "slices": {
     "frontend": {
-        "profile": "frontend"
+        "profile": "fullstack"
     },
     "backend": {
-        "profile": "backend"
+        "profile": "fullstack"
     },
     "cellguide_pipeline": {
         "profile": "cellguide_pipeline"

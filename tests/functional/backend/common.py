@@ -1,8 +1,10 @@
 import base64
 import json
 import os
+import tempfile
 import time
 import unittest
+from typing import Optional
 
 import requests
 from requests.adapters import HTTPAdapter, Response
@@ -15,6 +17,7 @@ API_URL = {
     "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
     "dev": "https://api.cellxgene.dev.single-cell.czi.technology",
     "test": "https://localhost:5000",
+    "rdev": f"https://{os.getenv('STACK_NAME', '')}-backend.rdev.single-cell.czi.technology",
 }
 
 AUDIENCE = {
@@ -22,15 +25,26 @@ AUDIENCE = {
     "staging": "api.cellxgene.staging.single-cell.czi.technology",
     "test": "api.cellxgene.dev.single-cell.czi.technology",
     "dev": "api.cellxgene.dev.single-cell.czi.technology",
+    "rdev": "api.cellxgene.dev.single-cell.czi.technology",
 }
 
 
 class BaseFunctionalTestCase(unittest.TestCase):
+    session: requests.Session
+    config: CorporaAuthConfig
+    deployment_stage: str
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
-        cls.config = CorporaAuthConfig()
+
+        # configure CorporaAuthConfig to use a temporary directory for the config file
+        cls.tempdir = tempfile.TemporaryDirectory()
+        dummy_config = f"{cls.tempdir.name}/dummy.json"
+        with open(dummy_config, "w") as fp:
+            json.dump({"api_base_url": os.getenv("API_BASE_URL")}, fp)
+        cls.config = CorporaAuthConfig(source=dummy_config)
         cls.session = requests.Session()
         # apply retry config to idempotent http methods we use + POST requests, which are currently all either
         # idempotent (wmg queries) or low risk to rerun in dev/staging. Update if this changes in functional tests.
@@ -41,6 +55,8 @@ class BaseFunctionalTestCase(unittest.TestCase):
             allowed_methods={"DELETE", "GET", "HEAD", "PUT" "POST"},
         )
         cls.session.mount("https://", HTTPAdapter(max_retries=retry_config))
+        if cls.deployment_stage == "rdev":
+            cls.get_oauth2_proxy_access_token()
         token = cls.get_auth_token(cls.config.functest_account_username, cls.config.functest_account_password)
         cls.curator_cookie = cls.make_cookie(token)
         cls.api = API_URL.get(cls.deployment_stage)
@@ -51,15 +67,35 @@ class BaseFunctionalTestCase(unittest.TestCase):
         cls.curation_api_access_token = cls.get_curation_api_access_token()
 
     @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        cls.session.close()
+        cls.tempdir.cleanup()
+
+    @classmethod
     def get_curation_api_access_token(cls):
         response = cls.session.post(
-            f"https://api.cellxgene.{cls.deployment_stage}.single-cell.czi.technology/curation/v1/auth/token",
+            f"{cls.api}/curation/v1/auth/token",
             headers={"x-api-key": cls.config.super_curator_api_key},
         )
         return response.json()["access_token"]
 
     @classmethod
-    def get_auth_token(cls, username: str, password: str, additional_claims: list = None):
+    def get_oauth2_proxy_access_token(cls):
+        payload = {
+            "client_id": cls.config.test_app_id,
+            "client_secret": cls.config.test_app_secret,
+            "grant_type": "client_credentials",
+            "audience": "https://api.cellxgene.dev.single-cell.czi.technology/dp/v1/curator",
+        }
+        headers = {"content-type": "application/json"}
+
+        res = cls.session.post("https://czi-cellxgene-dev.us.auth0.com/oauth/token", json=payload, headers=headers)
+        cls.proxy_access_token = res.json()["access_token"]
+        cls.session.headers["Authorization"] = f"Bearer {cls.proxy_access_token}"
+
+    @classmethod
+    def get_auth_token(cls, username: str, password: str, additional_claims: Optional[list] = None):
         standard_claims = "openid profile email offline"
         if additional_claims:
             additional_claims.append(standard_claims)
@@ -90,6 +126,8 @@ class BaseFunctionalTestCase(unittest.TestCase):
 
     def upload_and_wait(self, collection_id, dropbox_url, existing_dataset_id=None, cleanup=True):
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
+        if self.deployment_stage == "rdev":
+            headers["Authorization"] = f"Bearer {self.proxy_access_token}"
         body = {"url": dropbox_url}
 
         if existing_dataset_id is None:
@@ -131,4 +169,4 @@ class BaseFunctionalTestCase(unittest.TestCase):
 
     def assertStatusCode(self, actual: int, expected_response: Response):
         request_id = expected_response.headers.get("X-Request-Id")
-        self.assertEqual(actual, expected_response.status_code, msg=f"{request_id=}")
+        assert actual == expected_response.status_code, f"{request_id=}"

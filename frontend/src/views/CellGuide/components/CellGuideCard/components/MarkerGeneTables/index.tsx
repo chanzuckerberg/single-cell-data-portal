@@ -4,6 +4,7 @@ import React, {
   ReactElement,
   ReactNode,
   SetStateAction,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -35,6 +36,7 @@ import {
   NoWrapWrapper,
   StyledLink,
   ReferenceTooltipWrapper,
+  StyledIconImage,
 } from "./style";
 import Table from "../common/Table";
 import { Pagination } from "@mui/material";
@@ -49,6 +51,7 @@ import {
   ComputationalMarkerGeneTableData,
   useComputationalMarkerGenesTableRowsAndFilters,
 } from "./hooks/computational_markers";
+import treeDendrogram from "src/common/images/TreeDendogram.svg";
 import {
   CanonicalMarkerGeneTableData,
   useCanonicalMarkerGenesTableRowsAndFilters,
@@ -71,6 +74,7 @@ import {
   PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
   MARKER_GENES_CANONICAL_BREAKPOINT_PX,
   MARKER_GENES_COMPUTATIONAL_BREAKPOINT_PX,
+  MARKER_GENES_TREE_ICON_BUTTON_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 
@@ -174,6 +178,8 @@ interface Props {
   organName: string;
   organId: string;
   organismName: string;
+  selectedGene?: string;
+  selectGene: (gene: string) => void;
 }
 
 const MarkerGeneTables = ({
@@ -185,6 +191,8 @@ const MarkerGeneTables = ({
   organName,
   organId,
   organismName,
+  selectedGene,
+  selectGene,
 }: Props) => {
   // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(0);
@@ -333,6 +341,34 @@ const MarkerGeneTables = ({
       selectedOrganismLabel: organismName,
     });
 
+  const getSymbol = useCallback(
+    (
+      row: ComputationalMarkerGeneTableData | CanonicalMarkerGeneTableData,
+      showEye = false
+    ) => (
+      <NoWrapWrapper isSelected={row.symbol === selectedGene}>
+        {row.symbol}{" "}
+        <ButtonIcon
+          aria-label={`display gene info for ${row.symbol}`}
+          className="hover-button"
+          sdsIcon="infoCircle"
+          sdsSize="small"
+          sdsType="secondary"
+          onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
+        />
+        {showEye && (
+          <StyledIconImage
+            data-testid={MARKER_GENES_TREE_ICON_BUTTON_TEST_ID(row.symbol)}
+            className="hover-button"
+            src={treeDendrogram}
+            onClick={() => selectGene(row.symbol)}
+          />
+        )}
+      </NoWrapWrapper>
+    ),
+    [selectedGene, setGeneInfoGene, selectGene]
+  );
+
   const tableRows: TableRow[] = useMemo(() => {
     const referenceClickHandlerMobileView = (
       row: CanonicalMarkerGeneTableData
@@ -370,20 +406,7 @@ const MarkerGeneTables = ({
         });
       };
     };
-    const getSymbol = (
-      row: ComputationalMarkerGeneTableData | CanonicalMarkerGeneTableData
-    ) => (
-      <NoWrapWrapper>
-        {row.symbol}{" "}
-        <ButtonIcon
-          aria-label={`display gene info for ${row.symbol}`}
-          sdsIcon="infoCircle"
-          sdsSize="small"
-          sdsType="secondary"
-          onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
-        />
-      </NoWrapWrapper>
-    );
+
     return activeTable
       ? computationalMarkerGeneTableData.map((row) => ({
           ...row,
@@ -393,7 +416,7 @@ const MarkerGeneTables = ({
             <StyledCellNumerical> {row.marker_score} </StyledCellNumerical>
           ),
           symbolId: row.symbol,
-          symbol: getSymbol(row),
+          symbol: getSymbol(row, true),
         }))
       : canonicalMarkerGeneTableData.map((row) => ({
           ...row,
@@ -455,8 +478,8 @@ const MarkerGeneTables = ({
     activeTable,
     canonicalMarkerGeneTableData,
     computationalMarkerGeneTableData,
-    setGeneInfoGene,
     setTooltipContent,
+    getSymbol,
     skinnyMode,
   ]);
 
@@ -537,6 +560,10 @@ const MarkerGeneTables = ({
     page: number
   ) => {
     setPage(page);
+    track(EVENTS.CG_MARKER_GENE_PAGINATION_CLICKED, {
+      page: page,
+      type: activeTable ? "computational" : "canonical",
+    });
   };
 
   return (
@@ -551,6 +578,11 @@ const MarkerGeneTables = ({
               <Link
                 url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
                 label="Open in Gene Expression"
+                onClick={() => {
+                  track(EVENTS.CG_OPEN_IN_WMG_CLICKED, {
+                    type: activeTable ? "computational" : "canonical",
+                  });
+                }}
               />
             )}
           </TableTitleInnerWrapper>

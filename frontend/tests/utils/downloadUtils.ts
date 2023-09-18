@@ -9,6 +9,7 @@ import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
 import sharp from "sharp";
 import { goToWMG } from "./wmgUtils";
+import { CELL_TYPE_ROW_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 
 const EXPECTED_HEADER = [
   "Tissue",
@@ -40,7 +41,7 @@ export async function verifyCsv(
 
   //get number of element displayed in ui
   const uiElementsCount = await page
-    .locator(`[data-testid="cell-type-label-count"]`)
+    .locator(`[data-testid="${CELL_TYPE_ROW_CLASS_NAME}"]`)
     .count();
 
   //verify the number of element in the csv this is the Ui displayed multiplied by the number of genes selected

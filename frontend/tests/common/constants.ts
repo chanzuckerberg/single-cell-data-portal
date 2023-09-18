@@ -1,3 +1,5 @@
+import { CELL_TYPE_NAME_LABEL_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
+
 type TEST_ENV =
   | "local"
   | "localProd"
@@ -41,7 +43,7 @@ export const SHARED_LINK_NO_GROUP = `${TEST_URL}/gene-expression?compare=disease
 
 export const ADD_GENE_BTN = "add-gene-btn";
 
-export const CELL_TYPE_LABELS_ID = "cell-type-name";
+export const CELL_TYPE_LABELS_ID = CELL_TYPE_NAME_LABEL_CLASS_NAME;
 export const TWO_DECIMAL_NUMBER_REGEX = /^\d+\.?\d{0,2}$/;
 export const ERROR_NO_TESTID_OR_LOCATOR =
   "Either testId or locator must be defined";

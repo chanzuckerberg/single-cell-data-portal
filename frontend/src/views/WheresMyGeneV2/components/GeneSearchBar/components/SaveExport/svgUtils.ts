@@ -12,9 +12,17 @@ import {
 import { CHART_PADDING_PX } from "src/views/WheresMyGene/components/HeatMap/style";
 import { Tissue } from "src/views/WheresMyGene/common/types";
 import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGene/common/constants";
+import {
+  CELL_COUNT_LABEL_CLASS_NAME,
+  CELL_TYPE_ROW_CLASS_NAME,
+  TISSUE_ROW_CLASS_NAME,
+  TISSUE_NAME_LABEL_CLASS_NAME,
+  CELL_TYPE_NAME_LABEL_CLASS_NAME,
+} from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 
 export const NAME_SPACE_URI = "http://www.w3.org/2000/svg";
 const FONT_FAMILY = "sans-serif";
+const FONT_WEIGHT = "bold";
 const LABEL_ROTATION = "rotate(-90)";
 
 export function renderLegend({
@@ -314,11 +322,28 @@ export function renderYAxis({
     x: 0,
   });
 
-  Array.from(yAxis?.querySelectorAll(".cell-type-label-count") || []).forEach(
-    (labelCount, index) => {
-      const label = labelCount.querySelector(".cell-type-name")?.textContent;
+  const tissueRows = Array.from(
+    yAxis.querySelectorAll(`.${TISSUE_ROW_CLASS_NAME}`) || []
+  );
+  const cellTypeRows = Array.from(
+    yAxis.querySelectorAll(`.${CELL_TYPE_ROW_CLASS_NAME}`) || []
+  );
 
-      const count = labelCount.querySelector(".cell-count")?.textContent;
+  Array.from([...tissueRows, ...cellTypeRows] || []).forEach(
+    (labelCount, index) => {
+      /**
+       * (thuang): For tissue row, only `TISSUE_NAME_LABEL_CLASS_NAME` will return a string.
+       * For cell type row, only `CELL_TYPE_NAME_LABEL_CLASS_NAME` will return a string.
+       */
+      const label =
+        labelCount.querySelector(`.${TISSUE_NAME_LABEL_CLASS_NAME}`)
+          ?.textContent ||
+        ` ` +
+          labelCount.querySelector(`.${CELL_TYPE_NAME_LABEL_CLASS_NAME}`)
+            ?.textContent;
+
+      const count = labelCount.querySelector(`.${CELL_COUNT_LABEL_CLASS_NAME}`)
+        ?.textContent;
 
       // group
       const group = document.createElementNS(NAME_SPACE_URI, "svg");
@@ -328,6 +353,7 @@ export function renderYAxis({
         fill: ECHART_AXIS_LABEL_COLOR_HEX,
         "font-family": FONT_FAMILY,
         "font-size": ECHART_AXIS_LABEL_FONT_SIZE_PX,
+        "font-weight": FONT_WEIGHT,
         x: 0,
         /**
          * (thuang): Add `HEAT_MAP_BASE_CELL_PX / 2` top margin, so we render the

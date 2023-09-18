@@ -6,6 +6,7 @@ import { Tree, hierarchy } from "@visx/hierarchy";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import { CellOntologyTreeResponse as TreeNode } from "src/common/queries/cellGuide";
 import {
   TableTitleWrapper,
   TableTitle,
@@ -18,6 +19,7 @@ import {
   useCellOntologyTree,
   useCellOntologyTreeStateCellType,
   useCellOntologyTreeStateTissue,
+  useMarkerGenePresenceQuery,
 } from "src/common/queries/cellGuide";
 import {
   TableUnavailableContainer,
@@ -29,6 +31,8 @@ import {
   HoverContainer,
   TooltipInPortalStyle,
   StyledSVG,
+  RightAligned,
+  StyledTagFilter,
 } from "./style";
 import { useFullScreen } from "../FullScreenProvider";
 import {
@@ -45,35 +49,26 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
+  CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE,
   MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
+import {
+  ALL_TISSUES,
+  TISSUE_AGNOSTIC,
+} from "../../CellGuideCard/components/MarkerGeneTables/constants";
+import { Icon } from "@czi-sds/components";
 
-interface BaseTreeProps {
+interface TreeProps {
   skinnyMode?: boolean;
   inputWidth: number;
   inputHeight: number;
-}
-
-interface CellTypeIdProps extends BaseTreeProps {
-  cellTypeId: string;
-  tissueId?: never;
-  tissueName?: never;
-}
-
-interface TissueIdProps extends BaseTreeProps {
-  cellTypeId?: never;
+  selectedGene?: string;
+  selectedOrganism?: string;
+  cellTypeId?: string;
   tissueId: string;
   tissueName: string;
+  selectGene?: (gene: string) => void;
 }
-
-// Both cellTypeId and tissueId (with tissueName) are mandatory.
-interface BothCellAndTissueIdProps extends BaseTreeProps {
-  cellTypeId: string;
-  tissueId: string;
-  tissueName: string;
-}
-
-type TreeProps = BothCellAndTissueIdProps | CellTypeIdProps | TissueIdProps;
 
 // This determines the initial Zoom position and scale
 const initialTransformMatrixDefault = {
@@ -91,6 +86,9 @@ export default function OntologyDagView({
   tissueName,
   inputWidth,
   inputHeight,
+  selectedGene,
+  selectGene,
+  selectedOrganism,
 }: TreeProps) {
   const [width, setWidth] = useState(inputWidth);
   const [height, setHeight] = useState(inputHeight);
@@ -125,6 +123,45 @@ export default function OntologyDagView({
     setHeight(newHeight);
   }, [screenDimensions, isFullScreen, inputWidth, inputHeight]);
 
+  const { data: markerGenePresence, isLoading: isLoadingMarkerGenePresence } =
+    useMarkerGenePresenceQuery();
+
+  const selectedTissue =
+    tissueName === TISSUE_AGNOSTIC ? ALL_TISSUES : tissueName;
+
+  const cellTypesWithMarkerGeneStats: {
+    [cellTypeId: string]: {
+      me: number;
+      pc: number;
+      marker_score: number;
+    };
+  } | null = useMemo(() => {
+    if (
+      isLoadingMarkerGenePresence ||
+      !markerGenePresence ||
+      !selectedGene ||
+      !selectedOrganism
+    )
+      return null;
+    return (
+      markerGenePresence?.[selectedGene]?.[selectedOrganism]?.[
+        selectedTissue
+      ]?.reduce((acc, markerGeneStats) => {
+        const { cell_type_id, ...rest } = markerGeneStats;
+        return {
+          ...acc,
+          [`${cell_type_id}__0`]: rest,
+        };
+      }, {}) ?? {}
+    );
+  }, [
+    markerGenePresence,
+    isLoadingMarkerGenePresence,
+    selectedGene,
+    selectedOrganism,
+    selectedTissue,
+  ]);
+
   // This is used to trigger a re-render of the ontology view
   const [triggerRender, setTriggerRender] = useState(false);
   const toggleTriggerRender = () => {
@@ -145,10 +182,35 @@ export default function OntologyDagView({
     tissueId ?? ""
   );
 
+  const parentMap = useMemo(() => {
+    if (!rawTree) return null;
+    const queue: TreeNodeWithState[] = [rawTree];
+    const map = new Map<string, string>();
+    while (queue.length > 0) {
+      const node = queue.pop() as TreeNodeWithState;
+      if (node.children) {
+        for (const child of node.children) {
+          map.set(child.id, node.id);
+          queue.push(child);
+        }
+      }
+    }
+    return map;
+  }, [rawTree]);
+
   const initialTreeState: CellOntologyTreeStateResponse | undefined =
     useMemo(() => {
       let initialTreeState;
-      if (initialTreeStateCell && initialTreeStateTissue) {
+      if (cellTypesWithMarkerGeneStats && parentMap) {
+        const cellTypesWithMarkerGene = Object.keys(
+          cellTypesWithMarkerGeneStats
+        );
+        initialTreeState = getInitialStateForSelectedGene(
+          rawTree as TreeNode,
+          parentMap,
+          cellTypesWithMarkerGene
+        );
+      } else if (initialTreeStateCell && initialTreeStateTissue) {
         // When both cell and tissue tree states are available, inject the tissue tree counts
         // into the cell tree state.
         initialTreeState = {
@@ -161,14 +223,24 @@ export default function OntologyDagView({
         initialTreeState = initialTreeStateTissue;
       }
       return initialTreeState;
-    }, [initialTreeStateCell, initialTreeStateTissue]);
+    }, [
+      initialTreeStateCell,
+      initialTreeStateTissue,
+      rawTree,
+      parentMap,
+      cellTypesWithMarkerGeneStats,
+    ]);
 
   // Populate the tree data structure nodes with "isExpanded".
   const treeData: TreeNodeWithState | null = useMemo(() => {
     const newTree = rawTree ? JSON.parse(JSON.stringify(rawTree)) : null;
     if (newTree && initialTreeState) {
       if (initialTreeState.isExpandedNodes) {
-        setIsExpandedInRawTree(newTree, initialTreeState.isExpandedNodes);
+        setIsExpandedInRawTree(
+          newTree,
+          initialTreeState.isExpandedNodes,
+          initialTreeState.notShownWhenExpandedNodes
+        );
       }
       if (initialTreeState.tissueCounts) {
         setCellCountsInRawTreeForTissueCardOntologyView(
@@ -208,7 +280,9 @@ export default function OntologyDagView({
             !notShownWhenExpandedNodes[d.id]?.includes(child.id)
         );
 
-        if (
+        if (newChildren.length === 0) {
+          return hiddenChildren;
+        } else if (
           hiddenChildren.length <=
           MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE
         ) {
@@ -293,7 +367,13 @@ export default function OntologyDagView({
     tooltipOpen,
     showTooltip,
     hideTooltip,
-  } = useTooltip<{ n_cells: number; n_cells_rollup: number }>();
+  } = useTooltip<{
+    n_cells: number;
+    n_cells_rollup: number;
+    marker_score?: number;
+    me?: number;
+    pc?: number;
+  }>();
 
   const { TooltipInPortal, containerRef } = useTooltipInPortal({
     detectBounds: true,
@@ -310,6 +390,9 @@ export default function OntologyDagView({
         <TableTitleWrapper>
           <TableTitle>Cell Ontology</TableTitle>
         </TableTitleWrapper>
+      )}
+      {data && initialTreeState && (
+        <Legend isTissue={!cellTypeId} selectedGene={selectedGene} />
       )}
       {data && initialTreeState ? (
         <Zoom<SVGSVGElement>
@@ -337,14 +420,40 @@ export default function OntologyDagView({
               isFullScreen={isFullScreen}
               data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER}
             >
-              <FullscreenButton
-                data-testid={
-                  CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON
-                }
-                onClick={isFullScreen ? disableFullScreen : enableFullScreen}
-              >
-                {isFullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-              </FullscreenButton>
+              <RightAligned>
+                {selectedGene && (
+                  <StyledTagFilter
+                    data-testid={
+                      CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
+                    }
+                    label={selectedGene}
+                    sx={{
+                      backgroundColor: "#E0F0FF",
+                      padding: 0,
+                      margin: 0,
+                    }}
+                    deleteIcon={
+                      <Icon
+                        sdsIcon="xMark"
+                        sdsSize="xs"
+                        sdsType="button"
+                        color="error"
+                      />
+                    }
+                    onDelete={() => selectGene && selectGene(selectedGene)}
+                    onClick={() => selectGene && selectGene(selectedGene)}
+                  />
+                )}
+                <FullscreenButton
+                  data-testid={
+                    CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON
+                  }
+                  onClick={isFullScreen ? disableFullScreen : enableFullScreen}
+                >
+                  {isFullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+                </FullscreenButton>
+              </RightAligned>
+
               {tooltipOpen && (
                 <TooltipInPortal
                   // set this to random so it correctly updates with parent bounds
@@ -355,15 +464,37 @@ export default function OntologyDagView({
                   <div data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP}>
                     <b>{tooltipData?.n_cells}</b>
                     {" cells"}
-                    {tissueName ? ` in ${tissueName.toLowerCase()}` : ""}
+                    {tissueName ? ` in ${selectedTissue.toLowerCase()}` : ""}
                     {tooltipData?.n_cells !== tooltipData?.n_cells_rollup && (
                       <>
                         <br />
                         <b>{tooltipData?.n_cells_rollup}</b>
                         {" descendant cells"}
-                        {tissueName ? ` in ${tissueName.toLowerCase()}` : ""}
+                        {tissueName
+                          ? ` in ${selectedTissue.toLowerCase()}`
+                          : ""}
                       </>
                     )}
+                    {tooltipData &&
+                      tooltipData.marker_score &&
+                      tooltipData.me &&
+                      tooltipData.pc && (
+                        <>
+                          <br />
+                          <br />
+                          <b>{selectedGene} stats</b>
+                          <br />
+                          {"Marker score: "}
+                          <b>{tooltipData.marker_score.toFixed(2)}</b>
+
+                          <br />
+                          {"Expression score: "}
+                          <b>{tooltipData.me.toFixed(2)}</b>
+                          <br />
+                          {"% of cells: "}
+                          <b>{(tooltipData.pc * 100).toFixed(2)}</b>
+                        </>
+                      )}
                   </div>
                 </TooltipInPortal>
               )}
@@ -397,12 +528,14 @@ export default function OntologyDagView({
                           toggleTriggerRender={toggleTriggerRender}
                           showTooltip={showTooltip}
                           hideTooltip={hideTooltip}
+                          cellTypesWithMarkerGeneStats={
+                            cellTypesWithMarkerGeneStats
+                          }
                         />
                       </Group>
                     )}
                   </Tree>
                 </g>
-                <Legend width={width} />
               </StyledSVG>
             </HoverContainer>
           )}
@@ -424,12 +557,19 @@ export default function OntologyDagView({
 
 function setIsExpandedInRawTree(
   graph: TreeNodeWithState,
-  isExpandedNodes: string[]
+  isExpandedNodes: string[],
+  notShownWhenExpandedNodes: ShownData
 ) {
   graph.isExpanded = isExpandedNodes.includes(graph.id);
   if (graph.children) {
+    const hiddenNodes = notShownWhenExpandedNodes[graph.id] ?? [];
+    // are all children contained in hiddenNodes?
+    const allChildrenHidden = graph.children.every((child) =>
+      hiddenNodes.includes(child.id)
+    );
+    graph.isExpanded = graph.isExpanded && !allChildrenHidden;
     for (const child of graph.children) {
-      setIsExpandedInRawTree(child, isExpandedNodes);
+      setIsExpandedInRawTree(child, isExpandedNodes, notShownWhenExpandedNodes);
     }
   }
 }
@@ -460,4 +600,127 @@ function deleteNodesWithNoDescendantsForTissueCardOntologyView(
       return child.n_cells_rollup !== 0;
     });
   }
+}
+
+function getInitialStateForSelectedGene(
+  rawTree: TreeNodeWithState,
+  parentMap: Map<string, string>,
+  validCellTypes: string[]
+): CellOntologyTreeStateResponse {
+  // first get all the ancestors of each node in validCellTypes
+  const ancestors = new Set<string>();
+  for (const cellType of validCellTypes) {
+    let current: string | undefined = cellType;
+    while (current) {
+      ancestors.add(current);
+      current = parentMap.get(current);
+    }
+  }
+  const validNodes = Array.from(ancestors);
+  const tree: OntologyTree = JSON.parse(JSON.stringify(rawTree));
+
+  truncateGraph(tree, validNodes);
+
+  const isExpandedNodes = Array.from(new Set(getExpandedData(tree)));
+  const notShownWhenExpandedNodes = getShownData(tree);
+
+  let notShownWhenExpanded: ShownData = {};
+  for (const i of notShownWhenExpandedNodes) {
+    notShownWhenExpanded = { ...notShownWhenExpanded, ...i };
+  }
+  return {
+    isExpandedNodes,
+    notShownWhenExpandedNodes: notShownWhenExpanded,
+  };
+}
+
+interface OntologyTree extends TreeNode {
+  invalid_children_ids?: string[];
+  parent?: string;
+}
+
+function filterChildren(
+  graph: OntologyTree,
+  validNodes: string[]
+): OntologyTree[] {
+  const newChildren: OntologyTree[] = [];
+  const invalidChildrenIds: string[] = [];
+
+  for (const child of graph.children ?? []) {
+    if (validNodes.includes(child.id)) {
+      newChildren.push(child);
+    } else {
+      invalidChildrenIds.push(child.id);
+    }
+  }
+
+  if (invalidChildrenIds.length > 0) {
+    newChildren.push({
+      id: "",
+      name: "",
+      n_cells: 0,
+      n_cells_rollup: 0,
+      invalid_children_ids: invalidChildrenIds,
+      parent: graph.id,
+    });
+  }
+
+  return newChildren;
+}
+
+function truncateGraph(graph: OntologyTree, validNodes: string[]): void {
+  const children = filterChildren(graph, validNodes);
+
+  if (children.length === 0) {
+    graph.children = undefined;
+  } else {
+    graph.children = children;
+  }
+
+  for (const child of graph.children ?? []) {
+    if (child.id !== "") {
+      truncateGraph(child, validNodes);
+    }
+  }
+}
+
+function getExpandedData(
+  ontologyGraph: OntologyTree,
+  isExpandedNodes: string[] = []
+): string[] {
+  if (ontologyGraph.children) {
+    isExpandedNodes.push(ontologyGraph.id);
+    for (const child of ontologyGraph.children) {
+      getExpandedData(child, isExpandedNodes);
+    }
+  }
+  return isExpandedNodes;
+}
+
+interface ShownData {
+  [key: string]: string[];
+}
+
+function getShownData(
+  graph: OntologyTree,
+  notShownWhenExpandedNodes: ShownData[] = []
+): ShownData[] {
+  if (graph.children) {
+    for (const child of graph.children) {
+      if (
+        child.id === "" &&
+        child.invalid_children_ids &&
+        child.invalid_children_ids.length > 0
+      ) {
+        notShownWhenExpandedNodes.push({
+          [child.parent as string]: Array.from(
+            new Set(child.invalid_children_ids)
+          ),
+        });
+      } else {
+        getShownData(child, notShownWhenExpandedNodes);
+      }
+    }
+  }
+  return notShownWhenExpandedNodes;
 }

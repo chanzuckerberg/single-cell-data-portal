@@ -23,12 +23,16 @@ import {
 } from "tests/utils/wmgUtils";
 import { getCurrentDate } from "tests/utils/downloadUtils";
 import { addGene, searchAndAddGene } from "tests/utils/geneUtils";
+import {
+  CELL_TYPE_NAME_LABEL_CLASS_NAME,
+  TISSUE_NAME_LABEL_CLASS_NAME,
+} from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
 const GENE_LABELS_ID = "[data-testid^=gene-label-]";
-const CELL_TYPE_LABELS_ID = "cell-type-name";
-const TISSUE_LABELS_ID = "tissue-name";
+const CELL_TYPE_LABELS_ID = CELL_TYPE_NAME_LABEL_CLASS_NAME;
+const TISSUE_LABELS_ID = TISSUE_NAME_LABEL_CLASS_NAME;
 const ADD_GENE_ID = "add-gene-btn";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
 const SOURCE_DATA_LIST_SELECTOR = `[data-testid="source-data-list"]`;
@@ -325,7 +329,10 @@ describe("Where's My Gene", () => {
         { page }
       );
 
-      // Check all 3 Compare options work
+      // Check disease compare option works
+      // (alec) Checking all compare options is too slow, so just check one
+      // the risk of the other compare options deviating from the behavior of the
+      // disease option is low
       // Wait for loading spinner to disappear before checking (compare data is slow to load)
       await clickDropdownOptionByName({
         name: "Disease",
@@ -340,44 +347,6 @@ describe("Where's My Gene", () => {
           const afterCellTypeNames = await getCellTypeNames(page);
           expect(
             afterCellTypeNames.find((name) => name.includes("    normal"))
-          ).toBeTruthy();
-        },
-        { page }
-      );
-
-      await clickDropdownOptionByName({
-        name: "Sex",
-        page,
-        testId: COMPARE_DROPDOWN_ID,
-      });
-
-      await waitForLoadingSpinnerToResolve(page);
-
-      await tryUntil(
-        async () => {
-          const afterCellTypeNames = await getCellTypeNames(page);
-
-          expect(
-            afterCellTypeNames.find((name) => name.includes("    female"))
-          ).toBeTruthy();
-        },
-        { page }
-      );
-
-      await clickDropdownOptionByName({
-        name: "Ethnicity",
-        page,
-        testId: COMPARE_DROPDOWN_ID,
-      });
-
-      await waitForLoadingSpinnerToResolve(page);
-
-      await tryUntil(
-        async () => {
-          const afterCellTypeNames = await getCellTypeNames(page);
-
-          expect(
-            afterCellTypeNames.find((name) => name.includes("    multiethnic"))
           ).toBeTruthy();
         },
         { page }
@@ -425,9 +394,9 @@ describe("Where's My Gene", () => {
     }) => {
       await goToWMG(page);
 
-      await expandTissue(page, "heart");
+      await expandTissue(page, "brain");
 
-      await getCellTypeFmgButtonAndClick(page, "dendritic cell");
+      await getCellTypeFmgButtonAndClick(page, "smooth muscle cell");
 
       await waitForElement(page, NO_MARKER_GENES_WARNING_TEST_ID);
     });
@@ -525,7 +494,7 @@ describe("Where's My Gene", () => {
       // Select gene
       await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
       await selectFirstNOptions(SELECT_N_GENES, page);
-
+      await waitForHeatmapToRender(page);
       await clickUntilDownloadModalShowsUp({
         page,
         testId: DOWNLOAD_BUTTON_ID,

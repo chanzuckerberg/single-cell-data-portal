@@ -7,12 +7,23 @@ import CZILogo from "src/components/common/staticPages/czi-logo-white.png";
 import BottomBanner from "../BottomBanner";
 import styles from "./index.module.scss";
 import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
+import { useState } from "react";
 
 const LandingFooter = (): JSX.Element => {
+  const [isHubSpotReady, setIsHubSpotReady] = useState(false);
+
   return (
     <>
+      {/* This newsletter signup section should not be dismissible  */}
       <BottomBanner
+        id="newsletter-footer"
         asFooter
+        airtableLink={GENE_EXPRESSION_BANNER_SURVEY_LINK}
+        // (thuang): The first instance of BottomBanner in the UI needs to call onHubSpotReady()
+        onHubSpotReady={() => setIsHubSpotReady(true)}
+      />
+      <BottomBanner
+        isHubSpotReady={isHubSpotReady}
         airtableLink={GENE_EXPRESSION_BANNER_SURVEY_LINK}
       />
       <footer className={styles.footer}>
