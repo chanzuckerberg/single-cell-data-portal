@@ -1,0 +1,119 @@
+⚠️  tryUntil error-----------------START
+Timed out 10000ms waiting for expect(received).not.toHaveCount(expected) // deep equality
+
+Expected: not 0
+
+Call log:
+  - expect.not.toHaveCount with timeout 10000ms
+  - waiting for locator('canvas')
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+Timed out 10000ms waiting for expect(received).not.toHaveCount(expected) // deep equality
+
+Expected: not 0
+
+Call log:
+  - expect.not.toHaveCount with timeout 10000ms
+  - waiting for locator('canvas')
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+Timed out 10000ms waiting for expect(received).not.toHaveCount(expected) // deep equality
+
+Expected: not 0
+
+Call log:
+  - expect.not.toHaveCount with timeout 10000ms
+  - waiting for locator('canvas')
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+  -   locator resolved to 0 elements
+  -   unexpected value "0"
+
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect(received).toBeFalsy()
+
+Received: true
+⚠️  tryUntil error-----------------END
+⚠️  tryUntil error-----------------START
+expect(received).toBe(expected) // Object.is equality
+
+Expected: 0
+Received: 1
+⚠️  tryUntil error-----------------END
