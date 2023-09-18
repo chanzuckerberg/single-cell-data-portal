@@ -1,0 +1,81 @@
+  pw:api => selectors.setTestIdAttribute started +3s
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +40ms
+  pw:api   "commit" event fired +13ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => browserContext.newPage started +5ms
+  pw:api <= browserContext.newPage succeeded +40ms
+  pw:api => page.waitForLoadState started +3ms
+  pw:api => page.goto started +5ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +7ms
+  pw:api   "commit" event fired +7s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "commit" event fired +2ms
+  pw:api   "networkidle" event fired +5s
+  pw:api <= page.waitForLoadState succeeded +3ms
+  pw:api   "networkidle" event fired +8ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +2ms
+  pw:api   navigated to "about:blank" +43ms
+  pw:api <= page.goto succeeded +7ms
+  pw:api => locator.count started +3ms
+  pw:api <= locator.count succeeded +48ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('cell-type-labels-blood').getByTestId('tissue-name') +14ms
+  pw:api   "networkidle" event fired +30s
+  pw:api   locator resolved to <div data-testid="tissue-name" class="tissue-name css…>Blood</div> +19s
+  pw:api attempting click action +9ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +35ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +109ms
+  pw:api   click action done +461ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +9ms
+  pw:api <= locator.click succeeded +43ms
+  pw:api => locator.count started +2ms
+  pw:api <= locator.count succeeded +13ms
+  pw:api => locator.allTextContents started +6ms
+  pw:api <= locator.allTextContents succeeded +60ms
+  pw:api => locator.allTextContents started +5ms
+  pw:api <= locator.allTextContents succeeded +83ms
+  pw:api => locator.count started +2ms
+  pw:api <= locator.count succeeded +53ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +86ms
+  pw:api => locator.allTextContents started +3ms
+  pw:api <= locator.allTextContents succeeded +59ms
+  pw:api => locator.textContent started +1ms
+  pw:api waiting for getByTestId('cell-type-row').nth(34).getByTestId('cell-type-full-name') +23ms
+  pw:api   locator resolved to <div data-testid="cell-type-full-name" class="css-neg…>CD14-positive, CD16-negative classical monocyte</div> +10ms
+  pw:api <= locator.textContent succeeded +36ms
+  pw:api => locator.hover started +1ms
+  pw:api waiting for getByTestId('cell-type-name').nth(34) +61ms
+  pw:api   locator resolved to <div class="cell-type-name" data-testid="cell-type-na…>CD14-positive, CD16-n...ve classical monocyte</div> +24ms
+  pw:api attempting hover action +1ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +21ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing hover action +146ms
+  pw:api   hover action done +19ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +3ms
+  pw:api <= locator.hover succeeded +53ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api expect.toBeVisible with timeout 10000ms +50ms
+  pw:api waiting for getByText('CD14-positive, CD16-negative classical monocyte') +0ms
+  pw:api <= expect.toBeVisible failed +867ms
+  pw:api => page.screenshot started +3ms
+  pw:api taking page screenshot +36ms
+  pw:api <= page.screenshot succeeded +425ms
+  pw:api => video.saveAs started +1s
+  pw:api <= video.saveAs succeeded +15ms
