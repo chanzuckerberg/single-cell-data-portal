@@ -1,0 +1,42 @@
+  pw:api => selectors.setTestIdAttribute started +4s
+  pw:api => browser.newContext started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +4ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +61ms
+  pw:api   "commit" event fired +21ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +3ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +21ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +54ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api => page.goto started +15ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +6ms
+  pw:api   "commit" event fired +2s
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "commit" event fired +10ms
+  pw:api   "networkidle" event fired +5s
+  pw:api <= page.waitForLoadState succeeded +6ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +4s
+  pw:api   navigated to "https://localhost:3000/" +4ms
+  pw:api   navigated to "about:blank" +56ms
+  pw:api   navigated to "about:blank" +6ms
+  pw:api <= page.goto succeeded +15ms
+  pw:api => locator.innerText started +7ms
+  pw:api waiting for getByTestId('landing-page-cells-hero-num') +498ms
+  pw:api   "networkidle" event fired +11ms
+  pw:api   locator resolved to <p data-testid="landing-page-cells-hero-num">49.9M</p> +54ms
+  pw:api <= locator.innerText succeeded +19ms
+  pw:api => locator.innerText started +1ms
+  pw:api waiting for getByTestId('landing-page-celltypes-hero-num') +17ms
+  pw:api   locator resolved to <p data-testid="landing-page-celltypes-hero-num">709</p> +3ms
+  pw:api <= locator.innerText succeeded +25ms
+  pw:api => locator.innerText started +1ms
+  pw:api waiting for getByTestId('landing-page-datasets-hero-num') +11ms
+  pw:api   locator resolved to <p data-testid="landing-page-datasets-hero-num">937</p> +16ms
+  pw:api <= locator.innerText succeeded +18ms
+  pw:api taking page screenshot +31ms
