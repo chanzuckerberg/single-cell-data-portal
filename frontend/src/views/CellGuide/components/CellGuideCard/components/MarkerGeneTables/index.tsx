@@ -78,6 +78,7 @@ import {
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
 import Image from "next/image";
+import { CellType } from "../../../common/OntologyDagView/common/types";
 
 function getEmptyComputationalMarkerGenesTableUIMessageDetail(
   allFilteredByLowMarkerScore: boolean
@@ -182,6 +183,7 @@ interface Props {
   selectedGene?: string;
   selectGene: (gene: string) => void;
   inSideBar?: boolean;
+  setCellInfoCellType?: React.Dispatch<React.SetStateAction<CellType | null>>;
 }
 
 const MarkerGeneTables = ({
@@ -196,6 +198,7 @@ const MarkerGeneTables = ({
   selectedGene,
   selectGene,
   inSideBar,
+  setCellInfoCellType,
 }: Props) => {
   // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(0);
@@ -362,7 +365,11 @@ const MarkerGeneTables = ({
         {showEye && (
           <StyledImageWrapper
             className="hover-button"
-            onClick={() => selectGene(row.symbol)}
+            isActive={row.symbol === selectedGene}
+            onClick={() => {
+              skinnyMode && setCellInfoCellType && setCellInfoCellType(null);
+              selectGene(row.symbol);
+            }}
           >
             <Image
               data-testid={MARKER_GENES_TREE_ICON_BUTTON_TEST_ID(row.symbol)}
@@ -375,7 +382,7 @@ const MarkerGeneTables = ({
         )}
       </NoWrapWrapper>
     ),
-    [selectedGene, setGeneInfoGene, selectGene]
+    [selectedGene, setGeneInfoGene, selectGene, setCellInfoCellType, skinnyMode]
   );
 
   const tableRows: TableRow[] = useMemo(() => {

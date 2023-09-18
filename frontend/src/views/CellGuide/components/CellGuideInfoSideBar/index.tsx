@@ -14,6 +14,7 @@ import {
 export interface CellGuideInfoBarProps extends RightSidebarProperties {
   cellInfoCellType: CellType;
   setGeneInfoGene: React.Dispatch<React.SetStateAction<string | null>>;
+  setCellInfoCellType: React.Dispatch<React.SetStateAction<CellType | null>>;
   setTooltipContent: Dispatch<
     SetStateAction<{
       title: string;
@@ -38,6 +39,7 @@ function CellGuideInfoBar({
   selectedGene,
   skinnyMode,
   selectGene,
+  setCellInfoCellType,
 }: CellGuideInfoBarProps): JSX.Element | null {
   const router = useRouter();
   return (
@@ -70,6 +72,7 @@ function CellGuideInfoBar({
           key={cellInfoCellType.cellTypeId}
           cellTypeId={cellInfoCellType.cellTypeId}
           setGeneInfoGene={setGeneInfoGene}
+          setCellInfoCellType={setCellInfoCellType}
           cellTypeName={cellInfoCellType.cellTypeName}
           skinnyMode={skinnyMode}
           inSideBar

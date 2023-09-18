@@ -438,6 +438,7 @@ export default function CellGuideCard({
         >
           <CellGuideInfoSideBar
             cellInfoCellType={cellInfoCellType}
+            setCellInfoCellType={setCellInfoCellType}
             handleClose={handleCloseCellGuideInfoSideBar}
             title={
               <span>

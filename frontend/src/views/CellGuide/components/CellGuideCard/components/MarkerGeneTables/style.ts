@@ -129,8 +129,12 @@ export const MarkerGeneTableWrapper = styled.div`
   max-width: calc(100vw - ${spacesL}px - ${spacesL}px);
 `;
 
-export const StyledImageWrapper = styled.div`
+interface StyledImageWrapperProps {
+  isActive: boolean;
+}
+export const StyledImageWrapper = styled.div<StyledImageWrapperProps>`
   cursor: pointer;
   min-width: 12px;
   min-height: 12px;
+  visibility: ${(props) => (props.isActive ? "visible !important" : "unset")};
 `;
