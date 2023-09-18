@@ -108,7 +108,7 @@ jobs:
   functional-test:
     runs-on: ubuntu-22.04
     needs:
-      - upgrade
+      - create-rdev
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
