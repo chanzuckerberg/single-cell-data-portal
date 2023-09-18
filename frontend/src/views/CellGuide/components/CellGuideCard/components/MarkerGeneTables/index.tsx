@@ -369,7 +369,7 @@ const MarkerGeneTables = ({
             onClick={() => {
               skinnyMode && setCellInfoCellType && setCellInfoCellType(null);
               track(EVENTS.CG_MARKER_GENE_MODE_CLICKED, {
-                cellType: setCellInfoCellType
+                cell_type: setCellInfoCellType
                   ? cellInfoCellType?.cellTypeName
                   : cellTypeName,
                 inSideBar: !!cellInfoCellType,
