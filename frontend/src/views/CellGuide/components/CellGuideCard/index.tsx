@@ -190,7 +190,7 @@ export default function CellGuideCard({
   const [selectedOrganId, setSelectedOrganId] = useState(NO_ORGAN_ID);
 
   const handleChangeOrgan = (option: DefaultDropdownMenuOption | null) => {
-    if (!option) return;
+    if (!option || option.name === selectedOrgan.name) return;
     setSelectedOrgan(option);
     const optionName =
       option.name === TISSUE_AGNOSTIC ? ALL_TISSUES : option.name;
@@ -203,7 +203,7 @@ export default function CellGuideCard({
     useState<DefaultDropdownMenuOption>(sdsOrganismsList[0]);
 
   const handleChangeOrganism = (option: DefaultDropdownMenuOption | null) => {
-    if (!option) return;
+    if (!option || option.name === selectedOrganism.name) return;
     setSelectedOrganism(option);
     track(EVENTS.CG_SELECT_ORGANISM, { organism: option.name });
   };
