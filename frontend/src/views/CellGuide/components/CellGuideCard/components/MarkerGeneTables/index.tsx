@@ -593,7 +593,7 @@ const MarkerGeneTables = ({
     track(EVENTS.CG_MARKER_GENE_PAGINATION_CLICKED, {
       page: page,
       type: activeTable ? "computational" : "canonical",
-      cellType: cellTypeName,
+      cell_type: cellTypeName,
       inSideBar: !!cellInfoCellType,
     });
   };
@@ -632,7 +632,7 @@ const MarkerGeneTables = ({
                 setPage(1);
                 setActiveTable(0);
                 track(EVENTS.CG_CANONICAL_TAB_CLICKED, {
-                  cellType: cellTypeName,
+                  cell_type: cellTypeName,
                   inSideBar: !!cellInfoCellType,
                 });
               }}
@@ -648,7 +648,7 @@ const MarkerGeneTables = ({
                 setPage(1);
                 setActiveTable(1);
                 track(EVENTS.CG_COMPUTATIONAL_TAB_CLICKED, {
-                  cellType: cellTypeName,
+                  cell_type: cellTypeName,
                   inSideBar: !!cellInfoCellType,
                 });
               }}

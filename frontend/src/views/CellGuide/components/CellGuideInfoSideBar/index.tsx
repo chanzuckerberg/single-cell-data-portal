@@ -60,7 +60,7 @@ function CellGuideInfoBar({
             router.push(href);
           }
           track(EVENTS.CG_VIEW_CELLGUIDE_PAGE_CLICKED, {
-            cellType: cellInfoCellType.cellTypeName,
+            cell_type: cellInfoCellType.cellTypeName,
           });
         }}
       >
