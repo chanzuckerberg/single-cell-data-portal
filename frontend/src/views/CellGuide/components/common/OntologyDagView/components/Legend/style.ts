@@ -2,7 +2,6 @@ import styled from "@emotion/styled";
 import {
   highlightColor,
   primaryColor,
-  secondaryColor,
   tertiaryColor,
 } from "../../common/constants";
 import { gray500, spacesL, spacesM } from "src/common/theme";
@@ -84,15 +83,15 @@ export const NoDescendantsLine = styled.div<NoDescendantsProps>`
   position: absolute;
   width: ${(props) => props.size}px;
   height: 1px;
-  background-color: ${secondaryColor};
+  background-color: ${tertiaryColor};
   left: ${(props) => -props.size}px;
   top: ${(props) => props.size / 2 - 1}px;
   z-index: -1;
-  border: 1px solid ${secondaryColor};
+  border: 1px solid ${tertiaryColor};
 `;
 
 export const StyledBorder = styled(Border)`
-  border-left: 2px solid ${secondaryColor};
+  border-left: 2px solid ${tertiaryColor};
 `;
 
 export const StyledNodeWrapper = styled(NodeWrapper)`

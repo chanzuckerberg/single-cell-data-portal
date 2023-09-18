@@ -3,7 +3,7 @@ import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import { LinkHorizontal } from "@visx/shape";
 import { Group } from "@visx/group";
 import { TreeNodeWithState } from "../../common/types";
-import { leftBorderSpacing, secondaryColor } from "../../common/constants";
+import { leftBorderSpacing, tertiaryColor } from "../../common/constants";
 
 interface AnimatedLinksProps {
   tree: HierarchyPointNode<TreeNodeWithState>;
@@ -93,7 +93,7 @@ export default function AnimatedLinks({ tree, duration }: AnimatedLinksProps) {
                   <LinkHorizontal
                     key={key}
                     data={{ ...state, target: newStateTarget }}
-                    stroke={secondaryColor}
+                    stroke={tertiaryColor}
                     strokeWidth="1"
                     fill="none"
                   />

@@ -1,5 +1,4 @@
 import { useRef, useEffect } from "react";
-import { defaultTextColor } from "../../../../common/constants";
 import { StyledText } from "./style";
 
 interface TextProps {
