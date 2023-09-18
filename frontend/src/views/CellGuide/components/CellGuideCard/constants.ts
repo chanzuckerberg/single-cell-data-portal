@@ -12,3 +12,5 @@ export const CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN =
 
 export const CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN =
   "cell-guide-card-global-organism-filter-dropdown";
+
+export const RIGHT_SIDEBAR_WIDTH_PX = 400;

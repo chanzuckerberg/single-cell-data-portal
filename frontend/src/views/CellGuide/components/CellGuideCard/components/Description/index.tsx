@@ -50,11 +50,13 @@ interface DescriptionProps {
       element: JSX.Element;
     } | null>
   >;
+  inSideBar?: boolean;
 }
 export default function Description({
   cellTypeId,
   cellTypeName,
   skinnyMode,
+  inSideBar,
   setTooltipContent,
 }: DescriptionProps): JSX.Element {
   const [descriptionGpt, setDescriptionGpt] = useState<string>("");
@@ -211,39 +213,47 @@ export default function Description({
 
   return (
     <Wrapper>
-      {descriptionCl && (
-        <CellGuideCardDescription
-          data-testid={CELL_GUIDE_CARD_CL_DESCRIPTION}
-          onCopy={copyHandler}
-        >
-          {descriptionCl}
-          <Source>
-            <SourceLink>
-              {"Source: "}
-              <Link
-                url={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeId.replace(
-                  ":",
-                  "_"
-                )}`}
-                label={"Cell Ontology"}
-              />
-            </SourceLink>
-          </Source>
-        </CellGuideCardDescription>
+      {descriptionCl && !inSideBar && (
+        <>
+          <CellGuideCardDescription
+            data-testid={CELL_GUIDE_CARD_CL_DESCRIPTION}
+            onCopy={copyHandler}
+          >
+            {descriptionCl}
+            <Source>
+              <SourceLink>
+                {"Source: "}
+                <Link
+                  url={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeId.replace(
+                    ":",
+                    "_"
+                  )}`}
+                  label={"Cell Ontology"}
+                />
+              </SourceLink>
+            </Source>
+          </CellGuideCardDescription>
+          <br />
+        </>
       )}
-      <br />
       <CellGuideCardDescription
         data-testid={CELL_GUIDE_CARD_GPT_DESCRIPTION}
         onCopy={copyHandler}
+        inSideBar={inSideBar}
       >
         <DescriptionWrapper
+          inSideBar={inSideBar}
           maxHeight={isPastBreakpoint ? descriptionMaxHeight : undefined}
         >
-          <DescriptionHeader>Experimental Description</DescriptionHeader>
-          <div ref={containerRef}>{descriptionGpt}</div>
+          {!inSideBar && (
+            <DescriptionHeader>Experimental Description</DescriptionHeader>
+          )}
+          <div ref={containerRef}>
+            {inSideBar ? descriptionGpt.split("\n").at(0) : descriptionGpt}
+          </div>
         </DescriptionWrapper>
-        {sourceComponent}
-        {isPastBreakpoint && <Source>{disclaimerMessage}</Source>}
+        {!inSideBar && sourceComponent}
+        {isPastBreakpoint && !inSideBar && <Source>{disclaimerMessage}</Source>}
       </CellGuideCardDescription>
     </Wrapper>
   );
