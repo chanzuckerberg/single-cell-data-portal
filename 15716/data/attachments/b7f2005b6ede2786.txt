@@ -1,0 +1,172 @@
+  pw:api => selectors.setTestIdAttribute started +288ms
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +32ms
+  pw:api   "commit" event fired +12ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +7ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +39ms
+  pw:api => page.waitForResponse started +3ms
+  pw:api => page.goto started +5ms
+  pw:api navigating to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2", waiting until "load" +5ms
+  pw:api   "commit" event fired +175ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +4ms
+  pw:api   navigated to "https://localhost:3000/gene-expression?genes=DPM1%2CTNMD%2CTSPAN6&ver=2" +4ms
+  pw:api   navigated to "about:blank" +43ms
+  pw:api <= page.goto succeeded +38ms
+  pw:api <= page.waitForResponse succeeded +6s
+  pw:api => expect.not.toHaveCount started +3ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +27ms
+  pw:api waiting for locator('canvas') +1ms
+  pw:api   locator resolved to 0 elements +36ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +11ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +313ms
+  pw:api   locator resolved to 0 elements +363ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +255ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +502ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +0ms
+  pw:api   "networkidle" event fired +1s
+  pw:api   locator resolved to 0 elements +214ms
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 64 elements +8s
+  pw:api <= expect.not.toHaveCount succeeded +84ms
+  pw:api => page.waitForTimeout started +14ms
+  pw:api <= page.waitForTimeout succeeded +222ms
+  pw:api => expect.not.toHaveCount started +3ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +9ms
+  pw:api waiting for locator('canvas') +0ms
+  pw:api   locator resolved to 64 elements +2ms
+  pw:api <= expect.not.toHaveCount succeeded +13ms
+  pw:api => locator.count started +1ms
+  pw:api <= locator.count succeeded +5ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-type-labels-lung').getByTestId('tissue-name') +9ms
+  pw:api   locator resolved to <div data-testid="tissue-name" class="tissue-name css…>Lung</div> +4ms
+  pw:api attempting click action +7ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +18ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +13ms
+  pw:api   click action done +711ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +21s
+  pw:api <= locator.click succeeded +67ms
+  pw:api => locator.count started +1ms
+  pw:api <= locator.count succeeded +39ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +38ms
+  pw:api => locator.allTextContents started +4ms
+  pw:api <= locator.allTextContents succeeded +37ms
+  pw:api => locator.count started +1ms
+  pw:api <= locator.count succeeded +8ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +46ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +30ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByTestId('cell-type-labels-blood').getByTestId('tissue-name') +13ms
+  pw:api   locator resolved to <div data-testid="tissue-name" class="tissue-name css…>Blood</div> +6ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +5ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +26ms
+  pw:api   click action done +630ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +26s
+  pw:api <= locator.click succeeded +63ms
+  pw:api => locator.count started +1ms
+  pw:api <= locator.count succeeded +20ms
+  pw:api => locator.allTextContents started +5ms
+  pw:api <= locator.allTextContents succeeded +57ms
+  pw:api => locator.allTextContents started +9ms
+  pw:api <= locator.allTextContents succeeded +40ms
+  pw:api => locator.allTextContents started +4ms
+  pw:api <= locator.allTextContents succeeded +36ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +36ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +38ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +40ms
+  pw:api => locator.click started +4ms
+  pw:api waiting for getByTestId('cell-type-sort-dropdown') +16ms
+  pw:api   locator resolved to <button tabindex="0" type="button" label="Cell Ontology"…>…</button> +9ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +21ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +23ms
+  pw:api   click action done +187ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +50ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +81ms
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +1s
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +26s
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('gene-sort-dropdown') +45ms
+  pw:api   locator resolved to <button tabindex="0" type="button" label="As Entered" da…>…</button> +22ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +40ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   <div class="css-1879pua">…</div> from <div id="bottom-banner" data-testid="newsletter-modal…>…</div> subtree intercepts pointer events +49ms
+  pw:api retrying click action, attempt #1 +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +69ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +2ms
+  pw:api   <div class="css-1879pua">…</div> from <div id="bottom-banner" data-testid="newsletter-modal…>…</div> subtree intercepts pointer events +82ms
+  pw:api retrying click action, attempt #2 +0ms
+  pw:api   waiting 20ms +0ms
+  pw:api   waiting for element to be visible, enabled and stable +24ms
+  pw:api   element is visible, enabled and stable +39ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +55ms
+  pw:api   click action done +91ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +7ms
+  pw:api <= locator.click succeeded +47ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +112ms
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +27s
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +82ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +82ms
+  pw:api => locator.allTextContents started +5ms
+  pw:api <= locator.allTextContents succeeded +41ms
+  pw:api => locator.allTextContents started +0ms
+  pw:api <= locator.allTextContents succeeded +51ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +44ms
+  pw:api taking page screenshot +17ms
