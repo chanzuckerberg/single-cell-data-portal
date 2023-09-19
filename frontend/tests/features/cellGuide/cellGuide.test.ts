@@ -61,6 +61,10 @@ import {
   PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
   MARKER_GENES_TREE_ICON_BUTTON_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
+import {
+  CELLGUIDE_INFO_SIDEBAR_TEST_ID,
+  CELLGUIDE_VIEW_PAGE_SIDEBAR_BUTTON_TEST_ID,
+} from "src/views/CellGuide/components/CellGuideInfoSideBar/constants";
 
 const { describe } = test;
 
@@ -628,7 +632,7 @@ describe("Cell Guide", () => {
         );
       });
 
-      test("Clicking on a cell type label links to its CellGuide Card", async ({
+      test("Clicking on a cell type label opens its CellGuide info sidebar", async ({
         page,
       }) => {
         await goToPage(
@@ -638,14 +642,16 @@ describe("Cell Guide", () => {
         await page
           .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
           .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
-        const label = page.getByTestId(
-          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL:0000878__4`
-        );
+        await page
+          .getByTestId(
+            `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL:0000878__4`
+          )
+          .click();
 
-        await Promise.all([
-          page.waitForURL(`${TEST_URL}${ROUTES.CELL_GUIDE}/CL_0000878`),
-          waitForElementAndClick(label),
-        ]);
+        await isElementVisible(page, CELLGUIDE_INFO_SIDEBAR_TEST_ID);
+        await page
+          .getByTestId(CELLGUIDE_VIEW_PAGE_SIDEBAR_BUTTON_TEST_ID)
+          .click();
 
         // Check that the new node is highlighted green (isTargetNode=true)
         await page

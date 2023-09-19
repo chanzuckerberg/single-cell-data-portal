@@ -5,6 +5,8 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { RIGHT_SIDEBAR_WIDTH_PX } from "../CellGuideCard/constants";
+import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
 interface FullScreenContextProps {
   isFullScreen: boolean;
@@ -17,8 +19,13 @@ const FullScreenContext = createContext<FullScreenContextProps | undefined>(
   undefined
 );
 
-const FullScreenProvider: React.FC<React.PropsWithChildren> = ({
+interface FullScreenProviderProps extends React.PropsWithChildren {
+  cellInfoSideBarDisplayed?: boolean;
+}
+
+const FullScreenProvider: React.FC<FullScreenProviderProps> = ({
   children,
+  cellInfoSideBarDisplayed,
 }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
 
@@ -37,8 +44,10 @@ const FullScreenProvider: React.FC<React.PropsWithChildren> = ({
     const handleResize = () => {
       if (typeof window !== "undefined") {
         setScreenDimensions({
-          width: window.innerWidth,
-          height: window.innerHeight,
+          width:
+            window.innerWidth -
+            Number(cellInfoSideBarDisplayed) * RIGHT_SIDEBAR_WIDTH_PX,
+          height: window.innerHeight - HEADER_HEIGHT_PX,
         });
       }
     };
@@ -49,7 +58,7 @@ const FullScreenProvider: React.FC<React.PropsWithChildren> = ({
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [isFullScreen]);
+  }, [isFullScreen, cellInfoSideBarDisplayed]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

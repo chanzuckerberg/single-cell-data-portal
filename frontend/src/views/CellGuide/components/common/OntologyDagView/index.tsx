@@ -40,7 +40,7 @@ import {
   backgroundColor,
   NODE_SPACINGS,
 } from "./common/constants";
-import { TreeNodeWithState } from "./common/types";
+import { CellType, TreeNodeWithState } from "./common/types";
 import Legend from "./components/Legend";
 import AnimatedNodes from "./components/AnimatedNodes";
 import AnimatedLinks from "./components/AnimatedLinks";
@@ -68,6 +68,7 @@ interface TreeProps {
   tissueId: string;
   tissueName: string;
   selectGene?: (gene: string) => void;
+  setCellInfoCellType?: (props: CellType | null) => void;
 }
 
 // This determines the initial Zoom position and scale
@@ -89,6 +90,7 @@ export default function OntologyDagView({
   selectedGene,
   selectGene,
   selectedOrganism,
+  setCellInfoCellType,
 }: TreeProps) {
   const [width, setWidth] = useState(inputWidth);
   const [height, setHeight] = useState(inputHeight);
@@ -391,9 +393,7 @@ export default function OntologyDagView({
           <TableTitle>Cell Ontology</TableTitle>
         </TableTitleWrapper>
       )}
-      {data && initialTreeState && (
-        <Legend isTissue={!cellTypeId} selectedGene={selectedGene} />
-      )}
+
       {data && initialTreeState ? (
         <Zoom<SVGSVGElement>
           key={centeredNodeCoords ? "centered" : "initial"}
@@ -420,6 +420,9 @@ export default function OntologyDagView({
               isFullScreen={isFullScreen}
               data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER}
             >
+              {data && initialTreeState && (
+                <Legend isTissue={!cellTypeId} selectedGene={selectedGene} />
+              )}
               <RightAligned>
                 {selectedGene && (
                   <StyledTagFilter
@@ -508,7 +511,7 @@ export default function OntologyDagView({
                 <rect
                   width={width}
                   height={height}
-                  rx={14}
+                  rx={isFullScreen ? 0 : 14}
                   fill={backgroundColor}
                 />
                 <g transform={zoom.toString()}>
@@ -528,6 +531,7 @@ export default function OntologyDagView({
                           toggleTriggerRender={toggleTriggerRender}
                           showTooltip={showTooltip}
                           hideTooltip={hideTooltip}
+                          setCellInfoCellType={setCellInfoCellType}
                           cellTypesWithMarkerGeneStats={
                             cellTypesWithMarkerGeneStats
                           }

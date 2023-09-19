@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import {
   CommonThemeProps,
+  fontBodyXs,
   fontHeaderXl,
   fontHeaderXxl,
   Tag,
@@ -11,6 +12,7 @@ import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import Synonyms from "src/components/Synonyms";
 import {
   fontWeightSemibold,
+  primary400,
   spacesL,
   spacesM,
   spacesS,
@@ -128,6 +130,38 @@ export const StyledTag = styled(Tag)`
   margin: 0;
 `;
 
+export const StyledCellTagSideBar = styled(Tag)`
+  .MuiChip-label {
+    color: ${primary400};
+    font-weight: 500 !important;
+    ${fontBodyXs}
+  }
+  background-color: #e0f0ff;
+  &:hover {
+    cursor: default;
+    background-color: #e0f0ff;
+    .MuiChip-label {
+      color: ${primary400};
+    }
+  }
+`;
+
+export const StyledGeneTagSideBar = styled(Tag)`
+  .MuiChip-label {
+    color: #8f5aff;
+    font-weight: 500 !important;
+    ${fontBodyXs}
+  }
+  background-color: #8f5aff26;
+  &:hover {
+    cursor: default;
+    background-color: #8f5aff26;
+    .MuiChip-label {
+      color: #8f5aff;
+    }
+  }
+`;
+
 export const SearchBarPositioner = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -159,7 +193,6 @@ export const StyledRightSideBar = styled(RightSideBar)<StyledRightSideBarProps>`
   z-index: 10;
   top: ${HEADER_HEIGHT_PX}px;
   animation: ${slideIn} 0.2s ease-in-out forwards;
-
   ${(props) => {
     if (props.skinnyMode) {
       return `
@@ -204,7 +237,7 @@ export const MobileTooltipWrapper = styled.div`
   display: flex;
   flex-direction: column;
   height: calc(100vh - ${HEADER_HEIGHT_PX}px);
-  overscroll-behavior: contain;
+  overscroll-behavior: none;
   width: 100vw;
   padding: ${spacesL}px;
   gap: ${spacesL}px;

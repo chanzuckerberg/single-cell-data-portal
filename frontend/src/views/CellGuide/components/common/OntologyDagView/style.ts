@@ -3,6 +3,7 @@ import { css } from "@emotion/react";
 import { IconButton } from "@mui/material";
 import { ButtonIcon, TagFilter } from "@czi-sds/components";
 import { primary400, spacesL } from "src/common/theme";
+import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
 export const FullscreenButton = styled(IconButton)`
   visibility: hidden;
@@ -34,10 +35,10 @@ export const HoverContainer = styled.div<HoverContainerProps>`
     isFullScreen
       ? css`
           position: fixed;
-          top: 0;
+          top: ${HEADER_HEIGHT_PX}px;
           left: 0;
-          width: 100%;
-          height: 100%;
+          width: ${width}px;
+          height: ${height}px;
           overflow: auto;
           z-index: 9999;
         `
@@ -55,7 +56,7 @@ export const HoverContainer = styled.div<HoverContainerProps>`
 
 export const TooltipInPortalStyle = css`
   .visx-tooltip {
-    z-index: 1;
+    z-index: 99999;
   }
 `;
 

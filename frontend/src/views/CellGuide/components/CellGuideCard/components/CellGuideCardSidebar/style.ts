@@ -25,4 +25,8 @@ export const StickySidebarStyle = css`
   main {
     overflow: unset !important;
   }
+  /* This prevents the annoying bounce scroll-chaining effect native on browsers */
+  html {
+    overscroll-behavior: none;
+  }
 `;
