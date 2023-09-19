@@ -3,7 +3,6 @@ export const secondaryColor = "#999999";
 export const tertiaryColor = "#CCCCCC";
 export const highlightColor = "#3CB371";
 export const backgroundColor = "#F8F8F8";
-export const defaultTextColor = "#000000";
 export const smallSize = 4;
 export const largeSize = 8;
 export const leftBorderSpacing = 5;

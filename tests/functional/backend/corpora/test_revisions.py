@@ -140,8 +140,8 @@ class TestRevisions(BaseFunctionalTestCase):
 
         # Start a new revision
         res = self.session.post(f"{self.api}/dp/v1/collections/{canonical_collection_id}", headers=headers)
-        revision_id = res.json()["id"]
         self.assertStatusCode(201, res)
+        revision_id = res.json()["id"]
 
         # Get datasets for the collection (before uploading)
         public_datasets_before = self.session.get(f"{self.api}/dp/v1/collections/{canonical_collection_id}").json()[

@@ -15,13 +15,24 @@ import {
   fontWeightSemibold,
 } from "src/common/theme";
 
-export const CellGuideCardDescription = styled.div`
+interface CellGuideCardDescriptionProps extends CommonThemeProps {
+  inSideBar?: boolean;
+}
+export const CellGuideCardDescription = styled.div<CellGuideCardDescriptionProps>`
   ${fontBodyS}
   font-weight: 400;
   white-space: pre-wrap;
-  background-color: ${gray100};
-  padding: 12px 16px 12px 16px;
-  border-radius: 8px;
+  ${(props) => {
+    const { inSideBar } = props;
+    const backgroundColor = inSideBar ? "unset" : gray100(props);
+    const padding = inSideBar ? "0px" : "12px 16px 12px 16px";
+    const borderRadius = inSideBar ? "0px" : "8px";
+    return `
+      background-color: ${backgroundColor};
+      padding: ${padding};
+      border-radius: ${borderRadius};
+    `;
+  }}
 `;
 
 export const StyledButton = styled(Button)`
@@ -36,6 +47,7 @@ export const Wrapper = styled.div`
 
 interface DescriptionWrapperProps extends CommonThemeProps {
   maxHeight?: number;
+  inSideBar?: boolean;
 }
 export const DescriptionWrapper = styled.div<DescriptionWrapperProps>`
   ${(props) => `max-height: ${props.maxHeight}px;`}
@@ -43,6 +55,7 @@ export const DescriptionWrapper = styled.div<DescriptionWrapperProps>`
   position: relative;
   ${(props) =>
     props.maxHeight &&
+    !props.inSideBar &&
     `
     &:after {
       content: "";

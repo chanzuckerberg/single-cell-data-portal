@@ -36,7 +36,7 @@ import {
   NoWrapWrapper,
   StyledLink,
   ReferenceTooltipWrapper,
-  StyledIconImage,
+  StyledImageWrapper,
 } from "./style";
 import Table from "../common/Table";
 import { Pagination } from "@mui/material";
@@ -77,6 +77,8 @@ import {
   MARKER_GENES_TREE_ICON_BUTTON_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
+import Image from "next/image";
+import { CellType } from "../../../common/OntologyDagView/common/types";
 
 function getEmptyComputationalMarkerGenesTableUIMessageDetail(
   allFilteredByLowMarkerScore: boolean
@@ -180,6 +182,8 @@ interface Props {
   organismName: string;
   selectedGene?: string;
   selectGene: (gene: string) => void;
+  setCellInfoCellType?: React.Dispatch<React.SetStateAction<CellType | null>>;
+  cellInfoCellType?: CellType | null;
 }
 
 const MarkerGeneTables = ({
@@ -193,6 +197,8 @@ const MarkerGeneTables = ({
   organismName,
   selectedGene,
   selectGene,
+  cellInfoCellType,
+  setCellInfoCellType,
 }: Props) => {
   // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(0);
@@ -357,16 +363,40 @@ const MarkerGeneTables = ({
           onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
         />
         {showEye && (
-          <StyledIconImage
-            data-testid={MARKER_GENES_TREE_ICON_BUTTON_TEST_ID(row.symbol)}
+          <StyledImageWrapper
             className="hover-button"
-            src={treeDendrogram}
-            onClick={() => selectGene(row.symbol)}
-          />
+            isActive={row.symbol === selectedGene}
+            onClick={() => {
+              skinnyMode && setCellInfoCellType && setCellInfoCellType(null);
+              track(EVENTS.CG_MARKER_GENE_MODE_CLICKED, {
+                cell_type: setCellInfoCellType
+                  ? cellInfoCellType?.cellTypeName
+                  : cellTypeName,
+                inSideBar: !!cellInfoCellType,
+              });
+              selectGene(row.symbol);
+            }}
+          >
+            <Image
+              data-testid={MARKER_GENES_TREE_ICON_BUTTON_TEST_ID(row.symbol)}
+              src={treeDendrogram}
+              alt={`activate marker gene mode for ${row.symbol}`}
+              width="12px"
+              height="12px"
+            />
+          </StyledImageWrapper>
         )}
       </NoWrapWrapper>
     ),
-    [selectedGene, setGeneInfoGene, selectGene]
+    [
+      selectedGene,
+      setGeneInfoGene,
+      selectGene,
+      setCellInfoCellType,
+      skinnyMode,
+      cellInfoCellType,
+      cellTypeName,
+    ]
   );
 
   const tableRows: TableRow[] = useMemo(() => {
@@ -563,6 +593,8 @@ const MarkerGeneTables = ({
     track(EVENTS.CG_MARKER_GENE_PAGINATION_CLICKED, {
       page: page,
       type: activeTable ? "computational" : "canonical",
+      cell_type: cellTypeName,
+      inSideBar: !!cellInfoCellType,
     });
   };
 
@@ -574,7 +606,7 @@ const MarkerGeneTables = ({
             <TableTitle>Marker Genes</TableTitle>
           </TableTitleInnerWrapper>
           <TableTitleInnerWrapper>
-            {!skinnyMode && (
+            {!skinnyMode && !cellInfoCellType && (
               <Link
                 url={`${ROUTES.WHERE_IS_MY_GENE}?genes=${genesForShareUrl}&ver=2`}
                 label="Open in Gene Expression"
@@ -599,7 +631,10 @@ const MarkerGeneTables = ({
               onClick={() => {
                 setPage(1);
                 setActiveTable(0);
-                track(EVENTS.CG_CANONICAL_TAB_CLICKED);
+                track(EVENTS.CG_CANONICAL_TAB_CLICKED, {
+                  cell_type: cellTypeName,
+                  inSideBar: !!cellInfoCellType,
+                });
               }}
             >
               Canonical
@@ -612,7 +647,10 @@ const MarkerGeneTables = ({
               onClick={() => {
                 setPage(1);
                 setActiveTable(1);
-                track(EVENTS.CG_COMPUTATIONAL_TAB_CLICKED);
+                track(EVENTS.CG_COMPUTATIONAL_TAB_CLICKED, {
+                  cell_type: cellTypeName,
+                  inSideBar: !!cellInfoCellType,
+                });
               }}
             >
               Computational
