@@ -176,7 +176,7 @@ jobs:
           fi
           if [ "${DEPLOYMENT_STAGE}" != "prod" ]; then
             pip3 install -r scripts/smoke_tests/requirements.txt
-            backend-smoke-test
+            make backend-smoke-test
           fi
           cd frontend
           npm ci
