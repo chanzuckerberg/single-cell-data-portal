@@ -857,7 +857,7 @@ describe("Where's My Gene", () => {
       { page }
     );
   });
-  describe.only("Cell Type Filtering", () => {
+  describe("Cell Type Filtering", () => {
     test("Filter to single cell type and then clear", async ({ page }) => {
       await goToWMG(page);
       await searchAndAddFilterCellTypes(page, "B cell");
