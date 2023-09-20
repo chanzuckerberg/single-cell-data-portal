@@ -12,6 +12,7 @@ from backend.layers.business.business import (
     CollectionMetadataUpdate,
     CollectionQueryFilter,
     DatasetArtifactDownloadData,
+    DatasetArtifactDownloadDataDeprecated,
 )
 from backend.layers.business.exceptions import (
     CollectionCreationException,
@@ -1221,14 +1222,37 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         self.assertIsNotNone(artifact)
 
         expected_file_size = 12345
+        expected_permanent_url = "http://fake.permanent/url"
+
+        self.s3_provider.get_file_size = Mock(return_value=expected_file_size)
+        self.business_logic.generate_permanent_url = Mock(return_value=expected_permanent_url)
+
+        # TODO: requires mocking of the S3 provider. implement later
+        download_data = self.business_logic.get_dataset_artifact_download_data(dataset.version_id, artifact.id)
+        expected_download_data = DatasetArtifactDownloadData(expected_file_size, expected_permanent_url)
+        self.assertEqual(download_data, expected_download_data)
+
+    # Superseded. Remove with #5697.
+    def test_get_dataset_artifact_download_data_deprecated_ok(self):
+        """
+        Calling `get_dataset_artifact_download_dat_deprecated` should yield downloadable data
+        """
+        published_version = self.initialize_published_collection()
+        dataset = published_version.datasets[0]
+        artifact = next(artifact for artifact in dataset.artifacts if artifact.type == DatasetArtifactType.H5AD)
+        self.assertIsNotNone(artifact)
+
+        expected_file_size = 12345
         expected_presigned_url = "http://fake.presigned/url"
 
         self.s3_provider.get_file_size = Mock(return_value=expected_file_size)
         self.s3_provider.generate_presigned_url = Mock(return_value=expected_presigned_url)
 
         # TODO: requires mocking of the S3 provider. implement later
-        download_data = self.business_logic.get_dataset_artifact_download_data(dataset.version_id, artifact.id)
-        expected_download_data = DatasetArtifactDownloadData(
+        download_data = self.business_logic.get_dataset_artifact_download_data_deprecated(
+            dataset.version_id, artifact.id
+        )
+        expected_download_data = DatasetArtifactDownloadDataDeprecated(
             f"{dataset.version_id}.h5ad", DatasetArtifactType.H5AD, expected_file_size, expected_presigned_url
         )
         self.assertEqual(download_data, expected_download_data)

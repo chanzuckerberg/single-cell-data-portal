@@ -14,6 +14,13 @@ class CollectionQueryFilter:
 
 @dataclass
 class DatasetArtifactDownloadData:
+    file_size: int
+    url: str
+
+
+# Superseded by DatasetArtifactDownloadData. Remove with #5697.
+@dataclass
+class DatasetArtifactDownloadDataDeprecated:
     file_name: str
     file_type: DatasetArtifactType
     file_size: int

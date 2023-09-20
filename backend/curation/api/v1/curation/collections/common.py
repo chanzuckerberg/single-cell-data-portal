@@ -12,6 +12,7 @@ from backend.layers.common.entities import (
     CollectionVersionId,
     CollectionVersionWithDatasets,
     CollectionVersionWithPublishedDatasets,
+    DatasetArtifact,
     DatasetArtifactType,
     DatasetId,
     DatasetProcessingStatus,
@@ -33,7 +34,6 @@ def get_collections_base_url():
 
 
 def extract_dataset_assets(dataset_version: DatasetVersion):
-    base_url = CorporaConfig().dataset_assets_base_url
     asset_list = list()
     for asset in dataset_version.artifacts:
         if asset.type not in allowed_dataset_asset_types:
@@ -41,7 +41,7 @@ def extract_dataset_assets(dataset_version: DatasetVersion):
         filesize = get_business_logic().s3_provider.get_file_size(asset.uri)
         if filesize is None:
             filesize = -1
-        url = f"{base_url}/{dataset_version.version_id.id}.{asset.type}"
+        url = get_business_logic().generate_permanent_url(dataset_version.version_id, asset)
         result = {
             "filesize": filesize,
             "filetype": asset.type.upper(),

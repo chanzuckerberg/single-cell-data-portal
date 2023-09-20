@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 
 from furl import furl
 
-from backend.layers.business.entities import DatasetArtifactDownloadData
+from backend.layers.business.entities import DatasetArtifactDownloadData, DatasetArtifactDownloadDataDeprecated
 from backend.layers.common.entities import (
     CollectionId,
     CollectionVersionId,
@@ -1523,10 +1523,60 @@ class TestCollectionsCurators(BaseAPIPortalTest):
 
 # TODO: these tests all require the generation of a dataset
 class TestDataset(BaseAPIPortalTest):
+    def test__get_dataset_asset__OK(self):
+        file_size = 1000
+        permanent_url = "http://url.url"
+        self.business_logic.get_dataset_artifact_download_data = Mock(
+            return_value=DatasetArtifactDownloadData(file_size, permanent_url)
+        )
+        version = self.generate_dataset(
+            artifacts=[DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad")]
+        )
+        dataset_version_id = version.dataset_version_id
+        artifact_id = version.artifact_ids[0]
+
+        test_url = furl(path=f"/dp/v1/datasets/{dataset_version_id}/asset/{artifact_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(200, response.status_code)
+
+        actual_body = json.loads(response.data)
+        self.assertEqual(actual_body["url"], permanent_url)
+        self.assertEqual(actual_body["file_size"], file_size)
+
+    def test__get_dataset_asset__file_SERVER_ERROR(self):
+        """
+        `get_dataset_asset` should throw 500 if url or file_size aren't returned from the server
+        """
+        version = self.generate_dataset(
+            artifacts=[DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad")]
+        )
+        dataset_version_id = version.dataset_version_id
+        artifact_id = version.artifact_ids[0]
+
+        test_url = furl(path=f"/dp/v1/datasets/{dataset_version_id}/asset/{artifact_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(500, response.status_code)
+
+    def test__get_dataset_asset__dataset_NOT_FOUND(self):
+        fake_id = DatasetVersionId()
+        test_url = furl(path=f"/dp/v1/datasets/{fake_id}/asset/{fake_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(404, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(f"'dataset/{fake_id}' not found.", body["detail"])
+
+    def test__get_dataset_asset__asset_NOT_FOUND(self):
+        dataset = self.generate_dataset()
+        test_url = furl(path=f"/dp/v1/datasets/{dataset.dataset_version_id}/asset/fake_asset")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(404, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(f"'dataset/{dataset.dataset_version_id}/asset/fake_asset' not found.", body["detail"])
+
     # ✅
     def test__post_dataset_asset__OK(self):
-        self.business_logic.get_dataset_artifact_download_data = Mock(
-            return_value=DatasetArtifactDownloadData(
+        self.business_logic.get_dataset_artifact_download_data_deprecated = Mock(
+            return_value=DatasetArtifactDownloadDataDeprecated(
                 "asset.h5ad", DatasetArtifactType.H5AD, 1000, "http://presigned.url"
             )
         )
