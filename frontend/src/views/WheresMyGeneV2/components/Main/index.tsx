@@ -405,6 +405,7 @@ export default function WheresMyGene(): JSX.Element {
             setTissuesByName={setTissuesByName}
             tissuesByName={tissuesByName}
             expandedTissues={expandedTissues}
+            filteredExpandedTissues={filteredExpandedTissues}
             setExpandedTissues={setExpandedTissues}
             /**
              * (thuang): This is needed to reposition gene search bar when the

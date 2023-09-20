@@ -37,6 +37,7 @@ import {
   GeneExpressionSummary,
   SORT_BY,
   Tissue,
+  TissueType,
 } from "src/views/WheresMyGene/common/types";
 import YAxisChart from "./components/YAxisChart";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
@@ -74,7 +75,6 @@ import {
   TopLeftCornerMask,
   XAxisWrapper,
 } from "./style";
-
 interface Props {
   className?: string;
   cellTypes: { [tissue: Tissue]: CellTypeRow[] };
@@ -101,6 +101,7 @@ interface Props {
       [name: string]: OntologyTerm;
     }>
   >;
+  filteredExpandedTissues: TissueType[];
   expandedTissues: Set<string>;
   setExpandedTissues: Dispatch<SetStateAction<Set<string>>>;
   sidebarWidth: number;
@@ -124,6 +125,7 @@ export default memo(function HeatMap({
   setTissuesByName,
   expandedTissues,
   setExpandedTissues,
+  filteredExpandedTissues,
   sidebarWidth,
 }: Props): JSX.Element {
   const {
@@ -246,6 +248,18 @@ export default memo(function HeatMap({
     setDisplayedCellTypes(initialDisplayedCellTypeIds);
   }, [initialDisplayedCellTypeIds]);
 
+  useEffect(() => {
+    if (filteredExpandedTissues.length > 0) {
+      const newDisplayedCellTypes = new Set<string>(EMPTY_SET as Set<string>);
+      filteredExpandedTissues.forEach((tissue) => {
+        sortedCellTypesByTissueName[tissue.name].forEach((cellType) => {
+          newDisplayedCellTypes.add(tissue.id + cellType.cellTypeName);
+        });
+      });
+      setDisplayedCellTypes(newDisplayedCellTypes);
+    }
+  }, [filteredExpandedTissues, sortedCellTypesByTissueName]);
+
   const handleExpandCollapse = useCallback(
     (tissueID: string, tissueName: Tissue) => {
       const newDisplayedCellTypes = new Set<string>(displayedCellTypes);
@@ -278,7 +292,6 @@ export default memo(function HeatMap({
           }
         });
       }
-
       setDisplayedCellTypes(newDisplayedCellTypes);
       setExpandedTissues(newExpandedTissues);
     },
