@@ -106,7 +106,6 @@ export default function WheresMyGene(): JSX.Element {
   const [filteredExpandedTissues, setFilteredExpandedTissues] =
     useState<TissueType[]>(EMPTY_ARRAY);
 
-  console.log("filteredExpandedTissues", filteredExpandedTissues);
   //(seve): These useEffects are deceptively simple.
   // Their purpose is to avoid updating the state with null/empty values while we're waiting for the api to return data.
 
