@@ -78,6 +78,7 @@ class BaseFunctionalTestCase(unittest.TestCase):
             f"{cls.api}/curation/v1/auth/token",
             headers={"x-api-key": cls.config.super_curator_api_key},
         )
+        response.raise_for_status()
         return response.json()["access_token"]
 
     @classmethod
@@ -91,6 +92,7 @@ class BaseFunctionalTestCase(unittest.TestCase):
         headers = {"content-type": "application/json"}
 
         res = cls.session.post("https://czi-cellxgene-dev.us.auth0.com/oauth/token", json=payload, headers=headers)
+        res.raise_for_status()
         cls.proxy_access_token = res.json()["access_token"]
         cls.session.headers["Authorization"] = f"Bearer {cls.proxy_access_token}"
 
@@ -115,6 +117,7 @@ class BaseFunctionalTestCase(unittest.TestCase):
                 client_secret=cls.config.client_secret,
             ),
         )
+        response.raise_for_status()
         access_token = response.json()["access_token"]
         id_token = response.json()["id_token"]
         token = {"access_token": access_token, "id_token": id_token}
