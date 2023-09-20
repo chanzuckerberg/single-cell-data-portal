@@ -25,7 +25,7 @@ import {
 } from "src/common/queries/wheresMyGene";
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectFilters } from "../../common/store/actions";
-import { Filters as IFilters } from "../../common/types";
+import { Filters as IFilters, TissueType } from "../../common/types";
 import Organism from "./components/Organism";
 import Compare from "./components/Compare";
 import Sort from "./components/Sort";
@@ -104,6 +104,8 @@ export interface Props {
   availableFilters: Partial<FilterDimensions>;
   setAvailableFilters: Dispatch<SetStateAction<Partial<FilterDimensions>>>;
   setIsScaled: Dispatch<SetStateAction<boolean>>;
+  setExpandedTissues: Dispatch<SetStateAction<Set<string>>>;
+  setFilteredExpandedTissues: Dispatch<SetStateAction<TissueType[]>>;
 }
 
 export default memo(function Filters({
@@ -111,6 +113,8 @@ export default memo(function Filters({
   availableFilters,
   setAvailableFilters,
   setIsScaled,
+  setExpandedTissues,
+  setFilteredExpandedTissues,
 }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
@@ -322,10 +326,28 @@ export default memo(function Filters({
     [handleFilterChange]
   );
 
-  const handleTissuesChange = useMemo(
-    () => handleFilterChange("tissues"),
-    [handleFilterChange]
-  );
+  const handleTissuesChange = useMemo(() => {
+    handleFilterChange("tissues");
+    return (options: DefaultMenuSelectOption[] | null) => {
+      if (!dispatch || !options) return;
+      const newTissues = options.map(
+        (option) => (option as unknown as { id: string }).id
+      );
+      dispatch(selectFilters("tissues", newTissues));
+      setExpandedTissues(new Set(newTissues));
+      setFilteredExpandedTissues(
+        options.map((option) => ({
+          id: (option as unknown as { id: string }).id,
+          name: (option as unknown as { name: string }).name,
+        }))
+      );
+    };
+  }, [
+    dispatch,
+    setExpandedTissues,
+    setFilteredExpandedTissues,
+    handleFilterChange,
+  ]);
 
   return (
     <Wrapper>

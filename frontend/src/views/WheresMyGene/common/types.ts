@@ -11,6 +11,11 @@ export interface Organism {
 /** tissue name */
 export type Tissue = string;
 
+export interface TissueType {
+  id: string;
+  name: string;
+}
+
 /** This object holds a cell type and its gene expressions. */
 export interface CellTypeSummary {
   id: CellType["id"];

@@ -33,6 +33,7 @@ import {
   GeneExpressionSummary,
   Tissue,
   ChartProps,
+  TissueType,
 } from "src/views/WheresMyGene/common/types";
 import CellInfoSideBar from "src/views/WheresMyGene/components/CellInfoSideBar";
 import Filters from "src/views/WheresMyGene/components/Filters";
@@ -102,6 +103,10 @@ export default function WheresMyGene(): JSX.Element {
     EMPTY_SET as Set<Tissue>
   );
 
+  const [filteredExpandedTissues, setFilteredExpandedTissues] =
+    useState<TissueType[]>(EMPTY_ARRAY);
+
+  console.log("filteredExpandedTissues", filteredExpandedTissues);
   //(seve): These useEffects are deceptively simple.
   // Their purpose is to avoid updating the state with null/empty values while we're waiting for the api to return data.
 
@@ -299,6 +304,8 @@ export default function WheresMyGene(): JSX.Element {
           availableFilters={availableFilters}
           setAvailableFilters={setAvailableFilters}
           setIsScaled={setIsScaled}
+          setExpandedTissues={setExpandedTissues}
+          setFilteredExpandedTissues={setFilteredExpandedTissues}
         />
       </SideBar>
       {cellInfoCellType && tissuesByID ? (
