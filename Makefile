@@ -216,6 +216,10 @@ local-functional-test: ## Run functional tests in the dev environment
 		-e DEPLOYMENT_STAGE  -e STACK_NAME -e API_BASE_URL $${EXTRA_ARGS} \
 		backend bash -c "cd /single-cell-data-portal && make container-functionaltest"
 
+backend-smoke-test:
+	chamber -b secretsmanager exec corpora/backend/$${DEPLOYMENT_STAGE}/auth0-secret -- \
+		python3 -m scripts.smoke_tests.setup
+
 .PHONY: local-smoke-test
 local-smoke-test: ## Run frontend/e2e tests in the dev environment
 	docker-compose $(COMPOSE_OPTS) run --rm -T frontend make smoke-test-with-local-dev
