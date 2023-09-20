@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { Icon, TooltipProps } from "@czi-sds/components";
+import { TooltipProps } from "@czi-sds/components";
 import {
   CellGuideCardDescription,
   ChatGptTooltipSubtext,
@@ -26,6 +26,7 @@ import {
   useCellTypeMetadata,
   useValidatedDescription,
 } from "src/common/queries/cellGuide";
+import validatedIcon from "src/common/images/validated.svg";
 import Link from "../common/Link";
 import { StyledLink } from "../common/Link/style";
 import { track } from "src/common/analytics";
@@ -41,6 +42,7 @@ import {
   CELL_GUIDE_CARD_SYNONYMS,
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 import { useIsComponentPastBreakpointHeight } from "../common/hooks/useIsComponentPastBreakpoint";
+import Image from "next/image";
 
 const SLOT_PROPS: TooltipProps["slotProps"] = {
   tooltip: {
@@ -340,7 +342,14 @@ export default function Description({
             sdsType="secondary"
             sdsStyle="square"
             color="success"
-            icon={<Icon sdsType="static" sdsIcon="checkCircle" sdsSize="l" />}
+            icon={
+              <Image
+                src={validatedIcon}
+                alt="validated"
+                width={16}
+                height={16}
+              />
+            }
             label="Validated"
           />{" "}
           This description has been validated by our Biocurator team.{" "}

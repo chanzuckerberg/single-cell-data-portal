@@ -134,7 +134,8 @@ export const StyledTag = styled(Tag)`
   margin: auto 0;
   .MuiChip-label {
     ${fontBodyXs}
-    font-weight: 500;
+    font-weight: 500 !important;
+    letter-spacing: -0.04px !important;
   }
 `;
 
