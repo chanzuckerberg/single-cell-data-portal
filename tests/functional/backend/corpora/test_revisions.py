@@ -9,10 +9,6 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 from tests.functional.backend.common import BaseFunctionalTestCase
 
 
-class UndesiredHttpStatusCodeError(Exception):
-    pass
-
-
 class TestRevisions(BaseFunctionalTestCase):
     @classmethod
     def setUpClass(cls):
@@ -230,12 +226,11 @@ class TestRevisions(BaseFunctionalTestCase):
     def get_schema_with_retries(self, dataset_id, desired_http_status_code=requests.codes.ok):
         @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
         def get_s3_uri():
-            s3_uri_res = self.session.get(
+            s3_uri_resp = self.session.get(
                 f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.3/s3_uri", allow_redirects=False
             )
-            if s3_uri_res.status_code != desired_http_status_code:
-                raise UndesiredHttpStatusCodeError
-            return s3_uri_res
+            assert s3_uri_resp.status_code == desired_http_status_code
+            return s3_uri_resp
 
         @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
         def get_schema(s3_uri_response_object):
@@ -243,12 +238,11 @@ class TestRevisions(BaseFunctionalTestCase):
             s3_path = s3_uri_response_object.content.decode("utf-8").strip().strip('"')
             # s3_uri endpoints use double-encoded s3 uri path parameters
             s3_path_url = quote(quote(s3_path, safe=""))
-            schema_res = self.session.get(
+            schema_resp = self.session.get(
                 f"{self.api}/cellxgene/s3_uri/{s3_path_url}/api/v0.3/schema", allow_redirects=False
             )
-            if schema_res.status_code != requests.codes.ok:
-                raise UndesiredHttpStatusCodeError
-            return schema_res
+            assert schema_resp.status_code == requests.codes.ok
+            return schema_resp
 
         s3_uri_response = get_s3_uri()
         return get_schema(s3_uri_response)

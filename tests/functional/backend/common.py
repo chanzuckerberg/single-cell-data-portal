@@ -39,12 +39,16 @@ class BaseFunctionalTestCase(unittest.TestCase):
         super().setUpClass()
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
 
-        # configure CorporaAuthConfig to use a temporary directory for the config file
-        cls.tempdir = tempfile.TemporaryDirectory()
-        dummy_config = f"{cls.tempdir.name}/dummy.json"
-        with open(dummy_config, "w") as fp:
-            json.dump({"api_base_url": os.getenv("API_BASE_URL")}, fp)
-        cls.config = CorporaAuthConfig(source=dummy_config)
+        if os.getenv("LOCAL", None):
+            source = None
+        else:
+            # configure CorporaAuthConfig to use a temporary directory for the config file
+            cls.tempdir = tempfile.TemporaryDirectory()
+            source = f"{cls.tempdir.name}/dummy.json"
+            with open(source, "w") as fp:
+                json.dump({"api_base_url": os.getenv("API_BASE_URL")}, fp)
+
+        cls.config = CorporaAuthConfig(source=source)
         cls.session = requests.Session()
         # apply retry config to idempotent http methods we use + POST requests, which are currently all either
         # idempotent (wmg queries) or low risk to rerun in dev/staging. Update if this changes in functional tests.
@@ -70,7 +74,8 @@ class BaseFunctionalTestCase(unittest.TestCase):
     def tearDownClass(cls):
         super().tearDownClass()
         cls.session.close()
-        cls.tempdir.cleanup()
+        if not os.getenv("LOCAL", None):
+            cls.tempdir.cleanup()
 
     @classmethod
     def get_curation_api_access_token(cls):
