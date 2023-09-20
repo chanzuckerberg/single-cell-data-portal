@@ -293,32 +293,43 @@ export async function searchAndAddFilterCellTypes(
   page: Page,
   cellTypes: string | string[]
 ) {
-  if (!(cellTypes instanceof Array)) cellTypes = [cellTypes];
-  cellTypes.forEach(async (cellType) => {
-    const beforeCellTypeNames = await getCellTypeNames(page);
-    await page
-      .getByPlaceholder(CELL_TYPE_SEARCH_PLACEHOLDER_TEXT)
-      .type(cellType);
-    await page.getByText(cellType, { exact: true }).click();
-    await page.keyboard.press("Escape");
-    const afterCellTypeNames = await getCellTypeNames(page);
-    expect(afterCellTypeNames.length).toBeGreaterThan(
-      beforeCellTypeNames.length
-    );
-  });
+  tryUntil(
+    async () => {
+      if (!(cellTypes instanceof Array)) cellTypes = [cellTypes];
+      cellTypes.forEach(async (cellType) => {
+        const beforeCellTypeNames = await getCellTypeNames(page);
+        await page
+          .getByPlaceholder(CELL_TYPE_SEARCH_PLACEHOLDER_TEXT)
+          .type(cellType);
+        await page.getByText(cellType, { exact: true }).click();
+        await page.keyboard.press("Escape");
+        const afterCellTypeNames = await getCellTypeNames(page);
+        expect(afterCellTypeNames.length).toBeGreaterThan(
+          beforeCellTypeNames.length
+        );
+      });
+    },
+    { page }
+  );
 }
 export async function removeFilteredCellTypes(
   page: Page,
   cellTypes: string | string[]
 ) {
-  if (!(cellTypes instanceof Array)) cellTypes = [cellTypes];
-  cellTypes.forEach(async (cellType) => {
-    const beforeCellTypeNames = await getCellTypeNames(page);
-    const cellTypeTag = page.getByTestId(`cell-type-tag-${cellType}`);
-    const deleteIcon = cellTypeTag.getByTestId("CancelIcon");
-    await tryUntil(() => expect(deleteIcon).toBeVisible(), { page });
-    await deleteIcon.click();
-    const afterCellTypeNames = await getCellTypeNames(page);
-    expect(afterCellTypeNames.length).toBeLessThan(beforeCellTypeNames.length);
-  });
+  await tryUntil(
+    async () => {
+      if (!(cellTypes instanceof Array)) cellTypes = [cellTypes];
+      cellTypes.forEach(async (cellType) => {
+        const beforeCellTypeNames = await getCellTypeNames(page);
+        const cellTypeTag = page.getByTestId(`cell-type-tag-${cellType}`);
+        const deleteIcon = cellTypeTag.getByTestId("CancelIcon");
+        await deleteIcon.click();
+        const afterCellTypeNames = await getCellTypeNames(page);
+        expect(afterCellTypeNames.length).toBeLessThan(
+          beforeCellTypeNames.length
+        );
+      });
+    },
+    { page }
+  );
 }
