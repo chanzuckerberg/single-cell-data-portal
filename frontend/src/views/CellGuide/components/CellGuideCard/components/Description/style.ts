@@ -15,6 +15,7 @@ import {
   gray400,
   fontWeightSemibold,
   spacesXxs,
+  spacesS,
 } from "src/common/theme";
 import Synonyms from "src/components/Synonyms";
 import OntologyId from "../../../OntologyId";
@@ -147,7 +148,11 @@ export const ValidatedInlineWrapper = styled.span`
   color: ${gray500};
 `;
 
-export const ReferencesWrapper = styled.span`
+export const ReferencesWrapper = styled.div`
   display: flex;
+  margin-top: ${spacesXxs}px;
+  padding-bottom: ${spacesS}px;
   gap: ${spacesXxs}px;
+  height: 36px;
+  align-items: center;
 `;
