@@ -42,6 +42,7 @@ import {
   CELL_GUIDE_CARD_GPT_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_TOOLTIP_LINK,
   CELL_GUIDE_CARD_SYNONYMS,
+  CELL_GUIDE_CARD_VALIDATED_DESCRIPTION,
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 
 import {
@@ -50,6 +51,7 @@ import {
   CELL_GUIDE_CARD_HEADER_NAME,
   CELL_GUIDE_CARD_HEADER_TAG,
 } from "src/views/CellGuide/components/CellGuideCard/constants";
+
 import {
   CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE,
   CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR,
@@ -71,6 +73,7 @@ const { describe } = test;
 const WAIT_FOR_TIMEOUT_MS = 30 * 1000;
 
 const NEURON_CELL_TYPE_ID = "CL_0000540";
+const GLIOBLAST_CELL_TYPE_ID = "CL_0000030";
 const T_CELL_CELL_TYPE_ID = "CL_0000084";
 const LUNG_TISSUE_ID = "UBERON_0002048";
 
@@ -205,6 +208,13 @@ describe("Cell Guide", () => {
       const headerName = page.getByTestId(CELL_GUIDE_CARD_HEADER_NAME);
       const headerNameText = await headerName.textContent();
       expect(headerNameText).toBe("Neuron");
+    });
+    test("Glioblast CellGuide card is validated", async ({ page }) => {
+      await goToPage(
+        `${TEST_URL}${ROUTES.CELL_GUIDE}/${GLIOBLAST_CELL_TYPE_ID}`,
+        page
+      );
+      await isElementVisible(page, CELL_GUIDE_CARD_VALIDATED_DESCRIPTION);
     });
 
     test("CellGuide card GPT description tooltip displays disclaimer", async ({

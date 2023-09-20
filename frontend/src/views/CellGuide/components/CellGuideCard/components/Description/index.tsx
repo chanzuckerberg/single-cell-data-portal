@@ -37,6 +37,7 @@ import { StyledIconImage } from "../common/HelpTooltip/style";
 import {
   CELL_GUIDE_CARD_CL_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_DESCRIPTION,
+  CELL_GUIDE_CARD_VALIDATED_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_TOOLTIP_LINK,
   DESCRIPTION_BREAKPOINT_HEIGHT_PX,
   CELL_GUIDE_CARD_SYNONYMS,
@@ -336,7 +337,7 @@ export default function Description({
         </DescriptionWrapper>
         {isPastBreakpoint && readMoreOrLessComponent}
       </div>
-      <ValidatedWrapper>
+      <ValidatedWrapper data-testid={CELL_GUIDE_CARD_VALIDATED_DESCRIPTION}>
         <ValidatedInlineWrapper>
           <StyledTag
             sdsType="secondary"
