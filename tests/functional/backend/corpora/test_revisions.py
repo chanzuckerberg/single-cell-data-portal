@@ -9,10 +9,6 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 from tests.functional.backend.common import BaseFunctionalTestCase
 
 
-class UndesiredHttpStatusCodeError(Exception):
-    pass
-
-
 class TestRevisions(BaseFunctionalTestCase):
     @classmethod
     def setUpClass(cls):
@@ -233,8 +229,7 @@ class TestRevisions(BaseFunctionalTestCase):
             s3_uri_res = self.session.get(
                 f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.3/s3_uri", allow_redirects=False
             )
-            if s3_uri_res.status_code != desired_http_status_code:
-                raise UndesiredHttpStatusCodeError
+            assert s3_uri_res.status_code == desired_http_status_code
             return s3_uri_res
 
         @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
@@ -246,8 +241,7 @@ class TestRevisions(BaseFunctionalTestCase):
             schema_res = self.session.get(
                 f"{self.api}/cellxgene/s3_uri/{s3_path_url}/api/v0.3/schema", allow_redirects=False
             )
-            if schema_res.status_code != requests.codes.ok:
-                raise UndesiredHttpStatusCodeError
+            assert schema_res.status_code == requests.codes.ok
             return schema_res
 
         s3_uri_response = get_s3_uri()

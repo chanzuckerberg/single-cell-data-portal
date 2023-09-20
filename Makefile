@@ -38,13 +38,8 @@ cellguide-pipeline-unittest:
 	tests/unit/cellguide_pipeline/ --rootdir=. --alluredir=./allure-results --verbose;
 
 .PHONY: functional-test
-functional-test: local-functional-test
-	# Keeping old target name for reverse compatibility
-
-.PHONY: container-functionaltest
-container-functionaltest:
-	# This target is intended to be run INSIDE a container
-	python3 -m unittest discover --start-directory tests/functional/ --top-level-directory . --verbose
+functional-test:
+	python3 -m pytest tests/functional/ --rootdir=. --verbose
 
 .PHONY: prod-performance-test
 prod-performance-test:
@@ -195,30 +190,6 @@ local-unit-test-cellguide-pipeline: # Run processing-unittest target in `cellgui
 local-unit-test-cxg-admin:
 	docker-compose run --rm -T backend bash -c \
 	"cd /single-cell-data-portal && coverage run  $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/scripts/";
-
-# We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
-# set to be the empty string.
-# Note that there is a distinction between BOTO_ENDPOINT_URL being
-# the empty string (in which case we override the existing variable
-# defined in docker-compose.yml to be empty string), and not being
-# set (in which case the default from docker-compose is untouched)
-.PHONY: local-functional-test
-local-functional-test: ## Run functional tests in the dev environment
-	if [ -n "$${BOTO_ENDPOINT_URL+set}" ]; then \
-		EXTRA_ARGS="-e BOTO_ENDPOINT_URL"; \
-	fi; \
-	chamber -b secretsmanager exec corpora/backend/$${DEPLOYMENT_STAGE}/auth0-secret -- \
-		docker-compose $(COMPOSE_OPTS) run --rm -T \
-		-e CLIENT_ID -e CLIENT_SECRET \
-		-e FUNCTEST_ACCOUNT_USERNAME -e FUNCTEST_ACCOUNT_PASSWORD \
-		-e TEST_AUTH0_USER_ACCOUNT_PASSWORD -e TEST_APP_ID -e TEST_APP_SECRET \
-		-e SUPER_CURATOR_API_KEY -e AUTH0_DOMAIN \
-		-e DEPLOYMENT_STAGE  -e STACK_NAME -e API_BASE_URL $${EXTRA_ARGS} \
-		backend bash -c "cd /single-cell-data-portal && make container-functionaltest"
-
-backend-smoke-test:
-	chamber -b secretsmanager exec corpora/backend/$${DEPLOYMENT_STAGE}/auth0-secret -- \
-		python3 -m scripts.smoke_tests.setup
 
 .PHONY: local-smoke-test
 local-smoke-test: ## Run frontend/e2e tests in the dev environment
