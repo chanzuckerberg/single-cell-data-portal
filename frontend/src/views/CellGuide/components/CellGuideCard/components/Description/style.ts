@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import {
   Button,
   CommonThemeProps,
+  Tag,
   Tooltip,
   fontBodyS,
   fontBodyXs,
@@ -13,7 +14,10 @@ import {
   gray500,
   gray400,
   fontWeightSemibold,
+  spacesXxs,
 } from "src/common/theme";
+import Synonyms from "src/components/Synonyms";
+import OntologyId from "../../../OntologyId";
 
 interface CellGuideCardDescriptionProps extends CommonThemeProps {
   inSideBar?: boolean;
@@ -107,4 +111,43 @@ export const ChatGptTooltipText = styled.div`
 export const ChatGptTooltipSubtext = styled.div`
   ${fontBodyXxs}
   color: ${gray400};
+`;
+
+export const StyledSynonyms = styled(Synonyms)`
+  margin-top: ${spacesXxs}px;
+`;
+
+export const StyledOntologyId = styled(OntologyId)`
+  margin-top: ${spacesXxs}px;
+`;
+
+export const FlexContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const StyledTag = styled(Tag)`
+  border-radius: 4px;
+  padding: 2px 8px 2px 8px;
+  gap: 6px;
+  margin: auto 0;
+  .MuiChip-label {
+    ${fontBodyXs}
+    font-weight: 500;
+  }
+`;
+
+export const ValidatedWrapper = styled.div`
+  margin-top: 16px;
+`;
+
+export const ValidatedInlineWrapper = styled.span`
+  ${fontBodyS}
+  display: inline;
+  color: ${gray500};
+`;
+
+export const ReferencesWrapper = styled.span`
+  display: flex;
+  gap: ${spacesXxs}px;
 `;

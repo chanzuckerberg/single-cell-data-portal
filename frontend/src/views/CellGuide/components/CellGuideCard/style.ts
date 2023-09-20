@@ -9,7 +9,6 @@ import {
 
 import RightSideBar from "src/components/common/RightSideBar";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
-import Synonyms from "src/components/Synonyms";
 import {
   fontWeightSemibold,
   primary400,
@@ -17,10 +16,8 @@ import {
   spacesM,
   spacesS,
   spacesXxl,
-  spacesXxs,
 } from "src/common/theme";
 import { StyledDiv } from "src/views/WheresMyGene/components/ScreenTint/style";
-import OntologyId from "src/views/CellGuide/components/OntologyId";
 import { keyframes } from "@emotion/react";
 import { DEFAULT_ONTOLOGY_WIDTH } from "../common/OntologyDagView/common/constants";
 import { SKINNY_MODE_BREAKPOINT_WIDTH } from "./constants";
@@ -203,25 +200,10 @@ export const StyledRightSideBar = styled(RightSideBar)<StyledRightSideBarProps>`
   }}
 `;
 
-export const StyledSynonyms = styled(Synonyms)`
-  margin-top: ${spacesXxs}px;
-  margin-left: ${spacesL}px;
-`;
-
-export const StyledOntologyId = styled(OntologyId)`
-  margin-top: ${spacesXxs}px;
-  margin-left: ${spacesL}px;
-`;
-
 export const MobileSearchTint = styled(StyledDiv)`
   z-index: 1;
   background: rgba(0, 0, 0, 0.3);
   position: fixed;
-`;
-
-export const FlexContainer = styled.div`
-  display: flex;
-  flex-direction: column;
 `;
 
 export const MobileTooltipTitle = styled.div`
