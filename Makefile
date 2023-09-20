@@ -38,13 +38,8 @@ cellguide-pipeline-unittest:
 	tests/unit/cellguide_pipeline/ --rootdir=. --alluredir=./allure-results --verbose;
 
 .PHONY: functional-test
-functional-test: local-functional-test
-	# Keeping old target name for reverse compatibility
-
-.PHONY: container-functionaltest
-container-functionaltest:
-	# This target is intended to be run INSIDE a container
-	python3 -m unittest discover --start-directory tests/functional/ --top-level-directory . --verbose
+functional-test:
+	python3 -m pytest tests/functional/ --rootdir=. --verbose
 
 .PHONY: prod-performance-test
 prod-performance-test:

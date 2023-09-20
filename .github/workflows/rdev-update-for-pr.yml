@@ -116,23 +116,17 @@ jobs:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
-      - name: Login to ECR
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
       # TODO: Wait until the deployment is complete and return 200 responses from the version endpoint.
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
       - name: Run functional test
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
-          DEPLOYMENT_STAGE: rdev
+          DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
         run: |
-          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          mkdir -p .local/bin
-          curl -Ls https://github.com/segmentio/chamber/releases/download/v2.9.1/chamber-v2.9.1-linux-amd64 > .local/bin/chamber &&
-          chmod +x .local/bin/chamber
-          PATH="$PATH:$(pwd)/.local/bin"
-          docker-compose up --no-deps -d backend
-          BOTO_ENDPOINT_URL= make local-functional-test
+          pip3 install -r tests/functional/requirements.txt
+          make functional-test
