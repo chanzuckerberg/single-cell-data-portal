@@ -166,12 +166,17 @@ jobs:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
         ### config.js set-up required due to transient test dependencies on API_URL
         run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          mkdir -p .local/bin
+          curl -Ls https://github.com/segmentio/chamber/releases/download/v2.9.1/chamber-v2.9.1-linux-amd64 > .local/bin/chamber &&
+          chmod +x .local/bin/chamber
+          PATH="$PATH:$(pwd)/.local/bin"
           if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
             export DEPLOYMENT_STAGE=staging
           fi
           if [ "${DEPLOYMENT_STAGE}" != "prod" ]; then
             pip3 install -r scripts/smoke_tests/requirements.txt
-            python3 -m scripts.smoke_tests.setup
+            make backend-smoke-test
           fi
           cd frontend
           npm ci
