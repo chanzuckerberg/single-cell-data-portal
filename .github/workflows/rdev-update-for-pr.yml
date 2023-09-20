@@ -16,7 +16,7 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
   STACK_NAME: pr-${{ github.event.number }}
-  DEPLYOYMENT_STAGE: rdev
+  DEPLOYMENT_STAGE: rdev
 
 permissions:
   id-token: write
