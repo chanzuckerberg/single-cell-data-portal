@@ -1,0 +1,72 @@
+  pw:api => selectors.setTestIdAttribute started +2s
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +41ms
+  pw:api   "commit" event fired +17ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +6ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +11ms
+  pw:api => tracing.start started +17ms
+  pw:api <= tracing.start succeeded +7ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +69ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api => page.goto started +3ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +11ms
+  pw:api   "commit" event fired +244ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +0ms
+  pw:api   "commit" event fired +8ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForLoadState succeeded +6ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +2ms
+  pw:api   navigated to "about:blank" +30ms
+  pw:api <= page.goto succeeded +88ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view') to be visible +137ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-ontology-dag-view">…</div> +741ms
+  pw:api <= locator.waitFor succeeded +224ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-clickable-text-label-CL:0000878__4') +21ms
+  pw:api   locator resolved to <g data-testid="cell-guide-card-ontology-dag-view-c…>…</g> +20ms
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +12ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +199ms
+  pw:api   click action done +645ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +196ms
+  pw:api <= locator.click succeeded +132ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cellguide-info-sidebar') to be visible +34ms
+  pw:api   locator resolved to visible <div data-testid="cellguide-info-sidebar">…</div> +9ms
+  pw:api <= locator.waitFor succeeded +18ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cellguide-info-sidebar') +24ms
+  pw:api <= locator.isVisible succeeded +26ms
+  pw:api => locator.click started +5ms
+  pw:api waiting for getByTestId('cellguide-view-page-sidebar-button') +27ms
+  pw:api   locator resolved to <a href="/cellguide/CL_0000878" class="css-179xtre-…>View CellGuide Page</a> +62ms
+  pw:api attempting click action +75ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +71ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +7ms
+  pw:api   performing click action +159ms
+  pw:api   click action done +49ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +3ms
+  pw:api <= locator.click succeeded +37ms
+  pw:api => locator.waitFor started +0ms
+  pw:api waiting for getByTestId('cell-guide-card-rect-or-circle-CL:0000878__4-has-children-isTargetNode=true') to be visible +31ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000878" +16ms
+  pw:api   navigated to "about:blank" +490ms
+  pw:api   locator resolved to visible <foreignobject x="-8" y="-8" width="16" height="16" data-testid…>…</foreignobject> +807ms
+  pw:api <= locator.waitFor succeeded +131ms
+  pw:api taking page screenshot +11ms
