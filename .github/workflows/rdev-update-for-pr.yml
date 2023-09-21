@@ -117,3 +117,25 @@ jobs:
               repo: context.repo.repo,
               body: "${{ steps.summary.outputs.summary}}"
             })
+  functional-test:
+    runs-on: ubuntu-22.04
+    needs:
+      - create-rdev
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      # TODO: Wait until the deployment is complete and return 200 responses from the version endpoint.
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Run functional test
+        run: |
+          pip3 install -r tests/functional/requirements.txt
+          DEPLOYMENT_STAGE=rdev STACK_NAME=${{ env.STACK_NAME }} make functional-test
