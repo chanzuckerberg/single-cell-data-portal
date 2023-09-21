@@ -102,7 +102,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs:
       - create-rdev
-    if: github.event.action == "opened"
+    if: github.event.action == 'opened'
     steps:
       - name: Summerize deployment
         id: summary
