@@ -98,3 +98,28 @@ jobs:
           operation: ${{ steps.pre_happy.outputs.operation }}
           tag: ${{ steps.pre_happy.outputs.IMAGE_TAG }}
           happy_version: "0.92.0"
+  summarize:
+    runs-on: ubuntu-22.04
+    needs:
+      - create-rdev
+    if: [[ github.event.action == "open" ]]]
+    steps:
+      - name: Summerize deployment
+        id: summary
+        run: |
+          summary="## Deployment Summary"
+          summary+="\n- backend_url: https://${{ env.STACK_NAME }}-backend.rdev.single-cell.czi.technology"
+          summary+="\n- frontend_url: https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology"
+          summary+="\n- delete_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-deletion:1"
+          summary+="\n- migrate_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-migration:1"
+          echo "SUMMARY=$summary" >> $GITHUB_OUTPUT
+      - name: Post Comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "${{ steps.summary.outputs.summary}}"
+            })
