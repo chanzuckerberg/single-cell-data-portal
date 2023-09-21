@@ -142,9 +142,6 @@ jobs:
         with:
           python-version: "3.10"
       - name: Run functional test
-        env:
-          DEPLOYMENT_STAGE: ${{ env.DEPLOYMENT_STAGE }}
-          STACK_NAME: ${{ env.STACK_NAME }}
         run: |
           pip3 install -r tests/functional/requirements.txt
-          make functional-test
+          DEPLOYMENT_STAGE=rdev STACK_NAME=${{ env.STACK_NAME }} make functional-test
