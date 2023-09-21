@@ -1,0 +1,75 @@
+  pw:api => selectors.setTestIdAttribute started +3s
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +37ms
+  pw:api   "commit" event fired +13ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +10ms
+  pw:api => tracing.start started +5ms
+  pw:api <= tracing.start succeeded +20ms
+  pw:api => browserContext.newPage started +9ms
+  pw:api <= browserContext.newPage succeeded +52ms
+  pw:api => page.waitForLoadState started +3ms
+  pw:api => page.goto started +4ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +6ms
+  pw:api   "commit" event fired +139ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +0ms
+  pw:api   "commit" event fired +6ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForLoadState succeeded +4ms
+  pw:api   "networkidle" event fired +0ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +2ms
+  pw:api   navigated to "about:blank" +29ms
+  pw:api <= page.goto succeeded +26ms
+  pw:api => locator.all started +2ms
+  pw:api <= locator.all succeeded +2s
+  pw:api => page.waitForTimeout started +35ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForTimeout succeeded +637ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +99ms
+  pw:api => locator.scrollIntoViewIfNeeded started +3ms
+  pw:api waiting for getByTestId('section-3') +30ms
+  pw:api   locator resolved to hidden <div id="section-3" data-testid="section-3"></div> +12ms
+  pw:api   waiting for element to be  and stable +22ms
+  pw:api   element is  and stable +25ms
+  pw:api <= locator.scrollIntoViewIfNeeded succeeded +3ms
+  pw:api => expect.toBeInViewport started +4ms
+  pw:api => page.waitForTimeout started +1ms
+  pw:api expect.toBeInViewport with timeout 10000ms +27ms
+  pw:api waiting for getByTestId('cell-guide-card-source-data-table') +0ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-source-data-table" …>…</div> +565ms
+  pw:api <= expect.toBeInViewport succeeded +93ms
+  pw:api <= page.waitForTimeout succeeded +404ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +19ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-navigation-sidebar').locator('.MuiButtonBase-root.MuiTab-root').nth(1) +17ms
+  pw:api   locator resolved to <button role="tab" tabindex="-1" type="button" aria-sele…>Cell Ontology</button> +6ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +24ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +40ms
+  pw:api   click action done +49ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +192ms
+  pw:api <= locator.click succeeded +188ms
+  pw:api => expect.toBeInViewport started +10ms
+  pw:api => expect.not.toBeInViewport started +12ms
+  pw:api => page.waitForTimeout started +2ms
+  pw:api expect.toBeInViewport with timeout 10000ms +195ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view') +0ms
+  pw:api expect.not.toBeInViewport with timeout 10000ms +49ms
+  pw:api waiting for getByTestId('cell-guide-card-source-data-table') +0ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-ontology-dag-view">…</div> +287ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-source-data-table" …>…</div> +0ms
+  pw:api <= expect.toBeInViewport succeeded +55ms
+  pw:api <= expect.not.toBeInViewport succeeded +20ms
+  pw:api <= page.waitForTimeout succeeded +687ms
+  pw:api taking page screenshot +5ms
