@@ -6,7 +6,7 @@ from urllib.parse import quote
 import requests
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from tests.functional.backend.common import BaseFunctionalTestCase
+from tests.functional.backend.common import TEST_DATASET_URI, BaseFunctionalTestCase
 
 
 class TestRevisions(BaseFunctionalTestCase):
@@ -44,15 +44,16 @@ class TestRevisions(BaseFunctionalTestCase):
     def create_explorer_url(self, dataset_id):
         return f"https://cellxgene.{self.deployment_stage}.single-cell.czi.technology/e/{dataset_id}.cxg/"
 
-    @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
+    # TODO: Remove rdev from skip list. Rdev Explorer is required for this test to pass.
+    @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] in ["prod", "rdev"], "Do not make test collections public in prod")
     def test_revision_flow(self):
 
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
 
         collection_id = self.create_collection(headers)
 
-        dataset_1_dropbox_url = "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0"
-        dataset_2_dropbox_url = "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0"
+        dataset_1_dropbox_url = TEST_DATASET_URI
+        dataset_2_dropbox_url = TEST_DATASET_URI
 
         # Uploads a dataset
         self.upload_and_wait(collection_id, dataset_1_dropbox_url)

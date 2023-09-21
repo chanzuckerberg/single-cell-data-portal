@@ -62,7 +62,7 @@ jobs:
           --docker-compose-env-file envfile --aws-profile "" \
           --tags ${IMAGE_TAG},${STACK_NAME},branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
 
-  create-rdev:
+  deploy-rdev:
     runs-on: ubuntu-22.04
     needs:
       - build-images
@@ -84,24 +84,18 @@ jobs:
         id: pre_happy
         run: |
           echo "IMAGE_TAG=sha-${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
-          if [[ "${{ github.event.action }}" != "synchronize" ]]; then
-            echo "operation=create" >> $GITHUB_OUTPUT
-          else
-            echo "operation=update" >> $GITHUB_OUTPUT
-            # Check if the pull request was recently created, in the last 5min. If so skip updating the rdev.
-          fi
-      - name: Create/Update deployment
+      - name: Update deployment
         uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ env.STACK_NAME }}
-          operation: ${{ steps.pre_happy.outputs.operation }}
           tag: ${{ steps.pre_happy.outputs.IMAGE_TAG }}
           happy_version: "0.92.0"
+
   summarize:
     runs-on: ubuntu-22.04
     needs:
-      - create-rdev
+      - deploy-rdev
     if: github.event.action == 'opened'
     steps:
       - name: Summerize deployment
@@ -123,3 +117,25 @@ jobs:
               repo: context.repo.repo,
               body: "${{ steps.summary.outputs.summary}}"
             })
+  functional-test:
+    runs-on: ubuntu-22.04
+    needs:
+      - create-rdev
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      # TODO: Wait until the deployment is complete and return 200 responses from the version endpoint.
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Run functional test
+        run: |
+          pip3 install -r tests/functional/requirements.txt
+          DEPLOYMENT_STAGE=rdev STACK_NAME=${{ env.STACK_NAME }} make functional-test
