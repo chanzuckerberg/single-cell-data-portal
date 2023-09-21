@@ -16,6 +16,7 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
   STACK_NAME: pr-${{ github.event.number }}
+  HAPPY_VERSION: "0.92.0"
 
 permissions:
   id-token: write
@@ -84,24 +85,28 @@ jobs:
         id: pre_happy
         run: |
           echo "IMAGE_TAG=sha-${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
-          if [[ "${{ github.event.action }}" != "synchronize" ]]; then
-            echo "operation=create" >> $GITHUB_OUTPUT
-          else
-            echo "operation=update" >> $GITHUB_OUTPUT
-            # Check if the pull request was recently created, in the last 5min. If so skip updating the rdev.
-          fi
-      - name: Create/Update deployment
+      - name: Update deployment
+        if: github.event.action == 'synchronize'
+        uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
+        continue-on-error: true
+        with:
+          tfe-token: ${{ secrets.TFE_TOKEN }}
+          stack-name: ${{ env.STACK_NAME }}
+          operation: ${{ steps.pre_happy.outputs.operation }}
+          tag: ${{ steps.pre_happy.outputs.IMAGE_TAG }}
+          happy_version: ${{ env.HAPPY_VERSION }}
+      - name: Create deployment
+        if: github.event.action != 'synchronize' || failure()
         uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ env.STACK_NAME }}
           operation: ${{ steps.pre_happy.outputs.operation }}
           tag: ${{ steps.pre_happy.outputs.IMAGE_TAG }}
-          happy_version: "0.92.0"
+          happy_version: ${{ env.HAPPY_VERSION }}
+
   summarize:
     runs-on: ubuntu-22.04
-    needs:
-      - create-rdev
     if: github.event.action == 'opened'
     steps:
       - name: Summerize deployment
