@@ -28,12 +28,6 @@ export async function searchAndAddGene(page: Page, geneName: string) {
   await addGene(page, geneName);
 }
 
-export async function searchAndAddFilterCellType(page: Page, cellType: string) {
-  await goToWMG(page);
-  await page.getByPlaceholder(CELL_TYPE_SEARCH_PLACEHOLDER_TEXT).type(cellType);
-  await page.getByText(cellType).click();
-  await page.keyboard.press("Escape");
-}
 export async function verifyAddedTissue(page: Page, tissue: string) {
   // selected tissue should be visible
   await expect(page.getByTestId(`cell-type-labels-${tissue}`)).toBeVisible();
