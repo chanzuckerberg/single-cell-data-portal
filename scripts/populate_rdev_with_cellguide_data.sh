@@ -65,6 +65,7 @@ if [ -n "$LATEST_SNAPSHOT_IDENTIFIER" ]
 then
   aws s3 sync s3://cellguide-data-public-${SRC_DEPLOYMENT}/gpt_seo_descriptions s3://cellguide-data-public-dev/env-rdev-cellguide/${STACK_NAME}/gpt_seo_descriptions
   aws s3 sync s3://cellguide-data-public-${SRC_DEPLOYMENT}/gpt_descriptions s3://cellguide-data-public-dev/env-rdev-cellguide/${STACK_NAME}/gpt_descriptions
+  aws s3 sync s3://cellguide-data-public-${SRC_DEPLOYMENT}/validated_descriptions s3://cellguide-data-public-dev/env-rdev-cellguide/${STACK_NAME}/validated_descriptions
   if [ "$POPULATE_ONLY_GPT" = false ] ; then
     aws s3 sync s3://cellguide-data-public-${SRC_DEPLOYMENT}/${LATEST_SNAPSHOT_IDENTIFIER} s3://cellguide-data-public-dev/env-rdev-cellguide/${STACK_NAME}/${LATEST_SNAPSHOT_IDENTIFIER}
     aws s3 cp s3://cellguide-data-public-${SRC_DEPLOYMENT}/latest_snapshot_identifier s3://cellguide-data-public-dev/env-rdev-cellguide/${STACK_NAME}/latest_snapshot_identifier
