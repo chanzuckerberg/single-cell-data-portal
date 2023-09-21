@@ -1,0 +1,158 @@
+  pw:api => selectors.setTestIdAttribute started +275ms
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +43ms
+  pw:api   "commit" event fired +14ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +43ms
+  pw:api => page.waitForResponse started +3ms
+  pw:api => page.goto started +7ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +17ms
+  pw:api   "commit" event fired +197ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +40ms
+  pw:api   navigated to "about:blank" +48ms
+  pw:api <= page.goto succeeded +38ms
+  pw:api   "networkidle" event fired +3s
+  pw:api <= page.waitForResponse succeeded +2s
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('add-gene-btn') +58ms
+  pw:api   locator resolved to <div label="Add Genes" data-testid="add-gene-btn" cla…>…</div> +569ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +34ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +44ms
+  pw:api   click action done +880ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +7ms
+  pw:api <= locator.click succeeded +31ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api <= locator.elementHandles succeeded +18ms
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +60ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +3s
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +98ms
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +2s
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +89ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +2s
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +91ms
+  pw:api => expect.not.toHaveCount started +5ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +17ms
+  pw:api waiting for locator('canvas') +2ms
+  pw:api   locator resolved to 0 elements +6ms
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 0 elements +3ms
+  pw:api   unexpected value "0" +1ms
+  pw:api   locator resolved to 0 elements +114ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +254ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +503ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +1s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +3s
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 64 elements +14s
+  pw:api <= expect.not.toHaveCount succeeded +25ms
+  pw:api => page.waitForTimeout started +7ms
+  pw:api <= page.waitForTimeout succeeded +250ms
+  pw:api => expect.not.toHaveCount started +13ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +17ms
+  pw:api waiting for locator('canvas') +0ms
+  pw:api   locator resolved to 64 elements +6ms
+  pw:api <= expect.not.toHaveCount succeeded +16ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('download-button') +13ms
+  pw:api   locator resolved to <button tabindex="0" type="button" data-testid="download…>…</button> +12ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +14ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +16ms
+  pw:api   click action done +126ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +35ms
+  pw:api => locator.elementHandle started +1ms
+  pw:api waiting for locator('.bp4-dialog') +40ms
+  pw:api   locator resolved to visible <div role="dialog" aria-labelledby="title-bp-dialog-0…>…</div> +7ms
+  pw:api <= locator.elementHandle succeeded +28ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByTestId('png-checkbox') +22ms
+  pw:api   locator resolved to <span data-testid="png-checkbox" class="MuiButtonBase-…>…</span> +10ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api     element is not stable - waiting... +79ms
+  pw:api   element is visible, enabled and stable +135ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +43ms
+  pw:api   click action done +47ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +39ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByTestId('csv-checkbox') +26ms
+  pw:api   locator resolved to <span data-testid="csv-checkbox" class="MuiButtonBase-…>…</span> +9ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +64ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +36ms
+  pw:api   click action done +66ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +36ms
+  pw:api => page.waitForEvent started +1ms
+  pw:api => locator.click started +12ms
+  pw:api waiting for event "download" +24ms
+  pw:api waiting for getByTestId('dialog-download-button') +42ms
+  pw:api   locator resolved to <button tabindex="0" type="button" sdssize="large" data-…>Download</button> +12ms
+  pw:api attempting click action +12ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +55ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +29ms
+  pw:api   click action done +43ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +31ms
+  pw:api <= page.waitForEvent succeeded +6s
+  pw:api => download.saveAs started +6ms
+  pw:api <= download.saveAs succeeded +13ms
+  pw:api => locator.allTextContents started +60ms
+  pw:api <= locator.allTextContents succeeded +30ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +63ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +27ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +20ms
+  pw:api taking page screenshot +14ms
