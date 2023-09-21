@@ -16,7 +16,6 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
   STACK_NAME: pr-${{ github.event.number }}
-  HAPPY_VERSION: "0.92.0"
 
 permissions:
   id-token: write
@@ -86,17 +85,17 @@ jobs:
         run: |
           echo "IMAGE_TAG=sha-${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
       - name: Update deployment
-        if: github.event.action == 'synchronize'
         uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
-        continue-on-error: true
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ env.STACK_NAME }}
           tag: ${{ steps.pre_happy.outputs.IMAGE_TAG }}
-          happy_version: ${{ env.HAPPY_VERSION }}
+          happy_version: "0.92.0"
 
   summarize:
     runs-on: ubuntu-22.04
+    needs:
+      - deploy-rdev
     if: github.event.action == 'opened'
     steps:
       - name: Summerize deployment
