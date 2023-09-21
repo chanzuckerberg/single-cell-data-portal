@@ -1,0 +1,73 @@
+  pw:api => selectors.setTestIdAttribute started +3s
+  pw:api => browser.newContext started +13ms
+  pw:api <= selectors.setTestIdAttribute succeeded +34ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +140ms
+  pw:api   "commit" event fired +33ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +6ms
+  pw:api   "domcontentloaded" event fired +3ms
+  pw:api <= browser.newContext succeeded +15ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +7ms
+  pw:api => browserContext.newPage started +7ms
+  pw:api <= browserContext.newPage succeeded +136ms
+  pw:api => page.waitForLoadState started +1ms
+  pw:api => page.goto started +3ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +10ms
+  pw:api   "commit" event fired +10s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +0ms
+  pw:api   "commit" event fired +3ms
+  pw:api   "networkidle" event fired +5s
+  pw:api <= page.waitForLoadState succeeded +5ms
+  pw:api   "networkidle" event fired +0ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +3ms
+  pw:api   navigated to "about:blank" +29ms
+  pw:api <= page.goto succeeded +17ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-gpt-tooltip-link') to be visible +22ms
+  pw:api   locator resolved to visible <a data-mui-internal-clone-element="true" data-test…>…</a> +124ms
+  pw:api <= locator.waitFor succeeded +64ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-gpt-tooltip-link') +147ms
+  pw:api   "networkidle" event fired +477ms
+  pw:api <= locator.isVisible succeeded +3s
+  pw:api => locator.hover started +4ms
+  pw:api waiting for getByTestId('cell-guide-card-gpt-tooltip-link') +22ms
+  pw:api   locator resolved to <a data-mui-internal-clone-element="true" data-test…>…</a> +6ms
+  pw:api attempting hover action +2ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +10ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   <div role="banner" data-id="newsletter-banner" class=…>…</div> from <div id="bottom-banner" data-testid="newsletter-modal…>…</div> subtree intercepts pointer events +21ms
+  pw:api retrying hover action, attempt #1 +0ms
+  pw:api   waiting for element to be visible and stable +1ms
+  pw:api   element is visible and stable +10ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +3ms
+  pw:api   <div role="banner" data-id="newsletter-banner" class=…>…</div> from <div id="bottom-banner" data-testid="newsletter-modal…>…</div> subtree intercepts pointer events +19ms
+  pw:api retrying hover action, attempt #2 +0ms
+  pw:api   waiting 20ms +0ms
+  pw:api   waiting for element to be visible and stable +22ms
+  pw:api   element is visible and stable +23ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing hover action +164ms
+  pw:api   hover action done +144ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +22ms
+  pw:api <= locator.hover succeeded +118ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByRole('tooltip') to be visible +67ms
+  pw:api   locator resolved to visible <div id="mui-2" role="tooltip" data-popper-placement=…>…</div> +75ms
+  pw:api <= locator.waitFor succeeded +52ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByRole('tooltip') +38ms
+  pw:api <= locator.isVisible succeeded +25ms
+  pw:api => locator.textContent started +1ms
+  pw:api waiting for getByRole('tooltip') +23ms
+  pw:api   locator resolved to <div id="mui-2" role="tooltip" data-popper-placement=…>…</div> +21ms
+  pw:api <= locator.textContent succeeded +28ms
+  pw:api taking page screenshot +6ms
