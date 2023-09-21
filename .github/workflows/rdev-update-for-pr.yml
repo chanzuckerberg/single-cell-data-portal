@@ -23,31 +23,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  summarize:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Summerize deployment
-        id: summary
-        run: |
-          summary="## Deployment Summary\n"
-          summary+="- backend_url: https://${{ env.STACK_NAME }}-backend.rdev.single-cell.czi.technology"
-          summary+="- frontend_url: https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology"
-          summary+="- delete_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-deletion:1"
-          summary+="- migrate_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-migration:1"
-          echo "SUMMARY=$summary" >> $GITHUB_OUTPUT
-      - uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: "${{ steps.summary.outputs.summary}}"
-            })
-
   build-images:
-    needs:
-      - summarize
     strategy:
       matrix:
         image:
