@@ -25,7 +25,12 @@ APP_NAME = "{}-{}".format(os.environ.get("APP_NAME", "api"), DEPLOYMENT_STAGE)
 
 configure_logging(APP_NAME)
 
-if "DD_AGENT_HOST" in os.environ:
+
+def has_datadog_env_vars():
+    return os.environ.get("DD_AGENT_HOST", None) and os.environ.get("DD_TRACE_AGENT_PORT", None)
+
+
+if has_datadog_env_vars():
     # Datadog APM tracing
     # See https://ddtrace.readthedocs.io/en/stable/basic_usage.html#patch-all
 
@@ -44,9 +49,9 @@ if "DD_AGENT_HOST" in os.environ:
     patch_all()
 
     # enable Datadog profiling for development
-    if DEPLOYMENT_STAGE not in ["staging", "prod"]:
-        # noinspection PyPackageRequirements,PyUnresolvedReferences
-        pass
+    # if DEPLOYMENT_STAGE not in ["staging", "prod"]:
+    # noinspection PyPackageRequirements,PyUnresolvedReferences
+    # import ddtrace.profiling.auto
 
 
 def create_flask_app():
