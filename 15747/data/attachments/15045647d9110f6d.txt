@@ -1,0 +1,49 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +6ms
+  pw:api <= selectors.setTestIdAttribute succeeded +4ms
+  pw:api <= browserType.launch succeeded +179ms
+  pw:api => browser.newContext started +5ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +59ms
+  pw:api   "commit" event fired +16ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "load" event fired +2ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api <= browser.newContext succeeded +23ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +43ms
+  pw:api => page.waitForResponse started +8ms
+  pw:api => page.goto started +7ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +5ms
+  pw:api   "commit" event fired +8s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +52ms
+  pw:api   navigated to "about:blank" +41ms
+  pw:api <= page.goto succeeded +22ms
+  pw:api <= page.waitForResponse succeeded +8s
+  pw:api => locator.click started +7ms
+  pw:api waiting for getByTestId('add-gene-btn') +63ms
+  pw:api   locator resolved to <div label="Add Genes" data-testid="add-gene-btn" cla…>…</div> +32ms
+  pw:api attempting click action +3ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +205ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +16ms
+  pw:api   performing click action +56ms
+  pw:api   click action done +746ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +8ms
+  pw:api <= locator.click succeeded +26ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api <= locator.elementHandles succeeded +34ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +59ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +3s
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +187ms
+  pw:api taking page screenshot +75ms
