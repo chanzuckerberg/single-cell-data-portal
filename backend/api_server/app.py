@@ -25,28 +25,28 @@ APP_NAME = "{}-{}".format(os.environ.get("APP_NAME", "api"), DEPLOYMENT_STAGE)
 
 configure_logging(APP_NAME)
 
-# Datadog APM tracing
-# See https://ddtrace.readthedocs.io/en/stable/basic_usage.html#patch-all
+if "DD_AGENT_HOST" in os.environ:
+    # Datadog APM tracing
+    # See https://ddtrace.readthedocs.io/en/stable/basic_usage.html#patch-all
 
-# next line may be redundant with DD_GEVENT_PATCH_ALL env var in .happy/terraform/modules/service/main.tf
-gevent.monkey.patch_all()
-tracer.configure(
-    hostname=os.environ["DD_AGENT_HOST"],
-    port=os.environ["DD_TRACE_AGENT_PORT"],
-    # Filter out health check endpoint (index page: '/')
-    settings={
-        "FILTERS": [
-            FilterRequestsOnUrl([r"http://.*/$"]),
-        ],
-    },
-)
-patch_all()
+    # next line may be redundant with DD_GEVENT_PATCH_ALL env var in .happy/terraform/modules/service/main.tf
+    gevent.monkey.patch_all()
+    tracer.configure(
+        hostname=os.environ["DD_AGENT_HOST"],
+        port=os.environ["DD_TRACE_AGENT_PORT"],
+        # Filter out health check endpoint (index page: '/')
+        settings={
+            "FILTERS": [
+                FilterRequestsOnUrl([r"http://.*/$"]),
+            ],
+        },
+    )
+    patch_all()
 
-
-# enable Datadog profiling for development
-if DEPLOYMENT_STAGE not in ["staging", "prod"]:
-    # noinspection PyPackageRequirements,PyUnresolvedReferences
-    pass
+    # enable Datadog profiling for development
+    if DEPLOYMENT_STAGE not in ["staging", "prod"]:
+        # noinspection PyPackageRequirements,PyUnresolvedReferences
+        pass
 
 
 def create_flask_app():
