@@ -16,11 +16,11 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
   STACK_NAME: pr-${{ github.event.number }}
-  DEPLOYMENT_STAGE: rdev
 
 permissions:
   id-token: write
-  contents: read
+  issues: write
+  pull-requests: write
 
 jobs:
   build-images:
@@ -58,7 +58,6 @@ jobs:
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
           export IMAGE_TAG=sha-${GITHUB_SHA:0:8}
-          # Pushing image to dev because that's were all images are stored.
           happy push devstack --env dev --slice ${{ matrix.image }} \
           --docker-compose-env-file envfile --aws-profile "" \
           --tags ${IMAGE_TAG},${STACK_NAME},branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
@@ -99,13 +98,31 @@ jobs:
           operation: ${{ steps.pre_happy.outputs.operation }}
           tag: ${{ steps.pre_happy.outputs.IMAGE_TAG }}
           happy_version: "0.92.0"
-      - name: Happy Deployment Summary
+  summarize:
+    runs-on: ubuntu-22.04
+    needs:
+      - create-rdev
+    if: [[ github.event.action == "open" ]]]
+    steps:
+      - name: Summerize deployment
+        id: summary
         run: |
-          echo "backend_url: https://${{ env.STACK_NAME }}-backend.rdev.single-cell.czi.technology" >> $GITHUB_STEP_SUMMARY
-          echo "delete_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-deletion:1" >> $GITHUB_STEP_SUMMARY
-          echo "frontend_url: https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology" >> $GITHUB_STEP_SUMMARY
-          echo "migrate_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME }}-migration:1" >> $GITHUB_STEP_SUMMARY
-
+          summary="## Deployment Summary"
+          summary+="\n- backend_url: https://${{ env.STACK_NAME }}-backend.rdev.single-cell.czi.technology"
+          summary+="\n- frontend_url: https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology"
+          summary+="\n- delete_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-deletion:1"
+          summary+="\n- migrate_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-migration:1"
+          echo "SUMMARY=$summary" >> $GITHUB_OUTPUT
+      - name: Post Comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "${{ steps.summary.outputs.summary}}"
+            })
   functional-test:
     runs-on: ubuntu-22.04
     needs:

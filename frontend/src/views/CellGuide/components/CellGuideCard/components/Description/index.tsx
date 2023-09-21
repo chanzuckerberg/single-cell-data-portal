@@ -11,11 +11,22 @@ import {
   Wrapper,
   DescriptionWrapper,
   StyledButton,
+  StyledSynonyms,
+  FlexContainer,
+  StyledOntologyId,
+  ValidatedWrapper,
+  StyledTag,
+  ReferencesWrapper,
+  ValidatedInlineWrapper,
 } from "./style";
+import { Label } from "src/components/Synonyms/style";
+
 import {
   useGptDescription,
   useCellTypeMetadata,
+  useValidatedDescription,
 } from "src/common/queries/cellGuide";
+import validatedIcon from "src/common/images/validated.svg";
 import Link from "../common/Link";
 import { StyledLink } from "../common/Link/style";
 import { track } from "src/common/analytics";
@@ -26,10 +37,13 @@ import { StyledIconImage } from "../common/HelpTooltip/style";
 import {
   CELL_GUIDE_CARD_CL_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_DESCRIPTION,
+  CELL_GUIDE_CARD_VALIDATED_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_TOOLTIP_LINK,
   DESCRIPTION_BREAKPOINT_HEIGHT_PX,
+  CELL_GUIDE_CARD_SYNONYMS,
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 import { useIsComponentPastBreakpointHeight } from "../common/hooks/useIsComponentPastBreakpoint";
+import Image from "next/image";
 
 const SLOT_PROPS: TooltipProps["slotProps"] = {
   tooltip: {
@@ -50,14 +64,22 @@ interface DescriptionProps {
       element: JSX.Element;
     } | null>
   >;
+  inSideBar?: boolean;
+  synonyms?: string[];
 }
 export default function Description({
   cellTypeId,
   cellTypeName,
   skinnyMode,
+  inSideBar,
   setTooltipContent,
+  synonyms,
 }: DescriptionProps): JSX.Element {
+  const cellTypeIdRaw = cellTypeId.replace(":", "_");
   const [descriptionGpt, setDescriptionGpt] = useState<string>("");
+  const [descriptionValidated, setDescriptionValidated] = useState<string>("");
+  const [descriptionValidatedReferences, setDescriptionValidatedReferences] =
+    useState<string[]>([]);
   const [descriptionCl, setDescriptionCl] = useState<string>("");
   const [descriptionMaxHeight, setDescriptionMaxHeight] = useState<
     number | undefined
@@ -77,15 +99,26 @@ export default function Description({
   }, [isPastBreakpoint]);
 
   const { data: rawDescriptionGpt } = useGptDescription(cellTypeId);
+  const { data: rawDescriptionValidated, isLoading } =
+    useValidatedDescription(cellTypeId);
   const { data: cellTypesById } = useCellTypeMetadata();
   const rawDescriptionCl = cellTypesById?.[cellTypeId].clDescription;
 
   useEffect(() => {
+    if (rawDescriptionValidated) {
+      setDescriptionValidated(rawDescriptionValidated.description);
+      setDescriptionValidatedReferences(rawDescriptionValidated.references);
+    } else {
+      setDescriptionValidated("");
+      setDescriptionValidatedReferences([]);
+    }
+
     if (rawDescriptionGpt) setDescriptionGpt(rawDescriptionGpt);
     else setDescriptionGpt("");
+
     if (rawDescriptionCl) setDescriptionCl(rawDescriptionCl);
     else setDescriptionCl("");
-  }, [rawDescriptionGpt, rawDescriptionCl]);
+  }, [rawDescriptionGpt, rawDescriptionCl, rawDescriptionValidated]);
 
   const copyHandler = () => {
     if (!window) return;
@@ -114,6 +147,24 @@ export default function Description({
     </div>
   );
 
+  const submitCorrection = (
+    <>
+      If you believe a description is inaccurate, please{" "}
+      <a
+        href={CELL_GUIDE_CORRECTION_SURVEY_LINK}
+        target="_blank"
+        rel="noreferrer noopener"
+        onClick={() => {
+          track(EVENTS.SUBMIT_CORRECTION_CLICKED, {
+            cell_type_name: cellTypeName,
+          });
+        }}
+      >
+        submit a correction
+      </a>
+      .
+    </>
+  );
   const disclaimerMessage = (
     <div>
       <em>
@@ -121,20 +172,7 @@ export default function Description({
         team.
         {!isPastBreakpoint &&
           " Once a description is validated, we'll add references and a validation icon."}{" "}
-        If you believe a description is inaccurate, please{" "}
-        <a
-          href={CELL_GUIDE_CORRECTION_SURVEY_LINK}
-          target="_blank"
-          rel="noreferrer noopener"
-          onClick={() => {
-            track(EVENTS.SUBMIT_CORRECTION_CLICKED, {
-              cell_type_name: cellTypeName,
-            });
-          }}
-        >
-          submit a correction
-        </a>
-        .
+        {submitCorrection}
       </em>
     </div>
   );
@@ -185,66 +223,157 @@ export default function Description({
       </StyledTooltip>
     </SourceLink>
   );
-
+  const readMoreOrLessComponent = (
+    <StyledButton
+      sdsType="primary"
+      sdsStyle="minimal"
+      onClick={() => {
+        descriptionMaxHeight
+          ? setDescriptionMaxHeight(undefined)
+          : setDescriptionMaxHeight(DESCRIPTION_BREAKPOINT_HEIGHT_PX);
+        descriptionMaxHeight && track(EVENTS.CG_DESCRIPTION_READ_MORE_CLICKED);
+      }}
+    >
+      {descriptionMaxHeight ? "Read More" : "Read Less"}
+    </StyledButton>
+  );
   const sourceComponent = (
     <Source>
-      {isPastBreakpoint ? (
-        <StyledButton
-          sdsType="primary"
-          sdsStyle="minimal"
-          onClick={() => {
-            descriptionMaxHeight
-              ? setDescriptionMaxHeight(undefined)
-              : setDescriptionMaxHeight(DESCRIPTION_BREAKPOINT_HEIGHT_PX);
-            descriptionMaxHeight &&
-              track(EVENTS.CG_DESCRIPTION_READ_MORE_CLICKED);
-          }}
-        >
-          {descriptionMaxHeight ? "Read More" : "Read Less"}
-        </StyledButton>
-      ) : (
-        disclaimerMessage
-      )}
+      {isPastBreakpoint ? readMoreOrLessComponent : disclaimerMessage}
       {sourceLink}
     </Source>
   );
 
-  return (
-    <Wrapper>
-      {descriptionCl && (
-        <CellGuideCardDescription
-          data-testid={CELL_GUIDE_CARD_CL_DESCRIPTION}
-          onCopy={copyHandler}
-        >
-          {descriptionCl}
-          <Source>
-            <SourceLink>
-              {"Source: "}
-              <Link
-                url={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeId.replace(
-                  ":",
-                  "_"
-                )}`}
-                label={"Cell Ontology"}
-              />
-            </SourceLink>
-          </Source>
-        </CellGuideCardDescription>
-      )}
-      <br />
+  const gptDescriptionComponent = (
+    <CellGuideCardDescription
+      data-testid={CELL_GUIDE_CARD_GPT_DESCRIPTION}
+      onCopy={copyHandler}
+      inSideBar={inSideBar}
+    >
+      <DescriptionWrapper
+        inSideBar={inSideBar}
+        maxHeight={isPastBreakpoint ? descriptionMaxHeight : undefined}
+      >
+        {!inSideBar && (
+          <DescriptionHeader>Experimental Description</DescriptionHeader>
+        )}
+        <div ref={containerRef}>
+          {inSideBar ? descriptionGpt.split("\n").at(0) : descriptionGpt}
+        </div>
+      </DescriptionWrapper>
+      {!inSideBar && sourceComponent}
+      {isPastBreakpoint && !inSideBar && <Source>{disclaimerMessage}</Source>}
+    </CellGuideCardDescription>
+  );
+
+  const clDescriptionComponent = (
+    <>
       <CellGuideCardDescription
-        data-testid={CELL_GUIDE_CARD_GPT_DESCRIPTION}
+        data-testid={CELL_GUIDE_CARD_CL_DESCRIPTION}
         onCopy={copyHandler}
       >
+        {descriptionCl}
+        <Source>
+          <SourceLink>
+            {"Source: "}
+            <Link
+              url={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeId.replace(
+                ":",
+                "_"
+              )}`}
+              label={"Cell Ontology"}
+            />
+          </SourceLink>
+        </Source>
+      </CellGuideCardDescription>
+      <br />
+    </>
+  );
+
+  const footerComponent = (
+    <FlexContainer>
+      {skinnyMode && (
+        <StyledOntologyId
+          url={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
+          ontologyId={cellTypeId}
+        />
+      )}
+      <StyledSynonyms
+        synonyms={synonyms}
+        data-testid={CELL_GUIDE_CARD_SYNONYMS}
+      />
+      {descriptionValidated && !inSideBar && (
+        <ReferencesWrapper>
+          <Label>Citations</Label>
+          {descriptionValidatedReferences.map((ref, index) => {
+            return (
+              <Link
+                key={`${ref}-${index}`}
+                url={ref}
+                label={`[${index + 1}]`}
+              />
+            );
+          })}
+        </ReferencesWrapper>
+      )}
+    </FlexContainer>
+  );
+  const validatedDescriptionComponent = (
+    <CellGuideCardDescription
+      data-testid={CELL_GUIDE_CARD_GPT_DESCRIPTION}
+      onCopy={copyHandler}
+      inSideBar={true} // applies styling from sidebar (no gray background)
+    >
+      <div>
         <DescriptionWrapper
+          inSideBar={inSideBar}
           maxHeight={isPastBreakpoint ? descriptionMaxHeight : undefined}
         >
-          <DescriptionHeader>Experimental Description</DescriptionHeader>
-          <div ref={containerRef}>{descriptionGpt}</div>
+          <div ref={containerRef}>
+            {inSideBar
+              ? descriptionValidated.split("\n").at(0)
+              : descriptionValidated}
+          </div>
         </DescriptionWrapper>
-        {sourceComponent}
-        {isPastBreakpoint && <Source>{disclaimerMessage}</Source>}
-      </CellGuideCardDescription>
-    </Wrapper>
+        {isPastBreakpoint && readMoreOrLessComponent}
+      </div>
+      <ValidatedWrapper data-testid={CELL_GUIDE_CARD_VALIDATED_DESCRIPTION}>
+        <ValidatedInlineWrapper>
+          <StyledTag
+            sdsType="secondary"
+            sdsStyle="square"
+            color="success"
+            icon={
+              <Image
+                src={validatedIcon}
+                alt="validated"
+                width={16}
+                height={16}
+              />
+            }
+            label="Validated"
+          />{" "}
+          This description has been validated by our Biocurator team.{" "}
+          {submitCorrection}
+        </ValidatedInlineWrapper>
+      </ValidatedWrapper>
+
+      {footerComponent}
+    </CellGuideCardDescription>
   );
+
+  const experimentalDescriptionComponent = (
+    <>
+      {descriptionCl &&
+        !inSideBar &&
+        !descriptionValidated &&
+        clDescriptionComponent}
+      {gptDescriptionComponent}
+      {footerComponent}
+    </>
+  );
+  const descriptionComponent = descriptionValidated
+    ? validatedDescriptionComponent
+    : experimentalDescriptionComponent;
+  return <Wrapper>{!isLoading && descriptionComponent}</Wrapper>;
 }

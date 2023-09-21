@@ -2,10 +2,10 @@ import styled from "@emotion/styled";
 import {
   highlightColor,
   primaryColor,
-  secondaryColor,
   tertiaryColor,
 } from "../../common/constants";
-import { spacesL, spacesM } from "src/common/theme";
+import { gray500, spacesL, spacesM } from "src/common/theme";
+import { fontBodyXxxs } from "@czi-sds/components";
 import { Border, NodeWrapper } from "../Node/components/RectOrCircle/style";
 
 const SQUARE_SIZE = 14;
@@ -24,9 +24,13 @@ export const LegendWrapper = styled.div`
 `;
 
 export const LegendItemWrapper = styled.div`
+  ${fontBodyXxxs}
   display: flex;
   flex-direction: column;
   align-items: center;
+  color: ${gray500};
+  font-weight: 500;
+  min-width: 100px;
 `;
 
 export const MarkerScoreWrapper = styled.div`
@@ -79,15 +83,15 @@ export const NoDescendantsLine = styled.div<NoDescendantsProps>`
   position: absolute;
   width: ${(props) => props.size}px;
   height: 1px;
-  background-color: ${secondaryColor};
+  background-color: ${tertiaryColor};
   left: ${(props) => -props.size}px;
   top: ${(props) => props.size / 2 - 1}px;
   z-index: -1;
-  border: 1px solid ${secondaryColor};
+  border: 1px solid ${tertiaryColor};
 `;
 
 export const StyledBorder = styled(Border)`
-  border-left: 2px solid ${secondaryColor};
+  border-left: 2px solid ${tertiaryColor};
 `;
 
 export const StyledNodeWrapper = styled(NodeWrapper)`

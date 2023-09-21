@@ -12,6 +12,7 @@ export enum TYPES {
   COMPUTATIONAL_MARKERS = "COMPUTATIONAL_MARKERS",
   CANONICAL_MARKERS = "CANONICAL_MARKERS",
   GPT_DESCRIPTION = "GPT_DESCRIPTION",
+  VALIDATED_DESCRIPTION = "VALIDATED_DESCRIPTION",
   CELL_ONTOLOGY_TREE_STATE_TISSUE = "CELL_ONTOLOGY_TREE_STATE_TISSUE",
   TISSUE_METADATA = "TISSUE_METADATA",
   CELLTYPE_METADATA = "CELLTYPE_METADATA",
@@ -313,6 +314,27 @@ export const useGptDescription = (entityId: string): UseQueryResult<string> => {
   return useCellGuideQuery<string>(TYPES.GPT_DESCRIPTION, entityId, false);
 };
 
+/* ========== description ========== */
+export const USE_VALIDATED_DESCRIPTION_QUERY = {
+  entities: [ENTITIES.CELL_GUIDE_VALIDATED_DESCRIPTION],
+  id: "cell-guide-validated-description-query",
+};
+
+interface ValidatedDescriptionQueryResponse {
+  description: string;
+  references: string[];
+}
+
+export const useValidatedDescription = (
+  entityId: string
+): UseQueryResult<ValidatedDescriptionQueryResponse> => {
+  return useCellGuideQuery<ValidatedDescriptionQueryResponse>(
+    TYPES.VALIDATED_DESCRIPTION,
+    entityId,
+    false
+  );
+};
+
 /* ========== SEO description ========== */
 export const USE_GPT_SEO_DESCRIPTION_QUERY = {
   entities: [ENTITIES.CELL_GUIDE_GPT_SEO_DESCRIPTION],
@@ -529,6 +551,10 @@ const QUERY_MAPPING: {
   GPT_DESCRIPTION: {
     queryKey: USE_GPT_DESCRIPTION_QUERY,
     urlSuffix: `gpt_descriptions/%s.json`,
+  },
+  VALIDATED_DESCRIPTION: {
+    queryKey: USE_VALIDATED_DESCRIPTION_QUERY,
+    urlSuffix: `validated_descriptions/%s.json`,
   },
   GPT_SEO_DESCRIPTION: {
     queryKey: USE_GPT_SEO_DESCRIPTION_QUERY,

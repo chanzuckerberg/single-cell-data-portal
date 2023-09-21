@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import {
   Button,
   CommonThemeProps,
+  Tag,
   Tooltip,
   fontBodyS,
   fontBodyXs,
@@ -13,15 +14,30 @@ import {
   gray500,
   gray400,
   fontWeightSemibold,
+  spacesXxs,
+  spacesS,
 } from "src/common/theme";
+import Synonyms from "src/components/Synonyms";
+import OntologyId from "../../../OntologyId";
 
-export const CellGuideCardDescription = styled.div`
+interface CellGuideCardDescriptionProps extends CommonThemeProps {
+  inSideBar?: boolean;
+}
+export const CellGuideCardDescription = styled.div<CellGuideCardDescriptionProps>`
   ${fontBodyS}
   font-weight: 400;
   white-space: pre-wrap;
-  background-color: ${gray100};
-  padding: 12px 16px 12px 16px;
-  border-radius: 8px;
+  ${(props) => {
+    const { inSideBar } = props;
+    const backgroundColor = inSideBar ? "unset" : gray100(props);
+    const padding = inSideBar ? "0px" : "12px 16px 12px 16px";
+    const borderRadius = inSideBar ? "0px" : "8px";
+    return `
+      background-color: ${backgroundColor};
+      padding: ${padding};
+      border-radius: ${borderRadius};
+    `;
+  }}
 `;
 
 export const StyledButton = styled(Button)`
@@ -36,6 +52,7 @@ export const Wrapper = styled.div`
 
 interface DescriptionWrapperProps extends CommonThemeProps {
   maxHeight?: number;
+  inSideBar?: boolean;
 }
 export const DescriptionWrapper = styled.div<DescriptionWrapperProps>`
   ${(props) => `max-height: ${props.maxHeight}px;`}
@@ -43,6 +60,7 @@ export const DescriptionWrapper = styled.div<DescriptionWrapperProps>`
   position: relative;
   ${(props) =>
     props.maxHeight &&
+    !props.inSideBar &&
     `
     &:after {
       content: "";
@@ -94,4 +112,48 @@ export const ChatGptTooltipText = styled.div`
 export const ChatGptTooltipSubtext = styled.div`
   ${fontBodyXxs}
   color: ${gray400};
+`;
+
+export const StyledSynonyms = styled(Synonyms)`
+  margin-top: ${spacesXxs}px;
+`;
+
+export const StyledOntologyId = styled(OntologyId)`
+  margin-top: ${spacesXxs}px;
+`;
+
+export const FlexContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const StyledTag = styled(Tag)`
+  border-radius: 4px;
+  padding: 2px 8px 2px 8px;
+  gap: 6px;
+  margin: auto 0;
+  .MuiChip-label {
+    ${fontBodyXs}
+    font-weight: 500 !important;
+    letter-spacing: -0.04px !important;
+  }
+`;
+
+export const ValidatedWrapper = styled.div`
+  margin-top: 16px;
+`;
+
+export const ValidatedInlineWrapper = styled.span`
+  ${fontBodyS}
+  display: inline;
+  color: ${gray500};
+`;
+
+export const ReferencesWrapper = styled.div`
+  display: flex;
+  margin-top: ${spacesXxs}px;
+  padding-bottom: ${spacesS}px;
+  gap: ${spacesXxs}px;
+  height: 36px;
+  align-items: center;
 `;

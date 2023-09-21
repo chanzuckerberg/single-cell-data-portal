@@ -136,8 +136,8 @@ class TestRevisions(BaseFunctionalTestCase):
 
         # Start a new revision
         res = self.session.post(f"{self.api}/dp/v1/collections/{canonical_collection_id}", headers=headers)
-        revision_id = res.json()["id"]
         self.assertStatusCode(201, res)
+        revision_id = res.json()["id"]
 
         # Get datasets for the collection (before uploading)
         public_datasets_before = self.session.get(f"{self.api}/dp/v1/collections/{canonical_collection_id}").json()[
@@ -226,11 +226,11 @@ class TestRevisions(BaseFunctionalTestCase):
     def get_schema_with_retries(self, dataset_id, desired_http_status_code=requests.codes.ok):
         @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
         def get_s3_uri():
-            s3_uri_resp = self.session.get(
+            s3_uri_res = self.session.get(
                 f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.3/s3_uri", allow_redirects=False
             )
-            assert s3_uri_resp.status_code == desired_http_status_code
-            return s3_uri_resp
+            assert s3_uri_res.status_code == desired_http_status_code
+            return s3_uri_res
 
         @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
         def get_schema(s3_uri_response_object):
@@ -238,11 +238,11 @@ class TestRevisions(BaseFunctionalTestCase):
             s3_path = s3_uri_response_object.content.decode("utf-8").strip().strip('"')
             # s3_uri endpoints use double-encoded s3 uri path parameters
             s3_path_url = quote(quote(s3_path, safe=""))
-            schema_resp = self.session.get(
+            schema_res = self.session.get(
                 f"{self.api}/cellxgene/s3_uri/{s3_path_url}/api/v0.3/schema", allow_redirects=False
             )
-            assert schema_resp.status_code == requests.codes.ok
-            return schema_resp
+            assert schema_res.status_code == requests.codes.ok
+            return schema_res
 
         s3_uri_response = get_s3_uri()
         return get_schema(s3_uri_response)
