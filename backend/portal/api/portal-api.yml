@@ -552,7 +552,7 @@ paths:
         - datasets
       summary: Request to download a dataset asset
       description: >-
-        Request to download a file which on success will return a permanent URL to download the dataset.
+        Request to download a file which on success returns a permanent URL to download the dataset.
       operationId: backend.portal.api.portal_api.get_dataset_asset
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
@@ -574,7 +574,7 @@ paths:
                   file_size:
                     type: number
                   url:
-                    type: string                    
+                    type: string
         "401":
           $ref: "#/components/responses/401"
         "403":

@@ -649,7 +649,7 @@ def upload_relink(collection_id: str, body: dict, token_info: dict):
 
 def get_dataset_asset(dataset_id: str, asset_id: str):
     """
-    Request to download a file which on success will return a permanent URL to download the dataset.
+    Request to download a file which on success returns a permanent URL to download the dataset.
     """
 
     version = get_business_logic().get_dataset_version(DatasetVersionId(dataset_id))

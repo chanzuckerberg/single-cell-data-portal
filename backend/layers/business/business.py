@@ -104,12 +104,12 @@ class BusinessLogic(BusinessLogicInterface):
         super().__init__()
 
     @staticmethod
-    def generate_permanent_url(dataset_version_id: DatasetVersionId, asset: DatasetArtifact):
+    def generate_permanent_url(dataset_version_id: DatasetVersionId, asset_type: DatasetArtifactType):
         """
         Return the permanent URL for the given asset.
         """
         base_url = CorporaConfig().dataset_assets_base_url
-        url = f"{base_url}/{dataset_version_id.id}.{asset.type}"
+        url = f"{base_url}/{dataset_version_id.id}.{asset_type}"
         return url
 
     def _get_publisher_metadata(self, doi: str, errors: list) -> Optional[dict]:
@@ -538,7 +538,7 @@ class BusinessLogic(BusinessLogicInterface):
             raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")
 
         file_size = self.s3_provider.get_file_size(artifact.uri)
-        url = self.generate_permanent_url(dataset_version_id, artifact)
+        url = self.generate_permanent_url(dataset_version_id, artifact.type)
 
         return DatasetArtifactDownloadData(file_size, url)
 

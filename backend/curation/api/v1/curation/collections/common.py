@@ -41,7 +41,7 @@ def extract_dataset_assets(dataset_version: DatasetVersion):
         filesize = get_business_logic().s3_provider.get_file_size(asset.uri)
         if filesize is None:
             filesize = -1
-        url = get_business_logic().generate_permanent_url(dataset_version.version_id, asset)
+        url = get_business_logic().generate_permanent_url(dataset_version.version_id, asset.type)
         result = {
             "filesize": filesize,
             "filetype": asset.type.upper(),
