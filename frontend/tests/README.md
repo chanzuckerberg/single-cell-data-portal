@@ -336,7 +336,7 @@ Where tests are skipped vs. run in different environments.
 
 ## Keep code DRY and readable
 
-1.  Avoid nesting tests with `beforeEach()` and `afterEach()` when you can extract reusable functions to call explicitly inside each test case. This helps improve readability and maintenance, since all the setup and teardown are isolated within a test case. [Read more](https://kentcdodds.com/blog/avoid-nesting-when-youre-testing)
+1.  Avoid nesting tests with `beforeEach()` and `afterEach()` when you can extract reusable functions to call explicitly inside each test case. This helps improve readability and maintenance, since all the setup and teardown are isolated within a test case. [(Read more)](https://kentcdodds.com/blog/avoid-nesting-when-youre-testing)
 
 1.  Avoid unnecessary steps that add complexity to tests
 
