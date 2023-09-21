@@ -1,0 +1,35 @@
+  pw:api => selectors.setTestIdAttribute started +981ms
+  pw:api => browser.newContext started +4ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +35ms
+  pw:api   "commit" event fired +11ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api   "load" event fired +0ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => tracing.start started +2ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => browserContext.newPage started +2ms
+  pw:api <= browserContext.newPage succeeded +31ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000030", waiting until "load" +7ms
+  pw:api   "commit" event fired +116ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000030" +1ms
+  pw:api   "commit" event fired +1ms
+  pw:api   "networkidle" event fired +3s
+  pw:api <= page.waitForLoadState succeeded +3ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +2s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000030" +2ms
+  pw:api   navigated to "about:blank" +23ms
+  pw:api <= page.goto succeeded +24ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-validated-description') to be visible +21ms
+  pw:api   locator resolved to visible <div class="css-1q8v3xh-ValidatedWrapper eiresg914" d…>…</div> +1s
+  pw:api <= locator.waitFor succeeded +579ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-validated-description') +290ms
+  pw:api <= locator.isVisible succeeded +45ms
+  pw:api taking page screenshot +5ms
