@@ -63,7 +63,7 @@ jobs:
           --docker-compose-env-file envfile --aws-profile "" \
           --tags ${IMAGE_TAG},${STACK_NAME},branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
 
-  create-rdev:
+  deploy-rdev:
     runs-on: ubuntu-22.04
     needs:
       - build-images
@@ -92,16 +92,6 @@ jobs:
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ env.STACK_NAME }}
-          operation: ${{ steps.pre_happy.outputs.operation }}
-          tag: ${{ steps.pre_happy.outputs.IMAGE_TAG }}
-          happy_version: ${{ env.HAPPY_VERSION }}
-      - name: Create deployment
-        if: github.event.action != 'synchronize' || failure()
-        uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
-        with:
-          tfe-token: ${{ secrets.TFE_TOKEN }}
-          stack-name: ${{ env.STACK_NAME }}
-          operation: ${{ steps.pre_happy.outputs.operation }}
           tag: ${{ steps.pre_happy.outputs.IMAGE_TAG }}
           happy_version: ${{ env.HAPPY_VERSION }}
 
