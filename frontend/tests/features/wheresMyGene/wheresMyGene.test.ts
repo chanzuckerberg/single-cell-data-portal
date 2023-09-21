@@ -860,6 +860,7 @@ describe("Where's My Gene", () => {
   describe("Cell Type Filtering", () => {
     test("Filter to single cell type and then clear", async ({ page }) => {
       await goToWMG(page);
+      await waitForHeatmapToRender(page);
       await searchAndAddFilterCellTypes(page, "B cell");
       await removeFilteredCellTypes(page, "B cell");
     });
