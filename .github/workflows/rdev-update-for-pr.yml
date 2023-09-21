@@ -1,0 +1,125 @@
+name: Create/Update rdev for PR
+
+on:
+  pull_request:
+    branches-ignore:
+      - prod
+    types:
+      - open
+      - synchronize
+      - reopened
+
+env:
+  # Force using BuildKit instead of normal Docker, required so that metadata
+  # is written/read to allow us to use layers of previous builds as cache.
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+  DOCKER_REPO: ${{ secrets.ECR_REPO }}/
+  STACK_NAME: pr-${{ github.event.number }}
+
+permissions:
+  id-token: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  build-images:
+    strategy:
+      matrix:
+        image:
+          - frontend # pushed both the frontend and backend images
+          - upload_failures
+          - upload_success
+          - dataset_submissions
+          - processing
+          - wmg_processing
+          - cellguide_pipeline
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        with:
+          happy_version: "0.92.0"
+      - name: Push images
+        run: |
+          echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
+          echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
+          export IMAGE_TAG=sha-${GITHUB_SHA:0:8}
+          happy push devstack --env dev --slice ${{ matrix.image }} \
+          --docker-compose-env-file envfile --aws-profile "" \
+          --tags ${IMAGE_TAG},${STACK_NAME},branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
+
+  create-rdev:
+    runs-on: ubuntu-22.04
+    needs:
+      - build-images
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Prepare happy parameters
+        id: pre_happy
+        run: |
+          echo "IMAGE_TAG=sha-${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
+          if [[ "${{ github.event.action }}" != "synchronize" ]]; then
+            echo "operation=create" >> $GITHUB_OUTPUT
+          else
+            echo "operation=update" >> $GITHUB_OUTPUT
+            # Check if the pull request was recently created, in the last 5min. If so skip updating the rdev.
+          fi
+      - name: Create/Update deployment
+        uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
+        with:
+          tfe-token: ${{ secrets.TFE_TOKEN }}
+          stack-name: ${{ env.STACK_NAME }}
+          operation: ${{ steps.pre_happy.outputs.operation }}
+          tag: ${{ steps.pre_happy.outputs.IMAGE_TAG }}
+          happy_version: "0.92.0"
+  summarize:
+    runs-on: ubuntu-22.04
+    needs:
+      - create-rdev
+    if: [[ github.event.action == "open" ]]]
+    steps:
+      - name: Summerize deployment
+        id: summary
+        run: |
+          summary="## Deployment Summary"
+          summary+="\n- backend_url: https://${{ env.STACK_NAME }}-backend.rdev.single-cell.czi.technology"
+          summary+="\n- frontend_url: https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology"
+          summary+="\n- delete_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-deletion:1"
+          summary+="\n- migrate_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-migration:1"
+          echo "SUMMARY=$summary" >> $GITHUB_OUTPUT
+      - name: Post Comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "${{ steps.summary.outputs.summary}}"
+            })
