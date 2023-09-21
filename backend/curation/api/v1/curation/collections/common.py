@@ -12,7 +12,6 @@ from backend.layers.common.entities import (
     CollectionVersionId,
     CollectionVersionWithDatasets,
     CollectionVersionWithPublishedDatasets,
-    DatasetArtifact,
     DatasetArtifactType,
     DatasetId,
     DatasetProcessingStatus,
