@@ -13,7 +13,7 @@ datadog==0.47.0 # TODO (prathap): Check if this is really essential for APM trac
 # TODO(prathap): Fix this! ddtrace is essential for datadog but it is commented out because
 # it makes the following unit test hang:
 # tests/unit/backend/layers/common/test_auth0_manager.py::TestSession::test_session_refresh
-# ddtrace==1.20.1
+ddtrace==1.20.1
 Flask==2.2.3
 Flask-Cors>=3.0.6
 flask-server-timing==0.1.2
