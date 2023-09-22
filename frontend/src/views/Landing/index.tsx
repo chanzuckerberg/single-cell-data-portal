@@ -69,12 +69,15 @@ const LandingPage = (): JSX.Element => {
   const { data, isLoading, isSuccess } = useFetchDatasets(mode, status);
 
   const cellsHeroNum: string | null = useMemo(() => {
-    if (isLoading) return null;
-    if (!data || !isSuccess) return LANDING_PAGE_FALLBACK_CELLS_HERO_NUM;
+    if (isLoading || !data || !isSuccess)
+      return LANDING_PAGE_FALLBACK_CELLS_HERO_NUM;
     const total = data.reduce(
       (acc, curr) => acc + (curr.primary_cell_count ?? 0),
       0
     );
+
+    if (total === 0) return LANDING_PAGE_FALLBACK_CELLS_HERO_NUM;
+
     const formatter = new Intl.NumberFormat("en", {
       notation: "compact",
       compactDisplay: "short",
@@ -84,8 +87,8 @@ const LandingPage = (): JSX.Element => {
   }, [data, isLoading, isSuccess]);
 
   const cellTypesHeroNum: string | null = useMemo(() => {
-    if (isLoading) return null;
-    if (!data || !isSuccess) return LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM;
+    if (isLoading || !data || !isSuccess)
+      return LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM;
     // add the cell types to the set and then get the length of the set
     const unique_cell_types = new Set();
     data.forEach((dataset) => {
@@ -93,12 +96,16 @@ const LandingPage = (): JSX.Element => {
         unique_cell_types.add(cell_type.ontology_term_id);
       });
     });
+    if (unique_cell_types.size === 0) {
+      return LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM;
+    }
     return `${unique_cell_types.size}`;
   }, [data, isLoading, isSuccess]);
 
   const datasetsHeroNum: string | null = useMemo(() => {
-    if (isLoading) return null;
-    if (!data || !isSuccess) return LANDING_PAGE_FALLBACK_DATASETS_HERO_NUM;
+    if (isLoading || !data || !isSuccess || Object.keys(data).length === 0) {
+      return LANDING_PAGE_FALLBACK_DATASETS_HERO_NUM;
+    }
     // add the cell types to the set and then get the length of the set
     return `${Object.keys(data).length}`;
   }, [data, isLoading, isSuccess]);

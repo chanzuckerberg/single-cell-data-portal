@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { CommonThemeProps, fontBodyS, getColors } from "@czi-sds/components";
-import { gray100, spacesS } from "src/common/theme";
+import { gray100, gray200, spacesS } from "src/common/theme";
 
 export const StyledTable = styled.table`
   width: 100%;
@@ -36,6 +36,16 @@ interface StyledRowProps extends CommonThemeProps {
 }
 export const StyledRow = styled.tr<StyledRowProps>`
   background-color: ${(props) => (props.highlight ? gray100(props) : "white")};
+  .hover-button {
+    visibility: hidden;
+    transition: visibility 0s ease;
+  }
+  &:hover .hover-button {
+    visibility: visible;
+  }
+  &:hover {
+    background-color: ${gray200};
+  }
 `;
 
 export const StyledCell = styled.td`

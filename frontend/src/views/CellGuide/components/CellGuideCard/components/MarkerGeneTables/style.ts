@@ -15,7 +15,6 @@ import {
   spacesS,
 } from "src/common/theme";
 import Link from "../common/Link";
-import Image from "next/image";
 
 const DIVIDER_WIDTH = 2;
 
@@ -45,13 +44,6 @@ export const NoWrapWrapper = styled.span<NoWrapWrapperProps>`
   white-space: nowrap;
   display: flex;
   column-gap: ${spacesS}px;
-  .hover-button {
-    visibility: hidden;
-    transition: visibility 0.1s ease;
-  }
-  &:hover .hover-button {
-    visibility: visible;
-  }
 `;
 
 export const PublicationLinkWrapper = styled.div`
@@ -137,6 +129,12 @@ export const MarkerGeneTableWrapper = styled.div`
   max-width: calc(100vw - ${spacesL}px - ${spacesL}px);
 `;
 
-export const StyledIconImage = styled(Image)`
+interface StyledImageWrapperProps {
+  isActive: boolean;
+}
+export const StyledImageWrapper = styled.div<StyledImageWrapperProps>`
   cursor: pointer;
+  min-width: 12px;
+  min-height: 12px;
+  visibility: ${(props) => (props.isActive ? "visible !important" : "unset")};
 `;

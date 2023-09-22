@@ -41,9 +41,18 @@ if [[ -n "$WMG_CUBE" ]]; then
 fi
 
 
-echo Mirroring S3 Dataset data from $SRC_ENV to $DEST_ENV...
+if [[ $DEST_ENV == 'rdev' && -n "$CELLGUIDE" ]]; then
+  # Copy CellGuide data
+  echo "Copying CellGuide snapshot..."
 
-if [[ $DEST_ENV == 'rdev' ]]; then
+  latest_snapshot=$(aws s3 cp s3://cellguide-data-public-${SRC_ENV}/latest_snapshot_identifier -)
+  # CellGuide uses a hack for rdev: reads from the env-rdev-cellguide/ subpath within the cellguide-data-public-dev bucket
+  echo -n $latest_snapshot | aws s3 cp - s3://cellguide-data-public-dev/env-rdev-cellguide/${STACK}/latest_snapshot_identifier
+  $S3_SYNC_CMD s3://cellguide-data-public-${SRC_ENV}/${latest_snapshot} s3://cellguide-data-public-dev/env-rdev-cellguide/${STACK}/${latest_snapshot}
+fi
+
+
+if [[ $DEST_ENV == 'rdev' && -n "$COLLECTIONS" ]]; then
   # The code in this block implements Collection subsetting for rdev stacks. For every Dataset (current and prior
   # versions) in every Collection whose uuid is passed into the commma-separated $COLLECTIONS arg, a sample valid
   # Dataset is copied to all relevant s3 locations:
@@ -51,10 +60,12 @@ if [[ $DEST_ENV == 'rdev' ]]; then
   # - s3://env-rdev-cellxgene/${STACK}/
   # - s3://env-rdev-datasets/${STACK}/
 
+  echo Mirroring S3 Dataset data from $SRC_ENV to $DEST_ENV...
+
   # Clean up semaphores state directory ahead of using sem in case it was not cleared properly before
   [[ -d "~/.parallel/semaphores" ]] && rm -r ~/.parallel/semaphores
   sample_data_name="schema_3_0_0"
-  echo "Copying sample data for S3 Dataset assets for $(tr ',' '\n' <<< $COLLECTIONS | wc -l) Collections..."
+  echo "Copying sample data for S3 Dataset assets for $(tr ',' '\n' <<< $COLLECTIONS | wc -l | sed -e 's/ *//g') Collections..."
 
   # Copy artifacts
   export AWS_PROFILE=$src_aws_profile  # For SRC_ENV

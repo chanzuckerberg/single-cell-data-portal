@@ -36,7 +36,7 @@ import { SKINNY_MODE_BREAKPOINT_WIDTH } from "../CellGuideCard/constants";
 import { throttle } from "lodash";
 import CellGuideCardSidebar from "../CellGuideCard/components/CellGuideCardSidebar";
 import React from "react";
-import { StyledOntologyId } from "../CellGuideCard/style";
+import { StyledOntologyId } from "../CellGuideCard/components/Description/style";
 import {
   TableTitleWrapper,
   TableTitle,

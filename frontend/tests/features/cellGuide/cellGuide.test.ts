@@ -41,6 +41,8 @@ import {
   CELL_GUIDE_CARD_CL_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_TOOLTIP_LINK,
+  CELL_GUIDE_CARD_SYNONYMS,
+  CELL_GUIDE_CARD_VALIDATED_DESCRIPTION,
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 
 import {
@@ -48,8 +50,8 @@ import {
   CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_HEADER_NAME,
   CELL_GUIDE_CARD_HEADER_TAG,
-  CELL_GUIDE_CARD_SYNONYMS,
 } from "src/views/CellGuide/components/CellGuideCard/constants";
+
 import {
   CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE,
   CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR,
@@ -61,12 +63,17 @@ import {
   PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
   MARKER_GENES_TREE_ICON_BUTTON_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
+import {
+  CELLGUIDE_INFO_SIDEBAR_TEST_ID,
+  CELLGUIDE_VIEW_PAGE_SIDEBAR_BUTTON_TEST_ID,
+} from "src/views/CellGuide/components/CellGuideInfoSideBar/constants";
 
 const { describe } = test;
 
 const WAIT_FOR_TIMEOUT_MS = 30 * 1000;
 
 const NEURON_CELL_TYPE_ID = "CL_0000540";
+const GLIOBLAST_CELL_TYPE_ID = "CL_0000030";
 const T_CELL_CELL_TYPE_ID = "CL_0000084";
 const LUNG_TISSUE_ID = "UBERON_0002048";
 
@@ -201,6 +208,13 @@ describe("Cell Guide", () => {
       const headerName = page.getByTestId(CELL_GUIDE_CARD_HEADER_NAME);
       const headerNameText = await headerName.textContent();
       expect(headerNameText).toBe("Neuron");
+    });
+    test("Glioblast CellGuide card is validated", async ({ page }) => {
+      await goToPage(
+        `${TEST_URL}${ROUTES.CELL_GUIDE}/${GLIOBLAST_CELL_TYPE_ID}`,
+        page
+      );
+      await isElementVisible(page, CELL_GUIDE_CARD_VALIDATED_DESCRIPTION);
     });
 
     test("CellGuide card GPT description tooltip displays disclaimer", async ({
@@ -628,7 +642,7 @@ describe("Cell Guide", () => {
         );
       });
 
-      test("Clicking on a cell type label links to its CellGuide Card", async ({
+      test("Clicking on a cell type label opens its CellGuide info sidebar", async ({
         page,
       }) => {
         await goToPage(
@@ -638,14 +652,16 @@ describe("Cell Guide", () => {
         await page
           .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
           .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
-        const label = page.getByTestId(
-          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL:0000878__4`
-        );
+        await page
+          .getByTestId(
+            `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL:0000878__4`
+          )
+          .click();
 
-        await Promise.all([
-          page.waitForURL(`${TEST_URL}${ROUTES.CELL_GUIDE}/CL_0000878`),
-          waitForElementAndClick(label),
-        ]);
+        await isElementVisible(page, CELLGUIDE_INFO_SIDEBAR_TEST_ID);
+        await page
+          .getByTestId(CELLGUIDE_VIEW_PAGE_SIDEBAR_BUTTON_TEST_ID)
+          .click();
 
         // Check that the new node is highlighted green (isTargetNode=true)
         await page

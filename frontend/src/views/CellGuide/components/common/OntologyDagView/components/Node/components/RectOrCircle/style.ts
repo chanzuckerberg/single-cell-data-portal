@@ -1,6 +1,6 @@
 import { CommonThemeProps } from "@czi-sds/components";
 import styled from "@emotion/styled";
-import { secondaryColor } from "../../../../common/constants";
+import { tertiaryColor } from "../../../../common/constants";
 
 export const NodeWrapper = styled.div`
   display: flex;
@@ -13,7 +13,7 @@ interface BorderProps extends CommonThemeProps {
 }
 
 export const Border = styled.div<BorderProps>`
-  border-left: 1px solid ${secondaryColor};
+  border-left: 1px solid ${tertiaryColor};
   background-color: #f8f8f8;
   width: ${(props) => props.width}px;
   height: ${(props) => props.height / 2}px;

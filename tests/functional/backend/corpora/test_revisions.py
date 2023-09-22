@@ -6,11 +6,7 @@ from urllib.parse import quote
 import requests
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from tests.functional.backend.common import BaseFunctionalTestCase
-
-
-class UndesiredHttpStatusCodeError(Exception):
-    pass
+from tests.functional.backend.common import TEST_DATASET_URI, BaseFunctionalTestCase
 
 
 class TestRevisions(BaseFunctionalTestCase):
@@ -48,15 +44,16 @@ class TestRevisions(BaseFunctionalTestCase):
     def create_explorer_url(self, dataset_id):
         return f"https://cellxgene.{self.deployment_stage}.single-cell.czi.technology/e/{dataset_id}.cxg/"
 
-    @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
+    # TODO: Remove rdev from skip list. Rdev Explorer is required for this test to pass.
+    @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] in ["prod", "rdev"], "Do not make test collections public in prod")
     def test_revision_flow(self):
 
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
 
         collection_id = self.create_collection(headers)
 
-        dataset_1_dropbox_url = "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0"
-        dataset_2_dropbox_url = "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0"
+        dataset_1_dropbox_url = TEST_DATASET_URI
+        dataset_2_dropbox_url = TEST_DATASET_URI
 
         # Uploads a dataset
         self.upload_and_wait(collection_id, dataset_1_dropbox_url)
@@ -140,8 +137,8 @@ class TestRevisions(BaseFunctionalTestCase):
 
         # Start a new revision
         res = self.session.post(f"{self.api}/dp/v1/collections/{canonical_collection_id}", headers=headers)
-        revision_id = res.json()["id"]
         self.assertStatusCode(201, res)
+        revision_id = res.json()["id"]
 
         # Get datasets for the collection (before uploading)
         public_datasets_before = self.session.get(f"{self.api}/dp/v1/collections/{canonical_collection_id}").json()[
@@ -233,8 +230,7 @@ class TestRevisions(BaseFunctionalTestCase):
             s3_uri_res = self.session.get(
                 f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.3/s3_uri", allow_redirects=False
             )
-            if s3_uri_res.status_code != desired_http_status_code:
-                raise UndesiredHttpStatusCodeError
+            assert s3_uri_res.status_code == desired_http_status_code
             return s3_uri_res
 
         @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
@@ -246,8 +242,7 @@ class TestRevisions(BaseFunctionalTestCase):
             schema_res = self.session.get(
                 f"{self.api}/cellxgene/s3_uri/{s3_path_url}/api/v0.3/schema", allow_redirects=False
             )
-            if schema_res.status_code != requests.codes.ok:
-                raise UndesiredHttpStatusCodeError
+            assert schema_res.status_code == requests.codes.ok
             return schema_res
 
         s3_uri_response = get_s3_uri()

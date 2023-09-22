@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import {
   CommonThemeProps,
+  fontBodyXs,
   fontHeaderXl,
   fontHeaderXxl,
   Tag,
@@ -8,17 +9,15 @@ import {
 
 import RightSideBar from "src/components/common/RightSideBar";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
-import Synonyms from "src/components/Synonyms";
 import {
   fontWeightSemibold,
+  primary400,
   spacesL,
   spacesM,
   spacesS,
   spacesXxl,
-  spacesXxs,
 } from "src/common/theme";
 import { StyledDiv } from "src/views/WheresMyGene/components/ScreenTint/style";
-import OntologyId from "src/views/CellGuide/components/OntologyId";
 import { keyframes } from "@emotion/react";
 import { DEFAULT_ONTOLOGY_WIDTH } from "../common/OntologyDagView/common/constants";
 import { SKINNY_MODE_BREAKPOINT_WIDTH } from "./constants";
@@ -128,6 +127,38 @@ export const StyledTag = styled(Tag)`
   margin: 0;
 `;
 
+export const StyledCellTagSideBar = styled(Tag)`
+  .MuiChip-label {
+    color: ${primary400};
+    font-weight: 500 !important;
+    ${fontBodyXs}
+  }
+  background-color: #e0f0ff;
+  &:hover {
+    cursor: default;
+    background-color: #e0f0ff;
+    .MuiChip-label {
+      color: ${primary400};
+    }
+  }
+`;
+
+export const StyledGeneTagSideBar = styled(Tag)`
+  .MuiChip-label {
+    color: #8f5aff;
+    font-weight: 500 !important;
+    ${fontBodyXs}
+  }
+  background-color: #8f5aff26;
+  &:hover {
+    cursor: default;
+    background-color: #8f5aff26;
+    .MuiChip-label {
+      color: #8f5aff;
+    }
+  }
+`;
+
 export const SearchBarPositioner = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -159,7 +190,6 @@ export const StyledRightSideBar = styled(RightSideBar)<StyledRightSideBarProps>`
   z-index: 10;
   top: ${HEADER_HEIGHT_PX}px;
   animation: ${slideIn} 0.2s ease-in-out forwards;
-
   ${(props) => {
     if (props.skinnyMode) {
       return `
@@ -170,25 +200,10 @@ export const StyledRightSideBar = styled(RightSideBar)<StyledRightSideBarProps>`
   }}
 `;
 
-export const StyledSynonyms = styled(Synonyms)`
-  margin-top: ${spacesXxs}px;
-  margin-left: ${spacesL}px;
-`;
-
-export const StyledOntologyId = styled(OntologyId)`
-  margin-top: ${spacesXxs}px;
-  margin-left: ${spacesL}px;
-`;
-
 export const MobileSearchTint = styled(StyledDiv)`
   z-index: 1;
   background: rgba(0, 0, 0, 0.3);
   position: fixed;
-`;
-
-export const FlexContainer = styled.div`
-  display: flex;
-  flex-direction: column;
 `;
 
 export const MobileTooltipTitle = styled.div`
@@ -204,7 +219,7 @@ export const MobileTooltipWrapper = styled.div`
   display: flex;
   flex-direction: column;
   height: calc(100vh - ${HEADER_HEIGHT_PX}px);
-  overscroll-behavior: contain;
+  overscroll-behavior: none;
   width: 100vw;
   padding: ${spacesL}px;
   gap: ${spacesL}px;

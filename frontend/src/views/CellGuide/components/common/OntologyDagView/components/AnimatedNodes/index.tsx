@@ -4,6 +4,7 @@ import { localPoint } from "@visx/event";
 import Node from "../Node";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import {
+  CellType,
   MarkerGeneStatsByCellType,
   TreeNodeWithState,
 } from "../../common/types";
@@ -12,6 +13,8 @@ import { NODE_SPACINGS, TREE_ANIMATION_DURATION } from "../../common/constants";
 import { EVENTS } from "src/common/analytics/events";
 import { track } from "src/common/analytics";
 import { MouseEventHandler, useState } from "react";
+import { useRouter } from "next/router";
+import { ROUTES } from "src/common/constants/routes";
 
 interface AnimatedNodesProps {
   tree: HierarchyPointNode<TreeNodeWithState>;
@@ -32,6 +35,7 @@ interface AnimatedNodesProps {
   }) => void;
   hideTooltip: () => void;
   cellTypesWithMarkerGeneStats: MarkerGeneStatsByCellType | null;
+  setCellInfoCellType?: (props: CellType | null) => void;
 }
 
 interface AnimationState {
@@ -56,16 +60,24 @@ export default function AnimatedNodes({
   showTooltip,
   hideTooltip,
   cellTypesWithMarkerGeneStats,
+  setCellInfoCellType,
 }: AnimatedNodesProps) {
   const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For hover event
-
+  const router = useRouter();
   const handleAnimationEnd = (node: HierarchyPointNode<TreeNodeWithState>) => {
     // Update the starting position of the node to be its current position
     node.data.x0 = node.x;
     node.data.y0 = node.y;
   };
-
   const { data: cellTypeMetadata } = useCellTypeMetadata() || {};
+  const handleNodeLabelClick = ({ cellTypeId, cellTypeName }: CellType) => {
+    if (setCellInfoCellType) {
+      setCellInfoCellType({ cellTypeId, cellTypeName });
+    } else {
+      router.push(`${ROUTES.CELL_GUIDE}/${cellTypeId.replace(":", "_")}`);
+    }
+  };
+
   const handleMouseOver = (
     event: React.MouseEvent<HTMLDivElement>,
     datum: TreeNodeWithState
@@ -141,7 +153,9 @@ export default function AnimatedNodes({
         return { opacity: [0], timing: { duration: 0 } };
       }}
     >
-      {(nodes) => renderNodes(nodes, cellTypesWithMarkerGeneStats)}
+      {(nodes) =>
+        renderNodes(nodes, cellTypesWithMarkerGeneStats, handleNodeLabelClick)
+      }
     </NodeGroup>
   );
 
@@ -151,7 +165,8 @@ export default function AnimatedNodes({
       data: HierarchyPointNode<TreeNodeWithState>;
       state: AnimationState;
     },
-    cellTypesWithMarkerGeneStats: MarkerGeneStatsByCellType | null
+    cellTypesWithMarkerGeneStats: MarkerGeneStatsByCellType | null,
+    handleNodeLabelClick: (props: CellType) => void
   ) {
     const { key, data: node, state } = animatedNode;
 
@@ -176,6 +191,7 @@ export default function AnimatedNodes({
         handleClick={
           handleNodeClick as unknown as MouseEventHandler<HTMLDivElement>
         }
+        handleNodeLabelClick={handleNodeLabelClick}
       />
     );
 
@@ -214,11 +230,14 @@ export default function AnimatedNodes({
 
   function renderNodes(
     nodes: AnimationNode[],
-    cellTypesWithMarkerGeneStats: AnimatedNodesProps["cellTypesWithMarkerGeneStats"]
+    cellTypesWithMarkerGeneStats: AnimatedNodesProps["cellTypesWithMarkerGeneStats"],
+    handleNodeLabelClick: (props: CellType) => void
   ) {
     return (
       <Group>
-        {nodes.map((node) => renderNode(node, cellTypesWithMarkerGeneStats))}
+        {nodes.map((node) =>
+          renderNode(node, cellTypesWithMarkerGeneStats, handleNodeLabelClick)
+        )}
       </Group>
     );
   }
