@@ -4,12 +4,9 @@ import time
 from urllib.parse import urlparse
 
 import connexion
-
-# import gevent.monkey
+import gevent.monkey
 from connexion import FlaskApi, ProblemException, problem
-
-# from ddtrace import patch_all, tracer
-# from ddtrace.filters import FilterRequestsOnUrl
+from ddtrace import patch_all, tracer
 from flask import Response, g, request
 from flask_cors import CORS
 from server_timing import Timing as ServerTiming
@@ -34,23 +31,23 @@ def has_datadog_env_vars():
 
 # TODO(prathap): Fix problem with ddtrace causing backend unit test to hang
 # before configuring ddtrace below.
-# if has_datadog_env_vars():
-# Datadog APM tracing
-# See https://ddtrace.readthedocs.io/en/stable/basic_usage.html#patch-all
+if has_datadog_env_vars():
+    # Datadog APM tracing
+    # See https://ddtrace.readthedocs.io/en/stable/basic_usage.html#patch-all
 
-# next line may be redundant with DD_GEVENT_PATCH_ALL env var in .happy/terraform/modules/service/main.tf
-# gevent.monkey.patch_all()
-# tracer.configure(
-#    hostname=os.environ["DD_AGENT_HOST"],
-#    port=os.environ["DD_TRACE_AGENT_PORT"],
-# Filter out health check endpoint (index page: '/')
-#    settings={
-#        "FILTERS": [
-#            FilterRequestsOnUrl([r"http://.*/$"]),
-#        ],
-#    },
-# )
-# patch_all()
+    # next line may be redundant with DD_GEVENT_PATCH_ALL env var in .happy/terraform/modules/service/main.tf
+    gevent.monkey.patch_all()
+    tracer.configure(
+        hostname=os.environ["DD_AGENT_HOST"],
+        port=os.environ["DD_TRACE_AGENT_PORT"],
+        # Filter out health check endpoint (index page: '/')
+        # settings={
+        #     "FILTERS": [
+        #         FilterRequestsOnUrl([r"http://.*/$"]),
+        #     ],
+        # },
+    )
+    patch_all()
 
 # enable Datadog profiling for development
 # if DEPLOYMENT_STAGE not in ["staging", "prod"]:
@@ -143,6 +140,7 @@ app = configure_flask_app(create_flask_app())
 
 
 @app.route("/")
+@tracer.wrap()
 def apis_landing_page() -> str:
     """
     Render a page that displays links to all APIs
