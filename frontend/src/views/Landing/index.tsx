@@ -72,7 +72,7 @@ const LandingPage = (): JSX.Element => {
     if (isLoading) return null;
     if (!data || !isSuccess) return LANDING_PAGE_FALLBACK_CELLS_HERO_NUM;
     const total = data.reduce(
-      (acc, curr) => acc + (curr.primary_cell_count || 0),
+      (acc, curr) => acc + (curr.primary_cell_count ?? 0),
       0
     );
     const formatter = new Intl.NumberFormat("en", {
