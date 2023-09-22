@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import Any, Dict, Iterable, List
 
 import connexion
+from ddtrace import tracer
 from flask import jsonify
 from pandas import DataFrame
 from server_timing import Timing as ServerTiming
@@ -32,6 +33,7 @@ from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find
 #  -portal/2132
 
 
+@tracer.wrap()
 def primary_filter_dimensions():
     with ServerTiming.time("load snapshot"):
         snapshot: WmgSnapshot = load_snapshot(
@@ -42,6 +44,7 @@ def primary_filter_dimensions():
     return jsonify(snapshot.primary_filter_dimensions)
 
 
+@tracer.wrap()
 def query():
     request = connexion.request.json
     is_rollup = request.get("is_rollup", True)
@@ -106,6 +109,7 @@ def query():
     return response
 
 
+@tracer.wrap()
 def filters():
     request = connexion.request.json
     criteria = WmgFiltersQueryCriteria(**request["filter"])
@@ -127,6 +131,7 @@ def filters():
     return response
 
 
+@tracer.wrap()
 def markers():
     request = connexion.request.json
     cell_type = request["celltype"]
