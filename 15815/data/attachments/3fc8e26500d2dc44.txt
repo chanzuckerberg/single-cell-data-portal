@@ -1,0 +1,50 @@
+  pw:api => selectors.setTestIdAttribute started +0ms
+  pw:api => browserType.launch started +7ms
+  pw:api <= selectors.setTestIdAttribute succeeded +6ms
+  pw:api <= browserType.launch succeeded +234ms
+  pw:api => browser.newContext started +9ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +75ms
+  pw:api   "commit" event fired +19ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "domcontentloaded" event fired +4ms
+  pw:api   "load" event fired +1ms
+  pw:api <= browser.newContext succeeded +16ms
+  pw:api => tracing.start started +7ms
+  pw:api <= tracing.start succeeded +25ms
+  pw:api => browserContext.newPage started +4ms
+  pw:api <= browserContext.newPage succeeded +51ms
+  pw:api => page.waitForResponse started +10ms
+  pw:api => page.goto started +9ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +12ms
+  pw:api   "commit" event fired +10s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +1ms
+  pw:api   "networkidle" event fired +5s
+  pw:api   "domcontentloaded" event fired +4s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +6ms
+  pw:api   navigated to "about:blank" +38ms
+  pw:api <= page.goto succeeded +78ms
+  pw:api <= page.waitForResponse succeeded +12s
+  pw:api => locator.click started +3ms
+  pw:api waiting for getByTestId('add-gene-btn') +46ms
+  pw:api   locator resolved to <div label="Add Genes" data-testid="add-gene-btn" cla…>…</div> +20ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +28ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +34ms
+  pw:api   "networkidle" event fired +498ms
+  pw:api   click action done +430ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +27ms
+  pw:api <= locator.click succeeded +25ms
+  pw:api => locator.elementHandles started +4ms
+  pw:api <= locator.elementHandles succeeded +20ms
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +38ms
+  pw:api => keyboard.press started +9ms
+  pw:api <= keyboard.press succeeded +3s
+  pw:api => keyboard.press started +10ms
+  pw:api <= keyboard.press succeeded +149ms
+  pw:api taking page screenshot +90ms

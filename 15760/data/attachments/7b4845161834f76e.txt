@@ -1,3 +1,0 @@
-  pw:api <= selectors.setTestIdAttribute succeeded +52ms
-  pw:api => selectors.setTestIdAttribute started +19ms
-  pw:api => selectors.setTestIdAttribute started +11ms
