@@ -1,0 +1,19 @@
+⚠️  tryUntil error-----------------START
+Timed out 10000ms waiting for expect(received).toBeVisible()
+Call log:
+  - expect.toBeVisible with timeout 10000ms
+  - waiting for getByText('Welcome to CZ CELLxGENE')
+  -   locator resolved to <h1 id="welcome-to-cz-cellxgene" class="css-oojown-M…>Welcome to CZ CELLxGENE</h1>
+  -   unexpected value "hidden"
+  -   locator resolved to <h1 id="welcome-to-cz-cellxgene" class="css-oojown-M…>Welcome to CZ CELLxGENE</h1>
+  -   unexpected value "hidden"
+  -   locator resolved to <h1 id="welcome-to-cz-cellxgene" class="css-oojown-M…>Welcome to CZ CELLxGENE</h1>
+  -   unexpected value "hidden"
+  -   locator resolved to <h1 id="welcome-to-cz-cellxgene" class="css-oojown-M…>Welcome to CZ CELLxGENE</h1>
+  -   unexpected value "hidden"
+  -   locator resolved to <h1 id="welcome-to-cz-cellxgene" class="css-oojown-M…>Welcome to CZ CELLxGENE</h1>
+  -   unexpected value "hidden"
+  -   locator resolved to <h1 id="welcome-to-cz-cellxgene" class="css-oojown-M…>Welcome to CZ CELLxGENE</h1>
+  -   unexpected value "hidden"
+
+⚠️  tryUntil error-----------------END
