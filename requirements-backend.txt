@@ -9,8 +9,11 @@ click==8.1.3
 connexion[swagger-ui]==2.13.0
 coverage>=6.5.0
 dataclasses-json==0.5.7
-datadog==0.47.0 # for datadog
-ddtrace==1.20.0 # for datadog
+datadog==0.47.0 # TODO (prathap): Check if this is really essential for APM tracing
+# TODO(prathap): Fix this! ddtrace is essential for datadog but it is commented out because
+# it makes the following unit test hang:
+# tests/unit/backend/layers/common/test_auth0_manager.py::TestSession::test_session_refresh
+# ddtrace==1.20.1
 Flask==2.2.3
 Flask-Cors>=3.0.6
 flask-server-timing==0.1.2

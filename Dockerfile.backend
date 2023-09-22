@@ -12,6 +12,9 @@ RUN apt-get update && \
 # Don't re-run pip install unless either requirements.txt has changed.
 WORKDIR /single-cell-data-portal
 ADD requirements-backend.txt requirements-backend.txt
+
+# TODO(prathap): Determine if cmake is really needed for ddtrace
+RUN python3 -m pip install cmake
 RUN python3 -m pip install -r requirements-backend.txt
 EXPOSE 5000
 
