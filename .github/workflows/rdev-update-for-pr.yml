@@ -117,8 +117,10 @@ jobs:
               repo: context.repo.repo,
               body: "${{ steps.summary.outputs.summary}}"
             })
+
   functional-test:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     needs:
       - create-rdev
     steps:

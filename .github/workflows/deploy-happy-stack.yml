@@ -344,6 +344,7 @@ jobs:
 
   functional-test:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     needs:
       - upgrade
     steps:
@@ -398,6 +399,7 @@ jobs:
 
   performance-test:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     needs:
       - upgrade
     steps:
