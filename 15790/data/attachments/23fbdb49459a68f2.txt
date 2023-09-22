@@ -1,0 +1,42 @@
+  pw:api => selectors.setTestIdAttribute started +648ms
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +42ms
+  pw:api   "commit" event fired +15ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api   "load" event fired +0ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +45ms
+  pw:api => page.waitForLoadState started +7ms
+  pw:api => page.goto started +4ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +9ms
+  pw:api   "commit" event fired +254ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "commit" event fired +2ms
+  pw:api   "networkidle" event fired +5s
+  pw:api <= page.waitForLoadState succeeded +7ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/" +3ms
+  pw:api   navigated to "about:blank" +46ms
+  pw:api   navigated to "about:blank" +3ms
+  pw:api <= page.goto succeeded +12ms
+  pw:api => locator.innerText started +2ms
+  pw:api waiting for getByTestId('landing-page-cells-hero-num') +242ms
+  pw:api   locator resolved to <p data-testid="landing-page-cells-hero-num">49.9M</p> +36ms
+  pw:api <= locator.innerText succeeded +13ms
+  pw:api => locator.innerText started +1ms
+  pw:api waiting for getByTestId('landing-page-celltypes-hero-num') +13ms
+  pw:api   locator resolved to <p data-testid="landing-page-celltypes-hero-num">709</p> +4ms
+  pw:api <= locator.innerText succeeded +8ms
+  pw:api => locator.innerText started +0ms
+  pw:api waiting for getByTestId('landing-page-datasets-hero-num') +10ms
+  pw:api   locator resolved to <p data-testid="landing-page-datasets-hero-num">956</p> +3ms
+  pw:api <= locator.innerText succeeded +8ms
+  pw:api taking page screenshot +21ms
+  pw:api   "networkidle" event fired +130ms
