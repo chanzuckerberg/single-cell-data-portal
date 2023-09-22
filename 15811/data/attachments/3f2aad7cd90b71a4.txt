@@ -1,0 +1,154 @@
+  pw:api => selectors.setTestIdAttribute started +1s
+  pw:api => browser.newContext started +4ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +38ms
+  pw:api   "commit" event fired +12ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api   "load" event fired +0ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => tracing.start started +5ms
+  pw:api <= tracing.start succeeded +3ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +40ms
+  pw:api => page.waitForLoadState started +2ms
+  pw:api => page.goto started +4ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +52ms
+  pw:api   "commit" event fired +126ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +1ms
+  pw:api   "commit" event fired +15ms
+  pw:api   "networkidle" event fired +4s
+  pw:api <= page.waitForLoadState succeeded +3ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +5ms
+  pw:api   navigated to "about:blank" +29ms
+  pw:api <= page.goto succeeded +13ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view') to be visible +28ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-ontology-dag-view">…</div> +332ms
+  pw:api <= locator.waitFor succeeded +2s
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-enriched-genes-table-selector') +786ms
+  pw:api   locator resolved to <button class="css-c7lv9m-TableSelectorButton e1mdzv39" …>Computational</button> +88ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +1ms
+  pw:api   element is visible, enabled and stable +43ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +197ms
+  pw:api   click action done +181ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +38ms
+  pw:api <= locator.click succeeded +55ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-enriched-genes-table\']') to be visible +55ms
+  pw:api   locator resolved to visible <div class="css-n08b0e-TableWrapper e161gt4e1" data-t…>…</div> +10ms
+  pw:api <= locator.waitFor succeeded +17ms
+  pw:api => locator.all started +1ms
+  pw:api <= locator.all succeeded +7ms
+  pw:api => locator.textContent started +1ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-enriched-genes-table\'] tbody tr').first() +18ms
+  pw:api   locator resolved to <tr class="css-1u4zc7b-StyledRow e161gt4e4">…</tr> +5ms
+  pw:api <= locator.textContent succeeded +28ms
+  pw:api => locator.hover started +3ms
+  pw:api waiting for locator('[data-testid=\'cell-guide-card-enriched-genes-table\'] tbody tr').first().locator('td').first() +38ms
+  pw:api   locator resolved to <td class="css-dkdle1-StyledCell e161gt4e5">…</td> +17ms
+  pw:api attempting hover action +1ms
+  pw:api   waiting for element to be visible and stable +1ms
+  pw:api   element is visible and stable +5ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing hover action +22ms
+  pw:api   hover action done +9ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.hover succeeded +17ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByTestId('marker-gene-table-eye-button-NRXN1') +51ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="intrinsic" alt="acti…/> +7ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +8ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +21ms
+  pw:api   "networkidle" event fired +115ms
+  pw:api   click action done +379ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +89ms
+  pw:api <= locator.click succeeded +52ms
+  pw:api => locator.waitFor started +3ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-deactivate-marker-gene-mode') to be visible +135ms
+  pw:api   locator resolved to visible <div tabindex="0" role="button" data-testid="cell-gui…>…</div> +13ms
+  pw:api <= locator.waitFor succeeded +99ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-ontology-dag-view-deactivate-marker-gene-mode') +119ms
+  pw:api <= locator.isVisible succeeded +79ms
+  pw:api => locator.hover started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-rect-or-circle-CL:0002319__0-has-children-isTargetNode=false') +47ms
+  pw:api   locator resolved to <foreignobject x="-8" y="-8" width="16" height="16" data-testid…>…</foreignobject> +7ms
+  pw:api attempting hover action +1ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +37ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing hover action +15ms
+  pw:api   hover action done +92ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +77ms
+  pw:api <= locator.hover succeeded +67ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-tooltip') to be visible +27ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-ontology-dag-view-t…>…</div> +23ms
+  pw:api <= locator.waitFor succeeded +68ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-ontology-dag-view-tooltip') +78ms
+  pw:api <= locator.isVisible succeeded +33ms
+  pw:api => locator.textContent started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-tooltip') +11ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-ontology-dag-view-t…>…</div> +5ms
+  pw:api <= locator.textContent succeeded +11ms
+  pw:api => locator.textContent started +1ms
+  pw:api waiting for getByTestId('cell-guide-ontology-view-legend') +13ms
+  pw:api   locator resolved to <div class="css-gfk7xy-LegendWrapper e1ljfis80" data-…>…</div> +4ms
+  pw:api <= locator.textContent succeeded +11ms
+  pw:api => locator.click started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-deactivate-marker-gene-mode') +12ms
+  pw:api   locator resolved to <div tabindex="0" role="button" data-testid="cell-gui…>…</div> +5ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +21ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +14ms
+  pw:api   click action done +625ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +118ms
+  pw:api <= locator.click succeeded +58ms
+  pw:api => locator.hover started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-rect-or-circle-CL:0002319__0-has-children-isTargetNode=false') +22ms
+  pw:api   locator resolved to <foreignobject x="-8" y="-8" width="16" height="16" data-testid…>…</foreignobject> +6ms
+  pw:api attempting hover action +2ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +20ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +1ms
+  pw:api   performing hover action +23ms
+  pw:api   hover action done +158ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +68ms
+  pw:api <= locator.hover succeeded +17ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-tooltip') to be visible +26ms
+  pw:api   locator resolved to visible <div data-testid="cell-guide-card-ontology-dag-view-t…>…</div> +6ms
+  pw:api <= locator.waitFor succeeded +14ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-ontology-dag-view-tooltip') +15ms
+  pw:api <= locator.isVisible succeeded +24ms
+  pw:api => locator.textContent started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-ontology-dag-view-tooltip') +18ms
+  pw:api   locator resolved to <div data-testid="cell-guide-card-ontology-dag-view-t…>…</div> +7ms
+  pw:api <= locator.textContent succeeded +15ms
+  pw:api taking page screenshot +18ms

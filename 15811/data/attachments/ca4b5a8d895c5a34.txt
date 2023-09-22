@@ -1,0 +1,81 @@
+  pw:api => selectors.setTestIdAttribute started +228ms
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +39ms
+  pw:api   "commit" event fired +15ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "domcontentloaded" event fired +3ms
+  pw:api   "load" event fired +1ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +5ms
+  pw:api => browserContext.newPage started +2ms
+  pw:api <= browserContext.newPage succeeded +77ms
+  pw:api => page.waitForResponse started +1ms
+  pw:api => page.goto started +17ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +24ms
+  pw:api   "commit" event fired +144ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +1ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +6ms
+  pw:api   navigated to "about:blank" +25ms
+  pw:api <= page.goto succeeded +68ms
+  pw:api   "networkidle" event fired +3s
+  pw:api <= page.waitForResponse succeeded +2s
+  pw:api => locator.count started +6ms
+  pw:api <= locator.count succeeded +41ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-type-labels-brain').getByTestId('tissue-name') +7ms
+  pw:api   locator resolved to <div data-testid="tissue-name" class="tissue-name css…>Brain</div> +540ms
+  pw:api attempting click action +5ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +68ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +38ms
+  pw:api   click action done +252ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +14ms
+  pw:api <= locator.click succeeded +69ms
+  pw:api => locator.count started +22ms
+  pw:api <= locator.count succeeded +18ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +44ms
+  pw:api => locator.allTextContents started +3ms
+  pw:api <= locator.allTextContents succeeded +56ms
+  pw:api => expect.not.toHaveCount started +4ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +15ms
+  pw:api waiting for getByTestId('cell-type-name') +0ms
+  pw:api   locator resolved to 67 elements +7ms
+  pw:api <= expect.not.toHaveCount succeeded +30ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByRole('img', { name: 'display marker genes for smooth muscle cell' }) +12ms
+  pw:api   locator resolved to <img decoding="async" data-nimg="fixed" data-testid="…/> +15ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +12ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +23ms
+  pw:api   click action done +266ms
+  pw:api   waiting for scheduled navigations to finish +1ms
+  pw:api   navigations have finished +5ms
+  pw:api <= locator.click succeeded +31ms
+  pw:api => expect.not.toHaveCount started +21ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +20ms
+  pw:api waiting for getByTestId('no-marker-genes-warning') +0ms
+  pw:api   locator resolved to 0 elements +4ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +3ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +104ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +255ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 0 elements +505ms
+  pw:api   unexpected value "0" +0ms
+  pw:api   locator resolved to 1 element +1s
+  pw:api <= expect.not.toHaveCount succeeded +14ms
+  pw:api taking page screenshot +10ms

@@ -1,0 +1,86 @@
+  pw:api => selectors.setTestIdAttribute started +356ms
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +4ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +38ms
+  pw:api   "commit" event fired +16ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api   "load" event fired +0ms
+  pw:api <= browser.newContext succeeded +11ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +39ms
+  pw:api => page.waitForResponse started +2ms
+  pw:api => page.goto started +6ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +16ms
+  pw:api   "commit" event fired +126ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +2ms
+  pw:api   navigated to "about:blank" +35ms
+  pw:api <= page.goto succeeded +39ms
+  pw:api   "networkidle" event fired +3s
+  pw:api <= page.waitForResponse succeeded +2s
+  pw:api => locator.count started +2ms
+  pw:api <= locator.count succeeded +49ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-type-labels-lung').getByTestId('tissue-name') +9ms
+  pw:api   locator resolved to <div data-testid="tissue-name" class="tissue-name css…>Lung</div> +491ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +34ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +43ms
+  pw:api   click action done +519ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +27ms
+  pw:api <= locator.click succeeded +68ms
+  pw:api => locator.count started +3ms
+  pw:api <= locator.count succeeded +22ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +42ms
+  pw:api => locator.allTextContents started +5ms
+  pw:api <= locator.allTextContents succeeded +44ms
+  pw:api => locator.waitFor started +3ms
+  pw:api waiting for getByText('Loading').first() to be hidden +20ms
+  pw:api <= locator.waitFor succeeded +31ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +33ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +42ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +32ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +31ms
+  pw:api => locator.waitFor started +1ms
+  pw:api => locator.type started +1ms
+  pw:api waiting for getByText('Loading').first() to be hidden +12ms
+  pw:api waiting for getByPlaceholder('Add Genes') +10ms
+  pw:api   locator resolved to <input value="" id="mui-7" type="search" role="combobox…/> +11ms
+  pw:api elementHandle.type("MALAT1") +11ms
+  pw:api <= locator.waitFor succeeded +2ms
+  pw:api <= locator.type succeeded +1s
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByText('MALAT1') +20ms
+  pw:api   locator resolved to <div class="css-1iyoj2o">MALAT1</div> +11ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +17ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +19ms
+  pw:api   click action done +847ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +32ms
+  pw:api <= locator.click succeeded +94ms
+  pw:api => keyboard.press started +1ms
+  pw:api <= keyboard.press succeeded +154ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +77ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +79ms
+  pw:api taking page screenshot +17ms
