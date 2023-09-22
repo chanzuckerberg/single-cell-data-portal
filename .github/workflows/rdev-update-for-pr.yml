@@ -122,7 +122,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     needs:
-      - create-rdev
+      - deploy-rdev
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
