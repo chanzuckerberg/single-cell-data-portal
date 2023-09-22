@@ -291,15 +291,6 @@ jobs:
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
           retention-days: 1
 
-      - uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          fields: repo,commit,author,eventName,workflow,job,mention
-          mention: "here"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && github.ref == 'refs/heads/main'
-
   wait-for-shards:
     needs: run-e2e-tests # run after shards
     runs-on: ubuntu-22.04
