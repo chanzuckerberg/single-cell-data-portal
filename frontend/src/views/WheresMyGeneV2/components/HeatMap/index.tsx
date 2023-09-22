@@ -380,6 +380,28 @@ export default memo(function HeatMap({
     tissuesByName,
   ]);
 
+  useEffect(() => {
+    if (filteredTissueIds.length === 0) return;
+    setExpandedTissues(new Set(filteredTissueIds));
+    Object.entries(sortedCellTypesByTissueName).forEach(
+      ([tissue, cellTypes]) => {
+        if (filteredTissueIds.includes(tissuesByName[tissue].id)) {
+          cellTypes.forEach((cellType) => {
+            setDisplayedCellTypes(
+              (prev) =>
+                new Set([...prev, tissuesByName[tissue].id + cellType.name])
+            );
+          });
+        }
+      }
+    );
+  }, [
+    filteredTissueIds,
+    sortedCellTypesByTissueName,
+    tissuesByName,
+    setExpandedTissues,
+  ]);
+
   const handleCellTypeDelete = (cellTypeNameToDelete: string) => () => {
     if (!dispatch) return;
     const cellTypeIdToDelete = cellTypesByName[cellTypeNameToDelete].id;
