@@ -4,7 +4,6 @@ import time
 from urllib.parse import urlparse
 
 import connexion
-import gevent.monkey
 from connexion import FlaskApi, ProblemException, problem
 from ddtrace import patch_all, tracer
 from flask import Response, g, request
@@ -36,7 +35,7 @@ if has_datadog_env_vars():
     # See https://ddtrace.readthedocs.io/en/stable/basic_usage.html#patch-all
 
     # next line may be redundant with DD_GEVENT_PATCH_ALL env var in .happy/terraform/modules/service/main.tf
-    gevent.monkey.patch_all()
+    # gevent.monkey.patch_all()
     tracer.configure(
         hostname=os.environ["DD_AGENT_HOST"],
         port=os.environ["DD_TRACE_AGENT_PORT"],
