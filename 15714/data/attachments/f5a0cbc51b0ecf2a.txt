@@ -1,6 +1,0 @@
-⚠️  tryUntil error-----------------START
-locator.click: Page closed
-=========================== logs ===========================
-waiting for getByTestId('cell-type-labels-blood').getByTestId('tissue-name')
-============================================================
-⚠️  tryUntil error-----------------END
