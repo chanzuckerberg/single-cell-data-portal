@@ -233,6 +233,7 @@ jobs:
 
   backend-unit-test:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -286,6 +287,7 @@ jobs:
 
   backend-wmg-unit-test:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -339,6 +341,7 @@ jobs:
 
   processing-unit-test:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -397,6 +400,7 @@ jobs:
 
   wmg-processing-unit-test:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -451,6 +455,7 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
   cellguide-pipeline-unit-test:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -506,6 +511,7 @@ jobs:
 
   cxg-admin-unit-test:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -559,6 +565,7 @@ jobs:
 
   backend-integration-test:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
