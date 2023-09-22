@@ -812,9 +812,11 @@ def get_dataset_identifiers(url: str):
 
     validate_uuid_else_forbidden(_id)
 
+    # Private datasets (either of a revision or of a private collection) use their dataset version ID (e.g. /data_root/dataset_version_id.cxg).
     dataset = get_business_logic().get_dataset_version(DatasetVersionId(_id))
     if dataset is None:
         # Lookup from canonical if the version cannot be found
+        # Published datasets use their dataset ID (e.g. /data_root/dataset_id.cxg).
         try:
             dataset = get_business_logic().get_dataset_version_from_canonical(DatasetId(_id))
             if dataset is None:
