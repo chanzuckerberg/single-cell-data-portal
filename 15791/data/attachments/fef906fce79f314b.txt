@@ -1,0 +1,73 @@
+  pw:api => selectors.setTestIdAttribute started +7s
+  pw:api => browser.newContext started +10ms
+  pw:api <= selectors.setTestIdAttribute succeeded +2ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +56ms
+  pw:api   "commit" event fired +15ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "domcontentloaded" event fired +2ms
+  pw:api   "load" event fired +1ms
+  pw:api <= browser.newContext succeeded +13ms
+  pw:api => tracing.start started +5ms
+  pw:api <= tracing.start succeeded +4ms
+  pw:api => browserContext.newPage started +8ms
+  pw:api <= browserContext.newPage succeeded +53ms
+  pw:api => page.waitForLoadState started +3ms
+  pw:api => page.goto started +7ms
+  pw:api navigating to "https://localhost:3000/cellguide/CL_0000540", waiting until "load" +33ms
+  pw:api   "commit" event fired +166ms
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +1ms
+  pw:api   "commit" event fired +3ms
+  pw:api   "networkidle" event fired +5s
+  pw:api <= page.waitForLoadState succeeded +4ms
+  pw:api   "networkidle" event fired +1ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/cellguide/CL_0000540" +3ms
+  pw:api   navigated to "about:blank" +33ms
+  pw:api <= page.goto succeeded +13ms
+  pw:api => locator.waitFor started +2ms
+  pw:api waiting for getByTestId('cell-guide-card-gpt-tooltip-link') to be visible +25ms
+  pw:api   "networkidle" event fired +920ms
+  pw:api   locator resolved to visible <a data-mui-internal-clone-element="true" data-test…>…</a> +2s
+  pw:api <= locator.waitFor succeeded +210ms
+  pw:api => locator.isVisible started +2ms
+  pw:api   checking visibility of getByTestId('cell-guide-card-gpt-tooltip-link') +94ms
+  pw:api <= locator.isVisible succeeded +34ms
+  pw:api => locator.hover started +3ms
+  pw:api waiting for getByTestId('cell-guide-card-gpt-tooltip-link') +44ms
+  pw:api   locator resolved to <a data-mui-internal-clone-element="true" data-test…>…</a> +12ms
+  pw:api attempting hover action +2ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +10ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   <div role="banner" data-id="newsletter-banner" class=…>…</div> from <div id="bottom-banner" data-testid="newsletter-modal…>…</div> subtree intercepts pointer events +52ms
+  pw:api retrying hover action, attempt #1 +0ms
+  pw:api   waiting for element to be visible and stable +1ms
+  pw:api   element is visible and stable +13ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +4ms
+  pw:api   <div role="banner" data-id="newsletter-banner" class=…>…</div> from <div id="bottom-banner" data-testid="newsletter-modal…>…</div> subtree intercepts pointer events +26ms
+  pw:api retrying hover action, attempt #2 +0ms
+  pw:api   waiting 20ms +0ms
+  pw:api   waiting for element to be visible and stable +22ms
+  pw:api   element is visible and stable +16ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing hover action +227ms
+  pw:api   hover action done +139ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +98ms
+  pw:api <= locator.hover succeeded +60ms
+  pw:api => locator.waitFor started +6ms
+  pw:api waiting for getByRole('tooltip') to be visible +41ms
+  pw:api   locator resolved to visible <div id="mui-2" role="tooltip" data-popper-placement=…>…</div> +34ms
+  pw:api <= locator.waitFor succeeded +36ms
+  pw:api => locator.isVisible started +1ms
+  pw:api   checking visibility of getByRole('tooltip') +30ms
+  pw:api <= locator.isVisible succeeded +115ms
+  pw:api => locator.textContent started +3ms
+  pw:api waiting for getByRole('tooltip') +23ms
+  pw:api   locator resolved to <div id="mui-2" role="tooltip" data-popper-placement=…>…</div> +22ms
+  pw:api <= locator.textContent succeeded +37ms
+  pw:api taking page screenshot +15ms
