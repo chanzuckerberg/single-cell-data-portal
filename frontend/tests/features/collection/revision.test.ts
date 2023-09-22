@@ -127,9 +127,18 @@ describe("Collection Revision @loggedIn", () => {
     await tryUntil(
       async () => {
         await expect(page.getByTestId(COLLECTION_CONTENT_ID)).not.toBeVisible();
-        await expect(page).toMatchText(new RegExp(newCollectionName));
-        await expect(page).toMatchText(new RegExp(collectionDescription));
-        await expect(page).toMatchText(new RegExp(collectionContactName));
+
+        await expect(
+          page.getByText(new RegExp(newCollectionName))
+        ).toBeVisible();
+
+        await expect(
+          page.getByText(new RegExp(collectionDescription))
+        ).toBeVisible();
+
+        await expect(
+          page.getByText(new RegExp(collectionContactName))
+        ).toBeVisible();
       },
       { page }
     );
@@ -200,7 +209,7 @@ async function startRevision(page: Page): Promise<string> {
   // We expect to find one status tag, with the text "Published".
   expect(statusTag).not.toBe(null);
   await expect(statusTag).toHaveCount(1);
-  await expect(statusTag).toMatchText("Published");
+  await expect(statusTag.getByText("Published")).toBeVisible();
 
   // Grab the collection link.
   const collectionLink = await collectionRow?.getByTestId(COLLECTION_NAME_ID);
@@ -211,7 +220,7 @@ async function startRevision(page: Page): Promise<string> {
 
   await tryUntil(
     async () =>
-      await expect(page).toHaveSelector(getTestID(COLLECTION_ACTIONS_ID)),
+      await expect(page.getByTestId(COLLECTION_ACTIONS_ID)).toBeVisible(),
     { page }
   );
 
@@ -226,16 +235,20 @@ async function startRevision(page: Page): Promise<string> {
     "This is a private revision of a published collection. Open Published Collection";
 
   await tryUntil(
-    async () =>
-      await expect(page).toHaveSelector(getTestID(COLLECTION_STATUS_BANNER_ID)),
+    async () => {
+      await expect(page.getByTestId(COLLECTION_STATUS_BANNER_ID)).toBeVisible();
+
+      const collectionStatusBanner = page.getByTestId(
+        COLLECTION_STATUS_BANNER_ID
+      );
+
+      await expect(
+        collectionStatusBanner.getByText(PRIVATE_REVISION_TEXT)
+      ).toBeVisible();
+    },
+
     { page }
   );
-
-  const collectionStatusBanner = await page.getByTestId(
-    COLLECTION_STATUS_BANNER_ID
-  );
-
-  await expect(collectionStatusBanner).toMatchText(PRIVATE_REVISION_TEXT);
 
   return collectionName;
 }
