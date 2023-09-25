@@ -15,9 +15,9 @@ if [ "${DEPLOYMENT_STAGE}" == "test" ]; then
   HTTPS_CERT_AND_KEY="--certfile /tmp/pkcs12/server.crt --keyfile /tmp/pkcs12/server.key"
 fi
 
-# TODO(prathap): Fix problem with ddtrace causing backend unit test to hang
-# before invoking gunicorn under ddtrace-run. Also make sure when
-# DEPLOYMENT_STAGE=test, gunicorn is not invoked under ddtrace-run
+# TODO: Fix problem with invoking gunicorn under ddtrace-run. Also make sure when
+# DEPLOYMENT_STAGE=test, gunicorn is not invoked under ddtrace-run.
+# See ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5819
 
 export DD_GEVENT_PATCH_ALL=true
 # Note: Using just 1 worker for dev/test env. Multiple workers are used in deployment envs, as defined in Terraform code.

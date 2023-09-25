@@ -29,14 +29,13 @@ def has_datadog_env_vars():
     return os.environ.get("DD_AGENT_HOST", None) and os.environ.get("DD_TRACE_AGENT_PORT", None)
 
 
-# TODO(prathap): Fix problem with ddtrace causing backend unit test to hang
-# before configuring ddtrace below.
 if has_datadog_env_vars():
     # Datadog APM tracing
     # See https://ddtrace.readthedocs.io/en/stable/basic_usage.html#patch-all
 
-    # TODO(prathap): Fix this! next line may be redundant with DD_GEVENT_PATCH_ALL env var
+    # TODO: Fix this! next line may be redundant with DD_GEVENT_PATCH_ALL env var
     # in .happy/terraform/modules/service/main.tf
+    # see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
     # gevent.monkey.patch_all()
     tracer.configure(
         hostname=os.environ["DD_AGENT_HOST"],
@@ -50,8 +49,9 @@ if has_datadog_env_vars():
     )
     patch_all()
 
-# TODO(prathap): Determine if there is a requirement to instrument deeper
+# TODO: Determine if there is a requirement to instrument deeper
 # profiling in the dev environment.
+# see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
 # enable Datadog profiling for development
 # if DEPLOYMENT_STAGE not in ["staging", "prod"]:
 # noinspection PyPackageRequirements,PyUnresolvedReferences
