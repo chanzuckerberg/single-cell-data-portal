@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 
 from furl import furl
 
-from backend.layers.business.entities import DatasetArtifactDownloadData, DatasetArtifactDownloadDataDeprecated
+from backend.layers.business.entities import DatasetArtifactDownloadData, DeprecatedDatasetArtifactDownloadData
 from backend.layers.common.entities import (
     CollectionId,
     CollectionVersionId,
@@ -1576,7 +1576,7 @@ class TestDataset(BaseAPIPortalTest):
     # ✅
     def test__post_dataset_asset__OK(self):
         self.business_logic.get_dataset_artifact_download_data_deprecated = Mock(
-            return_value=DatasetArtifactDownloadDataDeprecated(
+            return_value=DeprecatedDatasetArtifactDownloadData(
                 "asset.h5ad", DatasetArtifactType.H5AD, 1000, "http://presigned.url"
             )
         )

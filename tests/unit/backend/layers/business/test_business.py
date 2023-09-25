@@ -12,7 +12,7 @@ from backend.layers.business.business import (
     CollectionMetadataUpdate,
     CollectionQueryFilter,
     DatasetArtifactDownloadData,
-    DatasetArtifactDownloadDataDeprecated,
+    DeprecatedDatasetArtifactDownloadData,
 )
 from backend.layers.business.exceptions import (
     CollectionCreationException,
@@ -1252,7 +1252,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         download_data = self.business_logic.get_dataset_artifact_download_data_deprecated(
             dataset.version_id, artifact.id
         )
-        expected_download_data = DatasetArtifactDownloadDataDeprecated(
+        expected_download_data = DeprecatedDatasetArtifactDownloadData(
             f"{dataset.version_id}.h5ad", DatasetArtifactType.H5AD, expected_file_size, expected_presigned_url
         )
         self.assertEqual(download_data, expected_download_data)

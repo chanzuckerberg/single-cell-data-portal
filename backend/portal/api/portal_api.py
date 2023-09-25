@@ -669,7 +669,11 @@ def get_dataset_asset(dataset_id: str, asset_id: str):
     if download_data.url is None:
         raise ServerErrorHTTPException()
 
-    response = {"dataset_id": dataset_id, "file_size": download_data.file_size, "url": download_data.url}
+    response = {
+        "dataset_id": dataset_id,
+        "file_size": download_data.file_size,
+        "url": download_data.url,
+    }
 
     return make_response(response, 200)
 

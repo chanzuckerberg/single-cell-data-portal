@@ -6,6 +6,7 @@ from uuid import UUID
 from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, GoneHTTPException, NotFoundHTTPException
 from backend.layers.auth.user_info import UserInfo
+from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import (
     CollectionId,
     CollectionVersion,
@@ -40,7 +41,7 @@ def extract_dataset_assets(dataset_version: DatasetVersion):
         filesize = get_business_logic().s3_provider.get_file_size(asset.uri)
         if filesize is None:
             filesize = -1
-        url = get_business_logic().generate_permanent_url(dataset_version.version_id, asset.type)
+        url = BusinessLogic.generate_permanent_url(dataset_version.version_id, asset.type)
         result = {
             "filesize": filesize,
             "filetype": asset.type.upper(),

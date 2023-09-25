@@ -4,7 +4,7 @@ from backend.layers.business.entities import (
     CollectionMetadataUpdate,
     CollectionQueryFilter,
     DatasetArtifactDownloadData,
-    DatasetArtifactDownloadDataDeprecated,
+    DeprecatedDatasetArtifactDownloadData,
 )
 from backend.layers.common.entities import (
     CanonicalCollection,
@@ -136,10 +136,10 @@ class BusinessLogicInterface:
     ) -> DatasetArtifactDownloadData:
         pass
 
-    # Superseded by get_dataset_artifact_download_data. Remove with #5697.
+    # TODO: Superseded by get_dataset_artifact_download_data. Remove with #5697.
     def get_dataset_artifact_download_data_deprecated(
         self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
-    ) -> DatasetArtifactDownloadDataDeprecated:
+    ) -> DeprecatedDatasetArtifactDownloadData:
         pass
 
     def update_dataset_version_status(

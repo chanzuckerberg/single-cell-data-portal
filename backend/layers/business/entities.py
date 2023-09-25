@@ -18,9 +18,9 @@ class DatasetArtifactDownloadData:
     url: str
 
 
-# Superseded by DatasetArtifactDownloadData. Remove with #5697.
+# TODO: Superseded by DatasetArtifactDownloadData. Remove with #5697.
 @dataclass
-class DatasetArtifactDownloadDataDeprecated:
+class DeprecatedDatasetArtifactDownloadData:
     file_name: str
     file_type: DatasetArtifactType
     file_size: int
