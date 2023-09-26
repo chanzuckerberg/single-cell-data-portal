@@ -29,6 +29,17 @@ The module also defines a list of tissues (TISSUES_IMMUNE_CELL_WHITELIST) in whi
 HEMATOPOIETIC_CELL_TYPE_ID representing the immune cell type ancestor to be filtered out from non-whitelisted tissues.
 """
 
+# these nodes will be traversed first compared to their siblings
+# this is to ensure that animal cell descendants are encountered first
+# such that {cell_type}__0 is always a descendant of animal cell if
+# {cell_type} is a descendant of animal cell.
+TRAVERSAL_PRIORITY_NODES = [
+    "CL:0000000",  # cell
+    "CL:0000003",  # native cell,
+    "CL:0000255",  # eukaryotic cell
+    "CL:0000548",  # animal cell
+]
+
 # tissues in which we want to show immune cell types
 TISSUES_IMMUNE_CELL_WHITELIST = [
     "UBERON:0002193",  # hemolymphoid system
@@ -48,7 +59,7 @@ class TraverseOntologyResult:
 
 
 class OntologyTreeBuilder:
-    def __init__(self, cell_counts_df, root_node="CL:0000548"):
+    def __init__(self, cell_counts_df, root_node="CL:0000000"):
         """
         OntologyTreeBuilder is a class that builds a nested dictionary representation of the cell ontology tree
         and populates the nodes with cell type counts from the input cell counts dataframe. It also provides
@@ -241,6 +252,9 @@ class OntologyTreeBuilder:
             )
 
         children = []
+        # sort subclasses such that if a node is in TRAVERSAL_PRIORITY_NODES, it is placed first
+        subclasses.sort(key=lambda x: x.id not in TRAVERSAL_PRIORITY_NODES)
+
         for child in subclasses:
             traverse_ontology_result = self._traverse_ontology_with_counting(
                 child, traverse_node_counter, all_unique_nodes

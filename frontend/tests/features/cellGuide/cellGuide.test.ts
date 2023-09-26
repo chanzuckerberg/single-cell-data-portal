@@ -76,6 +76,7 @@ const NEURON_CELL_TYPE_ID = "CL_0000540";
 const GLIOBLAST_CELL_TYPE_ID = "CL_0000030";
 const T_CELL_CELL_TYPE_ID = "CL_0000084";
 const LUNG_TISSUE_ID = "UBERON_0002048";
+const ABNORMAL_CELL_TYPE_ID = "CL_0001061";
 
 describe("Cell Guide", () => {
   describe("Landing Page", () => {
@@ -746,6 +747,32 @@ describe("Cell Guide", () => {
         await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
       });
 
+      test("Tree view exists for a cell type that is not a descendant of animal cell", async ({
+        page,
+      }) => {
+        await goToPage(
+          `${TEST_URL}${ROUTES.CELL_GUIDE}/${ABNORMAL_CELL_TYPE_ID}`,
+          page
+        );
+        await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+
+        const node = page.getByTestId(
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-${ABNORMAL_CELL_TYPE_ID.replace(
+            "_",
+            ":"
+          )}__0-has-children-isTargetNode=true`
+        );
+        await node.hover();
+        await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+        // check that the node `cell` (CL:0000000) is displayed
+        await isElementVisible(
+          page,
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000000__0-has-children-isTargetNode=false`
+        );
+      });
+
       test("Clicking on a computational marker gene tree icon enters marker gene mode in a CellGuide Card", async ({
         page,
       }) => {
@@ -861,18 +888,18 @@ describe("Cell Guide", () => {
           .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
 
         const label = page.getByTestId(
-          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL:0000066__0`
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL:1000271__0`
         );
 
         await Promise.all([
-          page.waitForURL(`${TEST_URL}${ROUTES.CELL_GUIDE}/CL_0000066`),
+          page.waitForURL(`${TEST_URL}${ROUTES.CELL_GUIDE}/CL_1000271`),
           waitForElementAndClick(label),
         ]);
 
         // Check that the new node is highlighted green (isTargetNode=true)
         await page
           .getByTestId(
-            `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000066__0-has-children-isTargetNode=true`
+            `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:1000271__0-no-children-isTargetNode=true`
           )
           .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
       });
@@ -887,7 +914,7 @@ describe("Cell Guide", () => {
           .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
 
         const node = page.getByTestId(
-          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000066__0-has-children-isTargetNode=false`
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:1000271__0-no-children-isTargetNode=false`
         );
         await node.hover();
         await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
