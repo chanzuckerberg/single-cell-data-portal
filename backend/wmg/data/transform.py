@@ -8,11 +8,32 @@ from backend.wmg.data.constants import CL_BASIC_OBO_NAME
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.snapshot import (
     CELL_TYPE_ORDERINGS_FILENAME,
+    DATASET_METADATA_FILENAME,
     EXPRESSION_SUMMARY_CUBE_NAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
 )
 from backend.wmg.data.tissue_mapper import TissueMapper
-from backend.wmg.data.utils import get_pinned_ontology_url, log_func_runtime, to_dict
+from backend.wmg.data.utils import get_datasets_from_curation_api, get_pinned_ontology_url, log_func_runtime, to_dict
+
+
+def generate_dataset_metadata_file(snapshot_path: str) -> None:
+    """
+    This function generates a dictionary containing metadata for each dataset.
+    The metadata includes the dataset id, label, collection id, and collection label.
+    The function fetches the datasets from the curation API and iterates over them to create the metadata dictionary.
+    """
+    datasets = get_datasets_from_curation_api()
+    dataset_dict = {}
+    for dataset in datasets:
+        dataset_id = dataset["dataset_id"]
+        dataset_dict[dataset_id] = dict(
+            id=dataset_id,
+            label=dataset["title"],
+            collection_id=dataset["collection_id"],
+            collection_label=dataset["collection_name"],
+        )
+    with open(f"{snapshot_path}/{DATASET_METADATA_FILENAME}", "w") as f:
+        json.dump(dataset_dict, f)
 
 
 @log_func_runtime
@@ -105,9 +126,7 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
         return {"id": node, "depth": depth}
 
     def recurse(node: str, depth=0):
-
         if node in cells:
-
             cells.remove(node)
             yield cell_entity(node, depth)
 
@@ -219,7 +238,6 @@ def generate_primary_filter_dimensions(snapshot_path: str, snapshot_id: int):
         return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
 
     with tiledb.open(f"{snapshot_path}/{EXPRESSION_SUMMARY_CUBE_NAME}") as cube:
-
         # gene terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
         organism_gene_ids: dict[str, List[str]] = list_grouped_primary_filter_dimensions_term_ids(
             cube, "gene_ontology_term_id", group_by_dim="organism_ontology_term_id"

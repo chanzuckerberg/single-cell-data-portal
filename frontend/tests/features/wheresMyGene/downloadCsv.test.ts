@@ -15,7 +15,7 @@ import {
 
 const { describe } = test;
 describe("CSV download tests", () => {
-  conditionallyRunTests();
+  conditionallyRunTests({ forceRun: true });
 
   test(`Should verify CSV metadata and header for lung tissue with no group set`, async ({
     page,
@@ -28,13 +28,7 @@ describe("CSV download tests", () => {
     //download  csv file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
     // verify csv file
-    await verifyCsv(
-      page,
-      folder,
-      tissues,
-      "disease-filter",
-      SHARED_LINK_NO_GROUP
-    );
+    await verifyCsv(page, folder, "disease-filter", SHARED_LINK_NO_GROUP);
     await deleteDownloadedFiles(`./tests/downloads/${folder}`);
   });
 
@@ -50,7 +44,7 @@ describe("CSV download tests", () => {
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
 
     // verify csv file
-    await verifyCsv(page, folder, tissues, "sex-filter", SHARED_LINK_FILTER);
+    await verifyCsv(page, folder, "sex-filter", SHARED_LINK_FILTER);
     await deleteDownloadedFiles(`./tests/downloads/${folder}`);
   });
 
@@ -66,7 +60,7 @@ describe("CSV download tests", () => {
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
 
     // verify csv file
-    await verifyCsv(page, folder, tissues, "no-filter", SHARED_LINK_NO_FILTER);
+    await verifyCsv(page, folder, "no-filter", SHARED_LINK_NO_FILTER);
     await deleteDownloadedFiles(`./tests/downloads/${folder}`);
   });
 });

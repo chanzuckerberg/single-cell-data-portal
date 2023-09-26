@@ -215,6 +215,7 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
                 primary_filter_dimensions=primary_filter_dimensions,
                 dataset_to_gene_ids=dataset_to_gene_ids,
                 filter_relationships=filter_relationships,
+                dataset_metadata=None,
             )
 
 
@@ -255,6 +256,7 @@ def create_temp_wmg_snapshot(
                 primary_filter_dimensions=primary_filter_dimensions,
                 dataset_to_gene_ids=None,
                 filter_relationships=filter_relationships,
+                dataset_metadata=None,
             )
 
 

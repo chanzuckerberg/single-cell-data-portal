@@ -10,9 +10,6 @@ import {
   CellGuideCardHeaderInnerWrapper,
   LEFT_RIGHT_PADDING_PX_XXL,
   StyledRightSideBar,
-  StyledSynonyms,
-  FlexContainer,
-  StyledOntologyId,
   MobileTooltipTitle,
   MobileTooltipWrapper,
   MobileTooltipHeader,
@@ -41,7 +38,6 @@ import {
   CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_HEADER_NAME,
   CELL_GUIDE_CARD_HEADER_TAG,
-  CELL_GUIDE_CARD_SYNONYMS,
   RIGHT_SIDEBAR_WIDTH_PX,
 } from "src/views/CellGuide/components/CellGuideCard/constants";
 import { useOrganAndOrganismFilterListForCellType } from "./components/MarkerGeneTables/hooks/common";
@@ -364,20 +360,8 @@ export default function CellGuideCard({
               cellTypeName={cellTypeName}
               skinnyMode={skinnyMode}
               setTooltipContent={setTooltipContent}
+              synonyms={synonyms}
             />
-
-            <FlexContainer>
-              {skinnyMode && (
-                <StyledOntologyId
-                  url={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
-                  ontologyId={cellTypeId}
-                />
-              )}
-              <StyledSynonyms
-                synonyms={synonyms}
-                data-testid={CELL_GUIDE_CARD_SYNONYMS}
-              />
-            </FlexContainer>
 
             {/* Cell Ontology section */}
             <div ref={sectionRef1} id="section-1" data-testid="section-1" />
