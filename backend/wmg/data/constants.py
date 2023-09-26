@@ -23,7 +23,7 @@ INCLUDED_ASSAYS = {
     "EFO:0010010": "CEL-seq2",
 }
 
-CL_PINNED_CONFIG_URL = "https://raw.githubusercontent.com/chanzuckerberg/single-cell-curation/main/cellxgene_schema_cli/cellxgene_schema/ontology_files/owl_info.yml"
+CL_PINNED_CONFIG_URL = "https://raw.githubusercontent.com/chanzuckerberg/single-cell-curation/v3.1.3/cellxgene_schema_cli/cellxgene_schema/ontology_files/owl_info.yml"
 CL_BASIC_OBO_NAME = "cl-basic.obo"
 CL_BASIC_OWL_NAME = "cl-basic.owl"
 
