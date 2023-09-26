@@ -1,45 +1,42 @@
 import styled from "@emotion/styled";
-import { OLD_GRAY } from "src/components/common/theme";
+import { fontBodyS, fontBodyXs } from "@czi-sds/components";
+import {
+  cornersM,
+  grey100,
+  grey300,
+  grey500,
+  spacesM,
+  spacesS,
+  spacesXxs,
+} from "src/common/theme";
 
-export const CodeWrapper = styled.div`
-  position: relative;
-  width: 511px;
-`;
-
-export const Code = styled.code`
-  border: 1px solid ${OLD_GRAY.VERY_LIGHT};
-  box-sizing: border-box;
-  border-radius: 4px;
-  height: 52px;
-  overflow: hidden;
-  display: block;
-  font-size: 13px;
-  line-height: 18px;
-  margin-bottom: 5px;
-  padding: 8px;
-`;
-
-export const CodeMask = styled.div`
-  position: absolute;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  background-color: rgba(0, 118, 220, 0.9);
-  color: white;
+export const CodeBlock = styled.div`
+  align-items: flex-start;
+  background-color: ${grey100};
+  border-radius: ${cornersM}px;
+  box-shadow: inset 0 0 0 0.5px ${grey300};
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  cursor: pointer;
+  gap: ${spacesS}px;
+  margin: 0;
+  padding: ${spacesS}px ${spacesM}px;
 
-  :hover {
-    opacity: 1;
+  code {
+    ${fontBodyS}
+    background-color: transparent;
+    box-sizing: content-box;
+    flex: 1;
+    max-height: 40px;
+    overflow: hidden;
+    padding: ${spacesXxs}px 0 0;
+  }
+
+  code:before,
+  code:after {
+    content: unset; /* overrides styles from layout.css. */
   }
 `;
 
-export const Tip = styled.div`
-  color: ${OLD_GRAY.TIPS};
-  font-size: 12px;
-  width: 490px;
+export const Caption = styled.div`
+  ${fontBodyXs}
+  color: ${grey500};
 `;
