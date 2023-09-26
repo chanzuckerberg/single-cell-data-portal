@@ -143,3 +143,9 @@ variable "health_check_interval" {
   description = "Interval for the health check pings"
   default     = 15
 }
+
+variable "fail_fast" {
+  type        = bool
+  description = "Whether Terraform should fail if the desired service does not start. Opposite of rollback."
+  default     = true
+}
