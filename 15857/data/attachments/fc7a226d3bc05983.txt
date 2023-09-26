@@ -1,0 +1,100 @@
+  pw:api => selectors.setTestIdAttribute started +3s
+  pw:api => browser.newContext started +4ms
+  pw:api <= selectors.setTestIdAttribute succeeded +5ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +43ms
+  pw:api   "commit" event fired +10ms
+  pw:api   navigated to "https://localhost:3000/" +1ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api   "load" event fired +1ms
+  pw:api <= browser.newContext succeeded +10ms
+  pw:api => tracing.start started +4ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => browserContext.newPage started +3ms
+  pw:api <= browserContext.newPage succeeded +45ms
+  pw:api => page.waitForLoadState started +14ms
+  pw:api => page.goto started +3ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +8ms
+  pw:api   "commit" event fired +14s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "commit" event fired +2ms
+  pw:api   "networkidle" event fired +5s
+  pw:api <= page.waitForLoadState succeeded +4ms
+  pw:api   "networkidle" event fired +0ms
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +3ms
+  pw:api   navigated to "about:blank" +25ms
+  pw:api <= page.goto succeeded +36ms
+  pw:api => locator.count started +2ms
+  pw:api <= locator.count succeeded +35ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-type-labels-blood').getByTestId('tissue-name') +12ms
+  pw:api   "networkidle" event fired +16s
+  pw:api   locator resolved to <div data-testid="tissue-name" class="tissue-name css…>Blood</div> +3s
+  pw:api attempting click action +35ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +75ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +2ms
+  pw:api   performing click action +30ms
+  pw:api   click action done +360ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +44ms
+  pw:api => locator.count started +1ms
+  pw:api <= locator.count succeeded +15ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +38ms
+  pw:api => locator.allTextContents started +4ms
+  pw:api <= locator.allTextContents succeeded +87ms
+  pw:api => locator.count started +2ms
+  pw:api <= locator.count succeeded +6ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +40ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +44ms
+  pw:api => locator.textContent started +1ms
+  pw:api waiting for getByTestId('cell-type-row').nth(26).getByTestId('cell-type-full-name') +14ms
+  pw:api   locator resolved to <div data-testid="cell-type-full-name" class="css-neg…>CD14-positive, CD16-negative classical monocyte</div> +6ms
+  pw:api <= locator.textContent succeeded +15ms
+  pw:api => locator.hover started +1ms
+  pw:api waiting for getByTestId('cell-type-name').nth(26) +13ms
+  pw:api   locator resolved to <div class="cell-type-name" data-testid="cell-type-na…>CD14-positive, CD16-n...ve classical monocyte</div> +23ms
+  pw:api attempting hover action +1ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +13ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing hover action +37ms
+  pw:api   hover action done +23ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.hover succeeded +15ms
+  pw:api => expect.toBeVisible started +5ms
+  pw:api expect.toBeVisible with timeout 10000ms +13ms
+  pw:api waiting for getByText('CD14-positive, CD16-negative classical monocyte') +1ms
+  pw:api   locator resolved to <div data-testid="cell-type-full-name" class="css-neg…>CD14-positive, CD16-negative classical monocyte</div> +28ms
+  pw:api <= expect.toBeVisible succeeded +14ms
+  pw:api => locator.textContent started +1ms
+  pw:api waiting for getByTestId('cell-type-row').nth(47).getByTestId('cell-type-full-name') +19ms
+  pw:api   locator resolved to <div data-testid="cell-type-full-name" class="css-neg…>CD34-positive, CD38-negative hematopoietic stem c…</div> +4ms
+  pw:api <= locator.textContent succeeded +59ms
+  pw:api => locator.hover started +1ms
+  pw:api waiting for getByTestId('cell-type-name').nth(47) +25ms
+  pw:api   locator resolved to <div class="cell-type-name" data-testid="cell-type-na…>CD34-positive, CD38-n...ematopoietic stem cell</div> +28ms
+  pw:api attempting hover action +1ms
+  pw:api   waiting for element to be visible and stable +0ms
+  pw:api   element is visible and stable +49ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +3ms
+  pw:api   performing hover action +36ms
+  pw:api   hover action done +24ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.hover succeeded +33ms
+  pw:api => expect.toBeVisible started +12ms
+  pw:api expect.toBeVisible with timeout 10000ms +23ms
+  pw:api waiting for getByText('CD34-positive, CD38-negative hematopoietic stem cell') +0ms
+  pw:api   locator resolved to <div data-testid="cell-type-full-name" class="css-neg…>CD34-positive, CD38-negative hematopoietic stem c…</div> +26ms
+  pw:api <= expect.toBeVisible succeeded +26ms
+  pw:api taking page screenshot +5ms
