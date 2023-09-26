@@ -29,21 +29,14 @@ export default function CopyButton({
     setAnimationStep(incrementAnimationState);
   };
 
-  // Callback fired after the "entered" status is applied.
-  // Executes twice while copy animation is in progress: "COPIED_ENTER" and "COPY_ENTER".
+  // Callback fired after the "exited" or "entered" status is applied.
+  // Executes while copy animation is in progress for "COPY_EXIT", "COPIED_ENTER" and "COPIED_EXIT", "COPY_ENTER".
   // Increments the animation step.
-  const onEntered = () => {
+  const onUpdateAnimationStep = () => {
     timeoutRef.current = setTimeout(() => {
       // Executes the next animation progression, after duration of the current animation is complete.
       setAnimationStep(incrementAnimationState);
     }, animation.duration);
-  };
-
-  // Callback fired after the "exited" status is applied.
-  // Executes twice while copy animation is in progress: "COPY_EXIT" and "COPIED_EXIT".
-  // Increments the animation step.
-  const onExited = () => {
-    setAnimationStep(incrementAnimationState);
   };
 
   // Clears timeout when unmounting.
@@ -64,8 +57,8 @@ export default function CopyButton({
         appear={false}
         easing={animation.easing}
         in={animation.in}
-        onEntered={onEntered}
-        onExited={onExited}
+        onEntered={onUpdateAnimationStep}
+        onExited={onUpdateAnimationStep}
         timeout={animation.timeout}
       >
         <span>{getButtonText(animationStep)}</span>
