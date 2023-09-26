@@ -248,6 +248,7 @@ class BaseTest(unittest.TestCase):
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
             collection_version.version_id, "http://fake.url", None, replace_dataset_version_id
         )
+
         if not metadata:
             metadata = copy.deepcopy(self.sample_dataset_metadata)
         if name is not None:
@@ -275,7 +276,10 @@ class BaseTest(unittest.TestCase):
             )
         if publish:
             self.business_logic.publish_collection_version(collection_version.version_id)
-        explorer_url = f"http://base.url/{dataset_version_id.id}.cxg/"
+
+        cxg_id = dataset_id.id if publish else dataset_version_id.id
+        explorer_url = f"http://base.url/{cxg_id}.cxg/"
+
         return DatasetData(
             dataset_version_id.id,
             dataset_id.id,

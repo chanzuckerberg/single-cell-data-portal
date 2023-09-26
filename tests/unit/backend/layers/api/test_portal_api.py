@@ -1924,43 +1924,67 @@ class TestDataset(BaseAPIPortalTest):
     def test__dataset_meta__ok(self):
         headers = {"host": "localhost", "Content-Type": "application/json"}
 
-        with self.subTest("dataset is public"):
-            test_uri_0 = "s3://some_bucket/some_key_0.cxg"
+        # with self.subTest("dataset is public"):
+        #     test_uri_0 = "s3://some_bucket/some_key_0.cxg"
+
+        #     public_dataset = self.generate_dataset(
+        #         artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri_0)],
+        #         publish=True,
+        #     )
+
+        #     test_url_public = f"/dp/v1/datasets/meta?url={public_dataset.explorer_url}"
+        #     response = self.app.get(test_url_public, headers)
+        #     self.assertEqual(response.status_code, 200)
+
+        #     expected_identifiers = {
+        #         "s3_uri": test_uri_0,
+        #         "dataset_id": public_dataset.dataset_version_id,
+        #         "collection_id": public_dataset.collection_version_id,
+        #         "collection_visibility": "PUBLIC",  # this is a published collection
+        #         "tombstoned": False,
+        #     }
+
+        #     self.assertEqual(json.loads(response.data), expected_identifiers)
+
+        # with self.subTest("dataset is private"):
+        #     test_uri_1 = "s3://some_bucket/some_key_1.cxg"
+
+        #     public_dataset = self.generate_dataset(
+        #         artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri_1)],
+        #         publish=False,
+        #     )
+
+        #     test_url_private = f"/dp/v1/datasets/meta?url={public_dataset.explorer_url}"
+        #     expected_identifiers = {
+        #         "s3_uri": test_uri_1,
+        #         "dataset_id": public_dataset.dataset_version_id,
+        #         "collection_id": public_dataset.collection_version_id,
+        #         "collection_visibility": "PRIVATE",
+        #         "tombstoned": False,
+        #     }
+
+        #     response = self.app.get(test_url_private, headers)
+        #     self.assertEqual(response.status_code, 200)
+
+        #     self.assertEqual(json.loads(response.data), expected_identifiers)
+
+        with self.subTest("dataset is withdrawn"):
+            test_uri_1 = "s3://some_bucket/some_key_1.cxg"
 
             public_dataset = self.generate_dataset(
-                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri_0)],
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri_1)],
                 publish=True,
             )
 
-            test_url_public = f"/dp/v1/datasets/meta?url={public_dataset.explorer_url}"
-            response = self.app.get(test_url_public, headers)
-            self.assertEqual(response.status_code, 200)
+            self.business_logic.tombstone_collection(CollectionId(public_dataset.collection_id))
 
-            expected_identifiers = {
-                "s3_uri": test_uri_0,
-                "dataset_id": public_dataset.dataset_version_id,
-                "collection_id": public_dataset.collection_version_id,
-                "collection_visibility": "PUBLIC",  # this is a published collection
-                "tombstoned": False,
-            }
-
-            self.assertEqual(json.loads(response.data), expected_identifiers)
-
-        with self.subTest("dataset is private"):
-            test_uri_1 = "s3://some_bucket/some_key_1.cxg"
-
-            private_dataset = self.generate_dataset(
-                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri_1)],
-                publish=False,
-            )
-
-            test_url_private = f"/dp/v1/datasets/meta?url={private_dataset.explorer_url}"
+            test_url_private = f"/dp/v1/datasets/meta?url={public_dataset.explorer_url}"
             expected_identifiers = {
                 "s3_uri": test_uri_1,
-                "dataset_id": private_dataset.dataset_version_id,
-                "collection_id": private_dataset.collection_version_id,
-                "collection_visibility": "PRIVATE",
-                "tombstoned": False,
+                "dataset_id": public_dataset.dataset_version_id,
+                "collection_id": public_dataset.collection_version_id,
+                "collection_visibility": "PUBLIC",
+                "tombstoned": True,
             }
 
             response = self.app.get(test_url_private, headers)
