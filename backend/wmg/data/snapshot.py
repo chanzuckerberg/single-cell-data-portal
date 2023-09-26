@@ -16,6 +16,7 @@ from backend.wmg.data.schemas.corpus_schema import (
     FILTER_RELATIONSHIPS_NAME,
 )
 from backend.wmg.data.tiledb import create_ctx
+from backend.wmg.data.utils import get_datasets_from_curation_api
 
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
@@ -90,6 +91,20 @@ class WmgSnapshot:
     def __hash__(self):
         return hash(None)  # hash is not used for WmgSnapshot
 
+    # TODO: Once the pipeline generates the V2 snapshot, this can be removed
+    def build_dataset_metadata_dict(self):
+        datasets = get_datasets_from_curation_api()
+        dataset_dict = {}
+        for dataset in datasets:
+            dataset_id = dataset["dataset_id"]
+            dataset_dict[dataset_id] = dict(
+                id=dataset_id,
+                label=dataset["title"],
+                collection_id=dataset["collection_id"],
+                collection_label=dataset["collection_name"],
+            )
+        self.dataset_metadata = dataset_dict
+
 
 # Cached data
 cached_snapshot: Optional[WmgSnapshot] = None
@@ -125,7 +140,9 @@ def load_snapshot(
             snapshot_id=snapshot_id,
             read_versioned_snapshot=read_versioned_snapshot,
         )
-
+    # TODO: Once the pipeline generates the V2 snapshot, this can be removed
+    if cached_snapshot.dataset_metadata is None:
+        cached_snapshot.build_dataset_metadata_dict()
     return cached_snapshot
 
 
@@ -193,7 +210,9 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
     primary_filter_dimensions = _load_primary_filter_data(snapshot_dir_path)
     dataset_to_gene_ids = _load_dataset_to_gene_ids_data(snapshot_dir_path)
     filter_relationships = _load_filter_graph_data(snapshot_dir_path)
-    dataset_metadata = _load_dataset_metadata(snapshot_dir_path)
+
+    # TODO: Once the pipeline generates the V2 snapshot, the ternary can be removed
+    dataset_metadata = _load_dataset_metadata(snapshot_dir_path) if snapshot_schema_version != "v1" else None
 
     snapshot_base_uri = _get_wmg_snapshot_dir_s3_uri(snapshot_dir_path)
     logger.info(f"Loading WMG snapshot from directory path {snapshot_dir_path} into URI {snapshot_base_uri}")

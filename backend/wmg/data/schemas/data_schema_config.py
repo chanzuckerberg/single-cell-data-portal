@@ -1,4 +1,4 @@
-WMG_DATA_SCHEMA_VERSION = "v1"
+WMG_DATA_SCHEMA_VERSION = "v2"
 
 # These are the valid attributes and dimensions consulted by the
 # wmg pipeline (writer) to determine the list of attributes and dimensions

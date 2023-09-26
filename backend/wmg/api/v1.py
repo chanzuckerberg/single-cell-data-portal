@@ -125,7 +125,7 @@ def markers():
 
 def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
     return [
-        snapshot.dataset_dict.get(dataset_id, dict(id=dataset_id, label="", collection_id="", collection_label=""))
+        snapshot.dataset_metadata.get(dataset_id, dict(id=dataset_id, label="", collection_id="", collection_label=""))
         for dataset_id in dataset_ids
     ]
 
@@ -241,7 +241,6 @@ def build_ordered_cell_types_by_tissue(
     cell_type_orderings: DataFrame,
     compare: str,
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
-
     distinct_tissues_cell_types = cell_counts_cell_type_agg.reset_index().rename(
         columns={"n_cells_cell_type": "n_total_cells"}
     )
