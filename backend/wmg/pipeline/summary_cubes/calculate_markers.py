@@ -111,6 +111,7 @@ def _query_tiledb_context_memoized(
         cell_type_orderings=None,
         primary_filter_dimensions=None,
         filter_relationships=None,
+        dataset_metadata=None,
     )
     cube_query_params = WmgCubeQueryParams(
         cube_query_valid_attrs=WRITER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,

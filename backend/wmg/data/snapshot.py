@@ -16,7 +16,6 @@ from backend.wmg.data.schemas.corpus_schema import (
     FILTER_RELATIONSHIPS_NAME,
 )
 from backend.wmg.data.tiledb import create_ctx
-from backend.wmg.data.utils import get_datasets_from_curation_api
 
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
@@ -28,6 +27,7 @@ CELL_COUNTS_CUBE_NAME = "cell_counts"
 MARKER_GENES_CUBE_NAME = "marker_genes"
 DATASET_TO_GENE_IDS_FILENAME = f"{DATASET_TO_GENE_IDS_NAME}.json"
 FILTER_RELATIONSHIPS_FILENAME = f"{FILTER_RELATIONSHIPS_NAME}.json"
+DATASET_METADATA_FILENAME = "dataset_metadata.json"
 
 STACK_NAME = os.environ.get("REMOTE_DEV_PREFIX")
 
@@ -84,21 +84,11 @@ class WmgSnapshot:
     # precomputed filter relationships graph
     filter_relationships: Dict
 
+    # dataset metadata dictionary
+    dataset_metadata: Dict
+
     def __hash__(self):
         return hash(None)  # hash is not used for WmgSnapshot
-
-    def build_dataset_metadata_dict(self):
-        datasets = get_datasets_from_curation_api()
-        dataset_dict = {}
-        for dataset in datasets:
-            dataset_id = dataset["dataset_id"]
-            dataset_dict[dataset_id] = dict(
-                id=dataset_id,
-                label=dataset["title"],
-                collection_id=dataset["collection_id"],
-                collection_label=dataset["collection_name"],
-            )
-        self.dataset_dict = dataset_dict
 
 
 # Cached data
@@ -135,9 +125,6 @@ def load_snapshot(
             snapshot_id=snapshot_id,
             read_versioned_snapshot=read_versioned_snapshot,
         )
-
-    if not hasattr(cached_snapshot, "dataset_dict"):
-        cached_snapshot.build_dataset_metadata_dict()
 
     return cached_snapshot
 
@@ -206,6 +193,7 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
     primary_filter_dimensions = _load_primary_filter_data(snapshot_dir_path)
     dataset_to_gene_ids = _load_dataset_to_gene_ids_data(snapshot_dir_path)
     filter_relationships = _load_filter_graph_data(snapshot_dir_path)
+    dataset_metadata = _load_dataset_metadata(snapshot_dir_path)
 
     snapshot_base_uri = _get_wmg_snapshot_dir_s3_uri(snapshot_dir_path)
     logger.info(f"Loading WMG snapshot from directory path {snapshot_dir_path} into URI {snapshot_base_uri}")
@@ -224,6 +212,7 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
         primary_filter_dimensions=primary_filter_dimensions,
         dataset_to_gene_ids=dataset_to_gene_ids,
         filter_relationships=filter_relationships,
+        dataset_metadata=dataset_metadata,
     )
 
 
@@ -238,6 +227,11 @@ def _load_cell_type_order(snapshot_dir_path: str) -> DataFrame:
 
 def _load_primary_filter_data(snapshot_dir_path: str) -> Dict:
     key_path = f"{snapshot_dir_path}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}"
+    return json.loads(_read_value_at_s3_key(key_path))
+
+
+def _load_dataset_metadata(snapshot_dir_path: str) -> Dict:
+    key_path = f"{snapshot_dir_path}/{DATASET_METADATA_FILENAME}"
     return json.loads(_read_value_at_s3_key(key_path))
 
 
