@@ -39,11 +39,12 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
       throw Error(`Format ${selectedFormat} not available`);
     }
 
-    const { dataset_id: datasetId, id: assetId } = asset[0];
+    const { dataset_id: datasetId, filename, id: assetId } = asset[0];
 
     getDownloadLink({
       assetId,
       datasetId,
+      filename,
       setFileName,
       setFileSize,
       setIsLoading,
@@ -52,6 +53,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
     async function getDownloadLink({
       assetId,
       datasetId,
+      filename,
       setFileName,
       setFileSize,
       setIsLoading,
@@ -69,15 +71,15 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
         const result = await (
           await fetch(`${API_URL}${url}`, {
             ...DEFAULT_FETCH_OPTIONS,
-            method: "POST",
+            method: "GET",
           })
         ).json();
 
-        const { file_size, presigned_url, file_name } = result;
+        const { file_size, url: downloadURL } = result;
 
         setFileSize(file_size);
-        setDownloadLink(presigned_url);
-        setFileName(file_name);
+        setDownloadLink(downloadURL);
+        setFileName(filename);
       } catch (error) {
         console.error("Please try again");
       }
@@ -159,6 +161,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
   interface GetDownloadLinkArgs {
     assetId: string;
     datasetId: string;
+    filename: string;
     setFileName: (value: string) => void;
     setFileSize: (value: number) => void;
     setIsLoading: (value: boolean) => void;
