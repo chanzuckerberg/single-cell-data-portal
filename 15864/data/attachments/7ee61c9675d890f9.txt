@@ -1,0 +1,2 @@
+{"levelname": "WARNING", "asctime": "2023-09-26T23:04:04.026Z", "name": "root", "message": "Type float64 will be converted to 32 bit float and may lose precision.", "lineno": 155, "pathname": "/single-cell-data-portal/backend/common/utils/type_conversion_utils.py", "request_id": ""}
+{"levelname": "WARNING", "asctime": "2023-09-26T23:04:04.026Z", "name": "root", "message": "Type float64 will be converted to 32 bit float and may lose precision.", "lineno": 155, "pathname": "/single-cell-data-portal/backend/common/utils/type_conversion_utils.py", "request_id": ""}
