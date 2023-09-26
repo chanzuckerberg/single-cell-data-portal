@@ -1,6 +1,6 @@
-import copy from "clipboard-copy";
-import { FC, useState } from "react";
-import { Code, CodeMask, CodeWrapper, Tip } from "./style";
+import { FC } from "react";
+import { Caption, CodeBlock } from "./style";
+import CopyButton from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/CurlLink/components/CopyButton";
 
 interface Props {
   fileName: string;
@@ -9,30 +9,18 @@ interface Props {
 }
 
 const CurlLink: FC<Props> = ({ fileName, handleAnalytics, link }) => {
-  const [isCopied, setIsCopied] = useState(false);
-
   const curl = `curl -o ${fileName} "${link}"`;
-
-  const handleCopyClick = () => {
-    setIsCopied(true);
-    copy(curl);
-    handleAnalytics();
-  };
-  const handleCopyMouseEnter = () => setIsCopied(false);
-
   return (
     <>
-      <CodeWrapper>
-        <Code>{curl}</Code>
-        <CodeMask onClick={handleCopyClick} onMouseEnter={handleCopyMouseEnter}>
-          {isCopied ? "Copied!" : "Copy to Clipboard"}
-        </CodeMask>
-      </CodeWrapper>
-      <Tip>
+      <CodeBlock>
+        <code>{curl}</code>
+        <CopyButton curl={curl} handleAnalytics={handleAnalytics} />
+      </CodeBlock>
+      <Caption>
         If you prefer not to download this dataset directly in your browser, you
         can optionally use the provided cURL link to download via the terminal.
         The above link will be valid for 1 week.
-      </Tip>
+      </Caption>
     </>
   );
 };

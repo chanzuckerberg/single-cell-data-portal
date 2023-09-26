@@ -1,12 +1,13 @@
-import { SpinnerSize } from "@blueprintjs/core";
-import { FC } from "react";
-import { Section, Text, Title } from "../common/style";
-import { Spinner } from "./style";
+import { FC, ReactNode } from "react";
+import { DialogLoader } from "src/components/Datasets/components/DownloadDataset/style";
+import { FormLabel } from "@mui/material";
+import { FormControl } from "./style";
 
 export const PROMPT_TEXT =
   "Select one of the data formats to view its download details.";
 
 interface Props {
+  curlPreview?: ReactNode;
   selected: boolean;
   fileSize: number;
   isLoading: boolean;
@@ -15,27 +16,29 @@ interface Props {
 const MEGA_BYTES = 2 ** 20;
 
 const Details: FC<Props> = ({
+  curlPreview,
   selected = false,
   fileSize = 0,
   isLoading = false,
 }) => {
   function renderContent() {
     if (isLoading) {
-      return <Spinner size={SpinnerSize.SMALL} />;
+      return <DialogLoader sdsStyle="minimal" />;
     }
 
     if (!selected) {
-      return PROMPT_TEXT;
+      return <div>{PROMPT_TEXT}</div>;
     }
 
-    return `${Math.round(fileSize / MEGA_BYTES)}MB`;
+    return <div>{`${Math.round(fileSize / MEGA_BYTES)}MB`}</div>;
   }
 
   return (
-    <Section>
-      <Title>DOWNLOAD DETAILS</Title>
-      <Text>{renderContent()}</Text>
-    </Section>
+    <FormControl>
+      <FormLabel>Download Details</FormLabel>
+      {renderContent()}
+      {curlPreview}
+    </FormControl>
   );
 };
 
