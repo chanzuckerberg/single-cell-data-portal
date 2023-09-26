@@ -1,15 +1,11 @@
-import {
-  Intent,
-  PopoverInteractionKind,
-  Position,
-  Radio,
-  RadioGroup,
-  Tooltip,
-} from "@blueprintjs/core";
-import * as React from "react";
-import { FC } from "react";
+import React, { FC } from "react";
 import { DATASET_ASSET_FORMAT } from "src/common/entities";
-import { Section, Title } from "../common/style";
+import { FormControl, FormLabel, RadioGroup } from "@mui/material";
+import { InputRadio, Tooltip } from "@czi-sds/components";
+import {
+  TOOLTIP_SLOT_PROPS,
+  TOOLTIP_TITLE,
+} from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/DataFormat/constants";
 
 interface Props {
   handleChange: (format: DATASET_ASSET_FORMAT) => void;
@@ -24,6 +20,8 @@ const DataFormat: FC<Props> = ({
   selectedFormat,
   availableFormats,
 }) => {
+  const isH5AD = availableFormats.includes(DATASET_ASSET_FORMAT.H5AD);
+  const isRDS = availableFormats.includes(DATASET_ASSET_FORMAT.RDS);
   const handleChange = (event: React.FormEvent<HTMLElement>) => {
     const value = (event.target as HTMLInputElement)
       .value as DATASET_ASSET_FORMAT;
@@ -31,58 +29,36 @@ const DataFormat: FC<Props> = ({
     handleChangeRaw(value);
   };
 
-  const renderH5adRadio = (): React.ReactElement => {
-    return (
-      <Radio
-        disabled={!availableFormats.includes(DATASET_ASSET_FORMAT.H5AD)}
-        label=".h5ad (AnnData v0.8)"
-        value={DATASET_ASSET_FORMAT.H5AD}
-      />
-    );
-  };
-
-  const renderRdsRadio = (): React.ReactElement => {
-    return (
-      <Radio
-        disabled={!availableFormats.includes(DATASET_ASSET_FORMAT.RDS)}
-        label=".rds (Seurat v4)"
-        value={DATASET_ASSET_FORMAT.RDS}
-      />
-    );
-  };
-
-  const renderDisabledRdsRadio = (): React.ReactElement => {
-    return (
-      <Tooltip
-        disabled={false}
-        interactionKind={PopoverInteractionKind.HOVER}
-        content="A .rds (Seurat v4) download is unavailable due to limitations in the R dgCMatrix sparse matrix class."
-        intent={Intent.DANGER}
-        position={Position.TOP}
-      >
-        {/* Logically renders only when rds format not available, but a Tooltip wrapper also happens to prevent 
-        proper functioning of radio buttons with a larger radio group outside of the Tooltip wrapper */}
-        {renderRdsRadio()}
-      </Tooltip>
-    );
-  };
-
   return (
-    <Section>
-      <Title>DATA FORMAT</Title>
+    <FormControl>
+      <FormLabel>Data Format</FormLabel>
       <RadioGroup
-        inline
         name="dataFormat"
-        disabled={isDisabled}
         onChange={handleChange}
-        selectedValue={selectedFormat}
+        value={selectedFormat}
       >
-        {renderH5adRadio()}
-        {availableFormats.includes(DATASET_ASSET_FORMAT.RDS)
-          ? renderRdsRadio()
-          : renderDisabledRdsRadio()}
+        <InputRadio
+          disabled={isDisabled || !isH5AD}
+          label=".h5ad (AnnData v0.8)"
+          value={DATASET_ASSET_FORMAT.H5AD}
+        />
+        <Tooltip
+          arrow
+          placement="top"
+          sdsStyle="dark"
+          slotProps={TOOLTIP_SLOT_PROPS}
+          title={isRDS ? null : TOOLTIP_TITLE}
+        >
+          <span>
+            <InputRadio
+              disabled={isDisabled || !isRDS}
+              label=".rds (Seurat v4)"
+              value={DATASET_ASSET_FORMAT.RDS}
+            />
+          </span>
+        </Tooltip>
       </RadioGroup>
-    </Section>
+    </FormControl>
   );
 };
 
