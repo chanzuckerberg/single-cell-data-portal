@@ -30,7 +30,6 @@ class OntologyTreeBuilderTests(unittest.TestCase):
             tree_builder = OntologyTreeBuilder(cell_counts_df)
 
             ontology_graph = convert_dataclass_to_dict_and_strip_nones(tree_builder.get_ontology_tree())
-            return ontology_graph, expected__ontology_graph
             self.assertTrue(compare_dicts(ontology_graph, expected__ontology_graph))
 
             all_states_per_cell_type = convert_dataclass_to_dict_and_strip_nones(
