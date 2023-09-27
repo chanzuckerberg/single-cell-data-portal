@@ -23,13 +23,7 @@ export DD_GEVENT_PATCH_ALL=true
 # Note: Using just 1 worker for dev/test env. Multiple workers are used in deployment envs, as defined in Terraform code.
 # Note: keep-alive timeout should always be greater than the idle timeout of the load balancer (60 seconds)
 
-# if [ "${DEPLOYMENT_STAGE}" == "test" ]; then
 echo "starting gunicorn server"
 exec gunicorn ${HTTPS_CERT_AND_KEY} --worker-class gevent --workers 1 --bind 0.0.0.0:5000 backend.api_server.app:app \
   --max-requests 10000 --timeout 180 --keep-alive 61 --log-level info
-# else
-#   echo "starting ddtrace and gunicorn"
-#   exec ddtrace-run gunicorn ${HTTPS_CERT_AND_KEY} --worker-class gevent --workers 1 --bind 0.0.0.0:5000 backend.api_server.app:app \
-#  --max-requests 10000 --timeout 180 --keep-alive 61 --log-level info --reload --preload --statsd-host localhost:8125
-# fi
 

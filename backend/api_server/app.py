@@ -25,18 +25,14 @@ APP_NAME = "{}-{}".format(os.environ.get("APP_NAME", "api"), DEPLOYMENT_STAGE)
 configure_logging(APP_NAME)
 
 
-def has_datadog_env_vars():
+def should_configure_datadog_tracing():
     return os.environ.get("DD_AGENT_HOST", None) and os.environ.get("DD_TRACE_AGENT_PORT", None)
 
 
-if has_datadog_env_vars():
+if should_configure_datadog_tracing():
     # Datadog APM tracing
     # See https://ddtrace.readthedocs.io/en/stable/basic_usage.html#patch-all
 
-    # TODO: Fix this! next line may be redundant with DD_GEVENT_PATCH_ALL env var
-    # in .happy/terraform/modules/service/main.tf
-    # see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
-    # gevent.monkey.patch_all()
     tracer.configure(
         hostname=os.environ["DD_AGENT_HOST"],
         port=os.environ["DD_TRACE_AGENT_PORT"],
