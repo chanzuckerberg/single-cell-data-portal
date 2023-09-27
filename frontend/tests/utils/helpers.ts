@@ -2,7 +2,13 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
-import { ElementHandle, expect, Locator, Page } from "@playwright/test";
+import {
+  APIRequestContext,
+  ElementHandle,
+  expect,
+  Locator,
+  Page,
+} from "@playwright/test";
 import { TEST_ENV } from "tests/common/constants";
 import { LOGIN_STATE_FILENAME, TEST_URL } from "../common/constants";
 import {
@@ -167,6 +173,39 @@ export async function getInnerText(
   >;
 
   return element.innerText();
+}
+
+export async function getAccessToken(request: APIRequestContext) {
+  if (TEST_ENV !== "rdev") return;
+
+  const secret = JSON.parse(
+    (await client.send(command)).SecretString || "null"
+  );
+
+  const { test_app_id, test_app_secret } = secret;
+
+  const payload = {
+    grant_type: "client_credentials",
+    client_id: test_app_id,
+    client_secret: test_app_secret,
+    audience:
+      "https://api.cellxgene.dev.single-cell.czi.technology/dp/v1/curator",
+  };
+
+  const response = await request.post(
+    "https://czi-cellxgene-dev.us.auth0.com/oauth/token",
+    {
+      data: payload,
+    }
+  );
+
+  const { access_token } = await response.json();
+
+  if (!access_token) {
+    throw Error("No Auth0 access token!");
+  }
+
+  process.env.ACCESS_TOKEN = access_token;
 }
 
 async function getTestUsernameAndPassword() {
