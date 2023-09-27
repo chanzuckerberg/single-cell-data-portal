@@ -12,8 +12,9 @@ import { noop } from "src/common/constants/utils";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../SaveExport";
 import { useConnect } from "./connect";
 import {
-  CITATION_LABEL,
-  CITATION_TEXT,
+  CITATION_BUTTON_LABEL,
+  CITATION_NOTIFICATION_LABEL,
+  CITATION_NOTIFICATION_TEXT,
 } from "src/views/WheresMyGeneV2/common/constants";
 
 export default function CitationButton(): JSX.Element {
@@ -35,22 +36,22 @@ export default function CitationButton(): JSX.Element {
             }
           >
             <StyledNotificationLabel data-testid="citation-link-notification">
-              {CITATION_LABEL}
+              {CITATION_NOTIFICATION_LABEL}
             </StyledNotificationLabel>
             <StyledNotificationDetails>
-              {CITATION_TEXT}
+              {CITATION_NOTIFICATION_TEXT}
             </StyledNotificationDetails>
           </Notification>
         </StyledNotificationWrapper>
       )}
       <StyledButtonDiv className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
-        <StyledLabel>Citation</StyledLabel>
+        <StyledLabel>{CITATION_BUTTON_LABEL}</StyledLabel>
         <StyledButtonIcon
           data-testid={"citation-button"}
           onClick={copyCitation}
           sdsSize="medium"
           sdsType="primary"
-          sdsIcon="speechBubbles"
+          sdsIcon="quote"
           disabled={selectedGenes.length === 0}
         />
       </StyledButtonDiv>
