@@ -341,14 +341,9 @@ export const USE_GPT_SEO_DESCRIPTION_QUERY = {
   id: "cell-guide-gpt-seo-description-query",
 };
 
-interface GptSeoDescriptionQueryResponse {
-  name: string;
-  description: string;
-}
-
 export const fetchGptSeoDescription = async (
   entityId: string
-): Promise<GptSeoDescriptionQueryResponse> => {
+): Promise<string> => {
   entityId = entityId.replace(":", "_");
   // This function is used server-side to fetch the GPT SEO description.
   const url = `${CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX}/${QUERY_MAPPING[
