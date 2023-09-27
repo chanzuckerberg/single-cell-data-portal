@@ -211,30 +211,8 @@ jobs:
       matrix:
         # Only run Chrome for now, since GHA only has 250 workers and will cancel jobs if it runs out
         project: [chromium]
-        shardCurrent:
-          [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-            18,
-            19,
-            20,
-          ]
-        shardTotal: [20]
+        shardCurrent: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        shardTotal: [10]
 
     defaults:
       run:
@@ -290,15 +268,6 @@ jobs:
           name: all-blob-reports
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
           retention-days: 1
-
-      - uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          fields: repo,commit,author,eventName,workflow,job,mention
-          mention: "here"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && github.ref == 'refs/heads/main'
 
   wait-for-shards:
     needs: run-e2e-tests # run after shards
