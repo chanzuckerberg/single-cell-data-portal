@@ -4,12 +4,16 @@ import { expect, Page, test } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
 import {
   expandTissue,
+  getCellTypeNames,
   selectFirstOption,
   tryUntil,
   waitForLoadingSpinnerToResolve,
 } from "./helpers";
 import { ADD_GENE_BTN, ADD_TISSUE_ID } from "../common/constants";
-import { ADD_GENE_SEARCH_PLACEHOLDER_TEXT } from "tests/utils/geneUtils";
+import {
+  ADD_GENE_SEARCH_PLACEHOLDER_TEXT,
+  CELL_TYPE_SEARCH_PLACEHOLDER_TEXT,
+} from "tests/utils/geneUtils";
 
 const { skip, beforeEach } = test;
 
@@ -64,7 +68,8 @@ export async function goToWMG(page: Page, url?: string) {
       await Promise.all([
         page.waitForResponse(
           (resp: { url: () => string | string[]; status: () => number }) =>
-            resp.url().includes("/wmg/v2/filters") && resp.status() === 200
+            resp.url().includes("/wmg/v2/primary_filter_dimensions") &&
+            resp.status() === 200
         ),
         page.goto(targetUrl),
       ]);
@@ -284,3 +289,21 @@ export async function searchAndAddGene(page: Page, geneName: string) {
   // close dropdown
   await page.keyboard.press("Escape");
 }
+
+export async function searchAndAddFilterCellType(page: Page, cellType: string) {
+  const beforeCellTypeNames = await getCellTypeNames(page);
+  await page.getByPlaceholder(CELL_TYPE_SEARCH_PLACEHOLDER_TEXT).type(cellType);
+  await page.getByText(cellType, { exact: true }).click();
+  await page.keyboard.press("Escape");
+  const afterCellTypeNames = await getCellTypeNames(page);
+  expect(afterCellTypeNames.length).toBeGreaterThan(beforeCellTypeNames.length);
+}
+export async function removeFilteredCellType(page: Page, cellType: string) {
+  const beforeCellTypeNames = await getCellTypeNames(page);
+  const cellTypeTag = page.getByTestId(`cell-type-tag-${cellType}`);
+  const deleteIcon = cellTypeTag.getByTestId("CancelIcon");
+  await deleteIcon.click();
+  const afterCellTypeNames = await getCellTypeNames(page);
+  expect(afterCellTypeNames.length).toBeLessThan(beforeCellTypeNames.length);
+}
+1;

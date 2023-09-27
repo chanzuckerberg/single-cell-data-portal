@@ -19,6 +19,8 @@ import {
   conditionallyRunTests,
   goToWMG,
   goToWMGWithSeededState,
+  removeFilteredCellType,
+  searchAndAddFilterCellType,
   waitForHeatmapToRender,
 } from "tests/utils/wmgUtils";
 import { getCurrentDate } from "tests/utils/downloadUtils";
@@ -854,6 +856,18 @@ describe("Where's My Gene", () => {
       },
       { page }
     );
+  });
+  describe("Cell Type Filtering", () => {
+    test("Filter to multiple cell types and then clear", async ({ page }) => {
+      await goToWMG(page);
+      await waitForLoadingSpinnerToResolve(page);
+      await searchAndAddFilterCellType(page, "B cell");
+      await searchAndAddFilterCellType(page, "T cell");
+      await searchAndAddFilterCellType(page, "NK cell");
+      await removeFilteredCellType(page, "B cell");
+      await removeFilteredCellType(page, "T cell");
+      await removeFilteredCellType(page, "NK cell");
+    });
   });
 });
 
