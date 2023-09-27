@@ -7,7 +7,7 @@ import {
 } from "@playwright/test";
 import { matchers } from "expect-playwright";
 import fs from "fs";
-import { LOGIN_STATE_FILENAME } from "tests/common/constants";
+import { LOGIN_STATE_FILENAME, TEST_ENV } from "tests/common/constants";
 import { COMMON_PLAYWRIGHT_CONTEXT } from "tests/common/context";
 import { getFeatureFlags } from "tests/common/featureFlags";
 import { SKIP_LOGIN } from "tests/common/constants";
@@ -79,6 +79,8 @@ const PLAYWRIGHT_REPORTER = process.env.CI
       ],
     ] as ReporterDescription[]);
 
+const extraHTTPHeaders = getExtraHTTPHeaders();
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -103,8 +105,16 @@ const config: PlaywrightTestConfig = {
   /* Configure projects for major browsers */
   projects: [
     {
+      name: "preSetup",
+      testMatch: "**/*.preSetup.ts",
+    },
+    {
       name: "setup",
+      dependencies: ["preSetup"],
       testMatch: "**/*.setup.ts",
+      use: {
+        extraHTTPHeaders,
+      },
     },
     {
       name: "chromium",
@@ -113,6 +123,7 @@ const config: PlaywrightTestConfig = {
         ...devices["Desktop Chrome"],
         userAgent: devices["Desktop Chrome"].userAgent + CZI_CHECKER,
         permissions: CLIPBOARD_PERMISSIONS,
+        extraHTTPHeaders,
       },
     },
     {
@@ -121,6 +132,7 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices["Desktop Firefox"],
         userAgent: devices["Desktop Firefox"].userAgent + CZI_CHECKER,
+        extraHTTPHeaders,
       },
     },
     {
@@ -130,6 +142,7 @@ const config: PlaywrightTestConfig = {
         ...devices["Desktop Edge"],
         userAgent: devices["Desktop Edge"].userAgent + CZI_CHECKER,
         permissions: CLIPBOARD_PERMISSIONS,
+        extraHTTPHeaders,
       },
     },
   ],
@@ -250,6 +263,14 @@ function getStorageState(): {
    * Auth0 and save the Auth0 rate limiting quota
    */
   return getFeatureFlags();
+}
+
+function getExtraHTTPHeaders(): { [key: string]: string } {
+  if (TEST_ENV !== "rdev") return {};
+
+  return {
+    Authorization: "Bearer " + process.env.ACCESS_TOKEN,
+  };
 }
 
 export default defineConfig(config);
