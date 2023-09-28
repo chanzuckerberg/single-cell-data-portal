@@ -67,6 +67,8 @@ export async function goToWMG(page: Page, url?: string) {
   const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
   return await tryUntil(
     async () => {
+      await page.goto(targetUrl);
+
       await Promise.all([
         page.waitForResponse(
           (resp: { url: () => string | string[]; status: () => number }) =>
@@ -304,7 +306,7 @@ export async function searchAndAddGene(page: Page, geneName: string) {
 
 export async function searchAndAddFilterCellType(page: Page, cellType: string) {
   const beforeCellTypeNames = await getCellTypeNames(page);
-  await page.getByPlaceholder(CELL_TYPE_SEARCH_PLACEHOLDER_TEXT).type(cellType);
+  await page.getByPlaceholder(CELL_TYPE_SEARCH_PLACEHOLDER_TEXT).fill(cellType);
   await page.getByText(cellType, { exact: true }).click();
   await page.keyboard.press("Escape");
   const afterCellTypeNames = await getCellTypeNames(page);
