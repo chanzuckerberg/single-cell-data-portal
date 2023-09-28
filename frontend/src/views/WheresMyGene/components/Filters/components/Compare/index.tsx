@@ -1,17 +1,4 @@
-import {
-  DefaultDropdownMenuOption,
-  InputDropdownProps as IInputDropdownProps,
-} from "@czi-sds/components";
-import { useContext, useMemo } from "react";
-import {
-  DispatchContext,
-  State,
-  StateContext,
-} from "src/views/WheresMyGene/common/store";
-import { selectCompare } from "src/views/WheresMyGene/common/store/actions";
 import { Wrapper, Label, StyledDropdown } from "../common/style";
-import { track } from "src/common/analytics";
-import { EVENTS } from "src/common/analytics/events";
 import { LabelWrapper, NewChip } from "./style";
 import {
   COMPARE_OPTIONS,
@@ -25,34 +12,13 @@ import {
   TooltipButton,
 } from "../../../CellInfoSideBar/style";
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
-
-const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {
-  sdsStyle: "square",
-};
-
-interface Props {
-  areFiltersDisabled: boolean;
-}
-
-// (alec) This is a hack to prevent the group by event from firing when the page loads
-let groupByEventTriggeredAtLeastOnce = false;
+import { Props } from "./types";
+import { useConnect } from "./connect";
 
 export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
-  const dispatch = useContext(DispatchContext);
-  const { compare } = useContext(StateContext);
-
-  const InputDropdownProps = useMemo(
-    () => ({
-      ...DEFAULT_INPUT_DROPDOWN_PROPS,
-      disabled: areFiltersDisabled,
-    }),
-    [areFiltersDisabled]
-  );
-
-  const optionLabel = useMemo(() => {
-    return COMPARE_OPTIONS.find((option) => option.id === compare);
-  }, [compare]);
-
+  const { optionLabel, handleChange, InputDropdownProps } = useConnect({
+    areFiltersDisabled,
+  });
   return (
     <div>
       <LabelWrapper>
@@ -99,24 +65,4 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
       </Wrapper>
     </div>
   );
-
-  function handleChange(value: DefaultDropdownMenuOption | null): void {
-    if (!dispatch || !value) return;
-    if (groupByEventTriggeredAtLeastOnce) {
-      track(EVENTS.WMG_OPTION_SELECT_GROUP_BY, {
-        group_by_option: value.name,
-      });
-    } else if (value.name !== "None") {
-      groupByEventTriggeredAtLeastOnce = true;
-      track(EVENTS.WMG_OPTION_SELECT_GROUP_BY, {
-        group_by_option: value.name,
-      });
-    }
-
-    dispatch(
-      selectCompare(
-        (value as (typeof COMPARE_OPTIONS)[number]).id as State["compare"]
-      )
-    );
-  }
 }
