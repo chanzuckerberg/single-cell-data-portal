@@ -49,6 +49,8 @@ const DataFormat: FC<Props> = ({
           slotProps={TOOLTIP_SLOT_PROPS}
           title={isRDS ? null : TOOLTIP_TITLE}
         >
+          {/* The radio button is enclosed within a <span> tag to enable tooltip functionality when the radio button is disabled. */}
+          {/* See https://github.com/chanzuckerberg/sci-components/blob/main/packages/components/src/core/Tooltip/index.tsx#L28. */}
           <span>
             <InputRadio
               disabled={isDisabled || !isRDS}
