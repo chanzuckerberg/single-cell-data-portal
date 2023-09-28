@@ -250,50 +250,50 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
 
-  # wait-for-shards:
-  #   needs: run-e2e-tests # run after shards
-  #   runs-on: ubuntu-22.04
-  #   if: success() # only run when all shards have passed
-  #   # store success output flag for ci job
-  #   outputs:
-  #     success: ${{ steps.setoutput.outputs.success }}
-  #   steps:
-  #     - id: setoutput
-  #       run: echo "{success}={true}" >> $GITHUB_OUTPUT
+  wait-for-shards:
+    needs: run-e2e-tests # run after shards
+    runs-on: ubuntu-22.04
+    if: success() # only run when all shards have passed
+    # store success output flag for ci job
+    outputs:
+      success: ${{ steps.setoutput.outputs.success }}
+    steps:
+      - id: setoutput
+        run: echo "{success}={true}" >> $GITHUB_OUTPUT
 
-  # merge-playwright-reports:
-  #   # Merge reports after playwright-tests, even if some shards have failed
-  #   if: always()
-  #   needs: [run-e2e-tests]
-  #   runs-on: ubuntu-latest
-  #   defaults:
-  #     run:
-  #       working-directory: frontend
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         fetch-depth: 2
-  #     - uses: actions/setup-node@v3
-  #       with:
-  #         node-version: 18
-  #     - name: Install dependencies
-  #       run: npm ci
+  merge-playwright-reports:
+    # Merge reports after playwright-tests, even if some shards have failed
+    if: always()
+    needs: [run-e2e-tests]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm ci
 
-  #     - name: Download blob reports from GitHub Actions Artifacts
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: all-blob-reports
-  #         path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-reports
+      - name: Download blob reports from GitHub Actions Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: all-blob-reports
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-reports
 
-  #     - name: Merge into HTML Report
-  #       run: npx playwright merge-reports --reporter html ./blob-reports
+      - name: Merge into HTML Report
+        run: npx playwright merge-reports --reporter html ./blob-reports
 
-  #     - name: Upload HTML report
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: html-report--attempt-${{ github.run_attempt }}
-  #         path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
-  #         retention-days: 30
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v3
+        with:
+          name: html-report--attempt-${{ github.run_attempt }}
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
+          retention-days: 30
 
   # # https://github.com/myieye/web-languageforge/blob/develop/.github/workflows/e2e-tests.yml
   # e2e-test:
