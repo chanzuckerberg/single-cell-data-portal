@@ -14,23 +14,20 @@ import {
 import { selectCompare } from "src/views/WheresMyGene/common/store/actions";
 import { Props } from "./types";
 
+const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {
+  sdsStyle: "square",
+};
+
 export const useConnect = ({ areFiltersDisabled }: Props) => {
   const dispatch = useContext(DispatchContext);
   const { compare } = useContext(StateContext);
-
-  const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = useMemo(
-    () => ({
-      sdsStyle: "square",
-    }),
-    []
-  );
 
   const InputDropdownProps = useMemo(
     () => ({
       ...DEFAULT_INPUT_DROPDOWN_PROPS,
       disabled: areFiltersDisabled,
     }),
-    [areFiltersDisabled, DEFAULT_INPUT_DROPDOWN_PROPS]
+    [areFiltersDisabled]
   );
 
   const optionLabel = useMemo(() => {
