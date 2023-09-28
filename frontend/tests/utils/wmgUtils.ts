@@ -3,6 +3,7 @@ import { TEST_URL } from "../common/constants";
 import { expect, Page, test } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
 import {
+  countLocator,
   expandTissue,
   getCellTypeNames,
   selectFirstOption,
@@ -14,6 +15,7 @@ import {
   ADD_GENE_SEARCH_PLACEHOLDER_TEXT,
   CELL_TYPE_SEARCH_PLACEHOLDER_TEXT,
 } from "tests/utils/geneUtils";
+import { TISSUE_NAME_LABEL_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 
 const { skip, beforeEach } = test;
 
@@ -73,6 +75,16 @@ export async function goToWMG(page: Page, url?: string) {
         ),
         page.goto(targetUrl),
       ]);
+
+      await tryUntil(
+        async () => {
+          const numberOfTissuesBefore = await countLocator(
+            page.getByTestId(TISSUE_NAME_LABEL_CLASS_NAME)
+          );
+          expect(numberOfTissuesBefore).toBeGreaterThan(0);
+        },
+        { page }
+      );
     },
     { page }
   );

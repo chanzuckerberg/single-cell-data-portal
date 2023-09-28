@@ -159,11 +159,12 @@ describe("Where's My Gene", () => {
       page,
       locator: getDiseaseSelectorButton(),
     });
-    const datasetOptions = await page
+
+    const diseaseOption = await page
       .getByRole("option")
-      .getByText("acute kidney failure")
-      .elementHandles();
-    await datasetOptions[0].click();
+      .getByText("acute kidney failure");
+
+    await diseaseOption.click();
     await page.keyboard.press("Escape");
 
     // wait for spinner to disappear, coincides with y-axis update
