@@ -19,11 +19,6 @@ const DownloadDataset: FC<Props> = ({
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
-  // Close modal.
-  const closeModal = () => {
-    setIsOpen(false);
-  };
-
   if (!dataAssets.length) {
     return null;
   }
@@ -36,8 +31,12 @@ const DownloadDataset: FC<Props> = ({
         disabled={isDisabled || !dataAssets.length}
         onClick={() => setIsOpen(true)}
       />
-      <Dialog onClose={closeModal} open={isOpen}>
-        <Content name={name} dataAssets={dataAssets} onClose={closeModal} />
+      <Dialog onClose={() => setIsOpen(false)} open={isOpen}>
+        <Content
+          name={name}
+          dataAssets={dataAssets}
+          onClose={() => setIsOpen(false)}
+        />
       </Dialog>
     </>
   );
