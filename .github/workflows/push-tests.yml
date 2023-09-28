@@ -149,7 +149,7 @@ jobs:
   wait-for-shards:
     needs: run-e2e-tests # run after shards
     runs-on: ubuntu-22.04
-    #if: success() # only run when all shards have passed
+    if: success() # only run when all shards have passed
     # store success output flag for ci job
     outputs:
       success: ${{ steps.setoutput.outputs.success }}
