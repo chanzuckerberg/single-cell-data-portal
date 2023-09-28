@@ -32,7 +32,7 @@ export default function CitationButton(): JSX.Element {
             slideDirection="left"
             intent="info"
             icon={
-              <StyledIcon sdsIcon={"copy"} sdsSize={"s"} sdsType={"static"} />
+              <StyledIcon sdsIcon={"quote"} sdsSize={"l"} sdsType={"static"} />
             }
           >
             <StyledNotificationLabel data-testid="citation-link-notification">
