@@ -90,7 +90,7 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
       <Wrapper>
         <StyledDropdown
           data-testid="compare-dropdown"
-          onChange={handleChange}
+          onChange={() => handleChange}
           label={optionLabel?.name || "None"}
           options={COMPARE_OPTIONS}
           InputDropdownProps={InputDropdownProps}
