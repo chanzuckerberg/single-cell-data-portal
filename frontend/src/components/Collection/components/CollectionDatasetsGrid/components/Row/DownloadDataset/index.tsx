@@ -24,11 +24,6 @@ const DownloadDataset: FC<Props> = ({
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
-  // Close modal.
-  const closeModal = () => {
-    setIsOpen(false);
-  };
-
   // Fetch the dataset assets on open of download modal.
   const { datasetAssets, isError, isLoading } = useDatasetAssets(
     datasetId,
@@ -43,13 +38,13 @@ const DownloadDataset: FC<Props> = ({
         disabled={isDisabled}
         onClick={() => setIsOpen(true)}
       />
-      <Dialog onClose={closeModal} open={isOpen}>
+      <Dialog onClose={() => setIsOpen(false)} open={isOpen}>
         <Content
           dataAssets={datasetAssets}
           isError={isError}
           isLoading={isLoading}
           name={name}
-          onClose={closeModal}
+          onClose={() => setIsOpen(false)}
         />
       </Dialog>
     </>

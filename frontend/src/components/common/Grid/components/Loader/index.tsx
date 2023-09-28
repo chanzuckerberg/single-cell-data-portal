@@ -2,16 +2,15 @@ import React from "react";
 import { LoadingIndicator } from "@czi-sds/components";
 
 interface Props {
-  className?: string;
   sdsStyle?: "minimal" | "tag";
 }
 
 export default function Loader({
-  className,
   sdsStyle = "tag",
+  ...props /* Spread props to allow for data-testid and other Loader props. */
 }: Props): JSX.Element {
   return (
-    <div className={className}>
+    <div {...props}>
       <LoadingIndicator sdsStyle={sdsStyle} />
     </div>
   );
