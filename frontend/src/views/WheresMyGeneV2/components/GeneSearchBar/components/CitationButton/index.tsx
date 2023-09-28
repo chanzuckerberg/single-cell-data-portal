@@ -15,7 +15,7 @@ import {
   CITATION_BUTTON_LABEL,
   CITATION_NOTIFICATION_LABEL,
   CITATION_NOTIFICATION_TEXT,
-} from "src/views/WheresMyGeneV2/common/constants";
+} from "./constants";
 
 export default function CitationButton(): JSX.Element {
   const { copyCitation, showCitationNotification, selectedGenes } =
