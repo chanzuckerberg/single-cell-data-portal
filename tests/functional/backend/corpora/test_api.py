@@ -6,7 +6,7 @@ import unittest
 import requests
 from requests import HTTPError
 
-from tests.functional.backend.common import BaseFunctionalTestCase
+from tests.functional.backend.common import TEST_DATASET_URI, BaseFunctionalTestCase
 
 
 class TestApi(BaseFunctionalTestCase):
@@ -14,7 +14,6 @@ class TestApi(BaseFunctionalTestCase):
     def setUpClass(cls):
         super().setUpClass()
 
-    @unittest.skip("Skipping this test until the deployed_version feature is fixed")
     def test_version(self):
         res = self.session.get(f"{self.api}/dp/v1/deployed_version")
         res.raise_for_status()
@@ -95,7 +94,7 @@ class TestApi(BaseFunctionalTestCase):
             for key in updated_data:
                 self.assertEqual(updated_data[key], data[key])
 
-        self.upload_and_wait(collection_id, "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0")
+        self.upload_and_wait(collection_id, TEST_DATASET_URI)
 
         # make collection public
         with self.subTest("Test make collection public"):
@@ -201,7 +200,7 @@ class TestApi(BaseFunctionalTestCase):
         self.assertStatusCode(requests.codes.created, res)
         self.assertIn("collection_id", data)
 
-        body = {"url": "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0"}
+        body = {"url": TEST_DATASET_URI}
 
         res = self.session.post(
             f"{self.api}/dp/v1/collections/{collection_id}/upload-links", data=json.dumps(body), headers=headers

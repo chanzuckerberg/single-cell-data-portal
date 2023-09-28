@@ -211,30 +211,8 @@ jobs:
       matrix:
         # Only run Chrome for now, since GHA only has 250 workers and will cancel jobs if it runs out
         project: [chromium]
-        shardCurrent:
-          [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-            18,
-            19,
-            20,
-          ]
-        shardTotal: [20]
+        shardCurrent: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        shardTotal: [10]
 
     defaults:
       run:
@@ -291,15 +269,6 @@ jobs:
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
           retention-days: 1
 
-      - uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          fields: repo,commit,author,eventName,workflow,job,mention
-          mention: "here"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && github.ref == 'refs/heads/main'
-
   wait-for-shards:
     needs: run-e2e-tests # run after shards
     runs-on: ubuntu-22.04
@@ -344,6 +313,7 @@ jobs:
 
   functional-test:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     needs:
       - upgrade
     steps:
@@ -361,37 +331,25 @@ jobs:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
-      # Login to ECR needed solely to be able to retrieve cached layers
-      - name: Login to Prod ECR
-        uses: docker/login-action@v1
-        if: github.event.deployment.environment == 'prod'
-        with:
-          registry: ${{ secrets.ECR_REPO_PROD }}
-      - name: Login to ECR
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.deployment.sha }}
           fetch-depth: 1
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
       - name: Run functional test
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
         if: github.event.deployment.environment != 'prod'
         run: |
-          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          mkdir -p .local/bin
-          curl -Ls https://github.com/segmentio/chamber/releases/download/v2.9.1/chamber-v2.9.1-linux-amd64 > .local/bin/chamber &&
-          chmod +x .local/bin/chamber
-          PATH="$PATH:$(pwd)/.local/bin"
           if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
             export DEPLOYMENT_STAGE=staging
           fi
           echo DEPLOYMENT_STAGE ${DEPLOYMENT_STAGE}
-          docker-compose up --no-deps -d backend
-          BOTO_ENDPOINT_URL= make local-functional-test
+          pip3 install -r tests/functional/requirements.txt
+          make functional-test
       ### Need to write success failure way because Github API doesn't allow doing
       ### "if: always(), state: ${{ success() }}:
       - name: Set deployment status to success if no errors
@@ -410,6 +368,7 @@ jobs:
 
   performance-test:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     needs:
       - upgrade
     steps:

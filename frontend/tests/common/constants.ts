@@ -49,7 +49,7 @@ export const ERROR_NO_TESTID_OR_LOCATOR =
   "Either testId or locator must be defined";
 export const GENE_LABELS_ID = "[data-testid^=gene-label-]";
 
-export const downLoadPath = "./tests/downloads";
+export const downloadPath = "./tests/downloads";
 export const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 export const ADD_TISSUE_ID = "tissue-filter";
 export const ADD_GENE_ID = "add-gene-btn";

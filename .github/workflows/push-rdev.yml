@@ -24,6 +24,16 @@ permissions:
 
 jobs:
   build-push-images:
+    strategy:
+      matrix:
+        image:
+          - frontend # pushed both the frontend and backend images
+          - upload_failures
+          - upload_success
+          - dataset_submissions
+          - processing
+          - wmg_processing
+          - cellguide_pipeline
     runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
@@ -31,7 +41,7 @@ jobs:
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 900
+          role-duration-seconds: 1800
       - name: Login to ECR
         uses: docker/login-action@v1
         with:
@@ -42,13 +52,25 @@ jobs:
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
-          happy_version: "0.59.0"
-      - name: Build component
-        shell: bash
+          happy_version: "0.92.0"
+      - name: Push images
         run: |
-          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:7}
+          echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
+          echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
+          export IMAGE_TAG=sha-${GITHUB_SHA:0:8}
+          happy push devstack --env dev --slice ${{ matrix.image }} \
+          --docker-compose-env-file envfile --aws-profile "" \
+          --tags ${IMAGE_TAG},${STACK_NAME},branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
+
+  summarize:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
       - name: Create Summary With Happy Commands
         run: |
+          export 
           echo "### Happy Commands :rocket: :upside_down_face:" >> $GITHUB_STEP_SUMMARY
-          echo "* \`happy create <_stack-name_> --tag ${GITHUB_SHA:0:7} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
-          echo "* \`happy update <_stack-name_> --tag ${GITHUB_SHA:0:7} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
+          echo "* \`happy create <_stack-name_> --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
+          echo "* \`happy update <_stack-name_> --tag ${GITHUB_SHA:0:8} --create-tag=false --skip-check-tag\`" >> $GITHUB_STEP_SUMMARY
