@@ -43,9 +43,6 @@ export const useConnect = ({ areFiltersDisabled }: Props) => {
       track(EVENTS.WMG_OPTION_SELECT_GROUP_BY, {
         group_by_option: value.name,
       });
-      track(EVENTS.WMG_OPTION_SELECT_GROUP_BY, {
-        group_by_option: value.name,
-      });
       dispatch(
         selectCompare(
           (value as (typeof COMPARE_OPTIONS)[number]).id as State["compare"]
