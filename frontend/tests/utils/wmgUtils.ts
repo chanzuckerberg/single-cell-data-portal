@@ -69,15 +69,6 @@ export async function goToWMG(page: Page, url?: string) {
     async () => {
       await page.goto(targetUrl);
 
-      await Promise.all([
-        page.waitForResponse(
-          (resp: { url: () => string | string[]; status: () => number }) =>
-            resp.url().includes("/wmg/v2/primary_filter_dimensions") &&
-            resp.status() === 200
-        ),
-        page.goto(targetUrl),
-      ]);
-
       await tryUntil(
         async () => {
           const numberOfTissuesBefore = await countLocator(
@@ -85,7 +76,7 @@ export async function goToWMG(page: Page, url?: string) {
           );
           expect(numberOfTissuesBefore).toBeGreaterThan(0);
         },
-        { page }
+        { page, silent: true }
       );
     },
     { page }
