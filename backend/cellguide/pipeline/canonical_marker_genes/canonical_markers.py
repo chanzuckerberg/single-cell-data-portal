@@ -80,7 +80,7 @@ class CanonicalMarkerGenesCompiler:
                 tissue_id = entry.id
         return tissue_id
 
-    def _get_gene_info(self, gene_biomarkers: list[GeneBiomarker]) -> Tuple[list[str], list[str]]:
+    def _get_gene_info(self, gene_biomarkers: list[GeneBiomarker]) -> Tuple[str, str]:
         """
         Extracts the gene information from the given gene biomarkers.
         This function only adds gene IDs that are present in WMG.
@@ -106,7 +106,7 @@ class CanonicalMarkerGenesCompiler:
                 name = gene.rdfs_label or self.gene_id_to_name.get(symbol, symbol)
                 gene_symbols.append(symbol)
                 gene_names.append(name)
-        return gene_symbols, gene_names
+        return ";;".join(gene_symbols), ";;".join(gene_names)
 
     def _get_references(self, references: list[Reference], doi_to_citation: dict[str, str]) -> Tuple[str, str]:
         """
@@ -166,10 +166,8 @@ class CanonicalMarkerGenesCompiler:
         logger.info(f"Getting processed ASCTB table entries for {len(self.asctb_data)} tissues...")
         with ProgressBar():
             parsed_table_entries = sum(compute(*results, num_workers=CELLGUIDE_PIPELINE_NUM_CPUS), [])
-
         # Drop duplicate entries if they exist
         parsed_table_entries = pd.DataFrame(parsed_table_entries).drop_duplicates().to_dict("records")
-
         logger.info("Fetching tissue names from UBERON ontology...")
         tissues_in_parsed_table_entries = [i["tissue"] for i in parsed_table_entries]
         tissues_by_id = {t: ontology_term_label(t) for t in tissues_in_parsed_table_entries}
@@ -185,65 +183,8 @@ class CanonicalMarkerGenesCompiler:
             celltype_markers_list.append(entry_copy)
             gene_infos[ct] = celltype_markers_list
 
-        logger.info("Aggregating gene biomarkers across tissues and publications across biomarkers and cell types...")
-
-        def aggregate_publications(publication):
-            # Remove empty publications and get unique ones with order preserved
-            publications = [i for i in publication.values if i != ""]
-            unique_publications = list(dict.fromkeys(publications))
-            return ";;".join(unique_publications)
-
-        def aggregate_gene_names(names, symbols):
-            # If possible, pick a gene name that is not a gene symbol
-            non_symbol_names = [name for name in names.values if name not in symbols]
-            return next(iter(non_symbol_names), names.values[0])
-
-        for cell_type in gene_infos:
-            # Convert the list of gene info for the current cell type to a DataFrame
-            gene_info_df = pd.DataFrame(gene_infos[cell_type])
-            gene_symbols = gene_info_df["symbol"].values
-
-            # Group the DataFrame by tissue and symbol, and aggregate the names and publications
-            aggregated_gene_info = (
-                gene_info_df.groupby(["tissue", "symbol"])
-                .agg(
-                    {
-                        "name": lambda names, symbols=gene_symbols: aggregate_gene_names(names, symbols),
-                        "publication": aggregate_publications,
-                        "publication_titles": aggregate_publications,
-                    }
-                )
-                .reset_index()
-                .to_dict(orient="records")
-            )
-
-            # Create a DataFrame from the aggregated gene info
-            aggregated_gene_info_df = pd.DataFrame(aggregated_gene_info)
-
-            # Aggregate the gene info across all tissues
-            all_tissues_gene_info = (
-                aggregated_gene_info_df.groupby("symbol")
-                .agg(
-                    {
-                        "name": lambda names, symbols=gene_symbols: aggregate_gene_names(names, symbols),
-                        "publication": aggregate_publications,
-                        "publication_titles": aggregate_publications,
-                    }
-                )
-                .reset_index()
-            )
-
-            # Add a column indicating these records are for all tissues
-            all_tissues_gene_info["tissue"] = "All Tissues"
-
-            # Ensure the DataFrame has the same column order as the original
-            all_tissues_gene_info = all_tissues_gene_info[aggregated_gene_info_df.columns]
-
-            # Add the all-tissues gene info to the list of aggregated gene info
-            aggregated_gene_info.extend(all_tissues_gene_info.to_dict(orient="records"))
-
-            # Update the gene info for the current cell type
-            gene_infos[cell_type] = [ParsedAsctbTableEntry(**entry) for entry in aggregated_gene_info]
+        for ct in gene_infos:
+            gene_infos[ct] = [ParsedAsctbTableEntry(**entry) for entry in gene_infos[ct]]
 
         return gene_infos
 
@@ -282,17 +223,13 @@ class CanonicalMarkerGenesCompiler:
             refs, titles = self._get_references([Reference(**entry) for entry in row["references"]], doi_to_citation)
 
             for cell_type in cell_types:
-                for index in range(len(gene_symbols)):
-                    symbol = gene_symbols[index]
-                    name = gene_names[index]
-
-                    entry = {
-                        "tissue": tissue_id,
-                        "symbol": symbol,
-                        "name": name,
-                        "publication": refs,
-                        "publication_titles": titles,
-                        "cell_type_ontology_term_id": cell_type,
-                    }
-                    parsed_table_entries.append(entry)
+                entry = {
+                    "tissue": tissue_id,
+                    "symbol": gene_symbols,
+                    "name": gene_names,
+                    "publication": refs,
+                    "publication_titles": titles,
+                    "cell_type_ontology_term_id": cell_type,
+                }
+                parsed_table_entries.append(entry)
         return parsed_table_entries
