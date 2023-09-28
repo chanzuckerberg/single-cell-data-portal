@@ -165,8 +165,11 @@ jobs:
           ./scripts/populate_rdev_with_cellguide_data.sh ${{ env.STACK_NAME }} & ./scripts/populate_rdev_with_wmg_data.sh ${{ env.STACK_NAME }}
 
   run-e2e-tests:
-    needs:
-      - seed-wmg-cellguide-rdev
+    # DEBUG
+    # DEBUG
+    # DEBUG
+    # needs:
+    # - seed-wmg-cellguide-rdev
     timeout-minutes: 30
     name: e2e-tests ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
     runs-on: ubuntu-22.04
@@ -202,50 +205,50 @@ jobs:
           npm ci
           npx playwright install --with-deps
 
-  #     # Run E2E tests
-  #     - name: Run E2E tests
-  #       env:
-  #         CI: true
-  #         PROJECT: ${{ matrix.project }}
-  #         SHARD: ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
-  #       run: DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev
+      # Run E2E tests
+      - name: Run E2E tests
+        env:
+          CI: true
+          PROJECT: ${{ matrix.project }}
+          SHARD: ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
+        run: DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev
 
-  #     - name: Upload FE test results as an artifact
-  #       if: always()
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: playwright-report ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
-  #         path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
-  #         retention-days: 14
+      - name: Upload FE test results as an artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
+          retention-days: 14
 
-  #     - name: Upload blob report to GitHub Actions Artifacts
-  #       if: always()
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: all-blob-reports
-  #         path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
-  #         retention-days: 1
+      - name: Upload blob report to GitHub Actions Artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: all-blob-reports
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
+          retention-days: 1
 
-  #     # Upload Allure results as an artifact
-  #     - uses: actions/upload-artifact@v3
-  #       with:
-  #         name: allure-results
-  #         path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/allure-results
-  #         retention-days: 20
+      # Upload Allure results as an artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/allure-results
+          retention-days: 20
 
-  #     - name: Install happy
-  #       uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
-  #       with:
-  #         happy_version: "0.59.0"
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        with:
+          happy_version: "0.59.0"
 
-  #     - uses: 8398a7/action-slack@v3
-  #       with:
-  #         status: ${{ job.status }}
-  #         fields: repo,commit,author,eventName,workflow,job,mention
-  #         mention: "here"
-  #       env:
-  #         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-  #       if: failure() && github.ref == 'refs/heads/main'
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "here"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && github.ref == 'refs/heads/main'
 
   # wait-for-shards:
   #   needs: run-e2e-tests # run after shards
