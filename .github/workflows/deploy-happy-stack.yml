@@ -251,7 +251,7 @@ jobs:
           if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
             export DEPLOYMENT_STAGE=staging
           fi
-          DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}
+          DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}-ci
 
       - name: Upload FE test results as an artifact
         if: always()
