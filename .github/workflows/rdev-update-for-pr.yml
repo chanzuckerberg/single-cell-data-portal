@@ -165,11 +165,8 @@ jobs:
           ./scripts/populate_rdev_with_cellguide_data.sh ${{ env.STACK_NAME }} & ./scripts/populate_rdev_with_wmg_data.sh ${{ env.STACK_NAME }}
 
   run-e2e-tests:
-    # DEBUG
-    # DEBUG
-    # DEBUG
-    # needs:
-    # - seed-wmg-cellguide-rdev
+    needs:
+      - seed-wmg-cellguide-rdev
     timeout-minutes: 30
     name: e2e-tests ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
     runs-on: ubuntu-22.04
@@ -295,16 +292,15 @@ jobs:
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
           retention-days: 30
 
-  # # https://github.com/myieye/web-languageforge/blob/develop/.github/workflows/e2e-tests.yml
+  # https://github.com/myieye/web-languageforge/blob/develop/.github/workflows/e2e-tests.yml
   e2e-test:
     name: e2e-test
-    if: always()
     runs-on: ubuntu-latest
-    needs: [run-e2e-tests, wait-for-shards]
+    needs: wait-for-shards
     steps:
       - name: Check result
         run: |
-          passed="${{ needs.run-e2e-tests.result }}"
+          passed="${{ needs.wait-for-shards.outputs.success }}"
           if [[ $passed == "success" ]]; then
             echo "Shards passed"
             exit 0
