@@ -39,7 +39,7 @@ export const useConnect = ({ areFiltersDisabled }: Props) => {
 
   const handleChange = useCallback(
     (value: DefaultDropdownMenuOption | null) => {
-      if (!dispatch || !value) return;
+      if (!dispatch || !value || optionLabel === value) return;
       track(EVENTS.WMG_OPTION_SELECT_GROUP_BY, {
         group_by_option: value.name,
       });
@@ -49,7 +49,7 @@ export const useConnect = ({ areFiltersDisabled }: Props) => {
         )
       );
     },
-    [dispatch]
+    [dispatch, optionLabel]
   );
   return {
     handleChange,
