@@ -7,7 +7,7 @@ import { goToPage, isDevStagingRdev, login } from "tests/utils/helpers";
 const { describe, skip } = test;
 
 describe("global setup", () => {
-  test("login", async () => {
+  test("login @loggedIn", async () => {
     skip(SKIP_LOGIN, "SKIP_LOGIN was set to true. Skipping log in.");
     skip(
       !isDevStagingRdev,
