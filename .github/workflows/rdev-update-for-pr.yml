@@ -317,6 +317,9 @@ jobs:
   e2e-logged-in-test:
     timeout-minutes: 30
     runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: frontend
     needs:
       - seed-wmg-cellguide-rdev
     steps:
