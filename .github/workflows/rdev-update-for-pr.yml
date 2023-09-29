@@ -335,13 +335,15 @@ jobs:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
-      - name: Run E2E Logged In tests
+      - name: Install dependencies
         ### config.js set-up required due to transient test dependencies on API_URL
         run: |
           npm ci
           npx playwright install --with-deps
           cp src/configs/local.js src/configs/configs.js
-          DEBUG=pw:api npm run e2e-rdev-logged-in
+      - name: Run E2E Logged In tests
+        run: |
+          DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev-logged-in
       - uses: actions/upload-artifact@v2
         if: always()
         with:
