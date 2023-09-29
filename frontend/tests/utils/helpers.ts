@@ -70,6 +70,10 @@ export async function goToPage(
   url: string = TEST_URL,
   page: Page
 ): Promise<void> {
+  if (!url) {
+    throw Error("goToPage() requires TEST_URL");
+  }
+
   await tryUntil(
     async () => {
       await Promise.all([
