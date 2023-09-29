@@ -201,6 +201,7 @@ jobs:
         with:
           fetch-depth: 2
       - name: Install dependencies
+        ### config.js set-up required due to transient test dependencies on API_URL
         run: |
           npm ci
           npx playwright install --with-deps
@@ -312,3 +313,45 @@ jobs:
             echo "Shards failed"
             exit 1
           fi
+
+  e2e-logged-in-test:
+    timeout-minutes: 30
+    runs-on: ubuntu-22.04
+    needs:
+      - deploy-rdev
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16.14.2"
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Run E2E Logged In tests
+        env:
+          DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
+        ### config.js set-up required due to transient test dependencies on API_URL
+        run: |
+          if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
+            export DEPLOYMENT_STAGE=staging
+          fi
+          if [ "${DEPLOYMENT_STAGE}" != "prod" ]; then
+            pip3 install -r scripts/smoke_tests/requirements.txt
+            python3 -m scripts.smoke_tests.setup
+          fi
+          cd frontend
+          npm ci
+          npx playwright install --with-deps
+          cp src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
+          DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}-logged-in
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: logged-in-test-results
+          path: frontend/playwright-report/
+          retention-days: 30
