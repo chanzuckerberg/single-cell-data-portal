@@ -381,7 +381,10 @@ export default memo(function HeatMap({
     <>
       <ContainerWrapper>
         <TopLeftCornerMask height={xAxisHeight}>
-          <CellTypeFilterContainer id="celltype-filter-container">
+          <CellTypeFilterContainer
+            id="celltype-filter-container"
+            data-testid="celltype-filter"
+          >
             <Autocomplete
               className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
               data-testid="cell-type-search"
