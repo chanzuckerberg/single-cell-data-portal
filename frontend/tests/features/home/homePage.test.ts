@@ -173,6 +173,11 @@ async function isPageScrollableToSeeSiteMap(page: Page) {
  * to check if the page is scrollable
  */
 async function isGlobalLayoutWrapperScrollable(page: Page) {
+  /**
+   * (thuang): Set the viewport size to a smaller size, so that we can scroll
+   */
+  await page.setViewportSize({ height: 300, width: 600 });
+
   const wrapper = page.getByTestId("global-layout-wrapper");
 
   expect(
