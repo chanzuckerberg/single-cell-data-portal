@@ -453,6 +453,23 @@ export async function expandTissue(page: Page, tissueName: string) {
   );
 }
 
+export async function collapseTissue(page: Page, tissueName: string) {
+  await tryUntil(
+    async () => {
+      const beforeCellTypeNames = await getCellTypeNames(page);
+      await page
+        .getByTestId(`cell-type-labels-${tissueName}`)
+        .getByTestId(TISSUE_NAME_LABEL_CLASS_NAME)
+        .click();
+      const afterCellTypeNames = await getCellTypeNames(page);
+      expect(afterCellTypeNames.length).toBeLessThan(
+        beforeCellTypeNames.length
+      );
+    },
+    { page }
+  );
+}
+
 export async function waitForLoadingSpinnerToResolve(page: Page) {
   await page.getByText("Loading").first().waitFor({ state: "hidden" });
 }
