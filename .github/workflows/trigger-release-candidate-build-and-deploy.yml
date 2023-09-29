@@ -1,4 +1,4 @@
-name: Merge main into staging
+name: Trigger release candidate build and deploy
 
 on:
   push:
@@ -11,11 +11,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          ref: staging
       - name: Merge main into staging
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git checkout staging
-          git pull
-          git merge --no-ff main -m "Merge main into staging"
+          git merge --no-ff main -m "Trigger release candidate build and deploy"
           git push
