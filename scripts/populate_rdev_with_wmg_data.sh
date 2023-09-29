@@ -1,7 +1,8 @@
 #!/bin/bash
 STACK_NAME=""
 SRC_DEPLOYMENT="staging"
-SNAPSHOT_VERSION="v2"
+# (thuang): This will be updated to v2 next week
+SNAPSHOT_VERSION="v1"
 
 function usage {
   echo "Usage: $0 [-s|--src_deployment <src_deployment>] [-g|--gpt_only] <stack_name>"
@@ -57,8 +58,8 @@ fi
 
 LATEST_SNAPSHOT_IDENTIFIER=$(aws s3 cp s3://cellxgene-wmg-${SRC_DEPLOYMENT}/snapshots/${SNAPSHOT_VERSION}/latest_snapshot_identifier -)
 if [ -n "$LATEST_SNAPSHOT_IDENTIFIER" ]; then
-  aws s3 sync s3://cellxgene-wmg-${SRC_DEPLOYMENT}/snapshots/${SNAPSHOT_VERSION}/${LATEST_SNAPSHOT_IDENTIFIER} s3://env-rdev-wmg/${STACK_NAME}/${LATEST_SNAPSHOT_IDENTIFIER}
-  aws s3 cp s3://cellxgene-wmg-${SRC_DEPLOYMENT}/snapshots/${SNAPSHOT_VERSION}/latest_snapshot_identifier s3://env-rdev-wmg/${STACK_NAME}/latest_snapshot_identifier
+  aws s3 sync s3://cellxgene-wmg-${SRC_DEPLOYMENT}/snapshots/${SNAPSHOT_VERSION}/${LATEST_SNAPSHOT_IDENTIFIER} s3://env-rdev-wmg/${STACK_NAME}/snapshots/${SNAPSHOT_VERSION}/${LATEST_SNAPSHOT_IDENTIFIER}
+  aws s3 cp s3://cellxgene-wmg-${SRC_DEPLOYMENT}/snapshots/${SNAPSHOT_VERSION}/latest_snapshot_identifier s3://env-rdev-wmg/${STACK_NAME}/snapshots/${SNAPSHOT_VERSION}/latest_snapshot_identifier
 else
   echo "Warning: LATEST_SNAPSHOT_IDENTIFIER is invalid"
   exit 1
