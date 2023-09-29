@@ -4,6 +4,7 @@ import {
   OntologyTerm,
 } from "src/common/queries/wheresMyGene";
 import { CellType, ChartProps } from "src/views/WheresMyGene/common/types";
+import CitationButton from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/CitationButton";
 import SaveExport from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 import ShareButton from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/ShareButton";
 import ExpressedInCells from "../ExpressedInCells";
@@ -62,6 +63,7 @@ export default memo(function Legend({
         filteredCellTypes={filteredCellTypes ?? EMPTY_ARRAY}
       />
       <ShareButton />
+      <CitationButton />
       <SourceDataButton
         handleRightSidebarButtonClick={handleRightSidebarButtonClick}
       />
