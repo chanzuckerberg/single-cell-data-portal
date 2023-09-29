@@ -431,6 +431,8 @@ def get_collection_index():
         transformed_collection["published_at"] = collection.canonical_collection.originally_published_at
         transformed_collection["revised_at"] = collection.published_at
 
+        transformed_collection["consortia"] = collection.metadata.consortia
+
         response.append(transformed_collection)
 
     return make_response(jsonify(response), 200)

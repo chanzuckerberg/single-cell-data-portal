@@ -817,6 +817,7 @@ class TestCollection(BaseAPIPortalTest):
         self.assertEqual(actual_collection["id"], collection.collection_id.id)
         self.assertEqual(actual_collection["name"], collection.metadata.name)
         self.assertNotIn("description", actual_collection)
+        self.assertEqual(actual_collection["consortia"], collection.metadata.consortia)
         # Both `published_at` and `revised_at` should point to the same timestamp
         self.assertEqual(actual_collection["published_at"], collection.published_at.timestamp())
         self.assertEqual(actual_collection["revised_at"], collection.published_at.timestamp())
