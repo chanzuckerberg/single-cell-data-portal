@@ -218,8 +218,11 @@ class CanonicalMarkerGenesCompiler:
             if not cell_types or not row["biomarkers_gene"]:
                 continue
 
-            tissue_id = self._get_tissue_id([AnatomicalStructure(**entry) for entry in row["anatomical_structures"]])
             gene_symbols, gene_names = self._get_gene_info([GeneBiomarker(**entry) for entry in row["biomarkers_gene"]])
+            if gene_symbols == "" or gene_names == "":
+                continue
+
+            tissue_id = self._get_tissue_id([AnatomicalStructure(**entry) for entry in row["anatomical_structures"]])
             refs, titles = self._get_references([Reference(**entry) for entry in row["references"]], doi_to_citation)
 
             for cell_type in cell_types:

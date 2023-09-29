@@ -449,9 +449,13 @@ const MarkerGeneTables = ({
           symbol: getSymbol(row, true),
         }))
       : canonicalMarkerGeneTableData.map((row) => ({
-          ...row,
           symbolId: row.symbol,
-          symbol: getSymbol(row),
+          symbol: row.symbol.split(";;").map((symbol) => {
+            return <tr key={symbol}>{getSymbol({ ...row, symbol })}</tr>;
+          }),
+          name: row.name.split(";;").map((name) => {
+            return <tr key={name}>{name}</tr>;
+          }),
           references: (
             <PublicationLinkWrapper>
               {row.referenceData.publicationTitles.map(
@@ -514,7 +518,7 @@ const MarkerGeneTables = ({
   ]);
 
   const genesForShareUrl = `${tableRows
-    .map((row) => row.symbolId)
+    .map((row) => row.symbolId.split(";;").join("%2C"))
     .join("%2C")}&cellTypes=${cellTypeName.replace(" ", "+")}`;
 
   const pageCount = Math.ceil(tableRows.length / ROWS_PER_PAGE);
