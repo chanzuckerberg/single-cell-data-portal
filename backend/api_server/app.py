@@ -26,7 +26,11 @@ configure_logging(APP_NAME)
 
 
 def should_configure_datadog_tracing():
-    return os.environ.get("DD_AGENT_HOST", None) and os.environ.get("DD_TRACE_AGENT_PORT", None)
+    return (
+        DEPLOYMENT_STAGE in ["dev", "staging", "prod"]
+        and os.environ.get("DD_AGENT_HOST", None)
+        and os.environ.get("DD_TRACE_AGENT_PORT", None)
+    )
 
 
 if should_configure_datadog_tracing():
@@ -44,14 +48,6 @@ if should_configure_datadog_tracing():
         },
     )
     patch_all()
-
-# TODO: Determine if there is a requirement to instrument deeper
-# profiling in the dev environment.
-# see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
-# enable Datadog profiling for development
-# if DEPLOYMENT_STAGE not in ["staging", "prod"]:
-# noinspection PyPackageRequirements,PyUnresolvedReferences
-# import ddtrace.profiling.auto
 
 
 def create_flask_app():
