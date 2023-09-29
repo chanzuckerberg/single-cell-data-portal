@@ -280,10 +280,10 @@ function selectFilters(
   return {
     ...state,
     selectedFilters: newSelectedFilters,
-    expandedTissueIds: handleExpandedTissueIds(state, action),
+    expandedTissueIds: selectFiltersHandleExpandedTissueIds(state, action),
   };
 
-  function handleExpandedTissueIds(
+  function selectFiltersHandleExpandedTissueIds(
     state: State,
     action: PayloadAction<{
       key: keyof State["selectedFilters"];
@@ -499,10 +499,13 @@ function setFilteredCellTypes(
     ...state,
     filteredCellTypes,
     filteredCellTypeIds,
-    expandedTissueIds: handleExpandedTissueIds(state, action),
+    expandedTissueIds: setFilteredCellTypesHandleExpandedTissueIds(
+      state,
+      action
+    ),
   };
 
-  function handleExpandedTissueIds(
+  function setFilteredCellTypesHandleExpandedTissueIds(
     state: State,
     action: PayloadAction<SetFilteredCellTypesPayload>
   ): State["expandedTissueIds"] {
