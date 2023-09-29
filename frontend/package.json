@@ -142,7 +142,7 @@
     "e2e-prod-ci": "SKIP_LOGIN=true TEST_ENV=prod playwright test --project $PROJECT --shard $SHARD --grep-invert @loggedIn",
     "e2e-prod-logged-in": "TEST_ENV=prod playwright test --project chromium --grep @loggedIn",
     "e2e-prod-save": "TEST_ENV=prod playwright test",
-    "e2e-rdev": "DEPLOYMENT_STAGE=rdev TEST_ENV=rdev playwright test --project $PROJECT --shard $SHARD --grep-invert @loggedIn",
+    "e2e-rdev": "DEPLOYMENT_STAGE=rdev TEST_ENV=rdev npm run e2e -- ",
     "e2e-rdev-ci": "DEPLOYMENT_STAGE=rdev TEST_ENV=rdev playwright test --project $PROJECT --shard $SHARD --grep-invert @loggedIn",
     "e2e-rdev-logged-in": "DEPLOYMENT_STAGE=rdev TEST_ENV=rdev playwright test --project chromium --grep @loggedIn",
     "e2e-rdev-logged-in-ci": "DEPLOYMENT_STAGE=rdev TEST_ENV=rdev playwright test --project chromium --grep @loggedIn",
