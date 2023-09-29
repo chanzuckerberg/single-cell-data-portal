@@ -2,7 +2,7 @@ import { test, chromium } from "@playwright/test";
 import { SKIP_LOGIN } from "tests/common/constants";
 import { COMMON_PLAYWRIGHT_CONTEXT } from "tests/common/context";
 import { getFeatureFlags } from "tests/common/featureFlags";
-import { goToPage, isDevStaging, login } from "tests/utils/helpers";
+import { goToPage, isDevStagingRdev, login } from "tests/utils/helpers";
 
 const { describe, skip } = test;
 
@@ -10,8 +10,8 @@ describe("global setup", () => {
   test("login", async () => {
     skip(SKIP_LOGIN, "SKIP_LOGIN was set to true. Skipping log in.");
     skip(
-      !isDevStaging,
-      `Skipping login for environment that is not "dev" or "staging"`
+      !isDevStagingRdev,
+      `Skipping login for environment that is not "dev", "rdev', or "staging"`
     );
 
     const browser = await chromium.launch();

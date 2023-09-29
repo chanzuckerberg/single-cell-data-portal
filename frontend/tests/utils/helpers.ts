@@ -58,11 +58,11 @@ const TEST_ENVS_DEV_STAGING_PROD = ["dev", "staging", "prod"];
 
 export const isDevStagingProd = TEST_ENVS_DEV_STAGING_PROD.includes(TEST_ENV);
 
-// Skip tests unless environment is dev or staging; used by tests that require a deployed environment but also modify
+// Skip tests unless environment is dev, rdev, or staging; used by tests that require a deployed environment but also modify
 // environment data (e.g. creating collections, which should be avoided in prod).
-const TEST_ENVS_DEV_STAGING = ["dev", "staging"];
+const TEST_ENVS_DEV_STAGING = ["dev", "staging", "rdev"];
 
-export const isDevStaging = TEST_ENVS_DEV_STAGING.includes(TEST_ENV);
+export const isDevStagingRdev = TEST_ENVS_DEV_STAGING.includes(TEST_ENV);
 
 const GO_TO_PAGE_TIMEOUT_MS = 2 * 60 * 1000;
 
