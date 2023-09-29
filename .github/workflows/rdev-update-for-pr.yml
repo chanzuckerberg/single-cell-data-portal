@@ -299,6 +299,7 @@ jobs:
 
   # https://github.com/myieye/web-languageforge/blob/develop/.github/workflows/e2e-tests.yml
   e2e-test:
+    if: always()
     name: e2e-test
     runs-on: ubuntu-latest
     needs: wait-for-shards
