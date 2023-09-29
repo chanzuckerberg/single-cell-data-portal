@@ -5,7 +5,7 @@ import { Collection } from "src/common/entities";
 import { sortByCellCountDescending } from "src/components/Collection/components/CollectionDatasetsGrid/components/DatasetsGrid/common/util";
 import { INVALID_DOI_ERROR_MESSAGE } from "src/components/CreateCollectionModal/components/Content/common/constants";
 import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
-import { goToPage, isDevStaging, tryUntil } from "tests/utils/helpers";
+import { goToPage, isDevStagingRdev, tryUntil } from "tests/utils/helpers";
 import datasets from "../../fixtures/datasets";
 import { getTestID } from "tests/utils/selectors";
 
@@ -44,9 +44,9 @@ describe("Collection", () => {
 
   describe("Logged In Tests @loggedIn", () => {
     skip(
-      !isDevStaging,
+      !isDevStagingRdev,
       `Currently push-test runs against dev BE, so login doesn't work for local containers.
-       We also only run the tests in dev and staging to avoid polluting prod.
+       We also only run the tests in dev, rdev, and staging to avoid polluting prod.
       `
     );
 
@@ -96,9 +96,9 @@ describe("Collection", () => {
 
   describe("Deployed Env Tests @loggedIn", () => {
     skip(
-      !isDevStaging,
+      !isDevStagingRdev,
       `BE DOI endpoints only work in dev, staging, and prod. And we also only run
-      the tests in dev and staging to avoid polluting prod.
+      the tests in dev, rdev, and staging to avoid polluting prod.
       `
     );
 
