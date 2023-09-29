@@ -213,7 +213,7 @@ jobs:
           CI: true
           PROJECT: ${{ matrix.project }}
           SHARD: ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
-        run: DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev
+        run: DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev-ci
 
       - name: Upload FE test results as an artifact
         if: always()
@@ -343,7 +343,7 @@ jobs:
           cp src/configs/local.js src/configs/configs.js
       - name: Run E2E Logged In tests
         run: |
-          DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev-logged-in
+          DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev-logged-in-ci
       - uses: actions/upload-artifact@v2
         if: always()
         with:
