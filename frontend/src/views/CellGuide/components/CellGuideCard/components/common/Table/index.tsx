@@ -16,6 +16,7 @@ interface TableProps<T> {
     string | React.ReactElement
   >;
   testId?: string;
+  implementHover?: boolean;
 }
 
 // This is a generic table component that can be used to render any type of data.
@@ -24,6 +25,7 @@ function Table<T extends object>({
   rows,
   columnIdToName,
   testId,
+  implementHover = true,
 }: TableProps<T>) {
   return (
     <TableWrapper data-testid={testId}>
@@ -45,7 +47,11 @@ function Table<T extends object>({
         </StyledHead>
         <tbody>
           {rows.map((row, rowIndex) => (
-            <StyledRow key={rowIndex} highlight={rowIndex % 2 === 1}>
+            <StyledRow
+              implementHover={implementHover}
+              key={rowIndex}
+              highlight={rowIndex % 2 === 1}
+            >
               {columns.map((column, cellIndex) => (
                 <StyledCell key={cellIndex}>
                   {row[column] as ReactNode}

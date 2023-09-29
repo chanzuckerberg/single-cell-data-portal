@@ -112,7 +112,7 @@ interface TableRowEnrichedGenes {
 // Canonical marker gene table types
 interface TableRowCanonicalGenes {
   symbol: ReactNode;
-  name: string;
+  name: ReactNode;
   references: ReactNode;
 }
 
@@ -564,6 +564,7 @@ const MarkerGeneTables = ({
           ) as TableRowCanonicalGenes[]
         }
         columnIdToName={tableColumnNamesCanonicalGenes}
+        implementHover={false}
       />
     );
   }, [
