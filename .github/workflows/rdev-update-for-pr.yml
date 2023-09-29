@@ -201,6 +201,7 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps
+          cp src/configs/local.js src/configs/configs.js
 
       # Run E2E tests
       - name: Run E2E tests
