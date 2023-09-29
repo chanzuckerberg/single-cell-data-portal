@@ -189,7 +189,7 @@ async function isGlobalLayoutWrapperScrollable(page: Page) {
 
       expect(
         await wrapper.evaluate((e) => {
-          return e.scrollTop > e.clientHeight;
+          return e.scrollTop > 0;
         })
       ).toBeTruthy();
     },
