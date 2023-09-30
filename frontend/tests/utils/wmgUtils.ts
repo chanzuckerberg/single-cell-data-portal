@@ -67,7 +67,18 @@ export async function goToWMG(page: Page, url?: string) {
   const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
   return await tryUntil(
     async () => {
-      await page.goto(targetUrl);
+      await Promise.all([
+        page.waitForResponse(async (response) => {
+          const { url, ok } = await response;
+
+          if (!url().includes("primary_filter_dimensions")) {
+            return false;
+          } else {
+            return ok();
+          }
+        }),
+        page.goto(targetUrl),
+      ]);
 
       await tryUntil(
         async () => {
