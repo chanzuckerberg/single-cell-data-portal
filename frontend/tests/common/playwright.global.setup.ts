@@ -24,26 +24,10 @@ describe("global setup", () => {
 
     await goToPage(undefined, page);
 
-    const apiUrl = await page.evaluate(() => {
-      return document.body.getAttribute("data-api-url");
-    });
-
-    process.env.API_URL = apiUrl || "";
-
     // One time auth
     await login(page);
 
     await browserContext.close();
     await browser.close();
-  });
-
-  test("set API_URL", async ({ page }) => {
-    await goToPage(undefined, page);
-
-    const apiUrl = await page.evaluate(() => {
-      return document.body.getAttribute("data-api-url");
-    });
-
-    process.env.API_URL = apiUrl || "";
   });
 });

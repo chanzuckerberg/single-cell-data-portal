@@ -86,7 +86,7 @@ export async function goToPage(
 }
 
 export async function login(page: Page): Promise<void> {
-  console.log("Logging in...");
+  console.log("🔐🪵 Logging in...");
 
   await goToPage(undefined, page);
 
@@ -117,7 +117,7 @@ export async function login(page: Page): Promise<void> {
 
   await page.context().storageState({ path: LOGIN_STATE_FILENAME });
 
-  console.log(`Login success!`);
+  console.log(`✅ Login success!`);
 }
 
 export async function scrollToPageBottom(page: Page): Promise<void> {
@@ -129,19 +129,32 @@ interface TryUntilConfigs {
   maxRetry?: number;
   page: Page;
   silent?: boolean;
+  timeoutMs?: number;
 }
+
+const RETRY_TIMEOUT_MS = 3 * 60 * 1000;
 
 export async function tryUntil(
   assert: () => void,
-  { maxRetry = 50, page, silent = false }: TryUntilConfigs
+  {
+    maxRetry = 50,
+    timeoutMs = RETRY_TIMEOUT_MS,
+    page,
+    silent = false,
+  }: TryUntilConfigs
 ): Promise<void> {
   const WAIT_FOR_MS = 200;
+
+  const startTime = Date.now();
 
   let retry = 0;
 
   let savedError: Error = new Error();
 
-  while (retry < maxRetry) {
+  const hasTimedOut = () => Date.now() - startTime > timeoutMs;
+  const hasMaxedOutRetry = () => retry >= maxRetry;
+
+  while (!hasMaxedOutRetry() && !hasTimedOut()) {
     try {
       await assert();
 
@@ -151,17 +164,22 @@ export async function tryUntil(
       savedError = error as Error;
 
       if (!silent) {
-        console.log("⚠️  tryUntil error-----------------START");
+        console.log("⚠️ tryUntil error-----------------START");
         console.log(savedError.message);
-        console.log("⚠️  tryUntil error-----------------END");
+        console.log("⚠️ tryUntil error-----------------END");
       }
 
       await page.waitForTimeout(WAIT_FOR_MS);
     }
   }
 
-  if (retry === maxRetry) {
-    savedError.message += " tryUntil() failed";
+  if (hasMaxedOutRetry()) {
+    savedError.message = `tryUntil() failed - Maxed out retries of ${maxRetry}: ${savedError.message}`;
+    throw savedError;
+  }
+
+  if (hasTimedOut()) {
+    savedError.message = `tryUntil() failed - Maxed out timeout of ${timeoutMs}ms: ${savedError.message}`;
     throw savedError;
   }
 }
