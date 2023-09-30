@@ -1,6 +1,6 @@
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
-import { expect, Page, test } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
 import {
   countLocator,
@@ -17,8 +17,6 @@ import {
 } from "tests/utils/geneUtils";
 import { TISSUE_NAME_LABEL_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 
-const { skip, beforeEach } = test;
-
 const WMG_SEED_GENES = ["DPM1", "TNMD", "TSPAN6"];
 
 /**
@@ -31,34 +29,7 @@ export const WMG_WITH_SEEDED_GENES = {
   genes: WMG_SEED_GENES,
 };
 
-const ENVS_TO_RUN_TESTS = [
-  "api.cellxgene.dev.single-cell.czi.technology",
-  "api.cellxgene.staging.single-cell.czi.technology",
-  "api.cellxgene.cziscience.com",
-];
-
-export function conditionallyRunTests({
-  forceRun = false,
-}: {
-  forceRun?: boolean;
-} = {}) {
-  if (forceRun) return;
-
-  /**
-   * (thuang): `beforeEach()` is needed, since without it, `describe()` will
-   * just eager inventory tests to run BEFORE our global setup sets `process.env.API_URL`
-   */
-  beforeEach(() => {
-    skip(
-      // (thuang): Temporarily skip WMG tests
-      // (thuang): Temporarily skip WMG tests
-      // (thuang): Temporarily skip WMG tests
-      ENVS_TO_RUN_TESTS.every(() => true),
-      // ENVS_TO_RUN_TESTS.every((env) => !process.env.API_URL?.includes(env)),
-      "WMG tests only work with dev/staging/prod API URLs"
-    );
-  });
-}
+const WAIT_FOR_RESPONSE_TIMEOUT_MS = 10 * 1000;
 
 /**
  * (thuang): `page.waitForResponse` sometimes times out, so we need to retry
@@ -68,15 +39,22 @@ export async function goToWMG(page: Page, url?: string) {
   return await tryUntil(
     async () => {
       await Promise.all([
-        page.waitForResponse(async (response) => {
-          const { url, ok } = await response;
+        page.waitForResponse(
+          (response) => {
+            if (response.url().includes("primary_filter_dimensions")) {
+              if (response.ok()) {
+                return true;
+              } else {
+                throw new Error(
+                  `Response status code is ${response.status()} for ${response.url()}`
+                );
+              }
+            }
 
-          if (!url().includes("primary_filter_dimensions")) {
             return false;
-          } else {
-            return ok();
-          }
-        }),
+          },
+          { timeout: WAIT_FOR_RESPONSE_TIMEOUT_MS }
+        ),
         page.goto(targetUrl),
       ]);
 

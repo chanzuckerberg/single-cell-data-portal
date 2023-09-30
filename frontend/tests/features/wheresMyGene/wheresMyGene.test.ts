@@ -16,7 +16,6 @@ import { parse } from "csv-parse/sync";
 import AdmZip from "adm-zip";
 import {
   WMG_WITH_SEEDED_GENES,
-  conditionallyRunTests,
   goToWMG,
   goToWMGWithSeededState,
   removeFilteredCellType,
@@ -79,8 +78,6 @@ const ERROR_NO_TESTID_OR_LOCATOR = "Either testId or locator must be defined";
 const { describe } = test;
 
 describe("Where's My Gene", () => {
-  conditionallyRunTests({ forceRun: true });
-
   test("renders the getting started UI", async ({ page }) => {
     await goToWMG(page);
 
