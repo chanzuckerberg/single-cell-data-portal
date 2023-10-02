@@ -20,8 +20,8 @@ describe("WMG tissue auto-expand", () => {
   test("Filter tissue auto expansion", async ({ page }) => {
     await loadPageAndTissues(page);
     await expandTissue(page, FILTERED_TISSUES[0]);
-    await filterTissues(page, FILTERED_TISSUES);
-    await checkTissues(page, FILTERED_TISSUES, FILTERED_TISSUES);
+    await filterTissues(page);
+    await checkTissues(page);
   });
   /**
    * Filter first two tissues from the left panel, collapse the first
@@ -45,9 +45,9 @@ describe("WMG tissue auto-expand", () => {
     page,
   }) => {
     await loadPageAndTissues(page);
-    await filterTissues(page, FILTERED_TISSUES);
-    await checkTissues(page, FILTERED_TISSUES, FILTERED_TISSUES);
-    await filterTissues(page, FILTERED_TISSUES);
+    await filterTissues(page);
+    await checkTissues(page);
+    await filterTissues(page);
     await checkTissues(page, [], []);
   });
   /**
@@ -61,9 +61,9 @@ describe("WMG tissue auto-expand", () => {
     page,
   }) => {
     await loadPageAndTissues(page);
-    await filterTissues(page, FILTERED_TISSUES);
+    await filterTissues(page);
     await filterCellType(page, 1);
-    await checkTissues(page, FILTERED_TISSUES, FILTERED_TISSUES);
+    await checkTissues(page);
     await checkCellTypes(page);
     await removeCellFilter(page);
     await expect(checkCellTypes(page)).rejects.toThrow();
@@ -83,7 +83,7 @@ describe("WMG tissue auto-expand", () => {
     await collapseTissue(page, tissues[0]);
     await collapseTissue(page, tissues[1]);
     await filterCellType(page, 1);
-    await checkTissues(page, tissues, tissues);
+    await checkTissues(page);
     await checkCellTypes(page, cells);
   });
   /**
@@ -98,9 +98,9 @@ describe("WMG tissue auto-expand", () => {
   }) => {
     const cells = CELL_TYPE_FILTERS.slice(1, 3);
     await loadPageAndTissues(page);
-    await filterTissues(page, FILTERED_TISSUES);
+    await filterTissues(page);
     await filterCellType(page);
-    await checkTissues(page, FILTERED_TISSUES, FILTERED_TISSUES);
+    await checkTissues(page);
     await removeCellFilter(page);
     await checkTissues(page, ["lung"], []);
     await checkCellTypes(page, cells);
@@ -148,7 +148,10 @@ async function filterCellType(page: Page, count = 3) {
  * filterTissues
  * Filter the tissuesfrom the left panel
  */
-async function filterTissues(page: Page, filteredTissues: string[]) {
+async function filterTissues(
+  page: Page,
+  filteredTissues: string[] = FILTERED_TISSUES
+) {
   await clickIntoFilter(page, TISSUE_FILTER_TEST_ID);
   for (const tissue of filteredTissues) {
     await page.getByRole("option", { name: tissue, exact: true }).click();
@@ -162,8 +165,8 @@ async function filterTissues(page: Page, filteredTissues: string[]) {
  */
 async function checkTissues(
   page: Page,
-  filteredTissues: string[],
-  expandedTissues: string[]
+  filteredTissues: string[] = FILTERED_TISSUES,
+  expandedTissues = filteredTissues
 ) {
   if (filteredTissues.length !== 0) {
     await expect(page.getByTestId("tissue-name")).toHaveCount(
