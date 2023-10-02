@@ -17,8 +17,9 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git branch --show-current
-          git log -1 --format='%H'
-          git rev-parse psridharan/issue-5461
+          echo "Current checkout branch is: $(git branch --show-current)"
+          echo "HEAD commit in current checkout branch is: $(git log -1 --format='%H')"
+          echo "HEAD commit in psridharan/issue-5461 branch is: "
+          echo "$(git rev-parse psridharan/issue-5461)"
           git merge --no-ff psridharan/issue-5461 -m "Merging psridharan/issue-5461 into psridharan/test-auto-merge-2"
           git push origin psridharan/test-auto-merge-2
