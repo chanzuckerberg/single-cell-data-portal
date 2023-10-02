@@ -1,8 +1,7 @@
 #!/bin/bash
 STACK_NAME=""
 SRC_DEPLOYMENT="staging"
-# (thuang): This will be updated to v2 next week
-SNAPSHOT_VERSION="v1"
+SNAPSHOT_VERSION="v2"
 
 function usage {
   echo "Usage: $0 [-s|--src_deployment <src_deployment>] [-g|--gpt_only] <stack_name>"
