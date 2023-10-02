@@ -9,7 +9,6 @@ import {
   expect,
   Locator,
   Page,
-  Route,
 } from "@playwright/test";
 import { TEST_ENV } from "tests/common/constants";
 import { LOGIN_STATE_FILENAME, TEST_URL } from "../common/constants";
@@ -531,25 +530,11 @@ export async function waitForLoadingSpinnerToResolve(page: Page) {
 
 const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
-const cache = new LRUCache<string, APIResponse>({
-  ttl: CACHE_TTL_MS,
-  ttlAutopurge: true,
-});
-
 export const test = rawTest.extend({
   page: async ({ page }, use) => {
-    let isContextTornDown = false; // Flag to track context status
-
-    // Register an event handler for context teardown
-    page.context().on("close", () => {
-      // DEBUG
-      // DEBUG
-      // DEBUG
-      console.log(
-        "!!!!!!!!!!!!!!! CONTEXT IS DOWN!!! 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥"
-      );
-
-      isContextTornDown = true;
+    const cache = new LRUCache<string, APIResponse>({
+      ttl: CACHE_TTL_MS,
+      ttlAutopurge: true,
     });
 
     await page.route("**/*", async (route) => {
@@ -563,43 +548,18 @@ export const test = rawTest.extend({
         const cachedResponse = cache.get(cacheKey);
 
         if (cachedResponse) {
-          if (isContextTornDown) {
-            // DEBUG
-            // DEBUG
-            // DEBUG
-            console.log("IF -- 🙆 context already down");
-            return;
-          }
-
-          // DEBUG
-          // DEBUG
-          // DEBUG
-          console.log("-------💰 using cache response");
-
           await route.fulfill({ response: cachedResponse });
         } else {
-          if (isContextTornDown) {
-            // DEBUG
-            // DEBUG
-            // DEBUG
-            console.log("ELSE -- 🙆 context already down");
-            return;
-          }
-
           const response = await route.fetch();
 
           if (response.ok()) {
             cache.set(cacheKey, response);
           }
 
-          // DEBUG
-          // DEBUG
-          // DEBUG
-          console.log("-------❤️ using fulfilling request");
           await route.fulfill({ response });
         }
       } catch (error) {
-        handleRouteError(error, page, route);
+        handleRouteError(error);
       }
     });
 
@@ -607,15 +567,11 @@ export const test = rawTest.extend({
   },
 });
 
-async function handleRouteError(error: unknown, page: Page, route) {
+async function handleRouteError(error: unknown) {
   // Ignore `Request context disposed` error
   if ((error as Error).message.includes("disposed")) {
+    return;
   } else {
-    // DEBUG
-    // DEBUG
-    // DEBUG
-    console.log("------🏀 throwing error", error.message);
-
     throw error;
   }
 }

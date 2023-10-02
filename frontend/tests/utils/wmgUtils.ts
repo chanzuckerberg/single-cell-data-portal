@@ -29,8 +29,6 @@ export const WMG_WITH_SEEDED_GENES = {
   genes: WMG_SEED_GENES,
 };
 
-const WAIT_FOR_RESPONSE_TIMEOUT_MS = 10 * 1000;
-
 /**
  * (thuang): `page.waitForResponse` sometimes times out, so we need to retry
  */
@@ -38,25 +36,7 @@ export async function goToWMG(page: Page, url?: string) {
   const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
   return await tryUntil(
     async () => {
-      await Promise.all([
-        page.waitForResponse(
-          (response) => {
-            if (response.url().includes("primary_filter_dimensions")) {
-              if (response.ok()) {
-                return true;
-              } else {
-                throw new Error(
-                  `Response status code is ${response.status()} for ${response.url()}`
-                );
-              }
-            }
-
-            return false;
-          },
-          { timeout: WAIT_FOR_RESPONSE_TIMEOUT_MS }
-        ),
-        page.goto(targetUrl),
-      ]);
+      await page.goto(targetUrl);
 
       await tryUntil(
         async () => {
