@@ -9,8 +9,12 @@ jobs:
   merge:
     runs-on: ubuntu-latest
     steps:
-      - name: Merge psridharan/issue-5461 into psridharan/test-auto-merge-2
+      - name: Checkout psridharan/issue-5461 into psridharan/test-auto-merge-2
         uses: actions/checkout@v2
+        with:
+          ref: psridharan/issue-5461
+          fetch-depth: 0
+      - name: Merge psridharan/issue-5461 into psridharan/test-auto-merge-2
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
@@ -18,19 +22,12 @@ jobs:
           echo "BEFORE CHECKOUT: Listing current checked out branches:"
           echo "$(git branch --list)"
 
-          echo "Checking out psridharan/issue-5461"
-          git checkout psridharan/issue-5461
-          echo "Confirming checked out branch-to-merge is: $(git branch --show-current)"
-
           echo "Checking out psridharan/test-auto-merge-2"
           git checkout psridharan/test-auto-merge-2
           echo "Confirming checked out branch receiving merge is: $(git branch --show-current)"
 
           echo "AFTER CHECKOUT: Listing current checked out branches:"
           echo "$(git branch --list)"
-
-          echo "Checkout psridharan/test-auto-merge-2"
-          git checkout psridharan/test-auto-merge-2
 
           echo "Current checked out receiving branch is: $(git branch --show-current)"
           echo "HEAD commit in current checked out receiving branch: $(git branch --show-current) is: $(git log -1 --format='%H')"
