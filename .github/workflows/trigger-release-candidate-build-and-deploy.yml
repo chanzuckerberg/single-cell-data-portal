@@ -9,20 +9,23 @@ jobs:
   merge:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout code from psridharan/issue-5461
+        uses: actions/checkout@v2
+        with:
+          ref: psridharan/issue-5461
+      - name: Checkout code from psridharan/test-auto-merge-2
         uses: actions/checkout@v2
         with:
           ref: psridharan/test-auto-merge-2
-      - name: Fetch latest changes to psridharan/issue-5461
-        run: git fetch origin psridharan/issue-5461
       - name: Merge psridharan/issue-5461 into psridharan/test-auto-merge-2
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           echo "Checkout psridharan/test-auto-merge-2"
           git checkout psridharan/test-auto-merge-2
-          echo "Current checkout branch is: $(git branch --show-current)"
-          echo "HEAD commit in current checkout branch is: $(git log -1 --format='%H')"
+          echo "Current checked out receiving branch is: $(git branch --show-current)"
+          echo "HEAD commit in current checked out receiving branch: $(git branch --show-current) is: $(git log -1 --format='%H')"
+          echo "HEAD commit in incoming branch psridharan/issue-5461 is: $(git log -1 --format='%H' psridharan/issue-5461)"
           echo "About to merge psridharan/issue-5461 into psridharan/test-auto-merge-2"
           git merge --verbose --no-ff psridharan/issue-5461 -m "Merging psridharan/issue-5461 into psridharan/test-auto-merge-2"
           git push origin psridharan/test-auto-merge-2
