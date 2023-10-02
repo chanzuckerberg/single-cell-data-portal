@@ -19,6 +19,8 @@ jobs:
           git config user.email "actions@github.com"
           echo "Current checkout branch is: $(git branch --show-current)"
           echo "HEAD commit in current checkout branch is: $(git log -1 --format='%H')"
+          echo "Running git fetch..."
+          git fetch
           echo "Checking branches available in the repo:"
           echo "$(git branch)"
           echo "HEAD commit in psridharan/issue-5461 branch is: "
