@@ -1,12 +1,12 @@
 import { expect, test, Page } from "@playwright/test";
-import { toInteger } from "lodash";
+import { indexOf, toInteger } from "lodash";
 import { collapseTissue, expandTissue } from "tests/utils/helpers";
 import { conditionallyRunTests, goToWMG } from "tests/utils/wmgUtils";
 
 const TISSUE_NODE_TEST_ID = "tissue-name";
 const TISSUE_FILTER_TEST_ID = "tissue-filter";
-const CELL_TYPE_FILTER = "B cell";
-const FILTERED_TISSUES = ["abdomen", "axilla", "brain"];
+const CELL_TYPE_FILTERS = ["B cell", "B-1a B cell", "B-1b B cell"];
+const FILTERED_TISSUES = ["abdomen", "axilla", "blood"];
 
 const { describe } = test;
 
@@ -57,16 +57,53 @@ describe("WMG tissue auto-expand", () => {
    * When cell type filter is removed, expect all cells to be shown under
    * expanded tissues.
    */
-  test("Filter tissue auto expansion - filter cell type 'B cell'", async ({
+  test("Filter cell type auto expansion - filter cell type 'B cell'", async ({
     page,
   }) => {
     await loadPageAndTissues(page);
     await filterTissues(page, FILTERED_TISSUES);
-    await filterCellType(page);
+    await filterCellType(page, 1);
     await checkTissues(page, FILTERED_TISSUES, FILTERED_TISSUES);
     await checkCellTypes(page);
-    await page.getByTestId("CancelIcon").click();
+    await removeCellFilter(page);
     await expect(checkCellTypes(page)).rejects.toThrow();
+  });
+  /**
+   * Filter cell type auto expansion - override tissue filter collapse state
+   * Filter first 2 tissues in left panel, collapse both tissues, filter "B
+   * cell". Expect both tissues to expand and only has "B cell" row
+   */
+  test("Filter cell type auto expansion - override tissue filter collapse state", async ({
+    page,
+  }) => {
+    const tissues = FILTERED_TISSUES.slice(0, 2);
+    const cells = CELL_TYPE_FILTERS.slice(0, 1);
+    await loadPageAndTissues(page);
+    await filterTissues(page, tissues);
+    await collapseTissue(page, tissues[0]);
+    await collapseTissue(page, tissues[1]);
+    await filterCellType(page, 1);
+    await checkTissues(page, tissues, tissues);
+    await checkCellTypes(page, cells);
+  });
+  /**
+   * Filter 3 tissues, filter top 3 cell types
+   * (B cell, B-1a B cell, and B-1b B cell). Expect both tissues expanded.
+   * Remove “B cell” from filter <-- this removes tissue filter, since only
+   * “Lung” tissue has B-1a B cell and B-1b B cell. I see Lung is shown, but
+   * the bug is that “Lung” tissue is NOT automatically expanded
+   */
+  test("Filter cell type auto expansion - remove cell type filter", async ({
+    page,
+  }) => {
+    const cells = CELL_TYPE_FILTERS.slice(1, 3);
+    await loadPageAndTissues(page);
+    await filterTissues(page, FILTERED_TISSUES);
+    await filterCellType(page);
+    await checkTissues(page, FILTERED_TISSUES, FILTERED_TISSUES);
+    await removeCellFilter(page);
+    await checkTissues(page, ["lung"], []);
+    await checkCellTypes(page, cells);
   });
 });
 /**
@@ -97,11 +134,13 @@ async function clickIntoFilter(page: Page, filterName: string) {
  * filterCellType
  * Filter cell type 'B cell' and exit filter mode
  */
-async function filterCellType(page: Page) {
+async function filterCellType(page: Page, count = 3) {
   await page.getByRole("combobox").first().click();
-  await page
-    .getByRole("option", { name: CELL_TYPE_FILTER, exact: true })
-    .click();
+  for (let i = 0; i < count; i++) {
+    await page
+      .getByRole("option", { name: CELL_TYPE_FILTERS[i], exact: true })
+      .click();
+  }
   await page.keyboard.press("Escape");
 }
 
@@ -112,14 +151,14 @@ async function filterCellType(page: Page) {
 async function filterTissues(page: Page, filteredTissues: string[]) {
   await clickIntoFilter(page, TISSUE_FILTER_TEST_ID);
   for (const tissue of filteredTissues) {
-    await page.getByRole("option", { name: tissue }).click();
+    await page.getByRole("option", { name: tissue, exact: true }).click();
   }
   await page.keyboard.press("Escape");
 }
 
 /**
  * checkTissues
- * Check that the filtered tissues are visible, and expanded tissues are expanded
+ * Check that only filtered tissues are visible, and expanded tissues are expanded
  */
 async function checkTissues(
   page: Page,
@@ -147,9 +186,17 @@ async function checkTissues(
  * checkCellTypes
  * Check that all cells under expanded tissues are 'B Cell'
  */
-async function checkCellTypes(page: Page) {
+async function checkCellTypes(page: Page, cellTypes = CELL_TYPE_FILTERS) {
   const cells = await page.getByTestId("cell-type-name").allInnerTexts();
   for (const cell of cells) {
-    await expect(cell).toEqual(CELL_TYPE_FILTER);
+    await expect(cell).toEqual(cellTypes[indexOf(cells, cell)]);
   }
+}
+
+/**
+ * removeCellFilter
+ * Remove cell filter
+ */
+async function removeCellFilter(page: Page) {
+  await page.getByTestId("CancelIcon").nth(0).click();
 }
