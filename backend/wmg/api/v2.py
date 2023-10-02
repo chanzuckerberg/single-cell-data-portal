@@ -33,10 +33,11 @@ from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find
 
 
 def primary_filter_dimensions():
-    snapshot: WmgSnapshot = load_snapshot(
-        snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
-        explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
-    )
+    with ServerTiming.time("load snapshot"):
+        snapshot: WmgSnapshot = load_snapshot(
+            snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
+            explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+        )
 
     return jsonify(snapshot.primary_filter_dimensions)
 
@@ -51,12 +52,13 @@ def query():
 
     criteria = WmgQueryCriteriaV2(**request["filter"])
 
-    with ServerTiming.time("query and build response"):
+    with ServerTiming.time("load snapshot"):
         snapshot: WmgSnapshot = load_snapshot(
             snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
         )
 
+    with ServerTiming.time("query and build response"):
         cube_query_params = WmgCubeQueryParams(
             cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
             cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
@@ -108,12 +110,13 @@ def filters():
     request = connexion.request.json
     criteria = WmgFiltersQueryCriteria(**request["filter"])
 
-    with ServerTiming.time("calculate filters and build response"):
+    with ServerTiming.time("load snapshot"):
         snapshot: WmgSnapshot = load_snapshot(
             snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
         )
 
+    with ServerTiming.time("calculate filters and build response"):
         response_filter_dims_values = build_filter_dims_values(criteria, snapshot)
         response = jsonify(
             dict(
