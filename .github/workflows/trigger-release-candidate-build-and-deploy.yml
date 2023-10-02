@@ -9,9 +9,8 @@ jobs:
   merge:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
       - name: Merge psridharan/issue-5461 into psridharan/test-auto-merge-2
+        uses: actions/checkout@v2
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
