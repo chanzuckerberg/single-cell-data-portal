@@ -538,6 +538,20 @@ const cache = new LRUCache<string, APIResponse>({
 
 export const test = rawTest.extend({
   page: async ({ page }, use) => {
+    let isContextTornDown = false; // Flag to track context status
+
+    // Register an event handler for context teardown
+    page.context().on("close", () => {
+      // DEBUG
+      // DEBUG
+      // DEBUG
+      console.log(
+        "!!!!!!!!!!!!!!! CONTEXT IS DOWN!!! 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥"
+      );
+
+      isContextTornDown = true;
+    });
+
     await page.route("**/*", async (route) => {
       try {
         const request = route.request();
@@ -549,16 +563,39 @@ export const test = rawTest.extend({
         const cachedResponse = cache.get(cacheKey);
 
         if (cachedResponse) {
-          if (!page.context()) return;
+          if (isContextTornDown) {
+            // DEBUG
+            // DEBUG
+            // DEBUG
+            console.log("IF -- 🙆 context already down");
+            return;
+          }
+
+          // DEBUG
+          // DEBUG
+          // DEBUG
+          console.log("-------💰 using cache response");
+
           await route.fulfill({ response: cachedResponse });
         } else {
-          if (!page.context()) return;
+          if (isContextTornDown) {
+            // DEBUG
+            // DEBUG
+            // DEBUG
+            console.log("ELSE -- 🙆 context already down");
+            return;
+          }
+
           const response = await route.fetch();
 
           if (response.ok()) {
             cache.set(cacheKey, response);
           }
 
+          // DEBUG
+          // DEBUG
+          // DEBUG
+          console.log("-------❤️ using fulfilling request");
           await route.fulfill({ response });
         }
       } catch (error) {
