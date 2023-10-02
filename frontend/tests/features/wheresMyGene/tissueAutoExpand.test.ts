@@ -6,6 +6,7 @@ import { conditionallyRunTests, goToWMG } from "tests/utils/wmgUtils";
 const TISSUE_NODE_TEST_ID = "tissue-name";
 const TISSUE_FILTER_LABEL = "Tissue";
 const TISSUE_FILTER_TEST_ID = "tissue-filter";
+const CELL_TYPE_FILTER_TEST_ID = "celltype-filter";
 const CELL_TYPE_FILTERS = ["B cell", "B-1a B cell", "B-1b B cell"];
 const FILTERED_TISSUES = ["abdomen", "axilla", "blood"];
 
@@ -139,7 +140,10 @@ async function clickIntoFilter(page: Page, filterName: string) {
  * Filter cell type 'B cell' and exit filter mode
  */
 async function filterCellType(page: Page, count = 3) {
-  await page.getByTestId("celltype-filter").getByRole("combobox").click();
+  await page
+    .getByTestId(CELL_TYPE_FILTER_TEST_ID)
+    .getByRole("combobox")
+    .click();
   for (let i = 0; i < count; i++) {
     await page
       .getByRole("option", { name: CELL_TYPE_FILTERS[i], exact: true })
