@@ -5,7 +5,7 @@
 #
 # In the case a specfic snapshot must be loaded
 # WMG_API_FORCE_LOAD_SNAPSHOT_ID should be set.
-WMG_API_SNAPSHOT_SCHEMA_VERSION = "v1"
+WMG_API_SNAPSHOT_SCHEMA_VERSION = "v2"
 
 # In the case we need to rollback or rollforward
 # set this variable to a specific snapshot id
