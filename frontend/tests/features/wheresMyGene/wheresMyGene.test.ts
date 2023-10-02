@@ -1,4 +1,5 @@
-import { expect, Page, test, Locator } from "@playwright/test";
+import { test } from "tests/utils/helpers";
+import { expect, Page, Locator } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
@@ -238,7 +239,7 @@ describe("Where's My Gene", () => {
     );
   });
 
-  test("Hierarchical Clustering", async ({ page }) => {
+  test.only("Hierarchical Clustering", async ({ page }) => {
     await goToWMGWithSeededState(page);
 
     const beforeGeneNames = await getGeneNames(page);
@@ -274,7 +275,7 @@ describe("Where's My Gene", () => {
     );
   });
 
-  describe("tissue rollup", () => {
+  describe.only("tissue rollup", () => {
     test("does NOT show tissues on the deny list", async ({ page }) => {
       const [response] = await Promise.all([
         page.waitForResponse("**/primary_filter_dimensions"),
@@ -299,7 +300,7 @@ describe("Where's My Gene", () => {
     });
   });
 
-  describe("Compare", () => {
+  describe.only("Compare", () => {
     test("Display stratified labels in y-axis as expected", async ({
       page,
     }) => {
@@ -370,7 +371,7 @@ describe("Where's My Gene", () => {
     });
   });
 
-  describe("Find Marker Genes", () => {
+  describe.only("Find Marker Genes", () => {
     test("Marker gene panel opens and can add genes to dotplot", async ({
       page,
     }) => {
@@ -719,7 +720,7 @@ describe("Where's My Gene", () => {
     const FAILED_EMAIL_VALIDATION_STRING =
       "Please provide a valid email address.";
 
-    test("Newsletter Modal - Open/Close", async ({ page }) => {
+    test.only("Newsletter Modal - Open/Close", async ({ page }) => {
       await goToWMG(page);
 
       // Open modal
@@ -746,7 +747,7 @@ describe("Where's My Gene", () => {
       await waitForElementToBeRemoved(page, NEWSLETTER_MODAL_CONTENT);
     });
 
-    test("Newsletter Modal - Validate Email", async ({ page }) => {
+    test.only("Newsletter Modal - Validate Email", async ({ page }) => {
       await goToWMG(page);
 
       // Open modal

@@ -4,10 +4,12 @@ import {
 } from "@aws-sdk/client-secrets-manager";
 import {
   APIRequestContext,
+  APIResponse,
   ElementHandle,
   expect,
   Locator,
   Page,
+  Route,
 } from "@playwright/test";
 import { TEST_ENV } from "tests/common/constants";
 import { LOGIN_STATE_FILENAME, TEST_URL } from "../common/constants";
@@ -17,6 +19,8 @@ import {
   GENE_LABELS_ID,
 } from "../common/constants";
 import { TISSUE_NAME_LABEL_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
+import { test as rawTest } from "@playwright/test";
+import { LRUCache } from "lru-cache";
 
 /**
  * (thuang): From oauth/users.json
@@ -164,9 +168,13 @@ export async function tryUntil(
       savedError = error as Error;
 
       if (!silent) {
-        console.log("⚠️ tryUntil error-----------------START");
+        /**
+         * (thuang): Intentional 2 spaces after ⚠️ to make it more visible
+         */
+        console.log("⚠️  tryUntil error-----------------START");
         console.log(savedError.message);
-        console.log("⚠️ tryUntil error-----------------END");
+        console.log("⚠️  tryUntil error-----------------END");
+        console.log("");
       }
 
       await page.waitForTimeout(WAIT_FOR_MS);
@@ -519,4 +527,58 @@ export async function expandTissue(page: Page, tissueName: string) {
 
 export async function waitForLoadingSpinnerToResolve(page: Page) {
   await page.getByText("Loading").first().waitFor({ state: "hidden" });
+}
+
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+const cache = new LRUCache<string, APIResponse>({
+  ttl: CACHE_TTL_MS,
+  ttlAutopurge: true,
+});
+
+export const test = rawTest.extend({
+  page: async ({ page }, use) => {
+    await page.route("**/*", async (route) => {
+      try {
+        const request = route.request();
+
+        const url = request.url();
+
+        const cacheKey = url + request.method() + (request.postData() || "");
+
+        const cachedResponse = cache.get(cacheKey);
+
+        if (cachedResponse) {
+          if (!page.context()) return;
+          await route.fulfill({ response: cachedResponse });
+        } else {
+          if (!page.context()) return;
+          const response = await route.fetch();
+
+          if (response.ok()) {
+            cache.set(cacheKey, response);
+          }
+
+          await route.fulfill({ response });
+        }
+      } catch (error) {
+        handleRouteError(error, page, route);
+      }
+    });
+
+    await use(page);
+  },
+});
+
+async function handleRouteError(error: unknown, page: Page, route) {
+  // Ignore `Request context disposed` error
+  if ((error as Error).message.includes("disposed")) {
+  } else {
+    // DEBUG
+    // DEBUG
+    // DEBUG
+    console.log("------🏀 throwing error", error.message);
+
+    throw error;
+  }
 }
