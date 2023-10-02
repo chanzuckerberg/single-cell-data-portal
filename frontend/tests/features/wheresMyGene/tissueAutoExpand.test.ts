@@ -4,6 +4,7 @@ import { collapseTissue, expandTissue } from "tests/utils/helpers";
 import { conditionallyRunTests, goToWMG } from "tests/utils/wmgUtils";
 
 const TISSUE_NODE_TEST_ID = "tissue-name";
+const TISSUE_FILTER_LABEL = "Tissue";
 const TISSUE_FILTER_TEST_ID = "tissue-filter";
 const CELL_TYPE_FILTERS = ["B cell", "B-1a B cell", "B-1b B cell"];
 const FILTERED_TISSUES = ["abdomen", "axilla", "blood"];
@@ -83,7 +84,7 @@ describe("WMG tissue auto-expand", () => {
     await collapseTissue(page, tissues[0]);
     await collapseTissue(page, tissues[1]);
     await filterCellType(page, 1);
-    await checkTissues(page);
+    await checkTissues(page, tissues);
     await checkCellTypes(page, cells);
   });
   /**
@@ -126,7 +127,10 @@ async function loadPageAndTissues(page: Page) {
  * Click into the filter and wait for the tooltip to be visible
  */
 async function clickIntoFilter(page: Page, filterName: string) {
-  await page.getByTestId(filterName).getByRole("button").first().click();
+  await page
+    .getByTestId(filterName)
+    .getByRole("button", { name: TISSUE_FILTER_LABEL, exact: true })
+    .click();
   await page.getByRole("tooltip").waitFor();
 }
 
@@ -135,7 +139,7 @@ async function clickIntoFilter(page: Page, filterName: string) {
  * Filter cell type 'B cell' and exit filter mode
  */
 async function filterCellType(page: Page, count = 3) {
-  await page.getByRole("combobox").first().click();
+  await page.getByTestId("celltype-filter").getByRole("combobox").click();
   for (let i = 0; i < count; i++) {
     await page
       .getByRole("option", { name: CELL_TYPE_FILTERS[i], exact: true })
