@@ -1,5 +1,6 @@
 name: Build Images and Create Deployment
-
+# PRATHAP: This is just a test to be the receiving branch of an automated merge
+# as per this PR: https://github.com/chanzuckerberg/single-cell-data-portal/pull/5860
 on:
   push:
     branches:
