@@ -12,10 +12,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: psridharan/test-auto-merge
-      - name: Merge psridharan/issue-5461 into psridharan/test-auto-merge
+          ref: psridharan/test-auto-merge-2
+      - name: Merge psridharan/issue-5461 into psridharan/test-auto-merge-2
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git merge --no-ff psridharan/issue-5461 -m "Merging psridharan/issue-5461 into psridharan/test-auto-merge"
+          git merge --no-ff psridharan/issue-5461 -m "Merging psridharan/issue-5461 into psridharan/test-auto-merge-2"
           git push
