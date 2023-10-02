@@ -23,7 +23,5 @@ jobs:
           git fetch origin psridharan/issue-5461
           echo "Checking branches available in the repo:"
           echo "$(git branch)"
-          echo "HEAD commit in psridharan/issue-5461 branch is: "
-          echo "$(git rev-parse psridharan/issue-5461)"
           git merge --no-ff psridharan/issue-5461 -m "Merging psridharan/issue-5461 into psridharan/test-auto-merge-2"
           git push origin psridharan/test-auto-merge-2
