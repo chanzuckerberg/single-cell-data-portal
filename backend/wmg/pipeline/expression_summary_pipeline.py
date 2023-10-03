@@ -88,7 +88,7 @@ class ExpressionSummaryBuilder:
         self.expression_summary_cube_created = False
 
     @log_func_runtime
-    def create_expression_summary_cube(self, write_chunk_size: Optional[int] = 10_000_000):
+    def create_expression_summary_cube(self, write_chunk_size: Optional[int] = 50_000_000):
         uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
         cube_dims = expression_summary_indexed_dims_no_gene_ontology + expression_summary_non_indexed_dims
 
