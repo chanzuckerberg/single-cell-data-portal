@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   delete-rdev:
-    # Cancel any updates to the rdev for this PR
+    # Cancel any rdev updates and tear down the stack.
     concurrency:
       group: pr-${{ github.event.number }}
       cancel-in-progress: true

@@ -64,7 +64,7 @@ jobs:
 
   deploy-rdev:
     runs-on: ubuntu-22.04
-    # add a concurrency group to prevent the rdev from being updated multiple times
+    # prevent the rdev from being updated in concurrent GHA
     concurrency:
       group: pr-${{ github.event.number }}
       cancel-in-progress: false
