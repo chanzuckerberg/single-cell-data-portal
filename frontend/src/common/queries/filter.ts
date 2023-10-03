@@ -73,6 +73,7 @@ type CollectionRevisionIdByCollectionId = Map<
  * Model of /collections/index JSON response.
  */
 export interface CollectionResponse {
+  consortia: string[];
   id: string;
   name: string;
   published_at: number;
@@ -485,6 +486,7 @@ function buildDatasetRow(
     ...dataset,
     cell_count: dataset.cell_count ?? 0,
     collection_name: collection?.name ?? "-",
+    consortia: collection?.consortia ?? [CATEGORY_VALUE_KEY.NO_CONSORTIUM],
     isOverMaxCellCount: checkIsOverMaxCellCount(dataset.cell_count),
     publicationDateValues,
     recency,
@@ -908,6 +910,9 @@ function processCollectionResponse(
     collection.publisher_metadata
   );
 
+  // Add "no consortium" value if collection has no consortium.
+  const consortia = collection.consortia ?? [CATEGORY_VALUE_KEY.NO_CONSORTIUM];
+
   // Calculate date bins and add to "processed" collection model.
   const publicationDateValues = expandPublicationDateValues(
     todayMonth,
@@ -921,6 +926,7 @@ function processCollectionResponse(
 
   return {
     ...collection,
+    consortia,
     publicationDateValues,
     summaryCitation,
   };

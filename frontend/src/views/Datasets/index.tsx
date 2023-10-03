@@ -215,6 +215,12 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter.
       {
+        accessor: "consortia",
+        filter: "includesSome",
+        id: CATEGORY_FILTER_ID.CONSORTIA,
+      },
+      // Hidden, required for filter.
+      {
         accessor: "cellTypeCalculated",
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED,
@@ -296,6 +302,7 @@ export default function Datasets(): JSX.Element {
           COLLECTION_ID,
           COLLECTION_NAME,
           COLUMN_ID_RECENCY,
+          CATEGORY_FILTER_ID.CONSORTIA,
           CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED,
           CATEGORY_FILTER_ID.SELF_REPORTED_ETHNICITY,
           CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
