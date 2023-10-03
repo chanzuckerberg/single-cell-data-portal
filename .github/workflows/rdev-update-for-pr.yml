@@ -220,7 +220,11 @@ jobs:
           CI: true
           PROJECT: ${{ matrix.project }}
           SHARD: ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
-        run: DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev-ci
+        # DEBUG
+        # DEBUG
+        # DEBUG
+        # Change back to e2e-rdev-ci
+        run: DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev
 
       - name: Upload FE test results as an artifact
         if: always()
