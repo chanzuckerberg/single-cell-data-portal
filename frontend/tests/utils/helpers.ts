@@ -520,3 +520,8 @@ export async function expandTissue(page: Page, tissueName: string) {
 export async function waitForLoadingSpinnerToResolve(page: Page) {
   await page.getByText("Loading").first().waitFor({ state: "hidden" });
 }
+
+// DEBUG
+// DEBUG
+// DEBUG
+// DEBUG
