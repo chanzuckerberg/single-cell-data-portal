@@ -9,6 +9,11 @@ on:
       - synchronize
       - reopened
 
+# prevent the rdev from being updated in concurrent GHA
+concurrency:
+  group: pr-${{ github.event.number }}
+  cancel-in-progress: false
+
 env:
   # Force using BuildKit instead of normal Docker, required so that metadata
   # is written/read to allow us to use layers of previous builds as cache.
@@ -64,10 +69,6 @@ jobs:
 
   deploy-rdev:
     runs-on: ubuntu-22.04
-    # prevent the rdev from being updated in concurrent GHA
-    concurrency:
-      group: pr-${{ github.event.number }}
-      cancel-in-progress: false
     needs:
       - build-images
     steps:
