@@ -159,11 +159,12 @@ describe("Where's My Gene", () => {
       page,
       locator: getDiseaseSelectorButton(),
     });
-    const datasetOptions = await page
+
+    const diseaseOption = await page
       .getByRole("option")
-      .getByText("acute kidney failure")
-      .elementHandles();
-    await datasetOptions[0].click();
+      .getByText("acute kidney failure");
+
+    await diseaseOption.click();
     await page.keyboard.press("Escape");
 
     // wait for spinner to disappear, coincides with y-axis update
@@ -859,14 +860,18 @@ describe("Where's My Gene", () => {
   });
   describe("Cell Type Filtering", () => {
     test("Filter to multiple cell types and then clear", async ({ page }) => {
+      const CELL_TYPE_NAMES = ["B cell", "T cell", "PP cell"];
+
       await goToWMG(page);
       await waitForLoadingSpinnerToResolve(page);
-      await searchAndAddFilterCellType(page, "B cell");
-      await searchAndAddFilterCellType(page, "T cell");
-      await searchAndAddFilterCellType(page, "NK cell");
-      await removeFilteredCellType(page, "B cell");
-      await removeFilteredCellType(page, "T cell");
-      await removeFilteredCellType(page, "NK cell");
+
+      for (const cellTypeName of CELL_TYPE_NAMES) {
+        await searchAndAddFilterCellType(page, cellTypeName);
+      }
+
+      for (const cellTypeName of CELL_TYPE_NAMES) {
+        await removeFilteredCellType(page, cellTypeName);
+      }
     });
   });
 });

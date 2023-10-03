@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import Any, Dict, Iterable, List
 
 import connexion
+from ddtrace import tracer
 from flask import jsonify
 from pandas import DataFrame
 from server_timing import Timing as ServerTiming
@@ -32,15 +33,18 @@ from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find
 #  -portal/2132
 
 
+@tracer.wrap()
 def primary_filter_dimensions():
-    snapshot: WmgSnapshot = load_snapshot(
-        snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
-        explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
-    )
+    with ServerTiming.time("load snapshot"):
+        snapshot: WmgSnapshot = load_snapshot(
+            snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
+            explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+        )
 
     return jsonify(snapshot.primary_filter_dimensions)
 
 
+@tracer.wrap()
 def query():
     request = connexion.request.json
     is_rollup = request.get("is_rollup", True)
@@ -51,12 +55,13 @@ def query():
 
     criteria = WmgQueryCriteriaV2(**request["filter"])
 
-    with ServerTiming.time("query and build response"):
+    with ServerTiming.time("load snapshot"):
         snapshot: WmgSnapshot = load_snapshot(
             snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
         )
 
+    with ServerTiming.time("query and build response"):
         cube_query_params = WmgCubeQueryParams(
             cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
             cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
@@ -104,16 +109,18 @@ def query():
     return response
 
 
+@tracer.wrap()
 def filters():
     request = connexion.request.json
     criteria = WmgFiltersQueryCriteria(**request["filter"])
 
-    with ServerTiming.time("calculate filters and build response"):
+    with ServerTiming.time("load snapshot"):
         snapshot: WmgSnapshot = load_snapshot(
             snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
         )
 
+    with ServerTiming.time("calculate filters and build response"):
         response_filter_dims_values = build_filter_dims_values(criteria, snapshot)
         response = jsonify(
             dict(
@@ -124,6 +131,7 @@ def filters():
     return response
 
 
+@tracer.wrap()
 def markers():
     request = connexion.request.json
     cell_type = request["celltype"]
