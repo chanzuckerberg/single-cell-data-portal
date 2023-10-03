@@ -51,6 +51,7 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE,
   MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE,
+  ANIMAL_CELL_ID,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
 import {
   ALL_TISSUES,
@@ -235,8 +236,13 @@ export default function OntologyDagView({
 
   // Populate the tree data structure nodes with "isExpanded".
   const treeData: TreeNodeWithState | null = useMemo(() => {
-    const newTree = rawTree ? JSON.parse(JSON.stringify(rawTree)) : null;
+    let newTree = rawTree ? JSON.parse(JSON.stringify(rawTree)) : null;
     if (newTree && initialTreeState) {
+      // if the cell type is a descendant of animal cell, set the root to be
+      // animal cell.
+      if (cellTypeId && isDescendant(newTree, cellTypeId, ANIMAL_CELL_ID)) {
+        newTree = getSubTree(newTree, `${ANIMAL_CELL_ID}__0`);
+      }
       if (initialTreeState.isExpandedNodes) {
         setIsExpandedInRawTree(
           newTree,
@@ -253,7 +259,7 @@ export default function OntologyDagView({
       }
     }
     return newTree;
-  }, [rawTree, initialTreeState]);
+  }, [rawTree, initialTreeState, cellTypeId]);
 
   // Create the tree data structure
   const data = useMemo(() => {
@@ -551,7 +557,7 @@ export default function OntologyDagView({
           </TableUnavailableHeader>
           <TableUnavailableDescription>
             The cell ontology visualization for this cell type is currently not
-            available as it is not a descendant of &quot;animal cell&quot;.
+            available.
           </TableUnavailableDescription>
         </TableUnavailableContainer>
       )}
@@ -727,4 +733,45 @@ function getShownData(
     }
   }
   return notShownWhenExpandedNodes;
+}
+
+function getSubTree(
+  tree: OntologyTree,
+  targetNode: string
+): OntologyTree | null {
+  if (tree.id === targetNode) {
+    return tree;
+  }
+  if (tree.children) {
+    for (const child of tree.children) {
+      const result = getSubTree(child, targetNode);
+      if (result) {
+        return result;
+      }
+    }
+  }
+  return null;
+}
+
+function isDescendant(
+  tree: OntologyTree,
+  targetNode: string,
+  parentNode: string
+): boolean {
+  const targetNodeBase = targetNode.split("__")[0];
+  const parentNodeBase = parentNode.split("__")[0];
+
+  if (tree.id.split("__")[0] === parentNodeBase && tree.children) {
+    return tree.children.some(
+      (child) =>
+        child.id.split("__")[0] === targetNodeBase ||
+        isDescendant(child, targetNode, child.id)
+    );
+  } else if (tree.children) {
+    return tree.children.some((child) =>
+      isDescendant(child, targetNode, parentNode)
+    );
+  }
+
+  return false;
 }

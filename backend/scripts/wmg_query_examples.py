@@ -40,6 +40,7 @@ def load_snapshot(snapshot_id) -> WmgSnapshot:
         dataset_to_gene_ids={},
         marker_genes_cube=None,
         filter_relationships=None,
+        dataset_metadata=None,
     )
 
 
@@ -54,7 +55,6 @@ def wmg_query() -> query.WmgQuery:
 
 
 if __name__ == "__main__":
-
     q = wmg_query()
     genes = ["ENSG00000182149"]
     tissues = ["UBERON:0000160"]
