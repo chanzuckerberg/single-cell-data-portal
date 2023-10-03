@@ -10,6 +10,7 @@ import { PNG } from "pngjs";
 import sharp from "sharp";
 import { goToWMG } from "./wmgUtils";
 import { CELL_TYPE_ROW_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
+import { tryUntil } from "tests/utils/helpers";
 
 const EXPECTED_HEADER = [
   "Tissue",
@@ -44,10 +45,21 @@ export async function verifyCsv({
   const headers = metadata.headers;
   const data = metadata.data;
 
-  //get number of element in csv
+  // get number of element in csv
   const csvElementsCount = metadata.rowCount;
 
-  //get number of element displayed in ui
+  await tryUntil(
+    async () => {
+      const count = await page
+        .locator(`[data-testid="${CELL_TYPE_ROW_CLASS_NAME}"]`)
+        .count();
+
+      expect(count).toBeGreaterThan(0);
+    },
+    { page }
+  );
+
+  // get number of element displayed in ui
   const uiElementsCount = await page
     .locator(`[data-testid="${CELL_TYPE_ROW_CLASS_NAME}"]`)
     .count();
