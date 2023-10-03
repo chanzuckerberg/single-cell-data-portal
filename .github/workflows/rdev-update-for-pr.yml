@@ -8,7 +8,6 @@ on:
       - open
       - synchronize
       - reopened
-      - closed
 
 # add a concurrency group to prevent the rdev from being updated multiple times
 concurrency:
