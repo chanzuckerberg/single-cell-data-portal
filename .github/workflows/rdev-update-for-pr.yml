@@ -178,8 +178,12 @@ jobs:
       matrix:
         # Only run Chrome for now, since GHA only has 250 workers and will cancel jobs if it runs out
         project: [chromium]
-        shardCurrent: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        shardTotal: [10]
+        # DEBUG
+        # DEBUG
+        # DEBUG
+        # DEBUG
+        shardCurrent: [1]
+        shardTotal: [1]
     defaults:
       run:
         working-directory: frontend
