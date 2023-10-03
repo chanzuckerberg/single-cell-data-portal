@@ -19,9 +19,6 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
-          echo "Listing locally available branches BEFORE 'staging' branch is checked out:"
-          echo "$(git branch --list)"
-
           echo "Checking out 'staging' branch"
           git checkout staging
           echo "Confirming checked out branch receiving merge is: $(git branch --show-current)"
@@ -29,9 +26,9 @@ jobs:
           echo "Listing locally available branches AFTER 'staging' branch is checked out:"
           echo "$(git branch --list)"
 
-          echo "HEAD commit in current checked out receiving branch: $(git branch --show-current) is: $(git log -1 --format='%H')"
+          echo "Latest commit on 'staging' branch is: $(git log -1 --format='%H' staging)"
 
-          echo "HEAD commit in incoming branch: 'main' is: $(git log -1 --format='%H' main)"
+          echo "Latest commit on 'main' branch is: $(git log -1 --format='%H' main)"
 
           echo "About to merge 'main' branch into 'staging' branch"
           git merge --verbose --no-ff main -m "Merging main branch into staging branch"
