@@ -3,39 +3,37 @@ name: Trigger release candidate build and deploy
 on:
   push:
     branches:
-      - psridharan/issue-5461
+      - main
 
 jobs:
   merge:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout psridharan/issue-5461 into psridharan/test-auto-merge-2
+      - name: Checkout main branch and staging branch
         uses: actions/checkout@v2
         with:
-          ref: psridharan/issue-5461
-          fetch-depth: 0
-      - name: Merge psridharan/issue-5461 into psridharan/test-auto-merge-2
+          ref: main
+          fetch-depth: 0 # fetch all history to make merges work correctly
+      - name: Merge main branch into staging branch
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
-          echo "BEFORE CHECKOUT: Listing current checked out branches:"
+          echo "Listing locally available branches BEFORE 'staging' branch is checked out:"
           echo "$(git branch --list)"
 
-          echo "Checking out psridharan/test-auto-merge-2"
-          git checkout psridharan/test-auto-merge-2
+          echo "Checking out 'staging' branch"
+          git checkout staging
           echo "Confirming checked out branch receiving merge is: $(git branch --show-current)"
 
-          echo "AFTER CHECKOUT: Listing current checked out branches:"
+          echo "Listing locally available branches AFTER 'staging' branch is checked out:"
           echo "$(git branch --list)"
 
-          echo "Current checked out receiving branch is: $(git branch --show-current)"
           echo "HEAD commit in current checked out receiving branch: $(git branch --show-current) is: $(git log -1 --format='%H')"
 
-          echo "HEAD commit in incoming branch psridharan/issue-5461 is:"
-          echo "$(git log -1 --format='%H' psridharan/issue-5461)"
+          echo "HEAD commit in incoming branch: 'main' is: $(git log -1 --format='%H' main)"
 
-          echo "About to merge psridharan/issue-5461 into psridharan/test-auto-merge-2"
-          git merge --verbose --no-ff psridharan/issue-5461 -m "Merging psridharan/issue-5461 into psridharan/test-auto-merge-2"
+          echo "About to merge 'main' branch into 'staging' branch"
+          git merge --verbose --no-ff main -m "Merging main branch into staging branch"
 
-          git push origin psridharan/test-auto-merge-2
+          git push origin staging
