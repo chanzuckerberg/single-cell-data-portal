@@ -333,7 +333,6 @@ export interface Categories {
   cell_type: Ontology[];
   cell_type_ancestors: string[];
   cellTypeCalculated: string[];
-  consortia: string[];
   disease: Ontology[];
   development_stage_ancestors: string[];
   self_reported_ethnicity: Ontology[];
@@ -399,6 +398,7 @@ export interface CollectionRow
   extends Categories,
     PublisherMetadataCategories,
     Testable {
+  consortia: string[];
   curator_name?: string; // Curator view.
   id: string;
   name: string;
@@ -420,6 +420,7 @@ export interface DatasetRow
     Testable {
   collection_id: Collection["id"];
   collection_name: Collection["name"];
+  consortia: string[];
   explorer_url: string;
   id: string;
   isOverMaxCellCount: boolean;
