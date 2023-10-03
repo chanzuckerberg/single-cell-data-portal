@@ -532,7 +532,16 @@ const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
 export const test = rawTest.extend({
   page: async ({ page }, use) => {
-    const cache = new LRUCache<string, APIResponse>({
+    const cache = new LRUCache<
+      string,
+      {
+        status: number;
+        headers: {
+          [key: string]: string;
+        };
+        body: Buffer;
+      }
+    >({
       ttl: CACHE_TTL_MS,
       ttlAutopurge: true,
     });
@@ -548,12 +557,24 @@ export const test = rawTest.extend({
         const cachedResponse = cache.get(cacheKey);
 
         if (cachedResponse) {
-          await route.fulfill({ response: cachedResponse });
+          await route.fulfill({
+            body: cachedResponse.body,
+            headers: cachedResponse.headers,
+            status: cachedResponse.status,
+          });
         } else {
           const response = await route.fetch();
 
+          const headers = response.headers();
+          const status = response.status();
+          const body = await response.body();
+
           if (response.ok()) {
-            cache.set(cacheKey, response);
+            cache.set(cacheKey, {
+              body,
+              headers,
+              status,
+            });
           }
 
           await route.fulfill({ response });
