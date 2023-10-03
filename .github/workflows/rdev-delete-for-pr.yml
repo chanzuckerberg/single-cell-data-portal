@@ -21,10 +21,10 @@ permissions:
 
 jobs:
   delete-rdev:
-    # Cancel any rdev updates and tear down the stack.
+    # prevent the rdev from being updated in concurrent GHA
     concurrency:
       group: pr-${{ github.event.number }}
-      cancel-in-progress: true
+      cancel-in-progress: false
     runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
