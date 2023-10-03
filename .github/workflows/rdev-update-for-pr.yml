@@ -8,6 +8,12 @@ on:
       - open
       - synchronize
       - reopened
+      - closed
+
+# add a concurrency group to prevent the rdev from being updated multiple times
+concurrency:
+  group: pr-${{ github.event.number }}
+  cancel-in-progress: false
 
 env:
   # Force using BuildKit instead of normal Docker, required so that metadata

@@ -7,6 +7,11 @@ on:
     types:
       - closed
 
+# add a concurrency group to prevent the rdev from being updated multiple times
+concurrency:
+  group: pr-${{ github.event.number }}
+  cancel-in-progress: true
+
 env:
   # Force using BuildKit instead of normal Docker, required so that metadata
   # is written/read to allow us to use layers of previous builds as cache.

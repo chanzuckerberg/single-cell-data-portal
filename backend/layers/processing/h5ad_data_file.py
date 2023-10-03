@@ -112,7 +112,7 @@ class H5ADDataFile:
                 * follows ScanPy embedding naming conventions
                 * with all values finite or NaN (no +Inf or -Inf)
             """
-
+            # TODO is this in the cellxgene_cli validator and can this be removed from here?
             is_valid = isinstance(embedding_name, str) and embedding_name.startswith("X_") and len(embedding_name) > 2
             is_valid = is_valid and isinstance(embedding_array, np.ndarray) and embedding_array.dtype.kind in "fiu"
             is_valid = is_valid and embedding_array.shape[0] == adata.n_obs and embedding_array.shape[1] >= 2
