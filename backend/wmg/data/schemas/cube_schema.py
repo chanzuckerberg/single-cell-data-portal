@@ -33,7 +33,7 @@ expression_summary_non_indexed_dims = [
 # The full set of logical cube dimensions by which the cube can be queried.
 expression_summary_logical_dims = expression_summary_indexed_dims + expression_summary_non_indexed_dims
 
-filters = [tiledb.ZstdFilter(level=+22)]
+filters = [tiledb.DictionaryFilter(), tiledb.ZstdFilter(level=+19)]
 
 expression_summary_domain = tiledb.Domain(
     [
@@ -43,9 +43,11 @@ expression_summary_domain = tiledb.Domain(
 )
 
 # The cube attributes that comprise the core data stored within the cube.
+filters_numeric = [tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=+5)]
 expression_summary_logical_attrs = [
-    tiledb.Attr(name="nnz", dtype=np.uint64, filters=filters),  # TODO: Why uint64?
-    tiledb.Attr(name="sum", dtype=np.float32, filters=filters),
+    tiledb.Attr(name="nnz", dtype=np.uint64, filters=filters_numeric),  # TODO: Why uint64?
+    tiledb.Attr(name="sum", dtype=np.float32, filters=filters_numeric),
+    tiledb.Attr(name="sqsum", dtype=np.float32, filters=filters_numeric),
 ]
 
 # The TileDB `Attr`s of the cube TileDB Array. This includes the
@@ -86,7 +88,7 @@ cell_counts_domain = tiledb.Domain(
 
 cell_counts_logical_attrs = [
     # total count of cells, regardless of expression level
-    tiledb.Attr(name="n_cells", dtype=np.uint32, filters=filters),
+    tiledb.Attr(name="n_cells", dtype=np.uint32, filters=filters_numeric),
 ]
 
 cell_counts_physical_attrs = [
