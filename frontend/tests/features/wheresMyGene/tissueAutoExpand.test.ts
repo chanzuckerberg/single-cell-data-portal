@@ -92,8 +92,7 @@ describe("WMG tissue auto-expand", () => {
    * Filter 3 tissues, filter top 3 cell types
    * (B cell, B-1a B cell, and B-1b B cell). Expect both tissues expanded.
    * Remove “B cell” from filter <-- this removes tissue filter, since only
-   * “Lung” tissue has B-1a B cell and B-1b B cell. I see Lung is shown, but
-   * the bug is that “Lung” tissue is NOT automatically expanded
+   * “Lung” tissue has B-1a B cell and B-1b B cell
    */
   test("Filter cell type auto expansion - remove cell type filter", async ({
     page,
