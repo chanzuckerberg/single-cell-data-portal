@@ -482,6 +482,8 @@ def get_user_collection_index(token_info):
                 collection.publisher_metadata
             )
 
+        transformed_collection["consortia"] = collection.metadata.consortia
+
         if collection.is_unpublished_version():
             transformed_collection["id"] = collection.version_id.id
         else:

@@ -939,6 +939,10 @@ class TestCollection(BaseAPIPortalTest):
             else:
                 self.assertEqual(collection["access_type"], "READ")
 
+        # Confirm consortia is included in the response
+        actual_collection = body[-1]  # last collection is private, owned by the user
+        self.assertEqual(actual_collection["consortia"], private_collection.metadata.consortia)
+
     # ✅
     def test__create_collection__InvalidParameters_DOI(self):
         tests = [
