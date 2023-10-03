@@ -24,6 +24,9 @@ permissions:
 
 jobs:
   build-images:
+    concurrency:
+      group: ${GITHUB_REF_NAME}
+      cancel-in-progress: true
     strategy:
       matrix:
         image:
