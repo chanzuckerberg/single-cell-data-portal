@@ -6,7 +6,6 @@ import pathlib
 from typing import Optional, Tuple
 
 import cellxgene_census
-import numba as nb
 import numpy as np
 import pandas as pd
 import tiledb
@@ -48,6 +47,7 @@ from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import (
     create_empty_cube,
     log_func_runtime,
+)
 from backend.wmg.pipeline.summary_cubes.builder_utils import (
     create_filter_relationships_graph,
     gene_expression_sum_x_cube_dimension,
@@ -61,6 +61,7 @@ DIMENSION_NAME_MAP_CENSUS_TO_WMG = {
     "tissue_ontology_term_id": "tissue_original_ontology_term_id",
     "tissue_general_ontology_term_id": "tissue_ontology_term_id",
 }
+
 
 class SummaryCubesBuilder:
     def __init__(self, *, corpus_path: str, organismInfo: dict):
