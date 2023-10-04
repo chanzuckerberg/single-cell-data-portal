@@ -16,7 +16,11 @@ import { SKIP_LOGIN } from "tests/common/constants";
  * (thuang): Playwright takes retries as part of the maxFailures count, so we
  * need to set maxFailures to a high number to allow retries.
  */
-const CICD_MAX_FAILURE = 5;
+// DEBUG
+// DEBUG
+// DEBUG
+// DEBUG
+// const CICD_MAX_FAILURE = 5;
 
 expect.extend(matchers);
 
@@ -182,14 +186,22 @@ const config: PlaywrightTestConfig = {
    * tests with more workers
    * https://github.com/microsoft/playwright/issues/19408#issuecomment-1347341819
    */
-  // workers: 1,
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  workers: 1,
 
   /* Run your local dev server before starting the tests */
   // webServer: {
   //   command: 'npm run start',
   //   port: 3000,
   // },
-  maxFailures: process.env.CI ? CICD_MAX_FAILURE : undefined,
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  // maxFailures: process.env.CI ? CICD_MAX_FAILURE : undefined,
 };
 
 function getStorageState(): {
