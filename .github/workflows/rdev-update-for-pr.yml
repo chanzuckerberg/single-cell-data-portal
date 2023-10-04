@@ -88,7 +88,7 @@ jobs:
       - name: Prepare happy parameters
         id: pre_happy
         run: |
-          echo "IMAGE_TAG=sha-${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
+          echo "IMAGE_TAG=${{ env.BRANCH_TAG }}" >> $GITHUB_OUTPUT
       - name: Update deployment
         uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
         with:
