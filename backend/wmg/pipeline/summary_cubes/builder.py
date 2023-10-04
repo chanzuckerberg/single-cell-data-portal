@@ -1,7 +1,7 @@
+import logging
 import math
 import os
 import pathlib
-import time
 from typing import Optional, Tuple
 
 import cellxgene_census
@@ -47,6 +47,8 @@ from backend.wmg.data.utils import (
     return_dataset_dict_w_publications,
 )
 
+logger = logging.getLogger(__name__)
+
 DIMENSION_NAME_MAP_CENSUS_TO_WMG = {
     "tissue_ontology_term_id": "tissue_original_ontology_term_id",
     "tissue_general_ontology_term_id": "tissue_ontology_term_id",
@@ -79,6 +81,18 @@ def gene_expression_sum_x_cube_dimension(
 
 class SummaryCubesBuilder:
     def __init__(self, *, corpus_path: str, organismInfo: dict):
+        """
+        Initialize the SummaryCubesBuilder class.
+
+        Args:
+            corpus_path (str): The path to the corpus.
+            organismInfo (dict): Information about the organism.
+                ex:
+                organismInfo = {
+                    "id": "UBERON:0000955",
+                    "label": "brain",
+                }
+        """
         organism = organismInfo["label"]
         organismId = organismInfo["id"]
 
@@ -109,6 +123,12 @@ class SummaryCubesBuilder:
 
     @log_func_runtime
     def create_expression_summary_cube(self, write_chunk_size: Optional[int] = 50_000_000):
+        """
+        Create the expression summary cube.
+
+        Args:
+            write_chunk_size (int, optional): The size of the write chunk. Defaults to 50_000_000.
+        """
         uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
         cube_dims = expression_summary_indexed_dims_no_gene_ontology + expression_summary_non_indexed_dims
 
@@ -123,10 +143,12 @@ class SummaryCubesBuilder:
 
             with tiledb.open(uri, "w") as cube:
                 for i in range(num_chunks):
+                    logger.info(f"Writing chunk {i} to {uri}")
                     dims_chunk = tuple(dim[i * write_chunk_size : (i + 1) * write_chunk_size] for dim in dims)
                     vals_chunk = {k: vals[k][i * write_chunk_size : (i + 1) * write_chunk_size] for k in vals}
                     cube[dims_chunk] = vals_chunk
 
+            logger.info("Consolidating and vacuuming")
             tiledb.consolidate(uri)
             tiledb.vacuum(uri)
 
@@ -134,6 +156,11 @@ class SummaryCubesBuilder:
 
     @log_func_runtime
     def create_expression_summary_default_cube(self):
+        """
+        Create the default expression summary cube. The default expression summary cube is an aggregation across
+        non-default dimensions in the expression summary cube.
+        """
+        logger.info("Creating the default expression summary cube.")
         if not self.expression_summary_cube_created:
             raise ValueError(
                 "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
@@ -160,10 +187,16 @@ class SummaryCubesBuilder:
 
             if not os.path.exists(expression_summary_default_uri):
                 create_empty_cube(expression_summary_default_uri, expression_summary_schema_default)
+            logger.info(f"Writing cube to {expression_summary_default_uri}")
             tiledb.from_pandas(expression_summary_default_uri, expression_summary_df_default, mode="append")
 
     @log_func_runtime
     def create_expression_summary_fmg_cube(self):
+        """
+        Create the FMG (Find Marker Genes) expression summary cube. The FMG expression summary cube is an aggregation across
+        dimensions in the expression summary cube that are irrelevant for marker gene calculation.
+        """
+        logger.info("Creating the FMG expression summary cube.")
         if not self.expression_summary_cube_created:
             raise ValueError(
                 "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
@@ -190,10 +223,21 @@ class SummaryCubesBuilder:
 
             if not os.path.exists(expression_summary_fmg_uri):
                 create_empty_cube(expression_summary_fmg_uri, expression_summary_fmg_schema)
+            logger.info(f"Writing cube to {expression_summary_fmg_uri}")
             tiledb.from_pandas(expression_summary_fmg_uri, expression_summary_df_fmg, mode="append")
 
     @log_func_runtime
     def _summarize_gene_expressions(self, *, cube_dims: list, schema: tiledb.ArraySchema):
+        """
+        Summarize gene expressions for each row/combination of cell attributes.
+
+        Args:
+            cube_dims (list): The dimensions of the cube.
+            schema (tiledb.ArraySchema): The schema of the cube.
+
+        Returns:
+            tuple: A tuple containing the dimensions and values of the cube.
+        """
         cube_index, cell_labels = self._make_cube_index(
             cube_dims=[dim for dim in cube_dims if dim != "publication_citation"]
         )
@@ -201,7 +245,7 @@ class SummaryCubesBuilder:
         n_groups = len(cube_index)
         n_genes = len(self.var_df)
 
-        print(n_groups, n_genes)
+        logger.info(f"Summarizing gene expressions across {n_groups} groups and {n_genes} genes")
 
         cube_sum = np.zeros((n_groups, n_genes), dtype=np.float32)
         cube_nnz = np.zeros((n_groups, n_genes), dtype=np.uint64)
@@ -215,7 +259,6 @@ class SummaryCubesBuilder:
         )
 
         dim_names = [dim.name for dim in schema.domain]
-        [i for i in cube_dims if i not in dim_names]
         dims, vals = self._build_in_mem_cube(
             schema=schema,
             cube_index=cube_index,
@@ -228,7 +271,17 @@ class SummaryCubesBuilder:
 
     @log_func_runtime
     def _make_cube_index(self, *, cube_dims: list) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        print("making cube index")
+        """
+        Create the cube index. The cube index is a dataframe containing all possible groups of metadata with
+        their corresponding indices.
+
+        Args:
+            cube_dims (list): The dimensions of the cube.
+
+        Returns:
+            Tuple[pd.DataFrame, pd.DataFrame]: A tuple containing the cube index and cell labels.
+        """
+        logger.info(f"Making the cube index across {cube_dims}")
         cell_labels = pd.DataFrame(
             data={k: self.obs_df[k].astype("category") for k in cube_dims},
             index=self.obs_df.index,
@@ -256,6 +309,9 @@ class SummaryCubesBuilder:
         cube_nnz: np.ndarray,
         cube_sqsum: np.ndarray,
     ) -> None:
+        """
+        This method reduces the X matrix and stores the results in cube_sum, cube_nnz, and cube_sqsum.
+        """
         with cellxgene_census.open_soma(
             census_version=self.census_version,
         ) as census:
@@ -263,16 +319,14 @@ class SummaryCubesBuilder:
             row_stride = 50_000
 
             with organism.axis_query("RNA", obs_query=soma.AxisQuery(value_filter="is_primary_data == True")) as query:
-                print("num cells", self.obs_df.shape[0])
+                logger.info(f"Reducing X with {self.obs_df.shape[0]} total cells")
 
-                z = 0
+                iteration = 0
                 for (obs_soma_joinids_chunk, _var_soma_joinids_chunk), raw_array in X_sparse_iter(
                     query, X_name="raw", stride=row_stride
                 ):
-                    print(z, int(self.obs_df.shape[0] / row_stride))
-                    z += 1
-
-                    t = time.time()
+                    logger.info(f"Reducer iteration {iteration} out of {math.ceil(self.obs_df.shape[0] / row_stride)}")
+                    iteration += 1
 
                     obs_soma_joinids_chunk = query.indexer.by_obs(obs_soma_joinids_chunk)
 
@@ -307,8 +361,6 @@ class SummaryCubesBuilder:
                         sqsum_into=cube_sqsum,
                     )
 
-                    print(time.time() - t, "s")
-
     def _build_in_mem_cube(
         self,
         *,
@@ -322,7 +374,7 @@ class SummaryCubesBuilder:
         """
         Build the cube in memory, calculating the gene expression value for each combination of attributes
         """
-
+        logger.info("Building cube in memory")
         # Count total values so we can allocate buffers once
         total_vals = 0
         for cube_idx in cube_index.cube_idx.values:
