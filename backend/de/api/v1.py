@@ -116,6 +116,9 @@ def differentialExpression():
 
 
 def fetch_datasets_metadata(snapshot: DeSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
+    if not hasattr(snapshot, "dataset_dict"):
+        snapshot.build_dataset_metadata_dict()
+
     return [
         snapshot.dataset_dict.get(dataset_id, dict(id=dataset_id, label="", collection_id="", collection_label=""))
         for dataset_id in dataset_ids
