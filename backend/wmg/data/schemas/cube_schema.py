@@ -22,8 +22,6 @@ expression_summary_non_indexed_dims = [
     "cell_type_ontology_term_id",
     "tissue_original_ontology_term_id",
     "dataset_id",
-    "assay_ontology_term_id",
-    "development_stage_ontology_term_id",
     "disease_ontology_term_id",
     "self_reported_ethnicity_ontology_term_id",
     "sex_ontology_term_id",
