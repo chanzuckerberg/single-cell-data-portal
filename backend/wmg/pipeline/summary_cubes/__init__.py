@@ -6,8 +6,6 @@ from backend.common.utils.result_notification import (
 )
 from backend.wmg.data.validation.validation import Validation
 from backend.wmg.pipeline.summary_cubes.cell_count import create_cell_count_cube
-from backend.wmg.pipeline.summary_cubes.expression_summary.job import create_expression_summary_cube
-from backend.wmg.pipeline.summary_cubes.expression_summary_fmg.job import create_expression_summary_fmg_cube
 from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
 
 
@@ -18,9 +16,6 @@ def run(corpus_path: str, validate_cube: bool) -> dict:
     validate expression summary cube based on biological expectations
     if indicated by param
     """
-    create_expression_summary_cube(corpus_path)
-    create_expression_summary_cube(corpus_path, default=True)
-    create_expression_summary_fmg_cube(corpus_path)
     create_cell_count_cube(corpus_path)
     create_marker_genes_cube(corpus_path)
 
