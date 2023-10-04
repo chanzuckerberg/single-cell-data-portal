@@ -132,6 +132,11 @@ class BaseTest(unittest.TestCase):
             donor_id=["test_donor_1"],
             is_primary_data="BOTH",
             x_approximate_distribution="normal",
+            default_embedding="X_embedding_1",
+            embeddings=["X_embedding_1", "X_embedding_2"],
+            feature_biotype=["gene"],
+            feature_count=400,
+            feature_reference=["NCBITaxon:9606"],
         )
 
         self.sample_collection_metadata = CollectionMetadata(
