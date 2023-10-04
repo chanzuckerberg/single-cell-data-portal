@@ -310,6 +310,11 @@ class EntityColumns:
         "mean_genes_per_cell",
         "schema_version",
         "donor_id",
+        "default_embedding",
+        "embeddings",
+        "feature_biotype",
+        "feature_count",
+        "feature_reference",
     ]
 
     dataset_asset_cols = [

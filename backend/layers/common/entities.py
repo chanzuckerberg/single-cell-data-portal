@@ -178,12 +178,12 @@ class DatasetMetadata:
     donor_id: List[str]
     is_primary_data: str
     x_approximate_distribution: Optional[str]
-    primary_cell_count: Optional[int] = None
-    feature_count: Optional[int]
-    feature_biotype: Optional[List[str]]
-    feature_reference: Optional[List[str]]
     default_embedding: Optional[str]
     embeddings: Optional[List[str]]
+    feature_biotype: Optional[List[str]]
+    feature_count: Optional[int]
+    feature_reference: Optional[List[str]]
+    primary_cell_count: Optional[int] = None
 
 
 @dataclass
