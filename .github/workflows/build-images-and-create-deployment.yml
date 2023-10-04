@@ -20,7 +20,7 @@ permissions:
   deployments: write
 
 jobs:
-  build-images:
+  build_images:
     strategy:
       matrix:
         image:
@@ -68,7 +68,7 @@ jobs:
 
   create_deployment:
     needs:
-      - build-images
+      - build_images
     runs-on: ubuntu-22.04
     steps:
       - name: Generate payload
