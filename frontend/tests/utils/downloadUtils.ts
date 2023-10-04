@@ -23,12 +23,21 @@ const EXPECTED_HEADER = [
   "Number of Cells Expressing Genes",
 ];
 
-export async function verifyCsv(
-  page: Page,
-  subDirectory: string,
-  filterName: string,
-  url: string
-): Promise<void> {
+const NUM_OF_GENES_SELECTED = 3;
+
+export async function verifyCsv({
+  page,
+  subDirectory,
+  filterName,
+  url,
+  tissues,
+}: {
+  page: Page;
+  subDirectory: string;
+  filterName: string;
+  url: string;
+  tissues: string[];
+}): Promise<void> {
   const metadata = await getCsvMetadata(subDirectory);
   // extract the headers and data arrays from the metadata object
   // put all the headers in an array
@@ -43,8 +52,16 @@ export async function verifyCsv(
     .locator(`[data-testid="${CELL_TYPE_ROW_CLASS_NAME}"]`)
     .count();
 
-  //verify the number of element in the csv this is the Ui displayed multiplied by the number of genes selected
-  expect(csvElementsCount).toEqual(uiElementsCount * 3);
+  const tissueCount = tissues.length;
+  const aggregatedRows = tissueCount * NUM_OF_GENES_SELECTED;
+
+  /**
+   * verify the number of element in the csv (minus aggregatedRows) is the Ui
+   * displayed multiplied by the number of genes selected
+   */
+  expect(csvElementsCount - aggregatedRows).toEqual(
+    uiElementsCount * NUM_OF_GENES_SELECTED
+  );
 
   const options = {
     filterName,
