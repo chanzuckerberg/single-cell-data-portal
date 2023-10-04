@@ -208,7 +208,7 @@ async function checkCellTypes(page: Page, cellTypes = CELL_TYPE_FILTERS) {
 
 /**
  * removeCellFilter
- * Remove cell filter
+ * Specifically remove the first cell filter (B cell)
  */
 async function removeCellFilter(page: Page) {
   await page
