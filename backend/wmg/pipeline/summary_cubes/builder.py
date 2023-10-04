@@ -142,12 +142,11 @@ class SummaryCubesBuilder:
         Create the default expression summary cube. The default expression summary cube is an aggregation across
         non-default dimensions in the expression summary cube.
         """
-        logger.info("Creating the default expression summary cube.")
         if not self.expression_summary_cube_created:
             raise ValueError(
                 "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
             )
-
+        logger.info("Creating the default expression summary cube.")
         expression_summary_uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
         expression_summary_default_uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"
 
@@ -177,12 +176,11 @@ class SummaryCubesBuilder:
         Create the FMG (Find Marker Genes) expression summary cube. The FMG expression summary cube is an aggregation across
         dimensions in the expression summary cube that are irrelevant for marker gene calculation.
         """
-        logger.info("Creating the FMG expression summary cube.")
         if not self.expression_summary_cube_created:
             raise ValueError(
                 "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
             )
-
+        logger.info("Creating the FMG expression summary cube.")
         expression_summary_uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
         expression_summary_fmg_uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"
 
@@ -211,11 +209,11 @@ class SummaryCubesBuilder:
         """
         Create cell count cube and write to disk
         """
-
         if not self.expression_summary_cube_created:
             raise ValueError(
                 "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
             )
+        logger.info("Creating the cell counts cube and filter relationships graph.")
         obs_df_filtered = self.obs_df[self.obs_df.index.isin(self.obs_coords_to_keep)]
 
         df = (
@@ -233,13 +231,14 @@ class SummaryCubesBuilder:
         n_cells = df["n_cells"].to_numpy()
         df["n_cells"] = n_cells
 
+        logger.info("Creating and writing filter relationships graph.")
         filter_relationships_linked_list = create_filter_relationships_graph(df)
-
         with open(f"{self.corpus_path}/{FILTER_RELATIONSHIPS_FILENAME}", "w") as f:
             json.dump(filter_relationships_linked_list, f)
 
         uri = f"{self.corpus_path}/{CELL_COUNTS_CUBE_NAME}"
         self._create_empty_cube_if_not_exists(uri, cell_counts_schema)
+        logger.info("Writing cell counts cube.")
         tiledb.from_pandas(uri, df, mode="append")
 
     @log_func_runtime
@@ -455,4 +454,5 @@ class SummaryCubesBuilder:
 
     def _create_empty_cube_if_not_exists(self, uri: str, schema: tiledb.ArraySchema):
         if not os.path.exists(uri):
+            logger.info(f"Creating empty cube at {uri}")
             create_empty_cube(uri, schema)
