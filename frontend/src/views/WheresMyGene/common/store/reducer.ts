@@ -457,6 +457,7 @@ function loadStateFromURL(
     selectedTissues: tissues,
     selectedOrganismId: payload.organism,
     filteredCellTypes: payload.cellTypes ?? [],
+    expandedTissueIds: filters.tissues ?? [],
   };
 }
 

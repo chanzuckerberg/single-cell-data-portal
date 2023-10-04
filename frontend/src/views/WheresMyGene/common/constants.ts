@@ -4,7 +4,10 @@ export const FMG_GENE_STRENGTH_THRESHOLD = 0.5;
 /**
  * (thuang): The `id` options here must match what the BE expects
  */
-export const COMPARE_OPTIONS = [
+export const COMPARE_OPTIONS: {
+  id: string | undefined;
+  name: string;
+}[] = [
   { id: undefined, name: "None" },
   { id: "disease", name: "Disease" },
   { id: "self_reported_ethnicity", name: "Ethnicity" },

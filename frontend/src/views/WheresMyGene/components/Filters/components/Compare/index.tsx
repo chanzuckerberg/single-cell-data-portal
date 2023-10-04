@@ -19,6 +19,7 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
   const { optionLabel, handleChange, InputDropdownProps } = useConnect({
     areFiltersDisabled,
   });
+
   return (
     <div>
       <LabelWrapper>
