@@ -416,6 +416,9 @@ function buildCollectionRows(
       collection?.publisher_metadata
     );
 
+    // Add "no consortium" value if collection has no consortium.
+    const consortia = buildConsortia(collection);
+
     // Calculate test ID
     const testId = createCollectionRowTestId(collection);
 
@@ -423,6 +426,7 @@ function buildCollectionRows(
     const collectionRow = sortCategoryValues({
       ...collection,
       ...aggregatedCategoryValues,
+      consortia,
       recency,
       testId,
     });
@@ -481,12 +485,15 @@ function buildDatasetRow(
   // Calculate recency for sorting.
   const recency = calculateRecency(dataset, collection?.publisher_metadata);
 
+  // Determine consortia for dataset.
+  const consortia = buildConsortia(collection);
+
   // Join!
   const datasetRow = {
     ...dataset,
     cell_count: dataset.cell_count ?? 0,
     collection_name: collection?.name ?? "-",
-    consortia: collection?.consortia ?? [CATEGORY_VALUE_KEY.NO_CONSORTIUM],
+    consortia,
     isOverMaxCellCount: checkIsOverMaxCellCount(dataset.cell_count),
     publicationDateValues,
     recency,
@@ -494,6 +501,18 @@ function buildDatasetRow(
       collection?.summaryCitation ?? CATEGORY_VALUE_KEY.NO_PUBLICATION,
   };
   return sortCategoryValues(datasetRow);
+}
+
+/**
+ * Build up array of consortia: use consortia from collection if available, otherwise use "no consortium" value.
+ * @param collection - Collection response returned from endpoint that has been processed to include additional
+ * FE-specific values.
+ */
+function buildConsortia(collection?: ProcessedCollectionResponse): string[] {
+  if (collection?.consortia && collection.consortia.length > 0) {
+    return collection.consortia;
+  }
+  return [CATEGORY_VALUE_KEY.NO_CONSORTIUM];
 }
 
 /**
