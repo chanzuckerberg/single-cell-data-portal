@@ -6,6 +6,7 @@ import pathlib
 from typing import Optional, Tuple
 
 import cellxgene_census
+import numba as nb
 import numpy as np
 import pandas as pd
 import tiledb
@@ -47,7 +48,6 @@ from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import (
     create_empty_cube,
     log_func_runtime,
-)
 from backend.wmg.pipeline.summary_cubes.builder_utils import (
     create_filter_relationships_graph,
     gene_expression_sum_x_cube_dimension,
@@ -62,7 +62,6 @@ DIMENSION_NAME_MAP_CENSUS_TO_WMG = {
     "tissue_general_ontology_term_id": "tissue_ontology_term_id",
 }
 
-
 class SummaryCubesBuilder:
     def __init__(self, *, corpus_path: str, organismInfo: dict):
         """
@@ -73,9 +72,10 @@ class SummaryCubesBuilder:
             organismInfo (dict): Information about the organism.
                 ex:
                 organismInfo = {
-                    "id": "UBERON:0000955",
-                    "label": "brain",
+                    "id": "NCBITaxon:9606",
+                    "label": "homo_sapiens",
                 }
+                Note that "label" should be the organism label used by census.
         """
         organism = organismInfo["label"]
         organismId = organismInfo["id"]
@@ -251,7 +251,7 @@ class SummaryCubesBuilder:
             schema (tiledb.ArraySchema): The schema of the cube.
 
         Returns:
-            tuple: A tuple containing the dimensions and values of the cube.
+            tuple: A tuple containing the dimensions (list) and values (keys) of the cube.
         """
         cube_index, cell_labels = self._make_cube_index(
             cube_dims=[dim for dim in cube_dims if dim != "publication_citation"]

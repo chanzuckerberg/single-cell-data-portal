@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+import unicodedata
 from typing import Dict, List
 
 import numpy as np
@@ -228,3 +229,33 @@ def get_pinned_ontology_url(name: str):
     cl_url = decoded_yaml["CL"]["urls"][key]
     cl_url = cl_url.split("cl.owl")[0] + name
     return cl_url
+
+
+def remove_accents(input_str):
+    nfkd_form = unicodedata.normalize("NFKD", input_str)
+    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
+
+
+def return_dataset_dict_w_publications():
+    datasets = get_datasets_from_curation_api()
+    collections = get_collections_from_curation_api()
+    collections_dict = {collection["collection_id"]: collection for collection in collections}
+
+    # cchoi: creating a helper function to format citations properly
+    def create_formatted_citation(collection):
+        publisher_metadata = collection["publisher_metadata"]
+        if publisher_metadata is None:
+            return "No Publication"
+        first_author = collection["publisher_metadata"]["authors"][0]
+        # first_author could be either 'family' or 'name'
+        citation = f"{first_author['family'] if 'family' in first_author else first_author['name']} et al. {collection['publisher_metadata']['journal']} {collection['publisher_metadata']['published_year']}"
+        formatted_citation = "No Publication" if collection["publisher_metadata"]["is_preprint"] else citation
+        return formatted_citation
+
+    dataset_dict = {}
+    for dataset in datasets:
+        dataset_id = dataset["dataset_id"]
+        collection = collections_dict[dataset["collection_id"]]
+        dataset_dict[dataset_id] = create_formatted_citation(collection)
+
+    return dataset_dict
