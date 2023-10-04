@@ -3,12 +3,13 @@ import { indexOf, toInteger } from "lodash";
 import { collapseTissue, expandTissue } from "tests/utils/helpers";
 import { conditionallyRunTests, goToWMG } from "tests/utils/wmgUtils";
 
+const FILTERED_TISSUES = ["abdomen", "axilla", "blood"];
 const TISSUE_NODE_TEST_ID = "tissue-name";
 const TISSUE_FILTER_LABEL = "Tissue";
 const TISSUE_FILTER_TEST_ID = "tissue-filter";
 const CELL_TYPE_FILTER_TEST_ID = "celltype-filter";
 const CELL_TYPE_FILTERS = ["B cell", "B-1a B cell", "B-1b B cell"];
-const FILTERED_TISSUES = ["abdomen", "axilla", "blood"];
+const CELL_TYPE_TEST_ID = "cell-type-name";
 
 const { describe } = test;
 
@@ -176,20 +177,20 @@ async function checkTissues(
   expandedTissues = filteredTissues
 ) {
   if (filteredTissues.length !== 0) {
-    await expect(page.getByTestId("tissue-name")).toHaveCount(
+    await expect(page.getByTestId(TISSUE_NODE_TEST_ID)).toHaveCount(
       filteredTissues.length
     );
   }
 
-  let i = 0;
+  let countExpanded = 0;
   for (const tissue of expandedTissues) {
     await expect(page.getByTestId(`cell-type-labels-${tissue}`)).toBeVisible();
     const height = await page
       .getByTestId(`cell-type-labels-${tissue}`)
       .getAttribute("height");
-    toInteger(height) > 20 && i++;
+    toInteger(height) > 20 && countExpanded++;
   }
-  await expect(i).toEqual(expandedTissues.length);
+  await expect(countExpanded).toEqual(expandedTissues.length);
 }
 
 /**
@@ -197,7 +198,9 @@ async function checkTissues(
  * Check that all cells under expanded tissues are 'B Cell'
  */
 async function checkCellTypes(page: Page, cellTypes = CELL_TYPE_FILTERS) {
-  const cells = await page.getByTestId("cell-type-name").allInnerTexts();
+  const cells = (
+    await page.getByTestId(CELL_TYPE_TEST_ID).allInnerTexts()
+  ).sort((a, b) => a.localeCompare(b));
   for (const cell of cells) {
     await expect(cell).toEqual(cellTypes[indexOf(cells, cell)]);
   }
@@ -208,5 +211,8 @@ async function checkCellTypes(page: Page, cellTypes = CELL_TYPE_FILTERS) {
  * Remove cell filter
  */
 async function removeCellFilter(page: Page) {
-  await page.getByTestId("CancelIcon").nth(0).click();
+  await await page
+    .getByTestId(`cell-type-tag-${CELL_TYPE_FILTERS[0]}`)
+    .getByTestId("CancelIcon")
+    .click();
 }
