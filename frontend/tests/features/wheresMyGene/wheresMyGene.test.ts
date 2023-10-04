@@ -700,30 +700,6 @@ async function clickUntilOptionsShowUp({
   );
 }
 
-async function clickUntilDownloadModalShowsUp({
-  page,
-  testId,
-  locator,
-}: {
-  page: Page;
-  testId?: string;
-  locator?: Locator;
-}) {
-  await tryUntil(
-    async () => {
-      if (testId) {
-        await page.getByTestId(testId).click();
-      } else if (locator) {
-        await locator.click();
-      } else {
-        throw Error(ERROR_NO_TESTID_OR_LOCATOR);
-      }
-      await page.locator(".bp4-dialog").elementHandle();
-    },
-    { page }
-  );
-}
-
 async function clickUntilSidebarShowsUp({
   page,
   testId,
