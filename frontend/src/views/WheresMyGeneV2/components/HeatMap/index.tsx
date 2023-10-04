@@ -11,11 +11,7 @@ import {
   useState,
 } from "react";
 
-import {
-  EMPTY_ARRAY,
-  EMPTY_OBJECT,
-  EMPTY_SET,
-} from "src/common/constants/utils";
+import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeRow,
   generateTermsByKey,
@@ -30,6 +26,7 @@ import {
 import {
   addCellInfoCellType,
   setFilteredCellTypes,
+  toggleExpandedTissueId,
 } from "src/views/WheresMyGene/common/store/actions";
 import {
   CellType,
@@ -39,7 +36,6 @@ import {
   Tissue,
 } from "src/views/WheresMyGene/common/types";
 import YAxisChart from "./components/YAxisChart";
-import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
 
 import {
   useSortedGeneNames,
@@ -64,8 +60,6 @@ import Loader from "src/views/WheresMyGene/components/Loader";
 import XAxisChart from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart";
 import Chart from "src/views/WheresMyGene/components/HeatMap/components/Chart";
 import { hyphenize } from "src/views/WheresMyGene/components/HeatMap/utils";
-import { track } from "src/common/analytics";
-import { EVENTS } from "src/common/analytics/events";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 import { Autocomplete, DefaultAutocompleteOption } from "@czi-sds/components";
 import {
@@ -74,6 +68,10 @@ import {
   TopLeftCornerMask,
   XAxisWrapper,
 } from "./style";
+import {
+  useHandleExpandedTissueIds,
+  useTrackHeatMapLoaded,
+} from "src/views/WheresMyGeneV2/components/HeatMap/hooks";
 
 interface Props {
   className?: string;
@@ -101,8 +99,6 @@ interface Props {
       [name: string]: OntologyTerm;
     }>
   >;
-  expandedTissues: Set<string>;
-  setExpandedTissues: Dispatch<SetStateAction<Set<string>>>;
   sidebarWidth: number;
 }
 
@@ -122,8 +118,6 @@ export default memo(function HeatMap({
   setAllChartProps,
   tissuesByName,
   setTissuesByName,
-  expandedTissues,
-  setExpandedTissues,
   sidebarWidth,
 }: Props): JSX.Element {
   const {
@@ -131,6 +125,7 @@ export default memo(function HeatMap({
     selectedFilters: { tissues: filteredTissueIds },
     filteredCellTypes,
     filteredCellTypeIds,
+    expandedTissueIds,
   } = useContext(StateContext);
 
   const selectedCellTypeOptions = useMemo(() => {
@@ -172,8 +167,7 @@ export default memo(function HeatMap({
   }, [cellTypes]);
 
   const generateMarkerGenes = (cellType: CellType, tissueID: string) => {
-    if (!dispatch) return;
-    dispatch(addCellInfoCellType({ cellType, tissueID }));
+    dispatch?.(addCellInfoCellType({ cellType, tissueID }));
   };
 
   const tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap =
@@ -224,71 +218,71 @@ export default memo(function HeatMap({
     return result;
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
 
-  const initialDisplayedCellTypeIds = useMemo(() => {
-    return Object.values(tissuesByName).reduce((acc, { id }) => {
-      if (
-        (filteredTissueIds.length > 0 && filteredTissueIds.includes(id)) ||
-        filteredTissueIds.length === 0
-      ) {
-        acc.add(id + id);
-      }
-      return acc;
-    }, new Set<string>());
-  }, [tissuesByName, filteredTissueIds]);
+  /**
+   * (thuang): Tissues to display after applying filters
+   */
+  const displayedTissues = useMemo(() => {
+    return Object.values(tissuesByName)
+      .filter(({ id }) => {
+        return !filteredTissueIds.length || filteredTissueIds.includes(id);
+      })
+      .filter(({ name }) => {
+        if (!filteredCellTypes.length) return true;
 
-  // set of tissue names that are visible and set of cell types that are visible
-  // presence is visible
-  const [displayedCellTypes, setDisplayedCellTypes] = useState<Set<string>>(
-    initialDisplayedCellTypeIds
-  );
+        const tissueCellTypes = sortedCellTypesByTissueName[name];
 
-  useEffect(() => {
-    setDisplayedCellTypes(initialDisplayedCellTypeIds);
-  }, [initialDisplayedCellTypeIds]);
-
-  const handleExpandCollapse = useCallback(
-    (tissueID: string, tissueName: Tissue) => {
-      const newDisplayedCellTypes = new Set<string>(displayedCellTypes);
-      const newExpandedTissues = new Set<string>(expandedTissues);
-      let addedTissue = false;
-
-      if (expandedTissues.has(tissueID)) {
-        newExpandedTissues.delete(tissueID);
-      } else {
-        newExpandedTissues.add(tissueID);
-        addedTissue = true;
-        track(EVENTS.WMG_TISSUE_EXPAND, { tissue: tissueName });
-      }
-      if (addedTissue) {
-        sortedCellTypesByTissueName[tissueName].forEach((cellType) => {
-          if (
-            filteredCellTypes.length == 0 ||
-            (filteredCellTypes.length > 0 &&
-              filteredCellTypes.includes(cellType.cellTypeName))
-          )
-            newDisplayedCellTypes.add(tissueID + cellType.cellTypeName);
+        return tissueCellTypes?.some((cellType) => {
+          return filteredCellTypes.includes(cellType.cellTypeName);
         });
-      } else {
-        [...newDisplayedCellTypes].forEach((cellType) => {
+      });
+  }, [
+    filteredTissueIds,
+    filteredCellTypes,
+    sortedCellTypesByTissueName,
+    tissuesByName,
+  ]);
+
+  const displayedTissueIds = useMemo(() => {
+    return displayedTissues.map(({ id }) => id);
+  }, [displayedTissues]);
+
+  /**
+   * (thuang): Derive displayed cell types from `displayedTissues`,
+   * `expandedTissueIds`, and `filteredCellTypes`
+   */
+  const displayedCellTypes = useMemo(() => {
+    const result = new Set<string>();
+
+    displayedTissues.forEach(({ id, name }) => {
+      result.add(id + id);
+
+      if (expandedTissueIds.includes(id)) {
+        const tissueCellTypes = sortedCellTypesByTissueName[name];
+
+        tissueCellTypes?.forEach((cellType) => {
           if (
-            cellType.includes(tissueID) &&
-            cellType !== `${tissueID}${tissueID}`
+            !filteredCellTypes.length ||
+            filteredCellTypes.includes(cellType.cellTypeName)
           ) {
-            newDisplayedCellTypes.delete(cellType);
+            result.add(id + cellType.cellTypeName);
           }
         });
       }
+    });
 
-      setDisplayedCellTypes(newDisplayedCellTypes);
-      setExpandedTissues(newExpandedTissues);
+    return result;
+  }, [
+    displayedTissues,
+    expandedTissueIds,
+    filteredCellTypes,
+    sortedCellTypesByTissueName,
+  ]);
+
+  const handleExpandCollapse = useCallback(
+    (tissueId: string, tissueName: Tissue) => {
+      dispatch?.(toggleExpandedTissueId({ tissueId, tissueName }));
     },
-    [
-      displayedCellTypes,
-      expandedTissues,
-      setExpandedTissues,
-      sortedCellTypesByTissueName,
-      filteredCellTypes,
-    ]
+    [dispatch]
   );
 
   const uniqueCellTypes = useMemo(() => {
@@ -305,83 +299,21 @@ export default memo(function HeatMap({
     _: unknown,
     rawNewFilteredCellTypes: DefaultAutocompleteOption[]
   ) => {
-    if (!dispatch) return;
-
     const cellTypeNames = rawNewFilteredCellTypes.map(
       (cellType) => cellType.name
     );
     const cellTypeIds = cellTypeNames.map((name) => cellTypesByName[name].id);
 
-    dispatch(
+    dispatch?.(
       setFilteredCellTypes({
         filteredCellTypes: cellTypeNames,
         filteredCellTypeIds: cellTypeIds,
+        displayedTissueIds,
       })
     );
   };
-  useEffect(() => {
-    if (filteredCellTypes.length === 0) {
-      setDisplayedCellTypes(initialDisplayedCellTypeIds);
-      setExpandedTissues(EMPTY_SET as Set<string>);
-    }
-  }, [
-    filteredCellTypes.length,
-    initialDisplayedCellTypeIds,
-    setExpandedTissues,
-  ]);
-
-  // Reset `displayedCellTypes` and `expandedTissues` when the user clears `filteredCellTypes`
-  useEffect(() => {
-    if (filteredCellTypes.length === 0) {
-      // This is handled in the above useEffect, but we need to return early here so we don't do the work below
-      return;
-    }
-
-    const newDisplayedCellTypes = new Set<string>();
-    const newExpandedTissues = new Set<string>();
-
-    Object.entries(sortedCellTypesByTissueName).forEach(
-      ([tissue, cellTypes]) => {
-        if (
-          filteredTissueIds.length > 0 &&
-          !filteredTissueIds.includes(tissuesByName[tissue].id)
-        ) {
-          return;
-        }
-
-        cellTypes.forEach((cellType) => {
-          if (filteredCellTypes.includes(cellType.name)) {
-            newDisplayedCellTypes.add(
-              tissuesByName[tissue].id + tissuesByName[tissue].id
-            );
-            newDisplayedCellTypes.add(tissuesByName[tissue].id + cellType.name);
-            newExpandedTissues.add(tissuesByName[tissue].id);
-          }
-        });
-      }
-    );
-    const filteredCellTypeIds = filteredCellTypes.map(
-      (cellType) => cellTypesByName[cellType].id
-    );
-    track(EVENTS.WMG_SELECT_CELL_TYPE, {
-      cell_types: filteredCellTypeIds,
-    });
-
-    setDisplayedCellTypes(newDisplayedCellTypes);
-    setExpandedTissues(newExpandedTissues);
-  }, [
-    cellTypesByName,
-    filteredCellTypes,
-    filteredCellTypeIds,
-    filteredTissueIds,
-    initialDisplayedCellTypeIds,
-    setExpandedTissues,
-    sortedCellTypesByTissueName,
-    tissuesByName,
-  ]);
 
   const handleCellTypeDelete = (cellTypeNameToDelete: string) => () => {
-    if (!dispatch) return;
     const cellTypeIdToDelete = cellTypesByName[cellTypeNameToDelete].id;
     const newCellTypeNames = filteredCellTypes.filter(
       (cellType) => !(cellTypeNameToDelete === cellType)
@@ -390,10 +322,11 @@ export default memo(function HeatMap({
       (cellTypeId) => !(cellTypeIdToDelete === cellTypeId)
     );
 
-    dispatch(
+    dispatch?.(
       setFilteredCellTypes({
         filteredCellTypes: newCellTypeNames,
         filteredCellTypeIds: newCellTypeIds,
+        displayedTissueIds,
       })
     );
   };
@@ -404,11 +337,18 @@ export default memo(function HeatMap({
     selectedCellTypes: filteredCellTypes,
   });
 
+  useHandleExpandedTissueIds({
+    filteredCellTypeIds,
+    filteredTissueIds,
+    displayedTissueIds,
+    dispatch,
+  });
+
   /**
    * All tissue cell types to render in YAxisCharts
    */
   const allTissueCellTypes = useMemo(() => {
-    return Object.values(tissuesByName)
+    return displayedTissues
       .sort((a, b) => {
         // sort tissues alphabetically
         return a.name.localeCompare(b.name);
@@ -430,18 +370,21 @@ export default memo(function HeatMap({
         };
       });
   }, [
-    tissuesByName,
     cellTypeSortBy,
     cellTypes,
     sortedCellTypesByTissueName,
     displayedCellTypes,
+    displayedTissues,
   ]);
 
   return (
     <>
       <ContainerWrapper>
         <TopLeftCornerMask height={xAxisHeight}>
-          <CellTypeFilterContainer id="celltype-filter-container">
+          <CellTypeFilterContainer
+            id="celltype-filter-container"
+            data-testid="celltype-filter"
+          >
             <Autocomplete
               className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
               data-testid="cell-type-search"
@@ -478,26 +421,21 @@ export default memo(function HeatMap({
             {allTissueCellTypes.map(
               ({ tissueId, tissueName, tissueCellTypes }) => {
                 return (
-                  tissueCellTypes.length > 0 && (
-                    <YAxisChart
-                      key={tissueName}
-                      tissue={tissueName}
-                      tissueID={tissueId}
-                      cellTypes={tissueCellTypes}
-                      generateMarkerGenes={generateMarkerGenes}
-                      expandedTissues={expandedTissues}
-                      handleExpandCollapse={handleExpandCollapse}
-                    />
-                  )
+                  <YAxisChart
+                    key={tissueName}
+                    tissue={tissueName}
+                    tissueID={tissueId}
+                    cellTypes={tissueCellTypes}
+                    generateMarkerGenes={generateMarkerGenes}
+                    expandedTissueIds={expandedTissueIds}
+                    handleExpandCollapse={handleExpandCollapse}
+                  />
                 );
               }
             )}
           </YAxisWrapper>
           <ChartWrapper ref={chartWrapperRef} top={xAxisHeight}>
             {allTissueCellTypes.map(({ tissueName, tissueCellTypes }) => {
-              // Don't render anything if tissue has no cell types for some reason
-              if (!tissueCellTypes.length) return;
-
               const selectedGeneData =
                 orderedSelectedGeneExpressionSummariesByTissueName[tissueName];
 
@@ -510,6 +448,7 @@ export default memo(function HeatMap({
                 const height =
                   document.getElementById(`${hyphenize(tissueName)}-y-axis`)
                     ?.clientHeight ?? 0;
+
                 return (
                   <div
                     id={`no-chart-data-${hyphenize(tissueName)}`} // Not used, just to make it stand out
