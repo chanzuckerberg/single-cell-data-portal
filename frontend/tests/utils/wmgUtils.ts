@@ -104,14 +104,15 @@ export async function searchAndAddTissue(page: Page, tissueName: string) {
     async () => {
       await page.getByTestId(ADD_TISSUE_ID).getByRole("button").first().click();
       await page.getByRole("tooltip").waitFor();
+      await page.getByRole("tooltip").getByText(tissueName).first().click();
+      // close dropdown
+      await page.keyboard.press("Escape");
+      await expect(
+        page.getByTestId(ADD_TISSUE_ID).getByText(tissueName)
+      ).toBeVisible();
     },
     { page }
   );
-
-  await page.getByRole("tooltip").getByText(tissueName).first().click();
-
-  // close dropdown
-  await page.keyboard.press("Escape");
 }
 
 export async function addTissuesAndGenes(
@@ -119,7 +120,7 @@ export async function addTissuesAndGenes(
   tissueNames: string[],
   genes: string[]
 ) {
-  for await (const tissueName of tissueNames) {
+  for (const tissueName of tissueNames) {
     await searchAndAddTissue(page, tissueName);
   }
   for await (const gene of genes) {
