@@ -12,9 +12,7 @@ import {
 } from "tests/utils/helpers";
 import { TEST_URL } from "../../common/constants";
 import { TISSUE_DENY_LIST } from "../../fixtures/wheresMyGene/tissueRollup";
-import fs from "fs";
-import { parse } from "csv-parse/sync";
-import AdmZip from "adm-zip";
+
 import {
   WMG_WITH_SEEDED_GENES,
   goToWMG,
@@ -23,7 +21,7 @@ import {
   searchAndAddFilterCellType,
   waitForHeatmapToRender,
 } from "tests/utils/wmgUtils";
-import { getCurrentDate } from "tests/utils/downloadUtils";
+
 import { addGene, searchAndAddGene } from "tests/utils/geneUtils";
 import {
   CELL_TYPE_NAME_LABEL_CLASS_NAME,
@@ -38,7 +36,6 @@ const TISSUE_LABELS_ID = TISSUE_NAME_LABEL_CLASS_NAME;
 const ADD_GENE_ID = "add-gene-btn";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
 const SOURCE_DATA_LIST_SELECTOR = `[data-testid="source-data-list"]`;
-const DOWNLOAD_BUTTON_ID = "download-button";
 
 // FMG test IDs
 const ADD_TO_DOT_PLOT_BUTTON_TEST_ID = "add-to-dotplot-fmg-button";
@@ -56,20 +53,11 @@ const GENE_INFO_CLOSE_BUTTON_SPLIT_TEST_ID = "gene-info-close-button-split";
 const RIGHT_SIDEBAR_CLOSE_BUTTON_TEST_ID = "right-sidebar-close-button";
 const GENE_INFO_BUTTON_CELL_INFO_TEST_ID = "gene-info-button-cell-info";
 
-// Export constants
-const CSV_START_FROM_ROW_NUM = 10; // This is the number of metadata rows + 1
-const PNG_CHECKBOX_ID = "png-checkbox";
-const CSV_CHECKBOX_ID = "csv-checkbox";
-const SVG_CHECKBOX_ID = "svg-checkbox";
-const DIALOG_DOWNLOAD_BUTTON_ID = "dialog-download-button";
-
 const MUI_CHIP_ROOT = ".MuiChip-root";
 
 const CELL_TYPE_SANITY_CHECK_NUMBER = 100;
 
 const COMPARE_DROPDOWN_ID = "compare-dropdown";
-
-const EXPORT_OUTPUT_DIR = "playwright-report/";
 
 const FILTERS_PANEL = "filters-panel";
 
@@ -708,30 +696,6 @@ async function clickUntilOptionsShowUp({
   );
 }
 
-async function clickUntilDownloadModalShowsUp({
-  page,
-  testId,
-  locator,
-}: {
-  page: Page;
-  testId?: string;
-  locator?: Locator;
-}) {
-  await tryUntil(
-    async () => {
-      if (testId) {
-        await page.getByTestId(testId).click();
-      } else if (locator) {
-        await locator.click();
-      } else {
-        throw Error(ERROR_NO_TESTID_OR_LOCATOR);
-      }
-      await page.locator(".bp4-dialog").elementHandle();
-    },
-    { page }
-  );
-}
-
 async function clickUntilSidebarShowsUp({
   page,
   testId,
@@ -843,10 +807,6 @@ async function getGeneNames(page: Page) {
 
 async function getCellTypeNames(page: Page) {
   return getNames({ page, testId: CELL_TYPE_LABELS_ID });
-}
-
-async function getTissueNames(page: Page) {
-  return getNames({ page, testId: TISSUE_LABELS_ID });
 }
 
 // (alec) use this instead of locator.count() to make sure that the element is actually present

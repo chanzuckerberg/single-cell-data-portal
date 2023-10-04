@@ -4,7 +4,6 @@ import {
 } from "@aws-sdk/client-secrets-manager";
 import {
   APIRequestContext,
-  APIResponse,
   ElementHandle,
   expect,
   Locator,
