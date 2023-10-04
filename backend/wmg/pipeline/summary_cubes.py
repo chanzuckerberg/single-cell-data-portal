@@ -22,7 +22,14 @@ from backend.wmg.data.schemas.cube_schema import (
     expression_summary_non_indexed_dims,
     expression_summary_schema,
 )
-from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME
+from backend.wmg.data.schemas.cube_schema_default import (
+    expression_summary_indexed_dims as expression_summary_indexed_dims_default,
+)
+from backend.wmg.data.schemas.cube_schema_default import (
+    expression_summary_non_indexed_dims as expression_summary_non_indexed_dims_default,
+)
+from backend.wmg.data.schemas.cube_schema_default import expression_summary_schema as expression_summary_schema_default
+from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME, EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import create_empty_cube, log_func_runtime
 from backend.wmg.pipeline.summary_cubes.cell_count import remove_accents, return_dataset_dict_w_publications
@@ -57,7 +64,7 @@ def gene_expression_sum_x_cube_dimension(
             nnz_into[grp_idx, cidx] += 1
 
 
-class ExpressionSummaryBuilder:
+class SummaryCubesBuilder:
     def __init__(self, *, corpus_path: str, organismInfo: dict):
         organism = organismInfo["label"]
         organismId = organismInfo["id"]
@@ -112,11 +119,35 @@ class ExpressionSummaryBuilder:
 
         self.expression_summary_cube_created = True
 
+    @log_func_runtime
     def create_expression_summary_default_cube(self):
         if not self.expression_summary_cube_created:
             raise ValueError(
                 "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
             )
+
+        expression_summary_uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
+        expression_summary_default_uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"
+
+        ctx = create_ctx()
+        with tiledb.scope_ctx(ctx):
+            dfs = []
+            with tiledb.open(expression_summary_uri, "r") as cube:
+                for row in cube.query(return_incomplete=True).df[:]:
+                    dfs.append(row)
+            expression_summary_df = pd.concat(dfs, axis=0)
+
+            expression_summary_df_default = (
+                expression_summary_df.groupby(
+                    expression_summary_indexed_dims_default + expression_summary_non_indexed_dims_default
+                )
+                .sum(numeric_only=True)
+                .reset_index()
+            )
+
+            if not os.path.exists(expression_summary_default_uri):
+                create_empty_cube(expression_summary_default_uri, expression_summary_schema_default)
+            tiledb.from_pandas(expression_summary_default_uri, expression_summary_df_default, mode="append")
 
     @log_func_runtime
     def _summarize_gene_expressions(self, *, cube_dims: list, schema: tiledb.ArraySchema):
@@ -184,14 +215,6 @@ class ExpressionSummaryBuilder:
     ) -> None:
         with cellxgene_census.open_soma(
             census_version=self.census_version,
-            context=soma.SOMATileDBContext(
-                tiledb_ctx=tiledb.Ctx(
-                    {
-                        "py.init_buffer_bytes": 1 * 1024**3,
-                        "soma.init_buffer_bytes": 1 * 1024**3,
-                    }
-                )
-            ),
         ) as census:
             organism = census["census_data"][self.organism]
             row_stride = 50_000
