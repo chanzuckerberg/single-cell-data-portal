@@ -211,7 +211,7 @@ async function checkCellTypes(page: Page, cellTypes = CELL_TYPE_FILTERS) {
  * Remove cell filter
  */
 async function removeCellFilter(page: Page) {
-  await await page
+  await page
     .getByTestId(`cell-type-tag-${CELL_TYPE_FILTERS[0]}`)
     .getByTestId("CancelIcon")
     .click();
