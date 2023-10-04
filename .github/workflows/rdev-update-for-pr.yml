@@ -65,7 +65,7 @@ jobs:
           echo "BRANCH_TAG=branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')" >> envfile
           happy push devstack --env dev --slice ${{ matrix.image }} \
           --docker-compose-env-file envfile --aws-profile "" \
-          --tags ${STACK_NAME},${{ env.BRANCH_TAG }} | sed 's/[\+\/]/-/g')
+          --tags ${STACK_NAME},${{ env.BRANCH_TAG }}
 
   deploy-rdev:
     runs-on: ubuntu-22.04
