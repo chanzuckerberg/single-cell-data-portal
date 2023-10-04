@@ -397,12 +397,12 @@ export default memo(function HeatMap({
             />
             <CellTypeTagContainer>
               {filteredCellTypes.map((cellType) => (
-                <StyledTag
-                  label={cellType}
-                  key={cellType}
-                  onDelete={handleCellTypeDelete(cellType)}
-                  data-testid={`cell-type-tag-${cellType}`}
-                />
+                <span key={cellType} data-testid={`cell-type-tag-${cellType}`}>
+                  <StyledTag
+                    label={cellType}
+                    onDelete={handleCellTypeDelete(cellType)}
+                  />
+                </span>
               ))}
             </CellTypeTagContainer>
           </CellTypeFilterContainer>

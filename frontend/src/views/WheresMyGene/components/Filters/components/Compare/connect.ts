@@ -2,7 +2,7 @@ import {
   DefaultDropdownMenuOption,
   InputDropdownProps as IInputDropdownProps,
 } from "@czi-sds/components";
-import { useCallback, useContext, useMemo } from "react";
+import { useCallback, useContext, useMemo, useRef } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { COMPARE_OPTIONS } from "src/views/WheresMyGene/common/constants";
@@ -30,23 +30,37 @@ export const useConnect = ({ areFiltersDisabled }: Props) => {
     [areFiltersDisabled]
   );
 
-  const optionLabel = useMemo(() => {
+  const optionLabel: DefaultDropdownMenuOption | undefined = useMemo(() => {
     return COMPARE_OPTIONS.find((option) => option.id === compare);
   }, [compare]);
 
+  const optionLabelRef = useRef<DefaultDropdownMenuOption | undefined>(
+    optionLabel
+  );
+
+  /**
+   * TEMP FIX
+   * Warning(thuang): `handleChange` CANNOT depend on `optionLabel`, since a new
+   * handleChange passed to SDS Dropdown will trigger another onChange event with the old value,
+   * causing infinite loop
+   */
   const handleChange = useCallback(
     (value: DefaultDropdownMenuOption | null) => {
-      if (!dispatch || !value || optionLabel === value) return;
+      if (!dispatch || !value || optionLabelRef.current === value) return;
+
       track(EVENTS.WMG_OPTION_SELECT_GROUP_BY, {
         group_by_option: value.name,
       });
+
+      optionLabelRef.current = value;
+
       dispatch(
         selectCompare(
           (value as (typeof COMPARE_OPTIONS)[number]).id as State["compare"]
         )
       );
     },
-    [dispatch, optionLabel]
+    [dispatch, optionLabelRef]
   );
   return {
     handleChange,
