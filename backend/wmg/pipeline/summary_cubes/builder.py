@@ -89,9 +89,10 @@ class SummaryCubesBuilder:
             organismInfo (dict): Information about the organism.
                 ex:
                 organismInfo = {
-                    "id": "UBERON:0000955",
-                    "label": "brain",
+                    "id": "NCBITaxon:9606",
+                    "label": "homo_sapiens",
                 }
+                Note that "label" should be the organism label used by census.
         """
         organism = organismInfo["label"]
         organismId = organismInfo["id"]
@@ -227,7 +228,7 @@ class SummaryCubesBuilder:
             tiledb.from_pandas(expression_summary_fmg_uri, expression_summary_df_fmg, mode="append")
 
     @log_func_runtime
-    def _summarize_gene_expressions(self, *, cube_dims: list, schema: tiledb.ArraySchema):
+    def _summarize_gene_expressions(self, *, cube_dims: list, schema: tiledb.ArraySchema) -> tuple[list, dict]:
         """
         Summarize gene expressions for each row/combination of cell attributes.
 
@@ -236,7 +237,7 @@ class SummaryCubesBuilder:
             schema (tiledb.ArraySchema): The schema of the cube.
 
         Returns:
-            tuple: A tuple containing the dimensions and values of the cube.
+            tuple: A tuple containing the dimensions (list) and values (keys) of the cube.
         """
         cube_index, cell_labels = self._make_cube_index(
             cube_dims=[dim for dim in cube_dims if dim != "publication_citation"]
