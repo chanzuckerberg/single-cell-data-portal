@@ -62,9 +62,10 @@ jobs:
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
+          echo "BRANCH_TAG=branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')" >> envfile
           happy push devstack --env dev --slice ${{ matrix.image }} \
           --docker-compose-env-file envfile --aws-profile "" \
-          --tags ${STACK_NAME},branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
+          --tags ${STACK_NAME},${{ env.BRANCH_TAG }} | sed 's/[\+\/]/-/g')
 
   deploy-rdev:
     runs-on: ubuntu-22.04
@@ -93,7 +94,7 @@ jobs:
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ env.STACK_NAME }}
-          tag: ${{ steps.pre_happy.outputs.IMAGE_TAG }}
+          tag: ${{ env.BRANCH_TAG }}
           happy_version: "0.92.0"
 
   summarize:
