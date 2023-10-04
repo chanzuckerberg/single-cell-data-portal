@@ -11,10 +11,6 @@ from tiledb import Array
 
 from backend.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
-from backend.wmg.data.schemas.corpus_schema import (
-    DATASET_TO_GENE_IDS_NAME,
-    FILTER_RELATIONSHIPS_NAME,
-)
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import get_datasets_from_curation_api
 
@@ -26,8 +22,8 @@ EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME = "expression_summary_default"
 EXPRESSION_SUMMARY_FMG_CUBE_NAME = "expression_summary_fmg"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
 MARKER_GENES_CUBE_NAME = "marker_genes"
-DATASET_TO_GENE_IDS_FILENAME = f"{DATASET_TO_GENE_IDS_NAME}.json"
-FILTER_RELATIONSHIPS_FILENAME = f"{FILTER_RELATIONSHIPS_NAME}.json"
+DATASET_TO_GENE_IDS_FILENAME = "dataset_to_gene_ids.json"
+FILTER_RELATIONSHIPS_FILENAME = "filter_relationships.json"
 DATASET_METADATA_FILENAME = "dataset_metadata.json"
 
 STACK_NAME = os.environ.get("REMOTE_DEV_PREFIX")
