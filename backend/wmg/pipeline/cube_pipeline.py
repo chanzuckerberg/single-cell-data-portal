@@ -15,6 +15,7 @@ from backend.wmg.data.schemas.data_schema_config import WMG_DATA_SCHEMA_VERSION
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, EXPRESSION_SUMMARY_CUBE_NAME
 from backend.wmg.data.transform import (
     cell_type_ordering_create_file,
+    generate_dataset_metadata_file,
     generate_primary_filter_dimensions,
 )
 from backend.wmg.data.utils import (
@@ -62,6 +63,7 @@ def load_data_and_create_cube(
         cell_count=get_cell_count_cube_count(f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}"),
     )
     cell_type_ordering_create_file(corpus_path)
+    generate_dataset_metadata_file(corpus_path)
     generate_primary_filter_dimensions(corpus_path, snapshot_id)
 
     cube_data_s3_path = upload_artifacts_to_s3(

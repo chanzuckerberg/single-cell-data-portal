@@ -19,6 +19,8 @@ import {
   conditionallyRunTests,
   goToWMG,
   goToWMGWithSeededState,
+  removeFilteredCellType,
+  searchAndAddFilterCellType,
   waitForHeatmapToRender,
 } from "tests/utils/wmgUtils";
 import { getCurrentDate } from "tests/utils/downloadUtils";
@@ -157,11 +159,12 @@ describe("Where's My Gene", () => {
       page,
       locator: getDiseaseSelectorButton(),
     });
-    const datasetOptions = await page
+
+    const diseaseOption = await page
       .getByRole("option")
-      .getByText("acute kidney failure")
-      .elementHandles();
-    await datasetOptions[0].click();
+      .getByText("acute kidney failure");
+
+    await diseaseOption.click();
     await page.keyboard.press("Escape");
 
     // wait for spinner to disappear, coincides with y-axis update
@@ -854,6 +857,22 @@ describe("Where's My Gene", () => {
       },
       { page }
     );
+  });
+  describe("Cell Type Filtering", () => {
+    test("Filter to multiple cell types and then clear", async ({ page }) => {
+      const CELL_TYPE_NAMES = ["B cell", "T cell", "PP cell"];
+
+      await goToWMG(page);
+      await waitForLoadingSpinnerToResolve(page);
+
+      for (const cellTypeName of CELL_TYPE_NAMES) {
+        await searchAndAddFilterCellType(page, cellTypeName);
+      }
+
+      for (const cellTypeName of CELL_TYPE_NAMES) {
+        await removeFilteredCellType(page, cellTypeName);
+      }
+    });
   });
 });
 

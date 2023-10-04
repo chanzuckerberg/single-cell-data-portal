@@ -25,15 +25,10 @@ export const getServerSideProps: GetServerSideProps<{
 }> = async (context) => {
   const { params } = context;
   const { cellTypeId: rawCellTypeId } = params ?? {};
-  const cellType = await fetchGptSeoDescription(rawCellTypeId as string);
+  const seoDescription = await fetchGptSeoDescription(rawCellTypeId as string);
   const cellTypeMetadata = await fetchCellTypeMetadata();
   const cellTypeId = (rawCellTypeId as string).replace("_", ":");
-  const synonyms = cellTypeMetadata[cellTypeId].synonyms;
-  const { name, description: seoDescription } = cellType ?? {
-    name: "",
-    description: "",
-  };
-
+  const { synonyms, name } = cellTypeMetadata[cellTypeId];
   return { props: { seoDescription, name, synonyms } };
 };
 

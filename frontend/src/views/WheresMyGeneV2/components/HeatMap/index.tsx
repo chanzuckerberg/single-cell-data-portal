@@ -444,6 +444,7 @@ export default memo(function HeatMap({
           <CellTypeFilterContainer id="celltype-filter-container">
             <Autocomplete
               className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+              data-testid="cell-type-search"
               multiple
               label="Search cell types"
               value={selectedCellTypeOptions}
@@ -457,6 +458,7 @@ export default memo(function HeatMap({
                   label={cellType}
                   key={cellType}
                   onDelete={handleCellTypeDelete(cellType)}
+                  data-testid={`cell-type-tag-${cellType}`}
                 />
               ))}
             </CellTypeTagContainer>

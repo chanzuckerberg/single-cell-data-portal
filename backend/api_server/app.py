@@ -5,6 +5,8 @@ from urllib.parse import urlparse
 
 import connexion
 from connexion import FlaskApi, ProblemException, problem
+from ddtrace import patch_all, tracer
+from ddtrace.filters import FilterRequestsOnUrl
 from flask import Response, g, request
 from flask_cors import CORS
 from server_timing import Timing as ServerTiming
@@ -21,6 +23,31 @@ APP_NAME = "{}-{}".format(os.environ.get("APP_NAME", "api"), DEPLOYMENT_STAGE)
 
 
 configure_logging(APP_NAME)
+
+
+def should_configure_datadog_tracing():
+    return (
+        DEPLOYMENT_STAGE in ["dev", "staging", "prod"]
+        and os.environ.get("DD_AGENT_HOST", None)
+        and os.environ.get("DD_TRACE_AGENT_PORT", None)
+    )
+
+
+if should_configure_datadog_tracing():
+    # Datadog APM tracing
+    # See https://ddtrace.readthedocs.io/en/stable/basic_usage.html#patch-all
+
+    tracer.configure(
+        hostname=os.environ["DD_AGENT_HOST"],
+        port=os.environ["DD_TRACE_AGENT_PORT"],
+        # Filter out health check endpoint (index page: '/')
+        settings={
+            "FILTERS": [
+                FilterRequestsOnUrl([r"http://.*/$"]),
+            ],
+        },
+    )
+    patch_all()
 
 
 def create_flask_app():

@@ -13,6 +13,7 @@ const MARKER_GENE_BUTTON_ID = "marker-gene-button";
 const REGEX = /^\d+\.?\d{0,2}$/;
 
 export const ADD_GENE_SEARCH_PLACEHOLDER_TEXT = "Add Genes";
+export const CELL_TYPE_SEARCH_PLACEHOLDER_TEXT = "Search cell types";
 
 export async function addGene(page: Page, geneName: string) {
   await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).type(geneName);
@@ -26,6 +27,7 @@ export async function searchAndAddGene(page: Page, geneName: string) {
   await goToWMG(page);
   await addGene(page, geneName);
 }
+
 export async function verifyAddedTissue(page: Page, tissue: string) {
   // selected tissue should be visible
   await expect(page.getByTestId(`cell-type-labels-${tissue}`)).toBeVisible();
