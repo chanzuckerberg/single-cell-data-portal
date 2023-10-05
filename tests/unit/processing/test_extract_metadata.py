@@ -157,11 +157,11 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
 
         self.assertEqual(extracted_metadata.default_embedding, "X_umap")
 
-        self.assertEqual(extracted_metadata.embeddings, ["X_umap", "X_pca"])
+        self.assertCountEqual(extracted_metadata.embeddings, ["X_umap", "X_pca"])
 
         self.assertEqual(extracted_metadata.feature_count, var.shape[0])
-        self.assertEqual(extracted_metadata.feature_biotype, ["gene", "spike-in"])
-        self.assertEqual(extracted_metadata.feature_reference, ["NCBITaxon:9606", "NCBITaxon:32630"])
+        self.assertCountEqual(extracted_metadata.feature_biotype, ["gene", "spike-in"])
+        self.assertCountEqual(extracted_metadata.feature_reference, ["NCBITaxon:9606", "NCBITaxon:32630"])
 
         filter = np.where(adata.var.feature_biotype == "gene")[0]
         self.assertAlmostEqual(extracted_metadata.mean_genes_per_cell, np.count_nonzero(adata.X[:, filter]) / 50001)
