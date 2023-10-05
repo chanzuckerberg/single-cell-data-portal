@@ -1,0 +1,122 @@
+  pw:api => selectors.setTestIdAttribute started +344ms
+  pw:api => browser.newContext started +5ms
+  pw:api <= selectors.setTestIdAttribute succeeded +1ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +42ms
+  pw:api   "commit" event fired +14ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "domcontentloaded" event fired +4ms
+  pw:api   "load" event fired +1ms
+  pw:api <= browser.newContext succeeded +9ms
+  pw:api => tracing.start started +5ms
+  pw:api <= tracing.start succeeded +2ms
+  pw:api => browserContext.newPage started +2ms
+  pw:api <= browserContext.newPage succeeded +40ms
+  pw:api => page.goto started +3ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +27ms
+  pw:api   "commit" event fired +156ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +3s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +3s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +14ms
+  pw:api   navigated to "about:blank" +39ms
+  pw:api <= page.goto succeeded +105ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api <= locator.elementHandles succeeded +884ms
+  pw:api => page.waitForTimeout started +5ms
+  pw:api <= page.waitForTimeout succeeded +294ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +88ms
+  pw:api => page.waitForTimeout started +4ms
+  pw:api <= page.waitForTimeout succeeded +284ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +41ms
+  pw:api => page.waitForTimeout started +6ms
+  pw:api <= page.waitForTimeout succeeded +218ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +6ms
+  pw:api => page.waitForTimeout started +6ms
+  pw:api <= page.waitForTimeout succeeded +262ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +11ms
+  pw:api => page.waitForTimeout started +8ms
+  pw:api <= page.waitForTimeout succeeded +242ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api <= locator.elementHandles succeeded +10ms
+  pw:api => page.waitForTimeout started +8ms
+  pw:api <= page.waitForTimeout succeeded +225ms
+  pw:api => locator.elementHandles started +0ms
+  pw:api <= locator.elementHandles succeeded +21ms
+  pw:api => page.waitForTimeout started +2ms
+  pw:api <= page.waitForTimeout succeeded +228ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +16ms
+  pw:api => page.waitForTimeout started +2ms
+  pw:api <= page.waitForTimeout succeeded +219ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +7ms
+  pw:api => page.waitForTimeout started +8ms
+  pw:api <= page.waitForTimeout succeeded +407ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +143ms
+  pw:api => locator.count started +3ms
+  pw:api   "networkidle" event fired +4ms
+  pw:api <= locator.count succeeded +1ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('cell-type-labels-lung').getByTestId('tissue-name') +10ms
+  pw:api   locator resolved to <div data-testid="tissue-name" class="tissue-name css…>Lung</div> +14ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +24ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +16ms
+  pw:api   click action done +669ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +6ms
+  pw:api <= locator.click succeeded +83ms
+  pw:api => locator.count started +2ms
+  pw:api <= locator.count succeeded +24ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +69ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +55ms
+  pw:api => locator.waitFor started +8ms
+  pw:api waiting for getByText('Loading').first() to be hidden +17ms
+  pw:api <= locator.waitFor succeeded +30ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +41ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +38ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +38ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +34ms
+  pw:api => locator.waitFor started +1ms
+  pw:api => locator.type started +1ms
+  pw:api waiting for getByText('Loading').first() to be hidden +17ms
+  pw:api waiting for getByPlaceholder('Add Genes') +19ms
+  pw:api   locator resolved to <input value="" id="mui-7" type="search" role="combobox…/> +16ms
+  pw:api <= locator.waitFor succeeded +13ms
+  pw:api elementHandle.type("MALAT1") +2ms
+  pw:api <= locator.type succeeded +1s
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByText('MALAT1') +18ms
+  pw:api   locator resolved to <div class="css-1iyoj2o">MALAT1</div> +13ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +21ms
+  pw:api   scrolling into view if needed +1ms
+  pw:api   done scrolling +0ms
+  pw:api   performing click action +43ms
+  pw:api   click action done +1s
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +115ms
+  pw:api <= locator.click succeeded +151ms
+  pw:api => keyboard.press started +2ms
+  pw:api <= keyboard.press succeeded +188ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +152ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +133ms
+  pw:api taking page screenshot +16ms
