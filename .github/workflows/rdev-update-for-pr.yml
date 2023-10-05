@@ -92,7 +92,7 @@ jobs:
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ env.STACK_NAME }}
-          tag: ${{ jobs.build_images.steps.push_images.outputs.IMAGE_TAG }}
+          tag: ${{ jobs.build_images.steps.push_images.outputs.image_tag }}
           happy_version: "0.110.1"
 
   summarize:
