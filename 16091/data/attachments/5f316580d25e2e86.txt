@@ -1,0 +1,183 @@
+  pw:api => selectors.setTestIdAttribute started +2s
+  pw:api => browser.newContext started +3ms
+  pw:api <= selectors.setTestIdAttribute succeeded +18ms
+  pw:api navigating to "https://localhost:3000/", waiting until "load" +55ms
+  pw:api   "commit" event fired +13ms
+  pw:api   navigated to "https://localhost:3000/" +0ms
+  pw:api   "domcontentloaded" event fired +1ms
+  pw:api   "load" event fired +1ms
+  pw:api <= browser.newContext succeeded +8ms
+  pw:api => tracing.start started +3ms
+  pw:api <= tracing.start succeeded +3ms
+  pw:api => browserContext.newPage started +2ms
+  pw:api <= browserContext.newPage succeeded +38ms
+  pw:api => page.goto started +2ms
+  pw:api navigating to "https://localhost:3000/gene-expression", waiting until "load" +4ms
+  pw:api   "commit" event fired +166ms
+  pw:api   navigated to "https://localhost:3000/gene-expression" +0ms
+  pw:api   "networkidle" event fired +4s
+  pw:api   "domcontentloaded" event fired +3s
+  pw:api   "load" event fired +2s
+  pw:api   navigated to "https://localhost:3000/gene-expression" +17ms
+  pw:api <= page.goto succeeded +175ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api   navigated to "about:blank" +181ms
+  pw:api <= locator.elementHandles succeeded +635ms
+  pw:api => page.waitForTimeout started +17ms
+  pw:api <= page.waitForTimeout succeeded +474ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +16ms
+  pw:api => page.waitForTimeout started +3ms
+  pw:api <= page.waitForTimeout succeeded +231ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +30ms
+  pw:api => page.waitForTimeout started +4ms
+  pw:api <= page.waitForTimeout succeeded +234ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +16ms
+  pw:api => page.waitForTimeout started +12ms
+  pw:api <= page.waitForTimeout succeeded +236ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +25ms
+  pw:api => page.waitForTimeout started +3ms
+  pw:api <= page.waitForTimeout succeeded +223ms
+  pw:api => locator.elementHandles started +2ms
+  pw:api <= locator.elementHandles succeeded +22ms
+  pw:api => page.waitForTimeout started +2ms
+  pw:api <= page.waitForTimeout succeeded +231ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +9ms
+  pw:api => page.waitForTimeout started +2ms
+  pw:api <= page.waitForTimeout succeeded +235ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +5ms
+  pw:api => page.waitForTimeout started +2ms
+  pw:api <= page.waitForTimeout succeeded +216ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +4ms
+  pw:api => page.waitForTimeout started +7ms
+  pw:api <= page.waitForTimeout succeeded +229ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +4ms
+  pw:api => page.waitForTimeout started +2ms
+  pw:api <= page.waitForTimeout succeeded +376ms
+  pw:api => locator.elementHandles started +1ms
+  pw:api <= locator.elementHandles succeeded +218ms
+  pw:api => expect.not.toHaveCount started +3ms
+  pw:api expect.not.toHaveCount with timeout 10000ms +18ms
+  pw:api waiting for getByTestId('tissue-name') +0ms
+  pw:api   locator resolved to 64 elements +6ms
+  pw:api <= expect.not.toHaveCount succeeded +18ms
+  pw:api => locator.count started +1ms
+  pw:api <= locator.count succeeded +5ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByTestId('cell-type-labels-abdomen').getByTestId('tissue-name') +9ms
+  pw:api   locator resolved to <div data-testid="tissue-name" class="tissue-name css…>Abdomen</div> +4ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +11ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +13ms
+  pw:api   click action done +163ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +1ms
+  pw:api <= locator.click succeeded +19ms
+  pw:api => locator.count started +1ms
+  pw:api <= locator.count succeeded +5ms
+  pw:api => locator.allTextContents started +1ms
+  pw:api <= locator.allTextContents succeeded +115ms
+  pw:api => locator.allTextContents started +2ms
+  pw:api <= locator.allTextContents succeeded +33ms
+  pw:api => locator.click started +1ms
+  pw:api waiting for getByTestId('tissue-filter').getByRole('button', { name: 'Tissue', exact: true }) +9ms
+  pw:api   locator resolved to <button tabindex="0" type="button" label="Tissue" class=…>…</button> +13ms
+  pw:api attempting click action +1ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +24ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +0ms
+  pw:api   performing click action +16ms
+  pw:api   click action done +165ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +8ms
+  pw:api <= locator.click succeeded +34ms
+  pw:api => locator.waitFor started +1ms
+  pw:api waiting for getByRole('tooltip') to be visible +31ms
+  pw:api   locator resolved to visible <div role="tooltip" data-popper-placement="bottom-sta…>…</div> +12ms
+  pw:api <= locator.waitFor succeeded +24ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByRole('option', { name: 'abdomen', exact: true }) +38ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-8-option-0" …>…</li> +3s
+  pw:api   "networkidle" event fired +19ms
+  pw:api attempting click action +134ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +26ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +65ms
+  pw:api   click action done +144ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +3ms
+  pw:api <= locator.click succeeded +45ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByRole('option', { name: 'axilla', exact: true }) +38ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-8-option-3" …>…</li> +57ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +35ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +17ms
+  pw:api   click action done +86ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +29ms
+  pw:api => locator.click started +0ms
+  pw:api waiting for getByRole('option', { name: 'blood', exact: true }) +15ms
+  pw:api   locator resolved to <li tabindex="-1" role="option" id="mui-8-option-5" …>…</li> +32ms
+  pw:api attempting click action +2ms
+  pw:api   waiting for element to be visible, enabled and stable +0ms
+  pw:api   element is visible, enabled and stable +8ms
+  pw:api   scrolling into view if needed +0ms
+  pw:api   done scrolling +1ms
+  pw:api   performing click action +13ms
+  pw:api   click action done +75ms
+  pw:api   waiting for scheduled navigations to finish +0ms
+  pw:api   navigations have finished +2ms
+  pw:api <= locator.click succeeded +22ms
+  pw:api => keyboard.press started +0ms
+  pw:api <= keyboard.press succeeded +451ms
+  pw:api => expect.toHaveCount started +4ms
+  pw:api expect.toHaveCount with timeout 10000ms +37ms
+  pw:api waiting for getByTestId('tissue-name') +1ms
+  pw:api   locator resolved to 3 elements +5ms
+  pw:api <= expect.toHaveCount succeeded +18ms
+  pw:api => expect.toBeVisible started +1ms
+  pw:api expect.toBeVisible with timeout 10000ms +11ms
+  pw:api waiting for getByTestId('cell-type-labels-abdomen') +3ms
+  pw:api   locator resolved to <div height="200" class="css-2y7bxg-Container et4zffz…>…</div> +29ms
+  pw:api <= expect.toBeVisible succeeded +11ms
+  pw:api => locator.getAttribute started +1ms
+  pw:api waiting for getByTestId('cell-type-labels-abdomen') +25ms
+  pw:api   locator resolved to <div height="200" class="css-2y7bxg-Container et4zffz…>…</div> +14ms
+  pw:api <= locator.getAttribute succeeded +16ms
+  pw:api => expect.toBeVisible started +2ms
+  pw:api expect.toBeVisible with timeout 10000ms +14ms
+  pw:api waiting for getByTestId('cell-type-labels-axilla') +0ms
+  pw:api   locator resolved to <div height="180" data-testid="cell-type-labels-axill…>…</div> +5ms
+  pw:api <= expect.toBeVisible succeeded +10ms
+  pw:api => locator.getAttribute started +1ms
+  pw:api waiting for getByTestId('cell-type-labels-axilla') +10ms
+  pw:api   locator resolved to <div height="180" data-testid="cell-type-labels-axill…>…</div> +9ms
+  pw:api <= locator.getAttribute succeeded +10ms
+  pw:api => expect.toBeVisible started +7ms
+  pw:api expect.toBeVisible with timeout 10000ms +11ms
+  pw:api waiting for getByTestId('cell-type-labels-blood') +0ms
+  pw:api   locator resolved to <div height="2700" data-testid="cell-type-labels-bloo…>…</div> +6ms
+  pw:api <= expect.toBeVisible succeeded +10ms
+  pw:api => locator.getAttribute started +1ms
+  pw:api waiting for getByTestId('cell-type-labels-blood') +11ms
+  pw:api   locator resolved to <div height="2700" data-testid="cell-type-labels-bloo…>…</div> +3ms
+  pw:api <= locator.getAttribute succeeded +9ms
+  pw:api taking page screenshot +7ms
