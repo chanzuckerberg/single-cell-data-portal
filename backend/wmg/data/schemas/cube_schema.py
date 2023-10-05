@@ -76,7 +76,6 @@ cell_counts_non_indexed_dims = expression_summary_non_indexed_dims
 
 cell_counts_logical_dims = cell_counts_indexed_dims + cell_counts_non_indexed_dims
 
-
 cell_counts_domain = tiledb.Domain(
     [
         tiledb.Dim(name=cell_counts_indexed_dim, domain=None, tile=None, dtype="ascii", filters=filters)
