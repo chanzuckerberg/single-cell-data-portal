@@ -187,6 +187,7 @@ export default memo(function Filters({
         return !tissue.name.includes("(cell culture)");
       })
       .map(mapTermToFilterOption);
+
     newTissues.sort((a, b) => a.name.localeCompare(b.name));
 
     const newAvailableFilters = {

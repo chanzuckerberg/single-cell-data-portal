@@ -28,7 +28,13 @@ describe("CSV download tests", () => {
     //download  csv file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
     // verify csv file
-    await verifyCsv(page, folder, "disease-filter", SHARED_LINK_NO_GROUP);
+    await verifyCsv({
+      page,
+      tissues,
+      subDirectory: folder,
+      filterName: "disease-filter",
+      url: SHARED_LINK_NO_GROUP,
+    });
     await deleteDownloadedFiles(`./tests/downloads/${folder}`);
   });
 
@@ -44,7 +50,13 @@ describe("CSV download tests", () => {
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
 
     // verify csv file
-    await verifyCsv(page, folder, "sex-filter", SHARED_LINK_FILTER);
+    await verifyCsv({
+      page,
+      tissues,
+      subDirectory: folder,
+      filterName: "sex-filter",
+      url: SHARED_LINK_FILTER,
+    });
     await deleteDownloadedFiles(`./tests/downloads/${folder}`);
   });
 
@@ -60,7 +72,13 @@ describe("CSV download tests", () => {
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
 
     // verify csv file
-    await verifyCsv(page, folder, "no-filter", SHARED_LINK_NO_FILTER);
+    await verifyCsv({
+      page,
+      tissues,
+      subDirectory: folder,
+      filterName: "no-filter",
+      url: SHARED_LINK_NO_FILTER,
+    });
     await deleteDownloadedFiles(`./tests/downloads/${folder}`);
   });
 });
