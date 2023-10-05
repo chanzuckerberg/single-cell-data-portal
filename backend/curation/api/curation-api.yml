@@ -1100,8 +1100,6 @@ components:
           $ref: "#/components/schemas/dataset_id"
         dataset_version_id:
           $ref: "#/components/schemas/dataset_version_id"
-        default_embedding:
-          $ref: "#/components/schemas/default_embedding"
         development_stage:
           description: |
             [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#development_stage)
@@ -1114,16 +1112,8 @@ components:
           $ref: "#/components/schemas/dataset_disease"
         donor_id:
           $ref: "#/components/schemas/donor_id"
-        embeddings:
-          $ref: "#/components/schemas/embeddings"
         explorer_url:
           $ref: "#/components/schemas/explorer_url"
-        feature_biotype:
-          $ref: "#/components/schemas/feature_biotype"
-        feature_count:
-          $ref: "#/components/schemas/feature_count"
-        feature_reference:
-          $ref: "#/components/schemas/feature_reference"
         is_primary_data:
           $ref: "#/components/schemas/is_primary_data"
         mean_genes_per_cell:

@@ -202,13 +202,18 @@ def reshape_dataset_for_curation_api(
     dataset_version: DatasetVersion,
     use_canonical_url: bool,
     preview=False,
+    index=False,
     as_canonical=True,
     is_published=False,
 ) -> dict:
     ds = dict()
 
     # Determine what columns to include from the dataset
-    columns = EntityColumns.dataset_metadata_preview_cols if preview else EntityColumns.dataset_metadata_cols
+    columns = EntityColumns.dataset_metadata_cols
+    if preview:
+        columns = EntityColumns.dataset_metadata_preview_cols
+    elif index:
+        columns = EntityColumns.dataset_metadata_index_cols
     # Get dataset metadata fields.
     # Metadata can be None if the dataset isn't still fully processed, so we account for that
     if dataset_version.metadata is not None:
@@ -295,7 +300,7 @@ class EntityColumns:
         "suspension_type",
     ]
 
-    dataset_metadata_cols = [
+    dataset_metadata_index_cols = [
         *dataset_metadata_preview_cols,
         "name",
         "is_primary_data",
@@ -310,6 +315,10 @@ class EntityColumns:
         "mean_genes_per_cell",
         "schema_version",
         "donor_id",
+    ]
+
+    dataset_metadata_cols = [
+        *dataset_metadata_index_cols,
         "default_embedding",
         "embeddings",
         "feature_biotype",
