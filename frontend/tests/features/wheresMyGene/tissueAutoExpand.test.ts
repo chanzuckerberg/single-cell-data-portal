@@ -1,7 +1,7 @@
 import { expect, test, Page } from "@playwright/test";
 import { indexOf, toInteger } from "lodash";
 import { collapseTissue, expandTissue } from "tests/utils/helpers";
-import { conditionallyRunTests, goToWMG } from "tests/utils/wmgUtils";
+import { goToWMG } from "tests/utils/wmgUtils";
 
 const FILTERED_TISSUES = ["abdomen", "axilla", "blood"];
 const TISSUE_NODE_TEST_ID = "tissue-name";
@@ -14,7 +14,6 @@ const CELL_TYPE_TEST_ID = "cell-type-name";
 const { describe } = test;
 
 describe("WMG tissue auto-expand", () => {
-  conditionallyRunTests({ forceRun: true });
   /**
    * Click the first tissue to expand, filter two tissues from left
    * panel. Expect only two tissues present and both expanded
