@@ -201,10 +201,7 @@ describe("Cell Guide", () => {
       await isElementVisible(page, CELL_GUIDE_CARD_SYNONYMS);
       await isElementVisible(page, CELL_GUIDE_CARD_GPT_TOOLTIP_LINK);
       await isElementVisible(page, CELL_GUIDE_CARD_SEARCH_BAR);
-      await isElementVisible(
-        page,
-        CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE
-      );
+      await isElementVisible(page, CELL_GUIDE_CARD_ENRICHED_GENES_TABLE);
       await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW);
       const headerName = page.getByTestId(CELL_GUIDE_CARD_HEADER_NAME);
       const headerNameText = await headerName.textContent();
@@ -283,16 +280,11 @@ describe("Cell Guide", () => {
           page
         );
 
+        const tableSelector = `[data-testid='${CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
+        await selectCanonicalMarkerGeneTable(page);
+
         await tryUntil(
           async () => {
-            // set canonical marker genes table as active
-            await page
-              .getByTestId(
-                CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR
-              )
-              .click();
-
-            const tableSelector = `[data-testid='${CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
             const columnHeaderElements = await page
               .locator(`${tableSelector} thead th`)
               .all();
@@ -320,17 +312,10 @@ describe("Cell Guide", () => {
           `${TEST_URL}${ROUTES.CELL_GUIDE}/${T_CELL_CELL_TYPE_ID}`,
           page
         );
-
+        const tableSelector = `[data-testid='${CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
+        await selectCanonicalMarkerGeneTable(page);
         await tryUntil(
           async () => {
-            // set canonical marker genes table as active
-            await page
-              .getByTestId(
-                CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR
-              )
-              .click();
-
-            const tableSelector = `[data-testid='${CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
             const rowElementsBefore = await page
               .locator(`${tableSelector} tbody tr`)
               .all();
@@ -367,11 +352,7 @@ describe("Cell Guide", () => {
           `${TEST_URL}${ROUTES.CELL_GUIDE}/${T_CELL_CELL_TYPE_ID}`,
           page
         );
-        // set canonical marker genes table as active
-        await page
-          .getByTestId(CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR)
-          .click();
-
+        await selectCanonicalMarkerGeneTable(page);
         const tableSelector = `[data-testid='${CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
 
         await tryUntil(
@@ -411,19 +392,7 @@ describe("Cell Guide", () => {
 
         const tableSelector = `[data-testid='${CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}']`;
 
-        await tryUntil(
-          async () => {
-            // set enriched marker genes table as active
-            await page
-              .getByTestId(CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR)
-              .click();
-
-            await page
-              .locator(tableSelector)
-              .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
-          },
-          { page }
-        );
+        await selectComputationalMarkerGeneTable(page);
 
         const columnHeaderElements = await page
           .locator(`${tableSelector} thead th`)
@@ -457,18 +426,11 @@ describe("Cell Guide", () => {
           page
         );
 
+        await selectComputationalMarkerGeneTable(page);
+        const tableSelector = `[data-testid='${CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}']`;
+
         await tryUntil(
           async () => {
-            // set enriched marker genes table as active
-            await page
-              .getByTestId(CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR)
-              .click();
-
-            const tableSelector = `[data-testid='${CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}']`;
-            await page
-              .locator(tableSelector)
-              .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
-
             const rowElementsBefore = await page
               .locator(`${tableSelector} tbody tr`)
               .all();
@@ -503,16 +465,11 @@ describe("Cell Guide", () => {
           page
         );
 
+        await selectComputationalMarkerGeneTable(page);
+        const tableSelector = `[data-testid='${CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}']`;
+
         await tryUntil(
           async () => {
-            // set enriched marker genes table as active
-            await page
-              .getByTestId(CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR)
-              .click();
-
-            const tableSelector = `[data-testid='${CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}']`;
-            await page.locator(tableSelector).waitFor({ timeout: 5000 });
-
             const rowElementsBefore = await page
               .locator(`${tableSelector} tbody tr`)
               .all();
@@ -786,19 +743,7 @@ describe("Cell Guide", () => {
 
         const tableSelector = `[data-testid='${CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}']`;
 
-        await tryUntil(
-          async () => {
-            // set enriched marker genes table as active
-            await page
-              .getByTestId(CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR)
-              .click();
-
-            await page
-              .locator(tableSelector)
-              .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
-          },
-          { page }
-        );
+        await selectComputationalMarkerGeneTable(page);
 
         const rowElements = await page
           .locator(`${tableSelector} tbody tr`)
@@ -994,6 +939,7 @@ describe("Cell Guide", () => {
         page
       );
 
+      await selectCanonicalMarkerGeneTable(page);
       await isElementVisible(page, MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID);
       await page.getByTestId(MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID).hover();
 
@@ -1076,6 +1022,42 @@ async function checkTooltipContent(page: Page, text: string) {
   // check that tooltip contains text
   const tooltipText = await tooltipLocator.textContent();
   expect(tooltipText).toContain(text);
+}
+
+async function selectCanonicalMarkerGeneTable(page: Page) {
+  const tableSelector = `[data-testid='${CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
+
+  await tryUntil(
+    async () => {
+      // set canonical marker genes table as active
+      await page
+        .getByTestId(CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR)
+        .click();
+
+      await page
+        .locator(tableSelector)
+        .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+    },
+    { page }
+  );
+}
+
+async function selectComputationalMarkerGeneTable(page: Page) {
+  const tableSelector = `[data-testid='${CELL_GUIDE_CARD_ENRICHED_GENES_TABLE}']`;
+
+  await tryUntil(
+    async () => {
+      // set enriched marker genes table as active
+      await page
+        .getByTestId(CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR)
+        .click();
+
+      await page
+        .locator(tableSelector)
+        .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+    },
+    { page }
+  );
 }
 
 async function isElementVisible(page: Page, testId: string) {

@@ -10,6 +10,7 @@ import { PNG } from "pngjs";
 import sharp from "sharp";
 import { goToWMG } from "./wmgUtils";
 import { CELL_TYPE_ROW_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
+import { tryUntil } from "tests/utils/helpers";
 
 const EXPECTED_HEADER = [
   "Tissue",
@@ -23,28 +24,56 @@ const EXPECTED_HEADER = [
   "Number of Cells Expressing Genes",
 ];
 
-export async function verifyCsv(
-  page: Page,
-  subDirectory: string,
-  filterName: string,
-  url: string
-): Promise<void> {
+const NUM_OF_GENES_SELECTED = 3;
+
+export async function verifyCsv({
+  page,
+  subDirectory,
+  filterName,
+  url,
+  tissues,
+}: {
+  page: Page;
+  subDirectory: string;
+  filterName: string;
+  url: string;
+  tissues: string[];
+}): Promise<void> {
   const metadata = await getCsvMetadata(subDirectory);
   // extract the headers and data arrays from the metadata object
   // put all the headers in an array
   const headers = metadata.headers;
   const data = metadata.data;
 
-  //get number of element in csv
+  // get number of element in csv
   const csvElementsCount = metadata.rowCount;
 
-  //get number of element displayed in ui
+  await tryUntil(
+    async () => {
+      const count = await page
+        .locator(`[data-testid="${CELL_TYPE_ROW_CLASS_NAME}"]`)
+        .count();
+
+      expect(count).toBeGreaterThan(0);
+    },
+    { page }
+  );
+
+  // get number of element displayed in ui
   const uiElementsCount = await page
     .locator(`[data-testid="${CELL_TYPE_ROW_CLASS_NAME}"]`)
     .count();
 
-  //verify the number of element in the csv this is the Ui displayed multiplied by the number of genes selected
-  expect(csvElementsCount).toEqual(uiElementsCount * 3);
+  const tissueCount = tissues.length;
+  const aggregatedRows = tissueCount * NUM_OF_GENES_SELECTED;
+
+  /**
+   * verify the number of element in the csv (minus aggregatedRows) is the Ui
+   * displayed multiplied by the number of genes selected
+   */
+  expect(csvElementsCount - aggregatedRows).toEqual(
+    uiElementsCount * NUM_OF_GENES_SELECTED
+  );
 
   const options = {
     filterName,
