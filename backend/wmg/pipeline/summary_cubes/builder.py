@@ -215,7 +215,7 @@ class SummaryCubesBuilder:
                 "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
             )
         logger.info("Creating the cell counts cube and filter relationships graph.")
-        obs_df_filtered = self.obs_df[self.obs_df.index.isin(self.obs_coords_to_keep)]
+        obs_df_filtered = self.obs_df.iloc[self.obs_coords_to_keep]
 
         df = (
             obs_df_filtered.groupby(
