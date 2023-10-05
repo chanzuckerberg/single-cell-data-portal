@@ -28,6 +28,7 @@ from tests.unit.cellguide_pipeline.mocks import (
     mock_get_asctb_master_sheet,
     mock_get_collections_from_curation_endpoint,
     mock_get_datasets_from_curation_endpoint,
+    mock_get_title_and_citation_from_doi,
 )
 
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -81,6 +82,9 @@ def run_cellguide_pipeline():
         with patch(
             "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_asctb_master_sheet",
             new=mock_get_asctb_master_sheet,
+        ), patch(
+            "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_title_and_citation_from_doi",
+            new=mock_get_title_and_citation_from_doi,
         ):
             canonical_marker_genes = get_canonical_marker_genes(snapshot=snapshot, ontology_tree=ontology_tree)
 
