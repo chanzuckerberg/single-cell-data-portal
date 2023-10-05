@@ -5,7 +5,7 @@ on:
     branches-ignore:
       - prod
     types:
-      - open
+      - opened
       - synchronize
       - reopened
 
@@ -57,7 +57,7 @@ jobs:
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
-          happy_version: "0.92.0"
+          happy_version: "0.110.1"
       - name: Push images
         id: push_images
         run: |
@@ -93,7 +93,7 @@ jobs:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ env.STACK_NAME }}
           tag: ${{ jobs.build_images.steps.push_images.outputs.IMAGE_TAG }}
-          happy_version: "0.92.0"
+          happy_version: "0.110.1"
 
   summarize:
     runs-on: ubuntu-22.04
@@ -245,7 +245,7 @@ jobs:
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
-          happy_version: "0.59.0"
+          happy_version: "0.110.1"
 
       - uses: 8398a7/action-slack@v3
         with:
