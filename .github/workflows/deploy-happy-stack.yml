@@ -269,21 +269,10 @@ jobs:
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
           retention-days: 1
 
-  wait-for-shards:
-    needs: run-e2e-tests # run after shards
-    runs-on: ubuntu-22.04
-    #if: success() # only run when all shards have passed
-    # store success output flag for ci job
-    outputs:
-      success: ${{ steps.setoutput.outputs.success }}
-    steps:
-      - id: setoutput
-        run: echo "{success}={true}" >> $GITHUB_OUTPUT
-
   e2e-test:
     if: always()
     runs-on: ubuntu-latest
-    needs: [run-e2e-tests, wait-for-shards]
+    needs: [run-e2e-tests]
     steps:
       - name: Check result
         run: |
