@@ -219,7 +219,7 @@ class SummaryCubesBuilder:
 
         df = (
             obs_df_filtered.groupby(
-                by=cell_counts_logical_dims,
+                by=[dim for dim in cell_counts_logical_dims if dim != "publication_citation"],
                 as_index=False,
             ).size()
         ).rename(columns={"size": "n_cells"})
