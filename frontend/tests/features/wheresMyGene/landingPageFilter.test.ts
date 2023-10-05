@@ -3,7 +3,6 @@ import {
   WMG_WITH_SEEDED_GENES,
   checkPlotSize,
   checkSourceData,
-  conditionallyRunTests,
   deSelectSecondaryFilterOption,
   goToWMG,
   selectSecondaryFilterOption,
@@ -23,12 +22,6 @@ const CELL_TYPE_FILTER = "naive B cell";
 const { describe } = test;
 
 describe("Left side bar", () => {
-  /**
-   * TODO(thuang): Remove forceRun when all WMG e2e tests are enabled.
-   * `forceRun` is just to incrementally add tests back in the meantime
-   */
-  conditionallyRunTests({ forceRun: true });
-
   test("Left side bar collapse and expand", async ({ page }) => {
     await goToWMG(page);
 
