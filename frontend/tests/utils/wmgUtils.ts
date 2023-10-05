@@ -3,13 +3,19 @@ import { TEST_URL } from "../common/constants";
 import { expect, Page, test } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
 import {
+  countLocator,
   expandTissue,
+  getCellTypeNames,
   selectFirstOption,
   tryUntil,
   waitForLoadingSpinnerToResolve,
 } from "./helpers";
 import { ADD_GENE_BTN, ADD_TISSUE_ID } from "../common/constants";
-import { ADD_GENE_SEARCH_PLACEHOLDER_TEXT } from "tests/utils/geneUtils";
+import {
+  ADD_GENE_SEARCH_PLACEHOLDER_TEXT,
+  CELL_TYPE_SEARCH_PLACEHOLDER_TEXT,
+} from "tests/utils/geneUtils";
+import { TISSUE_NAME_LABEL_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 
 const { skip, beforeEach } = test;
 
@@ -61,13 +67,17 @@ export async function goToWMG(page: Page, url?: string) {
   const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
   return await tryUntil(
     async () => {
-      await Promise.all([
-        page.waitForResponse(
-          (resp: { url: () => string | string[]; status: () => number }) =>
-            resp.url().includes("/wmg/v2/filters") && resp.status() === 200
-        ),
-        page.goto(targetUrl),
-      ]);
+      await page.goto(targetUrl);
+
+      await tryUntil(
+        async () => {
+          const numberOfTissuesBefore = await countLocator(
+            page.getByTestId(TISSUE_NAME_LABEL_CLASS_NAME)
+          );
+          expect(numberOfTissuesBefore).toBeGreaterThan(0);
+        },
+        { page, silent: true }
+      );
     },
     { page }
   );
@@ -94,14 +104,15 @@ export async function searchAndAddTissue(page: Page, tissueName: string) {
     async () => {
       await page.getByTestId(ADD_TISSUE_ID).getByRole("button").first().click();
       await page.getByRole("tooltip").waitFor();
+      await page.getByRole("tooltip").getByText(tissueName).first().click();
+      // close dropdown
+      await page.keyboard.press("Escape");
+      await expect(
+        page.getByTestId(ADD_TISSUE_ID).getByText(tissueName)
+      ).toBeVisible();
     },
     { page }
   );
-
-  await page.getByRole("tooltip").getByText(tissueName).first().click();
-
-  // close dropdown
-  await page.keyboard.press("Escape");
 }
 
 export async function addTissuesAndGenes(
@@ -109,7 +120,7 @@ export async function addTissuesAndGenes(
   tissueNames: string[],
   genes: string[]
 ) {
-  for await (const tissueName of tissueNames) {
+  for (const tissueName of tissueNames) {
     await searchAndAddTissue(page, tissueName);
   }
   for await (const gene of genes) {
@@ -284,3 +295,21 @@ export async function searchAndAddGene(page: Page, geneName: string) {
   // close dropdown
   await page.keyboard.press("Escape");
 }
+
+export async function searchAndAddFilterCellType(page: Page, cellType: string) {
+  const beforeCellTypeNames = await getCellTypeNames(page);
+  await page.getByPlaceholder(CELL_TYPE_SEARCH_PLACEHOLDER_TEXT).fill(cellType);
+  await page.getByText(cellType, { exact: true }).click();
+  await page.keyboard.press("Escape");
+  const afterCellTypeNames = await getCellTypeNames(page);
+  expect(afterCellTypeNames.length).toBeGreaterThan(beforeCellTypeNames.length);
+}
+export async function removeFilteredCellType(page: Page, cellType: string) {
+  const beforeCellTypeNames = await getCellTypeNames(page);
+  const cellTypeTag = page.getByTestId(`cell-type-tag-${cellType}`);
+  const deleteIcon = cellTypeTag.getByTestId("CancelIcon");
+  await deleteIcon.click();
+  const afterCellTypeNames = await getCellTypeNames(page);
+  expect(afterCellTypeNames.length).toBeLessThan(beforeCellTypeNames.length);
+}
+1;

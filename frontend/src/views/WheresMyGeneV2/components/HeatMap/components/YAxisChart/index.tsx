@@ -48,7 +48,7 @@ interface Props {
   tissueID: string;
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
   handleExpandCollapse: (tissueID: string, tissueName: Tissue) => void;
-  expandedTissues: Set<Tissue>;
+  expandedTissueIds: string[];
 }
 
 // List of Tissues to exclude from FMG
@@ -59,7 +59,7 @@ export default memo(function YAxisChart({
   tissue,
   generateMarkerGenes,
   handleExpandCollapse,
-  expandedTissues,
+  expandedTissueIds,
   tissueID,
 }: Props): JSX.Element {
   const tissueKey = hyphenize(tissue);
@@ -93,7 +93,7 @@ export default memo(function YAxisChart({
 
             const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
             const selectedFont = `${fontWeight} ${fontSize}px ${fontFamily}`;
-            const expanded = expandedTissues.has(tissueID);
+            const expanded = expandedTissueIds.includes(tissueID);
 
             const { text: paddedName } = formatLabel(
               name,

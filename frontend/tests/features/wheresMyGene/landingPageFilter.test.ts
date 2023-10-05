@@ -146,10 +146,23 @@ describe("Left side bar", () => {
   });
 
   async function countRecords(page: Page, testId: string) {
-    await page.getByTestId(testId).getByRole("button").click();
-    await expect(page.locator("option")).not.toHaveCount(0);
-    const numberOfRecords = await page.getByRole("option").count();
-    await page.keyboard.press("Escape");
-    return numberOfRecords;
+    const optionLocator = page.getByRole("option");
+
+    let count = 0;
+
+    await tryUntil(
+      async () => {
+        await page.getByTestId(testId).getByRole("button").click();
+
+        count = await optionLocator.count();
+
+        await page.keyboard.press("Escape");
+
+        expect(count).toBeGreaterThan(0);
+      },
+      { page }
+    );
+
+    return count;
   }
 });

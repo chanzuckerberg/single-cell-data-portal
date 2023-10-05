@@ -118,11 +118,12 @@ export async function scrollToPageBottom(page: Page): Promise<void> {
 interface TryUntilConfigs {
   maxRetry?: number;
   page: Page;
+  silent?: boolean;
 }
 
 export async function tryUntil(
   assert: () => void,
-  { maxRetry = 50, page }: TryUntilConfigs
+  { maxRetry = 50, page, silent = false }: TryUntilConfigs
 ): Promise<void> {
   const WAIT_FOR_MS = 200;
 
@@ -139,9 +140,11 @@ export async function tryUntil(
       retry += 1;
       savedError = error as Error;
 
-      console.log("⚠️  tryUntil error-----------------START");
-      console.log(savedError.message);
-      console.log("⚠️  tryUntil error-----------------END");
+      if (!silent) {
+        console.log("⚠️  tryUntil error-----------------START");
+        console.log(savedError.message);
+        console.log("⚠️  tryUntil error-----------------END");
+      }
 
       await page.waitForTimeout(WAIT_FOR_MS);
     }
@@ -446,6 +449,23 @@ export async function expandTissue(page: Page, tissueName: string) {
         .click();
       const afterCellTypeNames = await getCellTypeNames(page);
       expect(afterCellTypeNames.length).toBeGreaterThan(
+        beforeCellTypeNames.length
+      );
+    },
+    { page }
+  );
+}
+
+export async function collapseTissue(page: Page, tissueName: string) {
+  await tryUntil(
+    async () => {
+      const beforeCellTypeNames = await getCellTypeNames(page);
+      await page
+        .getByTestId(`cell-type-labels-${tissueName}`)
+        .getByTestId(TISSUE_NAME_LABEL_CLASS_NAME)
+        .click();
+      const afterCellTypeNames = await getCellTypeNames(page);
+      expect(afterCellTypeNames.length).toBeLessThan(
         beforeCellTypeNames.length
       );
     },

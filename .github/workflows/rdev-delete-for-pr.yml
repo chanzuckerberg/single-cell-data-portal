@@ -19,6 +19,11 @@ permissions:
   id-token: write
   contents: read
 
+# prevent the rdev from being updated in concurrent GHA
+concurrency:
+  group: pr-${{ github.event.number }}
+  cancel-in-progress: false
+
 jobs:
   delete-rdev:
     runs-on: ubuntu-22.04
