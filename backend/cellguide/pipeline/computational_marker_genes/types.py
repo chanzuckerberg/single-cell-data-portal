@@ -6,6 +6,7 @@ class ComputationalMarkerGenes:
     me: float
     pc: float
     marker_score: float
+    gene_ontology_term_id: str
     symbol: str
     name: str
     groupby_dims: dict[str, str]

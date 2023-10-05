@@ -11,7 +11,6 @@ filters = [tiledb.ZstdFilter(level=+22)]
 # (slicing) the TileDB array. Order matters here!
 marker_genes_indexed_dims = [
     "tissue_ontology_term_id",
-    "organism_ontology_term_id",
     "cell_type_ontology_term_id",
 ]
 
@@ -20,8 +19,7 @@ marker_genes_indexed_dims = [
 # distinction between logical and physical attributes.
 marker_genes_attrs = [
     tiledb.Attr(name="gene_ontology_term_id", dtype="ascii", var=True, filters=filters),
-    tiledb.Attr(name="p_value_ttest", dtype=np.float32, filters=filters),
-    tiledb.Attr(name="effect_size_ttest", dtype=np.float32, filters=filters),
+    tiledb.Attr(name="marker_score", dtype=np.float32, filters=filters),
 ]
 
 marker_genes_domain = tiledb.Domain(

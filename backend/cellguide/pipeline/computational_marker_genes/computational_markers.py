@@ -116,15 +116,7 @@ def _process_cell_type__parallel(
 class MarkerGenesCalculator:
     def __init__(self, *, snapshot: WmgSnapshot, all_cell_type_ids_in_corpus: list[str], groupby_terms: list[str]):
         self.all_cell_type_ids_in_corpus = all_cell_type_ids_in_corpus
-        self.organism_id_to_name = {
-            k: v for d in snapshot.primary_filter_dimensions["organism_terms"] for k, v in d.items()
-        }
-        self.tissue_id_to_name = {
-            k: v
-            for organism in snapshot.primary_filter_dimensions["tissue_terms"]
-            for i in snapshot.primary_filter_dimensions["tissue_terms"][organism]
-            for k, v in i.items()
-        }
+
         gene_metadata = get_gene_id_to_name_and_symbol()
         self.gene_id_to_name = gene_metadata.gene_id_to_name
         self.gene_id_to_symbol = gene_metadata.gene_id_to_symbol
@@ -139,14 +131,13 @@ class MarkerGenesCalculator:
             for k, v in i.items()
         }
         self.gene_id_to_symbol.update(primary_filters__gene_id_to_symbol)
+
         # Groupby variables used to group the data various operations
         # cell types are removed as they are treated differently
         # all other metadata (like tissue and organism) are dimensions across
         # which marker gene computation for cell types will be stratified
         if "cell_type_ontology_term_id" in groupby_terms:
             groupby_terms.remove("cell_type_ontology_term_id")
-        else:
-            raise ValueError("cell_type_ontology_term_id must be one of the groupby terms")
 
         self.groupby_terms = groupby_terms
         self.groupby_terms_with_celltype = groupby_terms + ["cell_type_ontology_term_id"]
@@ -154,7 +145,7 @@ class MarkerGenesCalculator:
 
         # load the cell counts and expression summary cubes fully in memory
         cell_counts_df = snapshot.cell_counts_cube.df[:]
-        expressions_df = snapshot.expression_summary_fmg_cube.df[:]
+        expressions_df = snapshot.expression_summary_default_cube.df[:]
 
         # prep the cell counts and expressions dataframes
         (self.cell_counts_df, self.expressions_df) = self._prepare_cell_counts_and_gene_expression_dfs(
@@ -302,7 +293,6 @@ class MarkerGenesCalculator:
         # iterates through each organism and tissue combination.
         logger.info(f"Iterating through all combinations of groupby dimensions {self.groupby_terms}")
         for combination in itertools.product(*groupby_term_to_unique_values):
-
             # get the rows corresponding to groups that match the current "combination"
             filt = groupby_term_to_values[0] == combination[0]
             for _i in range(1, len(combination)):
@@ -442,22 +432,11 @@ class MarkerGenesCalculator:
                 "me": datum["me"],
                 "pc": datum["pc"],
                 "marker_score": datum["effect_size"],
+                "gene_ontology_term_id": datum["gene_ontology_term_id"],
                 "symbol": self._get_gene_symbol_from_id(datum["gene_ontology_term_id"]),
                 "name": gene_names_to_ids[datum["gene_ontology_term_id"]],
             }
-
-            groupby_term_labels = [term.rsplit("_", 1)[0] + "_label" for term in self.groupby_terms]
-            entry["groupby_dims"] = dict(zip(groupby_term_labels, (datum[term] for term in self.groupby_terms)))
-            # map IDs to label
-            for key in entry["groupby_dims"]:
-                if key == "tissue_ontology_term_label":
-                    entry["groupby_dims"][key] = self.tissue_id_to_name.get(
-                        entry["groupby_dims"][key], entry["groupby_dims"][key]
-                    )
-                elif key == "organism_ontology_term_label":
-                    entry["groupby_dims"][key] = self.organism_id_to_name.get(
-                        entry["groupby_dims"][key], entry["groupby_dims"][key]
-                    )
+            entry["groupby_dims"] = {term: datum[term] for term in self.groupby_terms}
 
             marker_gene_list.append(ComputationalMarkerGenes(**entry))
             formatted_data[datum["cell_type_ontology_term_id"]] = marker_gene_list

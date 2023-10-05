@@ -12,6 +12,8 @@ import tiledb
 import tiledbsoma as soma
 from cellxgene_census.experimental.util._csr_iter import X_sparse_iter
 
+from backend.cellguide.pipeline.computational_marker_genes.computational_markers import MarkerGenesCalculator
+from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.wmg.data.constants import (
     GENE_EXPRESSION_COUNT_MIN_THRESHOLD,
     RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
@@ -31,17 +33,14 @@ from backend.wmg.data.schemas.cube_schema_default import (
     expression_summary_non_indexed_dims as expression_summary_non_indexed_dims_default,
 )
 from backend.wmg.data.schemas.cube_schema_default import expression_summary_schema as expression_summary_schema_default
-from backend.wmg.data.schemas.expression_summary_fmg_cube_schema import (
-    expression_summary_fmg_indexed_dims,
-    expression_summary_fmg_non_indexed_dims,
-    expression_summary_fmg_schema,
-)
 from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     EXPRESSION_SUMMARY_CUBE_NAME,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
-    EXPRESSION_SUMMARY_FMG_CUBE_NAME,
     FILTER_RELATIONSHIPS_FILENAME,
+    MARKER_GENES_CUBE_NAME,
+    PRIMARY_FILTER_DIMENSIONS_FILENAME,
+    WmgSnapshot,
 )
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import (
@@ -80,15 +79,39 @@ class SummaryCubesBuilder:
         """
         organism = organismInfo["label"]
         organismId = organismInfo["id"]
-
+        organismIdFolderName = organismId.replace(":", "_")
+        self.corpus_path = os.path.join(corpus_path, organismIdFolderName)
         pathlib.Path(corpus_path).mkdir(exist_ok=True)
+        self.organism = organism
+
+    @log_func_runtime
+    def _load_obs_and_var_dfs_if_necessary(self):
+        """
+        This method loads the obs and var dataframes from the census data.
+
+        Raises:
+            ValueError: If the organism is not a valid Census organism.
+        """
+        if hasattr(self, "obs_df") and hasattr(self, "var_df") and hasattr(self, "census_version"):
+            return
+
+        logger.info("Loading obs and var dataframes from the census data...")
         with cellxgene_census.open_soma(census_version="latest") as census:
-            obs_df = census["census_data"][organism]["obs"].read().concat().to_pandas().set_index("soma_joinid")
-            obs_df["organism_ontology_term_id"] = organismId
+            valid_organisms = list(census["census_data"].keys())
+            if self.organism not in valid_organisms:
+                raise ValueError(
+                    f'"{self.organism}" is not a valid Census organism. Please select one of {valid_organisms}'
+                )
+
+            obs_df = census["census_data"][self.organism]["obs"].read().concat().to_pandas().set_index("soma_joinid")
             obs_df = obs_df[obs_df["is_primary_data"] & (obs_df["nnz"] >= GENE_EXPRESSION_COUNT_MIN_THRESHOLD)]
             obs_df = obs_df.rename(columns=DIMENSION_NAME_MAP_CENSUS_TO_WMG)
             var_df = (
-                census["census_data"][organism]["ms"]["RNA"]["var"].read().concat().to_pandas().set_index("soma_joinid")
+                census["census_data"][self.organism]["ms"]["RNA"]["var"]
+                .read()
+                .concat()
+                .to_pandas()
+                .set_index("soma_joinid")
             )
 
             self.census_version = (
@@ -98,44 +121,8 @@ class SummaryCubesBuilder:
                 .to_pandas()
                 .set_index("label")["value"]["census_build_date"]
             )
-
         self.obs_df = obs_df
         self.var_df = var_df
-        self.corpus_path = corpus_path
-        self.organism = organism
-
-        self.expression_summary_cube_created = False
-
-    @log_func_runtime
-    def create_expression_summary_cube(self, write_chunk_size: Optional[int] = 50_000_000):
-        """
-        Create the expression summary cube.
-
-        Args:
-            write_chunk_size (int, optional): The size of the write chunk. Defaults to 50_000_000.
-        """
-        uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
-        cube_dims = expression_summary_indexed_dims_no_gene_ontology + expression_summary_non_indexed_dims
-
-        ctx = create_ctx()
-        with tiledb.scope_ctx(ctx):
-            self._create_empty_cube_if_not_exists(uri, expression_summary_schema)
-            dims, vals = self._summarize_gene_expressions(cube_dims=cube_dims, schema=expression_summary_schema)
-
-            num_chunks = math.ceil(dims[0].size / write_chunk_size)
-
-            with tiledb.open(uri, "w") as cube:
-                for i in range(num_chunks):
-                    logger.info(f"Writing chunk {i} to {uri}")
-                    dims_chunk = tuple(dim[i * write_chunk_size : (i + 1) * write_chunk_size] for dim in dims)
-                    vals_chunk = {k: vals[k][i * write_chunk_size : (i + 1) * write_chunk_size] for k in vals}
-                    cube[dims_chunk] = vals_chunk
-
-            logger.info("Consolidating and vacuuming")
-            tiledb.consolidate(uri)
-            tiledb.vacuum(uri)
-
-        self.expression_summary_cube_created = True
 
     @log_func_runtime
     def create_expression_summary_default_cube(self):
@@ -143,13 +130,13 @@ class SummaryCubesBuilder:
         Create the default expression summary cube. The default expression summary cube is an aggregation across
         non-default dimensions in the expression summary cube.
         """
-        if not self.expression_summary_cube_created:
+        if not os.path.exists(os.path.join(self.corpus_path, EXPRESSION_SUMMARY_CUBE_NAME)):
             raise ValueError(
                 "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
             )
         logger.info("Creating the default expression summary cube.")
-        expression_summary_uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
-        expression_summary_default_uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"
+        expression_summary_uri = os.path.join(self.corpus_path, EXPRESSION_SUMMARY_CUBE_NAME)
+        expression_summary_default_uri = os.path.join(self.corpus_path, EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME)
 
         ctx = create_ctx()
         with tiledb.scope_ctx(ctx):
@@ -167,53 +154,17 @@ class SummaryCubesBuilder:
                 .reset_index()
             )
 
-            self._create_empty_cube_if_not_exists(expression_summary_default_uri, expression_summary_schema_default)
+            self._create_empty_cube(expression_summary_default_uri, expression_summary_schema_default)
             logger.info(f"Writing cube to {expression_summary_default_uri}")
             tiledb.from_pandas(expression_summary_default_uri, expression_summary_df_default, mode="append")
-
-    @log_func_runtime
-    def create_expression_summary_fmg_cube(self):
-        """
-        Create the FMG (Find Marker Genes) expression summary cube. The FMG expression summary cube is an aggregation across
-        dimensions in the expression summary cube that are irrelevant for marker gene calculation.
-        """
-        if not self.expression_summary_cube_created:
-            raise ValueError(
-                "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
-            )
-        logger.info("Creating the FMG expression summary cube.")
-        expression_summary_uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
-        expression_summary_fmg_uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"
-
-        ctx = create_ctx()
-        with tiledb.scope_ctx(ctx):
-            dfs = []
-            with tiledb.open(expression_summary_uri, "r") as cube:
-                for row in cube.query(return_incomplete=True).df[:]:
-                    dfs.append(row)
-            expression_summary_df = pd.concat(dfs, axis=0)
-
-            expression_summary_df_fmg = (
-                expression_summary_df.groupby(
-                    expression_summary_fmg_indexed_dims + expression_summary_fmg_non_indexed_dims
-                )
-                .sum(numeric_only=True)
-                .reset_index()
-            )
-
-            self._create_empty_cube_if_not_exists(expression_summary_fmg_uri, expression_summary_fmg_schema)
-            logger.info(f"Writing cube to {expression_summary_fmg_uri}")
-            tiledb.from_pandas(expression_summary_fmg_uri, expression_summary_df_fmg, mode="append")
 
     @log_func_runtime
     def create_cell_counts_cube_and_filter_relationships(self):
         """
         Create cell count cube and write to disk
         """
-        if not self.expression_summary_cube_created:
-            raise ValueError(
-                "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
-            )
+        self._load_obs_and_var_dfs_if_necessary()
+
         logger.info("Creating the cell counts cube and filter relationships graph.")
 
         df = (
@@ -236,10 +187,79 @@ class SummaryCubesBuilder:
         with open(f"{self.corpus_path}/{FILTER_RELATIONSHIPS_FILENAME}", "w") as f:
             json.dump(filter_relationships_linked_list, f)
 
-        uri = f"{self.corpus_path}/{CELL_COUNTS_CUBE_NAME}"
-        self._create_empty_cube_if_not_exists(uri, cell_counts_schema)
+        uri = os.path.join(self.corpus_path, CELL_COUNTS_CUBE_NAME)
+        self._create_empty_cube(uri, cell_counts_schema)
         logger.info("Writing cell counts cube.")
         tiledb.from_pandas(uri, df, mode="append")
+
+    @log_func_runtime
+    def create_marker_genes_cube(self):
+        logger.info("Calculating marker genes.")
+        with open(os.path.join(self.corpus_path, PRIMARY_FILTER_DIMENSIONS_FILENAME), "r") as f, tiledb.open(
+            os.path.join(self.corpus_path, CELL_COUNTS_CUBE_NAME), "r"
+        ) as cell_counts_cube, tiledb.open(
+            os.path.join(self.corpus_path, EXPRESSION_SUMMARY_CUBE_NAME), "r"
+        ) as expression_summary_cube:
+            primary_filter_dimensions = json.load(f)
+            snapshot = WmgSnapshot(
+                primary_filter_dimensions=primary_filter_dimensions,
+                cell_counts_cube=cell_counts_cube,
+                expression_summary_cube=expression_summary_cube,
+            )
+            ontology_tree = get_ontology_tree_builder(snapshot=snapshot)
+            calculator = MarkerGenesCalculator(
+                snapshot=snapshot,
+                all_cell_type_ids_in_corpus=ontology_tree.all_cell_types_in_corpus,
+                groupby_terms=["tissue_ontology_term_id"],
+            )
+            marker_genes = calculator.get_computational_marker_genes()
+        marker_gene_records = []
+        for key in marker_genes:
+            for marker_gene in marker_genes[key]:
+                marker_gene_records.append(
+                    {
+                        "tissue_ontology_term_id": marker_gene.groupby_dims["tissue_ontology_term_id"],
+                        "cell_type_ontology_term_id": key,
+                        "gene_ontology_term_id": marker_gene.gene_ontology_term_id,
+                        "marker_score": marker_gene.marker_score,
+                    }
+                )
+        marker_genes_df = pd.DataFrame(marker_gene_records)
+        uri = os.path.join(self.corpus_path, MARKER_GENES_CUBE_NAME)
+        self._create_empty_cube(uri, cell_counts_schema)
+        logger.info("Writing cell counts cube.")
+        tiledb.from_pandas(uri, marker_genes_df, mode="append")
+
+    @log_func_runtime
+    def create_expression_summary_cube(self, write_chunk_size: Optional[int] = 50_000_000):
+        """
+        Create the expression summary cube.
+
+        Args:
+            write_chunk_size (int, optional): The size of the write chunk. Defaults to 50_000_000.
+        """
+        self._load_obs_and_var_dfs_if_necessary()
+
+        uri = os.path.join(self.corpus_path, EXPRESSION_SUMMARY_CUBE_NAME)
+        cube_dims = expression_summary_indexed_dims_no_gene_ontology + expression_summary_non_indexed_dims
+
+        ctx = create_ctx()
+        with tiledb.scope_ctx(ctx):
+            self._create_empty_cube(uri, expression_summary_schema)
+            dims, vals = self._summarize_gene_expressions(cube_dims=cube_dims, schema=expression_summary_schema)
+
+            num_chunks = math.ceil(dims[0].size / write_chunk_size)
+
+            with tiledb.open(uri, "w") as cube:
+                for i in range(num_chunks):
+                    logger.info(f"Writing chunk {i} to {uri}")
+                    dims_chunk = tuple(dim[i * write_chunk_size : (i + 1) * write_chunk_size] for dim in dims)
+                    vals_chunk = {k: vals[k][i * write_chunk_size : (i + 1) * write_chunk_size] for k in vals}
+                    cube[dims_chunk] = vals_chunk
+
+            logger.info("Consolidating and vacuuming")
+            tiledb.consolidate(uri)
+            tiledb.vacuum(uri)
 
     @log_func_runtime
     def _summarize_gene_expressions(self, *, cube_dims: list, schema: tiledb.ArraySchema):
@@ -446,7 +466,6 @@ class SummaryCubesBuilder:
 
         return dims, vals
 
-    def _create_empty_cube_if_not_exists(self, uri: str, schema: tiledb.ArraySchema):
-        if not os.path.exists(uri):
-            logger.info(f"Creating empty cube at {uri}")
-            create_empty_cube(uri, schema)
+    def _create_empty_cube(self, uri: str, schema: tiledb.ArraySchema):
+        logger.info(f"Creating empty cube at {uri}")
+        create_empty_cube(uri, schema)
