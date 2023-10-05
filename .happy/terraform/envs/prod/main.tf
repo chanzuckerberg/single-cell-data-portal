@@ -25,4 +25,5 @@ module stack {
   backend_workers              = 5 # Rule of thumb is num CPUs + 1
 
   wait_for_steady_state        = var.wait_for_steady_state
+  dd_key_secret_arn            = "arn:aws:secretsmanager:us-west-2:231426846575:secret:dd_api_key-tvi1Ey"
 }

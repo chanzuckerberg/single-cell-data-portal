@@ -147,3 +147,8 @@ variable backend_workers {
   description = "Number of backend workers to run. Set to 1 by default for dev and staging."
   default     = 1
 }
+
+variable dd_key_secret_arn {
+  type        = string
+  description = "ARN for the Datadog secret key"
+}
