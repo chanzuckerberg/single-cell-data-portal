@@ -18,7 +18,7 @@ from tests.unit.cellguide_pipeline.constants import (
     CANONICAL_MARKER_GENES_FIXTURE_FILENAME,
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
 )
-from tests.unit.cellguide_pipeline.mocks import mock_get_asctb_master_sheet
+from tests.unit.cellguide_pipeline.mocks import mock_get_asctb_master_sheet, mock_get_title_and_citation_from_doi
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
@@ -38,6 +38,9 @@ class CanonicalMarkerGeneCompilerTests(unittest.TestCase):
             with patch(
                 "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_asctb_master_sheet",
                 new=mock_get_asctb_master_sheet,
+            ), patch(
+                "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_title_and_citation_from_doi",
+                new=mock_get_title_and_citation_from_doi,
             ):
                 marker_gene_compiler = CanonicalMarkerGenesCompiler(
                     wmg_tissues=wmg_tissues, wmg_human_genes=wmg_human_genes
@@ -46,13 +49,11 @@ class CanonicalMarkerGeneCompilerTests(unittest.TestCase):
                 canonical_marker_genes = convert_dataclass_to_dict_and_strip_nones(
                     marker_gene_compiler.get_processed_asctb_table_entries()
                 )
-
             self.assertTrue(compare_dicts(canonical_marker_genes, expected__canonical_marker_genes))
 
 
 class CanonicalMarkerGeneCompilerUtilsTests(unittest.TestCase):
     def test__clean_doi(self):
-
         test_cases = [
             ("10.1016/j.cell.2019.11.025", "10.1016/j.cell.2019.11.025"),
             ("DOI: 10.1016/j.cell.2019.11.025.", "10.1016/j.cell.2019.11.025"),
