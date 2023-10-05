@@ -24,7 +24,7 @@ resource aws_ecs_service service {
 }
 
 data "aws_secretsmanager_secret" "secrets" {
-  arn = "arn:aws:secretsmanager:us-west-2:699936264352:secret:dd_api_key-nGPNwx"
+  arn = var.dd_key_secret_arn
 }
 
 data "aws_secretsmanager_secret_version" "current" {
