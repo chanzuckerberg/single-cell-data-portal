@@ -85,7 +85,7 @@ class SummaryCubesBuilder:
         with cellxgene_census.open_soma(census_version="latest") as census:
             obs_df = census["census_data"][organism]["obs"].read().concat().to_pandas().set_index("soma_joinid")
             obs_df["organism_ontology_term_id"] = organismId
-            obs_df = obs_df[obs_df["is_primary_data"]]
+            obs_df = obs_df[obs_df["is_primary_data"] & (obs_df["nnz"] >= GENE_EXPRESSION_COUNT_MIN_THRESHOLD)]
             obs_df = obs_df.rename(columns=DIMENSION_NAME_MAP_CENSUS_TO_WMG)
             var_df = (
                 census["census_data"][organism]["ms"]["RNA"]["var"].read().concat().to_pandas().set_index("soma_joinid")
@@ -215,10 +215,9 @@ class SummaryCubesBuilder:
                 "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
             )
         logger.info("Creating the cell counts cube and filter relationships graph.")
-        obs_df_filtered = self.obs_df.iloc[self.obs_coords_to_keep]
 
         df = (
-            obs_df_filtered.groupby(
+            self.obs_df.groupby(
                 by=[dim for dim in cell_counts_logical_dims if dim != "publication_citation"],
                 as_index=False,
             ).size()
@@ -328,15 +327,18 @@ class SummaryCubesBuilder:
         """
         This method reduces the X matrix and stores the results in cube_sum, cube_nnz, and cube_sqsum.
         """
-        self.obs_coords_to_keep = []
-
         with cellxgene_census.open_soma(
             census_version=self.census_version,
         ) as census:
             organism = census["census_data"][self.organism]
             row_stride = 50_000
 
-            with organism.axis_query("RNA", obs_query=soma.AxisQuery(value_filter="is_primary_data == True")) as query:
+            with organism.axis_query(
+                "RNA",
+                obs_query=soma.AxisQuery(
+                    value_filter=f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD}"
+                ),
+            ) as query:
                 logger.info(f"Reducing X with {self.obs_df.shape[0]} total cells")
 
                 iteration = 0
@@ -345,14 +347,6 @@ class SummaryCubesBuilder:
                     iteration += 1
 
                     obs_soma_joinids_chunk = query.indexer.by_obs(obs_soma_joinids_chunk)
-
-                    gene_counts_per_cell = np.diff(raw_array.indptr)
-                    keep = gene_counts_per_cell >= GENE_EXPRESSION_COUNT_MIN_THRESHOLD
-
-                    # filter cells
-                    raw_array = raw_array[keep]
-                    obs_soma_joinids_chunk = obs_soma_joinids_chunk[keep]
-                    self.obs_coords_to_keep.extend(obs_soma_joinids_chunk)
 
                     data_filt = raw_array.data >= RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
 
@@ -377,7 +371,6 @@ class SummaryCubesBuilder:
                         nnz_into=cube_nnz,
                         sqsum_into=cube_sqsum,
                     )
-        self.obs_coords_to_keep = sorted(self.obs_coords_to_keep)
 
     @log_func_runtime
     def _build_in_mem_cube(
