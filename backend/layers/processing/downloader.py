@@ -1,7 +1,6 @@
 import contextlib
 import logging
 import shutil
-import threading
 
 import requests
 
@@ -10,59 +9,6 @@ from backend.layers.common.entities import DatasetStatusKey, DatasetUploadStatus
 from backend.layers.processing.exceptions import UploadFailed
 
 logger = logging.getLogger("processing")
-
-
-class ProgressTracker:
-    def __init__(self, file_size: int):
-        self.file_size: int = file_size
-        self._progress: int = 0
-        self.progress_lock: threading.Lock = threading.Lock()  # prevent concurrent access of ProgressTracker._progress
-        self.stop_updater: threading.Event = threading.Event()  # Stops the update_progress thread
-        self.stop_downloader: threading.Event = threading.Event()  # Stops the downloader threads
-        self.error: Exception = None  # Track errors
-        self.tombstoned: bool = False  # Track if dataset tombstoned
-
-    def progress(self):
-        with self.progress_lock:
-            return self._progress / self.file_size
-
-    def update(self, progress):
-        with self.progress_lock:
-            self._progress += progress
-
-    def cancel(self):
-        self.tombstoned = True
-        self.stop_downloader.set()
-        self.stop_updater.set()
-
-
-class NoOpProgressTracker:
-    """
-    This progress tracker should be used if file_size isn't available.
-    It will return a progress of 1 if no errors occurred
-    during the download (i.e. if self.error was never set), otherwise it will return 0.
-    """
-
-    def __init__(self) -> None:
-        self.progress_lock: threading.Lock = threading.Lock()  # prevent concurrent access of ProgressTracker._progress
-        self.stop_updater: threading.Event = threading.Event()  # Stops the update_progress thread
-        self.stop_downloader: threading.Event = threading.Event()  # Stops the downloader threads
-        self.error: Exception = None  # Track errors
-        self.tombstoned: bool = False  # Track if dataset tombstoned
-
-    def progress(self):
-        if self.error:
-            return 0
-        else:
-            return 1
-
-    def update(self, progress):
-        pass
-
-    def cancel(self):
-        self.tombstoned = True
-        self.stop_downloader.set()
-        self.stop_updater.set()
 
 
 class Downloader:
@@ -123,11 +69,6 @@ class Downloader:
         )
         # TODO: set upload_progress to 0
 
-        # if file_size is not None:
-        #     progress_tracker = ProgressTracker(file_size)
-        # else:
-        #     progress_tracker = NoOpProgressTracker()
-
         with contextlib.suppress(Exception):
             self.download_file(url, local_path, chunk_size)
             # TODO: maybe add a check on the file size
@@ -135,20 +76,3 @@ class Downloader:
         self.business_logic.update_dataset_version_status(
             dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED
         )
-
-        # progress_thread.join()  # Wait for the progress thread to complete
-        # if progress_tracker.tombstoned:
-        #     raise ProcessingCancelled
-        # if progress_tracker.error:
-        #     status = {
-        #         "upload_status": UploadStatus.FAILED,
-        #         "upload_message": str(progress_tracker.error),
-        #     }
-        #     _processing_status_updater(processing_status, status)
-
-        # status_dict = processing_status.to_dict()
-        # if processing_status.upload_status == UploadStatus.FAILED:
-        #     logger.error(f"Upload failed: {status_dict}")
-        #     raise ProcessingFailed(status_dict)
-        # else:
-        #     return status_dict

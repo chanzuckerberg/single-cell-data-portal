@@ -18,7 +18,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ValidationFailed
-from backend.layers.processing.logger import logit
+from backend.layers.processing.logging_utils import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface

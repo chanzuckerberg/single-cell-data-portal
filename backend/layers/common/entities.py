@@ -264,7 +264,7 @@ class CollectionVersionBase:
 
     def is_unpublished_version(self) -> bool:
         """
-        The collection has been published, and this is a unpublished version of the collection.
+        The collection has been published, and this is a unpublished version of the collection. AKA revision
         TODO: After old API code is removed consider moving closer to API layer
         """
         return self.published_at is None and self.canonical_collection.originally_published_at is not None

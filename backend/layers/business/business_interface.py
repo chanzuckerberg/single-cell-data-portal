@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional, Tuple
+from typing import Iterable, List, Optional, Protocol, Tuple
 
 from backend.layers.business.entities import (
     CollectionMetadataUpdate,
@@ -27,7 +27,7 @@ from backend.layers.common.entities import (
 )
 
 
-class BusinessLogicInterface:
+class BusinessLogicInterface(Protocol):
     def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:
         pass
 
@@ -40,7 +40,7 @@ class BusinessLogicInterface:
         pass
 
     def get_collection_version(
-        self, version_id: CollectionVersionId, get_tombstoned: bool
+        self, version_id: CollectionVersionId, get_tombstoned: bool = False
     ) -> CollectionVersionWithDatasets:
         pass
 
@@ -108,6 +108,7 @@ class BusinessLogicInterface:
         url: str,
         file_size: Optional[int],
         existing_dataset_version_id: Optional[DatasetVersionId],
+        start_step_function: bool = True,
     ) -> Tuple[DatasetVersionId, DatasetId]:
         pass
 

@@ -21,7 +21,7 @@ from backend.layers.processing.exceptions import (
     UploadFailed,
     ValidationFailed,
 )
-from backend.layers.processing.logger import configure_logging
+from backend.layers.processing.logging_utils import configure_logging
 from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from backend.layers.processing.process_logic import ProcessingLogic

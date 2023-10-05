@@ -21,11 +21,11 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
-from backend.layers.processing import logger
+from backend.layers.processing import logging_utils
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider, sfn_name_generator
 
-logger.configure_logging(level=logging.INFO)
+logging_utils.configure_logging(level=logging.INFO)
 
 
 class SchemaMigrate(ProcessingLogic):
@@ -126,7 +126,6 @@ class SchemaMigrate(ProcessingLogic):
     def collection_migrate(self, collection_id: str, collection_version_id: str, can_publish: bool) -> Dict[str, Any]:
         # Get datasets from collection
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
-        cxs_get_current_schema_version()
         datasets = [
             dataset for dataset in version.datasets if not self._check_dataset_is_latest_schema_version(dataset)
         ]
@@ -183,7 +182,6 @@ class SchemaMigrate(ProcessingLogic):
     def publish_and_cleanup(self, collection_version_id: str, can_publish: bool) -> list:
         errors = []
         collection_version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
-        cxs_get_current_schema_version()
         object_keys_to_delete = []
 
         # Get the datasets that were processed

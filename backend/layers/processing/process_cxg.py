@@ -6,7 +6,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.processing.h5ad_data_file import H5ADDataFile
-from backend.layers.processing.logger import logit
+from backend.layers.processing.logging_utils import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
