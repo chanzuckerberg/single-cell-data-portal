@@ -25,7 +25,7 @@ from backend.layers.common.entities import (
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
-from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
+from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface, MockCrossrefProvider
 from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
@@ -103,7 +103,7 @@ class BaseTest(unittest.TestCase):
         else:
             self.database_provider = DatabaseProviderMock()
 
-        self.crossref_provider = Mock(spec=CrossrefProviderInterface)
+        self.crossref_provider = MockCrossrefProvider()
         step_function_provider = Mock(spec=StepFunctionProviderInterface)
         self.s3_provider = MockS3Provider()
         self.uri_provider = Mock(spec=UriProviderInterface)
@@ -153,12 +153,12 @@ class BaseTest(unittest.TestCase):
     def tearDown(self):
         super().tearDown()
         if self.run_as_integration:
-            self.database_provider._drop_schema()
+            self.database_provider._drop_schema()  # type: ignore
 
     @classmethod
     def tearDownClass(cls) -> None:
         if cls.run_as_integration:
-            cls.database_provider._engine.dispose()
+            cls.database_provider._engine.dispose()  # type: ignore
 
     def get_sample_dataset_metadata(self):
         """
@@ -207,7 +207,7 @@ class BaseTest(unittest.TestCase):
     def generate_published_collection(
         self,
         owner="test_user_id",
-        links: List[Link] = None,
+        links: Optional[List[Link]] = None,
         add_datasets: int = 1,
         curator_name: str = "Jane Smith",
         metadata=None,
@@ -292,13 +292,14 @@ class BaseTest(unittest.TestCase):
         # TODO: implement as needed
         return body
 
-    def generate_collection(self, links: Optional[List[dict]] = None, **kwargs) -> CollectionVersionWithDatasets:
+    def generate_collection(
+        self, links: Optional[List[dict]] = None, visibility: str = "PUBLIC", **kwargs
+    ) -> CollectionVersionWithDatasets:
         """Generated a collection
         Adding to for compatibility with old tests
         """
         links = links if links else []
         _links = [api_link_dict_to_link_class(lk) for lk in links]
-        visibility = kwargs.pop("visibility", "PUBLIC")
         if visibility == "PUBLIC":
             return self.generate_published_collection(links=_links, **kwargs)
         else:

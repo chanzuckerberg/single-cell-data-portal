@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Protocol
+from typing import Optional, Protocol
 from urllib.parse import urlparse
 
 import requests
@@ -144,7 +144,7 @@ class CrossrefProvider(CrossrefProviderInterface):
         except Exception as e:
             raise CrossrefParseException("Cannot parse metadata from Crossref") from e
 
-    def fetch_preprint_published_doi(self, doi):
+    def fetch_preprint_published_doi(self, doi) -> Optional[str]:
         """
         Given a preprint DOI, returns the DOI of the published paper, if available.
         """
@@ -160,3 +160,23 @@ class CrossrefProvider(CrossrefProviderInterface):
                     return published_doi[0]["id"]
             except Exception:
                 pass
+
+
+class MockCrossrefProvider(CrossrefProviderInterface):
+    """
+    Mock provider class used to call Crossref and retrieve publisher metadata
+    """
+
+    def fetch_metadata(self, doi: str) -> dict:
+        return {
+            "authors": [{"given": "John", "family": "Doe"}],
+            "published_year": 2020,
+            "published_month": 1,
+            "published_day": 1,
+            "published_at": datetime.timestamp(datetime(2020, 1, 1)),
+            "journal": "Journal of Mocking",
+            "is_preprint": False,
+        }
+
+    def fetch_preprint_published_doi(self, doi) -> Optional[str]:
+        return None
