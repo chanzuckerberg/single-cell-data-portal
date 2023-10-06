@@ -268,7 +268,7 @@ describe("WMG tissue auto-expand", () => {
   test("Tissue auto expansion - cross filter with Disease filter", async ({
     page,
   }) => {
-    const tissues = FILTERED_TISSUES.slice(2, 3);
+    const tissues = ["blood"];
     await loadPageAndTissues(page);
     await filterTissues(page);
     await filterSelection(
@@ -294,9 +294,7 @@ describe("WMG tissue auto-expand", () => {
   test("Tissue auto expansion - cross filter with Dataset filter", async ({
     page,
   }) => {
-    let tissues = FILTERED_TISSUES.slice(0, 2);
-    tissues = [...tissues, "brain"];
-
+    const tissues = ["abdomen", "axilla", "brain"];
     await loadPageAndTissues(page);
     await filterTissues(page, tissues);
     await filterSelection(
