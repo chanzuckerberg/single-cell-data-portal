@@ -123,6 +123,7 @@ module frontend_service {
   dataset_submissions_bucket = local.dataset_submissions_bucket
   execution_role             = local.ecs_execution_role
   health_check_interval      = 15
+  dd_key_secret_arn          = var.dd_key_secret_arn
 
   wait_for_steady_state = local.wait_for_steady_state
 }
@@ -153,6 +154,7 @@ module backend_service {
   dataset_submissions_bucket = local.dataset_submissions_bucket
   datasets_bucket            = local.datasets_bucket
   execution_role             = local.ecs_execution_role
+  dd_key_secret_arn          = var.dd_key_secret_arn
 
   wait_for_steady_state = local.wait_for_steady_state
 }

@@ -2,7 +2,13 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
-import { ElementHandle, expect, Locator, Page } from "@playwright/test";
+import {
+  APIRequestContext,
+  ElementHandle,
+  expect,
+  Locator,
+  Page,
+} from "@playwright/test";
 import { TEST_ENV } from "tests/common/constants";
 import { LOGIN_STATE_FILENAME, TEST_URL } from "../common/constants";
 import {
@@ -52,11 +58,11 @@ const TEST_ENVS_DEV_STAGING_PROD = ["dev", "staging", "prod"];
 
 export const isDevStagingProd = TEST_ENVS_DEV_STAGING_PROD.includes(TEST_ENV);
 
-// Skip tests unless environment is dev or staging; used by tests that require a deployed environment but also modify
+// Skip tests unless environment is dev, rdev, or staging; used by tests that require a deployed environment but also modify
 // environment data (e.g. creating collections, which should be avoided in prod).
-const TEST_ENVS_DEV_STAGING = ["dev", "staging"];
+const TEST_ENVS_DEV_STAGING = ["dev", "staging", "rdev"];
 
-export const isDevStaging = TEST_ENVS_DEV_STAGING.includes(TEST_ENV);
+export const isDevStagingRdev = TEST_ENVS_DEV_STAGING.includes(TEST_ENV);
 
 const GO_TO_PAGE_TIMEOUT_MS = 2 * 60 * 1000;
 
@@ -64,6 +70,10 @@ export async function goToPage(
   url: string = TEST_URL,
   page: Page
 ): Promise<void> {
+  if (!url) {
+    throw Error("goToPage() requires TEST_URL");
+  }
+
   await tryUntil(
     async () => {
       await Promise.all([
@@ -76,7 +86,7 @@ export async function goToPage(
 }
 
 export async function login(page: Page): Promise<void> {
-  console.log("Logging in...");
+  console.log("🔐🪵 Logging in...");
 
   await goToPage(undefined, page);
 
@@ -107,7 +117,7 @@ export async function login(page: Page): Promise<void> {
 
   await page.context().storageState({ path: LOGIN_STATE_FILENAME });
 
-  console.log(`Login success!`);
+  console.log(`✅ Login success!`);
 }
 
 export async function scrollToPageBottom(page: Page): Promise<void> {
@@ -119,19 +129,32 @@ interface TryUntilConfigs {
   maxRetry?: number;
   page: Page;
   silent?: boolean;
+  timeoutMs?: number;
 }
+
+const RETRY_TIMEOUT_MS = 3 * 60 * 1000;
 
 export async function tryUntil(
   assert: () => void,
-  { maxRetry = 50, page, silent = false }: TryUntilConfigs
+  {
+    maxRetry = 50,
+    timeoutMs = RETRY_TIMEOUT_MS,
+    page,
+    silent = false,
+  }: TryUntilConfigs
 ): Promise<void> {
   const WAIT_FOR_MS = 200;
+
+  const startTime = Date.now();
 
   let retry = 0;
 
   let savedError: Error = new Error();
 
-  while (retry < maxRetry) {
+  const hasTimedOut = () => Date.now() - startTime > timeoutMs;
+  const hasMaxedOutRetry = () => retry >= maxRetry;
+
+  while (!hasMaxedOutRetry() && !hasTimedOut()) {
     try {
       await assert();
 
@@ -141,17 +164,22 @@ export async function tryUntil(
       savedError = error as Error;
 
       if (!silent) {
-        console.log("⚠️  tryUntil error-----------------START");
+        console.log("⚠️ tryUntil error-----------------START");
         console.log(savedError.message);
-        console.log("⚠️  tryUntil error-----------------END");
+        console.log("⚠️ tryUntil error-----------------END");
       }
 
       await page.waitForTimeout(WAIT_FOR_MS);
     }
   }
 
-  if (retry === maxRetry) {
-    savedError.message += " tryUntil() failed";
+  if (hasMaxedOutRetry()) {
+    savedError.message = `tryUntil() failed - Maxed out retries of ${maxRetry}: ${savedError.message}`;
+    throw savedError;
+  }
+
+  if (hasTimedOut()) {
+    savedError.message = `tryUntil() failed - Maxed out timeout of ${timeoutMs}ms: ${savedError.message}`;
     throw savedError;
   }
 }
@@ -167,6 +195,39 @@ export async function getInnerText(
   >;
 
   return element.innerText();
+}
+
+export async function getAccessToken(request: APIRequestContext) {
+  if (TEST_ENV !== "rdev") return;
+
+  const secret = JSON.parse(
+    (await client.send(command)).SecretString || "null"
+  );
+
+  const { test_app_id, test_app_secret } = secret;
+
+  const payload = {
+    grant_type: "client_credentials",
+    client_id: test_app_id,
+    client_secret: test_app_secret,
+    audience:
+      "https://api.cellxgene.dev.single-cell.czi.technology/dp/v1/curator",
+  };
+
+  const response = await request.post(
+    "https://czi-cellxgene-dev.us.auth0.com/oauth/token",
+    {
+      data: payload,
+    }
+  );
+
+  const { access_token } = await response.json();
+
+  if (!access_token) {
+    throw Error("No Auth0 access token!");
+  }
+
+  process.env.ACCESS_TOKEN = access_token;
 }
 
 async function getTestUsernameAndPassword() {

@@ -143,3 +143,8 @@ variable "health_check_interval" {
   description = "Interval for the health check pings"
   default     = 15
 }
+
+variable dd_key_secret_arn {
+  type        = string
+  description = "ARN for the Datadog secret key"
+}
