@@ -34,6 +34,7 @@ const DATASET_FILTER_SELECTED = "Combined samples";
 const EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER = ["abdomen", "blood"];
 const EXPECTED_EXPANDED_TISSUES = ["blood"];
 const EXPECTED_VISIBLE_CELL = ["B Cell"];
+const EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER = ["axilla", "brain"];
 
 const { describe } = test;
 
@@ -305,13 +306,12 @@ describe("WMG tissue auto-expand", () => {
       DATASET_FILTER_SELECTION,
       DATASET_FILTER_SELECTED
     );
-    tissues.splice(0, 1);
-    await checkTissues(page, tissues);
+    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER);
     await filterCellType(page, 1);
     await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
-    await checkTissues(page, tissues);
+    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER);
     await removeCellFilter(page);
-    await checkTissues(page, tissues);
+    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER);
   });
 });
 
