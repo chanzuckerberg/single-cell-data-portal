@@ -16,7 +16,7 @@ from backend.cellguide.pipeline.computational_marker_genes.utils import (
 )
 from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
 from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
-from backend.common.utils.rollup import rollup_across_cell_type_descendants, rollup_across_cell_type_descendants_array
+from backend.common.utils.rollup import rollup_across_cell_type_descendants_array
 from backend.wmg.data.snapshot import WmgSnapshot
 
 logger = logging.getLogger(__name__)
@@ -114,8 +114,7 @@ def _process_cell_type__parallel(
 
 
 class MarkerGenesCalculator:
-    def __init__(self, *, snapshot: WmgSnapshot, all_cell_type_ids_in_corpus: list[str], groupby_terms: list[str]):
-        self.all_cell_type_ids_in_corpus = all_cell_type_ids_in_corpus
+    def __init__(self, *, snapshot: WmgSnapshot, groupby_terms: list[str]):
         self.organism_id_to_name = {
             k: v for d in snapshot.primary_filter_dimensions["organism_terms"] for k, v in d.items()
         }
@@ -206,39 +205,12 @@ class MarkerGenesCalculator:
 
         # group by cell counts
         cell_counts_df = cell_counts_df.groupby(self.groupby_terms_with_celltype).sum(numeric_only=True)
-        cell_counts_df = cell_counts_df[
-            cell_counts_df.index.get_level_values("cell_type_ontology_term_id").isin(self.all_cell_type_ids_in_corpus)
-        ]
 
         # group by gene expressions
         expressions_df = expressions_df.groupby(self.groupby_terms_with_celltype_and_gene).sum(numeric_only=True)
         expressions_df = expressions_df.reset_index()
-        expressions_df = expressions_df[
-            expressions_df["cell_type_ontology_term_id"].isin(self.all_cell_type_ids_in_corpus)
-        ]
 
-        # get the cartesian product of the groupby metadata and all the cell types in the corpus
-        index = pd.Index(
-            list(
-                itertools.product(
-                    *[cell_counts_df.index.get_level_values(term).unique() for term in self.groupby_terms]
-                    + [self.all_cell_type_ids_in_corpus]
-                )
-            )
-        )
-        index = index.set_names(self.groupby_terms_with_celltype)
-        # instantiate an empty dataframe with the groups from the cartesian product as the index
-        universe_cell_counts_df = pd.DataFrame(index=index)
-        universe_cell_counts_df["n_cells"] = 0
-        # populate the dataframe with the number of cells from the groups in the cell counts df
-        universe_cell_counts_df["n_cells"][cell_counts_df.index] = cell_counts_df["n_cells"]
-        # roll up the cell counts
-        universe_cell_counts_df = rollup_across_cell_type_descendants(universe_cell_counts_df.reset_index())
-        # remove groups that still have 0 cells after the rollup operation
-        universe_cell_counts_df = universe_cell_counts_df[universe_cell_counts_df["n_cells"] > 0]
-        # remake the multi-index
-        universe_cell_counts_df = universe_cell_counts_df.groupby(self.groupby_terms_with_celltype).sum()
-        return universe_cell_counts_df, expressions_df
+        return cell_counts_df, expressions_df
 
     def get_computational_marker_genes(self) -> dict[str, list[ComputationalMarkerGenes]]:
         logger.info("Getting computational marker genes")
@@ -266,20 +238,6 @@ class MarkerGenesCalculator:
         e_sum[groupby_index[groupby_coords].values, gene_index[gene_coords].values] = self.expressions_df["sum"]
         e_sqsum[groupby_index[groupby_coords].values, gene_index[gene_coords].values] = self.expressions_df["sqsum"]
 
-        # get all available combinations from the augmented cell counts dataframe
-        available_combinations = set(cell_counts_df.index.values)
-        # get all the combinations that are missing from the expressions dataframe
-        missing_combinations = available_combinations.difference(groupby_coords_unique)
-
-        # augment the row coordinates with the missing groups
-        groupby_coords_unique = groupby_coords_unique + list(missing_combinations)
-        groupby_index = pd.Series(index=pd.Index(groupby_coords_unique), data=np.arange(len(groupby_coords_unique)))
-
-        # augment the expression arrays with empty values for the missing groups
-        e_nnz = np.vstack((e_nnz, np.zeros((len(missing_combinations), e_nnz.shape[1]))))
-        e_sum = np.vstack((e_sum, np.zeros((len(missing_combinations), e_sum.shape[1]))))
-        e_sqsum = np.vstack((e_sqsum, np.zeros((len(missing_combinations), e_sqsum.shape[1]))))
-
         # for each groupby term, get the corresponding values from the multiindex
         groupby_term_to_values = [groupby_index.index.get_level_values(i) for i in range(len(self.groupby_terms))]
         # get the unique values for each groupby term
@@ -302,7 +260,6 @@ class MarkerGenesCalculator:
         # iterates through each organism and tissue combination.
         logger.info(f"Iterating through all combinations of groupby dimensions {self.groupby_terms}")
         for combination in itertools.product(*groupby_term_to_unique_values):
-
             # get the rows corresponding to groups that match the current "combination"
             filt = groupby_term_to_values[0] == combination[0]
             for _i in range(1, len(combination)):

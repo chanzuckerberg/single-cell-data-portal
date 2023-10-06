@@ -99,9 +99,7 @@ def run_cellguide_pipeline():
             source_collections = get_source_collections_data(ontology_tree=ontology_tree)
 
         # Get computatoinal marker genes
-        computational_marker_genes, reformatted_marker_genes = get_computational_marker_genes(
-            snapshot=snapshot, ontology_tree=ontology_tree
-        )
+        computational_marker_genes, reformatted_marker_genes = get_computational_marker_genes(snapshot=snapshot)
 
         output_json(
             ontology_tree_data.ontology_graph,
