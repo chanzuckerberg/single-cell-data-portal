@@ -50,7 +50,7 @@ class SchemaMigrate(ProcessingLogic):
                 published_collections = random.sample(published_collections, self.limit_select // 2)
         return itertools.chain(unpublished_collections, published_collections)
 
-    def gather_collections(self) -> List[Dict[str, str]]:
+    def gather_collections(self, auto_publish: bool) -> List[Dict[str, str]]:
         """
         This function is used to gather all the collections and their datasets that will be migrated
         :return: A dictionary with the following structure:
@@ -61,6 +61,9 @@ class SchemaMigrate(ProcessingLogic):
             "<collection_version_id>"}
             ...
         ]
+
+        :param auto_publish: bool - if False, coerce can_publish to False for all collections. if True, determine
+        can_publish on collection-by-collection basis based on business logic
         """
         response = []
 
@@ -68,7 +71,10 @@ class SchemaMigrate(ProcessingLogic):
         has_revision = []  # list of collections to skip if published with an active revision
         for collection in self.limit_collections():
             _resp = {}
-            if collection.is_published() and collection.collection_id not in has_revision:
+            if not auto_publish:
+                # nothing should be published, because auto_publish is set to False
+                _resp["can_publish"] = str(False)
+            elif collection.is_published() and collection.collection_id not in has_revision:
                 # published collection without an active revision
                 _resp["can_publish"] = str(True)
             elif collection.is_unpublished_version():
@@ -330,7 +336,8 @@ class SchemaMigrate(ProcessingLogic):
         self.logger.info(f"Starting {step_name}", extra={"step": step_name})
         if step_name == "gather_collections":
             gather_collections = self.error_wrapper(self.gather_collections, "gather_collections")
-            response = gather_collections()
+            auto_publish = os.environ["CAN_PUBLISH"].lower() == "true"
+            response = gather_collections(auto_publish)
         elif step_name == "collection_migrate":
             collection_id = os.environ["COLLECTION_ID"]
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]
