@@ -619,6 +619,12 @@ def _get_markers_ttest(target_filters, context_filters, corpus=None, n_markers=1
     pvals, effects = _run_ttest(
         target_data_sum, target_data_sumsq, n_target, context_data_sum, context_data_sumsq, n_context
     )
+    import pickle
+
+    pickle.dump(
+        (pvals, effects, target_data_sum, target_data_sumsq, n_target, context_data_sum, context_data_sumsq, n_context),
+        open("ttest.pkl", "wb"),
+    )
 
     if "cell_type_ontology_term_ids" in target_filters:
         cell_type_target = target_filters["cell_type_ontology_term_ids"][0]
