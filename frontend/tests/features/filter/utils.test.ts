@@ -2,7 +2,7 @@
  * Test suite for filter-related utils.
  */
 
-import { expect, test } from "@playwright/test";
+import test, { expect } from "@playwright/test";
 import { DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET } from "src/components/common/Filter/common/constants";
 import {
   findOntologyNodeById,

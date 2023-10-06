@@ -1,5 +1,6 @@
-import { expect, test, Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { toInteger } from "lodash";
+import { test } from "tests/common/test";
 import { collapseTissue, expandTissue, tryUntil } from "tests/utils/helpers";
 import { goToWMG } from "tests/utils/wmgUtils";
 
