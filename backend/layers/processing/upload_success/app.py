@@ -3,13 +3,11 @@ import logging
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatusKey, DatasetVersionId
 from backend.layers.persistence.persistence import DatabaseProvider
-
-database_provider = DatabaseProvider()
-business_logic = BusinessLogic(database_provider, None, None, None, None)
-
 from backend.layers.processing import logging_utils
 
 logging_utils.configure_logging(level=logging.INFO)
+database_provider = DatabaseProvider()
+business_logic = BusinessLogic(database_provider, None, None, None, None)
 
 
 def success_handler(event: dict, context) -> None:
