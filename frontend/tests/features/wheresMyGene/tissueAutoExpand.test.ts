@@ -33,6 +33,7 @@ const DATASET_FILTER_SELECTION =
 const DATASET_FILTER_SELECTED = "Combined samples";
 const EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER = ["abdomen", "blood"];
 const EXPECTED_EXPANDED_TISSUES = ["blood"];
+const EXPECTED_VISIBLE_CELL = ["B Cell"];
 
 const { describe } = test;
 
@@ -92,11 +93,7 @@ describe("WMG tissue auto-expand", () => {
     await filterTissues(page);
     await filterCellType(page, 1);
     await checkTissues(page);
-    await checkElementVisible(
-      page,
-      CELL_TYPE_FILTERS.slice(0, 1),
-      CELL_TYPE_TEST_ID
-    );
+    await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
     await removeCellFilter(page);
     await expect(
       checkElementVisible(page, CELL_TYPE_FILTERS, CELL_TYPE_TEST_ID)
@@ -112,7 +109,7 @@ describe("WMG tissue auto-expand", () => {
     page,
   }) => {
     const tissues = FILTERED_TISSUES.slice(0, 2);
-    const cells = CELL_TYPE_FILTERS.slice(0, 1);
+    const cells = EXPECTED_VISIBLE_CELL;
     await loadPageAndTissues(page);
     await filterTissues(page, tissues);
     await collapseTissue(page, tissues[0]);
@@ -150,7 +147,6 @@ describe("WMG tissue auto-expand", () => {
   test("Tissue auto expansion - cross filter with Sex filter selected", async ({
     page,
   }) => {
-    const tissues = FILTERED_TISSUES.slice(0, 1);
     await loadPageAndTissues(page);
     await filterSelection(
       page,
@@ -158,9 +154,10 @@ describe("WMG tissue auto-expand", () => {
       SEX_FILTER_LABEL,
       SEX_FILTER_SELECTION
     );
-    await filterTissues(page, tissues);
+    await filterTissues(page, EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER);
     await filterCellType(page, 1);
-    await checkTissues(page, tissues);
+    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER);
+    await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
   });
 
   /**
@@ -215,11 +212,7 @@ describe("WMG tissue auto-expand", () => {
     await collapseTissue(page, tissues[0]);
     await filterCellType(page, 1);
     await checkTissues(page, tissues);
-    await checkElementVisible(
-      page,
-      CELL_TYPE_FILTERS.slice(0, 1),
-      CELL_TYPE_TEST_ID
-    );
+    await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
   });
 
   /**
@@ -286,11 +279,7 @@ describe("WMG tissue auto-expand", () => {
     );
     await checkTissues(page, tissues);
     await filterCellType(page, 1);
-    await checkElementVisible(
-      page,
-      CELL_TYPE_FILTERS.slice(0, 1),
-      CELL_TYPE_TEST_ID
-    );
+    await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
     await checkTissues(page, tissues);
     await removeCellFilter(page);
     await checkTissues(page, tissues);
@@ -320,11 +309,7 @@ describe("WMG tissue auto-expand", () => {
     tissues.splice(0, 1);
     await checkTissues(page, tissues);
     await filterCellType(page, 1);
-    await checkElementVisible(
-      page,
-      CELL_TYPE_FILTERS.slice(0, 1),
-      CELL_TYPE_TEST_ID
-    );
+    await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
     await checkTissues(page, tissues);
     await removeCellFilter(page);
     await checkTissues(page, tissues);
