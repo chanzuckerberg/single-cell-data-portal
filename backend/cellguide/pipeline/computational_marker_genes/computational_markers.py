@@ -43,6 +43,7 @@ def _process_cell_type__parallel(
     gene_index: pd.Series,
     combination: tuple[str],
     groupby_terms: list[str],
+    effect_size_percentile: float,
 ) -> pd.DataFrame:
     """
     This function is used in a multiprocessing Pool to process each cell type in parallel.
@@ -93,7 +94,7 @@ def _process_cell_type__parallel(
         genes=gene_index.index.values,
         pvals=pvals,
         effects=effects,
-        percentile=0.05,
+        percentile=effect_size_percentile,
     )
 
     # create a dataframe containing the ranked genes, p-values, effect sizes, current combination
@@ -240,7 +241,7 @@ class MarkerGenesCalculator:
         universe_cell_counts_df = universe_cell_counts_df.groupby(self.groupby_terms_with_celltype).sum()
         return universe_cell_counts_df, expressions_df
 
-    def get_computational_marker_genes(self) -> dict[str, list[ComputationalMarkerGenes]]:
+    def get_computational_marker_genes(self, effect_size_percentile=0.15) -> dict[str, list[ComputationalMarkerGenes]]:
         logger.info("Getting computational marker genes")
         cell_counts_df = self.cell_counts_df
 
@@ -302,7 +303,6 @@ class MarkerGenesCalculator:
         # iterates through each organism and tissue combination.
         logger.info(f"Iterating through all combinations of groupby dimensions {self.groupby_terms}")
         for combination in itertools.product(*groupby_term_to_unique_values):
-
             # get the rows corresponding to groups that match the current "combination"
             filt = groupby_term_to_values[0] == combination[0]
             for _i in range(1, len(combination)):
@@ -338,6 +338,7 @@ class MarkerGenesCalculator:
                     gene_index=gene_index,
                     combination=combination,
                     groupby_terms=self.groupby_terms,
+                    effect_size_percentile=effect_size_percentile,
                 )
                 for i in range(len(cell_types_o))
             ]
