@@ -5,16 +5,10 @@ import {
   verifyAddedGene,
 } from "tests/utils/geneUtils";
 import { selectNthOption } from "tests/utils/helpers";
-import { conditionallyRunTests, goToWMG } from "tests/utils/wmgUtils";
+import { goToWMG } from "tests/utils/wmgUtils";
 const { describe } = test;
 
 describe("Manage gene tests", () => {
-  /**
-   * TODO(thuang): Remove forceRun when all WMG e2e tests are enabled.
-   * `forceRun` is just to incrementally add tests back in the meantime
-   */
-  conditionallyRunTests({ forceRun: true });
-
   test("Should select gene using keyboard arrow key to select", async ({
     page,
   }) => {

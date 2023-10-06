@@ -39,7 +39,7 @@ jobs:
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
-          happy_version: "0.85.1"
+          happy_version: "0.110.1"
       - name: Docker build, push, and tag
         shell: bash
         run: |
@@ -67,7 +67,7 @@ jobs:
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
-          happy_version: "0.85.1"
+          happy_version: "0.110.1"
       - name: Docker build, push, and tag
         shell: bash
         run: |
@@ -95,7 +95,7 @@ jobs:
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
-          happy_version: "0.85.1"
+          happy_version: "0.110.1"
       - name: Docker build, push, and tag
         shell: bash
         run: |

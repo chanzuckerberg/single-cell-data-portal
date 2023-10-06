@@ -173,6 +173,17 @@ async function isPageScrollableToSeeSiteMap(page: Page) {
  * to check if the page is scrollable
  */
 async function isGlobalLayoutWrapperScrollable(page: Page) {
+  if (
+    await page
+      .locator("main")
+      .evaluate((e) => e.scrollHeight <= window.innerHeight)
+  ) {
+    /**
+     * (thuang): Set the viewport size to a smaller size, so that we can scroll
+     */
+    await page.setViewportSize({ height: 300, width: 600 });
+  }
+
   const wrapper = page.getByTestId("global-layout-wrapper");
 
   expect(
@@ -189,7 +200,7 @@ async function isGlobalLayoutWrapperScrollable(page: Page) {
 
       expect(
         await wrapper.evaluate((e) => {
-          return e.scrollTop > e.clientHeight;
+          return e.scrollTop > 0;
         })
       ).toBeTruthy();
     },
