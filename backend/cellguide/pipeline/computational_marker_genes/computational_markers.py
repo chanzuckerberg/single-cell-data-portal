@@ -16,7 +16,7 @@ from backend.cellguide.pipeline.computational_marker_genes.utils import (
 )
 from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
 from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
-from backend.common.utils.rollup import rollup_across_cell_type_descendants_array
+from backend.common.utils.rollup import rollup_across_cell_type_descendants, rollup_across_cell_type_descendants_array
 from backend.wmg.data.snapshot import WmgSnapshot
 
 logger = logging.getLogger(__name__)
@@ -204,11 +204,15 @@ class MarkerGenesCalculator:
         logger.info("Preparing cell counts and gene expression dataframes")
 
         # group by cell counts
-        cell_counts_df = cell_counts_df.groupby(self.groupby_terms_with_celltype).sum(numeric_only=True)
+        cell_counts_df = cell_counts_df.groupby(self.groupby_terms_with_celltype).sum(numeric_only=True).reset_index()
+        cell_counts_df = rollup_across_cell_type_descendants(cell_counts_df)
+        # remake the multi-index
+        cell_counts_df.set_index(self.groupby_terms_with_celltype, inplace=True)
 
         # group by gene expressions
-        expressions_df = expressions_df.groupby(self.groupby_terms_with_celltype_and_gene).sum(numeric_only=True)
-        expressions_df = expressions_df.reset_index()
+        expressions_df = (
+            expressions_df.groupby(self.groupby_terms_with_celltype_and_gene).sum(numeric_only=True).reset_index()
+        )
 
         return cell_counts_df, expressions_df
 
