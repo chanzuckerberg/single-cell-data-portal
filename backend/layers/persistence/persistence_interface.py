@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import Iterable, List, Optional, Protocol, Tuple, Union
 
 from backend.layers.common.entities import (
     CanonicalCollection,
@@ -27,7 +27,7 @@ class PersistenceException(Exception):
     pass
 
 
-class DatabaseProviderInterface:
+class DatabaseProviderInterface(Protocol):
     def create_canonical_collection(
         self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
     ) -> CollectionVersion:
@@ -52,7 +52,7 @@ class DatabaseProviderInterface:
         """
 
     def get_collection_version_with_datasets(
-        self, version_id: CollectionVersionId, get_tombstoned: bool
+        self, version_id: CollectionVersionId, get_tombstoned: bool = False
     ) -> CollectionVersionWithDatasets:
         """
         Retrieves a specific collection version by id, with datasets
@@ -144,16 +144,6 @@ class DatabaseProviderInterface:
         Finalizes a collection version. This is equivalent to calling:
         1. update_collection_version_mapping
         2. set_published_at
-        """
-
-    def update_collection_version_mapping(self, collection_id: CollectionId, version_id: CollectionVersionId) -> None:
-        """
-        Updates the mapping between the canonical collection `collection_id` and its `version_id`
-        """
-
-    def set_collection_version_published_at(self, version_id: CollectionVersionId, published_at: datetime) -> None:
-        """
-        Sets the `published_at` datetime for a collection version and its datasets
         """
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId, get_tombstoned: bool) -> DatasetVersion:

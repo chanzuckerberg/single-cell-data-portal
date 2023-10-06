@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Protocol
 
 import requests
 
@@ -15,7 +16,7 @@ class FileInfoException(Exception):
     pass
 
 
-class UriProviderInterface:
+class UriProviderInterface(Protocol):
     def validate(self, uri: str) -> bool:
         pass
 

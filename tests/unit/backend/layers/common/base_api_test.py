@@ -2,7 +2,7 @@ import base64
 import json
 import time
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from backend.layers.thirdparty.cdn_provider_interface import CDNProviderInterface
 from tests.unit.backend.layers.api.config import TOKEN_EXPIRES
@@ -74,7 +74,7 @@ class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
         self.mock = patch("backend.common.corpora_config.CorporaAuthConfig.__getattr__", return_value="mock_audience")
         self.mock.start()
 
-        self.cloudfront_provider = CDNProviderInterface()
+        self.cloudfront_provider = Mock(spec=CDNProviderInterface)
 
         from backend.api_server.app import app
 

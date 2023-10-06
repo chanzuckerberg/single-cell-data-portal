@@ -1,6 +1,7 @@
 import itertools
 from datetime import datetime
 from typing import Iterable, List, Optional, Tuple
+from unittest.mock import Mock
 from urllib.parse import urlparse
 
 from flask import Response, jsonify, make_response
@@ -157,7 +158,7 @@ def remove_none(body: dict):
     """
     Removes the values of an object that are None
     """
-    return {k: v for k, v in body.items() if v is not None}
+    return {k: v for k, v in body.items() if not isinstance(v, (type(None), Mock))}
 
 
 # Note: `metadata` can be none while the dataset is uploading

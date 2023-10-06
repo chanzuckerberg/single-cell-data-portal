@@ -1,11 +1,11 @@
-from typing import Iterable, List, Protocol, Tuple
+from typing import Iterable, List, Optional, Protocol, Tuple
 
 
 class S3ProviderInterface(Protocol):
-    def get_file_size(self, path: str) -> int:
+    def get_file_size(self, path: str) -> Optional[int]:
         pass
 
-    def generate_presigned_url(self, path: str) -> str:
+    def generate_presigned_url(self, path: str, expiration: int = 604800) -> str:
         pass
 
     def upload_file(self, src_file: str, bucket_name: str, dst_file: str, extra_args: dict):

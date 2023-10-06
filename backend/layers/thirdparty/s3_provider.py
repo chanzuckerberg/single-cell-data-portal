@@ -2,7 +2,7 @@ import logging
 import os
 import re
 import subprocess
-from typing import Iterable, List, Tuple
+from typing import Iterable, List, Optional, Tuple
 from urllib.parse import urlparse
 
 import boto3
@@ -25,7 +25,7 @@ class S3Provider(S3ProviderInterface):
         parsed_url = urlparse(s3_uri)
         return parsed_url.netloc, parsed_url.path[1:]
 
-    def get_file_size(self, path: str) -> int:
+    def get_file_size(self, path: str) -> Optional[int]:
         """
         Returns the file size of an S3 object located at `path`
         """

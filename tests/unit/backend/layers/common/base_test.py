@@ -24,7 +24,7 @@ from backend.layers.common.entities import (
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
-from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
+from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
 
@@ -100,10 +100,10 @@ class BaseTest(unittest.TestCase):
         else:
             self.database_provider = DatabaseProviderMock()
 
-        self.crossref_provider = CrossrefProviderInterface()
-        step_function_provider = StepFunctionProviderInterface()
-        self.s3_provider = S3ProviderInterface()
-        self.uri_provider = UriProviderInterface()
+        self.crossref_provider = Mock(spec=CrossrefProviderInterface)
+        step_function_provider = Mock(spec=StepFunctionProviderInterface)
+        self.s3_provider = MockS3Provider()
+        self.uri_provider = Mock(spec=UriProviderInterface)
         self.uri_provider.validate = Mock(return_value=True)  # By default, every link should be valid
         self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
 

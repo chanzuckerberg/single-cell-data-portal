@@ -1,5 +1,5 @@
 import contextlib
-from typing import Iterable, List, Set
+from typing import Iterable, List, Optional, Set
 from urllib.parse import urlparse
 
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
@@ -55,3 +55,9 @@ class MockS3Provider(S3ProviderInterface):
 
     def is_empty(self):
         return len(self.mock_s3_fs) == 0
+
+    def generate_presigned_url(self, path: str, expiration: int = 604800) -> str:
+        return f"s3://{path}"
+
+    def get_file_size(self, path: str) -> Optional[int]:
+        return None

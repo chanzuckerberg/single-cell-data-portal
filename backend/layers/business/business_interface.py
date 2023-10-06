@@ -84,9 +84,6 @@ class BusinessLogicInterface(Protocol):
         """
         pass
 
-    def delete_collection(self, collection_id: CollectionId) -> None:
-        pass
-
     def delete_dataset_version_assets(self, dataset_versions: List[DatasetVersion]) -> None:
         pass
 

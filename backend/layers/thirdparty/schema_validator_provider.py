@@ -1,7 +1,7 @@
-from typing import Tuple
+from typing import Protocol, Tuple
 
 
-class SchemaValidatorProviderInterface:
+class SchemaValidatorProviderInterface(Protocol):
     def validate_and_save_labels(self, input_file: str, output_file: str) -> Tuple[bool, list, bool]:
         pass
 

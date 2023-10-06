@@ -1,5 +1,6 @@
 import json
 from time import time
+from typing import Protocol
 
 import boto3
 
@@ -14,7 +15,7 @@ def sfn_name_generator(dataset_version_id: DatasetVersionId, prefix=None) -> str
         return f"{dataset_version_id}_{int(time())}"
 
 
-class StepFunctionProviderInterface:
+class StepFunctionProviderInterface(Protocol):
     def start_step_function(
         self, version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, url: str
     ) -> None:

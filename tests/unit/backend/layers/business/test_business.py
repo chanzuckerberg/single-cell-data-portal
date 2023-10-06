@@ -3,7 +3,7 @@ import unittest
 import uuid
 from copy import deepcopy
 from datetime import datetime
-from typing import List, Tuple
+from typing import Optional, Tuple
 from unittest.mock import Mock, patch
 from uuid import uuid4
 
@@ -44,6 +44,7 @@ from backend.layers.common.entities import (
     OntologyTermId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.thirdparty.crossref_provider import (
     CrossrefDOINotFoundException,
@@ -61,9 +62,10 @@ test_curator_name = "Test User"
 class BaseBusinessLogicTestCase(unittest.TestCase):
     sample_collection_metadata: CollectionMetadata
     sample_dataset_metadata: DatasetMetadata
-
+    run_as_integration: bool
     test_user_name = "test_user_1"
     test_curator_name = "Test User"
+    database_provider: DatabaseProviderInterface
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -71,13 +73,13 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         if cls.run_as_integration:
             database_uri = os.environ.get("DB_URI", "postgresql://postgres:secret@localhost")
             cls.database_provider = DatabaseProvider(database_uri=database_uri)
-            cls.database_provider._drop_schema()
+            cls.database_provider._drop_schema()  # type: ignore
         # Set datasets bucket env var
         os.environ["DATASETS_BUCKET"] = "datasets"
 
     def setUp(self) -> None:
         if self.run_as_integration:
-            self.database_provider._create_schema()
+            self.database_provider._create_schema()  # type: ignore
         else:
             self.database_provider = DatabaseProviderMock()
 
@@ -101,11 +103,11 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         }
 
         # By default these do nothing. They can be mocked by single test cases.
-        self.crossref_provider = CrossrefProviderInterface()
-        self.step_function_provider = StepFunctionProviderInterface()
+        self.crossref_provider = Mock(spec=CrossrefProviderInterface)
+        self.step_function_provider = Mock(spec=StepFunctionProviderInterface)
         self.step_function_provider.start_step_function = Mock()
         self.s3_provider = MockS3Provider()
-        self.uri_provider = UriProviderInterface()
+        self.uri_provider = Mock(spec=UriProviderInterface)
         self.uri_provider.validate = Mock(return_value=True)  # By default, every link should be valid
         self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
 
@@ -156,12 +158,12 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
     def tearDown(self):
         if self.run_as_integration:
-            self.database_provider._drop_schema()
+            self.database_provider._drop_schema()  # type: ignore
 
     @classmethod
     def tearDownClass(cls) -> None:
         if cls.run_as_integration:
-            cls.database_provider._engine.dispose()
+            cls.database_provider._engine.dispose()  # type: ignore
         os.unsetenv("DATASETS_BUCKET")
 
     def initialize_empty_unpublished_collection(
@@ -206,7 +208,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self,
         owner: str = test_user_name,
         curator_name: str = test_curator_name,
-        published_at: datetime = None,
+        published_at: Optional[datetime] = None,
         num_datasets: int = 2,
     ) -> CollectionVersionWithDatasets:
         """
@@ -227,7 +229,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self,
         owner: str = test_user_name,
         curator_name: str = test_curator_name,
-        published_at: datetime = None,
+        published_at: Optional[datetime] = None,
         num_datasets: int = 2,
     ) -> Tuple[CollectionVersionWithDatasets, CollectionVersionWithDatasets]:
         # Published with a published revision.
@@ -243,7 +245,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self,
         owner: str = test_user_name,
         curator_name: str = test_curator_name,
-        published_at: datetime = None,
+        published_at: Optional[datetime] = None,
         num_datasets: int = 2,
     ) -> Tuple[CollectionVersionWithDatasets, CollectionVersionWithDatasets]:
         # Published with an unpublished revision
@@ -264,13 +266,13 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             self.database_provider.add_dataset_artifact(
                 dataset_version_id, DatasetArtifactType.H5AD.value, f"s3://artifacts/{key}"
             )
-            self.s3_provider.upload_file(None, "artifacts", key, None)
+            self.s3_provider.upload_file("None", "artifacts", key, {})
             # At present, not keeping public dataset assets as rows in DatasetArtifact table
-            self.s3_provider.upload_file(None, "datasets", key, None)
+            self.s3_provider.upload_file("None", "datasets", key, {})
         self.database_provider.add_dataset_artifact(
             dataset_version_id, DatasetArtifactType.CXG.value, f"s3://cellxgene/{dataset_version_id}.cxg"
         )
-        self.s3_provider.upload_file(None, "cellxgene", f"{dataset_version_id}.cxg", None)
+        self.s3_provider.upload_file("None", "cellxgene", f"{dataset_version_id}.cxg", {})
         self.database_provider.update_dataset_upload_status(dataset_version_id, DatasetUploadStatus.UPLOADED)
         self.database_provider.update_dataset_validation_status(dataset_version_id, DatasetValidationStatus.VALID)
         self.database_provider.update_dataset_processing_status(dataset_version_id, DatasetProcessingStatus.SUCCESS)
@@ -491,7 +493,7 @@ class TestGetAllCollections(BaseBusinessLogicTestCase):
         self.initialize_collection_with_a_published_revision()
 
         # Add a tombstoned Collection
-        collection_version_to_tombstone: CollectionVersionWithDatasets = self.initialize_published_collection()
+        collection_version_to_tombstone = self.initialize_published_collection()
         self.database_provider.tombstone_collection(collection_version_to_tombstone.collection_id)
 
         # Confirm tombstoned Collection is in place
@@ -1048,12 +1050,12 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
     @patch("backend.layers.business.business.BusinessLogic._delete_from_bucket")
     def test_delete_artifacts(self, _delete_from_bucket_mock):
         bucket = "bucket"
-        artifacts: List[DatasetArtifact] = [
+        artifacts = [
             DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri=f"s3://{bucket}/file.h5ad"),
         ]
         self.business_logic.delete_artifacts(artifacts)
         _delete_from_bucket_mock.assert_called_with(bucket, keys=["file.h5ad"], prefix=None)
-        artifacts: List[DatasetArtifact] = [
+        artifacts = [
             DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.CXG, uri=f"s3://{bucket}/file.cxg/"),
         ]
         self.business_logic.delete_artifacts(artifacts)

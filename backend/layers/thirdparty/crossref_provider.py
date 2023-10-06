@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from typing import Protocol
 from urllib.parse import urlparse
 
 import requests
@@ -7,7 +8,7 @@ import requests
 from backend.common.corpora_config import CorporaConfig
 
 
-class CrossrefProviderInterface:
+class CrossrefProviderInterface(Protocol):
     def fetch_metadata(self, doi: str) -> dict:
         pass
 
