@@ -1,5 +1,5 @@
 import { test } from "@playwright/test";
-import { conditionallyRunTests, goToWMG } from "../../utils/wmgUtils";
+import { goToWMG } from "../../utils/wmgUtils";
 import {
   subDirectory,
   downloadAndVerifyFiles,
@@ -15,8 +15,6 @@ import {
 
 const { describe } = test;
 describe("CSV download tests", () => {
-  conditionallyRunTests({ forceRun: true });
-
   test(`Should verify CSV metadata and header for lung tissue with no group set`, async ({
     page,
   }) => {

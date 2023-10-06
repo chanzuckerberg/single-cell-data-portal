@@ -2,15 +2,13 @@
  * Test suite for select filter-related utils.
  */
 import { expect, test } from "@playwright/test";
-import { conditionallyRunTests, goToWMG } from "../../utils/wmgUtils";
+import { goToWMG } from "../../utils/wmgUtils";
 import { selectFirstOption } from "tests/utils/helpers";
 import { getById } from "tests/utils/selectors";
 
 const { describe } = test;
 
 describe("Right side bar", () => {
-  conditionallyRunTests({ forceRun: true });
-
   test("Should link out to cellxgene documentation", async ({
     page,
     context,
