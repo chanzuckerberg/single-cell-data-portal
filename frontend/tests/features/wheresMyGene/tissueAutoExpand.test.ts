@@ -22,7 +22,7 @@ const PUBLICATION_FILTER_SELECTION = [
 const SELF_REPORTED_ETHNICITY_FILTER_TEST_ID = "self-reported-ethnicity-filter";
 const SELF_REPORTED_ETHNICITY_FILTER_LABEL = "Self-Reported Ethnicity";
 const SELF_REPORTED_ETHNICITY_FILTER_SELECTION = "African";
-const SELF_REPORTED_ETHNICITY_TISSUE = ["breast"];
+const SELF_REPORTED_ETHNICITY_TISSUE = ["breast", "nose"];
 const DISEASE_FILTER_TEST_ID = "disease-filter";
 const DISEASE_FILTER_LABEL = "Disease";
 const DISEASE_FILTER_SELECTION = "influenza";
@@ -241,7 +241,7 @@ describe("WMG tissue auto-expand", () => {
   /**
    * Tissue auto expansion - cross filter with Self-Reported Ethnicity filter
    * Expand Breast. Select African from Ethnicity filter. Breast should remain expanded.
-   * Add Nose to the Tissue filter. Nose should appear expanded.
+   * Add Breast and Nose to the Tissue filter. Both should appear expanded.
    */
   test("Tissue auto expansion - cross filter with Self-Reported Ethnicity filter", async ({
     page,
