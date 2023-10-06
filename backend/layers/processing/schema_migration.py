@@ -5,9 +5,6 @@ import os
 import random
 from typing import Any, Dict, Iterable, List
 
-from cellxgene_schema.migrate import migrate as cxs_migrate
-from cellxgene_schema.schema import get_current_schema_version as cxs_get_current_schema_version
-
 from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.result_notification import upload_to_slack
 from backend.layers.business.business import BusinessLogic
@@ -18,18 +15,19 @@ from backend.layers.common.entities import (
     CollectionVersionId,
     DatasetArtifactType,
     DatasetProcessingStatus,
-    DatasetVersion,
     DatasetVersionId,
 )
 from backend.layers.processing import logger
 from backend.layers.processing.process_logic import ProcessingLogic
+from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider, sfn_name_generator
 
 logger.configure_logging(level=logging.INFO)
 
 
 class SchemaMigrate(ProcessingLogic):
-    def __init__(self, business_logic: BusinessLogic):
+    def __init__(self, business_logic: BusinessLogic, schema_validator: SchemaValidatorProvider):
+        self.schema_validator = schema_validator
         self.business_logic = business_logic
         self.s3_provider = business_logic.s3_provider  # For compatiblity with ProcessingLogic
         self.artifact_bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
@@ -38,6 +36,7 @@ class SchemaMigrate(ProcessingLogic):
         self.local_path: str = "."  # Used for testing
         self.limit_migration = os.environ.get("LIMIT_MIGRATION", False)  # Run a small migration for testing
         self.limit_select = 2  # Number of collections to migrate
+        self.schema_version = schema_validator.get_current_schema_version()
 
     def limit_collections(self) -> Iterable[CollectionVersion]:
         published_collections = [*self.business_logic.get_collections(CollectionQueryFilter(is_published=True))]
@@ -98,7 +97,7 @@ class SchemaMigrate(ProcessingLogic):
         source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(raw_h5ad_uri)
         self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
         migrated_file = "migrated.h5ad"
-        cxs_migrate("previous_schema.h5ad", migrated_file, collection_id, dataset_id)
+        self.schema_validator.migrate("previous_schema.h5ad", migrated_file, collection_id, dataset_id)
         key_prefix = self.get_key_prefix(dataset_version_id)
         uri = self.upload_artifact(migrated_file, key_prefix, self.artifact_bucket)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
@@ -116,20 +115,10 @@ class SchemaMigrate(ProcessingLogic):
             "sfn_name": sfn_name,
         }
 
-    def _check_dataset_is_latest_schema_version(self, dataset: DatasetVersion) -> bool:
-        return (
-            hasattr(dataset, "metadata")
-            and hasattr(dataset.metadata, "schema_version")
-            and dataset.metadata.schema_version == cxs_get_current_schema_version()
-        )
-
     def collection_migrate(self, collection_id: str, collection_version_id: str, can_publish: bool) -> Dict[str, Any]:
         # Get datasets from collection
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
-        cxs_get_current_schema_version()
-        datasets = [
-            dataset for dataset in version.datasets if not self._check_dataset_is_latest_schema_version(dataset)
-        ]
+        datasets = [dataset for dataset in version.datasets if not self.check_dataset_is_latest_schema_version(dataset)]
         # Filter out datasets that are already on the current schema version
         if not datasets:
             # Handles the case were the collection has no datasets or all datasets are already migrated.
@@ -183,7 +172,6 @@ class SchemaMigrate(ProcessingLogic):
     def publish_and_cleanup(self, collection_version_id: str, can_publish: bool) -> list:
         errors = []
         collection_version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
-        cxs_get_current_schema_version()
         object_keys_to_delete = []
 
         # Get the datasets that were processed
@@ -207,7 +195,7 @@ class SchemaMigrate(ProcessingLogic):
             self.logger.info("checking dataset", extra=_log_extras)
             key_prefix = self.get_key_prefix(previous_dataset_version_id)
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
-            if not self._check_dataset_is_latest_schema_version(dataset):
+            if not self.check_dataset_is_latest_schema_version(dataset):
                 error = {
                     "message": "Did Not Migrate.",
                     "collection_id": collection_version.collection_id.id,
