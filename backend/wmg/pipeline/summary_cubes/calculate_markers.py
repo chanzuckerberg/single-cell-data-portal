@@ -622,7 +622,19 @@ def _get_markers_ttest(target_filters, context_filters, corpus=None, n_markers=1
     import pickle
 
     pickle.dump(
-        (pvals, effects, target_data_sum, target_data_sumsq, n_target, context_data_sum, context_data_sumsq, n_context),
+        (
+            pvals,
+            effects,
+            target_data_sum,
+            target_data_sumsq,
+            n_target,
+            context_data_sum,
+            context_data_sumsq,
+            n_context,
+            cell_type_target,
+            cell_types_context,
+            genes,
+        ),
         open("ttest.pkl", "wb"),
     )
 
