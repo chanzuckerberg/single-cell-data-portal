@@ -10,10 +10,16 @@ const SCHEMA_URL =
 interface Props {
   fileName: string;
   handleAnalytics: () => void;
+  isDownloadUX: boolean;
   link: string;
 }
 
-const CurlLink: FC<Props> = ({ fileName, handleAnalytics, link }) => {
+const CurlLink: FC<Props> = ({
+  fileName,
+  handleAnalytics,
+  isDownloadUX,
+  link,
+}) => {
   const [isCopied, setIsCopied] = useState(false);
 
   const curl = `curl -o ${fileName} "${link}"`;
@@ -33,18 +39,30 @@ const CurlLink: FC<Props> = ({ fileName, handleAnalytics, link }) => {
           {isCopied ? "Copied!" : "Copy to Clipboard"}
         </CodeMask>
       </CodeWrapper>
-      <Tip>
-        This cURL command is valid forever. All datasets on CZ CELLxGENE
-        Discover adhere to its{" "}
-        <Link href={SCHEMA_URL} rel="noreferrer noopener" target="_blank">
-          schema
-        </Link>{" "}
-        and may be downloaded programmatically using the{" "}
-        <Link href={DISCOVER_API_URL} rel="noreferrer noopener" target="_blank">
-          Discover API
-        </Link>
-        .
-      </Tip>
+      {isDownloadUX ? (
+        <Tip>
+          This cURL command is valid forever. All datasets on CZ CELLxGENE
+          Discover adhere to its{" "}
+          <Link href={SCHEMA_URL} rel="noreferrer noopener" target="_blank">
+            schema
+          </Link>{" "}
+          and may be downloaded programmatically using the{" "}
+          <Link
+            href={DISCOVER_API_URL}
+            rel="noreferrer noopener"
+            target="_blank"
+          >
+            Discover API
+          </Link>
+          .
+        </Tip>
+      ) : (
+        <Tip>
+          If you prefer not to download this dataset directly in your browser,
+          you can optionally use the provided cURL link to download via the
+          terminal. The above link will be valid for 1 week.
+        </Tip>
+      )}
     </>
   );
 };

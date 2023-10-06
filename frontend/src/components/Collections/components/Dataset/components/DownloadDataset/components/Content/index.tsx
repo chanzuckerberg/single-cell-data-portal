@@ -12,6 +12,8 @@ import Name from "./components/Name";
 import { CancelButton, DownloadButton, Wrapper } from "./style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { FEATURES } from "src/common/featureFlags/features";
 
 interface Props {
   onClose: () => void;
@@ -20,6 +22,7 @@ interface Props {
 }
 
 const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
+  const isDownloadUX = useFeatureFlag(FEATURES.DOWNLOAD_UX);
   const [selectedFormat, setSelectedFormat] = useState<
     DATASET_ASSET_FORMAT | ""
   >("");
@@ -45,6 +48,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
       assetId,
       datasetId,
       filename,
+      isDownloadUX,
       setFileName,
       setFileSize,
       setIsLoading,
@@ -54,6 +58,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
       assetId,
       datasetId,
       filename,
+      isDownloadUX,
       setFileName,
       setFileSize,
       setIsLoading,
@@ -71,11 +76,12 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
         const result = await (
           await fetch(`${API_URL}${url}`, {
             ...DEFAULT_FETCH_OPTIONS,
-            method: "GET",
+            method: isDownloadUX ? "GET" : "POST",
           })
         ).json();
 
-        const { file_size, url: downloadURL } = result;
+        const { file_size } = result;
+        const downloadURL = isDownloadUX ? result.url : result.presigned_url;
 
         setFileSize(file_size);
         setDownloadLink(downloadURL);
@@ -86,7 +92,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
 
       setIsLoading(false);
     }
-  }, [selectedFormat, dataAssets]);
+  }, [selectedFormat, dataAssets, isDownloadUX]);
 
   /**
    * Tracks dataset download analytics as specified by the custom analytics event.
@@ -144,6 +150,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
             <CurlLink
               fileName={fileName}
               handleAnalytics={() => handleAnalytics(EVENTS.DOWNLOAD_DATA_COPY)}
+              isDownloadUX={isDownloadUX}
               link={downloadLink}
             />
           )}
@@ -162,6 +169,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
     assetId: string;
     datasetId: string;
     filename: string;
+    isDownloadUX: boolean;
     setFileName: (value: string) => void;
     setFileSize: (value: number) => void;
     setIsLoading: (value: boolean) => void;
