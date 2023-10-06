@@ -200,7 +200,7 @@ describe("WMG tissue auto-expand", () => {
   test("Tissue auto expansion - cross filter with Publication filter selected", async ({
     page,
   }) => {
-    const tissues = FILTERED_TISSUES.slice(2, 3);
+    const tissues = ["blood"];
     await loadPageAndTissues(page);
     await filterSelection(
       page,
@@ -217,8 +217,8 @@ describe("WMG tissue auto-expand", () => {
 
   /**
    * Tissue auto expansion - cross filter with Publication filter, check expansion
-   * Filter 3 Tissues ["abdomen", "axilla", "blood"]. Collapse Brain. Filter
-   * 'Ahren et al. Neuron 2021' from the Publication filter. Only Brain should remain
+   * Filter 3 Tissues ["abdomen", "axilla", "blood"]. Collapse Blood. Filter
+   * 'Ahren et al. Neuron 2021' from the Publication filter. Only Blood should remain
    * visible and collapsed. Add Cell filter for B Cell. Only B Cell should be
    * visible under expanded Blood tissue node
    */
@@ -227,7 +227,7 @@ describe("WMG tissue auto-expand", () => {
   }) => {
     await loadPageAndTissues(page);
     await filterTissues(page);
-    await collapseTissue(page, FILTERED_TISSUES[2]);
+    await collapseTissue(page, "blood");
     await filterSelection(
       page,
       PUBLICATION_FILTER_TEST_ID,
@@ -235,7 +235,7 @@ describe("WMG tissue auto-expand", () => {
       PUBLICATION_FILTER_SELECTION[1]
     );
     await expect(page.getByTestId(TISSUE_NODE_TEST_ID)).toHaveCount(1);
-    await checkTissues(page, FILTERED_TISSUES.slice(2, 3), []);
+    await checkTissues(page, ["blood"], []);
   });
 
   /**
