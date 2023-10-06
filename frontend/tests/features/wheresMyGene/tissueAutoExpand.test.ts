@@ -1,6 +1,6 @@
 import { expect, test, Page } from "@playwright/test";
 import { indexOf, toInteger } from "lodash";
-import { collapseTissue, expandTissue } from "tests/utils/helpers";
+import { collapseTissue, expandTissue, tryUntil } from "tests/utils/helpers";
 import { goToWMG } from "tests/utils/wmgUtils";
 
 const FILTERED_TISSUES = ["abdomen", "axilla", "blood"];
@@ -30,6 +30,7 @@ const DATASET_FILTER_TEST_ID = "dataset-filter";
 const DATASET_FILTER_LABEL = "Dataset";
 const DATASET_FILTER_SELECTION =
   "Combined samples HTAN MSK - Single cell profiling reveals novel tumor and myeloid subpopulations in small cell lung cancer";
+const DATASET_FILTER_SELECTED = "Combined samples";
 
 const { describe } = test;
 
@@ -89,9 +90,9 @@ describe("WMG tissue auto-expand", () => {
     await filterTissues(page);
     await filterCellType(page, 1);
     await checkTissues(page);
-    await checkCellTypes(page);
+    await checkElementVisible(page);
     await removeCellFilter(page);
-    await expect(checkCellTypes(page)).rejects.toThrow();
+    await expect(checkElementVisible(page)).rejects.toThrow();
   });
 
   /**
@@ -110,7 +111,7 @@ describe("WMG tissue auto-expand", () => {
     await collapseTissue(page, tissues[1]);
     await filterCellType(page, 1);
     await checkTissues(page, tissues);
-    await checkCellTypes(page, cells);
+    await checkElementVisible(page, cells);
   });
 
   /**
@@ -129,7 +130,7 @@ describe("WMG tissue auto-expand", () => {
     await checkTissues(page);
     await removeCellFilter(page);
     await checkTissues(page, ["lung"], []);
-    await checkCellTypes(page, cells);
+    await checkElementVisible(page, cells);
   });
 
   /**
@@ -204,7 +205,7 @@ describe("WMG tissue auto-expand", () => {
     await collapseTissue(page, tissues[0]);
     await filterCellType(page, 1);
     await checkTissues(page, tissues);
-    await checkCellTypes(page);
+    await checkElementVisible(page);
   });
 
   /**
@@ -271,7 +272,7 @@ describe("WMG tissue auto-expand", () => {
     );
     await checkTissues(page, tissues);
     await filterCellType(page, 1);
-    await checkCellTypes(page);
+    await checkElementVisible(page);
     await checkTissues(page, tissues);
     await removeCellFilter(page);
     await checkTissues(page, tissues);
@@ -295,12 +296,13 @@ describe("WMG tissue auto-expand", () => {
       page,
       DATASET_FILTER_TEST_ID,
       DATASET_FILTER_LABEL,
-      DATASET_FILTER_SELECTION
+      DATASET_FILTER_SELECTION,
+      DATASET_FILTER_SELECTED
     );
     tissues.splice(0, 1);
     await checkTissues(page, tissues);
     await filterCellType(page, 1);
-    await checkCellTypes(page);
+    await checkElementVisible(page);
     await checkTissues(page, tissues);
     await removeCellFilter(page);
     await checkTissues(page, tissues);
@@ -379,34 +381,53 @@ async function checkTissues(
   filteredTissues: string[] = FILTERED_TISSUES,
   expandedTissues = filteredTissues
 ) {
-  if (filteredTissues.length !== 0) {
-    await expect(page.getByTestId(TISSUE_NODE_TEST_ID)).toHaveCount(
-      filteredTissues.length
-    );
-  }
+  await tryUntil(
+    async () => {
+      if (filteredTissues.length !== 0) {
+        await expect(page.getByTestId(TISSUE_NODE_TEST_ID)).toHaveCount(
+          filteredTissues.length
+        );
+        await checkElementVisible(page, filteredTissues, TISSUE_NODE_TEST_ID);
+      }
 
-  let countExpanded = 0;
-  for (const tissue of expandedTissues) {
-    await expect(page.getByTestId(`cell-type-labels-${tissue}`)).toBeVisible();
-    const height = await page
-      .getByTestId(`cell-type-labels-${tissue}`)
-      .getAttribute("height");
-    toInteger(height) > 20 && countExpanded++;
-  }
-  await expect(countExpanded).toEqual(expandedTissues.length);
+      let countExpanded = 0;
+      for (const tissue of expandedTissues) {
+        await expect(
+          page.getByTestId(`cell-type-labels-${tissue}`)
+        ).toBeVisible();
+        const height = await page
+          .getByTestId(`cell-type-labels-${tissue}`)
+          .getAttribute("height");
+        toInteger(height) > 20 && countExpanded++;
+      }
+      await expect(countExpanded).toEqual(expandedTissues.length);
+    },
+    { page }
+  );
 }
 
 /**
- * checkCellTypes
- * Check that all cells under expanded tissues are 'B Cell'
+ * checkElementVisible
+ * Check that all elements are visible
  */
-async function checkCellTypes(page: Page, cellTypes = CELL_TYPE_FILTERS) {
-  const cells = (
-    await page.getByTestId(CELL_TYPE_TEST_ID).allInnerTexts()
-  ).sort((a, b) => a.localeCompare(b));
-  for (const cell of cells) {
-    await expect(cell).toEqual(cellTypes[indexOf(cells, cell)]);
-  }
+async function checkElementVisible(
+  page: Page,
+  filteredElements = CELL_TYPE_FILTERS,
+  testId = CELL_TYPE_TEST_ID
+) {
+  await tryUntil(
+    async () => {
+      const elements = (await page.getByTestId(testId).allInnerTexts()).sort(
+        (a, b) => a.localeCompare(b)
+      );
+      for (const element of elements) {
+        await expect(element.toLowerCase()).toEqual(
+          filteredElements[indexOf(elements, element)].toLowerCase()
+        );
+      }
+    },
+    { page }
+  );
 }
 
 /**
@@ -422,16 +443,31 @@ async function removeCellFilter(page: Page) {
 
 /**
  * filterSelection
- * Filter the selection from the filter
+ * Filter the selection from the dropdown
  */
 async function filterSelection(
   page: Page,
   filterTestId: string,
   filterLabel: string,
-  selection: string
+  selection: string,
+  filterSelected: string = selection
 ) {
-  await clickIntoFilter(page, filterTestId, filterLabel);
-  await page.getByRole("option", { name: selection, exact: true }).isVisible();
-  await page.getByRole("option", { name: selection, exact: true }).click();
-  await page.keyboard.press("Escape");
+  await tryUntil(
+    async () => {
+      await clickIntoFilter(page, filterTestId, filterLabel);
+      const dropDownOption = await page.getByRole("option", {
+        name: selection,
+        exact: true,
+      });
+      expect(dropDownOption).toBeVisible();
+      await dropDownOption.click();
+      await page.keyboard.press("Escape");
+      await expect(
+        page
+          .getByTestId(filterTestId)
+          .getByRole("button", { name: filterSelected })
+      ).toBeVisible();
+    },
+    { page }
+  );
 }
