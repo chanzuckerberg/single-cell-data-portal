@@ -109,14 +109,13 @@ describe("WMG tissue auto-expand", () => {
     page,
   }) => {
     const tissues = FILTERED_TISSUES.slice(0, 2);
-    const cells = EXPECTED_VISIBLE_CELL;
     await loadPageAndTissues(page);
     await filterTissues(page, tissues);
     await collapseTissue(page, tissues[0]);
     await collapseTissue(page, tissues[1]);
     await filterCellType(page, 1);
     await checkTissues(page, tissues);
-    await checkElementVisible(page, cells, CELL_TYPE_TEST_ID);
+    await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
   });
 
   /**
