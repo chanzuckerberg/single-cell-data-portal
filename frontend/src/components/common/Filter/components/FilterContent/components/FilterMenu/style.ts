@@ -4,7 +4,6 @@ import {
   listCss,
   listItemButtonCss,
   listItemCss,
-  listItemDividerCss,
   listItemIconCss,
   listItemTextCss,
   scrollbar,
@@ -66,10 +65,6 @@ export const FilterMenu = styled.span<Props>`
       .MuiListItemText-root {
         ${listItemTextCss}
       }
-    }
-
-    .MuiDivider-root {
-      ${listItemDividerCss}
     }
   }
 `;
