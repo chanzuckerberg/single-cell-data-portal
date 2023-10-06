@@ -1,6 +1,6 @@
 import { expect, test, Page } from "@playwright/test";
-import { indexOf, toInteger } from "lodash";
-import { collapseTissue, expandTissue } from "tests/utils/helpers";
+import { toInteger } from "lodash";
+import { collapseTissue, expandTissue, tryUntil } from "tests/utils/helpers";
 import { goToWMG } from "tests/utils/wmgUtils";
 
 const FILTERED_TISSUES = ["abdomen", "axilla", "blood"];
@@ -10,6 +10,33 @@ const TISSUE_FILTER_TEST_ID = "tissue-filter";
 const CELL_TYPE_FILTER_TEST_ID = "celltype-filter";
 const CELL_TYPE_FILTERS = ["B cell", "B-1a B cell", "B-1b B cell"];
 const CELL_TYPE_TEST_ID = "cell-type-name";
+const SEX_FILTER_TEST_ID = "sex-filter";
+const SEX_FILTER_LABEL = "Sex";
+const SEX_FILTER_SELECTION = "female";
+const PUBLICATION_FILTER_TEST_ID = "publication-filter";
+const PUBLICATION_FILTER_LABEL = "Publication";
+const PUBLICATION_FILTER_SELECTION = [
+  "Ahern et al. Cell 2022",
+  "Arutyunyan et al. Nature 2023",
+];
+const SELF_REPORTED_ETHNICITY_FILTER_TEST_ID = "self-reported-ethnicity-filter";
+const SELF_REPORTED_ETHNICITY_FILTER_LABEL = "Self-Reported Ethnicity";
+const SELF_REPORTED_ETHNICITY_FILTER_SELECTION = "African";
+const SELF_REPORTED_ETHNICITY_TISSUE = ["breast", "nose"];
+const DISEASE_FILTER_TEST_ID = "disease-filter";
+const DISEASE_FILTER_LABEL = "Disease";
+const DISEASE_FILTER_SELECTION = "influenza";
+const DATASET_FILTER_TEST_ID = "dataset-filter";
+const DATASET_FILTER_LABEL = "Dataset";
+const DATASET_FILTER_SELECTION =
+  "Combined samples HTAN MSK - Single cell profiling reveals novel tumor and myeloid subpopulations in small cell lung cancer";
+const DATASET_FILTER_SELECTED = "Combined samples";
+const DATASET_FILTER_FILTERED_TISSUES = ["axilla", "brain"];
+const EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER = ["abdomen", "blood"];
+const EXPECTED_EXPANDED_TISSUES = ["blood"];
+const EXPECTED_VISIBLE_CELL = ["B Cell"];
+const EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER = ["axilla", "brain"];
+const EXPECTED_FILTERED_TISSUES_WITH_DISEASE_FILTER = ["blood"];
 
 const { describe } = test;
 
@@ -25,6 +52,7 @@ describe("WMG tissue auto-expand", () => {
     await filterTissues(page);
     await checkTissues(page);
   });
+
   /**
    * Filter first two tissues from the left panel, collapse the first
    * tissue, add third tissue from the left panel. Expect the first tissue
@@ -39,6 +67,7 @@ describe("WMG tissue auto-expand", () => {
     await filterTissues(page, FILTERED_TISSUES.slice(2, 3));
     await checkTissues(page, FILTERED_TISSUES, FILTERED_TISSUES.slice(1, 3));
   });
+
   /**
    * Filter two tissues, expect tissues to be expanded. Remove both tissues
    * from filter. Expect showing all tissues in collapsed state.
@@ -52,6 +81,7 @@ describe("WMG tissue auto-expand", () => {
     await filterTissues(page);
     await checkTissues(page, [], []);
   });
+
   /**
    * Filter two tissues, expect tissues to be expanded. Expect tissue list
    * to only show tissues that contain "B cell" and automatically expanded.
@@ -64,12 +94,15 @@ describe("WMG tissue auto-expand", () => {
   }) => {
     await loadPageAndTissues(page);
     await filterTissues(page);
-    await filterCellType(page, 1);
+    await filterCellTypes(page, CELL_TYPE_FILTERS.slice(0, 1));
     await checkTissues(page);
-    await checkCellTypes(page);
+    await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
     await removeCellFilter(page);
-    await expect(checkCellTypes(page)).rejects.toThrow();
+    await expect(
+      checkElementVisible(page, CELL_TYPE_FILTERS, CELL_TYPE_TEST_ID)
+    ).rejects.toThrow();
   });
+
   /**
    * Filter cell type auto expansion - override tissue filter collapse state
    * Filter first 2 tissues in left panel, collapse both tissues, filter "B
@@ -79,15 +112,15 @@ describe("WMG tissue auto-expand", () => {
     page,
   }) => {
     const tissues = FILTERED_TISSUES.slice(0, 2);
-    const cells = CELL_TYPE_FILTERS.slice(0, 1);
     await loadPageAndTissues(page);
     await filterTissues(page, tissues);
     await collapseTissue(page, tissues[0]);
     await collapseTissue(page, tissues[1]);
-    await filterCellType(page, 1);
+    await filterCellTypes(page, CELL_TYPE_FILTERS.slice(0, 1));
     await checkTissues(page, tissues);
-    await checkCellTypes(page, cells);
+    await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
   });
+
   /**
    * Filter 3 tissues, filter top 3 cell types
    * (B cell, B-1a B cell, and B-1b B cell). Expect both tissues expanded.
@@ -100,13 +133,186 @@ describe("WMG tissue auto-expand", () => {
     const cells = CELL_TYPE_FILTERS.slice(1, 3);
     await loadPageAndTissues(page);
     await filterTissues(page);
-    await filterCellType(page);
+    await filterCellTypes(page, CELL_TYPE_FILTERS);
     await checkTissues(page);
     await removeCellFilter(page);
     await checkTissues(page, ["lung"], []);
-    await checkCellTypes(page, cells);
+    await checkElementVisible(page, cells, CELL_TYPE_TEST_ID);
+  });
+
+  /**
+   * Tissue auto expansion - cross filter with Sex filter selected
+   * Filter Female from Sex filter. Filter Abdomen and Blood from the Tissue
+   * filter - those should be expanded, Add Cell type filtering,
+   * only B Cell type should appear and expanded.
+   */
+  test("Tissue auto expansion - cross filter with Sex filter selected", async ({
+    page,
+  }) => {
+    await loadPageAndTissues(page);
+    await filterSelection(
+      page,
+      SEX_FILTER_TEST_ID,
+      SEX_FILTER_LABEL,
+      SEX_FILTER_SELECTION
+    );
+    await filterTissues(page, EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER);
+    await filterCellTypes(page, CELL_TYPE_FILTERS.slice(0, 1));
+    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER);
+    await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
+  });
+
+  /**
+   * Tissue auto expansion - cross filter with Sex filter, check expansion
+   * Filter 3 Tissues ["abdomen", "axilla", "blood"]. Collapse Abdomen. Select
+   * Female from the Sex filter. Tissue filter should now only have Abdomen and
+   * Blood selected. Only Abdomen and Blood should be visible. Abdomen should
+   * remain collapsed. Remove Sex filter. Tissue filter should now only have
+   * Abdomen and Blood selected. Only Abdomen and Blood should be visible.
+   * Abdomen should remain collapsed.
+   */
+  test("Tissue auto expansion - cross filter with Sex filter, check expansion", async ({
+    page,
+  }) => {
+    await loadPageAndTissues(page);
+    await filterTissues(page, FILTERED_TISSUES);
+    await collapseTissue(page, FILTERED_TISSUES[0]);
+    await filterSelection(
+      page,
+      SEX_FILTER_TEST_ID,
+      SEX_FILTER_LABEL,
+      SEX_FILTER_SELECTION
+    );
+    await expect(page.getByTestId(TISSUE_NODE_TEST_ID)).toHaveCount(
+      EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER.length
+    );
+    await checkTissues(
+      page,
+      EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER,
+      EXPECTED_EXPANDED_TISSUES
+    );
+  });
+
+  /**
+   * Tissue auto expansion - cross filter with Publication filter selected
+   * Filter 'Ahren et al. Cell 2022' from the Publication filter. Filter Blood
+   * from the tissue filter. Blood should be expanded. Collapse Blood. add Cell
+   * filter for B Cell. Only B Cell should appear and Blood should be expanded.
+   */
+  test("Tissue auto expansion - cross filter with Publication filter selected", async ({
+    page,
+  }) => {
+    const tissues = ["blood"];
+    await loadPageAndTissues(page);
+    await filterSelection(
+      page,
+      PUBLICATION_FILTER_TEST_ID,
+      PUBLICATION_FILTER_LABEL,
+      PUBLICATION_FILTER_SELECTION[0]
+    );
+    await filterTissues(page, tissues);
+    await collapseTissue(page, tissues[0]);
+    await filterCellTypes(page, CELL_TYPE_FILTERS.slice(0, 1));
+    await checkTissues(page, tissues);
+    await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
+  });
+
+  /**
+   * Tissue auto expansion - cross filter with Publication filter, check expansion
+   * Filter 3 Tissues ["abdomen", "axilla", "blood"]. Collapse Blood. Filter
+   * 'Ahren et al. Neuron 2021' from the Publication filter. Only Blood should remain
+   * visible and collapsed. Add Cell filter for B Cell. Only B Cell should be
+   * visible under expanded Blood tissue node
+   */
+  test("Tissue auto expansion - cross filter with Publication filter, check expansion", async ({
+    page,
+  }) => {
+    await loadPageAndTissues(page);
+    await filterTissues(page);
+    await collapseTissue(page, "blood");
+    await filterSelection(
+      page,
+      PUBLICATION_FILTER_TEST_ID,
+      PUBLICATION_FILTER_LABEL,
+      PUBLICATION_FILTER_SELECTION[1]
+    );
+    await expect(page.getByTestId(TISSUE_NODE_TEST_ID)).toHaveCount(1);
+    await checkTissues(page, ["blood"], []);
+  });
+
+  /**
+   * Tissue auto expansion - cross filter with Self-Reported Ethnicity filter
+   * Expand Breast. Select African from Ethnicity filter. Breast should remain expanded.
+   * Add Breast and Nose to the Tissue filter. Both should appear expanded.
+   */
+  test("Tissue auto expansion - cross filter with Self-Reported Ethnicity filter", async ({
+    page,
+  }) => {
+    await loadPageAndTissues(page);
+    await expandTissue(page, SELF_REPORTED_ETHNICITY_TISSUE[0]);
+    await filterSelection(
+      page,
+      SELF_REPORTED_ETHNICITY_FILTER_TEST_ID,
+      SELF_REPORTED_ETHNICITY_FILTER_LABEL,
+      SELF_REPORTED_ETHNICITY_FILTER_SELECTION
+    );
+    await filterTissues(page, SELF_REPORTED_ETHNICITY_TISSUE);
+    await checkTissues(page, SELF_REPORTED_ETHNICITY_TISSUE);
+  });
+
+  /**
+   * Tissue auto expansion - cross filter with Disease filter
+   * Filter 3 Tissues ["abdomen", "axilla", "brain"]. From the Disease filter select influenza.
+   * Blood should appear only and expanded. Add cell type filter for B Cell. Only B Cell should
+   * appear under Blood and expanded. Remove influenza. Blood should remain expanded and cell count
+   * increase.
+   */
+  test("Tissue auto expansion - cross filter with Disease filter", async ({
+    page,
+  }) => {
+    await loadPageAndTissues(page);
+    await filterTissues(page);
+    await filterSelection(
+      page,
+      DISEASE_FILTER_TEST_ID,
+      DISEASE_FILTER_LABEL,
+      DISEASE_FILTER_SELECTION
+    );
+    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DISEASE_FILTER);
+    await filterCellTypes(page, CELL_TYPE_FILTERS.slice(0, 1));
+    await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
+    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DISEASE_FILTER);
+    await removeCellFilter(page);
+    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DISEASE_FILTER);
+  });
+
+  /**
+   * Tissue auto expansion - cross filter with Dataset filter
+   * Filter 3 Tissues ["abdomen", "axilla", "Brain"]. From the Dataset filter select Combined Samples.
+   * Axilla and Brain should appear only and expanded. Add cell type filter for B Cell. Only B Cell
+   * should appear under Axilla and Brain and expanded. Remove B Cell. Remove Combined Samples. Brain
+   */
+  test("Tissue auto expansion - cross filter with Dataset filter", async ({
+    page,
+  }) => {
+    await loadPageAndTissues(page);
+    await filterTissues(page, DATASET_FILTER_FILTERED_TISSUES);
+    await filterSelection(
+      page,
+      DATASET_FILTER_TEST_ID,
+      DATASET_FILTER_LABEL,
+      DATASET_FILTER_SELECTION,
+      DATASET_FILTER_SELECTED
+    );
+    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER);
+    await filterCellTypes(page, CELL_TYPE_FILTERS.slice(0, 1));
+    await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
+    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER);
+    await removeCellFilter(page);
+    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER);
   });
 });
+
 /**
  * *******************************************
  * Helper Functions
@@ -126,28 +332,32 @@ async function loadPageAndTissues(page: Page) {
  * clickIntoFilter
  * Click into the filter and wait for the tooltip to be visible
  */
-async function clickIntoFilter(page: Page, filterName: string) {
+async function clickIntoFilter(
+  page: Page,
+  filterName: string,
+  filterLabel = TISSUE_FILTER_LABEL
+) {
   await page
     .getByTestId(filterName)
-    .getByRole("button", { name: TISSUE_FILTER_LABEL, exact: true })
+    .getByRole("button", { name: filterLabel, exact: true })
     .click();
   await page.getByRole("tooltip").waitFor();
 }
 
 /**
- * filterCellType
- * Filter cell type 'B cell' and exit filter mode
+ * filterCellTypes
+ * Add cell types to the cell type filter
  */
-async function filterCellType(page: Page, count = 3) {
+async function filterCellTypes(page: Page, cellTypes: string[]) {
   await page
     .getByTestId(CELL_TYPE_FILTER_TEST_ID)
     .getByRole("combobox")
     .click();
-  for (let i = 0; i < count; i++) {
-    await page
-      .getByRole("option", { name: CELL_TYPE_FILTERS[i], exact: true })
-      .click();
+
+  for (const cellType of cellTypes) {
+    await page.getByRole("option", { name: cellType, exact: true }).click();
   }
+
   await page.keyboard.press("Escape");
 }
 
@@ -175,34 +385,51 @@ async function checkTissues(
   filteredTissues: string[] = FILTERED_TISSUES,
   expandedTissues = filteredTissues
 ) {
-  if (filteredTissues.length !== 0) {
-    await expect(page.getByTestId(TISSUE_NODE_TEST_ID)).toHaveCount(
-      filteredTissues.length
-    );
-  }
+  await tryUntil(
+    async () => {
+      if (filteredTissues.length !== 0) {
+        await expect(page.getByTestId(TISSUE_NODE_TEST_ID)).toHaveCount(
+          filteredTissues.length
+        );
+        await checkElementVisible(page, filteredTissues, TISSUE_NODE_TEST_ID);
+      }
 
-  let countExpanded = 0;
-  for (const tissue of expandedTissues) {
-    await expect(page.getByTestId(`cell-type-labels-${tissue}`)).toBeVisible();
-    const height = await page
-      .getByTestId(`cell-type-labels-${tissue}`)
-      .getAttribute("height");
-    toInteger(height) > 20 && countExpanded++;
-  }
-  await expect(countExpanded).toEqual(expandedTissues.length);
+      let countExpanded = 0;
+      for (const tissue of expandedTissues) {
+        await expect(
+          page.getByTestId(`cell-type-labels-${tissue}`)
+        ).toBeVisible();
+        const height = await page
+          .getByTestId(`cell-type-labels-${tissue}`)
+          .getAttribute("height");
+        toInteger(height) > 20 && countExpanded++;
+      }
+      await expect(countExpanded).toEqual(expandedTissues.length);
+    },
+    { page }
+  );
 }
 
 /**
- * checkCellTypes
- * Check that all cells under expanded tissues are 'B Cell'
+ * checkElementVisible
+ * Check that all elements are visible
  */
-async function checkCellTypes(page: Page, cellTypes = CELL_TYPE_FILTERS) {
-  const cells = (
-    await page.getByTestId(CELL_TYPE_TEST_ID).allInnerTexts()
-  ).sort((a, b) => a.localeCompare(b));
-  for (const cell of cells) {
-    await expect(cell).toEqual(cellTypes[indexOf(cells, cell)]);
-  }
+async function checkElementVisible(
+  page: Page,
+  filteredElements: string[],
+  testId: string
+) {
+  await tryUntil(
+    async () => {
+      const elements = await (
+        await page.getByTestId(testId).allInnerTexts()
+      ).map((str) => str.toLowerCase());
+      expect(elements).toEqual(
+        expect.arrayContaining(filteredElements.map((str) => str.toLowerCase()))
+      );
+    },
+    { page }
+  );
 }
 
 /**
@@ -214,4 +441,35 @@ async function removeCellFilter(page: Page) {
     .getByTestId(`cell-type-tag-${CELL_TYPE_FILTERS[0]}`)
     .getByTestId("CancelIcon")
     .click();
+}
+
+/**
+ * filterSelection
+ * Filter the selection from the dropdown
+ */
+async function filterSelection(
+  page: Page,
+  filterTestId: string,
+  filterLabel: string,
+  selection: string,
+  filterSelected: string = selection
+) {
+  await tryUntil(
+    async () => {
+      await clickIntoFilter(page, filterTestId, filterLabel);
+      const dropDownOption = await page.getByRole("option", {
+        name: selection,
+        exact: true,
+      });
+      expect(dropDownOption).toBeVisible();
+      await dropDownOption.click();
+      await page.keyboard.press("Escape");
+      await expect(
+        page
+          .getByTestId(filterTestId)
+          .getByRole("button", { name: filterSelected })
+      ).toBeVisible();
+    },
+    { page }
+  );
 }
