@@ -5,7 +5,11 @@ class TestGatherCollections:
         # get_collections is called twice
         schema_migrate.business_logic.get_collections.side_effect = [[published], [revision]]
         response = schema_migrate.gather_collections(auto_publish=True)
-        assert {"can_publish": "True", "collection_id": published.collection_id.id} not in response
+        assert {
+            "can_publish": "True",
+            "collection_id": published.collection_id.id,
+            "collection_version_id": published.collection_id.id,
+        } not in response
         assert {
             "can_publish": "False",
             "collection_id": revision.collection_id.id,
@@ -41,8 +45,8 @@ class TestGatherCollections:
 
     def test_with_auto_publish_false(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
-        published_no_revision = collections["published"]
-        private = collections["private"]
+        published_no_revision = collections["published"][0]
+        private = collections["private"][0]
         published_with_revision, revision = collections["revision"]
         # get_collections is called twice
         schema_migrate.business_logic.get_collections.side_effect = [
