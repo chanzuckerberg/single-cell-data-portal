@@ -345,24 +345,7 @@ async function clickIntoFilter(
 }
 
 /**
- * filterCellType
- * Filter cell type 'B cell' and exit filter mode
- */
-// async function filterCellType(page: Page, count = 3) {
-//   await page
-//     .getByTestId(CELL_TYPE_FILTER_TEST_ID)
-//     .getByRole("combobox")
-//     .click();
-//   for (let i = 0; i < count; i++) {
-//     await page
-//       .getByRole("option", { name: CELL_TYPE_FILTERS[i], exact: true })
-//       .click();
-//   }
-//   await page.keyboard.press("Escape");
-// }
-
-/**
- * filterCellType
+ * filterCellTypes
  * Add cell types to the cell type filter
  */
 async function filterCellTypes(page: Page, cellTypes: string[]) {
