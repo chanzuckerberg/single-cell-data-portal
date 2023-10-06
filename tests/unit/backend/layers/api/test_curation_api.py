@@ -559,7 +559,8 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
         # Confirm fields are present on Collection version body but ignore equality comparison for timestamps
         self.assertIn("created_at", received_body)
         self.assertIn("published_at", received_body)
-        [self.assertIn("published_at", d) for d in received_body["dataset_versions"]]
+        for d in received_body["dataset_versions"]:
+            self.assertIn("published_at", d)
         received_body.pop("created_at")
         received_body.pop("published_at")
         [d.pop("published_at") for d in received_body["dataset_versions"]]

@@ -11,6 +11,7 @@ from backend.layers.common.entities import (
     CollectionId,
     CollectionMetadata,
     CollectionVersion,
+    CollectionVersionBase,
     CollectionVersionWithDatasets,
     DatasetArtifactType,
     DatasetMetadata,
@@ -22,6 +23,7 @@ from backend.layers.common.entities import (
     OntologyTermId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
@@ -61,7 +63,8 @@ class BaseTest(unittest.TestCase):
     business_logic: BusinessLogic
     crossref_provider: CrossrefProviderInterface  # Can be mocked from the tests
     uri_provider: UriProviderInterface
-
+    run_as_integration: bool
+    database_provider: DatabaseProviderInterface
     sample_dataset_metadata: DatasetMetadata
     sample_collection_metadata: CollectionMetadata
 
@@ -168,7 +171,7 @@ class BaseTest(unittest.TestCase):
         self,
         owner="test_user_id",
         curator_name="Test User",
-        links: List[Link] = None,
+        links: Optional[List[Link]] = None,
         add_datasets: int = 0,
         metadata=None,
         dataset_schema_version="3.0.0",
@@ -229,12 +232,12 @@ class BaseTest(unittest.TestCase):
     def generate_dataset(
         self,
         owner: str = "test_user_id",
-        collection_version: Optional[CollectionVersion] = None,
+        collection_version: Optional[CollectionVersionBase] = None,
         metadata: Optional[DatasetMetadata] = None,
         name: Optional[str] = None,
-        statuses: List[DatasetStatusUpdate] = None,
-        validation_message: str = None,
-        artifacts: List[DatasetArtifactUpdate] = None,
+        statuses: Optional[List[DatasetStatusUpdate]] = None,
+        validation_message: Optional[str] = None,
+        artifacts: Optional[List[DatasetArtifactUpdate]] = None,
         publish: bool = False,
         replace_dataset_version_id: Optional[DatasetVersionId] = None,
     ) -> DatasetData:
@@ -289,17 +292,17 @@ class BaseTest(unittest.TestCase):
         # TODO: implement as needed
         return body
 
-    def generate_collection(self, links: List[dict] = None, **kwargs) -> CollectionVersionWithDatasets:
+    def generate_collection(self, links: Optional[List[dict]] = None, **kwargs) -> CollectionVersionWithDatasets:
         """Generated a collection
         Adding to for compatibility with old tests
         """
         links = links if links else []
-        links = [api_link_dict_to_link_class(lk) for lk in links]
+        _links = [api_link_dict_to_link_class(lk) for lk in links]
         visibility = kwargs.pop("visibility", "PUBLIC")
         if visibility == "PUBLIC":
-            return self.generate_published_collection(links=links, **kwargs)
+            return self.generate_published_collection(links=_links, **kwargs)
         else:
-            return self.generate_unpublished_collection(links=links, **kwargs)
+            return self.generate_unpublished_collection(links=_links, **kwargs)
 
     def generate_collection_revision(self, owner="test_user_id") -> CollectionVersionWithDatasets:
         published_collection = self.generate_published_collection(owner)
