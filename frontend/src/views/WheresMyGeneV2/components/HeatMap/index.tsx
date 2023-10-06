@@ -289,7 +289,8 @@ export default memo(function HeatMap({
     const result: Set<string> = new Set<string>();
     Object.values(sortedCellTypesByTissueName).forEach((cellTypes) => {
       cellTypes.forEach((cellType) => {
-        result.add(cellType.cellTypeName);
+        if (!cellType.cellTypeName.includes("UBERON:"))
+          result.add(cellType.cellTypeName);
       });
     });
     return [...result].sort().map((cellType) => ({ name: cellType }));
