@@ -1,5 +1,4 @@
 import { expect, test } from "@playwright/test";
-import { conditionallyRunTests } from "../../utils/wmgUtils";
 import { expandTissue, getCellTypeNames, goToPage } from "tests/utils/helpers";
 import { TEST_URL } from "tests/common/constants";
 import { ROUTES } from "src/common/constants/routes";
@@ -10,12 +9,6 @@ import {
 const { describe } = test;
 
 describe("cell tooltip", () => {
-  /**
-   * TODO(thuang): Remove forceRun when all WMG e2e tests are enabled.
-   * `forceRun` is just to incrementally add tests back in the meantime
-   */
-  conditionallyRunTests({ forceRun: true });
-
   test(`Should verify cell tooltip hover`, async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 

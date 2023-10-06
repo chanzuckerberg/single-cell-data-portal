@@ -11,6 +11,7 @@ from backend.layers.business.entities import (
     CollectionMetadataUpdate,
     CollectionQueryFilter,
     DatasetArtifactDownloadData,
+    DeprecatedDatasetArtifactDownloadData,
 )
 from backend.layers.business.exceptions import (
     ArtifactNotFoundException,
@@ -100,6 +101,16 @@ class BusinessLogic(BusinessLogicInterface):
         self.s3_provider = s3_provider
         self.uri_provider = uri_provider
         super().__init__()
+
+    @staticmethod
+    def generate_permanent_url(dataset_version_id: DatasetVersionId, asset_type: DatasetArtifactType):
+        """
+        Return the permanent URL for the given asset.
+        """
+        from backend.common.corpora_config import CorporaConfig
+
+        base_url = CorporaConfig().dataset_assets_base_url
+        return f"{base_url}/{dataset_version_id.id}.{asset_type}"
 
     def _get_publisher_metadata(self, doi: str, errors: list) -> Optional[dict]:
         """
@@ -520,6 +531,24 @@ class BusinessLogic(BusinessLogicInterface):
         self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
     ) -> DatasetArtifactDownloadData:
         """
+        Returns data required for download: file size and permanent URL.
+        """
+        artifacts = self.get_dataset_artifacts(dataset_version_id)
+        artifact = next((a for a in artifacts if a.id == artifact_id), None)
+
+        if not artifact:
+            raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")
+
+        file_size = self.s3_provider.get_file_size(artifact.uri)
+        url = self.generate_permanent_url(dataset_version_id, artifact.type)
+
+        return DatasetArtifactDownloadData(file_size, url)
+
+    # TODO: Superseded by get_dataset_artifact_download_data. Remove with #5697.
+    def get_dataset_artifact_download_data_deprecated(
+        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
+    ) -> DeprecatedDatasetArtifactDownloadData:
+        """
         Returns download data for an artifact, including a presigned URL
         """
         artifacts = self.get_dataset_artifacts(dataset_version_id)
@@ -533,7 +562,7 @@ class BusinessLogic(BusinessLogicInterface):
         file_size = self.s3_provider.get_file_size(artifact.uri)
         presigned_url = self.s3_provider.generate_presigned_url(artifact.uri)
 
-        return DatasetArtifactDownloadData(file_name, file_type, file_size, presigned_url)
+        return DeprecatedDatasetArtifactDownloadData(file_name, file_type, file_size, presigned_url)
 
     def get_dataset_status(self, dataset_version_id: DatasetVersionId) -> DatasetStatus:
         """
