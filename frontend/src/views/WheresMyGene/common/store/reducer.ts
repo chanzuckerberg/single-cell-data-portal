@@ -195,6 +195,10 @@ function selectOrganism(
     selectedTissues: EMPTY_ARRAY,
     selectedFilters: EMPTY_FILTERS,
     cellInfoCellType: null,
+    geneInfoGene: null,
+    filteredCellTypes: [],
+    filteredCellTypeIds: [],
+    expandedTissueIds: [],
   };
 }
 
