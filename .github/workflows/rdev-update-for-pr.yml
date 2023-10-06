@@ -40,6 +40,8 @@ jobs:
           - wmg_processing
           - cellguide_pipeline
     runs-on: ubuntu-22.04
+    outputs:
+      image_tag: ${{ steps.push_images.outputs.image_tag }}
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -92,7 +94,7 @@ jobs:
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ env.STACK_NAME }}
-          tag: ${{ jobs.build_images.steps.push_images.outputs.image_tag }}
+          tag: ${{ needs.build_images.outputs.image_tag }}
           happy_version: "0.110.1"
 
   summarize:
