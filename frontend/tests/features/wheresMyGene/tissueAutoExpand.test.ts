@@ -1,5 +1,5 @@
 import { expect, test, Page } from "@playwright/test";
-import { indexOf, toInteger } from "lodash";
+import { toInteger } from "lodash";
 import { collapseTissue, expandTissue, tryUntil } from "tests/utils/helpers";
 import { goToWMG } from "tests/utils/wmgUtils";
 
@@ -90,9 +90,11 @@ describe("WMG tissue auto-expand", () => {
     await filterTissues(page);
     await filterCellType(page, 1);
     await checkTissues(page);
-    await checkElementVisible(page);
+    await checkElementVisible(page, CELL_TYPE_FILTERS, CELL_TYPE_TEST_ID);
     await removeCellFilter(page);
-    await expect(checkElementVisible(page)).rejects.toThrow();
+    await expect(
+      checkElementVisible(page, CELL_TYPE_FILTERS, CELL_TYPE_TEST_ID)
+    ).rejects.toThrow();
   });
 
   /**
@@ -111,7 +113,7 @@ describe("WMG tissue auto-expand", () => {
     await collapseTissue(page, tissues[1]);
     await filterCellType(page, 1);
     await checkTissues(page, tissues);
-    await checkElementVisible(page, cells);
+    await checkElementVisible(page, cells, CELL_TYPE_TEST_ID);
   });
 
   /**
@@ -130,7 +132,7 @@ describe("WMG tissue auto-expand", () => {
     await checkTissues(page);
     await removeCellFilter(page);
     await checkTissues(page, ["lung"], []);
-    await checkElementVisible(page, cells);
+    await checkElementVisible(page, cells, CELL_TYPE_TEST_ID);
   });
 
   /**
@@ -205,7 +207,7 @@ describe("WMG tissue auto-expand", () => {
     await collapseTissue(page, tissues[0]);
     await filterCellType(page, 1);
     await checkTissues(page, tissues);
-    await checkElementVisible(page);
+    await checkElementVisible(page, CELL_TYPE_FILTERS, CELL_TYPE_TEST_ID);
   });
 
   /**
@@ -272,7 +274,7 @@ describe("WMG tissue auto-expand", () => {
     );
     await checkTissues(page, tissues);
     await filterCellType(page, 1);
-    await checkElementVisible(page);
+    await checkElementVisible(page, CELL_TYPE_FILTERS, CELL_TYPE_TEST_ID);
     await checkTissues(page, tissues);
     await removeCellFilter(page);
     await checkTissues(page, tissues);
@@ -302,7 +304,7 @@ describe("WMG tissue auto-expand", () => {
     tissues.splice(0, 1);
     await checkTissues(page, tissues);
     await filterCellType(page, 1);
-    await checkElementVisible(page);
+    await checkElementVisible(page, CELL_TYPE_FILTERS, CELL_TYPE_TEST_ID);
     await checkTissues(page, tissues);
     await removeCellFilter(page);
     await checkTissues(page, tissues);
@@ -412,19 +414,15 @@ async function checkTissues(
  */
 async function checkElementVisible(
   page: Page,
-  filteredElements = CELL_TYPE_FILTERS,
-  testId = CELL_TYPE_TEST_ID
+  filteredElements: string[],
+  testId: string
 ) {
   await tryUntil(
     async () => {
-      const elements = (await page.getByTestId(testId).allInnerTexts()).sort(
-        (a, b) => a.localeCompare(b)
-      );
-      for (const element of elements) {
-        await expect(element.toLowerCase()).toEqual(
-          filteredElements[indexOf(elements, element)].toLowerCase()
-        );
-      }
+      const elements = await (
+        await page.getByTestId(testId).allInnerTexts()
+      ).map((str) => str.toLowerCase());
+      expect(elements).toEqual(expect.arrayContaining(filteredElements));
     },
     { page }
   );
