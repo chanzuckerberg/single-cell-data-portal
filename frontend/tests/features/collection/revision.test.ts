@@ -4,7 +4,7 @@ import { TEST_URL } from "tests/common/constants";
 import {
   getInnerText,
   goToPage,
-  isDevStaging,
+  isDevStagingRdev,
   tryUntil,
 } from "tests/utils/helpers";
 import { getTestID } from "tests/utils/selectors";
@@ -23,8 +23,8 @@ const STATUS_TAG_ID = "status-tag";
 
 describe("Collection Revision @loggedIn", () => {
   skip(
-    !isDevStaging,
-    "We only seed published collections for revision test in dev and staging"
+    !isDevStagingRdev,
+    "We only seed published collections for revision test in dev, rdev, and staging"
   );
 
   /**
