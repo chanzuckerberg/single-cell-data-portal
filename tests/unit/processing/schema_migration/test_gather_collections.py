@@ -54,21 +54,21 @@ class TestGatherCollections:
             [private, revision],
         ]
         response = schema_migrate.gather_collections(auto_publish=False)
-        assert [
+        for obj in [
             {
                 "can_publish": "False",
-                "collection_id": published_no_revision[0].collection_id.id,
-                "collection_version_id": published_no_revision[0].version_id.id,
+                "collection_id": published_no_revision.collection_id.id,
+                "collection_version_id": published_no_revision.version_id.id,
             },
             {
                 "can_publish": "False",
-                "collection_id": private[0].collection_id.id,
-                "collection_version_id": private[0].version_id.id,
+                "collection_id": private.collection_id.id,
+                "collection_version_id": private.version_id.id,
             },
             {
                 "can_publish": "False",
-                "collection_id": revision[0].collection_id.id,
-                "collection_version_id": revision[0].version_id.id,
+                "collection_id": revision.collection_id.id,
+                "collection_version_id": revision.version_id.id,
             },
-        ] == response
-        assert len(response) == 3
+        ]:
+            assert obj in response

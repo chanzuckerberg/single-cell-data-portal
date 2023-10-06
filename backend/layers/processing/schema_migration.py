@@ -67,25 +67,26 @@ class SchemaMigrate(ProcessingLogic):
         """
         response = []
 
-        # evaluate unpublished collections first, so that published versions are skipped if there is an active revision
-        has_revision = []  # list of collections to skip if published with an active revision
+        has_revision = set()
+        # iterates over unpublished collections first, so published versions are skipped if there is an active revision
         for collection in self.limit_collections():
             _resp = {}
+            if collection.is_published() and collection.collection_id.id in has_revision:
+                continue
+
             if not auto_publish:
-                # nothing should be published, because auto_publish is set to False
+                # auto_publish is off for this migration
                 _resp["can_publish"] = str(False)
-            elif collection.is_published() and collection.collection_id not in has_revision:
+            elif collection.is_published():
                 # published collection without an active revision
                 _resp["can_publish"] = str(True)
             elif collection.is_unpublished_version():
                 # active revision of a published collection.
-                has_revision.append(collection.collection_id)  # revision found, skip published version
+                has_revision.add(collection.collection_id.id)  # revision found, skip published version
                 _resp["can_publish"] = str(False)
             elif collection.is_initial_unpublished_version():
                 # unpublished collection
                 _resp["can_publish"] = str(False)
-            else:
-                continue  # skip published version with an active revision
             _resp.update(
                 collection_id=collection.collection_id.id,
                 collection_version_id=collection.version_id.id,
