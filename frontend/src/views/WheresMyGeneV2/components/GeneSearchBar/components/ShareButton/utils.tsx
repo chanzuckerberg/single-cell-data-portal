@@ -79,6 +79,7 @@ export const loadStateFromQueryParams = ({
   selectedFilters,
   dispatch,
   tissues,
+  cellTypesByName,
 }: {
   params: URLSearchParams;
   selectedFilters: State["selectedFilters"];
@@ -126,7 +127,13 @@ export const loadStateFromQueryParams = ({
   }
 
   // Check for cell types
-  const newFilteredCellTypes = params.get("cellTypes")?.split(delimiter) || [];
+  const newFilteredCellTypes =
+    params
+      .get("cellTypes")
+      ?.split(delimiter)
+      .filter(
+        (cellType) => Object.keys(cellTypesByName).indexOf(cellType) !== -1
+      ) || [];
 
   if (newFilteredCellTypes.length > 0) paramsToRemove.push("cellTypes");
 
@@ -195,6 +202,9 @@ function getNewSelectedFilters({
     Object.entries(tissues ?? {}).map(([id, tissue]) => [tissue.name, id])
   );
 
+  const allTissueNames = Object.keys(tissueIdsByName);
+  const allTissueIds = Object.keys(tissues ?? {});
+
   Object.keys(selectedFilters).forEach((key) => {
     const value = params.get(key);
 
@@ -210,9 +220,12 @@ function getNewSelectedFilters({
       const tissueIds = [];
       const tissueNames = [];
       for (const tissueParam of tissueParams) {
-        if (tissueParam.includes("UBERON:")) {
+        if (
+          tissueParam.includes("UBERON:") &&
+          allTissueIds.indexOf(tissueParam) !== -1
+        ) {
           tissueIds.push(tissueParam);
-        } else {
+        } else if (allTissueNames.indexOf(tissueParam) !== -1) {
           tissueNames.push(tissueParam);
         }
       }
@@ -224,6 +237,7 @@ function getNewSelectedFilters({
         ) as string[]),
       ];
     } else {
+      // TODO(seve): add input validation for all filter types, ensure that the values are present in the data
       newSelectedFilters[key as keyof State["selectedFilters"]] =
         value.split(delimiter);
     }

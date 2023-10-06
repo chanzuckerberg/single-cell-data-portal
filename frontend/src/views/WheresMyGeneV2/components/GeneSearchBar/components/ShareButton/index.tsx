@@ -46,7 +46,7 @@ export default function ShareButton(): JSX.Element {
   const {
     data: rawCellTypesByTissueName,
     isLoading: isLoadingCellTypesByTissueName,
-  } = useCellTypesByTissueName(2);
+  } = useCellTypesByTissueName();
 
   const [cellTypesByTissueName, setCellTypesByTissueName] =
     useState<CellTypeByTissueName>(EMPTY_OBJECT);
@@ -73,7 +73,7 @@ export default function ShareButton(): JSX.Element {
     [cellTypesByName]
   );
 
-  const { isLoading: isLoadingFilterDims } = usePrimaryFilterDimensions(2); //temp explicit version
+  const { isLoading: isLoadingFilterDims } = usePrimaryFilterDimensions(); //temp explicit version
   const dispatch = useContext(DispatchContext);
   const [showURLCopyNotification, setShowURLCopyNotification] = useState(0);
 
@@ -131,6 +131,7 @@ export default function ShareButton(): JSX.Element {
         selectedFilters,
         dispatch,
         tissues,
+        cellTypesByName,
       });
 
       if (loadedState) {
