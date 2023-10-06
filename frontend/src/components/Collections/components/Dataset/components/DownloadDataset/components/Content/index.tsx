@@ -70,6 +70,7 @@ const Content: FC<Props> = ({
       assetId,
       datasetId,
       filename,
+      isDownloadUX,
       setFileName,
       setFileSize,
       setIsDownloadLinkLoading,
@@ -79,6 +80,7 @@ const Content: FC<Props> = ({
       assetId,
       datasetId,
       filename,
+      isDownloadUX,
       setFileName,
       setFileSize,
       setIsDownloadLinkLoading,
@@ -96,11 +98,12 @@ const Content: FC<Props> = ({
         const result = await (
           await fetch(`${API_URL}${url}`, {
             ...DEFAULT_FETCH_OPTIONS,
-            method: "GET",
+            method: isDownloadUX ? "GET" : "POST",
           })
         ).json();
 
-        const { file_size, url: downloadURL } = result;
+        const { file_size } = result;
+        const downloadURL = isDownloadUX ? result.url : result.presigned_url;
 
         setFileSize(file_size);
         setDownloadLink(downloadURL);
@@ -111,7 +114,7 @@ const Content: FC<Props> = ({
 
       setIsDownloadLinkLoading(false);
     }
-  }, [selectedFormat, dataAssets]);
+  }, [selectedFormat, dataAssets, isDownloadUX]);
 
   /**
    * Tracks dataset download analytics as specified by the custom analytics event.
@@ -197,6 +200,7 @@ const Content: FC<Props> = ({
     assetId: string;
     datasetId: string;
     filename: string;
+    isDownloadUX: boolean;
     setFileName: (value: string) => void;
     setFileSize: (value: number) => void;
     setIsDownloadLinkLoading: (value: boolean) => void;

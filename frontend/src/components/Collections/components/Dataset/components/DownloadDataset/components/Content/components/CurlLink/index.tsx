@@ -36,18 +36,30 @@ const CurlLink: FC<Props> = ({ fileName, handleAnalytics, link }) => {
           <CopyMask curl={curl} handleAnalytics={handleAnalytics} />
         )}
       </CodeBlock>
-      <Caption>
-        This cURL command is valid forever. All datasets on CZ CELLxGENE
-        Discover adhere to its{" "}
-        <Link href={SCHEMA_URL} rel="noreferrer noopener" target="_blank">
-          schema
-        </Link>{" "}
-        and may be downloaded programmatically using the{" "}
-        <Link href={DISCOVER_API_URL} rel="noreferrer noopener" target="_blank">
-          Discover API
-        </Link>
-        .
-      </Caption>
+      {isDownloadUX ? (
+        <Caption>
+          This cURL command is valid forever. All datasets on CZ CELLxGENE
+          Discover adhere to its{" "}
+          <Link href={SCHEMA_URL} rel="noreferrer noopener" target="_blank">
+            schema
+          </Link>{" "}
+          and may be downloaded programmatically using the{" "}
+          <Link
+            href={DISCOVER_API_URL}
+            rel="noreferrer noopener"
+            target="_blank"
+          >
+            Discover API
+          </Link>
+          .
+        </Caption>
+      ) : (
+        <Caption>
+          If you prefer not to download this dataset directly in your browser,
+          you can optionally use the provided cURL link to download via the
+          terminal. The above link will be valid for 1 week.
+        </Caption>
+      )}
     </>
   );
 };
