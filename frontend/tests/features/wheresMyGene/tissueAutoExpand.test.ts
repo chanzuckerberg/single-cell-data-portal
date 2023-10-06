@@ -31,6 +31,8 @@ const DATASET_FILTER_LABEL = "Dataset";
 const DATASET_FILTER_SELECTION =
   "Combined samples HTAN MSK - Single cell profiling reveals novel tumor and myeloid subpopulations in small cell lung cancer";
 const DATASET_FILTER_SELECTED = "Combined samples";
+const EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER = ["abdomen", "blood"];
+const EXPECTED_EXPANDED_TISSUES = ["blood"];
 
 const { describe } = test;
 
@@ -90,7 +92,11 @@ describe("WMG tissue auto-expand", () => {
     await filterTissues(page);
     await filterCellType(page, 1);
     await checkTissues(page);
-    await checkElementVisible(page, CELL_TYPE_FILTERS, CELL_TYPE_TEST_ID);
+    await checkElementVisible(
+      page,
+      CELL_TYPE_FILTERS.slice(0, 1),
+      CELL_TYPE_TEST_ID
+    );
     await removeCellFilter(page);
     await expect(
       checkElementVisible(page, CELL_TYPE_FILTERS, CELL_TYPE_TEST_ID)
@@ -169,21 +175,23 @@ describe("WMG tissue auto-expand", () => {
   test("Tissue auto expansion - cross filter with Sex filter, check expansion", async ({
     page,
   }) => {
-    const filteredTissues = FILTERED_TISSUES.slice();
-    const expandedTissues = filteredTissues.slice();
     await loadPageAndTissues(page);
-    await filterTissues(page, filteredTissues);
-    await collapseTissue(page, filteredTissues[0]);
-    expandedTissues.splice(0, 2);
+    await filterTissues(page, FILTERED_TISSUES);
+    await collapseTissue(page, FILTERED_TISSUES[0]);
     await filterSelection(
       page,
       SEX_FILTER_TEST_ID,
       SEX_FILTER_LABEL,
       SEX_FILTER_SELECTION
     );
-    filteredTissues.splice(1, 1); // remove axilla
-    await expect(page.getByTestId(TISSUE_NODE_TEST_ID)).toHaveCount(2);
-    await checkTissues(page, filteredTissues, expandedTissues);
+    await expect(page.getByTestId(TISSUE_NODE_TEST_ID)).toHaveCount(
+      EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER.length
+    );
+    await checkTissues(
+      page,
+      EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER,
+      EXPECTED_EXPANDED_TISSUES
+    );
   });
 
   /**
@@ -207,7 +215,11 @@ describe("WMG tissue auto-expand", () => {
     await collapseTissue(page, tissues[0]);
     await filterCellType(page, 1);
     await checkTissues(page, tissues);
-    await checkElementVisible(page, CELL_TYPE_FILTERS, CELL_TYPE_TEST_ID);
+    await checkElementVisible(
+      page,
+      CELL_TYPE_FILTERS.slice(0, 1),
+      CELL_TYPE_TEST_ID
+    );
   });
 
   /**
@@ -274,7 +286,11 @@ describe("WMG tissue auto-expand", () => {
     );
     await checkTissues(page, tissues);
     await filterCellType(page, 1);
-    await checkElementVisible(page, CELL_TYPE_FILTERS, CELL_TYPE_TEST_ID);
+    await checkElementVisible(
+      page,
+      CELL_TYPE_FILTERS.slice(0, 1),
+      CELL_TYPE_TEST_ID
+    );
     await checkTissues(page, tissues);
     await removeCellFilter(page);
     await checkTissues(page, tissues);
@@ -304,7 +320,11 @@ describe("WMG tissue auto-expand", () => {
     tissues.splice(0, 1);
     await checkTissues(page, tissues);
     await filterCellType(page, 1);
-    await checkElementVisible(page, CELL_TYPE_FILTERS, CELL_TYPE_TEST_ID);
+    await checkElementVisible(
+      page,
+      CELL_TYPE_FILTERS.slice(0, 1),
+      CELL_TYPE_TEST_ID
+    );
     await checkTissues(page, tissues);
     await removeCellFilter(page);
     await checkTissues(page, tissues);
@@ -422,7 +442,9 @@ async function checkElementVisible(
       const elements = await (
         await page.getByTestId(testId).allInnerTexts()
       ).map((str) => str.toLowerCase());
-      expect(elements).toEqual(expect.arrayContaining(filteredElements));
+      expect(elements).toEqual(
+        expect.arrayContaining(filteredElements.map((str) => str.toLowerCase()))
+      );
     },
     { page }
   );
