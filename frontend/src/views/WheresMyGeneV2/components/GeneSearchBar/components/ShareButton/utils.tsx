@@ -85,6 +85,7 @@ export const loadStateFromQueryParams = ({
   selectedFilters: State["selectedFilters"];
   dispatch: Dispatch<PayloadAction<LoadStateFromURLPayload>>;
   tissues?: TissueMetadataQueryResponse;
+  cellTypesByName: { [name: string]: string };
 }): LoadStateFromURLPayload | null => {
   if (isSSR()) return null;
 
@@ -131,9 +132,12 @@ export const loadStateFromQueryParams = ({
     params
       .get("cellTypes")
       ?.split(delimiter)
-      .filter(
-        (cellType) => Object.keys(cellTypesByName).indexOf(cellType) !== -1
-      ) || [];
+      .filter((cellType) => {
+        if (Object.keys(cellTypesByName).indexOf(cellType) !== -1) return true;
+        // Pop toast here
+        console.warn(`Cell type ${cellType} not found in cell types`);
+        return false;
+      }) || [];
 
   if (newFilteredCellTypes.length > 0) paramsToRemove.push("cellTypes");
 
