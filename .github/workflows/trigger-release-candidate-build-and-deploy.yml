@@ -31,6 +31,6 @@ jobs:
           echo "Latest commit on 'main' branch is: $(git log -1 --format='%H' main)"
 
           echo "About to merge 'main' branch into 'staging' branch"
-          git merge --verbose --no-ff main -m "Merging main branch into staging branch"
+          git merge --verbose main -m "Merging main branch into staging branch"
 
           git push origin staging
