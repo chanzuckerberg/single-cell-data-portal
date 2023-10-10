@@ -124,7 +124,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
     },
     "ApplyDefaults": {
         "Type": "Pass",
-        "Next": "DownloadValidate",
+        "Next": "GatherCollections",
         "Parameters": {
           "args.$": "States.JsonMerge($.inputDefaults, $$.Execution.Input, false)"
         },
