@@ -41,6 +41,7 @@ def publish_revisions_and_collections(
 
 class TestPublishRevisions:
     def test_cleanup(self, publish_revisions, caplog):
+        """Positive test case for cleanup method."""
         # Mock
         caplog.set_level(logging.INFO)
         publish_revisions.object_keys_to_delete = ["key1", "key2"]
@@ -55,6 +56,8 @@ class TestPublishRevisions:
         )
 
     def test_check_datasets_no_errors(self, publish_revisions_and_collections):
+        """positive test case for check_datasets method."""
+
         # Mock
         publish_revisions, collections = publish_revisions_and_collections
         published, revision = collections["revision"][0], collections["revision"][1]
@@ -70,6 +73,7 @@ class TestPublishRevisions:
         ]
 
     def test_check_datasets_not_latest_version(self, publish_revisions_and_collections):
+        """Check datasets when one of the dataset has not been migrated to the latest schema version."""
         # Mock
         publish_revisions, collections = publish_revisions_and_collections
         published, revision = collections["revision"][0], collections["revision"][1]
@@ -84,6 +88,7 @@ class TestPublishRevisions:
         assert publish_revisions.object_keys_to_delete == [f"{published.datasets[1].version_id.id}/migrated.h5ad"]
 
     def test_check_datasets_fail_status(self, publish_revisions_and_collections):
+        """Check datasets when one of the dataset has failed during the ingestion process."""
         # Mock
         publish_revisions, collections = publish_revisions_and_collections
         published, revision = collections["revision"][0], collections["revision"][1]
@@ -97,10 +102,10 @@ class TestPublishRevisions:
 
         # Assert
         assert errors[0]["message"] == error_message
-        # TODO get the published dataset version uuid
         assert publish_revisions.object_keys_to_delete == [f"{published.datasets[1].version_id.id}/migrated.h5ad"]
 
     def test_get_published_dataset_ids_from_collection_id(self, publish_revisions):
+        """Positive test case for get_published_dataset_ids_from_collection_id method."""
         # Mock
         mock_collection_version = Mock()
         mock_dataset1 = Mock()
@@ -119,6 +124,8 @@ class TestPublishRevisions:
         assert dataset_versions == {"dataset1_id": "version1_id", "dataset2_id": "version2_id"}
 
     def test_get_published_dataset_ids_from_collection_id__None(self, publish_revisions):
+        """Test case for get_published_dataset_ids_from_collection_id method when the published version of the
+        collection does not exists. This scenario should only be possible in test."""
         # Mock
         mock_collection_version = Mock()
         publish_revisions.business_logic.get_published_collection_version.return_value = None
@@ -129,7 +136,8 @@ class TestPublishRevisions:
         # Assert the results
         assert dataset_versions == {}
 
-    def test_run(self, publish_revisions_and_collections, caplog):
+    def test_run_pos(self, publish_revisions_and_collections, caplog):
+        """Positive test case for run method."""
         # Mock necessary objects and methods
         caplog.set_level(logging.INFO)
         publish_revisions, collections = publish_revisions_and_collections
@@ -144,6 +152,25 @@ class TestPublishRevisions:
         publish_revisions.check_datasets.assert_called_once_with(revision)
         assert "Publishing collection version." in caplog.messages
         publish_revisions.business_logic.publish_collection_version.assert_called_once_with(revision.version_id)
+        assert "Deleting migrated.h5ad files from s3." in caplog.messages
+
+    def test_run_neg(self, publish_revisions_and_collections, caplog):
+        """Run method when check_datasets returns errors."""
+        # Mock necessary objects and methods
+        caplog.set_level(logging.INFO)
+        publish_revisions, collections = publish_revisions_and_collections
+        _, revision = collections["revision"]
+        publish_revisions.business_logic.get_collections.return_value = [collections]
+        publish_revisions.check_datasets = Mock(return_value=["error message"])
+
+        # Call the method
+        publish_revisions.run()
+
+        # Assert the calls and behavior
+        publish_revisions.check_datasets.assert_called_once_with(revision)
+        assert "Unable to publish collection version." in caplog.messages
+        publish_revisions.business_logic.publish_collection_version.assert_not_called()
+        assert "Deleting migrated.h5ad files from s3." in caplog.messages
 
 
 if __name__ == "__main__":
