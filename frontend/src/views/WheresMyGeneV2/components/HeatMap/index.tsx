@@ -354,21 +354,25 @@ export default memo(function HeatMap({
         // sort tissues alphabetically
         return a.name.localeCompare(b.name);
       })
-      .map((tissue: OntologyTerm) => {
+      .flatMap((tissue: OntologyTerm) => {
         const { id, name } = tissue;
 
-        return {
-          tissueId: id,
-          tissueName: name,
-          tissueCellTypes: getTissueCellTypes({
-            cellTypeSortBy,
-            cellTypes,
-            sortedCellTypesByTissueName,
-            tissue: name,
-            tissueID: id,
-            displayedCellTypes,
-          }),
-        };
+        const tissueCellTypes = getTissueCellTypes({
+          cellTypeSortBy,
+          cellTypes,
+          sortedCellTypesByTissueName,
+          tissue: name,
+          tissueID: id,
+          displayedCellTypes,
+        });
+
+        return tissueCellTypes.length > 0
+          ? {
+              tissueId: id,
+              tissueName: name,
+              tissueCellTypes,
+            }
+          : [];
       });
   }, [
     cellTypeSortBy,
