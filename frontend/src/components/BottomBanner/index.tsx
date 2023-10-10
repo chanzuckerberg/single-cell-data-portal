@@ -23,11 +23,13 @@ import {
   HUBSPOT_URL,
   NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_BUTTON_TEXT,
   NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_TEXT,
+  NEWSLETTER_SIGNUP_BANNER_SURVEY_LINK_TEXT,
+  NEWSLETTER_SIGNUP_BANNER_SURVEY_TEXT,
 } from "./constants";
 import { Props } from "./types";
 
 export default memo(function BottomBanner({
-  includeSurveyLink = false,
+  includeSurveyLink = true,
   asFooter = false,
   customSurveyLinkPrefix,
   analyticsHandler,
@@ -100,31 +102,30 @@ export default memo(function BottomBanner({
             </FooterContentWrapper>
           ) : (
             <>
-              <div>
+              <>
                 <StyledLink
                   onClick={toggleNewsletterSignupModal}
                   data-testid="newsletter-modal-open-button"
                 >
                   {NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_BUTTON_TEXT}
-                </StyledLink>{" "}
-                {NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_TEXT}{" "}
+                </StyledLink>
+                {NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_TEXT}
                 {includeSurveyLink && (
                   <>
                     {customSurveyLinkPrefix
                       ? customSurveyLinkPrefix
-                      : "Send us feedback with this"}{" "}
+                      : NEWSLETTER_SIGNUP_BANNER_SURVEY_TEXT}
                     <StyledLink
                       href={airtableLink}
                       target="_blank"
                       rel="noopener"
                       onClick={analyticsHandler}
                     >
-                      quick survey
+                      {NEWSLETTER_SIGNUP_BANNER_SURVEY_LINK_TEXT}
                     </StyledLink>
-                    .
                   </>
                 )}
-              </div>
+              </>
 
               <NewsletterModal
                 isOpen={newsletterModalIsOpen}

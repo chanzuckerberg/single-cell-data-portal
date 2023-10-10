@@ -17,3 +17,6 @@ export const HUBSPOT_URL = "https://js.hsforms.net/forms/v2.js";
 export const NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_BUTTON_TEXT = "Subscribe";
 export const NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_TEXT =
   "to our newsletter to receive updates about new features.";
+export const NEWSLETTER_SIGNUP_BANNER_SURVEY_LINK_TEXT = "quick survey.";
+export const NEWSLETTER_SIGNUP_BANNER_SURVEY_TEXT =
+  "Send us feedback with this";

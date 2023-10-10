@@ -55,6 +55,7 @@ export const StyledBottomBannerWrapper = styled.div`
 `;
 
 export const StyledLink = styled.a`
+  padding: 0px 5px 0px 5px;
   text-decoration-line: underline;
   color: #8f5aff;
   font-weight: 500;
