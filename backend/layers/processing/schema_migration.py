@@ -154,7 +154,7 @@ class SchemaMigrate(ProcessingLogic):
                 "no_datasets": str(True),
             }
         else:
-            if can_publish:
+            if version.is_published():
                 # Create a new collection version(revision) if the collection is already published
                 private_collection_version_id = self.business_logic.create_collection_version(
                     CollectionId(collection_id)
