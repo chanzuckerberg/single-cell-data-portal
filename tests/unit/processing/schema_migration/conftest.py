@@ -68,7 +68,7 @@ def revision(published_collection):
     collection.version_id = CollectionVersionId()
     collection.datasets = []
     for _dataset in published_collection.datasets:
-        collection.datasets.append(make_mock_dataset_version())
+        collection.datasets.append(make_mock_dataset_version(dataset_id=_dataset.dataset_id.id))
     return [published_collection, collection]
 
 
