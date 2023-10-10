@@ -1,7 +1,10 @@
+import { Spinner, SpinnerSize } from "@blueprintjs/core";
 import { FC, ReactNode } from "react";
 import { DialogLoader } from "src/components/Datasets/components/DownloadDataset/style";
 import { FormLabel } from "@mui/material";
 import { FormControl } from "./style";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { FEATURES } from "src/common/featureFlags/features";
 
 export const PROMPT_TEXT =
   "Select one of the data formats to view its download details.";
@@ -21,9 +24,16 @@ const Details: FC<Props> = ({
   fileSize = 0,
   isLoading = false,
 }) => {
+  const isDownloadUX = useFeatureFlag(FEATURES.DOWNLOAD_UX);
+  const Loader = isDownloadUX ? (
+    <DialogLoader sdsStyle="minimal" />
+  ) : (
+    <Spinner size={SpinnerSize.SMALL} />
+  ); // TODO: #5566 hidden under feature flag.
+
   function renderContent() {
     if (isLoading) {
-      return <DialogLoader sdsStyle="minimal" />;
+      return Loader;
     }
 
     if (!selected) {

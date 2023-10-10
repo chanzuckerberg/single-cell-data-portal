@@ -9,6 +9,7 @@ import {
   spacesS,
   spacesXxs,
 } from "src/common/theme";
+import { OLD_GRAY } from "src/components/common/theme";
 
 export const CodeBlock = styled.div`
   align-items: flex-start;
@@ -39,4 +40,36 @@ export const CodeBlock = styled.div`
 export const Caption = styled.div`
   ${fontBodyXs}
   color: ${grey500};
+`;
+
+/**
+ * @deprecated by CodeBlock styles once "DOWNLOAD_UX" feature flag is removed.
+ */
+export const DownloadCodeBlock = styled.div`
+  margin-top: 14px;
+  position: relative;
+  width: 511px;
+
+  code {
+    border: 1px solid ${OLD_GRAY.VERY_LIGHT};
+    border-radius: ${cornersM}px;
+    box-sizing: border-box;
+    display: block;
+    font-size: 13px;
+    letter-spacing: normal;
+    line-height: 18px;
+    max-height: 52px;
+    overflow: hidden;
+    padding: ${spacesS}px;
+  }
+`;
+
+/**
+ * @deprecated by Caption styles once "DOWNLOAD_UX" feature flag is removed.
+ */
+export const DownloadCaption = styled.div`
+  color: ${OLD_GRAY.TIPS};
+  font-size: 12px;
+  margin-top: -3px;
+  width: 490px;
 `;

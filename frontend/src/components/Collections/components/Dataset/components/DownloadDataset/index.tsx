@@ -2,7 +2,12 @@ import React, { ElementType, FC } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { Dataset } from "src/common/entities";
 import Content from "./components/Content";
-import { Dialog } from "src/components/Datasets/components/DownloadDataset/style";
+import {
+  Dialog as DownloadUXDialog,
+  DownloadDialog,
+} from "src/components/Datasets/components/DownloadDataset/style";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { FEATURES } from "src/common/featureFlags/features";
 
 interface Props {
   Button: ElementType;
@@ -17,7 +22,9 @@ const DownloadDataset: FC<Props> = ({
   isDisabled = false,
   name,
 }) => {
+  const isDownloadUX = useFeatureFlag(FEATURES.DOWNLOAD_UX);
   const [isOpen, setIsOpen] = React.useState(false);
+  const Dialog = isDownloadUX ? DownloadUXDialog : DownloadDialog; // TODO(cc) Download UI #5566 hidden under feature flag.
 
   if (!dataAssets.length) {
     return null;
