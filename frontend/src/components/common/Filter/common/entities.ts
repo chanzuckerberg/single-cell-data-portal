@@ -14,6 +14,7 @@ export enum ANALYTICS_PAYLOAD_KEY {
   CELL_CLASS = "cellClass",
   CELL_SUBCLASS = "cellSubclass",
   CELL_TYPE = "cellType",
+  CONSORTIA = "consortia",
   ORGAN = "organ",
   SUSPENSION_TYPE = "suspension_type",
   SYSTEM = "system",
@@ -122,6 +123,7 @@ export enum CATEGORY_FILTER_ID {
   "ASSAY" = "ASSAY",
   "CELL_COUNT" = "CELL_COUNT",
   "CELL_TYPE_CALCULATED" = "CELL_TYPE_CALCULATED",
+  "CONSORTIA" = "CONSORTIA",
   "CURATOR_NAME" = "CURATOR_NAME",
   "DEVELOPMENT_STAGE" = "DEVELOPMENT_STAGE",
   "DISEASE" = "DISEASE",
@@ -317,6 +319,7 @@ export type FilterKey = keyof CollectionRow | keyof DatasetRow;
  * Category value keys.
  */
 export enum CATEGORY_VALUE_KEY {
+  NO_CONSORTIUM = "No consortium",
   NO_PUBLICATION = "No publication",
   NORMAL = "normal",
 }
@@ -395,6 +398,7 @@ export interface CollectionRow
   extends Categories,
     PublisherMetadataCategories,
     Testable {
+  consortia: string[];
   curator_name?: string; // Curator view.
   id: string;
   name: string;
@@ -416,6 +420,7 @@ export interface DatasetRow
     Testable {
   collection_id: Collection["id"];
   collection_name: Collection["name"];
+  consortia: string[];
   explorer_url: string;
   id: string;
   isOverMaxCellCount: boolean;

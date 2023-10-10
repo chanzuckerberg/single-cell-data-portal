@@ -196,6 +196,12 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
+        accessor: "consortia",
+        filter: "includesSome",
+        id: CATEGORY_FILTER_ID.CONSORTIA,
+      },
+      // Hidden, required for filter.
+      {
         accessor: "cellTypeCalculated",
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED,
