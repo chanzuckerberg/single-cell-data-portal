@@ -18,6 +18,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
     OntologyTermId,
+    TissueOntologyTermId,
 )
 from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.layers.thirdparty.uri_provider import FileInfo, FileInfoException
@@ -1787,7 +1788,7 @@ class TestDataset(BaseAPIPortalTest):
 
         modified_metadata = copy.deepcopy(self.sample_dataset_metadata)
         modified_metadata.development_stage = [OntologyTermId("Test", "HsapDv:0000008")]
-        modified_metadata.tissue = [OntologyTermId("Test", "UBERON:0002048")]
+        modified_metadata.tissue = [TissueOntologyTermId("Test", "UBERON:0002048", "cell culture")]
         modified_metadata.cell_type = [OntologyTermId("Test", "CL:0000738")]
 
         dataset = self.generate_dataset(metadata=modified_metadata, publish=True)
