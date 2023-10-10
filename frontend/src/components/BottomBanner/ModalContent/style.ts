@@ -89,3 +89,5 @@ export const StyledErrorMessage = styled.div`
    */
   color: ${error400};
 `;
+
+export const StyledNewsletterSignupModal = styled.div``;

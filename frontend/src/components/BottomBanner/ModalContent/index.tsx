@@ -7,6 +7,7 @@ import {
   StyledSubmitButton,
   StyledErrorMessage,
   StyledDisclaimer,
+  StyledNewsletterSignupModal,
 } from "./style";
 import { useConnect } from "./connect";
 import { EVENTS } from "src/common/analytics/events";
@@ -28,7 +29,7 @@ export default function BottomBannerModalContent({
     emailRef,
   } = useConnect({ id, isHubSpotReady, setError, email });
   return (
-    <div data-testid="newsletter-modal-content">
+    <StyledNewsletterSignupModal data-testid="newsletter-modal-content">
       <StyledTitle>Join Our Newsletter</StyledTitle>
 
       <StyledDescription>
@@ -86,6 +87,6 @@ export default function BottomBannerModalContent({
           ? 'To unsubscribe, click on the "Unsubscribe" link at the bottom of the newsletter.'
           : "Unsubscribe at any time."}
       </StyledDisclaimer>
-    </div>
+    </StyledNewsletterSignupModal>
   );
 }
