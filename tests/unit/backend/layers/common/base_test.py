@@ -20,6 +20,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
     OntologyTermId,
+    TissueOntologyTermId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
@@ -110,7 +111,11 @@ class BaseTest(unittest.TestCase):
         self.sample_dataset_metadata = DatasetMetadata(
             name="test_dataset_name",
             organism=[OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
-            tissue=[OntologyTermId(label="test_tissue_label", ontology_term_id="test_tissue_term_id")],
+            tissue=[
+                TissueOntologyTermId(
+                    label="test_tissue_label", ontology_term_id="test_tissue_term_id", tissue_type="tissue"
+                )
+            ],
             assay=[OntologyTermId(label="test_assay_label", ontology_term_id="test_assay_term_id")],
             disease=[OntologyTermId(label="test_disease_label", ontology_term_id="test_disease_term_id")],
             sex=[OntologyTermId(label="test_sex_label", ontology_term_id="test_sex_term_id")],

@@ -124,7 +124,13 @@ class TestCollection(BaseAPIPortalTest):
                     ],
                     "sex": [{"label": "test_sex_label", "ontology_term_id": "test_sex_term_id"}],
                     "suspension_type": ["test_suspension_type"],
-                    "tissue": [{"label": "test_tissue_label", "ontology_term_id": "test_tissue_term_id"}],
+                    "tissue": [
+                        {
+                            "label": "test_tissue_label",
+                            "ontology_term_id": "test_tissue_term_id",
+                            "tissue_type": "tissue",
+                        }
+                    ],
                     "tombstone": False,
                     "updated_at": mock.ANY,
                     "x_approximate_distribution": "normal",
@@ -175,7 +181,13 @@ class TestCollection(BaseAPIPortalTest):
                     ],
                     "sex": [{"label": "test_sex_label", "ontology_term_id": "test_sex_term_id"}],
                     "suspension_type": ["test_suspension_type"],
-                    "tissue": [{"label": "test_tissue_label", "ontology_term_id": "test_tissue_term_id"}],
+                    "tissue": [
+                        {
+                            "label": "test_tissue_label",
+                            "ontology_term_id": "test_tissue_term_id",
+                            "tissue_type": "tissue",
+                        }
+                    ],
                     "tombstone": False,
                     "updated_at": mock.ANY,
                     "x_approximate_distribution": "normal",

@@ -738,7 +738,7 @@ paths:
                     assay:
                       $ref: "#/components/schemas/ontology_element_array"
                     tissue:
-                      $ref: "#/components/schemas/ontology_element_array"
+                      $ref: "#/components/schemas/tissue_element_array"
                     tissue_ancestors:
                       type: array
                       items:
@@ -821,7 +821,7 @@ paths:
                     assay:
                       $ref: "#/components/schemas/ontology_element_array"
                     tissue:
-                      $ref: "#/components/schemas/ontology_element_array"
+                      $ref: "#/components/schemas/tissue_element_array"
                     tissue_ancestors:
                       type: array
                       items:
@@ -1175,6 +1175,15 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/ontology_element"
+    tissue_element_array:
+      type: array
+      items:
+        allOf:
+          - $ref: "#/components/schemas/ontology_element"
+          - type: object
+            properties:
+              tissue_type:
+                type: string
     dataset:
       type: object
       required:
@@ -1188,7 +1197,7 @@ components:
         assay:
           $ref: "#/components/schemas/ontology_element_array"
         tissue:
-          $ref: "#/components/schemas/ontology_element_array"
+          $ref: "#/components/schemas/tissue_element_array"
         disease:
           $ref: "#/components/schemas/ontology_element_array"
         sex:

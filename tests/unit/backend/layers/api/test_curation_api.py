@@ -1056,7 +1056,13 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     ],
                     "sex": [{"label": "test_sex_label", "ontology_term_id": "test_sex_term_id"}],
                     "suspension_type": ["test_suspension_type"],
-                    "tissue": [{"label": "test_tissue_label", "ontology_term_id": "test_tissue_term_id"}],
+                    "tissue": [
+                        {
+                            "label": "test_tissue_label",
+                            "ontology_term_id": "test_tissue_term_id",
+                            "tissue_type": "tissue",
+                        }
+                    ],
                     "title": "test_dataset_name",
                     "tombstone": False,
                     "x_approximate_distribution": "NORMAL",
