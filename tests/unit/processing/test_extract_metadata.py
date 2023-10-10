@@ -175,7 +175,7 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
                 [
                     np.array([["lung", "liver"][i] for i in tissue]).reshape(11, 1),
                     np.array([["UBERON:01", "UBERON:10"][i] for i in tissue]).reshape(11, 1),
-                    np.array([["organoid", "tissue"][i] for i in tissue]).reshape(50001, 1),
+                    np.array([["organoid", "tissue"][i] for i in tissue]).reshape(11, 1),
                     np.array([["10x", "smartseq", "cite-seq"][i] for i in assay]).reshape(11, 1),
                     np.array([["EFO:001", "EFO:010", "EFO:011"][i] for i in assay]).reshape(11, 1),
                     np.random.choice(["healthy"], size=(11, 1)),

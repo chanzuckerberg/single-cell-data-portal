@@ -1,3 +1,4 @@
+import dataclasses
 import itertools
 from datetime import datetime
 from typing import Iterable, List, Optional, Tuple
@@ -134,23 +135,13 @@ def _dataset_asset_to_response(dataset_artifact: DatasetArtifact, dataset_id: st
     }
 
 
-def _ontology_term_id_to_response(ontology_term_id: OntologyTermId):
-    """
-    Converts an OntologyTermId object to an object compliant to the API specifications
-    """
-    return {
-        "label": ontology_term_id.label,
-        "ontology_term_id": ontology_term_id.ontology_term_id,
-    }
-
-
 def _ontology_term_ids_to_response(ontology_term_ids: List[OntologyTermId]):
     """
     Converts a list of OntologyTermId objects to an object compliant to the API specifications.
     This is useful because dataset metadata contain all the possible values for that ontology
     that exist in the dataset proper.
     """
-    return [_ontology_term_id_to_response(otid) for otid in ontology_term_ids]
+    return [dataclasses.asdict(otid) for otid in ontology_term_ids]
 
 
 def remove_none(body: dict):
