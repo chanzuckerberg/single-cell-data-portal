@@ -337,7 +337,7 @@ class SchemaMigrate(ProcessingLogic):
         self.logger.info(f"Starting {step_name}", extra={"step": step_name})
         if step_name == "gather_collections":
             gather_collections = self.error_wrapper(self.gather_collections, "gather_collections")
-            auto_publish = os.environ["CAN_PUBLISH"].lower() == "true"
+            auto_publish = os.environ["AUTO_PUBLISH"].lower() == "true"
             response = gather_collections(auto_publish)
         elif step_name == "collection_migrate":
             collection_id = os.environ["COLLECTION_ID"]
