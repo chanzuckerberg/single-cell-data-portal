@@ -160,7 +160,7 @@ class OntologyTermId:
 
 @dataclass
 class TissueOntologyTermId(OntologyTermId):
-    tissue_type: str
+    tissue_type: Optional[str] = None
 
 
 @dataclass_json
