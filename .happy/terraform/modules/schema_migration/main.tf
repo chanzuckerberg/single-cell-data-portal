@@ -36,6 +36,10 @@ resource aws_batch_job_definition schema_migrations_swap {
         name= "REMOTE_DEV_PREFIX",
         value= var.remote_dev_prefix
       },
+      {
+        name= "DATASETS_BUCKET",
+        value= var.datasets_bucket
+      },
     ],
     resourceRequirements = [
       {
@@ -83,6 +87,10 @@ resource aws_batch_job_definition schema_migrations {
       {
         name= "REMOTE_DEV_PREFIX",
         value= var.remote_dev_prefix
+      },
+      {
+        name= "DATASETS_BUCKET",
+        value= var.datasets_bucket
       },
     ],
     resourceRequirements = [

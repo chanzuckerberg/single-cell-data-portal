@@ -316,8 +316,8 @@ class SchemaMigrate(ProcessingLogic):
             # Cleanup S3 files
             self.s3_provider.delete_files(self.artifact_bucket, error_s3_keys)
             report_message = "Schema migration results."
-            if report["errors"]:
-                report_message += " @sc-oncall-eng"
+            # if report["errors"]:
+            #     report_message += " @sc-oncall-eng"
             self._upload_to_slack("schema_migration_report.json", report_str, report_message)
             return report
         except Exception as e:
