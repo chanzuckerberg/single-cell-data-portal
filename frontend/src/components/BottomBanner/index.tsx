@@ -18,7 +18,12 @@ import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/compo
 import { noop } from "src/common/constants/utils";
 import BottomBannerModalContent from "./ModalContent";
 import { useConnect } from "./connect";
-import { FORM_CONTAINER_ID } from "./constants";
+import {
+  FORM_CONTAINER_ID,
+  HUBSPOT_URL,
+  NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_BUTTON_TEXT,
+  NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_TEXT,
+} from "./constants";
 import { Props } from "./types";
 
 export default memo(function BottomBanner({
@@ -66,7 +71,7 @@ export default memo(function BottomBanner({
           onHubSpotReady();
         }}
         type="text/javascript"
-        src="https://js.hsforms.net/forms/v2.js"
+        src={HUBSPOT_URL}
       />
       <StyledBottomBannerWrapper
         asFooter={asFooter}
@@ -100,9 +105,9 @@ export default memo(function BottomBanner({
                   onClick={toggleNewsletterSignupModal}
                   data-testid="newsletter-modal-open-button"
                 >
-                  Subscribe
+                  {NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_BUTTON_TEXT}
                 </StyledLink>{" "}
-                to our newsletter to receive updates about new features.{" "}
+                {NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_TEXT}{" "}
                 {includeSurveyLink && (
                   <>
                     {customSurveyLinkPrefix

@@ -12,6 +12,13 @@ import {
 import { useConnect } from "./connect";
 import { EVENTS } from "src/common/analytics/events";
 import { Props } from "./types";
+import {
+  NEWSLETTER_SIGNUP_MESSAGE,
+  NEWSLETTER_SIGNUP_SUCCESS_MESSAGE,
+  NEWSLETTER_SIGNUP_TITLE,
+  NEWSLETTER_SIGNUP_UNSUBSCRIBE_MESSAGE,
+  NEWSLETTER_SIGNUP_UNSUBSCRIBE_MESSAGE_UPON_SIGNUP,
+} from "../constants";
 
 export default function BottomBannerModalContent({
   id = "newsletter-banner",
@@ -28,14 +35,15 @@ export default function BottomBannerModalContent({
     setSubmitButtonEnabledOnce,
     emailRef,
   } = useConnect({ id, isHubSpotReady, setError, email });
+
   return (
     <StyledNewsletterSignupModal data-testid="newsletter-modal-content">
-      <StyledTitle>Join Our Newsletter</StyledTitle>
+      <StyledTitle>{NEWSLETTER_SIGNUP_TITLE}</StyledTitle>
 
       <StyledDescription>
         {isSubmitted
-          ? "Thanks for subscribing!"
-          : "Get a quarterly email with the latest CELLxGENE features and data."}
+          ? NEWSLETTER_SIGNUP_MESSAGE
+          : NEWSLETTER_SIGNUP_SUCCESS_MESSAGE}
       </StyledDescription>
 
       <StyledForm onSubmit={handleSubmit} noValidate>
@@ -84,8 +92,8 @@ export default function BottomBannerModalContent({
 
       <StyledDisclaimer>
         {isSubmitted
-          ? 'To unsubscribe, click on the "Unsubscribe" link at the bottom of the newsletter.'
-          : "Unsubscribe at any time."}
+          ? NEWSLETTER_SIGNUP_UNSUBSCRIBE_MESSAGE_UPON_SIGNUP
+          : NEWSLETTER_SIGNUP_UNSUBSCRIBE_MESSAGE}
       </StyledDisclaimer>
     </StyledNewsletterSignupModal>
   );
