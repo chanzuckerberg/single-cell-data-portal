@@ -32,7 +32,8 @@ export const useConnect = ({
   /**
    * useEffect
    * Reads a query parameter from the URL to auto open the newsletter signup modal
-   * Allows sharing of a URL to lead directly to the newsletter signup, specifically for conferences
+   * Allows sharing of a URL to lead directly to the newsletter signup, specifically
+   * for conferences
    * isDirectLink is tracked in setter function or else we get window not defined error
    */
   useEffect(() => {
@@ -58,8 +59,8 @@ export const useConnect = ({
   /**
    * showBanner
    * Returns true if the banner should be shown
-   * If the banner has been closed in the last BOTTOM_BANNER_EXPIRATION_TIME_MS days, it will not be shown
-   * If the banner has never been closed, it will be shown
+   * If the banner has been closed in the last BOTTOM_BANNER_EXPIRATION_TIME_MS days, it
+   * will not be shown. If the banner has never been closed, it will be shown
    */
   const showBanner = useMemo(() => {
     if (asFooter) return true;
