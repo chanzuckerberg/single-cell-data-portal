@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Divider } from "@mui/material";
 import { List } from "@czi-sds/components";
 import {
   CATEGORY_FILTER_ID,
@@ -85,15 +84,11 @@ export default function FilterMenu({
             {/* Pinned values - TOP */}
             {filteredPinnedValues.length > 0 &&
               pinnedPosition === PINNED_POSITION.TOP && (
-                <>
-                  <FilterMenuItems
-                    categoryFilterId={categoryFilterId}
-                    menuItems={filteredPinnedValues}
-                    onFilter={onFilter}
-                  />
-                  {/* Menu divider */}
-                  {isMenuDivided && <Divider />}
-                </>
+                <FilterMenuItems
+                  categoryFilterId={categoryFilterId}
+                  menuItems={filteredPinnedValues}
+                  onFilter={onFilter}
+                />
               )}
             {/* Unpinned values */}
             <FilterMenuItems

@@ -7,6 +7,10 @@ on:
       - staging
       - prod
 
+# add a concurrency group to prevent multiple builds from running at the same time
+concurrency:
+  group: $${{ github.ref }}-environment
+  cancel-in-progress: false
 env:
   # Force using BuildKit instead of normal Docker, required so that metadata
   # is written/read to allow us to use layers of previous builds as cache.
@@ -20,7 +24,7 @@ permissions:
   deployments: write
 
 jobs:
-  build-images:
+  build_images:
     strategy:
       matrix:
         image:
@@ -49,7 +53,7 @@ jobs:
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
-          happy_version: "0.92.0"
+          happy_version: "0.110.1"
       - name: Push images
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
@@ -68,7 +72,7 @@ jobs:
 
   create_deployment:
     needs:
-      - build-images
+      - build_images
     runs-on: ubuntu-22.04
     steps:
       - name: Generate payload

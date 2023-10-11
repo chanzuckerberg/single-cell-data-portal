@@ -7,13 +7,13 @@ import {
   ListItem,
 } from "@czi-sds/components";
 import { css } from "@emotion/react";
-import { GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
+import { GRAY } from "src/components/common/theme";
 import {
   cornersM,
+  fontWeightSemibold,
   grey100,
   grey500,
   primary400,
-  fontWeightSemibold,
   spacesS,
   spacesXs,
   spacesXxs,
@@ -117,14 +117,6 @@ export const listItemIconCss = (props: CommonThemeProps) => {
   `;
 };
 
-export const listItemDividerCss = css`
-  background-color: ${PT_TEXT_COLOR};
-  border: none;
-  border-bottom: 1px;
-  opacity: 0.15;
-  margin: 0;
-`;
-
 export const scrollbar = (props: CommonThemeProps) => {
   const colors = getColors(props);
   return css`
@@ -164,10 +156,6 @@ export const List = styled(SDSList)`
           ${listItemTextCss}
         }
       }
-    }
-
-    .MuiDivider-root {
-      ${listItemDividerCss}
     }
   }
 `;
