@@ -30,8 +30,10 @@ export const useConnect = ({
   }, [isHubSpotReady, isHubSpotReadyProp]);
 
   /**
+   * useEffect
    * Reads a query parameter from the URL to auto open the newsletter signup modal
    * Allows sharing of a URL to lead directly to the newsletter signup, specifically for conferences
+   * isDirectLink is tracked in setter function or else we get window not defined error
    */
   useEffect(() => {
     if (!isHubSpotReady) return;
@@ -45,7 +47,6 @@ export const useConnect = ({
         setNewsletterModalIsOpen(true);
         setIsDirectLink(() => {
           if (!isDirectLink) {
-            // Tracking this in setter function or else we get window not defined error
             track(EVENTS.NEWSLETTER_DIRECT_LINK_NAVIGATED);
           }
           return true;
@@ -54,6 +55,12 @@ export const useConnect = ({
     }
   }, [asFooter, isDirectLink, isHubSpotReady]);
 
+  /**
+   * showBanner
+   * Returns true if the banner should be shown
+   * If the banner has been closed in the last BOTTOM_BANNER_EXPIRATION_TIME_MS days, it will not be shown
+   * If the banner has never been closed, it will be shown
+   */
   const showBanner = useMemo(() => {
     if (asFooter) return true;
 
@@ -67,11 +74,14 @@ export const useConnect = ({
     return show;
   }, [asFooter, bottomBannerLastClosedTime, setBottomBannerLastClosedTime]);
 
+  /**
+   * toggleNewsletterSignupModal
+   * Toggles the newsletter signup modal
+   * */
   function toggleNewsletterSignupModal() {
     if (!newsletterModalIsOpen) {
       track(EVENTS.NEWSLETTER_OPEN_MODAL_CLICKED);
     }
-
     setError("");
     setEmail("");
     setNewsletterModalIsOpen(!newsletterModalIsOpen);

@@ -20,12 +20,16 @@ export const useConnect = ({
 }) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitButtonEnabledOnce, setSubmitButtonEnabledOnce] = useState(false);
+  const emailRef = useRef<HTMLInputElement | null>(null);
 
+  /**
+   * handleSubmit
+   * handles the submission of a newsletter signup form and includes
+   * validation, verfication of elements, and event tracking
+   */
   const handleSubmit = (event: React.FormEvent) => {
-    track(EVENTS.NEWSLETTER_EMAIL_SUBMITTED);
-
-    event.preventDefault();
     const isValid = validate();
+
     const form: HTMLFormElement | null = isValid
       ? document.querySelector(`${formContainerQueryId} form`)
       : null;
@@ -44,53 +48,58 @@ export const useConnect = ({
     input.dispatchEvent(new Event("input", { bubbles: true }));
 
     form.submit();
+
+    track(EVENTS.NEWSLETTER_EMAIL_SUBMITTED);
+    event.preventDefault();
   };
 
-  const emailRef = useRef<HTMLInputElement | null>(null);
-
-  // Validates if the email is valid or missing
+  /**
+   * validate
+   * validates the email input field
+   * returns true if the email is valid, false otherwise
+   * sets the error state if the email is invalid
+   * */
   const validate = () => {
     const validityState = emailRef.current?.validity;
+
     if (validityState?.valueMissing || validityState?.typeMismatch) {
       setError(FAILED_EMAIL_VALIDATION_STRING);
-
       track(EVENTS.NEWSLETTER_SIGNUP_FAILURE);
-
       return false;
     }
-    setError(""); // email validation passed, no error
+
+    setError("");
     return true;
   };
+
+  /**
+   * formContainerQueryId
+   * query selector for the form container
+   */
   const formContainerQueryId = useMemo(() => {
     return `[data-id="${id}"] ${FORM_CONTAINER_ID_QUERY}`;
   }, [id]);
 
+  /**
+   * useEffect
+   * handles the submission success flow and email validation failure flow
+   */
   useEffect(() => {
     if (!isHubSpotReady) return;
 
-    // Observer to observe changes in the HubSpot embedded form, which is hidden from the user in order to use our own form view
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
-        // Loop through all added nodes that were detected
         for (let i = 0; i < mutation.addedNodes.length; i++) {
           const node = mutation.addedNodes.item(i);
 
-          // Submission success flow
           if (node?.textContent?.includes(HIDDEN_NEWSLETTER_SUCCESS_MESSAGE)) {
             setIsSubmitted(true);
             setError("");
-
             track(EVENTS.NEWSLETTER_SIGNUP_SUCCESS);
-          }
-
-          // HubSpot email validation failure flow
-          else if (
+          } else if (
             node?.textContent?.includes("Please enter a valid email address.")
           ) {
-            // HTML email validation may pass, but may not pass validation for HubSpot
-            // ex. "ashintest_04252023_invalid_email@contractor.chanzuckerberg" does not validate with HubSpot but does with HTML email validation
             setError(FAILED_EMAIL_VALIDATION_STRING);
-
             track(EVENTS.NEWSLETTER_SIGNUP_FAILURE);
           }
         }
@@ -102,11 +111,6 @@ export const useConnect = ({
       portalId: "7272273",
       formId: "eb65b811-0451-414d-8304-7b9b6f468ce5",
       target: formContainerQueryId,
-      /**
-       * (thuang): Since the homepage has two newsletter banners (footer and banner),
-       * we need to give each banner a unique id to differentiate them.
-       * https://legacydocs.hubspot.com/docs/methods/forms/advanced_form_options
-       */
       formInstanceId: id,
     });
 

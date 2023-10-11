@@ -10,19 +10,16 @@ import { error400, gray500 } from "src/common/theme";
 
 export const StyledTitle = styled.div`
   ${fontHeaderXl}
-
   letter-spacing: -0.019em;
   font-size: 24px !important;
   margin: 0;
   height: auto !important;
-
   padding-top: 16px;
   padding-bottom: 8px;
 `;
 
 export const StyledDescription = styled.div`
   ${fontBodyS}
-
   letter-spacing: -0.006em;
   padding-bottom: 16px;
 `;
@@ -41,7 +38,6 @@ export const StyledInputText = styled(InputText)`
   .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
     border-color: #5826c1 !important;
   }
-
   flex: 1;
   margin-right: 4px;
   margin-bottom: 0px;
@@ -62,32 +58,20 @@ export const StyledSubmitButton = styled(Button)`
 
 export const StyledDisclaimer = styled.div`
   ${fontBodyXxxs}
-
   letter-spacing: -0.005em;
-
-  /*
-   * beta intent does not exist for SDS banner, but the colors do
-   * targeting specific id to overwrite style
-   */
   color: ${gray500};
 `;
 
 export const StyledErrorMessage = styled.div`
   ${fontBodyXxxs}
-
   letter-spacing: -0.005em;
-
   align-self: flex-start;
-
   height: 16px;
   margin-top: 4px;
   margin-bottom: 4px;
-
-  /*
-   * beta intent does not exist for SDS banner, but the colors do
-   * targeting specific id to overwrite style
-   */
   color: ${error400};
 `;
 
-export const StyledNewsletterSignupModal = styled.div``;
+export const StyledNewsletterSignupModal = styled.div`
+  margin: 0 auto;
+`;
