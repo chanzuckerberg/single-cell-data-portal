@@ -57,12 +57,10 @@ export default function BottomBannerModalContent({
               hideLabel
               onChange={(event) => {
                 if (emailValidationError) setError("");
-
                 if (!submitButtonEnabledOnce) {
                   setSubmitButtonEnabledOnce(true);
                   track(EVENTS.NEWSLETTER_SUBSCRIBE_BUTTON_AVAILABLE);
                 }
-
                 setEmail(event.target.value);
               }}
               id={"email-input"}
