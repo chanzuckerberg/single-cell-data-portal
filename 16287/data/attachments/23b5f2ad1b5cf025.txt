@@ -1,0 +1,2 @@
+ERROR    processing:publish_revisions.py:87 Unable to publish collection version.
+INFO     processing:publish_revisions.py:104 Deleting migrated.h5ad files from s3.
