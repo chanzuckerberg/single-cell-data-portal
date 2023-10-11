@@ -9,6 +9,7 @@ import {
   cornersS,
   fontWeightBold,
   fontWeightSemibold,
+  gray500,
   grey100,
   grey500,
   shadowL,
@@ -19,6 +20,7 @@ import {
   spacesXs,
   spacesXxs,
   spacesXxxs,
+  textPrimary,
 } from "src/common/theme";
 import Loader from "src/components/common/Grid/components/Loader";
 import { BLUE, OLD_BLUE } from "src/components/common/theme";
@@ -77,17 +79,26 @@ export const Dialog = styled(SDSDialog)`
   }
 
   .MuiDialogActions-root {
-    gap: ${spacesM}px;
+    gap: ${spacesL}px;
     margin: 0;
     padding-top: ${spacesL}px;
 
     .MuiButton-root {
       ${fontBodyS}
+      font-weight: 500;
       height: unset;
       min-width: unset;
 
+      &.MuiButton-text {
+        color: ${gray500};
+
+        &:hover,
+        &:active {
+          color: ${textPrimary};
+        }
+      }
+
       &.MuiButton-containedPrimary {
-        font-weight: 500;
         margin: 0;
         padding: ${spacesXs}px ${spacesM}px;
       }
