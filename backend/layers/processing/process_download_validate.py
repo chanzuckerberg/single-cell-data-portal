@@ -151,9 +151,7 @@ class ProcessDownloadValidate(ProcessingLogic):
         return DatasetMetadata(
             name=adata.uns["title"],
             organism=_get_term_pairs("organism"),
-            tissue=_get_tissue_terms()
-            if CorporaConfig().schema_4_feature_flag.lower() == "true"
-            else _get_term_pairs("tissue"),
+            tissue=_get_tissue_terms() if CorporaConfig().schema_4_feature_flag else _get_term_pairs("tissue"),
             assay=_get_term_pairs("assay"),
             disease=_get_term_pairs("disease"),
             sex=_get_term_pairs("sex"),
