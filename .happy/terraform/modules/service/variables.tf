@@ -108,21 +108,25 @@ variable "frontend_url" {
 variable "api_domain" {
   type        = string
   description = "domain for the backend api"
+  default = ""
 }
 
 variable "web_domain" {
   type        = string
   description = "domain for the website"
+  default = ""
 }
 
 variable "data_locator_domain" {
   type        = string
   description = "domain for the data portal"
+  default = ""
 }
 
 variable "cxg_bucket_path" {
   type        = string
   description = "path to the cxg bucket"
+  default = ""
 }
 
 variable "deployment_stage" {
