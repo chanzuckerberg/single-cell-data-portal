@@ -18,7 +18,7 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
 
         def mock_config_fn(name):
             if name == "schema_4_feature_flag":
-                return True
+                return "True"
 
         mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
         mock_config.start()
