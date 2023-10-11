@@ -19,6 +19,11 @@ variable artifact_bucket {
   description = "Artifact bucket name"
 }
 
+variable datasets_bucket {
+  type        = string
+  description = "Datasets public-access bucket name"
+}
+
 variable image {
   type        = string
   description = "Image name"

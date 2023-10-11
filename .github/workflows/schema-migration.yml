@@ -125,7 +125,7 @@ jobs:
           pip install awscli==1.29.1
       - name: Trigger Schema Migration AWS Step Function
         run: |
-          aws stepfunctions start-execution --state-machine-arn ${{ secrets.SCHEMA_MIGRATION_ARN }}
+          aws stepfunctions start-execution --state-machine-arn ${{ secrets.SCHEMA_MIGRATION_ARN }} --input "{\"auto_publish\" : \"True\"}"
       - name: Alert in Slack
         uses: 8398a7/action-slack@v3
         with:
