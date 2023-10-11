@@ -1,6 +1,6 @@
 import { Classes, Intent } from "@blueprintjs/core";
 import { useRouter } from "next/router";
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection, COLLECTION_LINK_TYPE } from "src/common/entities";
 import { useUserInfo } from "src/common/queries/auth";
@@ -129,8 +129,20 @@ const Content: FC<Props> = (props) => {
     []
   );
 
+  /**
+   * Handles change to selection of consortia.
+   * @param selectedConsortia - Selected consortia.
+   */
+  const handleConsortiaChange = useCallback(
+    (selectedConsortia: DropdownValue) => {
+      setConsortia(sortConsortia(selectedConsortia));
+    },
+    []
+  );
+
   useEffect(() => {
     if (collectionConsortia) {
+      console.log("testing effect");
       setConsortia(buildConsortiaOptions(collectionConsortia));
     }
   }, [collectionConsortia]);
@@ -388,14 +400,6 @@ const Content: FC<Props> = (props) => {
     }
 
     onClose();
-  }
-
-  /**
-   * Handles change to selection of consortia.
-   * @param selectedConsortia - Selected consortia.
-   */
-  function handleConsortiaChange(selectedConsortia: DropdownValue) {
-    setConsortia(sortConsortia(selectedConsortia));
   }
 
   function handleInputChange({ isValid: isValidFromInput, name }: Value) {
