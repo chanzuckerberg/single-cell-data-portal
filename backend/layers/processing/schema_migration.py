@@ -50,7 +50,7 @@ class SchemaMigrate(ProcessingLogic):
                 published_collections = random.sample(published_collections, self.limit_select // 2)
         return itertools.chain(unpublished_collections, published_collections)
 
-    def gather_collections(self) -> List[Dict[str, str]]:
+    def gather_collections(self, auto_publish: bool) -> List[Dict[str, str]]:
         """
         This function is used to gather all the collections and their datasets that will be migrated
         :return: A dictionary with the following structure:
@@ -61,25 +61,32 @@ class SchemaMigrate(ProcessingLogic):
             "<collection_version_id>"}
             ...
         ]
+
+        :param auto_publish: bool - if False, coerce can_publish to False for all collections. if True, determine
+        can_publish on collection-by-collection basis based on business logic
         """
         response = []
 
-        # evaluate unpublished collections first, so that published versions are skipped if there is an active revision
-        has_revision = []  # list of collections to skip if published with an active revision
+        has_revision = set()
+        # iterates over unpublished collections first, so published versions are skipped if there is an active revision
         for collection in self.limit_collections():
             _resp = {}
-            if collection.is_published() and collection.collection_id not in has_revision:
+            if collection.is_published() and collection.collection_id.id in has_revision:
+                continue
+
+            if not auto_publish:
+                # auto_publish is off for this migration
+                _resp["can_publish"] = str(False)
+            elif collection.is_published():
                 # published collection without an active revision
                 _resp["can_publish"] = str(True)
             elif collection.is_unpublished_version():
                 # active revision of a published collection.
-                has_revision.append(collection.collection_id)  # revision found, skip published version
+                has_revision.add(collection.collection_id.id)  # revision found, skip published version
                 _resp["can_publish"] = str(False)
             elif collection.is_initial_unpublished_version():
                 # unpublished collection
                 _resp["can_publish"] = str(False)
-            else:
-                continue  # skip published version with an active revision
             _resp.update(
                 collection_id=collection.collection_id.id,
                 collection_version_id=collection.version_id.id,
@@ -147,7 +154,7 @@ class SchemaMigrate(ProcessingLogic):
                 "no_datasets": str(True),
             }
         else:
-            if can_publish:
+            if version.is_published():
                 # Create a new collection version(revision) if the collection is already published
                 private_collection_version_id = self.business_logic.create_collection_version(
                     CollectionId(collection_id)
@@ -309,8 +316,8 @@ class SchemaMigrate(ProcessingLogic):
             # Cleanup S3 files
             self.s3_provider.delete_files(self.artifact_bucket, error_s3_keys)
             report_message = "Schema migration results."
-            if report["errors"]:
-                report_message += " @sc-oncall-eng"
+            # if report["errors"]:
+            #     report_message += " @sc-oncall-eng"
             self._upload_to_slack("schema_migration_report.json", report_str, report_message)
             return report
         except Exception as e:
@@ -330,7 +337,8 @@ class SchemaMigrate(ProcessingLogic):
         self.logger.info(f"Starting {step_name}", extra={"step": step_name})
         if step_name == "gather_collections":
             gather_collections = self.error_wrapper(self.gather_collections, "gather_collections")
-            response = gather_collections()
+            auto_publish = os.environ["AUTO_PUBLISH"].lower() == "true"
+            response = gather_collections(auto_publish)
         elif step_name == "collection_migrate":
             collection_id = os.environ["COLLECTION_ID"]
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]

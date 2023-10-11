@@ -28,7 +28,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  build-images:
+  build_images:
     strategy:
       matrix:
         image:
@@ -40,6 +40,8 @@ jobs:
           - wmg_processing
           - cellguide_pipeline
     runs-on: ubuntu-22.04
+    outputs:
+      image_tag: ${{ steps.push_images.outputs.image_tag }}
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -59,18 +61,20 @@ jobs:
         with:
           happy_version: "0.110.1"
       - name: Push images
+        id: push_images
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
-          export IMAGE_TAG=sha-${GITHUB_SHA:0:8}
+          export IMAGE_TAG=branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
           happy push devstack --env dev --slice ${{ matrix.image }} \
           --docker-compose-env-file envfile --aws-profile "" \
-          --tags ${IMAGE_TAG},${STACK_NAME},branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
+          --tags ${STACK_NAME},${IMAGE_TAG}
 
   deploy-rdev:
     runs-on: ubuntu-22.04
     needs:
-      - build-images
+      - build_images
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -85,16 +89,12 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
-      - name: Prepare happy parameters
-        id: pre_happy
-        run: |
-          echo "IMAGE_TAG=sha-${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
       - name: Update deployment
         uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ env.STACK_NAME }}
-          tag: ${{ steps.pre_happy.outputs.IMAGE_TAG }}
+          tag: ${{ needs.build_images.outputs.image_tag }}
           happy_version: "0.110.1"
 
   summarize:
