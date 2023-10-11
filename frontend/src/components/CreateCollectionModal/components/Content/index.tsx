@@ -22,10 +22,9 @@ import TextArea from "src/components/common/Form/TextArea";
 import {
   buildConsortiaOptions,
   isLinkTypeDOI,
-  sortConsortia,
 } from "src/components/CreateCollectionModal/components/Content/common/utils";
 import { getDOIPath } from "src/views/Collection/utils";
-import { CONSORTIA, INVALID_DOI_ERROR_MESSAGE } from "./common/constants";
+import { INVALID_DOI_ERROR_MESSAGE } from "./common/constants";
 import AddLink from "./components/AddLink";
 import LinkInput, { LinkValue } from "./components/LinkInput";
 import {
@@ -36,9 +35,6 @@ import {
   FormDivider,
   Title,
 } from "./style";
-import Dropdown, {
-  Value as DropdownValue,
-} from "src/components/common/Form/Dropdown";
 import { DefaultDropdownMenuOption } from "@czi-sds/components";
 
 const REQUIRED_FIELD_TEXT = "Required";
@@ -214,18 +210,18 @@ const Content: FC<Props> = (props) => {
               defaultValue={contact_email}
               syncValidation={[requiredValidator, emailValidation]}
             />
-            <Dropdown
-              // To maintain Dialog component focus, the consortia menu Popper component should be
-              // rendered under the DOM hierarchy of the Dropdown component and therefore the Dialog component.
-              disablePortal
-              label="Select Consortia"
-              multiple
-              onChange={handleConsortiaChange}
-              optionalField
-              options={buildConsortiaOptions(Object.values(CONSORTIA))}
-              text="Consortia"
-              value={consortia}
-            />
+            {/*<Dropdown*/}
+            {/*  // To maintain Dialog component focus, the consortia menu Popper component should be*/}
+            {/*  // rendered under the DOM hierarchy of the Dropdown component and therefore the Dialog component.*/}
+            {/*  disablePortal*/}
+            {/*  label="Select Consortia"*/}
+            {/*  multiple*/}
+            {/*  onChange={handleConsortiaChange}*/}
+            {/*  optionalField*/}
+            {/*  options={buildConsortiaOptions(Object.values(CONSORTIA))}*/}
+            {/*  text="Consortia"*/}
+            {/*  value={consortia}*/}
+            {/*/>*/}
           </CollectionDetail>
           {/* Collection links */}
           {links.length > 0 && (
@@ -390,9 +386,9 @@ const Content: FC<Props> = (props) => {
    * Handles change to selection of consortia.
    * @param selectedConsortia - Selected consortia.
    */
-  function handleConsortiaChange(selectedConsortia: DropdownValue) {
-    setConsortia(sortConsortia(selectedConsortia));
-  }
+  // function handleConsortiaChange(selectedConsortia: DropdownValue) {
+  //   setConsortia(sortConsortia(selectedConsortia));
+  // }
 
   function handleInputChange({ isValid: isValidFromInput, name }: Value) {
     if (fieldValidation[name] === isValidFromInput) return;
