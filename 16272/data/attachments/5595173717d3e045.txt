@@ -1,0 +1,48 @@
+INFO     backend.layers.business.business:business.py:390 {'message': 'ingesting dataset', 'collection_version_id': 60a80127-353b-44ad-b51a-0b912a6a59fb, 'url': 'https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0', 'existing_dataset_version_id': None}
+INFO     processing:process.py:102 Processing dataset c63cd734-0032-4118-bcbb-1713bf14a782
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:26 Start download_from_source_uri
+INFO     processing:process_download_validate.py:188 Start download
+INFO     processing:downloader.py:115 Setting up download.
+INFO     processing:downloader.py:116 file_size: 1
+INFO     processing:process_download_validate.py:197 None
+INFO     processing:process_download_validate.py:210 Download complete
+INFO     processing:logger.py:28 Complete download_from_source_uri
+INFO     processing:logger.py:26 Start validate_h5ad_file_and_add_labels
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:28 Complete validate_h5ad_file_and_add_labels
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:84 Uploaded [c63cd734-0032-4118-bcbb-1713bf14a782/raw.h5ad] to s3://fake_bucket_name/c63cd734-0032-4118-bcbb-1713bf14a782/raw.h5ad
+INFO     processing:process_logic.py:86 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:84 Uploaded [c63cd734-0032-4118-bcbb-1713bf14a782/local.h5ad] to s3://fake_bucket_name/c63cd734-0032-4118-bcbb-1713bf14a782/local.h5ad
+INFO     processing:process_logic.py:86 Updated database with h5ad.
+INFO     processing:process_logic.py:93 Uploaded c63cd734-0032-4118-bcbb-1713bf14a782.h5ad to s3://fake_datasets_bucket/c63cd734-0032-4118-bcbb-1713bf14a782/c63cd734-0032-4118-bcbb-1713bf14a782.h5ad
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process.py:102 Processing dataset c63cd734-0032-4118-bcbb-1713bf14a782
+INFO     processing:process_logic.py:106 Converting local.h5ad
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:112 Finished converting <MagicMock name='make_cxg' id='140050396136304'> in 0:00:00.000752
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_cxg.py:107 Updating database with cxg artifact for dataset c63cd734-0032-4118-bcbb-1713bf14a782. s3_uri is s3://fake_cxg_bucket/c63cd734-0032-4118-bcbb-1713bf14a782.cxg/
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process.py:102 Processing dataset c63cd734-0032-4118-bcbb-1713bf14a782
+INFO     processing:process_logic.py:106 Converting local.h5ad
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:112 Finished converting <MagicMock name='make_seurat' id='140050396145168'> in 0:00:00.000731
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:84 Uploaded [c63cd734-0032-4118-bcbb-1713bf14a782/local.rds] to s3://fake_bucket_name/c63cd734-0032-4118-bcbb-1713bf14a782/local.rds
+INFO     processing:process_logic.py:86 Updated database with rds.
+INFO     processing:process_logic.py:93 Uploaded c63cd734-0032-4118-bcbb-1713bf14a782.rds to s3://fake_datasets_bucket/c63cd734-0032-4118-bcbb-1713bf14a782/c63cd734-0032-4118-bcbb-1713bf14a782.rds
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact

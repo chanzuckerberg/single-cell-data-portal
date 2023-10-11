@@ -1,3 +1,0 @@
-INFO     processing:schema_migration.py:195 checking dataset
-INFO     processing:schema_migration.py:222 checked dataset
-INFO     processing:schema_migration.py:223 Deleting files
