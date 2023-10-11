@@ -176,7 +176,7 @@ module backend_service {
 }
 
 module explorer_service {
-  source                = "../service"
+  source                = "../explorer"
   custom_stack_name     = local.custom_stack_name
   app_name              = "explorer"
   vpc                   = local.vpc_id

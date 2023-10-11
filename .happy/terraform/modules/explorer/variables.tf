@@ -11,17 +11,6 @@ variable "custom_stack_name" {
 variable "remote_dev_prefix" {
   type        = string
   description = "S3 storage path / db schema prefix"
-}
-
-variable "dataset_submissions_bucket" {
-  type        = string
-  description = "S3 bucket for dataset submissions"
-  default     = ""
-}
-
-variable datasets_bucket {
-  type        = string
-  description = "Datasets public-access bucket name"
   default     = ""
 }
 
@@ -95,25 +84,30 @@ variable "cmd" {
   default     = []
 }
 
-variable "api_url" {
+variable "api_domain" {
   type        = string
-  description = "URL for the backend api."
+  description = "domain for the backend api"
 }
 
-variable "frontend_url" {
+variable "web_domain" {
   type        = string
-  description = "URL for the frontend app."
+  description = "domain for the website"
+}
+
+variable "data_locator_domain" {
+  type        = string
+  description = "domain for the data portal"
+}
+
+variable "cxg_bucket_path" {
+  type        = string
+  description = "path to the cxg bucket"
 }
 
 variable "deployment_stage" {
   type        = string
   description = "The name of the deployment stage of the Application"
   default     = "test"
-}
-
-variable "step_function_arn" {
-  type        = string
-  description = "ARN for the step function called by the uploader"
 }
 
 variable "priority" {
@@ -127,30 +121,19 @@ variable "memory" {
   default     = 2048
 }
 
-variable "cpu" {
-  type        = number
-  description = "CPU shares (1cpu=1024) per task"
-  default     = 2048
-}
-
 variable "wait_for_steady_state" {
   type        = bool
   description = "Whether Terraform should block until the service is in a steady state before exiting"
   default     = false
 }
 
-variable "execution_role" {
+variable "health_check_path" {
   type        = string
-  description = "Execution role to use for fargate tasks - required for fargate services!"
+  description = "Path for health checks"
+  default     = "/"
 }
 
-variable "health_check_interval" {
-  type        = number
-  description = "Interval for the health check pings"
-  default     = 15
-}
-
-variable dd_key_secret_arn {
+variable "frontend_url" {
   type        = string
-  description = "ARN for the Datadog secret key"
+  description = "URL for the frontend app."
 }
