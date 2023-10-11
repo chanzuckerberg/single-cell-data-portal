@@ -137,6 +137,7 @@ class BaseTest(unittest.TestCase):
             feature_biotype=["gene"],
             feature_count=400,
             feature_reference=["NCBITaxon:9606"],
+            raw_data_location="X.raw",
         )
 
         self.sample_collection_metadata = CollectionMetadata(

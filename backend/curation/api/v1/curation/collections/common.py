@@ -324,6 +324,7 @@ class EntityColumns:
         "feature_biotype",
         "feature_count",
         "feature_reference",
+        "raw_data_location",
     ]
 
     dataset_asset_cols = [

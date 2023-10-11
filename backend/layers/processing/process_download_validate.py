@@ -164,6 +164,7 @@ class ProcessDownloadValidate(ProcessingLogic):
             feature_reference=adata.var["feature_reference"].unique(),
             default_embedding=adata.uns.get("default_embedding"),
             embeddings=adata.obsm_keys(),
+            raw_data_location="raw.X" if adata.raw else "X",
         )
 
     def wrapped_download_from_s3(

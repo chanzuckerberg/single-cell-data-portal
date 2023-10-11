@@ -1039,6 +1039,8 @@ components:
           nullable: true
         published_at:
           $ref: "#/components/schemas/dataset_published_at"
+        raw_data_location:
+          $ref: "#/components/schemas/raw_data_location"
         revised_at:
           $ref: "#/components/schemas/dataset_revised_at"
         schema_version:
@@ -1235,6 +1237,8 @@ components:
           nullable: true
         published_at:
           $ref: "#/components/schemas/dataset_version_published_at"
+        raw_data_location:
+          $ref: "#/components/schemas/raw_data_location"
         schema_version:
           description: |
             The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
@@ -1318,7 +1322,7 @@ components:
           $ref: "#/components/schemas/suspension_type"
       type: object
     default_embedding:
-      description: Default dataset embedding that will display in CZ CELLxGENE Explorer
+      description: Key for the embedding that is displayed by default in CZ CELLxGENE Explorer
       type: string
       nullable: true
     distribution:
@@ -1344,7 +1348,7 @@ components:
         type: string
       nullable: true
     embeddings:
-      description: List of embeddings present in dataset
+      description: List of keys for embeddings in the dataset
       type: array
       items:
         type: string
@@ -1490,6 +1494,13 @@ components:
         published_year:
           type: number
       type: object
+    raw_data_location:
+      description: Location in dataset's AnnData artifact where raw (i.e. non-normalized) matrix data is stored
+      type: string
+      nullable: true
+      enum:
+        - X
+        - raw.X
     suspension_type:
       description: |
         [suspension_type](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#suspension_type)

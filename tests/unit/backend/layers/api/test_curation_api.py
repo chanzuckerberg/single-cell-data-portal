@@ -1052,6 +1052,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     "is_primary_data": [True, False],
                     "mean_genes_per_cell": 0.5,
                     "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
+                    "raw_data_location": "X.raw",
                     "schema_version": "3.0.0",
                     "self_reported_ethnicity": [
                         {

@@ -166,6 +166,8 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
         filter = np.where(adata.var.feature_biotype == "gene")[0]
         self.assertAlmostEqual(extracted_metadata.mean_genes_per_cell, np.count_nonzero(adata.X[:, filter]) / 50001)
 
+        self.assertEqual(extracted_metadata.raw_data_location, "X")
+
     @patch("scanpy.read_h5ad")
     def test_extract_metadata_find_raw_layer(self, mock_read_h5ad):
         # Setup anndata to be read
@@ -263,3 +265,5 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
         # Verify that the "my_awesome_wonky_layer" was read and not the default X layer. The layer contains only zeros
         # which should result in a mean_genes_per_cell value of 0 compared to 3 if the X layer was read.
         self.assertEqual(extracted_metadata.mean_genes_per_cell, 0)
+
+        self.assertEqual(extracted_metadata.raw_data_location, "raw.X")
