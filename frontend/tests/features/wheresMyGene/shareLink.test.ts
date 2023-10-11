@@ -43,10 +43,13 @@ const SEXES = [
 ];
 const COMPARE = "disease";
 
+const CELL_TYPES = ["CD4-positive helper T cell"];
+
 const SHARE_LINK =
   `${TEST_URL}/gene-expression?` +
   // (thuang): Tissue params include a tissue id and a tissue name to test that we support both
-  "compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2";
+  // (seve): cellType params includes a incorrect cellType to test that we filter out invalid params
+  "compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN&cellTypes=DOG%2CCAT%2CCD4-positive+helper+T+cell&ver=2";
 
 describe("Share link tests", () => {
   test("Should share link with single tissue and single gene", async ({
@@ -107,6 +110,7 @@ describe("Share link tests", () => {
           diseases: DISEASES,
           ethnicities: ETHNICITIES,
           compare: COMPARE,
+          cellTypes: CELL_TYPES,
         });
       },
       { page }
@@ -143,6 +147,7 @@ async function verifyShareLink({
   diseases,
   ethnicities,
   compare,
+  cellTypes,
 }: {
   page: Page;
   linkVersion: string;
@@ -153,6 +158,7 @@ async function verifyShareLink({
   diseases?: ExpectedParam[];
   ethnicities?: string[];
   compare?: string;
+  cellTypes?: string[];
 }) {
   let encodedLink = `${TEST_URL}/gene-expression?`;
 
@@ -239,6 +245,15 @@ async function verifyShareLink({
     encodedLink += encodeLink(param, String(data));
   }
 
+  //cellTypes
+  if (cellTypes !== undefined) {
+    const param = "cellTypes";
+
+    const data = await verifyParameter(page, urlParams, param, cellTypes);
+
+    encodedLink += encodeLink(param, String(data));
+  }
+
   // linkVersion
   const param = "ver";
   const data = await verifyParameter(page, urlParams, param, [linkVersion]);
@@ -284,6 +299,7 @@ async function verifyParameter(
     }
     case "tissues":
     case "genes":
+    case "cellTypes":
     case "ethnicities":
     case "ver":
     case "compare": {
