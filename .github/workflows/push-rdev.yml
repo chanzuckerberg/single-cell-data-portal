@@ -34,6 +34,7 @@ jobs:
           - processing
           - wmg_processing
           - cellguide_pipeline
+          - explorer
     runs-on: ubuntu-22.04
     outputs:
       image_tag: ${{ steps.push_images.outputs.image_tag }}

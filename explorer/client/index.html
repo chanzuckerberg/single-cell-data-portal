@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CELL&times;GENE | Explorer</title>
+    <style>
+      html,
+      body,
+      p,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      span,
+      button,
+      input,
+      label,
+      text,
+      div {
+        font-family: "Roboto Condensed", "Helvetica Neue", "Helvetica", "Arial",
+          sans-serif;
+        font-size: 14px;
+        letter-spacing: -0.006em;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <script type="text/javascript">
+      window.CELLXGENE = {};
+      window.CELLXGENE.API = {
+        prefix: `http://localhost:<%= CXG_SERVER_PORT %>${location.pathname}/api/`,
+        version: "v0.3/",
+      };
+    </script>
+    <noscript
+      >If you're seeing this message, that means
+      <strong>JavaScript has been disabled on your browser</strong>, please
+      <strong>enable JS</strong> to make this app work.</noscript
+    >
+
+    <div id="root"></div>
+    <script
+      async
+      src="static/obsoleteBrowsers.js"
+      id="obsolete-browsers"
+      data-template="<%= OBSOLETE_TEMPLATE %>"
+      data-regex="<%= OBSOLETE_REGEX %>"
+    ></script>
+  </body>
+</html>

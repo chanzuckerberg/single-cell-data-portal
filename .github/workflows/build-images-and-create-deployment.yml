@@ -35,6 +35,7 @@ jobs:
           - processing
           - wmg_processing
           - cellguide_pipeline
+          - explorer
     runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials

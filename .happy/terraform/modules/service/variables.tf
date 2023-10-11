@@ -62,6 +62,12 @@ variable "host_match" {
   description = "Host header to match for target rule. Leave empty to match all requests"
 }
 
+variable "host_match_internal" {
+  type        = string
+  description = "Host header to match for target rule. Leave empty to match all requests"
+  default     = ""
+}
+
 variable "security_groups" {
   type        = list(string)
   description = "Security groups for ECS tasks"
@@ -97,6 +103,26 @@ variable "api_url" {
 variable "frontend_url" {
   type        = string
   description = "URL for the frontend app."
+}
+
+variable "api_domain" {
+  type        = string
+  description = "domain for the backend api"
+}
+
+variable "web_domain" {
+  type        = string
+  description = "domain for the website"
+}
+
+variable "data_locator_domain" {
+  type        = string
+  description = "domain for the data portal"
+}
+
+variable "cxg_bucket_path" {
+  type        = string
+  description = "path to the cxg bucket"
 }
 
 variable "deployment_stage" {

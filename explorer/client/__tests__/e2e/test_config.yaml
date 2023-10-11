@@ -1,0 +1,16 @@
+server:
+  app:
+    force_https: true
+    port: 5005
+    debug: true
+    verbose: true
+
+  gene_info:
+    api_base: "https://api.cellxgene.dev.single-cell.czi.technology/gene_info/v1"
+default_dataset:
+  presentation:
+    max_categories: 1000
+    custom_colors: true
+
+  embeddings:
+    names: []

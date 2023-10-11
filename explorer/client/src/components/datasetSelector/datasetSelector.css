@@ -1,0 +1,36 @@
+/* Equivalent to BP's Colors.BLACK */
+@value bp-black: #10161a;
+/* Equivalent to BP's Colors.LIGHT_GRAY1 */
+@value bp-light-gray1: #CED9E0;
+
+:local(.datasetSelectorBreadcrumb),
+:local(.datasetSelectorBreadcrumbDisabled) {
+  font-size: 14px; /* Override BP breadcrumb font spec of 16px */
+}
+
+:local(.datasetSelectorBreadcrumb):hover {
+  color: bp-black;
+}
+
+:local(.datasetSelectorMenuPopoverTarget) {
+  cursor: pointer; /* Indicate menu target is clickable */
+}
+
+/* Selected dataset menu item */
+:local(.datasetSelectorMenuItem):local(.datasetSelectorMenuItemActive),
+:local(.datasetSelectorMenuItem):local(.datasetSelectorMenuItemActive):hover {
+  color: bp-black !important; /* Override BP's gray text when disabled */
+  cursor: default !important; /* Override BP's "not allowed" cursor */
+  font-weight: 600;
+}
+
+:local(.datasetMenuScrollable):global(::-webkit-scrollbar) {
+  width: 14px; /* 5px left and right, 4px track */
+}
+
+:local(.datasetMenuScrollable):global(::-webkit-scrollbar-thumb) {
+  background-clip: content-box;
+  background-color: bp-light-gray1;
+  border: 5px solid transparent;
+  border-radius: 14px;
+}

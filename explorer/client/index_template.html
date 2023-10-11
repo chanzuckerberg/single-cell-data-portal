@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CELL&times;GENE | Explorer</title>
+    <style>
+      html,
+      body,
+      p,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      span,
+      button,
+      input,
+      label,
+      text,
+      div {
+        font-family: "Roboto Condensed", "Helvetica Neue", "Helvetica", "Arial",
+          sans-serif;
+        font-size: 14px;
+        letter-spacing: -0.006em;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+    </style>
+    <script
+      defer
+      data-domain="<%= PLAUSIBLE_DATA_DOMAIN %>"
+      src="https://plausible.io/js/plausible.js"
+    ></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      window.CELLXGENE = {};
+      window.CELLXGENE.API = {
+        prefix: `${location.origin}${location.pathname}api/`,
+        version: "v0.3/",
+      };
+    </script>
+    <noscript
+      >If you're seeing this message, that means
+      <strong>JavaScript has been disabled on your browser</strong>, please
+      <strong>enable JS</strong> to make this app work.
+    </noscript>
+
+    <div id="root"></div>
+    <script
+      async
+      src="static/obsoleteBrowsers.js"
+      id="obsolete-browsers"
+      data-template="<%= OBSOLETE_TEMPLATE %>"
+      data-regex="<%= OBSOLETE_REGEX %>"
+    ></script>
+    {% for script in SCRIPTS -%}
+    <script type="text/javascript"
+      {{ ('integrity="%s"' % script.integrity) | safe if script.integrity }}
+      {{ ('crossorigin="%s"' % script.crossorigin) | safe if script.crossorigin }}
+      src="{{script.src | safe}}"
+    ></script>
+    {%- endfor %}
+
+    {% for ils in INLINE_SCRIPTS %}
+    <script type="text/javascript" no-csp-hash>{% include ils %}</script>
+    {% endfor %}
+  </body>
+</html>

@@ -1,0 +1,13 @@
+-r requirements.txt
+Authlib>=0.14.3
+black>=22.3.0
+bumpversion>=0.5
+coverage>=7.2.3
+flake8>=4.0.0
+parameterized>=0.7.0
+psycopg2-binary>=2.8.5
+pytest>=3.6.3
+pytest-subtests>=0.5.0
+python-jose>=3.2.0
+twine>=1.12.1
+rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability

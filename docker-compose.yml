@@ -332,6 +332,42 @@ services:
       corporanet:
         aliases:
           - backend.corporanet.local
+  explorer:
+    image: "${DOCKER_REPO}corpora-explorer"
+    profiles:
+      - explorer
+    build:
+      context: explorer
+      dockerfile: hosted/Dockerfile
+      cache_from:
+        - "${DOCKER_REPO}corpora-explorer:latest"
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+        - HAPPY_COMMIT
+        - HAPPY_BRANCH
+        - HAPPY_TAG
+        - HAPPY_ENV
+    restart: always
+    depends_on:
+      - localstack
+    ports:
+      - "6000:6000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CORPORA_LOCAL_DEV=true
+      - AWS_REGION=us-west-2
+      - AWS_DEFAULT_REGION=us-west-2
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - BOTO_ENDPOINT_URL=http://localstack:4566
+      - DEPLOYMENT_STAGE=test
+      - RESTART_ON_FAILURE=yes
+      - DEV_MODE_COOKIES=1
+      - IS_DOCKER_DEV=yes # This skips some unit tests.
+    networks:
+      corporanet:
+        aliases:
+          - explorer.corporanet.local
   oidc:
     image: soluto/oidc-server-mock:0.3.0
     # For Mac M1, you may need to build this image from source.

@@ -19,6 +19,7 @@ resource aws_ecs_service service {
     subnets          = var.subnets
     assign_public_ip = false
   }
+
   enable_execute_command = true
   wait_for_steady_state = var.wait_for_steady_state
 }
@@ -200,6 +201,22 @@ resource aws_ecs_task_definition task_definition {
         "value": "${var.api_url}"
       },
       {
+        "name": "API_DOMAIN",
+        "value": "${var.api_domain}"
+      },
+      {
+        "name": "WEB_DOMAIN",
+        "value": "${var.web_domain}"
+      },
+      {
+        "name": "DATA_LOCATOR_DOMAIN",
+        "value": "${var.data_locator_domain}"
+      },
+      {
+        "name": "CXG_BUCKET_PATH",
+        "value": "${var.cxg_bucket_path}"
+      },
+      {
         "name": "AWS_DEFAULT_REGION",
         "value": "${data.aws_region.current.name}"
       }
@@ -269,6 +286,26 @@ resource aws_lb_listener_rule listener_rule {
       }
     }
   }
+  action {
+    target_group_arn = aws_lb_target_group.target_group.id
+    type             = "forward"
+  }
+}
+
+resource aws_lb_listener_rule listener_rule_internal {
+  listener_arn = var.listener
+  priority     = var.priority + 1
+  count        = length(var.host_match_internal) > 0 ? 1 : 0
+  # Dev stacks need to match on hostnames
+  condition {
+    # for_each = length(var.host_match_internal) == 0 ? [] : [var.host_match_internal]
+    host_header {
+      values = [
+        var.host_match_internal
+      ]
+    }
+  }
+
   action {
     target_group_arn = aws_lb_target_group.target_group.id
     type             = "forward"

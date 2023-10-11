@@ -22,5 +22,11 @@ module stack {
   frontend_memory              = 4096
   dd_key_secret_arn            = "arn:aws:secretsmanager:us-west-2:699936264352:secret:dd_api_key-nGPNwx"
 
+  explorer_memory                       = 4096
+  explorer_api_domain                   = "${var.stack_name}-explorer.rdev.single-cell.czi.technology"
+  explorer_web_domain                   = "${var.stack_name}-explorer.rdev.single-cell.czi.technology"
+  explorer_data_locator_domain          = "${var.stack_name}-backend.internal.rdev.single-cell.czi.technology"
+  cxg_bucket_path              = "env-rdev-cellxgene/${var.stack_name}"
+
   wait_for_steady_state        = var.wait_for_steady_state
 }

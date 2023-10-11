@@ -12,9 +12,13 @@
     "dataset_submissions",
     "upload_failures",
     "upload_success",
-    "wmg_processing"
+    "wmg_processing",
+    "explorer"
   ],
   "slices": {
+    "explorer": {
+        "profile": "explorer"
+    },
     "frontend": {
         "profile": "fullstack"
     },

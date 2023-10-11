@@ -130,6 +130,39 @@ variable "backend_cpus" {
   default     = 2
 }
 
+variable explorer_instance_count {
+  type        = number
+  description = "How many backend tasks to run"
+  default     = 1
+}
+
+variable explorer_memory {
+  type        = number
+  description = "Allocated memory"
+  default     = 1536
+}
+
+variable "explorer_api_domain" {
+  type        = string
+  description = "domain for the backend api"
+}
+
+variable "explorer_web_domain" {
+  type        = string
+  description = "domain for the website"
+}
+
+variable "explorer_data_locator_domain" {
+  type        = string
+  description = "domain for the data portal"
+}
+
+variable "cxg_bucket_path" {
+  type        = string
+  description = "path to the cxg bucket"
+  default     = ""
+}
+
 variable frontend_memory {
   type        = number
   description = "Memory reservation for the backend task"

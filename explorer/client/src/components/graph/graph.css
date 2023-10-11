@@ -1,0 +1,16 @@
+:local(.axis) path,
+:local(.axis) line {
+  fill: none;
+  stroke: #000;
+  stroke-width: 1px;
+}
+
+circle {
+  stroke-width: 4px;
+  stroke: #000;
+  fill: none;
+}
+
+:local(.hidden) {
+  display: none;
+}
