@@ -106,8 +106,6 @@ export default memo(function YAxisChart({
             let formattedName = name;
             if (compare && compare === "publication" && !isAggregated) {
               formattedName = formatCitation(name);
-            } else {
-              formattedName = name;
             }
             const { text: paddedName } = formatLabel(
               formattedName,
