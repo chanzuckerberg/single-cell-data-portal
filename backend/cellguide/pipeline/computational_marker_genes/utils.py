@@ -8,6 +8,20 @@ from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
 from backend.wmg.data.utils import setup_retry_session
 
 
+@njit(parallel=True)
+def calculate_pvalue_excluding_nans(treatment, control):
+    treatment = treatment.flatten()
+
+    p_values = np.ones(treatment.size)
+    for i in prange(treatment.size):
+        if np.isnan(treatment[i]):
+            continue
+        col = control[:, i]
+        col = col[~np.isnan(col)]
+        p_values[i] = (treatment[i] < col).mean()
+    return p_values
+
+
 def calculate_cohens_d(
     *, sum1: np.ndarray, sumsq1: np.ndarray, n1: np.ndarray, sum2: np.ndarray, sumsq2: np.ndarray, n2: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray]:

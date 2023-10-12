@@ -17,12 +17,14 @@ from backend.cellguide.pipeline.computational_marker_genes.types import Computat
 from backend.cellguide.pipeline.computational_marker_genes.utils import (
     bootstrap_rows_percentiles,
     calculate_cohens_d,
+    calculate_pvalue_excluding_nans,
     query_gene_info_for_gene_description,
 )
 from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
 from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
 from backend.common.utils.rollup import (
-    are_cell_types_overlapping,
+    are_cell_types_colinear,
+    get_overlapping_cell_type_descendants,
     rollup_across_cell_type_descendants,
     rollup_across_cell_type_descendants_array,
 )
@@ -77,9 +79,11 @@ class MarkerGenesCalculator:
         expressions_df = snapshot.expression_summary_default_cube.df[:]
 
         # prep the cell counts and expressions dataframes
-        (self.cell_counts_df, self.expressions_df) = self._prepare_cell_counts_and_gene_expression_dfs(
-            cell_counts_df, expressions_df
-        )
+        (
+            self.cell_counts_df,
+            self.cell_counts_df_orig,
+            self.expressions_df,
+        ) = self._prepare_cell_counts_and_gene_expression_dfs(cell_counts_df, expressions_df)
 
     def _get_gene_symbol_from_id(self, gene_id: str) -> str:
         return self.gene_id_to_symbol.get(gene_id, gene_id)
@@ -119,8 +123,8 @@ class MarkerGenesCalculator:
 
         Returns
         -------
-        Tuple[pd.DataFrame, pd.DataFrame]
-            A tuple containing the prepared cell counts and gene expression dataframes.
+        Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]
+            A tuple containing the prepared cell counts, unrolled cell counts, and gene expression dataframes.
         """
         logger.info("Preparing cell counts and gene expression dataframes")
 
@@ -158,7 +162,7 @@ class MarkerGenesCalculator:
         universe_cell_counts_df = universe_cell_counts_df[universe_cell_counts_df["n_cells"] > 0]
         # remake the multi-index
         universe_cell_counts_df = universe_cell_counts_df.groupby(self.groupby_terms_with_celltype).sum()
-        return universe_cell_counts_df, expressions_df
+        return universe_cell_counts_df, cell_counts_df, expressions_df
 
     def _process_cell_type__parallel(
         self,
@@ -168,6 +172,9 @@ class MarkerGenesCalculator:
         e_sum_o: np.ndarray,
         e_sqsum_o: np.ndarray,
         n_cells_o: np.ndarray,
+        e_sum_o_orig: np.ndarray,
+        e_sqsum_o_orig: np.ndarray,
+        n_cells_o_orig: np.ndarray,
         filter_genes: np.ndarray,
     ) -> tuple[str, np.ndarray, np.ndarray, np.ndarray]:
         """
@@ -185,6 +192,12 @@ class MarkerGenesCalculator:
             Array of squared gene expression sums for each cell type.
         n_cells_o : np.ndarray
             Array of cell counts for each cell type.
+        e_sum_o_orig : np.ndarray
+            Array of raw gene expression sums for each cell type.
+        e_sqsum_o_orig : np.ndarray
+            Array of raw squared gene expression sums for each cell type.
+        n_cells_o_orig : np.ndarray
+            Array of cell counts for each cell type.
         filter_genes: np.ndarray
             A boolean array indicating which genes to filter out.
 
@@ -193,18 +206,40 @@ class MarkerGenesCalculator:
         tuple[np.ndarray, np.ndarray]
             A tuple containing the filtered effect sizes and the column indices of the remaining genes.
         """
+        e_sum_o = e_sum_o.copy()
+        e_sqsum_o = e_sqsum_o.copy()
+        n_cells_o = n_cells_o.copy()
+        cell_type_target = cell_types_o[i]
+
+        indexer = pd.Series(index=cell_types_o, values=np.arange(cell_types_o.size))
+
+        for j, cell_type in enumerate(cell_types_o):
+            if cell_type_target == cell_type or are_cell_types_colinear(cell_type, cell_type_target):
+                continue
+
+            overlapping_descendants = get_overlapping_cell_type_descendants(cell_type, cell_type_target)
+
+            if len(overlapping_descendants) > 0:
+                e_sum_o[j] -= e_sum_o_orig[indexer[overlapping_descendants].values].sum(0)
+                e_sqsum_o[j] -= e_sqsum_o_orig[indexer[overlapping_descendants].values].sum(0)
+                n_cells_o[j] -= n_cells_o_orig[indexer[overlapping_descendants].values].sum(0)
+
         # get the expressions and cell counts corresponding to the cell type
         sum1 = e_sum_o[i][None, :]
         sumsq1 = e_sqsum_o[i][None, :]
         n1 = n_cells_o[i][None, :]
 
-        # run the t-test elementwise against all other rows
+        # calculate cohens d effect size against all other rows
         effects = calculate_cohens_d(sum1=sum1, sumsq1=sumsq1, n1=n1, sum2=e_sum_o, sumsq2=e_sqsum_o, n2=n_cells_o)
-        is_colinear = np.array([are_cell_types_overlapping(cell_type, cell_types_o[i]) for cell_type in cell_types_o])
 
+        # zero out nans
         effects[np.isnan(effects)] = 0
 
+        # get valid genes
         unique_cols = np.where(~filter_genes)[0]
+
+        # filter out rows that are colinear with the cell type target and filter out invalid genes
+        is_colinear = np.array([are_cell_types_colinear(cell_type, cell_type_target) for cell_type in cell_types_o])
         effects_sub = effects[~is_colinear][:, unique_cols]
 
         return effects_sub, unique_cols
@@ -237,6 +272,7 @@ class MarkerGenesCalculator:
         """
         logger.info("Getting computational marker genes")
         cell_counts_df = self.cell_counts_df
+        cell_counts_df_orig = self.cell_counts_df_orig
 
         # the metadata groups (incl cell type) will be treated as row coordinates
         groupby_coords = list(zip(*self.expressions_df[self.groupby_terms_with_celltype].values.T))
@@ -291,6 +327,9 @@ class MarkerGenesCalculator:
         n_cells = cell_counts_df["n_cells"][groupby_index.index]
         n_cells = np.tile(n_cells.values[:, None], (1, e_nnz_rollup.shape[1]))
 
+        n_cells_orig = cell_counts_df_orig["n_cells"][groupby_index.index]
+        n_cells_orig = np.tile(n_cells_orig.values[:, None], (1, e_nnz_rollup.shape[1]))
+
         all_results = []
         # for example, if self.groupby_terms contains organism and tissue, then this loop
         # iterates through each organism and tissue combination.
@@ -310,24 +349,28 @@ class MarkerGenesCalculator:
             e_sum_o = e_sum[filt]
             e_sqsum_o = e_sqsum[filt]
             n_cells_o = n_cells[filt]
+            n_cells_orig_o = n_cells_orig[filt]
 
             # roll up the arrays across the rows given the cell types corresponding to each row
-            e_nnz_o = rollup_across_cell_type_descendants_array(e_nnz_o, cell_types_o)
-            e_sum_o = rollup_across_cell_type_descendants_array(e_sum_o, cell_types_o)
-            e_sqsum_o = rollup_across_cell_type_descendants_array(e_sqsum_o, cell_types_o)
+            e_nnz_o_rollup = rollup_across_cell_type_descendants_array(e_nnz_o, cell_types_o)
+            e_sum_o_rollup = rollup_across_cell_type_descendants_array(e_sum_o, cell_types_o)
+            e_sqsum_o_rollup = rollup_across_cell_type_descendants_array(e_sqsum_o, cell_types_o)
 
             # populate the original rollup arrays with the rolled up values for this combination
-            e_nnz_rollup[filt] = e_nnz_o
-            e_sum_rollup[filt] = e_sum_o
-            e_sqsum_rollup[filt] = e_sqsum_o
+            e_nnz_rollup[filt] = e_nnz_o_rollup
+            e_sum_rollup[filt] = e_sum_o_rollup
+            e_sqsum_rollup[filt] = e_sqsum_o_rollup
 
             delayed_results = [
                 delayed(self._process_cell_type__parallel)(
                     i=i,
                     cell_types_o=cell_types_o,
-                    e_sum_o=e_sum_o,
-                    e_sqsum_o=e_sqsum_o,
+                    e_sum_o=e_sum_o_rollup,
+                    e_sqsum_o=e_sqsum_o_rollup,
                     n_cells_o=n_cells_o,
+                    e_sum_o_orig=e_sum_o,
+                    e_sqsum_o_orig=e_sqsum_o,
+                    n_cells_o_orig=n_cells_orig_o,
                     filter_genes=e_nnz_o[i] < minimum_nnz,
                 )
                 for i in range(len(cell_types_o))
@@ -344,7 +387,7 @@ class MarkerGenesCalculator:
                 effect_sizes = []
                 for iteration in tqdm(
                     range(len(results)),
-                    desc=f"Bootstrapping effect sizes to calculate the {percentile}th percentile of the effect size distribution for each gene.",
+                    desc="Bootstrapping marker scores",
                 ):
                     effect_sizes_chunk, col_idx = results[iteration]
                     effects = np.full(gene_index.size, fill_value=np.nan)
@@ -367,9 +410,9 @@ class MarkerGenesCalculator:
                     cell_type = cell_types_o[iteration]
 
                     effect_size = effect_sizes[iteration]
-                    not_overlapping = np.array([not are_cell_types_overlapping(ct, cell_type) for ct in cell_types_o])
+                    not_overlapping = np.array([not are_cell_types_colinear(ct, cell_type) for ct in cell_types_o])
 
-                    specificity = (effect_size[None, :] > effect_sizes[not_overlapping]).mean(0)
+                    specificity = calculate_pvalue_excluding_nans(effect_size, effect_sizes[not_overlapping])
                     ranked_genes_df = pd.DataFrame()
                     ranked_genes_df["gene_ontology_term_id"] = gene_index.index.values
                     ranked_genes_df["specificity"] = specificity
