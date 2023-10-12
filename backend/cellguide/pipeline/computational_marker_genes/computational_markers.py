@@ -162,7 +162,12 @@ class MarkerGenesCalculator:
         universe_cell_counts_df = universe_cell_counts_df[universe_cell_counts_df["n_cells"] > 0]
         # remake the multi-index
         universe_cell_counts_df = universe_cell_counts_df.groupby(self.groupby_terms_with_celltype).sum()
-        return universe_cell_counts_df, cell_counts_df, expressions_df
+
+        # create an unrolled copy of the cell counts dataframe
+        cell_counts_df_orig = universe_cell_counts_df.copy()
+        cell_counts_df_orig["n_cells"] = 0
+        cell_counts_df_orig["n_cells"][cell_counts_df.index] = cell_counts_df["n_cells"]
+        return universe_cell_counts_df, cell_counts_df_orig, expressions_df
 
     def _process_cell_type__parallel(
         self,
@@ -292,9 +297,11 @@ class MarkerGenesCalculator:
 
         logger.info("Populating arrays with numeric data from the expressions dataframe")
         # populate the arrays with the numeric data from the expressions dataframe
-        e_nnz[groupby_index[groupby_coords].values, gene_index[gene_coords].values] = self.expressions_df["nnz"]
-        e_sum[groupby_index[groupby_coords].values, gene_index[gene_coords].values] = self.expressions_df["sum"]
-        e_sqsum[groupby_index[groupby_coords].values, gene_index[gene_coords].values] = self.expressions_df["sqsum"]
+        e_nnz[groupby_index[groupby_coords].values, gene_index[gene_coords].values] = self.expressions_df["nnz"].values
+        e_sum[groupby_index[groupby_coords].values, gene_index[gene_coords].values] = self.expressions_df["sum"].values
+        e_sqsum[groupby_index[groupby_coords].values, gene_index[gene_coords].values] = self.expressions_df[
+            "sqsum"
+        ].values
 
         # get all available combinations from the augmented cell counts dataframe
         available_combinations = set(cell_counts_df.index.values)
