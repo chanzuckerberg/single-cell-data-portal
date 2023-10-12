@@ -17,7 +17,7 @@ from backend.cellguide.pipeline.computational_marker_genes.types import Computat
 from backend.cellguide.pipeline.computational_marker_genes.utils import (
     bootstrap_rows_percentiles,
     calculate_cohens_d,
-    calculate_pvalue_excluding_nans,
+    calculate_specificity_excluding_nans,
     query_gene_info_for_gene_description,
 )
 from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
@@ -417,9 +417,9 @@ class MarkerGenesCalculator:
                     cell_type = cell_types_o[iteration]
 
                     effect_size = effect_sizes[iteration]
-                    not_overlapping = np.array([not are_cell_types_colinear(ct, cell_type) for ct in cell_types_o])
+                    not_colinear = np.array([not are_cell_types_colinear(ct, cell_type) for ct in cell_types_o])
 
-                    specificity = calculate_pvalue_excluding_nans(effect_size, effect_sizes[not_overlapping])
+                    specificity = calculate_specificity_excluding_nans(effect_size, effect_sizes[not_colinear])
                     ranked_genes_df = pd.DataFrame()
                     ranked_genes_df["gene_ontology_term_id"] = gene_index.index.values
                     ranked_genes_df["specificity"] = specificity

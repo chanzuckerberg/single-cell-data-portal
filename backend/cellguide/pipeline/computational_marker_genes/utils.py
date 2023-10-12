@@ -9,17 +9,17 @@ from backend.wmg.data.utils import setup_retry_session
 
 
 @njit(parallel=True)
-def calculate_pvalue_excluding_nans(treatment, control):
+def calculate_specificity_excluding_nans(treatment, control):
     treatment = treatment.flatten()
 
-    p_values = np.ones(treatment.size)
+    specificities = np.zeros(treatment.size)
     for i in prange(treatment.size):
         if np.isnan(treatment[i]):
             continue
         col = control[:, i]
         col = col[~np.isnan(col)]
-        p_values[i] = (treatment[i] < col).mean()
-    return p_values
+        specificities[i] = (treatment[i] > col).mean()
+    return specificities
 
 
 def calculate_cohens_d(
