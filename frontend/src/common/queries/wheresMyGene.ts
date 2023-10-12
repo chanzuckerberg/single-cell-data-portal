@@ -27,6 +27,7 @@ import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 import { Dataset } from "@mui/icons-material";
+import { formatCitation } from "../utils/formatCitation";
 
 interface RawOntologyTerm {
   [id: string]: string;
@@ -464,6 +465,13 @@ export function useFilterDimensions(version: 1 | 2 = 2): {
       tissue_terms,
     } = filter_dims;
 
+    const formattedCitations = publication_citations.map(
+      (citation: string) => ({
+        id: citation,
+        name: formatCitation(citation),
+      })
+    );
+
     const sortedDatasets = Object.values(
       aggregateCollectionsFromDatasets(datasets)
     ).flatMap(({ datasets }) => datasets);
@@ -478,7 +486,7 @@ export function useFilterDimensions(version: 1 | 2 = 2): {
         disease_terms: disease_terms.map(toEntity),
         self_reported_ethnicity_terms:
           self_reported_ethnicity_terms.map(toEntity),
-        publication_citations: publication_citations.map(stringToEntity),
+        publication_citations: formattedCitations,
         sex_terms: sex_terms.map(toEntity),
         tissue_terms: tissue_terms.map(toEntity),
       },
@@ -736,6 +744,7 @@ interface TermIdLabels {
         order: number;
         total_count: number;
         viewId: ViewId;
+        isAggregated: boolean;
       };
     };
   };
@@ -1157,10 +1166,6 @@ function toEntity(item: RawOntologyTerm) {
   const [id, name] = Object.entries(item)[0];
 
   return { id, name: name || id || "" };
-}
-
-function stringToEntity(item: string) {
-  return { id: item, name: item };
 }
 
 function useSnapshotId(): string | null {

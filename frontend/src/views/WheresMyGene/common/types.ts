@@ -38,6 +38,7 @@ export interface CellType {
   name: string;
   order: number;
   total_count: number;
+  isAggregated: boolean;
 }
 
 /**
