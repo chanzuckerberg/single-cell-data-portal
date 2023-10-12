@@ -71,7 +71,7 @@ import {
   MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID,
   MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID,
   MARKER_SCORE_TOOLTIP_TEST_ID,
-  P_VALUE_TOOLTIP_TEST_ID,
+  SPECIFICITY_SCORE_TOOLTIP_TEST_ID,
   PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
   MARKER_GENES_CANONICAL_BREAKPOINT_PX,
   MARKER_GENES_COMPUTATIONAL_BREAKPOINT_PX,
@@ -264,17 +264,19 @@ const MarkerGeneTables = ({
       specificity_score: (
         <div>
           <StyledHeadCellContent>
-            P-value
+            Specificity Score
             <HelpTooltip
               skinnyMode={skinnyMode}
-              title="P-value"
+              title="Specificity Score"
               setTooltipContent={setTooltipContent}
               dark
-              buttonDataTestId={P_VALUE_TOOLTIP_TEST_ID}
+              buttonDataTestId={SPECIFICITY_SCORE_TOOLTIP_TEST_ID}
               text={
                 <>
                   <div>
-                    P-values are calculated using a bootstrapping procedure.
+                    The specificity score for a given gene shows the percentage
+                    of cell types in "{organismName}" and "{organName}" where "
+                    {`${cellTypeName}`}" has a higher marker score.
                   </div>
                   <br />
                   <div>
