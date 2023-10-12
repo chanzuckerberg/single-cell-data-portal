@@ -27,9 +27,6 @@ export const PERCENT_OF_CELLS_TOOLTIP_TEST_ID =
 export const MARKER_SCORE_TOOLTIP_TEST_ID =
   "cell-guide-card-marker-score-tooltip";
 
-export const SPECIFICITY_SCORE_TOOLTIP_TEST_ID =
-  "cell-guide-card-specificity-score-tooltip";
-
 export const MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID =
   "marker-genes-computational-help-tooltip";
 export const MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID =

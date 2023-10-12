@@ -248,7 +248,6 @@ export interface ComputationalMarkersQueryResponseEntry {
   me: number;
   pc: number;
   marker_score: number;
-  specificity: number;
   symbol: string;
   name: string;
   groupby_dims: {
@@ -491,29 +490,23 @@ export function useAllOrgansLookupTables(): Map<string, string> {
 export function useAllTissuesLookupTables(
   cellTypeId: string
 ): Map<string, string> {
-  const { data: tissueData } = useTissueMetadata();
-  const { data: computationalMarkers } = useComputationalMarkers(cellTypeId);
+  const { data: sourceData } = useSourceData(cellTypeId);
 
   return useMemo(() => {
-    if (!tissueData || !computationalMarkers) {
+    if (!sourceData) {
       return new Map<string, string>();
-    }
-    const tissueIdByLabel: { [label: string]: string } = {};
-
-    for (const tissueId in tissueData) {
-      const tissue = tissueData[tissueId];
-      tissueIdByLabel[tissue.name] = tissue.id;
     }
 
     const allTissuesLabelToIdLookup = new Map<string, string>();
 
-    for (const markerGene of computationalMarkers) {
-      const label = markerGene.groupby_dims.tissue_ontology_term_label;
-      if (!label) continue;
-      allTissuesLabelToIdLookup.set(label, tissueIdByLabel[label]);
+    for (const source of sourceData) {
+      const tissueList = source.tissue;
+      for (const tissue of tissueList) {
+        allTissuesLabelToIdLookup.set(tissue.label, tissue.ontology_term_id);
+      }
     }
     return allTissuesLabelToIdLookup;
-  }, [tissueData, computationalMarkers]);
+  }, [sourceData]);
 }
 
 /**
