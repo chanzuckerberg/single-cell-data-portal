@@ -80,6 +80,10 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
             "batch_condition": np.array({"batchA", "batchB"}),
             "schema_version": "3.0.0",
             "default_embedding": "X_umap",
+            "citation": "Publication: https://doi.org/12.2345/science.abc1234 Dataset Version: "
+            "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
+            "CZ CELLxGENE Discover in Collection: "
+            "https://cellxgene.cziscience.com/collections/collection_id",
         }
 
         var = pandas.DataFrame(
@@ -151,6 +155,7 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
         self.assertEqual(extracted_metadata.x_approximate_distribution, "NORMAL")
         self.assertEqual(extracted_metadata.batch_condition, np.array({"batchA", "batchB"}))
         self.assertEqual(extracted_metadata.schema_version, "3.0.0")
+        self.assertEqual(extracted_metadata.citation, uns["citation"])
 
         self.assertEqual(extracted_metadata.cell_count, 50001)
         self.assertEqual(extracted_metadata.primary_cell_count, 0)
@@ -232,6 +237,10 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
             "X_approximate_distribution": "normal",
             "batch_condition": np.array({"batchA", "batchB"}),
             "schema_version": "3.0.0",
+            "citation": "Publication: https://doi.org/12.2345/science.abc1234 Dataset Version: "
+            "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
+            "CZ CELLxGENE Discover in Collection: "
+            "https://cellxgene.cziscience.com/collections/collection_id",
         }
 
         var = pandas.DataFrame(

@@ -44,7 +44,9 @@ class ProcessingTest(BaseProcessingTest):
             pdv = ProcessDownloadValidate(
                 self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
             )
-            pdv.process(dataset_version_id, dropbox_uri, "fake_bucket_name", "fake_datasets_bucket")
+            pdv.process(
+                collection.version_id, dataset_version_id, dropbox_uri, "fake_bucket_name", "fake_datasets_bucket"
+            )
 
             status = self.business_logic.get_dataset_status(dataset_version_id)
             self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
@@ -155,6 +157,7 @@ class ProcessingTest(BaseProcessingTest):
         )
         for step_name in ["download-validate", "cxg", "seurat"]:
             pm.process(
+                collection.version_id,
                 dataset_version_id,
                 step_name,
                 dropbox_uri,
@@ -210,6 +213,7 @@ class ProcessingTest(BaseProcessingTest):
 
         for step_name in ["download-validate"]:
             pm.process(
+                collection.version_id,
                 dataset_version_id,
                 step_name,
                 dropbox_uri,
