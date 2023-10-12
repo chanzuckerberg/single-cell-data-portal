@@ -24,7 +24,6 @@ import {
   addGeneInfoGene,
   clearGeneInfoGene,
   closeRightSidebar,
-  deleteSelectedGenes,
 } from "../../common/store/actions";
 import { ChartProps, GeneExpressionSummary } from "../../common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
@@ -199,23 +198,6 @@ export default function WheresMyGene(): JSX.Element {
     selectedGenes,
     cellTypesByTissueName,
   ]);
-
-  // Listen to delete keyboard press event
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-
-    function handleKeyDown(event: KeyboardEvent): void {
-      if (event.code === "Backspace") {
-        if (!dispatch) return;
-
-        dispatch(deleteSelectedGenes());
-      }
-    }
-  }, [dispatch]);
 
   const hasSelectedTissues = (selectedTissues?.length ?? 0) > 0;
   const hasSelectedGenes = selectedGenes.length > 0;

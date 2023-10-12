@@ -23,7 +23,6 @@ import {
   addGeneInfoGene,
   clearGeneInfoGene,
   closeRightSidebar,
-  deleteSelectedGenes,
 } from "src/views/WheresMyGene/common/store/actions";
 import {
   GeneExpressionSummary,
@@ -217,24 +216,6 @@ export default function WheresMyGene(): JSX.Element {
     selectedGenes,
     cellTypesByTissueName,
   ]);
-
-  // Listen to delete keyboard press event
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-
-    function handleKeyDown(event: KeyboardEvent): void {
-      if (event.code === "Backspace") {
-        if (!dispatch) return;
-
-        dispatch(deleteSelectedGenes());
-      }
-    }
-  }, [dispatch]);
-
   const [isSourceDatasetSidebarOpen, setSourceDatasetSidebarOpen] =
     useState(false);
   const handleSourceDatasetButtonClick = useCallback(() => {
