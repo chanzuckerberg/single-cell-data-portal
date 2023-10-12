@@ -342,7 +342,14 @@ const MarkerGeneTables = ({
         </StyledHeadCellContent>
       ),
     }),
-    [setTooltipContent, skinnyMode, isPastBreakpoint]
+    [
+      setTooltipContent,
+      skinnyMode,
+      isPastBreakpoint,
+      cellTypeName,
+      organName,
+      organismName,
+    ]
   );
 
   const allTissuesLabelToIdMap = useAllTissuesLookupTables(cellTypeId);
