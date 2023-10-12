@@ -1039,14 +1039,20 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
                     "dataset_id": f"{first_version.datasets[0].dataset_id.id}",
                     "dataset_version_id": f"{first_version.datasets[0].version_id.id}",
+                    "default_embedding": "X_embedding_1",
                     "development_stage": [
                         {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}
                     ],
                     "disease": [{"label": "test_disease_label", "ontology_term_id": "test_disease_term_id"}],
                     "donor_id": ["test_donor_1"],
+                    "embeddings": ["X_embedding_1", "X_embedding_2"],
+                    "feature_biotype": ["gene"],
+                    "feature_count": 400,
+                    "feature_reference": ["NCBITaxon:9606"],
                     "is_primary_data": [True, False],
                     "mean_genes_per_cell": 0.5,
                     "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
+                    "raw_data_location": "raw.X",
                     "schema_version": "3.0.0",
                     "self_reported_ethnicity": [
                         {
