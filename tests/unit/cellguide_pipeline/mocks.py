@@ -21,3 +21,7 @@ def mock_get_datasets_from_curation_endpoint():
 def mock_get_collections_from_curation_endpoint():
     with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{FAKE_COLLECTIONS_FIXTURE_FILENAME}", "r") as f:
         return json.load(f)
+
+
+def mock_get_title_and_citation_from_doi(doi: str):
+    return f"title from {doi}\n\n-- citation"
