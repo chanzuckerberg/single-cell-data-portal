@@ -36,6 +36,10 @@ resource aws_batch_job_definition schema_migrations_swap {
         name= "REMOTE_DEV_PREFIX",
         value= var.remote_dev_prefix
       },
+      {
+        name= "DATASETS_BUCKET",
+        value= var.datasets_bucket
+      },
     ],
     resourceRequirements = [
       {
@@ -84,6 +88,10 @@ resource aws_batch_job_definition schema_migrations {
         name= "REMOTE_DEV_PREFIX",
         value= var.remote_dev_prefix
       },
+      {
+        name= "DATASETS_BUCKET",
+        value= var.datasets_bucket
+      },
     ],
     resourceRequirements = [
                   {
@@ -112,8 +120,25 @@ resource aws_sfn_state_machine sfn_schema_migration {
   definition = <<EOF
 {
   "Comment": "Schema Migration State Machine",
-  "StartAt": "GatherCollections",
+  "StartAt": "DefineDefaults",
   "States": {
+    "DefineDefaults": {
+        "Type": "Pass",
+        "Next": "ApplyDefaults",
+        "ResultPath": "$.inputDefaults",
+        "Parameters": {
+          "auto_publish": "False"
+        }
+    },
+    "ApplyDefaults": {
+        "Type": "Pass",
+        "Next": "GatherCollections",
+        "Parameters": {
+          "args.$": "States.JsonMerge($.inputDefaults, $$.Execution.Input, false)"
+        },
+        "ResultPath": "$.withDefaults",
+        "OutputPath": "$.withDefaults.args"
+    },
     "GatherCollections": {
       "Type": "Task",
       "Resource": "arn:aws:states:::batch:submitJob.sync",
@@ -141,6 +166,10 @@ resource aws_sfn_state_machine sfn_schema_migration {
             {
               "Name": "EXECUTION_ID",
               "Value.$": "$$.Execution.Name"
+            },
+            {
+              "Name": "AUTO_PUBLISH",
+              "Value.$": "$.auto_publish"
             }
           ]
         }
