@@ -16,8 +16,8 @@ const SEX_FILTER_SELECTION = "female";
 const PUBLICATION_FILTER_TEST_ID = "publication-filter";
 const PUBLICATION_FILTER_LABEL = "Publication";
 const PUBLICATION_FILTER_SELECTION = [
-  "Ahern et al. Cell 2022",
-  "Arutyunyan et al. Nature 2023",
+  "Ahern et al. (2022) Cell",
+  "Arutyunyan et al. (2023) Nature",
 ];
 const SELF_REPORTED_ETHNICITY_FILTER_TEST_ID = "self-reported-ethnicity-filter";
 const SELF_REPORTED_ETHNICITY_FILTER_LABEL = "Self-Reported Ethnicity";
