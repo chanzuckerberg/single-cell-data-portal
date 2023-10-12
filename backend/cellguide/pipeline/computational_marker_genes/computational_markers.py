@@ -216,7 +216,7 @@ class MarkerGenesCalculator:
         n_cells_o = n_cells_o.copy()
         cell_type_target = cell_types_o[i]
 
-        indexer = pd.Series(index=cell_types_o, values=np.arange(cell_types_o.size))
+        indexer = pd.Series(index=cell_types_o, data=np.arange(cell_types_o.size))
 
         for j, cell_type in enumerate(cell_types_o):
             if cell_type_target == cell_type or are_cell_types_colinear(cell_type, cell_type_target):
