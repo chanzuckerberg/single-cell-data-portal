@@ -369,7 +369,7 @@ class MarkerGenesCalculator:
                     effect_size = effect_sizes[iteration]
                     not_overlapping = np.array([not are_cell_types_overlapping(ct, cell_type) for ct in cell_types_o])
 
-                    specificity = (effect_size[None, :] > effect_size[not_overlapping]).mean(0)
+                    specificity = (effect_size[None, :] > effect_sizes[not_overlapping]).mean(0)
                     ranked_genes_df = pd.DataFrame()
                     ranked_genes_df["gene_ontology_term_id"] = gene_index.index.values
                     ranked_genes_df["specificity"] = specificity
