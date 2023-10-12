@@ -106,7 +106,7 @@ interface TableRowEnrichedGenes {
   symbol: ReactNode;
   name: ReactNode;
   marker_score: ReactNode;
-  p_value: ReactNode;
+  specificity_score: ReactNode;
   me: ReactNode;
   pc: ReactNode;
 }
@@ -261,7 +261,7 @@ const MarkerGeneTables = ({
           </StyledHeadCellContent>
         </div>
       ),
-      p_value: (
+      specificity_score: (
         <div>
           <StyledHeadCellContent>
             P-value
@@ -474,7 +474,9 @@ const MarkerGeneTables = ({
           marker_score: (
             <StyledCellNumerical> {row.marker_score} </StyledCellNumerical>
           ),
-          p_value: <StyledCellNumerical> {row.p_value} </StyledCellNumerical>,
+          specificity_score: (
+            <StyledCellNumerical> {row.specificity} </StyledCellNumerical>
+          ),
           symbolId: row.symbol,
           symbol: getSymbol(row, true),
         }))
@@ -551,8 +553,8 @@ const MarkerGeneTables = ({
   const tableComponent = useMemo(() => {
     const tableColumnsEnrichedGenes: Array<keyof TableRowEnrichedGenes> =
       !isPastBreakpoint
-        ? ["symbol", "name", "marker_score", "p_value", "me", "pc"]
-        : ["symbol", "marker_score", "p_value", "me", "pc"];
+        ? ["symbol", "name", "marker_score", "specificity_score", "me", "pc"]
+        : ["symbol", "marker_score", "specificity_score", "me", "pc"];
 
     const tableColumnsCanonicalGenes: Array<keyof TableRowCanonicalGenes> =
       !isPastBreakpoint

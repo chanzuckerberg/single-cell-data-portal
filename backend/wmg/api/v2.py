@@ -136,7 +136,6 @@ def markers():
     request = connexion.request.json
     cell_type = request["celltype"]
     tissue = request["tissue"]
-    request["organism"]
     n_markers = request["n_markers"]
     test = request["test"]
     snapshot: WmgSnapshot = load_snapshot(

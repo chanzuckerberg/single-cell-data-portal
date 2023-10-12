@@ -190,8 +190,8 @@ class MarkerGenesCalculator:
 
         Returns
         -------
-        tuple[np.ndarray, scipy.sparse.coo_matrix]
-            A tuple containing the mean of effects, and a the sparsified effect sizes
+        tuple[np.ndarray, np.ndarray]
+            A tuple containing the filtered effect sizes and the column indices of the remaining genes.
         """
         # get the expressions and cell counts corresponding to the cell type
         sum1 = e_sum_o[i][None, :]
@@ -225,11 +225,10 @@ class MarkerGenesCalculator:
             The maximum number of marker genes to return, by default 100
         minimum_nnz : int, optional
             The minimum number of non-zero expressions for a gene to be considered, by default 25
-        target_sample_size : int, optional
-            The target sample size for the bootstrap, by default 10000
+        num_replicates : int, optional
+            The number of bootstrap replicates to generate for calcualting percentiles, by default 100
         percentile : int, optional
             The percentile for the bootstrap, by default 10
-
 
         Returns
         -------
