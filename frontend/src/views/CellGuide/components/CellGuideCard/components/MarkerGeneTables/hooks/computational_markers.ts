@@ -11,6 +11,7 @@ export interface ComputationalMarkerGeneTableData {
   symbol: string;
   name: string;
   marker_score: string;
+  specificity: string;
   me: string;
   pc: string;
 }
@@ -112,7 +113,6 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
 
     const rows: ComputationalMarkerGeneTableData[] = [];
     let atLeastOneGeneFilteredByLowMarkerScore = false;
-
     for (const markerGene of genes) {
       const { pass, errorCode } = _applyOrderedSelectionCriteria({
         markerGene: markerGene,
@@ -137,6 +137,7 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
         symbol,
         name,
         marker_score: marker_score.toFixed(2),
+        specificity: `${(markerGene.specificity * 100).toFixed(1)}`,
         me: me.toFixed(2),
         pc: (pc * 100).toFixed(1),
       });

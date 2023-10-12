@@ -55,7 +55,9 @@ export default function Node({
   const textCursor = node.data.id.startsWith("dummy-child")
     ? "pointer"
     : "default";
-  const cellTypeMarkerGeneStats = cellTypesWithMarkerGeneStats?.[node.data.id];
+  const nodeDataIdZero = `${node.data.id.split("__")[0]}__0`;
+  const cellTypeMarkerGeneStats =
+    cellTypesWithMarkerGeneStats?.[nodeDataIdZero];
   return (
     <StyledGroup top={top} left={left} key={animationKey} opacity={opacity}>
       {isInCorpus ? (

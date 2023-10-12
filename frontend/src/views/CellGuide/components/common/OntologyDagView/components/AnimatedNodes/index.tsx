@@ -92,10 +92,11 @@ export default function AnimatedNodes({
     if (event.target instanceof HTMLDivElement && ownerSVGElement) {
       const coords = localPoint(ownerSVGElement, event);
       if (coords) {
+        const datumIdZero = `${datum.id.split("__")[0]}__0`;
         const marker_score =
-          cellTypesWithMarkerGeneStats?.[datum.id]?.marker_score;
-        const me = cellTypesWithMarkerGeneStats?.[datum.id]?.me;
-        const pc = cellTypesWithMarkerGeneStats?.[datum.id]?.pc;
+          cellTypesWithMarkerGeneStats?.[datumIdZero]?.marker_score;
+        const me = cellTypesWithMarkerGeneStats?.[datumIdZero]?.me;
+        const pc = cellTypesWithMarkerGeneStats?.[datumIdZero]?.pc;
         showTooltip({
           tooltipLeft: coords.x,
           tooltipTop: coords.y,
