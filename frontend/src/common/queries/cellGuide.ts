@@ -248,6 +248,7 @@ export interface ComputationalMarkersQueryResponseEntry {
   me: number;
   pc: number;
   marker_score: number;
+  specificity: number;
   symbol: string;
   name: string;
   groupby_dims: {
