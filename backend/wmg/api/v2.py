@@ -136,7 +136,7 @@ def markers():
     request = connexion.request.json
     cell_type = request["celltype"]
     tissue = request["tissue"]
-    organism = request["organism"]
+    request["organism"]
     n_markers = request["n_markers"]
     test = request["test"]
     snapshot: WmgSnapshot = load_snapshot(
@@ -146,7 +146,6 @@ def markers():
 
     criteria = MarkerGeneQueryCriteria(
         tissue_ontology_term_id=tissue,
-        organism_ontology_term_id=organism,
         cell_type_ontology_term_id=cell_type,
     )
 
@@ -189,13 +188,12 @@ def find_dimension_id_from_compare(compare: str) -> str:
 def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
     criteria = criteria.dict()
     for key in criteria:
-        if key != "organism_ontology_term_id":
-            if isinstance(criteria[key], list):
-                if len(criteria[key]) > 0:
-                    return False
-            else:
-                if criteria[key] != "":
-                    return False
+        if isinstance(criteria[key], list):
+            if len(criteria[key]) > 0:
+                return False
+        else:
+            if criteria[key] != "":
+                return False
     return True
 
 
@@ -212,7 +210,7 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
     }
     for dim in dims:
         dims[dim] = (
-            find_all_dim_option_values(snapshot, criteria.organism_ontology_term_id, dim)
+            find_all_dim_option_values(snapshot, dim)
             if is_criteria_empty(criteria)
             else find_dim_option_values(criteria, snapshot, dim)
         )

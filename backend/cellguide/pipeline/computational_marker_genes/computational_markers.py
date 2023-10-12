@@ -1,22 +1,31 @@
 import concurrent.futures
 import itertools
 import logging
+import warnings
 from typing import Tuple
 
 import numpy as np
 import pandas as pd
 from dask import compute, delayed
 from dask.diagnostics import ProgressBar
+from tqdm import tqdm
 
+from backend.cellguide.pipeline.computational_marker_genes.constants import (
+    MARKER_SCORE_THRESHOLD,
+)
 from backend.cellguide.pipeline.computational_marker_genes.types import ComputationalMarkerGenes
 from backend.cellguide.pipeline.computational_marker_genes.utils import (
-    post_process_stats,
+    bootstrap_rows_percentiles,
+    calculate_cohens_d,
     query_gene_info_for_gene_description,
-    run_ttest,
 )
 from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
 from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
-from backend.common.utils.rollup import rollup_across_cell_type_descendants, rollup_across_cell_type_descendants_array
+from backend.common.utils.rollup import (
+    are_cell_types_overlapping,
+    rollup_across_cell_type_descendants,
+    rollup_across_cell_type_descendants_array,
+)
 from backend.wmg.data.snapshot import WmgSnapshot
 
 logger = logging.getLogger(__name__)
@@ -31,86 +40,6 @@ The groupby terms provided by the user determine the dimensions across which the
 For instance, users can stratify marker gene calculation across just organisms, each combination of organism and tissue, 
 or any arbitrary combinations of metadata dimensions.
 """
-
-
-def _process_cell_type__parallel(
-    *,
-    i: int,
-    cell_types_o: np.ndarray,
-    e_sum_o: np.ndarray,
-    e_sqsum_o: np.ndarray,
-    n_cells_o: np.ndarray,
-    gene_index: pd.Series,
-    combination: tuple[str],
-    groupby_terms: list[str],
-) -> pd.DataFrame:
-    """
-    This function is used in a multiprocessing Pool to process each cell type in parallel.
-    It calculates the marker genes for a given cell type by running a t-test against all other cell types.
-    The results are then post-processed to get a ranked list of marker genes.
-
-    Parameters
-    ----------
-    i : int
-        The index of the current cell type being processed.
-    cell_types_o : np.ndarray
-        Array of cell types.
-    e_sum_o : np.ndarray
-        Array of gene expression sums for each cell type.
-    e_sqsum_o : np.ndarray
-        Array of squared gene expression sums for each cell type.
-    n_cells_o : np.ndarray
-        Array of cell counts for each cell type.
-    gene_index : pd.Series
-        Pandas Series mapping gene IDs to integer indices.
-    combination : list[str]
-        The current combination of metadata dimensions being processed.
-    groupby_terms : list[str]
-        List of groupby dimensions.
-
-    Returns
-    -------
-    pd.DataFrame
-        A DataFrame containing the ranked genes, p-values, effect sizes, current combination and current cell type.
-    """
-    # get the expressions and cell counts corresponding to the cell type
-    sum1 = e_sum_o[i][None, :].copy()
-    sumsq1 = e_sqsum_o[i][None, :].copy()
-    n1 = n_cells_o[i][None, :].copy()
-
-    # run the t-test elementwise against all other rows
-    pvals, effects = run_ttest(sum1=sum1, sumsq1=sumsq1, n1=n1, sum2=e_sum_o, sumsq2=e_sqsum_o, n2=n_cells_o)
-
-    # set the results for the current cell type's row to nan
-    # (cell type should not be compared to itself)
-    pvals[i] = np.nan
-    effects[i] = np.nan
-
-    # process the stats to get the ranked list of differentially expressed genes
-    ranked_genes = post_process_stats(
-        cell_type_target=cell_types_o[i],
-        cell_types_context=cell_types_o,
-        genes=gene_index.index.values,
-        pvals=pvals,
-        effects=effects,
-        percentile=0.05,
-    )
-
-    # create a dataframe containing the ranked genes, p-values, effect sizes, current combination
-    # and current cell type
-    ranked_genes_df = pd.DataFrame()
-    ranked_genes_df.index = pd.Index(list(ranked_genes))
-    ranked_genes_df["p_value"] = [ranked_genes[k]["p_value"] for k in ranked_genes]
-    ranked_genes_df["effect_size"] = [ranked_genes[k]["effect_size"] for k in ranked_genes]
-
-    ranked_genes_df["cell_type_ontology_term_id"] = cell_types_o[i]
-    for j, term in enumerate(groupby_terms):
-        ranked_genes_df[term] = combination[j]
-    ranked_genes_df["gene_ontology_term_id"] = ranked_genes_df.index
-    ranked_genes_df = ranked_genes_df.reset_index(drop=True)
-    ranked_genes_df = ranked_genes_df[ranked_genes_df["effect_size"].notnull()]
-    ranked_genes_df = ranked_genes_df[ranked_genes_df["effect_size"] > 0]
-    return ranked_genes_df
 
 
 class MarkerGenesCalculator:
@@ -231,7 +160,82 @@ class MarkerGenesCalculator:
         universe_cell_counts_df = universe_cell_counts_df.groupby(self.groupby_terms_with_celltype).sum()
         return universe_cell_counts_df, expressions_df
 
-    def get_computational_marker_genes(self) -> dict[str, list[ComputationalMarkerGenes]]:
+    def _process_cell_type__parallel(
+        self,
+        *,
+        i: int,
+        cell_types_o: np.ndarray,
+        e_sum_o: np.ndarray,
+        e_sqsum_o: np.ndarray,
+        n_cells_o: np.ndarray,
+        filter_genes: np.ndarray,
+    ) -> tuple[str, np.ndarray, np.ndarray, np.ndarray]:
+        """
+        This function is used in dask scheduler to process each cell type in parallel.
+
+        Parameters
+        ----------
+        i : int
+            The index of the current cell type being processed.
+        cell_types_o : np.ndarray
+            Array of cell types.
+        e_sum_o : np.ndarray
+            Array of gene expression sums for each cell type.
+        e_sqsum_o : np.ndarray
+            Array of squared gene expression sums for each cell type.
+        n_cells_o : np.ndarray
+            Array of cell counts for each cell type.
+        filter_genes: np.ndarray
+            A boolean array indicating which genes to filter out.
+
+        Returns
+        -------
+        tuple[np.ndarray, scipy.sparse.coo_matrix]
+            A tuple containing the mean of effects, and a the sparsified effect sizes
+        """
+        # get the expressions and cell counts corresponding to the cell type
+        sum1 = e_sum_o[i][None, :]
+        sumsq1 = e_sqsum_o[i][None, :]
+        n1 = n_cells_o[i][None, :]
+
+        # run the t-test elementwise against all other rows
+        effects = calculate_cohens_d(sum1=sum1, sumsq1=sumsq1, n1=n1, sum2=e_sum_o, sumsq2=e_sqsum_o, n2=n_cells_o)
+        is_colinear = np.array([are_cell_types_overlapping(cell_type, cell_types_o[i]) for cell_type in cell_types_o])
+
+        effects[np.isnan(effects)] = 0
+
+        unique_cols = np.where(~filter_genes)[0]
+        effects_sub = effects[~is_colinear][:, unique_cols]
+
+        return effects_sub, unique_cols
+
+    def get_computational_marker_genes(
+        self,
+        num_marker_genes=100,
+        minimum_nnz=25,
+        num_replicates=100,
+        percentile=10,
+    ) -> dict[str, list[ComputationalMarkerGenes]]:
+        """
+        Calculate the computational marker genes for each cell type.
+
+        Arguments
+        ---------
+        num_marker_genes : int, optional
+            The maximum number of marker genes to return, by default 100
+        minimum_nnz : int, optional
+            The minimum number of non-zero expressions for a gene to be considered, by default 25
+        target_sample_size : int, optional
+            The target sample size for the bootstrap, by default 10000
+        percentile : int, optional
+            The percentile for the bootstrap, by default 10
+
+
+        Returns
+        -------
+        dict[str, list[ComputationalMarkerGenes]]
+            A dictionary where the keys are cell types and the values are lists of ComputationalMarkerGenes objects.
+        """
         logger.info("Getting computational marker genes")
         cell_counts_df = self.cell_counts_df
 
@@ -295,7 +299,7 @@ class MarkerGenesCalculator:
         for combination in itertools.product(*groupby_term_to_unique_values):
             # get the rows corresponding to groups that match the current "combination"
             filt = groupby_term_to_values[0] == combination[0]
-            for _i in range(1, len(combination)):
+            for _ in range(1, len(combination)):
                 filt = np.logical_and(filt, groupby_term_to_values[1] == combination[1])
 
             if filt.sum() == 0:
@@ -318,29 +322,71 @@ class MarkerGenesCalculator:
             e_sum_rollup[filt] = e_sum_o
             e_sqsum_rollup[filt] = e_sqsum_o
 
-            results = [
-                delayed(_process_cell_type__parallel)(
+            delayed_results = [
+                delayed(self._process_cell_type__parallel)(
                     i=i,
                     cell_types_o=cell_types_o,
                     e_sum_o=e_sum_o,
                     e_sqsum_o=e_sqsum_o,
                     n_cells_o=n_cells_o,
-                    gene_index=gene_index,
-                    combination=combination,
-                    groupby_terms=self.groupby_terms,
+                    filter_genes=e_nnz_o[i] < minimum_nnz,
                 )
                 for i in range(len(cell_types_o))
             ]
             logger.info(
                 f"Getting marker genes for {len(cell_types_o)} cell types in combination {combination} using {CELLGUIDE_PIPELINE_NUM_CPUS} CPUs..."
             )
-            with ProgressBar():
-                all_results.extend(compute(*results, num_workers=CELLGUIDE_PIPELINE_NUM_CPUS))
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+
+                with ProgressBar():
+                    results = compute(*delayed_results, num_workers=CELLGUIDE_PIPELINE_NUM_CPUS)
+
+                effect_sizes = []
+                for iteration in tqdm(
+                    range(len(results)),
+                    desc=f"Bootstrapping effect sizes to calculate the {percentile}th percentile of the effect size distribution for each gene.",
+                ):
+                    effect_sizes_chunk, col_idx = results[iteration]
+                    effects = np.full(gene_index.size, fill_value=np.nan)
+                    bootstrapped_percentiles = np.full((num_replicates, gene_index.size), fill_value=np.nan)
+
+                    if effect_sizes_chunk.shape[0] > 0:
+                        bootstrapped_percentiles[:, col_idx] = bootstrap_rows_percentiles(
+                            effect_sizes_chunk,
+                            num_replicates=num_replicates,
+                            num_samples=effect_sizes_chunk.shape[0],
+                            percentile=percentile,
+                        )
+
+                        effects[col_idx] = bootstrapped_percentiles[:, col_idx].mean(0)
+
+                    effect_sizes.append(effects)
+                effect_sizes = np.vstack(effect_sizes)
+
+                for iteration in tqdm(range(len(effect_sizes)), desc="Processing cell type marker genes"):
+                    cell_type = cell_types_o[iteration]
+
+                    effect_size = effect_sizes[iteration]
+                    not_overlapping = np.array([not are_cell_types_overlapping(ct, cell_type) for ct in cell_types_o])
+
+                    specificity = (effect_size[None, :] > effect_size[not_overlapping]).mean(0)
+                    ranked_genes_df = pd.DataFrame()
+                    ranked_genes_df["gene_ontology_term_id"] = gene_index.index.values
+                    ranked_genes_df["specificity"] = specificity
+                    ranked_genes_df["effect_size"] = effect_size
+                    ranked_genes_df["cell_type_ontology_term_id"] = cell_type
+
+                    for j, term in enumerate(self.groupby_terms):
+                        ranked_genes_df[term] = combination[j]
+
+                    ranked_genes_df = ranked_genes_df[ranked_genes_df["effect_size"].notnull()]
+                    ranked_genes_df = ranked_genes_df[ranked_genes_df["effect_size"] > MARKER_SCORE_THRESHOLD]
+                    all_results.append(ranked_genes_df)
 
         # concatenate all the results into one marker gene dataframe
         markers_df = pd.concat(all_results, axis=0)
-        # filter out rows with p-values >= 1e-5 (arbitrary heuristic)
-        markers_df = markers_df[markers_df["p_value"] < 1e-5]
+
         # use the groupby operation to convert the groupby columns into a MultiIndex
         markers_df = markers_df.groupby(self.groupby_terms_with_celltype_and_gene).first()
 
@@ -377,10 +423,10 @@ class MarkerGenesCalculator:
         # reset the index to convert MultiIndex back into columns
         markers_df = markers_df.reset_index()
 
-        # get the top 100 genes per metadata group
+        # get the top `num_marker_genes` genes per metadata group
         top_per_group = (
             markers_df.groupby(self.groupby_terms_with_celltype)
-            .apply(lambda x: x.nlargest(100, "effect_size"))
+            .apply(lambda x: x.nlargest(num_marker_genes, "effect_size"))
             .reset_index(drop=True)
         )
         # get the marker gene groups
@@ -432,6 +478,7 @@ class MarkerGenesCalculator:
                 "me": datum["me"],
                 "pc": datum["pc"],
                 "marker_score": datum["effect_size"],
+                "specificity": datum["specificity"],
                 "gene_ontology_term_id": datum["gene_ontology_term_id"],
                 "symbol": self._get_gene_symbol_from_id(datum["gene_ontology_term_id"]),
                 "name": gene_names_to_ids[datum["gene_ontology_term_id"]],

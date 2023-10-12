@@ -18,7 +18,6 @@ from backend.wmg.data.constants import (
     GENE_EXPRESSION_COUNT_MIN_THRESHOLD,
     RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
 )
-from backend.wmg.data.rankit import rankit
 from backend.wmg.data.schemas.cube_schema import (
     cell_counts_logical_dims,
     cell_counts_schema,
@@ -50,6 +49,7 @@ from backend.wmg.data.utils import (
 from backend.wmg.pipeline.summary_cubes.builder_utils import (
     create_filter_relationships_graph,
     gene_expression_sum_x_cube_dimension,
+    rankit,
     remove_accents,
     return_dataset_dict_w_publications,
 )
@@ -77,12 +77,11 @@ class SummaryCubesBuilder:
                 }
                 Note that "label" should be the organism label used by census.
         """
-        organism = organismInfo["label"]
-        organismId = organismInfo["id"]
-        organismIdFolderName = organismId.replace(":", "_")
-        self.corpus_path = os.path.join(corpus_path, organismIdFolderName)
-        pathlib.Path(corpus_path).mkdir(exist_ok=True)
-        self.organism = organism
+        self.organism = organismInfo["label"]
+        self.corpus_path = os.path.join(corpus_path, organismInfo["id"].replace(":", "_"))
+
+        logger.info(f"Creating directory {self.corpus_path}")
+        pathlib.Path(self.corpus_path).mkdir(parents=True, exist_ok=True)
 
     @log_func_runtime
     def _load_obs_and_var_dfs_if_necessary(self):
@@ -194,12 +193,24 @@ class SummaryCubesBuilder:
 
     @log_func_runtime
     def create_marker_genes_cube(self):
+        expression_summary_cube_uri = os.path.join(self.corpus_path, EXPRESSION_SUMMARY_CUBE_NAME)
+        cell_counts_cube_uri = os.path.join(self.corpus_path, CELL_COUNTS_CUBE_NAME)
+        if not os.path.exists(expression_summary_cube_uri):
+            raise ValueError(
+                "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
+            )
+
+        if not os.path.exists(cell_counts_cube_uri):
+            raise ValueError(
+                "'cell_counts' array does not exist. Please run 'create_cell_counts_cube_and_filter_relationships' first."
+            )
+
         logger.info("Calculating marker genes.")
-        with open(os.path.join(self.corpus_path, PRIMARY_FILTER_DIMENSIONS_FILENAME), "r") as f, tiledb.open(
-            os.path.join(self.corpus_path, CELL_COUNTS_CUBE_NAME), "r"
-        ) as cell_counts_cube, tiledb.open(
-            os.path.join(self.corpus_path, EXPRESSION_SUMMARY_CUBE_NAME), "r"
-        ) as expression_summary_cube:
+        with (
+            open(os.path.join(self.corpus_path, PRIMARY_FILTER_DIMENSIONS_FILENAME), "r") as f,
+            tiledb.open(cell_counts_cube_uri, "r") as cell_counts_cube,
+            tiledb.open(expression_summary_cube_uri, "r") as expression_summary_cube,
+        ):
             primary_filter_dimensions = json.load(f)
             snapshot = WmgSnapshot(
                 primary_filter_dimensions=primary_filter_dimensions,

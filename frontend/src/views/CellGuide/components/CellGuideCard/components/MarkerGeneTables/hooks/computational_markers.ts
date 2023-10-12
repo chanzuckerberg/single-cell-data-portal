@@ -11,6 +11,7 @@ export interface ComputationalMarkerGeneTableData {
   symbol: string;
   name: string;
   marker_score: string;
+  specificity: string;
   me: string;
   pc: string;
 }
@@ -137,6 +138,7 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
         symbol,
         name,
         marker_score: marker_score.toFixed(2),
+        specificity: markerGene.specificity.toFixed(3),
         me: me.toFixed(2),
         pc: (pc * 100).toFixed(1),
       });

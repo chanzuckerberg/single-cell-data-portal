@@ -71,6 +71,7 @@ import {
   MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID,
   MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID,
   MARKER_SCORE_TOOLTIP_TEST_ID,
+  P_VALUE_TOOLTIP_TEST_ID,
   PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
   MARKER_GENES_CANONICAL_BREAKPOINT_PX,
   MARKER_GENES_COMPUTATIONAL_BREAKPOINT_PX,
@@ -105,6 +106,7 @@ interface TableRowEnrichedGenes {
   symbol: ReactNode;
   name: ReactNode;
   marker_score: ReactNode;
+  p_value: ReactNode;
   me: ReactNode;
   pc: ReactNode;
 }
@@ -251,6 +253,33 @@ const MarkerGeneTables = ({
                   <div>
                     <a href={ROUTES.FMG_DOCS} rel="noopener" target="_blank">
                       Click to read more about the identification method.
+                    </a>
+                  </div>
+                </>
+              }
+            />
+          </StyledHeadCellContent>
+        </div>
+      ),
+      p_value: (
+        <div>
+          <StyledHeadCellContent>
+            P-value
+            <HelpTooltip
+              skinnyMode={skinnyMode}
+              title="P-value"
+              setTooltipContent={setTooltipContent}
+              dark
+              buttonDataTestId={P_VALUE_TOOLTIP_TEST_ID}
+              text={
+                <>
+                  <div>
+                    P-values are calculated using a bootstrapping procedure.
+                  </div>
+                  <br />
+                  <div>
+                    <a href={ROUTES.FMG_DOCS} rel="noopener" target="_blank">
+                      Click to read more about the methodology used.
                     </a>
                   </div>
                 </>
@@ -445,6 +474,7 @@ const MarkerGeneTables = ({
           marker_score: (
             <StyledCellNumerical> {row.marker_score} </StyledCellNumerical>
           ),
+          p_value: <StyledCellNumerical> {row.p_value} </StyledCellNumerical>,
           symbolId: row.symbol,
           symbol: getSymbol(row, true),
         }))
@@ -521,8 +551,8 @@ const MarkerGeneTables = ({
   const tableComponent = useMemo(() => {
     const tableColumnsEnrichedGenes: Array<keyof TableRowEnrichedGenes> =
       !isPastBreakpoint
-        ? ["symbol", "name", "marker_score", "me", "pc"]
-        : ["symbol", "marker_score", "me", "pc"];
+        ? ["symbol", "name", "marker_score", "p_value", "me", "pc"]
+        : ["symbol", "marker_score", "p_value", "me", "pc"];
 
     const tableColumnsCanonicalGenes: Array<keyof TableRowCanonicalGenes> =
       !isPastBreakpoint

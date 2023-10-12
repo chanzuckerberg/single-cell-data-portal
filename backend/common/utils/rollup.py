@@ -59,9 +59,9 @@ def find_descendants_per_cell_type(cell_types):
     return relatives_per_cell_type
 
 
-def are_cell_types_colinear(cell_type1, cell_type2):
+def are_cell_types_overlapping(cell_type1, cell_type2):
     """
-    Determine if two cell types are colinear in the ontology.
+    Determine if two cell types are colinear in the ontology or have overlapping descendants.
     Colinearity means that cell type 1 is an aacestor of cell type 2
     or vice-versa.
     Arguments
@@ -78,7 +78,11 @@ def are_cell_types_colinear(cell_type1, cell_type2):
     descendants2 = descendants(cell_type2)
     ancestors1 = ancestors(cell_type1)
     ancestors2 = ancestors(cell_type2)
-    return len(set(descendants1).intersection(ancestors2)) > 0 or len(set(descendants2).intersection(ancestors1)) > 0
+    return (
+        len(set(descendants1).intersection(ancestors2)) > 0
+        or len(set(descendants2).intersection(ancestors1)) > 0
+        or len(set(descendants1).intersection(descendants2)) > 0
+    )
 
 
 def rollup_across_cell_type_descendants(

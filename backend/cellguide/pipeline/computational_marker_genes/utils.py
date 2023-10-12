@@ -2,72 +2,17 @@ import os
 from typing import Tuple
 
 import numpy as np
-from numba import njit
-from scipy import stats
+from numba import njit, prange
 
 from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
-from backend.common.utils.rollup import are_cell_types_colinear
 from backend.wmg.data.utils import setup_retry_session
 
 
-@njit
-def nanpercentile_2d(arr: np.ndarray, percentile: float, axis: int) -> np.ndarray:
-    """
-    Calculate the specified percentile of a 2D array along an axis, ignoring NaN values.
-
-    Arguments
-    ---------
-    arr - 2D array to calculate percentile of
-    percentile - percentile to calculate, as a number between 0 and 100
-    axis - axis along which to calculate percentile
-
-    Returns
-    -------
-    The specified percentile of the 2D array along the specified axis.
-    """
-    if axis == 0:
-        result = np.empty(arr.shape[1])
-        for i in range(arr.shape[1]):
-            arr_column = arr[:, i]
-            result[i] = nanpercentile(arr_column, percentile)
-        return result
-    else:
-        result = np.empty(arr.shape[0])
-        for i in range(arr.shape[0]):
-            arr_row = arr[i, :]
-            result[i] = nanpercentile(arr_row, percentile)
-        return result
-
-
-@njit
-def nanpercentile(arr: np.ndarray, percentile: float):
-    """
-    Calculate the specified percentile of an array, ignoring NaN values.
-
-    Arguments
-    ---------
-    arr - array to calculate percentile of
-    percentile - percentile to calculate, as a number between 0 and 100
-
-    Returns
-    -------
-    The specified percentile of the array.
-    """
-
-    arr_without_nan = arr[np.logical_not(np.isnan(arr))]
-    length = len(arr_without_nan)
-
-    if length == 0:
-        return np.nan
-
-    return np.percentile(arr_without_nan, percentile)
-
-
-def run_ttest(
+def calculate_cohens_d(
     *, sum1: np.ndarray, sumsq1: np.ndarray, n1: np.ndarray, sum2: np.ndarray, sumsq2: np.ndarray, n2: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Run a t-test on two sets of data, element-wise.
+    Calculates Cohen's d for two sets of data.
     Arrays "1" and "2" have to be broadcastable into each other.
 
     Arguments
@@ -96,73 +41,9 @@ def run_ttest(
         var1[var1 < 0] = 0
         var2 = meansq2 - mean2**2
         var2[var2 < 0] = 0
-
-        var1_n = var1 / n1
-        var2_n = var2 / n2
-        sum_var_n = var1_n + var2_n
-        dof = sum_var_n**2 / (var1_n**2 / (n1 - 1) + var2_n**2 / (n2 - 1))
-        tscores = (mean1 - mean2) / np.sqrt(sum_var_n)
         effects = (mean1 - mean2) / np.sqrt(((n1 - 1) * var1 + (n2 - 1) * var2) / (n1 + n2 - 1))
 
-    pvals = stats.t.sf(tscores, dof)
-    return pvals, effects
-
-
-def post_process_stats(
-    *,
-    cell_type_target: str,
-    cell_types_context: np.ndarray,
-    genes: np.ndarray,
-    pvals: np.ndarray,
-    effects: np.ndarray,
-    percentile: float = 0.05,
-) -> dict[str, dict[str, float]]:
-    """
-    Post-process the statistical results to handle colinearity of cell types in the ontology and calculate percentiles.
-
-    Arguments
-    ---------
-    cell_type_target - The target cell type
-    cell_types_context - The context cell types
-    genes - The genes involved in the analysis
-    pvals - The p-values from the statistical test
-    effects - The effect sizes from the statistical test
-    percentile - The percentile to use for thresholding (default is 0.05)
-
-    Returns
-    -------
-    A dictionary mapping marker genes to their statistics.
-    """
-
-    # parent nodes msut not be compared to their children because they share expressions,
-    # since the expressions are rolled up across descendants
-    is_colinear = np.array([are_cell_types_colinear(cell_type, cell_type_target) for cell_type in cell_types_context])
-    effects[is_colinear] = np.nan
-    pvals[is_colinear] = np.nan
-
-    pvals[:, np.all(np.isnan(pvals), axis=0)] = 1
-    effects[:, np.all(np.isnan(effects), axis=0)] = 0
-
-    # aggregate
-    effects = nanpercentile_2d(effects, percentile * 100, 0)
-
-    effects[effects == 0] = np.nan
-
-    pvals = np.sort(pvals, axis=0)[int(np.round(0.05 * pvals.shape[0]))]
-
-    markers = np.array(genes)[np.argsort(-effects)]
-    p = pvals[np.argsort(-effects)]
-    effects = effects[np.argsort(-effects)]
-
-    statistics = []
-    final_markers = []
-    for i in range(len(p)):
-        pi = p[i]
-        ei = effects[i]
-        if ei is not np.nan and pi is not np.nan:
-            statistics.append({"p_value": pi, "effect_size": ei})
-            final_markers.append(markers[i])
-    return dict(zip(list(final_markers), statistics))
+    return effects
 
 
 def query_gene_info_for_gene_description(gene_id: str) -> str:
@@ -193,3 +74,69 @@ def query_gene_info_for_gene_description(gene_id: str) -> str:
         return data["name"]
     else:
         return gene_id
+
+
+@njit(parallel=True)
+def bootstrap_rows_percentiles(
+    X: np.ndarray, num_replicates: int = 1000, num_samples: int = 100, percentile: float = 5
+):
+    """
+    This function bootstraps rows of a given matrix X.
+
+    Arguments
+    ---------
+    X : np.ndarray
+        The input matrix to bootstrap.
+    num_replicates : int, optional
+        The number of bootstrap replicates to generate, by default 1000.
+    num_samples : int, optional
+        The number of samples to draw in each bootstrap replicate, by default 100.
+    percentile : float, optional
+        The percentile of the bootstrapped samples for each replicate, by default 15.
+
+    Returns
+    -------
+    bootstrap_percentile : np.ndarray
+        The percentile of the bootstrapped samples for each replicate.
+    """
+
+    bootstrap_percentile = np.zeros((num_replicates, X.shape[1]), dtype="float")
+
+    indices = np.random.randint(0, X.shape[0], size=(num_replicates, num_samples))
+    # for each replicate
+    for n_i in prange(num_replicates):
+        bootstrap_percentile[n_i] = sort_matrix_columns(X[indices[n_i]], percentile, num_samples)
+
+    return bootstrap_percentile
+
+
+@njit
+def sort_matrix_columns(matrix, percentile, num_samples):
+    """
+    This function sorts the columns of a given matrix and returns the index associated with
+    the specified percentile of the sorted samples for each column. This approximates
+    np.nanpercentile(matrix, percentile, axis=0).
+
+    Arguments
+    ---------
+    matrix : np.ndarray
+        The input matrix to sort.
+    percentile : float
+        The percentile of the sorted samples for each column.
+    num_samples : int
+        The number of samples in each column.
+
+    Returns
+    -------
+    result : np.ndarray
+        The sorted columns of the input matrix.
+    """
+    num_cols = matrix.shape[1]
+    result = np.empty(num_cols)
+    for col in range(num_cols):
+        sorted_col = np.sort(matrix[:, col])
+        num_nans = np.isnan(sorted_col).sum()
+        num_non_nans = num_samples - num_nans
+        sample_index = int(np.round(percentile / 100 * num_non_nans))
+        result[col] = sorted_col[sample_index]
+    return result

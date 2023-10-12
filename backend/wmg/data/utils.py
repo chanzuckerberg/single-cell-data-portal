@@ -57,11 +57,12 @@ def create_empty_cube(uri: str, schema):
     tiledb.Array.create(uri, schema, overwrite=True)
 
 
-def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:
+def find_all_dim_option_values(snapshot, dimension: str) -> list:
     all_filter_options = set()
-    organism_key = "organism_ontology_term_id__" + organism
-    all_filter_options = snapshot.filter_relationships[organism_key].get(dimension, [])
-    return [option.split("__")[1] for option in all_filter_options]
+    for key in snapshot.filter_relationships:
+        for option in snapshot.filter_relationships[key][dimension]:
+            all_filter_options.add(option.split("__")[1])
+    return list(all_filter_options)
 
 
 def find_dim_option_values(criteria: Dict, snapshot, dimension: str) -> list:
