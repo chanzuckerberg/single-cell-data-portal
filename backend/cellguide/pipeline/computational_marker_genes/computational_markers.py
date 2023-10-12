@@ -430,6 +430,7 @@ class MarkerGenesCalculator:
                         ranked_genes_df[term] = combination[j]
 
                     ranked_genes_df = ranked_genes_df[ranked_genes_df["effect_size"].notnull()]
+                    ranked_genes_df = ranked_genes_df[ranked_genes_df["specificity"].notnull()]
                     ranked_genes_df = ranked_genes_df[ranked_genes_df["effect_size"] > MARKER_SCORE_THRESHOLD]
                     all_results.append(ranked_genes_df)
 

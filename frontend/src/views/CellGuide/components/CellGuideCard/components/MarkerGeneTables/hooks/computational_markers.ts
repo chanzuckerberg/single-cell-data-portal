@@ -113,7 +113,7 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
 
     const rows: ComputationalMarkerGeneTableData[] = [];
     let atLeastOneGeneFilteredByLowMarkerScore = false;
-
+    console.log(genes);
     for (const markerGene of genes) {
       const { pass, errorCode } = _applyOrderedSelectionCriteria({
         markerGene: markerGene,

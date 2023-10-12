@@ -18,7 +18,10 @@ def calculate_specificity_excluding_nans(treatment, control):
             continue
         col = control[:, i]
         col = col[~np.isnan(col)]
-        specificities[i] = (treatment[i] > col).mean()
+        if col.size == 0:
+            specificities[i] = 1
+        else:
+            specificities[i] = (treatment[i] > col).mean()
     return specificities
 
 
