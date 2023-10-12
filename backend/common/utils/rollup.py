@@ -98,7 +98,7 @@ def get_overlapping_cell_type_descendants(cell_type1, cell_type2):
     descendants1 = descendants(cell_type1)
     descendants2 = descendants(cell_type2)
 
-    return set(descendants1).intersection(descendants2)
+    return list(set(descendants1).intersection(descendants2))
 
 
 def rollup_across_cell_type_descendants(
