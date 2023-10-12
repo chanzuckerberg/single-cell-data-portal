@@ -9,7 +9,6 @@ import {
   cornersS,
   fontWeightBold,
   fontWeightSemibold,
-  gray500,
   grey100,
   grey500,
   shadowL,
@@ -21,6 +20,7 @@ import {
   spacesXxs,
   spacesXxxs,
   textPrimary,
+  textSecondary,
 } from "src/common/theme";
 import Loader from "src/components/common/Grid/components/Loader";
 import { BLUE, OLD_BLUE } from "src/components/common/theme";
@@ -90,7 +90,7 @@ export const Dialog = styled(SDSDialog)`
       min-width: unset;
 
       &.MuiButton-text {
-        color: ${gray500};
+        color: ${textSecondary};
 
         &:hover,
         &:active {
