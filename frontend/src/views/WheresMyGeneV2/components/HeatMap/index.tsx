@@ -139,9 +139,7 @@ export default memo(function HeatMap({
   const chartWrapperRef = useRef<HTMLDivElement>(null);
   const dispatch = useContext(DispatchContext);
 
-  const { data, isLoading: loading } = usePrimaryFilterDimensions(2); //temp explicit version
-
-  console.log("loading", loading);
+  const { data } = usePrimaryFilterDimensions(2); //temp explicit version
 
   // Get tissueName to ID map for use in find marker genes
   useEffect(() => {
