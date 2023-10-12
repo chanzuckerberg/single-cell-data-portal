@@ -223,7 +223,7 @@ class MarkerGenesCalculator:
                 continue
 
             overlapping_descendants = get_overlapping_cell_type_descendants(cell_type, cell_type_target)
-
+            overlapping_descendants = list(set(overlapping_descendants).intersection(cell_types_o))
             if len(overlapping_descendants) > 0:
                 e_sum_o[j] -= e_sum_o_orig[indexer[overlapping_descendants].values].sum(0)
                 e_sqsum_o[j] -= e_sqsum_o_orig[indexer[overlapping_descendants].values].sum(0)
