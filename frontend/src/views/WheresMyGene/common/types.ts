@@ -17,6 +17,7 @@ export interface CellTypeSummary {
   viewId: CellType["viewId"];
   name: CellType["name"];
   total_count: number;
+  isAggregated: boolean;
   geneExpressions?: {
     [geneName: string]: CellTypeGeneExpressionSummaryData;
   };
