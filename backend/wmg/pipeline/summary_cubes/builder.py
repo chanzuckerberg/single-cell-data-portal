@@ -16,7 +16,7 @@ from backend.cellguide.pipeline.computational_marker_genes.computational_markers
 from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.wmg.data.constants import (
     GENE_EXPRESSION_COUNT_MIN_THRESHOLD,
-    RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
+    NORM_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
 )
 from backend.wmg.data.schemas.cube_schema import (
     cell_counts_logical_dims,
@@ -49,7 +49,6 @@ from backend.wmg.data.utils import (
 from backend.wmg.pipeline.summary_cubes.builder_utils import (
     create_filter_relationships_graph,
     gene_expression_sum_x_cube_dimension,
-    rankit,
     remove_accents,
     return_dataset_dict_w_publications,
 )
@@ -373,15 +372,17 @@ class SummaryCubesBuilder:
                 logger.info(f"Reducing X with {self.obs_df.shape[0]} total cells")
 
                 iteration = 0
-                for (obs_soma_joinids_chunk, _), raw_array in X_sparse_iter(query, X_name="raw", stride=row_stride):
+                for (obs_soma_joinids_chunk, _), raw_array in X_sparse_iter(
+                    query, X_name="normalized", stride=row_stride
+                ):
                     logger.info(f"Reducer iteration {iteration} out of {math.ceil(self.obs_df.shape[0] / row_stride)}")
                     iteration += 1
 
                     obs_soma_joinids_chunk = query.indexer.by_obs(obs_soma_joinids_chunk)
 
-                    data_filt = raw_array.data >= RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
+                    data_filt = raw_array.data >= NORM_EXPR_COUNT_FILTERING_MIN_THRESHOLD
 
-                    rankit(raw_array)
+                    raw_array.data[:] = np.log2(raw_array.data + 1)
 
                     raw_array = raw_array.tocoo()
 
