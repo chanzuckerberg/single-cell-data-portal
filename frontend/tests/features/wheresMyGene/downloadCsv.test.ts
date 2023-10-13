@@ -1,4 +1,3 @@
-import { test } from "@playwright/test";
 import { goToWMG } from "../../utils/wmgUtils";
 import {
   subDirectory,
@@ -12,6 +11,7 @@ import {
   SHARED_LINK_NO_FILTER,
   SHARED_LINK_NO_GROUP,
 } from "tests/common/constants";
+import { test } from "tests/common/test";
 
 const { describe } = test;
 describe("CSV download tests", () => {
