@@ -134,6 +134,19 @@ class SummaryCubesBuilder:
         self.var_df = var_df
 
     @log_func_runtime
+    def run_pipeline(self):
+        """
+        This method runs the entire pipeline for creating summary cubes. It sequentially calls the methods for creating
+        the expression summary cube, the default expression summary cube, the cell counts cube and filter relationships,
+        the primary filter dimensions, and the marker genes cube.
+        """
+        self.create_expression_summary_cube()
+        self.create_expression_summary_default_cube()
+        self.create_cell_counts_cube_and_filter_relationships()
+        self.create_primary_filter_dimensions()
+        self.create_marker_genes_cube()
+
+    @log_func_runtime
     def create_expression_summary_default_cube(self):
         """
         Create the default expression summary cube. The default expression summary cube is an aggregation across
