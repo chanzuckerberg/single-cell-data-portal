@@ -1,11 +1,13 @@
 from unittest.mock import MagicMock, Mock, patch
 
 from backend.layers.common.entities import (
+    CollectionVersionId,
     DatasetArtifactType,
     DatasetConversionStatus,
     DatasetProcessingStatus,
     DatasetUploadStatus,
     DatasetValidationStatus,
+    DatasetVersionId,
     Link,
 )
 from backend.layers.processing.process import ProcessMain
@@ -95,10 +97,12 @@ class ProcessingTest(BaseProcessingTest):
         pdv = ProcessDownloadValidate(
             self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
         )
-        pdv.populate_dataset_citation("collection_version_id_1", "dataset_version_id_1", "")
+        collection_version_id = CollectionVersionId()
+        dataset_version_id = DatasetVersionId()
+        pdv.populate_dataset_citation(collection_version_id, dataset_version_id, "")
         citation_str = (
-            "Dataset Version: http://domain/dataset_version_id_1.h5ad curated and distributed by "
-            "CZ CELLxGENE Discover in Collection: http://collections/collection_version_id_1"
+            f"Dataset Version: http://domain/{dataset_version_id}.h5ad curated and distributed by "
+            f"CZ CELLxGENE Discover in Collection: http://collections/{collection_version_id}"
         )
         self.assertEqual(mock_read_h5ad.return_value.uns["citation"], citation_str)
 
