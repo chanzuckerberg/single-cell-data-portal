@@ -89,6 +89,9 @@ jobs:
           ECR_REPOS=(${{ steps.get_digests.outputs.ecr_repos }})
           IMAGE_DIGESTS=(${{ steps.get_digests.outputs.image_digests }})
           for ((i = 0; i < ${#ECR_REPOS[@]}; ++i)); do
+            if [ ${IMAGE_DIGESTS[$i]} == "null" ]; do
+              continue
+            fi
             aws ecr batch-delete-image --repository-name ${ECR_REPOS[$i]} --image-ids imageDigest=${IMAGE_DIGESTS[$i]}
           done
 
