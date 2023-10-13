@@ -154,7 +154,7 @@ export function getHeatmapHeight(cellTypes: CellType[] = EMPTY_ARRAY): number {
  * Value format: `${viewId}~${tissue}~${name}~${order}`
  */
 export type CellTypeMetadata =
-  `${CellTypeSummary["viewId"]}~${Tissue}~${CellTypeSummary["name"]}~${number}~${number}`;
+  `${CellTypeSummary["viewId"]}~${Tissue}~${CellTypeSummary["name"]}~${number}~${number}~${boolean}`;
 
 /**
  * We need to encode cell type metadata here, so we can use it in onClick event
@@ -163,8 +163,8 @@ export function getAllSerializedCellTypeMetadata(
   cellTypes: CellType[],
   tissue: Tissue
 ): CellTypeMetadata[] {
-  return cellTypes.map(({ viewId, name, order, total_count }) => {
-    return `${viewId}~${tissue}~${name}~${order}~${total_count}` as CellTypeMetadata;
+  return cellTypes.map(({ viewId, name, order, total_count, isAggregated }) => {
+    return `${viewId}~${tissue}~${name}~${order}~${total_count}~${isAggregated}` as CellTypeMetadata;
   });
 }
 
@@ -176,12 +176,12 @@ export function deserializeCellTypeMetadata(
   tissue: Tissue;
   order: number;
   total_count: number;
+  isAggregated: boolean;
   id: string;
   optionId: OptionId;
 } {
-  const [rawViewId, tissue, name, order, total_count] = cellTypeMetadata.split(
-    TISSUE_CELL_TYPE_DIVIDER
-  );
+  const [rawViewId, tissue, name, order, total_count, isAggregated] =
+    cellTypeMetadata.split(TISSUE_CELL_TYPE_DIVIDER);
 
   // (thuang): Typescript limitation that split() returns string[]
   const viewId = rawViewId as CellType["viewId"];
@@ -193,6 +193,7 @@ export function deserializeCellTypeMetadata(
     id,
     name,
     optionId,
+    isAggregated: isAggregated === "true",
     order: Number(order),
     tissue,
     total_count: Number(total_count),

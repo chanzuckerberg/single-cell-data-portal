@@ -1,4 +1,4 @@
-import { test, Page, expect, Locator } from "@playwright/test";
+import { Page, expect, Locator } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import {
   goToPage,
@@ -67,6 +67,7 @@ import {
   CELLGUIDE_INFO_SIDEBAR_TEST_ID,
   CELLGUIDE_VIEW_PAGE_SIDEBAR_BUTTON_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideInfoSideBar/constants";
+import { test } from "tests/common/test";
 
 const { describe } = test;
 

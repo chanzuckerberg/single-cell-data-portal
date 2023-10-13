@@ -46,7 +46,7 @@
  */
 
 // App dependencies
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { Row } from "react-table";
 import { buildNextOntologyCategoryFilters } from "src/common/hooks/useCategoryFilter/common/curatedOntologyUtils";
 import {
@@ -79,6 +79,7 @@ import {
   SelectCategoryValue,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
+import { test } from "tests/common/test";
 
 const { describe } = test;
 

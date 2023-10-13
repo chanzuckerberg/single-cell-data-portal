@@ -3,7 +3,7 @@
  */
 
 // App dependencies
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { PublisherMetadata } from "src/common/entities";
 import {
   buildSummaryCitation,
@@ -13,6 +13,7 @@ import {
   createPublicationDateValues,
 } from "src/common/queries/filter";
 import { PUBLICATION_DATE_VALUES } from "src/components/common/Filter/common/constants";
+import { test } from "tests/common/test";
 
 const { describe } = test;
 
