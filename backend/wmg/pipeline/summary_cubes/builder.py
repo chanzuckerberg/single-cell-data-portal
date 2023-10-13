@@ -221,16 +221,16 @@ class SummaryCubesBuilder:
 
     @log_func_runtime
     def create_marker_genes_cube(self):
-        expression_summary_cube_uri = os.path.join(self.corpus_path, EXPRESSION_SUMMARY_CUBE_NAME)
+        expression_summary_default_cube_uri = os.path.join(self.corpus_path, EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME)
         cell_counts_cube_uri = os.path.join(self.corpus_path, CELL_COUNTS_CUBE_NAME)
-        if not self.expression_summary_cube_created:
+        if not self.expression_summary_default_cube_created:
             raise ValueError(
-                "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
+                "'expression_summary_default' cube does not exist. Please run 'create_expression_summary_default_cube' first."
             )
 
         if not self.cell_counts_cube_created:
             raise ValueError(
-                "'cell_counts' array does not exist. Please run 'create_cell_counts_cube_and_filter_relationships' first."
+                "'cell_counts' cube does not exist. Please run 'create_cell_counts_cube_and_filter_relationships' first."
             )
 
         if not self.primary_filter_dimensions_created:
@@ -242,18 +242,18 @@ class SummaryCubesBuilder:
         with (
             open(os.path.join(self.corpus_path, PRIMARY_FILTER_DIMENSIONS_FILENAME), "r") as f,
             tiledb.open(cell_counts_cube_uri, "r") as cell_counts_cube,
-            tiledb.open(expression_summary_cube_uri, "r") as expression_summary_cube,
+            tiledb.open(expression_summary_default_cube_uri, "r") as expression_summary_default_cube,
         ):
             primary_filter_dimensions = json.load(f)
             snapshot = WmgSnapshot(
                 primary_filter_dimensions=primary_filter_dimensions,
                 cell_counts_cube=cell_counts_cube,
-                expression_summary_cube=expression_summary_cube,
+                expression_summary_default_cube=expression_summary_default_cube,
             )
             ontology_tree = get_ontology_tree_builder(snapshot=snapshot)
             calculator = MarkerGenesCalculator(
                 snapshot=snapshot,
-                all_cell_type_ids_in_corpus=ontology_tree.all_cell_types_in_corpus,
+                all_cell_type_ids_in_corpus=ontology_tree.all_cell_type_ids_in_corpus,
                 groupby_terms=["tissue_ontology_term_id"],
             )
             marker_genes = calculator.get_computational_marker_genes()
@@ -329,6 +329,11 @@ class SummaryCubesBuilder:
             # get dataframes
             cell_counts_df = cell_counts_cube.df[:]
             expr_df = expression_summary_cube.df[:]
+
+            # populate organism ID into the dfs for the primary filter dimensions
+            organismId = self.corpus_path.split("/")[-1].replace("_", ":")
+            cell_counts_df["organism_ontology_term_id"] = organismId
+            expr_df["organism_ontology_term_id"] = organismId
 
             # genes
             organism_gene_ids = list_grouped_primary_filter_dimensions_term_ids(
@@ -592,7 +597,13 @@ class SummaryCubesBuilder:
 def list_grouped_primary_filter_dimensions_term_ids(
     df, primary_dim_name: str, group_by_dim: str
 ) -> dict[str, list[str]]:
-    return df.drop_duplicates().groupby(group_by_dim).agg(list).to_dict()[primary_dim_name]
+    return (
+        df[[primary_dim_name, group_by_dim]]
+        .drop_duplicates()
+        .groupby(group_by_dim)
+        .agg(list)
+        .to_dict()[primary_dim_name]
+    )
 
 
 def order_tissues(ontology_term_ids: list[str]) -> list[str]:
