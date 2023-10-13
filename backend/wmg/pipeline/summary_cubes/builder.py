@@ -86,6 +86,13 @@ class SummaryCubesBuilder:
         logger.info(f"Creating directory {self.corpus_path}")
         pathlib.Path(self.corpus_path).mkdir(parents=True, exist_ok=True)
 
+        self.expression_summary_cube_created = False
+        self.expression_summary_default_cube_created = False
+        self.cell_counts_cube_created = False
+        self.marker_genes_cube_created = False
+        self.filter_relationships_created = False
+        self.primary_filter_dimensions_created = False
+
     @log_func_runtime
     def _load_obs_and_var_dfs_if_necessary(self):
         """
@@ -132,7 +139,7 @@ class SummaryCubesBuilder:
         Create the default expression summary cube. The default expression summary cube is an aggregation across
         non-default dimensions in the expression summary cube.
         """
-        if not os.path.exists(os.path.join(self.corpus_path, EXPRESSION_SUMMARY_CUBE_NAME)):
+        if not self.expression_summary_cube_created:
             raise ValueError(
                 "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
             )
@@ -159,6 +166,8 @@ class SummaryCubesBuilder:
             self._create_empty_cube(expression_summary_default_uri, expression_summary_schema_default)
             logger.info(f"Writing cube to {expression_summary_default_uri}")
             tiledb.from_pandas(expression_summary_default_uri, expression_summary_df_default, mode="append")
+
+            self.expression_summary_default_cube_created = True
 
     @log_func_runtime
     def create_cell_counts_cube_and_filter_relationships(self):
@@ -188,24 +197,32 @@ class SummaryCubesBuilder:
         filter_relationships_linked_list = create_filter_relationships_graph(df)
         with open(f"{self.corpus_path}/{FILTER_RELATIONSHIPS_FILENAME}", "w") as f:
             json.dump(filter_relationships_linked_list, f)
+        self.filter_relationships_created = True
 
         uri = os.path.join(self.corpus_path, CELL_COUNTS_CUBE_NAME)
         self._create_empty_cube(uri, cell_counts_schema)
         logger.info("Writing cell counts cube.")
         tiledb.from_pandas(uri, df, mode="append")
 
+        self.cell_counts_cube_created = True
+
     @log_func_runtime
     def create_marker_genes_cube(self):
         expression_summary_cube_uri = os.path.join(self.corpus_path, EXPRESSION_SUMMARY_CUBE_NAME)
         cell_counts_cube_uri = os.path.join(self.corpus_path, CELL_COUNTS_CUBE_NAME)
-        if not os.path.exists(expression_summary_cube_uri):
+        if not self.expression_summary_cube_created:
             raise ValueError(
                 "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
             )
 
-        if not os.path.exists(cell_counts_cube_uri):
+        if not self.cell_counts_cube_created:
             raise ValueError(
                 "'cell_counts' array does not exist. Please run 'create_cell_counts_cube_and_filter_relationships' first."
+            )
+
+        if not self.primary_filter_dimensions_created:
+            raise ValueError(
+                "'primary_filter_dimensions' file does not exist. Please run 'create_primary_filter_dimensions' first."
             )
 
         logger.info("Calculating marker genes.")
@@ -243,6 +260,7 @@ class SummaryCubesBuilder:
         self._create_empty_cube(uri, cell_counts_schema)
         logger.info("Writing cell counts cube.")
         tiledb.from_pandas(uri, marker_genes_df, mode="append")
+        self.marker_genes_cube_created = True
 
     @log_func_runtime
     def create_expression_summary_cube(self, write_chunk_size: Optional[int] = 50_000_000):
@@ -275,11 +293,22 @@ class SummaryCubesBuilder:
             tiledb.consolidate(uri)
             tiledb.vacuum(uri)
 
+            self.expression_summary_cube_created = True
+
     @log_func_runtime
     def create_primary_filter_dimensions(self):
         """
         This method creates the primary filter dimensions for the WMG snapshot.
         """
+        if not self.expression_summary_default_cube_created:
+            raise ValueError(
+                "'expression_summary_default' array does not exist. Please run 'create_expression_summary_default_cube' first."
+            )
+        if not self.cell_counts_cube_created:
+            raise ValueError(
+                "'cell_counts' array does not exist. Please run 'create_cell_counts_cube_and_filter_relationships' first."
+            )
+
         with (
             tiledb.open(f"{self.corpus_path}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}", "r") as expression_summary_cube,
             tiledb.open(f"{self.corpus_path}/{CELL_COUNTS_CUBE_NAME}", "r") as cell_counts_cube,
@@ -319,6 +348,8 @@ class SummaryCubesBuilder:
             )
             with open(f"{self.corpus_path}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "w") as f:
                 json.dump(result, f)
+
+            self.primary_filter_dimensions_created = True
 
     @log_func_runtime
     def _summarize_gene_expressions(self, *, cube_dims: list, schema: tiledb.ArraySchema):
