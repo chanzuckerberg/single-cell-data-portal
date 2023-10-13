@@ -17,7 +17,7 @@ from backend.cellguide.pipeline.computational_marker_genes.computational_markers
 from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.wmg.data.constants import (
     GENE_EXPRESSION_COUNT_MIN_THRESHOLD,
-    NORM_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
+    RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
 )
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.schemas.cube_schema import (
@@ -466,31 +466,44 @@ class SummaryCubesBuilder:
 
                 iteration = 0
                 for (obs_soma_joinids_chunk, _), raw_array in X_sparse_iter(
-                    query, X_name="normalized", stride=row_stride
+                    query,
+                    X_name="normalized",
+                    stride=row_stride,
+                    fmt="csr",
                 ):
                     logger.info(f"Reducer iteration {iteration} out of {math.ceil(self.obs_df.shape[0] / row_stride)}")
                     iteration += 1
 
+                    # convert soma_joinids to row coords of filtered obs dataframe
                     obs_soma_joinids_chunk = query.indexer.by_obs(obs_soma_joinids_chunk)
 
-                    data_filt = raw_array.data >= NORM_EXPR_COUNT_FILTERING_MIN_THRESHOLD
-
-                    raw_array.data[:] = np.log2(raw_array.data + 1)
-
+                    # convert to coo TODO: remove once X_sparse_iter can return coo
                     raw_array = raw_array.tocoo()
 
+                    # get data and coordinates
                     data = raw_array.data
-                    row_indices, col = raw_array.row, raw_array.col
-                    row = obs_soma_joinids_chunk[row_indices]
+                    row_indices, col_var = raw_array.row, raw_array.col
+
+                    # convert row coordinates to obs coordinates
+                    row_obs = obs_soma_joinids_chunk[row_indices]
+
+                    # convert data to raw counts and filter by min threshold
+                    data_filt = (
+                        self.obs_df["raw_sum"].values[row_obs] * raw_array.data
+                        >= RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
+                    )
+
+                    # convert data to log2(CPM+1)
+                    raw_array.data[:] = np.log2(raw_array.data * 1e6 + 1)
 
                     # filter data
                     keep_data = np.logical_and(np.isfinite(data), data_filt)
-                    row, col, data = row[keep_data], col[keep_data], data[keep_data]
+                    row_obs, col_var, data = row_obs[keep_data], col_var[keep_data], data[keep_data]
 
                     gene_expression_sum_x_cube_dimension(
                         rankit_values=data,
-                        obs_idxs=row,
-                        var_idx=col,
+                        obs_idxs=row_obs,
+                        var_idx=col_var,
                         cube_indices=cube_indices,
                         sum_into=cube_sum,
                         nnz_into=cube_nnz,
