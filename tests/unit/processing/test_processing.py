@@ -41,7 +41,7 @@ class ProcessingTest(BaseProcessingTest):
         dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=0"
 
         collection = self.generate_unpublished_collection(
-            links=Link(name=None, type="DOI", uri="http://doi.org/12.2345")
+            links=[Link(name=None, type="DOI", uri="http://doi.org/12.2345")]
         )
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
             collection.version_id, dropbox_uri, None, None
