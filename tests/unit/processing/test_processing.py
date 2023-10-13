@@ -69,7 +69,7 @@ class ProcessingTest(BaseProcessingTest):
                 f"Dataset Version: http://domain/{dataset_version_id}.h5ad curated and distributed by "
                 f"CZ CELLxGENE Discover in Collection: http://collections/{collection.version_id}"
             )
-            self.assertEqual(mock_read_h5ad.uns["citation"], citation_str)
+            self.assertEqual(mock_read_h5ad.return_value.uns["citation"], citation_str)
             status = self.business_logic.get_dataset_status(dataset_version_id)
             self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
             self.assertEqual(status.upload_status, DatasetUploadStatus.UPLOADED)
@@ -86,6 +86,30 @@ class ProcessingTest(BaseProcessingTest):
             artifact = artifacts[0]
             artifact.type = DatasetArtifactType.H5AD
             artifact.uri = f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"
+
+    @patch("scanpy.read_h5ad")
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+    def test_process_download_validate__citation_no_publication_doi(self, mock_config, mock_read_h5ad):
+        dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=0"
+
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
+            collection.version_id, dropbox_uri, None, None
+        )
+        mock_read_h5ad.return_value = MagicMock(uns=dict())
+
+        with patch("backend.layers.processing.process_download_validate.ProcessDownloadValidate.extract_metadata"):
+            pdv = ProcessDownloadValidate(
+                self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
+            )
+            pdv.process(
+                collection.version_id, dataset_version_id, dropbox_uri, "fake_bucket_name", "fake_datasets_bucket"
+            )
+            citation_str = (
+                f"Dataset Version: http://domain/{dataset_version_id}.h5ad curated and distributed by "
+                f"CZ CELLxGENE Discover in Collection: http://collections/{collection.version_id}"
+            )
+            self.assertEqual(mock_read_h5ad.return_value.uns["citation"], citation_str)
 
     def test_process_seurat_success(self):
         collection = self.generate_unpublished_collection()
