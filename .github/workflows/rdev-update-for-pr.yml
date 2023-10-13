@@ -64,12 +64,9 @@ jobs:
           IMAGE_DIGESTS=()
           for ecr_repo in "${ECR_REPOS[@]}"; do
             IMAGE_DIGESTS+=(aws ecr list-images --repository-name $ecr_repo --filter tagStatus=TAGGED \
-              | jq -r --arg STACK_NAME ${STACK_NAME} '.imageIds[] \
-              | select(.imageTag==$STACK_NAME).imageDigest' \
-              | sed 's/^/imageDigest=/' | tr '\n' ',')
+              | jq -r --arg STACK_NAME ${STACK_NAME} '[.imageIds[] \
+              | select(.imageTag==$STACK_NAME)][0].imageDigest')
           done
-          #echo "ECR_REPOS=[$(echo ${ECR_REPOS[@]} | sed 's/ /, /g')]" >> $GITHUB_OUTPUT
-          #echo "IMAGE_DIGESTS=[$(echo ${IMAGE_DIGESTS[@]} | sed 's/ /, /g')]" >> $GITHUB_OUTPUT
           echo "ECR_REPOS=${ECR_REPOS[@]}" >> $GITHUB_OUTPUT
           echo "IMAGE_DIGESTS=${IMAGE_DIGESTS[@]}" >> $GITHUB_OUTPUT
       - name: Install happy
@@ -92,7 +89,7 @@ jobs:
           ECR_REPOS=(${{ steps.get_digests.outputs.ecr_repos }})
           IMAGE_DIGESTS=(${{ steps.get_digests.outputs.image_digests }})
           for ((i = 0; i < ${#ECR_REPOS[@]}; ++i)); do
-            aws ecr batch-delete-image --repository-name ${ECR_REPOS[$i]} --image-ids `tr ',' ' ' <<< ${IMAGE_DIGESTS[$i]}`
+            aws ecr batch-delete-image --repository-name ${ECR_REPOS[$i]} --image-ids imageDigest=${IMAGE_DIGESTS[$i]}
           done
 
   deploy-rdev:
