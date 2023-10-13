@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock, Mock, patch
 
 from backend.layers.common.entities import (
-    CollectionVersionId,
     DatasetArtifactType,
     DatasetConversionStatus,
     DatasetProcessingStatus,
@@ -93,16 +92,16 @@ class ProcessingTest(BaseProcessingTest):
     @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
     def test_populate_dataset_citation__no_publication_doi(self, mock_config, mock_read_h5ad):
         mock_read_h5ad.return_value = MagicMock(uns=dict())
+        collection = self.generate_unpublished_collection()
 
         pdv = ProcessDownloadValidate(
             self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
         )
-        collection_version_id = CollectionVersionId()
         dataset_version_id = DatasetVersionId()
-        pdv.populate_dataset_citation(collection_version_id, dataset_version_id, "")
+        pdv.populate_dataset_citation(collection.version_id, dataset_version_id, "")
         citation_str = (
             f"Dataset Version: http://domain/{dataset_version_id}.h5ad curated and distributed by "
-            f"CZ CELLxGENE Discover in Collection: http://collections/{collection_version_id}"
+            f"CZ CELLxGENE Discover in Collection: http://collections/{collection.version_id}"
         )
         self.assertEqual(mock_read_h5ad.return_value.uns["citation"], citation_str)
 
