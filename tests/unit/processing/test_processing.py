@@ -1,4 +1,4 @@
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 from backend.layers.common.entities import (
     DatasetArtifactType,
@@ -6,6 +6,7 @@ from backend.layers.common.entities import (
     DatasetProcessingStatus,
     DatasetUploadStatus,
     DatasetValidationStatus,
+    Link,
 )
 from backend.layers.processing.process import ProcessMain
 from backend.layers.processing.process_cxg import ProcessCxg
@@ -13,9 +14,20 @@ from backend.layers.processing.process_download_validate import ProcessDownloadV
 from backend.layers.processing.process_seurat import ProcessSeurat
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
+mock_config_attr = {
+    "collections_base_url": "http://collections",
+    "dataset_assets_base_url": "http://domain",
+}
+
+
+def mock_config_fn(name):
+    return mock_config_attr[name]
+
 
 class ProcessingTest(BaseProcessingTest):
-    def test_process_download_validate_success(self):
+    @patch("scanpy.read_h5ad")
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+    def test_process_download_validate_success(self, mock_config, mock_read_h5ad):
         """
         ProcessDownloadValidate should:
         1. Download the h5ad artifact
@@ -27,7 +39,9 @@ class ProcessingTest(BaseProcessingTest):
         """
         dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=0"
 
-        collection = self.generate_unpublished_collection()
+        collection = self.generate_unpublished_collection(
+            links=Link(name=None, type="DOI", uri="http://doi.org/12.2345")
+        )
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
             collection.version_id, dropbox_uri, None, None
         )
@@ -39,6 +53,8 @@ class ProcessingTest(BaseProcessingTest):
         self.assertEqual(status.processing_status, DatasetProcessingStatus.INITIALIZED)
         self.assertEqual(status.upload_status, DatasetUploadStatus.WAITING)
 
+        mock_read_h5ad.return_value = MagicMock(uns=dict())
+
         # TODO: ideally use a real h5ad so that
         with patch("backend.layers.processing.process_download_validate.ProcessDownloadValidate.extract_metadata"):
             pdv = ProcessDownloadValidate(
@@ -47,7 +63,12 @@ class ProcessingTest(BaseProcessingTest):
             pdv.process(
                 collection.version_id, dataset_version_id, dropbox_uri, "fake_bucket_name", "fake_datasets_bucket"
             )
-
+            citation_str = (
+                f"Publication: http://doi.org/12.2345 "
+                f"Dataset Version: http://domain/{dataset_version_id}.h5ad curated and distributed by "
+                f"CZ CELLxGENE Discover in Collection: http://collections/{collection.version_id}"
+            )
+            self.assertEqual(mock_read_h5ad.uns["citation"], citation_str)
             status = self.business_logic.get_dataset_status(dataset_version_id)
             self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
             self.assertEqual(status.upload_status, DatasetUploadStatus.UPLOADED)
@@ -140,10 +161,12 @@ class ProcessingTest(BaseProcessingTest):
             cxg_artifact = [artifact for artifact in artifacts if artifact.type == "cxg"][0]
             self.assertTrue(cxg_artifact, f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/")
 
+    @patch("scanpy.read_h5ad")
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
     @patch("backend.layers.processing.process_download_validate.ProcessDownloadValidate.extract_metadata")
     @patch("backend.layers.processing.process_seurat.ProcessSeurat.make_seurat")
     @patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg")
-    def test_process_all(self, mock_cxg, mock_seurat, mock_h5ad):
+    def test_process_all(self, mock_cxg, mock_seurat, mock_h5ad, mock_config, mock_read_h5ad):
         mock_seurat.return_value = "local.rds"
         mock_cxg.return_value = "local.cxg"
         dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
@@ -151,6 +174,7 @@ class ProcessingTest(BaseProcessingTest):
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
             collection.version_id, dropbox_uri, None, None
         )
+        mock_read_h5ad.return_value = MagicMock(uns=dict())
 
         pm = ProcessMain(
             self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
