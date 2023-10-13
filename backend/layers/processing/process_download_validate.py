@@ -85,7 +85,8 @@ class ProcessDownloadValidate(ProcessingLogic):
         if not is_valid:
             raise ValidationFailed(errors)
         else:
-            self.populate_dataset_citation(collection_id, dataset_id, output_filename)
+            if CorporaConfig().schema_4_feature_flag.lower() == "true":
+                self.populate_dataset_citation(collection_id, dataset_id, output_filename)
 
             # TODO: optionally, these could be batched into one
             self.update_processing_status(dataset_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)

@@ -19,6 +19,7 @@ mock_config_attr = {
     "collections_base_url": "http://collections",
     "dataset_assets_base_url": "http://domain",
     "upload_max_file_size_gb": 1,
+    "schema_4_feature_flag": "True",
 }
 
 
