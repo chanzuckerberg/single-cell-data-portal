@@ -38,7 +38,7 @@ class BaseFunctionalTestCase(unittest.TestCase):
     deployment_stage: str
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls, smoke_tests: bool = False):
         super().setUpClass()
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
         cls.config = CorporaAuthConfig()
@@ -54,7 +54,11 @@ class BaseFunctionalTestCase(unittest.TestCase):
         cls.session.mount("https://", HTTPAdapter(max_retries=retry_config))
         if cls.deployment_stage == "rdev":
             cls.get_oauth2_proxy_access_token()
-        token = cls.get_auth_token(cls.config.functest_account_username, cls.config.functest_account_password)
+        if smoke_tests:
+            username, password = cls.config.test_account_username, cls.config.test_account_password
+        else:
+            username, password = cls.config.functest_account_username, cls.config.functest_account_password
+        token = cls.get_auth_token(username, password)
         cls.curator_cookie = cls.make_cookie(token)
         cls.api = API_URL.get(cls.deployment_stage)
         cls.test_collection_id = "005d611a-14d5-4fbf-846e-571a1f874f70"

@@ -12,7 +12,7 @@ TEST_ACCT_CONTACT_NAME = "Smoke Test User"
 
 class SmokeTestsInitializer(BaseFunctionalTestCase):
     def __init__(self):
-        super().setUpClass()
+        super().setUpClass(smoke_tests=True)
         super().setUp()
         self.headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
 
