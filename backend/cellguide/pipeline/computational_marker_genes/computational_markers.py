@@ -378,7 +378,7 @@ class MarkerGenesCalculator:
                     e_sum_o_orig=e_sum_o,
                     e_sqsum_o_orig=e_sqsum_o,
                     n_cells_o_orig=n_cells_orig_o,
-                    filter_genes=e_nnz_o[i] < minimum_nnz,
+                    filter_genes=e_nnz_o_rollup[i] < minimum_nnz,
                 )
                 for i in range(len(cell_types_o))
             ]
