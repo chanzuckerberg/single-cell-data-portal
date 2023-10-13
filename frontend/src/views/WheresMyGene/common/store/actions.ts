@@ -20,15 +20,6 @@ export function deleteSingleGene(
   };
 }
 
-export function deleteSelectedGenes(): GetActionTypeOfReducer<
-  (typeof REDUCERS)["deleteSelectedGenes"]
-> {
-  return {
-    payload: null,
-    type: "deleteSelectedGenes",
-  };
-}
-
 export function deleteAllGenes(): GetActionTypeOfReducer<
   (typeof REDUCERS)["deleteAllGenes"]
 > {
