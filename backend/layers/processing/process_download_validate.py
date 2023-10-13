@@ -85,29 +85,38 @@ class ProcessDownloadValidate(ProcessingLogic):
         if not is_valid:
             raise ValidationFailed(errors)
         else:
-            # Update citation uns using contextual data from Collection
-            dataset_assets_base_url = CorporaConfig().dataset_assets_base_url
-            collections_base_url = CorporaConfig().collections_base_url
-
-            citation = ""
-            collection = self.business_logic.get_collection_version(collection_id)
-            doi = next((link.uri for link in collection.metadata.links if link.type == "DOI"), None)
-            if doi:
-                citation += f"Publication: {doi} "
-            citation += f"Dataset Version: {dataset_assets_base_url}/{dataset_id}.h5ad "
-            citation += (
-                f"curated and distributed by CZ CELLxGENE Discover in Collection: "
-                f"{collections_base_url}/{collection_id}"
-            )
-
-            adata = scanpy.read_h5ad(output_filename, backed="r")
-            adata.uns["citation"] = citation
-            adata.write(output_filename)
+            self.populate_dataset_citation(collection_id, dataset_id, output_filename)
 
             # TODO: optionally, these could be batched into one
             self.update_processing_status(dataset_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
             self.update_processing_status(dataset_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID)
             return output_filename, can_convert_to_seurat
+
+    def populate_dataset_citation(
+        self, collection_id: CollectionVersionId, dataset_id: DatasetVersionId, adata_path: str
+    ) -> None:
+        """
+        Builds citation string and updates the 'uns' dict of the adata at adata_path
+
+        :param collection_id: version ID for collection dataset is being uploaded to
+        :param dataset_id: version ID for dataset
+        :param adata_path: filepath to adata object that will be updated with citation
+        """
+        dataset_assets_base_url = CorporaConfig().dataset_assets_base_url
+        collections_base_url = CorporaConfig().collections_base_url
+        citation = ""
+        collection = self.business_logic.get_collection_version(collection_id)
+        doi = next((link.uri for link in collection.metadata.links if link.type == "DOI"), None)
+        if doi:
+            citation += f"Publication: {doi} "
+        citation += f"Dataset Version: {dataset_assets_base_url}/{dataset_id}.h5ad "
+        citation += (
+            f"curated and distributed by CZ CELLxGENE Discover in Collection: "
+            f"{collections_base_url}/{collection_id}"
+        )
+        adata = scanpy.read_h5ad(adata_path, backed="r")
+        adata.uns["citation"] = citation
+        adata.write(adata_path)
 
     @logit
     def extract_metadata(self, filename) -> DatasetMetadata:

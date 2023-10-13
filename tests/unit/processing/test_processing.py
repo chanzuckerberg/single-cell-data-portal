@@ -89,27 +89,18 @@ class ProcessingTest(BaseProcessingTest):
 
     @patch("scanpy.read_h5ad")
     @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-    def test_process_download_validate__citation_no_publication_doi(self, mock_config, mock_read_h5ad):
-        dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=0"
-
-        collection = self.generate_unpublished_collection()
-        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
-            collection.version_id, dropbox_uri, None, None
-        )
+    def test_populate_dataset_citation__no_publication_doi(self, mock_config, mock_read_h5ad):
         mock_read_h5ad.return_value = MagicMock(uns=dict())
 
-        with patch("backend.layers.processing.process_download_validate.ProcessDownloadValidate.extract_metadata"):
-            pdv = ProcessDownloadValidate(
-                self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
-            )
-            pdv.process(
-                collection.version_id, dataset_version_id, dropbox_uri, "fake_bucket_name", "fake_datasets_bucket"
-            )
-            citation_str = (
-                f"Dataset Version: http://domain/{dataset_version_id}.h5ad curated and distributed by "
-                f"CZ CELLxGENE Discover in Collection: http://collections/{collection.version_id}"
-            )
-            self.assertEqual(mock_read_h5ad.return_value.uns["citation"], citation_str)
+        pdv = ProcessDownloadValidate(
+            self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
+        )
+        pdv.populate_dataset_citation("collection_version_id_1", "dataset_version_id_1", "")
+        citation_str = (
+            "Dataset Version: http://domain/dataset_version_id_1.h5ad curated and distributed by "
+            "CZ CELLxGENE Discover in Collection: http://collections/collection_version_id_1"
+        )
+        self.assertEqual(mock_read_h5ad.return_value.uns["citation"], citation_str)
 
     def test_process_seurat_success(self):
         collection = self.generate_unpublished_collection()
