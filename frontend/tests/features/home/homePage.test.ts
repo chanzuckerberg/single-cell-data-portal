@@ -1,4 +1,4 @@
-import { expect, Page, test } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "tests/common/constants";
 import { goToPage, tryUntil } from "tests/utils/helpers";
@@ -10,6 +10,7 @@ import {
   LANDING_PAGE_CELLTYPES_HERO_NUM_ID,
   LANDING_PAGE_DATASETS_HERO_NUM_ID,
 } from "src/views/Landing/constants";
+import { test } from "tests/common/test";
 
 const { describe } = test;
 const COLLECTIONS_LINK_ID = "collections-link";
