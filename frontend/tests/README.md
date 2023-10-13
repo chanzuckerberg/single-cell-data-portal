@@ -4,6 +4,8 @@
 
 1. Do **NOT** import `.tsx` files in your tests, otherwise we'll get weird parsing errors, due to Playwright parser not parsing SVG files at the moment.
 
+1. Use `test` from `import { test } from "tests/common/test"` instead of `import { test } from "@playwright/test"`
+
 ## How to run E2E tests from your local machine
 
 See the [#how](#how) section
