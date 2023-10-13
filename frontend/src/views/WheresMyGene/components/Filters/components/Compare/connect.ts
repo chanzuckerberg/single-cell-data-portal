@@ -43,6 +43,8 @@ export const useConnect = ({ areFiltersDisabled }: Props) => {
    * Warning(thuang): `handleChange` CANNOT depend on `optionLabel`, since a new
    * handleChange passed to SDS Dropdown will trigger another onChange event with the old value,
    * causing infinite loop
+   * Action Item: We can depend on `optionLabel` again after https://github.com/chanzuckerberg/sci-components/pull/620
+   * is released
    */
   const handleChange = useCallback(
     (value: DefaultDropdownMenuOption | null) => {
@@ -60,7 +62,7 @@ export const useConnect = ({ areFiltersDisabled }: Props) => {
         )
       );
     },
-    [dispatch, optionLabelRef]
+    [dispatch]
   );
   return {
     handleChange,

@@ -2,8 +2,9 @@
  * Test suite for select filter-related utils.
  */
 
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { buildAnalyticsPayload } from "src/common/hooks/useCategoryFilter/common/selectUtils";
+import { test } from "tests/common/test";
 
 const { describe } = test;
 
