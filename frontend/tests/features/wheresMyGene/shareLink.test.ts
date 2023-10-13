@@ -1,7 +1,8 @@
-import { Page, expect, test } from "@playwright/test";
+import { Page, expect } from "@playwright/test";
 import { LATEST_SHARE_LINK_VERSION } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/ShareButton/utils";
 
 import { TEST_URL } from "tests/common/constants";
+import { test } from "tests/common/test";
 import { tryUntil } from "tests/utils/helpers";
 
 import { goToWMG, addTissuesAndGenes } from "tests/utils/wmgUtils";
