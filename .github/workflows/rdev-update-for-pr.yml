@@ -56,6 +56,22 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 1
+      - name: Get previous image digests for each repo
+        id: "get_digests"
+        run: |
+          ECR_REPOS=(corpora-frontend corpora-backend corpora-upload-failures corpora-upload-success \
+            dataset-submissions corpora-upload wmg-processing cellguide-pipeline)
+          IMAGE_DIGESTS=()
+          for ecr_repo in "${ECR_REPOS[@]}"; do
+            IMAGE_DIGESTS+=(aws ecr list-images --repository-name $ecr_repo --filter tagStatus=TAGGED \
+              | jq -r --arg STACK_NAME ${STACK_NAME} '.imageIds[] \
+              | select(.imageTag==$STACK_NAME).imageDigest' \
+              | sed 's/^/imageDigest=/' | tr '\n' ',')
+          done
+          #echo "ECR_REPOS=[$(echo ${ECR_REPOS[@]} | sed 's/ /, /g')]" >> $GITHUB_OUTPUT
+          #echo "IMAGE_DIGESTS=[$(echo ${IMAGE_DIGESTS[@]} | sed 's/ /, /g')]" >> $GITHUB_OUTPUT
+          echo "ECR_REPOS=${ECR_REPOS[@]}" >> $GITHUB_OUTPUT
+          echo "IMAGE_DIGESTS=${IMAGE_DIGESTS[@]}" >> $GITHUB_OUTPUT
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
@@ -70,6 +86,13 @@ jobs:
           happy push devstack --env dev --slice ${{ matrix.image }} \
           --docker-compose-env-file envfile --aws-profile "" \
           --tags ${STACK_NAME},${IMAGE_TAG}
+      - name: Delete previous images
+        run: |
+          ECR_REPOS=(${{ steps.get_digests.outputs.ecr_repos }})
+          IMAGE_DIGESTS=(${{ steps.get_digests.outputs.image_digests }})
+          for ((i = 0; i < ${#ECR_REPOS[@]}; ++i)); do
+            aws ecr batch-delete-image --repository-name ${ECR_REPOS[$i]} --image-ids `tr ',' ' ' <<< ${IMAGE_DIGESTS[$i]}`
+          done
 
   deploy-rdev:
     runs-on: ubuntu-22.04
