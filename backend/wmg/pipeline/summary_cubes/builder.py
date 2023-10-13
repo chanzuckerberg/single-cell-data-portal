@@ -3,6 +3,7 @@ import logging
 import math
 import os
 import pathlib
+import time
 from typing import Optional, Tuple
 
 import cellxgene_census
@@ -18,6 +19,7 @@ from backend.wmg.data.constants import (
     GENE_EXPRESSION_COUNT_MIN_THRESHOLD,
     NORM_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
 )
+from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.schemas.cube_schema import (
     cell_counts_logical_dims,
     cell_counts_schema,
@@ -42,6 +44,7 @@ from backend.wmg.data.snapshot import (
     WmgSnapshot,
 )
 from backend.wmg.data.tiledb import create_ctx
+from backend.wmg.data.tissue_mapper import TissueMapper
 from backend.wmg.data.utils import (
     create_empty_cube,
     log_func_runtime,
@@ -78,6 +81,7 @@ class SummaryCubesBuilder:
         """
         self.organism = organismInfo["label"]
         self.corpus_path = os.path.join(corpus_path, organismInfo["id"].replace(":", "_"))
+        self.snapshot_id = time.time()
 
         logger.info(f"Creating directory {self.corpus_path}")
         pathlib.Path(self.corpus_path).mkdir(parents=True, exist_ok=True)
@@ -270,6 +274,51 @@ class SummaryCubesBuilder:
             logger.info("Consolidating and vacuuming")
             tiledb.consolidate(uri)
             tiledb.vacuum(uri)
+
+    @log_func_runtime
+    def create_primary_filter_dimensions(self):
+        """
+        This method creates the primary filter dimensions for the WMG snapshot.
+        """
+        with (
+            tiledb.open(f"{self.corpus_path}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}", "r") as expression_summary_cube,
+            tiledb.open(f"{self.corpus_path}/{CELL_COUNTS_CUBE_NAME}", "r") as cell_counts_cube,
+        ):
+            # get dataframes
+            cell_counts_df = cell_counts_cube.df[:]
+            expr_df = expression_summary_cube.df[:]
+
+            # genes
+            organism_gene_ids = list_grouped_primary_filter_dimensions_term_ids(
+                expr_df, "gene_ontology_term_id", "organism_ontology_term_id"
+            )
+            organism_gene_terms = {
+                organism_term_id: [{g: gene_term_label(g)} for g in gene_term_ids]
+                for organism_term_id, gene_term_ids in organism_gene_ids.items()
+            }
+
+            # tissues
+            organism_tissue_ids = list_grouped_primary_filter_dimensions_term_ids(
+                cell_counts_df, "tissue_ontology_term_id", group_by_dim="organism_ontology_term_id"
+            )
+
+            # organisms
+            organism_tissue_terms = {
+                organism_term_id: [{t: ontology_term_label(t)} for t in order_tissues(tissue_term_ids)]
+                for organism_term_id, tissue_term_ids in organism_tissue_ids.items()
+            }
+
+            # collate
+            result = dict(
+                snapshot_id=str(self.snapshot_id),
+                organism_terms=[
+                    {o: ontology_term_label(o)} for o in sorted(cell_counts_df["organism_ontology_term_id"].unique())
+                ],
+                tissue_terms=organism_tissue_terms,
+                gene_terms=organism_gene_terms,
+            )
+            with open(f"{self.corpus_path}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "w") as f:
+                json.dump(result, f)
 
     @log_func_runtime
     def _summarize_gene_expressions(self, *, cube_dims: list, schema: tiledb.ArraySchema):
@@ -481,3 +530,29 @@ class SummaryCubesBuilder:
     def _create_empty_cube(self, uri: str, schema: tiledb.ArraySchema):
         logger.info(f"Creating empty cube at {uri}")
         create_empty_cube(uri, schema)
+
+
+def list_grouped_primary_filter_dimensions_term_ids(
+    df, primary_dim_name: str, group_by_dim: str
+) -> dict[str, list[str]]:
+    return df.drop_duplicates().groupby(group_by_dim).agg(list).to_dict()[primary_dim_name]
+
+
+def order_tissues(ontology_term_ids: list[str]) -> list[str]:
+    """
+    Order tissues based on appearance in TissueMapper.HIGH_LEVEL_TISSUES. This will maintain the priority set in
+    that class which is intended to keep most relevant tissues on top and tissues that are related to be placed
+    sequentially
+    """
+    ontology_term_ids = set(ontology_term_ids)
+    ordered_ontology_term_ids = []
+    for tissue in TissueMapper.HIGH_LEVEL_TISSUES:
+        tissue = TissueMapper.reformat_ontology_term_id(tissue, to_writable=True)
+        if tissue in ontology_term_ids:
+            ontology_term_ids.remove(tissue)
+            ordered_ontology_term_ids.append(tissue)
+
+    if ontology_term_ids:
+        ordered_ontology_term_ids = ordered_ontology_term_ids + list(ontology_term_ids)
+
+    return ordered_ontology_term_ids
