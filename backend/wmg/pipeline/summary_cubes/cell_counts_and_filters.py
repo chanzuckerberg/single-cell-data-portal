@@ -18,6 +18,7 @@ from backend.wmg.data.snapshot import (
 from backend.wmg.data.utils import create_empty_cube, log_func_runtime, to_dict
 from backend.wmg.pipeline.summary_cubes.constants import (
     CELL_COUNTS_CUBE_CREATED_FLAG,
+    DIMENSION_NAME_MAP_CENSUS_TO_WMG,
     FILTER_RELATIONSHIPS_CREATED_FLAG,
 )
 from backend.wmg.pipeline.summary_cubes.utils import (
@@ -38,6 +39,7 @@ def create_cell_counts_cube_and_filter_relationships(*, query: ExperimentAxisQue
     pipeline_state = load_pipeline_state(corpus_path)
 
     obs_df = query.obs().concat().to_pandas()
+    obs_df = obs_df.rename(columns=DIMENSION_NAME_MAP_CENSUS_TO_WMG)
 
     logger.info("Creating the cell counts cube and filter relationships graph.")
 
