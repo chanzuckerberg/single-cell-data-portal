@@ -1,111 +1,89 @@
-import contextlib
-import gc
+import json
 import logging
+import os
 
-import numpy as np
 import pandas as pd
 import tiledb
 
-from backend.common.utils.exceptions import MarkerGeneCalculationException
+from backend.cellguide.pipeline.computational_marker_genes.computational_markers import MarkerGenesCalculator
+from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema
-from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, MARKER_GENES_CUBE_NAME
+from backend.wmg.data.snapshot import (
+    CELL_COUNTS_CUBE_NAME,
+    EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
+    MARKER_GENES_CUBE_NAME,
+    PRIMARY_FILTER_DIMENSIONS_FILENAME,
+    WmgSnapshot,
+)
 from backend.wmg.data.utils import create_empty_cube, log_func_runtime
-from backend.wmg.pipeline.summary_cubes.calculate_markers import get_markers
+from backend.wmg.pipeline.summary_cubes.constants import (
+    CELL_COUNTS_CUBE_CREATED_FLAG,
+    EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,
+    MARKER_GENES_CUBE_CREATED_FLAG,
+    PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG,
+)
+from backend.wmg.pipeline.summary_cubes.utils import load_pipeline_state, write_pipeline_state
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
-
-
-@contextlib.contextmanager
-def extract_tissue_celltype_organism(corpus_path: str) -> pd.DataFrame:
-    # extract cell counts grouped by tissue, cell type, and organism
-    with tiledb.open(f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}") as array:
-        yield (
-            array.query(
-                attrs=["cell_type_ontology_term_id"],
-                dims=["organism_ontology_term_id", "tissue_ontology_term_id"],
-            )
-            .df[:]
-            .groupby(
-                [
-                    "tissue_ontology_term_id",
-                    "cell_type_ontology_term_id",
-                    "organism_ontology_term_id",
-                ]
-            )
-            .first()
-        )
 
 
 @log_func_runtime
-def create_marker_genes_cube(corpus_path: str):
-    """
-    Create marker genes cube and write to disk
-    """
-    with extract_tissue_celltype_organism(corpus_path) as tco:
-        uniq_tissues = tco.index.levels[0]
-        tissues = np.array(list(tco.index.get_level_values(0)))
-        cell_types = np.array(list(tco.index.get_level_values(1)))
-        organisms = np.array(list(tco.index.get_level_values(2)))
+def create_marker_genes_cube(*, corpus_path: str):
+    pipeline_state = load_pipeline_state(corpus_path)
 
-    uri = f"{corpus_path}/{MARKER_GENES_CUBE_NAME}"
+    expression_summary_default_cube_uri = os.path.join(corpus_path, EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME)
+    cell_counts_cube_uri = os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)
+    if not pipeline_state.get(EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG):
+        raise ValueError(
+            "'expression_summary_default' cube does not exist. Please run 'create_expression_summary_default_cube' first."
+        )
+
+    if not pipeline_state.get(CELL_COUNTS_CUBE_CREATED_FLAG):
+        raise ValueError(
+            "'cell_counts' cube does not exist. Please run 'create_cell_counts_cube_and_filter_relationships' first."
+        )
+
+    if not pipeline_state.get(PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG):
+        raise ValueError(
+            "'primary_filter_dimensions' file does not exist. Please run 'create_primary_filter_dimensions' first."
+        )
+
+    logger.info("Calculating marker genes.")
+    with (
+        open(os.path.join(corpus_path, PRIMARY_FILTER_DIMENSIONS_FILENAME), "r") as f,
+        tiledb.open(cell_counts_cube_uri, "r") as cell_counts_cube,
+        tiledb.open(expression_summary_default_cube_uri, "r") as expression_summary_default_cube,
+    ):
+        primary_filter_dimensions = json.load(f)
+        snapshot = WmgSnapshot(
+            primary_filter_dimensions=primary_filter_dimensions,
+            cell_counts_cube=cell_counts_cube,
+            expression_summary_default_cube=expression_summary_default_cube,
+        )
+        ontology_tree = get_ontology_tree_builder(snapshot=snapshot)
+        calculator = MarkerGenesCalculator(
+            snapshot=snapshot,
+            all_cell_type_ids_in_corpus=ontology_tree.all_cell_type_ids_in_corpus,
+            groupby_terms=["tissue_ontology_term_id"],
+        )
+        marker_genes = calculator.get_computational_marker_genes()
+    marker_gene_records = []
+    for key in marker_genes:
+        for marker_gene in marker_genes[key]:
+            marker_gene_records.append(
+                {
+                    "tissue_ontology_term_id": marker_gene.groupby_dims["tissue_ontology_term_id"],
+                    "cell_type_ontology_term_id": key,
+                    "gene_ontology_term_id": marker_gene.gene_ontology_term_id,
+                    "marker_score": marker_gene.marker_score,
+                    "specificity": marker_gene.specificity,
+                }
+            )
+    marker_genes_df = pd.DataFrame(marker_gene_records)
+    uri = os.path.join(corpus_path, MARKER_GENES_CUBE_NAME)
     create_empty_cube(uri, marker_genes_schema)
+    logger.info("Writing marker genes cube.")
+    tiledb.from_pandas(uri, marker_genes_df, mode="append")
 
-    for tiss in uniq_tissues:
-        tiss_celltypes = list(cell_types[tissues == tiss])
-        tiss_organisms = list(organisms[tissues == tiss])
-        for i, ct in enumerate(tiss_celltypes):
-            organism = tiss_organisms[i]
-
-            logger.info("Calculating markers for tissue: %s, cell type: %s, organism: %s", tiss, ct, organism)
-            target = {
-                "tissue_ontology_term_ids": [tiss],
-                "cell_type_ontology_term_ids": [ct],
-                "organism_ontology_term_id": organism,
-            }
-            context = {
-                "tissue_ontology_term_ids": [tiss],
-                "organism_ontology_term_id": organism,
-            }
-            try:
-                t_markers = get_markers(
-                    target, context, corpus=corpus_path, test="ttest", percentile=0.05, n_markers=None
-                )
-            except MarkerGeneCalculationException as e:
-                # exception handling here so pipeline doesn't fail if no cells match query criteria
-                logger.info("Error finding markers for tissue: %s, cell type: %s, organism: %s", tiss, ct, organism)
-                logger.info(e)
-                continue
-            gc.collect()
-
-            all_marker_genes = set(t_markers.keys())
-            markers = []
-            for g in all_marker_genes:
-                t_stats = t_markers.get(g, {"p_value_ttest": np.nan, "effect_size_ttest": np.nan})
-                t_stats.update(
-                    {
-                        "tissue_ontology_term_id": tiss,
-                        "organism_ontology_term_id": organism,
-                        "cell_type_ontology_term_id": ct,
-                        "gene_ontology_term_id": g,
-                    }
-                )
-                markers.append(t_stats)
-
-            df = pd.DataFrame.from_records(markers)
-            if df.shape[0] > 0:
-                df = df.astype(
-                    {
-                        "p_value_ttest": "float32",
-                        "effect_size_ttest": "float32",
-                    }
-                )
-                tiledb.from_pandas(uri, df, mode="append")
-
-    logger.debug("Cube created, start consolidation")
-    tiledb.consolidate(uri)
-
-    logger.debug("Cube consolidated, start vacuumming")
-    tiledb.vacuum(uri)
-
-    logger.info(f"Marker genes cube created and stored at {uri}")
+    pipeline_state[MARKER_GENES_CUBE_CREATED_FLAG] = True
+    write_pipeline_state(pipeline_state, corpus_path)
