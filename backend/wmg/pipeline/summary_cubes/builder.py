@@ -34,6 +34,7 @@ from backend.wmg.data.schemas.cube_schema_default import (
     expression_summary_non_indexed_dims as expression_summary_non_indexed_dims_default,
 )
 from backend.wmg.data.schemas.cube_schema_default import expression_summary_schema as expression_summary_schema_default
+from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema
 from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     EXPRESSION_SUMMARY_CUBE_NAME,
@@ -80,6 +81,7 @@ class SummaryCubesBuilder:
                 Note that "label" should be the organism label used by census.
         """
         self.organism = organismInfo["label"]
+        self.organismId = organismInfo["id"]
         self.corpus_path = os.path.join(corpus_path, organismInfo["id"].replace(":", "_"))
         self.snapshot_id = time.time()
 
@@ -266,12 +268,13 @@ class SummaryCubesBuilder:
                         "cell_type_ontology_term_id": key,
                         "gene_ontology_term_id": marker_gene.gene_ontology_term_id,
                         "marker_score": marker_gene.marker_score,
+                        "specificity": marker_gene.specificity,
                     }
                 )
         marker_genes_df = pd.DataFrame(marker_gene_records)
         uri = os.path.join(self.corpus_path, MARKER_GENES_CUBE_NAME)
-        self._create_empty_cube(uri, cell_counts_schema)
-        logger.info("Writing cell counts cube.")
+        self._create_empty_cube(uri, marker_genes_schema)
+        logger.info("Writing marker genes cube.")
         tiledb.from_pandas(uri, marker_genes_df, mode="append")
         self.marker_genes_cube_created = True
 
@@ -331,9 +334,8 @@ class SummaryCubesBuilder:
             expr_df = expression_summary_cube.df[:]
 
             # populate organism ID into the dfs for the primary filter dimensions
-            organismId = self.corpus_path.split("/")[-1].replace("_", ":")
-            cell_counts_df["organism_ontology_term_id"] = organismId
-            expr_df["organism_ontology_term_id"] = organismId
+            cell_counts_df["organism_ontology_term_id"] = self.organismId
+            expr_df["organism_ontology_term_id"] = self.organismId
 
             # genes
             organism_gene_ids = list_grouped_primary_filter_dimensions_term_ids(
