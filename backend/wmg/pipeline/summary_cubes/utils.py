@@ -38,7 +38,7 @@ def load_pipeline_state(corpus_path: str):
 
 
 def write_pipeline_state(pipeline_state: dict, corpus_path: str):
-    with open(os.path.join(corpus_path, PIPELINE_STATE_FILENAME)) as f:
+    with open(os.path.join(corpus_path, PIPELINE_STATE_FILENAME), "w") as f:
         json.dump(pipeline_state, f)
 
 
