@@ -9,7 +9,7 @@ ORGANISM_INFO = [
 
 
 def run():
-    snapshot_id = str(time.time())
+    snapshot_id = str(int(time.time()))
     for organism in ORGANISM_INFO:
         builder = SummaryCubesBuilder(corpus_path=snapshot_id, organismInfo=organism)
         builder.run_pipeline()
