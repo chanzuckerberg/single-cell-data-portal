@@ -4,6 +4,7 @@ import numba as nb
 import numpy as np
 import pandas as pd
 
+from backend.wmg.data.tissue_mapper import TissueMapper
 from backend.wmg.data.utils import (
     get_collections_from_curation_api,
     get_datasets_from_curation_api,
@@ -118,3 +119,45 @@ def return_dataset_dict_w_publications():
         dataset_dict[dataset_id] = create_formatted_citation(collection)
 
     return dataset_dict
+
+
+def list_grouped_primary_filter_dimensions_term_ids(
+    df, primary_dim_name: str, group_by_dim: str
+) -> dict[str, list[str]]:
+    """
+    This function takes a dataframe and two dimension names as input. It groups the dataframe by the second dimension name,
+    and lists the unique values of the first dimension name for each group. The output is a dictionary where the keys are the
+    unique values of the second dimension name, and the values are lists of unique values of the first dimension name for each group.
+
+    :param df: The input dataframe.
+    :param primary_dim_name: The name of the first dimension.
+    :param group_by_dim: The name of the second dimension to group by.
+    :return: A dictionary of lists of unique values of the first dimension for each group.
+    """
+    return (
+        df[[primary_dim_name, group_by_dim]]
+        .drop_duplicates()
+        .groupby(group_by_dim)
+        .agg(list)
+        .to_dict()[primary_dim_name]
+    )
+
+
+def order_tissues(ontology_term_ids: list[str]) -> list[str]:
+    """
+    Order tissues based on appearance in TissueMapper.HIGH_LEVEL_TISSUES. This will maintain the priority set in
+    that class which is intended to keep most relevant tissues on top and tissues that are related to be placed
+    sequentially
+    """
+    ontology_term_ids = set(ontology_term_ids)
+    ordered_ontology_term_ids = []
+    for tissue in TissueMapper.HIGH_LEVEL_TISSUES:
+        tissue = TissueMapper.reformat_ontology_term_id(tissue, to_writable=True)
+        if tissue in ontology_term_ids:
+            ontology_term_ids.remove(tissue)
+            ordered_ontology_term_ids.append(tissue)
+
+    if ontology_term_ids:
+        ordered_ontology_term_ids = ordered_ontology_term_ids + list(ontology_term_ids)
+
+    return ordered_ontology_term_ids

@@ -3,7 +3,6 @@ import logging
 import math
 import os
 import pathlib
-import time
 from typing import Optional, Tuple
 
 import cellxgene_census
@@ -37,6 +36,7 @@ from backend.wmg.data.schemas.cube_schema_default import expression_summary_sche
 from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema
 from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
+    DATASET_METADATA_FILENAME,
     EXPRESSION_SUMMARY_CUBE_NAME,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
     FILTER_RELATIONSHIPS_FILENAME,
@@ -45,14 +45,16 @@ from backend.wmg.data.snapshot import (
     WmgSnapshot,
 )
 from backend.wmg.data.tiledb import create_ctx
-from backend.wmg.data.tissue_mapper import TissueMapper
 from backend.wmg.data.utils import (
     create_empty_cube,
+    get_datasets_from_curation_api,
     log_func_runtime,
 )
 from backend.wmg.pipeline.summary_cubes.builder_utils import (
     create_filter_relationships_graph,
     gene_expression_sum_x_cube_dimension,
+    list_grouped_primary_filter_dimensions_term_ids,
+    order_tissues,
     remove_accents,
     return_dataset_dict_w_publications,
 )
@@ -63,6 +65,14 @@ DIMENSION_NAME_MAP_CENSUS_TO_WMG = {
     "tissue_ontology_term_id": "tissue_original_ontology_term_id",
     "tissue_general_ontology_term_id": "tissue_ontology_term_id",
 }
+
+EXPRESSION_SUMMARY_CUBE_CREATED_FLAG = "expression_summary_cube_created"
+CELL_COUNTS_CUBE_CREATED_FLAG = "cell_counts_cube_created"
+EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG = "expression_summary_default_cube_created"
+MARKER_GENES_CUBE_CREATED_FLAG = "marker_genes_cube_created"
+FILTER_RELATIONSHIPS_CREATED_FLAG = "filter_relationships_created"
+PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG = "primary_filter_dimensions_created"
+DATASET_METADATA_CREATED_FLAG = "dataset_metadata_created"
 
 
 class SummaryCubesBuilder:
@@ -80,20 +90,31 @@ class SummaryCubesBuilder:
                 }
                 Note that "label" should be the organism label used by census.
         """
+        self.snapshot_id = os.path.basename(os.path.normpath(corpus_path))
+
+        pathlib.Path(corpus_path).mkdir(parents=True, exist_ok=True)
+        state_file = os.path.join(corpus_path, "pipeline_state.json")
+        if os.path.exists(state_file):
+            with open(state_file, "r") as f:
+                self.state = json.load(f)
+        else:
+            self.state = {
+                EXPRESSION_SUMMARY_CUBE_CREATED_FLAG: False,
+                CELL_COUNTS_CUBE_CREATED_FLAG: False,
+                EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG: False,
+                MARKER_GENES_CUBE_CREATED_FLAG: False,
+                FILTER_RELATIONSHIPS_CREATED_FLAG: False,
+                PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG: False,
+                DATASET_METADATA_CREATED_FLAG: False,
+            }
+        self.state_file = state_file
+
         self.organism = organismInfo["label"]
         self.organismId = organismInfo["id"]
         self.corpus_path = os.path.join(corpus_path, organismInfo["id"].replace(":", "_"))
-        self.snapshot_id = time.time()
 
         logger.info(f"Creating directory {self.corpus_path}")
         pathlib.Path(self.corpus_path).mkdir(parents=True, exist_ok=True)
-
-        self.expression_summary_cube_created = False
-        self.expression_summary_default_cube_created = False
-        self.cell_counts_cube_created = False
-        self.marker_genes_cube_created = False
-        self.filter_relationships_created = False
-        self.primary_filter_dimensions_created = False
 
     @log_func_runtime
     def _load_obs_and_var_dfs_if_necessary(self):
@@ -147,6 +168,7 @@ class SummaryCubesBuilder:
         self.create_cell_counts_cube_and_filter_relationships()
         self.create_primary_filter_dimensions()
         self.create_marker_genes_cube()
+        self.create_dataset_metadata()
 
     @log_func_runtime
     def create_expression_summary_default_cube(self):
@@ -154,10 +176,11 @@ class SummaryCubesBuilder:
         Create the default expression summary cube. The default expression summary cube is an aggregation across
         non-default dimensions in the expression summary cube.
         """
-        if not self.expression_summary_cube_created:
+        if not self._is_step_completed(EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG):
             raise ValueError(
                 "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
             )
+
         logger.info("Creating the default expression summary cube.")
         expression_summary_uri = os.path.join(self.corpus_path, EXPRESSION_SUMMARY_CUBE_NAME)
         expression_summary_default_uri = os.path.join(self.corpus_path, EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME)
@@ -182,7 +205,7 @@ class SummaryCubesBuilder:
             logger.info(f"Writing cube to {expression_summary_default_uri}")
             tiledb.from_pandas(expression_summary_default_uri, expression_summary_df_default, mode="append")
 
-            self.expression_summary_default_cube_created = True
+            self._mark_step_completed(EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG)
 
     @log_func_runtime
     def create_cell_counts_cube_and_filter_relationships(self):
@@ -212,30 +235,31 @@ class SummaryCubesBuilder:
         filter_relationships_linked_list = create_filter_relationships_graph(df)
         with open(f"{self.corpus_path}/{FILTER_RELATIONSHIPS_FILENAME}", "w") as f:
             json.dump(filter_relationships_linked_list, f)
-        self.filter_relationships_created = True
+
+        self._mark_step_completed(FILTER_RELATIONSHIPS_CREATED_FLAG)
 
         uri = os.path.join(self.corpus_path, CELL_COUNTS_CUBE_NAME)
         self._create_empty_cube(uri, cell_counts_schema)
         logger.info("Writing cell counts cube.")
         tiledb.from_pandas(uri, df, mode="append")
 
-        self.cell_counts_cube_created = True
+        self._mark_step_completed(CELL_COUNTS_CUBE_CREATED_FLAG)
 
     @log_func_runtime
     def create_marker_genes_cube(self):
         expression_summary_default_cube_uri = os.path.join(self.corpus_path, EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME)
         cell_counts_cube_uri = os.path.join(self.corpus_path, CELL_COUNTS_CUBE_NAME)
-        if not self.expression_summary_default_cube_created:
+        if not self._is_step_completed(EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG):
             raise ValueError(
                 "'expression_summary_default' cube does not exist. Please run 'create_expression_summary_default_cube' first."
             )
 
-        if not self.cell_counts_cube_created:
+        if not self._is_step_completed(CELL_COUNTS_CUBE_CREATED_FLAG):
             raise ValueError(
                 "'cell_counts' cube does not exist. Please run 'create_cell_counts_cube_and_filter_relationships' first."
             )
 
-        if not self.primary_filter_dimensions_created:
+        if not self._is_step_completed(PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG):
             raise ValueError(
                 "'primary_filter_dimensions' file does not exist. Please run 'create_primary_filter_dimensions' first."
             )
@@ -276,7 +300,8 @@ class SummaryCubesBuilder:
         self._create_empty_cube(uri, marker_genes_schema)
         logger.info("Writing marker genes cube.")
         tiledb.from_pandas(uri, marker_genes_df, mode="append")
-        self.marker_genes_cube_created = True
+
+        self._mark_step_completed(MARKER_GENES_CUBE_CREATED_FLAG)
 
     @log_func_runtime
     def create_expression_summary_cube(self, write_chunk_size: Optional[int] = 50_000_000):
@@ -309,22 +334,23 @@ class SummaryCubesBuilder:
             tiledb.consolidate(uri)
             tiledb.vacuum(uri)
 
-            self.expression_summary_cube_created = True
+            self._mark_step_completed(EXPRESSION_SUMMARY_CUBE_CREATED_FLAG)
 
     @log_func_runtime
     def create_primary_filter_dimensions(self):
         """
         This method creates the primary filter dimensions for the WMG snapshot.
         """
-        if not self.expression_summary_default_cube_created:
+        if not self._is_step_completed(EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG):
             raise ValueError(
                 "'expression_summary_default' array does not exist. Please run 'create_expression_summary_default_cube' first."
             )
-        if not self.cell_counts_cube_created:
+        if not self._is_step_completed(CELL_COUNTS_CUBE_CREATED_FLAG):
             raise ValueError(
                 "'cell_counts' array does not exist. Please run 'create_cell_counts_cube_and_filter_relationships' first."
             )
 
+        logger.info("Creating primary filter dimensions")
         with (
             tiledb.open(f"{self.corpus_path}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}", "r") as expression_summary_cube,
             tiledb.open(f"{self.corpus_path}/{CELL_COUNTS_CUBE_NAME}", "r") as cell_counts_cube,
@@ -366,10 +392,34 @@ class SummaryCubesBuilder:
                 tissue_terms=organism_tissue_terms,
                 gene_terms=organism_gene_terms,
             )
+            logger.info("Writing primary filter dimensions")
             with open(f"{self.corpus_path}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "w") as f:
                 json.dump(result, f)
 
-            self.primary_filter_dimensions_created = True
+            self._mark_step_completed(PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG)
+
+    @log_func_runtime
+    def create_dataset_metadata(self, snapshot_path: str) -> None:
+        """
+        This function generates a dictionary containing metadata for each dataset.
+        The metadata includes the dataset id, label, collection id, and collection label.
+        The function fetches the datasets from the curation API and iterates over them to create the metadata dictionary.
+        """
+        logger.info("Generating dataset metadata file")
+        datasets = get_datasets_from_curation_api()
+        dataset_dict = {}
+        for dataset in datasets:
+            dataset_id = dataset["dataset_id"]
+            dataset_dict[dataset_id] = dict(
+                id=dataset_id,
+                label=dataset["title"],
+                collection_id=dataset["collection_id"],
+                collection_label=dataset["collection_name"],
+            )
+        logger.info("Writing dataset metadata file")
+        with open(f"{snapshot_path}/{DATASET_METADATA_FILENAME}", "w") as f:
+            json.dump(dataset_dict, f)
+        self._mark_step_completed(DATASET_METADATA_CREATED_FLAG)
 
     @log_func_runtime
     def _summarize_gene_expressions(self, *, cube_dims: list, schema: tiledb.ArraySchema):
@@ -595,34 +645,25 @@ class SummaryCubesBuilder:
         logger.info(f"Creating empty cube at {uri}")
         create_empty_cube(uri, schema)
 
+    def _mark_step_completed(self, step_key: str):
+        """
+        Mark the pipeline step complete for a given key and save the state to disk.
 
-def list_grouped_primary_filter_dimensions_term_ids(
-    df, primary_dim_name: str, group_by_dim: str
-) -> dict[str, list[str]]:
-    return (
-        df[[primary_dim_name, group_by_dim]]
-        .drop_duplicates()
-        .groupby(group_by_dim)
-        .agg(list)
-        .to_dict()[primary_dim_name]
-    )
+        Args:
+            step_key (str): The key in the state dictionary to update.
+        """
+        self.state[step_key] = True
+        with open(self.state_file, "w") as f:
+            json.dump(self.state, f)
 
+    def _is_step_completed(self, step_key: str) -> bool:
+        """
+        Check if a pipeline step is completed.
 
-def order_tissues(ontology_term_ids: list[str]) -> list[str]:
-    """
-    Order tissues based on appearance in TissueMapper.HIGH_LEVEL_TISSUES. This will maintain the priority set in
-    that class which is intended to keep most relevant tissues on top and tissues that are related to be placed
-    sequentially
-    """
-    ontology_term_ids = set(ontology_term_ids)
-    ordered_ontology_term_ids = []
-    for tissue in TissueMapper.HIGH_LEVEL_TISSUES:
-        tissue = TissueMapper.reformat_ontology_term_id(tissue, to_writable=True)
-        if tissue in ontology_term_ids:
-            ontology_term_ids.remove(tissue)
-            ordered_ontology_term_ids.append(tissue)
+        Args:
+            step_key (str): The key in the state dictionary to check.
 
-    if ontology_term_ids:
-        ordered_ontology_term_ids = ordered_ontology_term_ids + list(ontology_term_ids)
-
-    return ordered_ontology_term_ids
+        Returns:
+            bool: True if the step is completed, False otherwise.
+        """
+        return self.state.get(step_key, False)

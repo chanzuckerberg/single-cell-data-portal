@@ -1,3 +1,20 @@
+import time
+
+from backend.wmg.pipeline.summary_cubes.builder import SummaryCubesBuilder
+
+ORGANISM_INFO = [
+    {"label": "homo_sapiens", "id": "NCBITaxon:9606"},
+    {"label": "mus_musculus", "id": "NCBITaxon:10090"},
+]
+
+
+def run():
+    snapshot_id = str(time.time())
+    for organism in ORGANISM_INFO:
+        builder = SummaryCubesBuilder(corpus_path=snapshot_id, organismInfo=organism)
+        builder.run_pipeline()
+
+
 # from backend.common.utils.exceptions import CubeValidationException
 # from backend.common.utils.result_notification import (
 #     format_failed_batch_issue_slack_alert,
