@@ -1,3 +1,4 @@
+import json
 import logging
 import math
 import os
@@ -5,7 +6,6 @@ import pathlib
 from typing import Optional, Tuple
 
 import cellxgene_census
-import numba as nb
 import numpy as np
 import pandas as pd
 import tiledb
@@ -18,6 +18,8 @@ from backend.wmg.data.constants import (
 )
 from backend.wmg.data.rankit import rankit
 from backend.wmg.data.schemas.cube_schema import (
+    cell_counts_logical_dims,
+    cell_counts_schema,
     expression_summary_indexed_dims_no_gene_ontology,
     expression_summary_non_indexed_dims,
     expression_summary_schema,
@@ -35,14 +37,20 @@ from backend.wmg.data.schemas.expression_summary_fmg_cube_schema import (
     expression_summary_fmg_schema,
 )
 from backend.wmg.data.snapshot import (
+    CELL_COUNTS_CUBE_NAME,
     EXPRESSION_SUMMARY_CUBE_NAME,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
     EXPRESSION_SUMMARY_FMG_CUBE_NAME,
+    FILTER_RELATIONSHIPS_FILENAME,
 )
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import (
     create_empty_cube,
     log_func_runtime,
+)
+from backend.wmg.pipeline.summary_cubes.builder_utils import (
+    create_filter_relationships_graph,
+    gene_expression_sum_x_cube_dimension,
     remove_accents,
     return_dataset_dict_w_publications,
 )
@@ -53,31 +61,6 @@ DIMENSION_NAME_MAP_CENSUS_TO_WMG = {
     "tissue_ontology_term_id": "tissue_original_ontology_term_id",
     "tissue_general_ontology_term_id": "tissue_ontology_term_id",
 }
-
-
-@nb.njit(fastmath=True, error_model="numpy", parallel=False, nogil=True)
-def gene_expression_sum_x_cube_dimension(
-    rankit_values: np.ndarray,
-    obs_idxs: np.ndarray,
-    var_idx: np.ndarray,
-    cube_indices: np.ndarray,
-    sum_into: np.ndarray,
-    sqsum_into: np.ndarray,
-    nnz_into: np.ndarray,
-):
-    """
-    Sum the rankit values for each gene (for each cube row/combo of cell attributes)
-    Also track the number of cells that express that gene (nnz count)
-    """
-    for k in range(len(rankit_values)):
-        val = rankit_values[k]
-        if np.isfinite(val):
-            cidx = var_idx[k]
-            grp_idx = cube_indices[obs_idxs[k]]
-            sum_into[grp_idx, cidx] += val
-            sqsum_into[grp_idx, cidx] += val**2
-            nnz_into[grp_idx, cidx] += 1
-
 
 class SummaryCubesBuilder:
     def __init__(self, *, corpus_path: str, organismInfo: dict):
@@ -101,7 +84,7 @@ class SummaryCubesBuilder:
         with cellxgene_census.open_soma(census_version="latest") as census:
             obs_df = census["census_data"][organism]["obs"].read().concat().to_pandas().set_index("soma_joinid")
             obs_df["organism_ontology_term_id"] = organismId
-            obs_df = obs_df[obs_df["is_primary_data"]]
+            obs_df = obs_df[obs_df["is_primary_data"] & (obs_df["nnz"] >= GENE_EXPRESSION_COUNT_MIN_THRESHOLD)]
             obs_df = obs_df.rename(columns=DIMENSION_NAME_MAP_CENSUS_TO_WMG)
             var_df = (
                 census["census_data"][organism]["ms"]["RNA"]["var"].read().concat().to_pandas().set_index("soma_joinid")
@@ -135,9 +118,7 @@ class SummaryCubesBuilder:
 
         ctx = create_ctx()
         with tiledb.scope_ctx(ctx):
-            if not os.path.exists(uri):
-                create_empty_cube(uri, expression_summary_schema)
-
+            self._create_empty_cube_if_not_exists(uri, expression_summary_schema)
             dims, vals = self._summarize_gene_expressions(cube_dims=cube_dims, schema=expression_summary_schema)
 
             num_chunks = math.ceil(dims[0].size / write_chunk_size)
@@ -161,12 +142,12 @@ class SummaryCubesBuilder:
         Create the default expression summary cube. The default expression summary cube is an aggregation across
         non-default dimensions in the expression summary cube.
         """
-        logger.info("Creating the default expression summary cube.")
         if not self.expression_summary_cube_created:
             raise ValueError(
                 "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
             )
-
+        
+        logger.info("Creating the default expression summary cube.")
         expression_summary_uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
         expression_summary_default_uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"
 
@@ -186,8 +167,7 @@ class SummaryCubesBuilder:
                 .reset_index()
             )
 
-            if not os.path.exists(expression_summary_default_uri):
-                create_empty_cube(expression_summary_default_uri, expression_summary_schema_default)
+            self._create_empty_cube_if_not_exists(expression_summary_default_uri, expression_summary_schema_default)
             logger.info(f"Writing cube to {expression_summary_default_uri}")
             tiledb.from_pandas(expression_summary_default_uri, expression_summary_df_default, mode="append")
 
@@ -197,12 +177,12 @@ class SummaryCubesBuilder:
         Create the FMG (Find Marker Genes) expression summary cube. The FMG expression summary cube is an aggregation across
         dimensions in the expression summary cube that are irrelevant for marker gene calculation.
         """
-        logger.info("Creating the FMG expression summary cube.")
         if not self.expression_summary_cube_created:
             raise ValueError(
                 "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
             )
 
+        logger.info("Creating the FMG expression summary cube.")
         expression_summary_uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
         expression_summary_fmg_uri = f"{self.corpus_path}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"
 
@@ -222,13 +202,48 @@ class SummaryCubesBuilder:
                 .reset_index()
             )
 
-            if not os.path.exists(expression_summary_fmg_uri):
-                create_empty_cube(expression_summary_fmg_uri, expression_summary_fmg_schema)
+            self._create_empty_cube_if_not_exists(expression_summary_fmg_uri, expression_summary_fmg_schema)
             logger.info(f"Writing cube to {expression_summary_fmg_uri}")
             tiledb.from_pandas(expression_summary_fmg_uri, expression_summary_df_fmg, mode="append")
 
     @log_func_runtime
-    def _summarize_gene_expressions(self, *, cube_dims: list, schema: tiledb.ArraySchema) -> tuple[list, dict]:
+    def create_cell_counts_cube_and_filter_relationships(self):
+        """
+        Create cell count cube and write to disk
+        """
+        if not self.expression_summary_cube_created:
+            raise ValueError(
+                "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
+            )
+        logger.info("Creating the cell counts cube and filter relationships graph.")
+
+        df = (
+            self.obs_df.groupby(
+                by=[dim for dim in cell_counts_logical_dims if dim != "publication_citation"],
+                as_index=False,
+            ).size()
+        ).rename(columns={"size": "n_cells"})
+
+        dataset_dict = return_dataset_dict_w_publications()
+        df["publication_citation"] = [
+            remove_accents(dataset_dict.get(dataset_id, "No Publication")) for dataset_id in df["dataset_id"]
+        ]
+
+        n_cells = df["n_cells"].to_numpy()
+        df["n_cells"] = n_cells
+
+        logger.info("Creating and writing filter relationships graph.")
+        filter_relationships_linked_list = create_filter_relationships_graph(df)
+        with open(f"{self.corpus_path}/{FILTER_RELATIONSHIPS_FILENAME}", "w") as f:
+            json.dump(filter_relationships_linked_list, f)
+
+        uri = f"{self.corpus_path}/{CELL_COUNTS_CUBE_NAME}"
+        self._create_empty_cube_if_not_exists(uri, cell_counts_schema)
+        logger.info("Writing cell counts cube.")
+        tiledb.from_pandas(uri, df, mode="append")
+
+    @log_func_runtime
+    def _summarize_gene_expressions(self, *, cube_dims: list, schema: tiledb.ArraySchema):
         """
         Summarize gene expressions for each row/combination of cell attributes.
 
@@ -319,24 +334,20 @@ class SummaryCubesBuilder:
             organism = census["census_data"][self.organism]
             row_stride = 50_000
 
-            with organism.axis_query("RNA", obs_query=soma.AxisQuery(value_filter="is_primary_data == True")) as query:
+            with organism.axis_query(
+                "RNA",
+                obs_query=soma.AxisQuery(
+                    value_filter=f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD}"
+                ),
+            ) as query:
                 logger.info(f"Reducing X with {self.obs_df.shape[0]} total cells")
 
                 iteration = 0
-                for (obs_soma_joinids_chunk, _var_soma_joinids_chunk), raw_array in X_sparse_iter(
-                    query, X_name="raw", stride=row_stride
-                ):
+                for (obs_soma_joinids_chunk, _), raw_array in X_sparse_iter(query, X_name="raw", stride=row_stride):
                     logger.info(f"Reducer iteration {iteration} out of {math.ceil(self.obs_df.shape[0] / row_stride)}")
                     iteration += 1
 
                     obs_soma_joinids_chunk = query.indexer.by_obs(obs_soma_joinids_chunk)
-
-                    gene_counts_per_cell = np.diff(raw_array.indptr)
-                    keep = gene_counts_per_cell >= GENE_EXPRESSION_COUNT_MIN_THRESHOLD
-
-                    # filter cells
-                    raw_array = raw_array[keep]
-                    obs_soma_joinids_chunk = obs_soma_joinids_chunk[keep]
 
                     data_filt = raw_array.data >= RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
 
@@ -362,6 +373,8 @@ class SummaryCubesBuilder:
                         sqsum_into=cube_sqsum,
                     )
 
+
+    @log_func_runtime
     def _build_in_mem_cube(
         self,
         *,
@@ -434,3 +447,8 @@ class SummaryCubesBuilder:
             idx += n_vals
 
         return dims, vals
+
+    def _create_empty_cube_if_not_exists(self, uri: str, schema: tiledb.ArraySchema):
+        if not os.path.exists(uri):
+            logger.info(f"Creating empty cube at {uri}")
+            create_empty_cube(uri, schema)
