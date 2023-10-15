@@ -14,12 +14,13 @@ from backend.wmg.data.snapshot import (
     EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
 )
 from backend.wmg.data.tiledb import create_ctx
-from backend.wmg.data.utils import create_empty_cube, log_func_runtime
-from backend.wmg.pipeline.summary_cubes.constants import (
-    EXPRESSION_SUMMARY_CUBE_CREATED_FLAG,
+from backend.wmg.data.utils import log_func_runtime
+from backend.wmg.pipeline.constants import (
+    EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,
 )
-from backend.wmg.pipeline.summary_cubes.utils import (
+from backend.wmg.pipeline.utils import (
+    create_empty_cube_if_needed,
     load_pipeline_state,
     write_pipeline_state,
 )
@@ -35,7 +36,7 @@ def create_expression_summary_default_cube(*, corpus_path: str):
     """
     pipeline_state = load_pipeline_state(corpus_path=corpus_path)
 
-    if not pipeline_state.get(EXPRESSION_SUMMARY_CUBE_CREATED_FLAG):
+    if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
         raise ValueError(
             "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
         )
@@ -58,7 +59,7 @@ def create_expression_summary_default_cube(*, corpus_path: str):
             .reset_index()
         )
 
-        create_empty_cube(expression_summary_default_uri, expression_summary_schema)
+        create_empty_cube_if_needed(expression_summary_default_uri, expression_summary_schema)
         logger.info(f"Writing cube to {expression_summary_default_uri}")
         tiledb.from_pandas(expression_summary_default_uri, expression_summary_df_default, mode="append")
 

@@ -3,28 +3,19 @@ import logging
 import os
 
 import numpy as np
-import pandas as pd
 import tiledb
-from tiledbsoma import ExperimentAxisQuery
 
-from backend.wmg.data.schemas.cube_schema import (
-    cell_counts_logical_dims,
-    cell_counts_schema,
-)
 from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     FILTER_RELATIONSHIPS_FILENAME,
 )
-from backend.wmg.data.utils import create_empty_cube, log_func_runtime, to_dict
-from backend.wmg.pipeline.summary_cubes.constants import (
-    CELL_COUNTS_CUBE_CREATED_FLAG,
-    DIMENSION_NAME_MAP_CENSUS_TO_WMG,
+from backend.wmg.data.utils import log_func_runtime, to_dict
+from backend.wmg.pipeline.constants import (
+    EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     FILTER_RELATIONSHIPS_CREATED_FLAG,
 )
-from backend.wmg.pipeline.summary_cubes.utils import (
+from backend.wmg.pipeline.utils import (
     load_pipeline_state,
-    remove_accents,
-    return_dataset_dict_w_publications,
     write_pipeline_state,
 )
 
@@ -32,55 +23,13 @@ logger = logging.getLogger(__name__)
 
 
 @log_func_runtime
-def create_cell_counts_cube_and_filter_relationships(*, query: ExperimentAxisQuery, corpus_path: str):
-    """
-    Create cell count cube and write to disk
-    """
-    pipeline_state = load_pipeline_state(corpus_path)
-
-    obs_df = query.obs().concat().to_pandas()
-    obs_df = obs_df.rename(columns=DIMENSION_NAME_MAP_CENSUS_TO_WMG)
-
-    logger.info("Creating the cell counts cube and filter relationships graph.")
-
-    df = (
-        obs_df.groupby(
-            by=[dim for dim in cell_counts_logical_dims if dim != "publication_citation"],
-            as_index=False,
-        ).size()
-    ).rename(columns={"size": "n_cells"})
-
-    dataset_dict = return_dataset_dict_w_publications()
-    df["publication_citation"] = [
-        remove_accents(dataset_dict.get(dataset_id, "No Publication")) for dataset_id in df["dataset_id"]
-    ]
-    n_cells = df["n_cells"].to_numpy()
-    df["n_cells"] = n_cells
-
-    logger.info("Creating and writing filter relationships graph.")
-    filter_relationships_linked_list = create_filter_relationships_graph(df)
-    with open(f"{corpus_path}/{FILTER_RELATIONSHIPS_FILENAME}", "w") as f:
-        json.dump(filter_relationships_linked_list, f)
-    pipeline_state[FILTER_RELATIONSHIPS_CREATED_FLAG] = True
-    write_pipeline_state(pipeline_state, corpus_path)
-
-    uri = os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)
-    create_empty_cube(uri, cell_counts_schema)
-    logger.info("Writing cell counts cube.")
-    tiledb.from_pandas(uri, df, mode="append")
-
-    pipeline_state[CELL_COUNTS_CUBE_CREATED_FLAG] = True
-    write_pipeline_state(pipeline_state, corpus_path)
-
-
-@log_func_runtime
-def create_filter_relationships_graph(df: pd.DataFrame) -> dict:
+def create_filter_relationships_graph(*, corpus_path: str) -> dict:
     """
     Create a graph of filter relationships
 
     Arguments
     ---------
-    df: pd.DataFrame
+    cell_counts_df: pd.DataFrame
         Dataframe containing the filter combinations per cell
 
     Returns
@@ -91,14 +40,22 @@ def create_filter_relationships_graph(df: pd.DataFrame) -> dict:
         The dictionary values are lists of filter values that are related to the key filter value. Relatedness indicates that these filters
         are co-occuring in at least one cell.
     """
+    pipeline_state = load_pipeline_state(corpus_path)
+    if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
+        raise ValueError("'cell_counts' array does not exist. Please run 'create_cell_counts_cube' first.")
+
+    logger.info("Creating filter relationships graph.")
+    with tiledb.open(os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)) as cc_cube:
+        cell_counts_df = cc_cube.df[:]
+
     # get a dataframe of the columns that are not numeric
-    df_filters = df.select_dtypes(exclude="number")
+    df_filters = cell_counts_df.select_dtypes(exclude="number")
     # get a numpy array of the column names with shape (1, n_cols)
     cols = df_filters.columns.values[None, :]
 
     # tile the column names row-wise to match the shape of the dataframe and concatenate to the values
     # this ensures that filter values will never collide across columns.
-    mat = np.tile(cols, (df.shape[0], 1)) + "__" + df_filters.values
+    mat = np.tile(cols, (cell_counts_df.shape[0], 1)) + "__" + df_filters.values
 
     # for each cell, get all pairwise combinations of filters compresent in that cell
     # these are the edges of the filter relationships graph
@@ -126,4 +83,7 @@ def create_filter_relationships_graph(df: pd.DataFrame) -> dict:
     for k, v in filter_relationships_linked_list.items():
         filter_relationships_linked_list[k] = to_dict([x.split("__")[0] for x in v], v)
 
-    return filter_relationships_linked_list
+    with open(f"{corpus_path}/{FILTER_RELATIONSHIPS_FILENAME}", "w") as f:
+        json.dump(filter_relationships_linked_list, f)
+    pipeline_state[FILTER_RELATIONSHIPS_CREATED_FLAG] = True
+    write_pipeline_state(pipeline_state, corpus_path)

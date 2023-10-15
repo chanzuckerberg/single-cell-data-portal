@@ -3,8 +3,8 @@ import logging
 
 from backend.wmg.data.snapshot import DATASET_METADATA_FILENAME
 from backend.wmg.data.utils import get_datasets_from_curation_api, log_func_runtime
-from backend.wmg.pipeline.summary_cubes.constants import DATASET_METADATA_CREATED_FLAG
-from backend.wmg.pipeline.summary_cubes.utils import load_pipeline_state, write_pipeline_state
+from backend.wmg.pipeline.constants import DATASET_METADATA_CREATED_FLAG
+from backend.wmg.pipeline.utils import load_pipeline_state, write_pipeline_state
 
 logger = logging.getLogger(__name__)
 

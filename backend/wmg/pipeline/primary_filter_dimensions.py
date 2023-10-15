@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 
 import tiledb
 
@@ -11,12 +12,12 @@ from backend.wmg.data.snapshot import (
 )
 from backend.wmg.data.tissue_mapper import TissueMapper
 from backend.wmg.data.utils import log_func_runtime
-from backend.wmg.pipeline.summary_cubes.constants import (
-    CELL_COUNTS_CUBE_CREATED_FLAG,
+from backend.wmg.pipeline.constants import (
+    EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,
     PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG,
 )
-from backend.wmg.pipeline.summary_cubes.utils import (
+from backend.wmg.pipeline.utils import (
     load_pipeline_state,
     write_pipeline_state,
 )
@@ -25,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 @log_func_runtime
-def create_primary_filter_dimensions(*, corpus_path: str, organismId: str, snapshot_id: str):
+def create_primary_filter_dimensions(*, corpus_path: str):
     """
     This method creates the primary filter dimensions for the WMG snapshot.
     """
@@ -34,10 +35,12 @@ def create_primary_filter_dimensions(*, corpus_path: str, organismId: str, snaps
         raise ValueError(
             "'expression_summary_default' array does not exist. Please run 'create_expression_summary_default_cube' first."
         )
-    if not pipeline_state.get(CELL_COUNTS_CUBE_CREATED_FLAG):
+    if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
         raise ValueError(
             "'cell_counts' array does not exist. Please run 'create_cell_counts_cube_and_filter_relationships' first."
         )
+
+    snapshot_id = os.path.basename(os.path.normpath(corpus_path))
 
     logger.info("Creating primary filter dimensions")
     with (
@@ -47,10 +50,6 @@ def create_primary_filter_dimensions(*, corpus_path: str, organismId: str, snaps
         # get dataframes
         cell_counts_df = cell_counts_cube.df[:]
         expr_df = expression_summary_cube.df[:]
-
-        # populate organism ID into the dfs for the primary filter dimensions
-        cell_counts_df["organism_ontology_term_id"] = organismId
-        expr_df["organism_ontology_term_id"] = organismId
 
         # genes
         organism_gene_ids = list_grouped_primary_filter_dimensions_term_ids(

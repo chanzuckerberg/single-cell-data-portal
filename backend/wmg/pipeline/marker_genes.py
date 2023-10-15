@@ -15,14 +15,18 @@ from backend.wmg.data.snapshot import (
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
     WmgSnapshot,
 )
-from backend.wmg.data.utils import create_empty_cube, log_func_runtime
-from backend.wmg.pipeline.summary_cubes.constants import (
-    CELL_COUNTS_CUBE_CREATED_FLAG,
+from backend.wmg.data.utils import log_func_runtime
+from backend.wmg.pipeline.constants import (
+    EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,
     MARKER_GENES_CUBE_CREATED_FLAG,
     PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG,
 )
-from backend.wmg.pipeline.summary_cubes.utils import load_pipeline_state, write_pipeline_state
+from backend.wmg.pipeline.utils import (
+    create_empty_cube_if_needed,
+    load_pipeline_state,
+    write_pipeline_state,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +42,7 @@ def create_marker_genes_cube(*, corpus_path: str):
             "'expression_summary_default' cube does not exist. Please run 'create_expression_summary_default_cube' first."
         )
 
-    if not pipeline_state.get(CELL_COUNTS_CUBE_CREATED_FLAG):
+    if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
         raise ValueError(
             "'cell_counts' cube does not exist. Please run 'create_cell_counts_cube_and_filter_relationships' first."
         )
@@ -64,7 +68,7 @@ def create_marker_genes_cube(*, corpus_path: str):
         calculator = MarkerGenesCalculator(
             snapshot=snapshot,
             all_cell_type_ids_in_corpus=ontology_tree.all_cell_type_ids_in_corpus,
-            groupby_terms=["tissue_ontology_term_id"],
+            groupby_terms=["organism_ontology_term_id", "tissue_ontology_term_id"],
         )
         marker_genes = calculator.get_computational_marker_genes()
     marker_gene_records = []
@@ -81,7 +85,7 @@ def create_marker_genes_cube(*, corpus_path: str):
             )
     marker_genes_df = pd.DataFrame(marker_gene_records)
     uri = os.path.join(corpus_path, MARKER_GENES_CUBE_NAME)
-    create_empty_cube(uri, marker_genes_schema)
+    create_empty_cube_if_needed(uri, marker_genes_schema)
     logger.info("Writing marker genes cube.")
     tiledb.from_pandas(uri, marker_genes_df, mode="append")
 

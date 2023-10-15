@@ -13,10 +13,12 @@ from backend.wmg.data.schemas.tiledb_filters import filters_categorical, filters
 expression_summary_indexed_dims = [
     "gene_ontology_term_id",
     "tissue_ontology_term_id",
+    "organism_ontology_term_id",
 ]
 
 expression_summary_indexed_dims_no_gene_ontology = [
     "tissue_ontology_term_id",
+    "organism_ontology_term_id",
 ]
 
 # These are the queryable cube dimensions that will be modeled as

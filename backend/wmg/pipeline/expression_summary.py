@@ -9,9 +9,6 @@ from cellxgene_census.experimental.util._csr_iter import X_sparse_iter
 from numba import njit
 from tiledbsoma import ExperimentAxisQuery
 
-from backend.wmg.data.constants import (
-    RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
-)
 from backend.wmg.data.schemas.cube_schema import (
     expression_summary_indexed_dims_no_gene_ontology,
     expression_summary_non_indexed_dims,
@@ -20,18 +17,17 @@ from backend.wmg.data.schemas.cube_schema import (
 from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import (
-    create_empty_cube,
     log_func_runtime,
 )
-from backend.wmg.pipeline.summary_cubes.constants import (
+from backend.wmg.pipeline.constants import (
     DIMENSION_NAME_MAP_CENSUS_TO_WMG,
-    EXPRESSION_SUMMARY_CUBE_CREATED_FLAG,
+    RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
 )
-from backend.wmg.pipeline.summary_cubes.utils import (
+from backend.wmg.pipeline.utils import (
+    create_empty_cube_if_needed,
     load_pipeline_state,
     remove_accents,
     return_dataset_dict_w_publications,
-    write_pipeline_state,
 )
 
 logger = logging.getLogger(__name__)
@@ -58,7 +54,7 @@ class ExpressionSummaryCubeBuilder:
 
         ctx = create_ctx()
         with tiledb.scope_ctx(ctx):
-            create_empty_cube(uri, expression_summary_schema)
+            create_empty_cube_if_needed(uri, expression_summary_schema)
             dims, vals = self._summarize_gene_expressions(cube_dims=cube_dims, schema=expression_summary_schema)
 
             num_chunks = math.ceil(dims[0].size / WRITE_CHUNK_SIZE)
@@ -73,9 +69,6 @@ class ExpressionSummaryCubeBuilder:
             logger.info("Consolidating and vacuuming")
             tiledb.consolidate(uri)
             tiledb.vacuum(uri)
-
-        self.pipeline_state[EXPRESSION_SUMMARY_CUBE_CREATED_FLAG] = True
-        write_pipeline_state(self.pipeline_state, self.corpus_path)
 
     @log_func_runtime
     def _summarize_gene_expressions(self, *, cube_dims: list, schema: tiledb.ArraySchema):
