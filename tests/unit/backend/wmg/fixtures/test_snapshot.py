@@ -211,11 +211,9 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
                 expression_summary_default_cube=expression_summary_default_cube,
                 marker_genes_cube=marker_genes_cube,
                 cell_counts_cube=cell_counts_cube,
-                cell_type_orderings=None,
                 primary_filter_dimensions=primary_filter_dimensions,
                 dataset_to_gene_ids=dataset_to_gene_ids,
                 filter_relationships=filter_relationships,
-                dataset_metadata=None,
             )
 
 
@@ -248,15 +246,10 @@ def create_temp_wmg_snapshot(
             yield WmgSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
-                expression_summary_default_cube=None,
-                expression_summary_fmg_cube=None,
-                marker_genes_cube=None,
                 cell_counts_cube=cell_counts_cube,
                 cell_type_orderings=cell_type_orderings,
                 primary_filter_dimensions=primary_filter_dimensions,
-                dataset_to_gene_ids=None,
                 filter_relationships=filter_relationships,
-                dataset_metadata=None,
             )
 
 
