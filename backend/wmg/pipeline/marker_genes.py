@@ -77,6 +77,7 @@ def create_marker_genes_cube(*, corpus_path: str):
             marker_gene_records.append(
                 {
                     "tissue_ontology_term_id": marker_gene.groupby_dims["tissue_ontology_term_id"],
+                    "organism_ontology_term_id": marker_gene.groupby_dims["organism_ontology_term_id"],
                     "cell_type_ontology_term_id": key,
                     "gene_ontology_term_id": marker_gene.gene_ontology_term_id,
                     "marker_score": marker_gene.marker_score,
