@@ -10,6 +10,7 @@ from backend.wmg.data.snapshot import WmgSnapshot
 
 
 class WmgQueryCriteria(BaseModel):
+    organism_ontology_term_id: str  # required!
     gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)  # required!
     tissue_ontology_term_ids: List[str] = Field(unique_items=True, min_items=1)  # required!
     tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
@@ -23,6 +24,7 @@ class WmgQueryCriteria(BaseModel):
 
 
 class WmgQueryCriteriaV2(BaseModel):
+    organism_ontology_term_id: str  # required!
     gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)  # required!
     tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
@@ -37,6 +39,7 @@ class WmgQueryCriteriaV2(BaseModel):
 
 
 class WmgFiltersQueryCriteria(BaseModel):
+    organism_ontology_term_id: str  # required!
     tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
@@ -49,6 +52,7 @@ class WmgFiltersQueryCriteria(BaseModel):
 
 
 class MarkerGeneQueryCriteria(BaseModel):
+    organism_ontology_term_id: str  # required!
     tissue_ontology_term_id: str  # required!
     cell_type_ontology_term_id: str  # required!
 
@@ -68,7 +72,7 @@ class WmgCubeQueryParams:
         return [i.name for i in cube.schema.domain if i.name in self.cube_query_valid_dims]
 
     def _transform_cube_index_name(self, index_name: str, pluralize: bool = True) -> str:
-        if pluralize:
+        if index_name != "organism_ontology_term_id" and pluralize:
             return index_name + "s"
 
         return index_name
