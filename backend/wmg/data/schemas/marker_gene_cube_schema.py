@@ -11,6 +11,7 @@ from backend.wmg.data.schemas.tiledb_filters import filters_categorical, filters
 marker_genes_indexed_dims = [
     "tissue_ontology_term_id",
     "cell_type_ontology_term_id",
+    "organism_ontology_term_id",
 ]
 
 # The cube attributes that comprise the core data stored within the cube.
