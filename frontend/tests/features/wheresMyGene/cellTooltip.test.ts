@@ -1,5 +1,4 @@
-import { expect, test } from "@playwright/test";
-import { conditionallyRunTests } from "../../utils/wmgUtils";
+import { expect } from "@playwright/test";
 import { expandTissue, getCellTypeNames, goToPage } from "tests/utils/helpers";
 import { TEST_URL } from "tests/common/constants";
 import { ROUTES } from "src/common/constants/routes";
@@ -7,15 +6,10 @@ import {
   CELL_TYPE_NAME_LABEL_CLASS_NAME,
   CELL_TYPE_ROW_CLASS_NAME,
 } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
+import { test } from "tests/common/test";
 const { describe } = test;
 
 describe("cell tooltip", () => {
-  /**
-   * TODO(thuang): Remove forceRun when all WMG e2e tests are enabled.
-   * `forceRun` is just to incrementally add tests back in the meantime
-   */
-  conditionallyRunTests({ forceRun: true });
-
   test(`Should verify cell tooltip hover`, async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 

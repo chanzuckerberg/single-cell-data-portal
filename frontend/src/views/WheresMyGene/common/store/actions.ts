@@ -20,15 +20,6 @@ export function deleteSingleGene(
   };
 }
 
-export function deleteSelectedGenes(): GetActionTypeOfReducer<
-  (typeof REDUCERS)["deleteSelectedGenes"]
-> {
-  return {
-    payload: null,
-    type: "deleteSelectedGenes",
-  };
-}
-
 export function deleteAllGenes(): GetActionTypeOfReducer<
   (typeof REDUCERS)["deleteAllGenes"]
 > {
@@ -207,6 +198,25 @@ export function setFilteredCellTypes(
   return {
     payload,
     type: "setFilteredCellTypes",
+  };
+}
+
+export function toggleExpandedTissueId(payload: {
+  tissueId: string;
+  tissueName: string;
+}): GetActionTypeOfReducer<(typeof REDUCERS)["toggleExpandedTissueId"]> {
+  return {
+    payload,
+    type: "toggleExpandedTissueId",
+  };
+}
+
+export function autoExpandTissues(
+  payload: string[]
+): GetActionTypeOfReducer<(typeof REDUCERS)["autoExpandTissues"]> {
+  return {
+    payload,
+    type: "autoExpandTissues",
   };
 }
 

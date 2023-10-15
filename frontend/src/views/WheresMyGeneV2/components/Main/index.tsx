@@ -1,11 +1,7 @@
 import { DrawerSize } from "@blueprintjs/core";
 import Head from "next/head";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import {
-  EMPTY_ARRAY,
-  EMPTY_OBJECT,
-  EMPTY_SET,
-} from "src/common/constants/utils";
+import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
   FilterDimensions,
@@ -27,11 +23,9 @@ import {
   addGeneInfoGene,
   clearGeneInfoGene,
   closeRightSidebar,
-  deleteSelectedGenes,
 } from "src/views/WheresMyGene/common/store/actions";
 import {
   GeneExpressionSummary,
-  Tissue,
   ChartProps,
 } from "src/views/WheresMyGene/common/types";
 import CellInfoSideBar from "src/views/WheresMyGene/components/CellInfoSideBar";
@@ -72,6 +66,7 @@ export default function WheresMyGene(): JSX.Element {
     geneInfoGene,
     cellInfoCellType,
     filteredCellTypes,
+    expandedTissueIds,
   } = state;
 
   const selectedOrganismId = state.selectedOrganismId || "";
@@ -96,11 +91,6 @@ export default function WheresMyGene(): JSX.Element {
   const [tissuesByName, setTissuesByName] = useState<{
     [name: string]: OntologyTerm;
   }>({});
-
-  // This is set in HeatMap and the value is used to determine spacing in SVG export
-  const [expandedTissues, setExpandedTissues] = useState<Set<Tissue>>(
-    EMPTY_SET as Set<Tissue>
-  );
 
   //(seve): These useEffects are deceptively simple.
   // Their purpose is to avoid updating the state with null/empty values while we're waiting for the api to return data.
@@ -226,24 +216,6 @@ export default function WheresMyGene(): JSX.Element {
     selectedGenes,
     cellTypesByTissueName,
   ]);
-
-  // Listen to delete keyboard press event
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-
-    function handleKeyDown(event: KeyboardEvent): void {
-      if (event.code === "Backspace") {
-        if (!dispatch) return;
-
-        dispatch(deleteSelectedGenes());
-      }
-    }
-  }, [dispatch]);
-
   const [isSourceDatasetSidebarOpen, setSourceDatasetSidebarOpen] =
     useState(false);
   const handleSourceDatasetButtonClick = useCallback(() => {
@@ -357,7 +329,7 @@ export default function WheresMyGene(): JSX.Element {
               allChartProps={allChartProps}
               availableFilters={availableFilters}
               tissues={tissuesByName}
-              expandedTissues={expandedTissues}
+              expandedTissueIds={expandedTissueIds}
               filteredCellTypes={filteredCellTypes}
             />
           </Top>
@@ -397,8 +369,6 @@ export default function WheresMyGene(): JSX.Element {
             setAllChartProps={setAllChartProps}
             setTissuesByName={setTissuesByName}
             tissuesByName={tissuesByName}
-            expandedTissues={expandedTissues}
-            setExpandedTissues={setExpandedTissues}
             /**
              * (thuang): This is needed to reposition gene search bar when the
              * sidebar width expands/collapses

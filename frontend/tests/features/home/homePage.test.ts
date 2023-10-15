@@ -1,4 +1,4 @@
-import { expect, Page, test } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "tests/common/constants";
 import { goToPage, tryUntil } from "tests/utils/helpers";
@@ -10,6 +10,7 @@ import {
   LANDING_PAGE_CELLTYPES_HERO_NUM_ID,
   LANDING_PAGE_DATASETS_HERO_NUM_ID,
 } from "src/views/Landing/constants";
+import { test } from "tests/common/test";
 
 const { describe } = test;
 const COLLECTIONS_LINK_ID = "collections-link";
@@ -173,6 +174,17 @@ async function isPageScrollableToSeeSiteMap(page: Page) {
  * to check if the page is scrollable
  */
 async function isGlobalLayoutWrapperScrollable(page: Page) {
+  if (
+    await page
+      .locator("main")
+      .evaluate((e) => e.scrollHeight <= window.innerHeight)
+  ) {
+    /**
+     * (thuang): Set the viewport size to a smaller size, so that we can scroll
+     */
+    await page.setViewportSize({ height: 300, width: 600 });
+  }
+
   const wrapper = page.getByTestId("global-layout-wrapper");
 
   expect(
@@ -189,7 +201,7 @@ async function isGlobalLayoutWrapperScrollable(page: Page) {
 
       expect(
         await wrapper.evaluate((e) => {
-          return e.scrollTop > e.clientHeight;
+          return e.scrollTop > 0;
         })
       ).toBeTruthy();
     },

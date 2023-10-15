@@ -10,11 +10,7 @@ import ShareButton from "src/views/WheresMyGeneV2/components/GeneSearchBar/compo
 import ExpressedInCells from "../ExpressedInCells";
 import RelativeGeneExpression from "../RelativeGeneExpression";
 import { LegendWrapper } from "./style";
-import {
-  EMPTY_ARRAY,
-  EMPTY_OBJECT,
-  EMPTY_SET,
-} from "src/common/constants/utils";
+import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import SourceDataButton from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SourceDataButton";
 
 interface Props {
@@ -32,7 +28,7 @@ interface Props {
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
   tissues?: { [name: string]: OntologyTerm };
-  expandedTissues?: Set<string>;
+  expandedTissueIds?: string[];
   filteredCellTypes?: string[];
 }
 
@@ -46,7 +42,7 @@ export default memo(function Legend({
   allChartProps,
   availableFilters,
   tissues,
-  expandedTissues,
+  expandedTissueIds,
   filteredCellTypes,
 }: Props): JSX.Element {
   return (
@@ -59,7 +55,7 @@ export default memo(function Legend({
         allChartProps={allChartProps}
         availableFilters={availableFilters}
         tissues={tissues || EMPTY_OBJECT}
-        expandedTissues={expandedTissues ?? (EMPTY_SET as Set<string>)}
+        expandedTissueIds={expandedTissueIds ?? EMPTY_ARRAY}
         filteredCellTypes={filteredCellTypes ?? EMPTY_ARRAY}
       />
       <ShareButton />

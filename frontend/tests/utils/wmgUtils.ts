@@ -1,6 +1,6 @@
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "../common/constants";
-import { expect, Page, test } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
 import {
   countLocator,
@@ -17,8 +17,6 @@ import {
 } from "tests/utils/geneUtils";
 import { TISSUE_NAME_LABEL_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 
-const { skip, beforeEach } = test;
-
 const WMG_SEED_GENES = ["DPM1", "TNMD", "TSPAN6"];
 
 /**
@@ -31,34 +29,7 @@ export const WMG_WITH_SEEDED_GENES = {
   genes: WMG_SEED_GENES,
 };
 
-const ENVS_TO_RUN_TESTS = [
-  "api.cellxgene.dev.single-cell.czi.technology",
-  "api.cellxgene.staging.single-cell.czi.technology",
-  "api.cellxgene.cziscience.com",
-];
-
-export function conditionallyRunTests({
-  forceRun = false,
-}: {
-  forceRun?: boolean;
-} = {}) {
-  if (forceRun) return;
-
-  /**
-   * (thuang): `beforeEach()` is needed, since without it, `describe()` will
-   * just eager inventory tests to run BEFORE our global setup sets `process.env.API_URL`
-   */
-  beforeEach(() => {
-    skip(
-      // (thuang): Temporarily skip WMG tests
-      // (thuang): Temporarily skip WMG tests
-      // (thuang): Temporarily skip WMG tests
-      ENVS_TO_RUN_TESTS.every(() => true),
-      // ENVS_TO_RUN_TESTS.every((env) => !process.env.API_URL?.includes(env)),
-      "WMG tests only work with dev/staging/prod API URLs"
-    );
-  });
-}
+const WAIT_FOR_RESPONSE_TIMEOUT_MS = 10 * 1000;
 
 /**
  * (thuang): `page.waitForResponse` sometimes times out, so we need to retry
@@ -67,7 +38,25 @@ export async function goToWMG(page: Page, url?: string) {
   const targetUrl = url || `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`;
   return await tryUntil(
     async () => {
-      await page.goto(targetUrl);
+      await Promise.all([
+        page.waitForResponse(
+          (response) => {
+            if (response.url().includes("primary_filter_dimensions")) {
+              if (response.ok()) {
+                return true;
+              } else {
+                throw new Error(
+                  `Response status code is ${response.status()} for ${response.url()}`
+                );
+              }
+            }
+
+            return false;
+          },
+          { timeout: WAIT_FOR_RESPONSE_TIMEOUT_MS }
+        ),
+        page.goto(targetUrl),
+      ]);
 
       await tryUntil(
         async () => {
@@ -104,14 +93,15 @@ export async function searchAndAddTissue(page: Page, tissueName: string) {
     async () => {
       await page.getByTestId(ADD_TISSUE_ID).getByRole("button").first().click();
       await page.getByRole("tooltip").waitFor();
+      await page.getByRole("tooltip").getByText(tissueName).first().click();
+      // close dropdown
+      await page.keyboard.press("Escape");
+      await expect(
+        page.getByTestId(ADD_TISSUE_ID).getByText(tissueName)
+      ).toBeVisible();
     },
     { page }
   );
-
-  await page.getByRole("tooltip").getByText(tissueName).first().click();
-
-  // close dropdown
-  await page.keyboard.press("Escape");
 }
 
 export async function addTissuesAndGenes(
@@ -119,7 +109,7 @@ export async function addTissuesAndGenes(
   tissueNames: string[],
   genes: string[]
 ) {
-  for await (const tissueName of tissueNames) {
+  for (const tissueName of tissueNames) {
     await searchAndAddTissue(page, tissueName);
   }
   for await (const gene of genes) {

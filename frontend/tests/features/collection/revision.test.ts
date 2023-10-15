@@ -4,7 +4,7 @@ import { TEST_URL } from "tests/common/constants";
 import {
   getInnerText,
   goToPage,
-  isDevStaging,
+  isDevStagingRdev,
   tryUntil,
 } from "tests/utils/helpers";
 import { getTestID } from "tests/utils/selectors";
@@ -23,15 +23,15 @@ const STATUS_TAG_ID = "status-tag";
 
 describe("Collection Revision @loggedIn", () => {
   skip(
-    !isDevStaging,
-    "We only seed published collections for revision test in dev and staging"
+    !isDevStagingRdev,
+    "We only seed published collections for revision test in dev, rdev, and staging"
   );
 
   /**
    * TODO(#5666): Enable this test once #5666 is resolved
    * https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/gh/chanzuckerberg/single-cell-data-portal/5666
    */
-  test.skip("starts a revision", async ({ page }) => {
+  test("starts a revision", async ({ page }) => {
     const collectionName = await startRevision(page);
 
     const publishButton = await page.$(getTestID("publish-collection-button"));
@@ -74,7 +74,8 @@ describe("Collection Revision @loggedIn", () => {
    * TODO(#5666): Enable this test once #5666 is resolved
    * https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/gh/chanzuckerberg/single-cell-data-portal/5666
    */
-  test.skip("allows editing", async ({ page }) => {
+
+  test("allows editing", async ({ page }) => {
     await startRevision(page);
 
     const collectionName = await getInnerText(

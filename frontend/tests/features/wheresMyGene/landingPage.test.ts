@@ -1,10 +1,10 @@
-import { expect, Page, test } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { TEST_URL } from "../../common/constants";
 import { ROUTES } from "src/common/constants/routes";
 import { ADD_GENE_BTN } from "tests/common/constants";
 import { getById } from "tests/utils/selectors";
 import { tryUntil } from "tests/utils/helpers";
-import { conditionallyRunTests } from "tests/utils/wmgUtils";
+import { test } from "tests/common/test";
 
 const { describe } = test;
 const ALERT = "Send us feedback with this quick survey";
@@ -24,8 +24,6 @@ function goToWMG(page: Page) {
   ]);
 }
 describe("Tests for Gene Expression page", () => {
-  conditionallyRunTests({ forceRun: true });
-
   test("Should verify main panel components", async ({ page }) => {
     await goToWMG(page);
     // +Gene button

@@ -201,7 +201,7 @@ const MarkerGeneTables = ({
   setCellInfoCellType,
 }: Props) => {
   // 0 is canonical marker genes, 1 is computational marker genes
-  const [activeTable, setActiveTable] = useState(0);
+  const [activeTable, setActiveTable] = useState(1);
   const [computationalMarkerGenes, setComputationalMarkerGenes] =
     useState<ComputationalMarkersQueryResponse>([]);
 
@@ -624,6 +624,22 @@ const MarkerGeneTables = ({
         <TableSelectorRow>
           <FlexRow>
             <TableSelectorButton
+              data-testid={CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR}
+              isActive={activeTable === 1}
+              onClick={() => {
+                setPage(1);
+                setActiveTable(1);
+                track(EVENTS.CG_COMPUTATIONAL_TAB_CLICKED, {
+                  cell_type: cellTypeName,
+                  inSideBar: !!cellInfoCellType,
+                });
+              }}
+            >
+              Computational
+            </TableSelectorButton>
+          </FlexRow>
+          <FlexRow>
+            <TableSelectorButton
               data-testid={
                 CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR
               }
@@ -638,22 +654,6 @@ const MarkerGeneTables = ({
               }}
             >
               Canonical
-            </TableSelectorButton>
-          </FlexRow>
-          <FlexRow>
-            <TableSelectorButton
-              data-testid={CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR}
-              isActive={activeTable === 1}
-              onClick={() => {
-                setPage(1);
-                setActiveTable(1);
-                track(EVENTS.CG_COMPUTATIONAL_TAB_CLICKED, {
-                  cell_type: cellTypeName,
-                  inSideBar: !!cellInfoCellType,
-                });
-              }}
-            >
-              Computational
             </TableSelectorButton>
           </FlexRow>
         </TableSelectorRow>

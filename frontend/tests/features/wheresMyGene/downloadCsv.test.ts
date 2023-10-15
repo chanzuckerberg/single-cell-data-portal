@@ -1,5 +1,4 @@
-import { test } from "@playwright/test";
-import { conditionallyRunTests, goToWMG } from "../../utils/wmgUtils";
+import { goToWMG } from "../../utils/wmgUtils";
 import {
   subDirectory,
   downloadAndVerifyFiles,
@@ -12,11 +11,10 @@ import {
   SHARED_LINK_NO_FILTER,
   SHARED_LINK_NO_GROUP,
 } from "tests/common/constants";
+import { test } from "tests/common/test";
 
 const { describe } = test;
 describe("CSV download tests", () => {
-  conditionallyRunTests({ forceRun: true });
-
   test(`Should verify CSV metadata and header for lung tissue with no group set`, async ({
     page,
   }) => {
@@ -28,7 +26,13 @@ describe("CSV download tests", () => {
     //download  csv file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
     // verify csv file
-    await verifyCsv(page, folder, "disease-filter", SHARED_LINK_NO_GROUP);
+    await verifyCsv({
+      page,
+      tissues,
+      subDirectory: folder,
+      filterName: "disease-filter",
+      url: SHARED_LINK_NO_GROUP,
+    });
     await deleteDownloadedFiles(`./tests/downloads/${folder}`);
   });
 
@@ -44,7 +48,13 @@ describe("CSV download tests", () => {
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
 
     // verify csv file
-    await verifyCsv(page, folder, "sex-filter", SHARED_LINK_FILTER);
+    await verifyCsv({
+      page,
+      tissues,
+      subDirectory: folder,
+      filterName: "sex-filter",
+      url: SHARED_LINK_FILTER,
+    });
     await deleteDownloadedFiles(`./tests/downloads/${folder}`);
   });
 
@@ -60,7 +70,13 @@ describe("CSV download tests", () => {
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
 
     // verify csv file
-    await verifyCsv(page, folder, "no-filter", SHARED_LINK_NO_FILTER);
+    await verifyCsv({
+      page,
+      tissues,
+      subDirectory: folder,
+      filterName: "no-filter",
+      url: SHARED_LINK_NO_FILTER,
+    });
     await deleteDownloadedFiles(`./tests/downloads/${folder}`);
   });
 });

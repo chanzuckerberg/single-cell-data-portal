@@ -1,4 +1,11 @@
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
@@ -41,6 +48,8 @@ import {
   TISSUE_NAME_LABEL_CLASS_NAME,
   CELL_TYPE_NAME_LABEL_CLASS_NAME,
 } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
+import { formatCitation } from "src/common/utils/formatCitation";
+import { StateContext } from "src/views/WheresMyGene/common/store";
 
 interface Props {
   cellTypes: CellTypeRow[];
@@ -48,7 +57,7 @@ interface Props {
   tissueID: string;
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
   handleExpandCollapse: (tissueID: string, tissueName: Tissue) => void;
-  expandedTissues: Set<Tissue>;
+  expandedTissueIds: string[];
 }
 
 // List of Tissues to exclude from FMG
@@ -59,7 +68,7 @@ export default memo(function YAxisChart({
   tissue,
   generateMarkerGenes,
   handleExpandCollapse,
-  expandedTissues,
+  expandedTissueIds,
   tissueID,
 }: Props): JSX.Element {
   const tissueKey = hyphenize(tissue);
@@ -76,6 +85,7 @@ export default memo(function YAxisChart({
   const cellTypeMetadata = useMemo(() => {
     return getAllSerializedCellTypeMetadata(cellTypes, tissue);
   }, [cellTypes, tissue]);
+  const { compare } = useContext(StateContext);
 
   return (
     <Wrapper id={`${hyphenize(tissue)}-y-axis`}>
@@ -87,16 +97,18 @@ export default memo(function YAxisChart({
           .slice()
           .reverse()
           .map((cellType) => {
-            const { name } = deserializeCellTypeMetadata(
+            const { name, isAggregated } = deserializeCellTypeMetadata(
               cellType as CellTypeMetadata
             );
-
             const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
             const selectedFont = `${fontWeight} ${fontSize}px ${fontFamily}`;
-            const expanded = expandedTissues.has(tissueID);
-
+            const expanded = expandedTissueIds.includes(tissueID);
+            let formattedName = name;
+            if (compare && compare === "publication" && !isAggregated) {
+              formattedName = formatCitation(name);
+            }
             const { text: paddedName } = formatLabel(
-              name,
+              formattedName,
               Y_AXIS_CHART_WIDTH_PX - 90, // scale based on y-axis width
               selectedFont // prevents selected style from overlapping count
             );

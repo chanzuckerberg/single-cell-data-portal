@@ -1,15 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Page, expect, test } from "@playwright/test";
+import { Page, expect } from "@playwright/test";
 import { LATEST_SHARE_LINK_VERSION } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/ShareButton/utils";
 
 import { TEST_URL } from "tests/common/constants";
+import { test } from "tests/common/test";
 import { tryUntil } from "tests/utils/helpers";
 
-import {
-  goToWMG,
-  addTissuesAndGenes,
-  conditionallyRunTests,
-} from "tests/utils/wmgUtils";
+import { goToWMG, addTissuesAndGenes } from "tests/utils/wmgUtils";
 
 const { describe } = test;
 
@@ -54,8 +50,6 @@ const SHARE_LINK =
   "compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2";
 
 describe("Share link tests", () => {
-  conditionallyRunTests({ forceRun: true });
-
   test("Should share link with single tissue and single gene", async ({
     page,
     browserName,

@@ -30,16 +30,18 @@ export const useConnect = ({ areFiltersDisabled }: Props) => {
     [areFiltersDisabled]
   );
 
-  const optionLabel = useMemo(() => {
+  const optionLabel: DefaultDropdownMenuOption | undefined = useMemo(() => {
     return COMPARE_OPTIONS.find((option) => option.id === compare);
   }, [compare]);
 
   const handleChange = useCallback(
     (value: DefaultDropdownMenuOption | null) => {
       if (!dispatch || !value || optionLabel === value) return;
+
       track(EVENTS.WMG_OPTION_SELECT_GROUP_BY, {
         group_by_option: value.name,
       });
+
       dispatch(
         selectCompare(
           (value as (typeof COMPARE_OPTIONS)[number]).id as State["compare"]
