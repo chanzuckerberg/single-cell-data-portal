@@ -25,12 +25,13 @@ logger = logging.getLogger(__name__)
 
 
 @log_func_runtime
-def create_cell_counts_cube(*, query: ExperimentAxisQuery, corpus_path: str):
+def create_cell_counts_cube(*, query: ExperimentAxisQuery, corpus_path: str, organismId: str):
     """
     Create cell count cube and write to disk
     """
     obs_df = query.obs().concat().to_pandas()
     obs_df = obs_df.rename(columns=DIMENSION_NAME_MAP_CENSUS_TO_WMG)
+    obs_df["organism_ontology_term_id"] = organismId
 
     logger.info("Creating the cell counts cube and filter relationships graph.")
 

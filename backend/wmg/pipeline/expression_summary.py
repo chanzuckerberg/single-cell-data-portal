@@ -37,9 +37,10 @@ WRITE_CHUNK_SIZE = 50_000_000
 
 
 class ExpressionSummaryCubeBuilder:
-    def __init__(self, *, query: ExperimentAxisQuery, corpus_path: str):
+    def __init__(self, *, query: ExperimentAxisQuery, corpus_path: str, organismId: str):
         self.obs_df = query.obs().concat().to_pandas()
         self.obs_df = self.obs_df.rename(columns=DIMENSION_NAME_MAP_CENSUS_TO_WMG)
+        self.obs_df["organism_ontology_term_id"] = organismId
 
         self.var_df = query.var().concat().to_pandas()
         self.query = query

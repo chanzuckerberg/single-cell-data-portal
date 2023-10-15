@@ -23,6 +23,7 @@ def create_expression_summary_and_cell_counts_cubes(*, corpus_path: str):
 
     for organismInfo in ORGANISM_INFO:
         organism = organismInfo["label"]
+        organismId = organismInfo["id"]
 
         with cellxgene_census.open_soma(
             census_version="latest",
@@ -35,8 +36,10 @@ def create_expression_summary_and_cell_counts_cubes(*, corpus_path: str):
                 ),
             ) as query:
                 if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
-                    ExpressionSummaryCubeBuilder(query=query, corpus_path=corpus_path).create_expression_summary_cube()
-                    create_cell_counts_cube(query=query, corpus_path=corpus_path)
+                    ExpressionSummaryCubeBuilder(
+                        query=query, corpus_path=corpus_path, organismId=organismId
+                    ).create_expression_summary_cube()
+                    create_cell_counts_cube(query=query, corpus_path=corpus_path, organismId=organismId)
 
     pipeline_state[EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG] = True
     write_pipeline_state(pipeline_state, corpus_path)
