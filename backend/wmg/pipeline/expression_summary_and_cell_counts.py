@@ -1,5 +1,5 @@
 import cellxgene_census
-import tiledb as soma
+import tiledbsoma as soma
 
 from backend.wmg.pipeline.cell_counts import create_cell_counts_cube
 from backend.wmg.pipeline.constants import (
