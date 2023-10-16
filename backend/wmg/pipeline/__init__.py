@@ -1,6 +1,7 @@
 import logging
 import pathlib
 import time
+from typing import Optional
 
 from backend.wmg.data.utils import log_func_runtime
 from backend.wmg.pipeline.cell_type_ordering import create_cell_type_ordering
@@ -38,8 +39,10 @@ PIPELINE_STEPS = [
 
 
 @log_func_runtime
-def run_pipeline():
-    corpus_path = str(int(time.time()))
+def run_pipeline(corpus_path: Optional[str] = None):
+    if corpus_path is None:
+        corpus_path = str(int(time.time()))
+
     logger.info(f"Creating directory {corpus_path}")
     pathlib.Path(corpus_path).mkdir(parents=True, exist_ok=True)
 
