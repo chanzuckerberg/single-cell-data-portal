@@ -61,7 +61,7 @@ def query():
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
         )
 
-    with ServerTiming.time("query and build response"):
+    with ServerTiming.time("query tiledb"):
         cube_query_params = WmgCubeQueryParams(
             cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
             cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
@@ -81,6 +81,8 @@ def query():
         )
 
         cell_counts = q.cell_counts(criteria, compare_dimension=compare)
+
+    with ServerTiming.time("build response"):
         if expression_summary.shape[0] > 0 or cell_counts.shape[0] > 0:
             group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare] if compare else None
 
