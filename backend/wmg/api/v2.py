@@ -66,7 +66,7 @@ def query():
             cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
             cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
         )
-
+    with ServerTiming.time("build response"):
         q = WmgQuery(snapshot, cube_query_params)
         default = snapshot.expression_summary_default_cube is not None and compare is None
         for dim in criteria.dict():
