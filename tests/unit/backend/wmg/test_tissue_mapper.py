@@ -75,9 +75,5 @@ class TissueOrderTest(unittest.TestCase):
             "UBERON:0002240",  # spinal cord
             "UBERON:0002048 (organoid)",  # lung (organoid)
         ]
-        print("ordered")
-        print(order_tissues(unordered_tissues))
-        print("expected ordered")
-        print(expected_ordered_tissues)
 
         self.assertEqual(order_tissues(unordered_tissues), expected_ordered_tissues)
