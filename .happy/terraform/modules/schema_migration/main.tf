@@ -113,6 +113,55 @@ resource aws_batch_job_definition schema_migrations {
   })
 }
 
+resource aws_batch_job_definition pubish_revisions {
+  type = "container"
+  name = "dp-${var.deployment_stage}-${var.custom_stack_name}-${local.name}-publish-revisions"
+  container_properties = jsonencode({
+    command = ["python3",
+      "-m",
+      "backend.layers.processing.publish_revisions",
+    ],
+    jobRoleArn= var.batch_role_arn,
+    image= var.image,
+    environment= [
+      {
+        name= "ARTIFACT_BUCKET",
+        value= var.artifact_bucket
+      },
+      {
+        name= "DEPLOYMENT_STAGE",
+        value= var.deployment_stage
+      },
+      {
+        name= "AWS_DEFAULT_REGION",
+        value= data.aws_region.current.name
+      },
+      {
+        name= "REMOTE_DEV_PREFIX",
+        value= var.remote_dev_prefix
+      },
+    ],
+    resourceRequirements = [
+      {
+        type= "VCPU",
+        Value="2"
+      },
+      {
+        Type="MEMORY",
+        Value = "4096"
+      }
+    ]
+    logConfiguration= {
+      logDriver= "awslogs",
+      options= {
+        awslogs-group= aws_cloudwatch_log_group.batch_cloud_watch_logs_group.id,
+        awslogs-region= data.aws_region.current.name
+      }
+    }
+  })
+}
+
+
 resource aws_sfn_state_machine sfn_schema_migration {
   name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-${local.name}-sfn"
   role_arn = var.sfn_role_arn
