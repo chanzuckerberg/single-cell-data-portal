@@ -14,6 +14,7 @@ from backend.wmg.pipeline.constants import (
     CELL_TYPE_ORDERING_CREATED_FLAG,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
 )
+from backend.wmg.pipeline.errors import PipelineStepMissing
 from backend.wmg.pipeline.utils import (
     load_pipeline_state,
     write_pipeline_state,
@@ -38,7 +39,7 @@ def create_cell_type_ordering(*, corpus_path: str) -> None:
     """
     pipeline_state = load_pipeline_state(corpus_path)
     if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
-        raise ValueError("cell_counts")
+        raise PipelineStepMissing("cell_counts")
 
     with tiledb.open(os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)) as cell_counts_cube:
         cell_counts_df = cell_counts_cube.df[:]
