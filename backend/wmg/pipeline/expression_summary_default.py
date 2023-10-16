@@ -19,6 +19,7 @@ from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,
 )
+from backend.wmg.pipeline.errors import PipelineStepMissing
 from backend.wmg.pipeline.utils import (
     create_empty_cube_if_needed,
     load_pipeline_state,
@@ -37,7 +38,7 @@ def create_expression_summary_default_cube(*, corpus_path: str):
     pipeline_state = load_pipeline_state(corpus_path=corpus_path)
 
     if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
-        raise ValueError("'expression_summary' array does not exist. Please run its corresponding pipeline step first.")
+        raise PipelineStepMissing("expression_summary")
 
     logger.info("Creating the default expression summary cube.")
     expression_summary_uri = os.path.join(corpus_path, EXPRESSION_SUMMARY_CUBE_NAME)
