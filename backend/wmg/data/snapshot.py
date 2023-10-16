@@ -184,7 +184,6 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
 
     cell_type_orderings = _load_cell_type_order(snapshot_dir_path)
     primary_filter_dimensions = _load_primary_filter_data(snapshot_dir_path)
-    _load_dataset_to_gene_ids_data(snapshot_dir_path)
     filter_relationships = _load_filter_graph_data(snapshot_dir_path)
 
     # TODO: Once the pipeline generates the V2 snapshot, the ternary can be removed
@@ -225,11 +224,6 @@ def _load_primary_filter_data(snapshot_dir_path: str) -> Dict:
 
 def _load_dataset_metadata(snapshot_dir_path: str) -> Dict:
     key_path = f"{snapshot_dir_path}/{DATASET_METADATA_FILENAME}"
-    return json.loads(_read_value_at_s3_key(key_path))
-
-
-def _load_dataset_to_gene_ids_data(snapshot_dir_path: str) -> Dict:
-    key_path = f"{snapshot_dir_path}/{DATASET_TO_GENE_IDS_FILENAME}"
     return json.loads(_read_value_at_s3_key(key_path))
 
 
