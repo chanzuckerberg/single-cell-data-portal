@@ -1,6 +1,9 @@
 name: Deploy Happy
 
-on: deployment
+on:
+  deployment:
+  repository_dispatch:
+    types: [deploy-images]
 
 # add a concurrency group to prevent multiple builds from running at the same time
 concurrency:

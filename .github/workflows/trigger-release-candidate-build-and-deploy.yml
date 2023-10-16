@@ -6,10 +6,10 @@ on:
       - main
 
 jobs:
-  merge:
+  continuous_deploy_to_staging:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main branch and staging branch
+      - name: Checkout main branch
         uses: actions/checkout@v2
         with:
           ref: main
@@ -34,3 +34,21 @@ jobs:
           git merge --verbose main -m "Merging main branch into staging branch"
 
           git push origin staging
+      - name: Trigger repository_dispatch to build images
+        if: success()
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: build-images
+      - name: Trigger repository_dispatch to deploy images
+        if: success()
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: deploy-images
+      - name: Trigger repository_dispatch to run unit tests
+        if: success()
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: run-unit-tests
