@@ -158,7 +158,7 @@ def setup_retry_session(retries=3, backoff_factor=2, status_forcelist=(500, 502,
     return session
 
 
-def get_datasets_from_curation_api():
+def get_datasets_from_discover_api():
     # hardcode to staging backend if deployment is rdev or test
     deployment_stage = os.environ.get("DEPLOYMENT_STAGE")
     API_URL = DEPLOYMENT_STAGE_TO_API_URL.get(
@@ -175,7 +175,7 @@ def get_datasets_from_curation_api():
     return datasets
 
 
-def get_collections_from_curation_api():
+def get_collections_from_discover_api():
     # hardcode to staging backend if deployment is rdev or test
     deployment_stage = os.environ.get("DEPLOYMENT_STAGE")
     API_URL = DEPLOYMENT_STAGE_TO_API_URL.get(

@@ -8,8 +8,8 @@ from tiledb import ArraySchema
 from backend.wmg.data.tissue_mapper import TissueMapper
 from backend.wmg.data.utils import (
     create_empty_cube,
-    get_collections_from_curation_api,
-    get_datasets_from_curation_api,
+    get_collections_from_discover_api,
+    get_datasets_from_discover_api,
 )
 from backend.wmg.pipeline.constants import (
     DATASET_METADATA_CREATED_FLAG,
@@ -52,8 +52,8 @@ def remove_accents(input_str):
 
 
 def return_dataset_dict_w_publications():
-    datasets = get_datasets_from_curation_api()
-    collections = get_collections_from_curation_api()
+    datasets = get_datasets_from_discover_api()
+    collections = get_collections_from_discover_api()
     collections_dict = {collection["collection_id"]: collection for collection in collections}
 
     # cchoi: creating a helper function to format citations properly

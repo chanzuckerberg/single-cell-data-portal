@@ -29,10 +29,10 @@ class TestSourceCollectionsGenerator(unittest.TestCase):
             cell_counts_df = snapshot.cell_counts_cube.df[:]
             tree_builder = OntologyTreeBuilder(cell_counts_df)
             with patch(
-                "backend.cellguide.pipeline.source_collections.source_collections_generator.get_datasets_from_curation_api",
+                "backend.cellguide.pipeline.source_collections.source_collections_generator.get_datasets_from_discover_api",
                 new=mock_get_datasets_from_curation_endpoint,
             ), patch(
-                "backend.cellguide.pipeline.source_collections.source_collections_generator.get_collections_from_curation_api",
+                "backend.cellguide.pipeline.source_collections.source_collections_generator.get_collections_from_discover_api",
                 new=mock_get_collections_from_curation_endpoint,
             ):
                 source_collections = generate_source_collections_data(
