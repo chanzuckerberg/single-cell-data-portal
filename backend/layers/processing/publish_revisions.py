@@ -1,3 +1,11 @@
+"""
+After a migration has run, this can be used to publish all open revision for migrated collections.
+
+$ aws batch submit-job --job-name publish-revisions \
+  \ --job-queue <your_job_queue_ARN>
+  \ --job-definition <your_job_definition_ARN>
+
+"""
 import logging
 import os
 from typing import Dict, List
