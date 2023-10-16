@@ -1,4 +1,4 @@
-import json
+import os
 from typing import List, Set
 
 import pandas as pd
@@ -6,34 +6,22 @@ import tiledb
 
 from backend.wmg.data.constants import CL_BASIC_OBO_NAME
 from backend.wmg.data.snapshot import (
+    CELL_COUNTS_CUBE_NAME,
     CELL_TYPE_ORDERINGS_FILENAME,
-    DATASET_METADATA_FILENAME,
 )
-from backend.wmg.data.utils import get_datasets_from_curation_api, get_pinned_ontology_url, log_func_runtime, to_dict
-
-
-def generate_dataset_metadata_file(snapshot_path: str) -> None:
-    """
-    This function generates a dictionary containing metadata for each dataset.
-    The metadata includes the dataset id, label, collection id, and collection label.
-    The function fetches the datasets from the curation API and iterates over them to create the metadata dictionary.
-    """
-    datasets = get_datasets_from_curation_api()
-    dataset_dict = {}
-    for dataset in datasets:
-        dataset_id = dataset["dataset_id"]
-        dataset_dict[dataset_id] = dict(
-            id=dataset_id,
-            label=dataset["title"],
-            collection_id=dataset["collection_id"],
-            collection_label=dataset["collection_name"],
-        )
-    with open(f"{snapshot_path}/{DATASET_METADATA_FILENAME}", "w") as f:
-        json.dump(dataset_dict, f)
+from backend.wmg.data.utils import get_pinned_ontology_url, log_func_runtime, to_dict
+from backend.wmg.pipeline.constants import (
+    CELL_TYPE_ORDERING_CREATED_FLAG,
+    EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
+)
+from backend.wmg.pipeline.utils import (
+    load_pipeline_state,
+    write_pipeline_state,
+)
 
 
 @log_func_runtime
-def cell_type_ordering_create_file(snapshot_path: str) -> None:
+def create_cell_type_ordering(*, corpus_path: str) -> None:
     """
     Writes an ordered "table" of cell types to a json file. The table is written from a pandas data frame with the
     following columns:
@@ -48,9 +36,13 @@ def cell_type_ordering_create_file(snapshot_path: str) -> None:
 
     :return None
     """
+    pipeline_state = load_pipeline_state(corpus_path)
+    if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
+        raise ValueError("cell_counts")
 
-    cell_counts_cube = tiledb.open(f"{snapshot_path}/cell_counts")
-    cell_counts_df = cell_counts_cube.df[:]
+    with tiledb.open(os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)) as cell_counts_cube:
+        cell_counts_df = cell_counts_cube.df[:]
+
     cell_counts_df = (
         cell_counts_df.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).first().reset_index()
     )
@@ -71,12 +63,15 @@ def cell_type_ordering_create_file(snapshot_path: str) -> None:
     # Concatenate into single dataframe for writing
     df = pd.concat(ordered_cells_by_tissue).reset_index(drop=True)
 
-    df.to_json(f"{snapshot_path}/{CELL_TYPE_ORDERINGS_FILENAME}")
+    df.to_json(os.path.join(corpus_path, CELL_TYPE_ORDERINGS_FILENAME))
+
+    pipeline_state[CELL_TYPE_ORDERING_CREATED_FLAG] = True
+    write_pipeline_state(pipeline_state, corpus_path)
 
 
 def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     """
-    Helper function for `cell_type_ordering_create_file()`. Orders a set of cell types starting from a root cell type.
+    Helper function for `create_cell_type_ordering()`. Orders a set of cell types starting from a root cell type.
     Ordering is according to the CL directed acyclic graph (DAG). Using pygraphviz, a 2-dimensional representation of
     the DAG containing the cell types is built, then an ordered list of cell types is created by traversing the
     DAG using a depth-first approach. Children cell types are represented with a number `depth`, which is 0-based
@@ -159,7 +154,7 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
 
 def _cell_type_ordering_per_tissue(data_cells: pd.DataFrame, target_cells: List[str], tissue: str) -> pd.DataFrame:
     """
-    Helper function for `cell_type_ordering_create_file()`. Using an ordered cell type table
+    Helper function for `create_cell_type_ordering()`. Using an ordered cell type table
     obtained by `_cell_type_ordering_compute()`, this function subsets those cell types to only
     contain what's in `target_cells`, and adds a tissue column with values as in `tissue`.
 
