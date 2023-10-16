@@ -22,6 +22,7 @@ from backend.wmg.pipeline.constants import (
     MARKER_GENES_CUBE_CREATED_FLAG,
     PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG,
 )
+from backend.wmg.pipeline.errors import PipelineStepMissing
 from backend.wmg.pipeline.utils import (
     create_empty_cube_if_needed,
     load_pipeline_state,
@@ -38,19 +39,13 @@ def create_marker_genes_cube(*, corpus_path: str):
     expression_summary_default_cube_uri = os.path.join(corpus_path, EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME)
     cell_counts_cube_uri = os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)
     if not pipeline_state.get(EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG):
-        raise ValueError(
-            "'expression_summary_default' cube does not exist. Please run 'create_expression_summary_default_cube' first."
-        )
+        raise PipelineStepMissing("expression_summary_default")
 
     if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
-        raise ValueError(
-            "'cell_counts' cube does not exist. Please run 'create_cell_counts_cube_and_filter_relationships' first."
-        )
+        raise PipelineStepMissing("cell_counts")
 
     if not pipeline_state.get(PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG):
-        raise ValueError(
-            "'primary_filter_dimensions' file does not exist. Please run 'create_primary_filter_dimensions' first."
-        )
+        raise PipelineStepMissing("primary_filter_dimensions")
 
     logger.info("Calculating marker genes.")
     with (
