@@ -115,7 +115,7 @@ class ProcessDownloadValidate(ProcessingLogic):
             f"curated and distributed by CZ CELLxGENE Discover in Collection: "
             f"{collections_base_url}/{collection_id}"
         )
-        adata = scanpy.read_h5ad(adata_path, backed="r")
+        adata = scanpy.read_h5ad(adata_path)
         adata.uns["citation"] = citation
         adata.write(adata_path)
 
