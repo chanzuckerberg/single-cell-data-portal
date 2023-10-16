@@ -28,6 +28,7 @@ export const useConnect = ({
    * validation, verfication of elements, and event tracking
    */
   const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
     const isValid = validate();
 
     const form: HTMLFormElement | null = isValid
@@ -50,7 +51,6 @@ export const useConnect = ({
     form.submit();
 
     track(EVENTS.NEWSLETTER_EMAIL_SUBMITTED);
-    event.preventDefault();
   };
 
   /**

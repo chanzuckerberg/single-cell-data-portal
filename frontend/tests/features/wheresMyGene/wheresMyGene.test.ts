@@ -540,7 +540,7 @@ describe("Where's My Gene", () => {
         validationMessage.getByText(FAILED_EMAIL_VALIDATION_STRING)
       ).toBeTruthy();
 
-      emailInput.fill("");
+      emailInput.fill(" ");
       expect(subscribeButton.isDisabled());
 
       // Bad email 2
@@ -551,7 +551,7 @@ describe("Where's My Gene", () => {
         validationMessage.getByText(FAILED_EMAIL_VALIDATION_STRING)
       ).toBeTruthy();
 
-      emailInput.fill("");
+      emailInput.fill(" ");
       expect(subscribeButton.isDisabled());
 
       // Bad email 3
