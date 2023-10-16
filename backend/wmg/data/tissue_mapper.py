@@ -34,65 +34,37 @@ class TissueMapper:
         "UBERON_0001836",  # saliva
         "UBERON_0001723",  # tongue
         "UBERON_0001013",  # adipose tissue
-        "UBERON_0000473",  # testis
         "UBERON_0002367",  # prostate gland
         "UBERON_0000057",  # urethra
-        "UBERON_0000056",  # ureter
         "UBERON_0003889",  # fallopian tube
         "UBERON_0000995",  # uterus
         "UBERON_0000992",  # ovary
-        "UBERON_0002110",  # gall bladder
         "UBERON_0001255",  # urinary bladder
         "UBERON_0018707",  # bladder organ
         "UBERON_0000922",  # embryo
-        "UBERON_0004023",  # ganglionic eminence --> this a part of the embryo, remove in case generality is desired
         "UBERON_0001987",  # placenta
-        "UBERON_0007106",  # chorionic villus
         "UBERON_0002369",  # adrenal gland
         "UBERON_0002368",  # endocrine gland
         "UBERON_0002365",  # exocrine gland
         "UBERON_0000030",  # lamina propria
         "UBERON_0000029",  # lymph node
-        "UBERON_0004536",  # lymph vasculature
         "UBERON_0001015",  # musculature
         "UBERON_0000004",  # nose
         "UBERON_0003688",  # omentum
-        "UBERON_0000977",  # pleura
-        "UBERON_0002370",  # thymus
         "UBERON_0002049",  # vasculature
         "UBERON_0009472",  # axilla
         "UBERON_0001087",  # pleural fluid
         "UBERON_0000344",  # mucosa
         "UBERON_0001434",  # skeletal system
-        "UBERON_0002228",  # rib
-        "UBERON_0003129",  # skull
-        "UBERON_0004537",  # blood vasculature
         "UBERON_0002405",  # immune system
-        "UBERON_0001009",  # circulatory system
         "UBERON_0001007",  # digestive system
         "UBERON_0001017",  # central nervous system
-        "UBERON_0001008",  # renal system
         "UBERON_0000990",  # reproductive system
         "UBERON_0001004",  # respiratory system
-        "UBERON_0000010",  # peripheral nervous system
-        "UBERON_0001032",  # sensory system
-        "UBERON_0002046",  # thyroid gland
-        "UBERON_0004535",  # cardiovascular system
-        "UBERON_0000949",  # endocrine system
-        "UBERON_0002330",  # exocrine system
-        "UBERON_0002390",  # hematopoietic system
-        "UBERON_0000383",  # musculature of body
-        "UBERON_0001465",  # knee
-        "UBERON_0001016",  # nervous system
-        "UBERON_0001348",  # brown adipose tissue
-        "UBERON_0015143",  # mesenteric fat pad
-        "UBERON_0000175",  # pleural effusion
-        "UBERON_0001416",  # skin of abdomen
-        "UBERON_0001868",  # skin of chest
-        "UBERON_0001511",  # skin of leg
-        "UBERON_0002190",  # subcutaneous adipose tissue
-        "UBERON_0000014",  # zone of skin
         "UBERON_0000916",  # abdomen
+        # these were not originally in the list, but are in cellguide
+        "UBERON_0010210",  # blood clot
+        "UBERON_0035210",  # paracolic gutter
     ]
 
     # Terms to ignore when mapping
