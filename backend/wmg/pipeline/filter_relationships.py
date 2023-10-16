@@ -14,6 +14,7 @@ from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     FILTER_RELATIONSHIPS_CREATED_FLAG,
 )
+from backend.wmg.pipeline.errors import PipelineStepMissing
 from backend.wmg.pipeline.utils import (
     load_pipeline_state,
     write_pipeline_state,
@@ -42,7 +43,7 @@ def create_filter_relationships_graph(*, corpus_path: str) -> dict:
     """
     pipeline_state = load_pipeline_state(corpus_path)
     if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
-        raise ValueError("'cell_counts' array does not exist. Please run 'create_cell_counts_cube' first.")
+        raise PipelineStepMissing("cell_counts")
 
     logger.info("Creating filter relationships graph.")
     with tiledb.open(os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)) as cc_cube:
