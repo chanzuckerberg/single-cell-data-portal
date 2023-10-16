@@ -13,7 +13,7 @@ from backend.wmg.data.snapshot import (
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
 )
 from backend.wmg.data.tissue_mapper import TissueMapper
-from backend.wmg.data.utils import get_datasets_from_curation_api, get_pinned_ontology_url, log_func_runtime, to_dict
+from backend.wmg.data.utils import get_datasets_from_discover_api, get_pinned_ontology_url, log_func_runtime, to_dict
 
 
 def generate_dataset_metadata_file(snapshot_path: str) -> None:
@@ -22,7 +22,7 @@ def generate_dataset_metadata_file(snapshot_path: str) -> None:
     The metadata includes the dataset id, label, collection id, and collection label.
     The function fetches the datasets from the curation API and iterates over them to create the metadata dictionary.
     """
-    datasets = get_datasets_from_curation_api()
+    datasets = get_datasets_from_discover_api()
     dataset_dict = {}
     for dataset in datasets:
         dataset_id = dataset["dataset_id"]

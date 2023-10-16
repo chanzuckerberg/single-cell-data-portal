@@ -2,7 +2,7 @@ import json
 import logging
 
 from backend.wmg.data.snapshot import DATASET_METADATA_FILENAME
-from backend.wmg.data.utils import get_datasets_from_curation_api, log_func_runtime
+from backend.wmg.data.utils import get_datasets_from_discover_api, log_func_runtime
 from backend.wmg.pipeline.constants import DATASET_METADATA_CREATED_FLAG
 from backend.wmg.pipeline.utils import load_pipeline_state, write_pipeline_state
 
@@ -14,11 +14,11 @@ def create_dataset_metadata(*, corpus_path: str) -> None:
     """
     This function generates a dictionary containing metadata for each dataset.
     The metadata includes the dataset id, label, collection id, and collection label.
-    The function fetches the datasets from the curation API and iterates over them to create the metadata dictionary.
+    The function fetches the datasets from the Discover API and iterates over them to create the metadata dictionary.
     """
     logger.info("Generating dataset metadata file")
     pipeline_state = load_pipeline_state(corpus_path)
-    datasets = get_datasets_from_curation_api()
+    datasets = get_datasets_from_discover_api()
     dataset_dict = {}
     for dataset in datasets:
         dataset_id = dataset["dataset_id"]
