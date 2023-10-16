@@ -18,7 +18,7 @@ import {
   NEWSLETTER_SIGNUP_TITLE,
   NEWSLETTER_SIGNUP_UNSUBSCRIBE_MESSAGE,
   NEWSLETTER_SIGNUP_UNSUBSCRIBE_MESSAGE_UPON_SIGNUP,
-} from "../constants";
+} from "../../constants";
 
 export default function BottomBannerModalContent({
   id = "newsletter-banner",

@@ -16,7 +16,7 @@ import cellxgeneLogoSvg from "src/common/images/CellxGene.svg";
 import Head from "next/head";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 import { noop } from "src/common/constants/utils";
-import BottomBannerModalContent from "./ModalContent";
+import BottomBannerModalContent from "./components/ModalContent";
 import { useConnect } from "./connect";
 import {
   FORM_CONTAINER_ID,

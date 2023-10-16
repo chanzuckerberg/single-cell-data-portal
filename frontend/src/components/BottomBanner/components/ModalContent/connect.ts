@@ -5,7 +5,7 @@ import {
   FAILED_EMAIL_VALIDATION_STRING,
   FORM_CONTAINER_ID_QUERY,
   HIDDEN_NEWSLETTER_SUCCESS_MESSAGE,
-} from "../constants";
+} from "../../constants";
 
 export const useConnect = ({
   id,
