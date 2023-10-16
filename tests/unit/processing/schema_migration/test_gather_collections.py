@@ -4,8 +4,12 @@ class TestGatherCollections:
         published, revision = collections["revision"]
         # get_collections is called twice
         schema_migrate.business_logic.get_collections.side_effect = [[published], [revision]]
-        response = schema_migrate.gather_collections()
-        assert {"can_publish": "True", "collection_id": published.collection_id.id} not in response
+        response = schema_migrate.gather_collections(auto_publish=True)
+        assert {
+            "can_publish": "True",
+            "collection_id": published.collection_id.id,
+            "collection_version_id": published.collection_id.id,
+        } not in response
         assert {
             "can_publish": "False",
             "collection_id": revision.collection_id.id,
@@ -18,7 +22,7 @@ class TestGatherCollections:
         published = collections["published"]
         # get_collections is called twice
         schema_migrate.business_logic.get_collections.side_effect = [published, []]
-        response = schema_migrate.gather_collections()
+        response = schema_migrate.gather_collections(auto_publish=True)
         assert {
             "can_publish": "True",
             "collection_id": published[0].collection_id.id,
@@ -31,10 +35,40 @@ class TestGatherCollections:
         private = collections["private"]
         # get_collections is called twice
         schema_migrate.business_logic.get_collections.side_effect = [[], private]
-        response = schema_migrate.gather_collections()
+        response = schema_migrate.gather_collections(auto_publish=True)
         assert {
             "can_publish": "False",
             "collection_id": private[0].collection_id.id,
             "collection_version_id": private[0].version_id.id,
         } in response
         assert len(response) == 1
+
+    def test_with_auto_publish_false(self, schema_migrate_and_collections):
+        schema_migrate, collections = schema_migrate_and_collections
+        published_no_revision = collections["published"][0]
+        private = collections["private"][0]
+        published_with_revision, revision = collections["revision"]
+        # get_collections is called twice
+        schema_migrate.business_logic.get_collections.side_effect = [
+            [published_no_revision, published_with_revision],
+            [private, revision],
+        ]
+        response = schema_migrate.gather_collections(auto_publish=False)
+        for obj in [
+            {
+                "can_publish": "False",
+                "collection_id": published_no_revision.collection_id.id,
+                "collection_version_id": published_no_revision.version_id.id,
+            },
+            {
+                "can_publish": "False",
+                "collection_id": private.collection_id.id,
+                "collection_version_id": private.version_id.id,
+            },
+            {
+                "can_publish": "False",
+                "collection_id": revision.collection_id.id,
+                "collection_version_id": revision.version_id.id,
+            },
+        ]:
+            assert obj in response

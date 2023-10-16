@@ -28,6 +28,36 @@ permissions:
   pull-requests: write
 
 jobs:
+  get_previous_image_digests:
+    runs-on: ubuntu-22.04
+    outputs:
+      ecr_repos: ${{ steps.get_digests.outputs.ecr_repos }}
+      image_digests: ${{ steps.get_digests.outputs.image_digests }}
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - name: Get previous image digests for each repo
+        id: get_digests
+        run: |
+          ECR_REPOS=(corpora-frontend corpora-backend corpora-upload-failures corpora-upload-success \
+            dataset-submissions corpora-upload wmg-processing cellguide-pipeline)
+          IMAGE_DIGESTS=()
+          for ecr_repo in "${ECR_REPOS[@]}"; do
+            IMAGE_DIGESTS+=(`aws ecr list-images --repository-name $ecr_repo --filter tagStatus=TAGGED \
+              | jq -r --arg STACK_NAME ${STACK_NAME} '[.imageIds[] \
+              | select(.imageTag==$STACK_NAME)][0].imageDigest'`)
+          done
+          echo "ECR_REPOS=${ECR_REPOS[@]}" >> $GITHUB_OUTPUT
+          echo "IMAGE_DIGESTS=${IMAGE_DIGESTS[@]}" >> $GITHUB_OUTPUT
+
   build_images:
     strategy:
       matrix:
@@ -40,6 +70,8 @@ jobs:
           - wmg_processing
           - cellguide_pipeline
     runs-on: ubuntu-22.04
+    needs:
+      - get_previous_image_digests
     outputs:
       image_tag: ${{ steps.push_images.outputs.image_tag }}
     steps:
@@ -65,11 +97,12 @@ jobs:
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
-          export IMAGE_TAG=branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
+          export IMAGE_TAG=sha-${GITHUB_SHA:0:7}
+          export BRANCH_TAG=branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
           happy push devstack --env dev --slice ${{ matrix.image }} \
           --docker-compose-env-file envfile --aws-profile "" \
-          --tags ${STACK_NAME},${IMAGE_TAG}
+          --tags ${STACK_NAME},${IMAGE_TAG},${BRANCH_TAG}
 
   deploy-rdev:
     runs-on: ubuntu-22.04
@@ -96,6 +129,33 @@ jobs:
           stack-name: ${{ env.STACK_NAME }}
           tag: ${{ needs.build_images.outputs.image_tag }}
           happy_version: "0.110.1"
+
+  delete-previous-images:
+    runs-on: ubuntu-22.04
+    needs:
+      - get_previous_image_digests
+      - deploy-rdev
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - name: Delete previous images
+        run: |
+          ECR_REPOS=(${{ needs.get_previous_image_digests.outputs.ecr_repos }})
+          IMAGE_DIGESTS=(${{ needs.get_previous_image_digests.outputs.image_digests }})
+          for ((i = 0; i < ${#ECR_REPOS[@]}; ++i)); do
+            if [ ${IMAGE_DIGESTS[$i]} == "null" ]; then
+              continue
+            fi
+            aws ecr batch-delete-image --repository-name ${ECR_REPOS[$i]} --image-ids imageDigest=${IMAGE_DIGESTS[$i]}
+          done
 
   summarize:
     runs-on: ubuntu-22.04
@@ -173,9 +233,30 @@ jobs:
         run: |
           ./scripts/populate_rdev_with_wmg_data.sh ${{ env.STACK_NAME }}
 
+  seed-database-e2e-tests:
+    runs-on: ubuntu-22.04
+    needs:
+      - deploy-rdev
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Seed database for e2e tests
+        run: |
+          pip3 install -r scripts/smoke_tests/requirements.txt
+          STACK_NAME=${{ env.STACK_NAME }} DEPLOYMENT_STAGE=rdev python3 -m scripts.smoke_tests.setup
+
   run-e2e-tests:
     needs:
       - seed-wmg-cellguide-rdev
+      - seed-database-e2e-tests
     timeout-minutes: 30
     name: e2e-tests ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
     runs-on: ubuntu-22.04
@@ -319,6 +400,7 @@ jobs:
         working-directory: frontend
     needs:
       - seed-wmg-cellguide-rdev
+      - seed-database-e2e-tests
     steps:
       - uses: actions/setup-node@v2
         with:
