@@ -17,6 +17,7 @@ from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,
     PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG,
 )
+from backend.wmg.pipeline.errors import PipelineStepMissing
 from backend.wmg.pipeline.utils import (
     load_pipeline_state,
     write_pipeline_state,
@@ -32,11 +33,9 @@ def create_primary_filter_dimensions(*, corpus_path: str):
     """
     pipeline_state = load_pipeline_state(corpus_path)
     if not pipeline_state.get(EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG):
-        raise ValueError(
-            "'expression_summary_default' array does not exist. Please run its corresponding pipeline step first."
-        )
+        raise PipelineStepMissing("expression_summary_default")
     if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
-        raise ValueError("'cell_counts' array does not exist. Please run its corresponding pipeline step first.")
+        raise PipelineStepMissing("cell_counts")
 
     snapshot_id = os.path.basename(os.path.normpath(corpus_path))
 
