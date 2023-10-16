@@ -20,8 +20,11 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
             if name == "schema_4_feature_flag":
                 return "True"
 
-        mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-        mock_config.start()
+        self.mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+        self.mock_config.start()
+
+    def tearDown(self):
+        self.mock_config.stop()
 
     @patch("scanpy.read_h5ad")
     def test_extract_metadata(self, mock_read_h5ad):

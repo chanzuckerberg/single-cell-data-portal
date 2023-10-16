@@ -84,8 +84,8 @@ class BaseTest(unittest.TestCase):
             if name == "upload_max_file_size_gb":
                 return 30
 
-        mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-        mock_config.start()
+        self.mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+        self.mock_config.start()
 
         from backend.layers.common import validation
 
@@ -154,6 +154,7 @@ class BaseTest(unittest.TestCase):
 
     def tearDown(self):
         super().tearDown()
+        self.mock_config.stop()
         if self.run_as_integration:
             self.database_provider._drop_schema()
 
