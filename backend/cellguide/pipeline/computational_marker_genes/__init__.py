@@ -110,11 +110,4 @@ def get_computational_marker_genes(*, snapshot: WmgSnapshot, ontology_tree: Onto
             )
             reformatted_marker_genes[symbol][organism][tissue].append(data)
 
-    # # assert that cell types do not appear multiple times in each gene, tissue, organism
-    # for symbol in reformatted_marker_genes:
-    #     for organism in reformatted_marker_genes[symbol]:
-    #         for tissue in reformatted_marker_genes[symbol][organism]:
-    #             cell_type_ids = [i["cell_type_id"] for i in reformatted_marker_genes[symbol][organism][tissue]]
-    #             assert len(cell_type_ids) == len(list(set(cell_type_ids)))
-
     return marker_genes, reformatted_marker_genes
