@@ -9,6 +9,7 @@ MARKER_GENES_CUBE_CREATED_FLAG = "marker_genes_cube_created"
 FILTER_RELATIONSHIPS_CREATED_FLAG = "filter_relationships_created"
 PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG = "primary_filter_dimensions_created"
 DATASET_METADATA_CREATED_FLAG = "dataset_metadata_created"
+CELL_TYPE_ORDERING_CREATED_FLAG = "cell_type_ordering_created"
 
 PIPELINE_STATE_FILENAME = "pipeline_state.json"
 

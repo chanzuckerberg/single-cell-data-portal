@@ -1,43 +1,27 @@
-import json
-from typing import Dict, Iterable, List, Set
+import os
+from typing import List, Set
 
 import pandas as pd
 import tiledb
 
 from backend.wmg.data.constants import CL_BASIC_OBO_NAME
-from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.snapshot import (
+    CELL_COUNTS_CUBE_NAME,
     CELL_TYPE_ORDERINGS_FILENAME,
-    DATASET_METADATA_FILENAME,
-    EXPRESSION_SUMMARY_CUBE_NAME,
-    PRIMARY_FILTER_DIMENSIONS_FILENAME,
 )
-from backend.wmg.data.tissue_mapper import TissueMapper
-from backend.wmg.data.utils import get_datasets_from_curation_api, get_pinned_ontology_url, log_func_runtime, to_dict
-
-
-def generate_dataset_metadata_file(snapshot_path: str) -> None:
-    """
-    This function generates a dictionary containing metadata for each dataset.
-    The metadata includes the dataset id, label, collection id, and collection label.
-    The function fetches the datasets from the curation API and iterates over them to create the metadata dictionary.
-    """
-    datasets = get_datasets_from_curation_api()
-    dataset_dict = {}
-    for dataset in datasets:
-        dataset_id = dataset["dataset_id"]
-        dataset_dict[dataset_id] = dict(
-            id=dataset_id,
-            label=dataset["title"],
-            collection_id=dataset["collection_id"],
-            collection_label=dataset["collection_name"],
-        )
-    with open(f"{snapshot_path}/{DATASET_METADATA_FILENAME}", "w") as f:
-        json.dump(dataset_dict, f)
+from backend.wmg.data.utils import get_pinned_ontology_url, log_func_runtime, to_dict
+from backend.wmg.pipeline.constants import (
+    CELL_TYPE_ORDERING_CREATED_FLAG,
+    EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
+)
+from backend.wmg.pipeline.utils import (
+    load_pipeline_state,
+    write_pipeline_state,
+)
 
 
 @log_func_runtime
-def cell_type_ordering_create_file(snapshot_path: str) -> None:
+def create_cell_type_ordering(*, corpus_path: str) -> None:
     """
     Writes an ordered "table" of cell types to a json file. The table is written from a pandas data frame with the
     following columns:
@@ -52,9 +36,13 @@ def cell_type_ordering_create_file(snapshot_path: str) -> None:
 
     :return None
     """
+    pipeline_state = load_pipeline_state(corpus_path)
+    if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
+        raise ValueError("cell_counts")
 
-    cell_counts_cube = tiledb.open(f"{snapshot_path}/cell_counts")
-    cell_counts_df = cell_counts_cube.df[:]
+    with tiledb.open(os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)) as cell_counts_cube:
+        cell_counts_df = cell_counts_cube.df[:]
+
     cell_counts_df = (
         cell_counts_df.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).first().reset_index()
     )
@@ -75,12 +63,15 @@ def cell_type_ordering_create_file(snapshot_path: str) -> None:
     # Concatenate into single dataframe for writing
     df = pd.concat(ordered_cells_by_tissue).reset_index(drop=True)
 
-    df.to_json(f"{snapshot_path}/{CELL_TYPE_ORDERINGS_FILENAME}")
+    df.to_json(os.path.join(corpus_path, CELL_TYPE_ORDERINGS_FILENAME))
+
+    pipeline_state[CELL_TYPE_ORDERING_CREATED_FLAG] = True
+    write_pipeline_state(pipeline_state, corpus_path)
 
 
 def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     """
-    Helper function for `cell_type_ordering_create_file()`. Orders a set of cell types starting from a root cell type.
+    Helper function for `create_cell_type_ordering()`. Orders a set of cell types starting from a root cell type.
     Ordering is according to the CL directed acyclic graph (DAG). Using pygraphviz, a 2-dimensional representation of
     the DAG containing the cell types is built, then an ordered list of cell types is created by traversing the
     DAG using a depth-first approach. Children cell types are represented with a number `depth`, which is 0-based
@@ -163,7 +154,7 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
 
 def _cell_type_ordering_per_tissue(data_cells: pd.DataFrame, target_cells: List[str], tissue: str) -> pd.DataFrame:
     """
-    Helper function for `cell_type_ordering_create_file()`. Using an ordered cell type table
+    Helper function for `create_cell_type_ordering()`. Using an ordered cell type table
     obtained by `_cell_type_ordering_compute()`, this function subsets those cell types to only
     contain what's in `target_cells`, and adds a tissue column with values as in `tissue`.
 
@@ -209,81 +200,3 @@ def _cell_type_ordering_per_tissue(data_cells: pd.DataFrame, target_cells: List[
     tissue_cells["order"] = range(len(tissue_cells))
 
     return tissue_cells
-
-
-@log_func_runtime
-def generate_primary_filter_dimensions(snapshot_path: str, snapshot_id: int):
-    def list_primary_filter_dimension_term_ids(cube, primary_dim_name: str):
-        return cube.query(attrs=[], dims=[primary_dim_name]).df[:].groupby([primary_dim_name]).first().index.tolist()
-
-    def list_grouped_primary_filter_dimensions_term_ids(
-        cube, primary_dim_name: str, group_by_dim: str
-    ) -> Dict[str, List[str]]:
-        return (
-            cube.query(attrs=[], dims=[primary_dim_name, group_by_dim])
-            .df[:]
-            .drop_duplicates()
-            .groupby(group_by_dim)
-            .agg(list)
-            .to_dict()[primary_dim_name]
-        )
-
-    def build_gene_id_label_mapping(gene_ontology_term_ids: List[str]) -> List[dict]:
-        return [
-            {gene_ontology_term_id: gene_term_label(gene_ontology_term_id)}
-            for gene_ontology_term_id in gene_ontology_term_ids
-        ]
-
-    def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> List[dict]:
-        return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
-
-    with tiledb.open(f"{snapshot_path}/{EXPRESSION_SUMMARY_CUBE_NAME}") as cube:
-        # gene terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
-        organism_gene_ids: dict[str, List[str]] = list_grouped_primary_filter_dimensions_term_ids(
-            cube, "gene_ontology_term_id", group_by_dim="organism_ontology_term_id"
-        )
-        organism_gene_terms = {
-            organism_term_id: build_gene_id_label_mapping(gene_term_ids)
-            for organism_term_id, gene_term_ids in organism_gene_ids.items()
-        }
-
-        # tissue terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
-        organism_tissue_ids: dict[str, List[str]] = list_grouped_primary_filter_dimensions_term_ids(
-            cube, "tissue_ontology_term_id", group_by_dim="organism_ontology_term_id"
-        )
-        organism_tissue_terms = {
-            organism_term_id: build_ontology_term_id_label_mapping(order_tissues(tissue_term_ids))
-            for organism_term_id, tissue_term_ids in organism_tissue_ids.items()
-        }
-
-        result = dict(
-            snapshot_id=str(snapshot_id),
-            organism_terms=build_ontology_term_id_label_mapping(
-                list_primary_filter_dimension_term_ids(cube, "organism_ontology_term_id")
-            ),
-            tissue_terms=organism_tissue_terms,
-            gene_terms=organism_gene_terms,
-        )
-
-        with open(f"{snapshot_path}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "w") as f:
-            json.dump(result, f)
-
-
-def order_tissues(ontology_term_ids: Iterable[str]) -> Iterable[str]:
-    """
-    Order tissues based on appearance in TissueMapper.HIGH_LEVEL_TISSUES. This will maintain the priority set in
-    that class which is intended to keep most relevant tissues on top and tissues that are related to be placed
-    sequentially
-    """
-    ontology_term_ids = set(ontology_term_ids)
-    ordered_ontology_term_ids = []
-    for tissue in TissueMapper.HIGH_LEVEL_TISSUES:
-        tissue = TissueMapper.reformat_ontology_term_id(tissue, to_writable=True)
-        if tissue in ontology_term_ids:
-            ontology_term_ids.remove(tissue)
-            ordered_ontology_term_ids.append(tissue)
-
-    if ontology_term_ids:
-        ordered_ontology_term_ids = ordered_ontology_term_ids + list(ontology_term_ids)
-
-    return ordered_ontology_term_ids

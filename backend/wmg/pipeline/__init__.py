@@ -3,7 +3,9 @@ import pathlib
 import time
 
 from backend.wmg.data.utils import log_func_runtime
+from backend.wmg.pipeline.cell_type_ordering import create_cell_type_ordering
 from backend.wmg.pipeline.constants import (
+    CELL_TYPE_ORDERING_CREATED_FLAG,
     DATASET_METADATA_CREATED_FLAG,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,
@@ -31,6 +33,7 @@ PIPELINE_STEPS = [
     {"flag": PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG, "step": create_primary_filter_dimensions},
     {"flag": MARKER_GENES_CUBE_CREATED_FLAG, "step": create_marker_genes_cube},
     {"flag": DATASET_METADATA_CREATED_FLAG, "step": create_dataset_metadata},
+    {"flag": CELL_TYPE_ORDERING_CREATED_FLAG, "step": create_cell_type_ordering},
 ]
 
 
