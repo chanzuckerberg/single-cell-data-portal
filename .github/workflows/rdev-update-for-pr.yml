@@ -136,10 +136,20 @@ jobs:
       - get_previous_image_digests
       - deploy-rdev
     steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
       - name: Delete previous images
         run: |
-          ECR_REPOS=(${{ needs.get_previous_image_digests.get_digests.outputs.ecr_repos }})
-          IMAGE_DIGESTS=(${{ needs.get_previous_image_digests.get_digests.outputs.image_digests }})
+          ECR_REPOS=(${{ needs.get_previous_image_digests.outputs.ecr_repos }})
+          IMAGE_DIGESTS=(${{ needs.get_previous_image_digests.outputs.image_digests }})
           for ((i = 0; i < ${#ECR_REPOS[@]}; ++i)); do
             if [ ${IMAGE_DIGESTS[$i]} == "null" ]; then
               continue
