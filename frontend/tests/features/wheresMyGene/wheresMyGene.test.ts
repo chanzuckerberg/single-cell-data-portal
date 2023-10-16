@@ -1,4 +1,4 @@
-import { expect, Page, test, Locator } from "@playwright/test";
+import { expect, Page, Locator } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
@@ -26,6 +26,7 @@ import {
   CELL_TYPE_NAME_LABEL_CLASS_NAME,
   TISSUE_NAME_LABEL_CLASS_NAME,
 } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
+import { test } from "tests/common/test";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
@@ -539,7 +540,7 @@ describe("Where's My Gene", () => {
         validationMessage.getByText(FAILED_EMAIL_VALIDATION_STRING)
       ).toBeTruthy();
 
-      emailInput.fill("");
+      emailInput.fill(" ");
       expect(subscribeButton.isDisabled());
 
       // Bad email 2
@@ -550,7 +551,7 @@ describe("Where's My Gene", () => {
         validationMessage.getByText(FAILED_EMAIL_VALIDATION_STRING)
       ).toBeTruthy();
 
-      emailInput.fill("");
+      emailInput.fill(" ");
       expect(subscribeButton.isDisabled());
 
       // Bad email 3
