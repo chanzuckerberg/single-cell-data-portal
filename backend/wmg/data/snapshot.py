@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, Optional
 
 import pandas as pd
@@ -11,23 +11,17 @@ from tiledb import Array
 
 from backend.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
-from backend.wmg.data.schemas.corpus_schema import (
-    DATASET_TO_GENE_IDS_NAME,
-    FILTER_RELATIONSHIPS_NAME,
-)
 from backend.wmg.data.tiledb import create_ctx
-from backend.wmg.data.utils import get_datasets_from_curation_api
 
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
 PRIMARY_FILTER_DIMENSIONS_FILENAME = "primary_filter_dimensions.json"
 EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
 EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME = "expression_summary_default"
-EXPRESSION_SUMMARY_FMG_CUBE_NAME = "expression_summary_fmg"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
 MARKER_GENES_CUBE_NAME = "marker_genes"
-DATASET_TO_GENE_IDS_FILENAME = f"{DATASET_TO_GENE_IDS_NAME}.json"
-FILTER_RELATIONSHIPS_FILENAME = f"{FILTER_RELATIONSHIPS_NAME}.json"
+DATASET_TO_GENE_IDS_FILENAME = "dataset_to_gene_ids.json"
+FILTER_RELATIONSHIPS_FILENAME = "filter_relationships.json"
 DATASET_METADATA_FILENAME = "dataset_metadata.json"
 
 STACK_NAME = os.environ.get("REMOTE_DEV_PREFIX")
@@ -47,63 +41,39 @@ class WmgSnapshot:
     These are read from data artifacts, per the relative file names, above.
     """
 
-    snapshot_identifier: str
+    snapshot_identifier: Optional[str] = field(default=None)
 
     # TileDB array containing expression summary statistics (expressed gene count, non-expressed mean,
     # etc.) aggregated by multiple cell metadata dimensions and genes. See the full schema at
     # backend/wmg/data/schemas/cube_schema.py.
-    expression_summary_cube: Array
-
-    # TileDB array containing expression summary statistics optimized for marker gene computation.
-    # See the full schema at backend/wmg/data/schemas/expression_summary_fmg_cube_schema.py.
-    expression_summary_fmg_cube: Array
+    expression_summary_cube: Optional[Array] = field(default=None)
 
     # TileDB array containing expression summary statistics optimized for querying with no
     # secondary filters selected.
     # See the full schema at backend/wmg/data/schemas/cube_schema_default.py.
-    expression_summary_default_cube: Array
+    expression_summary_default_cube: Optional[Array] = field(default=None)
 
     # TileDB array containing the precomputed marker genes.
     # See the full schema at backend/wmg/data/schemas/marker_gene_cube_schema.py.
-    marker_genes_cube: Array
+    marker_genes_cube: Optional[Array] = field(default=None)
 
     # TileDB array containing the total cell counts (expressed gene count, non-expressed mean, etc.) aggregated by
     # multiple cell metadata dimensions (but no gene dimension). See the full schema at
     # backend/wmg/data/schemas/cube_schema.py.
-    cell_counts_cube: Array
+    cell_counts_cube: Optional[Array] = field(default=None)
 
     # Pandas DataFrame containing per-tissue ordering of cell types.
     # Columns are "tissue_ontology_term_id", "cell_type_ontology_term_id", "order"
-    cell_type_orderings: DataFrame
+    cell_type_orderings: Optional[DataFrame] = field(default=None)
 
     # precomputed list of ids for all gene and tissue ontology term ids per organism
-    primary_filter_dimensions: Dict
-
-    # dictionary of gene IDs mapped to dataset IDs
-    dataset_to_gene_ids: Dict
+    primary_filter_dimensions: Optional[Dict] = field(default=None)
 
     # precomputed filter relationships graph
-    filter_relationships: Dict
+    filter_relationships: Optional[Dict] = field(default=None)
 
     # dataset metadata dictionary
-    dataset_metadata: Dict
-
-    def __hash__(self):
-        return hash(None)  # hash is not used for WmgSnapshot
-
-    # TODO: Once the pipeline generates the V2 snapshot, this can be removed
-    def build_dataset_metadata_dict(self):
-        datasets = get_datasets_from_curation_api()
-        dataset_dict = {}
-        for dataset in datasets:
-            dataset_id = dataset["dataset_id"]
-            dataset_dict[dataset_id] = dict(
-                id=dataset_id,
-                label=dataset["title"],
-                collection_id=dataset["collection_id"],
-                collection_label=dataset["collection_name"],
-            )
-        self.dataset_metadata = dataset_dict
+    dataset_metadata: Optional[Dict] = field(default=None)
 
 
 # Cached data
@@ -208,7 +178,6 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
 
     cell_type_orderings = _load_cell_type_order(snapshot_dir_path)
     primary_filter_dimensions = _load_primary_filter_data(snapshot_dir_path)
-    dataset_to_gene_ids = _load_dataset_to_gene_ids_data(snapshot_dir_path)
     filter_relationships = _load_filter_graph_data(snapshot_dir_path)
 
     # TODO: Once the pipeline generates the V2 snapshot, the ternary can be removed
@@ -224,12 +193,10 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
         snapshot_identifier=snapshot_id,
         expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
         expression_summary_default_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
-        expression_summary_fmg_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
         marker_genes_cube=_open_cube(f"{snapshot_base_uri}/{MARKER_GENES_CUBE_NAME}"),
         cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
         cell_type_orderings=cell_type_orderings,
         primary_filter_dimensions=primary_filter_dimensions,
-        dataset_to_gene_ids=dataset_to_gene_ids,
         filter_relationships=filter_relationships,
         dataset_metadata=dataset_metadata,
     )
@@ -251,11 +218,6 @@ def _load_primary_filter_data(snapshot_dir_path: str) -> Dict:
 
 def _load_dataset_metadata(snapshot_dir_path: str) -> Dict:
     key_path = f"{snapshot_dir_path}/{DATASET_METADATA_FILENAME}"
-    return json.loads(_read_value_at_s3_key(key_path))
-
-
-def _load_dataset_to_gene_ids_data(snapshot_dir_path: str) -> Dict:
-    key_path = f"{snapshot_dir_path}/{DATASET_TO_GENE_IDS_FILENAME}"
     return json.loads(_read_value_at_s3_key(key_path))
 
 
