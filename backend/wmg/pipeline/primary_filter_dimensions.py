@@ -33,12 +33,10 @@ def create_primary_filter_dimensions(*, corpus_path: str):
     pipeline_state = load_pipeline_state(corpus_path)
     if not pipeline_state.get(EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG):
         raise ValueError(
-            "'expression_summary_default' array does not exist. Please run 'create_expression_summary_default_cube' first."
+            "'expression_summary_default' array does not exist. Please run its corresponding pipeline step first."
         )
     if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
-        raise ValueError(
-            "'cell_counts' array does not exist. Please run 'create_cell_counts_cube_and_filter_relationships' first."
-        )
+        raise ValueError("'cell_counts' array does not exist. Please run its corresponding pipeline step first.")
 
     snapshot_id = os.path.basename(os.path.normpath(corpus_path))
 
