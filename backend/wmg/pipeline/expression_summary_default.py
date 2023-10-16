@@ -37,9 +37,7 @@ def create_expression_summary_default_cube(*, corpus_path: str):
     pipeline_state = load_pipeline_state(corpus_path=corpus_path)
 
     if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
-        raise ValueError(
-            "'expression_summary' array does not exist. Please run 'create_expression_summary_cube' first."
-        )
+        raise ValueError("'expression_summary' array does not exist. Please run its corresponding pipeline step first.")
 
     logger.info("Creating the default expression summary cube.")
     expression_summary_uri = os.path.join(corpus_path, EXPRESSION_SUMMARY_CUBE_NAME)
