@@ -16,7 +16,6 @@ from backend.wmg.data.schemas.corpus_schema import (
     FILTER_RELATIONSHIPS_NAME,
 )
 from backend.wmg.data.tiledb import create_ctx
-from backend.wmg.data.utils import get_datasets_from_curation_api
 
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
@@ -54,10 +53,6 @@ class WmgSnapshot:
     # backend/wmg/data/schemas/cube_schema.py.
     expression_summary_cube: Array
 
-    # TileDB array containing expression summary statistics optimized for marker gene computation.
-    # See the full schema at backend/wmg/data/schemas/expression_summary_fmg_cube_schema.py.
-    expression_summary_fmg_cube: Array
-
     # TileDB array containing expression summary statistics optimized for querying with no
     # secondary filters selected.
     # See the full schema at backend/wmg/data/schemas/cube_schema_default.py.
@@ -79,9 +74,6 @@ class WmgSnapshot:
     # precomputed list of ids for all gene and tissue ontology term ids per organism
     primary_filter_dimensions: Dict
 
-    # dictionary of gene IDs mapped to dataset IDs
-    dataset_to_gene_ids: Dict
-
     # precomputed filter relationships graph
     filter_relationships: Dict
 
@@ -90,20 +82,6 @@ class WmgSnapshot:
 
     def __hash__(self):
         return hash(None)  # hash is not used for WmgSnapshot
-
-    # TODO: Once the pipeline generates the V2 snapshot, this can be removed
-    def build_dataset_metadata_dict(self):
-        datasets = get_datasets_from_curation_api()
-        dataset_dict = {}
-        for dataset in datasets:
-            dataset_id = dataset["dataset_id"]
-            dataset_dict[dataset_id] = dict(
-                id=dataset_id,
-                label=dataset["title"],
-                collection_id=dataset["collection_id"],
-                collection_label=dataset["collection_name"],
-            )
-        self.dataset_metadata = dataset_dict
 
 
 # Cached data
@@ -140,9 +118,7 @@ def load_snapshot(
             snapshot_id=snapshot_id,
             read_versioned_snapshot=read_versioned_snapshot,
         )
-    # TODO: Once the pipeline generates the V2 snapshot, this can be removed
-    if cached_snapshot.dataset_metadata is None:
-        cached_snapshot.build_dataset_metadata_dict()
+
     return cached_snapshot
 
 
@@ -208,7 +184,7 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
 
     cell_type_orderings = _load_cell_type_order(snapshot_dir_path)
     primary_filter_dimensions = _load_primary_filter_data(snapshot_dir_path)
-    dataset_to_gene_ids = _load_dataset_to_gene_ids_data(snapshot_dir_path)
+    _load_dataset_to_gene_ids_data(snapshot_dir_path)
     filter_relationships = _load_filter_graph_data(snapshot_dir_path)
 
     # TODO: Once the pipeline generates the V2 snapshot, the ternary can be removed
@@ -224,12 +200,10 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
         snapshot_identifier=snapshot_id,
         expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
         expression_summary_default_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
-        expression_summary_fmg_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
         marker_genes_cube=_open_cube(f"{snapshot_base_uri}/{MARKER_GENES_CUBE_NAME}"),
         cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
         cell_type_orderings=cell_type_orderings,
         primary_filter_dimensions=primary_filter_dimensions,
-        dataset_to_gene_ids=dataset_to_gene_ids,
         filter_relationships=filter_relationships,
         dataset_metadata=dataset_metadata,
     )
