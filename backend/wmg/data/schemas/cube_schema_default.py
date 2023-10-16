@@ -38,7 +38,7 @@ expression_summary_domain = tiledb.Domain(
 
 # The cube attributes that comprise the core data stored within the cube.
 expression_summary_logical_attrs = [
-    tiledb.Attr(name="nnz", dtype=np.uint64, filters=filters_numeric),  # TODO: Why uint64?
+    tiledb.Attr(name="nnz", dtype=np.uint64, filters=filters_numeric),
     tiledb.Attr(name="sum", dtype=np.float32, filters=filters_numeric),
     tiledb.Attr(name="sqsum", dtype=np.float32, filters=filters_numeric),
 ]
