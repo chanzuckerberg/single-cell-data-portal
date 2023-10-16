@@ -82,7 +82,6 @@ def query():
 
         cell_counts = q.cell_counts(criteria, compare_dimension=compare)
 
-    with ServerTiming.time("build response"):
         if expression_summary.shape[0] > 0 or cell_counts.shape[0] > 0:
             group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare] if compare else None
 
@@ -90,9 +89,10 @@ def query():
                 expression_summary, cell_counts, group_by_terms
             )
             if is_rollup:
-                rolled_gene_expression_df, rolled_cell_counts_grouped_df = rollup(
-                    gene_expression_df, cell_counts_grouped_df
-                )
+                with ServerTiming.time("rollup"):
+                    rolled_gene_expression_df, rolled_cell_counts_grouped_df = rollup(
+                        gene_expression_df, cell_counts_grouped_df
+                    )
 
             response = jsonify(
                 dict(
@@ -253,49 +253,52 @@ def build_expression_summary(
     -------
     structured_result : A nested dictionary that contains gene expression summary statistics.
     """
-    # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, cell_type_ontology_term_id respectively
-    structured_result: Dict[str, Dict[str, Dict[str, Dict[str, Any]]]] = defaultdict(
-        lambda: defaultdict(lambda: defaultdict(dict))
-    )
-
-    # Populate gene expressions stats for each (gene, tissue) combination
-    #
-    # For aggregations that do not contain `cell_type_ontology_term_id` as a component in the compound key
-    # used to group rows, we SHOULD NOT USE the gene expression dataframe that contains rolled up values.
-    # That is, we should not use `rolled_gene_expression_df` for such aggregations.
-    # This is because the roll up is computed over the cell_type ontology inheritance graph,
-    # and such aggregations will count the rolled up values many times.
-    #
-    # For group-by compound keys that do not contain the `cell_type_ontology_term_id`,
-    # the unrolled gene expression dataframe containing unaggregated gene expression values should be used.
-    # That is, we use `unrolled_gene_expression_df` for aggregation over the group by compound key:
-    # (`gene_ontology_term_id`, `tissue_ontology_term_id`)
-    gene_expr_grouped_df = unrolled_gene_expression_df.groupby(
-        ["gene_ontology_term_id", "tissue_ontology_term_id"], as_index=False
-    ).agg({"nnz": "sum", "sum": "sum", "n_cells_tissue": "first"})
-
-    for i in range(gene_expr_grouped_df.shape[0]):
-        row = gene_expr_grouped_df.iloc[i]
-        structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id]["tissue_stats"]["aggregated"] = dict(
-            n=int(row["nnz"]),
-            me=(float(row["sum"] / row["nnz"]) if row["nnz"] else 0.0),
-            tpc=(float(row["nnz"] / row["n_cells_tissue"]) if row["n_cells_tissue"] else 0.0),
+    with ServerTiming.time("build_expression_summary"):
+        # Create nested dicts with gene_ontology_term_id, tissue_ontology_term_id keys, cell_type_ontology_term_id respectively
+        structured_result: Dict[str, Dict[str, Dict[str, Dict[str, Any]]]] = defaultdict(
+            lambda: defaultdict(lambda: defaultdict(dict))
         )
 
-    # Populate gene expressions stats for each (gene, tissue, cell_type) combination
-    #
-    # For aggregations that contain `cell_type_ontology_term_id` as a component in the compound key used
-    # to group rows, we can use the gene expression dataframe that contains rolled up values.
-    # That is, we can use `rolled_gene_expression_df` for such aggregations.
-    gene_expr_grouped_df = rolled_gene_expression_df.groupby(
-        ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
-    ).agg({"nnz": "sum", "sum": "sum", "n_cells_cell_type": "sum", "n_cells_tissue": "first"})
+        # Populate gene expressions stats for each (gene, tissue) combination
+        #
+        # For aggregations that do not contain `cell_type_ontology_term_id` as a component in the compound key
+        # used to group rows, we SHOULD NOT USE the gene expression dataframe that contains rolled up values.
+        # That is, we should not use `rolled_gene_expression_df` for such aggregations.
+        # This is because the roll up is computed over the cell_type ontology inheritance graph,
+        # and such aggregations will count the rolled up values many times.
+        #
+        # For group-by compound keys that do not contain the `cell_type_ontology_term_id`,
+        # the unrolled gene expression dataframe containing unaggregated gene expression values should be used.
+        # That is, we use `unrolled_gene_expression_df` for aggregation over the group by compound key:
+        # (`gene_ontology_term_id`, `tissue_ontology_term_id`)
+        gene_expr_grouped_df = unrolled_gene_expression_df.groupby(
+            ["gene_ontology_term_id", "tissue_ontology_term_id"], as_index=False
+        ).agg({"nnz": "sum", "sum": "sum", "n_cells_tissue": "first"})
 
-    fill_out_structured_dict_aggregated(gene_expr_grouped_df, structured_result)
+        for i in range(gene_expr_grouped_df.shape[0]):
+            row = gene_expr_grouped_df.iloc[i]
+            structured_result[row.gene_ontology_term_id][row.tissue_ontology_term_id]["tissue_stats"][
+                "aggregated"
+            ] = dict(
+                n=int(row["nnz"]),
+                me=(float(row["sum"] / row["nnz"]) if row["nnz"] else 0.0),
+                tpc=(float(row["nnz"] / row["n_cells_tissue"]) if row["n_cells_tissue"] else 0.0),
+            )
 
-    # Populate gene expression stats for each (gene, tissue, cell_type, <compare_dimension>) combination
-    if compare:
-        fill_out_structured_dict_compare(rolled_gene_expression_df, structured_result, compare)
+        # Populate gene expressions stats for each (gene, tissue, cell_type) combination
+        #
+        # For aggregations that contain `cell_type_ontology_term_id` as a component in the compound key used
+        # to group rows, we can use the gene expression dataframe that contains rolled up values.
+        # That is, we can use `rolled_gene_expression_df` for such aggregations.
+        gene_expr_grouped_df = rolled_gene_expression_df.groupby(
+            ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
+        ).agg({"nnz": "sum", "sum": "sum", "n_cells_cell_type": "sum", "n_cells_tissue": "first"})
+
+        fill_out_structured_dict_aggregated(gene_expr_grouped_df, structured_result)
+
+        # Populate gene expression stats for each (gene, tissue, cell_type, <compare_dimension>) combination
+        if compare:
+            fill_out_structured_dict_compare(rolled_gene_expression_df, structured_result, compare)
 
     return structured_result
 
@@ -354,84 +357,89 @@ def build_ordered_cell_types_by_tissue(
     cell_type_orderings: DataFrame,
     compare: str,
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
-    distinct_tissues_cell_types = cell_counts_cell_type_agg.reset_index().rename(
-        columns={"n_cells_cell_type": "n_total_cells"}
-    )
-
-    # building order for cell types for FE to use
-    cell_type_orderings["order"] = range(cell_type_orderings.shape[0])
-
-    # make a multi index
-    cell_type_orderings = cell_type_orderings.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).first()
-
-    indexer = list(
-        zip(
-            distinct_tissues_cell_types["tissue_ontology_term_id"],
-            distinct_tissues_cell_types["cell_type_ontology_term_id"],
+    with ServerTiming.time("build_ordered_cell_types_by_tissue"):
+        distinct_tissues_cell_types = cell_counts_cell_type_agg.reset_index().rename(
+            columns={"n_cells_cell_type": "n_total_cells"}
         )
-    )
-    indexer_bool_filter = []
-    indexer_filter = []
-    for index in indexer:
-        indexer_bool_filter.append(index in cell_type_orderings.index)
-        if index in cell_type_orderings.index:
-            indexer_filter.append(index)
 
-    joined = distinct_tissues_cell_types[indexer_bool_filter]
+        # building order for cell types for FE to use
+        cell_type_orderings["order"] = range(cell_type_orderings.shape[0])
 
-    for column in cell_type_orderings:
-        joined[column] = list(cell_type_orderings[column][indexer_filter])
+        # make a multi index
+        cell_type_orderings = cell_type_orderings.groupby(
+            ["tissue_ontology_term_id", "cell_type_ontology_term_id"]
+        ).first()
 
-    # Remove cell types without counts
-    joined = joined[joined["n_total_cells"].notnull()]
+        indexer = list(
+            zip(
+                distinct_tissues_cell_types["tissue_ontology_term_id"],
+                distinct_tissues_cell_types["cell_type_ontology_term_id"],
+            )
+        )
+        indexer_bool_filter = []
+        indexer_filter = []
+        for index in indexer:
+            indexer_bool_filter.append(index in cell_type_orderings.index)
+            if index in cell_type_orderings.index:
+                indexer_filter.append(index)
 
-    # Create nested dicts with tissue_ontology_term_id keys, cell_type_ontology_term_id respectively
-    structured_result: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(lambda: defaultdict(dict))
+        joined = distinct_tissues_cell_types[indexer_bool_filter]
 
-    # Populate aggregated cell counts for each tissue
-    joined_agg = joined.groupby(["tissue_ontology_term_id"], as_index=False).agg({"n_total_cells": "sum"})
+        for column in cell_type_orderings:
+            joined[column] = list(cell_type_orderings[column][indexer_filter])
 
-    for i in range(joined_agg.shape[0]):
-        row = joined_agg.iloc[i]
-        structured_result[row.tissue_ontology_term_id]["tissue_stats"]["aggregated"] = {
-            "tissue_ontology_term_id": row.tissue_ontology_term_id,
-            "name": ontology_term_label(row.tissue_ontology_term_id),
-            "total_count": int(row.n_total_cells),
-            "order": -1,
-        }
+        # Remove cell types without counts
+        joined = joined[joined["n_total_cells"].notnull()]
 
-    # Populate aggregated cell counts for each (tissue, cell_type) combination
-    joined_agg = joined.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False).agg(
-        {"order": "first"}
-    )
+        # Create nested dicts with tissue_ontology_term_id keys, cell_type_ontology_term_id respectively
+        structured_result: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(lambda: defaultdict(dict))
 
-    agg = cell_counts_cell_type_agg.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).sum().T
+        # Populate aggregated cell counts for each tissue
+        joined_agg = joined.groupby(["tissue_ontology_term_id"], as_index=False).agg({"n_total_cells": "sum"})
 
-    for i in range(joined_agg.shape[0]):
-        row = joined_agg.iloc[i]
-        structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id]["aggregated"] = {
-            "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
-            "name": ontology_term_label(row.cell_type_ontology_term_id),
-            "total_count": int(agg[row.tissue_ontology_term_id][row.cell_type_ontology_term_id]["n_cells_cell_type"]),
-            "order": int(row.order),
-        }
+        for i in range(joined_agg.shape[0]):
+            row = joined_agg.iloc[i]
+            structured_result[row.tissue_ontology_term_id]["tissue_stats"]["aggregated"] = {
+                "tissue_ontology_term_id": row.tissue_ontology_term_id,
+                "name": ontology_term_label(row.tissue_ontology_term_id),
+                "total_count": int(row.n_total_cells),
+                "order": -1,
+            }
 
-    # Populate aggregated cell counts for each (tissue, cell_type, <compare_dimension>) combination
-    cell_counts_cell_type_agg_T = cell_counts_cell_type_agg.T
-    if compare:
-        for i in range(joined.shape[0]):
-            row = joined.iloc[i]
-            id_to_label = build_ontology_term_id_label_mapping([row[compare]])[0]
-            name = id_to_label.pop(row[compare])
-            structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][row[compare]] = {
+        # Populate aggregated cell counts for each (tissue, cell_type) combination
+        joined_agg = joined.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False).agg(
+            {"order": "first"}
+        )
+
+        agg = cell_counts_cell_type_agg.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).sum().T
+
+        for i in range(joined_agg.shape[0]):
+            row = joined_agg.iloc[i]
+            structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id]["aggregated"] = {
                 "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
-                "name": name if name else row[compare],
+                "name": ontology_term_label(row.cell_type_ontology_term_id),
                 "total_count": int(
-                    cell_counts_cell_type_agg_T[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
-                        row[compare]
-                    ]["n_cells_cell_type"]
+                    agg[row.tissue_ontology_term_id][row.cell_type_ontology_term_id]["n_cells_cell_type"]
                 ),
                 "order": int(row.order),
             }
+
+        # Populate aggregated cell counts for each (tissue, cell_type, <compare_dimension>) combination
+        cell_counts_cell_type_agg_T = cell_counts_cell_type_agg.T
+        if compare:
+            for i in range(joined.shape[0]):
+                row = joined.iloc[i]
+                id_to_label = build_ontology_term_id_label_mapping([row[compare]])[0]
+                name = id_to_label.pop(row[compare])
+                structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][row[compare]] = {
+                    "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
+                    "name": name if name else row[compare],
+                    "total_count": int(
+                        cell_counts_cell_type_agg_T[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
+                            row[compare]
+                        ]["n_cells_cell_type"]
+                    ),
+                    "order": int(row.order),
+                }
 
     return structured_result

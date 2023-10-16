@@ -7,6 +7,7 @@ and cell count data structures process and return to the client.
 from typing import List, Tuple
 
 from pandas import DataFrame
+from server_timing import Timing as ServerTiming
 
 DEFAULT_GROUP_BY_TERMS = ["tissue_ontology_term_id", "cell_type_ontology_term_id"]
 
@@ -55,9 +56,12 @@ def get_dot_plot_data(
     if group_by_terms is None:
         group_by_terms = DEFAULT_GROUP_BY_TERMS
     # Get the dot plot matrix dataframe and aggregated cell counts per cell type
-    cell_counts_cell_type_agg = agg_cell_type_counts(cell_counts, group_by_terms)
-    cell_counts_tissue_agg = agg_tissue_counts(cell_counts)
-    dot_plot_matrix_df = build_dot_plot_matrix(
-        raw_gene_expression, cell_counts_cell_type_agg, cell_counts_tissue_agg, group_by_terms
-    )
+    with ServerTiming.time("build agg_cell_type_counts"):
+        cell_counts_cell_type_agg = agg_cell_type_counts(cell_counts, group_by_terms)
+    with ServerTiming.time("build agg_tissue_counts"):
+        cell_counts_tissue_agg = agg_tissue_counts(cell_counts)
+    with ServerTiming.time("build build_dot_plot_matrix"):
+        dot_plot_matrix_df = build_dot_plot_matrix(
+            raw_gene_expression, cell_counts_cell_type_agg, cell_counts_tissue_agg, group_by_terms
+        )
     return dot_plot_matrix_df, cell_counts_cell_type_agg
