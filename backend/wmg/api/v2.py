@@ -66,7 +66,6 @@ def query():
             cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
             cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
         )
-    with ServerTiming.time("build response"):
         q = WmgQuery(snapshot, cube_query_params)
         default = snapshot.expression_summary_default_cube is not None and compare is None
         for dim in criteria.dict():
@@ -82,6 +81,7 @@ def query():
 
         cell_counts = q.cell_counts(criteria, compare_dimension=compare)
 
+    with ServerTiming.time("build response"):
         if expression_summary.shape[0] > 0 or cell_counts.shape[0] > 0:
             group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare] if compare else None
 
