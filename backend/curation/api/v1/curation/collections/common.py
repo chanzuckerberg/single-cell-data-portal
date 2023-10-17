@@ -223,7 +223,9 @@ def reshape_dataset_for_curation_api(
                 col = [asdict(col)]
             elif isinstance(col, list) and len(col) != 0 and isinstance(col[0], OntologyTermId):
                 col = [asdict(i) for i in col]
-            ds[column] = col
+
+            if col is not None:
+                ds[column] = col
 
     ds["dataset_id"] = dataset_version.dataset_id.id
     ds["dataset_version_id"] = dataset_version.version_id.id
@@ -234,8 +236,9 @@ def reshape_dataset_for_curation_api(
         ds["tombstone"] = False  # TODO this will always be false. Remove in the future
         if dataset_version.metadata is not None:
             ds["is_primary_data"] = is_primary_data_mapping.get(ds.pop("is_primary_data"), [])
-            if ds["x_approximate_distribution"]:
-                ds["x_approximate_distribution"] = ds["x_approximate_distribution"].upper()
+            ds["x_approximate_distribution"] = (
+                None if ds.get("x_approximate_distribution") is None else ds["x_approximate_distribution"].upper()
+            )
         if not is_published and (status := dataset_version.status):
             if status.processing_status == DatasetProcessingStatus.FAILURE:
                 if status.validation_status == DatasetValidationStatus.INVALID:
@@ -316,6 +319,16 @@ class EntityColumns:
         "schema_version",
         "donor_id",
         "citation",
+    ]
+
+    dataset_metadata_cols = [
+        *dataset_metadata_index_cols,
+        "default_embedding",
+        "embeddings",
+        "feature_biotype",
+        "feature_count",
+        "feature_reference",
+        "raw_data_location",
     ]
 
     dataset_metadata_cols = [

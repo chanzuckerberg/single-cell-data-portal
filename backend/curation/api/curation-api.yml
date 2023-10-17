@@ -1373,7 +1373,7 @@ components:
       nullable: true
       type: string
     feature_biotype:
-      description: List of feature biotypes in dataset. Must be
+      description: List of biotypes of features represented in dataset. Must be 'gene', 'spike-in', or both.
       type: array
       items:
         enum:
