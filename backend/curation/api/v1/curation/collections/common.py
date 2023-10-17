@@ -331,16 +331,6 @@ class EntityColumns:
         "raw_data_location",
     ]
 
-    dataset_metadata_cols = [
-        *dataset_metadata_index_cols,
-        "default_embedding",
-        "embeddings",
-        "feature_biotype",
-        "feature_count",
-        "feature_reference",
-        "raw_data_location",
-    ]
-
     dataset_asset_cols = [
         "filetype",
         "filename",
