@@ -11,6 +11,8 @@ jobs:
   test_repository_dispatch:
     runs-on: ubuntu-latest
     steps:
+      - name: Test Basic Receiving Workflow Trigger
+        run: echo "Hello! Test Receiving Repository Dispatch starts...."
       - name: Test Print Branch Name
         run: |
           echo "About to print branch name using env.GITHUB_BRANCH:"
