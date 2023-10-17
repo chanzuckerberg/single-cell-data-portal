@@ -236,8 +236,9 @@ def reshape_dataset_for_curation_api(
         ds["tombstone"] = False  # TODO this will always be false. Remove in the future
         if dataset_version.metadata is not None:
             ds["is_primary_data"] = is_primary_data_mapping.get(ds.pop("is_primary_data"), [])
-            if ds.get("x_approximate_distribution"):
-                ds["x_approximate_distribution"] = ds["x_approximate_distribution"].upper()
+            ds["x_approximate_distribution"] = (
+                None if ds.get("x_approximate_distribution") is None else ds["x_approximate_distribution"].upper()
+            )
         if not is_published and (status := dataset_version.status):
             if status.processing_status == DatasetProcessingStatus.FAILURE:
                 if status.validation_status == DatasetValidationStatus.INVALID:
