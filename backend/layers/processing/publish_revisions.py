@@ -13,7 +13,6 @@ from typing import Dict, List
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.entities import CollectionQueryFilter
 from backend.layers.common.entities import (
-    CollectionId,
     CollectionVersionWithDatasets,
     DatasetProcessingStatus,
 )
@@ -35,28 +34,10 @@ class PublishRevisions(ProcessingLogic):
         self.schema_validator = SchemaValidatorProvider()
         self.artifact_bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
         self.schema_version = self.schema_validator.get_current_schema_version()
-        self.object_keys_to_delete: List[str] = []
-
-    def get_published_dataset_ids_from_collection_id(self, collection_id: CollectionId) -> Dict[str, str]:
-        """
-        Map dataset id to dataset version id for the published version of the collection.
-        :param collection_id:
-        :return: A dictionary mapping dataset id to dataset version id for the published collection version.
-        """
-        published_collection = self.business_logic.get_published_collection_version(collection_id)
-        if published_collection:
-            current_dataset_versions = {
-                dataset.dataset_id.id: dataset.version_id.id for dataset in published_collection.datasets
-            }
-        else:
-            current_dataset_versions = {}
-        return current_dataset_versions
 
     def check_datasets(self, collection_version: CollectionVersionWithDatasets) -> List[Dict]:
         """Check that all datasets have been migrated and are in a success state"""
         errors = []
-        current_dataset_versions = self.get_published_dataset_ids_from_collection_id(collection_version.collection_id)
-
         for dataset in collection_version.datasets:
             dataset_id = dataset.dataset_id.id
             dataset_version_id = dataset.version_id.id
@@ -77,13 +58,6 @@ class PublishRevisions(ProcessingLogic):
                         "dataset_id": dataset_id,
                     }
                 )
-            else:
-                # track migrated.h5ad files store under the currently published dataset version id in s3 for
-                # clean up.
-                current_dataset_version = current_dataset_versions.get(dataset_id)
-                if current_dataset_version:
-                    key_name = self.get_key_prefix(f"{current_dataset_version}/migrated.h5ad")
-                    self.object_keys_to_delete.append(key_name)
         return errors
 
     def run(self):
@@ -106,14 +80,6 @@ class PublishRevisions(ProcessingLogic):
                         extra={"collection_version_id": collection_version.version_id.id},
                     )
                     self.business_logic.publish_collection_version(collection_version.version_id)
-        self.cleanup()
-
-    def cleanup(self) -> None:
-        self.logger.info(
-            "Deleting migrated.h5ad files from s3.", extra={"object_keys_deleted": len(self.object_keys_to_delete)}
-        )
-        self.s3_provider.delete_files(self.artifact_bucket, self.object_keys_to_delete)
-        self.object_keys_to_delete = []
 
 
 if __name__ == "__main__":
