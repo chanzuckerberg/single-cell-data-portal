@@ -3,7 +3,7 @@ name: Test Sending Repository Dispatch
 on:
   push:
     branches:
-      - "*"
+      - main
 
 jobs:
   test_sending_repository_dispatch:
