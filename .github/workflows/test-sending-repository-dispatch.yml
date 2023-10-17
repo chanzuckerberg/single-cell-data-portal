@@ -3,12 +3,14 @@ name: Test Sending Repository Dispatch
 on:
   push:
     branches:
-      - psridharan/trigger-stage-deploy
+      - "*"
 
 jobs:
   test_sending_repository_dispatch:
     runs-on: ubuntu-latest
     steps:
+      - name: Test Basic Sending Workflow Trigger
+        run: echo "Hello! Test Sending Repository Dispatch starts...."
       - name: Test Sending Repository Dispatch
         uses: peter-evans/repository-dispatch@v2
         with:
