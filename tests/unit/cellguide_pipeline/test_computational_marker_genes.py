@@ -5,7 +5,6 @@ from backend.cellguide.pipeline.computational_marker_genes import get_computatio
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.utils import convert_dataclass_to_dict_and_strip_nones
 from tests.test_utils.dict_compare import compare_dicts
-from tests.test_utils.rng_seed import SeededNumpyContext
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
 )
@@ -26,7 +25,7 @@ class MarkerGeneCalculatorTests(unittest.TestCase):
             f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{REFORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}", "r"
         ) as f:
             expected__reformatted_marker_genes = json.load(f)
-        with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot, SeededNumpyContext():
+        with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             cell_counts_df = snapshot.cell_counts_cube.df[:]
             tree_builder = OntologyTreeBuilder(cell_counts_df)
             computational_marker_genes, reformatted_marker_genes = get_computational_marker_genes(

@@ -401,8 +401,14 @@ class MarkerGenesCalculator:
                     bootstrapped_percentiles = np.full((num_replicates, gene_index.size), fill_value=np.nan)
 
                     if effect_sizes_chunk.shape[0] > 0:
+                        rng = np.random.default_rng(0)  # seed the RNG for reproducibility
+                        random_indices = rng.integers(
+                            0, effect_sizes_chunk.shape[0], size=(num_replicates, effect_sizes_chunk.shape[0])
+                        )
+
                         bootstrapped_percentiles[:, col_idx] = bootstrap_rows_percentiles(
                             effect_sizes_chunk,
+                            random_indices,
                             num_replicates=num_replicates,
                             num_samples=effect_sizes_chunk.shape[0],
                             percentile=percentile,

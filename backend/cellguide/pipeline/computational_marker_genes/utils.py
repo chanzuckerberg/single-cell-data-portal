@@ -95,7 +95,7 @@ def query_gene_info_for_gene_description(gene_id: str) -> str:
 
 @njit(parallel=True)
 def bootstrap_rows_percentiles(
-    X: np.ndarray, num_replicates: int = 1000, num_samples: int = 100, percentile: float = 5
+    X: np.ndarray, random_indices: np.ndarray, num_replicates: int = 1000, num_samples: int = 100, percentile: float = 5
 ):
     """
     This function bootstraps rows of a given matrix X.
@@ -118,11 +118,9 @@ def bootstrap_rows_percentiles(
     """
 
     bootstrap_percentile = np.zeros((num_replicates, X.shape[1]), dtype="float")
-
-    indices = np.random.randint(0, X.shape[0], size=(num_replicates, num_samples))
     # for each replicate
     for n_i in prange(num_replicates):
-        bootstrap_percentile[n_i] = sort_matrix_columns(X[indices[n_i]], percentile, num_samples)
+        bootstrap_percentile[n_i] = sort_matrix_columns(X[random_indices[n_i]], percentile, num_samples)
 
     return bootstrap_percentile
 
