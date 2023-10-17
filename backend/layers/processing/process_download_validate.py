@@ -154,11 +154,17 @@ class ProcessDownloadValidate(ProcessingLogic):
             mean_genes_per_cell=numerator / denominator,
             is_primary_data=_get_is_primary_data(),
             cell_type=_get_term_pairs("cell_type"),
-            x_approximate_distribution=_get_x_approximate_distribution(),  # TODO: pay attention
+            x_approximate_distribution=_get_x_approximate_distribution(),
             schema_version=adata.uns["schema_version"],
-            batch_condition=_get_batch_condition(),  # TODO: pay attention
+            batch_condition=_get_batch_condition(),
             donor_id=adata.obs["donor_id"].unique(),
             suspension_type=adata.obs["suspension_type"].unique(),
+            feature_count=adata.var.shape[0],
+            feature_biotype=adata.var["feature_biotype"].unique(),
+            feature_reference=adata.var["feature_reference"].unique(),
+            default_embedding=adata.uns.get("default_embedding"),
+            embeddings=adata.obsm_keys(),
+            raw_data_location="raw.X" if adata.raw else "X",
         )
 
     def wrapped_download_from_s3(
