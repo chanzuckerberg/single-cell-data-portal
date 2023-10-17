@@ -1,4 +1,4 @@
-name: Test Receiving Repository Dispatch
+name: Test Sending Repository Dispatch
 
 on:
   push:
