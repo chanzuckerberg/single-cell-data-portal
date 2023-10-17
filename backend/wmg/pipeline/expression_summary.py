@@ -243,7 +243,7 @@ class ExpressionSummaryCubeBuilder:
             data_filt = raw_array.data >= NORM_EXPR_COUNT_FILTERING_MIN_THRESHOLD
 
             # convert data to log(X+1)
-            raw_array = rankit(raw_array)
+            raw_array = rankit(raw_array.tocsr()).tocoo()
             data = raw_array.data
             row_indices, col_var = raw_array.row, raw_array.col
 
