@@ -7,6 +7,7 @@ import pandas as pd
 import tiledb
 from cellxgene_census.experimental.util._csr_iter import X_sparse_iter
 from numba import njit
+from scipy import sparse
 from tiledbsoma import ExperimentAxisQuery
 
 from backend.wmg.data.schemas.cube_schema import (
@@ -20,8 +21,10 @@ from backend.wmg.data.utils import (
     log_func_runtime,
 )
 from backend.wmg.pipeline.constants import (
+    ASSAYS_FOR_GENE_LENGTH_NORMALIZATION,
     DIMENSION_NAME_MAP_CENSUS_TO_WMG,
-    RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
+    NORM_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
+    TARGET_LIBRARY_SIZE,
 )
 from backend.wmg.pipeline.utils import (
     create_empty_cube_if_needed,
@@ -164,7 +167,7 @@ class ExpressionSummaryCubeBuilder:
         iteration = 0
         for (obs_soma_joinids_chunk, _), raw_array in X_sparse_iter(
             self.query,
-            X_name="normalized",
+            X_name="raw",
             stride=row_stride,
             fmt="csr",
         ):
@@ -174,8 +177,58 @@ class ExpressionSummaryCubeBuilder:
             # convert soma_joinids to row coords of filtered obs dataframe
             obs_soma_joinids_chunk = self.query.indexer.by_obs(obs_soma_joinids_chunk)
 
-            # convert to coo TODO: remove once X_sparse_iter can return coo
-            raw_array = raw_array.tocoo()
+            # get assay ids for gene length normalization
+            assay_ids = self.obs_df["assay_ontology_term_id"].values[obs_soma_joinids_chunk]
+            # get boolean array of which cells to normalize
+            cells_for_gene_length_normalization = np.in1d(assay_ids, ASSAYS_FOR_GENE_LENGTH_NORMALIZATION)
+
+            num_cells_for_norm = cells_for_gene_length_normalization.sum()
+
+            # note that `.multiply` converts the array to COO format
+            if num_cells_for_norm == len(obs_soma_joinids_chunk):
+                # normalize by gene length
+                raw_array = raw_array.multiply(1 / self.var_df["feature_length"].values[None, :])
+                # normalize by library size
+                raw_array = raw_array.multiply(TARGET_LIBRARY_SIZE / raw_array.sum(1).A)
+
+            elif num_cells_for_norm == 0:
+                # normalize by library size
+                raw_array = raw_array.multiply(TARGET_LIBRARY_SIZE / raw_array.sum(1).A)
+            else:
+                # get indices of cells to not normalize
+                no_norm_idx = np.where(~cells_for_gene_length_normalization)[0]
+                # normalized subset of raw_array by library size
+                raw_arr_no_norm = raw_array[no_norm_idx]
+                raw_arr_no_norm = raw_arr_no_norm.multiply(TARGET_LIBRARY_SIZE / raw_arr_no_norm.sum(1).A)
+
+                # get indices of cells to normalize
+                with_norm_idx = np.where(cells_for_gene_length_normalization)[0]
+                # normalized subset of raw_array by gene length and library size
+                raw_arr_with_norm = raw_array[with_norm_idx]
+                raw_arr_with_norm = raw_arr_with_norm.multiply(1 / self.var_df["feature_length"].values[None, :])
+                raw_arr_with_norm = raw_arr_with_norm.multiply(TARGET_LIBRARY_SIZE / raw_arr_with_norm.sum(1).A)
+
+                # get indexers to remap row indices to their corresponding row indices in raw_array
+                no_norm_indexer = pd.Series(index=np.arange(raw_arr_no_norm.shape[0]), data=no_norm_idx)
+                with_norm_indexer = pd.Series(index=np.arange(raw_arr_with_norm.shape[0]), data=with_norm_idx)
+
+                # get the row and column indices of the normalized and non-normalized arrays
+                no_norm_row_idx, no_norm_col_idx = raw_arr_no_norm.row, raw_arr_no_norm.col
+                with_norm_row_idx, with_norm_col_idx = raw_arr_with_norm.row, raw_arr_with_norm.col
+
+                # remap row indices to their corresponding row indices in raw_array
+                no_norm_row_idx = no_norm_indexer[no_norm_row_idx].values
+                with_norm_row_idx = with_norm_indexer[with_norm_row_idx].values
+
+                # combine row and column indices and data from the two arrays
+                combined_row_idx = np.append(no_norm_row_idx, with_norm_row_idx)
+                combined_col_idx = np.append(no_norm_col_idx, with_norm_col_idx)
+                combined_data = np.append(raw_arr_no_norm.data, raw_arr_with_norm.data)
+
+                # recreate raw_array
+                raw_array = sparse.coo_matrix(
+                    (combined_data, (combined_row_idx, combined_col_idx)), shape=raw_array.shape
+                )
 
             # get data and coordinates
             data = raw_array.data
@@ -185,12 +238,10 @@ class ExpressionSummaryCubeBuilder:
             row_obs = obs_soma_joinids_chunk[row_indices]
 
             # convert data to raw counts and filter by min threshold
-            data_filt = (
-                self.obs_df["raw_sum"].values[row_obs] * raw_array.data >= RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
-            )
+            data_filt = raw_array.data >= NORM_EXPR_COUNT_FILTERING_MIN_THRESHOLD
 
-            # convert data to log2(CPM+1)
-            raw_array.data[:] = np.log2(raw_array.data * 1e6 + 1)
+            # convert data to log(X+1)
+            raw_array.data[:] = np.log(raw_array.data + 1)
 
             # filter data
             keep_data = np.logical_and(np.isfinite(data), data_filt)
