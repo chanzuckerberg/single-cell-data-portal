@@ -1,4 +1,4 @@
-DIMENSION_NAME_MAP_CENSUS_TO_WMG = {
+DIMENSION_NAME_MAP_CENSUS_TO_WMG = {  # TODO: any hardcoded dependencies on census schema version should be decorated with docs indicating the required version
     "tissue_ontology_term_id": "tissue_original_ontology_term_id",
     "tissue_general_ontology_term_id": "tissue_ontology_term_id",
 }

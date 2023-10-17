@@ -160,7 +160,7 @@ class ExpressionSummaryCubeBuilder:
         """
         This method reduces the X matrix and stores the results in cube_sum, cube_nnz, and cube_sqsum.
         """
-        row_stride = 50_000
+        row_stride = 50_000  # TODO: maybe increase this to 500_000
 
         logger.info(f"Reducing X with {self.obs_df.shape[0]} total cells")
 
@@ -184,6 +184,7 @@ class ExpressionSummaryCubeBuilder:
 
             num_cells_for_norm = cells_for_gene_length_normalization.sum()
 
+            # perform gene length normalization for the subset of the chunk that maps to smartseq assays
             # note that `.multiply` converts the array to COO format
             if num_cells_for_norm == len(obs_soma_joinids_chunk):
                 # normalize by gene length
@@ -238,6 +239,7 @@ class ExpressionSummaryCubeBuilder:
             row_obs = obs_soma_joinids_chunk[row_indices]
 
             # convert data to raw counts and filter by min threshold
+            # TODO: chat with pablo about how to choose this threshold
             data_filt = raw_array.data >= NORM_EXPR_COUNT_FILTERING_MIN_THRESHOLD
 
             # convert data to log(X+1)
@@ -248,7 +250,7 @@ class ExpressionSummaryCubeBuilder:
             row_obs, col_var, data = row_obs[keep_data], col_var[keep_data], data[keep_data]
 
             gene_expression_sum_x_cube_dimension(
-                rankit_values=data,
+                rankit_values=data,  # TODO: change from rankit_values to log_values
                 obs_idxs=row_obs,
                 var_idx=col_var,
                 cube_indices=cube_indices,
@@ -282,7 +284,7 @@ class ExpressionSummaryCubeBuilder:
         dims = [np.empty((total_vals,), dtype=object) for i in range(len(schema.domain))]
 
         vals = {
-            "sum": np.empty((total_vals,)),
+            "sum": np.empty((total_vals,)),  # TODO: update this to read from schema
             "sqsum": np.empty((total_vals,)),
             "nnz": np.empty((total_vals,), dtype=np.uint64),
             **{k: np.empty((total_vals,), dtype=object) for k in other_cube_attrs},
