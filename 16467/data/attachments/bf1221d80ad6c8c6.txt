@@ -1,2 +1,0 @@
-{"levelname": "INFO", "asctime": "2023-10-16T23:13:17.016Z", "name": "processing", "message": "Publishing collection version.", "lineno": 96, "pathname": "/single-cell-data-portal/backend/layers/processing/publish_revisions.py", "collection_version_id": "f0d80b70-cc7f-4f0e-b829-9e4f67eeacd3"}
-{"levelname": "INFO", "asctime": "2023-10-16T23:13:17.016Z", "name": "processing", "message": "Deleting migrated.h5ad files from s3.", "lineno": 104, "pathname": "/single-cell-data-portal/backend/layers/processing/publish_revisions.py", "object_keys_deleted": 0}
