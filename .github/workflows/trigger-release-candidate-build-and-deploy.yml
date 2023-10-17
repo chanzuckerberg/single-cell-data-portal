@@ -39,9 +39,10 @@ jobs:
       # workflows. Details are here:
       # https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow
       #https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#repository_dispatch
-      - name: Trigger repository_dispatch to build images
+      - name: Trigger repository_dispatch to build images for staging
         if: success()
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           event-type: build-images
+          client-payload: '{"ref": "refs/heads/staging"}'

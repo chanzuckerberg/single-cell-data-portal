@@ -8,16 +8,18 @@ on:
       - prod
   repository_dispatch:
     types: [build-images]
-# add a concurrency group to prevent multiple builds from running at the same time
-concurrency:
-  group: $${{ github.ref }}-environment
-  cancel-in-progress: false
 env:
   # Force using BuildKit instead of normal Docker, required so that metadata
   # is written/read to allow us to use layers of previous builds as cache.
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
+  GITHUB_BRANCH: ${{ github.event.client_payload.ref || github.ref }}
+
+# add a concurrency group to prevent multiple builds from running at the same time
+concurrency:
+  group: $${{ env.GITHUB_BRANCH }}-environment
+  cancel-in-progress: false
 
 permissions:
   id-token: write
@@ -69,7 +71,7 @@ jobs:
           mention: "here"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+        if: failure() && (env.GITHUB_BRANCH == 'refs/heads/main' || env.GITHUB_BRANCH == 'refs/heads/staging' || env.GITHUB_BRANCH == 'refs/heads/prod')
 
   create_deployment:
     needs:
@@ -79,16 +81,16 @@ jobs:
       - name: Generate payload
         run: |
           echo "payload={\"tag\":\"sha-${GITHUB_SHA:0:8}\"}" >> $GITHUB_ENV
-          if [[ "${{ github.ref }}" == "refs/heads/prod" ]]; then
+          if [[ "${{ env.GITHUB_BRANCH }}" == "refs/heads/prod" ]]; then
             echo "DEPLOYMENT_STAGE=prod" >> $GITHUB_ENV
-          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+          elif [[ "${{ env.GITHUB_BRANCH }}" == "refs/heads/staging" ]]; then
             echo "DEPLOYMENT_STAGE=stage" >> $GITHUB_ENV
           else
             echo "DEPLOYMENT_STAGE=dev" >> $GITHUB_ENV
           fi
       - uses: avakar/create-deployment@v1
         #  TODO remove if conidition after pentest on October 31st 2023
-        if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod'
+        if: env.GITHUB_BRANCH == 'refs/heads/staging' || env.GITHUB_BRANCH == 'refs/heads/prod'
         with:
           auto_merge: false
           environment: ${{ env.DEPLOYMENT_STAGE }}
