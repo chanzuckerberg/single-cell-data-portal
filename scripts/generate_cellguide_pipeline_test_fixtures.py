@@ -10,6 +10,7 @@ from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_data
 from backend.cellguide.pipeline.source_collections import get_source_collections_data
 from backend.cellguide.pipeline.utils import output_json
 from backend.wmg.data.utils import setup_retry_session
+from tests.test_utils.rng_seed import SeededNumpyContext
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot
 from tests.unit.cellguide_pipeline.constants import (
     ASCTB_MASTER_SHEET_FIXTURE_FILENAME,
@@ -68,7 +69,10 @@ def run_cellguide_pipeline():
     data = {tissue: data[tissue] for tissue in CANONICAL_MARKER_GENE_TEST_TISSUES}
     output_json(data, f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{ASCTB_MASTER_SHEET_FIXTURE_FILENAME}")
 
-    with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
+    with (
+        load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot,
+        SeededNumpyContext(),
+    ):
         # Get ontology tree data
         ontology_tree, ontology_tree_data = get_ontology_tree_data(snapshot=snapshot)
 
