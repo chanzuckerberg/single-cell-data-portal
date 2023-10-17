@@ -18,7 +18,7 @@ env:
 
 # add a concurrency group to prevent multiple builds from running at the same time
 concurrency:
-  group: $${{ env.GITHUB_BRANCH }}-environment
+  group: ${{ github.event.client_payload.ref || github.ref }}-environment
   cancel-in-progress: false
 
 permissions:
