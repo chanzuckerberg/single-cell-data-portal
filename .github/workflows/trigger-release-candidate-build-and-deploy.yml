@@ -37,12 +37,12 @@ jobs:
           git merge --verbose psridharan/trigger-stage-deploy -m "Merging psridharan/trigger-stage-deploy branch into staging branch"
 
           git push origin staging
-      #- name: Trigger repository_dispatch to build images
-      #  if: success()
-      #  uses: peter-evans/repository-dispatch@v2
-      #  with:
-      #    token: ${{ secrets.GITHUB_TOKEN }}
-      #    event-type: build-images
+      - name: Trigger repository_dispatch to build images
+        if: success()
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: build-images
       #- name: Trigger repository_dispatch to deploy images
       #  if: success()
       #  uses: peter-evans/repository-dispatch@v2
