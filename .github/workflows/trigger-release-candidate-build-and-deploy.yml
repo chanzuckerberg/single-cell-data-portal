@@ -3,7 +3,7 @@ name: Trigger release candidate build and deploy
 on:
   push:
     branches:
-      - psridharan/trigger-stage-deploy # main
+      - main
 
 jobs:
   continuous_deploy_to_staging:
@@ -12,7 +12,7 @@ jobs:
       - name: Checkout main branch
         uses: actions/checkout@v2
         with:
-          ref: psridharan/trigger-stage-deploy # main
+          ref: main
           fetch-depth: 0 # fetch all history to make merges work correctly
       - name: Merge main branch into staging branch
         run: |
@@ -27,31 +27,21 @@ jobs:
           echo "$(git branch --list)"
 
           echo "Latest commit on 'staging' branch is: $(git log -1 --format='%H' staging)"
+          echo "Latest commit on 'main' branch is: $(git log -1 --format='%H' main)"
 
-          # echo "Latest commit on 'main' branch is: $(git log -1 --format='%H' main)"
-          echo "Latest commit on 'psridharan/trigger-stage-deploy' branch is: $(git log -1 --format='%H' psridharan/trigger-stage-deploy)"
-
-          # echo "About to merge 'main' branch into 'staging' branch"
-          echo "About to merge 'psridharan/trigger-stage-deploy' branch into 'staging' branch"
-          # git merge --verbose main -m "Merging main branch into staging branch"
-          git merge --verbose psridharan/trigger-stage-deploy -m "Merging psridharan/trigger-stage-deploy branch into staging branch"
+          echo "About to merge 'main' branch into 'staging' branch"
+          git merge --verbose main -m "Merging main branch into staging branch"
 
           git push origin staging
+
+      # We need to use repository_dispatch because by default github actions
+      # prevents actions triggered by 'GITHUB_TOKEN' from triggering other
+      # workflows. Details are here:
+      # https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow
+      #https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#repository_dispatch
       - name: Trigger repository_dispatch to build images
         if: success()
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           event-type: build-images
-      #- name: Trigger repository_dispatch to deploy images
-      #  if: success()
-      #  uses: peter-evans/repository-dispatch@v2
-      #  with:
-      #    token: ${{ secrets.GITHUB_TOKEN }}
-      #    event-type: deploy-images
-      #- name: Trigger repository_dispatch to run unit tests
-      #  if: success()
-      #  uses: peter-evans/repository-dispatch@v2
-      #  with:
-      #    token: ${{ secrets.GITHUB_TOKEN }}
-      #    event-type: run-unit-tests
