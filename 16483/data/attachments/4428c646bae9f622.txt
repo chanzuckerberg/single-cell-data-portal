@@ -1,2 +1,0 @@
-INFO     processing:schema_migration.py:306 Error files found
-INFO     processing:schema_migration.py:313 Report
