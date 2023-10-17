@@ -169,7 +169,7 @@ class DatasetMetadata:
     name: str
     schema_version: str
     organism: List[OntologyTermId]
-    tissue: List[TissueOntologyTermId]
+    tissue: List[OntologyTermId]
     assay: List[OntologyTermId]
     disease: List[OntologyTermId]
     sex: List[OntologyTermId]
