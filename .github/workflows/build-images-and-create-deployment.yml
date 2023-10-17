@@ -52,6 +52,7 @@ jobs:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
         with:
+          ref: ${{ env.GITHUB_BRANCH }}
           fetch-depth: 1
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
