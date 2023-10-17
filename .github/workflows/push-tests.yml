@@ -8,6 +8,11 @@ on:
     branches:
       - "main"
 
+# add a concurrency group to prevent multiple builds from running at the same time
+concurrency:
+  group: $${{ github.ref }}-environment
+  cancel-in-progress: false
+
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   DEPLOYMENT_STAGE: test
