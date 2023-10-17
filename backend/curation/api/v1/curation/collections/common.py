@@ -223,7 +223,9 @@ def reshape_dataset_for_curation_api(
                 col = [asdict(col)]
             elif isinstance(col, list) and len(col) != 0 and isinstance(col[0], OntologyTermId):
                 col = [asdict(i) for i in col]
-            ds[column] = col
+
+            if col is not None:
+                ds[column] = col
 
     ds["dataset_id"] = dataset_version.dataset_id.id
     ds["dataset_version_id"] = dataset_version.version_id.id
