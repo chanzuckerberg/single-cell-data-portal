@@ -6,10 +6,10 @@ on:
       - main
 
 jobs:
-  merge:
+  continuous_deploy_to_staging:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main branch and staging branch
+      - name: Checkout main branch
         uses: actions/checkout@v2
         with:
           ref: main
@@ -27,10 +27,22 @@ jobs:
           echo "$(git branch --list)"
 
           echo "Latest commit on 'staging' branch is: $(git log -1 --format='%H' staging)"
-
           echo "Latest commit on 'main' branch is: $(git log -1 --format='%H' main)"
 
           echo "About to merge 'main' branch into 'staging' branch"
           git merge --verbose main -m "Merging main branch into staging branch"
 
           git push origin staging
+
+      # We need to use repository_dispatch because by default github actions
+      # prevents actions triggered by 'GITHUB_TOKEN' from triggering other
+      # workflows. Details are here:
+      # https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow
+      #https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#repository_dispatch
+      - name: Trigger repository_dispatch to build images for staging
+        if: success()
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: build-images
+          client-payload: '{"ref": "refs/heads/staging"}'
