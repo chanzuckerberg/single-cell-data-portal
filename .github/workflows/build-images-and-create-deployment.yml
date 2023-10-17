@@ -86,6 +86,8 @@ jobs:
             echo "DEPLOYMENT_STAGE=dev" >> $GITHUB_ENV
           fi
       - uses: avakar/create-deployment@v1
+        #  TODO remove if conidition after pentest on October 31st 2023
+        if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod'
         with:
           auto_merge: false
           environment: ${{ env.DEPLOYMENT_STAGE }}
