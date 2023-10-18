@@ -184,15 +184,13 @@ const TissueHeaderButton = ({
           color="gray"
           sdsType="static"
         />
-        <TissueHeaderLabelStyle>
-          <div>
-            <TissueLabel
-              className={TISSUE_NAME_LABEL_CLASS_NAME}
-              data-testid={TISSUE_NAME_LABEL_CLASS_NAME}
-            >
-              {capitalize(formattedName)}
-            </TissueLabel>
-          </div>
+        <TissueHeaderLabelStyle expanded={expanded}>
+          <TissueLabel
+            className={TISSUE_NAME_LABEL_CLASS_NAME}
+            data-testid={TISSUE_NAME_LABEL_CLASS_NAME}
+          >
+            {capitalize(formattedName)}
+          </TissueLabel>
         </TissueHeaderLabelStyle>
       </FlexRow>
       <CellCountLabelStyle
