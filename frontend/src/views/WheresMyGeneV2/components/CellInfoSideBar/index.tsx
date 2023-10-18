@@ -12,13 +12,19 @@ import {
   NoMarkerGenesContainer,
   NoMarkerGenesDescription,
   NoMarkerGenesHeader,
-  StyledHTMLTable,
   StyledIconImage,
   StyledMarkerGeneHeader,
   StyledTooltip,
   TooltipContent,
   TissueName,
   TooltipButton,
+  DivTable,
+  DivTableRow,
+  DivTableCell,
+  DivTableHead,
+  ButtonWrapper,
+  DivTableLegend,
+  TooltipLink,
 } from "./style";
 import { Link } from "../../../../components/GeneInfoSideBar/style";
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
@@ -80,7 +86,7 @@ function CellInfoSideBar({
         {MARKER_SCORE_CELLGUIDE_LINK_TEXT}
       </Link>
       <ButtonContainer>
-        <>
+        <ButtonWrapper>
           <StyledMarkerGeneHeader>{MARKER_GENE_LABEL}</StyledMarkerGeneHeader>
           <Tooltip
             sdsStyle="dark"
@@ -93,23 +99,21 @@ function CellInfoSideBar({
             title={
               <StyledTooltip>
                 <TooltipContent>{MARKER_GENES_TOOLTIP_CONTENT}</TooltipContent>
-                <>
-                  <a
-                    href={ROUTES.FMG_DOCS}
-                    rel="noopener"
-                    target="_blank"
-                    onClick={() => {
-                      track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
-                        label: MARKER_GENE_LABEL,
-                      });
-                      track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
-                        label: MARKER_GENE_LABEL,
-                      });
-                    }}
-                  >
-                    {MARKER_SCORE_TOOLTIP_LINK_TEXT}
-                  </a>
-                </>
+                <TooltipLink
+                  href={ROUTES.FMG_DOCS}
+                  rel="noopener"
+                  target="_blank"
+                  onClick={() => {
+                    track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
+                      label: MARKER_GENE_LABEL,
+                    });
+                    track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
+                      label: MARKER_GENE_LABEL,
+                    });
+                  }}
+                >
+                  {MARKER_SCORE_TOOLTIP_LINK_TEXT}
+                </TooltipLink>
               </StyledTooltip>
             }
           >
@@ -122,7 +126,7 @@ function CellInfoSideBar({
             </TooltipButton>
           </Tooltip>
           <BetaChip label="Beta" size="small" />
-        </>
+        </ButtonWrapper>
         <Button
           data-testid="add-to-dotplot-fmg-button"
           startIcon={<Icon sdsIcon="plus" sdsSize="s" sdsType="button" />}
@@ -149,109 +153,101 @@ function CellInfoSideBar({
           </NoMarkerGenesContainer>
         ))
       ) : (
-        <StyledHTMLTable condensed bordered={false}>
-          <thead>
-            <tr>
-              <td>{TABLE_HEADER_GENE}</td>
-              <td>
-                {TABLE_HEADER_SCORE}
-                <Tooltip
-                  sdsStyle="dark"
-                  placement="bottom"
-                  width="default"
-                  className="fmg-tooltip-icon"
-                  arrow
-                  onOpen={() => setHoverStartTime(Date.now())}
-                  onClose={handleMarkerScoreHoverEnd}
-                  title={
-                    <StyledTooltip>
-                      <TooltipContent>
-                        {MARKER_SCORE_TOOLTIP_CONTENT}
-                      </TooltipContent>
-                      <>
-                        <a
-                          href={ROUTES.FMG_DOCS}
-                          rel="noopener"
-                          target="_blank"
-                          onClick={() => {
-                            track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
-                              label: MARKER_SCORE_LABEL,
-                            });
-                            track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
-                              label: MARKER_SCORE_LABEL,
-                            });
-                          }}
-                        >
-                          {MARKER_SCORE_TOOLTIP_LINK_TEXT}
-                        </a>
-                      </>
-                    </StyledTooltip>
-                  }
-                >
-                  <TooltipButton
-                    sdsStyle="minimal"
-                    sdsType="secondary"
-                    isAllCaps={false}
-                  >
-                    <StyledIconImage src={questionMarkIcon} />
-                  </TooltipButton>
-                </Tooltip>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <CopyGenesButton
-                  onClick={handleCopyGenes}
-                  sdsType="primary"
+        <DivTable>
+          <DivTableHead>
+            <DivTableCell>{TABLE_HEADER_GENE}</DivTableCell>
+            <DivTableCell align>
+              {TABLE_HEADER_SCORE}
+              <Tooltip
+                sdsStyle="dark"
+                placement="bottom"
+                width="default"
+                className="fmg-tooltip-icon"
+                arrow
+                onOpen={() => setHoverStartTime(Date.now())}
+                onClose={handleMarkerScoreHoverEnd}
+                title={
+                  <StyledTooltip>
+                    <TooltipContent>
+                      {MARKER_SCORE_TOOLTIP_CONTENT}
+                    </TooltipContent>
+                    <TooltipLink
+                      href={ROUTES.FMG_DOCS}
+                      rel="noopener"
+                      target="_blank"
+                      onClick={() => {
+                        track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
+                          label: MARKER_SCORE_LABEL,
+                        });
+                        track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
+                          label: MARKER_SCORE_LABEL,
+                        });
+                      }}
+                    >
+                      {MARKER_SCORE_TOOLTIP_LINK_TEXT}
+                    </TooltipLink>
+                  </StyledTooltip>
+                }
+              >
+                <TooltipButton
                   sdsStyle="minimal"
+                  sdsType="secondary"
                   isAllCaps={false}
-                  startIcon={
-                    <Icon sdsIcon="copy" sdsSize="s" sdsType="button" />
-                  }
                 >
-                  Copy
-                </CopyGenesButton>
-              </td>
-              <td>
-                <MarkerStrengthContainer>
-                  <MarkerStrengthLabel>{"Low: <1"}</MarkerStrengthLabel>
-                  <MarkerStrengthLabel>{"Medium: 1-2"}</MarkerStrengthLabel>
-                  <MarkerStrengthLabel>{"High: >2"}</MarkerStrengthLabel>
-                </MarkerStrengthContainer>
-              </td>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(data.marker_genes).map(([symbol, metadata]) => (
-              <tr key={symbol}>
-                <td>
-                  {symbol}
-                  <InfoButtonWrapper
-                    data-testid="gene-info-button-cell-info"
-                    onClick={() => {
-                      generateGeneInfo(symbol);
+                  <StyledIconImage src={questionMarkIcon} />
+                </TooltipButton>
+              </Tooltip>
+            </DivTableCell>
+          </DivTableHead>
+          <DivTableLegend>
+            <DivTableCell>
+              <CopyGenesButton
+                onClick={handleCopyGenes}
+                sdsType="primary"
+                sdsStyle="minimal"
+                isAllCaps={false}
+                startIcon={<Icon sdsIcon="copy" sdsSize="s" sdsType="button" />}
+              >
+                Copy
+              </CopyGenesButton>
+            </DivTableCell>
+            <DivTableCell align>
+              <MarkerStrengthContainer>
+                <MarkerStrengthLabel>{"Low: <1"}</MarkerStrengthLabel>
+                <MarkerStrengthLabel>{"Medium: 1-2"}</MarkerStrengthLabel>
+                <MarkerStrengthLabel>{"High: >2"}</MarkerStrengthLabel>
+              </MarkerStrengthContainer>
+            </DivTableCell>
+          </DivTableLegend>
+          {Object.entries(data.marker_genes).map(([symbol, metadata]) => (
+            <DivTableRow key={symbol}>
+              <DivTableCell>
+                {symbol}
+                <InfoButtonWrapper
+                  data-testid="gene-info-button-cell-info"
+                  onClick={() => {
+                    generateGeneInfo(symbol);
 
-                      track(EVENTS.WMG_FMG_GENE_INFO, {
-                        gene: symbol,
-                      });
-                    }}
-                  >
-                    <StyledImage
-                      id="gene-info-button-fmg"
-                      src={InfoSVG.src}
-                      width="10"
-                      height="10"
-                      alt={`display gene info for ${symbol}`}
-                    />
-                  </InfoButtonWrapper>
-                </td>
-                <td data-testid="marker-scores-fmg">
-                  {metadata.effect_size.toPrecision(4)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </StyledHTMLTable>
+                    track(EVENTS.WMG_FMG_GENE_INFO, {
+                      gene: symbol,
+                    });
+                  }}
+                >
+                  <StyledImage
+                    id="gene-info-button-fmg"
+                    src={InfoSVG.src}
+                    width="10"
+                    height="10"
+                    alt={`display gene info for ${symbol}`}
+                  />
+                </InfoButtonWrapper>
+              </DivTableCell>
+              <DivTableCell data-testid="marker-scores-fmg" align>
+                {metadata.effect_size.toPrecision(4)}
+              </DivTableCell>
+            </DivTableRow>
+          ))}
+        </DivTable>
       )}
     </>
   );
