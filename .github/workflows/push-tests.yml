@@ -360,7 +360,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Install dependencies
-        run: make dev-env-server build-for-server-dev
+        run: cd explorer && make dev-env-server build-for-server-dev
       - name: Unit tests
         run: |
           cd ./explorer && make unit-test-server
