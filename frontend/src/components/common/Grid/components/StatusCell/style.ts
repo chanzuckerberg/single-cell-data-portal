@@ -1,19 +1,14 @@
 import styled from "@emotion/styled";
+import { fontBodyXs, Tag as SDSTag } from "@czi-sds/components";
 import {
-  CommonThemeProps,
-  fontBodyXs,
-  getColors,
-  getSpaces,
-  Tag as SDSTag,
-} from "@czi-sds/components";
-
-const primary100 = (props: CommonThemeProps) => getColors(props)?.primary[100];
-const primary500 = (props: CommonThemeProps) => getColors(props)?.primary[500];
-const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
-const spacesXxs = (props: CommonThemeProps) => getSpaces(props)?.xxs;
-const spacesXxxs = (props: CommonThemeProps) => getSpaces(props)?.xxxs;
-const success100 = (props: CommonThemeProps) => getColors(props)?.success[100];
-const success500 = (props: CommonThemeProps) => getColors(props)?.success[500];
+  primary100,
+  primary500,
+  spacesS,
+  spacesXxs,
+  spacesXxxs,
+  success100,
+  success500,
+} from "src/common/theme";
 
 export const StatusTags = styled.div`
   display: grid;

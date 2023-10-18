@@ -8,11 +8,16 @@ import tiledb
 from scipy import stats
 
 from backend.common.utils.exceptions import MarkerGeneCalculationException
-from backend.wmg.data.query import FmgQueryCriteria, WmgQuery
-from backend.wmg.data.rollup import (
+from backend.common.utils.rollup import (
     are_cell_types_colinear,
     rollup_across_cell_type_descendants,
     rollup_across_cell_type_descendants_array,
+)
+from backend.wmg.data.query import FmgQueryCriteria, WmgCubeQueryParams, WmgQuery
+from backend.wmg.data.schemas.data_schema_config import (
+    WMG_DATA_SCHEMA_VERSION,
+    WRITER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
+    WRITER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
 )
 from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
@@ -83,7 +88,11 @@ def _query_tiledb_context_memoized(
             dataset_to_gene_ids = json.load(fp)
     else:
         if corpus is None:
-            corpus = load_snapshot()
+            corpus = load_snapshot(
+                snapshot_schema_version=WMG_DATA_SCHEMA_VERSION,
+                read_versioned_snapshot=True,
+            )
+
         assert isinstance(corpus, WmgSnapshot)
         expression_summary_fmg_cube = corpus.expression_summary_fmg_cube
         cell_counts_cube = corpus.cell_counts_cube
@@ -102,8 +111,14 @@ def _query_tiledb_context_memoized(
         cell_type_orderings=None,
         primary_filter_dimensions=None,
         filter_relationships=None,
+        dataset_metadata=None,
     )
-    q = WmgQuery(snapshot)
+    cube_query_params = WmgCubeQueryParams(
+        cube_query_valid_attrs=WRITER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
+        cube_query_valid_dims=WRITER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+    )
+
+    q = WmgQuery(snapshot, cube_query_params)
     query = q.expression_summary_fmg(criteria)
     cell_counts_query = q.cell_counts(criteria)
 

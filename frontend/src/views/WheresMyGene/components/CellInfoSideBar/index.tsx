@@ -22,6 +22,7 @@ import {
   TissueName,
   TooltipButton,
 } from "./style";
+import { Link } from "../../../../components/GeneInfoSideBar/style";
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { StyledImage } from "../HeatMap/components/YAxisChart/style";
 import InfoSVG from "../HeatMap/components/YAxisChart/icons/info-sign-icon.svg";
@@ -78,7 +79,7 @@ function CellInfoSideBar({
       if (Date.now() - hoverStartTime > 2 * 1000) {
         track(event, payload);
       }
-    }, [hoverStartTime]);
+    }, [event, payload]);
   };
 
   const handleFmgHoverEnd = useHandleHoverEnd(
@@ -98,6 +99,18 @@ function CellInfoSideBar({
   return (
     <div>
       <TissueName>{tissueInfo.name}</TissueName>
+      <Link
+        href={`${ROUTES.CELL_GUIDE}/${cellInfoCellType.cellType.id}`}
+        onClick={() =>
+          track(EVENTS.WMG_OPEN_IN_CG_CLICKED, {
+            cell_type: cellInfoCellType.cellType.id,
+          })
+        }
+        target="_blank"
+        rel="noreferrer noopener"
+      >
+        Open in CellGuide
+      </Link>
       <ButtonContainer>
         <div>
           <StyledMarkerGeneHeader>Marker Genes</StyledMarkerGeneHeader>

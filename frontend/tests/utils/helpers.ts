@@ -2,7 +2,13 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
-import { ElementHandle, expect, Locator, Page } from "@playwright/test";
+import {
+  APIRequestContext,
+  ElementHandle,
+  expect,
+  Locator,
+  Page,
+} from "@playwright/test";
 import { TEST_ENV } from "tests/common/constants";
 import { LOGIN_STATE_FILENAME, TEST_URL } from "../common/constants";
 import {
@@ -10,6 +16,7 @@ import {
   ERROR_NO_TESTID_OR_LOCATOR,
   GENE_LABELS_ID,
 } from "../common/constants";
+import { TISSUE_NAME_LABEL_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 
 /**
  * (thuang): From oauth/users.json
@@ -51,23 +58,36 @@ const TEST_ENVS_DEV_STAGING_PROD = ["dev", "staging", "prod"];
 
 export const isDevStagingProd = TEST_ENVS_DEV_STAGING_PROD.includes(TEST_ENV);
 
-// Skip tests unless environment is dev or staging; used by tests that require a deployed environment but also modify
+// Skip tests unless environment is dev, rdev, or staging; used by tests that require a deployed environment but also modify
 // environment data (e.g. creating collections, which should be avoided in prod).
-const TEST_ENVS_DEV_STAGING = ["dev", "staging"];
+const TEST_ENVS_DEV_STAGING = ["dev", "staging", "rdev"];
 
-export const isDevStaging = TEST_ENVS_DEV_STAGING.includes(TEST_ENV);
+export const isDevStagingRdev = TEST_ENVS_DEV_STAGING.includes(TEST_ENV);
 
-const GO_TO_PAGE_TIMEOUT_MS = 120 * 1000;
+const GO_TO_PAGE_TIMEOUT_MS = 2 * 60 * 1000;
 
 export async function goToPage(
   url: string = TEST_URL,
   page: Page
 ): Promise<void> {
-  await page.goto(url, { timeout: GO_TO_PAGE_TIMEOUT_MS });
-  await page.waitForLoadState("networkidle");
+  if (!url) {
+    throw Error("goToPage() requires TEST_URL");
+  }
+
+  await tryUntil(
+    async () => {
+      await Promise.all([
+        page.waitForLoadState("networkidle"),
+        page.goto(url, { timeout: GO_TO_PAGE_TIMEOUT_MS }),
+      ]);
+    },
+    { page }
+  );
 }
 
 export async function login(page: Page): Promise<void> {
+  console.log("🔐🪵 Logging in...");
+
   await goToPage(undefined, page);
 
   const { username, password } = await getTestUsernameAndPassword();
@@ -96,6 +116,8 @@ export async function login(page: Page): Promise<void> {
   console.log("setting storage state...");
 
   await page.context().storageState({ path: LOGIN_STATE_FILENAME });
+
+  console.log(`✅ Login success!`);
 }
 
 export async function scrollToPageBottom(page: Page): Promise<void> {
@@ -106,19 +128,33 @@ export async function scrollToPageBottom(page: Page): Promise<void> {
 interface TryUntilConfigs {
   maxRetry?: number;
   page: Page;
+  silent?: boolean;
+  timeoutMs?: number;
 }
+
+const RETRY_TIMEOUT_MS = 3 * 60 * 1000;
 
 export async function tryUntil(
   assert: () => void,
-  { maxRetry = 50, page }: TryUntilConfigs
+  {
+    maxRetry = 50,
+    timeoutMs = RETRY_TIMEOUT_MS,
+    page,
+    silent = false,
+  }: TryUntilConfigs
 ): Promise<void> {
   const WAIT_FOR_MS = 200;
+
+  const startTime = Date.now();
 
   let retry = 0;
 
   let savedError: Error = new Error();
 
-  while (retry < maxRetry) {
+  const hasTimedOut = () => Date.now() - startTime > timeoutMs;
+  const hasMaxedOutRetry = () => retry >= maxRetry;
+
+  while (!hasMaxedOutRetry() && !hasTimedOut()) {
     try {
       await assert();
 
@@ -126,12 +162,24 @@ export async function tryUntil(
     } catch (error) {
       retry += 1;
       savedError = error as Error;
+
+      if (!silent) {
+        console.log("⚠️ tryUntil error-----------------START");
+        console.log(savedError.message);
+        console.log("⚠️ tryUntil error-----------------END");
+      }
+
       await page.waitForTimeout(WAIT_FOR_MS);
     }
   }
 
-  if (retry === maxRetry) {
-    savedError.message += " tryUntil() failed";
+  if (hasMaxedOutRetry()) {
+    savedError.message = `tryUntil() failed - Maxed out retries of ${maxRetry}: ${savedError.message}`;
+    throw savedError;
+  }
+
+  if (hasTimedOut()) {
+    savedError.message = `tryUntil() failed - Maxed out timeout of ${timeoutMs}ms: ${savedError.message}`;
     throw savedError;
   }
 }
@@ -147,6 +195,39 @@ export async function getInnerText(
   >;
 
   return element.innerText();
+}
+
+export async function getAccessToken(request: APIRequestContext) {
+  if (TEST_ENV !== "rdev") return;
+
+  const secret = JSON.parse(
+    (await client.send(command)).SecretString || "null"
+  );
+
+  const { test_app_id, test_app_secret } = secret;
+
+  const payload = {
+    grant_type: "client_credentials",
+    client_id: test_app_id,
+    client_secret: test_app_secret,
+    audience:
+      "https://api.cellxgene.dev.single-cell.czi.technology/dp/v1/curator",
+  };
+
+  const response = await request.post(
+    "https://czi-cellxgene-dev.us.auth0.com/oauth/token",
+    {
+      data: payload,
+    }
+  );
+
+  const { access_token } = await response.json();
+
+  if (!access_token) {
+    throw Error("No Auth0 access token!");
+  }
+
+  process.env.ACCESS_TOKEN = access_token;
 }
 
 async function getTestUsernameAndPassword() {
@@ -297,6 +378,8 @@ export async function getNames({
   } else {
     throw Error(ERROR_NO_TESTID_OR_LOCATOR);
   }
+
+  if ((await labelsLocator.count()) === 0) return [];
   await tryUntil(
     async () => {
       const names = await labelsLocator.allTextContents();
@@ -415,4 +498,42 @@ export async function takeSnapshotOfMetaTags(name: string, page: Page) {
     },
     { page }
   );
+}
+
+export async function expandTissue(page: Page, tissueName: string) {
+  await tryUntil(
+    async () => {
+      const beforeCellTypeNames = await getCellTypeNames(page);
+      await page
+        .getByTestId(`cell-type-labels-${tissueName}`)
+        .getByTestId(TISSUE_NAME_LABEL_CLASS_NAME)
+        .click();
+      const afterCellTypeNames = await getCellTypeNames(page);
+      expect(afterCellTypeNames.length).toBeGreaterThan(
+        beforeCellTypeNames.length
+      );
+    },
+    { page }
+  );
+}
+
+export async function collapseTissue(page: Page, tissueName: string) {
+  await tryUntil(
+    async () => {
+      const beforeCellTypeNames = await getCellTypeNames(page);
+      await page
+        .getByTestId(`cell-type-labels-${tissueName}`)
+        .getByTestId(TISSUE_NAME_LABEL_CLASS_NAME)
+        .click();
+      const afterCellTypeNames = await getCellTypeNames(page);
+      expect(afterCellTypeNames.length).toBeLessThan(
+        beforeCellTypeNames.length
+      );
+    },
+    { page }
+  );
+}
+
+export async function waitForLoadingSpinnerToResolve(page: Page) {
+  await page.getByText("Loading").first().waitFor({ state: "hidden" });
 }

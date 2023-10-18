@@ -18,6 +18,6 @@ export enum API {
   WMG_PRIMARY_FILTER_DIMENSIONS = "/wmg/v1/primary_filter_dimensions",
   WMG_QUERY = "/wmg/v1/query",
   WMG_FILTERS_QUERY = "/wmg/v1/filters",
-  WMG_MARKER_GENES = "/wmg/v1/markers",
+  WMG_MARKER_GENES = "/wmg/v2/markers",
   WMG_GENE_INFO = "/gene_info/v1/gene_info",
 }

@@ -2,15 +2,23 @@ from collections import defaultdict
 from typing import Any, Dict, Iterable, List
 
 import connexion
+from ddtrace import tracer
 from flask import jsonify
 from pandas import DataFrame
 from server_timing import Timing as ServerTiming
 
 from backend.wmg.api.common.expression_dotplot import get_dot_plot_data
 from backend.wmg.api.common.rollup import rollup
+from backend.wmg.api.wmg_api_config import (
+    READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
+    READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+    WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+    WMG_API_SNAPSHOT_SCHEMA_VERSION,
+)
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.query import (
     MarkerGeneQueryCriteria,
+    WmgCubeQueryParams,
     WmgFiltersQueryCriteria,
     WmgQuery,
     WmgQueryCriteriaV2,
@@ -25,11 +33,18 @@ from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find
 #  -portal/2132
 
 
+@tracer.wrap()
 def primary_filter_dimensions():
-    snapshot: WmgSnapshot = load_snapshot()
+    with ServerTiming.time("load snapshot"):
+        snapshot: WmgSnapshot = load_snapshot(
+            snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
+            explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+        )
+
     return jsonify(snapshot.primary_filter_dimensions)
 
 
+@tracer.wrap()
 def query():
     request = connexion.request.json
     is_rollup = request.get("is_rollup", True)
@@ -40,9 +55,19 @@ def query():
 
     criteria = WmgQueryCriteriaV2(**request["filter"])
 
+    with ServerTiming.time("load snapshot"):
+        snapshot: WmgSnapshot = load_snapshot(
+            snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
+            explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+        )
+
     with ServerTiming.time("query and build response"):
-        snapshot: WmgSnapshot = load_snapshot()
-        q = WmgQuery(snapshot)
+        cube_query_params = WmgCubeQueryParams(
+            cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
+            cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+        )
+
+        q = WmgQuery(snapshot, cube_query_params)
         default = snapshot.expression_summary_default_cube is not None and compare is None
         for dim in criteria.dict():
             if len(criteria.dict()[dim]) > 0 and depluralize(dim) in expression_summary_non_indexed_dims:
@@ -84,12 +109,18 @@ def query():
     return response
 
 
+@tracer.wrap()
 def filters():
     request = connexion.request.json
     criteria = WmgFiltersQueryCriteria(**request["filter"])
 
+    with ServerTiming.time("load snapshot"):
+        snapshot: WmgSnapshot = load_snapshot(
+            snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
+            explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+        )
+
     with ServerTiming.time("calculate filters and build response"):
-        snapshot: WmgSnapshot = load_snapshot()
         response_filter_dims_values = build_filter_dims_values(criteria, snapshot)
         response = jsonify(
             dict(
@@ -100,6 +131,7 @@ def filters():
     return response
 
 
+@tracer.wrap()
 def markers():
     request = connexion.request.json
     cell_type = request["celltype"]
@@ -107,14 +139,23 @@ def markers():
     organism = request["organism"]
     n_markers = request["n_markers"]
     test = request["test"]
-    snapshot: WmgSnapshot = load_snapshot()
+    snapshot: WmgSnapshot = load_snapshot(
+        snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
+        explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+    )
 
     criteria = MarkerGeneQueryCriteria(
         tissue_ontology_term_id=tissue,
         organism_ontology_term_id=organism,
         cell_type_ontology_term_id=cell_type,
     )
-    q = WmgQuery(snapshot)
+
+    cube_query_params = WmgCubeQueryParams(
+        cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
+        cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+    )
+
+    q = WmgQuery(snapshot, cube_query_params)
     df = q.marker_genes(criteria)
     marker_genes = retrieve_top_n_markers(df, test, n_markers)
     return jsonify(
@@ -127,7 +168,7 @@ def markers():
 
 def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
     return [
-        snapshot.dataset_dict.get(dataset_id, dict(id=dataset_id, label="", collection_id="", collection_label=""))
+        snapshot.dataset_metadata.get(dataset_id, dict(id=dataset_id, label="", collection_id="", collection_label=""))
         for dataset_id in dataset_ids
     ]
 
@@ -311,7 +352,6 @@ def build_ordered_cell_types_by_tissue(
     cell_type_orderings: DataFrame,
     compare: str,
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
-
     distinct_tissues_cell_types = cell_counts_cell_type_agg.reset_index().rename(
         columns={"n_cells_cell_type": "n_total_cells"}
     )

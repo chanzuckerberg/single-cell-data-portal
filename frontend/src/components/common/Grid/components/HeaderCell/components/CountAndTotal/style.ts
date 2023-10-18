@@ -1,13 +1,6 @@
 import styled from "@emotion/styled";
-import {
-  CommonThemeProps,
-  fontBodyXs,
-  getColors,
-  Tag,
-} from "@czi-sds/components";
-
-const gray100 = (props: CommonThemeProps) => getColors(props)?.gray[100];
-const gray600 = (props: CommonThemeProps) => getColors(props)?.gray[600];
+import { fontBodyXs, Tag } from "@czi-sds/components";
+import { gray100, gray600 } from "src/common/theme";
 
 export const CountAndTotal = styled(Tag)`
   &.MuiChip-root {

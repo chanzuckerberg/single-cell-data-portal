@@ -1,0 +1,431 @@
+name: Create/Update rdev for PR
+
+on:
+  pull_request:
+    branches-ignore:
+      - prod
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+# prevent the rdev from being updated in concurrent GHA
+concurrency:
+  group: pr-${{ github.event.number }}
+  cancel-in-progress: false
+
+env:
+  # Force using BuildKit instead of normal Docker, required so that metadata
+  # is written/read to allow us to use layers of previous builds as cache.
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+  DOCKER_REPO: ${{ secrets.ECR_REPO }}/
+  STACK_NAME: pr-${{ github.event.number }}
+
+permissions:
+  id-token: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  get_previous_image_digests:
+    runs-on: ubuntu-22.04
+    outputs:
+      ecr_repos: ${{ steps.get_digests.outputs.ecr_repos }}
+      image_digests: ${{ steps.get_digests.outputs.image_digests }}
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - name: Get previous image digests for each repo
+        id: get_digests
+        run: |
+          ECR_REPOS=(corpora-frontend corpora-backend corpora-upload-failures corpora-upload-success \
+            dataset-submissions corpora-upload wmg-processing cellguide-pipeline)
+          IMAGE_DIGESTS=()
+          for ecr_repo in "${ECR_REPOS[@]}"; do
+            IMAGE_DIGESTS+=(`aws ecr list-images --repository-name $ecr_repo --filter tagStatus=TAGGED \
+              | jq -r --arg STACK_NAME ${STACK_NAME} '[.imageIds[] \
+              | select(.imageTag==$STACK_NAME)][0].imageDigest'`)
+          done
+          echo "ECR_REPOS=${ECR_REPOS[@]}" >> $GITHUB_OUTPUT
+          echo "IMAGE_DIGESTS=${IMAGE_DIGESTS[@]}" >> $GITHUB_OUTPUT
+
+  build_images:
+    strategy:
+      matrix:
+        image:
+          - frontend # pushed both the frontend and backend images
+          - upload_failures
+          - upload_success
+          - dataset_submissions
+          - processing
+          - wmg_processing
+          - cellguide_pipeline
+    runs-on: ubuntu-22.04
+    needs:
+      - get_previous_image_digests
+    outputs:
+      image_tag: ${{ steps.push_images.outputs.image_tag }}
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        with:
+          happy_version: "0.110.1"
+      - name: Push images
+        id: push_images
+        run: |
+          echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
+          echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
+          export IMAGE_TAG=sha-${GITHUB_SHA:0:7}
+          export BRANCH_TAG=branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+          happy push devstack --env dev --slice ${{ matrix.image }} \
+          --docker-compose-env-file envfile --aws-profile "" \
+          --tags ${STACK_NAME},${IMAGE_TAG},${BRANCH_TAG}
+
+  deploy-rdev:
+    runs-on: ubuntu-22.04
+    needs:
+      - build_images
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Update deployment
+        uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
+        with:
+          tfe-token: ${{ secrets.TFE_TOKEN }}
+          stack-name: ${{ env.STACK_NAME }}
+          tag: ${{ needs.build_images.outputs.image_tag }}
+          happy_version: "0.110.1"
+
+  delete-previous-images:
+    runs-on: ubuntu-22.04
+    needs:
+      - get_previous_image_digests
+      - deploy-rdev
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - name: Delete previous images
+        run: |
+          ECR_REPOS=(${{ needs.get_previous_image_digests.outputs.ecr_repos }})
+          IMAGE_DIGESTS=(${{ needs.get_previous_image_digests.outputs.image_digests }})
+          for ((i = 0; i < ${#ECR_REPOS[@]}; ++i)); do
+            if [ ${IMAGE_DIGESTS[$i]} == "null" ]; then
+              continue
+            fi
+            aws ecr batch-delete-image --repository-name ${ECR_REPOS[$i]} --image-ids imageDigest=${IMAGE_DIGESTS[$i]}
+          done
+
+  summarize:
+    runs-on: ubuntu-22.04
+    needs:
+      - deploy-rdev
+    if: github.event.action == 'opened'
+    steps:
+      - name: Summerize deployment
+        id: summary
+        run: |
+          summary="## Deployment Summary"
+          summary+="\n- backend_url: https://${{ env.STACK_NAME }}-backend.rdev.single-cell.czi.technology"
+          summary+="\n- frontend_url: https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology"
+          summary+="\n- delete_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-deletion:1"
+          summary+="\n- migrate_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-migration:1"
+          echo "SUMMARY=$summary" >> $GITHUB_OUTPUT
+      - name: Post Comment
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "${{ steps.summary.outputs.summary}}"
+            })
+
+  functional-test:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    needs:
+      - deploy-rdev
+      - seed-wmg-cellguide-rdev
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      # TODO: Wait until the deployment is complete and return 200 responses from the version endpoint.
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Run functional test
+        run: |
+          pip3 install -r tests/functional/requirements.txt
+          DEPLOYMENT_STAGE=rdev STACK_NAME=${{ env.STACK_NAME }} make functional-test
+
+  seed-wmg-cellguide-rdev:
+    runs-on: ubuntu-22.04
+    needs:
+      - deploy-rdev
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Grant Execute Permission to Bash Script
+        run: |
+          chmod +x ./scripts/populate_rdev_with_cellguide_data.sh ./scripts/populate_rdev_with_wmg_data.sh
+
+      - name: Seed cell guide data
+        run: |
+          ./scripts/populate_rdev_with_cellguide_data.sh ${{ env.STACK_NAME }}
+      - name: Seed WMG data
+        run: |
+          ./scripts/populate_rdev_with_wmg_data.sh ${{ env.STACK_NAME }}
+
+  seed-database-e2e-tests:
+    runs-on: ubuntu-22.04
+    needs:
+      - deploy-rdev
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Seed database for e2e tests
+        run: |
+          pip3 install -r scripts/smoke_tests/requirements.txt
+          STACK_NAME=${{ env.STACK_NAME }} DEPLOYMENT_STAGE=rdev python3 -m scripts.smoke_tests.setup
+
+  run-e2e-tests:
+    needs:
+      - seed-wmg-cellguide-rdev
+      - seed-database-e2e-tests
+    timeout-minutes: 30
+    name: e2e-tests ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # Only run Chrome for now, since GHA only has 250 workers and will cancel jobs if it runs out
+        project: [chromium]
+        shardCurrent: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        shardTotal: [10]
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16.14.2"
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - name: Install dependencies
+        ### config.js set-up required due to transient test dependencies on API_URL
+        run: |
+          npm ci
+          npx playwright install --with-deps
+          cp src/configs/local.js src/configs/configs.js
+
+      # Run E2E tests
+      - name: Run E2E tests
+        env:
+          CI: true
+          PROJECT: ${{ matrix.project }}
+          SHARD: ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
+        run: DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev-ci
+
+      - name: Upload FE test results as an artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
+          retention-days: 14
+
+      - name: Upload blob report to GitHub Actions Artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: all-blob-reports
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
+          retention-days: 1
+
+      # Upload Allure results as an artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/allure-results
+          retention-days: 20
+
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        with:
+          happy_version: "0.110.1"
+
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "here"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && github.ref == 'refs/heads/main'
+
+  merge-playwright-reports:
+    # Merge reports after playwright-tests, even if some shards have failed
+    if: always()
+    needs: run-e2e-tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download blob reports from GitHub Actions Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: all-blob-reports
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-reports
+
+      - name: Merge into HTML Report
+        run: npx playwright merge-reports --reporter html ./blob-reports
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v3
+        with:
+          name: html-report--attempt-${{ github.run_attempt }}
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
+          retention-days: 30
+
+  # https://github.com/myieye/web-languageforge/blob/develop/.github/workflows/e2e-tests.yml
+  e2e-test:
+    if: always()
+    name: e2e-test
+    runs-on: ubuntu-latest
+    needs:
+      - run-e2e-tests
+    steps:
+      - name: Check result
+        run: |
+          passed="${{ needs.run-e2e-tests.result }}"
+          if [[ $passed == "success" ]]; then
+            echo "Shards passed"
+            exit 0
+          else
+            echo "Shards failed"
+            exit 1
+          fi
+
+  e2e-logged-in-test:
+    timeout-minutes: 30
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: frontend
+    needs:
+      - seed-wmg-cellguide-rdev
+      - seed-database-e2e-tests
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16.14.2"
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Install dependencies
+        ### config.js set-up required due to transient test dependencies on API_URL
+        run: |
+          npm ci
+          npx playwright install --with-deps
+          cp src/configs/local.js src/configs/configs.js
+      - name: Run E2E Logged In tests
+        run: |
+          DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev-logged-in-ci
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: logged-in-test-results
+          path: frontend/playwright-report/
+          retention-days: 30

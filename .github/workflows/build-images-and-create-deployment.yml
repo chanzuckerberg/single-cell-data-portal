@@ -7,9 +7,11 @@ on:
       - staging
       - prod
 
+# add a concurrency group to prevent multiple builds from running at the same time
+concurrency:
+  group: $${{ github.ref }}-environment
+  cancel-in-progress: false
 env:
-  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-  DEPLOYMENT_STAGE: test
   # Force using BuildKit instead of normal Docker, required so that metadata
   # is written/read to allow us to use layers of previous builds as cache.
   DOCKER_BUILDKIT: 1
@@ -22,7 +24,17 @@ permissions:
   deployments: write
 
 jobs:
-  build-frontend-backend-images:
+  build_images:
+    strategy:
+      matrix:
+        image:
+          - frontend # pushed both the frontend and backend images
+          - upload_failures
+          - upload_success
+          - dataset_submissions
+          - processing
+          - wmg_processing
+          - cellguide_pipeline
     runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
@@ -36,15 +48,19 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
-          happy_version: "0.59.0"
+          happy_version: "0.110.1"
       - name: Push images
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
-          happy push --docker-compose-env-file envfile --aws-profile "" --tag sha-${GITHUB_SHA:0:8} frontend backend
+          happy push devstack --env dev --slice ${{ matrix.image }} \
+          --docker-compose-env-file envfile --aws-profile "" \
+          --tags sha-${GITHUB_SHA:0:8},branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -53,112 +69,10 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
-
-  build-batch-job-images:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 1800
-      - name: Login to ECR
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v2
-      - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
-        with:
-          happy_version: "0.59.0"
-      - name: Docker build, push, and tag
-        shell: bash
-        run: |
-          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} upload_failures upload_success dataset_submissions processing wmg_processing
-      - uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          fields: repo,commit,author,eventName,workflow,job,mention
-          mention: "here"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
-
-  add-image-tags:
-    needs:
-      - build-frontend-backend-images
-      - build-batch-job-images
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 1800
-      - name: Login to ECR
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v2
-      - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
-        with:
-          happy_version: "0.59.0"
-      - name: Docker re-tag
-        shell: bash
-        run: |
-          happy addtags --aws-profile "" --source-tag sha-${GITHUB_SHA:0:8} --dest-tag branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
-      - uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          fields: repo,commit,author,eventName,workflow,job,mention
-          mention: "here"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
-
-  push-prod-images:
-    needs:
-      - build-frontend-backend-images
-      - build-batch-job-images
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Configure AWS Credentials
-        if: ( github.ref == 'refs/heads/prod' )
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
-          role-duration-seconds: 1800
-      - name: Login to ECR
-        if: ( github.ref == 'refs/heads/prod' )
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REPO }}
-      - name: Login to Prod ECR
-        if: ( github.ref == 'refs/heads/prod' )
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REPO_PROD }}
-      - name: push docker images to prod ecr repo
-        if: ( github.ref == 'refs/heads/prod' )
-        shell: bash
-        run: |
-          docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
-          docker tag ${{ secrets.ECR_REPO }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8} ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
-          docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
-          docker pull ${{ secrets.ECR_REPO }}/corpora-upload-success:sha-${GITHUB_SHA:0:8}
-          docker tag ${{ secrets.ECR_REPO }}/corpora-upload-success:sha-${GITHUB_SHA:0:8} ${{ secrets.ECR_REPO_PROD }}/corpora-upload-success:sha-${GITHUB_SHA:0:8}
-          docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-success:sha-${GITHUB_SHA:0:8}
-          docker pull ${{ secrets.ECR_REPO }}/dataset-submissions:sha-${GITHUB_SHA:0:8}
-          docker tag ${{ secrets.ECR_REPO }}/dataset-submissions:sha-${GITHUB_SHA:0:8} ${{ secrets.ECR_REPO_PROD }}/dataset-submissions:sha-${GITHUB_SHA:0:8}
-          docker push ${{ secrets.ECR_REPO_PROD }}/dataset-submissions:sha-${GITHUB_SHA:0:8}
 
   create_deployment:
     needs:
-      - push-prod-images
+      - build_images
     runs-on: ubuntu-22.04
     steps:
       - name: Generate payload
@@ -172,6 +86,8 @@ jobs:
             echo "DEPLOYMENT_STAGE=dev" >> $GITHUB_ENV
           fi
       - uses: avakar/create-deployment@v1
+        #  TODO remove if conidition after pentest on October 31st 2023
+        if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod'
         with:
           auto_merge: false
           environment: ${{ env.DEPLOYMENT_STAGE }}

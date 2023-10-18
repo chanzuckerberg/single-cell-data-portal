@@ -3,12 +3,18 @@ import { Group } from "@visx/group";
 import { localPoint } from "@visx/event";
 import Node from "../Node";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
-import { TreeNodeWithState } from "../../common/types";
-import { useCellTypeNamesById } from "src/common/queries/cellGuide";
+import {
+  CellType,
+  MarkerGeneStatsByCellType,
+  TreeNodeWithState,
+} from "../../common/types";
+import { useCellTypeMetadata } from "src/common/queries/cellGuide";
 import { NODE_SPACINGS, TREE_ANIMATION_DURATION } from "../../common/constants";
 import { EVENTS } from "src/common/analytics/events";
 import { track } from "src/common/analytics";
-import { useState } from "react";
+import { MouseEventHandler, useState } from "react";
+import { useRouter } from "next/router";
+import { ROUTES } from "src/common/constants/routes";
 
 interface AnimatedNodesProps {
   tree: HierarchyPointNode<TreeNodeWithState>;
@@ -22,10 +28,29 @@ interface AnimatedNodesProps {
     tooltipData: {
       n_cells: number;
       n_cells_rollup: number;
+      marker_score?: number;
+      me?: number;
+      pc?: number;
     };
   }) => void;
   hideTooltip: () => void;
+  cellTypesWithMarkerGeneStats: MarkerGeneStatsByCellType | null;
+  setCellInfoCellType?: (props: CellType | null) => void;
 }
+
+interface AnimationState {
+  top: number;
+  left: number;
+  opacity: number;
+  timing: { duration: number };
+}
+
+interface AnimationNode {
+  key: string;
+  data: HierarchyPointNode<TreeNodeWithState>;
+  state: AnimationState;
+}
+
 export default function AnimatedNodes({
   tree,
   cellTypeId,
@@ -34,34 +59,54 @@ export default function AnimatedNodes({
   toggleTriggerRender,
   showTooltip,
   hideTooltip,
+  cellTypesWithMarkerGeneStats,
+  setCellInfoCellType,
 }: AnimatedNodesProps) {
   const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For hover event
+  const router = useRouter();
+  const handleAnimationEnd = (node: HierarchyPointNode<TreeNodeWithState>) => {
+    // Update the starting position of the node to be its current position
+    node.data.x0 = node.x;
+    node.data.y0 = node.y;
+  };
+  const { data: cellTypeMetadata } = useCellTypeMetadata() || {};
+  const handleNodeLabelClick = ({ cellTypeId, cellTypeName }: CellType) => {
+    if (setCellInfoCellType) {
+      setCellInfoCellType({ cellTypeId, cellTypeName });
+    } else {
+      router.push(`${ROUTES.CELL_GUIDE}/${cellTypeId.replace(":", "_")}`);
+    }
+  };
 
-  const cellTypeNamesById = useCellTypeNamesById() || {};
   const handleMouseOver = (
-    event: React.MouseEvent<SVGElement>,
+    event: React.MouseEvent<HTMLDivElement>,
     datum: TreeNodeWithState
   ) => {
     const id = setTimeout(() => {
       track(EVENTS.CG_TREE_NODE_HOVER, {
         cell_type: datum.name,
       });
-    }, 2000);
+    }, 2 * 1000);
     setTimerId(id);
-
-    if (event.target instanceof SVGElement) {
-      if (event.target.ownerSVGElement !== null) {
-        const coords = localPoint(event.target.ownerSVGElement, event);
-        if (coords) {
-          showTooltip({
-            tooltipLeft: coords.x,
-            tooltipTop: coords.y,
-            tooltipData: {
-              n_cells: datum.n_cells,
-              n_cells_rollup: datum.n_cells_rollup,
-            },
-          });
-        }
+    const ownerSVGElement = findSVGParent(event.target as Node);
+    if (event.target instanceof HTMLDivElement && ownerSVGElement) {
+      const coords = localPoint(ownerSVGElement, event);
+      if (coords) {
+        const marker_score =
+          cellTypesWithMarkerGeneStats?.[datum.id]?.marker_score;
+        const me = cellTypesWithMarkerGeneStats?.[datum.id]?.me;
+        const pc = cellTypesWithMarkerGeneStats?.[datum.id]?.pc;
+        showTooltip({
+          tooltipLeft: coords.x,
+          tooltipTop: coords.y,
+          tooltipData: {
+            n_cells: datum.n_cells,
+            n_cells_rollup: datum.n_cells_rollup,
+            marker_score,
+            me,
+            pc,
+          },
+        });
       }
     }
   };
@@ -71,6 +116,9 @@ export default function AnimatedNodes({
       data={tree.descendants()}
       keyAccessor={(d: HierarchyPointNode<TreeNodeWithState>) => d.data.id}
       start={(node: HierarchyPointNode<TreeNodeWithState>) => {
+        // when the animation ends, update the start position of the
+        // node to be its current position
+        setTimeout(() => handleAnimationEnd(node), duration);
         return node.parent
           ? {
               top: node.parent.data.x0 ?? node.parent.x,
@@ -105,68 +153,94 @@ export default function AnimatedNodes({
         return { opacity: [0], timing: { duration: 0 } };
       }}
     >
-      {(nodes) => {
-        return (
-          <Group>
-            {nodes.map(({ key, data: node, state }) => {
-              const isInCorpus =
-                (node.data.id.split("__").at(0)?.replace("_", ":") ?? "") in
-                cellTypeNamesById;
-
-              return (
-                <Node
-                  key={`${key}-node`}
-                  isInCorpus={isInCorpus}
-                  animationKey={key}
-                  node={node}
-                  isTargetNode={cellTypeId === node.data.id.split("__").at(0)}
-                  handleMouseOver={handleMouseOver}
-                  handleMouseOut={() => {
-                    hideTooltip();
-                    if (timerId) {
-                      clearTimeout(timerId);
-                      setTimerId(null);
-                    }
-                  }}
-                  maxWidth={NODE_SPACINGS[1] - 20}
-                  left={state.left}
-                  top={state.top}
-                  opacity={state.opacity}
-                  handleClick={() => {
-                    if (duration === 0) {
-                      setDuration(TREE_ANIMATION_DURATION);
-                    }
-
-                    // If node id starts with dummy-child then it's multiple cell types
-                    if (node.data.id.startsWith("dummy-child")) {
-                      track(EVENTS.CG_TREE_NODE_CLICKED, {
-                        cell_type: "multiple cell types",
-                      });
-
-                      if (node.parent) {
-                        node.parent.data.showAllChildren = true;
-                      }
-                    } else {
-                      track(EVENTS.CG_TREE_NODE_CLICKED, {
-                        cell_type: node.data.name,
-                      });
-                    }
-
-                    node.data.isExpanded = !node.data.isExpanded;
-                    if (!node.data.isExpanded) {
-                      node.data.showAllChildren = false;
-                      collapseAllDescendants(node);
-                    }
-                    toggleTriggerRender();
-                  }}
-                />
-              );
-            })}
-          </Group>
-        );
-      }}
+      {(nodes) =>
+        renderNodes(nodes, cellTypesWithMarkerGeneStats, handleNodeLabelClick)
+      }
     </NodeGroup>
   );
+
+  function renderNode(
+    animatedNode: {
+      key: string;
+      data: HierarchyPointNode<TreeNodeWithState>;
+      state: AnimationState;
+    },
+    cellTypesWithMarkerGeneStats: MarkerGeneStatsByCellType | null,
+    handleNodeLabelClick: (props: CellType) => void
+  ) {
+    const { key, data: node, state } = animatedNode;
+
+    const isInCorpus =
+      (node.data.id.split("__")[0]?.replace("_", ":") ?? "") in
+      (cellTypeMetadata ?? {});
+
+    return (
+      <Node
+        key={`${key}-node`}
+        isInCorpus={isInCorpus}
+        animationKey={key}
+        node={node}
+        cellTypesWithMarkerGeneStats={cellTypesWithMarkerGeneStats}
+        isTargetNode={cellTypeId === node.data.id.split("__")[0]}
+        handleMouseOver={handleMouseOver}
+        handleMouseOut={handleMouseOut}
+        maxWidth={NODE_SPACINGS[1] - 20}
+        left={state.left}
+        top={state.top}
+        opacity={state.opacity}
+        handleClick={
+          handleNodeClick as unknown as MouseEventHandler<HTMLDivElement>
+        }
+        handleNodeLabelClick={handleNodeLabelClick}
+      />
+    );
+
+    function handleNodeClick() {
+      if (duration === 0) {
+        setDuration(TREE_ANIMATION_DURATION);
+      }
+
+      if (node.data.id.startsWith("dummy-child")) {
+        track(EVENTS.CG_TREE_NODE_CLICKED, {
+          cell_type: "multiple cell types",
+        });
+        if (node.parent) {
+          node.parent.data.showAllChildren = true;
+        }
+      } else {
+        track(EVENTS.CG_TREE_NODE_CLICKED, { cell_type: node.data.name });
+      }
+
+      node.data.isExpanded = !node.data.isExpanded;
+      if (!node.data.isExpanded) {
+        node.data.showAllChildren = false;
+        collapseAllDescendants(node);
+      }
+      toggleTriggerRender();
+    }
+  }
+
+  function handleMouseOut() {
+    hideTooltip();
+    if (timerId) {
+      clearTimeout(timerId);
+      setTimerId(null);
+    }
+  }
+
+  function renderNodes(
+    nodes: AnimationNode[],
+    cellTypesWithMarkerGeneStats: AnimatedNodesProps["cellTypesWithMarkerGeneStats"],
+    handleNodeLabelClick: (props: CellType) => void
+  ) {
+    return (
+      <Group>
+        {nodes.map((node) =>
+          renderNode(node, cellTypesWithMarkerGeneStats, handleNodeLabelClick)
+        )}
+      </Group>
+    );
+  }
 }
 
 function collapseAllDescendants(node: HierarchyPointNode<TreeNodeWithState>) {
@@ -176,4 +250,14 @@ function collapseAllDescendants(node: HierarchyPointNode<TreeNodeWithState>) {
       collapseAllDescendants(child);
     }
   }
+}
+
+function findSVGParent(node: Node | null): SVGElement | undefined {
+  while (node) {
+    if (node instanceof SVGElement) {
+      return node;
+    }
+    node = node.parentNode;
+  }
+  return undefined;
 }

@@ -4,6 +4,10 @@ import os
 
 import pandas as pd
 
+from backend.wmg.api.wmg_api_config import (
+    READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
+    READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+)
 from backend.wmg.data import query
 from backend.wmg.data.snapshot import (
     EXPRESSION_SUMMARY_CUBE_NAME,
@@ -36,17 +40,21 @@ def load_snapshot(snapshot_id) -> WmgSnapshot:
         dataset_to_gene_ids={},
         marker_genes_cube=None,
         filter_relationships=None,
+        dataset_metadata=None,
     )
 
 
 def wmg_query() -> query.WmgQuery:
     snapshot_id = 1662103227  # _read_s3obj("latest_snapshot_identifier")
     snapshot = load_snapshot(snapshot_id)
-    return query.WmgQuery(snapshot)
+    cube_query_params = query.WmgCubeQueryParams(
+        cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
+        cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+    )
+    return query.WmgQuery(snapshot, cube_query_params)
 
 
 if __name__ == "__main__":
-
     q = wmg_query()
     genes = ["ENSG00000182149"]
     tissues = ["UBERON:0000160"]

@@ -1,23 +1,58 @@
 # Tests documentation
 
-## How to run E2E tests locally
+## WARNING
 
-There are a number of scripts for running E2E tests and one can choose depending on the their needs, especially when developing tests:
+1. Do **NOT** import `.tsx` files in your tests, otherwise we'll get weird parsing errors, due to Playwright parser not parsing SVG files at the moment.
 
-1. `npm run e2e` - run all tests on all browsers, resolutions and headless
-1. `npm run e2e:chrome` - run all tests in all resolutions, in chrome and headless
-1. `npm run e2e:ff` - run all tests in all resolutions, in firefox and headless
-1. `npm run e2e:ie` - run all tests in all resolutions, in edge and headless
-1. `npm run e2e:chrome:headed` - run all tests in all resolutions, in edge and headed mode
+1. Use `test` from `import { test } from "tests/common/test"` instead of `import { test } from "@playwright/test"`
 
-NOTE. It is advised to run the default `npm run e2e` once PR is ready to ensure all tests pass in their entirety as that is what the CI will.
+## How to run E2E tests from your local machine
+
+See the [#how](#how) section
 
 ## Flags
 
-1. `SKIP_LOGIN`: Add `SKIP_LOGIN=true` to your test command if you don't need Playwright to log into Data Portal
+1. `LOGIN` and `SKIP_LOGIN`: Add `LOGIN=false` or `SKIP_LOGIN=true` to your test command if you don't need Playwright to log into Data Portal
+   - Example: `LOGIN=false npm run e2e`
 1. `HEADLESS` and `HEADFUL`: Add `HEADLESS=false` or `HEADFUL=true` to your test command to launch browser
+   - Example: `HEADFUL=true npm run e2e`
 1. `RETRY`: Add `RETRY=false` if you don't want to retry your test. This is good for failing fast when you're writing tests
-1. `USE_COOKIE`: Manually use your own cookie for authenticated tests. Should only be used locally. The cookie value is set by modifying the `MANUAL_COOKIE` variable in `playwright.config.ts`
+   - Example: `RETRY=false npm run e2e`
+1. `USE_COOKIE`: Manually use your own cookie for authenticated tests. Should only be used locally. **The cookie value is set by modifying the `MANUAL_COOKIE` variable in `playwright.config.ts`**
+   - Example: `USE_COOKIE=true npm run e2e`
+
+## Cheat Sheet
+
+1. Run individual test file: Instead of executing the all test suite, you can pass a test file to the command to speed up your debug cycle
+
+   - Example: `npm run e2e -- -- TEST_FILE_PATH`
+
+1. `.only()`: Add `.only()` to a `test()` call, so Playwright will only run that test
+   ![Add .only](https://user-images.githubusercontent.com/6309723/196773185-8553273c-0cfd-4861-ac57-e2e21abfb76a.png)
+
+1. `--ui`: UI Mode lets you explore, run, and debug tests with a time travel experience complete with watch mode. All test files are loaded into the testing sidebar where you can expand each file and describe block to individually run, view, watch and debug each test.
+
+   - [Source](https://playwright.dev/docs/test-ui-mode#running-tests-in-ui-mode)
+
+   - Example: `npm run e2e -- --ui -- TEST_FILE_PATH`
+
+   ![Image](https://user-images.githubusercontent.com/13063165/234295914-f7ee3d8b-33a7-41b3-bc91-d363baaa7305.png)
+
+1. `--debug`: Debug mode launches Playwright Inspector, which lets you play, pause, or step through each action of your test using the toolbar at the top of the Inspector. You can see the current action highlighted in the test code, and matching elements highlighted in the browser window.
+
+   - [Source](https://playwright.dev/docs/debug#playwright-inspector)
+
+   - Example: `npm run e2e -- --debug -- TEST_FILE_PATH`
+
+   ![Image](https://user-images.githubusercontent.com/13063165/212924587-4b84e5f6-b147-40e9-8c75-d7b9ab6b7ca1.png)
+
+1. `npx playwright show-trace`: Use [Playwright Trace Viewer](https://playwright.dev/docs/trace-viewer) to inspect what the test did play by play along with the network responses at any given time
+
+   - [Source](https://playwright.dev/docs/trace-viewer)
+
+   - Example: `npx playwright show-trace PATH_TO_TRACE.zip`
+
+     ![Trace Viewer](https://user-images.githubusercontent.com/6309723/196768996-899f1086-13e8-4c3d-804a-eb050bfa6c71.gif)
 
 ### What
 
@@ -55,14 +90,11 @@ All the E2E test commands can be found in `frontend/Makefile` and `frontend/pack
 
 ### How
 
-1. Set up your local FE environment before running any `npm` commands:
+#### Set up
 
-   1. In `frontend/` directory, run `npm i`
-   2. Ensure your playwright config is connected to a working BE API service.
+Before running any tests, start with [mise en place](../README.md#mise-en-place)
 
-      1. For BE running in Docker containers, `frontend/src/configs/configs.js` should point to `API_URL: "https://backend.corporanet.local:5000"`
-
-      2. To run against Deployed BEs,`frontend/src/configs/configs.js` should point to `API_URL: "https://api.cellxgene.dev.single-cell.czi.technology"`, or any other deployed BE API base url
+#### Options
 
 1. local -> local (app started with `npm run dev`)
 
@@ -306,7 +338,7 @@ Where tests are skipped vs. run in different environments.
 
 ## Keep code DRY and readable
 
-1.  Avoid nesting tests with `beforeEach()` and `afterEach()` when you can extract reusable functions to call explicitly inside each test case. This helps improve readability and maintenance, since all the setup and teardown are isolated within a test case. [Read more](https://kentcdodds.com/blog/avoid-nesting-when-youre-testing)
+1.  Avoid nesting tests with `beforeEach()` and `afterEach()` when you can extract reusable functions to call explicitly inside each test case. This helps improve readability and maintenance, since all the setup and teardown are isolated within a test case. [(Read more)](https://kentcdodds.com/blog/avoid-nesting-when-youre-testing)
 
 1.  Avoid unnecessary steps that add complexity to tests
 

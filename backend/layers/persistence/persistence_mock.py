@@ -1,9 +1,9 @@
 import copy
 from datetime import datetime
 from fnmatch import fnmatchcase
-from typing import Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
-from backend.layers.business.exceptions import CollectionIsPublishedException
+from backend.layers.business.exceptions import CollectionIsPublishedException, DatasetIsPublishedException
 from backend.layers.common.entities import (
     CanonicalCollection,
     CanonicalDataset,
@@ -83,7 +83,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         return copy.deepcopy(version)
 
     def _update_version_with_canonical(
-        self, version: Union[CollectionVersion, CollectionVersionWithDatasets], update_datasets: bool = False
+        self,
+        version: Union[CollectionVersion, CollectionVersionWithDatasets],
+        update_datasets: bool = False,
+        get_tombstoned: bool = False,
     ):
         """
         Private method that returns a version updated with the canonical collection.
@@ -94,9 +97,11 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         copied_version = copy.deepcopy(version)
         if update_datasets:
             datasets_to_include = []
-            for dataset_id in copied_version.datasets:
-                if dataset_version := self.get_dataset_version(dataset_id):
+            for dataset_version_id in copied_version.datasets:
+                if dataset_version := self.get_dataset_version(dataset_version_id, get_tombstoned=get_tombstoned):
+                    dataset_version = self._update_dataset_version_with_canonical(dataset_version)
                     datasets_to_include.append(dataset_version)
+            # Replace 'datasets' array of Dataset version ids with 'datasets' array of actual Dataset versions
             copied_version.datasets = datasets_to_include
             # Hack for business logic that uses isinstance
             copied_version.__class__ = CollectionVersionWithDatasets
@@ -146,7 +151,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                     continue
                 yield self._update_version_with_canonical(collection_version)
 
-    def delete_canonical_collection(self, collection_id: CollectionId) -> None:
+    def tombstone_collection(self, collection_id: CollectionId) -> None:
         collection = self.collections[collection_id.id]
         collection.tombstoned = True
         # Tombstone Datasets individually as well
@@ -154,6 +159,17 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             if collection_version.collection_id == collection.id:
                 for dataset_version in collection_version.datasets:
                     self.datasets[self.datasets_versions[dataset_version.id].dataset_id.id].tombstoned = True
+
+    def resurrect_collection(self, collection_id: CollectionId, datasets_to_resurrect: Iterable[str]) -> None:
+        """
+        Untombstones a canonical collection and the explicitly-passed list of constituent Dataset ids. Constituent
+        Datasets whose ids are not included in this list will remain tombstoned.
+        """
+        collection = self.collections[collection_id.id]
+        collection.tombstoned = False
+        # Untombstone Datasets individually as well
+        for d_id in datasets_to_resurrect:
+            self.datasets[d_id].tombstoned = False
 
     def save_collection_metadata(
         self, version_id: CollectionVersionId, collection_metadata: CollectionMetadata
@@ -190,23 +206,59 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.collections_versions[new_version_id.id] = collection_version
         return new_version_id
 
+    def delete_unpublished_collection(self, collection_id: CollectionId) -> None:
+        collection = self.collections.get(collection_id.id)
+        if collection:
+            if collection.originally_published_at is not None:
+                raise CollectionIsPublishedException("Can only delete unpublished collections")
+            del self.collections[collection_id.id]
+
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         collection_version = self.collections_versions.get(version_id.id)
         if collection_version and collection_version.published_at is not None:
             raise CollectionIsPublishedException("Can only delete unpublished collections")
         del self.collections_versions[version_id.id]
 
+    def delete_datasets(self, datasets: List[Union[DatasetId, CanonicalDataset]]) -> None:
+        for d in datasets:
+            d_id = d.id if isinstance(d, DatasetId) else d.dataset_id.id
+            dataset = self.datasets.get(d_id)
+            if dataset.published_at:
+                raise DatasetIsPublishedException(f"Published Dataset {d_id} cannot be deleted")
+            dataset_versions = list(
+                filter(lambda dv: dv.dataset_id == dataset.dataset_id, self.datasets_versions.values())
+            )
+            self._delete_dataset_version_and_artifact_rows(dataset_versions, None)  # None in place of Session
+            del self.datasets[d_id]
+
+    def delete_dataset_versions(self, dataset_versions: List[Union[DatasetVersionId, DatasetVersion]]) -> None:
+        ids = [d_v.id if isinstance(d_v, DatasetVersionId) else d_v.version_id.id for d_v in dataset_versions]
+        dataset_version_rows = [self.datasets_versions.get(_id) for _id in ids]
+        self._delete_dataset_version_and_artifact_rows(dataset_version_rows, None)  # None in place of Session
+
+    def _delete_dataset_version_and_artifact_rows(
+        self, dataset_version_rows: List[DatasetVersion], session: Any
+    ) -> None:
+        for d_v_row in dataset_version_rows:
+            del self.datasets_versions[d_v_row.version_id.id]  # Artifacts live on DatasetVersion; they get deleted
+
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
         version = self.collections_versions.get(version_id.id)
         if version is not None:
             return self._update_version_with_canonical(version)
 
-    def get_all_versions_for_collection(self, collection_id: CollectionId) -> Iterable[CollectionVersionWithDatasets]:
+    def get_all_versions_for_collection(
+        self, collection_id: CollectionId, get_tombstoned: bool = False
+    ) -> Iterable[CollectionVersionWithDatasets]:
         # On a database, will require a secondary index on `collection_id` for an optimized lookup
         versions = []
         for collection_version in self.collections_versions.values():
             if collection_version.collection_id == collection_id:
-                versions.append(self._update_version_with_canonical(collection_version, update_datasets=True))
+                versions.append(
+                    self._update_version_with_canonical(
+                        collection_version, update_datasets=True, get_tombstoned=get_tombstoned
+                    )
+                )
         return versions
 
     def get_collection_version_with_datasets(
@@ -242,10 +294,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 self.datasets[dataset_version.dataset_id.id].revised_at = published_at
             dataset_version.canonical_dataset.dataset_version_id = dataset_version.version_id
             dataset_ids_for_new_collection_version.append(dataset_version.dataset_id.id)
-        cc = self.collections.get(collection_id.id)
+        previous_collection = self.collections.get(collection_id.id)
 
-        dataset_ids_to_tombstone = []
-        if cc is None:
+        dataset_version_ids_to_delete_from_s3 = []
+        if previous_collection is None:
             self.collections[collection_id.id] = CanonicalCollection(
                 id=collection_id,
                 version_id=version_id,
@@ -256,27 +308,27 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
         else:
             # Check to see if any Datasets are missing from new version, tombstone if so
-            current_dataset_version_ids = self.collections_versions[cc.version_id.id].datasets
-            current_dataset_ids = [
-                self.datasets_versions[d_v_id.id].dataset_id.id for d_v_id in current_dataset_version_ids
+            previous_dataset_version_ids = self.collections_versions[previous_collection.version_id.id].datasets
+            previous_dataset_ids = [
+                self.datasets_versions[d_v_id.id].dataset_id.id for d_v_id in previous_dataset_version_ids
             ]
-            for current_dataset_id in current_dataset_ids:
-                if current_dataset_id not in dataset_ids_for_new_collection_version:
+            for previous_dataset_id in previous_dataset_ids:
+                if previous_dataset_id not in dataset_ids_for_new_collection_version:
                     # Dataset has been removed and needs to be tombstoned
-                    self.datasets[current_dataset_id].tombstoned = True
+                    self.datasets[previous_dataset_id].tombstoned = True
                     for dataset_version in self.datasets_versions.values():
-                        if dataset_version.dataset_id == current_dataset_id:
-                            dataset_ids_to_tombstone.append(dataset_version.dataset_id.id)
+                        if dataset_version.dataset_id == previous_dataset_id:
+                            dataset_version_ids_to_delete_from_s3.append(dataset_version.version_id.id)
 
-            new_cc = copy.deepcopy(cc)
-            new_cc.version_id = version_id
+            new_collection = copy.deepcopy(previous_collection)
+            new_collection.version_id = version_id
             if update_revised_at:
-                new_cc.revised_at = published_at
-            self.collections[collection_id.id] = new_cc
+                new_collection.revised_at = published_at
+            self.collections[collection_id.id] = new_collection
         self.collections_versions[version_id.id].published_at = published_at
         self.collections_versions[version_id.id].schema_version = schema_version
 
-        return dataset_ids_to_tombstone
+        return dataset_version_ids_to_delete_from_s3
 
     # OR
     # def update_collection_version_mapping(self, collection_id: CollectionId, version_id: CollectionVersionId) -> None:
@@ -322,11 +374,51 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             dataset_versions.append(dataset_version)
         return dataset_versions
 
+    def get_all_dataset_versions_for_collection(
+        self, collection_id: CollectionId, from_date: datetime = datetime.min
+    ) -> List[DatasetVersion]:
+        """
+        Get all Dataset versions -- published and unpublished -- for a canonical Collection
+        """
+        from_date = datetime.min if from_date is None else from_date
+        dataset_versions = list(
+            filter(
+                lambda dv: dv.collection_id == collection_id and dv.created_at >= from_date,
+                self.datasets_versions.values(),
+            )
+        )
+        return [self._update_dataset_version_with_canonical(dv) for dv in dataset_versions]
+
+    def get_most_recent_active_dataset_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
+        """
+        Returns the most recent, active Dataset version for a canonical dataset_id
+        """
+        dataset_versions = list(filter(lambda dv: dv.dataset_id == dataset_id, self.datasets_versions.values()))
+        if not dataset_versions:
+            return None
+        dataset_versions_map = {str(dv.version_id): dv for dv in dataset_versions}
+        collection_id = dataset_versions[0].collection_id
+        cv_dataset_versions_ids = [
+            cv.datasets
+            for cv in sorted(
+                filter(lambda cv: cv.collection_id == collection_id, self.collections_versions.values()),
+                key=lambda cv: cv.created_at,
+                reverse=True,
+            )
+        ]
+        for cv_dataset_versions in cv_dataset_versions_ids:
+            for dv_id in dataset_versions_map:
+                if DatasetVersionId(dv_id) in cv_dataset_versions:
+                    return self._update_dataset_version_with_canonical(dataset_versions_map.get(dv_id))
+
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
+        """
+        Returns all dataset versions for a canonical dataset_id. ***AT PRESENT THIS FUNCTION IS NOT USED***
+        """
         versions = []
         for dataset_version in self.datasets_versions.values():
             if dataset_version.dataset_id == dataset_id:
-                versions.append(dataset_version)
+                versions.append(self._update_dataset_version_with_canonical(dataset_version))
         return versions
 
     def _get_all_datasets(self) -> Iterable[DatasetVersion]:
@@ -346,6 +438,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         dataset_id = DatasetId()
         version_id = DatasetVersionId()
         collection_version = self.collections_versions[collection_version_id.id]
+        canonical_dataset = CanonicalDataset(dataset_id, None, False, None)
         version = DatasetVersion(
             dataset_id=dataset_id,
             version_id=version_id,
@@ -354,12 +447,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             metadata=None,
             artifacts=[],
             created_at=datetime.utcnow(),
-            canonical_dataset=CanonicalDataset(dataset_id, None, False, None),
+            canonical_dataset=canonical_dataset,
         )
         self.datasets_versions[version_id.id] = version
-        self.datasets[dataset_id.id] = CanonicalDataset(
-            dataset_id=dataset_id, dataset_version_id=None, tombstoned=False, published_at=None
-        )
+        self.datasets[dataset_id.id] = canonical_dataset
         return copy.deepcopy(version)
 
     def add_dataset_to_collection_version_mapping(
@@ -425,26 +516,36 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         version.datasets = [d for d in version.datasets if d != dataset_version_id]
 
     def replace_dataset_in_collection_version(
-        self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId
+        self,
+        collection_version_id: CollectionVersionId,
+        old_dataset_version_id: DatasetVersionId,
+        new_dataset_version_id: DatasetVersionId = None,
     ) -> DatasetVersion:
-        new_version_id = DatasetVersionId()
         old_version = self.get_dataset_version(old_dataset_version_id)
         collection_version = self.collections_versions[collection_version_id.id]
-        new_version = DatasetVersion(
-            dataset_id=old_version.dataset_id,
-            version_id=new_version_id,
-            collection_id=collection_version.collection_id,
-            status=DatasetStatus.empty(),
-            metadata=None,
-            artifacts=[],
-            created_at=datetime.utcnow(),
-            canonical_dataset=old_version.canonical_dataset,
-        )
-        self.datasets_versions[new_version_id.id] = new_version
+        if new_dataset_version_id is None:
+            new_dataset_version_id = DatasetVersionId()
+            new_dataset_version = DatasetVersion(
+                dataset_id=old_version.dataset_id,
+                version_id=new_dataset_version_id,
+                collection_id=collection_version.collection_id,
+                status=DatasetStatus.empty(),
+                metadata=None,
+                artifacts=[],
+                created_at=datetime.utcnow(),
+                canonical_dataset=old_version.canonical_dataset,
+            )
+            self.datasets_versions[new_dataset_version_id.id] = new_dataset_version
+        else:
+            new_dataset_version = self.get_dataset_version(new_dataset_version_id)
+            if collection_version.collection_id != new_dataset_version.collection_id:
+                raise ValueError(
+                    f"Dataset version {new_dataset_version_id} does not belong to collection {collection_version.collection_id}"
+                )
 
         idx = next(i for i, e in enumerate(collection_version.datasets) if e == old_dataset_version_id)
-        collection_version.datasets[idx] = new_version_id
-        return copy.deepcopy(new_version)
+        collection_version.datasets[idx] = new_dataset_version_id
+        return copy.deepcopy(new_dataset_version)
 
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
         return copy.deepcopy(self.datasets_versions[version_id.id].status)
@@ -472,3 +573,18 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 cv for cv in self.collections_versions.values() if cv.schema_version == schema_version
             ]
         return copy.deepcopy(collection_versions)
+
+    def get_previous_dataset_version_id(self, dataset_id: DatasetId) -> Optional[DatasetVersionId]:
+        """
+        Returns the previously created dataset version for a dataset.
+        """
+
+        self.datasets.get(dataset_id.id)
+        datasets = [d for d in self.datasets_versions.values() if d.dataset_id == dataset_id]
+        datasets.sort(key=lambda d: d.created_at, reverse=True)
+        try:
+            previous_dataset = datasets[1]
+        except IndexError:
+            return None
+        else:
+            return copy.deepcopy(previous_dataset.version_id)

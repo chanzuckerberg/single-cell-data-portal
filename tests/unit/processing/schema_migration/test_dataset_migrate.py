@@ -25,6 +25,8 @@ class TestDatasetMigrate:
         assert response["dataset_version_id"] == new_dataset_version_id.id
         assert dataset_version_id != new_dataset_version_id.id
         assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
+        assert response["sfn_name"].startswith("migrate_")
+        assert dataset_version_id in response["sfn_name"]
         mock_cxs_migrate.assert_called_once_with(
             "previous_schema.h5ad", "migrated.h5ad", private.collection_id.id, private.datasets[0].dataset_id.id
         )
@@ -49,6 +51,8 @@ class TestDatasetMigrate:
         assert response["dataset_version_id"] == new_dataset_version_id.id
         assert dataset_version_id != new_dataset_version_id.id
         assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
+        assert response["sfn_name"].startswith("migrate_")
+        assert dataset_version_id in response["sfn_name"]
         mock_cxs_migrate.assert_called_once_with(
             "previous_schema.h5ad", "migrated.h5ad", published.collection_id.id, published.datasets[0].dataset_id.id
         )
@@ -73,6 +77,8 @@ class TestDatasetMigrate:
         assert response["dataset_version_id"] == new_dataset_version_id.id
         assert dataset_version_id != new_dataset_version_id.id
         assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
+        assert response["sfn_name"].startswith("migrate_")
+        assert dataset_version_id in response["sfn_name"]
         mock_cxs_migrate.assert_called_once_with(
             "previous_schema.h5ad", "migrated.h5ad", revision.collection_id.id, revision.datasets[0].dataset_id.id
         )

@@ -18,7 +18,6 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
 
     @patch("scanpy.read_h5ad")
     def test_extract_metadata(self, mock_read_h5ad):
-
         df = pandas.DataFrame(
             np.random.randint(10, size=(50001, 5)) * 50, columns=list("ABCDE"), index=(str(i) for i in range(50001))
         )
@@ -143,6 +142,7 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
         self.assertEqual(extracted_metadata.schema_version, "3.0.0")
 
         self.assertEqual(extracted_metadata.cell_count, 50001)
+        self.assertEqual(extracted_metadata.primary_cell_count, 0)
 
         filter = np.where(adata.var.feature_biotype == "gene")[0]
         self.assertAlmostEqual(extracted_metadata.mean_genes_per_cell, np.count_nonzero(adata.X[:, filter]) / 50001)

@@ -9,6 +9,7 @@ import {
   ONTOLOGY_VIEW_KEY,
   OntologyDescendants,
   OntologyTermSet,
+  PINNED_POSITION,
 } from "src/components/common/Filter/common/entities";
 import cell_type_descendants_json from "src/components/common/Filter/descendant_mappings/cell_type_descendants.json";
 import tissue_descendants_json from "src/components/common/Filter/descendant_mappings/tissue_descendants.json";
@@ -717,6 +718,20 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     viewKind: "MULTI_PANEL",
   },
   {
+    analyticsEvent: EVENTS.FILTER_SELECT_CONSORTIA,
+    analyticsPayloadKey: ANALYTICS_PAYLOAD_KEY.CONSORTIA,
+    categoryFilterId: CATEGORY_FILTER_ID.CONSORTIA,
+    filterOnKey: "consortia",
+    label: "Consortia",
+    labelKind: "VALUE",
+    matchKind: "INCLUDES_SOME",
+    multiselect: true,
+    pinnedCategoryValues: [CATEGORY_VALUE_KEY.NO_CONSORTIUM],
+    pinnedPosition: PINNED_POSITION.BOTTOM,
+    valueSourceKind: "NONE",
+    viewKind: "SELECT",
+  },
+  {
     // analyticsEvent: EVENTS.FILTER_SELECT_CURATOR,
     categoryFilterId: CATEGORY_FILTER_ID.CURATOR_NAME,
     filterOnKey: "curator_name",
@@ -790,13 +805,15 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     viewKind: "SELECT",
   },
   {
-    analyticsEvent: EVENTS.FILTER_SELECT_AUTHORS,
-    categoryFilterId: CATEGORY_FILTER_ID.PUBLICATION_AUTHORS,
-    filterOnKey: "publicationAuthors",
-    label: "Author",
+    analyticsEvent: EVENTS.FILTER_SELECT_PUBLICATION,
+    categoryFilterId: CATEGORY_FILTER_ID.PUBLICATION,
+    filterOnKey: "summaryCitation",
+    label: "Publication",
     labelKind: "VALUE",
     matchKind: "INCLUDES_SOME",
     multiselect: true,
+    pinnedCategoryValues: [CATEGORY_VALUE_KEY.NO_PUBLICATION],
+    pinnedPosition: PINNED_POSITION.BOTTOM,
     valueSourceKind: "NONE",
     viewKind: "SELECT",
   },

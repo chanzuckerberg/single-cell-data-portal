@@ -1,20 +1,49 @@
 import {
   CommonThemeProps,
   fontBodyS,
+  fontBodyXs,
   fontBodyXxs,
-  getColors,
 } from "@czi-sds/components";
 import styled from "@emotion/styled";
+import {
+  fontWeightSemibold,
+  gray200,
+  gray400,
+  gray500,
+  primary400,
+  spacesL,
+  spacesS,
+} from "src/common/theme";
+import Link from "../common/Link";
 
 const DIVIDER_WIDTH = 2;
 
-const gray200 = (props: CommonThemeProps) => getColors(props)?.gray[200];
+export const StyledLink = styled(Link)`
+  min-width: 2.25ch;
+  max-width: 3.25ch;
+`;
 
 export const TableTitleOuterWrapper = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  flex-wrap: wrap;
+`;
+
+export const ReferenceTooltipWrapper = styled.div`
+  row-gap: ${spacesL}px;
+  display: flex;
+  flex-direction: column;
+`;
+
+interface NoWrapWrapperProps extends CommonThemeProps {
+  isSelected: boolean;
+}
+export const NoWrapWrapper = styled.span<NoWrapWrapperProps>`
+  white-space: nowrap;
+  display: flex;
+  column-gap: ${spacesS}px;
 `;
 
 export const PublicationLinkWrapper = styled.div`
@@ -25,6 +54,14 @@ export const PublicationLinkWrapper = styled.div`
 export const StyledHeadCellContent = styled.div`
   display: flex;
   flex-direction: row;
+  justify-content: flex-end;
+`;
+
+export const StyledCellNumerical = styled.span`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-right: 12px;
 `;
 
 export const TableSelectorRow = styled.div`
@@ -49,9 +86,8 @@ export const TableSelectorButton = styled.button<TableSelectorButtonProps>`
   cursor: pointer;
   padding: 0;
   margin: 0;
-  font-weight: 600;
-  color: ${(props) =>
-    `${props.isActive ? "#000000" : getColors(props)?.gray[500]}`};
+  font-weight: ${fontWeightSemibold};
+  color: ${(props) => `${props.isActive ? "#000000" : gray500(props)}`};
 
   &::after {
     content: "";
@@ -61,7 +97,44 @@ export const TableSelectorButton = styled.button<TableSelectorButtonProps>`
     width: 100%;
     height: 2px;
     background-color: ${(props) =>
-      `${props.isActive ? getColors(props)?.primary[400] : gray200}`};
+      `${props.isActive ? primary400(props) : gray200(props)}`};
     transition: background-color 0.3s ease;
   }
+`;
+
+export const MarkerGenePagination = styled.div`
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+`;
+
+export const MarkerGeneInfo = styled.div`
+  ${fontBodyS}
+  color: ${gray500};
+  align-items: flex-start;
+  display: inline-flex;
+`;
+
+export const MarkerGeneTooltipText = styled.div`
+  ${fontBodyXs}
+  font-weight: 500;
+`;
+
+export const MarkerGeneTooltipSubtext = styled.div`
+  ${fontBodyXxs}
+  color: ${gray400};
+`;
+
+export const MarkerGeneTableWrapper = styled.div`
+  max-width: calc(100vw - ${spacesL}px - ${spacesL}px);
+`;
+
+interface StyledImageWrapperProps {
+  isActive: boolean;
+}
+export const StyledImageWrapper = styled.div<StyledImageWrapperProps>`
+  cursor: pointer;
+  min-width: 12px;
+  min-height: 12px;
+  visibility: ${(props) => (props.isActive ? "visible !important" : "unset")};
 `;

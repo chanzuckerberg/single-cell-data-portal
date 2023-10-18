@@ -5,7 +5,6 @@ import React, {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
@@ -25,15 +24,12 @@ import {
   addGeneInfoGene,
   clearGeneInfoGene,
   closeRightSidebar,
-  deleteSelectedGenes,
 } from "../../common/store/actions";
 import { ChartProps, GeneExpressionSummary } from "../../common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import CellInfoBar from "../CellInfoSideBar";
 import GeneInfoBar from "../../../../components/GeneInfoSideBar";
 import Filters from "../Filters";
-import GeneSearchBar from "../GeneSearchBar";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import InfoPanel from "../InfoPanel";
@@ -42,9 +38,12 @@ import Loader from "../Loader";
 import ScreenTint from "../ScreenTint";
 import { StyledBannerContainer, StyledSidebarDrawer } from "./style";
 import RightSideBar from "../../../../components/common/RightSideBar";
-import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
 import BottomBanner from "src/components/BottomBanner";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
+import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
+import GeneSearchBar from "src/views/WheresMyGeneV2/components/GeneSearchBar";
+import { UnderlyingDataChangeBanner } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport/ExportBanner";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -200,23 +199,6 @@ export default function WheresMyGene(): JSX.Element {
     cellTypesByTissueName,
   ]);
 
-  // Listen to delete keyboard press event
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-
-    function handleKeyDown(event: KeyboardEvent): void {
-      if (event.code === "Backspace") {
-        if (!dispatch) return;
-
-        dispatch(deleteSelectedGenes());
-      }
-    }
-  }, [dispatch]);
-
   const hasSelectedTissues = (selectedTissues?.length ?? 0) > 0;
   const hasSelectedGenes = selectedGenes.length > 0;
 
@@ -230,29 +212,11 @@ export default function WheresMyGene(): JSX.Element {
     setSourceDatasetSidebarOpen(!isSourceDatasetSidebarOpen);
   }, [isSourceDatasetSidebarOpen]);
 
-  const [forceOpen, setForceOpen] = useState(false);
-
   const [downloadStatus, setDownloadStatus] = useState<{
     isLoading: boolean;
   }>({
     isLoading: false,
   });
-
-  const usePrevious = <T,>(value: T): T | undefined => {
-    const ref = useRef<T>();
-    useEffect(() => {
-      ref.current = value;
-    });
-    return ref.current;
-  };
-  const prevState = usePrevious({ cellInfoCellType });
-  useEffect(() => {
-    if (
-      prevState?.cellInfoCellType?.cellType.id !== cellInfoCellType?.cellType.id
-    ) {
-      setForceOpen(!forceOpen); //the value of this boolean isn't actually read downstream, it just checks for uniqueness across renders
-    }
-  }, [cellInfoCellType, prevState?.cellInfoCellType?.cellType.id, forceOpen]);
 
   const [echartsRendererMode, setEchartsRendererMode] = useState<
     "canvas" | "svg"
@@ -285,8 +249,6 @@ export default function WheresMyGene(): JSX.Element {
         SideBarPositionerComponent={SideBarPositioner}
         testId="filters-panel"
         disabled={false}
-        forceOpen={true}
-        wmgSideBar
       >
         <Filters
           isLoading={isLoading}
@@ -341,7 +303,14 @@ export default function WheresMyGene(): JSX.Element {
           )}
 
           <Top id="top-legend">
-            <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
+            <GeneSearchBar
+              /**
+               * (thuang): Since this WMGv1 file is going to be deleted, I'm just
+               * passing a dummy value
+               */
+              sidebarWidth={0}
+              className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+            />
             <Legend
               selectedCellTypes={cellTypesByTissueName}
               selectedGenes={selectedGenes}
@@ -398,7 +367,10 @@ export default function WheresMyGene(): JSX.Element {
         </Wrapper>
       </View>
 
-      <BottomBanner includeSurveyLink />
+      <BottomBanner
+        airtableLink={GENE_EXPRESSION_BANNER_SURVEY_LINK}
+        includeSurveyLink
+      />
     </>
   );
 }

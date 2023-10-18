@@ -215,6 +215,12 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter.
       {
+        accessor: "consortia",
+        filter: "includesSome",
+        id: CATEGORY_FILTER_ID.CONSORTIA,
+      },
+      // Hidden, required for filter.
+      {
         accessor: "cellTypeCalculated",
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED,
@@ -238,9 +244,9 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: "publicationAuthors",
+        accessor: "summaryCitation",
         filter: "includesSome",
-        id: CATEGORY_FILTER_ID.PUBLICATION_AUTHORS,
+        id: CATEGORY_FILTER_ID.PUBLICATION,
       },
       // Hidden, required for filter.
       {
@@ -296,11 +302,12 @@ export default function Datasets(): JSX.Element {
           COLLECTION_ID,
           COLLECTION_NAME,
           COLUMN_ID_RECENCY,
+          CATEGORY_FILTER_ID.CONSORTIA,
           CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED,
           CATEGORY_FILTER_ID.SELF_REPORTED_ETHNICITY,
           CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           CATEGORY_FILTER_ID.GENE_COUNT,
-          CATEGORY_FILTER_ID.PUBLICATION_AUTHORS,
+          CATEGORY_FILTER_ID.PUBLICATION,
           CATEGORY_FILTER_ID.PUBLICATION_DATE_VALUES,
           CATEGORY_FILTER_ID.SEX,
           CATEGORY_FILTER_ID.SUSPENSION_TYPE,

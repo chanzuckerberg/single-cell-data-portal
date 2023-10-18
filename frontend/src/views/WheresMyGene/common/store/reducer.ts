@@ -1,11 +1,16 @@
 import isEqual from "lodash/isEqual";
 import { CompareId, X_AXIS_CHART_HEIGHT_PX } from "../constants";
 import { CellType, SORT_BY } from "../types";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { GENE_SEARCH_BAR_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/constants";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
   payload: Payload;
 }
+
 export interface State {
   genesToDelete: string[];
   selectedGenes: string[];
@@ -36,6 +41,8 @@ export interface State {
   compare?: CompareId;
   xAxisHeight: number;
   filteredCellTypes: string[];
+  filteredCellTypeIds: string[];
+  expandedTissueIds: string[];
 }
 
 const EMPTY_FILTERS: State["selectedFilters"] = {
@@ -64,8 +71,10 @@ export const INITIAL_STATE: State = {
     genes: SORT_BY.USER_ENTERED,
     scaled: SORT_BY.COLOR_SCALED,
   },
-  xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
+  xAxisHeight: X_AXIS_CHART_HEIGHT_PX + GENE_SEARCH_BAR_HEIGHT_PX,
   filteredCellTypes: [],
+  filteredCellTypeIds: [],
+  expandedTissueIds: [],
 };
 
 export const REDUCERS = {
@@ -75,7 +84,6 @@ export const REDUCERS = {
   clearGeneInfoGene,
   closeRightSidebar,
   addSelectedGenes,
-  deleteSelectedGenes,
   deleteSingleGene,
   deleteAllGenes,
   loadStateFromURL,
@@ -91,6 +99,8 @@ export const REDUCERS = {
   toggleGeneToDelete,
   setXAxisHeight,
   setFilteredCellTypes,
+  toggleExpandedTissueId,
+  autoExpandTissues,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -134,7 +144,7 @@ function deleteSingleGene(
   return {
     ...state,
     selectedGenes: newSelectedGenes,
-    xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
+    xAxisHeight: INITIAL_STATE.xAxisHeight,
   };
 }
 
@@ -142,30 +152,7 @@ function deleteAllGenes(state: State, _: PayloadAction<null>): State {
   return {
     ...state,
     selectedGenes: [],
-    xAxisHeight: X_AXIS_CHART_HEIGHT_PX,
-  };
-}
-
-function deleteSelectedGenes(state: State, _: PayloadAction<null>): State {
-  const { genesToDelete } = state;
-
-  if (!genesToDelete.length) {
-    return state;
-  }
-
-  const { selectedGenes } = state;
-
-  const newSelectedGenes = genesToDelete.length
-    ? deleteByItems<State["selectedGenes"][number]>(
-        selectedGenes,
-        genesToDelete
-      )
-    : selectedGenes;
-
-  return {
-    ...state,
-    genesToDelete: [],
-    selectedGenes: newSelectedGenes,
+    xAxisHeight: INITIAL_STATE.xAxisHeight,
   };
 }
 
@@ -181,7 +168,8 @@ function selectOrganism(
     ...state,
     selectedGenes: [],
     selectedOrganismId: action.payload,
-    selectedTissues: [],
+    selectedTissues: EMPTY_ARRAY,
+    selectedFilters: EMPTY_FILTERS,
     cellInfoCellType: null,
   };
 }
@@ -268,7 +256,59 @@ function selectFilters(
   return {
     ...state,
     selectedFilters: newSelectedFilters,
+    expandedTissueIds: selectFiltersHandleExpandedTissueIds(state, action),
   };
+
+  function selectFiltersHandleExpandedTissueIds(
+    state: State,
+    action: PayloadAction<{
+      key: keyof State["selectedFilters"];
+      options: string[];
+    }>
+  ): State["expandedTissueIds"] {
+    const { expandedTissueIds, selectedFilters } = state;
+
+    const {
+      payload: { key, options: tissueIds },
+    } = action;
+
+    if (key !== "tissues") return expandedTissueIds;
+
+    const prevTissueIds = selectedFilters.tissues;
+
+    /**
+     * (thuang): Only expand the newly added tissues, so if the user has collapsed
+     * some tissues during tissue filter mode, they won't be expanded when they
+     * add more tissues
+     */
+    const addedIds = tissueIds.filter(
+      (tissueId) => !prevTissueIds.includes(tissueId)
+    );
+
+    /**
+     * Entering tissue filter state: Expand all selected tissues
+     */
+    if (!prevTissueIds.length && tissueIds.length) {
+      return tissueIds;
+    }
+
+    /**
+     * Exiting tissue filter state: Collapse all tissues
+     */
+    if (prevTissueIds.length && !tissueIds.length) {
+      return EMPTY_ARRAY;
+    }
+
+    return [
+      /**
+       * (thuang): Remove any expanded tissues that are no longer selected
+       */
+      ...expandedTissueIds.filter((expandedTissueId) =>
+        tissueIds.includes(expandedTissueId)
+      ),
+      ...addedIds,
+    ];
+  }
 }
 
 function setSnapshotId(
@@ -393,6 +433,7 @@ function loadStateFromURL(
     selectedTissues: tissues,
     selectedOrganismId: payload.organism,
     filteredCellTypes: payload.cellTypes ?? [],
+    expandedTissueIds: filters.tissues ?? [],
   };
 }
 
@@ -409,16 +450,94 @@ function selectCompare(
 function setXAxisHeight(state: State, action: PayloadAction<number>): State {
   return {
     ...state,
-    xAxisHeight: action.payload,
+    xAxisHeight: action.payload + GENE_SEARCH_BAR_HEIGHT_PX,
   };
+}
+
+export interface SetFilteredCellTypesPayload {
+  filteredCellTypes: State["filteredCellTypes"];
+  filteredCellTypeIds: State["filteredCellTypeIds"];
+  displayedTissueIds: string[];
 }
 
 function setFilteredCellTypes(
   state: State,
-  action: PayloadAction<State["filteredCellTypes"]>
+  action: PayloadAction<SetFilteredCellTypesPayload>
 ): State {
+  const {
+    payload: { filteredCellTypes, filteredCellTypeIds },
+  } = action;
+
+  track(EVENTS.WMG_SELECT_CELL_TYPE, {
+    cell_types: filteredCellTypeIds,
+  });
+
   return {
     ...state,
-    filteredCellTypes: action.payload,
+    filteredCellTypes,
+    filteredCellTypeIds,
+    expandedTissueIds: setFilteredCellTypesHandleExpandedTissueIds(
+      state,
+      action
+    ),
+  };
+
+  function setFilteredCellTypesHandleExpandedTissueIds(
+    state: State,
+    action: PayloadAction<SetFilteredCellTypesPayload>
+  ): State["expandedTissueIds"] {
+    const { filteredCellTypeIds: prevFilteredCellTypeIds } = state;
+
+    const {
+      payload: { displayedTissueIds, filteredCellTypeIds },
+    } = action;
+
+    /**
+     * (thuang): Exiting cell type filter state: Collapse all tissues
+     */
+    if (prevFilteredCellTypeIds.length && filteredCellTypeIds.length === 0) {
+      return EMPTY_ARRAY;
+    }
+
+    return displayedTissueIds;
+  }
+}
+
+function toggleExpandedTissueId(
+  state: State,
+  action: PayloadAction<{ tissueId: string; tissueName: string }>
+) {
+  const {
+    payload: { tissueId, tissueName },
+  } = action;
+
+  const { expandedTissueIds } = state;
+
+  if (expandedTissueIds.includes(tissueId)) {
+    return {
+      ...state,
+      expandedTissueIds: expandedTissueIds.filter(
+        (expandedTissueId) => expandedTissueId !== tissueId
+      ),
+    };
+  }
+
+  track(EVENTS.WMG_TISSUE_EXPAND, { tissue: tissueName });
+
+  return {
+    ...state,
+    expandedTissueIds: [...expandedTissueIds, tissueId],
+  };
+}
+
+function autoExpandTissues(
+  state: State,
+  action: PayloadAction<string[]>
+): State {
+  const { payload } = action;
+
+  return {
+    ...state,
+    expandedTissueIds: payload,
   };
 }

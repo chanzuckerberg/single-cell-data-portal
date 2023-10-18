@@ -7,6 +7,10 @@ CELLxGENE Discover enables the publication, discovery and exploration of interop
 
 ## Developer Guidelines
 
+### FE Setup
+
+Follow instructions in [/frontend README](./frontend/README.md)
+
 ### Pre-requisite installations and setups
 
 **Note**: Before you begin to install any Python packages, make sure you have activated your Python virtual environment.
@@ -59,6 +63,10 @@ If you need to make a change to the CELLxGENE Discover database, see [CELLxGENE 
 1. Ensure that you have set up your local development environment per the instructions above and run `make local-init` to launch a local dev environment.
 1. Run the tests using the command `$ make unit-test`.
 
+### Running the WMG pipeline and endpoints locally in an interactive environment
+
+Please take a look at the tutorial notebooks in `example_dev_notebooks` for examples on how to run the WMG pipeline and endpoints locally for development purposes.
+
 ### Troubleshooting Unit Tests
 
 1. If your unit tests crash due to an `Error 137`, that means the docker containers currently running are using up more memory than what the docker application
@@ -71,6 +79,10 @@ If you need to make a change to the CELLxGENE Discover database, see [CELLxGENE 
 2. Set `DEPLOYMENT_STAGE` to deployed environment you want to run tests, as written locally, against (dev, staging, or prod)
 3. Run a specific suite of tests using `DEPLOYMENT_STAGE=<deployed_env> python3 -m unittest <path_to_functional_test>`. For example, `DEPLOYMENT_STAGE=dev python3 -m unittest tests/functional/backend/corpora/test_revisions.py`
 4. Run all functional tests by using `DEPLOYMENT_STAGE=<deployed_env> python3 -m unittest discover tests/functional/backend`
+
+### Running E2E Tests
+
+Follow instructions in [e2e tests README](frontend/tests/README.md)
 
 ### Upload processing container
 

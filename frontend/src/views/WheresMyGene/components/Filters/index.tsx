@@ -187,6 +187,7 @@ export default memo(function Filters({
         return !tissue.name.includes("(cell culture)");
       })
       .map(mapTermToFilterOption);
+
     newTissues.sort((a, b) => a.name.localeCompare(b.name));
 
     const newAvailableFilters = {
@@ -232,14 +233,14 @@ export default memo(function Filters({
   }, [disease_terms, diseases]);
 
   const selectedEthnicities = useMemo(() => {
-    return self_reported_ethnicity_terms.filter((ethnicity) =>
-      ethnicities?.includes(ethnicity.id)
+    return self_reported_ethnicity_terms.filter(
+      (ethnicity) => ethnicities?.includes(ethnicity.id)
     );
   }, [self_reported_ethnicity_terms, ethnicities]);
 
   const selectedPublications = useMemo(() => {
-    return publication_citations.filter((publication) =>
-      publications?.includes(publication.id)
+    return publication_citations.filter(
+      (publication) => publications?.includes(publication.id)
     );
   }, [publication_citations, publications]);
 
@@ -285,6 +286,7 @@ export default memo(function Filters({
         }
 
         currentOptions = options;
+
         dispatch(
           selectFilters(
             key,

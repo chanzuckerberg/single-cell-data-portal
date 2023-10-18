@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Iterable, List, Optional, Tuple
+from typing import Iterable, List, Optional, Tuple, Union
 
 from backend.layers.common.entities import (
     CanonicalCollection,
@@ -63,7 +63,9 @@ class DatabaseProviderInterface:
         Retrieves the latest mapped version for a collection
         """
 
-    def get_all_versions_for_collection(self, collection_id: CollectionId) -> List[CollectionVersionWithDatasets]:
+    def get_all_versions_for_collection(
+        self, collection_id: CollectionId, get_tombstoned: bool
+    ) -> List[CollectionVersionWithDatasets]:
         """
         Retrieves all versions for a specific collections, without filtering
         """
@@ -79,9 +81,14 @@ class DatabaseProviderInterface:
         Retrieves all the collection versions that are mapped to a canonical collection.
         """
 
-    def delete_canonical_collection(self, collection_id: CollectionId) -> None:
+    def tombstone_collection(self, collection_id: CollectionId) -> None:
         """
         Deletes (tombstones) a canonical collection.
+        """
+
+    def resurrect_collection(self, collection_id: CollectionId, datasets_to_resurrect: Iterable[str]) -> None:
+        """
+        Untombstones a canonical collection.
         """
 
     def save_collection_metadata(
@@ -105,15 +112,31 @@ class DatabaseProviderInterface:
         Returns the new version.
         """
 
+    def delete_unpublished_collection(self, collection_id: CollectionId) -> None:
+        """
+        Delete an unpublished Collection
+        """
+
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         """
         Deletes a collection version.
+        """
+
+    def delete_datasets(self, datasets: List[Union[DatasetId, CanonicalDataset]]) -> None:
+        """
+        Delete an unpublished DatasetTable row (and its dependent DatasetVersionTable and DatasetArtifactTable rows)
+        """
+
+    def delete_dataset_versions(self, dataset_versions: List[Union[DatasetVersionId, DatasetVersion]]) -> None:
+        """
+        Deletes DatasetVersionTable rows.
         """
 
     def finalize_collection_version(
         self,
         collection_id: CollectionId,
         version_id: CollectionVersionId,
+        schema_version: str,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
     ) -> List[str]:
@@ -136,6 +159,18 @@ class DatabaseProviderInterface:
     def get_dataset_version(self, dataset_version_id: DatasetVersionId, get_tombstoned: bool) -> DatasetVersion:
         """
         Returns a dataset version by id.
+        """
+
+    def get_all_dataset_versions_for_collection(
+        self, collection_id: CollectionId, from_date: datetime
+    ) -> List[DatasetVersion]:
+        """
+        Get all Dataset versions -- published and unpublished -- for a canonical Collection
+        """
+
+    def get_most_recent_active_dataset_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
+        """
+        Returns the most recent, active Dataset version for a canonical dataset_id
         """
 
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
@@ -217,11 +252,15 @@ class DatabaseProviderInterface:
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
     ) -> None:
         """
-        Removes a mapping between a collection version and a dataset version
+        Removes a mapping between a collection version and a dataset version. Optional flag to delete DatasetVersion
+        and dependent DatasetArtifact rows.
         """
 
     def replace_dataset_in_collection_version(
-        self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId
+        self,
+        collection_version_id: CollectionVersionId,
+        old_dataset_version_id: DatasetVersionId,
+        new_dataset_version_id: DatasetVersionId = None,
     ) -> DatasetVersion:
         """
         Replaces an existing mapping between a collection version and a dataset version
@@ -236,4 +275,9 @@ class DatabaseProviderInterface:
         """
         Returns a list with all collection versions that match the given schema_version. schema_version may contain
          wildcards.
+        """
+
+    def get_previous_dataset_version_id(self, dataset_id: DatasetId) -> Optional[DatasetVersionId]:
+        """
+        Returns the previously created dataset version for a dataset.
         """

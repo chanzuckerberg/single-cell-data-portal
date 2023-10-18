@@ -8,7 +8,7 @@ import { RightSideBarPositioner, StyledTitle, HeaderContainer } from "./style";
 
 export interface RightSidebarProperties {
   handleClose: () => void;
-  title: string;
+  title: string | ReactElement;
 }
 interface Props {
   children: ReactNode;

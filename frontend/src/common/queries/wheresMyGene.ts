@@ -27,6 +27,7 @@ import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 import { Dataset } from "@mui/icons-material";
+import { formatCitation } from "../utils/formatCitation";
 
 interface RawOntologyTerm {
   [id: string]: string;
@@ -478,7 +479,7 @@ export function useFilterDimensions(version: 1 | 2 = 2): {
         disease_terms: disease_terms.map(toEntity),
         self_reported_ethnicity_terms:
           self_reported_ethnicity_terms.map(toEntity),
-        publication_citations: publication_citations.map(stringToEntity),
+        publication_citations: publication_citations.map(toCitationEntity),
         sex_terms: sex_terms.map(toEntity),
         tissue_terms: tissue_terms.map(toEntity),
       },
@@ -611,12 +612,8 @@ export function useGeneExpressionSummariesByTissueName(version: 1 | 2 = 2): {
     }
 
     const { tissues } = primaryFilterDimensions;
-
     const tissuesById = generateTermsByKey(tissues, "id");
-
-    const result: {
-      [tissueName: string]: { [geneName: string]: GeneExpressionSummary };
-    } = {};
+    const result: GeneExpressionSummariesByTissueName = {};
 
     for (const [geneId, expressionSummariesByTissue] of Object.entries(data)) {
       const geneName = termIdLabels.genes[geneId];
@@ -624,46 +621,83 @@ export function useGeneExpressionSummariesByTissueName(version: 1 | 2 = 2): {
       for (const [tissueId, expressionSummariesByCellType] of Object.entries(
         expressionSummariesByTissue
       )) {
-        /**
-         * This collection contains all the expression summaries for a given tissue,
-         * including all the cell types and compare options
-         */
-        const mergedExpressionSummaries = [];
-        for (const [
-          cellTypeId,
-          expressionSummariesByCompareOption,
-        ] of Object.entries(expressionSummariesByCellType)) {
-          for (const [compareOptionId, expressionSummary] of Object.entries(
-            expressionSummariesByCompareOption
-          )) {
-            mergedExpressionSummaries.push(
-              transformCellTypeGeneExpressionSummaryData({
-                ...expressionSummary,
-                viewId: getCellTypeViewId(
-                  cellTypeId === "tissue_stats" ? tissueId : cellTypeId,
-                  compareOptionId
-                ),
-              })
-            );
-          }
+        const mergedExpressionSummaries = mergeExpressionSummaries(
+          expressionSummariesByCellType,
+          tissueId
+        );
 
-          const tissueName = tissuesById[tissueId].name;
-
-          const tissueGeneExpressionSummaries: {
-            [geneName: string]: GeneExpressionSummary;
-          } = result[tissueName] || {};
-
-          tissueGeneExpressionSummaries[geneName] = {
-            cellTypeGeneExpressionSummaries: mergedExpressionSummaries,
-            name: geneName,
-          };
-
-          result[tissueName] = tissueGeneExpressionSummaries;
-        }
+        updateResult(
+          result,
+          tissuesById[tissueId].name,
+          geneName,
+          mergedExpressionSummaries
+        );
       }
     }
 
     return { data: result, isLoading };
+
+    /**
+     * This produces a collection that contains all the expression summaries for
+     * a given tissue, including all the cell types and compare options
+     */
+    function mergeExpressionSummaries(
+      expressionSummariesByCellType: QueryResponse["expression_summary"][string][string],
+      tissueId: string
+    ) {
+      const mergedExpressionSummaries = [];
+
+      for (const [
+        cellTypeId,
+        expressionSummariesByCompareOption,
+      ] of Object.entries(expressionSummariesByCellType)) {
+        for (const [compareOptionId, expressionSummary] of Object.entries(
+          expressionSummariesByCompareOption
+        )) {
+          mergedExpressionSummaries.push(
+            transformExpressionSummary(
+              expressionSummary,
+              cellTypeId,
+              tissueId,
+              compareOptionId
+            )
+          );
+        }
+      }
+
+      return mergedExpressionSummaries;
+    }
+
+    function transformExpressionSummary(
+      expressionSummary: RawCellTypeGeneExpressionSummaryData,
+      cellTypeId: string,
+      tissueId: string,
+      compareOptionId: string
+    ) {
+      return transformCellTypeGeneExpressionSummaryData({
+        ...expressionSummary,
+        viewId: getCellTypeViewId(
+          cellTypeId === "tissue_stats" ? tissueId : cellTypeId,
+          compareOptionId
+        ),
+      });
+    }
+
+    function updateResult(
+      result: GeneExpressionSummariesByTissueName,
+      tissueName: string,
+      geneName: string,
+      mergedExpressionSummaries: CellTypeGeneExpressionSummaryData[]
+    ) {
+      const tissueGeneExpressionSummaries = result[tissueName] || {};
+
+      tissueGeneExpressionSummaries[geneName] = {
+        cellTypeGeneExpressionSummaries: mergedExpressionSummaries,
+        name: geneName,
+      };
+
+      result[tissueName] = tissueGeneExpressionSummaries;
+    }
   }, [
     data,
     isLoading,
@@ -703,6 +737,7 @@ interface TermIdLabels {
         order: number;
         total_count: number;
         viewId: ViewId;
+        isAggregated: boolean;
       };
     };
   };
@@ -836,7 +871,7 @@ function getSortedCellTypeCompareOptions(
 ): [
   // compareOptionId
   string,
-  QueryResponse["term_id_labels"]["cell_types"][string][string][string]
+  QueryResponse["term_id_labels"]["cell_types"][string][string][string],
 ][] {
   return Object.entries(cellTypeWithCompareOptions).sort((a, b) => {
     const aCompareOptionId = a[0];
@@ -885,7 +920,7 @@ function addCellTypeRowToResult({
     (
       | CellTypeStats[string][CompareOptionId]
       | TissueStats["tissue_stats"]["aggregated"]
-    )
+    ),
   ][];
 }) {
   let cellTypeName = "";
@@ -1039,7 +1074,8 @@ function useWMGQueryRequestBody(version: 1 | 2) {
 function useWMGFiltersQueryRequestBody(
   version: 1 | 2 = 2
 ): FiltersQuery | null {
-  const { selectedOrganismId, selectedFilters } = useContext(StateContext);
+  const { selectedOrganismId, selectedFilters, filteredCellTypeIds } =
+    useContext(StateContext);
 
   const { data } = usePrimaryFilterDimensions(version);
 
@@ -1052,18 +1088,6 @@ function useWMGFiltersQueryRequestBody(
     sexes,
     publications,
   } = selectedFilters;
-
-  const tissuesByName = useMemo(() => {
-    let result: { [name: string]: OntologyTerm } = {};
-
-    if (!data) return result;
-
-    const { tissues } = data;
-
-    result = generateTermsByKey(tissues, "name");
-
-    return result;
-  }, [data]);
 
   return useMemo(() => {
     if (!data || !selectedOrganismId) {
@@ -1080,20 +1104,20 @@ function useWMGFiltersQueryRequestBody(
         sex_ontology_term_ids: sexes,
         tissue_ontology_term_ids: tissues,
         publication_citations: publications,
+        cell_type_ontology_term_ids: filteredCellTypeIds,
       },
     };
   }, [
     tissues,
     selectedOrganismId,
     data,
-    tissuesByName,
     datasets,
     developmentStages,
     diseases,
     ethnicities,
     publications,
     sexes,
-    version,
+    filteredCellTypeIds,
   ]);
 }
 
@@ -1137,8 +1161,11 @@ function toEntity(item: RawOntologyTerm) {
   return { id, name: name || id || "" };
 }
 
-function stringToEntity(item: string) {
-  return { id: item, name: item };
+function toCitationEntity(citation: string) {
+  return {
+    id: citation,
+    name: formatCitation(citation),
+  };
 }
 
 function useSnapshotId(): string | null {
@@ -1224,7 +1251,6 @@ export interface FetchMarkerGeneParams {
   tissueID: string;
   organismID: string;
   test?: "ttest" | "binomtest";
-  version?: 1 | 2;
 }
 
 export interface FetchGeneInfoParams {
@@ -1238,9 +1264,8 @@ export async function fetchMarkerGenes({
   organismID,
   tissueID,
   test = "ttest",
-  version = 1,
 }: FetchMarkerGeneParams): Promise<MarkerGeneResponse> {
-  const url = API_URL + replaceV1WithV2(version).WMG_MARKER_GENES;
+  const url = API_URL + API.WMG_MARKER_GENES;
   const body = generateMarkerGeneBody(cellTypeID, tissueID, organismID, test);
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
@@ -1308,7 +1333,6 @@ export function useMarkerGenes({
   organismID,
   tissueID,
   test,
-  version = 1,
 }: FetchMarkerGeneParams): UseQueryResult<MarkerGeneResponse<MarkerGene>> {
   const { data } = usePrimaryFilterDimensions(2);
   const genesByID = useMemo((): { [name: string]: OntologyTerm } => {
@@ -1342,7 +1366,6 @@ export function useMarkerGenes({
         organismID,
         test,
         tissueID,
-        version,
       });
       const markerGenesIndexedByGeneName = Object.fromEntries(
         filterMarkerGenes(output.marker_genes).reduce(

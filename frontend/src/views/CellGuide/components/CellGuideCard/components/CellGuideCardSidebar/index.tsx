@@ -1,24 +1,24 @@
 import { SearchBarWrapper } from "./style";
 import CellGuideCardSearchBar from "../../../CellGuideCardSearchBar";
-import {
-  CellGuideSidebarWrapper,
-  StickyWrapper,
-  StickySidebarStyle,
-} from "./style";
+import { CellGuideSidebarWrapper, StickyWrapper } from "./style";
 import { NavigationJumpTo } from "@czi-sds/components";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
-import { Global } from "@emotion/react";
 import { useEffect, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-
-export const CELL_GUIDE_CARD_NAVIGATION_SIDEBAR =
-  "cell-guide-card-navigation-sidebar";
+import { CELL_GUIDE_CARD_NAVIGATION_SIDEBAR } from "src/views/CellGuide/components/CellGuideCard/components/CellGuideCardSidebar/constants";
 
 export default function CellGuideCardSidebar({
   items,
+  skinnyMode,
+  sectionClickHandler,
 }: {
-  items: { elementRef: React.MutableRefObject<null>; title: string }[];
+  items: {
+    elementRef: React.RefObject<HTMLDivElement>;
+    title: string;
+  }[];
+  skinnyMode: boolean;
+  sectionClickHandler?: () => void;
 }): JSX.Element {
   /**
    * (thuang): SDS `NavigationJumpTo` currently assumes `window` is always available,
@@ -31,16 +31,25 @@ export default function CellGuideCardSidebar({
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    let isMounted = true; // add this line
+
+    if (isMounted) {
+      setIsClient(true);
+    }
+
+    return () => {
+      isMounted = false; // add this line
+    };
   }, []);
 
   return (
     <CellGuideSidebarWrapper data-testid={CELL_GUIDE_CARD_NAVIGATION_SIDEBAR}>
-      <Global styles={StickySidebarStyle} />
       <StickyWrapper>
-        <SearchBarWrapper>
-          <CellGuideCardSearchBar />
-        </SearchBarWrapper>
+        {!skinnyMode && (
+          <SearchBarWrapper>
+            <CellGuideCardSearchBar />
+          </SearchBarWrapper>
+        )}
         {isClient && (
           <NavigationJumpTo
             items={items}
@@ -49,6 +58,7 @@ export default function CellGuideCardSidebar({
               track(EVENTS.CG_VIEW_SECTION, {
                 section: (event.target as HTMLElement).innerText,
               });
+              sectionClickHandler && sectionClickHandler();
             }}
           />
         )}

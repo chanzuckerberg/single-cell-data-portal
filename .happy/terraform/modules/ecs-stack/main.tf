@@ -18,6 +18,8 @@ locals {
   batch_container_memory_limit = var.batch_container_memory_limit
   wmg_batch_container_memory_limit = var.wmg_batch_container_memory_limit
   wmg_desired_vcpus                = var.wmg_desired_vcpus
+  cg_desired_vcpus                = var.cg_desired_vcpus
+  cg_batch_container_memory_limit = var.cg_batch_container_memory_limit
 
   migration_cmd                = ["make", "-C", "/single-cell-data-portal/backend", "db/init_remote_dev"]
   deletion_cmd                 = ["make", "-C", "/single-cell-data-portal/backend", "db/delete_remote_dev"]
@@ -44,9 +46,11 @@ locals {
   lambda_upload_repo              = local.secret["ecrs"]["upload_failures"]["url"]
   lambda_dataset_submissions_repo = local.secret["ecrs"]["dataset_submissions"]["url"]
   wmg_upload_image_repo           = local.secret["ecrs"]["wmg_processing"]["url"]
+  cg_upload_image_repo            = local.secret["ecrs"]["cellguide_pipeline"]["url"]
   batch_role_arn                  = local.secret["batch_queues"]["upload"]["role_arn"]
   job_queue_arn                   = local.secret["batch_queues"]["upload"]["queue_arn"]
   wmg_batch_role_arn              = local.secret["batch_queues"]["wmg"]["role_arn"]
+  cg_batch_role_arn               = local.secret["batch_queues"]["cg"]["role_arn"]
   schema_migration_job_queue_arn  = local.secret["batch_queues"]["schema_migration"]["queue_arn"]
   schema_migration_batch_role_arn = local.secret["batch_queues"]["schema_migration"]["role_arn"]
   external_dns                    = local.secret["external_zone_name"]
@@ -119,6 +123,7 @@ module frontend_service {
   dataset_submissions_bucket = local.dataset_submissions_bucket
   execution_role             = local.ecs_execution_role
   health_check_interval      = 15
+  dd_key_secret_arn          = var.dd_key_secret_arn
 
   wait_for_steady_state = local.wait_for_steady_state
 }
@@ -149,6 +154,7 @@ module backend_service {
   dataset_submissions_bucket = local.dataset_submissions_bucket
   datasets_bucket            = local.datasets_bucket
   execution_role             = local.ecs_execution_role
+  dd_key_secret_arn          = var.dd_key_secret_arn
 
   wait_for_steady_state = local.wait_for_steady_state
 }
@@ -207,6 +213,22 @@ module wmg_batch {
   batch_container_memory_limit  = var.wmg_batch_container_memory_limit
 }
 
+module cg_batch {
+  source                        = "../cg-batch"
+  image                         = "${local.cg_upload_image_repo}:${local.image_tag}"
+  batch_role_arn                = local.cg_batch_role_arn
+  cmd                           = ""
+  api_url                       = local.backend_url
+  custom_stack_name             = local.custom_stack_name
+  remote_dev_prefix             = local.remote_dev_prefix
+  deployment_stage              = local.deployment_stage
+  artifact_bucket               = local.artifact_bucket
+  wmg_bucket                    = local.wmg_bucket
+  desired_vcpus                 = local.cg_desired_vcpus
+  batch_container_memory_limit  = var.cg_batch_container_memory_limit
+}
+
+
 module upload_success_lambda {
   source                     = "../lambda"
   image                      = "${local.lambda_upload_success_repo}:${local.image_tag}"
@@ -219,6 +241,7 @@ module upload_success_lambda {
   lambda_execution_role      = local.lambda_execution_role
   subnets                    = local.subnets
   security_groups            = local.security_groups
+  datasets_bucket            = local.datasets_bucket
 }
 
 module upload_error_lambda {
@@ -256,6 +279,7 @@ module dataset_submissions_lambda {
   deployment_stage           = local.deployment_stage
   artifact_bucket            = local.artifact_bucket
   cellxgene_bucket           = local.cellxgene_bucket
+  datasets_bucket            = local.datasets_bucket
   lambda_execution_role      = aws_iam_role.dataset_submissions_lambda_service_role.arn
   step_function_arn          = module.upload_sfn.step_function_arn
   subnets                    = local.subnets
@@ -271,6 +295,7 @@ module schema_migration {
   remote_dev_prefix             = local.remote_dev_prefix
   deployment_stage              = local.deployment_stage
   artifact_bucket               = local.artifact_bucket
+  datasets_bucket               = local.datasets_bucket
   batch_container_memory_limit  = local.batch_container_memory_limit
   job_queue_arn                 = local.schema_migration_job_queue_arn
   sfn_role_arn                  = local.schema_migration_sfn_role_arn
@@ -294,7 +319,7 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
-data "aws_iam_policy_document" "lambda_step_function_execution_policy" {
+data "aws_iam_policy_document" "lambda_step_function_execution_policy_document" {
   statement {
     sid    = "sfn"
     effect = "Allow"
@@ -353,13 +378,15 @@ data "aws_iam_policy_document" "lambda_step_function_execution_policy" {
       "arn:aws:s3:::${local.artifact_bucket}/*",
       "arn:aws:s3:::${local.cellxgene_bucket}",
       "arn:aws:s3:::${local.cellxgene_bucket}/*",
+      "arn:aws:s3:::${local.datasets_bucket}",
+      "arn:aws:s3:::${local.datasets_bucket}/*"
     ]
   }
 }
 
 resource "aws_iam_policy" "lambda_step_function_execution_policy" {
   name = "lambda-step-function-execution-policy-${local.custom_stack_name}"
-  policy = data.aws_iam_policy_document.lambda_step_function_execution_policy.json
+  policy = data.aws_iam_policy_document.lambda_step_function_execution_policy_document.json
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_step_function_execution_policy_attachment" {

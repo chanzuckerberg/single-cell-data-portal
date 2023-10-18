@@ -1,15 +1,14 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, Page } from "@playwright/test";
 import {
+  WMG_WITH_SEEDED_GENES,
   checkPlotSize,
   checkSourceData,
-  conditionallyRunTests,
   deSelectSecondaryFilterOption,
   goToWMG,
-  goToWMGWithSeededState,
   selectSecondaryFilterOption,
-  selectTissueAndGeneOption,
+  waitForHeatmapToRender,
 } from "tests/utils/wmgUtils";
-import { tryUntil } from "tests/utils/helpers";
+import { goToPage, tryUntil } from "tests/utils/helpers";
 import {
   COLOR_SCALE_TOOLTIP_TEXT,
   GROUP_BY_TOOLTIP_TEXT,
@@ -18,14 +17,13 @@ import {
 } from "src/views/WheresMyGene/common/constants";
 
 const SIDE_BAR_TOGGLE_BUTTON_ID = "side-bar-toggle-button";
+const CELL_TYPE_FILTER = "naive B cell";
 
 const { describe } = test;
 
 describe("Left side bar", () => {
-  conditionallyRunTests();
-
   test("Left side bar collapse and expand", async ({ page }) => {
-    await goToWMGWithSeededState(page);
+    await goToWMG(page);
 
     // click chevron left to collapse the left tab
     await page.getByTestId(SIDE_BAR_TOGGLE_BUTTON_ID).click();
@@ -35,59 +33,68 @@ describe("Left side bar", () => {
   });
 
   [
-    ["dataset-filter"],
-    ["disease-filter"],
-    ["self-reported-ethnicity-filter"],
-    ["sex-filter"],
-  ].forEach(([filterOption]) => {
+    "dataset-filter",
+    "disease-filter",
+    "self-reported-ethnicity-filter",
+    "sex-filter",
+  ].forEach((filterOption) => {
     test(`Should be able select and de-select options for ${filterOption} filter`, async ({
       page,
     }) => {
-      await goToWMGWithSeededState(page);
+      await goToPage(WMG_WITH_SEEDED_GENES.URL, page);
 
+      await waitForHeatmapToRender(page);
       await tryUntil(
         async () => {
           // check the count of source data displayed before adding a filter
           const countBeforeFilter = await checkSourceData(page);
 
-          //check plot height before adding a filter
-          const plotSizeBeforeFilter = await checkPlotSize(page);
-
-          //select a filter
-          await selectSecondaryFilterOption(page, filterOption);
-
-          // check the count of source data displayed after adding a filter
-          const countAfterFilter = await checkSourceData(page);
-
-          //check plot height after adding a filter
-          const plotSizeAfterFilter = await checkPlotSize(page);
-
           // verify source data loading some data
           expect(countBeforeFilter).toBeGreaterThan(0);
 
-          // verify source data changed after filter is applied
-          expect(countBeforeFilter === countAfterFilter).toBeFalsy();
+          // check plot height before adding a filter
+          const plotSizeBeforeFilter = await checkPlotSize(page);
 
-          //verify data plot data loading some data
+          // verify data plot data loading some data
           expect(plotSizeBeforeFilter).toBeGreaterThan(0);
 
-          //verify data plot data changed after filter was applied
-          expect(plotSizeBeforeFilter === plotSizeAfterFilter).toBeFalsy();
+          // select a filter
+          await selectSecondaryFilterOption(page, filterOption);
 
-          //uncheck filter
+          await tryUntil(
+            async () => {
+              // check the count of source data displayed after adding a filter
+              const countAfterFilter = await checkSourceData(page);
+
+              //check plot height after adding a filter
+              const plotSizeAfterFilter = await checkPlotSize(page);
+
+              // verify source data changed after filter is applied
+              expect(countBeforeFilter === countAfterFilter).toBeFalsy();
+
+              // verify data plot data changed after filter was applied
+              expect(plotSizeBeforeFilter === plotSizeAfterFilter).toBeFalsy();
+            },
+            { page }
+          );
+
+          // uncheck filter
           await deSelectSecondaryFilterOption(page, filterOption);
         },
-        { page }
+        {
+          page,
+          /**
+           * (thuang): Give up after N times, because the app state might not
+           * be recoverable at this point
+           */
+          maxRetry: 3,
+        }
       );
     });
   });
 
   test("Left side bar tooltips", async ({ page }) => {
-    // navigate to gene expression page
-    await goToWMG(page);
-
-    //select tissue and gene
-    await selectTissueAndGeneOption(page);
+    await goToPage(WMG_WITH_SEEDED_GENES.URL, page);
 
     // Group By tooltip
     await page.getByTestId("group-by-tooltip-icon").hover();
@@ -105,4 +112,50 @@ describe("Left side bar", () => {
     await page.getByTestId("sort-genes-tooltip-icon").hover();
     expect(page.getByText(SORT_GENES_TOOLTIP_TEXT)).toBeTruthy();
   });
+
+  [
+    "dataset-filter",
+    "disease-filter",
+    "publication-filter",
+    "tissue-filter",
+  ].forEach((testId) => {
+    test(`Ensure that cell type filter cross-filters with ${testId}`, async ({
+      page,
+    }) => {
+      await goToPage(WMG_WITH_SEEDED_GENES.URL, page);
+
+      await waitForHeatmapToRender(page);
+
+      const numberOfRecordsBefore = await countRecords(page, testId);
+
+      await page.getByRole("combobox").first().click();
+      await page.getByRole("option", { name: CELL_TYPE_FILTER }).click();
+      await page.keyboard.press("Escape");
+
+      const numberOfRecordsAfter = await countRecords(page, testId);
+
+      expect(numberOfRecordsBefore).toBeGreaterThan(numberOfRecordsAfter);
+    });
+  });
+
+  async function countRecords(page: Page, testId: string) {
+    const optionLocator = page.getByRole("option");
+
+    let count = 0;
+
+    await tryUntil(
+      async () => {
+        await page.getByTestId(testId).getByRole("button").click();
+
+        count = await optionLocator.count();
+
+        await page.keyboard.press("Escape");
+
+        expect(count).toBeGreaterThan(0);
+      },
+      { page }
+    );
+
+    return count;
+  }
 });

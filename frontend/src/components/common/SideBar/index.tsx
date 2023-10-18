@@ -8,6 +8,7 @@ import {
   SideBarPositioner,
   ToggleButtonText,
 } from "src/components/common/SideBar/style";
+import { noop } from "src/common/constants/utils";
 
 const COLLAPSED_WIDTH_PX = 36;
 export const FILTERS_PANEL_EXPANDED_WIDTH_PX = 240;
@@ -24,14 +25,14 @@ export interface Props {
   isOpen?: boolean;
   onToggle?: SideBarToggleFn;
   width?: number;
-  position?: typeof Position[keyof typeof Position];
+  position?: (typeof Position)[keyof typeof Position];
   SideBarWrapperComponent?: typeof SideBarWrapper;
   SideBarPositionerComponent?: typeof SideBarPositioner;
   testId?: string;
   disabled?: boolean;
-  forceOpen?: boolean;
   wmgSideBar?: boolean;
   truncatedLabel?: string;
+  onWidthChange?: (width: number) => void;
 }
 
 export default function SideBar({
@@ -46,11 +47,12 @@ export default function SideBar({
   SideBarPositionerComponent = SideBarPositioner,
   testId,
   disabled,
-  forceOpen,
   wmgSideBar,
   truncatedLabel = "",
+  onWidthChange = noop,
 }: Props): JSX.Element {
-  const [isExpanded, setIsExpanded] = useState(isOpen);
+  // seve: wmgSideBar does not have isOpen prop, so we need to set default to true/open
+  const [isExpanded, setIsExpanded] = useState(isOpen || !!wmgSideBar);
   const sideBarWidth = isExpanded ? width : COLLAPSED_WIDTH_PX;
   const SideBarToggleButtonWrapper = isExpanded
     ? SideBarOpenButtonWrapper
@@ -68,8 +70,8 @@ export default function SideBar({
   };
 
   useEffect(() => {
-    if (!(disabled && !isExpanded) && wmgSideBar) handleExpandedClick(true);
-  }, [forceOpen]);
+    onWidthChange(sideBarWidth);
+  }, [sideBarWidth, onWidthChange]);
 
   return (
     <SideBarWrapperComponent

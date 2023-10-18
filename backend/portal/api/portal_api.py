@@ -22,7 +22,6 @@ from backend.layers.business.entities import CollectionMetadataUpdate, Collectio
 from backend.layers.business.exceptions import (
     ArtifactNotFoundException,
     CollectionCreationException,
-    CollectionDeleteException,
     CollectionIsPublishedException,
     CollectionNotFoundException,
     CollectionPublishException,
@@ -188,6 +187,7 @@ def _dataset_to_response(
             "assay": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.assay),
             "batch_condition": None if dataset.metadata is None else dataset.metadata.batch_condition,
             "cell_count": None if dataset.metadata is None else dataset.metadata.cell_count,
+            "primary_cell_count": None if dataset.metadata is None else dataset.metadata.primary_cell_count,
             "cell_type": None
             if dataset.metadata is None
             else _ontology_term_ids_to_response(dataset.metadata.cell_type),
@@ -431,6 +431,8 @@ def get_collection_index():
         transformed_collection["published_at"] = collection.canonical_collection.originally_published_at
         transformed_collection["revised_at"] = collection.published_at
 
+        transformed_collection["consortia"] = collection.metadata.consortia
+
         response.append(transformed_collection)
 
     return make_response(jsonify(response), 200)
@@ -480,6 +482,8 @@ def get_user_collection_index(token_info):
                 collection.publisher_metadata
             )
 
+        transformed_collection["consortia"] = collection.metadata.consortia
+
         if collection.is_unpublished_version():
             transformed_collection["id"] = collection.version_id.id
         else:
@@ -520,16 +524,10 @@ def delete_collection(collection_id: str, token_info: dict):
     if version.published_at:
         raise MethodNotAllowedException("Cannot delete a published Collection through API -- contact CXG Admins")
 
-    if isinstance(resource_id, CollectionVersionId):
-        try:
-            get_business_logic().delete_collection_version(resource_id)
-        except CollectionIsPublishedException:
-            raise ForbiddenHTTPException() from None
-    elif isinstance(resource_id, CollectionId):
-        try:
-            get_business_logic().tombstone_collection(resource_id)
-        except CollectionDeleteException() as e:
-            raise ServerErrorHTTPException(e.errors) from e
+    try:
+        get_business_logic().delete_collection_version(version)
+    except CollectionIsPublishedException:
+        raise ForbiddenHTTPException() from None
 
 
 def update_collection(collection_id: str, body: dict, token_info: dict):
@@ -653,6 +651,37 @@ def upload_relink(collection_id: str, body: dict, token_info: dict):
     return make_response({"dataset_id": dataset_id.id}, 202)
 
 
+def get_dataset_asset(dataset_id: str, asset_id: str):
+    """
+    Request to download a file which on success returns a permanent URL to download the dataset.
+    """
+
+    version = get_business_logic().get_dataset_version(DatasetVersionId(dataset_id))
+    if version is None:
+        raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}' not found.")
+
+    try:
+        download_data = get_business_logic().get_dataset_artifact_download_data(
+            DatasetVersionId(dataset_id), DatasetArtifactId(asset_id)
+        )
+    except ArtifactNotFoundException:
+        raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}/asset/{asset_id}' not found.") from None
+
+    if download_data.file_size is None:
+        raise ServerErrorHTTPException() from None
+
+    if download_data.url is None:
+        raise ServerErrorHTTPException()
+
+    response = {
+        "dataset_id": dataset_id,
+        "file_size": download_data.file_size,
+        "url": download_data.url,
+    }
+
+    return make_response(response, 200)
+
+
 def post_dataset_asset(dataset_id: str, asset_id: str):
     """
     Requests to download a dataset asset, by generating a presigned_url.
@@ -663,7 +692,7 @@ def post_dataset_asset(dataset_id: str, asset_id: str):
         raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}' not found.")
 
     try:
-        download_data = get_business_logic().get_dataset_artifact_download_data(
+        download_data = get_business_logic().get_dataset_artifact_download_data_deprecated(
             DatasetVersionId(dataset_id), DatasetArtifactId(asset_id)
         )
     except ArtifactNotFoundException:

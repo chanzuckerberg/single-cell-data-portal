@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import { defaultTextColor } from "../../../../common/constants";
+import { StyledText } from "./style";
 
 interface TextProps {
   name: string;
@@ -24,24 +24,21 @@ export default function Text({
         textElement.textContent = textContent + "...";
       }
     }
-  }, [name]);
+  }, [name, maxWidth]);
 
   return (
-    <text
+    <StyledText
       ref={textRef}
       dy=".33em"
       fontSize={9}
+      fontWeight={400}
       fontFamily="Arial"
       textAnchor="left"
-      fontStyle={
-        isInCorpus || name.endsWith("cell types") ? "normal" : "italic"
-      }
-      fontWeight={isInCorpus ? "bold" : "normal"}
-      fill={defaultTextColor}
+      isInCorpus={isInCorpus}
       cursor={cursor}
       dx={10}
     >
       {name}
-    </text>
+    </StyledText>
   );
 }

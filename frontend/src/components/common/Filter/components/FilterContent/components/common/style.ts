@@ -3,24 +3,22 @@ import {
   CommonThemeProps,
   fontBodyS,
   getColors,
-  getCorners,
-  getFontWeights,
-  getSpaces,
   List as SDSList,
   ListItem,
 } from "@czi-sds/components";
 import { css } from "@emotion/react";
-import { GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
-
-const cornersM = (props: CommonThemeProps) => getCorners(props)?.m;
-const grey100 = (props: CommonThemeProps) => getColors(props)?.gray[100];
-const grey500 = (props: CommonThemeProps) => getColors(props)?.gray[500];
-const primary400 = (props: CommonThemeProps) => getColors(props)?.primary[400];
-const semibold = (props: CommonThemeProps) => getFontWeights(props)?.semibold; // font-weight 600.
-const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
-const spacesXs = (props: CommonThemeProps) => getSpaces(props)?.xs;
-const spacesXxs = (props: CommonThemeProps) => getSpaces(props)?.xxs;
-const spacesXxxs = (props: CommonThemeProps) => getSpaces(props)?.xxxs;
+import { GRAY } from "src/components/common/theme";
+import {
+  cornersM,
+  fontWeightSemibold,
+  grey100,
+  grey500,
+  primary400,
+  spacesS,
+  spacesXs,
+  spacesXxs,
+  spacesXxxs,
+} from "src/common/theme";
 
 export const listCss = (props: CommonThemeProps) => {
   return css`
@@ -73,7 +71,7 @@ export const listItemButtonSelectedCss = (props: CommonThemeProps) => {
 
       .MuiListItemText-root {
         span:first-of-type {
-          font-weight: ${semibold(props)};
+          font-weight: ${fontWeightSemibold(props)};
         }
       }
     }
@@ -119,14 +117,6 @@ export const listItemIconCss = (props: CommonThemeProps) => {
   `;
 };
 
-export const listItemDividerCss = css`
-  background-color: ${PT_TEXT_COLOR};
-  border: none;
-  border-bottom: 1px;
-  opacity: 0.15;
-  margin: 0;
-`;
-
 export const scrollbar = (props: CommonThemeProps) => {
   const colors = getColors(props);
   return css`
@@ -166,10 +156,6 @@ export const List = styled(SDSList)`
           ${listItemTextCss}
         }
       }
-    }
-
-    .MuiDivider-root {
-      ${listItemDividerCss}
     }
   }
 `;

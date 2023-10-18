@@ -3,6 +3,7 @@ import logging
 import os
 from typing import Optional
 
+from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.aws import delete_many_from_s3
 from backend.common.utils.result_notification import aws_batch_job_url_fmt_str, aws_sfn_url_fmt_str, notify_slack
 from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatusKey, DatasetVersionId
@@ -27,7 +28,7 @@ def handle_failure(event: dict, context) -> None:
         dataset_id, collection_version_id, error_step_name, error_job_id, error_aws_regions, execution_arn
     )
     update_dataset_processing_status_to_failed(dataset_id)
-    cleanup_artifacts(dataset_id)
+    cleanup_artifacts(dataset_id, error_step_name)
 
 
 # write test cases using pytest to test the parse_event function
@@ -119,7 +120,7 @@ def get_failure_slack_notification_message(
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"Dataset processing job failed! @sc-oncall-eng\n"
+                    "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     f"*Owner*: {collection_owner}\n"
                     f"*Collection Version URL*: {collection_version_url}\n"
                     f"*Batch Job ID*: <{batch_url}|{job_id}>\n"
@@ -153,18 +154,26 @@ def trigger_slack_notification(
         data = get_failure_slack_notification_message(
             dataset_id, collection_version_id, step_name, job_id, aws_region, execution_arn
         )
-        notify_slack(data)
+        # For these notifications, we should alert #single-cell-wrangling
+        webhook = CorporaConfig().wrangling_slack_webhook
+        notify_slack(data, webhook)
 
 
-def cleanup_artifacts(dataset_id: str) -> None:
+FAILED_ARTIFACT_CLEANUP_MESSAGE = "Failed to clean up artifacts."
+FAILED_DATASET_CLEANUP_MESSAGE = "Failed to clean up datasets."
+FAILED_CXG_CLEANUP_MESSAGE = "Failed to clean up cxgs."
+
+
+def cleanup_artifacts(dataset_id: str, error_step_name: Optional[str] = None) -> None:
     """Clean up artifacts"""
     object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_id).strip("/")
-    with logger.LogSuppressed(Exception, message="Failed to clean up artifacts."):
-        artifact_bucket = os.environ["ARTIFACT_BUCKET"]
-        delete_many_from_s3(artifact_bucket, object_key + "/")
-    with logger.LogSuppressed(Exception, message="Failed to clean up datasets."):
+    if not error_step_name or error_step_name == "download-validate":
+        with logger.LogSuppressed(Exception, message=FAILED_ARTIFACT_CLEANUP_MESSAGE):
+            artifact_bucket = os.environ["ARTIFACT_BUCKET"]
+            delete_many_from_s3(artifact_bucket, object_key + "/")
+    with logger.LogSuppressed(Exception, message=FAILED_DATASET_CLEANUP_MESSAGE):
         datasets_bucket = os.environ["DATASETS_BUCKET"]
         delete_many_from_s3(datasets_bucket, object_key + ".")
-    with logger.LogSuppressed(Exception, message="Failed to clean up cxgs."):
+    with logger.LogSuppressed(Exception, message=FAILED_CXG_CLEANUP_MESSAGE):
         cellxgene_bucket = os.environ["CELLXGENE_BUCKET"]
         delete_many_from_s3(cellxgene_bucket, object_key + ".cxg/")

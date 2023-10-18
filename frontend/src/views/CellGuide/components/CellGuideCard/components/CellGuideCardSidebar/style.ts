@@ -1,10 +1,12 @@
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
-import { TOP_PADDING_PX } from "../../style";
+
+export const TOP_PADDING_PX = 32;
+export const CELL_GUIDE_SIDE_BAR_WIDTH_PX = 240;
 
 export const CellGuideSidebarWrapper = styled.div`
-  width: 240px;
+  width: ${CELL_GUIDE_SIDE_BAR_WIDTH_PX}px;
 `;
 
 export const StickyWrapper = styled.div`
@@ -14,7 +16,7 @@ export const StickyWrapper = styled.div`
 `;
 
 export const SearchBarWrapper = styled.div`
-  margin-bottom: 20px;
+  margin-bottom: 64px;
   width: 240px;
 `;
 
@@ -22,5 +24,9 @@ export const StickySidebarStyle = css`
   /* Hack because main has a global overflow CSS prop which interferes with sticky sidebar */
   main {
     overflow: unset !important;
+  }
+  /* This prevents the annoying bounce scroll-chaining effect native on browsers */
+  html {
+    overscroll-behavior: none;
   }
 `;

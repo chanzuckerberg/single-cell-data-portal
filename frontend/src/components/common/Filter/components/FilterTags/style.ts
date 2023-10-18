@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, fontBodyXs, getSpaces } from "@czi-sds/components";
-
-const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
+import { fontBodyXs } from "@czi-sds/components";
+import { spacesS } from "src/common/theme";
 
 export const SelectedTags = styled.span`
   display: flex;
@@ -10,6 +9,7 @@ export const SelectedTags = styled.span`
   min-width: 0; /* facilitates ellipsis on tag should it be required; flex default for min width is "auto" */
 
   .MuiChip-root {
+    align-items: first baseline;
     margin: 0;
 
     &:active {

@@ -4,42 +4,40 @@ from typing import Dict, Iterable, List, Set
 import pandas as pd
 import tiledb
 
-from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL_PRONTO
+from backend.wmg.data.constants import CL_BASIC_OBO_NAME
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.snapshot import (
     CELL_TYPE_ORDERINGS_FILENAME,
+    DATASET_METADATA_FILENAME,
     EXPRESSION_SUMMARY_CUBE_NAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
 )
 from backend.wmg.data.tissue_mapper import TissueMapper
-from backend.wmg.data.utils import log_func_runtime
+from backend.wmg.data.utils import get_datasets_from_curation_api, get_pinned_ontology_url, log_func_runtime, to_dict
 
 
-@log_func_runtime
-def get_cell_types_by_tissue(corpus_group: str) -> Dict:
+def generate_dataset_metadata_file(snapshot_path: str) -> None:
     """
-    Return a list of all associated cell type ontologies for each tissue contained in the
-    provided corpus
+    This function generates a dictionary containing metadata for each dataset.
+    The metadata includes the dataset id, label, collection id, and collection label.
+    The function fetches the datasets from the curation API and iterates over them to create the metadata dictionary.
     """
-    with tiledb.open(f"{corpus_group}/obs", "r") as obs:
-        tissue_cell_types = (
-            obs.query(attrs=[], dims=["tissue_ontology_term_id", "cell_type_ontology_term_id"])
-            .df[:]
-            .drop_duplicates()
-            .sort_values(by="tissue_ontology_term_id")
+    datasets = get_datasets_from_curation_api()
+    dataset_dict = {}
+    for dataset in datasets:
+        dataset_id = dataset["dataset_id"]
+        dataset_dict[dataset_id] = dict(
+            id=dataset_id,
+            label=dataset["title"],
+            collection_id=dataset["collection_id"],
+            collection_label=dataset["collection_name"],
         )
-    unique_tissue_ontology_term_id = tissue_cell_types.tissue_ontology_term_id.unique()
-    cell_type_by_tissue = {}
-    for x in unique_tissue_ontology_term_id:
-        cell_type_by_tissue[x] = tissue_cell_types.loc[
-            tissue_cell_types["tissue_ontology_term_id"] == x, "cell_type_ontology_term_id"
-        ]
-
-    return cell_type_by_tissue
+    with open(f"{snapshot_path}/{DATASET_METADATA_FILENAME}", "w") as f:
+        json.dump(dataset_dict, f)
 
 
 @log_func_runtime
-def cell_type_ordering_create_file(snapshot_path: str, cell_type_by_tissue: Dict[str, pd.DataFrame]) -> None:
+def cell_type_ordering_create_file(snapshot_path: str) -> None:
     """
     Writes an ordered "table" of cell types to a json file. The table is written from a pandas data frame with the
     following columns:
@@ -54,6 +52,15 @@ def cell_type_ordering_create_file(snapshot_path: str, cell_type_by_tissue: Dict
 
     :return None
     """
+
+    cell_counts_cube = tiledb.open(f"{snapshot_path}/cell_counts")
+    cell_counts_df = cell_counts_cube.df[:]
+    cell_counts_df = (
+        cell_counts_df.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).first().reset_index()
+    )
+    cell_type_by_tissue = to_dict(
+        cell_counts_df["tissue_ontology_term_id"], cell_counts_df["cell_type_ontology_term_id"].values
+    )
 
     # Generates ordering for ALL cell types
     all_cells = {cell for cell_df in cell_type_by_tissue.values() for cell in cell_df}
@@ -95,7 +102,7 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     import pygraphviz as pgv
     from pronto import Ontology
 
-    onto = Ontology(CL_BASIC_PERMANENT_URL_PRONTO)
+    onto = Ontology(get_pinned_ontology_url(CL_BASIC_OBO_NAME))
     ancestors = [list(onto[t].superclasses()) for t in cells if t in onto]
     ancestors = [i for s in ancestors for i in s]
     ancestors = set(ancestors)
@@ -119,9 +126,7 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
         return {"id": node, "depth": depth}
 
     def recurse(node: str, depth=0):
-
         if node in cells:
-
             cells.remove(node)
             yield cell_entity(node, depth)
 
@@ -233,7 +238,6 @@ def generate_primary_filter_dimensions(snapshot_path: str, snapshot_id: int):
         return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
 
     with tiledb.open(f"{snapshot_path}/{EXPRESSION_SUMMARY_CUBE_NAME}") as cube:
-
         # gene terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
         organism_gene_ids: dict[str, List[str]] = list_grouped_primary_filter_dimensions_term_ids(
             cube, "gene_ontology_term_id", group_by_dim="organism_ontology_term_id"

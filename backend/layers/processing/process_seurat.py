@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 
@@ -12,6 +13,8 @@ from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
+
+logger: logging.Logger = logging.getLogger("processing")
 
 
 class ProcessSeurat(ProcessingLogic):
@@ -88,6 +91,11 @@ class ProcessSeurat(ProcessingLogic):
         Create a Seurat rds file from the AnnData file.
         """
         try:
+            completed_process = subprocess.run(
+                ["Rscript", "-e", "\"installed.packages()[, c('Package', 'Version')]\""], capture_output=True
+            )
+            logger.debug({"stdout": completed_process.stdout, "args": completed_process.args})
+
             subprocess.run(
                 [
                     "Rscript",

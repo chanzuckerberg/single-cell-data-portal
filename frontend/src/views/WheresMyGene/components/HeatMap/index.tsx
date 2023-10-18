@@ -177,7 +177,11 @@ export default memo(function HeatMap({
         {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
         <XAxisWrapper id="x-axis-wrapper">
           <XAxisMask data-testid="x-axis-mask" height={xAxisHeight} />
-          <XAxisChart geneNames={sortedGeneNames} />
+          <XAxisChart
+            geneNames={sortedGeneNames}
+            // (thuang): Dummy value here, since we're deleting this file
+            sidebarWidth={0}
+          />
         </XAxisWrapper>
         <YAxisWrapper top={xAxisHeight}>
           {selectedTissues.map((tissue) => {

@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Divider } from "@mui/material";
 import { List } from "@czi-sds/components";
 import {
   CATEGORY_FILTER_ID,
   OnFilterFn,
+  PINNED_POSITION,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
 import FilterMenuItems from "src/components/common/Filter/components/FilterContent/components/FilterMenu/components/FilterMenuItems";
@@ -16,6 +16,7 @@ interface Props {
   categoryFilterId: CATEGORY_FILTER_ID;
   isSearchable: boolean;
   onFilter: OnFilterFn;
+  pinnedPosition?: PINNED_POSITION;
   pinnedValues: SelectCategoryValueView[];
   searchValue: string;
   setSearchValue: SetSearchValueFn;
@@ -31,6 +32,7 @@ export default function FilterMenu({
   categoryFilterId,
   isSearchable,
   onFilter,
+  pinnedPosition = PINNED_POSITION.TOP,
   pinnedValues,
   searchValue,
   setSearchValue,
@@ -79,22 +81,30 @@ export default function FilterMenu({
           <NoMatches>No matches found</NoMatches>
         ) : (
           <>
-            {/* Pinned values */}
-            {filteredPinnedValues.length > 0 && (
-              <FilterMenuItems
-                categoryFilterId={categoryFilterId}
-                menuItems={filteredPinnedValues}
-                onFilter={onFilter}
-              />
-            )}
-            {/* Menu divider */}
-            {isMenuDivided && <Divider />}
+            {/* Pinned values - TOP */}
+            {filteredPinnedValues.length > 0 &&
+              pinnedPosition === PINNED_POSITION.TOP && (
+                <FilterMenuItems
+                  categoryFilterId={categoryFilterId}
+                  menuItems={filteredPinnedValues}
+                  onFilter={onFilter}
+                />
+              )}
             {/* Unpinned values */}
             <FilterMenuItems
               categoryFilterId={categoryFilterId}
               menuItems={filteredUnpinnedValues}
               onFilter={onFilter}
             />
+            {/* Pinned values - BOTTOM */}
+            {filteredPinnedValues.length > 0 &&
+              pinnedPosition === PINNED_POSITION.BOTTOM && (
+                <FilterMenuItems
+                  categoryFilterId={categoryFilterId}
+                  menuItems={filteredPinnedValues}
+                  onFilter={onFilter}
+                />
+              )}
           </>
         )}
       </List>

@@ -4,11 +4,13 @@ import readline from "readline";
 import AdmZip from "adm-zip";
 import { getById, getTestID } from "./selectors";
 import { ROUTES } from "src/common/constants/routes";
-import { TEST_URL, downLoadPath } from "tests/common/constants";
+import { TEST_URL, downloadPath } from "tests/common/constants";
 import pixelmatch from "pixelmatch";
 import { PNG } from "pngjs";
 import sharp from "sharp";
 import { goToWMG } from "./wmgUtils";
+import { CELL_TYPE_ROW_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
+import { tryUntil } from "tests/utils/helpers";
 
 const EXPECTED_HEADER = [
   "Tissue",
@@ -22,32 +24,59 @@ const EXPECTED_HEADER = [
   "Number of Cells Expressing Genes",
 ];
 
-export async function verifyCsv(
-  page: Page,
-  subDirectory: string,
-  tissues: string[],
-  filterName: string,
-  url: string
-): Promise<void> {
-  const metadata = await getCsvMetadata(tissues, subDirectory);
+const NUM_OF_GENES_SELECTED = 3;
+
+export async function verifyCsv({
+  page,
+  subDirectory,
+  filterName,
+  url,
+  tissues,
+}: {
+  page: Page;
+  subDirectory: string;
+  filterName: string;
+  url: string;
+  tissues: string[];
+}): Promise<void> {
+  const metadata = await getCsvMetadata(subDirectory);
   // extract the headers and data arrays from the metadata object
   // put all the headers in an array
   const headers = metadata.headers;
   const data = metadata.data;
 
-  //get number of element in csv
+  // get number of element in csv
   const csvElementsCount = metadata.rowCount;
 
-  //get number of element displayed in ui
+  await tryUntil(
+    async () => {
+      const count = await page
+        .locator(`[data-testid="${CELL_TYPE_ROW_CLASS_NAME}"]`)
+        .count();
+
+      expect(count).toBeGreaterThan(0);
+    },
+    { page }
+  );
+
+  // get number of element displayed in ui
   const uiElementsCount = await page
-    .locator(`[data-testid="cell-type-label-count"]`)
+    .locator(`[data-testid="${CELL_TYPE_ROW_CLASS_NAME}"]`)
     .count();
 
-  //verify the number of element in the csv this is the Ui displayed multiplied by the number of genes selected
-  expect(csvElementsCount).toEqual(uiElementsCount * 3);
+  const tissueCount = tissues.length;
+  const aggregatedRows = tissueCount * NUM_OF_GENES_SELECTED;
+
+  /**
+   * verify the number of element in the csv (minus aggregatedRows) is the Ui
+   * displayed multiplied by the number of genes selected
+   */
+  expect(csvElementsCount - aggregatedRows).toEqual(
+    uiElementsCount * NUM_OF_GENES_SELECTED
+  );
 
   const options = {
-    filterName: filterName,
+    filterName,
     data: headers,
   };
 
@@ -59,7 +88,7 @@ export async function verifyCsv(
 }
 
 export function subDirectory() {
-  return (Math.floor(Math.random() * 90000) + 10000).toString();
+  return Date.now().toString();
 }
 export async function downloadAndVerifyFiles(
   page: Page,
@@ -74,12 +103,12 @@ export async function downloadAndVerifyFiles(
   if (fileTypes.includes("csv")) {
     if (tissues.length === 1) {
       expect(
-        fs.existsSync(`${downLoadPath}/${subDirectory}/${tissues[0]}.csv`)
+        fs.existsSync(`${downloadPath}/${subDirectory}/${tissues[0]}.csv`)
       ).toBeTruthy();
     } else if (tissues.length > 1) {
       expect(
         fs.existsSync(
-          `${downLoadPath}/${subDirectory}/CELLxGENE_gene_expression_${getCurrentDate()}.csv`
+          `${downloadPath}/${subDirectory}/CELLxGENE_gene_expression_${getCurrentDate()}.csv`
         )
       ).toBeTruthy();
     }
@@ -92,7 +121,7 @@ export async function downloadAndVerifyFiles(
       tissues.forEach((tissue) => {
         expect(
           fs.existsSync(
-            `${downLoadPath}/${subDirectory}/${tissue}.${extension}`
+            `${downloadPath}/${subDirectory}/${tissue}.${extension}`
           )
         ).toBeTruthy();
       });
@@ -100,7 +129,7 @@ export async function downloadAndVerifyFiles(
 }
 
 export async function deleteDownloadedFiles(filePath: string) {
-  fs.rmdir(filePath, { recursive: true }, (err) => {
+  fs.rm(filePath, { recursive: true }, (err) => {
     if (err) {
       console.error(`Error deleting folder: ${err}`);
     }
@@ -112,18 +141,11 @@ export interface CsvMetadata {
   headers: string[];
 }
 
-export const getCsvMetadata = (
-  tissues: string[],
-  subDirectory: string
-): Promise<CsvMetadata> => {
+export const getCsvMetadata = (subDirectory: string): Promise<CsvMetadata> => {
   return new Promise((resolve, reject) => {
     // Open the CSV file for reading
     const fileStream = fs.createReadStream(
-      `${downLoadPath}/${subDirectory}/${
-        tissues.length === 1
-          ? `${tissues[0]}.csv`
-          : `CELLxGENE_gene_expression_${getCurrentDate()}.csv`
-      }`,
+      `${downloadPath}/${subDirectory}/${`CELLxGENE_gene_expression_${getCurrentDate()}.csv`}`,
       { encoding: "utf8" }
     );
 
@@ -270,8 +292,8 @@ interface MetadataVerificationOptions {
 }
 
 export const getFilterText = async (page: Page, filterName: string) => {
-  const filter_label = `${getTestID(filterName)} [role="button"]`;
-  return await page.locator(filter_label).textContent();
+  const filterLabel = `${getTestID(filterName)} [role="button"]`;
+  return await page.locator(filterLabel).textContent();
 };
 export async function compareSvg(
   page: Page,
@@ -281,15 +303,15 @@ export async function compareSvg(
   folder: string,
   tissue: string
 ): Promise<void> {
-  const svg = fs.readFileSync(`${downLoadPath}/${svgFile}`, "utf-8");
+  const svg = fs.readFileSync(`${downloadPath}/${svgFile}`, "utf-8");
   await page.setContent(svg);
-  const actualCell = `${downLoadPath}/${folder}/${tissue}1.png`;
+  const actualCell = `${downloadPath}/${folder}/${tissue}1.png`;
   await page
     .locator("svg")
     .locator("svg")
     .nth(3)
     .screenshot({ path: actualCell });
-  const actualGene = `${downLoadPath}/${folder}/${tissue}gene.png`;
+  const actualGene = `${downloadPath}/${folder}/${tissue}gene.png`;
 
   // take a picture of dot plot on svg
   await page.locator('[id="0"]').screenshot({
@@ -373,12 +395,12 @@ export async function verifySvgDownload(
   folder: string
 ): Promise<void> {
   for (let i = 0; i < tissues.length; i++) {
-    const cellSnapshot = `${downLoadPath}/${folder}/${tissues[i]}.png`;
-    const geneSnapshot = `${downLoadPath}/${folder}/gene_${i}.png`;
+    const cellSnapshot = `${downloadPath}/${folder}/${tissues[i]}.png`;
+    const geneSnapshot = `${downloadPath}/${folder}/gene_${i}.png`;
 
     await goToWMG(page, sharedLink);
     await downloadAndVerifyFiles(page, ["svg"], tissues, folder);
-    await captureTissueSnapshot(page, downLoadPath, folder, tissues, i);
+    await captureTissueSnapshot(page, downloadPath, folder, tissues, i);
     await compareSvg(
       page,
       cellSnapshot,
@@ -398,7 +420,7 @@ export async function downloadGeneFile(
   fileTypes: string[] = ["png"]
 ): Promise<void> {
   const allFileTypes = ["csv", "png", "svg"];
-  const dirPath = `${downLoadPath}/${subDirectory}`;
+  const dirPath = `${downloadPath}/${subDirectory}`;
 
   //wait for download file
   const downloadPromise = page.waitForEvent("download");

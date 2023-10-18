@@ -31,22 +31,19 @@ wmg-processing-unittest:
 	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning coverage run $(COVERAGE_RUN_ARGS) -m pytest \
 	tests/unit/wmg_processing/ --rootdir=. --alluredir=./allure-results --verbose;
 
-.PHONY: functional-test
-functional-test: local-functional-test
-	# Keeping old target name for reverse compatibility
+.PHONY: cellguide-pipeline-unittest
+cellguide-pipeline-unittest:
+	# This target is intended to be run INSIDE the cellguide pipeline container
+	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning coverage run $(COVERAGE_RUN_ARGS) -m pytest \
+	tests/unit/cellguide_pipeline/ --rootdir=. --alluredir=./allure-results --verbose;
 
-.PHONY: container-functionaltest
-container-functionaltest:
-	# This target is intended to be run INSIDE a container
-	python3 -m unittest discover --start-directory tests/functional/ --top-level-directory . --verbose
+.PHONY: functional-test
+functional-test:
+	python3 -m pytest tests/functional/ --rootdir=. --verbose
 
 .PHONY: prod-performance-test
 prod-performance-test:
 	python3 -m unittest discover --start-directory tests/performance --top-level-directory . --verbose
-
-.PHONY: local-backend
-local-backend:
-	$(MAKE) local-server -C ./backend/api_server
 
 .PHONY: e2e
 e2e:
@@ -75,8 +72,11 @@ oauth/pkcs12/certificate.pfx:
 	# On Linux, the pkcs12 directory gets written to with root permission. Force ownership to our user.
 	sudo chown -R $$(id -u):$$(id -g) $(PWD)/oauth/pkcs12
 
+.PHONY: .env.ecr
 .env.ecr:
 	echo DOCKER_REPO=$$(aws sts get-caller-identity --profile single-cell-dev | jq -r .Account).dkr.ecr.us-west-2.amazonaws.com/ > .env.ecr;
+	echo "HAPPY_COMMIT=$(shell git rev-parse --verify HEAD)" >> .env.ecr
+	echo "HAPPY_BRANCH=$(shell git branch --show-current)" >> .env.ecr
 
 .PHONY: local-ecr-login
 local-ecr-login:
@@ -108,6 +108,12 @@ local-rebuild-backend: .env.ecr local-ecr-login
 
 local-rebuild-processing: .env.ecr local-ecr-login
 	docker-compose $(COMPOSE_OPTS) build processing
+
+local-rebuild-wmg-processing: .env.ecr local-ecr-login
+	docker-compose $(COMPOSE_OPTS) build wmg_processing
+
+local-rebuild-cellguide-pipeline: .env.ecr local-ecr-login
+	docker-compose $(COMPOSE_OPTS) build cellguide_pipeline
 
 .PHONY: local-sync
 local-sync: local-rebuild local-init  ## Re-sync the local-environment state after modifying library deps or docker configs
@@ -145,7 +151,7 @@ local-shell: ## Open a command shell in one of the dev containers. ex: make loca
 	docker-compose exec $(CONTAINER) bash
 
 .PHONY: local-unit-test
-local-unit-test: local-unit-test-backend local-unit-test-wmg-backend local-unit-test-wmg-processing local-unit-test-processing local-unit-test-cxg-admin
+local-unit-test: local-unit-test-backend local-unit-test-wmg-backend local-unit-test-wmg-processing local-unit-test-cellguide-pipeline local-unit-test-processing local-unit-test-cxg-admin
 # Run all backend and processing unit tests in the dev environment, with code coverage
 
 .PHONY: local-unit-test-backend
@@ -174,34 +180,16 @@ local-unit-test-wmg-processing: # Run processing-unittest target in `wmg_process
 	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T wmg_processing \
 	bash -c "cd /single-cell-data-portal && make wmg-processing-unittest;"
 
+.PHONY: local-unit-test-cellguide-pipeline
+local-unit-test-cellguide-pipeline: # Run processing-unittest target in `cellguide_pipeline` Docker container
+	echo "Running all cellguide pipeline unit tests"; \
+	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T cellguide_pipeline \
+	bash -c "cd /single-cell-data-portal && make cellguide-pipeline-unittest;"	
+
 .PHONY: local-unit-test-cxg-admin
 local-unit-test-cxg-admin:
 	docker-compose run --rm -T backend bash -c \
 	"cd /single-cell-data-portal && coverage run  $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/scripts/";
-
-# We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
-# set to be the empty string.
-# Note that there is a distinction between BOTO_ENDPOINT_URL being
-# the empty string (in which case we override the existing variable
-# defined in docker-compose.yml to be empty string), and not being
-# set (in which case the default from docker-compose is untouched)
-#
-# Unfortunately, this isn't working properly if DEPLOYMENT_STAGE is not test.
-# If you want to run this locally against staging, use the following mouthful of a
-# command, replacing IAM_ROLE with a role you have access to:
-# export IAM_ROLE=insert_iam_arn_here
-# eval $(echo $(AWS_PROFILE=single-cell-dev aws sts assume-role --role-arn ${IAM_ROLE} --role-session-name functional-test \
-#     | jq -r '"AWS_ACCESS_KEY_ID=\(.Credentials.AccessKeyId) AWS_SECRET_ACCESS_KEY=\(.Credentials.SecretAccessKey) AWS_SESSION_TOKEN=\(.Credentials.SessionToken)"') \
-# 	AWS_REGION=us-west-2 BOTO_ENDPOINT_URL= DEPLOYMENT_STAGE=staging make local-functional-test)
-.PHONY: local-functional-test
-local-functional-test: export AWS_PROFILE=$(TEST_AWS_PROFILE)
-local-functional-test: ## Run functional tests in the dev environment
-	if [ -n "$${BOTO_ENDPOINT_URL+set}" ]; then \
-		EXTRA_ARGS="-e BOTO_ENDPOINT_URL"; \
-	fi; \
-	chamber -b secretsmanager exec corpora/backend/$${DEPLOYMENT_STAGE}/auth0-secret -- \
-		docker-compose $(COMPOSE_OPTS) run --rm -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_USERNAME -e TEST_ACCOUNT_PASSWORD -e DEPLOYMENT_STAGE -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} \
-		backend bash -c "cd /single-cell-data-portal && make container-functionaltest"
 
 .PHONY: local-smoke-test
 local-smoke-test: ## Run frontend/e2e tests in the dev environment

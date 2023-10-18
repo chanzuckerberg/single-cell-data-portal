@@ -122,7 +122,7 @@ export default function Collections(): JSX.Element {
       // Viewable in collections mode, hidden in curator mode.
       {
         Cell: ({ row }: RowPropsValue<CollectionRow>) => {
-          return <div>{row.values.summaryCitation || "No publication"}</div>;
+          return <div>{row.values.summaryCitation}</div>;
         },
         Header: "Publication",
         accessor: COLLECTION_SUMMARY_CITATION,
@@ -196,6 +196,12 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
+        accessor: "consortia",
+        filter: "includesSome",
+        id: CATEGORY_FILTER_ID.CONSORTIA,
+      },
+      // Hidden, required for filter.
+      {
         accessor: "cellTypeCalculated",
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED,
@@ -213,9 +219,9 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: "publicationAuthors",
+        accessor: "summaryCitation",
         filter: "includesSome",
-        id: CATEGORY_FILTER_ID.PUBLICATION_AUTHORS,
+        id: CATEGORY_FILTER_ID.PUBLICATION,
       },
       // Hidden, required for filter.
       {

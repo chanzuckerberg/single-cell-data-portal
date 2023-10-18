@@ -7,29 +7,21 @@ import {
   AddCellInfoCellTypePayload,
   LoadStateFromURLPayload,
   REDUCERS,
+  SetFilteredCellTypesPayload,
   State,
 } from "./reducer";
 
 export function deleteSingleGene(
   geneToDelete: string
-): GetActionTypeOfReducer<typeof REDUCERS["deleteSingleGene"]> {
+): GetActionTypeOfReducer<(typeof REDUCERS)["deleteSingleGene"]> {
   return {
     payload: geneToDelete,
     type: "deleteSingleGene",
   };
 }
 
-export function deleteSelectedGenes(): GetActionTypeOfReducer<
-  typeof REDUCERS["deleteSelectedGenes"]
-> {
-  return {
-    payload: null,
-    type: "deleteSelectedGenes",
-  };
-}
-
 export function deleteAllGenes(): GetActionTypeOfReducer<
-  typeof REDUCERS["deleteAllGenes"]
+  (typeof REDUCERS)["deleteAllGenes"]
 > {
   return {
     payload: null,
@@ -39,7 +31,7 @@ export function deleteAllGenes(): GetActionTypeOfReducer<
 
 export function toggleGeneToDelete(
   geneToDelete: string
-): GetActionTypeOfReducer<typeof REDUCERS["toggleGeneToDelete"]> {
+): GetActionTypeOfReducer<(typeof REDUCERS)["toggleGeneToDelete"]> {
   return {
     payload: geneToDelete,
     type: "toggleGeneToDelete",
@@ -48,7 +40,7 @@ export function toggleGeneToDelete(
 
 export function selectOrganism(
   organismId: State["selectedOrganismId"]
-): GetActionTypeOfReducer<typeof REDUCERS["selectOrganism"]> {
+): GetActionTypeOfReducer<(typeof REDUCERS)["selectOrganism"]> {
   return {
     payload: organismId,
     type: "selectOrganism",
@@ -57,7 +49,7 @@ export function selectOrganism(
 
 export function selectGenes(
   genes: State["selectedGenes"]
-): GetActionTypeOfReducer<typeof REDUCERS["selectGenes"]> {
+): GetActionTypeOfReducer<(typeof REDUCERS)["selectGenes"]> {
   return {
     payload: genes,
     type: "selectGenes",
@@ -66,7 +58,7 @@ export function selectGenes(
 
 export function addSelectedGenes(
   genes: State["selectedGenes"]
-): GetActionTypeOfReducer<typeof REDUCERS["addSelectedGenes"]> {
+): GetActionTypeOfReducer<(typeof REDUCERS)["addSelectedGenes"]> {
   return {
     payload: genes,
     type: "addSelectedGenes",
@@ -75,7 +67,7 @@ export function addSelectedGenes(
 
 export function selectTissues(
   tissues: State["selectedTissues"]
-): GetActionTypeOfReducer<typeof REDUCERS["selectTissues"]> {
+): GetActionTypeOfReducer<(typeof REDUCERS)["selectTissues"]> {
   return {
     payload: tissues,
     type: "selectTissues",
@@ -84,7 +76,7 @@ export function selectTissues(
 
 export function selectSortBy(
   sortBy: Partial<State["sortBy"]>
-): GetActionTypeOfReducer<typeof REDUCERS["selectSortBy"]> {
+): GetActionTypeOfReducer<(typeof REDUCERS)["selectSortBy"]> {
   return {
     payload: sortBy,
     type: "selectSortBy",
@@ -93,7 +85,7 @@ export function selectSortBy(
 
 export function selectCompare(
   Compare: State["compare"]
-): GetActionTypeOfReducer<typeof REDUCERS["selectCompare"]> {
+): GetActionTypeOfReducer<(typeof REDUCERS)["selectCompare"]> {
   return {
     payload: Compare,
     type: "selectCompare",
@@ -101,7 +93,7 @@ export function selectCompare(
 }
 
 export function resetGenesToDelete(): GetActionTypeOfReducer<
-  typeof REDUCERS["resetGenesToDelete"]
+  (typeof REDUCERS)["resetGenesToDelete"]
 > {
   return {
     payload: null,
@@ -112,7 +104,7 @@ export function resetGenesToDelete(): GetActionTypeOfReducer<
 export function selectFilters(
   key: keyof State["selectedFilters"],
   options: string[]
-): GetActionTypeOfReducer<typeof REDUCERS["selectFilters"]> {
+): GetActionTypeOfReducer<(typeof REDUCERS)["selectFilters"]> {
   return {
     payload: { key, options },
     type: "selectFilters",
@@ -121,7 +113,7 @@ export function selectFilters(
 
 export function setSnapshotId(
   snapshotId: State["snapshotId"]
-): GetActionTypeOfReducer<typeof REDUCERS["setSnapshotId"]> {
+): GetActionTypeOfReducer<(typeof REDUCERS)["setSnapshotId"]> {
   return {
     payload: snapshotId,
     type: "setSnapshotId",
@@ -130,7 +122,7 @@ export function setSnapshotId(
 
 export function addCellInfoCellType(
   payload: AddCellInfoCellTypePayload
-): GetActionTypeOfReducer<typeof REDUCERS["addCellInfoCellType"]> {
+): GetActionTypeOfReducer<(typeof REDUCERS)["addCellInfoCellType"]> {
   return {
     payload,
     type: "addCellInfoCellType",
@@ -139,7 +131,7 @@ export function addCellInfoCellType(
 
 export function addGeneInfoGene(
   payload: string
-): GetActionTypeOfReducer<typeof REDUCERS["addGeneInfoGene"]> {
+): GetActionTypeOfReducer<(typeof REDUCERS)["addGeneInfoGene"]> {
   return {
     payload,
     type: "addGeneInfoGene",
@@ -147,7 +139,7 @@ export function addGeneInfoGene(
 }
 
 export function clearGeneInfoGene(): GetActionTypeOfReducer<
-  typeof REDUCERS["clearGeneInfoGene"]
+  (typeof REDUCERS)["clearGeneInfoGene"]
 > {
   return {
     payload: null,
@@ -156,7 +148,7 @@ export function clearGeneInfoGene(): GetActionTypeOfReducer<
 }
 
 export function clearCellInfoCellType(): GetActionTypeOfReducer<
-  typeof REDUCERS["clearCellInfoCellType"]
+  (typeof REDUCERS)["clearCellInfoCellType"]
 > {
   return {
     payload: null,
@@ -165,7 +157,7 @@ export function clearCellInfoCellType(): GetActionTypeOfReducer<
 }
 
 export function closeRightSidebar(): GetActionTypeOfReducer<
-  typeof REDUCERS["closeRightSidebar"]
+  (typeof REDUCERS)["closeRightSidebar"]
 > {
   return {
     payload: null,
@@ -175,7 +167,7 @@ export function closeRightSidebar(): GetActionTypeOfReducer<
 
 export function selectGeneInfoFromXAxis(
   payload: string
-): GetActionTypeOfReducer<typeof REDUCERS["selectGeneInfoFromXAxis"]> {
+): GetActionTypeOfReducer<(typeof REDUCERS)["selectGeneInfoFromXAxis"]> {
   return {
     payload,
     type: "selectGeneInfoFromXAxis",
@@ -184,7 +176,7 @@ export function selectGeneInfoFromXAxis(
 
 export function loadStateFromURL(
   payload: LoadStateFromURLPayload
-): GetActionTypeOfReducer<typeof REDUCERS["loadStateFromURL"]> {
+): GetActionTypeOfReducer<(typeof REDUCERS)["loadStateFromURL"]> {
   return {
     payload,
     type: "loadStateFromURL",
@@ -193,7 +185,7 @@ export function loadStateFromURL(
 
 export function setXAxisHeight(
   payload: number
-): GetActionTypeOfReducer<typeof REDUCERS["setXAxisHeight"]> {
+): GetActionTypeOfReducer<(typeof REDUCERS)["setXAxisHeight"]> {
   return {
     payload,
     type: "setXAxisHeight",
@@ -201,11 +193,30 @@ export function setXAxisHeight(
 }
 
 export function setFilteredCellTypes(
-  payload: State["filteredCellTypes"]
-): GetActionTypeOfReducer<typeof REDUCERS["setFilteredCellTypes"]> {
+  payload: SetFilteredCellTypesPayload
+): GetActionTypeOfReducer<(typeof REDUCERS)["setFilteredCellTypes"]> {
   return {
     payload,
     type: "setFilteredCellTypes",
+  };
+}
+
+export function toggleExpandedTissueId(payload: {
+  tissueId: string;
+  tissueName: string;
+}): GetActionTypeOfReducer<(typeof REDUCERS)["toggleExpandedTissueId"]> {
+  return {
+    payload,
+    type: "toggleExpandedTissueId",
+  };
+}
+
+export function autoExpandTissues(
+  payload: string[]
+): GetActionTypeOfReducer<(typeof REDUCERS)["autoExpandTissues"]> {
+  return {
+    payload,
+    type: "autoExpandTissues",
   };
 }
 

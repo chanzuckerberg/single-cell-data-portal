@@ -1,33 +1,38 @@
-import { expect, test } from "@playwright/test";
-import { conditionallyRunTests, goToWMG } from "../../utils/wmgUtils";
-
-import { SHARED_LINK_FILTER } from "tests/common/constants";
-import { getTestID } from "tests/utils/selectors";
+import { expect } from "@playwright/test";
+import { expandTissue, getCellTypeNames, goToPage } from "tests/utils/helpers";
+import { TEST_URL } from "tests/common/constants";
+import { ROUTES } from "src/common/constants/routes";
+import {
+  CELL_TYPE_NAME_LABEL_CLASS_NAME,
+  CELL_TYPE_ROW_CLASS_NAME,
+} from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
+import { test } from "tests/common/test";
 const { describe } = test;
+
 describe("cell tooltip", () => {
-  conditionallyRunTests();
-
   test(`Should verify cell tooltip hover`, async ({ page }) => {
-    // set app state
-    const cellName = "cell-type-name";
-    await goToWMG(page, SHARED_LINK_FILTER);
+    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
-    // wait for cell names to load
-    await page.getByTestId(cellName).nth(0).waitFor();
+    const cellName = CELL_TYPE_NAME_LABEL_CLASS_NAME;
+
+    // (thuang): Expand blood tissue to find truncated cell names
+    await expandTissue(page, "blood");
+
+    const cellsAfter = await getCellTypeNames(page);
+
     // get the number of cell names displayed
-    const cells = await page.getByTestId(cellName).allInnerTexts();
 
     let checkedCells = 0;
 
-    //no need to check all truncated cell names
-    for (let i = 0; i < cells.length && checkedCells < 2; i++) {
+    // no need to check all truncated cell names
+    for (let i = 0; i < cellsAfter.length && checkedCells < 2; i++) {
       // skip cells that are not truncated
-      if (!cells[i].includes("...")) continue;
+      if (!cellsAfter[i].includes("...")) continue;
 
       // get the text displayed when user hovers over truncated cell names
       const hoverText =
         (await page
-          .getByTestId("cell-type-label-count")
+          .getByTestId(CELL_TYPE_ROW_CLASS_NAME)
           .nth(i)
           .getByTestId("cell-type-full-name")
           .textContent()) || "no text";
@@ -35,9 +40,7 @@ describe("cell tooltip", () => {
       await page.getByTestId(cellName).nth(i).hover();
 
       //expect the hover text to be displayed
-      await expect(
-        page.locator(getTestID("cell-type-name-tooltip")).getByText(hoverText)
-      ).toBeVisible();
+      await expect(page.getByText(hoverText)).toBeVisible();
 
       checkedCells++;
     }

@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 
 from furl import furl
 
-from backend.layers.business.entities import DatasetArtifactDownloadData
+from backend.layers.business.entities import DatasetArtifactDownloadData, DeprecatedDatasetArtifactDownloadData
 from backend.layers.common.entities import (
     CollectionId,
     CollectionVersionId,
@@ -82,6 +82,7 @@ class TestCollection(BaseAPIPortalTest):
                     "assay": [{"label": "test_assay_label", "ontology_term_id": "test_assay_term_id"}],
                     "batch_condition": ["test_batch_1", "test_batch_2"],
                     "cell_count": 10,
+                    "primary_cell_count": 5,
                     "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
                     "collection_id": collection.collection_id.id,
                     "created_at": mock.ANY,
@@ -132,6 +133,7 @@ class TestCollection(BaseAPIPortalTest):
                     "assay": [{"label": "test_assay_label", "ontology_term_id": "test_assay_term_id"}],
                     "batch_condition": ["test_batch_1", "test_batch_2"],
                     "cell_count": 10,
+                    "primary_cell_count": 5,
                     "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
                     "collection_id": collection.collection_id.id,
                     "created_at": mock.ANY,
@@ -815,6 +817,7 @@ class TestCollection(BaseAPIPortalTest):
         self.assertEqual(actual_collection["id"], collection.collection_id.id)
         self.assertEqual(actual_collection["name"], collection.metadata.name)
         self.assertNotIn("description", actual_collection)
+        self.assertEqual(actual_collection["consortia"], collection.metadata.consortia)
         # Both `published_at` and `revised_at` should point to the same timestamp
         self.assertEqual(actual_collection["published_at"], collection.published_at.timestamp())
         self.assertEqual(actual_collection["revised_at"], collection.published_at.timestamp())
@@ -935,6 +938,10 @@ class TestCollection(BaseAPIPortalTest):
                 self.assertEqual(collection["access_type"], "WRITE")
             else:
                 self.assertEqual(collection["access_type"], "READ")
+
+        # Confirm consortia is included in the response
+        actual_collection = body[-1]  # last collection is private, owned by the user
+        self.assertEqual(actual_collection["consortia"], private_collection.metadata.consortia)
 
     # ✅
     def test__create_collection__InvalidParameters_DOI(self):
@@ -1521,10 +1528,60 @@ class TestCollectionsCurators(BaseAPIPortalTest):
 
 # TODO: these tests all require the generation of a dataset
 class TestDataset(BaseAPIPortalTest):
+    def test__get_dataset_asset__OK(self):
+        file_size = 1000
+        permanent_url = "http://url.url"
+        self.business_logic.get_dataset_artifact_download_data = Mock(
+            return_value=DatasetArtifactDownloadData(file_size, permanent_url)
+        )
+        version = self.generate_dataset(
+            artifacts=[DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad")]
+        )
+        dataset_version_id = version.dataset_version_id
+        artifact_id = version.artifact_ids[0]
+
+        test_url = furl(path=f"/dp/v1/datasets/{dataset_version_id}/asset/{artifact_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(200, response.status_code)
+
+        actual_body = json.loads(response.data)
+        self.assertEqual(actual_body["url"], permanent_url)
+        self.assertEqual(actual_body["file_size"], file_size)
+
+    def test__get_dataset_asset__file_SERVER_ERROR(self):
+        """
+        `get_dataset_asset` should throw 500 if url or file_size aren't returned from the server
+        """
+        version = self.generate_dataset(
+            artifacts=[DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad")]
+        )
+        dataset_version_id = version.dataset_version_id
+        artifact_id = version.artifact_ids[0]
+
+        test_url = furl(path=f"/dp/v1/datasets/{dataset_version_id}/asset/{artifact_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(500, response.status_code)
+
+    def test__get_dataset_asset__dataset_NOT_FOUND(self):
+        fake_id = DatasetVersionId()
+        test_url = furl(path=f"/dp/v1/datasets/{fake_id}/asset/{fake_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(404, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(f"'dataset/{fake_id}' not found.", body["detail"])
+
+    def test__get_dataset_asset__asset_NOT_FOUND(self):
+        dataset = self.generate_dataset()
+        test_url = furl(path=f"/dp/v1/datasets/{dataset.dataset_version_id}/asset/fake_asset")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(404, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(f"'dataset/{dataset.dataset_version_id}/asset/fake_asset' not found.", body["detail"])
+
     # ✅
     def test__post_dataset_asset__OK(self):
-        self.business_logic.get_dataset_artifact_download_data = Mock(
-            return_value=DatasetArtifactDownloadData(
+        self.business_logic.get_dataset_artifact_download_data_deprecated = Mock(
+            return_value=DeprecatedDatasetArtifactDownloadData(
                 "asset.h5ad", DatasetArtifactType.H5AD, 1000, "http://presigned.url"
             )
         )
@@ -1661,6 +1718,7 @@ class TestDataset(BaseAPIPortalTest):
                 actual_dataset["development_stage"], convert_ontology(persisted_dataset.metadata.development_stage)
             )
             self.assertEqual(actual_dataset["cell_count"], persisted_dataset.metadata.cell_count)
+            self.assertEqual(actual_dataset["primary_cell_count"], persisted_dataset.metadata.primary_cell_count)
             self.assertEqual(actual_dataset["cell_type"], convert_ontology(persisted_dataset.metadata.cell_type))
             self.assertEqual(actual_dataset["is_primary_data"], persisted_dataset.metadata.is_primary_data)
             self.assertEqual(actual_dataset["mean_genes_per_cell"], persisted_dataset.metadata.mean_genes_per_cell)
@@ -1922,7 +1980,7 @@ class TestDataset(BaseAPIPortalTest):
         headers = {"host": "localhost", "Content-Type": "application/json"}
 
         with self.subTest("dataset is public"):
-            test_uri_0 = "some_uri_0"
+            test_uri_0 = "s3://some_bucket/some_key_0.cxg"
 
             public_dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri_0)],
@@ -1944,7 +2002,7 @@ class TestDataset(BaseAPIPortalTest):
             self.assertEqual(json.loads(response.data), expected_identifiers)
 
         with self.subTest("dataset is private"):
-            test_uri_1 = "some_uri_1"
+            test_uri_1 = "s3://some_bucket/some_key_1.cxg"
 
             private_dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri_1)],
@@ -1998,7 +2056,7 @@ class TestDataset(BaseAPIPortalTest):
             return json.loads(response.data)
 
         with self.subTest("Dataset belonging to an unpublished collection"):
-            test_uri = "some_uri_0"
+            test_uri = "s3://some_bucket/some_key_0.cxg"
 
             dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
@@ -2016,7 +2074,7 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to an unpublished collection, replaced"):
-            test_uri = "some_uri_0"
+            test_uri = "s3://some_bucket/some_key_0.cxg"
 
             dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
@@ -2046,7 +2104,7 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to a published collection"):
-            test_uri = "some_uri_1"
+            test_uri = "s3://some_bucket/some_key_1.cxg"
 
             dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)], publish=True
@@ -2063,7 +2121,7 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to a revision of a published collection, not replaced"):
-            test_uri = "some_uri_2"
+            test_uri = "s3://some_bucket/some_key_2.cxg"
 
             dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)], publish=True
@@ -2082,7 +2140,7 @@ class TestDataset(BaseAPIPortalTest):
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
         with self.subTest("Dataset belonging to a revision of a published collection, replaced"):
-            test_uri = "some_uri_1"
+            test_uri = "s3://some_bucket/some_key_1.cxg"
 
             dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)], publish=True
@@ -2122,7 +2180,7 @@ class TestDataset(BaseAPIPortalTest):
             """
             If a dataset appears in multiple collection versions, the most recent one will be returned.
             """
-            test_uri = "some_uri_1"
+            test_uri = "s3://some_bucket/some_key_1.cxg"
 
             dataset = self.generate_dataset(
                 artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)], publish=True

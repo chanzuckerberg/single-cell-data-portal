@@ -6,7 +6,7 @@ import unittest
 import requests
 from requests import HTTPError
 
-from tests.functional.backend.common import BaseFunctionalTestCase
+from tests.functional.backend.common import TEST_DATASET_URI, BaseFunctionalTestCase
 
 
 class TestApi(BaseFunctionalTestCase):
@@ -18,7 +18,7 @@ class TestApi(BaseFunctionalTestCase):
         res = self.session.get(f"{self.api}/dp/v1/deployed_version")
         res.raise_for_status()
         self.assertStatusCode(requests.codes.ok, res)
-        self.assertIsNotNone(res.json()["Data Portal"])
+        self.assertTrue(len(res.json()["Data Portal"]) > 0)
 
     def test_auth(self):
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
@@ -26,7 +26,7 @@ class TestApi(BaseFunctionalTestCase):
         res.raise_for_status()
         self.assertStatusCode(requests.codes.ok, res)
         data = json.loads(res.content)
-        self.assertEqual(data["email"], "user@example.com")
+        self.assertEqual(data["email"], "functest@example.com")
 
     def test_root_route(self):
         res = self.session.get(f"{self.api}/")
@@ -94,7 +94,7 @@ class TestApi(BaseFunctionalTestCase):
             for key in updated_data:
                 self.assertEqual(updated_data[key], data[key])
 
-        self.upload_and_wait(collection_id, "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0")
+        self.upload_and_wait(collection_id, TEST_DATASET_URI)
 
         # make collection public
         with self.subTest("Test make collection public"):
@@ -134,6 +134,7 @@ class TestApi(BaseFunctionalTestCase):
             res = self.session.get(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
             self.assertStatusCode(requests.codes.ok, res)
 
+    @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
     def test_delete_private_collection(self):
         # create collection
         data = {
@@ -177,6 +178,7 @@ class TestApi(BaseFunctionalTestCase):
         collection_ids = [x["id"] for x in data["collections"]]
         self.assertNotIn(collection_id, collection_ids)
 
+    @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
     def test_dataset_upload_flow(self):
         body = {
             "contact_email": "lisbon@gmail.com",
@@ -198,7 +200,7 @@ class TestApi(BaseFunctionalTestCase):
         self.assertStatusCode(requests.codes.created, res)
         self.assertIn("collection_id", data)
 
-        body = {"url": "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0"}
+        body = {"url": TEST_DATASET_URI}
 
         res = self.session.post(
             f"{self.api}/dp/v1/collections/{collection_id}/upload-links", data=json.dumps(body), headers=headers

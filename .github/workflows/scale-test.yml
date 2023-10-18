@@ -7,8 +7,11 @@ on:
 jobs:
   locust-build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
         with:

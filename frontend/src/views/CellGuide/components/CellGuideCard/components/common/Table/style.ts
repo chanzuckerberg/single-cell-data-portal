@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
-import { fontBodyS, getColors, getSpaces } from "@czi-sds/components";
+import { CommonThemeProps, fontBodyS, getColors } from "@czi-sds/components";
+import { gray100, gray200, spacesS } from "src/common/theme";
 
 export const StyledTable = styled.table`
   width: 100%;
@@ -7,7 +8,6 @@ export const StyledTable = styled.table`
 `;
 
 export const TableWrapper = styled.div`
-  max-height: 500px;
   overflow-y: auto;
 `;
 
@@ -19,38 +19,43 @@ export const StyledHead = styled.thead`
 export const StyledHeadCell = styled.th`
   ${fontBodyS}
   font-weight: 500;
+  white-space: nowrap;
+  padding-top: ${spacesS}px;
+  padding-bottom: ${spacesS}px;
   ${(props) => {
     const colors = getColors(props);
-    const spacings = getSpaces(props);
 
     return `
     color: ${colors?.gray[500]};
-    padding: ${spacings?.s}px ${spacings?.m}px ${spacings?.s}px ${spacings?.m}px;`;
+    `;
   }}
 `;
 
-interface StyledRowProps {
+interface StyledRowProps extends CommonThemeProps {
   highlight: boolean;
 }
 export const StyledRow = styled.tr<StyledRowProps>`
-  background-color: ${(props) => (props.highlight ? "#F8F8F8" : "white")};
+  background-color: ${(props) => (props.highlight ? gray100(props) : "white")};
+  .hover-button {
+    visibility: hidden;
+    transition: visibility 0s ease;
+  }
+  &:hover .hover-button {
+    visibility: visible;
+  }
+  &:hover {
+    background-color: ${gray200};
+  }
 `;
 
 export const StyledCell = styled.td`
   ${fontBodyS}
   font-weight: 400;
-  ${(props) => {
-    const spacings = getSpaces(props);
-    return `padding: ${spacings?.s}px ${spacings?.m}px ${spacings?.s}px ${spacings?.m}px;
-    `;
-  }}
-  min-width: 120px;
-  word-break: break-word;
-  overflow-wrap: break-word;
+  padding-top: ${spacesS}px;
+  padding-bottom: ${spacesS}px;
   vertical-align: top;
 
   a {
     display: inline-block;
-    overflow-wrap: break-word;
   }
 `;

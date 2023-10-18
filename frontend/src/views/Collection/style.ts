@@ -1,12 +1,6 @@
 import styled from "@emotion/styled";
-import {
-  CommonThemeProps,
-  fontBodyS,
-  fontHeaderXl,
-  getSpaces,
-} from "@czi-sds/components";
-
-const spacesXxl = (props: CommonThemeProps) => getSpaces(props)?.xxl;
+import { fontBodyS, fontHeaderXl } from "@czi-sds/components";
+import { spacesXxl } from "src/common/theme";
 
 export const CollectionView = styled.div`
   padding: ${spacesXxl}px;

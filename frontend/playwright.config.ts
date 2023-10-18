@@ -7,9 +7,16 @@ import {
 } from "@playwright/test";
 import { matchers } from "expect-playwright";
 import fs from "fs";
-import { LOGIN_STATE_FILENAME } from "tests/common/constants";
+import { LOGIN_STATE_FILENAME, TEST_ENV } from "tests/common/constants";
 import { COMMON_PLAYWRIGHT_CONTEXT } from "tests/common/context";
-import featureFlags from "./tests/common/featureFlags";
+import { getFeatureFlags } from "tests/common/featureFlags";
+import { SKIP_LOGIN } from "tests/common/constants";
+
+/**
+ * (thuang): Playwright takes retries as part of the maxFailures count, so we
+ * need to set maxFailures to a high number to allow retries.
+ */
+const CICD_MAX_FAILURE = 5;
 
 expect.extend(matchers);
 
@@ -53,7 +60,12 @@ if (!SHOULD_RETRY) {
 
 // 'github' for GitHub Actions CI to generate annotations, default otherwise
 const PLAYWRIGHT_REPORTER = process.env.CI
-  ? ([["github"], ["line"], ["allure-playwright"]] as ReporterDescription[])
+  ? ([
+      ["blob"],
+      ["github"],
+      ["line"],
+      ["allure-playwright"],
+    ] as ReporterDescription[])
   : ([
       ["list"],
       [
@@ -66,6 +78,8 @@ const PLAYWRIGHT_REPORTER = process.env.CI
         },
       ],
     ] as ReporterDescription[]);
+
+const extraHTTPHeaders = getExtraHTTPHeaders();
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -91,8 +105,16 @@ const config: PlaywrightTestConfig = {
   /* Configure projects for major browsers */
   projects: [
     {
+      name: "preSetup",
+      testMatch: "**/*.preSetup.ts",
+    },
+    {
       name: "setup",
+      dependencies: ["preSetup"],
       testMatch: "**/*.setup.ts",
+      use: {
+        extraHTTPHeaders,
+      },
     },
     {
       name: "chromium",
@@ -101,6 +123,7 @@ const config: PlaywrightTestConfig = {
         ...devices["Desktop Chrome"],
         userAgent: devices["Desktop Chrome"].userAgent + CZI_CHECKER,
         permissions: CLIPBOARD_PERMISSIONS,
+        extraHTTPHeaders,
       },
     },
     {
@@ -109,6 +132,7 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices["Desktop Firefox"],
         userAgent: devices["Desktop Firefox"].userAgent + CZI_CHECKER,
+        extraHTTPHeaders,
       },
     },
     {
@@ -118,6 +142,7 @@ const config: PlaywrightTestConfig = {
         ...devices["Desktop Edge"],
         userAgent: devices["Desktop Edge"].userAgent + CZI_CHECKER,
         permissions: CLIPBOARD_PERMISSIONS,
+        extraHTTPHeaders,
       },
     },
   ],
@@ -164,6 +189,7 @@ const config: PlaywrightTestConfig = {
   //   command: 'npm run start',
   //   port: 3000,
   // },
+  maxFailures: process.env.CI ? CICD_MAX_FAILURE : undefined,
 };
 
 function getStorageState(): {
@@ -206,24 +232,45 @@ function getStorageState(): {
     }>;
   }>;
 } {
-  const storageState = featureFlags;
-
-  if (fs.existsSync(LOGIN_STATE_FILENAME)) {
+  /**
+   * (thuang): Don't login and set `curator` feature flag to `true`,
+   * if `SKIP_LOGIN` is set to `true`.
+   * This way we avoid calling Auth0 and save the Auth0 rate limiting quota
+   */
+  if (!SKIP_LOGIN && fs.existsSync(LOGIN_STATE_FILENAME)) {
     const loginState = JSON.parse(
       fs.readFileSync(LOGIN_STATE_FILENAME, "utf-8")
     );
 
+    const storageState = getFeatureFlags({ curator: true });
     // Merge loginState with featureFlags
-    storageState.cookies = storageState.cookies.concat(loginState.cookies);
-    storageState.origins = storageState.origins.concat(loginState.origins);
+    storageState.cookies = [...storageState.cookies, ...loginState.cookies];
+    storageState.origins = [...storageState.origins, ...loginState.origins];
+
+    return storageState;
   }
 
   // For testing auth tests locally with a manual cookie
   if (process.env.USE_COOKIE === "true") {
+    const storageState = getFeatureFlags({ curator: true });
     storageState.cookies = MANUAL_COOKIE;
+
+    return storageState;
   }
 
-  return storageState;
+  /**
+   * (thuang): By default `curator` feature flag is `false`, so we don't call
+   * Auth0 and save the Auth0 rate limiting quota
+   */
+  return getFeatureFlags();
+}
+
+function getExtraHTTPHeaders(): { [key: string]: string } {
+  if (TEST_ENV !== "rdev") return {};
+
+  return {
+    Authorization: "Bearer " + process.env.ACCESS_TOKEN,
+  };
 }
 
 export default defineConfig(config);

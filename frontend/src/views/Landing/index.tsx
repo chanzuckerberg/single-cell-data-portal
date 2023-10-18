@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { useInView } from "react-intersection-observer";
 // 4513(thuang): Comment out frameSrc for now until we figure out a compliant way to embed
 // import TweetEmbed from "react-tweet-embed";
@@ -26,36 +26,93 @@ import GeneExpressionIcon from "./icons/gene-expression";
 import SingleCellDataIconActive from "./icons/single-cell-data-active";
 import SingleCellDataIconInactive from "./icons/single-cell-data-inactive";
 import styles from "./index.module.scss";
+import { useViewMode } from "src/common/hooks/useViewMode";
+import { useFetchDatasets } from "src/common/queries/filter";
+import {
+  LANDING_PAGE_CELLS_HERO_NUM_ID,
+  LANDING_PAGE_CELLTYPES_HERO_NUM_ID,
+  LANDING_PAGE_DATASETS_HERO_NUM_ID,
+  LANDING_PAGE_FALLBACK_CELLS_HERO_NUM,
+  LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM,
+  LANDING_PAGE_FALLBACK_DATASETS_HERO_NUM,
+} from "./constants";
+
+const ROOT_MARGIN = "-50% 0px -50% 0px";
 
 const LandingPage = (): JSX.Element => {
   const { ref: observerSection1, inView: inView1 } = useInView({
-    rootMargin: "-50% 0px -50% 0px",
+    rootMargin: ROOT_MARGIN,
   });
-  const scrollSection1 = useRef<HTMLDivElement>(null!);
+  const scrollSection1 = useRef<HTMLDivElement>(null);
 
   const { ref: observerSection2, inView: inView2 } = useInView({
-    rootMargin: "-50% 0px -50% 0px",
+    rootMargin: ROOT_MARGIN,
   });
-  const scrollSection2 = useRef<HTMLDivElement>(null!);
+  const scrollSection2 = useRef<HTMLDivElement>(null);
 
   const { ref: observerSection3, inView: inView3 } = useInView({
-    rootMargin: "-50% 0px -50% 0px",
+    rootMargin: ROOT_MARGIN,
   });
-  const scrollSection3 = useRef<HTMLDivElement>(null!);
+  const scrollSection3 = useRef<HTMLDivElement>(null);
 
   const { ref: observerSection4, inView: inView4 } = useInView({
-    rootMargin: "-50% 0px -50% 0px",
+    rootMargin: ROOT_MARGIN,
   });
-  const scrollSection4 = useRef<HTMLDivElement>(null!);
+  const scrollSection4 = useRef<HTMLDivElement>(null);
 
   const { ref: observerSection5, inView: inView5 } = useInView({
-    rootMargin: "-50% 0px -50% 0px",
+    rootMargin: ROOT_MARGIN,
   });
-  const scrollSection5 = useRef<HTMLDivElement>(null!);
+  const scrollSection5 = useRef<HTMLDivElement>(null);
 
-  const [cellsHeroNum] = useState("45M");
-  const [datasetsHeroNum] = useState("842");
-  const [cellTypesHeroNum] = useState("682");
+  const { mode, status } = useViewMode();
+  const { data, isLoading, isSuccess } = useFetchDatasets(mode, status);
+
+  const cellsHeroNum: string | null = useMemo(() => {
+    if (isLoading || !data || !isSuccess)
+      return LANDING_PAGE_FALLBACK_CELLS_HERO_NUM;
+    const total = data.reduce(
+      (acc, curr) => acc + (curr.primary_cell_count ?? 0),
+      0
+    );
+
+    if (total === 0) return LANDING_PAGE_FALLBACK_CELLS_HERO_NUM;
+
+    const formatter = new Intl.NumberFormat("en", {
+      notation: "compact",
+      compactDisplay: "short",
+      maximumFractionDigits: 1,
+    });
+    return formatter.format(total);
+  }, [data, isLoading, isSuccess]);
+
+  const cellTypesHeroNum: string | null = useMemo(() => {
+    if (isLoading || !data || !isSuccess)
+      return LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM;
+    // add the cell types to the set and then get the length of the set
+    const unique_cell_types = new Set();
+    data.forEach((dataset) => {
+      dataset.cell_type.forEach((cell_type) => {
+        unique_cell_types.add(cell_type.ontology_term_id);
+      });
+    });
+    if (unique_cell_types.size === 0) {
+      return LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM;
+    }
+    return `${unique_cell_types.size}`;
+  }, [data, isLoading, isSuccess]);
+
+  const datasetsHeroNum: string | null = useMemo(() => {
+    if (isLoading || !data || !isSuccess || Object.keys(data).length === 0) {
+      return LANDING_PAGE_FALLBACK_DATASETS_HERO_NUM;
+    }
+    // add the cell types to the set and then get the length of the set
+    return `${Object.keys(data).length}`;
+  }, [data, isLoading, isSuccess]);
+
+  const SUB_HEADING = "13.05.22 - CZ CELLxGENE";
+
+  const CTA_TEXT_EXPLORE_DATASETS = "Explore Datasets";
 
   const publications = [
     {
@@ -77,10 +134,10 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - CZ CELLxGENE",
+          subheading: SUB_HEADING,
           ctaLink:
             "https://cellxgene.cziscience.com/collections/e5f58829-1a66-40b5-a624-9046778e74f5",
-          ctaText: "Explore Datasets",
+          ctaText: CTA_TEXT_EXPLORE_DATASETS,
           ctaHighlight: true,
           ctaLogo: true,
         },
@@ -105,10 +162,10 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - CZ CELLxGENE",
+          subheading: SUB_HEADING,
           ctaLink:
             "https://cellxgene.cziscience.com/collections/62ef75e4-cbea-454e-a0ce-998ec40223d3",
-          ctaText: "Explore Datasets",
+          ctaText: CTA_TEXT_EXPLORE_DATASETS,
           ctaHighlight: true,
           ctaLogo: true,
         },
@@ -125,10 +182,10 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - CZ CELLxGENE",
+          subheading: SUB_HEADING,
           ctaLink:
             "https://cellxgene.cziscience.com/collections/6f6d381a-7701-4781-935c-db10d30de293",
-          ctaText: "Explore Datasets",
+          ctaText: CTA_TEXT_EXPLORE_DATASETS,
           ctaHighlight: true,
           ctaLogo: true,
         },
@@ -146,10 +203,10 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - CZ CELLxGENE",
+          subheading: SUB_HEADING,
           ctaLink:
             "https://cellxgene.cziscience.com/collections/dde06e0f-ab3b-46be-96a2-a8082383c4a1",
-          ctaText: "Explore Datasets",
+          ctaText: CTA_TEXT_EXPLORE_DATASETS,
           ctaHighlight: true,
           ctaLogo: true,
         },
@@ -167,10 +224,10 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - CZ CELLxGENE",
+          subheading: SUB_HEADING,
           ctaLink:
             "https://cellxgene.cziscience.com/collections/436154da-bcf1-4130-9c8b-120ff9a888f2",
-          ctaText: "Explore Datasets",
+          ctaText: CTA_TEXT_EXPLORE_DATASETS,
           ctaHighlight: true,
           ctaLogo: true,
         },
@@ -260,15 +317,21 @@ const LandingPage = (): JSX.Element => {
             <div className={styles.heroStatsContainer}>
               <div>
                 <span>unique cells</span>
-                <p>{cellsHeroNum}</p>
+                <p data-testid={LANDING_PAGE_CELLS_HERO_NUM_ID}>
+                  {cellsHeroNum}
+                </p>
               </div>
               <div>
                 <span>datasets</span>
-                <p>{datasetsHeroNum}</p>
+                <p data-testid={LANDING_PAGE_DATASETS_HERO_NUM_ID}>
+                  {datasetsHeroNum}
+                </p>
               </div>
               <div>
                 <span>cell types</span>
-                <p>{cellTypesHeroNum}</p>
+                <p data-testid={LANDING_PAGE_CELLTYPES_HERO_NUM_ID}>
+                  {cellTypesHeroNum}
+                </p>
               </div>
             </div>
           </div>

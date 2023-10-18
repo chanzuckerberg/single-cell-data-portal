@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from typing import Optional
 
 import requests
 
@@ -18,7 +19,7 @@ aws_sfn_url_fmt_str = (
 )
 
 
-def notify_slack(data: dict):
+def notify_slack(data: dict, slack_webhook: Optional[str] = None):
     """
     This will only create a slack notification if called in the production env
     In all other envs (and in prod) it will simply log alert data
@@ -26,7 +27,8 @@ def notify_slack(data: dict):
     msg = json.dumps(data, indent=2)
     logger.info(f"Slack notification function called with message: {msg}")
     if os.getenv("DEPLOYMENT_STAGE") == "prod":
-        slack_webhook = CorporaConfig().slack_webhook
+        if slack_webhook is None:
+            slack_webhook = CorporaConfig().slack_webhook
         requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=msg)
 
 

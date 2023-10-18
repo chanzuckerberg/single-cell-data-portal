@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { fontWeightSemibold } from "src/common/theme";
 import { SideBarPositioner as RawSideBarPositioner } from "src/components/common/SideBar/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
@@ -7,6 +8,7 @@ export const SIDEBAR_BOX_SHADOW_COLOR = "rgba(16, 22, 26, 0.15)";
 export const RightSideBarPositioner = styled(RawSideBarPositioner)`
   max-height: ${sectionMaxheight};
   box-shadow: inset 0px 1px 0px ${SIDEBAR_BOX_SHADOW_COLOR};
+  overscroll-behavior: none;
 `;
 
 export const HeaderContainer = styled.div`
@@ -16,7 +18,7 @@ export const HeaderContainer = styled.div`
 `;
 
 export const StyledTitle = styled.div`
-  font-weight: 600;
+  font-weight: ${fontWeightSemibold};
   font-size: 20px;
   line-height: 24px;
 `;

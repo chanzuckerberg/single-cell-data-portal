@@ -1,4 +1,11 @@
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
@@ -34,6 +41,15 @@ import {
   Wrapper,
   TissueLabel,
 } from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/style";
+import {
+  CELL_COUNT_LABEL_CLASS_NAME,
+  CELL_TYPE_ROW_CLASS_NAME,
+  TISSUE_ROW_CLASS_NAME,
+  TISSUE_NAME_LABEL_CLASS_NAME,
+  CELL_TYPE_NAME_LABEL_CLASS_NAME,
+} from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
+import { formatCitation } from "src/common/utils/formatCitation";
+import { StateContext } from "src/views/WheresMyGene/common/store";
 
 interface Props {
   cellTypes: CellTypeRow[];
@@ -41,8 +57,7 @@ interface Props {
   tissueID: string;
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
   handleExpandCollapse: (tissueID: string, tissueName: Tissue) => void;
-  expandedTissues: Set<Tissue>;
-  selectedOrganismId: string;
+  expandedTissueIds: string[];
 }
 
 // List of Tissues to exclude from FMG
@@ -53,7 +68,7 @@ export default memo(function YAxisChart({
   tissue,
   generateMarkerGenes,
   handleExpandCollapse,
-  expandedTissues,
+  expandedTissueIds,
   tissueID,
 }: Props): JSX.Element {
   const tissueKey = hyphenize(tissue);
@@ -70,6 +85,7 @@ export default memo(function YAxisChart({
   const cellTypeMetadata = useMemo(() => {
     return getAllSerializedCellTypeMetadata(cellTypes, tissue);
   }, [cellTypes, tissue]);
+  const { compare } = useContext(StateContext);
 
   return (
     <Wrapper id={`${hyphenize(tissue)}-y-axis`}>
@@ -81,16 +97,18 @@ export default memo(function YAxisChart({
           .slice()
           .reverse()
           .map((cellType) => {
-            const { name } = deserializeCellTypeMetadata(
+            const { name, isAggregated } = deserializeCellTypeMetadata(
               cellType as CellTypeMetadata
             );
-
             const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
             const selectedFont = `${fontWeight} ${fontSize}px ${fontFamily}`;
-            const expanded = expandedTissues.has(tissueID);
-
+            const expanded = expandedTissueIds.includes(tissueID);
+            let formattedName = name;
+            if (compare && compare === "publication" && !isAggregated) {
+              formattedName = formatCitation(name);
+            }
             const { text: paddedName } = formatLabel(
-              name,
+              formattedName,
               Y_AXIS_CHART_WIDTH_PX - 90, // scale based on y-axis width
               selectedFont // prevents selected style from overlapping count
             );
@@ -152,8 +170,8 @@ const TissueHeaderButton = ({
 
   return (
     <FlexRowJustified
-      className="cell-type-label-count"
-      data-testid="cell-type-label-count"
+      className={TISSUE_ROW_CLASS_NAME}
+      data-testid={TISSUE_ROW_CLASS_NAME}
     >
       <FlexRow
         onClick={useCallback(() => {
@@ -169,15 +187,18 @@ const TissueHeaderButton = ({
         <TissueHeaderLabelStyle>
           <div>
             <TissueLabel
-              className="cell-type-name"
-              data-testid="cell-type-name"
+              className={TISSUE_NAME_LABEL_CLASS_NAME}
+              data-testid={TISSUE_NAME_LABEL_CLASS_NAME}
             >
               {capitalize(formattedName)}
             </TissueLabel>
           </div>
         </TissueHeaderLabelStyle>
       </FlexRow>
-      <CellCountLabelStyle className="cell-count" data-testid="cell-count">
+      <CellCountLabelStyle
+        className={CELL_COUNT_LABEL_CLASS_NAME}
+        data-testid={CELL_COUNT_LABEL_CLASS_NAME}
+      >
         {countString}
       </CellCountLabelStyle>
     </FlexRowJustified>
@@ -211,8 +232,8 @@ const CellTypeButton = ({
 
   return (
     <FlexRowJustified
-      className="cell-type-label-count"
-      data-testid="cell-type-label-count"
+      className={CELL_TYPE_ROW_CLASS_NAME}
+      data-testid={CELL_TYPE_ROW_CLASS_NAME}
     >
       <FlexRow>
         <CellTypeLabelStyle>
@@ -236,7 +257,10 @@ const CellTypeButton = ({
                   {name}
                 </HiddenCellTypeLabelStyle>
               )}
-              <div className="cell-type-name" data-testid="cell-type-name">
+              <div
+                className={CELL_TYPE_NAME_LABEL_CLASS_NAME}
+                data-testid={CELL_TYPE_NAME_LABEL_CLASS_NAME}
+              >
                 {formattedName}
               </div>
             </div>
@@ -273,7 +297,10 @@ const CellTypeButton = ({
             </InfoButtonWrapper>
           )}
       </FlexRow>
-      <CellCountLabelStyle className="cell-count" data-testid="cell-count">
+      <CellCountLabelStyle
+        className={CELL_COUNT_LABEL_CLASS_NAME}
+        data-testid={CELL_COUNT_LABEL_CLASS_NAME}
+      >
         {countString}
       </CellCountLabelStyle>
     </FlexRowJustified>

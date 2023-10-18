@@ -1,16 +1,9 @@
 import { Classes, InputGroup } from "@blueprintjs/core";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import {
-  ButtonIcon,
-  CommonThemeProps,
-  getColors,
-  getSpaces,
-} from "@czi-sds/components";
+import { ButtonIcon, getColors } from "@czi-sds/components";
 import { GRAY, LIGHT_GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
-
-const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
-const spacesXxs = (props: CommonThemeProps) => getSpaces(props)?.xxs;
+import { spacesS, spacesXxs } from "src/common/theme";
 
 export const ViewSearch = styled(InputGroup)`
   &.${Classes.INPUT_GROUP} {

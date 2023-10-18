@@ -26,6 +26,7 @@ import {
 } from "src/components/common/Filter/common/constants";
 import {
   Categories,
+  CATEGORY_VALUE_KEY,
   CollectionRow,
   DatasetRow,
 } from "src/components/common/Filter/common/entities";
@@ -72,6 +73,7 @@ type CollectionRevisionIdByCollectionId = Map<
  * Model of /collections/index JSON response.
  */
 export interface CollectionResponse {
+  consortia: string[];
   id: string;
   name: string;
   published_at: number;
@@ -98,10 +100,10 @@ export type ProcessedCollectionResponse = (
   | CollectionResponse
   | UserCollectionResponse
 ) & {
-  publicationAuthors: string[];
   publicationDateValues: number[];
   revisedBy?: string;
   status?: COLLECTION_STATUS[];
+  summaryCitation: string;
 };
 
 /**
@@ -110,6 +112,7 @@ export type ProcessedCollectionResponse = (
 export interface DatasetResponse {
   assay: Ontology[];
   cell_count: number | null;
+  primary_cell_count: number | null;
   cell_type: Ontology[];
   cell_type_ancestors: string[];
   collection_id: string;
@@ -413,10 +416,8 @@ function buildCollectionRows(
       collection?.publisher_metadata
     );
 
-    // Build the summary citation from the collection's publication metadata, if any.
-    const summaryCitation = buildSummaryCitation(
-      collection?.publisher_metadata
-    );
+    // Add "no consortium" value if collection has no consortium.
+    const consortia = buildConsortia(collection);
 
     // Calculate test ID
     const testId = createCollectionRowTestId(collection);
@@ -425,8 +426,8 @@ function buildCollectionRows(
     const collectionRow = sortCategoryValues({
       ...collection,
       ...aggregatedCategoryValues,
+      consortia,
       recency,
-      summaryCitation,
       testId,
     });
     collectionRows.push(collectionRow);
@@ -484,17 +485,34 @@ function buildDatasetRow(
   // Calculate recency for sorting.
   const recency = calculateRecency(dataset, collection?.publisher_metadata);
 
+  // Determine consortia for dataset.
+  const consortia = buildConsortia(collection);
+
   // Join!
   const datasetRow = {
     ...dataset,
     cell_count: dataset.cell_count ?? 0,
     collection_name: collection?.name ?? "-",
+    consortia,
     isOverMaxCellCount: checkIsOverMaxCellCount(dataset.cell_count),
-    publicationAuthors: collection?.publicationAuthors,
     publicationDateValues,
     recency,
+    summaryCitation:
+      collection?.summaryCitation ?? CATEGORY_VALUE_KEY.NO_PUBLICATION,
   };
   return sortCategoryValues(datasetRow);
+}
+
+/**
+ * Build up array of consortia: use consortia from collection if available, otherwise use "no consortium" value.
+ * @param collection - Collection response returned from endpoint that has been processed to include additional
+ * FE-specific values.
+ */
+function buildConsortia(collection?: ProcessedCollectionResponse): string[] {
+  if (collection?.consortia && collection.consortia.length > 0) {
+    return collection.consortia;
+  }
+  return [CATEGORY_VALUE_KEY.NO_CONSORTIUM];
 }
 
 /**
@@ -506,7 +524,7 @@ export function buildSummaryCitation(
   publisherMetadata?: PublisherMetadata
 ): string {
   if (!publisherMetadata) {
-    return "";
+    return CATEGORY_VALUE_KEY.NO_PUBLICATION;
   }
 
   const citationTokens = [];
@@ -622,18 +640,6 @@ export function deletePrivateCollectionsById(
     }
   }
   return publishedCollectionsById;
-}
-
-/**
- * Concat author first and last names to facilitate filter. Ignore authors with a `name` attribute as this indicates
- * author is a consortium which are not to be included in the filter.
- * @param authors - Array of collection publication authors.
- * @returns Array of strings containing author first and last names.
- */
-function expandPublicationAuthors(authors: (Author | Consortium)[]): string[] {
-  return authors
-    .filter(isAuthorPerson)
-    .map((author: Author) => `${author.family}, ${author.given}`);
 }
 
 /**
@@ -923,6 +929,9 @@ function processCollectionResponse(
     collection.publisher_metadata
   );
 
+  // Add "no consortium" value if collection has no consortium.
+  const consortia = collection.consortia ?? [CATEGORY_VALUE_KEY.NO_CONSORTIUM];
+
   // Calculate date bins and add to "processed" collection model.
   const publicationDateValues = expandPublicationDateValues(
     todayMonth,
@@ -931,15 +940,14 @@ function processCollectionResponse(
     publicationYear
   );
 
-  // Determine the set of authors of the publication.
-  const publicationAuthors = expandPublicationAuthors(
-    collection?.publisher_metadata?.authors ?? []
-  );
+  // Build the summary citation from the collection's publication metadata, if any.
+  const summaryCitation = buildSummaryCitation(collection?.publisher_metadata);
 
   return {
     ...collection,
-    publicationAuthors,
+    consortia,
     publicationDateValues,
+    summaryCitation,
   };
 }
 

@@ -15,11 +15,11 @@ import {
   getCompareOptionNameById,
   HEATMAP_CONTAINER_ID,
   X_AXIS_CHART_HEIGHT_PX,
+  X_AXIS_CHART_HEIGHT_PX_SVG,
 } from "src/views/WheresMyGene/common/constants";
 import { CellType, ChartProps } from "src/views/WheresMyGene/common/types";
 
 import { Label } from "../../style";
-import { StyledButtonIcon } from "../QuickSelect/style";
 import {
   ButtonWrapper,
   DownloadButton,
@@ -69,6 +69,7 @@ import {
   getHeatmapWidth,
 } from "src/views/WheresMyGene/components/HeatMap/utils";
 import { CHART_PADDING_PX } from "src/views/WheresMyGene/components/HeatMap/style";
+import { StyledButtonIcon } from "../ShareButton/style";
 
 let heatmapContainerScrollTop: number | undefined;
 
@@ -110,7 +111,7 @@ export interface Props {
   allChartProps: { [tissue: string]: ChartProps };
   availableFilters: Partial<FilterDimensions>;
   tissues: { [name: string]: OntologyTerm };
-  expandedTissues: Set<string>;
+  expandedTissueIds: string[];
   filteredCellTypes: string[];
 }
 
@@ -127,7 +128,7 @@ export default function SaveExport({
   allChartProps,
   availableFilters,
   tissues,
-  expandedTissues,
+  expandedTissueIds,
   filteredCellTypes,
 }: Props): JSX.Element {
   const { selectedFilters, selectedOrganismId, compare } =
@@ -203,7 +204,7 @@ export default function SaveExport({
         setEchartsRendererMode,
         setDownloadStatus,
         tissues,
-        expandedTissues,
+        expandedTissueIds,
         filteredCellTypes,
       }),
       MUTATION_OBSERVER_TIMEOUT
@@ -234,7 +235,7 @@ export default function SaveExport({
     selectedOrganismId,
     setEchartsRendererMode,
     tissues,
-    expandedTissues,
+    expandedTissueIds,
     filteredCellTypes,
   ]);
 
@@ -331,14 +332,14 @@ function generateSvg({
   tissueNames,
   tissuesByName,
   selectedCellTypes,
-  expandedTissues,
+  expandedTissueIds,
 }: {
   svg: string;
   heatmapWidth: number;
   tissueNames: string[];
   tissuesByName: { [name: string]: OntologyTerm };
   selectedCellTypes: Props["selectedCellTypes"];
-  expandedTissues: Set<string>;
+  expandedTissueIds: string[];
 }) {
   const heatmapNode = new DOMParser().parseFromString(svg, "image/svg+xml");
   const heatmapContainer = heatmapNode
@@ -373,9 +374,12 @@ function generateSvg({
     // If tissue is expanded, then use the heatmap height + padding
     // If tissue is NOT expanded, then just add padding
 
-    const heatmapHeight = expandedTissues.has(tissuesByName[tissueName].id)
-      ? getHeatmapHeight(selectedCellTypes[tissueName]) + X_AXIS_CHART_HEIGHT_PX
-      : X_AXIS_CHART_HEIGHT_PX;
+    const heatmapHeight = expandedTissueIds.includes(
+      tissuesByName[tissueName].id
+    )
+      ? getHeatmapHeight(selectedCellTypes[tissueName]) +
+        X_AXIS_CHART_HEIGHT_PX_SVG
+      : X_AXIS_CHART_HEIGHT_PX_SVG;
 
     // Render elements to SVG
     const yAxisSvg = renderYAxis({
@@ -508,7 +512,7 @@ async function generateImage({
   tissueNames,
   tissuesByName,
   selectedCellTypes,
-  expandedTissues,
+  expandedTissueIds,
 }: {
   fileType: string;
   heatmapNode: HTMLDivElement;
@@ -517,7 +521,7 @@ async function generateImage({
   tissueNames: string[];
   tissuesByName: { [name: string]: OntologyTerm };
   selectedCellTypes: Props["selectedCellTypes"];
-  expandedTissues: Set<string>;
+  expandedTissueIds: string[];
 }): Promise<string | ArrayBuffer> {
   const convertHTMLtoImage = fileType === "png" ? toPng : toSvg;
 
@@ -538,7 +542,7 @@ async function generateImage({
       tissueNames,
       tissuesByName,
       selectedCellTypes,
-      expandedTissues,
+      expandedTissueIds,
     });
   } else if (fileType === "png" && isMultipleFormatDownload) {
     input = base64URLToArrayBuffer(imageURL);
@@ -603,7 +607,7 @@ function download_({
   setDownloadStatus,
   setEchartsRendererMode,
   tissues: rawTissues,
-  expandedTissues,
+  expandedTissueIds,
   filteredCellTypes,
 }: {
   allChartProps: { [tissue: string]: ChartProps };
@@ -625,7 +629,7 @@ function download_({
   >;
   setEchartsRendererMode: (mode: "canvas" | "svg") => void;
   tissues: { [name: string]: OntologyTerm };
-  expandedTissues: Set<string>;
+  expandedTissueIds: string[];
   filteredCellTypes: string[];
 }) {
   return async () => {
@@ -693,7 +697,7 @@ function download_({
                   tissueNames,
                   tissuesByName: rawTissues,
                   selectedCellTypes,
-                  expandedTissues,
+                  expandedTissueIds,
                 });
               }
 
@@ -732,7 +736,7 @@ function download_({
         publication_filter: selectedFilters.publications,
         sex_filter: selectedFilters.sexes,
         group_by_option: getCompareOptionNameById(compare),
-        tissues_expanded: expandedTissues,
+        tissues_expanded: expandedTissueIds,
         tissue_filter: selectedFilters.tissues,
         genes: selectedGenes,
         cell_types_selected: [...filteredCellTypes],

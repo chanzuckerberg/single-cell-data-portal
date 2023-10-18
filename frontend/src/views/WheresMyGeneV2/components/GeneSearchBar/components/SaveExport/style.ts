@@ -7,6 +7,7 @@ import {
   getColors,
 } from "@czi-sds/components";
 import Modal from "src/components/common/Modal";
+import { gray100, gray500 } from "src/common/theme";
 
 export const DOWNLOAD_MODAL_WIDTH_PX = 600;
 export const DOWNLOAD_MODAL_PADDING = 24;
@@ -85,14 +86,8 @@ export const StyledMessage = styled.div`
 
   border-radius: 4px;
 
-  ${(props) => {
-    const colors = getColors(props);
-
-    return `
-      background: ${colors?.gray[100]};
-      color: ${colors?.gray[500]};
-    `;
-  }}
+  background: ${gray100};
+  color: ${gray500};
 `;
 
 export const ButtonWrapper = styled.div`

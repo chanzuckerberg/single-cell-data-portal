@@ -1,18 +1,7 @@
 import { DrawerSize } from "@blueprintjs/core";
 import Head from "next/head";
-import {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import {
-  EMPTY_ARRAY,
-  EMPTY_OBJECT,
-  EMPTY_SET,
-} from "src/common/constants/utils";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
   FilterDimensions,
@@ -23,7 +12,9 @@ import {
   useGeneExpressionSummariesByTissueName,
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
-import SideBar from "src/components/common/SideBar";
+import SideBar, {
+  FILTERS_PANEL_EXPANDED_WIDTH_PX,
+} from "src/components/common/SideBar";
 import {
   DispatchContext,
   StateContext,
@@ -32,18 +23,14 @@ import {
   addGeneInfoGene,
   clearGeneInfoGene,
   closeRightSidebar,
-  deleteSelectedGenes,
 } from "src/views/WheresMyGene/common/store/actions";
 import {
   GeneExpressionSummary,
-  Tissue,
   ChartProps,
 } from "src/views/WheresMyGene/common/types";
 import CellInfoSideBar from "src/views/WheresMyGene/components/CellInfoSideBar";
 import Filters from "src/views/WheresMyGene/components/Filters";
 import GeneInfoSideBar from "src/components/GeneInfoSideBar";
-import GeneSearchBar from "src/views/WheresMyGeneV2/components/GeneSearchBar";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 
 import InfoPanel from "src/views/WheresMyGene/components/InfoPanel";
 import Legend from "src/views/WheresMyGene/components/InfoPanel/components/Legend";
@@ -52,7 +39,6 @@ import {
   StyledBannerContainer,
   StyledSidebarDrawer,
 } from "src/views/WheresMyGene/components/Main/style";
-import RightSideBar from "src/components/common/RightSideBar";
 import ScreenTint from "src/views/WheresMyGene/components/ScreenTint";
 import {
   SideBarPositioner,
@@ -65,6 +51,8 @@ import HeatMap from "../HeatMap";
 import BottomBanner from "src/components/BottomBanner";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "src/views/WheresMyGene/components/CellInfoSideBar/style";
 import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
+import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
+import { StyledRightSideBar } from "./style";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -78,6 +66,7 @@ export default function WheresMyGene(): JSX.Element {
     geneInfoGene,
     cellInfoCellType,
     filteredCellTypes,
+    expandedTissueIds,
   } = state;
 
   const selectedOrganismId = state.selectedOrganismId || "";
@@ -102,11 +91,6 @@ export default function WheresMyGene(): JSX.Element {
   const [tissuesByName, setTissuesByName] = useState<{
     [name: string]: OntologyTerm;
   }>({});
-
-  // This is set in HeatMap and the value is used to determine spacing in SVG export
-  const [expandedTissues, setExpandedTissues] = useState<Set<Tissue>>(
-    EMPTY_SET as Set<Tissue>
-  );
 
   //(seve): These useEffects are deceptively simple.
   // Their purpose is to avoid updating the state with null/empty values while we're waiting for the api to return data.
@@ -232,53 +216,17 @@ export default function WheresMyGene(): JSX.Element {
     selectedGenes,
     cellTypesByTissueName,
   ]);
-
-  // Listen to delete keyboard press event
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-
-    function handleKeyDown(event: KeyboardEvent): void {
-      if (event.code === "Backspace") {
-        if (!dispatch) return;
-
-        dispatch(deleteSelectedGenes());
-      }
-    }
-  }, [dispatch]);
-
   const [isSourceDatasetSidebarOpen, setSourceDatasetSidebarOpen] =
     useState(false);
   const handleSourceDatasetButtonClick = useCallback(() => {
     setSourceDatasetSidebarOpen(!isSourceDatasetSidebarOpen);
   }, [isSourceDatasetSidebarOpen]);
 
-  const [forceOpen, setForceOpen] = useState(false);
-
   const [downloadStatus, setDownloadStatus] = useState<{
     isLoading: boolean;
   }>({
     isLoading: false,
   });
-
-  const usePrevious = <T,>(value: T): T | undefined => {
-    const ref = useRef<T>();
-    useEffect(() => {
-      ref.current = value;
-    });
-    return ref.current;
-  };
-  const prevState = usePrevious({ cellInfoCellType });
-  useEffect(() => {
-    if (
-      prevState?.cellInfoCellType?.cellType.id !== cellInfoCellType?.cellType.id
-    ) {
-      setForceOpen(!forceOpen); //the value of this boolean isn't actually read downstream, it just checks for uniqueness across renders
-    }
-  }, [cellInfoCellType, prevState?.cellInfoCellType?.cellType.id, forceOpen]);
 
   const [echartsRendererMode, setEchartsRendererMode] = useState<
     "canvas" | "svg"
@@ -299,6 +247,11 @@ export default function WheresMyGene(): JSX.Element {
     dispatch(addGeneInfoGene(gene));
   };
 
+  // Sidebar width
+  const [sidebarWidth, setSidebarWidth] = useState(
+    FILTERS_PANEL_EXPANDED_WIDTH_PX
+  );
+
   return (
     <>
       <Head>
@@ -310,9 +263,8 @@ export default function WheresMyGene(): JSX.Element {
         SideBarWrapperComponent={SideBarWrapper}
         SideBarPositionerComponent={SideBarPositioner}
         testId="filters-panel"
-        disabled={false}
-        forceOpen={true}
         wmgSideBar
+        onWidthChange={setSidebarWidth}
       >
         <Filters
           isLoading={isLoading}
@@ -322,7 +274,7 @@ export default function WheresMyGene(): JSX.Element {
         />
       </SideBar>
       {cellInfoCellType && tissuesByID ? (
-        <RightSideBar width={CELL_INFO_SIDEBAR_WIDTH_PX}>
+        <StyledRightSideBar width={CELL_INFO_SIDEBAR_WIDTH_PX}>
           <CellInfoSideBar
             generateGeneInfo={generateGeneInfo}
             cellInfoCellType={cellInfoCellType}
@@ -341,17 +293,17 @@ export default function WheresMyGene(): JSX.Element {
               />
             )
           }
-        </RightSideBar>
+        </StyledRightSideBar>
       ) : (
         // Gene info full right sidebar length
         geneInfoGene && (
-          <RightSideBar>
+          <StyledRightSideBar>
             <GeneInfoSideBar
               geneInfoGene={geneInfoGene}
               handleClose={handleCloseGeneInfoSideBar}
               title={geneInfoGene}
             />
-          </RightSideBar>
+          </StyledRightSideBar>
         )
       )}
 
@@ -367,7 +319,6 @@ export default function WheresMyGene(): JSX.Element {
           )}
 
           <Top id="top-legend">
-            <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
             <Legend
               selectedCellTypes={cellTypesByTissueName}
               selectedGenes={selectedGenes}
@@ -378,7 +329,7 @@ export default function WheresMyGene(): JSX.Element {
               allChartProps={allChartProps}
               availableFilters={availableFilters}
               tissues={tissuesByName}
-              expandedTissues={expandedTissues}
+              expandedTissueIds={expandedTissueIds}
               filteredCellTypes={filteredCellTypes}
             />
           </Top>
@@ -398,6 +349,10 @@ export default function WheresMyGene(): JSX.Element {
           <ScreenTint isDownloading={downloadStatus} />
 
           <HeatMap
+            /**
+             * (thuang): Use the selected organism ID to reset the heatmap state
+             */
+            key={selectedOrganismId}
             echartsRendererMode={echartsRendererMode}
             cellTypeSortBy={sortBy.cellTypes}
             geneSortBy={sortBy.genes}
@@ -410,17 +365,23 @@ export default function WheresMyGene(): JSX.Element {
             }
             scaledMeanExpressionMax={scaledMeanExpressionMax}
             scaledMeanExpressionMin={scaledMeanExpressionMin}
-            selectedOrganismId={selectedOrganismId}
             allChartProps={allChartProps}
             setAllChartProps={setAllChartProps}
             setTissuesByName={setTissuesByName}
-            expandedTissues={expandedTissues}
-            setExpandedTissues={setExpandedTissues}
+            tissuesByName={tissuesByName}
+            /**
+             * (thuang): This is needed to reposition gene search bar when the
+             * sidebar width expands/collapses
+             */
+            sidebarWidth={sidebarWidth}
           />
         </Wrapper>
       </View>
 
-      <BottomBanner includeSurveyLink />
+      <BottomBanner
+        airtableLink={GENE_EXPRESSION_BANNER_SURVEY_LINK}
+        includeSurveyLink
+      />
     </>
   );
 }

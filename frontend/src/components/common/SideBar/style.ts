@@ -1,13 +1,15 @@
 import styled from "@emotion/styled";
 import { LIGHT_GRAY } from "src/components/common/theme";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
+import { CommonThemeProps, fontBodyS } from "@czi-sds/components";
 import {
-  CommonThemeProps,
-  fontBodyS,
-  getColors,
-  getFontWeights,
-  getSpaces,
-} from "@czi-sds/components";
+  grey300,
+  grey500,
+  fontWeightSemibold,
+  spacesL,
+  spacesS,
+  spacesXl,
+} from "src/common/theme";
 
 export enum Position {
   LEFT = "left",
@@ -16,19 +18,12 @@ export enum Position {
 
 interface Props extends CommonThemeProps {
   sideBarWidth: number;
-  position: typeof Position[keyof typeof Position];
+  position: (typeof Position)[keyof typeof Position];
 }
 
 interface PositionerProps extends CommonThemeProps {
   isExpanded: boolean;
 }
-
-const grey300 = (props: CommonThemeProps) => getColors(props)?.gray[300];
-const grey500 = (props: CommonThemeProps) => getColors(props)?.gray[500];
-const semibold = (props: CommonThemeProps) => getFontWeights(props)?.semibold;
-const spacesL = (props: CommonThemeProps) => getSpaces(props)?.l;
-const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
-const spacesXl = (props: CommonThemeProps) => getSpaces(props)?.xl;
 
 const generateBoxShadow = (props: Props) =>
   `inset ${props.position === Position.LEFT ? -0.5 : 0.5}px 0 ${grey300(
@@ -41,6 +36,7 @@ export const SideBar = styled.div<Props>`
   width: ${(props) => `${props.sideBarWidth}px`};
   grid-area: ${(props) =>
     props.position === Position.LEFT ? "leftsidebar" : "rightsidebar"};
+  background-color: white;
 `;
 
 export const SideBarPositioner = styled.div<PositionerProps>`
@@ -97,7 +93,7 @@ export const SideBarToggleButtonWrapper = styled.span`
 export const ToggleButtonText = styled.span`
   ${fontBodyS}
   color: #000000;
-  font-weight: ${semibold};
+  font-weight: ${fontWeightSemibold};
   letter-spacing: -0.006em;
 `;
 

@@ -1,12 +1,12 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, getSpaces } from "@czi-sds/components";
 import { PT_TEXT_COLOR } from "../common/theme";
 import Nav from "src/components/Header/components/Nav";
 import { NavDivider } from "src/components/Header/components/Nav/components/NavDivider/style";
+import { spacesL, spacesXl } from "src/common/theme";
+import { fontHeaderM } from "@czi-sds/components";
 
 export const HEADER_HEIGHT_PX = 48;
-const spacesL = (props: CommonThemeProps) => getSpaces(props)?.l;
-const spacesXl = (props: CommonThemeProps) => getSpaces(props)?.xl;
+export const MAX_WIDTH_BREAKPOINT_PX = 768;
 
 export const Wrapper = styled.div`
   background-color: ${PT_TEXT_COLOR};
@@ -16,7 +16,7 @@ export const Wrapper = styled.div`
   width: 100%;
   z-index: 2;
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     height: 100%;
     position: relative;
     display: flex;
@@ -31,23 +31,22 @@ export const MainWrapper = styled.div`
   justify-content: space-between;
   padding: 0 16px;
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     align-items: flex-start;
     flex-direction: column;
     justify-content: flex-start;
-    padding-top: ${HEADER_HEIGHT_PX}px;
   }
 `;
 
 export const MobileHomeLink = styled.span`
   display: none;
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     display: block;
   }
 `;
 
 export const DesktopHomeLink = styled.span`
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     display: none;
   }
 `;
@@ -55,7 +54,7 @@ export const DesktopHomeLink = styled.span`
 export const MobileMenuButton = styled.div`
   display: none;
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     display: block;
     color: white;
     cursor: pointer;
@@ -68,7 +67,7 @@ export const MobileMenuButton = styled.div`
 export const MobileMenuButtonBar = styled.div`
   display: none;
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     display: block;
     width: 30px;
     height: 2px;
@@ -93,12 +92,12 @@ export const MobileMenuButtonBar = styled.div`
 `;
 
 export const MobileNavTray = styled.div`
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     position: absolute;
     transform: translateX(100vw);
     right: 0;
-    top: 0;
-    width: 80%;
+    top: ${HEADER_HEIGHT_PX}px;
+    width: 100%;
     height: 100vh;
     transition: transform 0.35s ease-out;
 
@@ -114,7 +113,7 @@ export const MobileNavWrapper = styled.div`
   width: 100%;
   height: ${HEADER_HEIGHT_PX}px;
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     position: fixed;
     z-index: 3;
     top: 0;
@@ -134,7 +133,7 @@ export const Left = styled.span`
     display: flex; /* Ensures the anchor wrapping the logo has correct line height. */
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     flex-direction: column;
     align-items: flex-start;
   }
@@ -145,14 +144,14 @@ export const Right = styled.span`
   display: flex;
   gap: ${spacesL}px;
 
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     flex-direction: column;
     align-items: flex-start;
   }
 `;
 
 export const Navigation = styled(Nav)`
-  @media (max-width: 768px) {
+  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
     flex-direction: column;
     align-items: flex-start;
     padding-top: 16px;
@@ -162,4 +161,10 @@ export const Navigation = styled(Nav)`
       width: 100%;
     }
   }
+`;
+
+export const HeaderTitle = styled.div`
+  ${fontHeaderM}
+  color: white;
+  cursor: pointer;
 `;

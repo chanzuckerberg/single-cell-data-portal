@@ -70,7 +70,7 @@ const Collection: FC = () => {
 
   useEffect(() => {
     if (isTombstonedCollection(collection)) {
-      const redirectUrl = ROUTES.HOMEPAGE;
+      const redirectUrl = ROUTES.COLLECTIONS;
       router.push(redirectUrl + "?tombstoned_collection_id=" + id);
     }
   }, [collection, id, router]);
@@ -104,9 +104,9 @@ const Collection: FC = () => {
   const collectionConsortia = collection.consortia;
   const collectionMetadataLinks = buildCollectionMetadataLinks(
     collection.links,
+    collection.summaryCitation,
     collection.contact_name,
-    collection.contact_email,
-    collection.summaryCitation
+    collection.contact_email
   );
 
   return (

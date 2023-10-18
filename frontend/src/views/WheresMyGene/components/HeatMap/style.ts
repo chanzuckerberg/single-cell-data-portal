@@ -10,9 +10,8 @@ import {
 import { LEGEND_MARGIN_BOTTOM_PX } from "../../style";
 import { X_AXIS_CHART_HEIGHT_PX } from "../../common/constants";
 import { Autocomplete } from "@mui/material";
-import { CommonThemeProps, Tag, getSpaces } from "@czi-sds/components";
-
-const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
+import { Tag } from "@czi-sds/components";
+import { spacesS } from "src/common/theme";
 
 export const CHART_PADDING_PX = 10;
 
@@ -68,10 +67,12 @@ export const StyledAutocomplete = styled(Autocomplete)`
 export const StyledTag = styled(Tag)`
   max-width: 258px;
 `;
+// Copied to frontend/src/views/WheresMyGeneV2/components/HeatMap/style.ts
 interface TopLeftCornerMaskProps {
   height: number;
 }
 
+// Copied to frontend/src/views/WheresMyGeneV2/components/HeatMap/style.ts
 export const TopLeftCornerMask = styled.div<TopLeftCornerMaskProps>`
   position: absolute;
   background-color: white;
@@ -91,8 +92,13 @@ export const TopLeftCornerMask = styled.div<TopLeftCornerMaskProps>`
  * (thuang): Instead of using the full width, we only want enough space for the
  * filter box + the widest scrollbar across different browsers.
  */
+/**
+ * Copied to frontend/src/views/WheresMyGene/components/HeatMap/utils.ts for
+ * frontend/src/views/WheresMyGeneV2/components/HeatMap/style.ts to import
+ */
 const CELL_TYPE_FILTER_WIDTH_PX = 300;
 
+// Copied to frontend/src/views/WheresMyGeneV2/components/HeatMap/style.ts
 export const CellTypeFilterContainer = styled.div`
   height: 100%;
   width: ${CELL_TYPE_FILTER_WIDTH_PX}px;
@@ -130,6 +136,7 @@ export const XAxisMask = styled.div<XAxisMaskProps>`
   height: ${(props) => props.height}px;
 `;
 
+// Copied to frontend/src/views/WheresMyGeneV2/components/HeatMap/style.ts
 export const XAxisWrapper = styled.div`
   display: flex;
   background-color: white;

@@ -4,7 +4,10 @@ export const FMG_GENE_STRENGTH_THRESHOLD = 0.5;
 /**
  * (thuang): The `id` options here must match what the BE expects
  */
-export const COMPARE_OPTIONS = [
+export const COMPARE_OPTIONS: {
+  id: string | undefined;
+  name: string;
+}[] = [
   { id: undefined, name: "None" },
   { id: "disease", name: "Disease" },
   { id: "self_reported_ethnicity", name: "Ethnicity" },
@@ -22,6 +25,7 @@ export const getCompareOptionNameById = (id?: CompareId) => {
 
 // This is used as the default/initial height of the x-axis
 export const X_AXIS_CHART_HEIGHT_PX = 80;
+export const X_AXIS_CHART_HEIGHT_PX_SVG = 30;
 
 // This is the height of the container for the gene delete and hover icons
 // Increasing this value adds more space between the gene label and icons

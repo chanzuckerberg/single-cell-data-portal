@@ -1,0 +1,36 @@
+name: Trigger release candidate build and deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch and staging branch
+        uses: actions/checkout@v2
+        with:
+          ref: main
+          fetch-depth: 0 # fetch all history to make merges work correctly
+      - name: Merge main branch into staging branch
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          echo "Checking out 'staging' branch"
+          git checkout staging
+          echo "Confirming checked out branch receiving merge is: $(git branch --show-current)"
+
+          echo "Listing locally available branches AFTER 'staging' branch is checked out:"
+          echo "$(git branch --list)"
+
+          echo "Latest commit on 'staging' branch is: $(git log -1 --format='%H' staging)"
+
+          echo "Latest commit on 'main' branch is: $(git log -1 --format='%H' main)"
+
+          echo "About to merge 'main' branch into 'staging' branch"
+          git merge --verbose main -m "Merging main branch into staging branch"
+
+          git push origin staging

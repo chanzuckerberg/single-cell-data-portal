@@ -1,25 +1,25 @@
 import { MouseEventHandler } from "react";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
-import { useRouter } from "next/router";
-import { ROUTES } from "src/common/constants/routes";
-import { TreeNodeWithState } from "../../common/types";
+import {
+  CellType,
+  MarkerGeneStatsByCellType,
+  TreeNodeWithState,
+} from "../../common/types";
 import Text from "./components/Text";
 import RectOrCircle from "./components/RectOrCircle";
 import { StyledGroup } from "./style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-
-export const CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL =
-  "cell-guide-card-ontology-dag-view-clickable-text-label";
+import { CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/CellGuide/components/common/OntologyDagView/components/Node/constants";
 
 type HierarchyNode = HierarchyPointNode<TreeNodeWithState>;
 
 interface NodeProps {
   node: HierarchyNode;
-  handleClick?: MouseEventHandler<SVGGElement>;
+  handleClick?: MouseEventHandler<HTMLDivElement>;
   isTargetNode: boolean;
   handleMouseOver: (
-    event: React.MouseEvent<SVGElement>,
+    event: React.MouseEvent<HTMLDivElement>,
     datum: TreeNodeWithState
   ) => void;
   handleMouseOut: () => void;
@@ -29,6 +29,8 @@ interface NodeProps {
   animationKey: string;
   maxWidth: number;
   isInCorpus: boolean;
+  cellTypesWithMarkerGeneStats: MarkerGeneStatsByCellType | null;
+  handleNodeLabelClick: (props: CellType) => void;
 }
 
 export default function Node({
@@ -43,17 +45,17 @@ export default function Node({
   opacity,
   maxWidth,
   isInCorpus,
+  cellTypesWithMarkerGeneStats,
+  handleNodeLabelClick,
 }: NodeProps) {
-  const router = useRouter();
-
   // text labels should only collapse/expand node for dummy nodes
   const onClick = node.data.id.startsWith("dummy-child")
-    ? handleClick
+    ? (handleClick as unknown as MouseEventHandler<SVGElement>)
     : undefined;
   const textCursor = node.data.id.startsWith("dummy-child")
     ? "pointer"
     : "default";
-
+  const cellTypeMarkerGeneStats = cellTypesWithMarkerGeneStats?.[node.data.id];
   return (
     <StyledGroup top={top} left={left} key={animationKey} opacity={opacity}>
       {isInCorpus ? (
@@ -63,12 +65,10 @@ export default function Node({
             track(EVENTS.CG_TREE_CELL_TYPE_CLICKED, {
               cell_type: node.data.name,
             });
-            router.push(
-              `${ROUTES.CELL_GUIDE}/${node.data.id
-                .replace(":", "_")
-                .split("__")
-                .at(0)}`
-            );
+            handleNodeLabelClick({
+              cellTypeId: node.data.id.split("__").at(0) as string,
+              cellTypeName: node.data.name,
+            });
           }}
         >
           <a>
@@ -96,6 +96,8 @@ export default function Node({
         isTargetNode={isTargetNode}
         handleMouseOver={handleMouseOver}
         handleMouseOut={handleMouseOut}
+        cellTypeMarkerGeneStats={cellTypeMarkerGeneStats}
+        inMarkerGeneMode={!!cellTypesWithMarkerGeneStats}
       />
     </StyledGroup>
   );

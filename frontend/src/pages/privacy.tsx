@@ -28,9 +28,9 @@ const Privacy = (): JSX.Element => {
 
           <br />
 
-          <main>
+          <div>
             <h1>Privacy Policy</h1>
-            <p>Last updated: May 11, 2023.</p>
+            <p>Last updated: July 25, 2023.</p>
             {/* Introduction */}
             <>
               <h2>Introduction</h2>
@@ -45,7 +45,7 @@ const Privacy = (): JSX.Element => {
               </p>
               <p>
                 Please read our full{" "}
-                <a href={ROUTES.TOS}>Terms of Use ("Terms")</a> (which
+                <a href={ROUTES.TOS}>Terms of Use (&quot;Terms&quot;)</a> (which
                 incorporates this Privacy Policy) and this Privacy Policy for
                 complete details, but here is the key information you should
                 know:
@@ -153,10 +153,12 @@ const Privacy = (): JSX.Element => {
                       publish data, we use essential cookies (small text files
                       sent by your computer each time you access the Site that
                       are unique to your account or your browser) to enable that
-                      use. For web analytics, we do not use Google Analytics.
-                      Instead, we use the privacy-friendly Plausible as our
-                      website analytic tool. Learn more about Plausible’s data
-                      and privacy practices{" "}
+                      use. We also use local storage to save your preferences
+                      (e.g., to remember that you blocked a pop-up). For web
+                      analytics, we do not use Google Analytics. Instead, we use
+                      the privacy-friendly Plausible as our website analytic
+                      tool. Learn more about Plausible’s data and privacy
+                      practices{" "}
                       <a
                         href="https://plausible.io/data-policy"
                         rel="noopener"
@@ -608,8 +610,8 @@ const Privacy = (): JSX.Element => {
                   <h4>Direct Marketing and Do Not Track Signals.</h4> We don’t
                   currently disclose personal data with third parties for their
                   direct marketing purposes, nor do we support any Do Not Track
-                  ("DNT") signals, since there’s currently no standard for how
-                  online services respond to those signals. As standards
+                  (&quot;DNT&quot;) signals, since there’s currently no standard
+                  for how online services respond to those signals. As standards
                   develop, we may establish policies for responding to DNT
                   signals that we would describe in this Privacy Policy.
                 </li>
@@ -672,7 +674,7 @@ const Privacy = (): JSX.Element => {
                 </li>
               </ul>
             </>
-          </main>
+          </div>
         </PrivacyStyle>
       </CommonStyle>
     </Layout>

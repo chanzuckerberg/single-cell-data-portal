@@ -1,11 +1,12 @@
-locals {
-  name = "schema-migration"
-  dataset_migrate_cpu = "4"
-}
-
 data aws_region current {}
 
 data aws_caller_identity current {}
+
+locals {
+  name = "schema-migration"
+  job_definition_arn = "arn:aws:batch:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:job-definition/dp-${var.deployment_stage}-${var.custom_stack_name}-schema-migration"
+  swap_job_definition_arn = "${local.job_definition_arn}-swap"
+}
 
 resource aws_cloudwatch_log_group batch_cloud_watch_logs_group {
   retention_in_days = 365
@@ -35,15 +36,19 @@ resource aws_batch_job_definition schema_migrations_swap {
         name= "REMOTE_DEV_PREFIX",
         value= var.remote_dev_prefix
       },
+      {
+        name= "DATASETS_BUCKET",
+        value= var.datasets_bucket
+      },
     ],
     resourceRequirements = [
       {
         type= "VCPU",
-        Value=local.dataset_migrate_cpu
+        Value="6"
       },
       {
         Type="MEMORY",
-        Value = "95000"
+        Value = "47500"
       }
     ]
     linuxParameters= {
@@ -83,6 +88,10 @@ resource aws_batch_job_definition schema_migrations {
         name= "REMOTE_DEV_PREFIX",
         value= var.remote_dev_prefix
       },
+      {
+        name= "DATASETS_BUCKET",
+        value= var.datasets_bucket
+      },
     ],
     resourceRequirements = [
                   {
@@ -111,8 +120,25 @@ resource aws_sfn_state_machine sfn_schema_migration {
   definition = <<EOF
 {
   "Comment": "Schema Migration State Machine",
-  "StartAt": "GatherCollections",
+  "StartAt": "DefineDefaults",
   "States": {
+    "DefineDefaults": {
+        "Type": "Pass",
+        "Next": "ApplyDefaults",
+        "ResultPath": "$.inputDefaults",
+        "Parameters": {
+          "auto_publish": "False"
+        }
+    },
+    "ApplyDefaults": {
+        "Type": "Pass",
+        "Next": "GatherCollections",
+        "Parameters": {
+          "args.$": "States.JsonMerge($.inputDefaults, $$.Execution.Input, false)"
+        },
+        "ResultPath": "$.withDefaults",
+        "OutputPath": "$.withDefaults.args"
+    },
     "GatherCollections": {
       "Type": "Task",
       "Resource": "arn:aws:states:::batch:submitJob.sync",
@@ -140,6 +166,10 @@ resource aws_sfn_state_machine sfn_schema_migration {
             {
               "Name": "EXECUTION_ID",
               "Value.$": "$$.Execution.Name"
+            },
+            {
+              "Name": "AUTO_PUBLISH",
+              "Value.$": "$.auto_publish"
             }
           ]
         }
@@ -455,23 +485,13 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "Type": "Task",
                   "Resource": "arn:aws:states:::batch:submitJob.sync",
                   "Parameters": {
-                    "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
+                    "JobDefinition": "${local.swap_job_definition_arn}",
                     "JobName": "dataset_migration",
                     "JobQueue": "${var.job_queue_arn}",
                     "Timeout": {
                       "AttemptDurationSeconds": 36000
                     },
                     "ContainerOverrides": {
-                      "ResourceRequirements": [
-                        {
-                          "Type": "MEMORY",
-                          "Value": "16384"
-                        },
-                        {
-                         "Type": "VCPU",
-                          "Value": "${local.dataset_migrate_cpu}"
-                        }
-                      ],
                       "Environment": [
                         {
                           "Name": "STEP_NAME",
@@ -508,214 +528,6 @@ resource aws_sfn_state_machine sfn_schema_migration {
                       ]
                     }
                   },
-                  "Next": "StepFunctionsStartExecution",
-                  "Catch": [
-                    {
-                      "ErrorEquals": [
-                        "States.ALL"
-                      ],
-                      "Next": "DatasetError",
-                      "ResultPath": "$.error"
-                    }
-                  ],
-                  "ResultPath": "$.result"
-                },
-                "DatasetMigration32": {
-                  "Type": "Task",
-                  "Resource": "arn:aws:states:::batch:submitJob.sync",
-                  "Parameters": {
-                    "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
-                    "JobName": "dataset_migration",
-                    "JobQueue": "${var.job_queue_arn}",
-                    "Timeout": {
-                      "AttemptDurationSeconds": 36000
-                    },
-                    "ContainerOverrides": {
-                      "ResourceRequirements": [
-                        {
-                          "Type": "MEMORY",
-                          "Value": "32768"
-                        },
-                        {
-                         "Type": "VCPU",
-                          "Value": "${local.dataset_migrate_cpu}"
-                        }
-                      ],
-                      "Environment": [
-                        {
-                          "Name": "STEP_NAME",
-                          "Value": "dataset_migrate"
-                        },
-                        {
-                          "Name": "MIGRATE",
-                          "Value": "True"
-                        },
-                        {
-                          "Name": "DATASET_ID",
-                          "Value.$": "$.dataset_id"
-                        },
-                        {
-                          "Name": "DATASET_VERSION_ID",
-                          "Value.$": "$.dataset_version_id"
-                        },
-                        {
-                          "Name": "COLLECTION_VERSION_ID",
-                          "Value.$": "$.collection_version_id"
-                        },
-                        {
-                          "Name": "COLLECTION_ID",
-                          "Value.$": "$.collection_id"
-                        },
-                        {
-                          "Name": "TASK_TOKEN",
-                          "Value.$": "$$.Task.Token"
-                        },
-                        {
-                          "Name": "EXECUTION_ID",
-                          "Value.$": "$$.Execution.Name"
-                        }
-                      ]
-                    }
-                  },
-                  "Next": "StepFunctionsStartExecution",
-                  "Catch": [
-                    {
-                      "ErrorEquals": [
-                        "States.ALL"
-                      ],
-                      "Next": "DatasetError",
-                      "ResultPath": "$.error"
-                    }
-                  ],
-                  "ResultPath": "$.result"
-                },
-                "DatasetMigration64": {
-                  "Type": "Task",
-                  "Resource": "arn:aws:states:::batch:submitJob.sync",
-                  "Parameters": {
-                    "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
-                    "JobName": "dataset_migration",
-                    "JobQueue": "${var.job_queue_arn}",
-                    "Timeout": {
-                      "AttemptDurationSeconds": 36000
-                    },
-                    "ContainerOverrides": {
-                      "ResourceRequirements": [
-                        {
-                          "Type": "MEMORY",
-                          "Value": "65536"
-                        },
-                        {
-                         "Type": "VCPU",
-                          "Value": "${local.dataset_migrate_cpu}"
-                        }
-                      ],
-                      "Environment": [
-                        {
-                          "Name": "STEP_NAME",
-                          "Value": "dataset_migrate"
-                        },
-                        {
-                          "Name": "MIGRATE",
-                          "Value": "True"
-                        },
-                        {
-                          "Name": "DATASET_ID",
-                          "Value.$": "$.dataset_id"
-                        },
-                        {
-                          "Name": "DATASET_VERSION_ID",
-                          "Value.$": "$.dataset_version_id"
-                        },
-                        {
-                          "Name": "COLLECTION_VERSION_ID",
-                          "Value.$": "$.collection_version_id"
-                        },
-                        {
-                          "Name": "COLLECTION_ID",
-                          "Value.$": "$.collection_id"
-                        },
-                        {
-                          "Name": "TASK_TOKEN",
-                          "Value.$": "$$.Task.Token"
-                        },
-                        {
-                          "Name": "EXECUTION_ID",
-                          "Value.$": "$$.Execution.Name"
-                        }
-                      ]
-                    }
-                  },
-                  "Next": "StepFunctionsStartExecution",
-                  "Catch": [
-                    {
-                      "ErrorEquals": [
-                        "States.ALL"
-                      ],
-                      "Next": "DatasetError",
-                      "ResultPath": "$.error"
-                    }
-                  ],
-                  "ResultPath": "$.result"
-                },
-                "DatasetMigration95": {
-                  "Type": "Task",
-                  "Resource": "arn:aws:states:::batch:submitJob.sync",
-                  "Parameters": {
-                    "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
-                    "JobName": "dataset_migration",
-                    "JobQueue": "${var.job_queue_arn}",
-                    "Timeout": {
-                      "AttemptDurationSeconds": 36000
-                    },
-                    "ContainerOverrides": {
-                      "ResourceRequirements": [
-                        {
-                          "Type": "MEMORY",
-                          "Value": "97280"
-                        },
-                        {
-                         "Type": "VCPU",
-                          "Value": "${local.dataset_migrate_cpu}"
-                        }
-                      ],
-                      "Environment": [
-                        {
-                          "Name": "STEP_NAME",
-                          "Value": "dataset_migrate"
-                        },
-                        {
-                          "Name": "MIGRATE",
-                          "Value": "True"
-                        },
-                        {
-                          "Name": "DATASET_ID",
-                          "Value.$": "$.dataset_id"
-                        },
-                        {
-                          "Name": "DATASET_VERSION_ID",
-                          "Value.$": "$.dataset_version_id"
-                        },
-                        {
-                          "Name": "COLLECTION_VERSION_ID",
-                          "Value.$": "$.collection_version_id"
-                        },
-                        {
-                          "Name": "COLLECTION_ID",
-                          "Value.$": "$.collection_id"
-                        },
-                        {
-                          "Name": "TASK_TOKEN",
-                          "Value.$": "$$.Task.Token"
-                        },
-                        {
-                          "Name": "EXECUTION_ID",
-                          "Value.$": "$$.Execution.Name"
-                        }
-                      ]
-                    }
-                  },
-
                   "Next": "StepFunctionsStartExecution",
                   "Catch": [
                     {
@@ -737,6 +549,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "Resource": "arn:aws:states:::states:startExecution.sync:2",
                   "Parameters": {
                     "StateMachineArn": "arn:aws:states:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:stateMachine:dp-${var.deployment_stage}-${var.custom_stack_name}-sfn",
+                    "Name.$": "$.result.sfn_name",
                     "Input": {
                       "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id",
                       "url.$": "$.result.uri",
@@ -761,7 +574,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
             },
             "ItemsPath": "$.datasets",
             "Next": "CollectionPublish",
-            "MaxConcurrency": 40,
+            "MaxConcurrency": 32,
             "Catch": [
               {
                 "ErrorEquals": [
@@ -803,6 +616,12 @@ resource aws_sfn_state_machine sfn_schema_migration {
           "AttemptDurationSeconds": 600
         },
         "ContainerOverrides": {
+          "ResourceRequirements": [
+            {
+              "Type": "MEMORY",
+              "Value": "8048"
+            }
+          ],
           "Environment": [
             {
               "Name": "STEP_NAME",

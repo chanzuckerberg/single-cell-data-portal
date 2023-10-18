@@ -1,42 +1,40 @@
 import { Page, expect } from "@playwright/test";
-import { ROUTES } from "src/common/constants/routes";
-import { TEST_URL, ADD_GENE_BTN } from "tests/common/constants";
+import { goToWMG } from "./wmgUtils";
+import {
+  CELL_COUNT_LABEL_CLASS_NAME,
+  CELL_TYPE_NAME_LABEL_CLASS_NAME,
+  CELL_TYPE_ROW_CLASS_NAME,
+} from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 
 const FMG_EXCLUDE_TISSUES = ["blood"];
-const CELL_COUNT_ID = "cell-count";
-const CELL_TYPE_NAME_ID = "cell-type-name";
+const CELL_COUNT_ID = CELL_COUNT_LABEL_CLASS_NAME;
+const CELL_TYPE_NAME_ID = CELL_TYPE_NAME_LABEL_CLASS_NAME;
 const MARKER_GENE_BUTTON_ID = "marker-gene-button";
 const REGEX = /^\d+\.?\d{0,2}$/;
 
-export async function goToWMG(page: Page) {
-  return Promise.all([
-    page.waitForResponse(
-      (resp: { url: () => string | string[]; status: () => number }) =>
-        resp.url().includes("/wmg/v1/filters") && resp.status() === 200
-    ),
-    page.goto(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
-  ]);
-}
-export async function searchAndAddGene(page: Page, geneName: string) {
-  await goToWMG(page);
-  // click +Tissue button
-  await page.getByTestId(ADD_GENE_BTN).click();
-  await page.getByPlaceholder("Search").type(geneName);
+export const ADD_GENE_SEARCH_PLACEHOLDER_TEXT = "Add Genes";
+export const CELL_TYPE_SEARCH_PLACEHOLDER_TEXT = "Search cell types";
+
+export async function addGene(page: Page, geneName: string) {
+  await page.getByPlaceholder(ADD_GENE_SEARCH_PLACEHOLDER_TEXT).type(geneName);
   await page.getByText(geneName).click();
 
   // close dropdown
   await page.keyboard.press("Escape");
 }
-export async function verifyAddedTissue(page: Page, tissue: string) {
-  // STEP 1 & Add Tissues texts should disappear
-  await expect(page.getByText("STEP 1")).not.toBeVisible();
-  await expect(page.getByTestId("Add Tissues")).not.toBeVisible();
 
+export async function searchAndAddGene(page: Page, geneName: string) {
+  await goToWMG(page);
+  await addGene(page, geneName);
+}
+
+export async function verifyAddedTissue(page: Page, tissue: string) {
   // selected tissue should be visible
   await expect(page.getByTestId(`cell-type-labels-${tissue}`)).toBeVisible();
 
   // verify cell counts: name, icon and count
-  const CELL_COUNTS = page.getByTestId("cell-type-label-count");
+  const CELL_COUNTS = page.getByTestId(CELL_TYPE_ROW_CLASS_NAME);
+
   for (let i = 0; i < (await CELL_COUNTS.count()); i++) {
     const COUNT = await CELL_COUNTS.nth(i)
       .getByTestId(CELL_COUNT_ID)
@@ -62,10 +60,6 @@ export async function verifyAddedTissue(page: Page, tissue: string) {
 }
 
 export async function verifyAddedGene(page: Page, geneName: string) {
-  // STEP 1 & Add Tissues texts should disappear
-  await expect(page.getByText("STEP 2")).not.toBeVisible();
-  await expect(page.getByTestId("Add Genes")).not.toBeVisible();
-
   // selected gene should be visible
   expect(await page.getByTestId(`gene-name-${geneName}`).textContent()).toBe(
     geneName

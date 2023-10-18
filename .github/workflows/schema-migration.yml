@@ -35,10 +35,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: main
+          fetch-depth: 1
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
-          happy_version: "0.85.1"
+          happy_version: "0.110.1"
       - name: Docker build, push, and tag
         shell: bash
         run: |
@@ -62,10 +63,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: staging
+          fetch-depth: 1
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
-          happy_version: "0.85.1"
+          happy_version: "0.110.1"
       - name: Docker build, push, and tag
         shell: bash
         run: |
@@ -89,10 +91,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: prod
+          fetch-depth: 1
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
         with:
-          happy_version: "0.85.1"
+          happy_version: "0.110.1"
       - name: Docker build, push, and tag
         shell: bash
         run: |
@@ -122,7 +125,7 @@ jobs:
           pip install awscli==1.29.1
       - name: Trigger Schema Migration AWS Step Function
         run: |
-          aws stepfunctions start-execution --state-machine-arn ${{ secrets.SCHEMA_MIGRATION_ARN }}
+          aws stepfunctions start-execution --state-machine-arn ${{ secrets.SCHEMA_MIGRATION_ARN }} --input "{\"auto_publish\" : \"True\"}"
       - name: Alert in Slack
         uses: 8398a7/action-slack@v3
         with:

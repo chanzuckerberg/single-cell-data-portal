@@ -8,6 +8,7 @@ namespace HubSpotFormAPI {
     portalId: string;
     formId: string;
     target?: string;
+    formInstanceId?: string;
   }
 
   export interface HubSpotForm {

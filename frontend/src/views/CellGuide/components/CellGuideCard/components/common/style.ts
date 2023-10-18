@@ -1,22 +1,19 @@
 import styled from "@emotion/styled";
-import {
-  fontHeaderM,
-  fontBodyXxs,
-  fontBodyS,
-  getColors,
-} from "@czi-sds/components";
+import { fontBodyXxs, fontBodyS, fontHeaderL } from "@czi-sds/components";
 import { Divider } from "@mui/material";
+import { fontWeightSemibold, gray500 } from "src/common/theme";
 
 export const TableTitle = styled.div`
-  ${fontHeaderM}
+  ${fontHeaderL}
   cursor: default;
+  font-weight: ${fontWeightSemibold};
 `;
 
 export const TableTitleWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  margin-top: 48px;
+  margin-top: 80px;
   margin-bottom: 8px;
 `;
 
@@ -54,6 +51,8 @@ export const TableUnavailableContainer = styled("div")`
   justify-content: center;
   text-align: center;
   border-radius: 8px;
+
+  padding: 0 8px;
 `;
 
 export const TableUnavailableHeader = styled("span")`
@@ -64,12 +63,8 @@ export const TableUnavailableHeader = styled("span")`
 
 export const TableUnavailableDescription = styled("span")`
   ${fontBodyXxs}
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-      color: ${colors?.gray[500]};
-    `;
-  }}
+
+  color: ${gray500};
 `;
 
 export const StyledDivider = styled(Divider)`

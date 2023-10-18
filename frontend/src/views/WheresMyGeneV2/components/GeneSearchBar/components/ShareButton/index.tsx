@@ -5,10 +5,10 @@ import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_OBJECT, noop } from "src/common/constants/utils";
 import { isSSR } from "src/common/utils/isSSR";
 
-import { StyledButtonIcon } from "../QuickSelect/style";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../SaveExport";
 import {
   StyledButtonDiv,
+  StyledButtonIcon,
   StyledIcon,
   StyledLabel,
   StyledNotificationDetails,
@@ -27,9 +27,11 @@ import {
 } from "src/common/queries/wheresMyGene";
 import { getCompareOptionNameById } from "src/views/WheresMyGene/common/constants";
 import { CellType } from "src/views/WheresMyGene/common/types";
+import { useTissueMetadata } from "src/common/queries/cellGuide";
 
 export default function ShareButton(): JSX.Element {
   const state = useContext(StateContext);
+  const { data: tissues } = useTissueMetadata();
 
   const {
     selectedFilters,
@@ -124,11 +126,12 @@ export default function ShareButton(): JSX.Element {
     const params = new URLSearchParams(search);
     if (params) {
       // If we later want to display a toast on successful load from url, this function returns true/false
-      const loadedState = loadStateFromQueryParams(
+      const loadedState = loadStateFromQueryParams({
         params,
         selectedFilters,
-        dispatch
-      );
+        dispatch,
+        tissues,
+      });
 
       if (loadedState) {
         const filteredCellTypeIDs =
@@ -154,6 +157,7 @@ export default function ShareButton(): JSX.Element {
     cellTypesByName,
     compare,
     mapCellTypesToIDs,
+    tissues,
   ]);
 
   return (
