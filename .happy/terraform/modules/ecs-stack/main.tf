@@ -340,6 +340,7 @@ module schema_migration {
   remote_dev_prefix             = local.remote_dev_prefix
   deployment_stage              = local.deployment_stage
   artifact_bucket               = local.artifact_bucket
+  datasets_bucket               = local.datasets_bucket
   batch_container_memory_limit  = local.batch_container_memory_limit
   job_queue_arn                 = local.schema_migration_job_queue_arn
   sfn_role_arn                  = local.schema_migration_sfn_role_arn
