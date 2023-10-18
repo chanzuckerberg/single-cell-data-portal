@@ -9,6 +9,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import { EVENTS } from "src/common/analytics/events";
 import { checkFeatureFlags } from "src/common/featureFlags";
+import { networkGuard } from "src/common/networkGuard";
 import { theme } from "src/common/theme";
 import DefaultLayout from "src/components/Layout/components/defaultLayout";
 import configs from "src/configs/configs";
@@ -30,6 +31,7 @@ declare global {
 const queryClient = new QueryClient();
 
 checkFeatureFlags();
+networkGuard();
 
 type NextPageWithLayout = NextPage & {
   Layout?: FC;

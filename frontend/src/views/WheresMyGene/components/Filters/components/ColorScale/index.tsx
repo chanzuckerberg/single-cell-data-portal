@@ -19,7 +19,7 @@ import {
   StyledIconImage,
   TooltipButton,
   StyledTooltip,
-} from "../../../CellInfoSideBar/style";
+} from "../../../../../WheresMyGeneV2/components/CellInfoSideBar/style";
 import { COLOR_SCALE_TOOLTIP_TEXT } from "src/views/WheresMyGene/common/constants";
 
 interface Props {

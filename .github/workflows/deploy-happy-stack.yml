@@ -2,11 +2,6 @@ name: Deploy Happy
 
 on: deployment
 
-# add a concurrency group to prevent multiple builds from running at the same time
-concurrency:
-  group: $${{ github.ref }}-environment
-  cancel-in-progress: false
-
 env:
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
@@ -109,6 +104,12 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.deployment.sha }}
+      - name: Get most recent tag
+        id: "fetch_tag"
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          echo "PREVIOUS_TAG=$(git describe --tags $(git rev-list --tags=sha\* --max-count=1))" >> $GITHUB_OUTPUT
       - name: Push Tag with latest prod commit SHA
         uses: rickstaa/action-create-tag@v1
         id: "tag_create"
@@ -119,16 +120,7 @@ jobs:
         id: build_changelog
         uses: mikepenz/release-changelog-builder-action@v4
         with:
-          configurationJson: |
-            {
-              "tag_resolver": {
-                "method": "sort",
-                "filter": {
-                  "pattern": "sha-(.+)",
-                  "flags": "gu"
-                }
-              }
-            }
+          fromTag: ${{ steps.fetch_tag.outputs.PREVIOUS_TAG }}
       - name: Produce Github Release for Prod Deployments
         uses: softprops/action-gh-release@v1
         if: steps.tag_create.outputs.tag_exists == 'false'

@@ -17,7 +17,7 @@ import {
   StyledIconImage,
   StyledTooltip,
   TooltipButton,
-} from "../../../CellInfoSideBar/style";
+} from "../../../../../WheresMyGeneV2/components/CellInfoSideBar/style";
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { ROUTES } from "src/common/constants/routes";
 import {

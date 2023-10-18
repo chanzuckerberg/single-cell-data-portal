@@ -84,7 +84,6 @@ export const REDUCERS = {
   clearGeneInfoGene,
   closeRightSidebar,
   addSelectedGenes,
-  deleteSelectedGenes,
   deleteSingleGene,
   deleteAllGenes,
   loadStateFromURL,
@@ -154,29 +153,6 @@ function deleteAllGenes(state: State, _: PayloadAction<null>): State {
     ...state,
     selectedGenes: [],
     xAxisHeight: INITIAL_STATE.xAxisHeight,
-  };
-}
-
-function deleteSelectedGenes(state: State, _: PayloadAction<null>): State {
-  const { genesToDelete } = state;
-
-  if (!genesToDelete.length) {
-    return state;
-  }
-
-  const { selectedGenes } = state;
-
-  const newSelectedGenes = genesToDelete.length
-    ? deleteByItems<State["selectedGenes"][number]>(
-        selectedGenes,
-        genesToDelete
-      )
-    : selectedGenes;
-
-  return {
-    ...state,
-    genesToDelete: [],
-    selectedGenes: newSelectedGenes,
   };
 }
 

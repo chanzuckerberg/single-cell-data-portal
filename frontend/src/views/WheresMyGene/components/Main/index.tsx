@@ -24,11 +24,10 @@ import {
   addGeneInfoGene,
   clearGeneInfoGene,
   closeRightSidebar,
-  deleteSelectedGenes,
 } from "../../common/store/actions";
 import { ChartProps, GeneExpressionSummary } from "../../common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
-import CellInfoBar from "../CellInfoSideBar";
+import CellInfoBar from "../../../WheresMyGeneV2/components/CellInfoSideBar";
 import GeneInfoBar from "../../../../components/GeneInfoSideBar";
 import Filters from "../Filters";
 import GetStarted from "../GetStarted";
@@ -40,7 +39,7 @@ import ScreenTint from "../ScreenTint";
 import { StyledBannerContainer, StyledSidebarDrawer } from "./style";
 import RightSideBar from "../../../../components/common/RightSideBar";
 import BottomBanner from "src/components/BottomBanner";
-import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
+import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../../../WheresMyGeneV2/components/CellInfoSideBar/style";
 import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 import GeneSearchBar from "src/views/WheresMyGeneV2/components/GeneSearchBar";
@@ -199,23 +198,6 @@ export default function WheresMyGene(): JSX.Element {
     selectedGenes,
     cellTypesByTissueName,
   ]);
-
-  // Listen to delete keyboard press event
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-
-    function handleKeyDown(event: KeyboardEvent): void {
-      if (event.code === "Backspace") {
-        if (!dispatch) return;
-
-        dispatch(deleteSelectedGenes());
-      }
-    }
-  }, [dispatch]);
 
   const hasSelectedTissues = (selectedTissues?.length ?? 0) > 0;
   const hasSelectedGenes = selectedGenes.length > 0;

@@ -23,13 +23,12 @@ import {
   addGeneInfoGene,
   clearGeneInfoGene,
   closeRightSidebar,
-  deleteSelectedGenes,
 } from "src/views/WheresMyGene/common/store/actions";
 import {
   GeneExpressionSummary,
   ChartProps,
 } from "src/views/WheresMyGene/common/types";
-import CellInfoSideBar from "src/views/WheresMyGene/components/CellInfoSideBar";
+import CellInfoSideBar from "src/views/WheresMyGeneV2/components/CellInfoSideBar";
 import Filters from "src/views/WheresMyGene/components/Filters";
 import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 
@@ -50,7 +49,7 @@ import {
 import { View } from "src/views/globalStyle";
 import HeatMap from "../HeatMap";
 import BottomBanner from "src/components/BottomBanner";
-import { CELL_INFO_SIDEBAR_WIDTH_PX } from "src/views/WheresMyGene/components/CellInfoSideBar/style";
+import { CELL_INFO_SIDEBAR_WIDTH_PX } from "src/views/WheresMyGeneV2/components/CellInfoSideBar/style";
 import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
 import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
 import { StyledRightSideBar } from "./style";
@@ -217,24 +216,6 @@ export default function WheresMyGene(): JSX.Element {
     selectedGenes,
     cellTypesByTissueName,
   ]);
-
-  // Listen to delete keyboard press event
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-
-    function handleKeyDown(event: KeyboardEvent): void {
-      if (event.code === "Backspace") {
-        if (!dispatch) return;
-
-        dispatch(deleteSelectedGenes());
-      }
-    }
-  }, [dispatch]);
-
   const [isSourceDatasetSidebarOpen, setSourceDatasetSidebarOpen] =
     useState(false);
   const handleSourceDatasetButtonClick = useCallback(() => {
