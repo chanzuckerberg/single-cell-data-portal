@@ -402,12 +402,13 @@ def build_ordered_cell_types_by_tissue(
     compare: str,
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
     with ServerTiming.time("build_ordered_cell_types_by_tissue"):
+        cell_counts_cell_type_agg = cell_counts_cell_type_agg.reset_index()
         # Create nested dicts with tissue_ontology_term_id keys, cell_type_ontology_term_id respectively
         structured_result: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(lambda: defaultdict(dict))
 
         # Populate aggregated cell counts for each tissue
-        tissue_agg = cell_counts_cell_type_agg.groupby(["tissue_ontology_term_id"], as_index=False).agg(
-            {"n_cells_cell_type": "sum"}
+        tissue_agg = cell_counts_cell_type_agg.groupby(["tissue_ontology_term_id"], as_index=False).sum(
+            numeric_only=True
         )
         fill_out_structured_tissue_agg(tissue_agg, structured_result)
 
