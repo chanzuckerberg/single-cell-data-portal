@@ -9,6 +9,7 @@ import {
   LoadStateFromURLPayload,
   PayloadAction,
 } from "src/views/WheresMyGene/common/store/reducer";
+import { CellType } from "src/views/WheresMyGene/common/types";
 
 const HUMAN_ORGANISM_ID = "NCBITaxon:9606";
 
@@ -85,7 +86,7 @@ export const loadStateFromQueryParams = ({
   selectedFilters: State["selectedFilters"];
   dispatch: Dispatch<PayloadAction<LoadStateFromURLPayload>>;
   tissues?: TissueMetadataQueryResponse;
-  cellTypesByName: { [name: string]: string };
+  cellTypesByName: { [name: string]: CellType };
 }): LoadStateFromURLPayload | null => {
   if (isSSR()) return null;
 
