@@ -11,7 +11,7 @@ import { EVENTS } from "src/common/analytics/events";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
 import { Icon, Tooltip } from "@czi-sds/components";
-import InfoSVG from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/icons/info-sign-icon.svg";
+import InfoSVG from "src/common/images/info-sign-icon.svg";
 
 import {
   COMPARE_OPTION_ID_FOR_AGGREGATED,

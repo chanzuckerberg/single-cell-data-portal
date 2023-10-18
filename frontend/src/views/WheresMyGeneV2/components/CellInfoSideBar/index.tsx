@@ -22,8 +22,8 @@ import {
 } from "./style";
 import { Link } from "../../../../components/GeneInfoSideBar/style";
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
-import { StyledImage } from "../HeatMap/components/YAxisChart/style";
-import InfoSVG from "../HeatMap/components/YAxisChart/icons/info-sign-icon.svg";
+import { StyledImage } from "../../../WheresMyGene/components/HeatMap/components/YAxisChart/style";
+import InfoSVG from "src/common/images/info-sign-icon.svg";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
 import { CellInfoBarProps } from "./types";
 import {
