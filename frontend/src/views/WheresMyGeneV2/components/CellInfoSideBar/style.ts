@@ -38,12 +38,17 @@ export const StyledTooltip = styled("div")`
   }
 `;
 
+export const TooltipContent = styled("div")`
+  padding: 0px 0px 8px 0px;
+`;
+
 export const StyledMarkerGeneHeader = styled("span")`
   color: black;
   font-weight: ${fontWeightSemibold};
   font-size: 16px;
   line-height: 24px;
   vertical-align: middle;
+  text-transform: capitalize;
 `;
 
 export const TooltipButton = styled(Button)`

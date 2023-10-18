@@ -1,12 +1,9 @@
 import { Button, Icon, Tooltip } from "@czi-sds/components";
-import React, { useCallback, useContext, useState } from "react";
+import React from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
-import { OntologyTerm, useMarkerGenes } from "src/common/queries/wheresMyGene";
 import { BetaChip } from "src/components/Header/style";
-import { DispatchContext, State } from "../../common/store";
-import { addSelectedGenes } from "../../common/store/actions";
 import {
   ButtonContainer,
   CopyGenesButton,
@@ -19,85 +16,56 @@ import {
   StyledIconImage,
   StyledMarkerGeneHeader,
   StyledTooltip,
+  TooltipContent,
   TissueName,
   TooltipButton,
 } from "./style";
 import { Link } from "../../../../components/GeneInfoSideBar/style";
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
-import { StyledImage } from "../HeatMap/components/YAxisChart/style";
-import InfoSVG from "../HeatMap/components/YAxisChart/icons/info-sign-icon.svg";
-import { RightSidebarProperties } from "../../../../components/common/RightSideBar";
+import { StyledImage } from "../../../WheresMyGene/components/HeatMap/components/YAxisChart/style";
+import InfoSVG from "src/common/images/info-sign-icon.svg";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
-
-const MARKER_GENE_LABEL = "marker genes";
-const MARKER_SCORE_LABEL = "marker score";
-
-export interface CellInfoBarProps extends RightSidebarProperties {
-  cellInfoCellType: Exclude<State["cellInfoCellType"], null>;
-  tissueInfo: OntologyTerm;
-  generateGeneInfo: (gene: string) => void;
-}
+import { CellInfoBarProps } from "./types";
+import {
+  MARKER_GENES_TOOLTIP_CONTENT,
+  MARKER_GENE_LABEL,
+  MARKER_SCORE_CELLGUIDE_LINK_TEXT,
+  MARKER_SCORE_DOTPLOT_BUTTON_TEXT,
+  MARKER_SCORE_LABEL,
+  MARKER_SCORE_TOOLTIP_CONTENT,
+  MARKER_SCORE_TOOLTIP_LINK_TEXT,
+  NO_MARKER_GENES_DESCRIPTION,
+  NO_MARKER_GENES_HEADER,
+  TABLE_HEADER_GENE,
+  TABLE_HEADER_SCORE,
+} from "./constants";
+import { useConnect } from "./connect";
 
 function CellInfoSideBar({
   cellInfoCellType,
   tissueInfo,
   generateGeneInfo,
 }: CellInfoBarProps): JSX.Element | null {
-  const urlParams = new URLSearchParams(window.location.search);
-  let testType: "binomtest" | undefined = undefined;
-
-  if (urlParams.get("test") === "binomtest") {
-    testType = "binomtest";
-  }
-  const { isLoading, data } = useMarkerGenes({
-    cellTypeID: cellInfoCellType.cellType.id,
-    organismID: cellInfoCellType.organismID,
-    test: testType,
-    tissueID: cellInfoCellType.tissueID,
+  const {
+    isLoading,
+    data,
+    handleCopyGenes,
+    handleDisplayGenes,
+    handleFmgHoverEnd,
+    handleMarkerScoreHoverEnd,
+    setHoverStartTime,
+  } = useConnect({
+    cellInfoCellType,
   });
-
-  const dispatch = useContext(DispatchContext);
-
-  const handleCopyGenes = useCallback(() => {
-    if (!data) return;
-    const genes = Object.keys(data.marker_genes);
-    navigator.clipboard.writeText(genes.join(", "));
-    track(EVENTS.WMG_FMG_COPY_GENES_CLICKED);
-  }, [data]);
-
-  const handleDisplayGenes = useCallback(() => {
-    if (!data || !dispatch) return;
-    const genes = Object.keys(data.marker_genes);
-    dispatch(addSelectedGenes(genes));
-    track(EVENTS.WMG_FMG_ADD_GENES_CLICKED);
-  }, [data, dispatch]);
-
-  const [hoverStartTime, setHoverStartTime] = useState(0);
-
-  const useHandleHoverEnd = (event: EVENTS, payload = {}) => {
-    return useCallback(() => {
-      if (Date.now() - hoverStartTime > 2 * 1000) {
-        track(event, payload);
-      }
-    }, [event, payload]);
-  };
-
-  const handleFmgHoverEnd = useHandleHoverEnd(
-    EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER,
-    { label: MARKER_GENE_LABEL }
-  );
-  const handleMarkerScoreHoverEnd = useHandleHoverEnd(
-    EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER,
-    { label: MARKER_SCORE_LABEL }
-  );
 
   if (isLoading || !data) return null;
 
   const numMarkerGenes = Object.keys(data.marker_genes).length;
 
   if (!cellInfoCellType) return null;
+
   return (
-    <div>
+    <>
       <TissueName>{tissueInfo.name}</TissueName>
       <Link
         href={`${ROUTES.CELL_GUIDE}/${cellInfoCellType.cellType.id}`}
@@ -109,11 +77,11 @@ function CellInfoSideBar({
         target="_blank"
         rel="noreferrer noopener"
       >
-        Open in CellGuide
+        {MARKER_SCORE_CELLGUIDE_LINK_TEXT}
       </Link>
       <ButtonContainer>
-        <div>
-          <StyledMarkerGeneHeader>Marker Genes</StyledMarkerGeneHeader>
+        <>
+          <StyledMarkerGeneHeader>{MARKER_GENE_LABEL}</StyledMarkerGeneHeader>
           <Tooltip
             sdsStyle="dark"
             placement="bottom"
@@ -124,12 +92,8 @@ function CellInfoSideBar({
             onClose={handleFmgHoverEnd}
             title={
               <StyledTooltip>
-                <div>
-                  Marker genes are highly and uniquely expressed in the cell
-                  type relative to all other cell types.
-                </div>
-                <br />
-                <div>
+                <TooltipContent>{MARKER_GENES_TOOLTIP_CONTENT}</TooltipContent>
+                <>
                   <a
                     href={ROUTES.FMG_DOCS}
                     rel="noopener"
@@ -143,9 +107,9 @@ function CellInfoSideBar({
                       });
                     }}
                   >
-                    Click to read more about the identification method.
+                    {MARKER_SCORE_TOOLTIP_LINK_TEXT}
                   </a>
-                </div>
+                </>
               </StyledTooltip>
             }
           >
@@ -158,7 +122,7 @@ function CellInfoSideBar({
             </TooltipButton>
           </Tooltip>
           <BetaChip label="Beta" size="small" />
-        </div>
+        </>
         <Button
           data-testid="add-to-dotplot-fmg-button"
           startIcon={<Icon sdsIcon="plus" sdsSize="s" sdsType="button" />}
@@ -169,19 +133,18 @@ function CellInfoSideBar({
           style={{ fontWeight: "500" }}
           disabled={!numMarkerGenes}
         >
-          Add to Dot Plot
+          {MARKER_SCORE_DOTPLOT_BUTTON_TEXT}
         </Button>
       </ButtonContainer>
-
       {!numMarkerGenes ? (
         (track(EVENTS.WMG_FMG_NO_MARKER_GENES, {
           combination: `${cellInfoCellType.cellType.id}, ${tissueInfo.id}`,
         }),
         (
           <NoMarkerGenesContainer data-testid="no-marker-genes-warning">
-            <NoMarkerGenesHeader>No Marker Genes</NoMarkerGenesHeader>
+            <NoMarkerGenesHeader>{NO_MARKER_GENES_HEADER}</NoMarkerGenesHeader>
             <NoMarkerGenesDescription>
-              No reliable marker genes for this cell type.
+              {NO_MARKER_GENES_DESCRIPTION}
             </NoMarkerGenesDescription>
           </NoMarkerGenesContainer>
         ))
@@ -189,9 +152,9 @@ function CellInfoSideBar({
         <StyledHTMLTable condensed bordered={false}>
           <thead>
             <tr>
-              <td>Gene </td>
+              <td>{TABLE_HEADER_GENE}</td>
               <td>
-                Marker Score
+                {TABLE_HEADER_SCORE}
                 <Tooltip
                   sdsStyle="dark"
                   placement="bottom"
@@ -202,14 +165,10 @@ function CellInfoSideBar({
                   onClose={handleMarkerScoreHoverEnd}
                   title={
                     <StyledTooltip>
-                      <div>
-                        Marker Score indicates the strength and specificity of a
-                        gene as a marker. It is the 5th percentile of the effect
-                        sizes when comparing the expressions in a cell type of
-                        interest to each other cell type in the tissue.
-                      </div>
-                      <br />
-                      <div>
+                      <TooltipContent>
+                        {MARKER_SCORE_TOOLTIP_CONTENT}
+                      </TooltipContent>
+                      <>
                         <a
                           href={ROUTES.FMG_DOCS}
                           rel="noopener"
@@ -223,9 +182,9 @@ function CellInfoSideBar({
                             });
                           }}
                         >
-                          Click to read more about the identification method.
+                          {MARKER_SCORE_TOOLTIP_LINK_TEXT}
                         </a>
-                      </div>
+                      </>
                     </StyledTooltip>
                   }
                 >
@@ -294,7 +253,7 @@ function CellInfoSideBar({
           </tbody>
         </StyledHTMLTable>
       )}
-    </div>
+    </>
   );
 }
 
