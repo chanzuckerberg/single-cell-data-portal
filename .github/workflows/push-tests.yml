@@ -363,7 +363,7 @@ jobs:
         run: cd explorer && make dev-env-server build-for-server-dev
       - name: Unit tests
         run: |
-          cd ./explorer && make unit-test-server
+          cd explorer && make unit-test-server
           bash <(curl -s https://codecov.io/bash) -y .codecov.yml -k server -cF server,python,unitTest
           cd explorer/client && ./node_modules/codecov/bin/codecov --yml=../.codecov.yml --root=../ --gcov-root=../ -C -F frontend,javascript,unitTest
 
@@ -394,7 +394,7 @@ jobs:
         run: cd explorer && make dev-env-server build-for-server-dev
       - name: Smoke tests (without annotations feature)
         run: |
-          cd explorer/client && make smoke-test
+          cd explorer && make smoke-test
           ./node_modules/codecov/bin/codecov --yml=../.codecov.yml --root=../ --gcov-root=../ -C -F frontend,javascript,smokeTest
 
   cxg-admin-unit-test:
