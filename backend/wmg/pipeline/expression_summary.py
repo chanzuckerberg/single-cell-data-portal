@@ -240,10 +240,10 @@ class ExpressionSummaryCubeBuilder:
 
             # convert data to raw counts and filter by min threshold
             # TODO: chat with pablo about how to choose this threshold
-            data_filt = raw_array.data >= NORM_EXPR_COUNT_FILTERING_MIN_THRESHOLD
+            data_filt = data >= NORM_EXPR_COUNT_FILTERING_MIN_THRESHOLD
 
             # convert data to log(X+1)
-            raw_array.data[:] = np.log(raw_array.data + 1)
+            data = np.log(data + 1)
 
             # filter data
             keep_data = np.logical_and(np.isfinite(data), data_filt)
