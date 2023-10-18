@@ -1,0 +1,21 @@
+name: Test Receiving Repository Dispatch
+
+on:
+  repository_dispatch:
+    types: [test-repository-dispatch]
+
+env:
+  GITHUB_BRANCH: ${{ github.event.client_payload.ref || github.ref }}
+
+jobs:
+  test_repository_dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test Basic Receiving Workflow Trigger
+        run: echo "Hello! Test Receiving Repository Dispatch starts...."
+      - name: Test Print Branch Name
+        run: |
+          echo "About to print branch name using env.GITHUB_BRANCH:"
+          echo "${{ env.GITHUB_BRANCH }}"
+          echo "About to print branch name using plain GITHUB_BRANCH:"
+          echo $GITHUB_BRANCH

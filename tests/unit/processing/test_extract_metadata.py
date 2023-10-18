@@ -91,13 +91,24 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
             "X_approximate_distribution": "normal",
             "batch_condition": np.array({"batchA", "batchB"}),
             "schema_version": "3.0.0",
+            "default_embedding": "X_umap",
         }
 
         var = pandas.DataFrame(
-            data=["gene", "spike-in", "gene", "gene", "gene"], columns=["feature_biotype"], index=df.columns
+            data=[
+                ["gene", "NCBITaxon:9606"],
+                ["spike-in", "NCBITaxon:32630"],
+                ["gene", "NCBITaxon:9606"],
+                ["gene", "NCBITaxon:9606"],
+                ["gene", "NCBITaxon:9606"],
+            ],
+            columns=["feature_biotype", "feature_reference"],
+            index=df.columns,
         )
 
-        adata = anndata.AnnData(X=df, obs=obs, uns=uns, var=var)
+        obsm = {"X_umap": np.zeros([50001, 2]), "X_pca": np.zeros([50001, 2])}
+
+        adata = anndata.AnnData(X=df, obs=obs, obsm=obsm, uns=uns, var=var)
         mock_read_h5ad.return_value = adata
 
         extracted_metadata = self.pdv.extract_metadata("dummy")
@@ -159,8 +170,18 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
         self.assertEqual(extracted_metadata.cell_count, 50001)
         self.assertEqual(extracted_metadata.primary_cell_count, 0)
 
+        self.assertEqual(extracted_metadata.default_embedding, "X_umap")
+
+        self.assertCountEqual(extracted_metadata.embeddings, ["X_umap", "X_pca"])
+
+        self.assertEqual(extracted_metadata.feature_count, var.shape[0])
+        self.assertCountEqual(extracted_metadata.feature_biotype, ["gene", "spike-in"])
+        self.assertCountEqual(extracted_metadata.feature_reference, ["NCBITaxon:9606", "NCBITaxon:32630"])
+
         filter = np.where(adata.var.feature_biotype == "gene")[0]
         self.assertAlmostEqual(extracted_metadata.mean_genes_per_cell, np.count_nonzero(adata.X[:, filter]) / 50001)
+
+        self.assertEqual(extracted_metadata.raw_data_location, "X")
 
     @patch("scanpy.read_h5ad")
     def test_extract_metadata_find_raw_layer(self, mock_read_h5ad):
@@ -222,6 +243,7 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
             ],
             index=(str(i) for i in range(11)),
         )
+        # purposefully do not provide default_embedding, as it is an optional field
         uns = {
             "title": "my test dataset",
             "X_approximate_distribution": "normal",
@@ -230,11 +252,24 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
         }
 
         var = pandas.DataFrame(
-            data=["gene", "spike-in", "gene"], columns=["feature_biotype"], index=non_zeros_X_layer_df.columns
+            data=[
+                ["gene", "NCBITaxon:9606"],
+                ["spike-in", "NCBITaxon:32630"],
+                ["gene", "NCBITaxon:9606"],
+            ],
+            columns=["feature_biotype", "feature_reference"],
+            index=non_zeros_X_layer_df.columns,
         )
 
+        obsm = {"X_umap": np.zeros([11, 2])}
+
         adata = anndata.AnnData(
-            X=non_zeros_X_layer_df, obs=obs, uns=uns, var=var, layers={"my_awesome_wonky_layer": zeros_layer_df}
+            X=non_zeros_X_layer_df,
+            obs=obs,
+            obsm=obsm,
+            uns=uns,
+            var=var,
+            layers={"my_awesome_wonky_layer": zeros_layer_df},
         )
         adata_raw = anndata.AnnData(X=zeros_layer_df, obs=obs, uns=uns)
         adata.raw = adata_raw
@@ -247,3 +282,5 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
         # Verify that the "my_awesome_wonky_layer" was read and not the default X layer. The layer contains only zeros
         # which should result in a mean_genes_per_cell value of 0 compared to 3 if the X layer was read.
         self.assertEqual(extracted_metadata.mean_genes_per_cell, 0)
+
+        self.assertEqual(extracted_metadata.raw_data_location, "raw.X")
