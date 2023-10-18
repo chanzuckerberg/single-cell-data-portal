@@ -422,7 +422,7 @@ function loadStateFromURL(
 ): State {
   const { payload } = action;
 
-  const { compare, filters, genes, tissues } = payload;
+  const { compare, filters, genes, tissues, cellTypes, organism } = payload;
 
   return {
     ...state,
@@ -430,8 +430,8 @@ function loadStateFromURL(
     selectedFilters: { ...state.selectedFilters, ...filters },
     selectedGenes: genes,
     selectedTissues: tissues,
-    selectedOrganismId: payload.organism,
-    filteredCellTypes: payload.cellTypes ?? [],
+    selectedOrganismId: organism,
+    filteredCellTypes: cellTypes ?? [],
     expandedTissueIds: filters.tissues ?? [],
   };
 }
