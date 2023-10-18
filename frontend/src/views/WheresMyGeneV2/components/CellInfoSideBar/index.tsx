@@ -133,7 +133,7 @@ function CellInfoSideBar({
           style={{ fontWeight: "500" }}
           disabled={!numMarkerGenes}
         >
-          {MARKER_SCORE_DOTPLOT_BUTTON_TEXT}{" "}
+          {MARKER_SCORE_DOTPLOT_BUTTON_TEXT}
         </Button>
       </ButtonContainer>
       {!numMarkerGenes ? (
@@ -152,7 +152,7 @@ function CellInfoSideBar({
         <StyledHTMLTable condensed bordered={false}>
           <thead>
             <tr>
-              <td>{TABLE_HEADER_GENE} </td>
+              <td>{TABLE_HEADER_GENE}</td>
               <td>
                 {TABLE_HEADER_SCORE}
                 <Tooltip
