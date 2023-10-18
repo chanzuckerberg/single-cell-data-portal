@@ -204,9 +204,56 @@ function CellInfoSideBar({
                     <StyledTooltip>
                       <div>
                         Marker Score indicates the strength and specificity of a
-                        gene as a marker. It is the 5th percentile of the effect
-                        sizes when comparing the expressions in a cell type of
-                        interest to each other cell type in the tissue.
+                        gene as a marker. It is the 10th percentile of the
+                        effect sizes when comparing the expressions in a cell
+                        type of interest to each other cell type in the tissue.
+                      </div>
+                      <br />
+                      <div>
+                        <a
+                          href={ROUTES.FMG_DOCS}
+                          rel="noopener"
+                          target="_blank"
+                          onClick={() => {
+                            track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
+                              label: MARKER_SCORE_LABEL,
+                            });
+                            track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
+                              label: MARKER_SCORE_LABEL,
+                            });
+                          }}
+                        >
+                          Click to read more about the identification method.
+                        </a>
+                      </div>
+                    </StyledTooltip>
+                  }
+                >
+                  <TooltipButton
+                    sdsStyle="minimal"
+                    sdsType="secondary"
+                    isAllCaps={false}
+                  >
+                    <StyledIconImage src={questionMarkIcon} />
+                  </TooltipButton>
+                </Tooltip>
+              </td>
+              <td>
+                Specificity
+                <Tooltip
+                  sdsStyle="dark"
+                  placement="bottom"
+                  width="default"
+                  className="fmg-tooltip-icon"
+                  arrow
+                  onOpen={() => setHoverStartTime(Date.now())}
+                  onClose={handleMarkerScoreHoverEnd}
+                  title={
+                    <StyledTooltip>
+                      <div>
+                        Specificity indicates the fraction of cell types that
+                        have lower marker score for a particular gene than the
+                        cell type of interest.
                       </div>
                       <br />
                       <div>
@@ -253,7 +300,7 @@ function CellInfoSideBar({
                   Copy
                 </CopyGenesButton>
               </td>
-              <td>
+              <td colSpan={2}>
                 <MarkerStrengthContainer>
                   <MarkerStrengthLabel>{"Low: <1"}</MarkerStrengthLabel>
                   <MarkerStrengthLabel>{"Medium: 1-2"}</MarkerStrengthLabel>
@@ -287,7 +334,10 @@ function CellInfoSideBar({
                   </InfoButtonWrapper>
                 </td>
                 <td data-testid="marker-scores-fmg">
-                  {metadata.effect_size.toPrecision(4)}
+                  {metadata.marker_score.toPrecision(4)}
+                </td>
+                <td data-testid="specificity-scores-fmg">
+                  {metadata.specificity.toPrecision(2)}
                 </td>
               </tr>
             ))}

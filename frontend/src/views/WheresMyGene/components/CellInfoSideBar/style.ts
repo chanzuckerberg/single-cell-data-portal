@@ -86,7 +86,7 @@ export const StyledHTMLTable = styled(HTMLTable)`
     font-weight: 500;
     padding: 0 !important;
   }
-  & td:nth-of-type(2) {
+  & td:nth-of-type(3) {
     text-align: end;
   }
 
