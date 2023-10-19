@@ -250,7 +250,7 @@ async function verifyShareLink({
     encodedLink += encodeLink(param, String(data));
   }
 
-  //cellTypes
+  // cellTypes
   if (cellTypes !== undefined) {
     const param = "cellTypes";
 
