@@ -15,7 +15,6 @@ from backend.wmg.data.snapshot import (
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
     WmgSnapshot,
 )
-from backend.wmg.data.utils import log_func_runtime
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,
@@ -26,6 +25,7 @@ from backend.wmg.pipeline.errors import PipelineStepMissing
 from backend.wmg.pipeline.utils import (
     create_empty_cube_if_needed,
     load_pipeline_state,
+    log_func_runtime,
     write_pipeline_state,
 )
 
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 @log_func_runtime
-def create_marker_genes_cube(*, corpus_path: str):
+def create_marker_genes_cube(corpus_path: str):
     pipeline_state = load_pipeline_state(corpus_path)
 
     expression_summary_default_cube_uri = os.path.join(corpus_path, EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME)
@@ -45,7 +45,7 @@ def create_marker_genes_cube(*, corpus_path: str):
         raise PipelineStepMissing("cell_counts")
 
     if not pipeline_state.get(PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG):
-        raise PipelineStepMissing("primary_filter_dimensions")
+        raise PipelineStepMissing("primary_filter_dimensions.json")
 
     logger.info("Calculating marker genes.")
     with (

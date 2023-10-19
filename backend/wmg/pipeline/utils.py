@@ -1,16 +1,13 @@
 import json
 import logging
 import os
+import time
 import unicodedata
 
+import numpy as np
+import tiledb
 from tiledb import ArraySchema
 
-from backend.wmg.data.tissue_mapper import TissueMapper
-from backend.wmg.data.utils import (
-    create_empty_cube,
-    get_collections_from_discover_api,
-    get_datasets_from_discover_api,
-)
 from backend.wmg.pipeline.constants import (
     DATASET_METADATA_CREATED_FLAG,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
@@ -19,6 +16,10 @@ from backend.wmg.pipeline.constants import (
     MARKER_GENES_CUBE_CREATED_FLAG,
     PIPELINE_STATE_FILENAME,
     PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG,
+)
+from backend.wmg.pipeline.utils import (
+    get_collections_from_discover_api,
+    get_datasets_from_discover_api,
 )
 
 logger = logging.getLogger(__name__)
@@ -76,49 +77,38 @@ def return_dataset_dict_w_publications():
     return dataset_dict
 
 
-def list_grouped_primary_filter_dimensions_term_ids(
-    df, primary_dim_name: str, group_by_dim: str
-) -> dict[str, list[str]]:
-    """
-    This function takes a dataframe and two dimension names as input. It groups the dataframe by the second dimension name,
-    and lists the unique values of the first dimension name for each group. The output is a dictionary where the keys are the
-    unique values of the second dimension name, and the values are lists of unique values of the first dimension name for each group.
-
-    :param df: The input dataframe.
-    :param primary_dim_name: The name of the first dimension.
-    :param group_by_dim: The name of the second dimension to group by.
-    :return: A dictionary of lists of unique values of the first dimension for each group.
-    """
-    return (
-        df[[primary_dim_name, group_by_dim]]
-        .drop_duplicates()
-        .groupby(group_by_dim)
-        .agg(list)
-        .to_dict()[primary_dim_name]
-    )
-
-
-def order_tissues(ontology_term_ids: list[str]) -> list[str]:
-    """
-    Order tissues based on appearance in TissueMapper.HIGH_LEVEL_TISSUES. This will maintain the priority set in
-    that class which is intended to keep most relevant tissues on top and tissues that are related to be placed
-    sequentially
-    """
-    ontology_term_ids = set(ontology_term_ids)
-    ordered_ontology_term_ids = []
-    for tissue in TissueMapper.HIGH_LEVEL_TISSUES:
-        tissue = TissueMapper.reformat_ontology_term_id(tissue, to_writable=True)
-        if tissue in ontology_term_ids:
-            ontology_term_ids.remove(tissue)
-            ordered_ontology_term_ids.append(tissue)
-
-    if ontology_term_ids:
-        ordered_ontology_term_ids = ordered_ontology_term_ids + list(ontology_term_ids)
-
-    return ordered_ontology_term_ids
-
-
 def create_empty_cube_if_needed(uri: str, schema: ArraySchema):
     if not os.path.exists(uri):
         logger.info(f"Creating empty cube at {uri} with schema: {schema}")
-        create_empty_cube(uri, schema)
+        tiledb.Array.create(uri, schema, overwrite=True)
+
+
+def log_func_runtime(func):
+    # This decorator function logs the execution time of the function object passed
+    def wrap_func(*args, **kwargs):
+        logger = logging.getLogger(func.__module__)
+        start = time.perf_counter()
+        result = func(*args, **kwargs)
+        stop = time.perf_counter()
+        logger.info(f"Function {func.__name__} executed in {(stop-start):.4f}s")
+        return result
+
+    return wrap_func
+
+
+def to_dict(a, b):
+    """
+    convert a flat key array (a) and a value array (b) into a dictionary with values grouped by keys
+    """
+    a = np.array(a)
+    b = np.array(b)
+    idx = np.argsort(a)
+    a = a[idx]
+    b = b[idx]
+    bounds = np.where(a[:-1] != a[1:])[0] + 1
+    bounds = np.append(np.append(0, bounds), a.size)
+    bounds_left = bounds[:-1]
+    bounds_right = bounds[1:]
+    slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
+    d = dict(zip(np.unique(a), [list(set(x)) for x in slists]))
+    return d

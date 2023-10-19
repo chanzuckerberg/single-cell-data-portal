@@ -9,22 +9,18 @@ from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     FILTER_RELATIONSHIPS_FILENAME,
 )
-from backend.wmg.data.utils import log_func_runtime, to_dict
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     FILTER_RELATIONSHIPS_CREATED_FLAG,
 )
 from backend.wmg.pipeline.errors import PipelineStepMissing
-from backend.wmg.pipeline.utils import (
-    load_pipeline_state,
-    write_pipeline_state,
-)
+from backend.wmg.pipeline.utils import load_pipeline_state, log_func_runtime, to_dict, write_pipeline_state
 
 logger = logging.getLogger(__name__)
 
 
 @log_func_runtime
-def create_filter_relationships_graph(*, corpus_path: str) -> dict:
+def create_filter_relationships_graph(corpus_path: str) -> dict:
     """
     Create a graph of filter relationships
 

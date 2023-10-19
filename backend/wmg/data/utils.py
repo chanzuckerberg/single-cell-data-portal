@@ -1,60 +1,13 @@
-import logging
 import os
-import time
-from typing import Dict, List
+from typing import Dict
 
-import numpy as np
 import requests
-import tiledb
 import yaml
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
 from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
 from backend.wmg.data.constants import CL_PINNED_CONFIG_URL, WMG_PINNED_SCHEMA_VERSION
-
-
-def log_func_runtime(func):
-    # This decorator function logs the execution time of the function object passed
-    def wrap_func(*args, **kwargs):
-        logger = logging.getLogger(func.__module__)
-        start = time.perf_counter()
-        result = func(*args, **kwargs)
-        stop = time.perf_counter()
-        logger.info(f"Function {func.__name__} executed in {(stop-start):.4f}s")
-        return result
-
-    return wrap_func
-
-
-def get_all_dataset_ids(tdb_group: str) -> List[str]:
-    # TODO: implement this function
-    # with tiledb.open(f"{tdb_group}/{OBS_ARRAY_NAME}", "r") as obs:
-    #     all_dataset_ids = obs.query(attrs=[], dims=["dataset_id"]).df[:].dataset_id.unique()
-    # all_dataset_ids.sort()
-    # return all_dataset_ids
-    pass
-
-
-@log_func_runtime
-def get_expression_summary_cube_gene_count(tbd_group: str) -> int:
-    with tiledb.open(tbd_group) as obs:
-        gene_count = len(obs.query(dims=["gene_ontology_term_id"]).df[:].gene_ontology_term_id.unique())
-    return gene_count
-
-
-@log_func_runtime
-def get_cell_count_cube_count(tbd_group: str) -> int:
-    with tiledb.open(tbd_group) as obs:
-        cell_count = obs.query(attrs=["n_cells"]).df[:].n_cells.sum()
-    return cell_count
-
-
-def create_empty_cube(uri: str, schema):
-    """
-    Create an empty cube with expected schema (dimensions and attributes) at given uri
-    """
-    tiledb.Array.create(uri, schema, overwrite=True)
 
 
 def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:
@@ -190,24 +143,6 @@ def get_collections_from_discover_api():
         if response.status_code == 200:
             collections = response.json()
     return collections
-
-
-def to_dict(a, b):
-    """
-    convert a flat key array (a) and a value array (b) into a dictionary with values grouped by keys
-    """
-    a = np.array(a)
-    b = np.array(b)
-    idx = np.argsort(a)
-    a = a[idx]
-    b = b[idx]
-    bounds = np.where(a[:-1] != a[1:])[0] + 1
-    bounds = np.append(np.append(0, bounds), a.size)
-    bounds_left = bounds[:-1]
-    bounds_right = bounds[1:]
-    slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
-    d = dict(zip(np.unique(a), [list(set(x)) for x in slists]))
-    return d
 
 
 def get_pinned_ontology_url(name: str):

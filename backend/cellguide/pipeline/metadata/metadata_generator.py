@@ -6,7 +6,7 @@ from pronto import Ontology
 from backend.cellguide.pipeline.constants import UBERON_BASIC_PERMANENT_URL_PRONTO
 from backend.cellguide.pipeline.metadata.types import CellMetadata, TissueMetadata
 from backend.wmg.data.constants import CL_BASIC_OBO_NAME
-from backend.wmg.data.utils import get_pinned_ontology_url
+from backend.wmg.pipeline.utils import get_pinned_ontology_url
 
 logger = logging.getLogger(__name__)
 

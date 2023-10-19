@@ -1,16 +1,10 @@
 import logging
 import os
-import shutil
 import subprocess
 
 import boto3
 
-from backend.wmg.data.schemas.corpus_schema import (
-    INTEGRATED_ARRAY_NAME,
-    OBS_ARRAY_NAME,
-    VAR_ARRAY_NAME,
-)
-from backend.wmg.data.utils import log_func_runtime
+from backend.wmg.pipeline.utils import log_func_runtime
 
 stack_name = os.environ.get("REMOTE_DEV_PREFIX")
 
@@ -71,11 +65,6 @@ def upload_artifacts_to_s3(
     snapshot_s3_dest_path: A string that contains the location of the uploaded data
     """
     snapshot_id = str(snapshot_id)
-
-    # cleanup files we do not wish to upload
-    shutil.rmtree(f"{snapshot_source_path}/{INTEGRATED_ARRAY_NAME}")
-    shutil.rmtree(f"{snapshot_source_path}/{OBS_ARRAY_NAME}")
-    shutil.rmtree(f"{snapshot_source_path}/{VAR_ARRAY_NAME}")
 
     snapshot_s3_dest_path = _get_wmg_snapshot_s3_fullpath(
         snapshot_schema_version, snapshot_id, is_snapshot_validation_successful

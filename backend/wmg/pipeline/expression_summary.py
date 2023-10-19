@@ -17,9 +17,6 @@ from backend.wmg.data.schemas.cube_schema import (
 )
 from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME
 from backend.wmg.data.tiledb import create_ctx
-from backend.wmg.data.utils import (
-    log_func_runtime,
-)
 from backend.wmg.pipeline.constants import (
     ASSAYS_FOR_GENE_LENGTH_NORMALIZATION,
     DIMENSION_NAME_MAP_CENSUS_TO_WMG,
@@ -29,6 +26,7 @@ from backend.wmg.pipeline.constants import (
 from backend.wmg.pipeline.utils import (
     create_empty_cube_if_needed,
     load_pipeline_state,
+    log_func_runtime,
     remove_accents,
     return_dataset_dict_w_publications,
 )

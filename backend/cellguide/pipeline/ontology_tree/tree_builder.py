@@ -14,7 +14,7 @@ from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS, UB
 from backend.cellguide.pipeline.ontology_tree.types import OntologyTree, OntologyTreeState
 from backend.common.utils.rollup import rollup_across_cell_type_descendants
 from backend.wmg.data.constants import CL_BASIC_OBO_NAME
-from backend.wmg.data.utils import get_pinned_ontology_url
+from backend.wmg.pipeline.utils import get_pinned_ontology_url
 
 logger = logging.getLogger(__name__)
 

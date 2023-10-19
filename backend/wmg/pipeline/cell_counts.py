@@ -11,12 +11,12 @@ from backend.wmg.data.schemas.cube_schema import (
 from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
 )
-from backend.wmg.data.utils import log_func_runtime
 from backend.wmg.pipeline.constants import (
     DIMENSION_NAME_MAP_CENSUS_TO_WMG,
 )
 from backend.wmg.pipeline.utils import (
     create_empty_cube_if_needed,
+    log_func_runtime,
     remove_accents,
     return_dataset_dict_w_publications,
 )

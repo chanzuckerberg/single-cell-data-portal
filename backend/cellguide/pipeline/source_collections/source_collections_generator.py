@@ -1,7 +1,7 @@
 from backend.cellguide.pipeline.canonical_marker_genes.utils import format_citation_dp
 from backend.cellguide.pipeline.source_collections.types import SourceCollectionsData
 from backend.common.utils.rollup import descendants
-from backend.wmg.data.utils import get_collections_from_discover_api, get_datasets_from_discover_api
+from backend.wmg.pipeline.utils import get_collections_from_discover_api, get_datasets_from_discover_api
 
 
 def generate_source_collections_data(all_cell_type_ids_in_corpus: list[str]) -> dict[str, list[SourceCollectionsData]]:

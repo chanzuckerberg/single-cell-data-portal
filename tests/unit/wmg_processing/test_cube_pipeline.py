@@ -6,9 +6,9 @@ import unittest
 from unittest import mock
 from unittest.mock import Mock
 
-from backend.wmg.data.load_cube import _get_wmg_snapshot_s3_fullpath
 from backend.wmg.data.snapshot import _get_wmg_snapshot_schema_dir_path
 from backend.wmg.pipeline.cube_pipeline import logger, main
+from backend.wmg.pipeline.load_cube import _get_wmg_snapshot_s3_fullpath
 
 
 @contextlib.contextmanager

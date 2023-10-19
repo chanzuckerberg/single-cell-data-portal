@@ -2,7 +2,7 @@ import unittest
 from typing import Dict
 
 from backend.wmg.data.query import WmgQueryCriteria, WmgSnapshot
-from backend.wmg.data.utils import find_all_dim_option_values, find_dim_option_values
+from backend.wmg.pipeline.utils import find_all_dim_option_values, find_dim_option_values
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot
 
 TEST_SNAPSHOT = "realistic-test-snapshot"

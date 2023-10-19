@@ -18,7 +18,7 @@ ORGANISM_INFO = [
 ]
 
 
-def create_expression_summary_and_cell_counts_cubes(*, corpus_path: str):
+def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
     pipeline_state = load_pipeline_state(corpus_path)
 
     for organismInfo in ORGANISM_INFO:

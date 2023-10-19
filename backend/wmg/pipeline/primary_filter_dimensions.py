@@ -11,7 +11,6 @@ from backend.wmg.data.snapshot import (
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
 )
 from backend.wmg.data.tissue_mapper import TissueMapper
-from backend.wmg.data.utils import log_func_runtime
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,
@@ -20,6 +19,7 @@ from backend.wmg.pipeline.constants import (
 from backend.wmg.pipeline.errors import PipelineStepMissing
 from backend.wmg.pipeline.utils import (
     load_pipeline_state,
+    log_func_runtime,
     write_pipeline_state,
 )
 
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 @log_func_runtime
-def create_primary_filter_dimensions(*, corpus_path: str):
+def create_primary_filter_dimensions(corpus_path: str):
     """
     This method creates the primary filter dimensions for the WMG snapshot.
     """

@@ -2,15 +2,15 @@ import json
 import logging
 
 from backend.wmg.data.snapshot import DATASET_METADATA_FILENAME
-from backend.wmg.data.utils import get_datasets_from_discover_api, log_func_runtime
+from backend.wmg.data.utils import get_datasets_from_discover_api
 from backend.wmg.pipeline.constants import DATASET_METADATA_CREATED_FLAG
-from backend.wmg.pipeline.utils import load_pipeline_state, write_pipeline_state
+from backend.wmg.pipeline.utils import load_pipeline_state, log_func_runtime, write_pipeline_state
 
 logger = logging.getLogger(__name__)
 
 
 @log_func_runtime
-def create_dataset_metadata(*, corpus_path: str) -> None:
+def create_dataset_metadata(corpus_path: str) -> None:
     """
     This function generates a dictionary containing metadata for each dataset.
     The metadata includes the dataset id, label, collection id, and collection label.
