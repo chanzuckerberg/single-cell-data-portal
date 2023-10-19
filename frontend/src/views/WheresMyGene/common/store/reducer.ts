@@ -106,11 +106,6 @@ export const REDUCERS = {
 export function reducer(state: State, action: PayloadAction<unknown>): State {
   const { type } = action;
 
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  console.log("🎄 state", state);
-
   const handler = REDUCERS[type];
 
   if (!handler) {
@@ -426,6 +421,8 @@ function loadStateFromURL(
   state: State,
   action: PayloadAction<LoadStateFromURLPayload>
 ): State {
+  const { expandedTissueIds } = state;
+
   const { payload } = action;
 
   const { compare, filters, genes, tissues, cellTypes, organism, cellTypeIds } =
@@ -440,7 +437,7 @@ function loadStateFromURL(
     selectedOrganismId: organism,
     filteredCellTypes: cellTypes ?? EMPTY_ARRAY,
     filteredCellTypeIds: cellTypeIds ?? EMPTY_ARRAY,
-    expandedTissueIds: filters.tissues ?? EMPTY_ARRAY,
+    expandedTissueIds: filters.tissues ?? expandedTissueIds,
   };
 }
 

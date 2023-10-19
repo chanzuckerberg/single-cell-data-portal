@@ -239,23 +239,11 @@ export function useConnect({
         (name) => cellTypesByName[name].id
       );
 
-      // DEBUG
-      // DEBUG
-      // DEBUG
-      console.log("-------filteredCellTypes", filteredCellTypes);
-      console.log("-------rawNewFilteredCellTypes", rawNewFilteredCellTypes);
-      console.log("-------newCellTypeNames", newCellTypeNames);
-
       /**
        * (thuang): Don't dispatch if the new filtered cell types are the same.
        * Otherwise, it will cause infinite loop.
        */
       if (String(filteredCellTypes) === String(newCellTypeNames)) return;
-
-      // DEBUG
-      // DEBUG
-      // DEBUG
-      console.log("🙆🙆🙆🙆🙆🙆🙆🙆🙆🙆🙆 DISPATCHING");
 
       dispatch?.(
         setFilteredCellTypes({
@@ -267,31 +255,6 @@ export function useConnect({
     },
     [cellTypesByName, displayedTissueIds, dispatch, filteredCellTypes]
   );
-
-  // const previousFilteredCellTypes = useRef(filteredCellTypes);
-
-  // useEffect(() => {
-  //   if (previousFilteredCellTypes.current === filteredCellTypes) return;
-
-  //   // DEBUG
-  //   // DEBUG
-  //   // DEBUG
-  //   console.log(
-  //     "#### Calling handleFilteredCellTypesChange filteredCellTypes",
-  //     filteredCellTypes
-  //   );
-
-  //   handleFilteredCellTypesChange(
-  //     null,
-  //     filteredCellTypes.map((name) => ({ name }))
-  //   );
-
-  //   previousFilteredCellTypes.current = filteredCellTypes;
-  // }, [
-  //   previousFilteredCellTypes,
-  //   filteredCellTypes,
-  //   handleFilteredCellTypesChange,
-  // ]);
 
   const handleCellTypeDelete = (cellTypeNameToDelete: string) => () => {
     const cellTypeIdToDelete = cellTypesByName[cellTypeNameToDelete].id;
@@ -353,14 +316,6 @@ export function useConnect({
     displayedCellTypes,
     selectedCellTypes: filteredCellTypes,
   });
-
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  console.log(
-    "📞📞📞📞 calling useHandleExpandedTissueIds filteredCellTypeIds",
-    filteredCellTypeIds
-  );
 
   useHandleExpandedTissueIds({
     filteredCellTypeIds,
