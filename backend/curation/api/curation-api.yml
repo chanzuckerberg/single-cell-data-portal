@@ -1305,7 +1305,13 @@ components:
         [tissue label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#tissue)
       default: []
       items:
-        $ref: "#/components/schemas/ontology_element"
+        allOf:
+          - $ref: "#/components/schemas/ontology_element"
+          - type: object
+            properties:
+              tissue_type:
+                type: string
+                nullable: true
       type: array
     dataset_tombstone:
       description: When True, this Dataset was withdrawn from the Data curation at the request of its submitter.

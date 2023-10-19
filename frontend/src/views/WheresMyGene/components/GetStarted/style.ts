@@ -6,7 +6,7 @@ import {
   CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
 } from "src/components/Layout/style";
 import { LEGEND_MARGIN_BOTTOM_PX } from "../../style";
-import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
+import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../../../WheresMyGeneV2/components/CellInfoSideBar/style";
 import { Y_AXIS_CHART_WIDTH_PX } from "../HeatMap/utils";
 import { LEGEND_HEIGHT_PX } from "../InfoPanel/components/Legend/style";
 

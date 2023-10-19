@@ -2,11 +2,6 @@ name: Deploy Happy
 
 on: deployment
 
-# add a concurrency group to prevent multiple builds from running at the same time
-concurrency:
-  group: ${{ github.ref }}-environment
-  cancel-in-progress: false
-
 env:
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1

@@ -26,17 +26,6 @@ from tests.unit.backend.layers.api.test_portal_api import generate_mock_publishe
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
 
-mock_config_attr = {
-    "curator_role_arn": "test_role_arn",
-    "submission_bucket": "cellxgene-dataset-submissions-test",
-    "upload_max_file_size_gb": 1,
-    "dataset_assets_base_url": "http://domain",
-}
-
-
-def mock_config_fn(name):
-    return mock_config_attr[name]
-
 
 class TestDeleteCollection(BaseAPIPortalTest):
     def _test(self, collection_id, header, expected_status, query_param_str=None):
@@ -114,9 +103,8 @@ class TestDeleteCollection(BaseAPIPortalTest):
 
 
 class TestS3Credentials(BaseAPIPortalTest):
-    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
     @patch("backend.curation.api.v1.curation.collections.collection_id.s3_upload_credentials.sts_client")
-    def test__generate_s3_credentials__OK(self, sts_client: Mock, mock_config: Mock):
+    def test__generate_s3_credentials__OK(self, sts_client: Mock):
         def _test(token, is_super_curator: bool = False):
             sts_client.assume_role_with_web_identity = Mock(
                 return_value={
@@ -626,8 +614,7 @@ class TestGetCollectionVersions(BaseAPIPortalTest):
 
 
 class TestGetCollectionID(BaseAPIPortalTest):
-    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-    def test__get_published_collection_verify_body_is_reshaped_correctly__OK(self, mock_config: Mock):
+    def test__get_published_collection_verify_body_is_reshaped_correctly__OK(self):
         # Setup
         # test fixtures
         dataset_metadata = copy.deepcopy(self.sample_dataset_metadata)
@@ -1023,12 +1010,12 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                         {
                             "filesize": -1,
                             "filetype": "H5AD",
-                            "url": f"None/{first_version.datasets[0].version_id.id}.h5ad",
+                            "url": f"http://domain/{first_version.datasets[0].version_id.id}.h5ad",
                         },
                         {
                             "filesize": -1,
                             "filetype": "RDS",
-                            "url": f"None/{first_version.datasets[0].version_id.id}.rds",
+                            "url": f"http://domain/{first_version.datasets[0].version_id.id}.rds",
                         },
                     ],
                     "batch_condition": ["test_batch_1", "test_batch_2"],
@@ -1066,7 +1053,13 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     ],
                     "sex": [{"label": "test_sex_label", "ontology_term_id": "test_sex_term_id"}],
                     "suspension_type": ["test_suspension_type"],
-                    "tissue": [{"label": "test_tissue_label", "ontology_term_id": "test_tissue_term_id"}],
+                    "tissue": [
+                        {
+                            "label": "test_tissue_label",
+                            "ontology_term_id": "test_tissue_term_id",
+                            "tissue_type": "tissue",
+                        }
+                    ],
                     "title": "test_dataset_name",
                     "tombstone": False,
                     "x_approximate_distribution": "NORMAL",
@@ -1627,8 +1620,7 @@ class TestGetDatasets(BaseAPIPortalTest):
         response = self.app.get(test_url)
         self.assertEqual(410, response.status_code)
 
-    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-    def test_get_dataset_shape(self, mock_config: Mock):
+    def test_get_dataset_shape(self):
         # retrieve a private dataset
         private_dataset = self.generate_dataset(name="test")
         test_url = f"/curation/v1/collections/{private_dataset.collection_id}/datasets/{private_dataset.dataset_id}"
@@ -1780,16 +1772,14 @@ class TestGetDatasets(BaseAPIPortalTest):
             response = self.app.get(test_url, headers=headers)
             self.assertEqual(403, response.status_code)
 
-    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-    def test_get_dataset_no_assets(self, mock_config: Mock):
+    def test_get_dataset_no_assets(self):
         private_dataset = self.generate_dataset(artifacts=[])
         test_url = f"/curation/v1/collections/{private_dataset.collection_id}/datasets/{private_dataset.dataset_id}"
         response = self.app.get(test_url)
         body = response.json
         self.assertEqual([], body["assets"])
 
-    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-    def test_get_all_datasets_200(self, mock_config: Mock):
+    def test_get_all_datasets_200(self):
         published_collection_1 = self.generate_published_collection(
             add_datasets=2,
             metadata=CollectionMetadata(
@@ -1889,8 +1879,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             ]
             self.assertEqual(expected_assets, dataset["assets"])
 
-    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-    def test_get_datasets_by_schema_200(self, mock_config: Mock):
+    def test_get_datasets_by_schema_200(self):
         published_collection_1 = self.generate_published_collection(
             add_datasets=2,
             metadata=CollectionMetadata(
@@ -2000,8 +1989,7 @@ class TestGetDatasets(BaseAPIPortalTest):
 
 
 class TestGetDatasetVersion(BaseAPIPortalTest):
-    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-    def test_get_dataset_version_ok(self, mock_config: Mock):
+    def test_get_dataset_version_ok(self):
         collection = self.generate_published_collection()
         collection_id = collection.collection_id
         initial_published_dataset = collection.datasets[0]

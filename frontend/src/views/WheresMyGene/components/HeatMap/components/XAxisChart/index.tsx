@@ -29,7 +29,7 @@ import {
   DeleteButtonWrapper,
 } from "./style";
 import { StyledImage } from "../YAxisChart/style";
-import InfoSVG from "../YAxisChart/icons/info-sign-icon.svg";
+import InfoSVG from "src/common/images/info-sign-icon.svg";
 import {
   X_AXIS_CHART_HEIGHT_PX,
   X_AXIS_HOVER_CONTAINER_HEIGHT_PX,

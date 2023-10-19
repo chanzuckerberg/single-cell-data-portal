@@ -231,6 +231,11 @@ def convert_anndata_category_colors_to_cxg_category_colors(adata):
         if category_name not in adata.obs.keys():
             continue
 
+        # suppose we have sex_ontology_term_id_colors annotated. we want to use "female" instead of "PATO:0000383" in the
+        # colors JSON. using the label column instead of the ontology_term_id column will ensure we use english
+        if "_ontology_term_id" in category_name:
+            category_name = category_name.replace("_ontology_term_id", "")
+
         # create the cellxgene color entry for this category
         cxg_colors[category_name] = dict(
             zip(adata.obs[category_name].cat.categories, [convert_color_to_hex_format(c) for c in adata.uns[uns_key]])

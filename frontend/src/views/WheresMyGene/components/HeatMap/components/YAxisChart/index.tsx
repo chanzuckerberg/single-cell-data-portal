@@ -9,7 +9,7 @@ import {
   hyphenize,
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../utils";
-import InfoSVG from "./icons/info-sign-icon.svg";
+import InfoSVG from "src/common/images/info-sign-icon.svg";
 import {
   CellCountLabelStyle,
   CellTypeLabelStyle,
