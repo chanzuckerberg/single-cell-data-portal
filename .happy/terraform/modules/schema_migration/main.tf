@@ -140,6 +140,10 @@ resource aws_batch_job_definition pubish_revisions {
         name= "REMOTE_DEV_PREFIX",
         value= var.remote_dev_prefix
       },
+      {
+        name= "DATASETS_BUCKET",
+        value= var.datasets_bucket
+      },
     ],
     resourceRequirements = [
       {
