@@ -8,6 +8,10 @@ import numpy as np
 import tiledb
 from tiledb import ArraySchema
 
+from backend.wmg.data.utils import (
+    get_collections_from_discover_api,
+    get_datasets_from_discover_api,
+)
 from backend.wmg.pipeline.constants import (
     DATASET_METADATA_CREATED_FLAG,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
@@ -16,10 +20,6 @@ from backend.wmg.pipeline.constants import (
     MARKER_GENES_CUBE_CREATED_FLAG,
     PIPELINE_STATE_FILENAME,
     PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG,
-)
-from backend.wmg.pipeline.utils import (
-    get_collections_from_discover_api,
-    get_datasets_from_discover_api,
 )
 
 logger = logging.getLogger(__name__)

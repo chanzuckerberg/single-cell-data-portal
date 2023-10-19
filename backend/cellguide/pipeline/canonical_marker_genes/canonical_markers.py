@@ -19,7 +19,7 @@ from backend.cellguide.pipeline.canonical_marker_genes.utils import (
 from backend.cellguide.pipeline.constants import ASCTB_MASTER_SHEET_URL, CELLGUIDE_PIPELINE_NUM_CPUS
 from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
 from backend.wmg.data.ontology_labels import ontology_term_label
-from backend.wmg.pipeline.utils import setup_retry_session
+from backend.wmg.data.utils import setup_retry_session
 
 logger = logging.getLogger(__name__)
 

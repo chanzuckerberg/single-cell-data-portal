@@ -1,6 +1,6 @@
 from requests import Response
 
-from backend.wmg.pipeline.utils import setup_retry_session
+from backend.wmg.data.utils import setup_retry_session
 
 
 def clean_doi(doi: str) -> str:
