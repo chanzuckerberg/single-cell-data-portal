@@ -22,7 +22,8 @@ permissions:
 jobs:
   mirror-prod-data-to-staging:
     runs-on: ubuntu-22.04
-    if: github.event.deployment.environment == 'staging'
+    # TODO: Reinstate. This is for temporarily testing mirroring job
+    # if: github.event.deployment.environment == 'staging'
     steps:
       - uses: actions/checkout@v2
         with:
