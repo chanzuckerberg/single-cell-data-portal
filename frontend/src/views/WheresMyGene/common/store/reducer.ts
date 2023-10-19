@@ -164,13 +164,11 @@ function selectOrganism(
     return state;
   }
 
-  const { sortBy, snapshotId, xAxisHeight } = state;
+  const { snapshotId } = state;
 
   return {
     ...INITIAL_STATE,
-    sortBy: sortBy,
     snapshotId,
-    xAxisHeight,
     selectedOrganismId: action.payload,
   };
 }
