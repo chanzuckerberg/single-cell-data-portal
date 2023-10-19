@@ -79,7 +79,10 @@ class PublishRevisions(ProcessingLogic):
                         "Publishing collection version.",
                         extra={"collection_version_id": collection_version.version_id.id},
                     )
-                    self.business_logic.publish_collection_version(collection_version.version_id)
+                    try:
+                        self.business_logic.publish_collection_version(collection_version.version_id)
+                    except Exception:
+                        logging.exception("Failed to publish collection version.")
 
 
 if __name__ == "__main__":
