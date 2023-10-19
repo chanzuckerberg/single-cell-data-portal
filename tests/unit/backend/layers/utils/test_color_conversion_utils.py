@@ -53,5 +53,24 @@ class TestColorConversionUtils(unittest.TestCase):
         del adata.obs["louvain"]
         self.assertEqual(convert_anndata_category_colors_to_cxg_category_colors(adata), {})
 
+    def test_term_vs_label_colors(self):
+        expected_label_colors = {
+            "assay": {"10x 3' v2": "#ffb6c1", "10x 3' v3": "#ffc0cb"},
+            "cell_type": {"mature B cell": "#ffb6c1", "plasma cell": "#ffc0cb"},
+            "development_stage": {"human adult stage": "#ff69b4", "mature stage": "#ffc0cb"},
+            "donor_id": {"C41": "#ff0000", "C58": "#ffa500", "C70": "#ffff00", "C72": "#008000"},
+            "sex": {"female": "#ffc0cb", "male": "#0000ff"},
+            "suspension_type": {"cell": "#0000ff", "nucleus": "#800080"},
+        }
+        adata_with_term_colors = anndata.read_h5ad(fixture_file_path("liver_with_term_colors.h5ad"))
+        self.assertDictEqual(
+            convert_anndata_category_colors_to_cxg_category_colors(adata_with_term_colors), expected_label_colors
+        )
+
+        adata_with_label_colors = anndata.read_h5ad(fixture_file_path("liver_with_label_colors.h5ad"))
+        self.assertDictEqual(
+            convert_anndata_category_colors_to_cxg_category_colors(adata_with_label_colors), expected_label_colors
+        )
+
     def _get_h5ad(self):
         return anndata.read_h5ad(fixture_file_path("pbmc3k.h5ad"))
