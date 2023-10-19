@@ -10,7 +10,7 @@ import {
 import { LEGEND_MARGIN_BOTTOM_PX } from "../../style";
 import { X_AXIS_CHART_HEIGHT_PX } from "../../common/constants";
 import { Autocomplete } from "@mui/material";
-import { Tag } from "@czi-sds/components";
+import { TagFilter } from "@czi-sds/components";
 import { spacesS } from "src/common/theme";
 
 export const CHART_PADDING_PX = 10;
@@ -64,7 +64,7 @@ export const StyledAutocomplete = styled(Autocomplete)`
   }
 `;
 
-export const StyledTag = styled(Tag)`
+export const StyledTag = styled(TagFilter)`
   max-width: 258px;
 `;
 // Copied to frontend/src/views/WheresMyGeneV2/components/HeatMap/style.ts

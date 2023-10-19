@@ -34,7 +34,7 @@ def get(schema_version: str = None):
         }
 
         for dataset in collection.datasets:
-            dataset_response_obj = reshape_dataset_for_curation_api(dataset, use_canonical_url=True)
+            dataset_response_obj = reshape_dataset_for_curation_api(dataset, index=True, use_canonical_url=True)
             dataset_response_obj.update(collection_info)
             all_datasets_with_collection_name_and_doi.append(dataset_response_obj)
 

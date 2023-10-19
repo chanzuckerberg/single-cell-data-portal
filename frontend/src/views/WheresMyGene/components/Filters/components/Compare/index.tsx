@@ -10,7 +10,7 @@ import {
   StyledIconImage,
   StyledTooltip,
   TooltipButton,
-} from "../../../CellInfoSideBar/style";
+} from "src/views/WheresMyGeneV2/components/CellInfoSideBar/style";
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { Props } from "./types";
 import { useConnect } from "./connect";
