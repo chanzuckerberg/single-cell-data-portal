@@ -1,6 +1,13 @@
 name: Deploy Happy
 
-on: deployment
+# TODO: Reinstate. This is for temporarily testing mirroring job
+#on: deployment
+
+# TODO: Remove. This is for temporarily testing mirroring job
+on:
+  push:
+    branches:
+      - atol/5480-mirror-data-to-staging-on-deploy
 
 env:
   DOCKER_BUILDKIT: 1
