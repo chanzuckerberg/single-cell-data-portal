@@ -112,6 +112,7 @@ export const loadStateFromQueryParams = ({
   // Check for genes
   const newSelectedGenes = params.get("genes")?.split(delimiter) || [];
   if (newSelectedGenes.length > 0) paramsToRemove.push("genes");
+  console.log(newSelectedGenes);
 
   // If there are no filters and genes selected, don't update the state
   if (

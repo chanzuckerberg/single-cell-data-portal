@@ -52,7 +52,7 @@ const SHARE_LINK =
   `${TEST_URL}/gene-expression?` +
   // (thuang): Tissue params include a tissue id and a tissue name to test that we support both
   // (seve): cellType params includes incorrect cellTypes to test that we filter out invalid params
-  `compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN&cellTypes=${INCORRECT_CELL_TYPES.concat(
+  `compare=disease&datasets=d8da613f-e681-4c69-b463-e94f5e66847f%2Cde2c780c-1747-40bd-9ccf-9588ec186cee&diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=blood%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&cellTypes=${INCORRECT_CELL_TYPES.concat(
     CELL_TYPES
   ).join("%2C")}&ver=2`;
 
