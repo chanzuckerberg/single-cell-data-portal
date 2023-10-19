@@ -467,6 +467,11 @@ function setFilteredCellTypes(
     payload: { filteredCellTypes, filteredCellTypeIds },
   } = action;
 
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  console.log("$$$$$$$$$$$$$ reducer filteredCellTypes", filteredCellTypes);
+
   track(EVENTS.WMG_SELECT_CELL_TYPE, {
     cell_types: filteredCellTypeIds,
   });

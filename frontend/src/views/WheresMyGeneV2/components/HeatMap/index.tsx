@@ -1,47 +1,8 @@
-import cloneDeep from "lodash/cloneDeep";
-import {
-  Dispatch,
-  memo,
-  SetStateAction,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { memo } from "react";
 
-import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
-import {
-  CellTypeRow,
-  generateTermsByKey,
-  OntologyTerm,
-  usePrimaryFilterDimensions,
-} from "src/common/queries/wheresMyGene";
-import {
-  DispatchContext,
-  State,
-  StateContext,
-} from "src/views/WheresMyGene/common/store";
-import {
-  addCellInfoCellType,
-  setFilteredCellTypes,
-  toggleExpandedTissueId,
-} from "src/views/WheresMyGene/common/store/actions";
-import {
-  CellType,
-  ChartProps,
-  GeneExpressionSummary,
-  SORT_BY,
-  Tissue,
-} from "src/views/WheresMyGene/common/types";
+import { Tissue } from "src/views/WheresMyGene/common/types";
 import YAxisChart from "./components/YAxisChart";
 
-import {
-  useSortedGeneNames,
-  useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
-} from "src/views/WheresMyGene/components/HeatMap/hooks/useSortedGeneNames";
-import { useSortedCellTypesByTissueName } from "src/views/WheresMyGene/components/HeatMap/hooks/useSortedCellTypesByTissueName";
 import {
   CellTypeTagContainer,
   ChartWrapper,
@@ -61,326 +22,48 @@ import XAxisChart from "src/views/WheresMyGene/components/HeatMap/components/XAx
 import Chart from "src/views/WheresMyGene/components/HeatMap/components/Chart";
 import { hyphenize } from "src/views/WheresMyGene/components/HeatMap/utils";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
-import { Autocomplete, DefaultAutocompleteOption } from "@czi-sds/components";
+import { Autocomplete } from "@czi-sds/components";
 import {
   CellTypeFilterContainer,
   Divider,
   TopLeftCornerMask,
   XAxisWrapper,
 } from "./style";
-import {
-  useHandleExpandedTissueIds,
-  useTrackHeatMapLoaded,
-} from "src/views/WheresMyGeneV2/components/HeatMap/hooks";
 
-interface Props {
-  className?: string;
-  cellTypes: { [tissue: Tissue]: CellTypeRow[] };
-  genes: State["selectedGenes"];
-  selectedGeneExpressionSummariesByTissueName: {
-    [tissueName: string]: GeneExpressionSummary[];
-  };
-  scaledMeanExpressionMax: number;
-  scaledMeanExpressionMin: number;
-  isLoadingAPI: boolean;
-  isScaled: boolean;
-  cellTypeSortBy: SORT_BY;
-  geneSortBy: SORT_BY;
-  echartsRendererMode: "svg" | "canvas";
-  setAllChartProps: Dispatch<
-    SetStateAction<{
-      [tissue: string]: ChartProps;
-    }>
-  >;
-  allChartProps: { [tissue: string]: ChartProps };
-  tissuesByName: { [name: string]: OntologyTerm };
-  setTissuesByName: Dispatch<
-    SetStateAction<{
-      [name: string]: OntologyTerm;
-    }>
-  >;
-  sidebarWidth: number;
-}
+import { useConnect } from "src/views/WheresMyGeneV2/components/HeatMap/connect";
 
-export default memo(function HeatMap({
-  className,
-  cellTypes,
-  genes,
-  selectedGeneExpressionSummariesByTissueName,
-  scaledMeanExpressionMax,
-  scaledMeanExpressionMin,
-  isLoadingAPI,
-  isScaled,
-  cellTypeSortBy,
-  geneSortBy,
-  echartsRendererMode,
-  allChartProps,
-  setAllChartProps,
-  tissuesByName,
-  setTissuesByName,
-  sidebarWidth,
-}: Props): JSX.Element {
+import { Props } from "./types";
+
+export default memo(function HeatMap(props: Props): JSX.Element {
   const {
+    allChartProps,
+    className,
+    echartsRendererMode,
+    isLoadingAPI,
+    isScaled,
+    scaledMeanExpressionMax,
+    scaledMeanExpressionMin,
+    setAllChartProps,
+    sidebarWidth,
+  } = props;
+
+  const {
+    allTissueCellTypes,
+    chartWrapperRef,
+    expandedTissueIds,
+    filteredCellTypes,
+    generateMarkerGenes,
+    handleCellTypeDelete,
+    handleExpandCollapse,
+    handleFilteredCellTypesChange,
+    isLoading,
+    orderedSelectedGeneExpressionSummariesByTissueName,
+    selectedCellTypeOptions,
+    setIsLoading,
+    sortedGeneNames,
+    uniqueCellTypes,
     xAxisHeight,
-    selectedFilters: { tissues: filteredTissueIds },
-    filteredCellTypes,
-    filteredCellTypeIds,
-    expandedTissueIds,
-  } = useContext(StateContext);
-
-  const selectedCellTypeOptions = useMemo(() => {
-    return filteredCellTypes.map((cellType) => ({
-      name: cellType,
-    }));
-  }, [filteredCellTypes]);
-
-  // Loading state per tissue
-  const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
-  const chartWrapperRef = useRef<HTMLDivElement>(null);
-  const dispatch = useContext(DispatchContext);
-
-  const { data } = usePrimaryFilterDimensions(2); //temp explicit version
-
-  // Get tissueName to ID map for use in find marker genes
-  useEffect(() => {
-    let result: { [name: string]: OntologyTerm } = EMPTY_OBJECT;
-
-    if (data) {
-      const { tissues } = data;
-
-      result = generateTermsByKey(tissues, "name");
-    }
-
-    setTissuesByName(result);
-  }, [data, setTissuesByName]);
-
-  const cellTypesByName = useMemo(() => {
-    const result: { [name: string]: CellType } = {};
-
-    Object.values(cellTypes).forEach((cellTypes) => {
-      cellTypes.forEach((cellType) => {
-        result[cellType.cellTypeName] = cellType;
-      });
-    });
-
-    return result;
-  }, [cellTypes]);
-
-  const generateMarkerGenes = (cellType: CellType, tissueID: string) => {
-    dispatch?.(addCellInfoCellType({ cellType, tissueID }));
-  };
-
-  const tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap =
-    useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap(
-      selectedGeneExpressionSummariesByTissueName
-    );
-
-  const sortedGeneNames = useSortedGeneNames({
-    geneSortBy,
-    genes,
-    selectedCellTypes: cellTypes,
-    tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
-  });
-
-  const sortedCellTypesByTissueName = useSortedCellTypesByTissueName({
-    cellTypeSortBy,
-    genes,
-    selectedCellTypes: cellTypes,
-    tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
-  });
-
-  const geneNameToIndex = useMemo(() => {
-    const result: { [key: string]: number } = {};
-
-    for (const [index, gene] of Object.entries(sortedGeneNames)) {
-      result[gene] = Number(index);
-    }
-
-    return result;
-  }, [sortedGeneNames]);
-
-  const orderedSelectedGeneExpressionSummariesByTissueName = useMemo(() => {
-    const result: { [tissueName: string]: GeneExpressionSummary[] } = {};
-
-    for (const [tissueName, geneExpressionSummary] of Object.entries(
-      selectedGeneExpressionSummariesByTissueName
-    )) {
-      // (thuang): sort() mutates the array, so we need to clone it
-      result[tissueName] = cloneDeep(
-        geneExpressionSummary.sort((a, b) => {
-          if (!a || !b) return -1;
-
-          return geneNameToIndex[a.name] - geneNameToIndex[b.name];
-        })
-      );
-    }
-
-    return result;
-  }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
-
-  /**
-   * (thuang): Tissues to display after applying filters
-   */
-  const displayedTissues = useMemo(() => {
-    return Object.values(tissuesByName)
-      .filter(({ id }) => {
-        return !filteredTissueIds.length || filteredTissueIds.includes(id);
-      })
-      .filter(({ name }) => {
-        if (!filteredCellTypes.length) return true;
-
-        const tissueCellTypes = sortedCellTypesByTissueName[name];
-
-        return tissueCellTypes?.some((cellType) => {
-          return filteredCellTypes.includes(cellType.cellTypeName);
-        });
-      });
-  }, [
-    filteredTissueIds,
-    filteredCellTypes,
-    sortedCellTypesByTissueName,
-    tissuesByName,
-  ]);
-
-  const displayedTissueIds = useMemo(() => {
-    return displayedTissues.map(({ id }) => id);
-  }, [displayedTissues]);
-
-  /**
-   * (thuang): Derive displayed cell types from `displayedTissues`,
-   * `expandedTissueIds`, and `filteredCellTypes`
-   */
-  const displayedCellTypes = useMemo(() => {
-    const result = new Set<string>();
-
-    displayedTissues.forEach(({ id, name }) => {
-      result.add(id + id);
-
-      if (expandedTissueIds.includes(id)) {
-        const tissueCellTypes = sortedCellTypesByTissueName[name];
-
-        tissueCellTypes?.forEach((cellType) => {
-          if (
-            !filteredCellTypes.length ||
-            filteredCellTypes.includes(cellType.cellTypeName)
-          ) {
-            result.add(id + cellType.cellTypeName);
-          }
-        });
-      }
-    });
-
-    return result;
-  }, [
-    displayedTissues,
-    expandedTissueIds,
-    filteredCellTypes,
-    sortedCellTypesByTissueName,
-  ]);
-
-  const handleExpandCollapse = useCallback(
-    (tissueId: string, tissueName: Tissue) => {
-      dispatch?.(toggleExpandedTissueId({ tissueId, tissueName }));
-    },
-    [dispatch]
-  );
-
-  const uniqueCellTypes = useMemo(() => {
-    const result: Set<string> = new Set<string>();
-    Object.values(sortedCellTypesByTissueName).forEach((cellTypes) => {
-      cellTypes.forEach((cellType) => {
-        if (!cellType.cellTypeName.includes("UBERON:"))
-          result.add(cellType.cellTypeName);
-      });
-    });
-    return [...result].sort().map((cellType) => ({ name: cellType }));
-  }, [sortedCellTypesByTissueName]);
-
-  const handleFilteredCellTypesChange = (
-    _: unknown,
-    rawNewFilteredCellTypes: DefaultAutocompleteOption[]
-  ) => {
-    const cellTypeNames = rawNewFilteredCellTypes.map(
-      (cellType) => cellType.name
-    );
-    const cellTypeIds = cellTypeNames.map((name) => cellTypesByName[name].id);
-
-    dispatch?.(
-      setFilteredCellTypes({
-        filteredCellTypes: cellTypeNames,
-        filteredCellTypeIds: cellTypeIds,
-        displayedTissueIds,
-      })
-    );
-  };
-
-  const handleCellTypeDelete = (cellTypeNameToDelete: string) => () => {
-    const cellTypeIdToDelete = cellTypesByName[cellTypeNameToDelete].id;
-    const newCellTypeNames = filteredCellTypes.filter(
-      (cellType) => !(cellTypeNameToDelete === cellType)
-    );
-    const newCellTypeIds = filteredCellTypeIds.filter(
-      (cellTypeId) => !(cellTypeIdToDelete === cellTypeId)
-    );
-
-    dispatch?.(
-      setFilteredCellTypes({
-        filteredCellTypes: newCellTypeNames,
-        filteredCellTypeIds: newCellTypeIds,
-        displayedTissueIds,
-      })
-    );
-  };
-
-  useTrackHeatMapLoaded({
-    selectedGenes: genes,
-    displayedCellTypes,
-    selectedCellTypes: filteredCellTypes,
-  });
-
-  useHandleExpandedTissueIds({
-    filteredCellTypeIds,
-    filteredTissueIds,
-    displayedTissueIds,
-    dispatch,
-  });
-
-  /**
-   * All tissue cell types to render in YAxisCharts
-   */
-  const allTissueCellTypes = useMemo(() => {
-    return displayedTissues
-      .sort((a, b) => {
-        // sort tissues alphabetically
-        return a.name.localeCompare(b.name);
-      })
-      .flatMap((tissue: OntologyTerm) => {
-        const { id, name } = tissue;
-
-        const tissueCellTypes = getTissueCellTypes({
-          cellTypeSortBy,
-          cellTypes,
-          sortedCellTypesByTissueName,
-          tissue: name,
-          tissueID: id,
-          displayedCellTypes,
-        });
-
-        return tissueCellTypes.length > 0
-          ? {
-              tissueId: id,
-              tissueName: name,
-              tissueCellTypes,
-            }
-          : [];
-      });
-  }, [
-    cellTypeSortBy,
-    cellTypes,
-    sortedCellTypesByTissueName,
-    displayedCellTypes,
-    displayedTissues,
-  ]);
+  } = useConnect(props);
 
   return (
     <>
@@ -493,45 +176,6 @@ export default memo(function HeatMap({
   );
 });
 
-function getTissueCellTypes({
-  cellTypes,
-  sortedCellTypesByTissueName,
-  tissue,
-  tissueID,
-  cellTypeSortBy,
-  displayedCellTypes,
-}: {
-  cellTypes: { [tissue: Tissue]: CellTypeRow[] };
-  sortedCellTypesByTissueName: { [tissue: string]: CellTypeRow[] };
-  tissue: Tissue;
-  tissueID: string;
-  cellTypeSortBy: SORT_BY;
-  displayedCellTypes: Set<string>;
-}) {
-  const tissueCellTypes = cellTypes[tissue];
-
-  if (!tissueCellTypes || tissueCellTypes.length === 0) return EMPTY_ARRAY;
-
-  const sortedTissueCellTypes = sortedCellTypesByTissueName[tissue];
-
-  let ret =
-    (cellTypeSortBy === SORT_BY.CELL_ONTOLOGY
-      ? tissueCellTypes
-      : sortedTissueCellTypes) || EMPTY_ARRAY;
-
-  ret = ret.filter((cellType) =>
-    displayedCellTypes.has(tissueID + cellType.cellTypeName)
-  );
-
-  return ret;
-}
-
 function isAnyTissueLoading(isLoading: { [tissue: Tissue]: boolean }) {
   return Object.values(isLoading).some((isLoading) => isLoading);
-}
-
-function setInitialIsLoading(cellTypes: Props["cellTypes"]) {
-  return Object.keys(cellTypes).reduce((isLoading, tissue) => {
-    return { ...isLoading, [tissue]: false };
-  }, {});
 }
