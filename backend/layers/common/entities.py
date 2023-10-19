@@ -158,13 +158,18 @@ class OntologyTermId:
     ontology_term_id: str
 
 
+@dataclass
+class TissueOntologyTermId(OntologyTermId):
+    tissue_type: Optional[str] = None
+
+
 @dataclass_json
 @dataclass
 class DatasetMetadata:
     name: str
     schema_version: str
     organism: List[OntologyTermId]
-    tissue: List[OntologyTermId]
+    tissue: List[TissueOntologyTermId]
     assay: List[OntologyTermId]
     disease: List[OntologyTermId]
     sex: List[OntologyTermId]
