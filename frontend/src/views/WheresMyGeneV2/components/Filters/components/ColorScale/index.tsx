@@ -1,7 +1,7 @@
 import { Tooltip } from "@czi-sds/components";
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { StyledDropdown, Wrapper } from "../common/style";
-import { Label } from "../../../InfoPanel/common/style";
+import { Label } from "src/views/WheresMyGene/components/InfoPanel/common/style";
 import { LabelWrapper } from "./style";
 import {
   StyledIconImage,

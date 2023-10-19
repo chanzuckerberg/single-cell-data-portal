@@ -10,13 +10,16 @@ import {
 } from "src/common/queries/wheresMyGene";
 import { Props } from "./types";
 import { useCallback, useContext, useEffect, useMemo } from "react";
-import { DispatchContext, StateContext } from "../../common/store";
+import {
+  DispatchContext,
+  StateContext,
+} from "../../../WheresMyGene/common/store";
 import { isEqual } from "lodash";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { track } from "src/common/analytics";
-import { Filters as IFilters } from "../../common/types";
+import { Filters as IFilters } from "src/views/WheresMyGene/common/types";
 import { ANALYTICS_MAPPING } from "./constants";
-import { selectFilters } from "../../common/store/actions";
+import { selectFilters } from "src/views/WheresMyGene/common/store/actions";
 import {
   getOptionSelected,
   isOptionEqualToValue,

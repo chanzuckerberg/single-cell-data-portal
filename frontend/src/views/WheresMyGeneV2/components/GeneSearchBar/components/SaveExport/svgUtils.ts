@@ -3,7 +3,7 @@ import {
   ECHART_AXIS_LABEL_COLOR_HEX,
   ECHART_AXIS_LABEL_FONT_SIZE_PX,
 } from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart/style";
-import { PLASMA_SVG_STRING } from "src/views/WheresMyGene/components/Filters/components/ColorScale";
+import { PLASMA_SVG_STRING } from "src/views/WheresMyGeneV2/components/Filters/components/ColorScale";
 import {
   HEAT_MAP_BASE_CELL_PX,
   hyphenize,
