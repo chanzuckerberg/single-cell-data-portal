@@ -227,6 +227,10 @@ def reshape_dataset_for_curation_api(
             if col is not None:
                 ds[column] = col
 
+    if ds.get("tissue") is not None and CorporaConfig().schema_4_feature_flag.lower() == "false":
+        for tissue in ds["tissue"]:
+            del tissue["tissue_type"]
+
     ds["dataset_id"] = dataset_version.dataset_id.id
     ds["dataset_version_id"] = dataset_version.version_id.id
     # Get none preview specific dataset fields
