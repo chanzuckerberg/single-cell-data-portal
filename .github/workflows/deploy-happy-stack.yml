@@ -13,6 +13,24 @@ permissions:
   deployments: write
 
 jobs:
+  mirror-prod-data-to-staging:
+    runs-on: ubuntu-22.04
+    if: github.event.deployment.environment == 'staging'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.deployment.sha }}
+          fetch-depth: 1
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Run mirroring
+        run: |
+          NO_PROMPT=1 SRC_ENV=prod DEST_ENV=staging backend/scripts/mirror_env_data.sh
+
   upgrade:
     runs-on: ubuntu-22.04
     steps:
@@ -133,6 +151,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs:
       - upgrade
+      - mirror-prod-data-to-staging
     steps:
       - uses: actions/setup-node@v2
         with:
@@ -203,6 +222,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs:
       - upgrade
+      - mirror-prod-data-to-staging
     strategy:
       fail-fast: false
       matrix:
@@ -303,6 +323,7 @@ jobs:
     timeout-minutes: 30
     needs:
       - upgrade
+      - mirror-prod-data-to-staging
     steps:
       - name: Configure AWS Prod Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -358,6 +379,7 @@ jobs:
     timeout-minutes: 30
     needs:
       - upgrade
+      - mirror-prod-data-to-staging
     steps:
       - name: Configure AWS Prod Credentials
         uses: aws-actions/configure-aws-credentials@v2
