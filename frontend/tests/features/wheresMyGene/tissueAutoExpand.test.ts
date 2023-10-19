@@ -5,6 +5,7 @@ import { collapseTissue, expandTissue, tryUntil } from "tests/utils/helpers";
 import {
   goToWMG,
   WMG_WITH_SEEDED_GENES_AND_CELL_TYPES,
+  WMG_WITH_SEEDED_GENES_AND_TISSUES,
 } from "tests/utils/wmgUtils";
 
 const FILTERED_TISSUES = ["abdomen", "axilla", "blood"];
@@ -353,6 +354,37 @@ describe("WMG tissue auto-expand", () => {
       CELL_TYPE_TEST_ID
     );
     await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_SHARE_LINK);
+  });
+
+  test("Share link with genes and tissues", async ({ page }) => {
+    await Promise.all([
+      /**
+       * (thuang): This test asserts that the app does use the tissues passed
+       * in the share link in a `/filters` request.
+       * If this `waitForRequest` times out, it's likely because the app is NOT
+       * sending a request with the tissues passed in the share link.
+       */
+      page.waitForRequest(
+        (request) => {
+          if (!request.url().includes("wmg/v2/filters")) return false;
+
+          const requestBody = JSON.parse(request.postData() || "{}");
+
+          const requestTissueIds = JSON.stringify(
+            requestBody.filter.tissue_ontology_term_ids
+          );
+
+          return (
+            requestTissueIds ===
+            JSON.stringify(WMG_WITH_SEEDED_GENES_AND_TISSUES.tissueIds)
+          );
+        },
+        { timeout: WAIT_FOR_REQUEST_TIMEOUT_MS }
+      ),
+      loadPageAndTissues(page, WMG_WITH_SEEDED_GENES_AND_TISSUES.URL),
+    ]);
+
+    await checkTissues(page, WMG_WITH_SEEDED_GENES_AND_TISSUES.tissues);
   });
 });
 
