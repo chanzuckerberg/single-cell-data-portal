@@ -7,6 +7,7 @@ import Organism from "./components/Organism";
 import Compare from "./components/Compare";
 import Sort from "./components/Sort";
 import {
+  FilterContainer,
   StyledComplexFilter,
   StyledComplexFilterInputDropdown,
   ViewOptionsLabel,
@@ -38,7 +39,7 @@ export default memo(function Filters({
 
   return (
     <Wrapper>
-      <div>
+      <FilterContainer>
         <StyledComplexFilter
           multiple
           data-testid="dataset-filter"
@@ -127,19 +128,19 @@ export default memo(function Filters({
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
         />
-      </div>
+      </FilterContainer>
 
       <Organism isLoading={isLoading} />
 
       <Compare areFiltersDisabled={false} />
 
-      <div>
+      <FilterContainer>
         <ViewOptionsLabel>View Options</ViewOptionsLabel>
         <ViewOptionsWrapper>
           <Sort areFiltersDisabled={!isHeatmapShown} />
           <ColorScale setIsScaled={setIsScaled} />
         </ViewOptionsWrapper>
-      </div>
+      </FilterContainer>
     </Wrapper>
   );
 });
