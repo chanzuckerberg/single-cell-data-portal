@@ -143,6 +143,10 @@ export const loadStateFromQueryParams = ({
         return false;
       }) || [];
 
+  const newFilteredCellTypeIds = newFilteredCellTypes.map(
+    (cellTypeName) => cellTypesByName[cellTypeName].id
+  );
+
   if (newFilteredCellTypes.length > 0) paramsToRemove.push("cellTypes");
 
   // Check for compare
@@ -164,6 +168,7 @@ export const loadStateFromQueryParams = ({
     organism: newSelectedOrganism,
     genes: newSelectedGenes,
     cellTypes: newFilteredCellTypes,
+    cellTypeIds: newFilteredCellTypeIds,
   };
 
   dispatch(loadStateFromURL(payload));

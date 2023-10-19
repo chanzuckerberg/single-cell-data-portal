@@ -67,6 +67,15 @@ export function useHandleExpandedTissueIds({
   const [prevFilteredTissueIds, setPrevFilteredTissueIds] =
     useState(filteredTissueIds);
 
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  console.log("-👀---------displayedTissueIds", displayedTissueIds);
+  console.log("-👀---------prevFilteredCellTypeIds", prevFilteredCellTypeIds);
+  console.log("-👀---------filteredCellTypeIds", filteredCellTypeIds);
+  console.log("-👀---------prevFilteredTissueIds", prevFilteredTissueIds);
+  console.log("-👀---------filteredTissueIds", filteredTissueIds);
+
   useEffect(() => {
     /**
      * (thuang): When we exit the tissue filter mode, but still have cell type filter,

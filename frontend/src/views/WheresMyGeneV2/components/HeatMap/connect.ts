@@ -268,30 +268,30 @@ export function useConnect({
     [cellTypesByName, displayedTissueIds, dispatch, filteredCellTypes]
   );
 
-  const previousFilteredCellTypes = useRef(filteredCellTypes);
+  // const previousFilteredCellTypes = useRef(filteredCellTypes);
 
-  useEffect(() => {
-    if (previousFilteredCellTypes.current === filteredCellTypes) return;
+  // useEffect(() => {
+  //   if (previousFilteredCellTypes.current === filteredCellTypes) return;
 
-    // DEBUG
-    // DEBUG
-    // DEBUG
-    console.log(
-      "#### Calling handleFilteredCellTypesChange filteredCellTypes",
-      filteredCellTypes
-    );
+  //   // DEBUG
+  //   // DEBUG
+  //   // DEBUG
+  //   console.log(
+  //     "#### Calling handleFilteredCellTypesChange filteredCellTypes",
+  //     filteredCellTypes
+  //   );
 
-    handleFilteredCellTypesChange(
-      null,
-      filteredCellTypes.map((name) => ({ name }))
-    );
+  //   handleFilteredCellTypesChange(
+  //     null,
+  //     filteredCellTypes.map((name) => ({ name }))
+  //   );
 
-    previousFilteredCellTypes.current = filteredCellTypes;
-  }, [
-    previousFilteredCellTypes,
-    filteredCellTypes,
-    handleFilteredCellTypesChange,
-  ]);
+  //   previousFilteredCellTypes.current = filteredCellTypes;
+  // }, [
+  //   previousFilteredCellTypes,
+  //   filteredCellTypes,
+  //   handleFilteredCellTypesChange,
+  // ]);
 
   const handleCellTypeDelete = (cellTypeNameToDelete: string) => () => {
     const cellTypeIdToDelete = cellTypesByName[cellTypeNameToDelete].id;
@@ -353,6 +353,14 @@ export function useConnect({
     displayedCellTypes,
     selectedCellTypes: filteredCellTypes,
   });
+
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  console.log(
+    "📞📞📞📞 calling useHandleExpandedTissueIds filteredCellTypeIds",
+    filteredCellTypeIds
+  );
 
   useHandleExpandedTissueIds({
     filteredCellTypeIds,
