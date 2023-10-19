@@ -16,11 +16,6 @@ env:
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
   GITHUB_BRANCH: ${{ github.event.client_payload.ref || github.ref }}
 
-# add a concurrency group to prevent multiple builds from running at the same time
-concurrency:
-  group: ${{ github.event.client_payload.ref || github.ref }}-environment
-  cancel-in-progress: false
-
 permissions:
   id-token: write
   contents: read

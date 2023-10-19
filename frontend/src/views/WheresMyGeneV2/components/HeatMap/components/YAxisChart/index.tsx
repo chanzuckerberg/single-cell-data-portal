@@ -8,10 +8,10 @@ import {
 } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
 import { Icon, Tooltip } from "@czi-sds/components";
-import InfoSVG from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/icons/info-sign-icon.svg";
+import InfoSVG from "src/common/images/info-sign-icon.svg";
 
 import {
   COMPARE_OPTION_ID_FOR_AGGREGATED,
@@ -184,15 +184,13 @@ const TissueHeaderButton = ({
           color="gray"
           sdsType="static"
         />
-        <TissueHeaderLabelStyle>
-          <div>
-            <TissueLabel
-              className={TISSUE_NAME_LABEL_CLASS_NAME}
-              data-testid={TISSUE_NAME_LABEL_CLASS_NAME}
-            >
-              {capitalize(formattedName)}
-            </TissueLabel>
-          </div>
+        <TissueHeaderLabelStyle expanded={expanded}>
+          <TissueLabel
+            className={TISSUE_NAME_LABEL_CLASS_NAME}
+            data-testid={TISSUE_NAME_LABEL_CLASS_NAME}
+          >
+            {capitalize(formattedName)}
+          </TissueLabel>
         </TissueHeaderLabelStyle>
       </FlexRow>
       <CellCountLabelStyle
