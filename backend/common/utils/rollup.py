@@ -81,6 +81,26 @@ def are_cell_types_colinear(cell_type1, cell_type2):
     return len(set(descendants1).intersection(ancestors2)) > 0 or len(set(descendants2).intersection(ancestors1)) > 0
 
 
+def get_overlapping_cell_type_descendants(cell_type1, cell_type2):
+    """
+    Get overlapping cell type descendants
+
+    Arguments
+    ---------
+    cell_type1 : str
+        Cell type 1 (cell type ontology term id)
+    cell_type2 : str
+        Cell type 2 (cell type ontology term id)
+    Returns
+    -------
+    list[str]
+    """
+    descendants1 = descendants(cell_type1)
+    descendants2 = descendants(cell_type2)
+
+    return list(set(descendants1).intersection(descendants2))
+
+
 def rollup_across_cell_type_descendants(
     df, cell_type_col="cell_type_ontology_term_id", parallel=True, ignore_cols=None
 ) -> pd.DataFrame:

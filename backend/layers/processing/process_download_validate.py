@@ -3,6 +3,7 @@ from typing import List, Literal, Optional, Tuple
 import numpy
 import scanpy
 
+from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
@@ -15,6 +16,7 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersionId,
     OntologyTermId,
+    TissueOntologyTermId,
 )
 from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ValidationFailed
@@ -119,6 +121,12 @@ class ProcessDownloadValidate(ProcessingLogic):
                 for k in adata.obs.groupby([base_term, base_term_id]).groups
             ]
 
+        def _get_tissue_terms() -> List[TissueOntologyTermId]:
+            return [
+                TissueOntologyTermId(label=k[0], ontology_term_id=k[1], tissue_type=k[2])
+                for k in adata.obs.groupby(["tissue", "tissue_ontology_term_id", "tissue_type"]).groups
+            ]
+
         def _get_is_primary_data() -> Literal["PRIMARY", "SECONDARY", "BOTH"]:
             is_primary_data = adata.obs["is_primary_data"]
             if all(is_primary_data):
@@ -143,7 +151,9 @@ class ProcessDownloadValidate(ProcessingLogic):
         return DatasetMetadata(
             name=adata.uns["title"],
             organism=_get_term_pairs("organism"),
-            tissue=_get_term_pairs("tissue"),
+            tissue=_get_tissue_terms()
+            if CorporaConfig().schema_4_feature_flag.lower() == "true"
+            else _get_term_pairs("tissue"),
             assay=_get_term_pairs("assay"),
             disease=_get_term_pairs("disease"),
             sex=_get_term_pairs("sex"),
@@ -154,11 +164,17 @@ class ProcessDownloadValidate(ProcessingLogic):
             mean_genes_per_cell=numerator / denominator,
             is_primary_data=_get_is_primary_data(),
             cell_type=_get_term_pairs("cell_type"),
-            x_approximate_distribution=_get_x_approximate_distribution(),  # TODO: pay attention
+            x_approximate_distribution=_get_x_approximate_distribution(),
             schema_version=adata.uns["schema_version"],
-            batch_condition=_get_batch_condition(),  # TODO: pay attention
+            batch_condition=_get_batch_condition(),
             donor_id=adata.obs["donor_id"].unique(),
             suspension_type=adata.obs["suspension_type"].unique(),
+            feature_count=adata.var.shape[0],
+            feature_biotype=adata.var["feature_biotype"].unique(),
+            feature_reference=adata.var["feature_reference"].unique(),
+            default_embedding=adata.uns.get("default_embedding"),
+            embeddings=adata.obsm_keys(),
+            raw_data_location="raw.X" if adata.raw else "X",
         )
 
     def wrapped_download_from_s3(
