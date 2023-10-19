@@ -5,7 +5,7 @@ from enum import Enum
 from typing import List, Optional
 from urllib.parse import urlparse
 
-from dataclasses_json import config, dataclass_json
+from dataclasses_json import dataclass_json
 
 # TODO: copy and paste the docs for these
 
@@ -160,7 +160,7 @@ class OntologyTermId:
 
 @dataclass
 class TissueOntologyTermId(OntologyTermId):
-    tissue_type: Optional[str] = field(default=None, metadata=config(exclude=lambda x: x is None))
+    tissue_type: Optional[str] = None
 
 
 @dataclass_json

@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 from flask import Response, jsonify, make_response
 
+from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.http_exceptions import (
     ConflictException,
     ForbiddenHTTPException,
@@ -173,6 +174,10 @@ def _dataset_to_response(
         # If dataset is an update of a published dataset and in an unpublished revision, it isn't published
         if is_in_revision and revision_created_at and dataset.created_at > revision_created_at:
             published = False
+    tissue = None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.tissue)
+    if tissue is not None and CorporaConfig().schema_4_feature_flag.lower() == "false":
+        for t in tissue:
+            del t["tissue_type"]
     return remove_none(
         {
             "assay": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.assay),
@@ -207,7 +212,7 @@ def _dataset_to_response(
             else _ontology_term_ids_to_response(dataset.metadata.self_reported_ethnicity),
             "sex": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.sex),
             "suspension_type": None if dataset.metadata is None else dataset.metadata.suspension_type,
-            "tissue": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.tissue),
+            "tissue": tissue,
             "tombstone": is_tombstoned,
             "updated": True
             if is_in_revision and dataset.canonical_dataset.published_at and published is False
