@@ -7,7 +7,8 @@ import { tryUntil } from "tests/utils/helpers";
 import { test } from "tests/common/test";
 
 const { describe } = test;
-const ALERT = "Send us feedback with this quick survey";
+const ALERT =
+  "Subscribeto our newsletter to receive updates about new features.Send us feedback with thisquick survey.";
 
 const SURVEY_LINK = "https://airtable.com/shrLwepDSEX1HI6bo";
 

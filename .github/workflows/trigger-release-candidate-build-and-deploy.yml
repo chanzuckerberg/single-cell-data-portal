@@ -1,15 +1,22 @@
 name: Trigger release candidate build and deploy
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - "Push Tests"
+    types:
+      - completed
     branches:
       - main
 
 jobs:
-  merge:
+  deploy_to_stage_env_on_test_pass_on_main:
     runs-on: ubuntu-latest
+    # deployment to staging is only triggered if dependent workflow ("Push Tests")
+    # pass successfully
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - name: Checkout main branch and staging branch
+      - name: Checkout main branch
         uses: actions/checkout@v2
         with:
           ref: main
@@ -27,10 +34,32 @@ jobs:
           echo "$(git branch --list)"
 
           echo "Latest commit on 'staging' branch is: $(git log -1 --format='%H' staging)"
-
           echo "Latest commit on 'main' branch is: $(git log -1 --format='%H' main)"
 
           echo "About to merge 'main' branch into 'staging' branch"
           git merge --verbose main -m "Merging main branch into staging branch"
 
           git push origin staging
+
+      # We need to use repository_dispatch because by default github actions
+      # prevents actions triggered by 'GITHUB_TOKEN' from triggering other
+      # workflows. Details are here:
+      # https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow
+      #https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#repository_dispatch
+      - name: Trigger repository_dispatch to build images for staging
+        if: success()
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          event-type: build-images
+          client-payload: '{"ref": "refs/heads/staging"}'
+
+      - name: Send slack notification if main not merged into staging
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "here"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
