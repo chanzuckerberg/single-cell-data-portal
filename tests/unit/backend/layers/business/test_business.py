@@ -52,6 +52,7 @@ from backend.layers.thirdparty.crossref_provider import (
     CrossrefException,
     CrossrefProviderInterface,
 )
+from backend.layers.thirdparty.s3_exceptions import S3DeleteException
 from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
@@ -1140,7 +1141,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         s3_provider.delete_files.assert_called_with(bucket, ["file.h5ad"])
 
     def test_delete_artifacts_CollectionDeleteException_with_H5AD(self):
-        self.business_logic.s3_provider = Mock()
+        self.business_logic.s3_provider.delete_files = Mock(side_effect=S3DeleteException("error"))
         delete_artifacts = self.business_logic.delete_artifacts
         bucket = "bucket"
 
