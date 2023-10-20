@@ -716,6 +716,14 @@ components:
         type: string
       nullable: true
       example: ["patient", "seqBatch"]
+    citation:
+      description: |
+        Citation that includes downloadable permalink to h5ad artifact for this dataset, a permalink to collection it 
+        belongs to in CZ CELLxGENE Discover, and--if applicable--the Publication DOI associated with the dataset.
+        See details about the exact format in the 
+        [schema definition](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.0.0/schema.md#citation)
+      type: string
+      nullable: true
     collection_list:
       description: Collection metadata
       properties:
@@ -988,6 +996,8 @@ components:
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
+        citation:
+          $ref: "#/components/schemas/citation"
         dataset_id:
           $ref: "#/components/schemas/dataset_id"
         dataset_version_id:
@@ -1092,6 +1102,8 @@ components:
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
+        citation:
+          $ref: "#/components/schemas/citation"
         collection_doi:
           $ref: "#/components/schemas/doi"
         collection_id:
@@ -1189,6 +1201,8 @@ components:
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
+        citation:
+          $ref: "#/components/schemas/citation"
         collection_id:
           $ref: "#/components/schemas/collection_id"
         collection_version_id:

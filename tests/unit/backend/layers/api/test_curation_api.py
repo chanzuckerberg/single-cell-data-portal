@@ -1024,6 +1024,10 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     "cell_count": 10,
                     "primary_cell_count": 5,
                     "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
+                    "citation": "Publication: https://doi.org/12.2345/science.abc1234 Dataset Version: "
+                    "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
+                    "CZ CELLxGENE Discover in Collection: "
+                    "https://cellxgene.cziscience.com/collections/collection_id",
                     "dataset_id": f"{first_version.datasets[0].dataset_id.id}",
                     "dataset_version_id": f"{first_version.datasets[0].version_id.id}",
                     "default_embedding": "X_embedding_1",
