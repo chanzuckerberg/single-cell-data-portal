@@ -31,3 +31,14 @@ ASSAYS_FOR_GENE_LENGTH_NORMALIZATION = [
 TARGET_LIBRARY_SIZE = 10_000
 
 WMG_DATA_SCHEMA_VERSION = "v3"
+
+
+WMG_PIPELINE_TEST_RUN_KEY = "WMG_PIPELINE_TEST_RUN"
+
+WMG_PIPELINE_TEST_RUN_CONFIG = {
+    "census_version": "2023-10-09",
+    "value_filters": {
+        "homo_sapiens": "dataset_id in ['0041b9c3-6a49-4bf7-8514-9bc7190067a7']",
+        "mus_musculus": "dataset_id in ['ef47280b-3e68-4188-a49a-7b8374c8a6f2']",
+    },
+}

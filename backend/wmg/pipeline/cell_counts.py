@@ -33,7 +33,7 @@ def create_cell_counts_cube(*, query: ExperimentAxisQuery, corpus_path: str, org
     obs_df = obs_df.rename(columns=DIMENSION_NAME_MAP_CENSUS_TO_WMG)
     obs_df["organism_ontology_term_id"] = organismId
 
-    logger.info("Creating the cell counts cube and filter relationships graph.")
+    logger.info("Creating the cell counts cube.")
 
     df = (
         obs_df.groupby(

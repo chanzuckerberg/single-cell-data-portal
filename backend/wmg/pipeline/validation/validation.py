@@ -8,7 +8,7 @@ import tiledb
 
 from backend.common.utils.math_utils import GB
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, EXPRESSION_SUMMARY_CUBE_NAME
-from backend.wmg.data.validation import fixtures
+from backend.wmg.pipeline.validation import fixtures
 
 logger = logging.getLogger(__name__)
 

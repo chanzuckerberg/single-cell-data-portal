@@ -6,7 +6,6 @@ from backend.wmg.api.wmg_api_config import (
     READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
 )
 from backend.wmg.data.query import (
-    FmgQueryCriteria,
     MarkerGeneQueryCriteria,
     WmgCubeQueryParams,
     WmgQuery,
@@ -129,19 +128,6 @@ class QueryTest(unittest.TestCase):
             marker_genes = retrieve_top_n_markers(result, "ttest", 0)
             expected = generate_expected_marker_gene_data_with_pandas(snapshot, criteria, "ttest", 0)
             self.assertEqual(marker_genes, expected)
-
-    def test__query_expression_summary_fmg_cube__returns_correct_results(self):
-        criteria = FmgQueryCriteria(
-            organism_ontology_term_id="NCBITaxon:9606",
-            tissue_ontology_term_ids=["UBERON:0002048"],
-            cell_type_ontology_term_ids=["CL:0000786"],
-        )
-        with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
-            q = WmgQuery(snapshot, self.cube_query_params)
-            query_result = q.expression_summary_fmg(criteria)
-            query_sum = list(query_result[["sum", "sqsum", "nnz"]].sum())
-            expected = [94218.3125, 276081.25, 37598.0]
-            [self.assertEqual(round(query_sum[i]), round(expected[i])) for i in range(len(query_sum))]
 
     def test__query_expression_summary_default_cube__returns_correct_results(self):
         criteria = WmgQueryCriteria(

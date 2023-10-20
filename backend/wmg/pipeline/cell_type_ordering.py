@@ -9,13 +9,13 @@ from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     CELL_TYPE_ORDERINGS_FILENAME,
 )
-from backend.wmg.data.utils import get_pinned_ontology_url
+from backend.wmg.data.utils import get_pinned_ontology_url, to_dict
 from backend.wmg.pipeline.constants import (
     CELL_TYPE_ORDERING_CREATED_FLAG,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
 )
 from backend.wmg.pipeline.errors import PipelineStepMissing
-from backend.wmg.pipeline.utils import load_pipeline_state, log_func_runtime, to_dict, write_pipeline_state
+from backend.wmg.pipeline.utils import load_pipeline_state, log_func_runtime, write_pipeline_state
 
 
 @log_func_runtime
