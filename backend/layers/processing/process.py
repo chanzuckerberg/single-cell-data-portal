@@ -5,6 +5,7 @@ from typing import Optional
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
+    CollectionVersionId,
     DatasetConversionStatus,
     DatasetProcessingStatus,
     DatasetStatusKey,
@@ -65,7 +66,7 @@ class ProcessMain(ProcessingLogic):
         )
         self.process_seurat = ProcessSeurat(self.business_logic, self.uri_provider, self.s3_provider)
         self.process_cxg = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
-        self.schema_migrate = SchemaMigrate(business_logic)
+        self.schema_migrate = SchemaMigrate(business_logic, schema_validator)
 
     def log_batch_environment(self):
         batch_environment_variables = [
@@ -89,6 +90,7 @@ class ProcessMain(ProcessingLogic):
 
     def process(
         self,
+        collection_id: Optional[CollectionVersionId],
         dataset_id: DatasetVersionId,
         step_name: str,
         dropbox_uri: Optional[str],
@@ -102,7 +104,9 @@ class ProcessMain(ProcessingLogic):
         self.logger.info(f"Processing dataset {dataset_id}")
         try:
             if step_name == "download-validate":
-                self.process_download_validate.process(dataset_id, dropbox_uri, artifact_bucket, datasets_bucket)
+                self.process_download_validate.process(
+                    collection_id, dataset_id, dropbox_uri, artifact_bucket, datasets_bucket
+                )
             elif step_name == "cxg":
                 self.process_cxg.process(dataset_id, artifact_bucket, cxg_bucket)
             elif step_name == "cxg_remaster":
@@ -149,12 +153,13 @@ class ProcessMain(ProcessingLogic):
             rv = self.schema_migrate.migrate(step_name)
         else:
             dataset_id = os.environ["DATASET_ID"]
-
+            collection_id = os.environ.get("COLLECTION_ID")
             dropbox_uri = os.environ.get("DROPBOX_URL")
             artifact_bucket = os.environ.get("ARTIFACT_BUCKET")
             datasets_bucket = os.environ.get("DATASETS_BUCKET")
             cxg_bucket = os.environ.get("CELLXGENE_BUCKET")
             rv = self.process(
+                collection_id=None if collection_id is None else CollectionVersionId(collection_id),
                 dataset_id=DatasetVersionId(dataset_id),
                 step_name=step_name,
                 dropbox_uri=dropbox_uri,

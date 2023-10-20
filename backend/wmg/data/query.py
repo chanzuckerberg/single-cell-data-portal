@@ -51,12 +51,6 @@ class WmgFiltersQueryCriteria(BaseModel):
     publication_citations: List[str] = Field(default=[], unique_items=True, min_items=0)
 
 
-class FmgQueryCriteria(BaseModel):
-    organism_ontology_term_id: str  # required!
-    tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0, max_items=1)
-
-
 class MarkerGeneQueryCriteria(BaseModel):
     organism_ontology_term_id: str  # required!
     tissue_ontology_term_id: str  # required!
@@ -102,19 +96,13 @@ class WmgQuery:
             criteria=criteria,
         )
 
-    def expression_summary_fmg(self, criteria: FmgQueryCriteria) -> DataFrame:
-        return self._query(
-            cube=self._snapshot.expression_summary_fmg_cube,
-            criteria=criteria,
-        )
-
     def marker_genes(self, criteria: MarkerGeneQueryCriteria) -> DataFrame:
         return self._query(
             cube=self._snapshot.marker_genes_cube,
             criteria=criteria,
         )
 
-    def cell_counts(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria], compare_dimension=None) -> DataFrame:
+    def cell_counts(self, criteria: WmgQueryCriteria, compare_dimension=None) -> DataFrame:
         cell_counts = self._query(
             cube=self._snapshot.cell_counts_cube,
             criteria=criteria.copy(exclude={"gene_ontology_term_ids"}),
@@ -128,7 +116,7 @@ class WmgQuery:
     def _query(
         self,
         cube: Array,
-        criteria: Union[WmgQueryCriteria, WmgQueryCriteriaV2, FmgQueryCriteria, MarkerGeneQueryCriteria],
+        criteria: Union[WmgQueryCriteria, WmgQueryCriteriaV2, MarkerGeneQueryCriteria],
         compare_dimension=None,
     ) -> DataFrame:
         indexed_dims = self._cube_query_params.get_indexed_dims_to_lookup_query_criteria(
@@ -165,12 +153,6 @@ class WmgQuery:
         attrs = self._cube_query_params.get_attrs_for_cube_query(cube)
         if compare_dimension is not None:
             attrs.append(compare_dimension)
-        if (
-            isinstance(criteria, FmgQueryCriteria)
-            and compare_dimension != "dataset_id"
-            and "dataset_id" in [i.name for i in cube.schema]
-        ):
-            attrs.append("dataset_id")
 
         attrs += numeric_attrs
 

@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, Optional
 
 import pandas as pd
@@ -11,10 +11,6 @@ from tiledb import Array
 
 from backend.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
-from backend.wmg.data.schemas.corpus_schema import (
-    DATASET_TO_GENE_IDS_NAME,
-    FILTER_RELATIONSHIPS_NAME,
-)
 from backend.wmg.data.tiledb import create_ctx
 
 # Snapshot data artifact file/dir names
@@ -22,11 +18,9 @@ CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
 PRIMARY_FILTER_DIMENSIONS_FILENAME = "primary_filter_dimensions.json"
 EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
 EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME = "expression_summary_default"
-EXPRESSION_SUMMARY_FMG_CUBE_NAME = "expression_summary_fmg"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
 MARKER_GENES_CUBE_NAME = "marker_genes"
-DATASET_TO_GENE_IDS_FILENAME = f"{DATASET_TO_GENE_IDS_NAME}.json"
-FILTER_RELATIONSHIPS_FILENAME = f"{FILTER_RELATIONSHIPS_NAME}.json"
+FILTER_RELATIONSHIPS_FILENAME = "filter_relationships.json"
 DATASET_METADATA_FILENAME = "dataset_metadata.json"
 
 STACK_NAME = os.environ.get("REMOTE_DEV_PREFIX")
@@ -46,39 +40,42 @@ class WmgSnapshot:
     These are read from data artifacts, per the relative file names, above.
     """
 
-    snapshot_identifier: str
+    snapshot_identifier: Optional[str] = field(default=None)
 
     # TileDB array containing expression summary statistics (expressed gene count, non-expressed mean,
     # etc.) aggregated by multiple cell metadata dimensions and genes. See the full schema at
     # backend/wmg/data/schemas/cube_schema.py.
-    expression_summary_cube: Array
+
+    expression_summary_cube: Optional[Array] = field(default=None)
 
     # TileDB array containing expression summary statistics optimized for querying with no
     # secondary filters selected.
     # See the full schema at backend/wmg/data/schemas/cube_schema_default.py.
-    expression_summary_default_cube: Array
+    expression_summary_default_cube: Optional[Array] = field(default=None)
 
     # TileDB array containing the precomputed marker genes.
     # See the full schema at backend/wmg/data/schemas/marker_gene_cube_schema.py.
-    marker_genes_cube: Array
+    marker_genes_cube: Optional[Array] = field(default=None)
 
     # TileDB array containing the total cell counts (expressed gene count, non-expressed mean, etc.) aggregated by
     # multiple cell metadata dimensions (but no gene dimension). See the full schema at
     # backend/wmg/data/schemas/cube_schema.py.
-    cell_counts_cube: Array
+    cell_counts_cube: Optional[Array] = field(default=None)
 
     # Pandas DataFrame containing per-tissue ordering of cell types.
     # Columns are "tissue_ontology_term_id", "cell_type_ontology_term_id", "order"
-    cell_type_orderings: dict
+
+    cell_type_orderings: Optional[DataFrame] = field(default=None)
 
     # precomputed list of ids for all gene and tissue ontology term ids per organism
-    primary_filter_dimensions: Dict
+    primary_filter_dimensions: Optional[Dict] = field(default=None)
 
     # precomputed filter relationships graph
-    filter_relationships: Dict
+    filter_relationships: Optional[Dict] = field(default=None)
 
     # dataset metadata dictionary
-    dataset_metadata: Dict
+
+    dataset_metadata: Optional[Dict] = field(default=None)
 
     def __hash__(self):
         return hash(None)  # hash is not used for WmgSnapshot

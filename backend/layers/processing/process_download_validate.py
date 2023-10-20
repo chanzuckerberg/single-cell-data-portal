@@ -3,9 +3,11 @@ from typing import List, Literal, Optional, Tuple
 import numpy
 import scanpy
 
+from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
+    CollectionVersionId,
     DatasetArtifactType,
     DatasetConversionStatus,
     DatasetMetadata,
@@ -15,6 +17,7 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersionId,
     OntologyTermId,
+    TissueOntologyTermId,
 )
 from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ValidationFailed
@@ -58,7 +61,9 @@ class ProcessDownloadValidate(ProcessingLogic):
         self.schema_validator = schema_validator
 
     @logit
-    def validate_h5ad_file_and_add_labels(self, dataset_id: DatasetVersionId, local_filename: str) -> Tuple[str, bool]:
+    def validate_h5ad_file_and_add_labels(
+        self, collection_id: CollectionVersionId, dataset_id: DatasetVersionId, local_filename: str
+    ) -> Tuple[str, bool]:
         """
         Validates and labels the specified dataset file and updates the processing status in the database
         :param dataset_id: ID of the dataset to update
@@ -81,10 +86,39 @@ class ProcessDownloadValidate(ProcessingLogic):
         if not is_valid:
             raise ValidationFailed(errors)
         else:
+            if CorporaConfig().schema_4_feature_flag.lower() == "true":
+                self.populate_dataset_citation(collection_id, dataset_id, output_filename)
+
             # TODO: optionally, these could be batched into one
             self.update_processing_status(dataset_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
             self.update_processing_status(dataset_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID)
             return output_filename, can_convert_to_seurat
+
+    def populate_dataset_citation(
+        self, collection_id: CollectionVersionId, dataset_id: DatasetVersionId, adata_path: str
+    ) -> None:
+        """
+        Builds citation string and updates the 'uns' dict of the adata at adata_path
+
+        :param collection_id: version ID for collection dataset is being uploaded to
+        :param dataset_id: version ID for dataset
+        :param adata_path: filepath to adata object that will be updated with citation
+        """
+        dataset_assets_base_url = CorporaConfig().dataset_assets_base_url
+        collections_base_url = CorporaConfig().collections_base_url
+        citation = ""
+        collection = self.business_logic.get_collection_version(collection_id)
+        doi = next((link.uri for link in collection.metadata.links if link.type == "DOI"), None)
+        if doi:
+            citation += f"Publication: {doi} "
+        citation += f"Dataset Version: {dataset_assets_base_url}/{dataset_id}.h5ad "
+        citation += (
+            f"curated and distributed by CZ CELLxGENE Discover in Collection: "
+            f"{collections_base_url}/{collection_id}"
+        )
+        adata = scanpy.read_h5ad(adata_path)
+        adata.uns["citation"] = citation
+        adata.write(adata_path)
 
     @logit
     def extract_metadata(self, filename) -> DatasetMetadata:
@@ -119,6 +153,12 @@ class ProcessDownloadValidate(ProcessingLogic):
                 for k in adata.obs.groupby([base_term, base_term_id]).groups
             ]
 
+        def _get_tissue_terms() -> List[TissueOntologyTermId]:
+            return [
+                TissueOntologyTermId(label=k[0], ontology_term_id=k[1], tissue_type=k[2])
+                for k in adata.obs.groupby(["tissue", "tissue_ontology_term_id", "tissue_type"]).groups
+            ]
+
         def _get_is_primary_data() -> Literal["PRIMARY", "SECONDARY", "BOTH"]:
             is_primary_data = adata.obs["is_primary_data"]
             if all(is_primary_data):
@@ -143,7 +183,9 @@ class ProcessDownloadValidate(ProcessingLogic):
         return DatasetMetadata(
             name=adata.uns["title"],
             organism=_get_term_pairs("organism"),
-            tissue=_get_term_pairs("tissue"),
+            tissue=_get_tissue_terms()
+            if CorporaConfig().schema_4_feature_flag.lower() == "true"
+            else _get_term_pairs("tissue"),
             assay=_get_term_pairs("assay"),
             disease=_get_term_pairs("disease"),
             sex=_get_term_pairs("sex"),
@@ -154,11 +196,18 @@ class ProcessDownloadValidate(ProcessingLogic):
             mean_genes_per_cell=numerator / denominator,
             is_primary_data=_get_is_primary_data(),
             cell_type=_get_term_pairs("cell_type"),
-            x_approximate_distribution=_get_x_approximate_distribution(),  # TODO: pay attention
+            x_approximate_distribution=_get_x_approximate_distribution(),
             schema_version=adata.uns["schema_version"],
-            batch_condition=_get_batch_condition(),  # TODO: pay attention
+            batch_condition=_get_batch_condition(),
             donor_id=adata.obs["donor_id"].unique(),
             suspension_type=adata.obs["suspension_type"].unique(),
+            feature_count=adata.var.shape[0],
+            feature_biotype=adata.var["feature_biotype"].unique(),
+            feature_reference=adata.var["feature_reference"].unique(),
+            default_embedding=adata.uns.get("default_embedding"),
+            embeddings=adata.obsm_keys(),
+            raw_data_location="raw.X" if adata.raw else "X",
+            citation=adata.uns.get("citation"),
         )
 
     def wrapped_download_from_s3(
@@ -217,12 +266,20 @@ class ProcessDownloadValidate(ProcessingLogic):
         else:
             return string[:]
 
-    def process(self, dataset_id: DatasetVersionId, dropbox_url: str, artifact_bucket: str, datasets_bucket: str):
+    def process(
+        self,
+        collection_id: CollectionVersionId,
+        dataset_id: DatasetVersionId,
+        dropbox_url: str,
+        artifact_bucket: str,
+        datasets_bucket: str,
+    ):
         """
         1. Download the original dataset from Dropbox
         2. Validate and label it
         3. Upload the labeled dataset to the artifact bucket
         4. Upload the labeled dataset to the datasets bucket
+        :param collection_id
         :param dataset_id:
         :param dropbox_url:
         :param artifact_bucket:
@@ -240,7 +297,9 @@ class ProcessDownloadValidate(ProcessingLogic):
         )
 
         # Validate and label the dataset
-        file_with_labels, can_convert_to_seurat = self.validate_h5ad_file_and_add_labels(dataset_id, local_filename)
+        file_with_labels, can_convert_to_seurat = self.validate_h5ad_file_and_add_labels(
+            collection_id, dataset_id, local_filename
+        )
         # Process metadata
         metadata = self.extract_metadata(file_with_labels)
         self.business_logic.set_dataset_metadata(dataset_id, metadata)

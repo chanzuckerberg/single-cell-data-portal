@@ -5,6 +5,7 @@ import { ECHART_AXIS_LABEL_COLOR_HEX } from "../XAxisChart/style";
 import { SELECTED_STYLE } from "../../style";
 import { MARGIN_BETWEEN_HEATMAPS } from "src/views/WheresMyGene/common/constants";
 import { fontWeightSemibold, gray500 } from "src/common/theme";
+import { CommonThemeProps } from "@czi-sds/components";
 
 export const Y_AXIS_TISSUE_WIDTH_PX = 30;
 
@@ -55,6 +56,10 @@ export const CellTypeLabelStyle = styled.div`
   text-align: left;
 `;
 
+interface TissueHeaderLabelStyleProps extends CommonThemeProps {
+  expanded: boolean;
+}
+
 export const TissueHeaderLabelStyle = styled.div`
   margin: auto;
   font: normal 12px sans-serif;
@@ -62,7 +67,9 @@ export const TissueHeaderLabelStyle = styled.div`
   width: 100%;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};
   text-align: left;
-  font-weight: ${fontWeightSemibold};
+  ${(props: TissueHeaderLabelStyleProps) => {
+    return props.expanded && `font-weight: ${fontWeightSemibold(props)}`;
+  }}
 `;
 
 export const HiddenCellTypeLabelStyle = styled.div`

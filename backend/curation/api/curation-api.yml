@@ -716,6 +716,14 @@ components:
         type: string
       nullable: true
       example: ["patient", "seqBatch"]
+    citation:
+      description: |
+        Citation that includes downloadable permalink to h5ad artifact for this dataset, a permalink to collection it 
+        belongs to in CZ CELLxGENE Discover, and--if applicable--the Publication DOI associated with the dataset.
+        See details about the exact format in the 
+        [schema definition](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.0.0/schema.md#citation)
+      type: string
+      nullable: true
     collection_list:
       description: Collection metadata
       properties:
@@ -988,10 +996,14 @@ components:
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
+        citation:
+          $ref: "#/components/schemas/citation"
         dataset_id:
           $ref: "#/components/schemas/dataset_id"
         dataset_version_id:
           $ref: "#/components/schemas/dataset_version_id"
+        default_embedding:
+          $ref: "#/components/schemas/default_embedding"
         development_stage:
           description: |
             [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#development_stage)
@@ -1004,8 +1016,16 @@ components:
           $ref: "#/components/schemas/dataset_disease"
         donor_id:
           $ref: "#/components/schemas/donor_id"
+        embeddings:
+          $ref: "#/components/schemas/embeddings"
         explorer_url:
           $ref: "#/components/schemas/explorer_url"
+        feature_biotype:
+          $ref: "#/components/schemas/feature_biotype"
+        feature_count:
+          $ref: "#/components/schemas/feature_count"
+        feature_reference:
+          $ref: "#/components/schemas/feature_reference"
         is_primary_data:
           $ref: "#/components/schemas/is_primary_data"
         mean_genes_per_cell:
@@ -1029,6 +1049,8 @@ components:
           nullable: true
         published_at:
           $ref: "#/components/schemas/dataset_published_at"
+        raw_data_location:
+          $ref: "#/components/schemas/raw_data_location"
         revised_at:
           $ref: "#/components/schemas/dataset_revised_at"
         schema_version:
@@ -1080,6 +1102,8 @@ components:
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
+        citation:
+          $ref: "#/components/schemas/citation"
         collection_doi:
           $ref: "#/components/schemas/doi"
         collection_id:
@@ -1177,6 +1201,8 @@ components:
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
+        citation:
+          $ref: "#/components/schemas/citation"
         collection_id:
           $ref: "#/components/schemas/collection_id"
         collection_version_id:
@@ -1188,6 +1214,8 @@ components:
           $ref: "#/components/schemas/dataset_id"
         dataset_version_id:
           $ref: "#/components/schemas/dataset_version_id"
+        default_embedding:
+          $ref: "#/components/schemas/default_embedding"
         development_stage:
           description: |
             [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#development_stage)
@@ -1200,6 +1228,14 @@ components:
           $ref: "#/components/schemas/dataset_disease"
         donor_id:
           $ref: "#/components/schemas/donor_id"
+        embeddings:
+          $ref: "#/components/schemas/embeddings"
+        feature_biotype:
+          $ref: "#/components/schemas/feature_biotype"
+        feature_count:
+          $ref: "#/components/schemas/feature_count"
+        feature_reference:
+          $ref: "#/components/schemas/feature_reference"
         is_primary_data:
           $ref: "#/components/schemas/is_primary_data"
         mean_genes_per_cell:
@@ -1215,6 +1251,8 @@ components:
           nullable: true
         published_at:
           $ref: "#/components/schemas/dataset_version_published_at"
+        raw_data_location:
+          $ref: "#/components/schemas/raw_data_location"
         schema_version:
           description: |
             The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
@@ -1267,7 +1305,13 @@ components:
         [tissue label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#tissue)
       default: []
       items:
-        $ref: "#/components/schemas/ontology_element"
+        allOf:
+          - $ref: "#/components/schemas/ontology_element"
+          - type: object
+            properties:
+              tissue_type:
+                type: string
+                nullable: true
       type: array
     dataset_tombstone:
       description: When True, this Dataset was withdrawn from the Data curation at the request of its submitter.
@@ -1297,6 +1341,10 @@ components:
         suspension_type:
           $ref: "#/components/schemas/suspension_type"
       type: object
+    default_embedding:
+      description: Key for the embedding that is displayed by default in CZ CELLxGENE Explorer
+      type: string
+      nullable: true
     distribution:
       description:
         CELLxGENE Discover runs a heuristic to detect the approximate distribution
@@ -1313,15 +1361,47 @@ components:
       type: string
       nullable: true
       example: "10.1093/ajae/aaq063"
+    donor_id:
+      description: Free-text that identifies a unique individual that data were derived from.
+      type: array
+      items:
+        type: string
+      nullable: true
+    embeddings:
+      description: List of keys for embeddings in the dataset
+      type: array
+      items:
+        type: string
+      nullable: true
     explorer_url:
       description: |
         The URL at which a given Dataset may be explored using CELLxGENE Explorer.
       nullable: true
       type: string
-    donor_id:
-      description: Free-text that identifies a unique individual that data were derived from.
+    feature_biotype:
+      description: List of biotypes of features represented in dataset. Must be 'gene', 'spike-in', or both.
       type: array
       items:
+        enum:
+          - gene
+          - spike-in
+        type: string
+      nullable: true
+    feature_count:
+      description: Number of features in dataset
+      type: integer
+      nullable: true
+    feature_reference:
+      description: |
+        List of NCBITaxon ontology term IDs mapping to reference organisms for features in dataset. Currently
+        supports Homo Sapiens, Mus musculus, SARS-CoV-2, and ERCC Spike-Ins.
+      type: array
+      items:
+        enum:
+          - NCBITaxon:9606
+          - NCBITaxon:10090
+          - NCBITaxon:2697049
+          - NCBITaxon:32630
         type: string
       nullable: true
     is_primary_data:
@@ -1434,6 +1514,13 @@ components:
         published_year:
           type: number
       type: object
+    raw_data_location:
+      description: Location in dataset's AnnData artifact where raw (i.e. non-normalized) matrix data is stored
+      type: string
+      nullable: true
+      enum:
+        - X
+        - raw.X
     suspension_type:
       description: |
         [suspension_type](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#suspension_type)

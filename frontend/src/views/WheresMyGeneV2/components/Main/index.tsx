@@ -28,8 +28,8 @@ import {
   GeneExpressionSummary,
   ChartProps,
 } from "src/views/WheresMyGene/common/types";
-import CellInfoSideBar from "src/views/WheresMyGene/components/CellInfoSideBar";
-import Filters from "src/views/WheresMyGene/components/Filters";
+import CellInfoSideBar from "src/views/WheresMyGeneV2/components/CellInfoSideBar";
+import Filters from "src/views/WheresMyGeneV2/components/Filters";
 import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 
 import InfoPanel from "src/views/WheresMyGene/components/InfoPanel";
@@ -49,7 +49,7 @@ import {
 import { View } from "src/views/globalStyle";
 import HeatMap from "../HeatMap";
 import BottomBanner from "src/components/BottomBanner";
-import { CELL_INFO_SIDEBAR_WIDTH_PX } from "src/views/WheresMyGene/components/CellInfoSideBar/style";
+import { CELL_INFO_SIDEBAR_WIDTH_PX } from "src/views/WheresMyGeneV2/components/CellInfoSideBar/style";
 import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
 import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
 import { StyledRightSideBar } from "./style";
