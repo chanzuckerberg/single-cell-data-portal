@@ -29,7 +29,7 @@ import {
   ChartProps,
 } from "src/views/WheresMyGene/common/types";
 import CellInfoSideBar from "src/views/WheresMyGeneV2/components/CellInfoSideBar";
-import Filters from "src/views/WheresMyGene/components/Filters";
+import Filters from "src/views/WheresMyGeneV2/components/Filters";
 import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 
 import InfoPanel from "src/views/WheresMyGene/components/InfoPanel";

@@ -71,8 +71,22 @@ class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
         super().setUp()
 
         # TODO: this can be improved, but the current authorization method requires it
+        mock_config_attr = {
+            "curator_role_arn": "test_role_arn",
+            "submission_bucket": "cellxgene-dataset-submissions-test",
+            "upload_max_file_size_gb": 1,
+            "dataset_assets_base_url": "http://domain",
+            "schema_4_feature_flag": "True",
+        }
+
+        def mock_config_fn(name):
+            return mock_config_attr[name]
+
         self.mock = patch("backend.common.corpora_config.CorporaAuthConfig.__getattr__", return_value="mock_audience")
         self.mock.start()
+
+        self.mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+        self.mock_config.start()
 
         self.cloudfront_provider = CDNProviderInterface()
 
@@ -94,6 +108,7 @@ class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
         # Disable mocking of business logic and cloudfront provider
         self.mock_business_logic.stop()
         self.mock_cloudfront_provider.stop()
+        self.mock_config.stop()
 
     def get_cxguser_token(self, user="owner"):
         """

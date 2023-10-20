@@ -29,6 +29,10 @@ export const Wrapper = styled(RawWrapper)`
   gap: ${spacesXl}px;
 `;
 
+export const FilterContainer = styled.div`
+  margin: 0;
+`;
+
 export const StyledComplexFilter = styled(ComplexFilter)`
   width: 100%;
   margin-bottom: 16px;
