@@ -24,20 +24,41 @@ jobs:
     runs-on: ubuntu-22.04
     # TODO: Reinstate. This is for temporarily testing mirroring job
     # if: github.event.deployment.environment == 'staging'
+    if: false
     steps:
-      - uses: actions/checkout@v2
+      - name: install requirements
+        run: |
+          pip install awscli==1.29.1
+
+      - name: Assume AWS role for production account
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          ref: ${{ github.event.deployment.sha }}
-          fetch-depth: 1
-      - name: Configure AWS Credentials
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Dump production database
+        run: |
+          eval `aws secretsmanager get-secret-value --secret-id corpora/backend/prod/database --region us-west-2 | jq -r '.SecretString' | jq -r '.database_uri | match("postgresql://(.+):(.+)@(.+)/(.+)").captures | "DB_USER=\(.[0].string) PGPASSWORD=\(.[1].string) DB_HOST=\(.[2].string) DB_NAME=\(.[3].string)"'`
+          pg_dump -Fc --host $DB_HOST --dbname=$DB_NAME --username $DB_USER --file=db_dump.psql
+
+      - name: Assume AWS role for staging account
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
-      - name: Run mirroring
+      - name: Restore dump to staging database
         run: |
-          NO_PROMPT=1 SRC_ENV=prod DEST_ENV=staging backend/scripts/mirror_env_data.sh
+          eval `aws secretsmanager get-secret-value --secret-id corpora/backend/staging/database --region us-west-2 | jq -r '.SecretString' | jq -r '.database_uri | match("postgresql://(.+):(.+)@(.+)/(.+)").captures | "DB_USER=\(.[0].string) PGPASSWORD=\(.[1].string) DB_HOST=\(.[2].string) DB_NAME=\(.[3].string)"'`
+          pg_restore --host $DB_HOST --dbname=$DB_NAME --username $DB_USER --clean --if-exists --no-owner --no-privileges --no-comments --schema=persistence_schema db_dump.psql
+          psql --host $DB_HOST --dbname=$DB_NAME --username $DB_USER -c "UPDATE persistence_schema.\"DatasetArtifact\" SET uri = regexp_replace(uri, '(s3:\\/\\/)([[:alpha:]]+-[[:alpha:]]+-)([[:alpha:]]+)(\\/.+)', '\\1\\2staging\\4') WHERE uri IS NOT NULL;"
+      - name: Run S3 mirroring
+        run: |
+          PARALLEL_CMD="parallel --ungroup --jobs 16"
+          S3_SYNC_CMD="aws s3 sync --copy-props metadata-directive --no-progress"
+          PARTITION_PREFIXES="0 1 2 3 4 5 6 7 8 9 a b c d e f"
+          $PARALLEL_CMD $S3_SYNC_CMD s3://corpora-data-prod/ s3://corpora-data-staging/ --exclude "'*'" --include "'{}*'" --exclude "'*loom'" ::: $PARTITION_PREFIXES
+          $PARALLEL_CMD $S3_SYNC_CMD s3://hosted-cellxgene-prod/ s3://hosted-cellxgene-staging/ --exclude "'*'" --include "'{}*'" ::: $PARTITION_PREFIXES
 
   upgrade:
     runs-on: ubuntu-22.04
