@@ -24,7 +24,6 @@ jobs:
     runs-on: ubuntu-22.04
     # TODO: Reinstate. This is for temporarily testing mirroring job
     # if: github.event.deployment.environment == 'staging'
-    if: false
     steps:
       - name: install requirements
         run: |
