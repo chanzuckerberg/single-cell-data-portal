@@ -46,7 +46,7 @@ const COMPARE = "disease";
 
 const INCORRECT_CELL_TYPES = ["DOG", "CAT"];
 
-const CELL_TYPES = ["CD4-positive helper T cell"];
+const CELL_TYPES = ["natural killer cell"];
 
 const SHARE_LINK =
   `${TEST_URL}/gene-expression?` +
