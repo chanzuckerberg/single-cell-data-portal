@@ -10,9 +10,6 @@ from dask import compute, delayed
 from dask.diagnostics import ProgressBar
 from tqdm import tqdm
 
-from backend.cellguide.pipeline.computational_marker_genes.constants import (
-    MARKER_SCORE_THRESHOLD,
-)
 from backend.cellguide.pipeline.computational_marker_genes.types import ComputationalMarkerGenes
 from backend.cellguide.pipeline.computational_marker_genes.utils import (
     bootstrap_rows_percentiles,
@@ -42,6 +39,8 @@ The groupby terms provided by the user determine the dimensions across which the
 For instance, users can stratify marker gene calculation across just organisms, each combination of organism and tissue, 
 or any arbitrary combinations of metadata dimensions.
 """
+
+MARKER_SCORE_THRESHOLD = 0.5
 
 
 class MarkerGenesCalculator:
