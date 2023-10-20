@@ -34,7 +34,8 @@ def generate_expected_marker_gene_data_with_pandas(snapshot, criteria, statistic
     Build expected query results from a pandas dataframe.
     """
     marker_genes = snapshot.marker_genes_cube.df[:]
-
+    # TODO: remove after reader bumps to v3
+    marker_genes = marker_genes.rename(columns={"marker_score": "effect_size_ttest", "specificity": "p_value_ttest"})
     criteria_mg = criteria.dict()
     marker_genes = _filter_dataframe(marker_genes, criteria_mg)
     expected = retrieve_top_n_markers(marker_genes, statistical_test, num_markers)
@@ -63,14 +64,13 @@ class WmgCubeQueryParamsTest(unittest.TestCase):
                 "cell_type_ontology_term_id",
                 "tissue_original_ontology_term_id",
                 "dataset_id",
-                "assay_ontology_term_id",
-                "development_stage_ontology_term_id",
                 "disease_ontology_term_id",
                 "self_reported_ethnicity_ontology_term_id",
                 "sex_ontology_term_id",
                 "publication_citation",
                 "nnz",
                 "sum",
+                "sqsum",
             ]
             actual_cube_nonindexed_attrs = [i.name for i in snapshot.expression_summary_cube.schema]
             self.assertEqual(actual_cube_nonindexed_attrs, expected_cube_nonindexed_attrs)
@@ -105,41 +105,45 @@ class QueryTest(unittest.TestCase):
 
     def test__query_marker_genes_cube__returns_correct_top_10_markers(self):
         criteria = MarkerGeneQueryCriteria(
-            tissue_ontology_term_id="UBERON:0002048",
-            cell_type_ontology_term_id="CL:0000786",
+            tissue_ontology_term_id="UBERON:0002097",
+            cell_type_ontology_term_id="CL:0002419",
             organism_ontology_term_id="NCBITaxon:9606",
         )
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             q = WmgQuery(snapshot, self.cube_query_params)
             result = q.marker_genes(criteria)
+            # TODO: remove after reader bumps to v3
+            result = result.rename(columns={"marker_score": "effect_size_ttest", "specificity": "p_value_ttest"})
             marker_genes = retrieve_top_n_markers(result, "ttest", 10)
             expected = generate_expected_marker_gene_data_with_pandas(snapshot, criteria, "ttest", 10)
             self.assertEqual(marker_genes, expected)
 
     def test__query_marker_genes_cube__returns_correct_all_markers(self):
         criteria = MarkerGeneQueryCriteria(
-            tissue_ontology_term_id="UBERON:0002048",
-            cell_type_ontology_term_id="CL:0000786",
+            tissue_ontology_term_id="UBERON:0002097",
+            cell_type_ontology_term_id="CL:0002419",
             organism_ontology_term_id="NCBITaxon:9606",
         )
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             q = WmgQuery(snapshot, self.cube_query_params)
             result = q.marker_genes(criteria)
+            # TODO: remove after reader bumps to v3
+            result = result.rename(columns={"marker_score": "effect_size_ttest", "specificity": "p_value_ttest"})
             marker_genes = retrieve_top_n_markers(result, "ttest", 0)
             expected = generate_expected_marker_gene_data_with_pandas(snapshot, criteria, "ttest", 0)
             self.assertEqual(marker_genes, expected)
 
     def test__query_expression_summary_default_cube__returns_correct_results(self):
         criteria = WmgQueryCriteria(
-            gene_ontology_term_ids=["ENSG00000238042", "ENSG00000168028"],
+            gene_ontology_term_ids=["ENSG00000286269", "ENSG00000286270"],
             organism_ontology_term_id="NCBITaxon:9606",
-            tissue_ontology_term_ids=["UBERON:0002048"],
+            tissue_ontology_term_ids=["UBERON:0002097"],
         )
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             q = WmgQuery(snapshot, self.cube_query_params)
             query_result = q.expression_summary_default(criteria)
             query_sum = list(query_result[["sum", "nnz", "sqsum"]].sum())
-            expected = [657358, 301875, 1491223]
+            expected = [7, 5, 9]
             [self.assertEqual(round(query_sum[i]), round(expected[i])) for i in range(len(query_sum))]
 
 

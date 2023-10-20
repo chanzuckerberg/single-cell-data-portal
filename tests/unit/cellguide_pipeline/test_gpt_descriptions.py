@@ -61,6 +61,8 @@ class TestGptDescriptionGenerator(unittest.TestCase):
         ):
             cell_counts_df = snapshot.cell_counts_cube.df[:]
             tree_builder = OntologyTreeBuilder(cell_counts_df)
+            for obj in WHICH_OBJECTS_DO_NOT_EXIST:
+                tree_builder.all_cell_type_ids_to_labels_in_corpus[obj["id"]] = obj["name"]
             new_gpt_descriptions = generate_new_gpt_descriptions(tree_builder.all_cell_type_ids_to_labels_in_corpus)
             self.assertTrue(compare_dicts(new_gpt_descriptions, expected_outputs))
 
