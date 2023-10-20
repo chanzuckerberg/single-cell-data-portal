@@ -25,12 +25,15 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
             "show_warning_banner": False,
         }
 
-        mock_config = patch("backend.gene_info.config.GeneInfoConfig.__getattr__", return_value="mock_key")
-        mock_config.start()
+        self.mock_config = patch("backend.gene_info.config.GeneInfoConfig.__getattr__", return_value="mock_key")
+        self.mock_config.start()
 
     @classmethod
     def setUpClass(cls) -> None:
         cls.maxDiff = None
+
+    def tearDown(self):
+        self.mock_config.stop()
 
     @patch("backend.gene_info.api.ncbi_provider.urllib.request.urlopen")
     @patch("backend.gene_info.api.v1.NCBIProvider._search_gene_uid")

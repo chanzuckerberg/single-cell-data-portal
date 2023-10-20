@@ -296,7 +296,7 @@ export async function searchAndAddFilterCellType(page: Page, cellType: string) {
 export async function removeFilteredCellType(page: Page, cellType: string) {
   const beforeCellTypeNames = await getCellTypeNames(page);
   const cellTypeTag = page.getByTestId(`cell-type-tag-${cellType}`);
-  const deleteIcon = cellTypeTag.getByTestId("CancelIcon");
+  const deleteIcon = cellTypeTag.getByTestId("ClearIcon");
   await deleteIcon.click();
   const afterCellTypeNames = await getCellTypeNames(page);
   expect(afterCellTypeNames.length).toBeLessThan(beforeCellTypeNames.length);

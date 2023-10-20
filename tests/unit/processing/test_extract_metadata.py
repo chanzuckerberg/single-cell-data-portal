@@ -4,7 +4,7 @@ import anndata
 import numpy as np
 import pandas
 
-from backend.layers.common.entities import OntologyTermId
+from backend.layers.common.entities import OntologyTermId, TissueOntologyTermId
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
@@ -15,6 +15,16 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
         self.pdv = ProcessDownloadValidate(
             self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
         )
+
+        def mock_config_fn(name):
+            if name == "schema_4_feature_flag":
+                return "True"
+
+        self.mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+        self.mock_config.start()
+
+    def tearDown(self):
+        self.mock_config.stop()
 
     @patch("scanpy.read_h5ad")
     def test_extract_metadata(self, mock_read_h5ad):
@@ -30,6 +40,7 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
                 [
                     np.array([["lung", "liver"][i] for i in tissue]).reshape(50001, 1),
                     np.array([["UBERON:01", "UBERON:10"][i] for i in tissue]).reshape(50001, 1),
+                    np.array([["organoid", "tissue"][i] for i in tissue]).reshape(50001, 1),
                     np.array([["10x", "smartseq", "cite-seq"][i] for i in assay]).reshape(50001, 1),
                     np.array([["EFO:001", "EFO:010", "EFO:011"][i] for i in assay]).reshape(50001, 1),
                     np.random.choice(["healthy"], size=(50001, 1)),
@@ -54,6 +65,7 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
             columns=[
                 "tissue",
                 "tissue_ontology_term_id",
+                "tissue_type",
                 "assay",
                 "assay_ontology_term_id",
                 "disease",
@@ -80,6 +92,10 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
             "batch_condition": np.array({"batchA", "batchB"}),
             "schema_version": "3.0.0",
             "default_embedding": "X_umap",
+            "citation": "Publication: https://doi.org/12.2345/science.abc1234 Dataset Version: "
+            "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
+            "CZ CELLxGENE Discover in Collection: "
+            "https://cellxgene.cziscience.com/collections/collection_id",
         }
 
         var = pandas.DataFrame(
@@ -105,7 +121,10 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
 
         self.assertCountEqual(
             extracted_metadata.tissue,
-            [OntologyTermId("lung", "UBERON:01"), OntologyTermId("liver", "UBERON:10")],
+            [
+                TissueOntologyTermId("lung", "UBERON:01", "organoid"),
+                TissueOntologyTermId("liver", "UBERON:10", "tissue"),
+            ],
         )
 
         self.assertCountEqual(
@@ -151,6 +170,7 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
         self.assertEqual(extracted_metadata.x_approximate_distribution, "NORMAL")
         self.assertEqual(extracted_metadata.batch_condition, np.array({"batchA", "batchB"}))
         self.assertEqual(extracted_metadata.schema_version, "3.0.0")
+        self.assertEqual(extracted_metadata.citation, uns["citation"])
 
         self.assertEqual(extracted_metadata.cell_count, 50001)
         self.assertEqual(extracted_metadata.primary_cell_count, 0)
@@ -184,6 +204,7 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
                 [
                     np.array([["lung", "liver"][i] for i in tissue]).reshape(11, 1),
                     np.array([["UBERON:01", "UBERON:10"][i] for i in tissue]).reshape(11, 1),
+                    np.array([["organoid", "tissue"][i] for i in tissue]).reshape(11, 1),
                     np.array([["10x", "smartseq", "cite-seq"][i] for i in assay]).reshape(11, 1),
                     np.array([["EFO:001", "EFO:010", "EFO:011"][i] for i in assay]).reshape(11, 1),
                     np.random.choice(["healthy"], size=(11, 1)),
@@ -206,6 +227,7 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
             columns=[
                 "tissue",
                 "tissue_ontology_term_id",
+                "tissue_type",
                 "assay",
                 "assay_ontology_term_id",
                 "disease",
@@ -232,6 +254,10 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
             "X_approximate_distribution": "normal",
             "batch_condition": np.array({"batchA", "batchB"}),
             "schema_version": "3.0.0",
+            "citation": "Publication: https://doi.org/12.2345/science.abc1234 Dataset Version: "
+            "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
+            "CZ CELLxGENE Discover in Collection: "
+            "https://cellxgene.cziscience.com/collections/collection_id",
         }
 
         var = pandas.DataFrame(

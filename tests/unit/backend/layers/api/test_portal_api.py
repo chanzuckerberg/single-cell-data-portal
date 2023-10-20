@@ -18,6 +18,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
     OntologyTermId,
+    TissueOntologyTermId,
 )
 from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.layers.thirdparty.uri_provider import FileInfo, FileInfoException
@@ -124,7 +125,13 @@ class TestCollection(BaseAPIPortalTest):
                     ],
                     "sex": [{"label": "test_sex_label", "ontology_term_id": "test_sex_term_id"}],
                     "suspension_type": ["test_suspension_type"],
-                    "tissue": [{"label": "test_tissue_label", "ontology_term_id": "test_tissue_term_id"}],
+                    "tissue": [
+                        {
+                            "label": "test_tissue_label",
+                            "ontology_term_id": "test_tissue_term_id",
+                            "tissue_type": "tissue",
+                        }
+                    ],
                     "tombstone": False,
                     "updated_at": mock.ANY,
                     "x_approximate_distribution": "normal",
@@ -175,7 +182,13 @@ class TestCollection(BaseAPIPortalTest):
                     ],
                     "sex": [{"label": "test_sex_label", "ontology_term_id": "test_sex_term_id"}],
                     "suspension_type": ["test_suspension_type"],
-                    "tissue": [{"label": "test_tissue_label", "ontology_term_id": "test_tissue_term_id"}],
+                    "tissue": [
+                        {
+                            "label": "test_tissue_label",
+                            "ontology_term_id": "test_tissue_term_id",
+                            "tissue_type": "tissue",
+                        }
+                    ],
                     "tombstone": False,
                     "updated_at": mock.ANY,
                     "x_approximate_distribution": "normal",
@@ -1775,7 +1788,7 @@ class TestDataset(BaseAPIPortalTest):
 
         modified_metadata = copy.deepcopy(self.sample_dataset_metadata)
         modified_metadata.development_stage = [OntologyTermId("Test", "HsapDv:0000008")]
-        modified_metadata.tissue = [OntologyTermId("Test", "UBERON:0002048")]
+        modified_metadata.tissue = [TissueOntologyTermId("Test", "UBERON:0002048", "cell culture")]
         modified_metadata.cell_type = [OntologyTermId("Test", "CL:0000738")]
 
         dataset = self.generate_dataset(metadata=modified_metadata, publish=True)

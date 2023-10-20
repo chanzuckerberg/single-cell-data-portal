@@ -1,7 +1,7 @@
 from backend.cellguide.pipeline.canonical_marker_genes.utils import format_citation_dp
 from backend.cellguide.pipeline.source_collections.types import SourceCollectionsData
 from backend.common.utils.rollup import descendants
-from backend.wmg.data.utils import get_collections_from_curation_api, get_datasets_from_curation_api
+from backend.wmg.data.utils import get_collections_from_discover_api, get_datasets_from_discover_api
 
 
 def generate_source_collections_data(all_cell_type_ids_in_corpus: list[str]) -> dict[str, list[SourceCollectionsData]]:
@@ -9,8 +9,8 @@ def generate_source_collections_data(all_cell_type_ids_in_corpus: list[str]) -> 
     For each cell type id in the corpus, we want to generate a SourceCollectionsData object, which contains
     metadata about the source data for each cell type
     """
-    all_datasets = get_datasets_from_curation_api()
-    all_collections = get_collections_from_curation_api()
+    all_datasets = get_datasets_from_discover_api()
+    all_collections = get_collections_from_discover_api()
 
     collections_dict = {collection["collection_id"]: collection for collection in all_collections}
     datasets_dict = {dataset["dataset_id"]: dataset for dataset in all_datasets}
