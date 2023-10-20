@@ -26,13 +26,11 @@ def get(collection_id: str, token_info: dict):
     is_owner_or_allowed_else_forbidden(collection_version, user_info)
     if collection_version.published_at:
         raise ForbiddenHTTPException()
-    if user_info.is_super_curator():
-        upload_key_prefix = f"super/{collection_id}/"
-    else:
-        upload_key_prefix = f"{user_info.user_id}/{collection_id}/"
     rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
-    if rdev_prefix:
-        upload_key_prefix = f"{rdev_prefix}/{upload_key_prefix}"
+    if user_info.is_super_curator():
+        upload_key_prefix = rdev_prefix + f"super/{collection_id}"
+    else:
+        upload_key_prefix = rdev_prefix + f"{user_info.user_id}/{collection_id}"
     parameters = dict(
         RoleArn=config.curator_role_arn,
         RoleSessionName=user_info.user_id.replace("|", "-"),
