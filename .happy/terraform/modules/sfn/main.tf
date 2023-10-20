@@ -174,12 +174,10 @@ resource "aws_sfn_state_machine" "state_machine" {
                 ],
                 "TimeoutSeconds": ${local.timeout}
               },
-              {
-                "CatchSeuratFailure": {
-                  "Type": "Pass",
-                  "End": true,
-                  "ResultPath": null
-                }
+              "CatchSeuratFailure": {
+                "Type": "Pass",
+                "End": true,
+                "ResultPath": null
               }
             }
           }
