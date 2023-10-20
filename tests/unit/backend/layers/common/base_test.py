@@ -143,6 +143,10 @@ class BaseTest(unittest.TestCase):
             feature_count=400,
             feature_reference=["NCBITaxon:9606"],
             raw_data_location="raw.X",
+            citation="Publication: https://doi.org/12.2345/science.abc1234 Dataset Version: "
+            "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
+            "CZ CELLxGENE Discover in Collection: "
+            "https://cellxgene.cziscience.com/collections/collection_id",
         )
 
         self.sample_collection_metadata = CollectionMetadata(
