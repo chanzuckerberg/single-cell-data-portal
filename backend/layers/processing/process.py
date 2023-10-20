@@ -154,8 +154,6 @@ class ProcessMain(ProcessingLogic):
             artifact_bucket = os.environ.get("ARTIFACT_BUCKET")
             datasets_bucket = os.environ.get("DATASETS_BUCKET")
             cxg_bucket = os.environ.get("CELLXGENE_BUCKET")
-            if step_name == "seurat":
-                return 1
             rv = self.process(
                 dataset_id=DatasetVersionId(dataset_id),
                 step_name=step_name,

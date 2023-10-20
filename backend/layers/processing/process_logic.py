@@ -105,6 +105,8 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
     ) -> str:
         self.logger.info(f"Converting {local_filename}")
         start = datetime.now()
+        if processing_status_key == DatasetStatusKey.RDS:
+            raise ConversionFailed(processing_status_key) from None
         try:
             self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.CONVERTING)
             file_dir = converter(local_filename)
