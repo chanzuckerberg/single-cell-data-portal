@@ -83,7 +83,7 @@ if __name__ == "__main__":
             new=mock_get_datasets_from_curation_endpoint,
         ),
     ):
-        corpus_path = os.path.join(temp_dir, "test-snapshot")
+        corpus_path = os.path.join(temp_dir, os.path.basename(os.path.normpath(new_snapshot)))
         run_pipeline(corpus_path=corpus_path)
 
         for cube_name in [

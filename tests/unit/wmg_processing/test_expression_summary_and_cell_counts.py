@@ -1,4 +1,3 @@
-import shutil
 import unittest
 from unittest.mock import patch
 
@@ -26,8 +25,8 @@ class ExpressionSummaryAndCellCountsTests(unittest.TestCase):
         ):
             cls.expected_expression_summary_df = es_cube.df[:]
             cls.cell_counts_df = cc_cube.df[:]
-        shutil.rmtree(f"{cls.temp_cube_dir.name}/{EXPRESSION_SUMMARY_CUBE_NAME}")
-        shutil.rmtree(f"{cls.temp_cube_dir.name}/{CELL_COUNTS_CUBE_NAME}")
+        # shutil.rmtree(f"{cls.temp_cube_dir.name}/{EXPRESSION_SUMMARY_CUBE_NAME}")
+        # shutil.rmtree(f"{cls.temp_cube_dir.name}/{CELL_COUNTS_CUBE_NAME}")
 
     @classmethod
     def tearDownClass(cls):
@@ -38,8 +37,8 @@ class ExpressionSummaryAndCellCountsTests(unittest.TestCase):
         pipeline_state.pop(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG, None)
         write_pipeline_state(pipeline_state, self.temp_cube_dir.name)
 
-        shutil.rmtree(f"{self.temp_cube_dir.name}/{EXPRESSION_SUMMARY_CUBE_NAME}")
-        shutil.rmtree(f"{self.temp_cube_dir.name}/{CELL_COUNTS_CUBE_NAME}")
+        # shutil.rmtree(f"{self.temp_cube_dir.name}/{EXPRESSION_SUMMARY_CUBE_NAME}")
+        # shutil.rmtree(f"{self.temp_cube_dir.name}/{CELL_COUNTS_CUBE_NAME}")
 
     def test_expression_summary_and_cell_counts(self):
         with (

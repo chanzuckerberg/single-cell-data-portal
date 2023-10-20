@@ -12,11 +12,13 @@ from backend.wmg.pipeline.utils import load_pipeline_state, write_pipeline_state
 from tests.test_utils import compare_dicts
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot_tmpdir
 
+TEST_SNAPSHOT_NAME = "realistic-test-snapshot"
+
 
 class PrimaryFilterDimensionsTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.temp_cube_dir = load_realistic_test_snapshot_tmpdir("realistic-test-snapshot")
+        cls.temp_cube_dir = load_realistic_test_snapshot_tmpdir(TEST_SNAPSHOT_NAME)
         with open(f"{cls.temp_cube_dir.name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}") as f:
             cls.expected_primary_filter_dimensions = json.load(f)
 
@@ -39,6 +41,7 @@ class PrimaryFilterDimensionsTests(unittest.TestCase):
         create_primary_filter_dimensions(self.temp_cube_dir.name)
         with open(f"{self.temp_cube_dir.name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}") as f:
             primary_filter_dimensions = json.load(f)
+            primary_filter_dimensions["snapshot_id"] = TEST_SNAPSHOT_NAME
         pipeline_state = load_pipeline_state(self.temp_cube_dir.name)
         self.assertTrue(pipeline_state.get(PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG))
         self.assertTrue(compare_dicts(primary_filter_dimensions, self.expected_primary_filter_dimensions))
