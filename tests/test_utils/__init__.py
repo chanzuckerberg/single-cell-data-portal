@@ -51,3 +51,7 @@ class TempEnvironmentVariable:
             del os.environ[self.key]
         else:
             os.environ[self.key] = self.original_value
+
+
+def sort_dataframe(df):
+    return df.sort_values(by=df.columns.tolist()).reset_index(drop=True)

@@ -14,6 +14,7 @@ from backend.wmg.pipeline.constants import (
 )
 from backend.wmg.pipeline.marker_genes import create_marker_genes_cube
 from backend.wmg.pipeline.utils import load_pipeline_state, write_pipeline_state
+from tests.test_utils import sort_dataframe
 from tests.test_utils.mocks import mock_bootstrap_rows_percentiles
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot_tmpdir
 
@@ -23,7 +24,7 @@ class MarkerGenesTests(unittest.TestCase):
     def setUpClass(cls):
         cls.temp_cube_dir = load_realistic_test_snapshot_tmpdir("realistic-test-snapshot")
         with tiledb.open(f"{cls.temp_cube_dir.name}/{MARKER_GENES_CUBE_NAME}") as mg_cube:
-            cls.expected_marker_gene_df = mg_cube.df[:]
+            cls.expected_marker_gene_df = sort_dataframe(mg_cube.df[:])
         shutil.rmtree(f"{cls.temp_cube_dir.name}/{MARKER_GENES_CUBE_NAME}")
 
     @classmethod
@@ -51,7 +52,7 @@ class MarkerGenesTests(unittest.TestCase):
             create_marker_genes_cube(self.temp_cube_dir.name)
 
         with tiledb.open(f"{self.temp_cube_dir.name}/{MARKER_GENES_CUBE_NAME}") as mg_cube:
-            marker_genes_df = mg_cube.df[:]
+            marker_genes_df = sort_dataframe(mg_cube.df[:])
             pd.testing.assert_frame_equal(marker_genes_df, self.expected_marker_gene_df)
 
         pipeline_state = load_pipeline_state(self.temp_cube_dir.name)
