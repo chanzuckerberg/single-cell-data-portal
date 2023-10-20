@@ -4,6 +4,7 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_OBJECT, noop } from "src/common/constants/utils";
 import { isSSR } from "src/common/utils/isSSR";
+import { useRouter } from "next/router";
 
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../SaveExport";
 import {
@@ -32,6 +33,7 @@ import { useTissueMetadata } from "src/common/queries/cellGuide";
 export default function ShareButton(): JSX.Element {
   const state = useContext(StateContext);
   const { data: tissues } = useTissueMetadata();
+  const router = useRouter();
 
   const {
     selectedFilters,
@@ -127,11 +129,12 @@ export default function ShareButton(): JSX.Element {
     if (params) {
       // If we later want to display a toast on successful load from url, this function returns true/false
       const loadedState = loadStateFromQueryParams({
-        params,
-        selectedFilters,
-        dispatch,
-        tissues,
         cellTypesByName,
+        dispatch,
+        params,
+        router,
+        selectedFilters,
+        tissues,
       });
 
       if (loadedState) {
@@ -159,6 +162,7 @@ export default function ShareButton(): JSX.Element {
     compare,
     mapCellTypesToIDs,
     tissues,
+    router,
   ]);
 
   return (

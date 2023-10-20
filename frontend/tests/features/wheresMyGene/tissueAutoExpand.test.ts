@@ -2,7 +2,11 @@ import { expect, Page } from "@playwright/test";
 import { toInteger } from "lodash";
 import { test } from "tests/common/test";
 import { collapseTissue, expandTissue, tryUntil } from "tests/utils/helpers";
-import { goToWMG } from "tests/utils/wmgUtils";
+import {
+  goToWMG,
+  WMG_WITH_SEEDED_GENES_AND_CELL_TYPES,
+  WMG_WITH_SEEDED_GENES_AND_TISSUES,
+} from "tests/utils/wmgUtils";
 
 const FILTERED_TISSUES = ["abdomen", "axilla", "blood"];
 const TISSUE_NODE_TEST_ID = "tissue-name";
@@ -38,6 +42,9 @@ const EXPECTED_EXPANDED_TISSUES = ["blood"];
 const EXPECTED_VISIBLE_CELL = ["B Cell"];
 const EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER = ["axilla", "brain"];
 const EXPECTED_FILTERED_TISSUES_WITH_DISEASE_FILTER = ["blood"];
+const EXPECTED_FILTERED_TISSUES_WITH_SHARE_LINK = ["lung"];
+
+const WAIT_FOR_REQUEST_TIMEOUT_MS = 30 * 1000; // 30 seconds
 
 const { describe } = test;
 
@@ -312,6 +319,73 @@ describe("WMG tissue auto-expand", () => {
     await removeCellFilter(page);
     await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER);
   });
+
+  test("Share link with genes and cellTypes", async ({ page }) => {
+    await Promise.all([
+      /**
+       * (thuang): This test asserts that the app does use the cellTypes passed
+       * in the share link in a `/filters` request.
+       * If this `waitForRequest` times out, it's likely because the app is NOT
+       * sending a request with the cellTypes passed in the share link.
+       */
+      page.waitForRequest(
+        (request) => {
+          if (!request.url().includes("wmg/v2/filters")) return false;
+
+          const requestBody = JSON.parse(request.postData() || "{}");
+
+          const requestCellTypeIds = JSON.stringify(
+            requestBody.filter.cell_type_ontology_term_ids
+          );
+
+          return (
+            requestCellTypeIds ===
+            JSON.stringify(WMG_WITH_SEEDED_GENES_AND_CELL_TYPES.cellTypeIds)
+          );
+        },
+        { timeout: WAIT_FOR_REQUEST_TIMEOUT_MS }
+      ),
+      loadPageAndTissues(page, WMG_WITH_SEEDED_GENES_AND_CELL_TYPES.URL),
+    ]);
+
+    await checkElementVisible(
+      page,
+      WMG_WITH_SEEDED_GENES_AND_CELL_TYPES.cellTypes,
+      CELL_TYPE_TEST_ID
+    );
+    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_SHARE_LINK);
+  });
+
+  test("Share link with genes and tissues", async ({ page }) => {
+    await Promise.all([
+      /**
+       * (thuang): This test asserts that the app does use the tissues passed
+       * in the share link in a `/filters` request.
+       * If this `waitForRequest` times out, it's likely because the app is NOT
+       * sending a request with the tissues passed in the share link.
+       */
+      page.waitForRequest(
+        (request) => {
+          if (!request.url().includes("wmg/v2/filters")) return false;
+
+          const requestBody = JSON.parse(request.postData() || "{}");
+
+          const requestTissueIds = JSON.stringify(
+            requestBody.filter.tissue_ontology_term_ids
+          );
+
+          return (
+            requestTissueIds ===
+            JSON.stringify(WMG_WITH_SEEDED_GENES_AND_TISSUES.tissueIds)
+          );
+        },
+        { timeout: WAIT_FOR_REQUEST_TIMEOUT_MS }
+      ),
+      loadPageAndTissues(page, WMG_WITH_SEEDED_GENES_AND_TISSUES.URL),
+    ]);
+
+    await checkTissues(page, WMG_WITH_SEEDED_GENES_AND_TISSUES.tissues);
+  });
 });
 
 /**
@@ -324,8 +398,8 @@ describe("WMG tissue auto-expand", () => {
  * loadPageAndTissues
  * Load the WMG page and wait for the tissue nodes to be visible
  */
-async function loadPageAndTissues(page: Page) {
-  await goToWMG(page);
+async function loadPageAndTissues(page: Page, url?: string) {
+  await goToWMG(page, url);
   await expect(page.getByTestId(TISSUE_NODE_TEST_ID)).not.toHaveCount(0);
 }
 
@@ -364,7 +438,7 @@ async function filterCellTypes(page: Page, cellTypes: string[]) {
 
 /**
  * filterTissues
- * Filter the tissuesfrom the left panel
+ * Filter the tissues from the left panel
  */
 async function filterTissues(
   page: Page,

@@ -1,3 +1,4 @@
+import { NextRouter } from "next/router";
 import { Dispatch } from "react";
 import { TissueMetadataQueryResponse } from "src/common/queries/cellGuide";
 import { isSSR } from "src/common/utils/isSSR";
@@ -76,17 +77,19 @@ const stripEmptyFilters = (
 };
 
 export const loadStateFromQueryParams = ({
-  params,
-  selectedFilters,
-  dispatch,
-  tissues,
   cellTypesByName,
+  dispatch,
+  params,
+  router,
+  selectedFilters,
+  tissues,
 }: {
   params: URLSearchParams;
   selectedFilters: State["selectedFilters"];
   dispatch: Dispatch<PayloadAction<LoadStateFromURLPayload>>;
   tissues?: TissueMetadataQueryResponse;
   cellTypesByName: { [name: string]: CellType };
+  router: NextRouter;
 }): LoadStateFromURLPayload | null => {
   if (isSSR()) return null;
 
@@ -140,6 +143,10 @@ export const loadStateFromQueryParams = ({
         return false;
       }) || [];
 
+  const newFilteredCellTypeIds = newFilteredCellTypes.map(
+    (cellTypeName) => cellTypesByName[cellTypeName].id
+  );
+
   if (newFilteredCellTypes.length > 0) paramsToRemove.push("cellTypes");
 
   // Check for compare
@@ -153,7 +160,7 @@ export const loadStateFromQueryParams = ({
    * (thuang): Please makes sure we only remove params AFTER pushing all params
    * to `paramsToRemove`
    */
-  removeParams(paramsToRemove);
+  removeParams({ params: paramsToRemove, router });
 
   const payload = {
     compare: newCompare,
@@ -161,6 +168,7 @@ export const loadStateFromQueryParams = ({
     organism: newSelectedOrganism,
     genes: newSelectedGenes,
     cellTypes: newFilteredCellTypes,
+    cellTypeIds: newFilteredCellTypeIds,
   };
 
   dispatch(loadStateFromURL(payload));
