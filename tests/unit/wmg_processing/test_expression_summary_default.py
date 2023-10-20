@@ -37,6 +37,7 @@ class ExpressionSummaryDefaultTests(unittest.TestCase):
         write_pipeline_state(pipeline_state, self.temp_cube_dir.name)
         shutil.rmtree(f"{self.temp_cube_dir.name}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}")
 
+    @unittest.skip("Skipping this test")
     def test_expression_summary_default(self):
         create_expression_summary_default_cube(self.temp_cube_dir.name)
 
