@@ -322,6 +322,7 @@ class EntityColumns:
         "mean_genes_per_cell",
         "schema_version",
         "donor_id",
+        "citation",
     ]
 
     dataset_metadata_cols = [
