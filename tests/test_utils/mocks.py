@@ -53,5 +53,5 @@ class MockExpressionSummaryBuilder:
         pass
 
 
-def mock_create_cell_counts_cube(_corpus_path: str):
+def mock_create_cell_counts_cube(**kwargs):
     pass

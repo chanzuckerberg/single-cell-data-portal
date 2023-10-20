@@ -41,13 +41,17 @@ class ExpressionSummaryAndCellCountsTests(unittest.TestCase):
         shutil.rmtree(f"{self.temp_cube_dir.name}/{EXPRESSION_SUMMARY_CUBE_NAME}")
         shutil.rmtree(f"{self.temp_cube_dir.name}/{CELL_COUNTS_CUBE_NAME}")
 
-    def test_expression_summary(self):
+    def test_expression_summary_and_cell_counts(self):
         with (
             TempEnvironmentVariable(WMG_PIPELINE_TEST_RUN_KEY, "true"),
             patch(
-                "backend.wmg.pipeline.expression_summary.ExpressionSummaryCubeBuilder", new=MockExpressionSummaryBuilder
+                "backend.wmg.pipeline.expression_summary_and_cell_counts.ExpressionSummaryCubeBuilder",
+                new=MockExpressionSummaryBuilder,
             ),
-            patch("backend.wmg.pipeline.cell_counts.create_cell_counts_cube", new=mock_create_cell_counts_cube),
+            patch(
+                "backend.wmg.pipeline.expression_summary_and_cell_counts.create_cell_counts_cube",
+                new=mock_create_cell_counts_cube,
+            ),
         ):
             create_expression_summary_and_cell_counts_cubes(self.temp_cube_dir.name)
 
