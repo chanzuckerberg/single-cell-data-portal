@@ -13,6 +13,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.processing.schema_migration import SchemaMigrate
+from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
 
 
 def make_mock_dataset_version(
@@ -67,7 +68,7 @@ def revision(published_collection):
     collection.version_id = CollectionVersionId()
     collection.datasets = []
     for _dataset in published_collection.datasets:
-        collection.datasets.append(make_mock_dataset_version())
+        collection.datasets.append(make_mock_dataset_version(dataset_id=_dataset.dataset_id.id))
     return [published_collection, collection]
 
 
@@ -88,7 +89,9 @@ def private():
 @pytest.fixture
 def schema_migrate(tmpdir):
     business_logic = mock.Mock()
-    schema_migrate = SchemaMigrate(business_logic)
+    schema_validator = mock.Mock(spec=SchemaValidatorProviderInterface)
+    schema_validator.get_current_schema_version.return_value = "1.0.0"
+    schema_migrate = SchemaMigrate(business_logic, schema_validator)
     schema_migrate.local_path = str(tmpdir)
     return schema_migrate
 

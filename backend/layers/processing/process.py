@@ -66,7 +66,7 @@ class ProcessMain(ProcessingLogic):
         )
         self.process_seurat = ProcessSeurat(self.business_logic, self.uri_provider, self.s3_provider)
         self.process_cxg = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
-        self.schema_migrate = SchemaMigrate(business_logic)
+        self.schema_migrate = SchemaMigrate(business_logic, schema_validator)
 
     def log_batch_environment(self):
         batch_environment_variables = [
