@@ -3,6 +3,7 @@ import logging
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatusKey, DatasetVersionId
 from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.processing.upload_failures.failures_app import handle_failure
 
 database_provider = DatabaseProvider()
 business_logic = BusinessLogic(database_provider, None, None, None, None)
@@ -20,6 +21,9 @@ def success_handler(event: dict, context) -> None:
     """
     dataset_id = event["dataset_id"]
 
-    business_logic.update_dataset_version_status(
-        DatasetVersionId(dataset_id), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
-    )
+    if event.get("errors"):
+        handle_failure(event, context)
+    else:
+        business_logic.update_dataset_version_status(
+            DatasetVersionId(dataset_id), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
+        )

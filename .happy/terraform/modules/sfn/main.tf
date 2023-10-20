@@ -163,19 +163,26 @@ resource "aws_sfn_state_machine" "state_machine" {
                     ]
                   }
                 },
+                "Catch": [
+                  {
+                    "ErrorEquals": [
+                      "States.ALL"
+                    ],
+                    "Next": "CatchSeuratFailure",
+                    "ResultPath": "$.error"
+                  }
+                ],
                 "TimeoutSeconds": ${local.timeout}
+              },
+              {
+                "CatchSeuratFailure": {
+                  "Type": "Pass",
+                  "End": true,
+                  "ResultPath": null
+                }
               }
             }
           }
-        ],
-        "Catch": [
-            {
-            "ErrorEquals": [
-                "States.ALL"
-            ],
-            "Next": "HandleErrors",
-            "ResultPath": "$.error"
-            }
         ]
       },
       "HandleSuccess": {
