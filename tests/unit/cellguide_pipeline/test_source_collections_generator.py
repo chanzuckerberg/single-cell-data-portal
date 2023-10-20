@@ -5,17 +5,17 @@ from unittest.mock import patch
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.source_collections.source_collections_generator import generate_source_collections_data
 from backend.cellguide.pipeline.utils import convert_dataclass_to_dict_and_strip_nones
-from tests.test_utils.dict_compare import compare_dicts
+from tests.test_utils import compare_dicts
+from tests.test_utils.mocks import (
+    mock_get_collections_from_curation_endpoint,
+    mock_get_datasets_from_curation_endpoint,
+)
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
 )
 from tests.unit.cellguide_pipeline.constants import (
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
     SOURCE_COLLECTIONS_FIXTURE_FILENAME,
-)
-from tests.unit.cellguide_pipeline.mocks import (
-    mock_get_collections_from_curation_endpoint,
-    mock_get_datasets_from_curation_endpoint,
 )
 
 TEST_SNAPSHOT = "realistic-test-snapshot"

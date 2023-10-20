@@ -53,7 +53,7 @@ PIPELINE_STEPS = [
 
 
 @log_func_runtime
-def run_pipeline(corpus_path: Optional[str] = None):
+def run_pipeline(corpus_path: Optional[str] = None, skip_validation: bool = False):
     if corpus_path is None:
         corpus_path = str(int(time.time()))
 
@@ -69,24 +69,25 @@ def run_pipeline(corpus_path: Optional[str] = None):
         if not pipeline_state.get(flag):
             step(corpus_path)
 
-    try:
-        is_valid = Validation(corpus_path).validate_cube()
-    except Exception:
-        is_valid = False
+    if not skip_validation:
+        try:
+            is_valid = Validation(corpus_path).validate_cube()
+        except Exception:
+            is_valid = False
 
-    snapshot_id = os.path.basename(os.path.normpath(corpus_path))
-    cube_data_s3_path = upload_artifacts_to_s3(
-        snapshot_source_path=corpus_path,
-        snapshot_schema_version=WMG_DATA_SCHEMA_VERSION,
-        snapshot_id=snapshot_id,
-        is_snapshot_validation_successful=is_valid,
-    )
-    stats = _get_stats(corpus_path)
+        snapshot_id = os.path.basename(os.path.normpath(corpus_path))
+        cube_data_s3_path = upload_artifacts_to_s3(
+            snapshot_source_path=corpus_path,
+            snapshot_schema_version=WMG_DATA_SCHEMA_VERSION,
+            snapshot_id=snapshot_id,
+            is_snapshot_validation_successful=is_valid,
+        )
+        stats = _get_stats(corpus_path)
 
-    if is_valid:
-        logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot location: {cube_data_s3_path}")
+        if is_valid:
+            logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot location: {cube_data_s3_path}")
 
-    return cube_data_s3_path, stats, is_valid
+        return cube_data_s3_path, stats, is_valid
 
 
 def main():

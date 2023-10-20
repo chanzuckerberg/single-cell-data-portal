@@ -9,13 +9,13 @@ from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     CELL_TYPE_ORDERINGS_FILENAME,
 )
-from backend.wmg.data.utils import get_pinned_ontology_url
+from backend.wmg.data.utils import get_pinned_ontology_url, to_dict
 from backend.wmg.pipeline.constants import (
     CELL_TYPE_ORDERING_CREATED_FLAG,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
 )
 from backend.wmg.pipeline.errors import PipelineStepMissing
-from backend.wmg.pipeline.utils import load_pipeline_state, log_func_runtime, to_dict, write_pipeline_state
+from backend.wmg.pipeline.utils import load_pipeline_state, log_func_runtime, write_pipeline_state
 
 
 @log_func_runtime
@@ -61,6 +61,9 @@ def create_cell_type_ordering(corpus_path: str) -> None:
     # Concatenate into single dataframe for writing
     df = pd.concat(ordered_cells_by_tissue).reset_index(drop=True)
 
+    # sort rows for consistency
+    df = df.sort_values(by=df.columns.tolist())
+
     df.to_json(os.path.join(corpus_path, CELL_TYPE_ORDERINGS_FILENAME))
 
     pipeline_state[CELL_TYPE_ORDERING_CREATED_FLAG] = True
@@ -94,7 +97,7 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     onto = Ontology(get_pinned_ontology_url(CL_BASIC_OBO_NAME))
     ancestors = [list(onto[t].superclasses()) for t in cells if t in onto]
     ancestors = [i for s in ancestors for i in s]
-    ancestors = set(ancestors)
+    ancestors = sorted(set(ancestors))
 
     G = pgv.AGraph()
     for a in ancestors:

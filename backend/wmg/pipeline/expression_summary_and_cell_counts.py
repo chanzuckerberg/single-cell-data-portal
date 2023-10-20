@@ -18,22 +18,29 @@ ORGANISM_INFO = [
 ]
 
 
+class CensusParameters:
+    census_version = "latest"
+    value_filter = {
+        "homo_sapiens": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD}",
+        "mus_musculus": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD}",
+    }
+
+
 def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
     pipeline_state = load_pipeline_state(corpus_path)
 
-    for organismInfo in ORGANISM_INFO:
-        organism = organismInfo["label"]
-        organismId = organismInfo["id"]
+    with cellxgene_census.open_soma(
+        census_version=CensusParameters.census_version,
+    ) as census:
+        for organismInfo in ORGANISM_INFO:
+            organism = organismInfo["label"]
+            organismId = organismInfo["id"]
 
-        with cellxgene_census.open_soma(
-            census_version="latest",
-        ) as census:
+            value_filter = CensusParameters.value_filter[organism]
             organism = census["census_data"][organism]
             with organism.axis_query(
                 "RNA",
-                obs_query=soma.AxisQuery(
-                    value_filter=f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD}"
-                ),
+                obs_query=soma.AxisQuery(value_filter=value_filter),
             ) as query:
                 if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
                     ExpressionSummaryCubeBuilder(

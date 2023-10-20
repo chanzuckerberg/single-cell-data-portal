@@ -1,6 +1,8 @@
 import os
 from typing import Dict
 
+import numpy as np
+import pandas as pd
 import requests
 import yaml
 from requests.adapters import HTTPAdapter
@@ -163,3 +165,60 @@ def get_pinned_ontology_url(name: str):
     cl_url = decoded_yaml["CL"]["urls"][key]
     cl_url = cl_url.split("cl.owl")[0] + name
     return cl_url
+
+
+def build_filter_relationships(cell_counts_df: pd.DataFrame):
+    # get a dataframe of the columns that are not numeric
+    df_filters = cell_counts_df.select_dtypes(exclude="number")
+    # get a numpy array of the column names with shape (1, n_cols)
+    cols = df_filters.columns.values[None, :]
+
+    # tile the column names row-wise to match the shape of the dataframe and concatenate to the values
+    # this ensures that filter values will never collide across columns.
+    mat = np.tile(cols, (cell_counts_df.shape[0], 1)) + "__" + df_filters.values
+
+    # for each cell, get all pairwise combinations of filters compresent in that cell
+    # these are the edges of the filter relationships graph
+    Xs = []
+    Ys = []
+    for i in range(mat.shape[0]):
+        Xs.extend(np.repeat(mat[i], mat[i].size))
+        Ys.extend(np.tile(mat[i], mat[i].size))
+
+    # get all the unique combinations of filters
+    Xs, Ys = np.unique(np.array((Xs, Ys)), axis=1)
+
+    # exclude self-relationships
+    filt = Xs != Ys
+    Xs, Ys = Xs[filt], Ys[filt]
+
+    # convert the edges to a linked list representation
+    filter_relationships_linked_list = to_dict(Xs, Ys)
+
+    # reorganize the linked list representation to a nested linked list representation
+    # where the filter columns are separated into distinct dictionaries
+    # e.g. instead of {"cell_type_ontology_term_id__beta cell": ["dataset_id__Single cell transcriptome analysis of human pancreas", "assay_ontology_term_id__assay_type", ...], ...},
+    # it's now {"cell_type_ontology_term_id__beta cell": {"dataset_id": ["dataset_id__Single cell transcriptome analysis of human pancreas", ...], "assay_ontology_term_id": ["assay_ontology_term_id__assay_type", ...], ...}, ...}.
+    # This structure is easier to parse by the `/query` endpoint.
+    for k, v in filter_relationships_linked_list.items():
+        filter_relationships_linked_list[k] = to_dict([x.split("__")[0] for x in v], v)
+
+    return filter_relationships_linked_list
+
+
+def to_dict(a, b):
+    """
+    convert a flat key array (a) and a value array (b) into a dictionary with values grouped by keys
+    """
+    a = np.array(a)
+    b = np.array(b)
+    idx = np.argsort(a)
+    a = a[idx]
+    b = b[idx]
+    bounds = np.where(a[:-1] != a[1:])[0] + 1
+    bounds = np.append(np.append(0, bounds), a.size)
+    bounds_left = bounds[:-1]
+    bounds_right = bounds[1:]
+    slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
+    d = dict(zip(np.unique(a), [list(set(x)) for x in slists]))
+    return d

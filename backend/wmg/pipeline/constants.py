@@ -20,7 +20,7 @@ GENE_EXPRESSION_COUNT_MIN_THRESHOLD = 500
 
 # Minimum value for raw expression counts that will be used to filter out computed RankIt values. Details:
 # https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/scExpression/scExpression-documentation.md#removal-of-noisy-ultra-low-expression-values
-NORM_EXPR_COUNT_FILTERING_MIN_THRESHOLD = 2
+NORM_EXPR_COUNT_FILTERING_MIN_THRESHOLD = 3
 
 ASSAYS_FOR_GENE_LENGTH_NORMALIZATION = [
     "EFO:0008930",  # Smart-seq

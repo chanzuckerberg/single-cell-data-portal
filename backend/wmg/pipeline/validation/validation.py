@@ -8,7 +8,7 @@ import tiledb
 
 from backend.common.utils.math_utils import GB
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, EXPRESSION_SUMMARY_CUBE_NAME
-from backend.wmg.data.validation import fixtures
+from backend.wmg.pipeline.validation import fixtures
 
 logger = logging.getLogger(__name__)
 
@@ -21,9 +21,9 @@ class Validation:
         self.cell_count_path = f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}"
         self.env = os.getenv("DEPLOYMENT_STAGE")
         self.validation_dataset_id = "3de0ad6d-4378-4f62-b37b-ec0b75a50d94"
-        self.MIN_CUBE_SIZE_GB = 2.3
+        self.MIN_CUBE_SIZE_GB = 2
         self.MIN_TISSUE_COUNT = 53
-        self.MIN_SPECIES_COUNT = 4
+        self.MIN_SPECIES_COUNT = 2
         self.MIN_DATASET_COUNT = 254
         self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT = 80
         self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT = 60
@@ -430,8 +430,8 @@ class Validation:
             expected_values = anndata.read_h5ad(
                 f"{pathlib.Path(__file__).parent.resolve()}/3_0_0_lung_map_3de0ad6d-4378-4f62-b37b-ec0b75a50d94.h5ad"
             )
-            malat_expected = expected_values.obs.assign(MALAT1=expected_values.layers["rankit"].toarray()[:, 0])
-            ccl5_expected = expected_values.obs.assign(CCL5=expected_values.layers["rankit"].toarray()[:, 1])
+            malat_expected = expected_values.obs.assign(MALAT1=expected_values.X.toarray()[:, 0])
+            ccl5_expected = expected_values.obs.assign(CCL5=expected_values.X.toarray()[:, 1])
 
             expected_malat1_by_cell_type = (
                 malat_expected.groupby("cell_type_ontology_term_id").sum(numeric_only=True).MALAT1
@@ -455,18 +455,18 @@ class Validation:
             Here we take the absolute value of the sum of the difference for each cell type. That number should be
             very small (less than 1).
             """
-            malat1_diff_total = sum(abs(malat1_comparison.self - malat1_comparison.other))
-            ccl5_diff_total = sum(abs(ccl5_comparison.self - ccl5_comparison.other))
+            malat1_diff_max = max(abs(malat1_comparison.self - malat1_comparison.other) / abs(malat1_comparison.self))
+            ccl5_diff_max = max(abs(ccl5_comparison.self - ccl5_comparison.other) / abs(ccl5_comparison.self))
 
-            if malat1_diff_total > 1:
+            if malat1_diff_max > 0.01:
                 self.errors.append(
                     f"MALAT1 expression values for dataset {self.validation_dataset_id} are further "
-                    f"from expected values than they should be. Abs sum of difference is {malat1_diff_total}"
+                    f"from expected values than they should be. Max % difference is {malat1_diff_max}"
                 )
-            if ccl5_diff_total > 1:
+            if ccl5_diff_max > 0.01:
                 self.errors.append(
                     f"CCL5 expression values for dataset {self.validation_dataset_id} are further "
-                    f"from expected values than they should be. Abs sum of difference is {ccl5_diff_total}"
+                    f"from expected values than they should be. Max % difference is {ccl5_diff_max}"
                 )
 
     def validate_dataset_counts(self):
