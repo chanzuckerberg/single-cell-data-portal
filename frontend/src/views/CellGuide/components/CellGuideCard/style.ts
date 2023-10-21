@@ -5,6 +5,7 @@ import {
   fontHeaderXl,
   fontHeaderXxl,
   Tag,
+  Dropdown,
 } from "@czi-sds/components";
 
 import RightSideBar from "src/components/common/RightSideBar";
@@ -35,6 +36,10 @@ interface CellGuideViewProps extends CommonThemeProps {
   skinnyMode: boolean;
 }
 
+export const StyledDropdown = styled(Dropdown)`
+  z-index: 1;
+  padding: 0;
+`;
 export const CellGuideView = styled.div<CellGuideViewProps>`
   display: flex;
   flex-direction: row;

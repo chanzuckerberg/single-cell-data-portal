@@ -17,6 +17,7 @@ import {
   CellGuideWrapper,
   StyledCellTagSideBar,
   StyledGeneTagSideBar,
+  StyledDropdown,
 } from "./style";
 import Description from "./components/Description";
 import MarkerGeneTables from "./components/MarkerGeneTables";
@@ -61,7 +62,7 @@ import CellGuideInfoSideBar from "../CellGuideInfoSideBar";
 import { CellType } from "../common/OntologyDagView/common/types";
 import { useComputationalMarkerGenesTableRowsAndFilters } from "./components/MarkerGeneTables/hooks/computational_markers";
 
-const SELECT_A_GENE = "Select a gene";
+const SELECT_A_GENE = "Color by Gene";
 
 const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
   sdsStyle: "square",
@@ -233,13 +234,13 @@ export default function CellGuideCard({
     }));
 
     // Insert an element at the beginning
-    genes.unshift({ name: "Clear gene" });
+    genes.unshift({ name: "No Gene" });
 
     return genes;
   }, [computationalMarkerGeneTableData]);
 
   const handleChangeGene = (option: DefaultDropdownMenuOption | null) => {
-    if (option?.name === "Clear gene") {
+    if (option?.name === "No Gene") {
       setSelectedGene(undefined);
     } else if (option) {
       selectGene(option.name);
@@ -247,11 +248,18 @@ export default function CellGuideCard({
   };
 
   const geneDropdownComponent = (
-    <Dropdown
+    <StyledDropdown
       InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
       search
       label={selectedGene || SELECT_A_GENE}
-      onChange={handleChangeGene}
+      onChange={
+        handleChangeGene as unknown as (
+          options:
+            | DefaultDropdownMenuOption
+            | DefaultDropdownMenuOption[]
+            | null
+        ) => void
+      }
       options={sdsGenesList}
       data-testid={CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN}
     />

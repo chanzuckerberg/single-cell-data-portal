@@ -22,6 +22,7 @@ export const RightAligned = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
+  align-items: center;
   z-index: 1;
   padding-right: ${spacesL}px;
 `;
@@ -41,7 +42,7 @@ export const HoverContainer = styled.div<HoverContainerProps>`
           width: ${width}px;
           height: ${height}px;
           overflow: auto;
-          z-index: 9999;
+          z-index: 1000;
         `
       : css`
           height: ${height}px;
@@ -57,7 +58,7 @@ export const HoverContainer = styled.div<HoverContainerProps>`
 
 export const TooltipInPortalStyle = css`
   .visx-tooltip {
-    z-index: 99999;
+    z-index: 9999;
   }
 `;
 

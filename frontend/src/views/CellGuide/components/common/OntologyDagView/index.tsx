@@ -395,7 +395,7 @@ export default function OntologyDagView({
       {!!cellTypeId && (
         <TableTitleWrapper>
           <TableTitle>Cell Ontology</TableTitle>
-          {geneDropdownComponent}
+          {!isFullScreen && geneDropdownComponent}
         </TableTitleWrapper>
       )}
 
@@ -429,6 +429,7 @@ export default function OntologyDagView({
                 <Legend isTissue={!cellTypeId} selectedGene={selectedGene} />
               )}
               <RightAligned>
+                {isFullScreen && geneDropdownComponent}
                 <FullscreenButton
                   data-testid={
                     CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON
