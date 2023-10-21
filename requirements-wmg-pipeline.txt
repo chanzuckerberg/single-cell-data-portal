@@ -5,13 +5,15 @@ black==22.3.0  # Must be kept in sync with black version in .pre-commit-config.y
 boto3==1.28.7
 botocore>=1.31.7, <1.32.0
 click==8.1.3
+cellxgene-census==1.6.0
 coverage==7.2.7
 dataclasses-json==0.5.7
 furl==2.1.3
 jsonschema==4.18.4
 moto==3.1.3
-numba==0.56.2
+numba==0.56.4
 numpy==1.23.5
+openai==0.27.7
 owlready2==0.40.0
 pandas==1.5.3
 parameterized
@@ -27,10 +29,10 @@ python-json-logger==2.0.7
 requests>=2.22.0
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
 ruff==0.0.239 # Must be kept in sync with ruff version in .pre-commit-config.yaml
-s3fs==0.4.2
 scanpy==1.9.3
 scipy==1.10.1
 SQLAlchemy==1.4.49
 SQLAlchemy-Utils==0.41.1
 tenacity==8.2.2
-tiledb==0.21.4  # Portal's tiledb version should always be the same or older than Explorer's
+tiledbsoma==1.4.4
+dask==2023.8.1
