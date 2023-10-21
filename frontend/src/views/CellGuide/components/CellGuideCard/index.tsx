@@ -419,7 +419,7 @@ export default function CellGuideCard({
             <div>
               <FullScreenProvider cellInfoSideBarDisplayed={!!cellInfoCellType}>
                 <OntologyDagView
-                  key={`${cellTypeId}-${selectedOrganId}`}
+                  key={`${cellTypeId}-${selectedOrganId}-${selectedGene}`}
                   cellTypeId={cellTypeId}
                   tissueName={selectedOrgan.name}
                   tissueId={selectedOrganId}
