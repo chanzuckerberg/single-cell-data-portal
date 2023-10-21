@@ -32,7 +32,6 @@ import {
   TooltipInPortalStyle,
   StyledSVG,
   RightAligned,
-  StyledTagFilter,
 } from "./style";
 import { useFullScreen } from "../FullScreenProvider";
 import {
@@ -49,7 +48,6 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
-  CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE,
   MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE,
   ANIMAL_CELL_ID,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
@@ -57,7 +55,6 @@ import {
   ALL_TISSUES,
   TISSUE_AGNOSTIC,
 } from "../../CellGuideCard/components/MarkerGeneTables/constants";
-import { Icon } from "@czi-sds/components";
 
 interface TreeProps {
   skinnyMode?: boolean;
@@ -70,6 +67,7 @@ interface TreeProps {
   tissueName: string;
   selectGene?: (gene: string) => void;
   setCellInfoCellType?: (props: CellType | null) => void;
+  geneDropdownComponent?: React.ReactNode;
 }
 
 // This determines the initial Zoom position and scale
@@ -89,9 +87,9 @@ export default function OntologyDagView({
   inputWidth,
   inputHeight,
   selectedGene,
-  selectGene,
   selectedOrganism,
   setCellInfoCellType,
+  geneDropdownComponent,
 }: TreeProps) {
   const [width, setWidth] = useState(inputWidth);
   const [height, setHeight] = useState(inputHeight);
@@ -397,6 +395,7 @@ export default function OntologyDagView({
       {!!cellTypeId && (
         <TableTitleWrapper>
           <TableTitle>Cell Ontology</TableTitle>
+          {geneDropdownComponent}
         </TableTitleWrapper>
       )}
 
@@ -430,29 +429,6 @@ export default function OntologyDagView({
                 <Legend isTissue={!cellTypeId} selectedGene={selectedGene} />
               )}
               <RightAligned>
-                {selectedGene && (
-                  <StyledTagFilter
-                    data-testid={
-                      CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
-                    }
-                    label={selectedGene}
-                    sx={{
-                      backgroundColor: "#E0F0FF",
-                      padding: 0,
-                      margin: 0,
-                    }}
-                    deleteIcon={
-                      <Icon
-                        sdsIcon="xMark"
-                        sdsSize="xs"
-                        sdsType="button"
-                        color="error"
-                      />
-                    }
-                    onDelete={() => selectGene && selectGene(selectedGene)}
-                    onClick={() => selectGene && selectGene(selectedGene)}
-                  />
-                )}
                 <FullscreenButton
                   data-testid={
                     CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON

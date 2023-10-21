@@ -487,15 +487,19 @@ export function useAllOrgansLookupTables(): Map<string, string> {
 }
 
 /* ========== Lookup tables for tissues ========== */
-export function useAllTissuesLookupTables(
-  cellTypeId: string
-): Map<string, string> {
+export function useAllTissuesLookupTables(cellTypeId: string): {
+  allTissuesLabelToIdLookup: Map<string, string>;
+  computationalMarkers: ComputationalMarkersQueryResponse;
+} {
   const { data: tissueData } = useTissueMetadata();
   const { data: computationalMarkers } = useComputationalMarkers(cellTypeId);
 
   return useMemo(() => {
     if (!tissueData || !computationalMarkers) {
-      return new Map<string, string>();
+      return {
+        allTissuesLabelToIdLookup: new Map<string, string>(),
+        computationalMarkers: [],
+      };
     }
     const tissueIdByLabel: { [label: string]: string } = {};
 
@@ -511,7 +515,7 @@ export function useAllTissuesLookupTables(
       if (!label) continue;
       allTissuesLabelToIdLookup.set(label, tissueIdByLabel[label]);
     }
-    return allTissuesLabelToIdLookup;
+    return { allTissuesLabelToIdLookup, computationalMarkers };
   }, [tissueData, computationalMarkers]);
 }
 

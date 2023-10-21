@@ -2,6 +2,8 @@ import { useMemo } from "react";
 import {
   CanonicalMarkersQueryResponse,
   CanonicalMarkersQueryResponseEntry,
+  useAllTissuesLookupTables,
+  useCanonicalMarkers,
 } from "src/common/queries/cellGuide";
 import {
   ALL_TISSUES,
@@ -98,29 +100,30 @@ function _passSelectionCriteria({
 }
 
 export function useCanonicalMarkerGenesTableRowsAndFilters({
-  genes,
-  allTissuesLabelToIdMap,
-  selectedOrganismLabel,
-  selectedOrganId,
-  selectedOrganLabel,
+  cellTypeId,
+  organName,
+  organismName,
+  organId,
 }: {
-  genes: CanonicalMarkersQueryResponse;
-  allTissuesLabelToIdMap: Map<string, string>;
-  selectedOrganismLabel: string;
-  selectedOrganId: string;
-  selectedOrganLabel: string;
+  cellTypeId: string;
+  organName: string;
+  organismName: string;
+  organId: string;
 }): {
   canonicalMarkerGeneTableData: CanonicalMarkerGeneTableData[];
 } {
+  const { allTissuesLabelToIdLookup: allTissuesLabelToIdMap } =
+    useAllTissuesLookupTables(cellTypeId);
+  const { data: genes } = useCanonicalMarkers(cellTypeId);
   return useMemo(() => {
-    if (!genes || selectedOrganismLabel != HOMO_SAPIENS)
+    if (!genes || organismName != HOMO_SAPIENS)
       return {
         canonicalMarkerGeneTableData: [],
       };
 
     const rows: CanonicalMarkerGeneTableData[] = [];
 
-    const organLabel = TISSUE_AGNOSTIC ? ALL_TISSUES : selectedOrganLabel;
+    const organLabel = TISSUE_AGNOSTIC ? ALL_TISSUES : organName;
     const publicationTitlesToIndex = _getPublicationTitlesToIndex(
       genes,
       organLabel
@@ -131,7 +134,7 @@ export function useCanonicalMarkerGenesTableRowsAndFilters({
         !_passSelectionCriteria({
           markerGene: markerGene,
           allTissuesLabelToIdMap: allTissuesLabelToIdMap,
-          selectedOrganId: selectedOrganId,
+          selectedOrganId: organId,
         })
       )
         continue;
@@ -159,11 +162,5 @@ export function useCanonicalMarkerGenesTableRowsAndFilters({
     return {
       canonicalMarkerGeneTableData: rows,
     };
-  }, [
-    genes,
-    selectedOrganismLabel,
-    selectedOrganLabel,
-    selectedOrganId,
-    allTissuesLabelToIdMap,
-  ]);
+  }, [genes, organismName, organName, organId, allTissuesLabelToIdMap]);
 }

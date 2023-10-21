@@ -13,7 +13,6 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
-  CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
 import { CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID } from "src/views/CellGuide/components/common/OntologyDagView/components/Legend/constants";
 import { CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/CellGuide/components/common/OntologyDagView/components/Node/constants";
@@ -46,6 +45,7 @@ import {
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 
 import {
+  CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN,
   CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_HEADER_NAME,
@@ -759,11 +759,59 @@ describe("Cell Guide", () => {
         await rowElements[0].locator("td").nth(0).hover();
         await treeIcon.click();
 
-        // check that the eyeClosed button is visible
-        await isElementVisible(
-          page,
-          CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
+        // hover over the node
+        const node = page.getByTestId(
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0002319__0-has-children-isTargetNode=false`
         );
+        await node.hover();
+        await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+
+        // assert that the tooltip text contains the marker gene information
+        const tooltipText = await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP)
+          .textContent();
+
+        expect(tooltipText).toContain(`${geneSymbol} stats`);
+
+        const legendText = await page
+          .getByTestId(CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID)
+          .textContent();
+        expect(legendText).toContain("Marker Score");
+        expect(legendText).toContain("Expressed in Cells(%)");
+
+        // deactivate marker gene mode and check that the legend and tooltips reverted
+        await page
+          .getByTestId(CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN)
+          .click();
+        await page.getByRole("option", { name: "Clear gene" }).click();
+
+        await node.hover();
+        await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+
+        const newTooltipText = await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP)
+          .textContent();
+
+        expect(newTooltipText).not.toContain(`${geneSymbol} stats`);
+      });
+      test("Clicking on the computational marker gene dropdown enters marker gene mode in a CellGuide Card", async ({
+        page,
+      }) => {
+        await goToPage(
+          `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`,
+          page
+        );
+        await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+
+        await page
+          .getByTestId(CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN)
+          .click();
+
+        const secondElement = page.getByRole("option").nth(1);
+        const geneSymbol = await secondElement.textContent();
+        await secondElement.click();
 
         // hover over the node
         const node = page.getByTestId(
@@ -787,10 +835,10 @@ describe("Cell Guide", () => {
 
         // deactivate marker gene mode and check that the legend and tooltips reverted
         await page
-          .getByTestId(
-            CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
-          )
+          .getByTestId(CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN)
           .click();
+
+        await page.getByRole("option", { name: "Clear gene" }).click();
 
         await node.hover();
         await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);

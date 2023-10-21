@@ -36,6 +36,7 @@ import {
   SKINNY_MODE_BREAKPOINT_WIDTH,
   CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN,
+  CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN,
   CELL_GUIDE_CARD_HEADER_NAME,
   CELL_GUIDE_CARD_HEADER_TAG,
   RIGHT_SIDEBAR_WIDTH_PX,
@@ -58,6 +59,9 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import CellGuideInfoSideBar from "../CellGuideInfoSideBar";
 import { CellType } from "../common/OntologyDagView/common/types";
+import { useComputationalMarkerGenesTableRowsAndFilters } from "./components/MarkerGeneTables/hooks/computational_markers";
+
+const SELECT_A_GENE = "Select a gene";
 
 const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
   sdsStyle: "square",
@@ -216,6 +220,42 @@ export default function CellGuideCard({
     setSelectedGene(undefined);
   }, [selectedOrgan, selectedOrganism, setSelectedGene]);
 
+  const { computationalMarkerGeneTableData } =
+    useComputationalMarkerGenesTableRowsAndFilters({
+      cellTypeId,
+      organismName: selectedOrganism.name,
+      organId: selectedOrganId,
+    });
+
+  const sdsGenesList = useMemo(() => {
+    const genes = computationalMarkerGeneTableData.map((gene) => ({
+      name: gene.symbol,
+    }));
+
+    // Insert an element at the beginning
+    genes.unshift({ name: "Clear gene" });
+
+    return genes;
+  }, [computationalMarkerGeneTableData]);
+
+  const handleChangeGene = (option: DefaultDropdownMenuOption | null) => {
+    if (option?.name === "Clear gene") {
+      setSelectedGene(undefined);
+    } else if (option) {
+      selectGene(option.name);
+    }
+  };
+
+  const geneDropdownComponent = (
+    <Dropdown
+      InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
+      search
+      label={selectedGene || SELECT_A_GENE}
+      onChange={handleChangeGene}
+      options={sdsGenesList}
+      data-testid={CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN}
+    />
+  );
   const title = `${titleizedCellTypeName} Cell Types - CZ CELLxGENE CellGuide`;
   const seoDescription = `Find comprehensive information about "${cellTypeName}" cell types (synonyms: ${
     synonyms?.join(", ") || "N/A"
@@ -381,6 +421,7 @@ export default function CellGuideCard({
                   selectedOrganism={selectedOrganism.name}
                   selectedGene={selectedGene}
                   selectGene={selectGene}
+                  geneDropdownComponent={geneDropdownComponent}
                 />
               </FullScreenProvider>
             </div>
