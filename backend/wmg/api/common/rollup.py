@@ -83,6 +83,9 @@ def _rollup_gene_expression(gene_expression_df, universal_set_cell_counts_df) ->
         and likely greater size than the input gene expression dataframe that includes combinations
         for which numeric values should be aggregated during the rollup operation.
     """
+    if gene_expression_df.shape[0] == 0:
+        return gene_expression_df
+
     numeric_columns = list(
         gene_expression_df.columns[[np.issubdtype(dtype, np.number) for dtype in gene_expression_df.dtypes]]
     )
