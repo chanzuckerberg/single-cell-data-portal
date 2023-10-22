@@ -27,5 +27,4 @@ READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES = ["gene_ontology_term_id", "cell_type_on
 READER_WMG_CUBE_QUERY_VALID_DIMENSIONS = [
     "gene_ontology_term_id",
     "tissue_ontology_term_id",
-    "cell_type_ontology_term_id",
 ]

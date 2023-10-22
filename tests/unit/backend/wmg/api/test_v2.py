@@ -7,6 +7,7 @@ from pytest import approx
 from backend.api_server.app import app
 from backend.wmg.api.v2 import find_dimension_id_from_compare
 from backend.wmg.data.query import MarkerGeneQueryCriteria
+from tests.test_utils import compare_dicts
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.test_cube_schema import expression_summary_non_indexed_dims
 from tests.unit.backend.wmg.fixtures.test_primary_filters import (
@@ -66,12 +67,9 @@ def generate_expected_term_id_labels_dictionary(
 
     result = {}
     result["cell_types"] = {}
-    # assume tissues are sorted, and cell types are sorted within each tissue
-    # assume the length of cell types is the dimensionality of each column in the
-    # test snapshot (i.e. each tissue contains all fake cell types).
-    # this line determines the starting order for each cell type in each tissue.
-    orders = [int(tissue.split("_")[-1]) * len(cell_types) for tissue in tissues]
-    for tissue, order in zip(tissues, orders):
+
+    order = -1
+    for tissue in tissues:
         result["cell_types"][tissue] = {}
 
         for cell_type in cell_types:
@@ -90,7 +88,6 @@ def generate_expected_term_id_labels_dictionary(
                     "total_count": cell_counts_tissue_cell_type_compare_dim,
                     "order": order,
                 }
-            order += 1
 
         tissue_cell_counts = {
             "tissue_ontology_term_id": tissue,
@@ -98,7 +95,7 @@ def generate_expected_term_id_labels_dictionary(
             "total_count": sum(
                 [agg_dict["aggregated"]["total_count"] for _, agg_dict in result["cell_types"][tissue].items()]
             ),
-            "order": -1,
+            "order": order,
         }
 
         result["cell_types"][tissue]["tissue_stats"] = {}
@@ -591,7 +588,7 @@ class WmgApiV2Tests(unittest.TestCase):
             self.assertEqual(200, response.status_code)
 
             expected = expected_term_id_labels["cell_types"]
-            self.assertEqual(expected, json.loads(response.data)["term_id_labels"]["cell_types"])
+            self.assertTrue(compare_dicts(expected, json.loads(response.data)["term_id_labels"]["cell_types"]))
 
     @patch("backend.wmg.api.v2.gene_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
@@ -980,7 +977,6 @@ class WmgApiV2Tests(unittest.TestCase):
     @patch("backend.wmg.api.v2.gene_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
     @patch("backend.wmg.api.v2.load_snapshot")
-    @unittest.skip("Skipping this test until the reader bumps to WMG snapshot V3")
     def test__markers_returns_200_and_correct_response(self, load_snapshot, ontology_term_label, gene_term_label):
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
@@ -1018,7 +1014,6 @@ class WmgApiV2Tests(unittest.TestCase):
     @patch("backend.wmg.api.v2.gene_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
     @patch("backend.wmg.api.v2.load_snapshot")
-    @unittest.skip("Skipping this test until the reader bumps to WMG snapshot V3")
     def test__markers_returns_200_and_empty_dictionary_for_bad_celltypes(
         self, load_snapshot, ontology_term_label, gene_term_label
     ):
