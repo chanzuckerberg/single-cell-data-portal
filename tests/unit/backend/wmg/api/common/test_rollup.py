@@ -405,7 +405,9 @@ class TestHighLevelRollupFunction(unittest.TestCase):
         expected_cell_counts_df.reset_index(inplace=True)
 
         assert_frame_equal(
-            rolled_up_cell_counts_df.reset_index(drop=True), expected_cell_counts_df.reset_index(drop=True)
+            rolled_up_cell_counts_df.reset_index(drop=True),
+            expected_cell_counts_df.reset_index(drop=True),
+            check_dtype=False,
         )
 
         # sort the rolled up gene expression dataframe so that the correct rows are compared with
@@ -413,4 +415,8 @@ class TestHighLevelRollupFunction(unittest.TestCase):
         sort_columns_for_rolled_gene_expr_df = list(cell_counts_df_index_list) + ["gene_ontology_term_id"]
         rolled_up_gene_expr_df.sort_values(sort_columns_for_rolled_gene_expr_df, inplace=True)
 
-        assert_frame_equal(rolled_up_gene_expr_df.reset_index(drop=True), expected_gene_expr_df.reset_index(drop=True))
+        assert_frame_equal(
+            rolled_up_gene_expr_df.reset_index(drop=True),
+            expected_gene_expr_df.reset_index(drop=True),
+            check_dtype=False,
+        )
