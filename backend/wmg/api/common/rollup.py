@@ -134,7 +134,7 @@ def _rollup_gene_expression(gene_expression_df, universal_set_cell_counts_df) ->
     n_cells_tissue = gene_expression_df.groupby("tissue_ontology_term_id").first()["n_cells_tissue"]
 
     new_df["n_cells_tissue"] = n_cells_tissue[new_df["tissue_ontology_term_id"]].values
-    return new_df  # .astype(gene_expression_df.dtypes)
+    return new_df[gene_expression_df.columns]
 
 
 def _build_cell_count_groups_universal_set(cell_counts_grouped_df) -> DataFrame:
