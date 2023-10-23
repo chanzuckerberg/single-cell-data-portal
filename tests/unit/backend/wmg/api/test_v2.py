@@ -23,6 +23,7 @@ from tests.unit.backend.wmg.fixtures.test_snapshot import (
     create_temp_wmg_snapshot,
     exclude_all_but_one_gene_per_organism,
     exclude_dev_stage_and_ethnicity_for_secondary_filter_test,
+    forward_cell_type_ordering,
     load_realistic_test_snapshot,
     reverse_cell_type_ordering,
 )
@@ -40,7 +41,7 @@ def generate_expected_term_id_labels_dictionary(
     cell_count_tissue_cell_type: int,
     compare_terms: list[str],
     cell_counts_tissue_cell_type_compare_dim: int,
-    cell_ordering_func=reverse_cell_type_ordering,
+    cell_ordering_func=forward_cell_type_ordering,
 ) -> dict:
     """
     Generates aggregated cell counts and cell ordering expected to be returned by /wmg/v2/query endpoint.
@@ -210,6 +211,7 @@ def generate_test_inputs_and_expected_outputs(
     me: float,
     cell_count_per_row_cell_counts_cube: int,
     compare_dim=None,
+    cell_ordering_func=forward_cell_type_ordering,
 ) -> tuple:
     """
     Generates test inputs and expected outputs for the /wmg/v2/query endpoint.
@@ -269,6 +271,7 @@ def generate_test_inputs_and_expected_outputs(
         cell_count_tissue_cell_type=cell_count_tissue_cell_type,
         compare_terms=compare_terms,
         cell_counts_tissue_cell_type_compare_dim=cell_counts_tissue_cell_type_compare_dim,
+        cell_ordering_func=cell_ordering_func,
     )
     expected_expression_summary = generate_expected_expression_summary_dictionary(
         genes=genes,
@@ -464,7 +467,6 @@ class WmgApiV2Tests(unittest.TestCase):
                 "expression_summary": expected_expression_summary,
                 "term_id_labels": expected_term_id_labels,
             }
-
             self.assert_equality_nested_dict_with_floats(
                 expected=expected_response, actual=json.loads(response.data), key_path=[]
             )
@@ -582,7 +584,7 @@ class WmgApiV2Tests(unittest.TestCase):
             organism = "organism_ontology_term_id_0"
 
             (request, _, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(
-                genes, organism, dim_size, 1.0, 10
+                genes, organism, dim_size, 1.0, 10, cell_ordering_func=reverse_cell_type_ordering
             )
 
             response = self.app.post("/wmg/v2/query", json=request)
@@ -618,7 +620,7 @@ class WmgApiV2Tests(unittest.TestCase):
             organism = "organism_ontology_term_id_0"
 
             (request, _, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(
-                genes, organism, dim_size, 1.0, expected_count
+                genes, organism, dim_size, 1.0, expected_count, cell_ordering_func=reverse_cell_type_ordering
             )
 
             response = self.app.post("/wmg/v2/query", json=request)
