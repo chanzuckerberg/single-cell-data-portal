@@ -4,6 +4,7 @@ import { useQuery, UseQueryResult } from "react-query";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { CELLGUIDE_DATA_URL, API_URL } from "src/configs/configs";
 import { ENTITIES } from "./entities";
+import { EMPTY_ARRAY } from "../constants/utils";
 
 export enum TYPES {
   CELL_ONTOLOGY_TREE = "CELL_ONTOLOGY_TREE",
@@ -498,7 +499,7 @@ export function useAllTissuesLookupTables(cellTypeId: string): {
     if (!tissueData || !computationalMarkers) {
       return {
         allTissuesLabelToIdLookup: new Map<string, string>(),
-        computationalMarkers: [],
+        computationalMarkers: EMPTY_ARRAY,
       };
     }
     const tissueIdByLabel: { [label: string]: string } = {};

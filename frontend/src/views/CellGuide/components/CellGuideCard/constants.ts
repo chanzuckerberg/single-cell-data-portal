@@ -15,3 +15,5 @@ export const CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN =
   "cell-guide-card-global-marker-gene-dropdown";
 
 export const RIGHT_SIDEBAR_WIDTH_PX = 400;
+
+export const NO_GENE = "No Gene";

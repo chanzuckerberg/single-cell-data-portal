@@ -41,6 +41,7 @@ import {
   CELL_GUIDE_CARD_HEADER_NAME,
   CELL_GUIDE_CARD_HEADER_TAG,
   RIGHT_SIDEBAR_WIDTH_PX,
+  NO_GENE,
 } from "src/views/CellGuide/components/CellGuideCard/constants";
 import { useOrganAndOrganismFilterListForCellType } from "./components/MarkerGeneTables/hooks/common";
 import {
@@ -63,6 +64,7 @@ import { CellType } from "../common/OntologyDagView/common/types";
 import { useComputationalMarkerGenesTableRowsAndFilters } from "./components/MarkerGeneTables/hooks/computational_markers";
 
 const SELECT_A_GENE = "Color by Gene";
+const NO_GENE_OPTIONS = { name: NO_GENE };
 
 const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
   sdsStyle: "square",
@@ -233,14 +235,11 @@ export default function CellGuideCard({
       name: gene.symbol,
     }));
 
-    // Insert an element at the beginning
-    genes.unshift({ name: "No Gene" });
-
-    return genes;
+    return [NO_GENE_OPTIONS, ...genes];
   }, [computationalMarkerGeneTableData]);
 
   const handleChangeGene = (option: DefaultDropdownMenuOption | null) => {
-    if (option?.name === "No Gene") {
+    if (option?.name === NO_GENE_OPTIONS.name) {
       setSelectedGene(undefined);
     } else if (option) {
       selectGene(option.name);
