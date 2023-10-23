@@ -176,7 +176,6 @@ resource "aws_sfn_state_machine" "state_machine" {
               },
               "CatchSeuratFailure": {
                 "Type": "Pass",
-                "End": true,
                 "Next": "HandleErrors"
               }
             }
