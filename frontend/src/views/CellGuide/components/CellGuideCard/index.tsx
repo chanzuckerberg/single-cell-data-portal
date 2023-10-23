@@ -242,7 +242,7 @@ export default function CellGuideCard({
     if (option?.name === NO_GENE_OPTIONS.name) {
       setSelectedGene(undefined);
     } else if (option) {
-      selectGene(option.name);
+      setSelectedGene(option.name);
     }
   };
 
