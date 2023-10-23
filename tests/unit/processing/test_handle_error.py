@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetStatus, DatasetVersionId
-from backend.layers.processing.upload_failures.failures_app import (
+from backend.layers.processing.upload_failures.app import (
     FAILED_ARTIFACT_CLEANUP_MESSAGE,
     FAILED_CXG_CLEANUP_MESSAGE,
     FAILED_DATASET_CLEANUP_MESSAGE,
