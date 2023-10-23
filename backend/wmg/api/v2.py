@@ -100,7 +100,7 @@ def query():
                     term_id_labels=dict(
                         genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
                         cell_types=build_ordered_cell_types_by_tissue(
-                            rolled_cell_counts_grouped_df, snapshot.cell_type_orderings, compare
+                            rolled_cell_counts_grouped_df, cell_counts_grouped_df, snapshot.cell_type_orderings, compare
                         ),
                     ),
                 )
@@ -393,11 +393,13 @@ def fill_out_structured_cell_type_compare(cell_type_agg_compare, structured_resu
 
 # getting only cell type metadata, no genes
 def build_ordered_cell_types_by_tissue(
+    rolled_cell_counts_cell_type_agg: DataFrame,
     cell_counts_cell_type_agg: DataFrame,
     cell_type_orderings: dict,
     compare: str,
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
     cell_counts_cell_type_agg = cell_counts_cell_type_agg.reset_index()
+    rolled_cell_counts_cell_type_agg = rolled_cell_counts_cell_type_agg.reset_index()
     # Create nested dicts with tissue_ontology_term_id keys, cell_type_ontology_term_id respectively
     structured_result: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(lambda: defaultdict(dict))
 
@@ -406,7 +408,7 @@ def build_ordered_cell_types_by_tissue(
     fill_out_structured_tissue_agg(tissue_agg, structured_result)
 
     # Populate aggregated cell counts for each (tissue, cell_type) combination
-    cell_type_agg = cell_counts_cell_type_agg.groupby(
+    cell_type_agg = rolled_cell_counts_cell_type_agg.groupby(
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
     ).sum(numeric_only=True)
 
@@ -415,7 +417,7 @@ def build_ordered_cell_types_by_tissue(
     # Populate aggregated cell counts for each (tissue, cell_type, <compare_dimension>) combination
     if compare:
         fill_out_structured_cell_type_compare(
-            cell_counts_cell_type_agg, structured_result, cell_type_orderings, compare
+            rolled_cell_counts_cell_type_agg, structured_result, cell_type_orderings, compare
         )
 
     return structured_result
