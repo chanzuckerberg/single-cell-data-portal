@@ -29,7 +29,7 @@ import { ChartProps, GeneExpressionSummary } from "../../common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import CellInfoBar from "../../../WheresMyGeneV2/components/CellInfoSideBar";
 import GeneInfoBar from "../../../../components/GeneInfoSideBar";
-import Filters from "../Filters";
+import Filters from "../../../WheresMyGeneV2/components/Filters";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import InfoPanel from "../InfoPanel";

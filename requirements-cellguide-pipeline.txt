@@ -29,7 +29,7 @@ requests==2.31.0
 s3transfer==0.6.1
 scipy==1.11.1
 six==1.16.0
-tiledb==0.22.2
+tiledb==0.22.3
 typing_extensions==4.7.1
 tzdata==2023.3
 urllib3==1.26.16

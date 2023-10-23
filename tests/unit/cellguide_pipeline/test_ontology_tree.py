@@ -3,7 +3,7 @@ import unittest
 
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.utils import convert_dataclass_to_dict_and_strip_nones
-from tests.test_utils.dict_compare import compare_dicts
+from tests.test_utils import compare_dicts
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
 )
