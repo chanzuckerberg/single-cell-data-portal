@@ -46,15 +46,21 @@ def find_descendants_per_cell_type(cell_types):
     descendants_per_cell_type : list
         List of lists of descendants for each cell type in the input list.
     """
-
+    lookup_table = {}
+    cell_types_set = set(cell_types)
     relatives_per_cell_type = []
     for cell_type in cell_types:
-        relatives = descendants(cell_type)
-        relatives_per_cell_type.append(relatives)
+        if ";;" in cell_type:
+            prefix, suffix = cell_type.split(";;")
+            suffix = ";;" + suffix
+        else:
+            prefix = cell_type
+            suffix = ""
+        if cell_type not in lookup_table:
+            relatives = [f"{i}{suffix}" for i in descendants(prefix)]
+            lookup_table[cell_type] = list(cell_types_set.intersection(relatives))
 
-    for i, children in enumerate(relatives_per_cell_type):
-        # remove descendent cell types that are not cell types in the WMG data
-        relatives_per_cell_type[i] = list(set(children).intersection(cell_types))
+        relatives_per_cell_type.append(lookup_table[cell_type])
 
     return relatives_per_cell_type
 

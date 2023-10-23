@@ -61,12 +61,11 @@ def query():
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
         )
 
-    with ServerTiming.time("query and build response"):
+    with ServerTiming.time("query tiledb"):
         cube_query_params = WmgCubeQueryParams(
             cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
             cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
         )
-
         q = WmgQuery(snapshot, cube_query_params)
         default = snapshot.expression_summary_default_cube is not None and compare is None
         for dim in criteria.dict():
@@ -81,6 +80,8 @@ def query():
         )
 
         cell_counts = q.cell_counts(criteria, compare_dimension=compare)
+
+    with ServerTiming.time("build response"):
         if expression_summary.shape[0] > 0 or cell_counts.shape[0] > 0:
             group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare] if compare else None
 
@@ -346,90 +347,75 @@ def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> Li
     return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
 
 
+def fill_out_structured_tissue_agg(tissue_agg, structured_result):
+    tissues = tissue_agg["tissue_ontology_term_id"].values
+    n = tissue_agg["n_cells_cell_type"].values
+
+    for i in range(len(tissues)):
+        structured_result[tissues[i]]["tissue_stats"]["aggregated"] = {
+            "tissue_ontology_term_id": tissues[i],
+            "name": ontology_term_label(tissues[i]),
+            "total_count": int(n[i]),
+            "order": -1,
+        }
+
+
+def fill_out_structured_cell_type_agg(cell_type_agg, structured_result, ordering):
+    tissues = cell_type_agg["tissue_ontology_term_id"].values
+    cell_types = cell_type_agg["cell_type_ontology_term_id"].values
+    n = cell_type_agg["n_cells_cell_type"].values
+
+    for i in range(len(tissues)):
+        structured_result[tissues[i]][cell_types[i]]["aggregated"] = {
+            "cell_type_ontology_term_id": cell_types[i],
+            "name": ontology_term_label(cell_types[i]),
+            "total_count": int(n[i]),
+            "order": ordering.get((tissues[i], cell_types[i]), -1),
+        }
+
+
+def fill_out_structured_cell_type_compare(cell_type_agg_compare, structured_result, ordering, compare):
+    tissues = cell_type_agg_compare["tissue_ontology_term_id"].values
+    cell_types = cell_type_agg_compare["cell_type_ontology_term_id"].values
+    n = cell_type_agg_compare["n_cells_cell_type"].values
+    compare = cell_type_agg_compare[compare].values
+
+    for i in range(len(tissues)):
+        id_to_label = build_ontology_term_id_label_mapping([compare[i]])[0]
+        name = id_to_label.pop(compare[i])
+        structured_result[tissues[i]][cell_types[i]][compare[i]] = {
+            "cell_type_ontology_term_id": cell_types[i],
+            "name": name if name else compare[i],
+            "total_count": int(n[i]),
+            "order": int(ordering.get((tissues[i], cell_types[i]), -1)),
+        }
+
+
 # getting only cell type metadata, no genes
 def build_ordered_cell_types_by_tissue(
     cell_counts_cell_type_agg: DataFrame,
-    cell_type_orderings: DataFrame,
+    cell_type_orderings: dict,
     compare: str,
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
-    distinct_tissues_cell_types = cell_counts_cell_type_agg.reset_index().rename(
-        columns={"n_cells_cell_type": "n_total_cells"}
-    )
-
-    # building order for cell types for FE to use
-    cell_type_orderings["order"] = range(cell_type_orderings.shape[0])
-
-    # make a multi index
-    cell_type_orderings = cell_type_orderings.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).first()
-
-    indexer = list(
-        zip(
-            distinct_tissues_cell_types["tissue_ontology_term_id"],
-            distinct_tissues_cell_types["cell_type_ontology_term_id"],
-        )
-    )
-    indexer_bool_filter = []
-    indexer_filter = []
-    for index in indexer:
-        indexer_bool_filter.append(index in cell_type_orderings.index)
-        if index in cell_type_orderings.index:
-            indexer_filter.append(index)
-
-    joined = distinct_tissues_cell_types[indexer_bool_filter]
-
-    for column in cell_type_orderings:
-        joined[column] = list(cell_type_orderings[column][indexer_filter])
-
-    # Remove cell types without counts
-    joined = joined[joined["n_total_cells"].notnull()]
-
+    cell_counts_cell_type_agg = cell_counts_cell_type_agg.reset_index()
     # Create nested dicts with tissue_ontology_term_id keys, cell_type_ontology_term_id respectively
     structured_result: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(lambda: defaultdict(dict))
 
     # Populate aggregated cell counts for each tissue
-    joined_agg = joined.groupby(["tissue_ontology_term_id"], as_index=False).agg({"n_total_cells": "sum"})
-
-    for i in range(joined_agg.shape[0]):
-        row = joined_agg.iloc[i]
-        structured_result[row.tissue_ontology_term_id]["tissue_stats"]["aggregated"] = {
-            "tissue_ontology_term_id": row.tissue_ontology_term_id,
-            "name": ontology_term_label(row.tissue_ontology_term_id),
-            "total_count": int(row.n_total_cells),
-            "order": -1,
-        }
+    tissue_agg = cell_counts_cell_type_agg.groupby(["tissue_ontology_term_id"], as_index=False).sum(numeric_only=True)
+    fill_out_structured_tissue_agg(tissue_agg, structured_result)
 
     # Populate aggregated cell counts for each (tissue, cell_type) combination
-    joined_agg = joined.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False).agg(
-        {"order": "first"}
-    )
+    cell_type_agg = cell_counts_cell_type_agg.groupby(
+        ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
+    ).sum(numeric_only=True)
 
-    agg = cell_counts_cell_type_agg.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).sum().T
-
-    for i in range(joined_agg.shape[0]):
-        row = joined_agg.iloc[i]
-        structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id]["aggregated"] = {
-            "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
-            "name": ontology_term_label(row.cell_type_ontology_term_id),
-            "total_count": int(agg[row.tissue_ontology_term_id][row.cell_type_ontology_term_id]["n_cells_cell_type"]),
-            "order": int(row.order),
-        }
+    fill_out_structured_cell_type_agg(cell_type_agg, structured_result, cell_type_orderings)
 
     # Populate aggregated cell counts for each (tissue, cell_type, <compare_dimension>) combination
-    cell_counts_cell_type_agg_T = cell_counts_cell_type_agg.T
     if compare:
-        for i in range(joined.shape[0]):
-            row = joined.iloc[i]
-            id_to_label = build_ontology_term_id_label_mapping([row[compare]])[0]
-            name = id_to_label.pop(row[compare])
-            structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][row[compare]] = {
-                "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
-                "name": name if name else row[compare],
-                "total_count": int(
-                    cell_counts_cell_type_agg_T[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
-                        row[compare]
-                    ]["n_cells_cell_type"]
-                ),
-                "order": int(row.order),
-            }
+        fill_out_structured_cell_type_compare(
+            cell_counts_cell_type_agg, structured_result, cell_type_orderings, compare
+        )
 
     return structured_result
