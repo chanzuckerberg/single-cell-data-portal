@@ -217,13 +217,12 @@ def retrieve_top_n_markers(query_result, test, n_markers):
     if test == "binomtest":
         raise ValueError("binomtest is not supported anymore")
 
-    attrs = [f"p_value_{test}", f"effect_size_{test}"]
-    col_names = ["p_value", "effect_size"]
-    markers = query_result[["gene_ontology_term_id"] + attrs].rename(columns=dict(zip(attrs, col_names)))
-    markers = markers[markers["effect_size"].notna()]
+    attrs = ["gene_ontology_term_id", "specificity", "marker_score"]
+    markers = query_result[attrs]
+    markers = markers[markers["marker_score"].notna()]
     if n_markers > 0:
-        markers = markers.nlargest(n_markers, "effect_size")
+        markers = markers.nlargest(n_markers, "marker_score")
     else:
-        markers = markers.sort_values("effect_size", ascending=False)
-    records = markers[["gene_ontology_term_id"] + col_names].to_dict(orient="records")
+        markers = markers.sort_values("marker_score", ascending=False)
+    records = markers[attrs].to_dict(orient="records")
     return records
