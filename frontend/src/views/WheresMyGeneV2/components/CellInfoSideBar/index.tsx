@@ -34,6 +34,7 @@ import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
 import { CellInfoBarProps } from "./types";
 import {
   MARKER_GENES_TOOLTIP_CONTENT,
+  SPECIFICITY_TOOLTIP_CONTENT,
   MARKER_GENE_LABEL,
   MARKER_SCORE_CELLGUIDE_LINK_TEXT,
   MARKER_SCORE_DOTPLOT_BUTTON_TEXT,
@@ -43,7 +44,9 @@ import {
   NO_MARKER_GENES_DESCRIPTION,
   NO_MARKER_GENES_HEADER,
   TABLE_HEADER_GENE,
-  TABLE_HEADER_SCORE,
+  TABLE_HEADER_MARKER_SCORE,
+  TABLE_HEADER_SPECIFICITY,
+  SPECIFICITY_LABEL,
 } from "./constants";
 import { useConnect } from "./connect";
 
@@ -59,6 +62,7 @@ function CellInfoSideBar({
     handleDisplayGenes,
     handleFmgHoverEnd,
     handleMarkerScoreHoverEnd,
+    handleSpecificityHoverEnd,
     setHoverStartTime,
   } = useConnect({
     cellInfoCellType,
@@ -156,8 +160,8 @@ function CellInfoSideBar({
         <DivTable>
           <DivTableHead>
             <DivTableCell>{TABLE_HEADER_GENE}</DivTableCell>
-            <DivTableCell align>
-              {TABLE_HEADER_SCORE}
+            <DivTableCell>
+              {TABLE_HEADER_MARKER_SCORE}
               <Tooltip
                 sdsStyle="dark"
                 placement="bottom"
@@ -181,6 +185,49 @@ function CellInfoSideBar({
                         });
                         track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
                           label: MARKER_SCORE_LABEL,
+                        });
+                      }}
+                    >
+                      {MARKER_SCORE_TOOLTIP_LINK_TEXT}
+                    </TooltipLink>
+                  </StyledTooltip>
+                }
+              >
+                <TooltipButton
+                  sdsStyle="minimal"
+                  sdsType="secondary"
+                  isAllCaps={false}
+                >
+                  <StyledIconImage src={questionMarkIcon} />
+                </TooltipButton>
+              </Tooltip>
+            </DivTableCell>
+
+            <DivTableCell align>
+              {TABLE_HEADER_SPECIFICITY}
+              <Tooltip
+                sdsStyle="dark"
+                placement="bottom"
+                width="default"
+                className="fmg-tooltip-icon"
+                arrow
+                onOpen={() => setHoverStartTime(Date.now())}
+                onClose={handleSpecificityHoverEnd}
+                title={
+                  <StyledTooltip>
+                    <TooltipContent>
+                      {SPECIFICITY_TOOLTIP_CONTENT}
+                    </TooltipContent>
+                    <TooltipLink
+                      href={ROUTES.FMG_DOCS}
+                      rel="noopener"
+                      target="_blank"
+                      onClick={() => {
+                        track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
+                          label: SPECIFICITY_LABEL,
+                        });
+                        track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
+                          label: SPECIFICITY_LABEL,
                         });
                       }}
                     >
@@ -243,7 +290,10 @@ function CellInfoSideBar({
                 </InfoButtonWrapper>
               </DivTableCell>
               <DivTableCell data-testid="marker-scores-fmg" align>
-                {metadata.effect_size.toPrecision(4)}
+                {metadata.marker_score.toPrecision(3)}
+              </DivTableCell>
+              <DivTableCell data-testid="specificity-fmg" align>
+                {metadata.specificity.toPrecision(2)}
               </DivTableCell>
             </DivTableRow>
           ))}

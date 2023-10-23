@@ -4,7 +4,11 @@ import { EVENTS } from "src/common/analytics/events";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
 import { DispatchContext, State } from "../../../WheresMyGene/common/store";
 import { addSelectedGenes } from "../../../WheresMyGene/common/store/actions";
-import { MARKER_GENE_LABEL, MARKER_SCORE_LABEL } from "./constants";
+import {
+  MARKER_GENE_LABEL,
+  MARKER_SCORE_LABEL,
+  SPECIFICITY_LABEL,
+} from "./constants";
 
 export const useConnect = ({
   cellInfoCellType,
@@ -56,6 +60,10 @@ export const useConnect = ({
     EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER,
     { label: MARKER_SCORE_LABEL }
   );
+  const handleSpecificityHoverEnd = useHandleHoverEnd(
+    EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER,
+    { label: SPECIFICITY_LABEL }
+  );
 
   return {
     handleCopyGenes,
@@ -64,6 +72,7 @@ export const useConnect = ({
     data,
     handleFmgHoverEnd,
     handleMarkerScoreHoverEnd,
+    handleSpecificityHoverEnd,
     setHoverStartTime,
   };
 };
