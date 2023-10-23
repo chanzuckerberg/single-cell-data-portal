@@ -22,9 +22,8 @@ jobs:
           role-duration-seconds: 1800
           role-session-name: HappyCleanupSingleCellDPRdevStacks
       - name: Clean up stale happy stacks
-        uses: chanzuckerberg/github-actions/.github/actions/happy-cleanup@happy-cleanup-v1.1.5
+        uses: chanzuckerberg/github-actions/.github/actions/happy-cleanup@happy-cleanup-v1.5.0
         with:
-          happy_version: 0.108.0
           tfe_token: ${{secrets.TFE_TOKEN}}
           # the default stale period to delete a stack is 2 weeks
           # override like this:
