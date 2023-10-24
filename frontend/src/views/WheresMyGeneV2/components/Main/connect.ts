@@ -144,6 +144,12 @@ export const useConnect = () => {
     setCellTypesByTissueName(rawCellTypesByTissueName);
   }, [rawCellTypesByTissueName, isLoadingCellTypesByTissueName]);
 
+  /**
+   * This is needed to prevent overwriting the geneExpressionSummariesByTissueName
+   * state with empty object when the gene expression summaries are still loading.
+   * This is also needed to ensure that the gene expression summaries are updated
+   * when the selected genes change.
+   */
   useEffect(() => {
     if (isLoading) return;
 
@@ -152,8 +158,10 @@ export const useConnect = () => {
     );
   }, [rawGeneExpressionSummariesByTissueName, isLoading]);
 
-  // TODO(thuang): Fix this complexity
-  // eslint-disable-next-line sonarjs/cognitive-complexity
+  /**
+   * Calculates the maximum and minimum scaled mean expression values for the selected genes and cell types.
+   * This is used to scale the heatmap colors.
+   */
   const { scaledMeanExpressionMax, scaledMeanExpressionMin } = useMemo(() => {
     let min = Infinity;
     let max = -Infinity;

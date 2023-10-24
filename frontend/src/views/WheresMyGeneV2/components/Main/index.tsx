@@ -103,7 +103,6 @@ export default function WheresMyGene(): JSX.Element {
         <Wrapper>
           {check.loading && <Loader />}
 
-          {/* Used for PNG and SVG exports to render message banner to render in output */}
           {downloadStatus.isLoading && (
             <StyledBannerContainer>
               <UnderlyingDataChangeBanner />
