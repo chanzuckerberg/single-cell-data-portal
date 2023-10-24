@@ -16,6 +16,7 @@ import {
   spacesDefault,
   spacesL,
   spacesXl,
+  spacesXxs,
   textSecondary,
 } from "src/common/theme";
 
@@ -23,6 +24,7 @@ function DetailItem(props: { label: string; children: string }) {
   const ItemContainer = styled.div`
     display: flex;
     flex-direction: column;
+    gap: ${spacesXxs}px;
   `;
 
   const ItemLabel = styled.div`
@@ -46,7 +48,8 @@ function CensusDirectory() {
   const Content = styled.div`
     display: flex;
     flex-direction: column;
-    margin: 56px 160px;
+    margin: 80px auto;
+    max-width: 1200px;
   `;
 
   const Header = styled.h1`
@@ -94,6 +97,10 @@ function CensusDirectory() {
     margin-bottom: ${spacesDefault}px;
   `;
 
+  const ProjectDesctiption = styled(Paragraph)`
+    max-width: 85ch;
+  `;
+
   const ProjectContainer = styled.div`
     display: flex;
     flex-direction: row;
@@ -114,6 +121,11 @@ function CensusDirectory() {
     flex-direction: row;
     gap: ${spacesXl}px;
     margin-top: ${spacesL}px;
+  `;
+
+  const StyledButton = styled(Button)`
+    font-weight: ${fontWeightSemibold};
+    min-width: 80px;
   `;
 
   return (
@@ -140,7 +152,7 @@ function CensusDirectory() {
             <ProjectSubmitter>
               Turing Institute for Biomedical Machine Learning
             </ProjectSubmitter>
-            <Paragraph>
+            <ProjectDesctiption>
               Ligula imperdiet eget et enim id morbi. Pretium diam risus
               placerat felis vulputate adipiscing sed integer. Mauris commodo
               risus scelerisque tempus mi venenatis egestas. Sed at scelerisque
@@ -149,7 +161,7 @@ function CensusDirectory() {
               condimentum. Ornare porta eget porttitor cum arcu id ultricies id.
               Massa interdum orci risus arcu mattis massa. Amet metus nibh enim
               nam pellentesque sagittis diam id quam.
-            </Paragraph>
+            </ProjectDesctiption>
             <DetailsContainer>
               <DetailItem label="contact">Haotian Cui</DetailItem>
               <DetailItem label="publication">
@@ -158,12 +170,12 @@ function CensusDirectory() {
             </DetailsContainer>
           </ProjectDetails>
           <ProjectButtons>
-            <Button sdsType="secondary" sdsStyle="square">
+            <StyledButton sdsType="secondary" sdsStyle="square">
               Embedding
-            </Button>
-            <Button sdsType="primary" sdsStyle="square">
+            </StyledButton>
+            <StyledButton sdsType="primary" sdsStyle="square">
               Model
-            </Button>
+            </StyledButton>
           </ProjectButtons>
         </ProjectContainer>
       </TierContainer>
@@ -179,7 +191,7 @@ function CensusDirectory() {
             <ProjectSubmitter>
               WangLab at University of Toronto
             </ProjectSubmitter>
-            <Paragraph>
+            <ProjectDesctiption>
               Ligula imperdiet eget et enim id morbi. Pretium diam risus
               placerat felis vulputate adipiscing sed integer. Mauris commodo
               risus scelerisque tempus mi venenatis egestas. Sed at scelerisque
@@ -188,7 +200,7 @@ function CensusDirectory() {
               condimentum. Ornare porta eget porttitor cum arcu id ultricies id.
               Massa interdum orci risus arcu mattis massa. Amet metus nibh enim
               nam pellentesque sagittis diam id quam.
-            </Paragraph>
+            </ProjectDesctiption>
             <DetailsContainer>
               <DetailItem label="contact">Haotian Cui</DetailItem>
               <DetailItem label="publication">
@@ -203,12 +215,12 @@ function CensusDirectory() {
             </DetailsContainer>
           </ProjectDetails>
           <ProjectButtons>
-            <Button sdsType="secondary" sdsStyle="square">
+            <StyledButton sdsType="secondary" sdsStyle="square">
               Embedding
-            </Button>
-            <Button sdsType="primary" sdsStyle="square">
+            </StyledButton>
+            <StyledButton sdsType="primary" sdsStyle="square">
               Model
-            </Button>
+            </StyledButton>
           </ProjectButtons>
         </ProjectContainer>
       </TierContainer>
@@ -222,7 +234,7 @@ function CensusDirectory() {
           <ProjectDetails>
             <ProjectTitle>OpenCell ML</ProjectTitle>
             <ProjectSubmitter>CZ BioHub </ProjectSubmitter>
-            <Paragraph>
+            <ProjectDesctiption>
               Ligula imperdiet eget et enim id morbi. Pretium diam risus
               placerat felis vulputate adipiscing sed integer. Mauris commodo
               risus scelerisque tempus mi venenatis egestas. Sed at scelerisque
@@ -231,15 +243,15 @@ function CensusDirectory() {
               condimentum. Ornare porta eget porttitor cum arcu id ultricies id.
               Massa interdum orci risus arcu mattis massa. Amet metus nibh enim
               nam pellentesque sagittis diam id quam.
-            </Paragraph>
+            </ProjectDesctiption>
           </ProjectDetails>
           <ProjectButtons>
-            <Button sdsType="secondary" sdsStyle="square">
+            <StyledButton sdsType="secondary" sdsStyle="square">
               Embedding
-            </Button>
-            <Button sdsType="primary" sdsStyle="square">
+            </StyledButton>
+            <StyledButton sdsType="primary" sdsStyle="square">
               Model
-            </Button>
+            </StyledButton>
           </ProjectButtons>
         </ProjectContainer>
       </TierContainer>
