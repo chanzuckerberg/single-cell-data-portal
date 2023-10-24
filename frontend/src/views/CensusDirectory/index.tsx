@@ -3,7 +3,6 @@ import {
   fontBodyS,
   fontCapsXxxs,
   fontHeaderL,
-  fontHeaderM,
   fontHeaderXl,
   fontHeaderXxl,
 } from "@czi-sds/components";
@@ -164,7 +163,7 @@ function CensusDirectory() {
           <ProjectDetails>
             <ProjectTitle>scGPT</ProjectTitle>
             <ProjectSubmitter>
-              WangLab at University of Toronto{" "}
+              WangLab at University of Toronto
             </ProjectSubmitter>
             <Paragraph>
               Ligula imperdiet eget et enim id morbi. Pretium diam risus

@@ -6,7 +6,7 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import NavDivider from "src/components/Header/components/Nav/components/NavDivider";
 import { isRouteActive } from "src/components/Header";
-import { LinkWrapper, NavSection, Nav as NavWrapper } from "./style";
+import { LinkWrapper, Nav as NavWrapper } from "./style";
 import { BetaChip } from "../../style";
 
 export const CENSUS_LINK = "https://chanzuckerberg.github.io/cellxgene-census/";
