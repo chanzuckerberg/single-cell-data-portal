@@ -35,7 +35,7 @@ import HeatMap from "../HeatMap";
 import InfoPanel from "../../../WheresMyGeneV2/components/InfoPanel";
 import Legend from "../../../WheresMyGeneV2/components/InfoPanel/components/Legend";
 import Loader from "../../../WheresMyGeneV2/components/Loader";
-import ScreenTint from "../ScreenTint";
+import ScreenTint from "../../../WheresMyGeneV2/components/ScreenTint";
 import { StyledBannerContainer, StyledSidebarDrawer } from "./style";
 import RightSideBar from "../../../../components/common/RightSideBar";
 import BottomBanner from "src/components/BottomBanner";

@@ -11,7 +11,7 @@ import {
   StyledBannerContainer,
   StyledSidebarDrawer,
 } from "src/views/WheresMyGene/components/Main/style";
-import ScreenTint from "src/views/WheresMyGene/components/ScreenTint";
+import ScreenTint from "src/views/WheresMyGeneV2/components/ScreenTint";
 import {
   SideBarPositioner,
   SideBarWrapper,

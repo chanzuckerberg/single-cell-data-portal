@@ -1,5 +1,5 @@
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
-import Loader from "../../../WheresMyGeneV2/components/Loader";
+import Loader from "../Loader";
 import { StyledDiv } from "./style";
 
 export default function ScreenTint({
