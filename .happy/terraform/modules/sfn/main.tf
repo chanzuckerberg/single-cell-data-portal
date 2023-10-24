@@ -185,6 +185,12 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Type": "Task",
         "InputPath": "$",
         "Resource": "${var.lambda_success_handler}",
+        "Parameters": {
+          "execution_id.$": "$$.Execution.Id",
+          "error.$": "$.error",
+          "dataset_id.$": "$.dataset_id",
+          "collection_id.$": "$.collection_id"
+        },
         "End": true,
         "Retry": [ {
             "ErrorEquals": ["Lambda.AWSLambdaException"],

@@ -11,7 +11,7 @@ business_logic = BusinessLogic(database_provider, None, None, None, None)
 logger = logging.getLogger("processing")
 
 
-def success_handler(event: list, context) -> None:
+def success_handler(events: list, context) -> None:
     """
     Lambda function invoked by the ingestion step function that updates
     the processing status for the specified dataset to SUCCESS
@@ -19,12 +19,13 @@ def success_handler(event: list, context) -> None:
     :param context: Lambda's context object
     :return:
     """
-    dataset_id = event["dataset_id"]
+    cxg_event, seurat_event = events
 
-    handle_failure(event[1])
-
-    handle_failure(event[0])
-
-    business_logic.update_dataset_version_status(
-        DatasetVersionId(dataset_id), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
-    )
+    if "error" in cxg_event:
+        handle_failure(cxg_event)
+    else:
+        if "error" in seurat_event:
+            handle_failure(seurat_event)
+        business_logic.update_dataset_version_status(
+            DatasetVersionId(cxg_event["dataset_id"]), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
+        )
