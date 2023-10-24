@@ -27,10 +27,6 @@ AUDIENCE = {
     "rdev": "api.cellxgene.dev.single-cell.czi.technology",
 }
 
-TEST_DATASET_URI = (
-    "https://www.dropbox.com/scl/fi/phrt3ru8ulep7ttnwttu2/example_valid.h5ad?rlkey=mmcm2qd9xrnbqle3l3vyii0gx&dl=0"
-)
-
 
 class BaseFunctionalTestCase(unittest.TestCase):
     session: requests.Session
