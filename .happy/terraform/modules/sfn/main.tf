@@ -82,7 +82,6 @@ resource "aws_sfn_state_machine" "state_machine" {
       "CxgSeuratParallel": {
         "Type": "Parallel",
         "Next": "HandleSuccess",
-        "ResultPath": null,
         "Branches": [
           {
             "StartAt": "Cxg",
@@ -176,7 +175,7 @@ resource "aws_sfn_state_machine" "state_machine" {
               },
               "CatchSeuratFailure": {
                 "Type": "Pass",
-                "Next": "HandleErrors"
+                "End": true
               }
             }
           }
@@ -186,24 +185,6 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Type": "Task",
         "InputPath": "$",
         "Resource": "${var.lambda_success_handler}",
-        "End": true,
-        "Retry": [ {
-            "ErrorEquals": ["Lambda.AWSLambdaException"],
-            "IntervalSeconds": 1,
-            "MaxAttempts": 3,
-            "BackoffRate": 2.0
-        } ]
-      },
-      "HandleErrors": {
-        "Type": "Task",
-        "InputPath": "$",
-        "Resource": "${var.lambda_error_handler}",
-        "Parameters": {
-          "execution_id.$": "$$.Execution.Id",
-          "error.$": "$.error",
-          "dataset_id.$": "$.dataset_id",
-          "collection_id.$": "$.collection_id"
-        },
         "End": true,
         "Retry": [ {
             "ErrorEquals": ["Lambda.AWSLambdaException"],
