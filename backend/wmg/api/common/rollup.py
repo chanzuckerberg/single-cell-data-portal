@@ -83,23 +83,33 @@ def _rollup_gene_expression(gene_expression_df, universal_set_cell_counts_df) ->
         and likely greater size than the input gene expression dataframe that includes combinations
         for which numeric values should be aggregated during the rollup operation.
     """
+    # if the gene expression dataframe is empty, then there is nothing to roll up
     if gene_expression_df.shape[0] == 0:
         return gene_expression_df
 
+    # get the numeric columns in the gene expression dataframe
     numeric_columns = list(
         gene_expression_df.columns[[np.issubdtype(dtype, np.number) for dtype in gene_expression_df.dtypes]]
     )
 
+    # get the available combinations of (tissue, cell_type, <compare_dimension>) in the input cell counts dataframe
     group_by_terms = list(universal_set_cell_counts_df.index.names)
     available_combinations = set(universal_set_cell_counts_df.index.values)
 
+    # we do not wish to roll up the n_cells_tissue column
     numeric_columns.remove("n_cells_tissue")
 
+    # pivot the gene expression dataframe to get a dense 2D array of numeric values (sum, nnz, sqsum)
+    # rows are the (tissue, cell_type, <compare_dimension>) combinations and columns are the genes
     pivoted = gene_expression_df.pivot_table(
         index=group_by_terms, columns=["gene_ontology_term_id"], fill_value=0, values=numeric_columns, aggfunc="sum"
     )
     genes = np.array(pivoted["sum"].columns.tolist())
     missing_combinations = list(available_combinations.difference(pivoted.index.values))
+
+    # vertically stack empty arrays corresponding to the missing combinations, and then
+    # stack each 2D array corresponding to sum, nnz, or sqsum into a 3D array
+    # this 3D array will be rolled up along the first dimension
     dense_tables = np.stack(
         [
             np.vstack((pivoted[col].values, np.zeros((len(missing_combinations), len(genes)))))
@@ -107,23 +117,31 @@ def _rollup_gene_expression(gene_expression_df, universal_set_cell_counts_df) ->
         ],
         axis=2,
     )
-
+    # get the multi-index (rows) for the pivoted tables and add the missing combinations
     multi_index = pd.MultiIndex.from_tuples(pivoted.index.tolist() + missing_combinations, names=group_by_terms)
+
+    # reorder the multi-index to have cell_type_ontology_term_id as the first level
     group_by_terms.remove("cell_type_ontology_term_id")
     group_by_terms = ["cell_type_ontology_term_id"] + group_by_terms
-
     multi_index = multi_index.reorder_levels(group_by_terms)
 
+    # get the multi-index as a 2D array
     multi_index_array = np.vstack(multi_index.values)
-
+    # create a string array of cell types for rollup
+    # cell types are suffixed with ";;" to avoid collisions with cell type descendants
+    # outside of each cell type's group.
     cell_types_for_rollup = np.char.add(multi_index_array[:, 0], ";;")
     for col in range(1, multi_index_array.shape[1]):
         if col > 1:
             cell_types_for_rollup = np.char.add(cell_types_for_rollup, "--")
         cell_types_for_rollup = np.char.add(cell_types_for_rollup, multi_index_array[:, col])
 
+    # roll up the array along the first dimension (cell types;;groups)
     dense_tables = rollup_across_cell_type_descendants_array(dense_tables, cell_types_for_rollup)
 
+    # sum, nnz, and sqsum come from the same sparse structure and are therefore guaranteed to be nonzero
+    # in the same locations. We can use any of them to get the row and column coordinates of nonzero values.
+    # rows and columns correspond to cell groups and genes respectively.
     row, col = dense_tables[:, :, 0].nonzero()
 
     new_df = pd.DataFrame(index=multi_index[row], data=genes[col], columns=["gene_ontology_term_id"]).reset_index()
