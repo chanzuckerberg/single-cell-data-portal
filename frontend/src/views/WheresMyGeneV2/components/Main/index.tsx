@@ -135,12 +135,6 @@ export default function WheresMyGene(): JSX.Element {
   // TODO(thuang): Fix this complexity
   // eslint-disable-next-line sonarjs/cognitive-complexity
   const { scaledMeanExpressionMax, scaledMeanExpressionMin } = useMemo(() => {
-    /*
-    If a tissue is collapsed, then only consider its average expression.
-    If a tissue is expanded, include the average expression of cell types.
-    If filteredTissueIds is not empty, then only consider the average expression
-    of the filtered tissues.
-    */
     let min = Infinity;
     let max = -Infinity;
     for (const [tissueName, tissueSelectedCellTypes] of Object.entries(
