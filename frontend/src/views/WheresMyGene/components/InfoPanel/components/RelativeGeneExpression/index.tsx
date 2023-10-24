@@ -27,7 +27,7 @@ export default function RelativeGeneExpression({
           />
           {(isScaled || maxExpression !== -Infinity) && (
             <LowHigh className="low-high">
-              <span>{0.0}</span>
+              <span>0.0</span>
               <span data-testid={MAX_EXPRESSION_LABEL_TEST_ID}>
                 {isScaled ? "1.0" : maxExpression.toFixed(2)}
               </span>
