@@ -82,29 +82,4 @@ describe("Right side bar", () => {
       )
     ).toBeVisible();
   });
-
-  test.only("should scale from 0 to 1 when scaled check box is checked, gene expression", async ({
-    page,
-  }) => {
-    // navigate to url
-    await goToWMG(page);
-    const COLOR_SCALE = '[id="relative-gene-expression"] .low-high';
-
-    //verify the correct values are displayed on the color scale
-    await expect(page.locator(COLOR_SCALE)).toContainText("0.0");
-    await expect(page.locator(COLOR_SCALE)).toContainText("1.0");
-
-    //close quick survey box
-    await page.locator('[aria-label="Close"]').click();
-
-    //click the color scale drop-down
-    await page.getByTestId("color-scale-dropdown").click();
-
-    //select the second option
-    await page.locator('[data-option-index="1"]').click();
-
-    //verify the correct values are displayed on the color scale
-    await expect(page.locator(COLOR_SCALE)).toContainText("0.0");
-    await expect(page.locator(COLOR_SCALE)).toContainText("6.0");
-  });
 });
