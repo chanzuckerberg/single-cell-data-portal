@@ -62,10 +62,8 @@ class WmgSnapshot:
     # backend/wmg/data/schemas/cube_schema.py.
     cell_counts_cube: Optional[Array] = field(default=None)
 
-    # Pandas DataFrame containing per-tissue ordering of cell types.
-    # Columns are "tissue_ontology_term_id", "cell_type_ontology_term_id", "order"
-
-    cell_type_orderings: Optional[DataFrame] = field(default=None)
+    # Dictionary of (cell type, tissue) tuples as keys and order as values.
+    cell_type_orderings: Optional[dict] = field(default=None)
 
     # precomputed list of ids for all gene and tissue ontology term ids per organism
     primary_filter_dimensions: Optional[Dict] = field(default=None)
