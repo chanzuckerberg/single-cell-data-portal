@@ -187,9 +187,8 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Resource": "${var.lambda_success_handler}",
         "Parameters": {
           "execution_id.$": "$$.Execution.Id",
-          "error.$": "$.error",
-          "dataset_id.$": "$.dataset_id",
-          "collection_id.$": "$.collection_id"
+          "cxg_job.$": "$[0]",
+          "seurat_job.$": "$[1]"
         },
         "End": true,
         "Retry": [ {
