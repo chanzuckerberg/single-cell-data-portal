@@ -83,7 +83,7 @@ describe("Right side bar", () => {
     ).toBeVisible();
   });
 
-  test("should scale from 0 to 1 when scaled check box is checked, gene expression ", async ({
+  test.only("should scale from 0 to 1 when scaled check box is checked, gene expression", async ({
     page,
   }) => {
     // navigate to url
