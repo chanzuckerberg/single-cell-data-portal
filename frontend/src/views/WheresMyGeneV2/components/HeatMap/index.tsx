@@ -22,26 +22,26 @@ import {
   DispatchContext,
   State,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
+} from "src/views/WheresMyGeneV2/common/store";
 import {
   addCellInfoCellType,
   setFilteredCellTypes,
   toggleExpandedTissueId,
-} from "src/views/WheresMyGene/common/store/actions";
+} from "src/views/WheresMyGeneV2/common/store/actions";
 import {
   CellType,
   ChartProps,
   GeneExpressionSummary,
   SORT_BY,
   Tissue,
-} from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/types";
 import YAxisChart from "./components/YAxisChart";
 
 import {
   useSortedGeneNames,
   useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
-} from "src/views/WheresMyGene/components/HeatMap/hooks/useSortedGeneNames";
-import { useSortedCellTypesByTissueName } from "src/views/WheresMyGene/components/HeatMap/hooks/useSortedCellTypesByTissueName";
+} from "./hooks/useSortedGeneNames";
+import { useSortedCellTypesByTissueName } from "./hooks/useSortedCellTypesByTissueName";
 import {
   CellTypeTagContainer,
   ChartWrapper,
@@ -50,16 +50,16 @@ import {
   StyledTag,
   XAxisMask,
   YAxisWrapper,
-} from "src/views/WheresMyGene/components/HeatMap/style";
+} from "./style";
 import { CellCountLabel } from "src/views/WheresMyGeneV2/components/HeatMap/components/XAxisChart/style";
 import {
   HEATMAP_CONTAINER_ID,
   MARGIN_BETWEEN_HEATMAPS,
-} from "src/views/WheresMyGene/common/constants";
+} from "../../common/constants";
 import Loader from "src/views/WheresMyGeneV2/components/Loader";
 import XAxisChart from "src/views/WheresMyGeneV2/components/HeatMap/components/XAxisChart";
 import Chart from "src/views/WheresMyGeneV2/components/HeatMap/components/Chart";
-import { hyphenize } from "src/views/WheresMyGene/components/HeatMap/utils";
+import { hyphenize } from "src/views/WheresMyGeneV2/components/HeatMap/utils";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 import { Autocomplete, DefaultAutocompleteOption } from "@czi-sds/components";
 import {

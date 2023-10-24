@@ -4,7 +4,7 @@ import {
   COMPARE_OPTIONS,
   GROUP_BY_TOOLTIP_TEXT,
   SELECT_TISSUE_GENE_TEXT,
-} from "src/views/WheresMyGene/common/constants";
+} from "src/views/WheresMyGeneV2/common/constants";
 import { Tooltip } from "@czi-sds/components";
 import {
   StyledIconImage,

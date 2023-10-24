@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { fontBodyXs, TooltipTable } from "@czi-sds/components";
 import { gray500, spacesL, spacesXs } from "src/common/theme";
 import { HeatmapChart } from "@czi-sds/data-viz";
-import { MARGIN_BETWEEN_HEATMAPS } from "src/views/WheresMyGene/common/constants";
+import { MARGIN_BETWEEN_HEATMAPS } from "src/views/WheresMyGeneV2/common/constants";
 
 export const StyledHeatmapChart = styled(HeatmapChart)`
   margin-bottom: ${MARGIN_BETWEEN_HEATMAPS}px;

@@ -2,11 +2,11 @@ import { useCallback, useContext } from "react";
 import {
   DispatchContext,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
+} from "src/views/WheresMyGeneV2/common/store";
 import {
   resetGenesToDelete,
   toggleGeneToDelete,
-} from "src/views/WheresMyGene/common/store/actions";
+} from "src/views/WheresMyGeneV2/common/store/actions";
 
 export function useDeleteGenes(): {
   genesToDelete: string[];

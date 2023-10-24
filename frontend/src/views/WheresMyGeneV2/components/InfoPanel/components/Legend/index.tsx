@@ -3,7 +3,7 @@ import {
   FilterDimensions,
   OntologyTerm,
 } from "src/common/queries/wheresMyGene";
-import { CellType, ChartProps } from "src/views/WheresMyGene/common/types";
+import { CellType, ChartProps } from "src/views/WheresMyGeneV2/common/types";
 import CitationButton from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/CitationButton";
 import SaveExport from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 import ShareButton from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/ShareButton";

@@ -2,8 +2,8 @@ import { useCallback, useContext, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
-import { DispatchContext, State } from "../../../WheresMyGene/common/store";
-import { addSelectedGenes } from "../../../WheresMyGene/common/store/actions";
+import { DispatchContext, State } from "../../common/store";
+import { addSelectedGenes } from "../../common/store/actions";
 import { MARKER_GENE_LABEL, MARKER_SCORE_LABEL } from "./constants";
 
 export const useConnect = ({

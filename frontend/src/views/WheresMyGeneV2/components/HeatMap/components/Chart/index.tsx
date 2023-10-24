@@ -22,8 +22,8 @@ import {
   COMPARE_OPTION_ID_FOR_AGGREGATED,
   getOptionIdFromCellTypeViewId,
 } from "src/common/queries/wheresMyGene";
-import { getCompareOptionNameById } from "src/views/WheresMyGene/common/constants";
-import { StateContext } from "src/views/WheresMyGene/common/store";
+import { getCompareOptionNameById } from "src/views/WheresMyGeneV2/common/constants";
+import { StateContext } from "src/views/WheresMyGeneV2/common/store";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
@@ -32,7 +32,7 @@ import {
   GeneExpressionSummary,
   Tissue,
   ViewId,
-} from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/types";
 
 import {
   getAllSerializedCellTypeMetadata,
@@ -40,7 +40,7 @@ import {
   getHeatmapHeight,
   getHeatmapWidth,
   hyphenize,
-} from "../../../../../WheresMyGene/components/HeatMap/utils";
+} from "../../utils";
 import { StyledHeatmapChart, StyledTooltipTable, tooltipCss } from "./style";
 
 import {

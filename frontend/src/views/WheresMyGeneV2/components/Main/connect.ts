@@ -14,16 +14,16 @@ import { FILTERS_PANEL_EXPANDED_WIDTH_PX } from "src/components/common/SideBar";
 import {
   DispatchContext,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
+} from "src/views/WheresMyGeneV2/common/store";
 import {
   addGeneInfoGene,
   clearGeneInfoGene,
   closeRightSidebar,
-} from "src/views/WheresMyGene/common/store/actions";
+} from "src/views/WheresMyGeneV2/common/store/actions";
 import {
   GeneExpressionSummary,
   ChartProps,
-} from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/types";
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const useConnect = () => {

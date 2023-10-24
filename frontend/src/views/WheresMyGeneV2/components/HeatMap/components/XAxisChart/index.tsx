@@ -5,22 +5,22 @@ import { EVENTS } from "src/common/analytics/events";
 import {
   DispatchContext,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
+} from "src/views/WheresMyGeneV2/common/store";
 import {
   deleteSingleGene,
   selectGeneInfoFromXAxis,
   setXAxisHeight,
-} from "src/views/WheresMyGene/common/store/actions";
-import { useDeleteGenes } from "../../../../../WheresMyGene/components/HeatMap/hooks/useDeleteGenes";
+} from "src/views/WheresMyGeneV2/common/store/actions";
+import { useDeleteGenes } from "../../hooks/useDeleteGenes";
 import {
   CHART_PADDING_PX,
   SELECTED_STYLE,
-} from "../../../../../WheresMyGene/components/HeatMap/style";
+} from "src/views/WheresMyGeneV2/components/HeatMap/style";
 import {
   getHeatmapWidth,
   formatLabel,
   Y_AXIS_CHART_WIDTH_PX,
-} from "../../../../../WheresMyGene/components/HeatMap/utils";
+} from "../../utils";
 import {
   XAxisWrapper,
   XAxisContainer,
@@ -31,12 +31,12 @@ import {
   HoverContainer,
   DeleteButtonWrapper,
 } from "./style";
-import { StyledImage } from "../../../../../WheresMyGene/components/HeatMap/components/YAxisChart/style";
+import { StyledImage } from "../YAxisChart/style";
 import InfoSVG from "src/common/images/info-sign-icon.svg";
 import {
   X_AXIS_CHART_HEIGHT_PX,
   X_AXIS_HOVER_CONTAINER_HEIGHT_PX,
-} from "src/views/WheresMyGene/common/constants";
+} from "src/views/WheresMyGeneV2/common/constants";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 import GeneSearchBar from "src/views/WheresMyGeneV2/components/GeneSearchBar";
 

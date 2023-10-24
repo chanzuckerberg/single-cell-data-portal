@@ -1,12 +1,12 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API_URL } from "src/configs/configs";
-import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
+import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/constants";
 import {
   DispatchContext,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
-import { setSnapshotId } from "src/views/WheresMyGene/common/store/actions";
+} from "src/views/WheresMyGeneV2/common/store";
+import { setSnapshotId } from "src/views/WheresMyGeneV2/common/store/actions";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
@@ -18,7 +18,7 @@ import {
   RawCellTypeGeneExpressionSummaryData,
   ViewId,
   Organism as IOrganism,
-} from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/types";
 import { API } from "../API";
 import { APIV2 } from "src/common/tempAPIV2";
 

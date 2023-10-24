@@ -479,7 +479,7 @@ export async function downloadGeneFile(
 
 /**
  * (ashin-czi): Gets the date in mmddyy format
- * Copied from `frontend/src/views/WheresMyGene/components/GeneSearchBar/components/SaveExport/csvUtils.ts`
+ * Copied from `frontend/src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport/csvUtils.ts`
  * since Playwright doesn't like importing from that file due to its dependency on `d3`
  */
 export function getCurrentDate() {

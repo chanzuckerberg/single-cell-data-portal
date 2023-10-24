@@ -5,7 +5,7 @@ import {
   CellTypeGeneExpressionSummaryData,
   SORT_BY,
   Tissue,
-} from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/types";
 
 interface Props {
   tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap: Map<

@@ -2,7 +2,7 @@ import { interpolateMagma } from "d3-scale-chromatic";
 import {
   CellTypeSummary,
   GeneExpressionSummary,
-} from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/types";
 import { ChartFormat } from "./types";
 import { DefaultLabelFormatterCallbackParams, EChartsOption } from "echarts";
 import { useMemo } from "react";

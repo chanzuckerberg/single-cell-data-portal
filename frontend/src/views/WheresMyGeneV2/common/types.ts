@@ -1,6 +1,6 @@
 import { DefaultMenuSelectOption } from "@czi-sds/components";
 import { CSSProperties } from "react";
-import { ChartFormat } from "../../WheresMyGeneV2/components/HeatMap/components/Chart/types";
+import { ChartFormat } from "../components/HeatMap/components/Chart/types";
 import { CellTypeMetadata } from "../components/HeatMap/utils";
 
 export interface Organism {

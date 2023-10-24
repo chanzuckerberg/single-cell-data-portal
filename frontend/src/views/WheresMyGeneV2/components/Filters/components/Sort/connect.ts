@@ -1,12 +1,12 @@
 import { track } from "src/common/analytics";
 import { Props } from "./types";
 import { EVENTS } from "src/common/analytics/events";
-import { selectSortBy } from "src/views/WheresMyGene/common/store/actions";
-import { SORT_BY } from "src/views/WheresMyGene/common/types";
+import { selectSortBy } from "src/views/WheresMyGeneV2/common/store/actions";
+import { SORT_BY } from "src/views/WheresMyGeneV2/common/types";
 import {
   DispatchContext,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
+} from "src/views/WheresMyGeneV2/common/store";
 import { useContext, useMemo } from "react";
 import {
   CELL_TYPE_OPTIONS,
