@@ -41,6 +41,8 @@ export const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
 export const spacesXs = (props: CommonThemeProps) => getSpaces(props)?.xs;
 export const spacesXxs = (props: CommonThemeProps) => getSpaces(props)?.xxs;
 export const spacesXxxs = (props: CommonThemeProps) => getSpaces(props)?.xxxs;
+export const spacesDefault = (props: CommonThemeProps) =>
+  getSpaces(props)?.default;
 
 const corners = {
   l: 16,

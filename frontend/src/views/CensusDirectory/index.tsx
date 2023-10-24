@@ -5,13 +5,19 @@ import {
   fontHeaderL,
   fontHeaderXl,
   fontHeaderXxl,
-  getColors,
-  getFontWeights,
-  getPalette,
-  getSpaces,
 } from "@czi-sds/components";
 import styled from "@emotion/styled";
 import React from "react";
+import {
+  fontWeightBold,
+  fontWeightRegular,
+  fontWeightSemibold,
+  gray400,
+  spacesDefault,
+  spacesL,
+  spacesXl,
+  textSecondary,
+} from "src/common/theme";
 
 function DetailItem(props: { label: string; children: string }) {
   const ItemContainer = styled.div`
@@ -21,11 +27,11 @@ function DetailItem(props: { label: string; children: string }) {
 
   const ItemLabel = styled.div`
     ${fontCapsXxxs}
-    font-weight: ${(props) => getFontWeights(props)?.semibold};
+    font-weight: ${fontWeightSemibold};
     font-feature-settings:
       "clig" off,
       "liga" off;
-    color: ${(props) => getColors(props)?.gray[400]};
+    color: ${gray400};
   `;
 
   return (
@@ -45,13 +51,13 @@ function CensusDirectory() {
 
   const Header = styled.h1`
     ${fontHeaderXxl}
-    margin-bottom: ${(props) => getSpaces(props)?.default}px;
-    font-weight: ${(props) => getFontWeights(props)?.bold};
+    margin-bottom: ${spacesDefault}px;
+    font-weight: ${fontWeightBold};
   `;
 
   const Paragraph = styled.p`
     ${fontBodyS}
-    font-weight: ${(props) => getFontWeights(props)?.regular};
+    font-weight: ${fontWeightRegular};
     margin-bottom: 0;
   `;
 
@@ -65,27 +71,27 @@ function CensusDirectory() {
 
   const TierTitle = styled.h3`
     ${fontHeaderXl}
-    margin-bottom: ${(props) => getSpaces(props)?.default}px;
-    font-weight: ${(props) => getFontWeights(props)?.semibold};
+    margin-bottom: ${spacesDefault}px;
+    font-weight: ${fontWeightSemibold};
   `;
 
   const TierDescription = styled.p`
     ${fontBodyS}
-    color: ${(props) => getPalette(props)?.text?.secondary};
-    font-weight: ${(props) => getFontWeights(props)?.regular};
+    color: ${textSecondary};
+    font-weight: ${fontWeightRegular};
     margin-bottom: 0;
   `;
 
   const ProjectTitle = styled.h4`
     ${fontHeaderL}
-    font-weight: ${(props) => getFontWeights(props)?.semibold};
-    margin-bottom: ${(props) => getSpaces(props)?.default}px;
+    font-weight: ${fontWeightSemibold};
+    margin-bottom: ${spacesDefault}px;
   `;
 
   const ProjectSubmitter = styled.h4`
     ${fontBodyS}
-    font-weight: ${(props) => getFontWeights(props)?.semibold};
-    margin-bottom: ${(props) => getSpaces(props)?.default}px;
+    font-weight: ${fontWeightSemibold};
+    margin-bottom: ${spacesDefault}px;
   `;
 
   const ProjectContainer = styled.div`
@@ -97,7 +103,7 @@ function CensusDirectory() {
   const ProjectButtons = styled.div`
     display: flex;
     flex-direction: row;
-    gap: ${({ theme }) => getSpaces(theme)?.default}px;
+    gap: ${spacesDefault}px;
   `;
   const ProjectDetails = styled.div`
     display: flex;
@@ -106,8 +112,8 @@ function CensusDirectory() {
   const DetailsContainer = styled.div`
     display: flex;
     flex-direction: row;
-    gap: ${({ theme }) => getSpaces(theme)?.xl}px;
-    margin-top: ${({ theme }) => getSpaces(theme)?.l}px;
+    gap: ${spacesXl}px;
+    margin-top: ${spacesL}px;
   `;
 
   return (
