@@ -187,22 +187,28 @@ export default function WheresMyGene(): JSX.Element {
             - If the cell type is not included in the filtered cell types and at least one cell type is filtered
             - If the tissue id is not included in the filtered tissue ids and at least one tissue is filtered
             - If the cell type gene expression summary view id is not included in the available view ids
+            The above conditions capture all possible scenarios where the data is not visible to users.
             */
             if (
+              // If the cell type is not part of an expanded tissue
               (isCellType && !expandedTissueIds.includes(tissueId)) ||
+              // If the tissue does not contain any of the filtered cell types and at least one cell type is filtered
               (!isCellType &&
                 filteredCellTypes.length > 0 &&
                 !tissueSelectedCellTypeNames.filter((value) =>
                   filteredCellTypes.includes(value)
                 ).length) ||
+              // If the cell type is not included in the filtered cell types and at least one cell type is filtered
               (isCellType &&
                 filteredCellTypes.length > 0 &&
                 !filteredCellTypes.includes(
                   cellTypeNameById?.[cellTypeGeneExpressionSummaryId]
                 )) ||
+              // If the tissue id is not included in the filtered tissue ids and at least one tissue is filtered
               (!isCellType &&
                 filteredTissueIds.length > 0 &&
                 !filteredTissueIds.includes(tissueId)) ||
+              // If the cell type gene expression summary view id is not included in the available view ids
               !tissueSelectedCellTypeIds.includes(
                 cellTypeGeneExpressionSummary.viewId
               )
