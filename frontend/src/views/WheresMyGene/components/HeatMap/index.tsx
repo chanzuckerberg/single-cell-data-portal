@@ -30,8 +30,8 @@ import {
 } from "../../common/types";
 import Loader from "../Loader";
 import Chart from "../../../WheresMyGeneV2/components/HeatMap/components/Chart";
-import XAxisChart from "./components/XAxisChart";
-import { CellCountLabel } from "./components/XAxisChart/style";
+import XAxisChart from "../../../WheresMyGeneV2/components/HeatMap/components/XAxisChart";
+import { CellCountLabel } from "../../../WheresMyGeneV2/components/HeatMap/components/XAxisChart/style";
 import YAxisChart from "./components/YAxisChart";
 import { useSortedCellTypesByTissueName } from "./hooks/useSortedCellTypesByTissueName";
 import {

@@ -11,13 +11,16 @@ import {
   selectGeneInfoFromXAxis,
   setXAxisHeight,
 } from "src/views/WheresMyGene/common/store/actions";
-import { useDeleteGenes } from "../../hooks/useDeleteGenes";
-import { CHART_PADDING_PX, SELECTED_STYLE } from "../../style";
+import { useDeleteGenes } from "../../../../../WheresMyGene/components/HeatMap/hooks/useDeleteGenes";
+import {
+  CHART_PADDING_PX,
+  SELECTED_STYLE,
+} from "../../../../../WheresMyGene/components/HeatMap/style";
 import {
   getHeatmapWidth,
   formatLabel,
   Y_AXIS_CHART_WIDTH_PX,
-} from "../../utils";
+} from "../../../../../WheresMyGene/components/HeatMap/utils";
 import {
   XAxisWrapper,
   XAxisContainer,
@@ -28,7 +31,7 @@ import {
   HoverContainer,
   DeleteButtonWrapper,
 } from "./style";
-import { StyledImage } from "../YAxisChart/style";
+import { StyledImage } from "../../../../../WheresMyGene/components/HeatMap/components/YAxisChart/style";
 import InfoSVG from "src/common/images/info-sign-icon.svg";
 import {
   X_AXIS_CHART_HEIGHT_PX,

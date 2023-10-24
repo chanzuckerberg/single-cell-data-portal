@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
-import { SELECTED_STYLE } from "../../style";
-import { HEAT_MAP_BASE_CELL_WIDTH_PX } from "../../utils";
+import { SELECTED_STYLE } from "../../../../../WheresMyGene/components/HeatMap/style";
+import { HEAT_MAP_BASE_CELL_WIDTH_PX } from "../../../../../WheresMyGene/components/HeatMap/utils";
 import { GENE_SEARCH_BAR_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/constants";
 import { spacesXxxs } from "src/common/theme";
 import { CommonThemeProps } from "@czi-sds/components";

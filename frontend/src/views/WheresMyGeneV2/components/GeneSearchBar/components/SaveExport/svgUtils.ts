@@ -2,7 +2,7 @@ import { CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX } from "src/components/Layout/sty
 import {
   ECHART_AXIS_LABEL_COLOR_HEX,
   ECHART_AXIS_LABEL_FONT_SIZE_PX,
-} from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart/style";
+} from "src/views/WheresMyGeneV2/components/HeatMap/components/XAxisChart/style";
 import { PLASMA_SVG_STRING } from "src/views/WheresMyGeneV2/components/Filters/components/ColorScale/constants";
 import {
   HEAT_MAP_BASE_CELL_PX,
