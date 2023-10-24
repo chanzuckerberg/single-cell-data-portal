@@ -7,6 +7,7 @@ import {
   FilterDimensions,
   GeneExpressionSummariesByTissueName,
   generateTermsByKey,
+  getOntologyTermIdFromCellTypeViewId,
   OntologyTerm,
   useCellTypesByTissueName,
   useGeneExpressionSummariesByTissueName,
@@ -169,7 +170,9 @@ export default function WheresMyGene(): JSX.Element {
           for (const cellTypeGeneExpressionSummary of cellTypeGeneExpressionSummaries) {
             // get term before $
             const cellTypeGeneExpressionSummaryId =
-              cellTypeGeneExpressionSummary.viewId.split("$")[0];
+              getOntologyTermIdFromCellTypeViewId(
+                cellTypeGeneExpressionSummary.viewId
+              );
             const isCellType =
               !cellTypeGeneExpressionSummaryId.startsWith("UBERON");
 
