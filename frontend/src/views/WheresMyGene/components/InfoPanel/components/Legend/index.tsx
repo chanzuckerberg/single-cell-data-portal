@@ -30,6 +30,7 @@ interface Props {
   tissues?: { [name: string]: OntologyTerm };
   expandedTissueIds?: string[];
   filteredCellTypes?: string[];
+  maxExpression: number;
 }
 
 export default memo(function Legend({
@@ -44,6 +45,7 @@ export default memo(function Legend({
   tissues,
   expandedTissueIds,
   filteredCellTypes,
+  maxExpression,
 }: Props): JSX.Element {
   return (
     <LegendWrapper data-testid="legend-wrapper">
@@ -63,7 +65,10 @@ export default memo(function Legend({
       <SourceDataButton
         handleRightSidebarButtonClick={handleRightSidebarButtonClick}
       />
-      <RelativeGeneExpression isScaled={isScaled} />
+      <RelativeGeneExpression
+        isScaled={isScaled}
+        maxExpression={maxExpression}
+      />
       <ExpressedInCells />
     </LegendWrapper>
   );
