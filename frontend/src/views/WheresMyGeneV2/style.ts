@@ -7,7 +7,7 @@ import { FOOTER_HEIGHT_PX } from "src/components/Footer/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import { SidebarMainWrapper } from "src/components/Layout/style";
 import { Container } from "./components/GeneSearchBar/style";
-import { LegendWrapper } from "../WheresMyGene/components/InfoPanel/components/Legend/style";
+import { LegendWrapper } from "./components/InfoPanel/components/Legend/style";
 
 export const LEGEND_MARGIN_BOTTOM_PX = 20;
 
