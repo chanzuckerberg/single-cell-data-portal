@@ -57,6 +57,7 @@ fi
 
 LATEST_SNAPSHOT_IDENTIFIER=$(aws s3 cp s3://cellxgene-wmg-${SRC_DEPLOYMENT}/snapshots/${SNAPSHOT_VERSION}/latest_snapshot_identifier -)
 if [ -n "$LATEST_SNAPSHOT_IDENTIFIER" ]; then
+  aws s3 rm s3://env-rdev-wmg/${STACK_NAME}/snapshots/${SNAPSHOT_VERSION}/${LATEST_SNAPSHOT_IDENTIFIER} --recursive
   aws s3 sync s3://cellxgene-wmg-${SRC_DEPLOYMENT}/snapshots/${SNAPSHOT_VERSION}/${LATEST_SNAPSHOT_IDENTIFIER} s3://env-rdev-wmg/${STACK_NAME}/snapshots/${SNAPSHOT_VERSION}/${LATEST_SNAPSHOT_IDENTIFIER}
 
   # Check the exit code of the last command (AWS CLI)
