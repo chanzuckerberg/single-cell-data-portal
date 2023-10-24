@@ -99,7 +99,7 @@ def generate_expected_term_id_labels_dictionary(
             "total_count": sum(
                 [agg_dict["aggregated"]["total_count"] for _, agg_dict in result["cell_types"][tissue].items()]
             ),
-            "order": order,
+            "order": -1,
         }
 
         result["cell_types"][tissue]["tissue_stats"] = {}
