@@ -477,6 +477,7 @@ export default memo(function HeatMap({
                   echartsRendererMode={echartsRendererMode}
                   setAllChartProps={setAllChartProps}
                   chartProps={allChartProps[tissueName]}
+                  maxExpression={scaledMeanExpressionMax}
                 />
               );
             })}
