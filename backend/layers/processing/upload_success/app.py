@@ -23,10 +23,10 @@ def success_handler(events: dict, context) -> None:
     cxg_job["execution_id"], seurat_job["execution_id"] = events["execution_id"], events["execution_id"]
 
     if cxg_job.get("error"):
-        handle_failure(cxg_job)
+        handle_failure(cxg_job, context)
     else:
         if seurat_job.get("error"):
-            handle_failure(seurat_job)
+            handle_failure(seurat_job, context)
         business_logic.update_dataset_version_status(
             DatasetVersionId(cxg_job["dataset_id"]), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
         )
