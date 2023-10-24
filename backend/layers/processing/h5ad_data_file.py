@@ -7,6 +7,7 @@ import anndata
 import numpy as np
 import tiledb
 
+from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.color_conversion_utils import (
     ColorFormatException,
     convert_anndata_category_colors_to_cxg_category_colors,
@@ -283,4 +284,6 @@ class H5ADDataFile:
             return schema_version
 
     def corpora_is_schema_version_supported(self, schema_version):
+        if CorporaConfig().schema_4_feature_flag.lower() == "true":
+            return schema_version and schema_version.startswith("4.")
         return schema_version and schema_version.startswith("3.")

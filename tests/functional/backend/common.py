@@ -9,7 +9,7 @@ import requests
 from requests.adapters import HTTPAdapter, Response
 from requests.packages.urllib3.util import Retry
 
-from backend.common.corpora_config import CorporaAuthConfig
+from backend.common.corpora_config import CorporaAuthConfig, CorporaConfig
 
 API_URL = {
     "prod": "https://api.cellxgene.cziscience.com",
@@ -42,6 +42,18 @@ class BaseFunctionalTestCase(unittest.TestCase):
         super().setUpClass()
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
         cls.config = CorporaAuthConfig()
+        cls.is_using_schema_4 = CorporaConfig().schema_4_feature_flag.lower() == "true"
+        cls.test_dataset_uri = (
+            (
+                "https://www.dropbox.com/scl/fi/zp593kl62obm11mvimtrz/"
+                "4_0_0_example.h5ad?rlkey=xxvoc9ihp7ie48n5vfwgigsn7&dl=0"
+            )
+            if cls.is_using_schema_4
+            else (
+                "https://www.dropbox.com/scl/fi/phrt3ru8ulep7ttnwttu2/"
+                "example_valid.h5ad?rlkey=mmcm2qd9xrnbqle3l3vyii0gx&dl=0"
+            )
+        )
         cls.session = requests.Session()
         # apply retry config to idempotent http methods we use + POST requests, which are currently all either
         # idempotent (wmg queries) or low risk to rerun in dev/staging. Update if this changes in functional tests.
