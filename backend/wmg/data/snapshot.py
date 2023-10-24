@@ -64,7 +64,7 @@ class WmgSnapshot:
 
     # Pandas DataFrame containing per-tissue ordering of cell types.
     # Columns are "tissue_ontology_term_id", "cell_type_ontology_term_id", "order"
-    cell_type_orderings: Optional[DataFrame] = field(default=None)
+    cell_type_orderings: Optional[dict] = field(default=None)
 
     # precomputed list of ids for all gene and tissue ontology term ids per organism
     primary_filter_dimensions: Optional[Dict] = field(default=None)
@@ -195,7 +195,9 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
         expression_summary_default_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
         marker_genes_cube=_open_cube(f"{snapshot_base_uri}/{MARKER_GENES_CUBE_NAME}"),
         cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
-        cell_type_orderings=cell_type_orderings,
+        cell_type_orderings=cell_type_orderings.set_index(["tissue_ontology_term_id", "cell_type_ontology_term_id"])[
+            "order"
+        ].to_dict(),
         primary_filter_dimensions=primary_filter_dimensions,
         filter_relationships=filter_relationships,
         dataset_metadata=dataset_metadata,

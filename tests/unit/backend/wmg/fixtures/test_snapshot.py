@@ -269,7 +269,11 @@ def create_temp_wmg_snapshot(
             cell_counts_fn=cell_counts_generator_fn,
         )
 
-        cell_type_orderings = build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn)
+        cell_type_orderings = (
+            build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn)
+            .set_index(["tissue_ontology_term_id", "cell_type_ontology_term_id"])["order"]
+            .to_dict()
+        )
         primary_filter_dimensions = build_precomputed_primary_filters()
 
         with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube, tiledb.open(
