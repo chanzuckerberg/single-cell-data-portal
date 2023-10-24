@@ -75,9 +75,6 @@ class WmgSnapshot:
 
     dataset_metadata: Optional[Dict] = field(default=None)
 
-    def __hash__(self):
-        return hash(None)  # hash is not used for WmgSnapshot
-
 
 # Cached data
 cached_snapshot: Optional[WmgSnapshot] = None
