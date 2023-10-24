@@ -19,6 +19,8 @@ ADD backend/wmg/__init__.py backend/wmg/__init__.py
 ADD backend/wmg/config.py backend/wmg/config.py
 ADD backend/wmg/data backend/wmg/data
 ADD backend/wmg/pipeline backend/wmg/pipeline
+ADD backend/wmg/api backend/wmg/api
+ADD backend/cellguide/pipeline backend/cellguide/pipeline
 ADD backend/layers backend/layers
 ADD backend/common backend/common
 
@@ -29,4 +31,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD ["python3", "-m", "backend.wmg.pipeline.cube_pipeline"]
+CMD ["python3", "-m", "backend.wmg.pipeline"]

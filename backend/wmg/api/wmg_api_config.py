@@ -5,7 +5,7 @@
 #
 # In the case a specfic snapshot must be loaded
 # WMG_API_FORCE_LOAD_SNAPSHOT_ID should be set.
-WMG_API_SNAPSHOT_SCHEMA_VERSION = "v2"
+WMG_API_SNAPSHOT_SCHEMA_VERSION = "v3"
 
 # In the case we need to rollback or rollforward
 # set this variable to a specific snapshot id
@@ -27,5 +27,4 @@ READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES = ["gene_ontology_term_id", "cell_type_on
 READER_WMG_CUBE_QUERY_VALID_DIMENSIONS = [
     "gene_ontology_term_id",
     "tissue_ontology_term_id",
-    "cell_type_ontology_term_id",
 ]

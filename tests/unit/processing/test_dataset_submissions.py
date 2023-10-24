@@ -19,6 +19,9 @@ class TestDatasetSubmissions(BaseTest):
         )
         self.mock.start()
 
+    def tearDown(self):
+        self.mock.stop()
+
     def test__missing_curator_file_name__raises_error(self):
         mock_collection_id = EntityId()
         s3_event = create_s3_event(key=f"{self.user_name}/{mock_collection_id}/")

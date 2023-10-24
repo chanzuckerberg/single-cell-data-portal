@@ -40,7 +40,9 @@ export function dataToChartFormat({
       } = geneExpression;
 
       const scaledMeanExpression =
-        (meanExpression - scaledMeanExpressionMin) / oldRange;
+        oldRange > 0
+          ? (meanExpression - scaledMeanExpressionMin) / oldRange
+          : 1.0;
 
       const geneIndex = genes.findIndex((gene) => gene?.name === geneName);
 
@@ -64,9 +66,7 @@ export function dataToChartFormat({
   }
 }
 
-const MAX_MEAN_EXPRESSION_VALUE = 6;
-
-export function useChartItemStyle(isScaled: boolean) {
+export function useChartItemStyle(isScaled: boolean, maxExpression: number) {
   return useMemo(() => {
     return {
       color(props: DefaultLabelFormatterCallbackParams) {
@@ -77,12 +77,12 @@ export function useChartItemStyle(isScaled: boolean) {
 
         const expressionValue = isScaled
           ? scaledMeanExpression
-          : meanExpression / MAX_MEAN_EXPRESSION_VALUE;
+          : meanExpression / maxExpression;
 
         return interpolateMagma(1 - expressionValue);
       },
     };
-  }, [isScaled]);
+  }, [isScaled, maxExpression]);
 }
 
 export function symbolSize(props: { percentage: number }) {

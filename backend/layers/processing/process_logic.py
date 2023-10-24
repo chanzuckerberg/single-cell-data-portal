@@ -8,6 +8,7 @@ from backend.layers.common.entities import (
     DatasetConversionStatus,
     DatasetStatusGeneric,
     DatasetStatusKey,
+    DatasetVersion,
     DatasetVersionId,
 )
 from backend.layers.processing.downloader import Downloader
@@ -27,6 +28,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
     s3_provider: S3ProviderInterface
     downloader: Downloader
     logger: logging.Logger
+    schema_version: str
 
     def __init__(self) -> None:
         self.logger = logging.getLogger("processing")
@@ -124,3 +126,10 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
             return join(remote_dev_prefix, identifier).strip("/")
         else:
             return identifier
+
+    def check_dataset_is_latest_schema_version(self, dataset: DatasetVersion) -> bool:
+        return (
+            hasattr(dataset, "metadata")
+            and hasattr(dataset.metadata, "schema_version")
+            and dataset.metadata.schema_version == self.schema_version
+        )

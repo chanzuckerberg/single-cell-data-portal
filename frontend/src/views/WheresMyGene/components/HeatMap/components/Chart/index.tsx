@@ -74,6 +74,7 @@ interface Props {
     }>
   >;
   chartProps: ChartProps;
+  maxExpression: number;
 }
 
 const BASE_DEBOUNCE_MS = 200;
@@ -95,6 +96,7 @@ export default memo(function Chart({
   echartsRendererMode,
   setAllChartProps,
   chartProps,
+  maxExpression,
 }: Props): JSX.Element {
   const [currentIndices, setCurrentIndices] = useState([-1, -1]);
   const [cursorOffset, setCursorOffset] = useState([-1, -1]);
@@ -389,7 +391,7 @@ export default memo(function Chart({
 
   const { chartData, cellTypeMetadata, geneNames } = chartProps || {};
 
-  const itemStyle = useChartItemStyle(isScaled);
+  const itemStyle = useChartItemStyle(isScaled, maxExpression);
 
   return (
     <Tooltip

@@ -51,7 +51,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          event-type: build-images
+          event-type: build-images-for-staging
           client-payload: '{"ref": "refs/heads/staging"}'
 
       - name: Send slack notification if main not merged into staging
