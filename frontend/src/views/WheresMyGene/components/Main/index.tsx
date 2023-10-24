@@ -320,6 +320,7 @@ export default function WheresMyGene(): JSX.Element {
               setEchartsRendererMode={setEchartsRendererMode}
               allChartProps={allChartProps}
               availableFilters={availableFilters}
+              maxExpression={6.0}
             />
           </Top>
 
