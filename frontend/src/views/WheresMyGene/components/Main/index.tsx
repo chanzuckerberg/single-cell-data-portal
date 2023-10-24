@@ -34,7 +34,7 @@ import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import InfoPanel from "../../../WheresMyGeneV2/components/InfoPanel";
 import Legend from "../../../WheresMyGeneV2/components/InfoPanel/components/Legend";
-import Loader from "../Loader";
+import Loader from "../../../WheresMyGeneV2/components/Loader";
 import ScreenTint from "../ScreenTint";
 import { StyledBannerContainer, StyledSidebarDrawer } from "./style";
 import RightSideBar from "../../../../components/common/RightSideBar";

@@ -28,7 +28,7 @@ import {
   SORT_BY,
   Tissue,
 } from "../../common/types";
-import Loader from "../Loader";
+import Loader from "../../../WheresMyGeneV2/components/Loader";
 import Chart from "../../../WheresMyGeneV2/components/HeatMap/components/Chart";
 import XAxisChart from "../../../WheresMyGeneV2/components/HeatMap/components/XAxisChart";
 import { CellCountLabel } from "../../../WheresMyGeneV2/components/HeatMap/components/XAxisChart/style";

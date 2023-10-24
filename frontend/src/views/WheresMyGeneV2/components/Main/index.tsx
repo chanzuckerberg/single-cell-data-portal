@@ -6,7 +6,7 @@ import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 import SideBar from "src/components/common/SideBar";
 import InfoPanel from "src/views/WheresMyGeneV2/components/InfoPanel";
 import Legend from "src/views/WheresMyGeneV2/components/InfoPanel/components/Legend";
-import Loader from "src/views/WheresMyGene/components/Loader";
+import Loader from "src/views/WheresMyGeneV2/components/Loader";
 import {
   StyledBannerContainer,
   StyledSidebarDrawer,
