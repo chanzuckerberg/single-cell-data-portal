@@ -1,7 +1,9 @@
 import logging
 
-from backend.cellguide.pipeline.computational_marker_genes.computational_markers import MarkerGenesCalculator
-from backend.cellguide.pipeline.computational_marker_genes.constants import MARKER_SCORE_THRESHOLD
+from backend.cellguide.pipeline.computational_marker_genes.computational_markers import (
+    MARKER_SCORE_THRESHOLD,
+    MarkerGenesCalculator,
+)
 from backend.cellguide.pipeline.constants import COMPUTATIONAL_MARKER_GENES_FOLDERNAME, MARKER_GENE_PRESENCE_FILENAME
 from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder

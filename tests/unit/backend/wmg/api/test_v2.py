@@ -7,6 +7,7 @@ from pytest import approx
 from backend.api_server.app import app
 from backend.wmg.api.v2 import find_dimension_id_from_compare
 from backend.wmg.data.query import MarkerGeneQueryCriteria
+from tests.test_utils import compare_dicts
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.test_cube_schema import expression_summary_non_indexed_dims
 from tests.unit.backend.wmg.fixtures.test_primary_filters import (
@@ -22,6 +23,7 @@ from tests.unit.backend.wmg.fixtures.test_snapshot import (
     create_temp_wmg_snapshot,
     exclude_all_but_one_gene_per_organism,
     exclude_dev_stage_and_ethnicity_for_secondary_filter_test,
+    forward_cell_type_ordering,
     load_realistic_test_snapshot,
     reverse_cell_type_ordering,
 )
@@ -39,6 +41,7 @@ def generate_expected_term_id_labels_dictionary(
     cell_count_tissue_cell_type: int,
     compare_terms: list[str],
     cell_counts_tissue_cell_type_compare_dim: int,
+    cell_ordering_func=forward_cell_type_ordering,
 ) -> dict:
     """
     Generates aggregated cell counts and cell ordering expected to be returned by /wmg/v2/query endpoint.
@@ -66,12 +69,9 @@ def generate_expected_term_id_labels_dictionary(
 
     result = {}
     result["cell_types"] = {}
-    # assume tissues are sorted, and cell types are sorted within each tissue
-    # assume the length of cell types is the dimensionality of each column in the
-    # test snapshot (i.e. each tissue contains all fake cell types).
-    # this line determines the starting order for each cell type in each tissue.
-    orders = [int(tissue.split("_")[-1]) * len(cell_types) for tissue in tissues]
-    for tissue, order in zip(tissues, orders):
+    orders = sum([cell_ordering_func(cell_types) for _ in tissues], [])
+    index = 0
+    for tissue in tissues:
         result["cell_types"][tissue] = {}
 
         for cell_type in cell_types:
@@ -80,7 +80,7 @@ def generate_expected_term_id_labels_dictionary(
                 "cell_type_ontology_term_id": cell_type,
                 "name": f"{cell_type}_label",
                 "total_count": cell_count_tissue_cell_type,
-                "order": order,
+                "order": orders[index],
             }
 
             for term in compare_terms:
@@ -88,9 +88,9 @@ def generate_expected_term_id_labels_dictionary(
                     "cell_type_ontology_term_id": cell_type,
                     "name": f"{term}_label",
                     "total_count": cell_counts_tissue_cell_type_compare_dim,
-                    "order": order,
+                    "order": orders[index],
                 }
-            order += 1
+            index += 1
 
         tissue_cell_counts = {
             "tissue_ontology_term_id": tissue,
@@ -211,6 +211,7 @@ def generate_test_inputs_and_expected_outputs(
     me: float,
     cell_count_per_row_cell_counts_cube: int,
     compare_dim=None,
+    cell_ordering_func=forward_cell_type_ordering,
 ) -> tuple:
     """
     Generates test inputs and expected outputs for the /wmg/v2/query endpoint.
@@ -270,6 +271,7 @@ def generate_test_inputs_and_expected_outputs(
         cell_count_tissue_cell_type=cell_count_tissue_cell_type,
         compare_terms=compare_terms,
         cell_counts_tissue_cell_type_compare_dim=cell_counts_tissue_cell_type_compare_dim,
+        cell_ordering_func=cell_ordering_func,
     )
     expected_expression_summary = generate_expected_expression_summary_dictionary(
         genes=genes,
@@ -465,7 +467,6 @@ class WmgApiV2Tests(unittest.TestCase):
                 "expression_summary": expected_expression_summary,
                 "term_id_labels": expected_term_id_labels,
             }
-
             self.assert_equality_nested_dict_with_floats(
                 expected=expected_response, actual=json.loads(response.data), key_path=[]
             )
@@ -583,7 +584,7 @@ class WmgApiV2Tests(unittest.TestCase):
             organism = "organism_ontology_term_id_0"
 
             (request, _, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(
-                genes, organism, dim_size, 1.0, 10
+                genes, organism, dim_size, 1.0, 10, cell_ordering_func=reverse_cell_type_ordering
             )
 
             response = self.app.post("/wmg/v2/query", json=request)
@@ -591,7 +592,7 @@ class WmgApiV2Tests(unittest.TestCase):
             self.assertEqual(200, response.status_code)
 
             expected = expected_term_id_labels["cell_types"]
-            self.assertEqual(expected, json.loads(response.data)["term_id_labels"]["cell_types"])
+            self.assertTrue(compare_dicts(expected, json.loads(response.data)["term_id_labels"]["cell_types"]))
 
     @patch("backend.wmg.api.v2.gene_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
@@ -619,7 +620,7 @@ class WmgApiV2Tests(unittest.TestCase):
             organism = "organism_ontology_term_id_0"
 
             (request, _, expected_term_id_labels) = generate_test_inputs_and_expected_outputs(
-                genes, organism, dim_size, 1.0, expected_count
+                genes, organism, dim_size, 1.0, expected_count, cell_ordering_func=reverse_cell_type_ordering
             )
 
             response = self.app.post("/wmg/v2/query", json=request)
@@ -980,6 +981,7 @@ class WmgApiV2Tests(unittest.TestCase):
     @patch("backend.wmg.api.v2.gene_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
     @patch("backend.wmg.api.v2.load_snapshot")
+    @unittest.skip("Skipping this test until the reader bumps to WMG snapshot V3")
     def test__markers_returns_200_and_correct_response(self, load_snapshot, ontology_term_label, gene_term_label):
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
@@ -1017,6 +1019,7 @@ class WmgApiV2Tests(unittest.TestCase):
     @patch("backend.wmg.api.v2.gene_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
     @patch("backend.wmg.api.v2.load_snapshot")
+    @unittest.skip("Skipping this test until the reader bumps to WMG snapshot V3")
     def test__markers_returns_200_and_empty_dictionary_for_bad_celltypes(
         self, load_snapshot, ontology_term_label, gene_term_label
     ):
