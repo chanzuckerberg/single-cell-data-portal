@@ -94,7 +94,10 @@ function CensusDirectory() {
     flex-direction: row;
     gap: 8px;
   `;
-  const ProjectDetails = styled.div``;
+  const ProjectDetails = styled.div`
+    display: flex;
+    flex-direction: column;
+  `;
   const DetailsContainer = styled.div`
     display: flex;
     flex-direction: row;
