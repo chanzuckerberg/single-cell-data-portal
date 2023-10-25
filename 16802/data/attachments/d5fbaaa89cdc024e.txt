@@ -1,8 +1,0 @@
-INFO     backend.layers.business.business:business.py:390 {'message': 'ingesting dataset', 'collection_version_id': b8f5e81b-edde-40c3-88b4-05a17f8ab54a, 'url': 'nothing', 'existing_dataset_version_id': None}
-INFO     processing:process_logic.py:108 Converting local.h5ad
-INFO     processing:process_logic.py:45 Updating processing status
-INFO     processing:process_logic.py:45 Updating processing status
-INFO     processing:process_logic.py:114 Finished converting <MagicMock name='make_cxg' id='140388722166560'> in 0:00:00.000868
-INFO     processing:process_logic.py:45 Updating processing status
-INFO     processing:process_cxg.py:107 Updating database with cxg artifact for dataset 8a7d8fa5-eb57-450f-b1fc-5167111cdcc1. s3_uri is s3://fake_cxg_bucket/8a7d8fa5-eb57-450f-b1fc-5167111cdcc1.cxg/
-INFO     processing:process_logic.py:45 Updating processing status
