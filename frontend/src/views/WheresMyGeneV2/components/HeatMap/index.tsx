@@ -22,19 +22,19 @@ import {
   DispatchContext,
   State,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
+} from "src/views/WheresMyGeneV2/common/store";
 import {
   addCellInfoCellType,
   setFilteredCellTypes,
   toggleExpandedTissueId,
-} from "src/views/WheresMyGene/common/store/actions";
+} from "src/views/WheresMyGeneV2/common/store/actions";
 import {
   CellType,
   ChartProps,
   GeneExpressionSummary,
   SORT_BY,
   Tissue,
-} from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/types";
 import YAxisChart from "./components/YAxisChart";
 
 import {
@@ -55,7 +55,7 @@ import { CellCountLabel } from "src/views/WheresMyGene/components/HeatMap/compon
 import {
   HEATMAP_CONTAINER_ID,
   MARGIN_BETWEEN_HEATMAPS,
-} from "src/views/WheresMyGene/common/constants";
+} from "src/views/WheresMyGeneV2/common/constants";
 import Loader from "src/views/WheresMyGene/components/Loader";
 import XAxisChart from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart";
 import Chart from "src/views/WheresMyGeneV2/components/HeatMap/components/Chart";

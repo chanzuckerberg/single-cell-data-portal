@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo, useState } from "react";
-import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
+import { CellType, Tissue } from "src/views/WheresMyGeneV2/common/types";
 import {
   CellTypeMetadata,
   deserializeCellTypeMetadata,

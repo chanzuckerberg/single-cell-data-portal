@@ -1,5 +1,5 @@
 import { EVENTS } from "src/common/analytics/events";
-import { Filters as IFilters } from "src/views/WheresMyGene/common/types";
+import { Filters as IFilters } from "src/views/WheresMyGeneV2/common/types";
 
 export const ANALYTICS_MAPPING: {
   [key in keyof IFilters]: { eventName: EVENTS; label: string };

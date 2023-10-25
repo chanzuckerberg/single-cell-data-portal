@@ -5,13 +5,13 @@ import {
 import { useCallback, useContext, useMemo } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { COMPARE_OPTIONS } from "src/views/WheresMyGene/common/constants";
+import { COMPARE_OPTIONS } from "src/views/WheresMyGeneV2/common/constants";
 import {
   DispatchContext,
   State,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
-import { selectCompare } from "src/views/WheresMyGene/common/store/actions";
+} from "src/views/WheresMyGeneV2/common/store";
+import { selectCompare } from "src/views/WheresMyGeneV2/common/store/actions";
 import { Props } from "./types";
 
 const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {

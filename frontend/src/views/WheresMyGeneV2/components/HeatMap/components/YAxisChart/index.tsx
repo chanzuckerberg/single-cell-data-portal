@@ -17,7 +17,7 @@ import {
   COMPARE_OPTION_ID_FOR_AGGREGATED,
   CellTypeRow,
 } from "src/common/queries/wheresMyGene";
-import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
+import { CellType, Tissue } from "src/views/WheresMyGeneV2/common/types";
 import {
   CellTypeMetadata,
   Y_AXIS_CHART_WIDTH_PX,
@@ -49,7 +49,7 @@ import {
   CELL_TYPE_NAME_LABEL_CLASS_NAME,
 } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 import { formatCitation } from "src/common/utils/formatCitation";
-import { StateContext } from "src/views/WheresMyGene/common/store";
+import { StateContext } from "src/views/WheresMyGeneV2/common/store";
 
 interface Props {
   cellTypes: CellTypeRow[];

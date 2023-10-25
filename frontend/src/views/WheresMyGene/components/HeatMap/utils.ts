@@ -9,7 +9,7 @@ import {
   CellTypeSummary,
   GeneExpressionSummary,
   Tissue,
-} from "../../common/types";
+} from "../../../WheresMyGeneV2/common/types";
 import { TISSUE_CELL_TYPE_DIVIDER } from "./hooks/useSortedGeneNames";
 
 /**

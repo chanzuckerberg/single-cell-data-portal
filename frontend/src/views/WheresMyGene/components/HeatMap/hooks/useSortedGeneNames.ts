@@ -7,7 +7,7 @@ import {
   GeneExpressionSummary,
   SORT_BY,
   Tissue,
-} from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/types";
 
 export const TISSUE_CELL_TYPE_DIVIDER = "~";
 

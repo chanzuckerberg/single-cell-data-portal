@@ -18,16 +18,20 @@ import {
 import {
   HEATMAP_CONTAINER_ID,
   X_AXIS_CHART_HEIGHT_PX,
-} from "../../common/constants";
-import { DispatchContext, State, StateContext } from "../../common/store";
-import { addCellInfoCellType } from "../../common/store/actions";
+} from "../../../WheresMyGeneV2/common/constants";
+import {
+  DispatchContext,
+  State,
+  StateContext,
+} from "../../../WheresMyGeneV2/common/store";
+import { addCellInfoCellType } from "../../../WheresMyGeneV2/common/store/actions";
 import {
   CellType,
   ChartProps,
   GeneExpressionSummary,
   SORT_BY,
   Tissue,
-} from "../../common/types";
+} from "../../../WheresMyGeneV2/common/types";
 import Loader from "../Loader";
 import Chart from "../../../WheresMyGeneV2/components/HeatMap/components/Chart";
 import XAxisChart from "./components/XAxisChart";

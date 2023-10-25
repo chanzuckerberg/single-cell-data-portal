@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { gray300 } from "src/common/theme";
-import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGene/common/constants";
+import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/constants";
 import {
   CELL_TYPE_FILTER_WIDTH_PX,
   DIVIDER_MARGIN_PX,

@@ -4,7 +4,7 @@ import {
   INITIAL_STATE,
   reducer,
   StateContext,
-} from "./common/store";
+} from "../WheresMyGeneV2/common/store";
 import Main from "./components/Main";
 
 export default function WheresMyGene(): JSX.Element {

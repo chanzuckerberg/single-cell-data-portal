@@ -6,7 +6,7 @@ import {
   aggregateCollectionsFromDatasets,
   useFilterDimensions,
 } from "src/common/queries/wheresMyGene";
-import { StateContext } from "src/views/WheresMyGene/common/store";
+import { StateContext } from "src/views/WheresMyGeneV2/common/store";
 import { Content, InfoText, ListSubheader, Wrapper } from "./style";
 import { ROUTES } from "src/common/constants/routes";
 

@@ -19,13 +19,19 @@ import {
 } from "src/common/queries/wheresMyGene";
 import SideBar from "src/components/common/SideBar";
 import { View } from "../../../globalStyle";
-import { DispatchContext, StateContext } from "../../common/store";
+import {
+  DispatchContext,
+  StateContext,
+} from "../../../WheresMyGeneV2/common/store";
 import {
   addGeneInfoGene,
   clearGeneInfoGene,
   closeRightSidebar,
-} from "../../common/store/actions";
-import { ChartProps, GeneExpressionSummary } from "../../common/types";
+} from "../../../WheresMyGeneV2/common/store/actions";
+import {
+  ChartProps,
+  GeneExpressionSummary,
+} from "../../../WheresMyGeneV2/common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import CellInfoBar from "../../../WheresMyGeneV2/components/CellInfoSideBar";
 import GeneInfoBar from "../../../../components/GeneInfoSideBar";

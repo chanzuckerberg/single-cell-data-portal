@@ -10,8 +10,8 @@ import {
   Y_AXIS_CHART_WIDTH_PX,
 } from "src/views/WheresMyGene/components/HeatMap/utils";
 import { CHART_PADDING_PX } from "src/views/WheresMyGene/components/HeatMap/style";
-import { Tissue } from "src/views/WheresMyGene/common/types";
-import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGene/common/constants";
+import { Tissue } from "src/views/WheresMyGeneV2/common/types";
+import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/constants";
 import {
   CELL_COUNT_LABEL_CLASS_NAME,
   CELL_TYPE_ROW_CLASS_NAME,

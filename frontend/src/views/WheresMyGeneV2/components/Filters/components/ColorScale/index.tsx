@@ -8,7 +8,7 @@ import {
   TooltipButton,
   StyledTooltip,
 } from "src/views/WheresMyGeneV2/components/CellInfoSideBar/style";
-import { COLOR_SCALE_TOOLTIP_TEXT } from "src/views/WheresMyGene/common/constants";
+import { COLOR_SCALE_TOOLTIP_TEXT } from "src/views/WheresMyGeneV2/common/constants";
 import { COLOR_SCALE_OPTIONS } from "./constants";
 import { DEFAULT_INPUT_DROPDOWN_PROPS, Props } from "./types";
 import { useConnect } from "./connect";

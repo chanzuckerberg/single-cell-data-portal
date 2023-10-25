@@ -1,4 +1,4 @@
-import { ViewId } from "src/views/WheresMyGene/common/types";
+import { ViewId } from "src/views/WheresMyGeneV2/common/types";
 
 export interface ChartFormat {
   cellTypeIndex: number;

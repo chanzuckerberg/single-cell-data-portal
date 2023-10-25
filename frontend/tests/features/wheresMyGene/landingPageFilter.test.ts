@@ -14,7 +14,7 @@ import {
   GROUP_BY_TOOLTIP_TEXT,
   SORT_CELL_TYPES_TOOLTIP_TEXT,
   SORT_GENES_TOOLTIP_TEXT,
-} from "src/views/WheresMyGene/common/constants";
+} from "src/views/WheresMyGeneV2/common/constants";
 
 const SIDE_BAR_TOGGLE_BUTTON_ID = "side-bar-toggle-button";
 const CELL_TYPE_FILTER = "naive B cell";

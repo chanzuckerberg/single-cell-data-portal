@@ -16,8 +16,8 @@ import {
   HEATMAP_CONTAINER_ID,
   X_AXIS_CHART_HEIGHT_PX,
   X_AXIS_CHART_HEIGHT_PX_SVG,
-} from "src/views/WheresMyGene/common/constants";
-import { CellType, ChartProps } from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/constants";
+import { CellType, ChartProps } from "src/views/WheresMyGeneV2/common/types";
 
 import { Label } from "../../style";
 import {
@@ -46,7 +46,7 @@ import {
   OntologyTerm,
   useAvailableOrganisms,
 } from "src/common/queries/wheresMyGene";
-import { State, StateContext } from "src/views/WheresMyGene/common/store";
+import { State, StateContext } from "src/views/WheresMyGeneV2/common/store";
 import {
   buildCellTypeIdToMetadataMapping,
   csvGeneExpressionRow,
