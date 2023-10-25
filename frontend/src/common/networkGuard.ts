@@ -5,7 +5,7 @@ export const TOO_MANY_REQUESTS_ERROR_MESSAGE_PREFIX =
 
 let requestCount = 0;
 const TIMEOUT_MS = 5 * 1000; // 5 seconds in milliseconds
-const maxRequests = 20;
+const maxRequests = 50;
 let timeoutExpiration = 0;
 let hasReachedMaxRequests = false;
 
