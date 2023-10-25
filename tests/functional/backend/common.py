@@ -41,8 +41,8 @@ class BaseFunctionalTestCase(unittest.TestCase):
         cls.is_using_schema_4 = CorporaConfig().schema_4_feature_flag.lower() == "true"
         cls.test_dataset_uri = (
             (
-                "https://www.dropbox.com/scl/fi/zp593kl62obm11mvimtrz/"
-                "4_0_0_example.h5ad?rlkey=xxvoc9ihp7ie48n5vfwgigsn7&dl=0"
+                "https://www.dropbox.com/scl/fi/d99hpw3p2cxtmi7v4kyv5/"
+                "4_0_0_test_dataset.h5ad?rlkey=i5ownt8g1mropbu41r7fa0i06&dl=0"
             )
             if cls.is_using_schema_4
             else (

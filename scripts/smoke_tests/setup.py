@@ -65,8 +65,8 @@ if __name__ == "__main__":
         sys.exit(0)
     if smoke_test_init.is_using_schema_4:
         dataset_dropbox_url = (
-            "https://www.dropbox.com/scl/fi/zp593kl62obm11mvimtrz/"
-            "4_0_0_example.h5ad?rlkey=xxvoc9ihp7ie48n5vfwgigsn7&dl=0"
+            "https://www.dropbox.com/scl/fi/d99hpw3p2cxtmi7v4kyv5/"
+            "4_0_0_test_dataset.h5ad?rlkey=i5ownt8g1mropbu41r7fa0i06&dl=0"
         )
     else:
         dataset_dropbox_url = "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0"
