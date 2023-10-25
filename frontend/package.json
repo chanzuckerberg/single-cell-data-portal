@@ -152,7 +152,8 @@
     "lint": "concurrently \"node_modules/.bin/next lint\" \"node_modules/.bin/stylelint '**/*.{js,ts,tsx,css}'\"  \"npm run type-check\"",
     "prettier-check": "npx prettier --check .",
     "build-and-start-prod": "npm run build && npm run serve",
-    "postbuild": "next-sitemap"
+    "postbuild": "next-sitemap",
+    "e2e-trace": "npx playwright show-trace"
   },
   "repository": {
     "type": "git",
