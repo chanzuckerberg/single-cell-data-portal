@@ -20,7 +20,6 @@ EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
 EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME = "expression_summary_default"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
 MARKER_GENES_CUBE_NAME = "marker_genes"
-DATASET_TO_GENE_IDS_FILENAME = "dataset_to_gene_ids.json"
 FILTER_RELATIONSHIPS_FILENAME = "filter_relationships.json"
 DATASET_METADATA_FILENAME = "dataset_metadata.json"
 
@@ -46,6 +45,7 @@ class WmgSnapshot:
     # TileDB array containing expression summary statistics (expressed gene count, non-expressed mean,
     # etc.) aggregated by multiple cell metadata dimensions and genes. See the full schema at
     # backend/wmg/data/schemas/cube_schema.py.
+
     expression_summary_cube: Optional[Array] = field(default=None)
 
     # TileDB array containing expression summary statistics optimized for querying with no
@@ -62,8 +62,7 @@ class WmgSnapshot:
     # backend/wmg/data/schemas/cube_schema.py.
     cell_counts_cube: Optional[Array] = field(default=None)
 
-    # Pandas DataFrame containing per-tissue ordering of cell types.
-    # Columns are "tissue_ontology_term_id", "cell_type_ontology_term_id", "order"
+    # Dictionary of (cell type, tissue) tuples as keys and order as values.
     cell_type_orderings: Optional[dict] = field(default=None)
 
     # precomputed list of ids for all gene and tissue ontology term ids per organism
@@ -73,6 +72,7 @@ class WmgSnapshot:
     filter_relationships: Optional[Dict] = field(default=None)
 
     # dataset metadata dictionary
+
     dataset_metadata: Optional[Dict] = field(default=None)
 
 
@@ -110,9 +110,7 @@ def load_snapshot(
             snapshot_id=snapshot_id,
             read_versioned_snapshot=read_versioned_snapshot,
         )
-    # TODO: Once the pipeline generates the V2 snapshot, this can be removed
-    if cached_snapshot.dataset_metadata is None:
-        cached_snapshot.build_dataset_metadata_dict()
+
     return cached_snapshot
 
 

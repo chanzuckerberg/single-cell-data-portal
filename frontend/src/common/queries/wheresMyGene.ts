@@ -1319,8 +1319,8 @@ export interface MarkerGenesByCellType {
 
 export interface MarkerGene {
   gene_ontology_term_id: string;
-  effect_size: number;
-  p_value: number;
+  marker_score: number;
+  specificity: number;
 }
 
 export interface MarkerGeneResponse<T = MarkerGene[]> {
@@ -1349,7 +1349,7 @@ export function useMarkerGenes({
 
   function filterMarkerGenes(markerGenes: MarkerGene[]): MarkerGene[] {
     return markerGenes.filter(
-      (markerGene) => markerGene.effect_size >= FMG_GENE_STRENGTH_THRESHOLD
+      (markerGene) => markerGene.marker_score >= FMG_GENE_STRENGTH_THRESHOLD
     );
   }
 

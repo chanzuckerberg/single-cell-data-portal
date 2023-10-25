@@ -41,13 +41,16 @@ const client = new SecretsManagerClient({
   endpoint,
 });
 
-const deployment_stage = process.env.DEPLOYMENT_STAGE || "test";
+const deployment_stage = process.env.DEPLOYMENT_STAGE || "rdev";
 
 const secretValueRequest = {
   SecretId: `corpora/backend/${deployment_stage}/auth0-secret`,
 };
 
 const command = new GetSecretValueCommand(secretValueRequest);
+
+export const shouldUseRdevToken =
+  process.env.RDEV_TOKEN === "true" || TEST_ENV === "rdev";
 
 export const TIMEOUT_MS = 3 * 1000;
 
@@ -198,7 +201,7 @@ export async function getInnerText(
 }
 
 export async function getAccessToken(request: APIRequestContext) {
-  if (TEST_ENV !== "rdev") return;
+  if (!shouldUseRdevToken) return;
 
   const secret = JSON.parse(
     (await client.send(command)).SecretString || "null"
