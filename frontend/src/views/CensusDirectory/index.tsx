@@ -7,7 +7,9 @@ import {
   fontHeaderXxl,
 } from "@czi-sds/components";
 import styled from "@emotion/styled";
+import Link from "next/link";
 import React from "react";
+import { useProjects } from "src/common/queries/censusDirectory";
 import {
   fontWeightBold,
   fontWeightRegular,
@@ -20,7 +22,7 @@ import {
   textSecondary,
 } from "src/common/theme";
 
-function DetailItem(props: { label: string; children: string }) {
+function DetailItem(props: { label: string; children: string; link?: string }) {
   const ItemContainer = styled.div`
     display: flex;
     flex-direction: column;
@@ -39,7 +41,13 @@ function DetailItem(props: { label: string; children: string }) {
   return (
     <ItemContainer>
       <ItemLabel>{props.label}</ItemLabel>
-      {props.children}
+      {props.link ? (
+        <Link href={props.link} passHref>
+          {props.children}
+        </Link>
+      ) : (
+        props.children
+      )}
     </ItemContainer>
   );
 }
@@ -128,6 +136,10 @@ function CensusDirectory() {
     min-width: 80px;
   `;
 
+  const { data: projects } = useProjects();
+
+  const tier1Projects = projects?.filter((project) => project.tier === 1);
+
   return (
     <Content>
       <Header>Census Directory</Header>
@@ -146,38 +158,31 @@ function CensusDirectory() {
           Ut nisi non lorem adipiscing. Orci tellus quisque quam ac purus vitae.
           Aliquet quis egestas viverra nulla quis lectus adipiscing.
         </TierDescription>
-        <ProjectContainer>
-          <ProjectDetails>
-            <ProjectTitle>BioAI</ProjectTitle>
-            <ProjectSubmitter>
-              Turing Institute for Biomedical Machine Learning
-            </ProjectSubmitter>
-            <ProjectDesctiption>
-              Ligula imperdiet eget et enim id morbi. Pretium diam risus
-              placerat felis vulputate adipiscing sed integer. Mauris commodo
-              risus scelerisque tempus mi venenatis egestas. Sed at scelerisque
-              vulputate egestas vulputate condimentum libero tempus convallis.
-              Nulla id eget fringilla ultrices pellentesque nunc faucibus
-              condimentum. Ornare porta eget porttitor cum arcu id ultricies id.
-              Massa interdum orci risus arcu mattis massa. Amet metus nibh enim
-              nam pellentesque sagittis diam id quam.
-            </ProjectDesctiption>
-            <DetailsContainer>
-              <DetailItem label="contact">Haotian Cui</DetailItem>
-              <DetailItem label="publication">
-                Cul et al. (2023) bioRxiv
-              </DetailItem>
-            </DetailsContainer>
-          </ProjectDetails>
-          <ProjectButtons>
-            <StyledButton sdsType="secondary" sdsStyle="square">
-              Embedding
-            </StyledButton>
-            <StyledButton sdsType="primary" sdsStyle="square">
-              Model
-            </StyledButton>
-          </ProjectButtons>
-        </ProjectContainer>
+        {tier1Projects?.map((project) => (
+          <ProjectContainer key={project.title}>
+            <ProjectDetails>
+              <ProjectTitle>{project.title}</ProjectTitle>
+              <ProjectSubmitter>{project.submitter}</ProjectSubmitter>
+              <ProjectDesctiption>{project.description}</ProjectDesctiption>
+              <DetailsContainer>
+                <DetailItem label="contact" link={project.contact_email}>
+                  {project.contact_name}
+                </DetailItem>
+                <DetailItem label="publication" link={project.publication_link}>
+                  {project.publication_info}
+                </DetailItem>
+              </DetailsContainer>
+            </ProjectDetails>
+            <ProjectButtons>
+              <StyledButton sdsType="secondary" sdsStyle="square">
+                Embedding
+              </StyledButton>
+              <StyledButton sdsType="primary" sdsStyle="square">
+                Model
+              </StyledButton>
+            </ProjectButtons>
+          </ProjectContainer>
+        ))}
       </TierContainer>
       <TierContainer>
         <TierTitle>Tier 2</TierTitle>

@@ -39,6 +39,12 @@ const defaultSecureHeaders = {
         PLAUSIBLE_URL,
         configs.API_URL,
         configs.CELLGUIDE_DATA_URL,
+        // TMP LOCAL BE SERVER
+        // TMP LOCAL BE SERVER
+        // TMP LOCAL BE SERVER
+        // TMP LOCAL BE SERVER
+        // TMP LOCAL BE SERVER
+        "http://localhost:5005/census-directory",
       ],
       defaultSrc: ["'self'", HUBSPOT_FORMS_URL],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
