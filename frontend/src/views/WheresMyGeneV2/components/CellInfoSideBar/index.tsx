@@ -243,7 +243,7 @@ function CellInfoSideBar({
                 </InfoButtonWrapper>
               </DivTableCell>
               <DivTableCell data-testid="marker-scores-fmg" align>
-                {metadata.effect_size.toPrecision(4)}
+                {metadata.marker_score.toPrecision(4)}
               </DivTableCell>
             </DivTableRow>
           ))}
