@@ -35,12 +35,12 @@ import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 
 import InfoPanel from "src/views/WheresMyGeneV2/components/InfoPanel";
 import Legend from "src/views/WheresMyGeneV2/components/InfoPanel/components/Legend";
-import Loader from "src/views/WheresMyGene/components/Loader";
+import Loader from "src/views/WheresMyGeneV2/components/Loader";
 import {
   StyledBannerContainer,
   StyledSidebarDrawer,
 } from "src/views/WheresMyGene/components/Main/style";
-import ScreenTint from "src/views/WheresMyGene/components/ScreenTint";
+import ScreenTint from "src/views/WheresMyGeneV2/components/ScreenTint";
 import {
   SideBarPositioner,
   SideBarWrapper,

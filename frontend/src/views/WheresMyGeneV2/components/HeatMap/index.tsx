@@ -56,7 +56,7 @@ import {
   HEATMAP_CONTAINER_ID,
   MARGIN_BETWEEN_HEATMAPS,
 } from "src/views/WheresMyGeneV2/common/constants";
-import Loader from "src/views/WheresMyGene/components/Loader";
+import Loader from "src/views/WheresMyGeneV2/components/Loader";
 import XAxisChart from "src/views/WheresMyGeneV2/components/HeatMap/components/XAxisChart";
 import Chart from "src/views/WheresMyGeneV2/components/HeatMap/components/Chart";
 import { hyphenize } from "src/views/WheresMyGeneV2/components/HeatMap/utils";
