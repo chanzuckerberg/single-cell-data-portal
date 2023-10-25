@@ -23,7 +23,7 @@ SUFFIXES_TO_STRIP = ["organoid", "cell culture"]
 def ontology_term_label(ontology_term_id: str) -> Optional[str]:
     """
     Returns the label for an ontology term, given its id. This excludes gene ontology term
-    and self reported ethnicity term, which are handled separately by gene_gene_term_label()
+    and self reported ethnicity term, which are handled separately by gene_term_label()
     and ethnicity_term_label() respectively. Return None if ontology term id is invalid.
     """
 
@@ -53,7 +53,7 @@ def ethnicity_term_label(self_reported_ethnicity_ontology_term_id: str) -> str:
 
     NOTE: It is assumed that self_reported_ethnicity_ontology_term_id has been validated against
     a schema (ex: schema-3 or schema-4) before this function is called. Therefore,
-    no error error checking on the format of the input is done.
+    no error checking on the format of the input is done.
 
     Parameters
     ----------
