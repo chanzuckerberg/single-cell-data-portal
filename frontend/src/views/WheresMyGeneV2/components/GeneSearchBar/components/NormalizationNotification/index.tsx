@@ -31,7 +31,13 @@ export default function NormalizationNotification(): JSX.Element {
         onClose={noop}
         slideDirection={"left"}
         intent={"info"}
-        icon={<StyledIcon sdsIcon={"link"} sdsSize={"s"} sdsType={"static"} />}
+        icon={
+          <StyledIcon
+            sdsIcon={"exclamationMarkCircle"}
+            sdsSize={"s"}
+            sdsType={"static"}
+          />
+        }
       >
         <StyledNotificationLabel data-testid="share-link-notification">
           {NORMALIZATION_NOTIFICATION_TITLE}
