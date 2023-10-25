@@ -1,9 +1,11 @@
+import { Dialog as RawDialog, DialogContent } from "@czi-sds/components";
 import {
-  Dialog as RawDialog,
-  DialogContent,
-  DialogActions,
-} from "@czi-sds/components";
-import { ActionButton, CancelButton, StyledDialogTitle } from "./style";
+  ActionButton,
+  StyledDialogAction,
+  StyledDialogPaper,
+  StyledDialogTitle,
+} from "./style";
+import { Button } from "src/components/common/Button";
 
 interface Props {
   handleCancel: () => void;
@@ -13,21 +15,26 @@ interface Props {
 
 export default function Dialog({ handleCancel, handleConfirm, isOpen }: Props) {
   return (
-    <RawDialog sdsSize="xs" canClickOutsideClose={false} open={isOpen}>
+    <RawDialog
+      PaperComponent={StyledDialogPaper}
+      sdsSize="xs"
+      canClickOutsideClose={false}
+      open={isOpen}
+    >
       <StyledDialogTitle title="Change organism?" data-testid="dialog-title" />
       <DialogContent data-testid="dialog-content">
         This will reset the dot plot and remove all selected genes and filters.
       </DialogContent>
-      <DialogActions data-testid="dialog-actions" buttonPosition="right">
+      <StyledDialogAction data-testid="dialog-actions" buttonPosition="right">
         <>
-          <CancelButton
+          <Button
             isAllCaps={false}
             sdsStyle="minimal"
             sdsType="secondary"
             onClick={handleCancel}
           >
             Cancel
-          </CancelButton>
+          </Button>
           <ActionButton
             color="error"
             sdsStyle="square"
@@ -37,7 +44,7 @@ export default function Dialog({ handleCancel, handleConfirm, isOpen }: Props) {
             Confirm
           </ActionButton>
         </>
-      </DialogActions>
+      </StyledDialogAction>
     </RawDialog>
   );
 }

@@ -1,30 +1,34 @@
 import {
-  Button,
+  DialogActions,
+  DialogPaper,
   DialogTitle,
-  fontBodyS,
   fontHeaderL,
 } from "@czi-sds/components";
 import styled from "@emotion/styled";
-import { error500, spacesDefault, textSecondary } from "src/common/theme";
-
-const FONT_WEIGHT_500 = 500;
+import { error500, spacesDefault, spacesXl, spacesXxs } from "src/common/theme";
+import { Button } from "src/components/common/Button";
 
 export const ActionButton = styled(Button)`
-  ${fontBodyS}
-  font-weight: ${FONT_WEIGHT_500};
-
   &:hover {
     background-color: ${error500};
   }
 `;
 
-export const CancelButton = styled(Button)`
-  ${fontBodyS}
-  color: ${textSecondary};
-  font-weight: ${FONT_WEIGHT_500};
-`;
-
 export const StyledDialogTitle = styled(DialogTitle)`
   ${fontHeaderL}
   margin-bottom: ${spacesDefault}px;
+`;
+
+export const StyledDialogPaper = styled(DialogPaper)`
+  padding: ${spacesXl}px !important;
+`;
+
+/**
+ * (thuang): We want the word to word space between buttons to be
+ * 16px, so reducing margin-left to spacesXxs gives us that
+ */
+export const StyledDialogAction = styled(DialogActions)`
+  &.MuiDialogActions-spacing > :not(:first-of-type) {
+    margin-left: ${spacesXxs}px;
+  }
 `;
