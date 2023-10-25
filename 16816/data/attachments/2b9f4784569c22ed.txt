@@ -1,0 +1,27 @@
+INFO     backend.layers.business.business:business.py:390 {'message': 'ingesting dataset', 'collection_version_id': b08e429d-b7b8-411b-81f7-9d28366cb2d1, 'url': 'https://www.dropbox.com/s/fake_location/test.h5ad?dl=0', 'existing_dataset_version_id': None}
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:26 Start download_from_source_uri
+INFO     processing:process_download_validate.py:237 Start download
+INFO     processing:downloader.py:115 Setting up download.
+INFO     processing:downloader.py:116 file_size: 1
+INFO     processing:process_download_validate.py:246 None
+INFO     processing:process_download_validate.py:259 Download complete
+INFO     processing:logger.py:28 Complete download_from_source_uri
+INFO     processing:logger.py:26 Start validate_h5ad_file_and_add_labels
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete validate_h5ad_file_and_add_labels
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:86 Uploaded [fcc23d78-efa8-4ef3-ad5f-18336aa0fef7/raw.h5ad] to s3://fake_bucket_name/fcc23d78-efa8-4ef3-ad5f-18336aa0fef7/raw.h5ad
+INFO     processing:process_logic.py:88 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:86 Uploaded [fcc23d78-efa8-4ef3-ad5f-18336aa0fef7/local.h5ad] to s3://fake_bucket_name/fcc23d78-efa8-4ef3-ad5f-18336aa0fef7/local.h5ad
+INFO     processing:process_logic.py:88 Updated database with h5ad.
+INFO     processing:process_logic.py:95 Uploaded fcc23d78-efa8-4ef3-ad5f-18336aa0fef7.h5ad to s3://fake_datasets_bucket/fcc23d78-efa8-4ef3-ad5f-18336aa0fef7/fcc23d78-efa8-4ef3-ad5f-18336aa0fef7.h5ad
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
