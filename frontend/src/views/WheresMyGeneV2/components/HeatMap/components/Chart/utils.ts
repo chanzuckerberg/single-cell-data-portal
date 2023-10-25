@@ -3,7 +3,7 @@ import {
   CellTypeSummary,
   GeneExpressionSummary,
 } from "src/views/WheresMyGene/common/types";
-import { ChartFormat } from "./components/Chart/hooks/utils";
+import { ChartFormat } from "./types";
 import { DefaultLabelFormatterCallbackParams, EChartsOption } from "echarts";
 import { useMemo } from "react";
 

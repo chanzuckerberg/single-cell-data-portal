@@ -1,4 +1,4 @@
-import { convertPercentageToDiameter } from "../../../HeatMap/components/Chart/utils";
+import { convertPercentageToDiameter } from "../../../../../WheresMyGeneV2/components/HeatMap/components/Chart/utils";
 import { Content, Label, LowHigh } from "../../common/style";
 import { Dot, Dots, Wrapper } from "./style";
 

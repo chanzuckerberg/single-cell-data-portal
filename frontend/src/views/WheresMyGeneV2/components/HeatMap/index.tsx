@@ -58,7 +58,7 @@ import {
 } from "src/views/WheresMyGene/common/constants";
 import Loader from "src/views/WheresMyGene/components/Loader";
 import XAxisChart from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart";
-import Chart from "src/views/WheresMyGene/components/HeatMap/components/Chart";
+import Chart from "src/views/WheresMyGeneV2/components/HeatMap/components/Chart";
 import { hyphenize } from "src/views/WheresMyGene/components/HeatMap/utils";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 import { Autocomplete, DefaultAutocompleteOption } from "@czi-sds/components";

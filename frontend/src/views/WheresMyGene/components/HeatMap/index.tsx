@@ -29,7 +29,7 @@ import {
   Tissue,
 } from "../../common/types";
 import Loader from "../Loader";
-import Chart from "./components/Chart";
+import Chart from "../../../WheresMyGeneV2/components/HeatMap/components/Chart";
 import XAxisChart from "./components/XAxisChart";
 import { CellCountLabel } from "./components/XAxisChart/style";
 import YAxisChart from "./components/YAxisChart";
