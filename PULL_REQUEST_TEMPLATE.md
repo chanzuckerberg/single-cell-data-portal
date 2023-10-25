@@ -1,3 +1,11 @@
+## Checklist 🛎️
+
+- [ ] Add product, design, and eng for rdev review
+
+- [ ] For UI changes, add screenshots/videos, so the reviewers know what you expect them to see
+
+- [ ] For UI changes, add e2e tests to prevent regressions
+
 ## Reason for Change
 
 - #TICKET_NUMBER
