@@ -54,6 +54,7 @@ import { CELL_INFO_SIDEBAR_WIDTH_PX } from "src/views/WheresMyGeneV2/components/
 import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
 import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
 import { StyledRightSideBar } from "./style";
+import NormalizationNotification from "../GeneSearchBar/components/NormalizationNotification";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -306,7 +307,7 @@ export default function WheresMyGene(): JSX.Element {
       <Head>
         <title>Gene Expression - CZ CELLxGENE Discover</title>
       </Head>
-
+      <NormalizationNotification />
       <SideBar
         label="Filters"
         SideBarWrapperComponent={SideBarWrapper}

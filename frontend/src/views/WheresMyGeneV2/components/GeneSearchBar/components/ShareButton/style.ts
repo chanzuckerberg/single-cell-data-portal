@@ -1,8 +1,15 @@
 import styled from "@emotion/styled";
-import { ButtonIcon, fontBodyXs, fontBodyXxs, Icon } from "@czi-sds/components";
+import {
+  ButtonIcon,
+  fontBodyXs,
+  fontBodyXxs,
+  Icon,
+  fontHeaderXs,
+  fontBodyS,
+} from "@czi-sds/components";
 import { NotificationWrapper } from "src/components/common/Filter/common/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
-import { gray500 } from "src/common/theme";
+import { gray500, primary400 } from "src/common/theme";
 
 export const StyledButtonDiv = styled.div`
   display: flex;
@@ -27,6 +34,8 @@ export const StyledButtonIcon = styled(ButtonIcon)`
 export const StyledNotificationWrapper = styled(NotificationWrapper)`
   top: ${HEADER_HEIGHT_PX}px;
   right: 24px;
+  line-height: 20px;
+  width: 370px;
 `;
 
 export const StyledIcon = styled(Icon)`
@@ -35,15 +44,27 @@ export const StyledIcon = styled(Icon)`
 `;
 
 export const StyledNotificationLabel = styled.div`
-  ${fontBodyXs}
-
+  ${fontHeaderXs}
+  padding-bottom: 5px;
   margin: 0 !important;
   color: black;
 `;
 
 export const StyledNotificationDetails = styled.div`
   ${fontBodyXs}
-
   margin: 0 !important;
-  color: ${gray500};
+  color: black;
+`;
+
+export const StyledLinkBody = styled.a`
+  font-weight: 500;
+`;
+
+export const StyledLink = styled.a`
+  ${fontBodyS}
+  font-weight: 600;
+`;
+
+export const StyledLinkWrapper = styled.div`
+  margin-top: 8px;
 `;
