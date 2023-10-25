@@ -112,7 +112,6 @@ export default function WheresMyGene(): JSX.Element {
       rawGeneExpressionSummariesByTissueName
     );
   }, [rawGeneExpressionSummariesByTissueName, isLoading]);
-
   // TODO(thuang): Fix this complexity
   // eslint-disable-next-line sonarjs/cognitive-complexity
   const { scaledMeanExpressionMax, scaledMeanExpressionMin } = useMemo(() => {
@@ -321,6 +320,7 @@ export default function WheresMyGene(): JSX.Element {
               setEchartsRendererMode={setEchartsRendererMode}
               allChartProps={allChartProps}
               availableFilters={availableFilters}
+              maxExpression={6.0}
             />
           </Top>
 

@@ -255,6 +255,7 @@ export default memo(function HeatMap({
                 echartsRendererMode={echartsRendererMode}
                 setAllChartProps={setAllChartProps}
                 chartProps={allChartProps[tissue]}
+                maxExpression={6.0}
               />
             );
           })}

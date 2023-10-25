@@ -27,6 +27,7 @@ import {
   TISSUE_NAME_LABEL_CLASS_NAME,
 } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 import { test } from "tests/common/test";
+import { MAX_EXPRESSION_LABEL_TEST_ID } from "src/views/WheresMyGene/components/InfoPanel/components/RelativeGeneExpression/constants";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
@@ -380,7 +381,8 @@ describe("Where's My Gene", () => {
       expect(numGenes).toBeGreaterThan(0);
     });
 
-    test("Cell types with no marker genes display warning", async ({
+    // need to find a tissue, cell type with no marker genes
+    test.skip("Cell types with no marker genes display warning", async ({
       page,
     }) => {
       await goToWMG(page);
@@ -638,6 +640,48 @@ describe("Where's My Gene", () => {
       for (const cellTypeName of CELL_TYPE_NAMES) {
         await removeFilteredCellType(page, cellTypeName);
       }
+    });
+  });
+  describe("Legend dynamic scaling", () => {
+    test("Filter to multiple cell types and then clear", async ({ page }) => {
+      const CELL_TYPE_NAMES = ["plasma cell"];
+
+      await goToWMG(page);
+      await waitForLoadingSpinnerToResolve(page);
+      await page
+        .getByTestId("newsletter-modal-banner-wrapper")
+        .getByLabel("Close")
+        .click();
+      await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
+
+      await page.keyboard.type("JCHAIN");
+      await page.keyboard.press("ArrowDown");
+      await page.keyboard.press("Enter");
+
+      await clickDropdownOptionByName({
+        page,
+        testId: "color-scale-dropdown",
+        name: "Unscaled",
+      });
+
+      const textContentBefore = await page
+        .getByTestId(MAX_EXPRESSION_LABEL_TEST_ID)
+        .textContent();
+      for (const cellTypeName of CELL_TYPE_NAMES) {
+        await searchAndAddFilterCellType(page, cellTypeName);
+      }
+      const textContentAfter = await page
+        .getByTestId(MAX_EXPRESSION_LABEL_TEST_ID)
+        .textContent();
+      for (const cellTypeName of CELL_TYPE_NAMES) {
+        await removeFilteredCellType(page, cellTypeName);
+      }
+      const textContentBefore2 = await page
+        .getByTestId(MAX_EXPRESSION_LABEL_TEST_ID)
+        .textContent();
+
+      expect(textContentBefore).not.toEqual(textContentAfter);
+      expect(textContentBefore).toEqual(textContentBefore2);
     });
   });
 });
