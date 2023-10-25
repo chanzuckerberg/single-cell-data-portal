@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { CSSProperties } from "react";
 import { contentWrapper } from "src/components/Layout/style";
-import { Container } from "./WheresMyGene/components/HeatMap/style";
+import { Container } from "./WheresMyGeneV2/components/HeatMap/style_old";
 import { Wrapper } from "./WheresMyGene/style";
 
 interface ViewProps {

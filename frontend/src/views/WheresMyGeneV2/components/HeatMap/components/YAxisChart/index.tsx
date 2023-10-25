@@ -26,8 +26,8 @@ import {
   getAllSerializedCellTypeMetadata,
   getHeatmapHeight,
   hyphenize,
-} from "src/views/WheresMyGene/components/HeatMap/utils";
-import { SELECTED_STYLE } from "src/views/WheresMyGene/components/HeatMap/style";
+} from "src/views/WheresMyGeneV2/components/HeatMap/utils";
+import { SELECTED_STYLE } from "src/views/WheresMyGeneV2/components/HeatMap/style_old";
 import {
   CellCountLabelStyle,
   CellTypeLabelStyle,
@@ -40,7 +40,7 @@ import {
   TissueHeaderLabelStyle,
   Wrapper,
   TissueLabel,
-} from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/style";
+} from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/style";
 import {
   CELL_COUNT_LABEL_CLASS_NAME,
   CELL_TYPE_ROW_CLASS_NAME,

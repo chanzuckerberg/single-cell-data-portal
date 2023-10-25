@@ -5,7 +5,7 @@ import {
   CELL_TYPE_FILTER_WIDTH_PX,
   DIVIDER_MARGIN_PX,
   Y_AXIS_CHART_WIDTH_PX,
-} from "src/views/WheresMyGene/components/HeatMap/utils";
+} from "src/views/WheresMyGeneV2/components/HeatMap/utils";
 
 enum ZIndex {
   XAxisWrapper = 2,

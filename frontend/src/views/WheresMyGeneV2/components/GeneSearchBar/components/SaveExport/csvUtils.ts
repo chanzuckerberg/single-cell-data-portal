@@ -11,7 +11,7 @@ import { State } from "src/views/WheresMyGeneV2/common/store";
 import { Props } from ".";
 import { generateAndCopyShareUrl } from "../ShareButton/utils";
 
-import { deserializeCellTypeMetadata } from "src/views/WheresMyGene/components/HeatMap/utils";
+import { deserializeCellTypeMetadata } from "src/views/WheresMyGeneV2/components/HeatMap/utils";
 import { ChartProps } from "src/views/WheresMyGeneV2/common/types";
 import { ChartFormat } from "src/views/WheresMyGeneV2/components/HeatMap/components/Chart/types";
 

@@ -40,7 +40,7 @@ import {
   getHeatmapHeight,
   getHeatmapWidth,
   hyphenize,
-} from "../../../../../WheresMyGene/components/HeatMap/utils";
+} from "../../utils";
 import { StyledHeatmapChart, StyledTooltipTable, tooltipCss } from "./style";
 
 import {

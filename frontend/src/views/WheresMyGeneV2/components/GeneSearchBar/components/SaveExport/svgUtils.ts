@@ -8,8 +8,8 @@ import {
   HEAT_MAP_BASE_CELL_PX,
   hyphenize,
   Y_AXIS_CHART_WIDTH_PX,
-} from "src/views/WheresMyGene/components/HeatMap/utils";
-import { CHART_PADDING_PX } from "src/views/WheresMyGene/components/HeatMap/style";
+} from "src/views/WheresMyGeneV2/components/HeatMap/utils";
+import { CHART_PADDING_PX } from "src/views/WheresMyGeneV2/components/HeatMap/style_old";
 import { Tissue } from "src/views/WheresMyGeneV2/common/types";
 import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/constants";
 import {

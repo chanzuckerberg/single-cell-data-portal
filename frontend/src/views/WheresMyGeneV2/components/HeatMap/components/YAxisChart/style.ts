@@ -1,8 +1,8 @@
 import Image from "next/image";
 import styled from "@emotion/styled";
 import { HEAT_MAP_BASE_CELL_PX, Y_AXIS_CHART_WIDTH_PX } from "../../utils";
-import { ECHART_AXIS_LABEL_COLOR_HEX } from "../../../../../WheresMyGeneV2/components/HeatMap/components/XAxisChart/style";
-import { SELECTED_STYLE } from "../../style";
+import { ECHART_AXIS_LABEL_COLOR_HEX } from "../XAxisChart/style";
+import { SELECTED_STYLE } from "../../style_old";
 import { MARGIN_BETWEEN_HEATMAPS } from "src/views/WheresMyGeneV2/common/constants";
 import { fontWeightSemibold, gray500 } from "src/common/theme";
 import { CommonThemeProps } from "@czi-sds/components";
