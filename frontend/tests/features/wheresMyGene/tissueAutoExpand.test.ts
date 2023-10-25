@@ -33,7 +33,7 @@ const DATASET_FILTER_SELECTION =
   "Combined samples HTAN MSK - Single cell profiling reveals novel tumor and myeloid subpopulations in small cell lung cancer";
 const DATASET_FILTER_SELECTED = "Combined samples";
 const DATASET_FILTER_FILTERED_TISSUES = ["axilla", "brain"];
-const EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER = ["adipose tissue", "blood"];
+const EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER = ["blood", "brain"];
 const EXPECTED_EXPANDED_TISSUES = ["blood"];
 const EXPECTED_VISIBLE_CELL = ["B Cell"];
 const EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER = ["axilla", "brain"];
