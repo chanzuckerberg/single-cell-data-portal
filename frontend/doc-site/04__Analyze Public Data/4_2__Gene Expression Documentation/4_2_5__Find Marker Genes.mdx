@@ -29,9 +29,12 @@ For a selected cell type in a tissue,
 - Use Welch's t-test to compare the gene expressions in the selected cell type to each other cell type in the tissue.
   - Note: each cell type contains cells labeled as that cell type as well as its descendants in the cell ontology. Consequently, cell types are only compared to other cell types that are not in the same lineage (i.e. comparisons with ancestors and descendants are ignored).
   - Record the effect size for each gene in each comparison.
-- For each gene, calculate the 5th percentile of the effect sizes across all comparisons. This is the marker score.
-  - Let $T_t$ be the set of cell types $\{c_1,\ldots,c_n\}$ in tissue $t$. The marker score ($S_{c_ig_j}$) for gene $g_j$ in cell type $c_i$ is $S_{c_ig_j}=p_5(\{e_{c_kg_j} : c_k \in T_t, c_k \neq c_i\})$ where $p_5$ is the 5th percentile operator and $e_{c_kg_j}$ is the effect size of the t-test comparing $g_j$ in $c_i$ to $c_k$.
+- For each gene, calculate the 10th percentile of the effect sizes across all comparisons. This is the marker score.
+  - Let $T_t$ be the set of cell types $\{c_1,\ldots,c_n\}$ in tissue $t$. The marker score ($S_{c_ig_j}$) for gene $g_j$ in cell type $c_i$ is $S_{c_ig_j}=p_10(\{e_{c_kg_j} : c_k \in T_t, c_k \neq c_i\})$ where $p_10$ is the 10th percentile operator and $e_{c_kg_j}$ is the effect size of the t-test comparing $g_j$ in $c_i$ to $c_k$.
+- For a few of comparisons, the 10th percentile can be a noisy metric. To improve its robustness, we bootstrap the distribution of effect sizes, taking the 10th percentile of each replicate, and averaging all replicates to get the final effect size.
 - Sort the genes by their marker score in descending order and return the top 25.
+
+It is important to note that some methodological decisions were made to balance accuracy with efficiency and scalability. For example, we use a t-test to perform differential expression, which is a simple and fast test. However, it may not be as accurate as more sophisticated (and computationally intensive) statistical tests and differential expression values were calculated using normalized and log-transformed values instead of raw counts. Applying secondary filters to the data (like disease, ethnicity, etc.) does not affect the results. Enabling dynamic calculation of marker genes for arbitrary populations of cells in arbitrary subsets of the data may be a direction for future development.
 
 ## Welch's t-test
 
