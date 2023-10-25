@@ -9,7 +9,7 @@ import {
   hyphenize,
   Y_AXIS_CHART_WIDTH_PX,
 } from "src/views/WheresMyGeneV2/components/HeatMap/utils";
-import { CHART_PADDING_PX } from "src/views/WheresMyGeneV2/components/HeatMap/style_old";
+import { CHART_PADDING_PX } from "src/views/WheresMyGeneV2/components/HeatMap/style";
 import { Tissue } from "src/views/WheresMyGeneV2/common/types";
 import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/constants";
 import {

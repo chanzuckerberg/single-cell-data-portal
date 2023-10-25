@@ -27,7 +27,7 @@ import {
   getHeatmapHeight,
   hyphenize,
 } from "src/views/WheresMyGeneV2/components/HeatMap/utils";
-import { SELECTED_STYLE } from "src/views/WheresMyGeneV2/components/HeatMap/style_old";
+import { SELECTED_STYLE } from "src/views/WheresMyGeneV2/components/HeatMap/style";
 import {
   CellCountLabelStyle,
   CellTypeLabelStyle,

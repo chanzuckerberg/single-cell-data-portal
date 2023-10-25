@@ -50,7 +50,7 @@ import {
   StyledTag,
   XAxisMask,
   YAxisWrapper,
-} from "src/views/WheresMyGeneV2/components/HeatMap/style_old";
+} from "src/views/WheresMyGeneV2/components/HeatMap/style";
 import { CellCountLabel } from "src/views/WheresMyGeneV2/components/HeatMap/components/XAxisChart/style";
 import {
   HEATMAP_CONTAINER_ID,

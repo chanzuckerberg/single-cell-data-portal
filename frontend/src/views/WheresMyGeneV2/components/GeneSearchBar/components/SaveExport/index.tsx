@@ -68,7 +68,7 @@ import {
   getHeatmapHeight,
   getHeatmapWidth,
 } from "src/views/WheresMyGeneV2/components/HeatMap/utils";
-import { CHART_PADDING_PX } from "src/views/WheresMyGeneV2/components/HeatMap/style_old";
+import { CHART_PADDING_PX } from "src/views/WheresMyGeneV2/components/HeatMap/style";
 import { StyledButtonIcon } from "../ShareButton/style";
 
 let heatmapContainerScrollTop: number | undefined;

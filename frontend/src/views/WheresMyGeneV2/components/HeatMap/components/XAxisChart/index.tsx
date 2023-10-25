@@ -12,7 +12,7 @@ import {
   setXAxisHeight,
 } from "src/views/WheresMyGeneV2/common/store/actions";
 import { useDeleteGenes } from "../../hooks/useDeleteGenes";
-import { CHART_PADDING_PX, SELECTED_STYLE } from "../../style_old";
+import { CHART_PADDING_PX, SELECTED_STYLE } from "../../style";
 import {
   getHeatmapWidth,
   formatLabel,

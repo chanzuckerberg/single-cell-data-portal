@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
 import { CSSProperties } from "react";
 import { contentWrapper } from "src/components/Layout/style";
-import { Container } from "./WheresMyGeneV2/components/HeatMap/style_old";
-import { Wrapper } from "./WheresMyGeneV2/style_old";
+import { Container } from "./WheresMyGeneV2/components/HeatMap/style";
+import { Wrapper } from "./WheresMyGeneV2/style";
 
 interface ViewProps {
   overflow?: CSSProperties["overflow"];

@@ -39,14 +39,14 @@ import Loader from "src/views/WheresMyGeneV2/components/Loader";
 import {
   StyledBannerContainer,
   StyledSidebarDrawer,
-} from "src/views/WheresMyGeneV2/components/Main/style_old";
+} from "src/views/WheresMyGeneV2/components/Main/style";
 import ScreenTint from "src/views/WheresMyGeneV2/components/ScreenTint";
 import {
   SideBarPositioner,
   SideBarWrapper,
   Top,
   Wrapper,
-} from "src/views/WheresMyGeneV2/style_old";
+} from "src/views/WheresMyGeneV2/style";
 import { View } from "src/views/globalStyle";
 import HeatMap from "../HeatMap";
 import BottomBanner from "src/components/BottomBanner";
