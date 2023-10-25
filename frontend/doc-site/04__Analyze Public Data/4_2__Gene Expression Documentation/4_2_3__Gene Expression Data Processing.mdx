@@ -88,7 +88,6 @@ This normalization is not designed to correct batch effects; while normalization
 
 ## Removal of Noisy Ultra-low Expression Values
 
-TODO - SMB - UPDATE
 After applying normalization, any gene/cell combination counts less or equal than 2 are set to missing data. This allows for removal of noise due to ultra-lowly expressed genes and provides a cleaner visualization.
 
 ## Summarization of Data in Dot Plot
@@ -100,6 +99,7 @@ For each gene/cell type combination the following values are represented in the 
 - Expressing cells (dot size) – percentage of cells of the cell type expressing the gene, in parentheses is shown the absolute number of cells expressing the gene. These numbers are calculated after the following filters have been applied: "Removal of low coverage cells" and "Removal of noisy low expression values".
 
 ## Expression and cell count rollup across descendants in the cell ontology
+
 The cell ontology is a hierarchical tree structure that represents the relationship between cell types. For example, the cell type "B cell" is a descendant of the cell type "lymphocyte". For a particular cell type, the cell ontology is used to sum up the expression values and cell counts of cells labeled as that cell type as well as those labeled as its descendants. In the aforementioned example, the average expression of "lymphocyte" would include "B cells" and all its other descendants.
 
 This rollup operation accounts for the fact that different datasets may have labeled their cells with different levels of granularity. It provides a more robust measure of the average expression of low-granularity cell type terms, such as "secretory cell" or "lymphocyte."
