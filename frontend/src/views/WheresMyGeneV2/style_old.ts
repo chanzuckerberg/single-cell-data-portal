@@ -8,8 +8,8 @@ import { FOOTER_HEIGHT_PX } from "src/components/Footer/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import { SidebarMainWrapper } from "src/components/Layout/style";
 
-import { LegendWrapper } from "../WheresMyGeneV2/components/InfoPanel/components/Legend/style";
-import { Container } from "../WheresMyGeneV2/components/GeneSearchBar/style";
+import { LegendWrapper } from "./components/InfoPanel/components/Legend/style";
+import { Container } from "./components/GeneSearchBar/style";
 
 export const LEGEND_MARGIN_BOTTOM_PX = 20;
 
