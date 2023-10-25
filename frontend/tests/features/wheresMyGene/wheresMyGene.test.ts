@@ -381,7 +381,8 @@ describe("Where's My Gene", () => {
       expect(numGenes).toBeGreaterThan(0);
     });
 
-    test("Cell types with no marker genes display warning", async ({
+    // need to find a tissue, cell type with no marker genes
+    test.skip("Cell types with no marker genes display warning", async ({
       page,
     }) => {
       await goToWMG(page);
@@ -643,7 +644,7 @@ describe("Where's My Gene", () => {
   });
   describe("Legend dynamic scaling", () => {
     test("Filter to multiple cell types and then clear", async ({ page }) => {
-      const CELL_TYPE_NAMES = ["B cell"];
+      const CELL_TYPE_NAMES = ["plasma cell"];
 
       await goToWMG(page);
       await waitForLoadingSpinnerToResolve(page);
@@ -653,7 +654,7 @@ describe("Where's My Gene", () => {
         .click();
       await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
 
-      await page.keyboard.type("MALAT1");
+      await page.keyboard.type("JCHAIN");
       await page.keyboard.press("ArrowDown");
       await page.keyboard.press("Enter");
 
