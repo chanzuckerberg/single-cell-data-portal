@@ -4,7 +4,7 @@ import { test } from "tests/common/test";
 import { collapseTissue, expandTissue, tryUntil } from "tests/utils/helpers";
 import { goToWMG } from "tests/utils/wmgUtils";
 
-const FILTERED_TISSUES = ["abdomen", "axilla", "blood"];
+const FILTERED_TISSUES = ["axilla", "blood", "brain"];
 const TISSUE_NODE_TEST_ID = "tissue-name";
 const TISSUE_FILTER_LABEL = "Tissue";
 const TISSUE_FILTER_TEST_ID = "tissue-filter";
@@ -33,7 +33,7 @@ const DATASET_FILTER_SELECTION =
   "Combined samples HTAN MSK - Single cell profiling reveals novel tumor and myeloid subpopulations in small cell lung cancer";
 const DATASET_FILTER_SELECTED = "Combined samples";
 const DATASET_FILTER_FILTERED_TISSUES = ["axilla", "brain"];
-const EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER = ["abdomen", "blood"];
+const EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER = ["blood", "brain"];
 const EXPECTED_EXPANDED_TISSUES = ["blood"];
 const EXPECTED_VISIBLE_CELL = ["B Cell"];
 const EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER = ["axilla", "brain"];
@@ -165,7 +165,7 @@ describe("WMG tissue auto-expand", () => {
 
   /**
    * Tissue auto expansion - cross filter with Sex filter, check expansion
-   * Filter 3 Tissues ["abdomen", "axilla", "blood"]. Collapse Abdomen. Select
+   * Filter 3 Tissues. Collapse Abdomen. Select
    * Female from the Sex filter. Tissue filter should now only have Abdomen and
    * Blood selected. Only Abdomen and Blood should be visible. Abdomen should
    * remain collapsed. Remove Sex filter. Tissue filter should now only have
@@ -220,7 +220,7 @@ describe("WMG tissue auto-expand", () => {
 
   /**
    * Tissue auto expansion - cross filter with Publication filter, check expansion
-   * Filter 3 Tissues ["abdomen", "axilla", "blood"]. Collapse Blood. Filter
+   * Filter 3 Tissues. Collapse Blood. Filter
    * 'Ahren et al. Neuron 2021' from the Publication filter. Only Blood should remain
    * visible and collapsed. Add Cell filter for B Cell. Only B Cell should be
    * visible under expanded Blood tissue node
@@ -263,7 +263,7 @@ describe("WMG tissue auto-expand", () => {
 
   /**
    * Tissue auto expansion - cross filter with Disease filter
-   * Filter 3 Tissues ["abdomen", "axilla", "brain"]. From the Disease filter select influenza.
+   * Filter 3 Tissues. From the Disease filter select influenza.
    * Blood should appear only and expanded. Add cell type filter for B Cell. Only B Cell should
    * appear under Blood and expanded. Remove influenza. Blood should remain expanded and cell count
    * increase.
@@ -289,7 +289,7 @@ describe("WMG tissue auto-expand", () => {
 
   /**
    * Tissue auto expansion - cross filter with Dataset filter
-   * Filter 3 Tissues ["abdomen", "axilla", "Brain"]. From the Dataset filter select Combined Samples.
+   * Filter 3 Tissues. From the Dataset filter select Combined Samples.
    * Axilla and Brain should appear only and expanded. Add cell type filter for B Cell. Only B Cell
    * should appear under Axilla and Brain and expanded. Remove B Cell. Remove Combined Samples. Brain
    */
