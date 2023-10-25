@@ -7,7 +7,6 @@ import anndata
 import numpy as np
 import tiledb
 
-from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.color_conversion_utils import (
     ColorFormatException,
     convert_anndata_category_colors_to_cxg_category_colors,
@@ -21,7 +20,6 @@ from backend.common.utils.cxg_generation_utils import (
     convert_ndarray_to_cxg_dense_array,
 )
 from backend.common.utils.matrix_utils import is_matrix_sparse
-from backend.common.utils.semvar_utils import validate_version_str
 from backend.common.utils.tiledb import consolidation_buffer_size
 
 
@@ -235,16 +233,6 @@ class H5ADDataFile:
         """
         Extract out the Corpora dataset properties from the H5AD file.
         """
-
-        schema_version = self.get_corpora_schema_version()
-
-        if schema_version is None:
-            return None
-
-        schema_version_is_supported = self.corpora_is_schema_version_supported(schema_version)
-        if not schema_version_is_supported:
-            raise ValueError("Unsupported Corpora schema version")
-
         corpora_props = {}
         for key in CorporaConstants.REQUIRED_SIMPLE_METADATA_FIELDS:
             if key not in self.anndata.uns:
@@ -265,25 +253,3 @@ class H5ADDataFile:
                 corpora_props[key] = self.anndata.uns[key]
 
         return corpora_props
-
-    def get_corpora_schema_version(self):
-        """
-        Given an AnnData object, return:
-            * None - if not a Corpora object
-            * schema_version (str) - if a Corpora object
-
-        Implements the identification protocol defined in the specification.
-        """
-
-        # Per Corpora AnnData spec, this is a Corpora file if the following is true
-        if "schema_version" not in self.anndata.uns_keys():
-            return None
-
-        schema_version = self.anndata.uns["schema_version"]
-        if validate_version_str(schema_version):
-            return schema_version
-
-    def corpora_is_schema_version_supported(self, schema_version):
-        if CorporaConfig().schema_4_feature_flag.lower() == "true":
-            return schema_version and schema_version.startswith("4.")
-        return schema_version and schema_version.startswith("3.")
