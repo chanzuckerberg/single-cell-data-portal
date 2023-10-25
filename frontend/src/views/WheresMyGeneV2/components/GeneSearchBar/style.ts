@@ -7,7 +7,7 @@ import {
   CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
   CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
 } from "src/components/Layout/style";
-import { LEGEND_HEIGHT_PX } from "src/views/WheresMyGene/components/InfoPanel/components/Legend/style";
+import { LEGEND_HEIGHT_PX } from "src/views/WheresMyGeneV2/components/InfoPanel/components/Legend/style";
 import { Y_AXIS_CHART_WIDTH_PX } from "src/views/WheresMyGeneV2/components/HeatMap/utils";
 import { GENE_SEARCH_BAR_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/constants";
 

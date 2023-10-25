@@ -27,7 +27,7 @@ import {
   TISSUE_NAME_LABEL_CLASS_NAME,
 } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 import { test } from "tests/common/test";
-import { MAX_EXPRESSION_LABEL_TEST_ID } from "src/views/WheresMyGene/components/InfoPanel/components/RelativeGeneExpression/constants";
+import { MAX_EXPRESSION_LABEL_TEST_ID } from "src/views/WheresMyGeneV2/components/InfoPanel/components/RelativeGeneExpression/constants";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 

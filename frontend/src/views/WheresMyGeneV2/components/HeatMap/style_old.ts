@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { Y_AXIS_CHART_WIDTH_PX } from "./utils";
 import { LIGHT_GRAY } from "src/components/common/theme";
-import { LEGEND_HEIGHT_PX } from "../../../WheresMyGene/components/InfoPanel/components/Legend/style";
+import { LEGEND_HEIGHT_PX } from "../InfoPanel/components/Legend/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import {
   CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
