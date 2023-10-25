@@ -7,10 +7,11 @@ import {
 } from "@playwright/test";
 import { matchers } from "expect-playwright";
 import fs from "fs";
-import { LOGIN_STATE_FILENAME, TEST_ENV } from "tests/common/constants";
+import { LOGIN_STATE_FILENAME } from "tests/common/constants";
 import { COMMON_PLAYWRIGHT_CONTEXT } from "tests/common/context";
 import { getFeatureFlags } from "tests/common/featureFlags";
 import { SKIP_LOGIN } from "tests/common/constants";
+import { shouldUseRdevToken } from "tests/utils/helpers";
 
 /**
  * (thuang): Playwright takes retries as part of the maxFailures count, so we
@@ -266,7 +267,7 @@ function getStorageState(): {
 }
 
 function getExtraHTTPHeaders(): { [key: string]: string } {
-  if (TEST_ENV !== "rdev") return {};
+  if (!shouldUseRdevToken) return {};
 
   return {
     Authorization: "Bearer " + process.env.ACCESS_TOKEN,
