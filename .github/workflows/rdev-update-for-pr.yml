@@ -392,6 +392,21 @@ jobs:
             exit 1
           fi
 
+  artifacts-url-comments:
+    runs-on: ubuntu-latest
+    needs:
+      - run-e2e-tests
+    steps:
+      - name: add artifact links to pull request and related issues step
+        uses: tonyhallett/artifacts-url-comments@v1.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          prefix: Here are the artifacts
+          suffix: Have a nice day.
+          format: name
+          addTo: pullandissues
+
   e2e-logged-in-test:
     timeout-minutes: 30
     runs-on: ubuntu-22.04
