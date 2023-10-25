@@ -1,9 +1,11 @@
-import { Dialog as RawDialog, DialogContent } from "@czi-sds/components";
+import { Dialog as RawDialog } from "@czi-sds/components";
 import {
   ActionButton,
   StyledDialogAction,
+  StyledDialogContent,
   StyledDialogPaper,
   StyledDialogTitle,
+  Title,
 } from "./style";
 import { Button } from "src/components/common/Button";
 
@@ -21,10 +23,13 @@ export default function Dialog({ handleCancel, handleConfirm, isOpen }: Props) {
       canClickOutsideClose={false}
       open={isOpen}
     >
-      <StyledDialogTitle title="Change organism?" data-testid="dialog-title" />
-      <DialogContent data-testid="dialog-content">
+      <StyledDialogTitle
+        title={(<Title>Change organism?</Title>) as unknown as string}
+        data-testid="dialog-title"
+      />
+      <StyledDialogContent data-testid="dialog-content">
         This will reset the dot plot and remove all selected genes and filters.
-      </DialogContent>
+      </StyledDialogContent>
       <StyledDialogAction data-testid="dialog-actions" buttonPosition="right">
         <>
           <Button

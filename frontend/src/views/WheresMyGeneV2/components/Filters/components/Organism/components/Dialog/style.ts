@@ -1,7 +1,9 @@
 import {
   DialogActions,
+  DialogContent,
   DialogPaper,
   DialogTitle,
+  fontBodyXs,
   fontHeaderL,
 } from "@czi-sds/components";
 import styled from "@emotion/styled";
@@ -19,8 +21,20 @@ export const StyledDialogTitle = styled(DialogTitle)`
   margin-bottom: ${spacesDefault}px;
 `;
 
+/**
+ * (thuang): SDS DialogTitle currently doesn't support
+ * swapping out their Title component, so this is a workaround
+ */
+export const Title = styled("p")`
+  ${fontHeaderL}
+`;
+
 export const StyledDialogPaper = styled(DialogPaper)`
   padding: ${spacesXl}px !important;
+`;
+
+export const StyledDialogContent = styled(DialogContent)`
+  ${fontBodyXs}
 `;
 
 /**
