@@ -15,7 +15,7 @@ from backend.wmg.api.wmg_api_config import (
     WMG_API_FORCE_LOAD_SNAPSHOT_ID,
     WMG_API_SNAPSHOT_SCHEMA_VERSION,
 )
-from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
+from backend.wmg.data.ontology_labels import ethnicity_term_label, gene_term_label, ontology_term_label
 from backend.wmg.data.query import (
     MarkerGeneQueryCriteria,
     WmgCubeQueryParams,
@@ -220,15 +220,26 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
 
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(snapshot, dims["dataset_id"]),
-        disease_terms=build_ontology_term_id_label_mapping(dims["disease_ontology_term_id"]),
-        sex_terms=build_ontology_term_id_label_mapping(dims["sex_ontology_term_id"]),
-        development_stage_terms=build_ontology_term_id_label_mapping(dims["development_stage_ontology_term_id"]),
+        disease_terms=build_ontology_term_id_label_mapping(
+            ontology_term_ids=dims["disease_ontology_term_id"], dim_name="disease_ontology_term_id"
+        ),
+        sex_terms=build_ontology_term_id_label_mapping(
+            ontology_term_ids=dims["sex_ontology_term_id"], dim_name="sex_ontology_term_id"
+        ),
+        development_stage_terms=build_ontology_term_id_label_mapping(
+            ontology_term_ids=dims["development_stage_ontology_term_id"], dim_name="development_stage_ontology_term_id"
+        ),
         self_reported_ethnicity_terms=build_ontology_term_id_label_mapping(
-            dims["self_reported_ethnicity_ontology_term_id"]
+            ontology_term_ids=dims["self_reported_ethnicity_ontology_term_id"],
+            dim_name="self_reported_ethnicity_ontology_term_id",
         ),
         publication_citations=dims["publication_citation"],
-        cell_type_terms=build_ontology_term_id_label_mapping(dims["cell_type_ontology_term_id"]),
-        tissue_terms=build_ontology_term_id_label_mapping(dims["tissue_ontology_term_id"]),
+        cell_type_terms=build_ontology_term_id_label_mapping(
+            ontology_term_ids=dims["cell_type_ontology_term_id"], dim_name="cell_type_ontology_term_id"
+        ),
+        tissue_terms=build_ontology_term_id_label_mapping(
+            ontology_term_ids=dims["tissue_ontology_term_id"], dim_name="tissue_ontology_term_id"
+        ),
     )
 
     return response_filter_dims_values
@@ -343,8 +354,13 @@ def build_gene_id_label_mapping(gene_ontology_term_ids: List[str]) -> List[dict]
     ]
 
 
-def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> List[dict]:
-    return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
+def build_ontology_term_id_label_mapping(*, ontology_term_ids: Iterable[str], dim_name: str) -> List[dict]:
+    term_label_getter_func = ontology_term_label
+
+    if dim_name == "self_reported_ethnicity_ontology_term_id":
+        term_label_getter_func = ethnicity_term_label
+
+    return [{ontology_term_id: term_label_getter_func(ontology_term_id)} for ontology_term_id in ontology_term_ids]
 
 
 def fill_out_structured_tissue_agg(tissue_agg, structured_result):
@@ -374,18 +390,20 @@ def fill_out_structured_cell_type_agg(cell_type_agg, structured_result, ordering
         }
 
 
-def fill_out_structured_cell_type_compare(cell_type_agg_compare, structured_result, ordering, compare):
+def fill_out_structured_cell_type_compare(cell_type_agg_compare, structured_result, ordering, compare_dim_name):
     tissues = cell_type_agg_compare["tissue_ontology_term_id"].values
     cell_types = cell_type_agg_compare["cell_type_ontology_term_id"].values
     n = cell_type_agg_compare["n_cells_cell_type"].values
-    compare = cell_type_agg_compare[compare].values
+    compare_values = cell_type_agg_compare[compare_dim_name].values
 
     for i in range(len(tissues)):
-        id_to_label = build_ontology_term_id_label_mapping([compare[i]])[0]
-        name = id_to_label.pop(compare[i])
-        structured_result[tissues[i]][cell_types[i]][compare[i]] = {
+        id_to_label = build_ontology_term_id_label_mapping(
+            ontology_term_ids=[compare_values[i]], dim_name=compare_dim_name
+        )[0]
+        name = id_to_label.pop(compare_values[i])
+        structured_result[tissues[i]][cell_types[i]][compare_values[i]] = {
             "cell_type_ontology_term_id": cell_types[i],
-            "name": name if name else compare[i],
+            "name": name if name else compare_values[i],
             "total_count": int(n[i]),
             "order": int(ordering.get((tissues[i], cell_types[i]), -1)),
         }

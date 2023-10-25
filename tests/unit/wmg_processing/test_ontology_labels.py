@@ -1,6 +1,6 @@
 import unittest
 
-from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
+from backend.wmg.data.ontology_labels import ethnicity_term_label, gene_term_label, ontology_term_label
 
 
 class OntologyLabelTests(unittest.TestCase):
@@ -10,7 +10,6 @@ class OntologyLabelTests(unittest.TestCase):
         # should happen infrequently
         test_cases = {
             "EFO:0000001": "experimental factor",
-            "HANCESTRO:0003": "country",
             "CL:0000000": "cell",
             "HsapDv:0000000": "human life cycle stage",
             "PATO:0000001": "quality",
@@ -24,6 +23,18 @@ class OntologyLabelTests(unittest.TestCase):
         for ontology_term_id, expected_ontology_term_label in test_cases.items():
             with self.subTest(ontology_term_id):
                 self.assertEqual(ontology_term_label(ontology_term_id), expected_ontology_term_label)
+
+    def test__ethnicity_term_label(self):
+        # A conservative, high-level check that all ontologies have been loaded, without checking explicit counts
+        # This test is fragile, in that changes to our ontologies may break these these tests in the future, but that
+        # should happen infrequently
+        test_cases = {
+            "HANCESTRO:0003": "country",
+            "HANCESTRO:0005,HANCESTRO:0014": "European,Hispanic or Latin American",
+        }
+        for ontology_term_id, expected_ontology_term_label in test_cases.items():
+            with self.subTest(ontology_term_id):
+                self.assertEqual(ethnicity_term_label(ontology_term_id), expected_ontology_term_label)
 
     def test__gene_label(self):
         # A conservative, high-level check that all ontologies have been loaded, without checking explicit counts

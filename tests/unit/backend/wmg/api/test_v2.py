@@ -335,6 +335,11 @@ class WmgApiV2Tests(unittest.TestCase):
 
         self.assertTrue(True, f"Assertion failure in key path: {key_path}")
 
+    def mock_ethnicity_term_label_func(self, ethnicity_term_id):
+        individual_term_ids = ethnicity_term_id.split(",")
+        term_labels = [f"{term_id}_label" for term_id in individual_term_ids]
+        return ",".join(term_labels)
+
     def setUp(self):
         super().setUp()
         with EnvironmentSetup(dict(APP_NAME="corpora-api")):
@@ -516,10 +521,11 @@ class WmgApiV2Tests(unittest.TestCase):
             )
 
     @patch("backend.wmg.api.v2.gene_term_label")
+    @patch("backend.wmg.api.v2.ethnicity_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
     @patch("backend.wmg.api.v2.load_snapshot")
     def test__query_request_multi_primary_dims_only_with_compare__returns_200_and_correct_response(
-        self, load_snapshot, ontology_term_label, gene_term_label
+        self, load_snapshot, ontology_term_label, ethnicity_term_label, gene_term_label
     ):
         dim_size = 3
         with create_temp_wmg_snapshot(
@@ -535,6 +541,7 @@ class WmgApiV2Tests(unittest.TestCase):
             # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
             # module is separately unit tested, and here we just want to verify the response building logic is correct.
             ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            ethnicity_term_label.side_effect = self.mock_ethnicity_term_label_func
             gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
 
             genes = ["gene_ontology_term_id_0", "gene_ontology_term_id_2"]
@@ -707,10 +714,11 @@ class WmgApiV2Tests(unittest.TestCase):
 
     @patch("backend.wmg.api.v2.fetch_datasets_metadata")
     @patch("backend.wmg.api.v2.gene_term_label")
+    @patch("backend.wmg.api.v2.ethnicity_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
     @patch("backend.wmg.api.v2.load_snapshot")
     def test__filter_request_with_filter_dims__returns_valid_filter_dims__base_case(
-        self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
+        self, load_snapshot, ontology_term_label, ethnicity_term_label, gene_term_label, fetch_datasets_metadata
     ):
         # mock the functions in the ontology_labels module, so we can assert deterministic values in the
         # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
@@ -718,6 +726,7 @@ class WmgApiV2Tests(unittest.TestCase):
         dim_size = 1
         with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
             ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            ethnicity_term_label.side_effect = self.mock_ethnicity_term_label_func
             gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
             fetch_datasets_metadata.return_value = mock_datasets_metadata([f"dataset_id_{i}" for i in range(dim_size)])
             load_snapshot.return_value = snapshot
@@ -756,14 +765,16 @@ class WmgApiV2Tests(unittest.TestCase):
                 "sex_terms": [],
                 "tissue_terms": [{"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"}],
             }
+
             self.assertEqual(json.loads(response.data)["filter_dims"], expected_filters)
 
     @patch("backend.wmg.api.v2.fetch_datasets_metadata")
     @patch("backend.wmg.api.v2.gene_term_label")
+    @patch("backend.wmg.api.v2.ethnicity_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
     @patch("backend.wmg.api.v2.load_snapshot")
     def test__filter_request_with_filter_dims__returns_valid_filter_dims(
-        self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
+        self, load_snapshot, ontology_term_label, ethnicity_term_label, gene_term_label, fetch_datasets_metadata
     ):
         # mock the functions in the ontology_labels module, so we can assert deterministic values in the
         # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
@@ -778,6 +789,7 @@ class WmgApiV2Tests(unittest.TestCase):
             # thus filtering for dev_stage_0 should return filter options that include ethnicity 0,1 &2 but
             # filtering for dev_stage_1 or dev_stage_2 should only return ethnicity 0 (and vice versa)
             ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            ethnicity_term_label.side_effect = self.mock_ethnicity_term_label_func
             gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
             fetch_datasets_metadata.return_value = mock_datasets_metadata([f"dataset_id_{i}" for i in range(dim_size)])
             # setup up API endpoints to use a mocked cube
