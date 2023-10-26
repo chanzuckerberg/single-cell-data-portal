@@ -164,13 +164,12 @@ function selectOrganism(
     return state;
   }
 
+  const { snapshotId } = state;
+
   return {
-    ...state,
-    selectedGenes: [],
+    ...INITIAL_STATE,
+    snapshotId,
     selectedOrganismId: action.payload,
-    selectedTissues: EMPTY_ARRAY,
-    selectedFilters: EMPTY_FILTERS,
-    cellInfoCellType: null,
   };
 }
 
