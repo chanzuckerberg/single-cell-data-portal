@@ -270,6 +270,9 @@ export const gray500 = grey500;
 export const grey600 = (props: CommonThemeProps) => getColors(props)?.gray[600];
 export const gray600 = grey600;
 
+export const greyWhite = () => "#fffff";
+export const grayWhite = greyWhite;
+
 themeOptions.colors.gray = { ...themeOptions.colors.gray, "400": "#999999" };
 
 export const beta100 = (props: CommonThemeProps) => getColors(props)?.beta[100];
