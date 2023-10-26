@@ -9,7 +9,7 @@ import {
   tryUntil,
   waitForLoadingSpinnerToResolve,
 } from "tests/utils/helpers";
-import { TEST_URL } from "../../common/constants";
+import { COMPARE_DROPDOWN_ID, TEST_URL } from "../../common/constants";
 import { TISSUE_DENY_LIST } from "../../fixtures/wheresMyGene/tissueRollup";
 
 import {
@@ -59,8 +59,6 @@ const GENE_INFO_BUTTON_CELL_INFO_TEST_ID = "gene-info-button-cell-info";
 const MUI_CHIP_ROOT = ".MuiChip-root";
 
 const CELL_TYPE_SANITY_CHECK_NUMBER = 100;
-
-const COMPARE_DROPDOWN_ID = "compare-dropdown";
 
 const FILTERS_PANEL = "filters-panel";
 
