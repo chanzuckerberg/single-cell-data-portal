@@ -12,7 +12,7 @@ import {
   SELECT_TISSUE_GENE_TEXT,
   SORT_CELL_TYPES_TOOLTIP_TEXT,
   SORT_GENES_TOOLTIP_TEXT,
-} from "src/views/WheresMyGene/common/constants";
+} from "src/views/WheresMyGeneV2/common/constants";
 import { Props } from "./types";
 import { useConnect } from "./connect";
 import { CELL_TYPE_OPTIONS, GENE_OPTIONS } from "./constants";

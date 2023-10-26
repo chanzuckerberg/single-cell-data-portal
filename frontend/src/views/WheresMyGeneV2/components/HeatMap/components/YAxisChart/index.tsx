@@ -17,7 +17,7 @@ import {
   COMPARE_OPTION_ID_FOR_AGGREGATED,
   CellTypeRow,
 } from "src/common/queries/wheresMyGene";
-import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
+import { CellType, Tissue } from "src/views/WheresMyGeneV2/common/types";
 import {
   CellTypeMetadata,
   Y_AXIS_CHART_WIDTH_PX,
@@ -26,8 +26,8 @@ import {
   getAllSerializedCellTypeMetadata,
   getHeatmapHeight,
   hyphenize,
-} from "src/views/WheresMyGene/components/HeatMap/utils";
-import { SELECTED_STYLE } from "src/views/WheresMyGene/components/HeatMap/style";
+} from "src/views/WheresMyGeneV2/components/HeatMap/utils";
+import { SELECTED_STYLE } from "src/views/WheresMyGeneV2/components/HeatMap/style";
 import {
   CellCountLabelStyle,
   CellTypeLabelStyle,
@@ -40,7 +40,7 @@ import {
   TissueHeaderLabelStyle,
   Wrapper,
   TissueLabel,
-} from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/style";
+} from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/style";
 import {
   CELL_COUNT_LABEL_CLASS_NAME,
   CELL_TYPE_ROW_CLASS_NAME,
@@ -49,7 +49,7 @@ import {
   CELL_TYPE_NAME_LABEL_CLASS_NAME,
 } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 import { formatCitation } from "src/common/utils/formatCitation";
-import { StateContext } from "src/views/WheresMyGene/common/store";
+import { StateContext } from "src/views/WheresMyGeneV2/common/store";
 
 interface Props {
   cellTypes: CellTypeRow[];

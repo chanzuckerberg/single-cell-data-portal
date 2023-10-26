@@ -1,7 +1,7 @@
 import { expect, Page, Locator } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
-import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
+import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/constants";
 import {
   expandTissue,
   goToPage,
@@ -9,7 +9,7 @@ import {
   tryUntil,
   waitForLoadingSpinnerToResolve,
 } from "tests/utils/helpers";
-import { TEST_URL } from "../../common/constants";
+import { COMPARE_DROPDOWN_ID, TEST_URL } from "../../common/constants";
 import { TISSUE_DENY_LIST } from "../../fixtures/wheresMyGene/tissueRollup";
 
 import {
@@ -27,7 +27,7 @@ import {
   TISSUE_NAME_LABEL_CLASS_NAME,
 } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 import { test } from "tests/common/test";
-import { MAX_EXPRESSION_LABEL_TEST_ID } from "src/views/WheresMyGene/components/InfoPanel/components/RelativeGeneExpression/constants";
+import { MAX_EXPRESSION_LABEL_TEST_ID } from "src/views/WheresMyGeneV2/components/InfoPanel/components/RelativeGeneExpression/constants";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
@@ -59,8 +59,6 @@ const GENE_INFO_BUTTON_CELL_INFO_TEST_ID = "gene-info-button-cell-info";
 const MUI_CHIP_ROOT = ".MuiChip-root";
 
 const CELL_TYPE_SANITY_CHECK_NUMBER = 100;
-
-const COMPARE_DROPDOWN_ID = "compare-dropdown";
 
 const FILTERS_PANEL = "filters-panel";
 
