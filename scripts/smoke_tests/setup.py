@@ -62,10 +62,14 @@ if __name__ == "__main__":
     # check whether we need to create collections
     collection_count = smoke_test_init.get_collection_count()
     if collection_count >= NUM_TEST_COLLECTIONS:
-        print("Found sufficient published collections for testing, exiting")
         sys.exit(0)
-
-    dataset_dropbox_url = "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0"
+    if smoke_test_init.is_using_schema_4:
+        dataset_dropbox_url = (
+            "https://www.dropbox.com/scl/fi/d99hpw3p2cxtmi7v4kyv5/"
+            "4_0_0_test_dataset.h5ad?rlkey=i5ownt8g1mropbu41r7fa0i06&dl=0"
+        )
+    else:
+        dataset_dropbox_url = "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0"
     num_to_create = NUM_TEST_COLLECTIONS - collection_count
     threads = []
     for _ in range(num_to_create):
