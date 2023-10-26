@@ -44,6 +44,7 @@ export default function NormalizationNotification(): JSX.Element {
           <StyledLinkBody
             href={NOMALIZATION_NOTIFICATION_BODY_LINK}
             target="_blank"
+            rel="noopener"
           >
             {NORMALIZATION_NOTIFICATION_BODY_LINK_LABEL}
           </StyledLinkBody>
@@ -52,6 +53,7 @@ export default function NormalizationNotification(): JSX.Element {
             <StyledLink
               href={NORMALIZATION_NOTIFICATION_DOCS_URL}
               target="_blank"
+              rel="noopener"
             >
               {NORMALIZATION_NOTIFICATION_LINK_TEXT}
             </StyledLink>
