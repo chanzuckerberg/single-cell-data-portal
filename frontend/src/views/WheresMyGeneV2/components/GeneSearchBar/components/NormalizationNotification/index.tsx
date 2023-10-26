@@ -26,7 +26,7 @@ export default function NormalizationNotification(): JSX.Element {
       <Notification
         autoDismiss={AUTO_DISMISS_MS}
         onClose={noop}
-        slideDirection={"left"}
+        slideDirection="left"
         intent={"info"}
         icon={
           <StyledIcon
