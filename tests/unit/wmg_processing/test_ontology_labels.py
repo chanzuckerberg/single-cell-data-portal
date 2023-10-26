@@ -29,7 +29,12 @@ class OntologyLabelTests(unittest.TestCase):
         # This test is fragile, in that changes to our ontologies may break these these tests in the future, but that
         # should happen infrequently
         test_cases = {
+            # Schema-3 test cases
             "HANCESTRO:0003": "country",
+            "unknown": None,
+            "multiethnic": None,
+            "na": None,
+            # Schema-4 test cases
             "HANCESTRO:0005,HANCESTRO:0014": "European,Hispanic or Latin American",
         }
         for ontology_term_id, expected_ontology_term_label in test_cases.items():
