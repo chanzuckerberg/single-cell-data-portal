@@ -1,13 +1,15 @@
 import styled from "@emotion/styled";
 import {
   SideBar,
+  SideBarOpenButtonWrapper,
   SideBarPositioner as RawSideBarPositioner,
 } from "src/components/common/SideBar/style";
 import { FOOTER_HEIGHT_PX } from "src/components/Footer/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import { SidebarMainWrapper } from "src/components/Layout/style";
+
+import { LegendWrapper } from "./components/InfoPanel/components/Legend/style";
 import { Container } from "./components/GeneSearchBar/style";
-import { LegendWrapper } from "../WheresMyGeneV2/components/InfoPanel/components/Legend/style";
 
 export const LEGEND_MARGIN_BOTTOM_PX = 20;
 
@@ -44,6 +46,12 @@ export const Top = styled.div`
 
 export const SideBarWrapper = styled(SideBar)`
   max-height: calc(100vh - ${HEADER_HEIGHT_PX}px);
+
+  ${SideBarOpenButtonWrapper} {
+    .MuiButton-root {
+      margin-bottom: 12px;
+    }
+  }
 `;
 
 export const SideBarPositioner = styled(RawSideBarPositioner)`
