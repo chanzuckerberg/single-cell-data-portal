@@ -9,7 +9,7 @@ import {
 } from "@czi-sds/components";
 import { NotificationWrapper } from "src/components/common/Filter/common/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
-import { gray500, primary400 } from "src/common/theme";
+import { gray500 } from "src/common/theme";
 
 export const StyledButtonDiv = styled.div`
   display: flex;
