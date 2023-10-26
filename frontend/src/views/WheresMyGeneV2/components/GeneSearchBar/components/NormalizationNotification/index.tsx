@@ -9,8 +9,8 @@ import {
   StyledNotificationLabel,
   StyledNotificationWrapper,
 } from "../ShareButton/style";
-import { useConnect } from "./connect";
 import {
+  AUTO_DISMISS_MS,
   NOMALIZATION_NOTIFICATION_BODY_LINK,
   NORMALIZATION_NOTIFICATION_BODY,
   NORMALIZATION_NOTIFICATION_BODY_2,
@@ -21,13 +21,10 @@ import {
 } from "./constants";
 
 export default function NormalizationNotification(): JSX.Element {
-  const { showURLCopyNotification } = useConnect();
-
   return (
     <StyledNotificationWrapper>
       <Notification
-        key={showURLCopyNotification}
-        autoDismiss={10000}
+        autoDismiss={AUTO_DISMISS_MS}
         onClose={noop}
         slideDirection={"left"}
         intent={"info"}
@@ -44,12 +41,18 @@ export default function NormalizationNotification(): JSX.Element {
         </StyledNotificationLabel>
         <StyledNotificationDetails>
           {NORMALIZATION_NOTIFICATION_BODY}
-          <StyledLinkBody href={NOMALIZATION_NOTIFICATION_BODY_LINK}>
+          <StyledLinkBody
+            href={NOMALIZATION_NOTIFICATION_BODY_LINK}
+            target="_blank"
+          >
             {NORMALIZATION_NOTIFICATION_BODY_LINK_LABEL}
           </StyledLinkBody>
           {NORMALIZATION_NOTIFICATION_BODY_2}
           <StyledLinkWrapper>
-            <StyledLink href={NORMALIZATION_NOTIFICATION_DOCS_URL}>
+            <StyledLink
+              href={NORMALIZATION_NOTIFICATION_DOCS_URL}
+              target="_blank"
+            >
               {NORMALIZATION_NOTIFICATION_LINK_TEXT}
             </StyledLink>
           </StyledLinkWrapper>

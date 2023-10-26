@@ -10,3 +10,4 @@ export const NORMALIZATION_NOTIFICATION_LINK_TEXT =
   "Learn more about data and normalization";
 export const NORMALIZATION_NOTIFICATION_DOCS_URL =
   "https://cellxgene.cziscience.com/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_1__Get%20Started";
+export const AUTO_DISMISS_MS = 10 * 1000;
