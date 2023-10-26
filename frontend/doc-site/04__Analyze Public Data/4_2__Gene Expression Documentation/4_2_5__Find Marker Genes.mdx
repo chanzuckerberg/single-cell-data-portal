@@ -29,8 +29,9 @@ For a selected cell type in a tissue,
 - Use Welch's t-test to compare the gene expressions in the selected cell type to each other cell type in the tissue.
   - Note: each cell type contains cells labeled as that cell type as well as its descendants in the cell ontology. Consequently, cell types are only compared to other cell types that are not in the same lineage (i.e. comparisons with ancestors and descendants are ignored).
   - Record the effect size for each gene in each comparison.
-- For each gene, calculate the 5th percentile of the effect sizes across all comparisons. This is the marker score.
-  - Let $T_t$ be the set of cell types $\{c_1,\ldots,c_n\}$ in tissue $t$. The marker score ($S_{c_ig_j}$) for gene $g_j$ in cell type $c_i$ is $S_{c_ig_j}=p_5(\{e_{c_kg_j} : c_k \in T_t, c_k \neq c_i\})$ where $p_5$ is the 5th percentile operator and $e_{c_kg_j}$ is the effect size of the t-test comparing $g_j$ in $c_i$ to $c_k$.
+- For each gene, calculate the 10th percentile of the effect sizes across all comparisons. This is the marker score.
+  - Let $T_t$ be the set of cell types $\{c_1,\ldots,c_n\}$ in tissue $t$. The marker score ($S_{c_ig_j}$) for gene $g_j$ in cell type $c_i$ is $S_{c_ig_j}=p_(10)(\{e_{c_kg_j} : c_k \in T_t, c_k \neq c_i\})$ where $p_(10)$ is the 10th percentile operator and $e_{c_kg_j}$ is the effect size of the t-test comparing $g_j$ in $c_i$ to $c_k$.
+- For a few of comparisons, the 10th percentile can be a noisy metric. To improve its robustness, we bootstrap the distribution of effect sizes for each gene, taking the 10th percentile of each replicate, and averaging all replicates to get the final effect size.
 - Sort the genes by their marker score in descending order and return the top 25.
 
 ## Welch's t-test
@@ -49,87 +50,10 @@ Welch's t-test is a statistical test for comparing the means of two independent 
   - $df = \frac{\left(\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}\right)^2}{\frac{\left(\frac{s_1^2}{n_1}\right)^2}{n_1 - 1} + \frac{\left(\frac{s_2^2}{n_2}\right)^2}{n_2 - 1}}$.
 - Calculate the p-value using the t-distribution ($P(T >t)$).
 
-## Validation
-
-To determine if the genes reported by Find Marker Genes contain biologically relevant information, we can check to see if the marker genes alone are enough to recapiulate the cell type clustering of a few test datasets:
-
-1. [Tabula Sapiens blood data](https://cellxgene.cziscience.com/collections/e5f58829-1a66-40b5-a624-9046778e74f5)
-2. [COVID blood data (Arunachalam et al.)](https://cellxgene.cziscience.com/collections/b9fc3d70-5a72-4479-a046-c2cc1ab19efc)
-3. [Human Lung Cell Atlas lung data](https://cellxgene.cziscience.com/collections/5d445965-6f1a-4b68-ba3a-b8f765155d3a)
-
-Each test dataset was run through one of three analysis workflows:
-
-1. **Standard analysis**: This is the standard analysis workflow offered by [Scanpy](https://scanpy.readthedocs.io/en/stable/) with cell types clustered using the Leiden algorithm.
-2. **Marker gene analysis**: We take the union of the top 5 marker genes per cell type, subsample the data down to the resulting genes, and run the standard analysis workflow on the subsampled data.
-3. **Random gene analysis**: We subsample the data down to $N$ random genes and run the standard analysis workflow on the subsampled data, where $N$ is the number of marker genes used in (2).
-
-For each dataset and workflow, we report the adjusted rand index (ARI) and normalized mutual information (NMI) between the Leiden clustering results and the original cell type annotations. We also present the UMAP visualizations to qualitatively illustrate the clustering quality for each workflow.
-
-### Tabula Sapiens blood data
-
-**Standard analysis**
-
-<Image src={"/doc-site/4-2_blood1_standard_umap.png"} height={250} />
-ARI: 0.35, NMI: 0.69
-
-**Marker gene analysis**
-
-<Image src={"/doc-site/4-2_blood1_marker_umap.png"} height={250} />
-ARI: 0.31, NMI: 0.68
-
-**Random analysis**
-
-<Image src={"/doc-site/4-2_blood1_random_umap.png"} height={250} />
-ARI: 0.16, NMI: 0.45
-
-### COVID blood data (Arunachalam et al.)
-
-**Standard analysis**
-
-<Image src={"/doc-site/4-2_blood2_standard_umap.png"} height={250} />
-ARI: 0.50, NMI: 0.75
-
-**Marker gene analysis**
-
-<Image src={"/doc-site/4-2_blood2_marker_umap.png"} height={250} />
-ARI: 0.56, NMI: 0.75
-
-**Random analysis**
-
-<Image src={"/doc-site/4-2_blood2_random_umap.png"} height={250} />
-ARI: 0.17, NMI: 0.33
-
-### Human Lung Cell Atlas lung data
-
-**Standard analysis**
-
-<Image src={"/doc-site/4-2_lung_standard_umap.png"} height={250} />
-ARI: 0.50, NMI: 0.80
-
-**Marker gene analysis**
-
-<Image src={"/doc-site/4-2_lung_marker_umap.png"} height={250} />
-ARI: 0.50, NMI: 0.79
-
-**Random analysis**
-
-<Image src={"/doc-site/4-2_lung_random_umap.png"} height={250} />
-ARI: 0.18, NMI: 0.41
-
-### Discussion
-
-Subsampling the data down to the union of the top 5 marker genes per cell type typically yields around 250-350 unique genes. If this set of genes were not enriched in biologically relevant genes, subsetting the data down to such a small number of genes would give very low quality results (as shown in the random gene analysis results). Encouragingly, we do not observe any significant decrease in clustering accuracy when subsetting down to the marker genes in any of the datasets tested.
-
-### Reproducibility notebooks
-
-1. [Tabula Sapiens blood data](/doc-site/clustering_validation_blood1.pdf)
-2. [COVID blood data (Arunachalam et al.)](/doc-site/clustering_validation_blood2.pdf)
-3. [Human Lung Cell Atlas lung data](/doc-site/clustering_validation_lung.pdf)
-
 ## Caveats
 
 - It is important to note that some methodological decisions were made to balance accuracy with efficiency and scalability. For example, we use a t-test to perform differential expression, which is a simple and fast test. However, it may not be as accurate as more sophisticated (and computationally intensive) statistical tests.
-- While differential expression is typically performed on raw counts for single-cell RNA sequencing data, we opted to use the <NextLink href="04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_3__Gene%20Expression%20Data%20Processing">rankit-normalized</NextLink> values in order to identify marker genes that corroborate the gene expressions shown in the dot plot.
+- While differential expression is typically performed on raw counts for single-cell RNA sequencing data, we opted to use the <NextLink href="04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_3__Gene%20Expression%20Data%20Processing">normalized</NextLink> values in order to identify marker genes that corroborate the gene expressions shown in the dot plot.
 - For the beta, we opted to not report the p-values for each gene. Though we can calculate approximate p-values using the t-statistic and degrees of freedom calculated in _Welch's t-test_, it is difficult to accurately aggregate the p-values for each gene across all comparisons. The most reliable method involves repeatedly permuting the data to generate a null distribution, but this is computationally intensive.
 - Currently, marker genes are only calculated for cell types in tissues using only _healthy_ cells. Applying secondary filters to the data (like disease, ethnicity, etc.) does not affect the results. Enabling dynamic calculation of marker genes for arbitrary populations of cells in arbitrary subsets of the data may be a direction for future development.
 - Ideal marker genes for a particular cell type are expressed in all of its cells and not expressed anywhere else: they have binary expression patterns. In reality, almost no genes have truly binary expression patterns. Instead, they have genes that are statistically enriched in their cells relative to all other cell types. Additionally, genes may be good markers for a cell type in one context (e.g. a tissue) but not another (e.g. the entire human body).

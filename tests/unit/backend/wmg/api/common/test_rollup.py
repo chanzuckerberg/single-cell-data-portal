@@ -9,8 +9,7 @@ from pandas import DataFrame
 from pandas.testing import assert_frame_equal
 from parameterized import parameterized
 
-from backend.wmg.api.common.rollup import _add_missing_combinations_to_gene_expression_df_for_rollup, rollup
-from backend.wmg.data.schemas.cube_schema import expression_summary_logical_attrs
+from backend.wmg.api.common.rollup import rollup
 
 
 def _create_cell_counts_df_helper(cell_counts_rows: list[list], columns: list[str], index_cols: list[str]) -> DataFrame:
@@ -406,7 +405,9 @@ class TestHighLevelRollupFunction(unittest.TestCase):
         expected_cell_counts_df.reset_index(inplace=True)
 
         assert_frame_equal(
-            rolled_up_cell_counts_df.reset_index(drop=True), expected_cell_counts_df.reset_index(drop=True)
+            rolled_up_cell_counts_df.reset_index(drop=True),
+            expected_cell_counts_df.reset_index(drop=True),
+            check_dtype=False,
         )
 
         # sort the rolled up gene expression dataframe so that the correct rows are compared with
@@ -414,112 +415,8 @@ class TestHighLevelRollupFunction(unittest.TestCase):
         sort_columns_for_rolled_gene_expr_df = list(cell_counts_df_index_list) + ["gene_ontology_term_id"]
         rolled_up_gene_expr_df.sort_values(sort_columns_for_rolled_gene_expr_df, inplace=True)
 
-        assert_frame_equal(rolled_up_gene_expr_df.reset_index(drop=True), expected_gene_expr_df.reset_index(drop=True))
-
-
-class TestHighLevelRollupHelperFunctions(unittest.TestCase):
-    def test__add_missing_combinations_to_gene_expression_df_for_rollup(self):
-        """
-        test that the `_add_missing_combinations_to_gene_expression_df_for_rollup` function works as expected
-        this function is used to add missing (tissue, cell type) combinations to the expression dataframe
-        so that the expression dataframe can be rolled up correctly.
-
-        the cell counts dataframe has 100 cell types, 60 of which have expression data
-        the goal of this test is to make sure that `_add_missing_combinations_to_gene_expression_df_for_rollup`
-        adds the missing (tissue, cell type) combinations for each gene to th expression dataframe.
-
-        there will be (100 cell types) * (2 tissues) = 200 rows in the cell counts dataframe
-        there will be (60 cell types) * (2 tissues) * (3 genes) = 360 rows in the expression dataframe
-        there will be (100 cell types) * (2 tissues) * (3 genes) = 600 rows in the expected expression dataframe
-
-
-        the input expression dataframe will have 1 for all numeric columns, excluding n_cells_tissue.
-        because we don't want to roll up the n_cells_tissue column, we set it to 100 for all rows and check
-        that it stays 100 after adding the missing combinations.
-
-        the expected expression dataframe will have the same rows as the input dataframe, with new rows added
-        that have 0 for all numeric columns, excluding n_cells_tissue, which stays 100.
-        """
-        num_cell_types = 100
-        num_cell_types_with_expression = 60
-        num_tissues = 2
-        num_genes = 3
-
-        cell_types_cell_counts_df = [f"cell_type_ontology_term_id_{i}" for i in range(num_cell_types)] * num_tissues
-        tissue_cell_counts_df = sum([[f"tissue_ontology_term_id_{i}"] * num_cell_types for i in range(num_tissues)], [])
-
-        cell_types_dot_plot_df = cell_types_cell_counts_df[:num_cell_types_with_expression] * num_tissues * num_genes
-        tissue_dot_plot_df = (
-            sum([[f"tissue_ontology_term_id_{i}"] * num_cell_types_with_expression for i in range(num_tissues)], [])
-            * num_genes
+        assert_frame_equal(
+            rolled_up_gene_expr_df.reset_index(drop=True),
+            expected_gene_expr_df.reset_index(drop=True),
+            check_dtype=False,
         )
-        genes_dot_plot_df = sum(
-            [[f"gene_ontology_term_id_{i}"] * num_cell_types_with_expression * num_tissues for i in range(num_genes)],
-            [],
-        )
-
-        cell_counts_cell_type_agg = pd.DataFrame()
-        cell_counts_cell_type_agg["cell_type_ontology_term_id"] = cell_types_cell_counts_df
-        cell_counts_cell_type_agg["tissue_ontology_term_id"] = tissue_cell_counts_df
-        cell_counts_cell_type_agg["n_cells_cell_type"] = 1
-
-        dot_plot_matrix_df = pd.DataFrame()
-        dot_plot_matrix_df["cell_type_ontology_term_id"] = cell_types_dot_plot_df
-        dot_plot_matrix_df["tissue_ontology_term_id"] = tissue_dot_plot_df
-        dot_plot_matrix_df["gene_ontology_term_id"] = genes_dot_plot_df
-        for attr in expression_summary_logical_attrs:
-            dot_plot_matrix_df[attr.name] = 1
-        dot_plot_matrix_df["n_cells_cell_type"] = 1
-        dot_plot_matrix_df["n_cells_tissue"] = 100
-
-        expected_added_cell_types = (
-            [f"cell_type_ontology_term_id_{i}" for i in range(num_cell_types_with_expression, num_cell_types)]
-            * num_tissues
-            * num_genes
-        )
-        expected_added_tissues = (
-            sum(
-                [
-                    [f"tissue_ontology_term_id_{i}"] * (num_cell_types - num_cell_types_with_expression)
-                    for i in range(num_tissues)
-                ],
-                [],
-            )
-            * num_genes
-        )
-        expected_added_genes = sum(
-            [
-                [f"gene_ontology_term_id_{i}"] * (num_cell_types - num_cell_types_with_expression) * num_tissues
-                for i in range(num_genes)
-            ],
-            [],
-        )
-        expected_added_dataframe = pd.DataFrame()
-        expected_added_dataframe["cell_type_ontology_term_id"] = expected_added_cell_types
-        expected_added_dataframe["tissue_ontology_term_id"] = expected_added_tissues
-        expected_added_dataframe["gene_ontology_term_id"] = expected_added_genes
-        for attr in expression_summary_logical_attrs:
-            expected_added_dataframe[attr.name] = 0
-        expected_added_dataframe["n_cells_cell_type"] = 0
-        expected_added_dataframe["n_cells_tissue"] = 100
-
-        expected_dot_plot_matrix_df = pd.concat((dot_plot_matrix_df, expected_added_dataframe), axis=0)
-
-        # group by to get cell_counts_cell_type_agg into the right format (with multi-index)
-        cell_counts_cell_type_agg = cell_counts_cell_type_agg.groupby(
-            ["cell_type_ontology_term_id", "tissue_ontology_term_id"]
-        ).first()
-        actual_dot_plot_matrix_df = _add_missing_combinations_to_gene_expression_df_for_rollup(
-            dot_plot_matrix_df, cell_counts_cell_type_agg
-        )
-
-        # sort both dataframes to ensure comparable ordering
-        actual_dot_plot_matrix_df = actual_dot_plot_matrix_df.sort_values(
-            ["cell_type_ontology_term_id", "tissue_ontology_term_id", "gene_ontology_term_id"]
-        ).reset_index(drop=True)
-        expected_dot_plot_matrix_df = expected_dot_plot_matrix_df.sort_values(
-            ["cell_type_ontology_term_id", "tissue_ontology_term_id", "gene_ontology_term_id"]
-        ).reset_index(drop=True)
-
-        # assert equality
-        assert_frame_equal(actual_dot_plot_matrix_df, expected_dot_plot_matrix_df)

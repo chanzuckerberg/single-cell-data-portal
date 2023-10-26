@@ -21,12 +21,23 @@ class TestH5ADDataFile(unittest.TestCase):
 
         self.sample_output_directory = path.splitext(self.sample_h5ad_filename)[0] + ".cxg"
 
+        def mock_config_fn(name):
+            if name == "schema_4_feature_flag":
+                return "True"
+
+        self.mock_config = unittest.mock.patch(
+            "backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn
+        )
+        self.mock_config.start()
+
     def tearDown(self):
         if self.sample_h5ad_filename:
             remove(self.sample_h5ad_filename)
 
         if path.isdir(self.sample_output_directory):
             rmtree(self.sample_output_directory)
+
+        self.mock_config.stop()
 
     def test__create_h5ad_data_file__non_h5ad_raises_exception(self):
         non_h5ad_filename = "my_fancy_dataset.csv"
@@ -340,6 +351,6 @@ class TestH5ADDataFile(unittest.TestCase):
         uns["batch_condition"] = np.array(["a", "b"], dtype="object")
 
         # Need to carefully set the corpora schema versions in order for tests to pass.
-        uns["schema_version"] = "3.0.0"
+        uns["schema_version"] = "4.0.0"
 
         return anndata.AnnData(X=X, obs=obs, var=var, obsm=obsm, uns=uns)

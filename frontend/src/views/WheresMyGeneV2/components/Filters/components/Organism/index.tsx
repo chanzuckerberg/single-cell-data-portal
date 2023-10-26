@@ -2,9 +2,19 @@ import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { StyledDropdown, Wrapper, Label } from "../common/style";
 import { InputDropdownProps, Props, tempOnChange } from "./types";
 import { useConnect } from "./connect";
+import Dialog from "./components/Dialog";
 
 export default function Organism({ isLoading }: Props): JSX.Element {
-  const { organisms, organism, handleOnChange } = useConnect();
+  const {
+    handleDialogCancel,
+    handleDialogConfirm,
+    handleOnChange,
+    isDialogOpen,
+    organism,
+    organisms,
+    DropdownMenuProps,
+  } = useConnect();
+
   return (
     <Wrapper>
       <Label>Organism</Label>
@@ -14,7 +24,12 @@ export default function Organism({ isLoading }: Props): JSX.Element {
         onChange={handleOnChange as tempOnChange}
         InputDropdownProps={{ ...InputDropdownProps, disabled: isLoading }}
         data-testid="add-organism"
-        value={organism}
+        DropdownMenuProps={DropdownMenuProps}
+      />
+      <Dialog
+        isOpen={isDialogOpen}
+        handleCancel={handleDialogCancel}
+        handleConfirm={handleDialogConfirm}
       />
     </Wrapper>
   );
