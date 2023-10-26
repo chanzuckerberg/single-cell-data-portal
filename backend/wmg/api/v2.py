@@ -1,3 +1,4 @@
+import logging
 from collections import defaultdict
 from typing import Any, Dict, Iterable, List
 
@@ -31,6 +32,8 @@ from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2132
+
+logger = logging.getLogger("wmg-api")
 
 
 @tracer.wrap()
@@ -358,6 +361,19 @@ def build_ontology_term_id_label_mapping(*, ontology_term_ids: Iterable[str], di
     term_label_getter_func = ontology_term_label
 
     if dim_name == "self_reported_ethnicity_ontology_term_id":
+        logger.info(
+            f"PRATHAP! build_ontology_term_id_label_mapping() func - ontology_term_ids for ethnicity: {ontology_term_ids}"
+        )
+        logger.info(
+            "PRATHAP! build_ontology_term_id_label_mapping() func - about to apply 'ontology_term_label()' func for debugging ethnicity..."
+        )
+        debugging_ethnicity_labels = [
+            {ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids
+        ]
+        logger.info(
+            f"PRATHAP! build_ontology_term_id_label_mapping() func - debugging_ethnicity_labels: {debugging_ethnicity_labels}"
+        )
+
         term_label_getter_func = ethnicity_term_label
 
     return [{ontology_term_id: term_label_getter_func(ontology_term_id)} for ontology_term_id in ontology_term_ids]

@@ -20,7 +20,7 @@ genes_files = [
 
 SUFFIXES_TO_STRIP = ["organoid", "cell culture"]
 
-logger = logging.getLogger("wmg")
+logger = logging.getLogger("wmg-ontology-labels")
 
 
 def ontology_term_label(ontology_term_id: str) -> Optional[str]:
@@ -74,10 +74,12 @@ def ethnicity_term_label(self_reported_ethnicity_ontology_term_id: str) -> str:
     # In schema-4, self_reported_ethnicity_ontology_term_id can be a comma
     # separated string to denote multiple ethnicities.
     individual_term_ids = self_reported_ethnicity_ontology_term_id.split(",")
-    logger.info(f"PRATHAP! self_reported_ethnicity_ontology_term_id: {self_reported_ethnicity_ontology_term_id}")
-    logger.info(f"PRATHAP! individual_term_ids: {individual_term_ids}")
+    logger.info(
+        f"PRATHAP! ethnicity_term_label() func - self_reported_ethnicity_ontology_term_id: {self_reported_ethnicity_ontology_term_id}"
+    )
+    logger.info(f"PRATHAP! ethnicity_term_label() func - individual_term_ids: {individual_term_ids}")
     term_labels = [ontology_term_id_labels.get(term_id) for term_id in individual_term_ids]
-    logger.info(f"PRATHAP! term_labels: {term_labels}")
+    logger.info(f"PRATHAP! ethnicity_term_label() func - term_labels: {term_labels}")
     ethnicity_term_label = ",".join(term_labels)
     return ethnicity_term_label
 
