@@ -47,11 +47,12 @@ export const generateAndCopyShareUrl = ({
     url.searchParams.set(key, value.join(","));
   });
   url.searchParams.set("genes", genes.join(","));
-  url.searchParams.set("ver", LATEST_SHARE_LINK_VERSION);
 
   if (cellTypes.length > 0) {
     url.searchParams.set("cellTypes", cellTypes.join(","));
   }
+
+  url.searchParams.set("ver", LATEST_SHARE_LINK_VERSION);
 
   const urlString = String(url);
 
