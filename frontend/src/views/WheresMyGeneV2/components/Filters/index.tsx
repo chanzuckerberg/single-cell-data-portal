@@ -72,7 +72,7 @@ export default memo(function Filters({
           multiple
           data-testid="self-reported-ethnicity-filter"
           search
-          label="Self-Reported Ethnicity"
+          label="Self-Reported BUG IN NAME Ethnicity"
           options={
             terms.self_reported_ethnicity as unknown as DefaultMenuSelectOption[]
           }
