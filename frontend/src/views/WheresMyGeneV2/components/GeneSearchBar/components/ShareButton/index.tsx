@@ -20,14 +20,14 @@ import { generateAndCopyShareUrl, loadStateFromQueryParams } from "./utils";
 import {
   DispatchContext,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
+} from "src/views/WheresMyGeneV2/common/store";
 import {
   CellTypeByTissueName,
   useCellTypesByTissueName,
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
-import { getCompareOptionNameById } from "src/views/WheresMyGene/common/constants";
-import { CellType } from "src/views/WheresMyGene/common/types";
+import { getCompareOptionNameById } from "src/views/WheresMyGeneV2/common/constants";
+import { CellType } from "src/views/WheresMyGeneV2/common/types";
 import { useTissueMetadata } from "src/common/queries/cellGuide";
 
 export default function ShareButton(): JSX.Element {

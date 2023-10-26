@@ -28,7 +28,7 @@ import {
 } from "./style";
 import { Link } from "src/components/GeneInfoSideBar/style";
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
-import { StyledImage } from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/style";
+import { StyledImage } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/style";
 import InfoSVG from "src/common/images/info-sign-icon.svg";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
 import { CellInfoBarProps } from "./types";
@@ -243,7 +243,7 @@ function CellInfoSideBar({
                 </InfoButtonWrapper>
               </DivTableCell>
               <DivTableCell data-testid="marker-scores-fmg" align>
-                {metadata.effect_size.toPrecision(4)}
+                {metadata.marker_score.toPrecision(4)}
               </DivTableCell>
             </DivTableRow>
           ))}

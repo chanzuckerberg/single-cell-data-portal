@@ -1,6 +1,6 @@
 import { memo } from "react";
 
-import { Tissue } from "src/views/WheresMyGene/common/types";
+import { Tissue } from "src/views/WheresMyGeneV2/common/types";
 import YAxisChart from "./components/YAxisChart";
 
 import {
@@ -11,16 +11,16 @@ import {
   StyledTag,
   XAxisMask,
   YAxisWrapper,
-} from "src/views/WheresMyGene/components/HeatMap/style";
-import { CellCountLabel } from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart/style";
+} from "src/views/WheresMyGeneV2/components/HeatMap/style";
+import { CellCountLabel } from "src/views/WheresMyGeneV2/components/HeatMap/components/XAxisChart/style";
 import {
   HEATMAP_CONTAINER_ID,
   MARGIN_BETWEEN_HEATMAPS,
-} from "src/views/WheresMyGene/common/constants";
-import Loader from "src/views/WheresMyGene/components/Loader";
-import XAxisChart from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart";
-import Chart from "src/views/WheresMyGene/components/HeatMap/components/Chart";
-import { hyphenize } from "src/views/WheresMyGene/components/HeatMap/utils";
+} from "src/views/WheresMyGeneV2/common/constants";
+import Loader from "src/views/WheresMyGeneV2/components/Loader";
+import XAxisChart from "src/views/WheresMyGeneV2/components/HeatMap/components/XAxisChart";
+import Chart from "src/views/WheresMyGeneV2/components/HeatMap/components/Chart";
+import { hyphenize } from "src/views/WheresMyGeneV2/components/HeatMap/utils";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
 import { Autocomplete } from "@czi-sds/components";
 import {
@@ -165,6 +165,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
                   echartsRendererMode={echartsRendererMode}
                   setAllChartProps={setAllChartProps}
                   chartProps={allChartProps[tissueName]}
+                  maxExpression={scaledMeanExpressionMax}
                 />
               );
             })}

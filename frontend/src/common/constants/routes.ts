@@ -1,5 +1,6 @@
 export enum ROUTES {
   HOMEPAGE = "/",
+  CENSUS_DIRECTORY = "/census-directory",
   COLLECTION = "/collections/:id",
   COLLECTIONS = "/collections",
   DATASETS = "/datasets",

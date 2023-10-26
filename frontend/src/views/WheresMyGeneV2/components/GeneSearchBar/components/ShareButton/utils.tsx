@@ -3,14 +3,14 @@ import { Dispatch } from "react";
 import { TissueMetadataQueryResponse } from "src/common/queries/cellGuide";
 import { isSSR } from "src/common/utils/isSSR";
 import { removeParams } from "src/common/utils/removeParams";
-import { CompareId } from "src/views/WheresMyGene/common/constants";
-import { State } from "src/views/WheresMyGene/common/store";
-import { loadStateFromURL } from "src/views/WheresMyGene/common/store/actions";
+import { CompareId } from "src/views/WheresMyGeneV2/common/constants";
+import { State } from "src/views/WheresMyGeneV2/common/store";
+import { loadStateFromURL } from "src/views/WheresMyGeneV2/common/store/actions";
 import {
   LoadStateFromURLPayload,
   PayloadAction,
-} from "src/views/WheresMyGene/common/store/reducer";
-import { CellType } from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/store/reducer";
+import { CellType } from "src/views/WheresMyGeneV2/common/types";
 
 const HUMAN_ORGANISM_ID = "NCBITaxon:9606";
 

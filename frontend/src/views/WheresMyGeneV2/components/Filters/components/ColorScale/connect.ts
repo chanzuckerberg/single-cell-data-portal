@@ -2,12 +2,12 @@ import { useContext, useMemo } from "react";
 import {
   DispatchContext,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
-import { SORT_BY } from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/store";
+import { SORT_BY } from "src/views/WheresMyGeneV2/common/types";
 import { COLOR_SCALE_OPTIONS } from "./constants";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { selectSortBy } from "src/views/WheresMyGene/common/store/actions";
+import { selectSortBy } from "src/views/WheresMyGeneV2/common/store/actions";
 import { Props } from "./types";
 
 export const useConnect = ({

@@ -39,6 +39,5 @@ class MarkerGeneCalculatorTests(unittest.TestCase):
             )
             computational_marker_genes = convert_dataclass_to_dict_and_strip_nones(computational_marker_genes)
             reformatted_marker_genes = convert_dataclass_to_dict_and_strip_nones(reformatted_marker_genes)
-
             self.assertTrue(compare_dicts(computational_marker_genes, expected__computational_marker_genes))
             self.assertTrue(compare_dicts(reformatted_marker_genes, expected__reformatted_marker_genes))

@@ -34,7 +34,16 @@ def ancestors(cell_type):
 
 def find_descendants_per_cell_type(cell_types):
     """
-    Find the ancestors or descendants for each cell type in the input list.
+    Find the descendants for each cell type in the input list.
+    Terms are only considered descendants if they are present in the input list.
+
+    Terms can be suffixed with ";;{A_0}--{B_0}--..." to indicate that only descendants within the same
+    group specified by the suffix should be considered. For example, if the term is
+    "CL:0000540;;{tissue_0}--{disease_0}" then only descendants with the same tissue_0 and disease_0
+    will be considered.
+
+    This is useful for rolling up cell types within groups (e.g. tissues) but not across groups.
+
 
     Parameters
     ----------
@@ -46,15 +55,28 @@ def find_descendants_per_cell_type(cell_types):
     descendants_per_cell_type : list
         List of lists of descendants for each cell type in the input list.
     """
+    # a lookup table to avoid redundant ontology lookups
+    lookup_table = {}
 
+    # a set of all cell types in the input list
+    # used to compute intersections with descendants
+    cell_types_set = set(cell_types)
     relatives_per_cell_type = []
     for cell_type in cell_types:
-        relatives = descendants(cell_type)
-        relatives_per_cell_type.append(relatives)
+        # if the input cell types are suffixed, only consider descendants within the same group
+        if ";;" in cell_type:
+            prefix, suffix = cell_type.split(";;")
+            suffix = ";;" + suffix
+        else:
+            prefix = cell_type
+            suffix = ""
+        if cell_type not in lookup_table:
+            # find descendants of cell type and re-suffix them
+            relatives = [f"{i}{suffix}" for i in descendants(prefix)]
+            # only consider descendants (+suffixes) that are in the input list
+            lookup_table[cell_type] = list(cell_types_set.intersection(relatives))
 
-    for i, children in enumerate(relatives_per_cell_type):
-        # remove descendent cell types that are not cell types in the WMG data
-        relatives_per_cell_type[i] = list(set(children).intersection(cell_types))
+        relatives_per_cell_type.append(lookup_table[cell_type])
 
     return relatives_per_cell_type
 

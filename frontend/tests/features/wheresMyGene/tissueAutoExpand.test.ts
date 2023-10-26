@@ -1,5 +1,14 @@
 import { expect, Page } from "@playwright/test";
 import { toInteger } from "lodash";
+import {
+  ADD_TISSUE_ID,
+  CELL_TYPE_FILTER_TEST_ID,
+  DATASET_FILTER_TEST_ID,
+  DISEASE_FILTER_TEST_ID,
+  PUBLICATION_FILTER_TEST_ID,
+  SELF_REPORTED_ETHNICITY_FILTER_TEST_ID,
+  SEX_FILTER_TEST_ID,
+} from "tests/common/constants";
 import { test } from "tests/common/test";
 import { collapseTissue, expandTissue, tryUntil } from "tests/utils/helpers";
 import {
@@ -8,36 +17,33 @@ import {
   WMG_WITH_SEEDED_GENES_AND_TISSUES,
 } from "tests/utils/wmgUtils";
 
-const FILTERED_TISSUES = ["abdomen", "axilla", "blood"];
+const FILTERED_TISSUES = ["axilla", "blood", "brain"];
 const TISSUE_NODE_TEST_ID = "tissue-name";
 const TISSUE_FILTER_LABEL = "Tissue";
-const TISSUE_FILTER_TEST_ID = "tissue-filter";
-const CELL_TYPE_FILTER_TEST_ID = "celltype-filter";
+
 const CELL_TYPE_FILTERS = ["B cell", "B-1a B cell", "B-1b B cell"];
 const CELL_TYPE_TEST_ID = "cell-type-name";
-const SEX_FILTER_TEST_ID = "sex-filter";
 const SEX_FILTER_LABEL = "Sex";
 const SEX_FILTER_SELECTION = "female";
-const PUBLICATION_FILTER_TEST_ID = "publication-filter";
 const PUBLICATION_FILTER_LABEL = "Publication";
 const PUBLICATION_FILTER_SELECTION = [
   "Ahern et al. (2022) Cell",
   "Arutyunyan et al. (2023) Nature",
 ];
-const SELF_REPORTED_ETHNICITY_FILTER_TEST_ID = "self-reported-ethnicity-filter";
+
 const SELF_REPORTED_ETHNICITY_FILTER_LABEL = "Self-Reported Ethnicity";
 const SELF_REPORTED_ETHNICITY_FILTER_SELECTION = "African";
 const SELF_REPORTED_ETHNICITY_TISSUE = ["breast", "nose"];
-const DISEASE_FILTER_TEST_ID = "disease-filter";
+
 const DISEASE_FILTER_LABEL = "Disease";
 const DISEASE_FILTER_SELECTION = "influenza";
-const DATASET_FILTER_TEST_ID = "dataset-filter";
+
 const DATASET_FILTER_LABEL = "Dataset";
 const DATASET_FILTER_SELECTION =
   "Combined samples HTAN MSK - Single cell profiling reveals novel tumor and myeloid subpopulations in small cell lung cancer";
 const DATASET_FILTER_SELECTED = "Combined samples";
 const DATASET_FILTER_FILTERED_TISSUES = ["axilla", "brain"];
-const EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER = ["abdomen", "blood"];
+const EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER = ["blood", "brain"];
 const EXPECTED_EXPANDED_TISSUES = ["blood"];
 const EXPECTED_VISIBLE_CELL = ["B Cell"];
 const EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER = ["axilla", "brain"];
@@ -172,7 +178,7 @@ describe("WMG tissue auto-expand", () => {
 
   /**
    * Tissue auto expansion - cross filter with Sex filter, check expansion
-   * Filter 3 Tissues ["abdomen", "axilla", "blood"]. Collapse Abdomen. Select
+   * Filter 3 Tissues. Collapse Abdomen. Select
    * Female from the Sex filter. Tissue filter should now only have Abdomen and
    * Blood selected. Only Abdomen and Blood should be visible. Abdomen should
    * remain collapsed. Remove Sex filter. Tissue filter should now only have
@@ -227,7 +233,7 @@ describe("WMG tissue auto-expand", () => {
 
   /**
    * Tissue auto expansion - cross filter with Publication filter, check expansion
-   * Filter 3 Tissues ["abdomen", "axilla", "blood"]. Collapse Blood. Filter
+   * Filter 3 Tissues. Collapse Blood. Filter
    * 'Ahren et al. Neuron 2021' from the Publication filter. Only Blood should remain
    * visible and collapsed. Add Cell filter for B Cell. Only B Cell should be
    * visible under expanded Blood tissue node
@@ -270,7 +276,7 @@ describe("WMG tissue auto-expand", () => {
 
   /**
    * Tissue auto expansion - cross filter with Disease filter
-   * Filter 3 Tissues ["abdomen", "axilla", "brain"]. From the Disease filter select influenza.
+   * Filter 3 Tissues. From the Disease filter select influenza.
    * Blood should appear only and expanded. Add cell type filter for B Cell. Only B Cell should
    * appear under Blood and expanded. Remove influenza. Blood should remain expanded and cell count
    * increase.
@@ -296,7 +302,7 @@ describe("WMG tissue auto-expand", () => {
 
   /**
    * Tissue auto expansion - cross filter with Dataset filter
-   * Filter 3 Tissues ["abdomen", "axilla", "Brain"]. From the Dataset filter select Combined Samples.
+   * Filter 3 Tissues. From the Dataset filter select Combined Samples.
    * Axilla and Brain should appear only and expanded. Add cell type filter for B Cell. Only B Cell
    * should appear under Axilla and Brain and expanded. Remove B Cell. Remove Combined Samples. Brain
    */
@@ -444,7 +450,7 @@ async function filterTissues(
   page: Page,
   filteredTissues: string[] = FILTERED_TISSUES
 ) {
-  await clickIntoFilter(page, TISSUE_FILTER_TEST_ID);
+  await clickIntoFilter(page, ADD_TISSUE_ID);
   for (const tissue of filteredTissues) {
     await page.getByRole("option", { name: tissue, exact: true }).click();
   }
