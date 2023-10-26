@@ -81,20 +81,20 @@ For each gene in our reference files, length was calculated by creating non-over
 
 ## Data Normalization
 
-Read counts are normalized using a log transformation of pseudocounts per million (ln(CPM+1)).
+Read counts are normalized using a log transformation of pseudocounts per 10,000 reads (ln(CPTT+1)).
 Normalized matrices from multiple datasets of the same tissue are then concatenated.
 
 This normalization is not designed to correct batch effects; while normalization and subsequent aggregation of data across many observations (mean expression values) mitigates these effects to some degree, users should be aware that batch effects may still be present in the data.
 
 ## Removal of Noisy Ultra-low Expression Values
 
-After applying normalization, any gene/cell combination counts less or equal than 2 are set to missing data. This allows for removal of noise due to ultra-lowly expressed genes and provides a cleaner visualization.
+After applying normalization, any gene/cell combination counts less or equal than 3 are set to missing data. This allows for removal of noise due to ultra-lowly expressed genes and provides a cleaner visualization.
 
 ## Summarization of Data in Dot Plot
 
 For each gene/cell type combination the following values are represented in the dot plot, either visually or in text upon hover.
 
-- Gene expression (dot color) – the average ln(CPM+1)-normalized gene expression among genes that have non-zero values.
+- Gene expression (dot color) – the average ln(CPTT+1)-normalized gene expression among genes that have non-zero values.
 - Scaled gene expression (dot color) – scaled mean expression to the range [0,1]. Scaling is done by assigning the minimum value in the current view to 0 and the max is assigned to 1.
 - Expressing cells (dot size) – percentage of cells of the cell type expressing the gene, in parentheses is shown the absolute number of cells expressing the gene. These numbers are calculated after the following filters have been applied: "Removal of low coverage cells" and "Removal of noisy low expression values".
 

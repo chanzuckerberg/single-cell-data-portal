@@ -30,7 +30,7 @@ For a selected cell type in a tissue,
   - Note: each cell type contains cells labeled as that cell type as well as its descendants in the cell ontology. Consequently, cell types are only compared to other cell types that are not in the same lineage (i.e. comparisons with ancestors and descendants are ignored).
   - Record the effect size for each gene in each comparison.
 - For each gene, calculate the 10th percentile of the effect sizes across all comparisons. This is the marker score.
-  - Let $T_t$ be the set of cell types $\{c_1,\ldots,c_n\}$ in tissue $t$. The marker score ($S_{c_ig_j}$) for gene $g_j$ in cell type $c_i$ is $S_{c_ig_j}=p_10(\{e_{c_kg_j} : c_k \in T_t, c_k \neq c_i\})$ where $p_10$ is the 10th percentile operator and $e_{c_kg_j}$ is the effect size of the t-test comparing $g_j$ in $c_i$ to $c_k$.
+  - Let $T_t$ be the set of cell types $\{c_1,\ldots,c_n\}$ in tissue $t$. The marker score ($S_{c_ig_j}$) for gene $g_j$ in cell type $c_i$ is $S_{c_ig_j}=p_(10)(\{e_{c_kg_j} : c_k \in T_t, c_k \neq c_i\})$ where $p_(10)$ is the 10th percentile operator and $e_{c_kg_j}$ is the effect size of the t-test comparing $g_j$ in $c_i$ to $c_k$.
 - For a few of comparisons, the 10th percentile can be a noisy metric. To improve its robustness, we bootstrap the distribution of effect sizes, taking the 10th percentile of each replicate, and averaging all replicates to get the final effect size.
 - Sort the genes by their marker score in descending order and return the top 25.
 
@@ -140,3 +140,4 @@ Subsampling the data down to the union of the top 5 marker genes per cell type t
 ### Marker genes are not available for blood or small populations of cells
 
 It may be difficult to identify any good markers for some cell types, especially if they have a small number of cells or are compared to many similar cell types. To account for the former scenario, marker genes are not displayed for cell types with fewer than 25 cells. The latter scenario is particularly relevant in the blood as it contains many closely-related cell types. As a result, we have temporarily disabled the find marker genes feature for cell types in blood.
+
