@@ -5,7 +5,7 @@ export const NOMALIZATION_NOTIFICATION_BODY_LINK =
   "https://chanzuckerberg.github.io/cellxgene-census/";
 export const NORMALIZATION_NOTIFICATION_BODY_LINK_LABEL = "CellxGene Census";
 export const NORMALIZATION_NOTIFICATION_BODY_2 =
-  ". We now normalize this underlying data using ln(CPM+1) instead of quantile normalization.";
+  ". We now normalize this underlying data using ln(CPTT+1) instead of quantile normalization.";
 export const NORMALIZATION_NOTIFICATION_LINK_TEXT =
   "Learn more about data and normalization";
 export const NORMALIZATION_NOTIFICATION_DOCS_URL =
