@@ -16,11 +16,11 @@ import {
 import {
   DispatchContext,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
+} from "src/views/WheresMyGeneV2/common/store";
 import {
   useSortedGeneNames,
   useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
-} from "src/views/WheresMyGene/components/HeatMap/hooks/useSortedGeneNames";
+} from "src/views/WheresMyGeneV2/components/HeatMap/hooks/useSortedGeneNames";
 import {
   useHandleExpandedTissueIds,
   useTrackHeatMapLoaded,
@@ -33,13 +33,13 @@ import {
   GeneExpressionSummary,
   SORT_BY,
   Tissue,
-} from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/types";
 import {
   addCellInfoCellType,
   setFilteredCellTypes,
   toggleExpandedTissueId,
-} from "src/views/WheresMyGene/common/store/actions";
-import { useSortedCellTypesByTissueName } from "src/views/WheresMyGene/components/HeatMap/hooks/useSortedCellTypesByTissueName";
+} from "src/views/WheresMyGeneV2/common/store/actions";
+import { useSortedCellTypesByTissueName } from "src/views/WheresMyGeneV2/components/HeatMap/hooks/useSortedCellTypesByTissueName";
 import { cloneDeep } from "lodash";
 
 export function useConnect({

@@ -1,14 +1,14 @@
 import { Dispatch, SetStateAction } from "react";
 
 import { CellTypeRow, OntologyTerm } from "src/common/queries/wheresMyGene";
-import { State } from "src/views/WheresMyGene/common/store";
+import { State } from "src/views/WheresMyGeneV2/common/store";
 
 import {
   ChartProps,
   GeneExpressionSummary,
   SORT_BY,
   Tissue,
-} from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/types";
 
 export interface Props {
   className?: string;
