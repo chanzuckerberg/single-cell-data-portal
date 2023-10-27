@@ -1,6 +1,7 @@
 name: Create/Update rdev for PR
 
 on:
+  if: false # TODO: revert
   pull_request:
     branches-ignore:
       - prod

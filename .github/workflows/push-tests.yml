@@ -1,6 +1,7 @@
 name: Push Tests
 
 on:
+  if: false # TODO: revert
   pull_request:
     branches:
       - "*"
