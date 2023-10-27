@@ -1,1 +1,0 @@
-INFO     root:app.py:58 {'message': 's3_event', 'Records': [{'s3': {'bucket': {'name': 'some_bucket'}, 'object': {'key': 'test_user_id/74edb2fd-cb21-4921-8769-526598a782c8/21fb8ae8-aa77-4a1e-ae08-064bb39eb6d4', 'size': 0}}}]}
