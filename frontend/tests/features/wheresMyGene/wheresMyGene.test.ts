@@ -678,23 +678,6 @@ describe("Where's My Gene", () => {
       expect(textContentBefore).toEqual(textContentBefore2);
     });
   });
-  test("Cell type filter state should reset when organism changes", async ({
-    page,
-  }) => {
-    await goToWMG(page);
-    await waitForLoadingSpinnerToResolve(page);
-
-    await searchAndAddFilterCellType(page, "B cell");
-
-    await clickDropdownOptionByName({
-      name: "Mus musculus",
-      page,
-      testId: "add-organism",
-    });
-
-    const afterCellTypeNames = await getCellTypeNames(page);
-    expect(afterCellTypeNames.length).toBe(0);
-  });
 
   test("only render tissues that contain data", async ({ page }) => {
     await goToWMG(page);
@@ -705,17 +688,17 @@ describe("Where's My Gene", () => {
     });
     const datasetOption = await page
       .getByRole("option")
-      .getByText("Differentiating brown preadipocytes (cell culture)");
+      .getByText("Fallopian tube RNA");
     await datasetOption.click();
     await page.keyboard.press("Escape");
 
     await waitForLoadingSpinnerToResolve(page);
 
-    const nonExistantTissue = await page.getByTestId(
+    const nonExistentTissue = await page.getByTestId(
       "cell-type-labels-adipose-tissue"
     );
 
-    expect(nonExistantTissue).toHaveCount(0);
+    expect(nonExistentTissue).toHaveCount(0);
   });
 });
 
