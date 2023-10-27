@@ -28,12 +28,15 @@ from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find_dim_option_values
 
+
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2132
 
 
-@tracer.wrap()
+@tracer.wrap(
+    name="primary_filter_dimensions", service="wmg-api", resource="primary_filter_dimensions", span_type="wmg-api"
+)
 def primary_filter_dimensions():
     with ServerTiming.time("load snapshot"):
         snapshot: WmgSnapshot = load_snapshot(
@@ -44,7 +47,7 @@ def primary_filter_dimensions():
     return jsonify(snapshot.primary_filter_dimensions)
 
 
-@tracer.wrap()
+@tracer.wrap(name="query", service="wmg-api", resource="query", span_type="wmg-api")
 def query():
     request = connexion.request.json
     is_rollup = request.get("is_rollup", True)
@@ -200,6 +203,10 @@ def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
     return True
 
 
+<<<<<<< HEAD
+=======
+@tracer.wrap(name="build_filter_dims_values", service="wmg-api", resource="query", span_type="wmg-api")
+>>>>>>> 352054419abb (fix: error handler logging (#6113))
 def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot) -> Dict:
     dims = {
         "dataset_id": "",
@@ -234,6 +241,10 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
     return response_filter_dims_values
 
 
+<<<<<<< HEAD
+=======
+@tracer.wrap(name="build_expression_summary", service="wmg-api", resource="query", span_type="wmg-api")
+>>>>>>> 352054419abb (fix: error handler logging (#6113))
 def build_expression_summary(
     unrolled_gene_expression_df: DataFrame, rolled_gene_expression_df: DataFrame, compare: str
 ) -> dict:

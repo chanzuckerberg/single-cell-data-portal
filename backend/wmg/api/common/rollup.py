@@ -2,7 +2,6 @@
 
 The API public methods call the public methods in this module to perform the rollup operations.
 """
-
 import itertools
 from typing import Tuple
 
@@ -15,6 +14,10 @@ from backend.common.utils.rollup import rollup_across_cell_type_descendants, rol
 ######################### PUBLIC FUNCTIONS IN ALPHABETIC ORDER ##################################
 
 
+<<<<<<< HEAD
+=======
+@tracer.wrap(name="rollup", service="wmg-api", resource="query", span_type="wmg-api")
+>>>>>>> 352054419abb (fix: error handler logging (#6113))
 def rollup(gene_expression_df, cell_counts_grouped_df) -> Tuple[DataFrame, DataFrame]:
     """
     Accumulates (or rolls up) cell count values and gene-expression values FOR EACH expressed gene

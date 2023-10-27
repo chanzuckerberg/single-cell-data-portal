@@ -2,6 +2,7 @@ from typing import Dict, List, Union
 
 import numpy as np
 import pandas as pd
+from ddtrace import tracer
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
@@ -83,6 +84,7 @@ class WmgQuery:
         self._snapshot = snapshot
         self._cube_query_params = cube_query_params
 
+    @tracer.wrap(name="expression_summary", service="wmg-api", resource="_query", span_type="wmg-api")
     def expression_summary(self, criteria: WmgQueryCriteria, compare_dimension=None) -> DataFrame:
         return self._query(
             cube=self._snapshot.expression_summary_cube,
@@ -90,18 +92,21 @@ class WmgQuery:
             compare_dimension=compare_dimension,
         )
 
+    @tracer.wrap(name="expression_summary_default", service="wmg-api", resource="_query", span_type="wmg-api")
     def expression_summary_default(self, criteria: WmgQueryCriteria) -> DataFrame:
         return self._query(
             cube=self._snapshot.expression_summary_default_cube,
             criteria=criteria,
         )
 
+    @tracer.wrap(name="expression_summary_v2", service="wmg-api", resource="_query", span_type="wmg-api")
     def marker_genes(self, criteria: MarkerGeneQueryCriteria) -> DataFrame:
         return self._query(
             cube=self._snapshot.marker_genes_cube,
             criteria=criteria,
         )
 
+    @tracer.wrap(name="expression_summary_v2", service="wmg-api", resource="_query", span_type="wmg-api")
     def cell_counts(self, criteria: WmgQueryCriteria, compare_dimension=None) -> DataFrame:
         cell_counts = self._query(
             cube=self._snapshot.cell_counts_cube,
@@ -113,6 +118,7 @@ class WmgQuery:
 
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
     #  /chanzuckerberg/single-cell-data-portal/2133
+    @tracer.wrap(name="_query", service="wmg-api", resource="_query", span_type="wmg-api")
     def _query(
         self,
         cube: Array,
@@ -171,6 +177,9 @@ class WmgQuery:
 
         return query_result_df
 
+    @tracer.wrap(
+        name="list_primary_filter_dimension_term_ids", service="wmg-api", resource="_query", span_type="wmg-api"
+    )
     def list_primary_filter_dimension_term_ids(self, primary_dim_name: str):
         return (
             self._snapshot.cell_counts_cube.query(attrs=[], dims=[primary_dim_name])
@@ -180,6 +189,12 @@ class WmgQuery:
             .index.tolist()
         )
 
+    @tracer.wrap(
+        name="list_grouped_primary_filter_dimensions_term_ids",
+        service="wmg-api",
+        resource="_query",
+        span_type="wmg-api",
+    )
     def list_grouped_primary_filter_dimensions_term_ids(
         self, primary_dim_name: str, group_by_dim: str
     ) -> Dict[str, List[str]]:
