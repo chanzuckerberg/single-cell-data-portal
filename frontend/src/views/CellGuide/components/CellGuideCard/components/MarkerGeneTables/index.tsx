@@ -76,7 +76,7 @@ import {
   MARKER_GENES_COMPUTATIONAL_BREAKPOINT_PX,
   MARKER_GENES_TREE_ICON_BUTTON_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
-import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
+import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/constants";
 import Image from "next/image";
 import { CellType } from "../../../common/OntologyDagView/common/types";
 

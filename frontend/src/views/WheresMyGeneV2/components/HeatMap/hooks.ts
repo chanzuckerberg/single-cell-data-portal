@@ -1,8 +1,8 @@
 import { Dispatch, useEffect, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { autoExpandTissues } from "src/views/WheresMyGene/common/store/actions";
-import { PayloadAction } from "src/views/WheresMyGene/common/store/reducer";
+import { autoExpandTissues } from "src/views/WheresMyGeneV2/common/store/actions";
+import { PayloadAction } from "src/views/WheresMyGeneV2/common/store/reducer";
 
 interface Props {
   selectedGenes: string[];

@@ -9,7 +9,7 @@ import {
 } from "./style";
 import { useGeneInfo } from "src/common/queries/wheresMyGene";
 import { RightSidebarProperties } from "../common/RightSideBar";
-import { GeneInfo } from "../../views/WheresMyGene/common/types";
+import { GeneInfo } from "../../views/WheresMyGeneV2/common/types";
 import Synonyms from "src/components/Synonyms";
 
 const GENE_CARDS_URL = "https://www.genecards.org/cgi-bin/carddisp.pl?gene=";

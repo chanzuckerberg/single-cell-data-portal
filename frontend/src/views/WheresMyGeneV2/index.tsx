@@ -6,7 +6,7 @@ import {
   INITIAL_STATE,
   StateContext,
   reducer,
-} from "../WheresMyGene/common/store";
+} from "./common/store";
 
 export default function WheresMyGene(): JSX.Element {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);

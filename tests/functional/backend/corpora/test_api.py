@@ -6,7 +6,7 @@ import unittest
 import requests
 from requests import HTTPError
 
-from tests.functional.backend.common import TEST_DATASET_URI, BaseFunctionalTestCase
+from tests.functional.backend.common import BaseFunctionalTestCase
 
 
 class TestApi(BaseFunctionalTestCase):
@@ -94,7 +94,7 @@ class TestApi(BaseFunctionalTestCase):
             for key in updated_data:
                 self.assertEqual(updated_data[key], data[key])
 
-        self.upload_and_wait(collection_id, TEST_DATASET_URI)
+        self.upload_and_wait(collection_id, self.test_dataset_uri)
 
         # make collection public
         with self.subTest("Test make collection public"):
@@ -200,7 +200,7 @@ class TestApi(BaseFunctionalTestCase):
         self.assertStatusCode(requests.codes.created, res)
         self.assertIn("collection_id", data)
 
-        body = {"url": TEST_DATASET_URI}
+        body = {"url": self.test_dataset_uri}
 
         res = self.session.post(
             f"{self.api}/dp/v1/collections/{collection_id}/upload-links", data=json.dumps(body), headers=headers
