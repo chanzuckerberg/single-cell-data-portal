@@ -43,3 +43,9 @@ export const LinkWrapper = styled.span`
   align-items: center;
   display: flex;
 `;
+
+export const NavSection = styled.div`
+  display: flex;
+  direction: column;
+  justify-content: baseline;
+`;

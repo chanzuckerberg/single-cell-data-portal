@@ -3,7 +3,7 @@ import {
   ComputationalMarkersQueryResponse,
   ComputationalMarkersQueryResponseEntry,
 } from "src/common/queries/cellGuide";
-import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
+import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/constants";
 import { isTissueIdDescendantOfAncestorTissueId } from "src/views/CellGuide/common/utils";
 import { ALL_TISSUES, NO_ORGAN_ID } from "../constants";
 

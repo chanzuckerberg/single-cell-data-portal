@@ -2,11 +2,6 @@ name: Deploy Happy
 
 on: deployment
 
-# add a concurrency group to prevent multiple builds from running at the same time
-concurrency:
-  group: ${{ github.ref }}-environment
-  cancel-in-progress: false
-
 env:
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
@@ -163,7 +158,7 @@ jobs:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
-      - name: Run E2E Logged In tests
+      - name: Run e2e Logged In tests
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
         ### config.js set-up required due to transient test dependencies on API_URL
@@ -242,8 +237,8 @@ jobs:
           npx playwright install --with-deps
           cp src/configs/local.js src/configs/configs.js
 
-      # Run E2E tests
-      - name: Run E2E tests
+      # Run e2e tests
+      - name: Run e2e tests
         env:
           CI: true
           PROJECT: ${{ matrix.project }}

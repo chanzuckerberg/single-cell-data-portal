@@ -158,13 +158,18 @@ class OntologyTermId:
     ontology_term_id: str
 
 
+@dataclass
+class TissueOntologyTermId(OntologyTermId):
+    tissue_type: Optional[str] = None
+
+
 @dataclass_json
 @dataclass
 class DatasetMetadata:
     name: str
     schema_version: str
     organism: List[OntologyTermId]
-    tissue: List[OntologyTermId]
+    tissue: List[TissueOntologyTermId]
     assay: List[OntologyTermId]
     disease: List[OntologyTermId]
     sex: List[OntologyTermId]
@@ -178,6 +183,7 @@ class DatasetMetadata:
     donor_id: List[str]
     is_primary_data: str
     x_approximate_distribution: Optional[str]
+    citation: Optional[str] = None
     default_embedding: Optional[str] = None
     embeddings: Optional[List[str]] = None
     feature_biotype: Optional[List[str]] = None

@@ -483,7 +483,9 @@ describe("Cell Guide", () => {
               CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN
             );
             await waitForElementAndClick(dropdown);
-            await page.getByRole("option").getByText("abdomen").click();
+            await page.keyboard.type("colon");
+            await page.keyboard.press("ArrowDown");
+            await page.keyboard.press("Enter");
 
             const rowElementsAfter = await page
               .locator(`${tableSelector} tbody tr`)

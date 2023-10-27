@@ -6,9 +6,9 @@ import unittest
 from unittest import mock
 from unittest.mock import Mock
 
-from backend.wmg.data.load_cube import _get_wmg_snapshot_s3_fullpath
 from backend.wmg.data.snapshot import _get_wmg_snapshot_schema_dir_path
-from backend.wmg.pipeline.cube_pipeline import logger, main
+from backend.wmg.pipeline import logger, main
+from backend.wmg.pipeline.load_cube import _get_wmg_snapshot_s3_fullpath
 
 
 @contextlib.contextmanager
@@ -22,9 +22,9 @@ def change_directory(path):
 
 
 class TestCubePipe(unittest.TestCase):
-    @mock.patch("backend.wmg.pipeline.cube_pipeline.notify_slack")
+    @mock.patch("backend.wmg.pipeline.notify_slack")
     @mock.patch(
-        "backend.wmg.pipeline.cube_pipeline.load_data_and_create_cube",
+        "backend.wmg.pipeline.run_pipeline",
         new=Mock(side_effect=Exception("testing")),
     )
     def test_exception_handle_catches_errors(self, mock_notify_slack: Mock):

@@ -42,6 +42,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
     OntologyTermId,
+    TissueOntologyTermId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
@@ -87,8 +88,8 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             if name == "upload_max_file_size_gb":
                 return 30
 
-        mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-        mock_config.start()
+        self.mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+        self.mock_config.start()
 
         # TODO: also deduplicate with base test
         from backend.layers.common import validation
@@ -129,7 +130,11 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self.sample_dataset_metadata = DatasetMetadata(
             name="test_dataset_name",
             organism=[OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
-            tissue=[OntologyTermId(label="test_tissue_label", ontology_term_id="test_tissue_term_id")],
+            tissue=[
+                TissueOntologyTermId(
+                    label="test_tissue_label", ontology_term_id="test_tissue_term_id", tissue_type="tissue"
+                )
+            ],
             assay=[OntologyTermId(label="test_assay_label", ontology_term_id="test_assay_term_id")],
             disease=[OntologyTermId(label="test_disease_label", ontology_term_id="test_disease_term_id")],
             sex=[OntologyTermId(label="test_sex_label", ontology_term_id="test_sex_term_id")],
@@ -157,10 +162,15 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             feature_count=400,
             feature_reference=["NCBITaxon:9606"],
             raw_data_location="raw.X",
+            citation="Publication: https://doi.org/12.2345/science.abc1234 Dataset Version: "
+            "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
+            "CZ CELLxGENE Discover in Collection: "
+            "https://cellxgene.cziscience.com/collections/collection_id",
         )
         self.s3_provider.mock_s3_fs = set()
 
     def tearDown(self):
+        self.mock_config.stop()
         if self.run_as_integration:
             self.database_provider._drop_schema()
 

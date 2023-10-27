@@ -13,7 +13,7 @@ class BaseProcessingTest(BaseTest):
         self.uri_provider = UriProvider()
         self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "local.h5ad"))
         self.s3_provider = MockS3Provider()
-        self.schema_validator = SchemaValidatorProviderInterface()
+        self.schema_validator = Mock(spec=SchemaValidatorProviderInterface)
         self.schema_validator.validate_and_save_labels = Mock(return_value=(True, [], True))
         self.downloader = Downloader(self.business_logic)
         self.downloader.download_file = Mock()

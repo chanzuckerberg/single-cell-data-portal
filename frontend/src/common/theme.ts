@@ -41,6 +41,8 @@ export const spacesS = (props: CommonThemeProps) => getSpaces(props)?.s;
 export const spacesXs = (props: CommonThemeProps) => getSpaces(props)?.xs;
 export const spacesXxs = (props: CommonThemeProps) => getSpaces(props)?.xxs;
 export const spacesXxxs = (props: CommonThemeProps) => getSpaces(props)?.xxxs;
+export const spacesDefault = (props: CommonThemeProps) =>
+  getSpaces(props)?.default;
 
 const corners = {
   l: 16,
@@ -267,6 +269,11 @@ export const gray500 = grey500;
 
 export const grey600 = (props: CommonThemeProps) => getColors(props)?.gray[600];
 export const gray600 = grey600;
+
+export const greyWhite = () => "#fffff";
+export const grayWhite = greyWhite;
+
+themeOptions.colors.gray = { ...themeOptions.colors.gray, "400": "#999999" };
 
 export const beta100 = (props: CommonThemeProps) => getColors(props)?.beta[100];
 
