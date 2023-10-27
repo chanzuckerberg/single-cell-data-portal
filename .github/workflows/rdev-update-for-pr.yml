@@ -159,8 +159,6 @@ jobs:
 
   summarize:
     runs-on: ubuntu-22.04
-    needs:
-      - deploy-rdev
     if: github.event.action == 'opened'
     steps:
       - name: Summerize deployment
