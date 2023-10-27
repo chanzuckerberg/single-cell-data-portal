@@ -32,16 +32,14 @@ const PUBLICATION_FILTER_SELECTION = [
 ];
 
 const SELF_REPORTED_ETHNICITY_FILTER_LABEL = "Self-Reported Ethnicity";
-const SELF_REPORTED_ETHNICITY_FILTER_SELECTION = "African";
-const SELF_REPORTED_ETHNICITY_TISSUE = ["breast", "nose"];
+const SELF_REPORTED_ETHNICITY_FILTER_SELECTION = "British";
+const SELF_REPORTED_ETHNICITY_TISSUE = ["brain", "breast"];
 
 const DISEASE_FILTER_LABEL = "Disease";
 const DISEASE_FILTER_SELECTION = "influenza";
 
 const DATASET_FILTER_LABEL = "Dataset";
-const DATASET_FILTER_SELECTION =
-  "Combined samples HTAN MSK - Single cell profiling reveals novel tumor and myeloid subpopulations in small cell lung cancer";
-const DATASET_FILTER_SELECTED = "Combined samples";
+const DATASET_FILTER_SELECTION = "Combined Samples";
 const DATASET_FILTER_FILTERED_TISSUES = ["axilla", "brain"];
 const EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER = ["blood", "brain"];
 const EXPECTED_EXPANDED_TISSUES = ["blood"];
@@ -164,12 +162,12 @@ describe("WMG tissue auto-expand", () => {
     page,
   }) => {
     await loadPageAndTissues(page);
-    await filterSelection(
+    await filterSelection({
       page,
-      SEX_FILTER_TEST_ID,
-      SEX_FILTER_LABEL,
-      SEX_FILTER_SELECTION
-    );
+      filterTestId: SEX_FILTER_TEST_ID,
+      filterLabel: SEX_FILTER_LABEL,
+      selection: SEX_FILTER_SELECTION,
+    });
     await filterTissues(page, EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER);
     await filterCellTypes(page, CELL_TYPE_FILTERS.slice(0, 1));
     await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER);
@@ -191,12 +189,12 @@ describe("WMG tissue auto-expand", () => {
     await loadPageAndTissues(page);
     await filterTissues(page, FILTERED_TISSUES);
     await collapseTissue(page, FILTERED_TISSUES[0]);
-    await filterSelection(
+    await filterSelection({
       page,
-      SEX_FILTER_TEST_ID,
-      SEX_FILTER_LABEL,
-      SEX_FILTER_SELECTION
-    );
+      filterTestId: SEX_FILTER_TEST_ID,
+      filterLabel: SEX_FILTER_LABEL,
+      selection: SEX_FILTER_SELECTION,
+    });
     await expect(page.getByTestId(TISSUE_NODE_TEST_ID)).toHaveCount(
       EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER.length
     );
@@ -218,12 +216,12 @@ describe("WMG tissue auto-expand", () => {
   }) => {
     const tissues = ["blood"];
     await loadPageAndTissues(page);
-    await filterSelection(
+    await filterSelection({
       page,
-      PUBLICATION_FILTER_TEST_ID,
-      PUBLICATION_FILTER_LABEL,
-      PUBLICATION_FILTER_SELECTION[0]
-    );
+      filterTestId: PUBLICATION_FILTER_TEST_ID,
+      filterLabel: PUBLICATION_FILTER_LABEL,
+      selection: PUBLICATION_FILTER_SELECTION[0],
+    });
     await filterTissues(page, tissues);
     await collapseTissue(page, tissues[0]);
     await filterCellTypes(page, CELL_TYPE_FILTERS.slice(0, 1));
@@ -244,12 +242,12 @@ describe("WMG tissue auto-expand", () => {
     await loadPageAndTissues(page);
     await filterTissues(page);
     await collapseTissue(page, "blood");
-    await filterSelection(
+    await filterSelection({
       page,
-      PUBLICATION_FILTER_TEST_ID,
-      PUBLICATION_FILTER_LABEL,
-      PUBLICATION_FILTER_SELECTION[1]
-    );
+      filterTestId: PUBLICATION_FILTER_TEST_ID,
+      filterLabel: PUBLICATION_FILTER_LABEL,
+      selection: PUBLICATION_FILTER_SELECTION[1],
+    });
     await expect(page.getByTestId(TISSUE_NODE_TEST_ID)).toHaveCount(1);
     await checkTissues(page, ["blood"], []);
   });
@@ -264,12 +262,12 @@ describe("WMG tissue auto-expand", () => {
   }) => {
     await loadPageAndTissues(page);
     await expandTissue(page, SELF_REPORTED_ETHNICITY_TISSUE[0]);
-    await filterSelection(
+    await filterSelection({
       page,
-      SELF_REPORTED_ETHNICITY_FILTER_TEST_ID,
-      SELF_REPORTED_ETHNICITY_FILTER_LABEL,
-      SELF_REPORTED_ETHNICITY_FILTER_SELECTION
-    );
+      filterTestId: SELF_REPORTED_ETHNICITY_FILTER_TEST_ID,
+      filterLabel: SELF_REPORTED_ETHNICITY_FILTER_LABEL,
+      selection: SELF_REPORTED_ETHNICITY_FILTER_SELECTION,
+    });
     await filterTissues(page, SELF_REPORTED_ETHNICITY_TISSUE);
     await checkTissues(page, SELF_REPORTED_ETHNICITY_TISSUE);
   });
@@ -286,12 +284,12 @@ describe("WMG tissue auto-expand", () => {
   }) => {
     await loadPageAndTissues(page);
     await filterTissues(page);
-    await filterSelection(
+    await filterSelection({
       page,
-      DISEASE_FILTER_TEST_ID,
-      DISEASE_FILTER_LABEL,
-      DISEASE_FILTER_SELECTION
-    );
+      filterTestId: DISEASE_FILTER_TEST_ID,
+      filterLabel: DISEASE_FILTER_LABEL,
+      selection: DISEASE_FILTER_SELECTION,
+    });
     await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DISEASE_FILTER);
     await filterCellTypes(page, CELL_TYPE_FILTERS.slice(0, 1));
     await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
@@ -302,7 +300,7 @@ describe("WMG tissue auto-expand", () => {
 
   /**
    * Tissue auto expansion - cross filter with Dataset filter
-   * Filter 3 Tissues. From the Dataset filter select Combined Samples.
+   * Filter 2 Tissues. From the Dataset filter select Combined Samples.
    * Axilla and Brain should appear only and expanded. Add cell type filter for B Cell. Only B Cell
    * should appear under Axilla and Brain and expanded. Remove B Cell. Remove Combined Samples. Brain
    */
@@ -311,13 +309,13 @@ describe("WMG tissue auto-expand", () => {
   }) => {
     await loadPageAndTissues(page);
     await filterTissues(page, DATASET_FILTER_FILTERED_TISSUES);
-    await filterSelection(
+    await filterSelection({
       page,
-      DATASET_FILTER_TEST_ID,
-      DATASET_FILTER_LABEL,
-      DATASET_FILTER_SELECTION,
-      DATASET_FILTER_SELECTED
-    );
+      filterTestId: DATASET_FILTER_TEST_ID,
+      filterLabel: DATASET_FILTER_LABEL,
+      selection: DATASET_FILTER_SELECTION,
+    });
+
     await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER);
     await filterCellTypes(page, CELL_TYPE_FILTERS.slice(0, 1));
     await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
@@ -409,6 +407,8 @@ async function loadPageAndTissues(page: Page, url?: string) {
   await expect(page.getByTestId(TISSUE_NODE_TEST_ID)).not.toHaveCount(0);
 }
 
+const TOOLTIP_TIMEOUT_MS = 2 * 1000;
+
 /**
  * clickIntoFilter
  * Click into the filter and wait for the tooltip to be visible
@@ -418,11 +418,18 @@ async function clickIntoFilter(
   filterName: string,
   filterLabel = TISSUE_FILTER_LABEL
 ) {
-  await page
-    .getByTestId(filterName)
-    .getByRole("button", { name: filterLabel, exact: true })
-    .click();
-  await page.getByRole("tooltip").waitFor();
+  await tryUntil(
+    async () => {
+      await page
+        .getByTestId(filterName)
+        .getByRole("button", { name: filterLabel })
+        .click();
+      await expect(page.getByRole("tooltip")).toBeVisible({
+        timeout: TOOLTIP_TIMEOUT_MS,
+      });
+    },
+    { page }
+  );
 }
 
 /**
@@ -430,16 +437,25 @@ async function clickIntoFilter(
  * Add cell types to the cell type filter
  */
 async function filterCellTypes(page: Page, cellTypes: string[]) {
-  await page
-    .getByTestId(CELL_TYPE_FILTER_TEST_ID)
-    .getByRole("combobox")
-    .click();
+  await tryUntil(
+    async () => {
+      for (const cellType of cellTypes) {
+        await page
+          .getByTestId(CELL_TYPE_FILTER_TEST_ID)
+          .getByRole("combobox")
+          .click();
 
-  for (const cellType of cellTypes) {
-    await page.getByRole("option", { name: cellType, exact: true }).click();
-  }
+        await page.getByRole("option", { name: cellType, exact: true }).click();
 
-  await page.keyboard.press("Escape");
+        await page.keyboard.press("Escape");
+
+        await expect(
+          page.getByTestId("cell-type-tag-" + cellType)
+        ).toBeVisible();
+      }
+    },
+    { page }
+  );
 }
 
 /**
@@ -450,11 +466,14 @@ async function filterTissues(
   page: Page,
   filteredTissues: string[] = FILTERED_TISSUES
 ) {
-  await clickIntoFilter(page, ADD_TISSUE_ID);
   for (const tissue of filteredTissues) {
-    await page.getByRole("option", { name: tissue, exact: true }).click();
+    await filterSelection({
+      page,
+      filterTestId: ADD_TISSUE_ID,
+      filterLabel: TISSUE_FILTER_LABEL,
+      selection: tissue,
+    });
   }
-  await page.keyboard.press("Escape");
 }
 
 /**
@@ -528,27 +547,29 @@ async function removeCellFilter(page: Page) {
  * filterSelection
  * Filter the selection from the dropdown
  */
-async function filterSelection(
-  page: Page,
-  filterTestId: string,
-  filterLabel: string,
-  selection: string,
-  filterSelected: string = selection
-) {
+async function filterSelection({
+  page,
+  filterTestId,
+  filterLabel,
+  selection,
+  filterSelected = selection,
+}: {
+  page: Page;
+  filterTestId: string;
+  filterLabel: string;
+  selection: string;
+  filterSelected?: string;
+}) {
   await tryUntil(
     async () => {
       await clickIntoFilter(page, filterTestId, filterLabel);
-      const dropDownOption = await page.getByRole("option", {
-        name: selection,
-        exact: true,
-      });
-      expect(dropDownOption).toBeVisible();
+      const dropDownOption = await page
+        .getByRole("tooltip")
+        .getByText(selection);
       await dropDownOption.click();
       await page.keyboard.press("Escape");
       await expect(
-        page
-          .getByTestId(filterTestId)
-          .getByRole("button", { name: filterSelected })
+        page.getByTestId(filterTestId).getByText(filterSelected)
       ).toBeVisible();
     },
     { page }
