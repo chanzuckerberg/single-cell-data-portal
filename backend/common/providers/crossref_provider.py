@@ -66,6 +66,22 @@ class CrossrefProvider:
             else:
                 raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
 
+        # if doi is-preprint-of another, fetch the published doi
+        message = res.json()["message"]
+        if "relation" in message and "is-preprint-of" in message["relation"]:
+            published_ids = message["relation"]["is-preprint-of"]
+            for pub_id in published_ids:
+                if pub_id["id-type"] == "doi":
+                    try:
+                        published_doi_res = requests.get(
+                            f"{self.base_crossref_uri}/{published_ids[pub_id]['id']}",
+                            headers={"Crossref-Plus-API-Token": f"Bearer {self.crossref_api_key}"},
+                        )
+                        published_doi_res.raise_for_status()
+                        return published_doi_res
+                    except requests.RequestException:
+                        # return pre-print if fetching original doi fails
+                        return res
         return res
 
     def fetch_metadata(self, doi: str) -> dict:
