@@ -41,6 +41,8 @@ jobs:
           version: "2"
       - name: Run S3 mirroring
         run: |
+          parallel --version
+          aws --version
           PARTITION_PREFIXES="0 1 2 3 4 5 6 7 8 9 a b c d e f"
           parallel --line-buffer --jobs 16 aws s3 sync --copy-props metadata-directive --no-progress s3://corpora-data-prod/ s3://corpora-data-staging/ --exclude "'*'" --include "'{}*'" --exclude "'*loom'" ::: $PARTITION_PREFIXES
           parallel --line-buffer --jobs 16 aws s3 sync --copy-props metadata-directive --no-progress s3://hosted-cellxgene-prod/ s3://hosted-cellxgene-staging/ --exclude "'*'" --include "'{}*'" ::: $PARTITION_PREFIXES
