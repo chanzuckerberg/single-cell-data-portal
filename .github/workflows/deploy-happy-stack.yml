@@ -37,11 +37,13 @@ jobs:
           role-duration-seconds: 2700
       - name: Install aws cli
         uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: "2"
       - name: Run S3 mirroring
         run: |
           PARTITION_PREFIXES="0 1 2 3 4 5 6 7 8 9 a b c d e f"
-          parallel --ungroup --jobs 16 "aws s3 sync --copy-props metadata-directive --no-progress s3://corpora-data-prod/ s3://corpora-data-staging/ --exclude "'*'" --include "'{}*'" --exclude "'*loom'" ::: $PARTITION_PREFIXES
-          parallel --ungroup --jobs 16 "aws s3 sync --copy-props metadata-directive --no-progress s3://hosted-cellxgene-prod/ s3://hosted-cellxgene-staging/ --exclude "'*'" --include "'{}*'" ::: $PARTITION_PREFIXES
+          parallel --line-buffer --jobs 16 aws s3 sync --copy-props metadata-directive --no-progress s3://corpora-data-prod/ s3://corpora-data-staging/ --exclude "'*'" --include "'{}*'" --exclude "'*loom'" ::: $PARTITION_PREFIXES
+          parallel --line-buffer --jobs 16 aws s3 sync --copy-props metadata-directive --no-progress s3://hosted-cellxgene-prod/ s3://hosted-cellxgene-staging/ --exclude "'*'" --include "'{}*'" ::: $PARTITION_PREFIXES
 
   upgrade:
     runs-on: ubuntu-22.04
