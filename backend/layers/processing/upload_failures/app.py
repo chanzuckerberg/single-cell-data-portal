@@ -31,9 +31,6 @@ def handle_failure(event: dict, context) -> None:
     cleanup_artifacts(dataset_id, error_step_name)
 
 
-# write test cases using pytest to test the parse_event function
-
-
 def parse_event(event: dict):
     dataset_id = event.get("dataset_id")
     collection_version_id = event.get("collection_id")
@@ -85,20 +82,20 @@ def get_failure_slack_notification_message(
     execution_arn: str,
 ) -> dict:
     if dataset_id is None:
-        logger.error("Dataset ID not found")
+        logging.error("Dataset ID not found")
         dataset_id = "None"
         dataset = None
     else:
         dataset = get_business_logic().get_dataset_version(DatasetVersionId(dataset_id))
     if dataset is None:
-        logger.error(f"Dataset {dataset_id} not found")
+        logging.error(f"Dataset {dataset_id} not found")
         dataset_id = dataset_id + "(not found)"
         collection_owner, processing_status = "", ""
     else:
         collection_id = dataset.collection_id
         collection = get_business_logic().get_unpublished_collection_version_from_canonical(collection_id)
         if collection is None:
-            logger.error(f"Collection {collection_id} not found")
+            logging.error(f"Collection {collection_id} not found")
             collection_owner = ""
         else:
             collection_owner = collection.owner

@@ -2,16 +2,16 @@ import { CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX } from "src/components/Layout/sty
 import {
   ECHART_AXIS_LABEL_COLOR_HEX,
   ECHART_AXIS_LABEL_FONT_SIZE_PX,
-} from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart/style";
+} from "src/views/WheresMyGeneV2/components/HeatMap/components/XAxisChart/style";
 import { PLASMA_SVG_STRING } from "src/views/WheresMyGeneV2/components/Filters/components/ColorScale/constants";
 import {
   HEAT_MAP_BASE_CELL_PX,
   hyphenize,
   Y_AXIS_CHART_WIDTH_PX,
-} from "src/views/WheresMyGene/components/HeatMap/utils";
-import { CHART_PADDING_PX } from "src/views/WheresMyGene/components/HeatMap/style";
-import { Tissue } from "src/views/WheresMyGene/common/types";
-import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGene/common/constants";
+} from "src/views/WheresMyGeneV2/components/HeatMap/utils";
+import { CHART_PADDING_PX } from "src/views/WheresMyGeneV2/components/HeatMap/style";
+import { Tissue } from "src/views/WheresMyGeneV2/common/types";
+import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/constants";
 import {
   CELL_COUNT_LABEL_CLASS_NAME,
   CELL_TYPE_ROW_CLASS_NAME,

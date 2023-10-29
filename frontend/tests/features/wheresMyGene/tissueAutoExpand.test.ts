@@ -1,5 +1,14 @@
 import { expect, Page } from "@playwright/test";
 import { toInteger } from "lodash";
+import {
+  ADD_TISSUE_ID,
+  CELL_TYPE_FILTER_TEST_ID,
+  DATASET_FILTER_TEST_ID,
+  DISEASE_FILTER_TEST_ID,
+  PUBLICATION_FILTER_TEST_ID,
+  SELF_REPORTED_ETHNICITY_FILTER_TEST_ID,
+  SEX_FILTER_TEST_ID,
+} from "tests/common/constants";
 import { test } from "tests/common/test";
 import { collapseTissue, expandTissue, tryUntil } from "tests/utils/helpers";
 import { goToWMG } from "tests/utils/wmgUtils";
@@ -7,27 +16,24 @@ import { goToWMG } from "tests/utils/wmgUtils";
 const FILTERED_TISSUES = ["axilla", "blood", "brain"];
 const TISSUE_NODE_TEST_ID = "tissue-name";
 const TISSUE_FILTER_LABEL = "Tissue";
-const TISSUE_FILTER_TEST_ID = "tissue-filter";
-const CELL_TYPE_FILTER_TEST_ID = "celltype-filter";
+
 const CELL_TYPE_FILTERS = ["B cell", "B-1a B cell", "B-1b B cell"];
 const CELL_TYPE_TEST_ID = "cell-type-name";
-const SEX_FILTER_TEST_ID = "sex-filter";
 const SEX_FILTER_LABEL = "Sex";
 const SEX_FILTER_SELECTION = "female";
-const PUBLICATION_FILTER_TEST_ID = "publication-filter";
 const PUBLICATION_FILTER_LABEL = "Publication";
 const PUBLICATION_FILTER_SELECTION = [
   "Ahern et al. (2022) Cell",
   "Arutyunyan et al. (2023) Nature",
 ];
-const SELF_REPORTED_ETHNICITY_FILTER_TEST_ID = "self-reported-ethnicity-filter";
+
 const SELF_REPORTED_ETHNICITY_FILTER_LABEL = "Self-Reported Ethnicity";
 const SELF_REPORTED_ETHNICITY_FILTER_SELECTION = "African";
 const SELF_REPORTED_ETHNICITY_TISSUE = ["breast", "nose"];
-const DISEASE_FILTER_TEST_ID = "disease-filter";
+
 const DISEASE_FILTER_LABEL = "Disease";
 const DISEASE_FILTER_SELECTION = "influenza";
-const DATASET_FILTER_TEST_ID = "dataset-filter";
+
 const DATASET_FILTER_LABEL = "Dataset";
 const DATASET_FILTER_SELECTION =
   "Combined samples HTAN MSK - Single cell profiling reveals novel tumor and myeloid subpopulations in small cell lung cancer";
@@ -364,13 +370,13 @@ async function filterCellTypes(page: Page, cellTypes: string[]) {
 
 /**
  * filterTissues
- * Filter the tissuesfrom the left panel
+ * Filter the tissues from the left panel
  */
 async function filterTissues(
   page: Page,
   filteredTissues: string[] = FILTERED_TISSUES
 ) {
-  await clickIntoFilter(page, TISSUE_FILTER_TEST_ID);
+  await clickIntoFilter(page, ADD_TISSUE_ID);
   for (const tissue of filteredTissues) {
     await page.getByRole("option", { name: tissue, exact: true }).click();
   }

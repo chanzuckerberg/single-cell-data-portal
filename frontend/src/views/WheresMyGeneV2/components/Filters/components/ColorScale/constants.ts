@@ -1,7 +1,7 @@
 // (ashin-czi): Used by SaveExport SVG generation to recreate the color scale plasma image in an SVG
 // Not the best solution but importing SVG files creates conflicts with the Loader
 
-import { SORT_BY } from "src/views/WheresMyGene/common/types";
+import { SORT_BY } from "src/views/WheresMyGeneV2/common/types";
 
 // and can't get the actual content of the SVG file needed for SVG creation
 export const PLASMA_SVG_STRING = `
