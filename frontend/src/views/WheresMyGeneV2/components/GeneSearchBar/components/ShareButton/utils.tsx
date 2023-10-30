@@ -132,13 +132,15 @@ export const loadStateFromQueryParams = ({
     paramsToRemove.push("organism");
   }
 
+  const cellTypeNames = Object.keys(cellTypesByName);
+
   // Check for cell types
   const newFilteredCellTypes =
     params
       .get("cellTypes")
       ?.split(delimiter)
       .filter((cellType) => {
-        if (Object.keys(cellTypesByName).indexOf(cellType) !== -1) return true;
+        if (cellTypeNames.indexOf(cellType) !== -1) return true;
         // Pop toast here
         console.warn(`Cell type ${cellType} not found in cell types`);
         return false;
