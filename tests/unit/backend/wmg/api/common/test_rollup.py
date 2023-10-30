@@ -314,8 +314,6 @@ class TestHighLevelRollupFunction(unittest.TestCase):
                 ["UBERON:0000955", "CL:0002627", "unknown", 40],
             ],
             "expected_rolled_up_cell_counts": [
-                ["UBERON:0000955", "CL:0000127", "HANCESTRO:0005", 10],
-                ["UBERON:0000955", "CL:0000127", "HANCESTRO:0006", 10],
                 ["UBERON:0000955", "CL:0000127", "HANCESTRO:0008", 50],
                 ["UBERON:0000955", "CL:0000127", "multiethnic", 70],
                 ["UBERON:0000955", "CL:0000127", "unknown", 410],
