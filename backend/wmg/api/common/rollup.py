@@ -234,26 +234,35 @@ def _rollup_cell_counts(cell_counts_grouped_df) -> DataFrame:
         and likely greater size than the input cell counts dataframe, but with the cell count
         values aggregated across the cell type's descendants.
     """
+    if cell_counts_grouped_df.shape[0] == 0:
+        return cell_counts_grouped_df
+
     rolled_up_cell_counts_grouped_df = cell_counts_grouped_df
 
-    if cell_counts_grouped_df.shape[0] > 0:
-        universal_set_cell_counts_grouped_df = _build_cell_count_groups_universal_set(cell_counts_grouped_df)
-        index_names = universal_set_cell_counts_grouped_df.index.names
+    universal_set_cell_counts_grouped_df = _build_cell_count_groups_universal_set(cell_counts_grouped_df)
+    index_names = universal_set_cell_counts_grouped_df.index.names
 
-        universal_set_cell_counts_grouped_df = universal_set_cell_counts_grouped_df.reset_index()
+    universal_set_cell_counts_grouped_df = universal_set_cell_counts_grouped_df.reset_index()
 
-        # rollup cell counts across cell type descendants
-        rolled_up_cell_counts_grouped_df = rollup_across_cell_type_descendants(universal_set_cell_counts_grouped_df)
+    # rollup cell counts across cell type descendants
+    rolled_up_cell_counts_grouped_df = rollup_across_cell_type_descendants(universal_set_cell_counts_grouped_df)
 
-        rolled_up_cell_counts_grouped_df = rolled_up_cell_counts_grouped_df[
-            rolled_up_cell_counts_grouped_df["n_cells_cell_type"] > 0
-        ]
+    rolled_up_cell_counts_grouped_df = rolled_up_cell_counts_grouped_df[
+        rolled_up_cell_counts_grouped_df["n_cells_cell_type"] > 0
+    ]
 
-        rolled_up_cell_counts_grouped_df.set_index(index_names, inplace=True)
-        cell_type_groups = _concatenate_columns_into_str(np.vstack(rolled_up_cell_counts_grouped_df.index.values))
-        cell_counts = rolled_up_cell_counts_grouped_df["n_cells_cell_type"].to_dict()
-        rolled_up_cell_counts_grouped_df = rolled_up_cell_counts_grouped_df[
-            are_cell_types_not_redundant_nodes(cell_type_groups, cell_counts)
-        ]
+    rolled_up_cell_counts_grouped_df.set_index(index_names, inplace=True)
 
+    index_names = list(index_names)
+    index_names.remove("cell_type_ontology_term_id")
+    index_names = ["cell_type_ontology_term_id"] + index_names
+    multi_index = rolled_up_cell_counts_grouped_df.index.reorder_levels(index_names)
+
+    cell_type_groups = _concatenate_columns_into_str(np.vstack(multi_index.values))
+
+    cell_counts = dict(zip(cell_type_groups, rolled_up_cell_counts_grouped_df["n_cells_cell_type"].values))
+
+    rolled_up_cell_counts_grouped_df = rolled_up_cell_counts_grouped_df[
+        are_cell_types_not_redundant_nodes(cell_type_groups, cell_counts)
+    ]
     return rolled_up_cell_counts_grouped_df

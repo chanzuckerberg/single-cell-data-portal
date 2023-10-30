@@ -1,4 +1,4 @@
-from functools import lru_cache, wraps
+from functools import lru_cache
 from typing import Optional
 
 import numba as nb
@@ -12,62 +12,6 @@ from backend.wmg.data.utils import get_pinned_ontology_url
 # ontology object
 ontology = owlready2.get_ontology(get_pinned_ontology_url(CL_BASIC_OWL_NAME))
 ontology.load()
-
-
-def make_hashable(func):
-    """
-    Implicitly convert unhashable data structures (list, dict, and set) to hashable data structures for memoization.
-    """
-
-    def _make_hashable_helper(obj):
-        """Recursively convert unhashable types to hashable ones."""
-        if isinstance(obj, dict):
-            return frozenset((k, _make_hashable_helper(v)) for k, v in obj.items())
-        elif isinstance(obj, set):
-            return frozenset(obj)
-        elif isinstance(obj, list):
-            return tuple(_make_hashable_helper(x) for x in obj)
-        else:
-            return obj
-
-    class HDict(dict):
-        def __hash__(self):
-            return hash(_make_hashable_helper(self))
-
-    class HList(list):
-        def __hash__(self):
-            return hash(_make_hashable_helper(self))
-
-    class HSet(set):
-        def __hash__(self):
-            return hash(_make_hashable_helper(self))
-
-    @wraps(func)
-    def wrapped(*args, **kwargs):
-        new_args = []
-        for arg in args:
-            if isinstance(arg, dict):
-                arg = HDict(arg)
-            elif isinstance(arg, list):
-                arg = HList(arg)
-            elif isinstance(arg, set):
-                arg = HSet(arg)
-            new_args.append(arg)
-
-        new_kwargs = {}
-        for k, v in kwargs.items():
-            if isinstance(v, dict):
-                v = HDict(v)
-            elif isinstance(v, list):
-                v = HList(v)
-            elif isinstance(v, set):
-                v = HSet(v)
-            new_kwargs[k] = v
-
-        return func(*new_args, **new_kwargs)
-
-    return wrapped
-
 
 # cache finding descendants per cell type
 @lru_cache(maxsize=None)
@@ -88,8 +32,6 @@ def ancestors(cell_type):
     return ancestors
 
 
-@make_hashable
-@lru_cache(maxsize=None)
 def get_valid_descendants(
     cell_type: str, valid_cell_types: frozenset[str], cell_counts: Optional[dict[str, int]] = None
 ):
@@ -163,9 +105,14 @@ def find_descendants_per_cell_type(cell_types):
     descendants_per_cell_type : list
         List of lists of descendants for each cell type in the input list.
     """
+    lookup_table = {}
     cell_types_set = frozenset(cell_types)
-
-    return [get_valid_descendants(cell_type, cell_types_set) for cell_type in cell_types]
+    valid_descendants = []
+    for cell_type in cell_types:
+        if cell_type not in lookup_table:
+            lookup_table[cell_type] = get_valid_descendants(cell_type, cell_types_set)
+        valid_descendants.append(lookup_table[cell_type])
+    return valid_descendants
 
 
 def are_cell_types_not_redundant_nodes(cell_types, cell_counts):
@@ -179,12 +126,14 @@ def are_cell_types_not_redundant_nodes(cell_types, cell_counts):
     Returns:
     - is_not_redundant (list of bool): A list of boolean values indicating whether each cell type is a redundant node.
     """
-
+    lookup_table = {}
     is_not_redundant = []
     cell_types_set = frozenset(cell_types)
     for cell_type in cell_types:
-        relatives = get_valid_descendants(cell_type, cell_types_set, cell_counts=cell_counts)
-        is_not_redundant.append(len(relatives) > 0)
+        if cell_type not in lookup_table:
+            relatives = get_valid_descendants(cell_type, cell_types_set, cell_counts=cell_counts)
+            lookup_table[cell_type] = len(relatives) > 0
+        is_not_redundant.append(lookup_table[cell_type])
     return is_not_redundant
 
 
