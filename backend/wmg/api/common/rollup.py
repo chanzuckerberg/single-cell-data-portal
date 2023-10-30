@@ -252,7 +252,8 @@ def _rollup_cell_counts(cell_counts_grouped_df) -> DataFrame:
         rolled_up_cell_counts_grouped_df.set_index(index_names, inplace=True)
         cell_type_groups = _concatenate_columns_into_str(np.vstack(rolled_up_cell_counts_grouped_df.index.values))
         cell_counts = rolled_up_cell_counts_grouped_df["n_cells_cell_type"].to_dict()
-        filt = are_cell_types_not_redundant_nodes(cell_type_groups, cell_counts)
-        rolled_up_cell_counts_grouped_df = rolled_up_cell_counts_grouped_df[filt]
+        rolled_up_cell_counts_grouped_df = rolled_up_cell_counts_grouped_df[
+            are_cell_types_not_redundant_nodes(cell_type_groups, cell_counts)
+        ]
 
     return rolled_up_cell_counts_grouped_df

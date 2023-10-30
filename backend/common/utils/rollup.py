@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Optional
 
 import numba as nb
 import numpy as np
@@ -33,7 +34,9 @@ def ancestors(cell_type):
 
 
 @lru_cache(maxsize=None)
-def get_valid_descendants(cell_type, valid_cell_types, cell_counts=None):
+def get_valid_descendants(
+    cell_type: str, valid_cell_types: frozenset[str], cell_counts: Optional[dict[str, int]] = None
+):
     """
     Get valid descendants for a cell type.
 
@@ -46,8 +49,8 @@ def get_valid_descendants(cell_type, valid_cell_types, cell_counts=None):
     ---------
     cell_type : str
         Cell type (cell type ontology term ID, potentially suffixed)
-    valid_cell_types : set[str]
-        Set of valid cell types
+    valid_cell_types : frozenset[str]
+        FrozenSet of valid cell types
     cell_counts : dict[str, int], optional, default=None
         Dictionary mapping cell type ontology term IDs (potentially suffixed) to the number of cells of that type.
         This is used to exclude all descendants of a cell type if the cell type has the same number of cells as one
@@ -122,7 +125,7 @@ def are_cell_types_not_redundant_nodes(cell_types, cell_counts):
     """
 
     is_not_redundant = []
-    cell_types_set = set(cell_types)
+    cell_types_set = frozenset(cell_types)
     for cell_type in cell_types:
         relatives = get_valid_descendants(cell_type, cell_types_set, cell_counts=cell_counts)
         is_not_redundant.append(len(relatives) > 0)
