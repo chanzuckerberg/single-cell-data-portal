@@ -15,22 +15,58 @@ ontology.load()
 
 
 def make_hashable(func):
+    """
+    Implicitly convert unhashable data structures (list, dict, and set) to hashable data structures for memoization.
+    """
+
     def _make_hashable_helper(obj):
         """Recursively convert unhashable types to hashable ones."""
         if isinstance(obj, dict):
             return frozenset((k, _make_hashable_helper(v)) for k, v in obj.items())
         elif isinstance(obj, set):
             return frozenset(obj)
+        elif isinstance(obj, list):
+            return tuple(_make_hashable_helper(x) for x in obj)
         else:
             return obj
 
+    class HDict(dict):
+        def __hash__(self):
+            return hash(_make_hashable_helper(self))
+
+    class HList(list):
+        def __hash__(self):
+            return hash(_make_hashable_helper(self))
+
+    class HSet(set):
+        def __hash__(self):
+            return hash(_make_hashable_helper(self))
+
     @wraps(func)
-    def wrapper(*args, **kwargs):
-        new_args = tuple(_make_hashable_helper(arg) for arg in args)
-        new_kwargs = {k: _make_hashable_helper(v) for k, v in kwargs.items()}
+    def wrapped(*args, **kwargs):
+        new_args = []
+        for arg in args:
+            if isinstance(arg, dict):
+                arg = HDict(arg)
+            elif isinstance(arg, list):
+                arg = HList(arg)
+            elif isinstance(arg, set):
+                arg = HSet(arg)
+            new_args.append(arg)
+
+        new_kwargs = {}
+        for k, v in kwargs.items():
+            if isinstance(v, dict):
+                v = HDict(v)
+            elif isinstance(v, list):
+                v = HList(v)
+            elif isinstance(v, set):
+                v = HSet(v)
+            new_kwargs[k] = v
+
         return func(*new_args, **new_kwargs)
 
-    return wrapper
+    return wrapped
 
 
 # cache finding descendants per cell type
