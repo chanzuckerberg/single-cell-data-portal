@@ -25,8 +25,10 @@ def make_hashable(func):
             return obj
 
     @wraps(func)
-    def wrapper(arg):
-        return func(_make_hashable_helper(arg))
+    def wrapper(*args, **kwargs):
+        new_args = tuple(_make_hashable_helper(arg) for arg in args)
+        new_kwargs = {k: _make_hashable_helper(v) for k, v in kwargs.items()}
+        return func(*new_args, **new_kwargs)
 
     return wrapper
 
