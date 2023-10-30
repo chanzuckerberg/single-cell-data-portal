@@ -8,7 +8,11 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from backend.common.utils.rollup import are_cell_types_colinear, rollup_across_cell_type_descendants
+from backend.common.utils.rollup import (
+    are_cell_types_colinear,
+    are_cell_types_not_redundant_nodes,
+    rollup_across_cell_type_descendants,
+)
 
 
 class TestLowLevelRollupFunctionsTraversingCellTypeLineage(unittest.TestCase):
@@ -55,3 +59,42 @@ class TestLowLevelRollupFunctionsTraversingCellTypeLineage(unittest.TestCase):
         for cell_types, expected in zip(cell_type_pairs, expected_colinearity):
             a, b = cell_types
             assert are_cell_types_colinear(a, b) == expected
+
+    def test__cell_types_are_not_redundant(self):
+        cell_counts = {
+            "CL:0000127;;UBERON:0000955--HANCESTRO:0005": 10,
+            "CL:0000127;;UBERON:0000955--HANCESTRO:0006": 10,
+            "CL:0000127;;UBERON:0000955--HANCESTRO:0008": 50,
+            "CL:0000127;;UBERON:0000955--multiethnic": 70,
+            "CL:0000127;;UBERON:0000955--unknown": 410,
+            "CL:0000644;;UBERON:0000955--unknown": 70,
+            "CL:0002605;;UBERON:0000955--HANCESTRO:0005": 10,
+            "CL:0002605;;UBERON:0000955--HANCESTRO:0008": 30,
+            "CL:0002605;;UBERON:0000955--multiethnic": 40,
+            "CL:0002627;;UBERON:0000955--HANCESTRO:0006": 10,
+            "CL:0002627;;UBERON:0000955--HANCESTRO:0008": 20,
+            "CL:0002627;;UBERON:0000955--multiethnic": 30,
+            "CL:0002627;;UBERON:0000955--unknown": 40,
+        }
+        cell_type_groups = np.array(
+            [
+                "CL:0000127;;UBERON:0000955--HANCESTRO:0005",
+                "CL:0000127;;UBERON:0000955--HANCESTRO:0006",
+                "CL:0000127;;UBERON:0000955--HANCESTRO:0008",
+                "CL:0000127;;UBERON:0000955--multiethnic",
+                "CL:0000127;;UBERON:0000955--unknown",
+                "CL:0000644;;UBERON:0000955--unknown",
+                "CL:0002605;;UBERON:0000955--HANCESTRO:0005",
+                "CL:0002605;;UBERON:0000955--HANCESTRO:0008",
+                "CL:0002605;;UBERON:0000955--multiethnic",
+                "CL:0002627;;UBERON:0000955--HANCESTRO:0006",
+                "CL:0002627;;UBERON:0000955--HANCESTRO:0008",
+                "CL:0002627;;UBERON:0000955--multiethnic",
+                "CL:0002627;;UBERON:0000955--unknown",
+            ],
+            dtype="<U46",
+        )
+
+        result = are_cell_types_not_redundant_nodes(cell_type_groups, cell_counts)
+        expected = [False, False, True, True, True, True, True, True, True, True, True, True, True]
+        self.assertEqual(result, expected)
