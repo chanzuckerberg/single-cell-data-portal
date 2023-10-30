@@ -4,10 +4,9 @@ on:
   push:
     branches:
       - main
-      - staging
       - prod
   repository_dispatch:
-    types: [build-images]
+    types: [build-images-for-staging]
 env:
   # Force using BuildKit instead of normal Docker, required so that metadata
   # is written/read to allow us to use layers of previous builds as cache.
@@ -15,11 +14,6 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
   GITHUB_BRANCH: ${{ github.event.client_payload.ref || github.ref }}
-
-# add a concurrency group to prevent multiple builds from running at the same time
-concurrency:
-  group: ${{ github.event.client_payload.ref || github.ref }}-environment
-  cancel-in-progress: false
 
 permissions:
   id-token: write

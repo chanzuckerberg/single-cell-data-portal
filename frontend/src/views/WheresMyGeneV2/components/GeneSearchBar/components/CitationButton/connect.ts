@@ -1,7 +1,7 @@
 import { useCallback, useContext, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { StateContext } from "src/views/WheresMyGene/common/store";
+import { StateContext } from "src/views/WheresMyGeneV2/common/store";
 import { CITATION_NOTIFICATION_TEXT } from "./constants";
 
 export const useConnect = () => {

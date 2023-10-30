@@ -76,9 +76,9 @@ class S3Provider(S3ProviderInterface):
                 Delete={"Objects": [{"Key": key} for key in key_batch]},
             )
             if deleted := resp.get("Deleted"):
-                logger.info(f"Deleted: {deleted}")
+                logger.info({"deleted": deleted})
             if errors := resp.get("Errors"):
-                logger.info(f"Errors: {errors}")
+                logger.error({"errors": errors, "bucket_name": bucket_name})
                 raise S3DeleteException(errors)
 
     def delete_prefix(self, bucket_name: str, prefix: str) -> None:

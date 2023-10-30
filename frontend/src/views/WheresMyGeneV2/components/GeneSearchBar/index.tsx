@@ -15,12 +15,12 @@ import Toast from "src/views/Collection/components/Toast";
 import {
   DispatchContext,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
+} from "src/views/WheresMyGeneV2/common/store";
 import {
   deleteAllGenes,
   selectGenes,
-} from "src/views/WheresMyGene/common/store/actions";
-import { Gene } from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/store/actions";
+import { Gene } from "src/views/WheresMyGeneV2/common/types";
 import {
   ActionWrapper,
   AutocompleteWrapper,

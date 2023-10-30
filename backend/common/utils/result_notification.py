@@ -85,7 +85,7 @@ def gen_wmg_pipeline_failure_message(failure_info: str) -> dict:
     }
 
 
-def gen_wmg_pipeline_success_message(snapshot_path: str, dataset_count: int, cell_count: int, gene_count: int) -> dict:
+def gen_wmg_pipeline_success_message(snapshot_path: str, dataset_count: int, cell_count: int) -> dict:
     return {
         "blocks": [
             {
@@ -101,8 +101,7 @@ def gen_wmg_pipeline_success_message(snapshot_path: str, dataset_count: int, cel
                 "text": {
                     "type": "mrkdwn",
                     "text": f"\n* WMG snapshot stored in {snapshot_path}"
-                    f"\n* The cube contains {cell_count} cells from {dataset_count} "
-                    f"\n  datasets, with expression scores across {gene_count} genes.",
+                    f"\n* The cube contains {cell_count} cells from {dataset_count} datasets.",
                 },
             },
         ]

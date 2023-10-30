@@ -1,5 +1,5 @@
 import SidebarLayout from "src/components/Layout/components/sidebarLayout";
-import { SideBarLayoutMainWrapper } from "src/views/WheresMyGene/style";
+import { SideBarLayoutMainWrapper } from "src/views/WheresMyGeneV2/style";
 import WheresMyGeneV2 from "src/views/WheresMyGeneV2";
 
 const Page = (): JSX.Element => <WheresMyGeneV2 />;
