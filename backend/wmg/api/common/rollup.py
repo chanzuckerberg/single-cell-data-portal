@@ -10,7 +10,11 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 
-from backend.common.utils.rollup import rollup_across_cell_type_descendants, rollup_across_cell_type_descendants_array
+from backend.common.utils.rollup import (
+    are_cell_types_not_redundant_nodes,
+    rollup_across_cell_type_descendants,
+    rollup_across_cell_type_descendants_array,
+)
 
 ######################### PUBLIC FUNCTIONS IN ALPHABETIC ORDER ##################################
 
@@ -130,11 +134,7 @@ def _rollup_gene_expression(gene_expression_df, universal_set_cell_counts_df) ->
     # create a string array of cell types for rollup
     # cell types are suffixed with ";;" to avoid collisions with cell type descendants
     # outside of each cell type's group.
-    cell_types_for_rollup = np.char.add(multi_index_array[:, 0], ";;")
-    for col in range(1, multi_index_array.shape[1]):
-        if col > 1:
-            cell_types_for_rollup = np.char.add(cell_types_for_rollup, "--")
-        cell_types_for_rollup = np.char.add(cell_types_for_rollup, multi_index_array[:, col])
+    cell_types_for_rollup = _concatenate_columns_into_str(multi_index_array)
 
     # roll up the array along the first dimension (cell types;;groups)
     dense_tables = rollup_across_cell_type_descendants_array(dense_tables, cell_types_for_rollup)
@@ -153,6 +153,15 @@ def _rollup_gene_expression(gene_expression_df, universal_set_cell_counts_df) ->
 
     new_df["n_cells_tissue"] = n_cells_tissue[new_df["tissue_ontology_term_id"]].values
     return new_df[gene_expression_df.columns]
+
+
+def _concatenate_columns_into_str(value_arr):
+    concatenated = np.char.add(value_arr[:, 0], ";;")
+    for col in range(1, value_arr.shape[1]):
+        if col > 1:
+            concatenated = np.char.add(concatenated, "--")
+        concatenated = np.char.add(concatenated, value_arr[:, col])
+    return concatenated
 
 
 def _build_cell_count_groups_universal_set(cell_counts_grouped_df) -> DataFrame:
@@ -239,6 +248,11 @@ def _rollup_cell_counts(cell_counts_grouped_df) -> DataFrame:
         rolled_up_cell_counts_grouped_df = rolled_up_cell_counts_grouped_df[
             rolled_up_cell_counts_grouped_df["n_cells_cell_type"] > 0
         ]
+
         rolled_up_cell_counts_grouped_df.set_index(index_names, inplace=True)
+        cell_type_groups = _concatenate_columns_into_str(np.vstack(rolled_up_cell_counts_grouped_df.index.values))
+        cell_counts = rolled_up_cell_counts_grouped_df["n_cells_cell_type"].to_dict()
+        filt = are_cell_types_not_redundant_nodes(cell_type_groups, cell_counts)
+        rolled_up_cell_counts_grouped_df = rolled_up_cell_counts_grouped_df[filt]
 
     return rolled_up_cell_counts_grouped_df
