@@ -1,4 +1,4 @@
-from functools import lru_cache
+from functools import lru_cache, wraps
 from typing import Optional
 
 import numba as nb
@@ -12,6 +12,23 @@ from backend.wmg.data.utils import get_pinned_ontology_url
 # ontology object
 ontology = owlready2.get_ontology(get_pinned_ontology_url(CL_BASIC_OWL_NAME))
 ontology.load()
+
+
+def make_hashable(func):
+    def _make_hashable_helper(obj):
+        """Recursively convert unhashable types to hashable ones."""
+        if isinstance(obj, dict):
+            return frozenset((k, _make_hashable_helper(v)) for k, v in obj.items())
+        elif isinstance(obj, set):
+            return frozenset(obj)
+        else:
+            return obj
+
+    @wraps(func)
+    def wrapper(arg):
+        return func(_make_hashable_helper(arg))
+
+    return wrapper
 
 
 # cache finding descendants per cell type
@@ -33,6 +50,7 @@ def ancestors(cell_type):
     return ancestors
 
 
+@make_hashable
 @lru_cache(maxsize=None)
 def get_valid_descendants(
     cell_type: str, valid_cell_types: frozenset[str], cell_counts: Optional[dict[str, int]] = None
