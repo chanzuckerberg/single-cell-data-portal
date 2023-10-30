@@ -41,10 +41,10 @@ def success_handler(events: dict, context) -> None:
                 error_cause,
                 execution_arn,
             ) = parse_event(seurat_job)
+            update_dataset_processing_status_to_failed(dataset_id)
             trigger_slack_notification(
                 dataset_id, collection_version_id, error_step_name, error_job_id, error_aws_regions, execution_arn
             )
-            update_dataset_processing_status_to_failed(dataset_id)
         business_logic.update_dataset_version_status(
             DatasetVersionId(cxg_job["dataset_id"]), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
         )
