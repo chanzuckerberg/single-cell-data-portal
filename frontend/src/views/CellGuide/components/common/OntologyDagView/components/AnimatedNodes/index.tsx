@@ -82,12 +82,14 @@ export default function AnimatedNodes({
     event: React.MouseEvent<HTMLDivElement>,
     datum: TreeNodeWithState
   ) => {
-    const id = setTimeout(() => {
-      track(EVENTS.CG_TREE_NODE_HOVER, {
-        cell_type: datum.name,
-      });
-    }, 2 * 1000);
-    setTimerId(id);
+    if (!timerId) {
+      const id = setTimeout(() => {
+        track(EVENTS.CG_TREE_NODE_HOVER, {
+          cell_type: datum.name,
+        });
+      }, 2 * 1000);
+      setTimerId(id);
+    }
     const ownerSVGElement = findSVGParent(event.target as Node);
     if (event.target instanceof HTMLDivElement && ownerSVGElement) {
       const coords = localPoint(ownerSVGElement, event);
