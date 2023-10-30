@@ -17,6 +17,9 @@ import {
   DialogTitle,
 } from "@czi-sds/components";
 import { DialogLoader as Loader } from "src/components/Datasets/components/DownloadDataset/style";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { FEATURES } from "src/common/featureFlags/features";
+import { Spinner } from "@blueprintjs/core";
 
 interface Props {
   isError?: boolean;
@@ -33,6 +36,7 @@ const Content: FC<Props> = ({
   name,
   dataAssets,
 }) => {
+  const isDownloadUX = useFeatureFlag(FEATURES.DOWNLOAD_UX);
   const [selectedFormat, setSelectedFormat] = useState<
     DATASET_ASSET_FORMAT | ""
   >("");
@@ -43,6 +47,11 @@ const Content: FC<Props> = ({
     useState<boolean>(false);
   const isDownloadDisabled =
     !downloadLink || isDownloadLinkLoading || isError || isLoading;
+  const DialogLoader = isDownloadUX ? (
+    <Loader sdsStyle="minimal" />
+  ) : (
+    <Spinner size={20} />
+  ); // TODO: #5566 hidden under feature flag.
 
   useEffect(() => {
     if (!selectedFormat) return;
@@ -129,7 +138,7 @@ const Content: FC<Props> = ({
       <DialogTitle title="Download Dataset" />
       <DialogContent>
         {isError && <div>Dataset download is currently not available.</div>}
-        {isLoading && <Loader sdsStyle="minimal" />}
+        {isLoading && DialogLoader}
         {!isError && !isLoading && (
           <>
             <Name name={name} />
