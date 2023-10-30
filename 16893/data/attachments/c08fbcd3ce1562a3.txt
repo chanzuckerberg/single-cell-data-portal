@@ -1,3 +1,0 @@
-INFO     wmg-api:v2.py:364 PRATHAP! build_ontology_term_id_label_mapping() func - ontology_term_ids for ethnicity: ['self_reported_ethnicity_ontology_term_id_0']
-INFO     wmg-api:v2.py:367 PRATHAP! build_ontology_term_id_label_mapping() func - about to apply 'ontology_term_label()' func for debugging ethnicity...
-INFO     wmg-api:v2.py:373 PRATHAP! build_ontology_term_id_label_mapping() func - debugging_ethnicity_labels: [{'self_reported_ethnicity_ontology_term_id_0': 'self_reported_ethnicity_ontology_term_id_0_label'}]
