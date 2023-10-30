@@ -107,7 +107,7 @@ def find_descendants_per_cell_type(cell_types):
     descendants_per_cell_type : list
         List of lists of descendants for each cell type in the input list.
     """
-    cell_types_set = set(cell_types)
+    cell_types_set = frozenset(cell_types)
 
     return [get_valid_descendants(cell_type, cell_types_set) for cell_type in cell_types]
 
