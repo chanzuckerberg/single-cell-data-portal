@@ -13,7 +13,7 @@ from backend.portal.api.providers import get_business_logic
 logger.configure_logging(level=logging.INFO)
 
 
-def handle_failure(event: dict, context) -> None:
+def handle_failure(event: dict, context, delete_artifacts=True) -> None:
     logging.info(event)
     (
         dataset_id,
@@ -28,7 +28,8 @@ def handle_failure(event: dict, context) -> None:
         dataset_id, collection_version_id, error_step_name, error_job_id, error_aws_regions, execution_arn
     )
     update_dataset_processing_status_to_failed(dataset_id)
-    cleanup_artifacts(dataset_id, error_step_name)
+    if delete_artifacts:
+        cleanup_artifacts(dataset_id, error_step_name)
 
 
 def parse_event(event: dict):
