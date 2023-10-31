@@ -1,9 +1,12 @@
 import json
 import os
+import contextlib
 import shutil
 from typing import Any, Dict
 
 import scanpy
+
+import requests
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.common.utils.math_utils import MB
@@ -15,7 +18,7 @@ from backend.layers.common.entities import (
     DatasetUploadStatus,
     DatasetVersionId,
 )
-from backend.layers.processing.downloader import download
+from backend.layers.processing.downloader import logger
 from backend.layers.processing.exceptions import UploadFailed
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
@@ -80,7 +83,7 @@ class ProcessDownload(ProcessingLogic):
         if string.startswith(prefix):
             return string[len(prefix) :]
         else:
-            return string[:]
+            return string
 
     def create_batch_job_definition_parameters(self, local_filename: str, dataset_id) -> Dict[str, Any]:
         MEMORY_MODIFIER = 1.1  # add 10% overhead
@@ -154,3 +157,29 @@ class ProcessDownload(ProcessingLogic):
 
         sfn_client = StepFunctionProvider().client
         sfn_client.send_task_success(taskToken=sfn_task_token, output=json.dumps(response))
+
+
+def download(
+    url: str,
+    local_path: str,
+    chunk_size: int = 10 * 2**20,
+) -> None:
+    """
+    Download a file from a url and update the processing_status upload fields in the database
+
+    :param url: The URL of the file to be downloaded.
+    :param local_path: The local name of the file be downloaded.
+    :param chunk_size: The size of downloaded data to copy to memory before saving to disk.
+
+    :return: The current dataset processing status.
+    """
+
+    with contextlib.suppress(Exception), requests.get(url, stream=True) as resp:
+        resp.raise_for_status()
+        with open(local_path, "wb") as fp:
+            logger.debug("Starting download.")
+            for chunk in resp.iter_content(chunk_size=chunk_size):
+                if chunk:
+                    fp.write(chunk)
+                    chunk_size = len(chunk)
+                    logger.debug(f"chunk size: {chunk_size}")
