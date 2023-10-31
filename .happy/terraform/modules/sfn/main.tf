@@ -168,7 +168,7 @@ resource "aws_sfn_state_machine" "state_machine" {
             "Environment": [
               {
                 "Name": "DATASET_ID",
-                 "Value.$": "$.dataset_id"
+                "Value.$": "$.dataset_id"
               },
               {
                 "Name": "COLLECTION_ID",
