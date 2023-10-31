@@ -89,7 +89,7 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Next": "CxgSeuratParallel",
         "Parameters": {
           "JobDefinition":"${var.job_definition_arn}",
-          "JobName": "download",
+          "JobName": "validate",
           "JobQueue.$": "$.job_queue",
           "RetryStrategy": {
             "Attempts": ${var.max_attempts},
