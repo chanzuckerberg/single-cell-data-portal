@@ -1,1 +1,0 @@
-{"levelname": "ERROR", "asctime": "2023-10-30T00:45:26.030Z", "name": "root", "message": "Dataset dataset123 not found", "lineno": 91, "pathname": "/single-cell-data-portal/backend/layers/processing/upload_failures/app.py"}
