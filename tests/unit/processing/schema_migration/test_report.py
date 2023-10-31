@@ -1,6 +1,5 @@
 import json
-
-from mock import call
+from unittest.mock import call
 
 
 def mock_download_file(bucket: str, key: str, local_path: str):
