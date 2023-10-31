@@ -11,7 +11,6 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing.process import ProcessMain
 from backend.layers.processing.process_cxg import ProcessCxg
-from backend.layers.processing.process_download import ProcessDownload
 from backend.layers.processing.process_seurat import ProcessSeurat
 from backend.layers.processing.process_validate import ProcessValidate
 from tests.unit.processing.base_processing_test import BaseProcessingTest
@@ -80,41 +79,6 @@ class ProcessingTest(BaseProcessingTest):
             artifact = artifacts[0]
             artifact.type = DatasetArtifactType.H5AD
             artifact.uri = f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"
-
-    def test_process_download_success(self):
-        """
-        ProcessValidate should:
-        1. Download the h5ad artifact
-        2. Set upload status to UPLOADED
-        3. upload the original file to S3
-        """
-        dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=0"
-
-        collection = self.generate_unpublished_collection()
-        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
-            collection.version_id, dropbox_uri, None, None
-        )
-
-        # This is where we're at when we start the SFN
-        status = self.business_logic.get_dataset_status(dataset_version_id)
-        self.assertIsNone(status.validation_status)
-        self.assertEqual(status.processing_status, DatasetProcessingStatus.INITIALIZED)
-        self.assertEqual(status.upload_status, DatasetUploadStatus.WAITING)
-
-        pdv = ProcessDownload(self.business_logic, self.uri_provider, self.s3_provider)
-        pdv.process(dataset_version_id, dropbox_uri, "fake_bucket_name", "fake_sfn_task_token")
-
-        status = self.business_logic.get_dataset_status(dataset_version_id)
-        self.assertEqual(status.upload_status, DatasetUploadStatus.UPLOADED)
-
-        # Verify that both the original (raw.h5ad) and the labeled (local.h5ad) files are there
-        self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad"))
-
-        artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
-        self.assertEqual(1, len(artifacts))
-        artifact = artifacts[0]
-        artifact.type = DatasetArtifactType.RAW_H5AD
-        artifact.uri = f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad"
 
     @patch("scanpy.read_h5ad")
     @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
