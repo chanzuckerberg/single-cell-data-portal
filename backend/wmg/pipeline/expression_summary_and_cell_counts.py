@@ -44,7 +44,7 @@ def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
             organism = organismInfo["label"]
             organismId = organismInfo["id"]
 
-            value_filter = CensusParameters.value_filter[organism]
+            value_filter = CensusParameters.value_filter(organism)
             organism = census["census_data"][organism]
             with organism.axis_query(
                 "RNA",
