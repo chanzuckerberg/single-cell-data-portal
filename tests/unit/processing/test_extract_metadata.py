@@ -9,7 +9,7 @@ from backend.layers.processing.process_validate import ProcessValidate
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 
-class TestProcessingDownloadValidate(BaseProcessingTest):
+class TestProcessingValidate(BaseProcessingTest):
     def setUp(self):
         super().setUp()
         self.pdv = ProcessValidate(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
