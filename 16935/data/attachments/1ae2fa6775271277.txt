@@ -1,1 +1,0 @@
-The "latest" release is currently 2023-10-23. Specify 'census_version="2023-10-23"' in future calls to open_soma() to ensure data consistency.
