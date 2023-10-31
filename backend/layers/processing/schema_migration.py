@@ -104,7 +104,15 @@ class SchemaMigrate(ProcessingLogic):
         source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(raw_h5ad_uri)
         self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
         migrated_file = "migrated.h5ad"
-        self.schema_validator.migrate("previous_schema.h5ad", migrated_file, collection_id, dataset_id)
+        reported_changes = self.schema_validator.migrate(
+            "previous_schema.h5ad", migrated_file, collection_id, dataset_id
+        )
+        if reported_changes:
+            self._store_sfn_response(
+                "report/migrate_changes",
+                f"{collection_id}_{dataset_id}",
+                {f"{collection_id}_{dataset_id}": reported_changes},
+            )
         key_prefix = self.get_key_prefix(dataset_version_id)
         uri = self.upload_artifact(migrated_file, key_prefix, self.artifact_bucket)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
@@ -237,16 +245,15 @@ class SchemaMigrate(ProcessingLogic):
             self.business_logic.publish_collection_version(collection_version.version_id)
         return errors
 
-    def _store_sfn_response(self, step_name, file_name, response: Dict[str, str]):
+    def _store_sfn_response(self, directory: str, file_name: str, response: Dict[str, str]):
         """
-
-        :param step_name: The step that will use this file
+        :param directory: The subdirectory in which to store the response,
         :param file_name: a unique name to describe this job
         :param response: the response to store as json.
         """
         file_name = f"{file_name}.json"
         local_file = os.path.join(self.local_path, file_name)
-        key_name = self.get_key_prefix(f"schema_migration/{self.execution_id}/{step_name}/{file_name}")
+        key_name = self.get_key_prefix(f"schema_migration/{self.execution_id}/{directory}/{file_name}")
         with open(local_file, "w") as f:
             json.dump(response, f)
         self.s3_provider.upload_file(local_file, self.artifact_bucket, key_name, {})
@@ -254,16 +261,16 @@ class SchemaMigrate(ProcessingLogic):
             "Uploaded to S3", extra={"file_name": local_file, "bucket": self.artifact_bucket, "key": key_name}
         )
 
-    def _retrieve_sfn_response(self, step_name, file_name):
+    def _retrieve_sfn_response(self, directory: str, file_name: str):
         """
         retrieve the JSON responses to be used by this step
-        :param step_name: the step that the response is intended for
-        :param file_name: a unique name of the file.
+        :param directory: the subdirectory from which to retrieve the response
+        :param file_name: the filename to retrieve.
         :return: the contents of the JSON file
         """
         file_name = f"{file_name}.json"
         local_file = os.path.join(self.local_path, "data.json")
-        key_name = self.get_key_prefix(f"schema_migration/{self.execution_id}/{step_name}/{file_name}")
+        key_name = self.get_key_prefix(f"schema_migration/{self.execution_id}/{directory}/{file_name}")
         self.s3_provider.download_file(self.artifact_bucket, key_name, local_file)
         with open(local_file, "r") as f:
             data = json.load(f)
@@ -277,7 +284,7 @@ class SchemaMigrate(ProcessingLogic):
             except Exception as e:
                 self.logger.exception(f"Error in {func.__name__}", extra={"input": {"args": args, "kwargs": kwargs}})
                 self._store_sfn_response(
-                    "report", file_name, {"step": func.__name__, "error": str(e), "args": args, "kwargs": kwargs}
+                    "report/errors", file_name, {"step": func.__name__, "error": str(e), "args": args, "kwargs": kwargs}
                 )
                 raise e
 
@@ -285,24 +292,29 @@ class SchemaMigrate(ProcessingLogic):
 
     def report(self) -> str:
         try:
-            report = dict(errors=[])
-            error_s3_keys = list(
-                self.s3_provider.list_directory(
-                    self.artifact_bucket, self.get_key_prefix(f"schema_migration/{self.execution_id}/report")
+            report = dict(errors=[], migrate_changes=[])
+
+            def retrieve_report_files_from_s3(directory: str):
+                s3_keys = list(
+                    self.s3_provider.list_directory(
+                        self.artifact_bucket,
+                        self.get_key_prefix(f"schema_migration/{self.execution_id}/report/{directory}"),
+                    )
                 )
-            )
-            self.logger.info("Error files found", extra={"error_files": len(error_s3_keys)})
-            for s3_key in error_s3_keys:
-                local_file = os.path.join(self.local_path, "data.json")
-                self.s3_provider.download_file(self.artifact_bucket, s3_key, local_file)
-                with open(local_file, "r") as f:
-                    jn = json.load(f)
-                report["errors"].append(jn)
+                self.logger.info(f"{directory} files found", extra={"files": len(s3_keys)})
+                for s3_key in s3_keys:
+                    local_file = os.path.join(self.local_path, "data.json")
+                    self.s3_provider.download_file(self.artifact_bucket, s3_key, local_file)
+                    with open(local_file, "r") as f:
+                        jn = json.load(f)
+                    report[directory].append(jn)
+                # Cleanup S3 files
+                self.s3_provider.delete_files(self.artifact_bucket, s3_keys)
+
+            retrieve_report_files_from_s3("errors")
+            retrieve_report_files_from_s3("migrate_changes")
             self.logger.info("Report", extra=report)
             report_str = json.dumps(report, indent=4, sort_keys=True)
-
-            # Cleanup S3 files
-            self.s3_provider.delete_files(self.artifact_bucket, error_s3_keys)
             report_message = "Schema migration results."
             # if report["errors"]:
             #     report_message += " @sc-oncall-eng"

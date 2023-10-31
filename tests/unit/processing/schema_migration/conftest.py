@@ -91,6 +91,7 @@ def schema_migrate(tmpdir):
     business_logic = mock.Mock()
     schema_validator = mock.Mock(spec=SchemaValidatorProviderInterface)
     schema_validator.get_current_schema_version.return_value = "1.0.0"
+    schema_validator.migrate.return_value = list()
     schema_migrate = SchemaMigrate(business_logic, schema_validator)
     schema_migrate.local_path = str(tmpdir)
     return schema_migrate
