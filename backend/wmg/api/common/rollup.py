@@ -2,11 +2,11 @@
 
 The API public methods call the public methods in this module to perform the rollup operations.
 """
-from ddtrace import tracer 
 import itertools
 from typing import Tuple
 import numpy as np
 import pandas as pd
+from ddtrace import tracer 
 from pandas import DataFrame
 
 from backend.common.utils.rollup import rollup_across_cell_type_descendants, rollup_across_cell_type_descendants_array
