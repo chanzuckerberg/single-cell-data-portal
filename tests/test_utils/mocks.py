@@ -52,6 +52,13 @@ class MockCensusParameters:
         "mus_musculus": "dataset_id in ['ef47280b-3e68-4188-a49a-7b8374c8a6f2']",
     }
 
+    def value_filter(organism: str) -> str:
+        organism_mapping = {
+            "homo_sapiens": "dataset_id in ['0041b9c3-6a49-4bf7-8514-9bc7190067a7']",
+            "mus_musculus": "dataset_id in ['ef47280b-3e68-4188-a49a-7b8374c8a6f2']",
+        }
+        return organism_mapping[organism]
+
 
 def mock_return_dataset_dict_w_publications():
     return {}
