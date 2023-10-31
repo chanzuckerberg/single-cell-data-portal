@@ -81,7 +81,6 @@ class ProcessMain(ProcessingLogic):
             "MAX_ATTEMPTS",
             "MIGRATE",
             "REMOTE_DEV_PREFIX",
-            "TASK_TOKEN",
         ]
         env_vars = dict()
         for var in batch_environment_variables:
