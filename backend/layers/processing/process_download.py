@@ -73,7 +73,7 @@ class ProcessDownload(ProcessingLogic):
         if string.startswith(prefix):
             return string[len(prefix) :]
         else:
-            return string[:]
+            return string
 
     def process(self, dataset_id: DatasetVersionId, dataset_uri: str, artifact_bucket: str, sfn_task_token: str):
         """
