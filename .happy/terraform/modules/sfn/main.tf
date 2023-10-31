@@ -171,6 +171,10 @@ resource "aws_sfn_state_machine" "state_machine" {
                  "Value.$": "$.dataset_id"
               },
               {
+                "Name": "COLLECTION_ID",
+                "Value.$": "$.collection_id"
+              },
+              {
                 "Name": "STEP_NAME",
                 "Value": "validate"
               }
