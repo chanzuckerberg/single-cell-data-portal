@@ -9,7 +9,8 @@ import requests
 from requests.adapters import HTTPAdapter, Response
 from requests.packages.urllib3.util import Retry
 
-from backend.common.corpora_config import CorporaAuthConfig, CorporaConfig
+from backend.common.corpora_config import CorporaAuthConfig
+from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 
 API_URL = {
     "prod": "https://api.cellxgene.cziscience.com",
@@ -38,7 +39,7 @@ class BaseFunctionalTestCase(unittest.TestCase):
         super().setUpClass()
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
         cls.config = CorporaAuthConfig()
-        cls.is_using_schema_4 = CorporaConfig().schema_4_feature_flag.lower() == "true"
+        cls.is_using_schema_4 = FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4)
         cls.test_dataset_uri = (
             (
                 "https://www.dropbox.com/scl/fi/d99hpw3p2cxtmi7v4kyv5/"

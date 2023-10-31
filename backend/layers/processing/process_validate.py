@@ -4,6 +4,7 @@ import numpy
 import scanpy
 
 from backend.common.corpora_config import CorporaConfig
+from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
@@ -79,7 +80,7 @@ class ProcessValidate(ProcessingLogic):
         if not is_valid:
             raise ValidationFailed(errors)
         else:
-            if CorporaConfig().schema_4_feature_flag.lower() == "true":
+            if FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4):
                 self.populate_dataset_citation(collection_id, dataset_id, output_filename)
 
             # TODO: optionally, these could be batched into one
@@ -177,7 +178,7 @@ class ProcessValidate(ProcessingLogic):
             name=adata.uns["title"],
             organism=_get_term_pairs("organism"),
             tissue=_get_tissue_terms()
-            if CorporaConfig().schema_4_feature_flag.lower() == "true"
+            if FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4)
             else _get_term_pairs("tissue"),
             assay=_get_term_pairs("assay"),
             disease=_get_term_pairs("disease"),
