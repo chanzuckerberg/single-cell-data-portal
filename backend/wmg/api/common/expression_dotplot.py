@@ -5,7 +5,7 @@ and cell count data structures process and return to the client.
 """
 
 from typing import List, Tuple
-
+from ddtrace import tracer
 from pandas import DataFrame
 
 DEFAULT_GROUP_BY_TERMS = ["tissue_ontology_term_id", "cell_type_ontology_term_id"]
@@ -46,7 +46,7 @@ def build_dot_plot_matrix(
         cell_counts_tissue_agg, on=["tissue_ontology_term_id"], how="left"
     )
 
-
+@tracer.wrap()
 def get_dot_plot_data(
     raw_gene_expression: DataFrame,
     cell_counts: DataFrame,
