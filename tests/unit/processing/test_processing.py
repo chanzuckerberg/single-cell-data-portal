@@ -170,12 +170,13 @@ class ProcessingTest(BaseProcessingTest):
             cxg_artifact = [artifact for artifact in artifacts if artifact.type == "cxg"][0]
             self.assertTrue(cxg_artifact, f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/")
 
+    @patch("backend.layers.processing.process_download.StepFunctionProvider")
     @patch("scanpy.read_h5ad")
     @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
     @patch("backend.layers.processing.process_validate.ProcessValidate.extract_metadata")
     @patch("backend.layers.processing.process_seurat.ProcessSeurat.make_seurat")
     @patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg")
-    def test_process_all(self, mock_cxg, mock_seurat, mock_h5ad, mock_config, mock_read_h5ad):
+    def test_process_all(self, mock_cxg, mock_seurat, mock_h5ad, mock_config, mock_read_h5ad, mock_sfn_provider):
         mock_seurat.return_value = "local.rds"
         mock_cxg.return_value = "local.cxg"
 

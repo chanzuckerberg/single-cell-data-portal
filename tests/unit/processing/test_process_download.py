@@ -1,5 +1,6 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
+import anndata
 import pytest
 
 from backend.layers.common.entities import DatasetArtifactType, DatasetProcessingStatus, DatasetUploadStatus
@@ -8,7 +9,9 @@ from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 
 class TestProcessDownload(BaseProcessingTest):
-    def test_process_download_success(self):
+    @patch("backend.layers.processing.process_download.StepFunctionProvider")
+    @patch("scanpy.read_h5ad")
+    def test_process_download_success(self, mock_read_h5ad, mock_sfn_provider):
         """
         ProcessValidate should:
         1. Download the h5ad artifact
@@ -21,6 +24,15 @@ class TestProcessDownload(BaseProcessingTest):
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
             collection.version_id, dropbox_uri, None, None
         )
+        # Mock anndata object
+        mock_anndata = Mock(spec=anndata.AnnData)
+        mock_anndata.n_obs = 10000
+        mock_anndata.n_vars = 10000
+        mock_read_h5ad.return_value = mock_anndata
+
+        # Mock SFN client
+        mock_sfn = Mock()
+        mock_sfn_provider.return_value = mock_sfn
 
         # This is where we're at when we start the SFN
         status = self.business_logic.get_dataset_status(dataset_version_id)
@@ -33,6 +45,12 @@ class TestProcessDownload(BaseProcessingTest):
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
         self.assertEqual(status.upload_status, DatasetUploadStatus.UPLOADED)
+
+        # Assert mocks
+        mock_read_h5ad.assert_called_with("raw.h5ad")
+        mock_sfn.client.send_task_success.assert_called_with(
+            taskToken="fake_sfn_task_token", output='{"job_definition": "8"}'
+        )
 
         # Verify that both the original (raw.h5ad) and the labeled (local.h5ad) files are there
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad"))
