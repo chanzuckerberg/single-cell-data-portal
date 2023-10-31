@@ -221,6 +221,10 @@ def _rollup_cell_counts(cell_counts_grouped_df) -> DataFrame:
     must include CUMULATIVE cell counts values for the combination (T1, C2) by adding in the
     cell count for (T1, C1).
 
+    Redundant nodes are removed from the rolled up cell counts dataframe. A redundant node is a
+    cell type that has no cell count values associated with it, but has ONLY ONE descendant cell type
+    that has cell count values associated with it.
+
     Parameters
     ----------
     cell_counts_grouped_df : pandas DataFrame
