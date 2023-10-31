@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import requests
 
-from backend.common.utils.dl_sources.url import URL, MissingHeaderException, from_url
+from backend.common.utils.dl_sources.url import URI, MissingHeaderException, from_url
 
 
 @dataclass
@@ -19,7 +19,7 @@ class UriProviderInterface:
     def validate(self, uri: str) -> bool:
         pass
 
-    def parse(self, uri: str) -> URL:
+    def parse(self, uri: str) -> URI:
         pass
 
     def get_file_info(self, uri: str) -> FileInfo:
@@ -37,9 +37,9 @@ class UriProvider(UriProviderInterface):
         link = from_url(uri)
         return link is not None
 
-    def parse(self, uri: str) -> URL:
+    def parse(self, uri: str) -> URI:
         """
-        Returns a parsed URL object
+        Returns a parsed URI object
         """
         return from_url(uri)
 
@@ -57,6 +57,6 @@ class UriProvider(UriProviderInterface):
             )
 
         except requests.HTTPError as ex:
-            raise FileInfoException("The URL provided causes an error with Dropbox.") from ex
+            raise FileInfoException("The URI provided causes an error with Dropbox.") from ex
         except MissingHeaderException as ex:
             raise FileInfoException from ex

@@ -5,6 +5,9 @@ from urllib.parse import ParseResult, urlparse
 import boto3
 import requests
 
+from backend.common.utils import downloader
+from backend.layers.thirdparty.s3_provider import S3Provider
+
 
 class MissingHeaderException(Exception):
     def __init__(self, detail: str = "", *args, **kwargs) -> None:
@@ -12,22 +15,22 @@ class MissingHeaderException(Exception):
 
 
 # TODO: consider renaming as URI
-class URL(ABC):
+class URI(ABC):
     """Define the abstract base class to support different download sources."""
 
-    def __init__(self, url, parsed_url: ParseResult):
-        self.url: str = url
+    def __init__(self, uri, parsed_url: ParseResult):
+        self.uri: str = uri
         self.parsed_url: ParseResult = parsed_url
 
     @classmethod
     @abstractmethod
-    def validate(cls, url: str) -> typing.Optional["URL"]:
-        """Validates the URL matches the expected format, and returns a new class object if valid.."""
+    def validate(cls, uri: str) -> typing.Optional["URI"]:
+        """Validates the URI matches the expected format, and returns a new class object if valid.."""
 
     @abstractmethod
     def file_info(self) -> dict:
         """
-        Extract information about a file from a URL.
+        Extract information about a file from a URI.
         """
 
     @property
@@ -47,7 +50,7 @@ class URL(ABC):
             return headers[key]
         except KeyError:
             raise MissingHeaderException(
-                f"{self.__class__.__name__}:URL({self.url}) failed request. '{key}' not present in the header."
+                f"{self.__class__.__name__}:URI({self.uri}) failed request. '{key}' not present in the header."
             ) from None
 
     def _get_key_with_fallback(self, headers: dict, key: str, fallback_key: str) -> str:
@@ -55,22 +58,26 @@ class URL(ABC):
             return headers.get(key) or headers[fallback_key]
         except KeyError:
             raise MissingHeaderException(
-                f"""{self.__class__.__name__}:URL({self.url}) failed request.
+                f"""{self.__class__.__name__}:URI({self.uri}) failed request.
                 Neither '{key}' nor '{fallback_key}' are present in the header.
                 """
             ) from None
 
+    @abstractmethod
+    def download(self, local_file_name: str) -> None:
+        pass
 
-class DropBoxURL(URL):
+
+class DropBoxURL(URI):
     """Supports download URLs from a DropBox share link."""
 
     @classmethod
-    def validate(cls, url: str) -> typing.Optional["URL"]:
-        """Converts a valid DropBox URL into a direct download link. If the url is not a valid DropBox URL, none is
-        returned. Otherwise, the converted URL is returned.
+    def validate(cls, uri: str) -> typing.Optional["URI"]:
+        """Converts a valid DropBox URI into a direct download link. If the uri is not a valid DropBox URI, none is
+        returned. Otherwise, the converted URI is returned.
         """
 
-        parsed_url = urlparse(url)
+        parsed_url = urlparse(uri)
         if parsed_url.scheme != "https" or parsed_url.netloc != "www.dropbox.com":
             return None
         # dl=0 will show the file in the preview page. A link with ? dl=1 will force the file to download.
@@ -88,12 +95,12 @@ class DropBoxURL(URL):
 
     def file_info(self) -> dict:
         """
-        Extract information about a file from a DropBox URL.
-        :param url: a DropBox URL leading to a file.
+        Extract information about a file from a DropBox URI.
+        :param uri: a DropBox URI leading to a file.
         :return: The file name and size of the file.
         """
         try:
-            resp = requests.head(self.url, allow_redirects=True)
+            resp = requests.head(self.uri, allow_redirects=True)
             resp.raise_for_status()
         except Exception:
             return {"size": None, "name": None}
@@ -108,24 +115,27 @@ class DropBoxURL(URL):
             "name": self._get_key(resp.headers, "content-disposition").split(";")[1].split("=", 1)[1][1:-1],
         }
 
+    def download(self, local_file_name: str):
+        downloader.download(self.uri, local_file_name)
 
-class S3URL(URL):
+
+class S3URL(URI):
     """Supports presigned URLs from an AWS S3 bucket."""
 
     _netloc = "amazonaws.com"
     _scheme = "https"
 
     @classmethod
-    def validate(cls, url: str):
-        parsed_url = urlparse(url)
+    def validate(cls, uri: str):
+        parsed_url = urlparse(uri)
         return (
-            cls(url, parsed_url)
+            cls(uri, parsed_url)
             if parsed_url.scheme == cls._scheme and parsed_url.netloc.endswith(cls._netloc)
             else None
         )
 
     def file_info(self) -> dict:
-        resp = requests.get(self.url, headers={"Range": "bytes=0-0"})
+        resp = requests.get(self.uri, headers={"Range": "bytes=0-0"})
         resp.raise_for_status()
 
         return {
@@ -133,15 +143,22 @@ class S3URL(URL):
             "name": self.parsed_url.path,
         }
 
+    def download(self, local_file_name: str):
+        downloader.download(self.uri, local_file_name)
 
-class S3URI(URL):
+
+class S3URI(URI):
     """
     Handles S3 URIs: s3://<bucket>/<key>
     """
 
+    def __init__(self, uri, parsed_url: ParseResult):
+        super().__init__(uri, parsed_url)
+        self.s3_provider = S3Provider()
+
     @classmethod
-    def validate(cls, url: str) -> typing.Optional["URL"]:
-        parsed = urlparse(url)
+    def validate(cls, uri: str) -> typing.Optional["URI"]:
+        parsed = urlparse(uri)
         bucket_name = parsed.netloc
         key = parsed.path
         if parsed.scheme == "s3" and bucket_name and key:
@@ -162,21 +179,24 @@ class S3URI(URL):
     def key(self):
         return self.parsed_url.path
 
+    def download(self, local_file_name: str):
+        self.s3_provider.download_file(self.bucket_name, self.key, local_file_name)
+
 
 class RegisteredSources:
     """Manages all of the download sources."""
 
-    _registered = set()
+    _registered: typing.Set[typing.Type[URI]] = set()
 
     @classmethod
-    def add(cls, parser: typing.Type[URL]):
-        if issubclass(parser, URL):
+    def add(cls, parser: typing.Type[URI]):
+        if issubclass(parser, URI):
             cls._registered.add(parser)
         else:
-            raise TypeError(f"subclass type {URL.__name__} expected")
+            raise TypeError(f"subclass type {URI.__name__} expected")
 
     @classmethod
-    def remove(cls, parser: typing.Type[URL]):
+    def remove(cls, parser: typing.Type[URI]):
         cls._registered.remove(parser)
 
     @classmethod
@@ -184,12 +204,13 @@ class RegisteredSources:
         return cls._registered
 
 
-def from_url(url: str) -> URL:
-    """Given a URL return a object that can be used by the processing container to download data."""
+def from_url(uri: str) -> typing.Optional[URI]:
+    """Given a URI return a object that can be used by the processing container to download data."""
     for source in RegisteredSources.get():
-        url_obj = source.validate(url)
+        url_obj = source.validate(uri)
         if url_obj:
             return url_obj
+    return None
 
 
 # RegisteredSources are processed in the order registered and returns the first match.

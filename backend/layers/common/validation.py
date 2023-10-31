@@ -73,7 +73,7 @@ def _verify_collection_metadata_fields(
 
 def verify_collection_links(links: List[Link], errors: list) -> None:
     def _error_message(i: int, _url: str) -> dict:
-        return {"name": f"links[{i}]", "reason": "Invalid URL.", "value": _url}
+        return {"name": f"links[{i}]", "reason": "Invalid URI.", "value": _url}
 
     for index, link in enumerate(links):
         url = link.uri

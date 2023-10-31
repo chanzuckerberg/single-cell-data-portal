@@ -149,13 +149,13 @@ def get_collections_from_discover_api():
 
 def get_pinned_ontology_url(name: str):
     """
-    This function retrieves the URL of the pinned ontology based on the provided name.
+    This function retrieves the URI of the pinned ontology based on the provided name.
 
     Parameters:
     name (str): The name of the ontology (e.g. cl-basic.obo).
 
     Returns:
-    str: The URL of the pinned ontology.
+    str: The URI of the pinned ontology.
     """
     session = setup_retry_session()
     response = session.get(CL_PINNED_CONFIG_URL)

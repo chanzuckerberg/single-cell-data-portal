@@ -43,7 +43,7 @@ def test__link__INVALID(link_type, test_url):
     )
     errors = []
     verify_collection_metadata(body, errors)
-    expected_error = [dict(reason="Invalid URL.", name="links[0]", value=test_url)]
+    expected_error = [dict(reason="Invalid URI.", name="links[0]", value=test_url)]
     assert expected_error == errors
 
 
