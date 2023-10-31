@@ -32,6 +32,12 @@ locals {
     "--keep-alive", "61", "--log-level", "info"]
   data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/seed_data_04_2f30f3bcc9aa.sql"
 
+  # env mirroring
+  env_mirroring_db_dump_cmd    = ["/single-cell-data-portal/backend/scripts/env_mirroring_aws_ecs/db_dump.sh"]
+  env_mirroring_db_load_cmd    = ["/single-cell-data-portal/backend/scripts/env_mirroring_aws_ecs/db_load.sh"]
+  env_mirroring_s3_sync_cmd    = ["/single-cell-data-portal/backend/scripts/env_mirroring_aws_ecs/s3_sync.sh"]
+  env_mirroring_db_dump_s3_uri = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/env_mirroring_aws_ecs/prod.pg_dump"
+
   vpc_id                          = local.secret["cloud_env"]["vpc_id"]
   subnets                         = local.secret["cloud_env"]["private_subnets"]
   security_groups                 = local.secret["security_groups"]
@@ -228,6 +234,37 @@ module cg_batch {
   batch_container_memory_limit  = var.cg_batch_container_memory_limit
 }
 
+module env_mirroring_db_dump {
+  source            = "../env-mirroring-ecs"
+  image             = "${local.backend_image_repo}:${local.image_tag}"
+  task_role_arn     = local.ecs_role_arn
+  cmd               = local.env_mirroring_db_dump_cmd
+  custom_stack_name = local.custom_stack_name
+  deployment_stage  = local.deployment_stage
+  execution_role    = local.ecs_execution_role
+  db_dump_s3_uri    = local.env_mirroring_db_dump_s3_uri
+}
+
+module env_mirroring_db_load {
+  source            = "../env-mirroring-ecs"
+  image             = "${local.backend_image_repo}:${local.image_tag}"
+  task_role_arn     = local.ecs_role_arn
+  cmd               = local.env_mirroring_db_load_cmd
+  custom_stack_name = local.custom_stack_name
+  deployment_stage  = local.deployment_stage
+  execution_role    = local.ecs_execution_role
+  db_dump_s3_uri    = local.env_mirroring_db_dump_s3_uri
+}
+
+module env_mirroring_s3_sync {
+  source            = "../env-mirroring-ecs"
+  image             = "${local.backend_image_repo}:${local.image_tag}"
+  task_role_arn     = local.ecs_role_arn
+  cmd               = local.env_mirroring_s3_sync_cmd
+  custom_stack_name = local.custom_stack_name
+  deployment_stage  = local.deployment_stage
+  execution_role    = local.ecs_execution_role
+}
 
 module upload_success_lambda {
   source                     = "../lambda"
