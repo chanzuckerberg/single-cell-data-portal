@@ -22,20 +22,20 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "ApplyDefaults": {
         "Type": "Pass",
-        "Next": "DownloadValidate",
+        "Next": "Download",
         "Parameters": {
           "args.$": "States.JsonMerge($.inputDefaults, $$.Execution.Input, false)"
         },
         "ResultPath": "$.withDefaults",
         "OutputPath": "$.withDefaults.args"
       },
-      "DownloadValidate": {
+      "Download": {
         "Type": "Task",
         "Resource": "arn:aws:states:::batch:submitJob.sync",
-        "Next": "CxgSeuratParallel",
+        "Next": "Validate",
         "Parameters": {
-          "JobDefinition": "${var.job_definition_arn}",
-          "JobName": "download-validate",
+          "JobDefinition":"${var.job_definition_arn}",
+          "JobName": "download",
           "JobQueue.$": "$.job_queue",
           "RetryStrategy": {
             "Attempts": ${var.max_attempts},
@@ -66,7 +66,61 @@ resource "aws_sfn_state_machine" "state_machine" {
               },
               {
                 "Name": "STEP_NAME",
-                "Value": "download-validate"
+                "Value": "download"
+              }
+            ]
+          }
+        },
+        "ResultPath": null,
+        "TimeoutSeconds": ${local.timeout},
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "HandleErrors",
+            "ResultPath": "$.error"
+          }
+        ]
+      },
+      "Validate": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::batch:submitJob.sync",
+        "Next": "CxgSeuratParallel",
+        "Parameters": {
+          "JobDefinition":"${var.job_definition_arn}",
+          "JobName": "download",
+          "JobQueue.$": "$.job_queue",
+          "RetryStrategy": {
+            "Attempts": ${var.max_attempts},
+            "EvaluateOnExit": [
+              {
+                "Action": "EXIT",
+                "OnExitCode": "1"
+              },
+              {
+                "Action": "RETRY",
+                "OnExitCode": "*"
+              }
+            ]
+          },
+          "ContainerOverrides": {
+            "Environment": [
+              {
+                "Name": "DROPBOX_URL",
+                "Value.$": "$.url"
+              },
+              {
+                "Name": "DATASET_ID",
+                "Value.$": "$.dataset_id"
+              },
+              {
+                "Name": "COLLECTION_ID",
+                "Value.$": "$.collection_id"
+              },
+              {
+                "Name": "STEP_NAME",
+                "Value": "download"
               }
             ]
           }
