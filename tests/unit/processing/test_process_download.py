@@ -57,6 +57,18 @@ class TestProcessDownload(BaseProcessingTest):
             bucket_name="fake_bucket_name", object_key="fake_key/fake_file.h5ad", local_filename="fake_local_path"
         )
 
+    def test_download_from_dropbox_uri(self):
+        """
+        Call process download using a dropbox uri
+        """
+
+        dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=1"
+        pdv = ProcessDownload(self.business_logic, self.uri_provider, self.s3_provider)
+        pdv.download = Mock()
+
+        assert pdv.download_from_source_uri(dropbox_uri, "fake_local_path") == "fake_local_path"
+        pdv.download.assert_called_once_with(dropbox_uri, "fake_local_path")
+
     def test_download_unknown_uri(self):
         """
         Call process download using unknown
