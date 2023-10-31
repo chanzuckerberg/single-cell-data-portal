@@ -1,6 +1,7 @@
 import cellxgene_census
 import tiledbsoma as soma
 
+from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 from backend.wmg.pipeline.cell_counts import create_cell_counts_cube
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
@@ -22,13 +23,14 @@ class CensusParameters:
     census_version = "latest"
 
     def value_filter(organism: str) -> str:
-        value_filter_mapping = {
+        organism_mapping = {
             "homo_sapiens": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD}",
             "mus_musculus": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD}",
         }
-        value_filter = value_filter_mapping[organism]
-        # if schema_4:
-        #     value_filter += " and tissue_type == 'tissue'"
+        value_filter = organism_mapping[organism]
+        if FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4):
+            # Filter out non-tissue tissues and system-level tissues
+            value_filter += " and tissue_type == 'tissue' and tissue_ontology_term_id not in ['UBERON_0001017', 'UBERON:0001007', 'UBERON:0002405', 'UBERON:0000990', 'UBERON:0001004', 'UBERON:0001434']"
         return value_filter
 
 
