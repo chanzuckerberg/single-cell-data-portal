@@ -1,7 +1,5 @@
 from unittest.mock import MagicMock, Mock, patch
 
-import anndata
-
 from backend.layers.common.entities import (
     DatasetArtifactType,
     DatasetConversionStatus,
@@ -83,9 +81,7 @@ class ProcessingTest(BaseProcessingTest):
             artifact.type = DatasetArtifactType.H5AD
             artifact.uri = f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"
 
-    @patch("backend.layers.processing.process_download.StepFunctionProvider")
-    @patch("scanpy.read_h5ad")
-    def test_process_download_success(self, mock_read_h5ad, mock_sfn_provider):
+    def test_process_download_success(self):
         """
         ProcessValidate should:
         1. Download the h5ad artifact
@@ -98,15 +94,6 @@ class ProcessingTest(BaseProcessingTest):
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
             collection.version_id, dropbox_uri, None, None
         )
-        # Mock anndata object
-        mock_anndata = Mock(spec=anndata.AnnData)
-        mock_anndata.n_obs = 10000
-        mock_anndata.n_vars = 10000
-        mock_read_h5ad.return_value = mock_anndata
-
-        # Mock SFN client
-        mock_sfn = Mock()
-        mock_sfn_provider.return_value = mock_sfn
 
         # This is where we're at when we start the SFN
         status = self.business_logic.get_dataset_status(dataset_version_id)
@@ -119,12 +106,6 @@ class ProcessingTest(BaseProcessingTest):
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
         self.assertEqual(status.upload_status, DatasetUploadStatus.UPLOADED)
-
-        # Assert mocks
-        mock_read_h5ad.assert_called_with("raw.h5ad")
-        mock_sfn.client.send_task_success.assert_called_with(
-            taskToken="fake_sfn_task_token", output='{"job_definition": "8"}'
-        )
 
         # Verify that both the original (raw.h5ad) and the labeled (local.h5ad) files are there
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad"))
@@ -225,13 +206,12 @@ class ProcessingTest(BaseProcessingTest):
             cxg_artifact = [artifact for artifact in artifacts if artifact.type == "cxg"][0]
             self.assertTrue(cxg_artifact, f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/")
 
-    @patch("backend.layers.processing.process_download.StepFunctionProvider")
     @patch("scanpy.read_h5ad")
     @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
     @patch("backend.layers.processing.process_validate.ProcessValidate.extract_metadata")
     @patch("backend.layers.processing.process_seurat.ProcessSeurat.make_seurat")
     @patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg")
-    def test_process_all(self, mock_cxg, mock_seurat, mock_h5ad, mock_config, mock_read_h5ad, mock_sfn_provider):
+    def test_process_all(self, mock_cxg, mock_seurat, mock_h5ad, mock_config, mock_read_h5ad):
         mock_seurat.return_value = "local.rds"
         mock_cxg.return_value = "local.cxg"
 
