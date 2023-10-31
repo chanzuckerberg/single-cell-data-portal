@@ -4,6 +4,7 @@ import anndata
 import numpy as np
 import pandas
 
+from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 from backend.layers.common.entities import OntologyTermId, TissueOntologyTermId
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from tests.unit.processing.base_processing_test import BaseProcessingTest
@@ -17,10 +18,10 @@ class TestProcessingDownloadValidate(BaseProcessingTest):
         )
 
         def mock_config_fn(name):
-            if name == "schema_4_feature_flag":
+            if name == FeatureFlagValues.SCHEMA_4:
                 return "True"
 
-        self.mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+        self.mock_config = patch.object(FeatureFlagService, "is_enabled", side_effect=mock_config_fn)
         self.mock_config.start()
 
     def tearDown(self):

@@ -25,7 +25,7 @@ import FullScreenProvider from "../common/FullScreenProvider";
 import SourceDataTable from "./components/SourceDataTable";
 import CellGuideCardSidebar from "./components/CellGuideCardSidebar";
 import CellGuideMobileHeader from "../CellGuideMobileHeader";
-import { Gene } from "src/views/WheresMyGene/common/types";
+import { Gene } from "src/views/WheresMyGeneV2/common/types";
 import { throttle } from "lodash";
 import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 import { titleize } from "src/common/utils/string";

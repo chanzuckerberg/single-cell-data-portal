@@ -19,34 +19,34 @@ import SideBar, {
 import {
   DispatchContext,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
+} from "src/views/WheresMyGeneV2/common/store";
 import {
   addGeneInfoGene,
   clearGeneInfoGene,
   closeRightSidebar,
-} from "src/views/WheresMyGene/common/store/actions";
+} from "src/views/WheresMyGeneV2/common/store/actions";
 import {
   GeneExpressionSummary,
   ChartProps,
-} from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/types";
 import CellInfoSideBar from "src/views/WheresMyGeneV2/components/CellInfoSideBar";
 import Filters from "src/views/WheresMyGeneV2/components/Filters";
 import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 
-import InfoPanel from "src/views/WheresMyGene/components/InfoPanel";
-import Legend from "src/views/WheresMyGene/components/InfoPanel/components/Legend";
-import Loader from "src/views/WheresMyGene/components/Loader";
+import InfoPanel from "src/views/WheresMyGeneV2/components/InfoPanel";
+import Legend from "src/views/WheresMyGeneV2/components/InfoPanel/components/Legend";
+import Loader from "src/views/WheresMyGeneV2/components/Loader";
 import {
   StyledBannerContainer,
   StyledSidebarDrawer,
-} from "src/views/WheresMyGene/components/Main/style";
-import ScreenTint from "src/views/WheresMyGene/components/ScreenTint";
+} from "src/views/WheresMyGeneV2/components/Main/style";
+import ScreenTint from "src/views/WheresMyGeneV2/components/ScreenTint";
 import {
   SideBarPositioner,
   SideBarWrapper,
   Top,
   Wrapper,
-} from "src/views/WheresMyGene/style";
+} from "src/views/WheresMyGeneV2/style";
 import { View } from "src/views/globalStyle";
 import HeatMap from "../HeatMap";
 import BottomBanner from "src/components/BottomBanner";

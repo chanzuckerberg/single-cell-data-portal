@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 from flask import Response, jsonify, make_response
 
-from backend.common.corpora_config import CorporaConfig
+from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 from backend.common.utils.http_exceptions import (
     ConflictException,
     ForbiddenHTTPException,
@@ -175,7 +175,7 @@ def _dataset_to_response(
         if is_in_revision and revision_created_at and dataset.created_at > revision_created_at:
             published = False
     tissue = None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.tissue)
-    if tissue is not None and CorporaConfig().schema_4_feature_flag.lower() == "false":
+    if tissue is not None and not FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4):
         for t in tissue:
             del t["tissue_type"]
     return remove_none(

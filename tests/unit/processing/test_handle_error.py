@@ -1,3 +1,4 @@
+import logging
 import os
 from typing import Dict
 from unittest.mock import Mock, patch
@@ -161,7 +162,7 @@ def mock_get_dataset_version(collection_id):
 
 
 def test_get_failure_slack_notification_message_with_dataset_id_none(
-    sample_slack_header_block, sample_slack_status_block_empty
+    sample_slack_header_block, sample_slack_status_block_empty, caplog
 ):
     dataset_id = None
     step_name = "Step 1"
@@ -170,7 +171,7 @@ def test_get_failure_slack_notification_message_with_dataset_id_none(
     execution_arn = "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine"
     collection_version_id = "collection_version_id123"
 
-    with patch(f"{module_path}.logger") as logger_mock:
+    with caplog.at_level(logging.ERROR):
         result = get_failure_slack_notification_message(
             dataset_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
         )
@@ -198,11 +199,11 @@ def test_get_failure_slack_notification_message_with_dataset_id_none(
             sample_slack_status_block_empty,
         ]
     }
-    logger_mock.error.assert_called_with("Dataset None not found")
+    assert "Dataset None not found" in caplog.text
 
 
 def test_get_failure_slack_notification_message_with_dataset_not_found(
-    sample_slack_header_block, sample_slack_status_block_empty
+    sample_slack_header_block, sample_slack_status_block_empty, caplog
 ):
     dataset_id = "dataset123"
     step_name = "Step 1"
@@ -216,10 +217,10 @@ def test_get_failure_slack_notification_message_with_dataset_not_found(
     get_business_logic_mock.get_dataset_version = get_dataset_version_mock
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
-    logger_mock = Mock()
+    Mock()
 
-    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), patch(
-        f"{module_path}.logger", logger_mock
+    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), caplog.at_level(
+        logging.ERROR
     ):
         result = get_failure_slack_notification_message(
             dataset_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
@@ -249,7 +250,7 @@ def test_get_failure_slack_notification_message_with_dataset_not_found(
             sample_slack_status_block_empty,
         ]
     }
-    logger_mock.error.assert_called_with("Dataset dataset123 not found")
+    assert "Dataset dataset123 not found" in caplog.text
     get_dataset_version_mock.assert_called_with(DatasetVersionId(dataset_id))
 
 
@@ -261,7 +262,7 @@ def mock_collection_version(owner, version_id):
 
 
 def test_get_failure_slack_notification_message_with_missing_collection(
-    sample_slack_header_block, sample_slack_status_block
+    sample_slack_header_block, sample_slack_status_block, caplog
 ):
     dataset_id = "dataset123"
     collection_id = "collection123"
@@ -281,10 +282,10 @@ def test_get_failure_slack_notification_message_with_missing_collection(
     )
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
-    logger_mock = Mock()
+    Mock()
 
-    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), patch(
-        f"{module_path}.logger", logger_mock
+    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), caplog.at_level(
+        logging.ERROR
     ):
         result = get_failure_slack_notification_message(
             dataset_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
@@ -314,7 +315,7 @@ def test_get_failure_slack_notification_message_with_missing_collection(
             sample_slack_status_block,
         ]
     }
-    logger_mock.error.assert_called_with(f"Collection {collection_id} not found")
+    assert f"Collection {collection_id} not found" in caplog.text
     get_dataset_version_mock.assert_called_with(DatasetVersionId(dataset_id))
     get_unpublished_collection_version_from_canonical_mock.assert_called_with(CollectionId(collection_id))
 
