@@ -25,24 +25,23 @@ export const USE_PROJECTS = {
   id: "census-directory-projects",
 };
 
-// maybe we should have a general census directory project type with specific typing for each tier?
+// assumed tier 2 for now
 export interface CensusDirectoryProject {
+  id: string;
+  obsoleted_by: string;
   title: string;
   description: string;
   submitter: string;
   contact_name: string;
   contact_email: string;
   doi: string;
-  publication_info: string;
-  publication_link: string;
   model_link: string;
-  embeddings_link: string;
-  tier: number;
   census_release: string;
-  experiment_name: string;
+  organism_name: string;
   measurement_name: string;
+  embeddings_link: string;
   contribution_type: string;
-  notebook_links: string[];
+  notebook_links: string[]; // committed directly
 }
 
 export function useProjects() {
