@@ -18,6 +18,7 @@ const BLOOD_TISSUE = {
 };
 
 const TISSUES = [BLOOD_TISSUE, { id: "UBERON:0002048", name: "lung" }];
+const TISSUE_PARAMS = [TISSUES[0].id, TISSUES[1].name];
 
 const tissueNames = TISSUES.map((tissue) => tissue.name);
 const tissueIds = TISSUES.map((tissue) => tissue.id);
@@ -62,10 +63,8 @@ SHARE_LINK_SEARCH_PARAMS.set(
 SHARE_LINK_SEARCH_PARAMS.set("ethnicities", ETHNICITIES.join());
 SHARE_LINK_SEARCH_PARAMS.set("sexes", SEXES.map((sex) => sex.id).join());
 // (thuang): Tissue params include a tissue id and a tissue name to test that we support both
-SHARE_LINK_SEARCH_PARAMS.set(
-  "tissues",
-  [TISSUES[0].id, TISSUES[1].name].join()
-);
+SHARE_LINK_SEARCH_PARAMS.set("tissues", TISSUE_PARAMS.join());
+
 SHARE_LINK_SEARCH_PARAMS.set("genes", GENES.join());
 // (seve): cellType params includes incorrect cellTypes to test that we filter out invalid params
 SHARE_LINK_SEARCH_PARAMS.set(
@@ -129,6 +128,7 @@ describe("Share link tests", () => {
         await verifyShareLink({
           page,
           linkVersion: LATEST_SHARE_LINK_VERSION,
+          tissueIds,
           genes: GENES,
           datasets: DATASETS,
           sexes: SEXES,

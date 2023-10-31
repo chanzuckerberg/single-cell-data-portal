@@ -88,7 +88,7 @@ export const loadStateFromQueryParams = ({
   params: URLSearchParams;
   selectedFilters: State["selectedFilters"];
   dispatch: Dispatch<PayloadAction<LoadStateFromURLPayload>>;
-  tissues?: TissueMetadataQueryResponse;
+  tissues: TissueMetadataQueryResponse;
   cellTypesByName: { [name: string]: CellType };
   router: NextRouter;
 }): LoadStateFromURLPayload | null => {
@@ -202,7 +202,7 @@ function getNewSelectedFilters({
   selectedFilters,
   delimiter,
 }: {
-  tissues?: TissueMetadataQueryResponse;
+  tissues: TissueMetadataQueryResponse;
   params: URLSearchParams;
   paramsToRemove: string[];
   selectedFilters: State["selectedFilters"];

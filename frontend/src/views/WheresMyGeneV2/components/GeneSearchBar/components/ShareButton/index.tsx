@@ -121,6 +121,7 @@ export default function ShareButton(): JSX.Element {
       isSSR() ||
       isLoadingFilterDims ||
       !dispatch ||
+      !tissues ||
       Object.keys(cellTypesByName).length === 0
     )
       return;
