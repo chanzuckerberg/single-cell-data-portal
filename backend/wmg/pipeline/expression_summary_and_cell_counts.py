@@ -20,10 +20,16 @@ ORGANISM_INFO = [
 
 class CensusParameters:
     census_version = "latest"
-    value_filter = {
-        "homo_sapiens": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD}",
-        "mus_musculus": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD}",
-    }
+
+    def value_filter(organism: str) -> str:
+        value_filter_mapping = {
+            "homo_sapiens": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD}",
+            "mus_musculus": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD}",
+        }
+        value_filter = value_filter_mapping[organism]
+        # if schema_4:
+        #     value_filter += " and tissue_type == 'tissue'"
+        return value_filter
 
 
 def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
