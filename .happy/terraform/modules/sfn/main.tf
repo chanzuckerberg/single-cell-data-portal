@@ -120,7 +120,7 @@ resource "aws_sfn_state_machine" "state_machine" {
               },
               {
                 "Name": "STEP_NAME",
-                "Value": "download"
+                "Value": "validate"
               }
             ]
           }
