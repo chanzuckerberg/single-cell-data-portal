@@ -1,6 +1,7 @@
 import json
 import os
 import contextlib
+import logging
 import shutil
 from typing import Any, Dict
 
@@ -18,7 +19,6 @@ from backend.layers.common.entities import (
     DatasetUploadStatus,
     DatasetVersionId,
 )
-from backend.layers.processing.downloader import logger
 from backend.layers.processing.exceptions import UploadFailed
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
@@ -26,7 +26,7 @@ from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
-MEMORY_TIERS = [15, 30]
+logger = logging.getLogger(__name__)
 
 
 class ProcessDownload(ProcessingLogic):
