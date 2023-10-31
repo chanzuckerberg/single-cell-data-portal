@@ -110,7 +110,7 @@ def query():
     return response
 
 
-@tracer.wrap()
+@tracer.wrap(name="filters", service="wmg-api", resource="filters", span_type="wmg-api")
 def filters():
     request = connexion.request.json
     criteria = WmgFiltersQueryCriteria(**request["filter"])
@@ -132,7 +132,7 @@ def filters():
     return response
 
 
-@tracer.wrap()
+@tracer.wrap(name="markers", service="wmg-api", resource="markers", span_type="wmg-api")
 def markers():
     request = connexion.request.json
     cell_type = request["celltype"]
@@ -199,7 +199,7 @@ def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
                     return False
     return True
 
-
+@tracer.wrap(name="build_filter_dims_values", service="wmg-api", resource="query", span_type="wmg-api")
 def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot) -> Dict:
     dims = {
         "dataset_id": "",
@@ -233,7 +233,7 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
 
     return response_filter_dims_values
 
-
+@tracer.wrap(name="build_expression_summary", service="wmg-api", resource="query", span_type="wmg-api")
 def build_expression_summary(
     unrolled_gene_expression_df: DataFrame, rolled_gene_expression_df: DataFrame, compare: str
 ) -> dict:
