@@ -1,13 +1,11 @@
+import contextlib
 import json
 import os
-import contextlib
-import logging
 import shutil
 from typing import Any, Dict
 
-import scanpy
-
 import requests
+import scanpy
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.common.utils.math_utils import MB
@@ -25,8 +23,6 @@ from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
-
-logger = logging.getLogger(__name__)
 
 
 class ProcessDownload(ProcessingLogic):
@@ -64,7 +60,7 @@ class ProcessDownload(ProcessingLogic):
             file_size = self.uri_provider.get_file_info(source_uri).size
             if file_size and file_size >= shutil.disk_usage("/")[2]:
                 raise UploadFailed("Insufficient disk space.")
-            download(file_url.url, local_path)
+            self.download(file_url.url, local_path)
         elif file_url.scheme == "s3":
             bucket_name = file_url.netloc
             key = self.remove_prefix(file_url.path, "/")
@@ -158,28 +154,28 @@ class ProcessDownload(ProcessingLogic):
         sfn_client = StepFunctionProvider().client
         sfn_client.send_task_success(taskToken=sfn_task_token, output=json.dumps(response))
 
+    def download(
+        self,
+        url: str,
+        local_path: str,
+        chunk_size: int = 10 * 2**20,
+    ) -> None:
+        """
+        Download a file from a url and update the processing_status upload fields in the database
 
-def download(
-    url: str,
-    local_path: str,
-    chunk_size: int = 10 * 2**20,
-) -> None:
-    """
-    Download a file from a url and update the processing_status upload fields in the database
+        :param url: The URL of the file to be downloaded.
+        :param local_path: The local name of the file be downloaded.
+        :param chunk_size: The size of downloaded data to copy to memory before saving to disk.
 
-    :param url: The URL of the file to be downloaded.
-    :param local_path: The local name of the file be downloaded.
-    :param chunk_size: The size of downloaded data to copy to memory before saving to disk.
+        :return: The current dataset processing status.
+        """
 
-    :return: The current dataset processing status.
-    """
-
-    with contextlib.suppress(Exception), requests.get(url, stream=True) as resp:
-        resp.raise_for_status()
-        with open(local_path, "wb") as fp:
-            logger.debug("Starting download.")
-            for chunk in resp.iter_content(chunk_size=chunk_size):
-                if chunk:
-                    fp.write(chunk)
-                    chunk_size = len(chunk)
-                    logger.debug(f"chunk size: {chunk_size}")
+        with contextlib.suppress(Exception), requests.get(url, stream=True) as resp:
+            resp.raise_for_status()
+            with open(local_path, "wb") as fp:
+                self.logger.debug("Starting download.")
+                for chunk in resp.iter_content(chunk_size=chunk_size):
+                    if chunk:
+                        fp.write(chunk)
+                        chunk_size = len(chunk)
+                        self.logger.debug(f"chunk size: {chunk_size}")
