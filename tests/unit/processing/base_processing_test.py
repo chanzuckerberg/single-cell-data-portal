@@ -14,3 +14,15 @@ class BaseProcessingTest(BaseTest):
         self.s3_provider = MockS3Provider()
         self.schema_validator = Mock(spec=SchemaValidatorProviderInterface)
         self.schema_validator.validate_and_save_labels = Mock(return_value=(True, [], True))
+
+
+mock_config_attr = {
+    "collections_base_url": "http://collections",
+    "dataset_assets_base_url": "http://domain",
+    "upload_max_file_size_gb": 1,
+    "schema_4_feature_flag": "True",
+}
+
+
+def mock_config_fn(name):
+    return mock_config_attr[name]
