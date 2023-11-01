@@ -73,10 +73,7 @@ class SchemaMigrate(ProcessingLogic):
             if collection.is_published() and collection.collection_id.id in has_revision:
                 continue
 
-            if not auto_publish:
-                # auto_publish is off for this migration
-                _resp["can_publish"] = str(False)
-            elif collection.is_published():
+            if collection.is_published():
                 # published collection without an active revision
                 _resp["can_publish"] = str(True)
             elif collection.is_unpublished_version():
@@ -85,6 +82,10 @@ class SchemaMigrate(ProcessingLogic):
                 _resp["can_publish"] = str(False)
             elif collection.is_initial_unpublished_version():
                 # unpublished collection
+                _resp["can_publish"] = str(False)
+
+            if not auto_publish:
+                # auto_publish is off for this migration, overwrite "can_publish" as true.
                 _resp["can_publish"] = str(False)
             _resp.update(
                 collection_id=collection.collection_id.id,
@@ -240,7 +241,7 @@ class SchemaMigrate(ProcessingLogic):
         )
         self.s3_provider.delete_files(self.artifact_bucket, object_keys_to_delete)
         if errors:
-            self._store_sfn_response("report", collection_version_id, errors)
+            self._store_sfn_response("report/errors", collection_version_id, errors)
         elif can_publish:
             self.business_logic.publish_collection_version(collection_version.version_id)
         return errors
@@ -301,7 +302,7 @@ class SchemaMigrate(ProcessingLogic):
                         self.get_key_prefix(f"schema_migration/{self.execution_id}/report/{directory}"),
                     )
                 )
-                self.logger.info(f"{directory} files found", extra={"files": len(s3_keys)})
+                self.logger.info(f"{len(s3_keys)} {directory} files found")
                 for s3_key in s3_keys:
                     local_file = os.path.join(self.local_path, "data.json")
                     self.s3_provider.download_file(self.artifact_bucket, s3_key, local_file)
