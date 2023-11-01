@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import requests
 
-from backend.common.utils.dl_sources.url import URI, MissingHeaderException, from_url
+from backend.common.utils.dl_sources.uri import URI, MissingHeaderException, from_url
 
 
 @dataclass

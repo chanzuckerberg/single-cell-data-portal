@@ -1,3 +1,4 @@
+import shutil
 import typing
 from abc import ABC, abstractmethod
 from urllib.parse import ParseResult, urlparse
@@ -7,6 +8,10 @@ import requests
 
 from backend.common.utils import downloader
 from backend.layers.thirdparty.s3_provider import S3Provider
+
+
+class DownloadFailed(Exception):
+    pass
 
 
 class MissingHeaderException(Exception):
@@ -63,6 +68,11 @@ class URI(ABC):
                 """
             ) from None
 
+    def _disk_space_check(self):
+        file_size = self.file_info()["size"]
+        if file_size and file_size >= shutil.disk_usage("/")[2]:
+            raise DownloadFailed("Insufficient disk space.")
+
     @abstractmethod
     def download(self, local_file_name: str) -> None:
         pass
@@ -116,6 +126,7 @@ class DropBoxURL(URI):
         }
 
     def download(self, local_file_name: str):
+        self._disk_space_check()
         downloader.download(self.uri, local_file_name)
 
 
@@ -144,6 +155,7 @@ class S3URL(URI):
         }
 
     def download(self, local_file_name: str):
+        self._disk_space_check()
         downloader.download(self.uri, local_file_name)
 
 
@@ -180,6 +192,7 @@ class S3URI(URI):
         return self.parsed_url.path
 
     def download(self, local_file_name: str):
+        self._disk_space_check()
         self.s3_provider.download_file(self.bucket_name, self.key, local_file_name)
 
 
