@@ -1,4 +1,5 @@
 from typing import Dict, List, Union
+from ddtrace import tracer
 
 import numpy as np
 import pandas as pd
@@ -113,6 +114,7 @@ class WmgQuery:
 
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
     #  /chanzuckerberg/single-cell-data-portal/2133
+    @tracer.wrap(name="get_cell_counts", service="wmg-api", resource="query", span_type="wmg-api")
     def _query(
         self,
         cube: Array,
