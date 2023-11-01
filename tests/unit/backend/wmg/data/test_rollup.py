@@ -98,3 +98,15 @@ class TestLowLevelRollupFunctionsTraversingCellTypeLineage(unittest.TestCase):
         result = are_cell_types_not_redundant_nodes(cell_type_groups, cell_counts)
         expected = [False, False, True, True, True, True, True, True, True, True, True, True, True]
         self.assertEqual(result, expected)
+
+    def test__cell_types_are_not_redundant_linear_chain(self):
+        cell_counts = {
+            "CL:0000127": 10,
+            "CL:0000683": 50,
+            "CL:0002085": 50,
+        }
+        cell_type_groups = np.array(["CL:0000127", "CL:0000683", "CL:0002085"])
+
+        result = are_cell_types_not_redundant_nodes(cell_type_groups, cell_counts)
+        expected = [True, False, True]
+        self.assertEqual(result, expected)

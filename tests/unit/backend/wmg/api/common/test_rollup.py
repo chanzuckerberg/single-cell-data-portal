@@ -187,9 +187,9 @@ class TestHighLevelRollupFunction(unittest.TestCase):
                     ["UBERON:0002113", "CL:0002605", 80],
                     ["UBERON:0002113", "CL:0002627", 90],
                 ],
-                # cell count for cell type: "CL:0000127" in Tissue: "UBERON:0000955" GETS AGGREGATED
-                # count because Tissue "UBERON:0000955" CONTAINS cell counts for
-                # descendants of cell type: "CL:0000127"
+                # cell count for cell type: "CL:0000127" in Tissue: "UBERON:0000955" GETS AGGREGATED because
+                # "CL:0000127" has non-zero cell count for at least one tissue in the input AND at least one
+                # descendant of "CL:0000127" has non-zero cell count for "UBERON:0000955"
                 "expected_rolled_up_cell_counts": [
                     ["UBERON:0000955", "CL:0000127", 240],
                     ["UBERON:0000955", "CL:0000644", 70],

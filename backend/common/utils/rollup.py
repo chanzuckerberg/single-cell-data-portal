@@ -13,6 +13,7 @@ from backend.wmg.data.utils import get_pinned_ontology_url
 ontology = owlready2.get_ontology(get_pinned_ontology_url(CL_BASIC_OWL_NAME))
 ontology.load()
 
+
 # cache finding descendants per cell type
 @lru_cache(maxsize=None)
 def descendants(cell_type):
@@ -36,12 +37,19 @@ def get_valid_descendants(
     cell_type: str, valid_cell_types: frozenset[str], cell_counts: Optional[dict[str, int]] = None
 ):
     """
-    Get valid descendants for a cell type.
+    Get valid descendants for a cell type. Here, "validity" can mean one of two things:
+    1. The descendant is present in the input list of valid cell types
+    2. The descendant is present in the input list of valid cell types and has a different number of cells
+    than the input cell type.
 
     Terms can be suffixed with ";;{A_0}--{B_0}--..." to indicate that only descendants within the same
     group specified by the suffix should be considered. For example, if the term is
     "CL:0000540;;{tissue_0}--{disease_0}" then only descendants with the same tissue_0 and disease_0
     will be considered.
+
+    If cell counts are provided, then a cell type has no valid descendants (even itself) if it has the same
+    number of cells as one of its descendants. In these cases, the cell type is a redundant node and should
+    be excluded. Redundant nodes are indicated by an empty list.
 
     Arguments
     ---------
@@ -76,6 +84,8 @@ def get_valid_descendants(
             for relative in valid_relatives
             if relative != cell_type and cell_counts.get(relative) is not None
         ]
+        # if the cell type has the same number of cells as one of its descendants, then it is a redundant node
+        # and has no valid relatives (including itself)
         if cell_counts.get(cell_type) in relative_cell_counts:
             valid_relatives = []
 
@@ -118,6 +128,10 @@ def find_descendants_per_cell_type(cell_types):
 def are_cell_types_not_redundant_nodes(cell_types, cell_counts):
     """
     Determines whether each cell type in a list of cell types is not a redundant node.
+    Redundance means that a cell type has the same number of cells as one of its descendants. This indicates that
+    the cell type contains exactly the same set of cells as one of its descendant subtrees. The only way this can occur is
+    if the cell type belongs to a linear chain of cell types, all of which have the same number of cells. In these cases,
+    the cell type is redundant and should be excluded. We only wish to keep the leaf nodes of these linear chains.
 
     Args:
     - cell_types (list of str): A list of cell type names.
