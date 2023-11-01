@@ -7,7 +7,7 @@ from typing import Tuple
 
 import numpy as np
 import pandas as pd
-from ddtrace import tracer 
+from ddtrace import tracer
 from pandas import DataFrame
 
 from backend.common.utils.rollup import rollup_across_cell_type_descendants, rollup_across_cell_type_descendants_array

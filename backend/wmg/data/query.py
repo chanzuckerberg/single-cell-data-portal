@@ -1,8 +1,8 @@
 from typing import Dict, List, Union
-from ddtrace import tracer
 
 import numpy as np
 import pandas as pd
+from ddtrace import tracer
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array

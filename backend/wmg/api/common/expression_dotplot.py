@@ -5,6 +5,7 @@ and cell count data structures process and return to the client.
 """
 
 from typing import List, Tuple
+
 from ddtrace import tracer
 from pandas import DataFrame
 
