@@ -25,6 +25,7 @@ from tests.unit.backend.wmg.fixtures.test_snapshot import (
     exclude_dev_stage_and_ethnicity_for_secondary_filter_test,
     forward_cell_type_ordering,
     load_realistic_test_snapshot,
+    ont_term_id_gen_schema4_ethnicity_variation,
     reverse_cell_type_ordering,
 )
 from tests.unit.backend.wmg.test_query import generate_expected_marker_gene_data_with_pandas
@@ -296,6 +297,32 @@ def generate_test_inputs_and_expected_outputs(
         expected_expression_summary,
         expected_term_id_labels,
     )
+
+
+def sort_filter_api_response_filter_dims_dict(filter_dims_dict):
+    """
+    This utility function sorts the dictionary of ontology term IDs
+    in the "filter" API response object by ontology term IDs to
+    enable equality checks in test assertions.
+
+    NOTE: This function mutates `filter_dims_dict` by sorting it in-place
+    """
+    for key, value_list in filter_dims_dict.items():
+        if key != "datasets":
+            # The value_list for keys != "datasets", contains
+            # a list of dictionaries where each dictionary is
+            # a SINGLE key-value pair. Therefore, we sort the
+            # list of dictionaries by their key.
+            # We do this by extracting a tuple of keys to the each
+            # dictionary. Since these dictionaries only contain a
+            # single key-value pair, the length of he tuple is
+            # guaranteed to be 1
+            value_list.sort(key=lambda x: tuple(x)[0])
+        else:
+            # for value_list of keys == "datasets", sort
+            # the value_list by the value of the "id" key
+            # in each dictionary in the value_list
+            value_list.sort(key=lambda x: x["id"])
 
 
 # TODO(prathap): Write tests that mock backend.wmg.api.v2.get_dot_plot_data() and
@@ -757,6 +784,88 @@ class WmgApiV2Tests(unittest.TestCase):
                 "tissue_terms": [{"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"}],
             }
             self.assertEqual(json.loads(response.data)["filter_dims"], expected_filters)
+
+    @patch("backend.wmg.api.v2.fetch_datasets_metadata")
+    @patch("backend.wmg.api.v2.gene_term_label")
+    @patch("backend.wmg.api.v2.ontology_term_label")
+    @patch("backend.wmg.api.v2.load_snapshot")
+    def test__filter_request_with_empty_criteria__returns_valid_dim_options__schema4_ethnicity_values(
+        self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
+    ):
+        dim_size = 3
+        with create_temp_wmg_snapshot(
+            dim_size=dim_size, dim_ontology_term_ids_generator_fn=ont_term_id_gen_schema4_ethnicity_variation
+        ) as snapshot:
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
+            fetch_datasets_metadata.return_value = mock_datasets_metadata([f"dataset_id_{i}" for i in range(dim_size)])
+            load_snapshot.return_value = snapshot
+            filter_dict = dict(
+                cell_type_ontology_term_ids=[],
+                dataset_ids=[],
+                disease_ontology_term_ids=[],
+                development_stage_ontology_term_ids=[],
+                organism_ontology_term_id="organism_ontology_term_id_0",
+                publication_citations=[],
+                self_reported_ethnicity_ontology_term_ids=[],
+                sex_ontology_term_ids=[],
+                tissue_ontology_term_ids=[],
+            )
+
+            filter_request = dict(filter=filter_dict)
+
+            response = self.app.post("/wmg/v2/filters", json=filter_request)
+            actual_response_filter_dims = json.loads(response.data)["filter_dims"]
+
+            # sorts 'actual_response_filter_dims' in-place
+            sort_filter_api_response_filter_dims_dict(actual_response_filter_dims)
+
+            expected_filters = {
+                "cell_type_terms": [
+                    {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
+                    {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
+                    {"cell_type_ontology_term_id_2": "cell_type_ontology_term_id_2_label"},
+                ],
+                "datasets": [
+                    {
+                        "collection_id": "dataset_id_0_coll_id",
+                        "collection_label": "dataset_id_0_coll_name",
+                        "id": "dataset_id_0",
+                        "label": "dataset_id_0_name",
+                    },
+                    {
+                        "collection_id": "dataset_id_1_coll_id",
+                        "collection_label": "dataset_id_1_coll_name",
+                        "id": "dataset_id_1",
+                        "label": "dataset_id_1_name",
+                    },
+                    {
+                        "collection_id": "dataset_id_2_coll_id",
+                        "collection_label": "dataset_id_2_coll_name",
+                        "id": "dataset_id_2",
+                        "label": "dataset_id_2_name",
+                    },
+                ],
+                "development_stage_terms": [
+                    {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
+                    {"development_stage_ontology_term_id_1": "development_stage_ontology_term_id_1_label"},
+                    {"development_stage_ontology_term_id_2": "development_stage_ontology_term_id_2_label"},
+                ],
+                "disease_terms": [],
+                "publication_citations": [],
+                "self_reported_ethnicity_terms": [
+                    {"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"},
+                    {"self_reported_ethnicity_ontology_term_id_1": "self_reported_ethnicity_ontology_term_id_1_label"},
+                ],
+                "sex_terms": [],
+                "tissue_terms": [
+                    {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"},
+                    {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
+                    {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"},
+                ],
+            }
+
+            self.assertEqual(actual_response_filter_dims, expected_filters)
 
     @patch("backend.wmg.api.v2.fetch_datasets_metadata")
     @patch("backend.wmg.api.v2.gene_term_label")
