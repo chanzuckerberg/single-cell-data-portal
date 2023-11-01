@@ -311,7 +311,8 @@ resource "aws_sfn_state_machine" "state_machine" {
             "BackoffRate": 2.0
         } ],
         "Next": "DeregisterJobDefinition",
-        "ResultPath": null
+        "ResultPath": null,
+        "OutputPath": "$.[0]"
       },
       "HandleErrors": {
         "Type": "Task",
