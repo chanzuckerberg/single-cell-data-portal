@@ -91,6 +91,7 @@ class S3Provider(S3ProviderInterface):
         """
         Downloads an S3 file located at s3://bucket_name/object_key to `local_filename`
         """
+        logger.info({"message": "Downloading file", "bucket_name": bucket_name, "object_key": object_key})
         self.client.download_file(bucket_name, object_key, local_filename)
 
     def restore_object(self, bucket_name: str, object_key: str) -> None:

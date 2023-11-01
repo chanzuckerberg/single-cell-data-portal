@@ -4,6 +4,7 @@ import numpy
 import scanpy
 
 from backend.common.corpora_config import CorporaConfig
+from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
@@ -11,15 +12,12 @@ from backend.layers.common.entities import (
     DatasetArtifactType,
     DatasetConversionStatus,
     DatasetMetadata,
-    DatasetProcessingStatus,
     DatasetStatusKey,
-    DatasetUploadStatus,
     DatasetValidationStatus,
     DatasetVersionId,
     OntologyTermId,
     TissueOntologyTermId,
 )
-from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ValidationFailed
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
@@ -28,21 +26,19 @@ from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorP
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
 
-class ProcessDownloadValidate(ProcessingLogic):
+class ProcessValidate(ProcessingLogic):
     """
-    Base class for handling the `Download and Validate` step of the step function.
+    Base class for handling the `Validate` step of the step function.
     This will:
     1. Download the original artifact from the provided URI
     2. Run the cellxgene-schema validator
     3. Save and upload a labeled copy of the original artifact (local.h5ad)
-    4. Upload a copy of the original artifact (raw.h5ad)
     5. Persist the dataset metadata on the database
     6. Determine if a Seurat conversion is possible (it is not if the X matrix has more than 2**32-1 nonzero values)
     If this step completes successfully, ProcessCxg and ProcessSeurat will start in parallel.
     If this step fails, the handle_failures lambda will be invoked.
     """
 
-    downloader: Downloader
     schema_validator: SchemaValidatorProviderInterface
 
     def __init__(
@@ -50,14 +46,12 @@ class ProcessDownloadValidate(ProcessingLogic):
         business_logic: BusinessLogicInterface,
         uri_provider: UriProviderInterface,
         s3_provider: S3ProviderInterface,
-        downloader: Downloader,
         schema_validator: SchemaValidatorProviderInterface,
     ) -> None:
         super().__init__()
         self.business_logic = business_logic
         self.uri_provider = uri_provider
         self.s3_provider = s3_provider
-        self.downloader = downloader
         self.schema_validator = schema_validator
 
     @logit
@@ -86,7 +80,7 @@ class ProcessDownloadValidate(ProcessingLogic):
         if not is_valid:
             raise ValidationFailed(errors)
         else:
-            if CorporaConfig().schema_4_feature_flag.lower() == "true":
+            if FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4):
                 self.populate_dataset_citation(collection_id, dataset_id, output_filename)
 
             # TODO: optionally, these could be batched into one
@@ -107,7 +101,7 @@ class ProcessDownloadValidate(ProcessingLogic):
         dataset_assets_base_url = CorporaConfig().dataset_assets_base_url
         collections_base_url = CorporaConfig().collections_base_url
         citation = ""
-        collection = self.business_logic.get_collection_version(collection_id)
+        collection = self.business_logic.get_collection_version(collection_id, get_tombstoned=False)
         doi = next((link.uri for link in collection.metadata.links if link.type == "DOI"), None)
         if doi:
             citation += f"Publication: {doi} "
@@ -184,7 +178,7 @@ class ProcessDownloadValidate(ProcessingLogic):
             name=adata.uns["title"],
             organism=_get_term_pairs("organism"),
             tissue=_get_tissue_terms()
-            if CorporaConfig().schema_4_feature_flag.lower() == "true"
+            if FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4)
             else _get_term_pairs("tissue"),
             assay=_get_term_pairs("assay"),
             disease=_get_term_pairs("disease"),
@@ -210,67 +204,10 @@ class ProcessDownloadValidate(ProcessingLogic):
             citation=adata.uns.get("citation"),
         )
 
-    def wrapped_download_from_s3(
-        self, dataset_id: DatasetVersionId, bucket_name: str, object_key: str, local_filename: str
-    ):
-        """
-        Wraps download_from_s3() to update the dataset's upload status
-        :param dataset_id:
-        :param bucket_name:
-        :param object_key:
-        :param local_filename:
-        :return:
-        """
-        self.update_processing_status(dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)
-        self.download_from_s3(
-            bucket_name=bucket_name,
-            object_key=object_key,
-            local_filename=local_filename,
-        )
-        self.update_processing_status(dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
-
-    @logit
-    def download_from_source_uri(self, dataset_id: DatasetVersionId, source_uri: str, local_path: str) -> str:
-        """Given a source URI, download it to local_path.
-        Handles fixing the url so it downloads directly.
-        """
-        self.logger.info("Start download")
-        file_url = self.uri_provider.parse(source_uri)
-        if not file_url:
-            raise ValueError(f"Malformed source URI: {source_uri}")
-
-        # This is a bit ugly and should be done polymorphically instead, but Dropbox support will be dropped soon
-        if file_url.scheme == "https":
-            file_info = self.uri_provider.get_file_info(source_uri)
-            status = self.downloader.download(dataset_id, file_url.url, local_path, file_info.size)
-            self.logger.info(status)  # TODO: this log is awful
-        elif file_url.scheme == "s3":
-            bucket_name = file_url.netloc
-            key = self.remove_prefix(file_url.path, "/")
-            self.wrapped_download_from_s3(
-                dataset_id=dataset_id,
-                bucket_name=bucket_name,
-                object_key=key,
-                local_filename=local_path,
-            )
-        else:
-            raise ValueError(f"Download for URI scheme '{file_url.scheme}' not implemented")
-
-        self.logger.info("Download complete")  # TODO: remove
-        return local_path
-
-    # TODO: after upgrading to Python 3.9, replace this with removeprefix()
-    def remove_prefix(self, string: str, prefix: str) -> str:
-        if string.startswith(prefix):
-            return string[len(prefix) :]
-        else:
-            return string[:]
-
     def process(
         self,
         collection_id: CollectionVersionId,
         dataset_id: DatasetVersionId,
-        dropbox_url: str,
         artifact_bucket: str,
         datasets_bucket: str,
     ):
@@ -281,24 +218,19 @@ class ProcessDownloadValidate(ProcessingLogic):
         4. Upload the labeled dataset to the datasets bucket
         :param collection_id
         :param dataset_id:
-        :param dropbox_url:
         :param artifact_bucket:
         :param datasets_bucket:
         :return:
         """
-
-        self.update_processing_status(dataset_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.PENDING)
-
-        # Download the original dataset from Dropbox
-        local_filename = self.download_from_source_uri(
-            dataset_id=dataset_id,
-            source_uri=dropbox_url,
-            local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
-        )
+        # Download the original dataset from S3
+        key_prefix = self.get_key_prefix(dataset_id.id)
+        original_h5ad_artifact_file_name = CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME
+        object_key = f"{key_prefix}/{original_h5ad_artifact_file_name}"
+        self.download_from_s3(artifact_bucket, object_key, original_h5ad_artifact_file_name)
 
         # Validate and label the dataset
         file_with_labels, can_convert_to_seurat = self.validate_h5ad_file_and_add_labels(
-            collection_id, dataset_id, local_filename
+            collection_id, dataset_id, original_h5ad_artifact_file_name
         )
         # Process metadata
         metadata = self.extract_metadata(file_with_labels)
@@ -308,16 +240,6 @@ class ProcessDownloadValidate(ProcessingLogic):
             self.update_processing_status(dataset_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
             self.logger.info(f"Skipping Seurat conversion for dataset {dataset_id}")
 
-        key_prefix = self.get_key_prefix(dataset_id.id)
-        # Upload the original dataset to the artifact bucket
-        self.create_artifact(
-            local_filename,
-            DatasetArtifactType.RAW_H5AD,
-            key_prefix,
-            dataset_id,
-            artifact_bucket,
-            DatasetStatusKey.H5AD,
-        )
         # Upload the labeled dataset to the artifact bucket
         self.create_artifact(
             file_with_labels,

@@ -1,10 +1,20 @@
 from unittest.mock import Mock
 
-from backend.layers.processing.downloader import Downloader
 from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProvider
 from tests.unit.backend.layers.common.base_test import BaseTest
+
+mock_config_attr = {
+    "collections_base_url": "http://collections",
+    "dataset_assets_base_url": "http://domain",
+    "upload_max_file_size_gb": 1,
+    "schema_4_feature_flag": "True",
+}
+
+
+def mock_config_fn(name):
+    return mock_config_attr[name]
 
 
 class BaseProcessingTest(BaseTest):
@@ -15,5 +25,3 @@ class BaseProcessingTest(BaseTest):
         self.s3_provider = MockS3Provider()
         self.schema_validator = Mock(spec=SchemaValidatorProviderInterface)
         self.schema_validator.validate_and_save_labels = Mock(return_value=(True, [], True))
-        self.downloader = Downloader(self.business_logic)
-        self.downloader.download_file = Mock()
