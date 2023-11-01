@@ -47,7 +47,7 @@ class TestProcessDownload(BaseProcessingTest):
         self.assertEqual(status.upload_status, DatasetUploadStatus.UPLOADED)
 
         # Assert mocks
-        mock_read_h5ad.assert_called_with("raw.h5ad")
+        mock_read_h5ad.assert_called_with("raw.h5ad", backed="r")
         mock_sfn.client.send_task_success.assert_called_with(
             taskToken="fake_sfn_task_token",
             output=json.dumps(

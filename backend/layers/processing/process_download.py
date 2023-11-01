@@ -140,7 +140,7 @@ class ProcessDownload(ProcessingLogic):
         return {"Vcpus": int(ceil(estimated_vcpus)), "Memory": int(ceil(estimated_memory_MB)), "MaxSwap": max_swap}
 
     def create_batch_job_definition_parameters(self, local_filename: str, dataset_vid: str) -> Dict[str, Any]:
-        adata = scanpy.read_h5ad(local_filename)
+        adata = scanpy.read_h5ad(local_filename, backed="r")
         batch_resources = self.estimate_resource_requirements(adata)
         job_definition_name = self.get_job_definion_name(dataset_vid)
 
