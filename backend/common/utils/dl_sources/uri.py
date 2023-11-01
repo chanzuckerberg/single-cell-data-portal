@@ -19,13 +19,12 @@ class MissingHeaderException(Exception):
         self.detail = "Missing header from response. " + detail
 
 
-# TODO: consider renaming as URI
 class URI(ABC):
     """Define the abstract base class to support different download sources."""
 
-    def __init__(self, uri, parsed_url: ParseResult):
+    def __init__(self, uri, parsed_uri: ParseResult):
         self.uri: str = uri
-        self.parsed_url: ParseResult = parsed_url
+        self.parsed_uri: ParseResult = parsed_uri
 
     @classmethod
     @abstractmethod
@@ -40,15 +39,15 @@ class URI(ABC):
 
     @property
     def scheme(self):
-        return self.parsed_url.scheme
+        return self.parsed_uri.scheme
 
     @property
     def netloc(self):
-        return self.parsed_url.netloc
+        return self.parsed_uri.netloc
 
     @property
     def path(self):
-        return self.parsed_url.path
+        return self.parsed_uri.path
 
     def _get_key(self, headers: dict, key: str) -> str:
         try:
@@ -79,7 +78,7 @@ class URI(ABC):
 
 
 class DropBoxURL(URI):
-    """Supports download URLs from a DropBox share link."""
+    """Supports download URIs from a DropBox share link."""
 
     @classmethod
     def validate(cls, uri: str) -> typing.Optional["URI"]:
@@ -87,21 +86,21 @@ class DropBoxURL(URI):
         returned. Otherwise, the converted URI is returned.
         """
 
-        parsed_url = urlparse(uri)
-        if parsed_url.scheme != "https" or parsed_url.netloc != "www.dropbox.com":
+        parsed_uri = urlparse(uri)
+        if parsed_uri.scheme != "https" or parsed_uri.netloc != "www.dropbox.com":
             return None
         # dl=0 will show the file in the preview page. A link with ? dl=1 will force the file to download.
-        if "dl=0" in parsed_url.query:
-            new_query = parsed_url.query.replace("dl=0", "dl=1")
-        elif not parsed_url.query:
+        if "dl=0" in parsed_uri.query:
+            new_query = parsed_uri.query.replace("dl=0", "dl=1")
+        elif not parsed_uri.query:
             new_query = "dl=1"
-        elif "dl=1" in parsed_url.query:
-            new_query = parsed_url.query
+        elif "dl=1" in parsed_uri.query:
+            new_query = parsed_uri.query
         else:
-            new_query = parsed_url.query + "&dl=1"
+            new_query = parsed_uri.query + "&dl=1"
 
-        parsed_url = parsed_url._replace(query=new_query)
-        return cls(parsed_url.geturl(), parsed_url)
+        parsed_uri = parsed_uri._replace(query=new_query)
+        return cls(parsed_uri.geturl(), parsed_uri)
 
     def file_info(self) -> dict:
         """
@@ -138,10 +137,10 @@ class S3URL(URI):
 
     @classmethod
     def validate(cls, uri: str):
-        parsed_url = urlparse(uri)
+        parsed_uri = urlparse(uri)
         return (
-            cls(uri, parsed_url)
-            if parsed_url.scheme == cls._scheme and parsed_url.netloc.endswith(cls._netloc)
+            cls(uri, parsed_uri)
+            if parsed_uri.scheme == cls._scheme and parsed_uri.netloc.endswith(cls._netloc)
             else None
         )
 
@@ -151,7 +150,7 @@ class S3URL(URI):
 
         return {
             "size": int(self._get_key(resp.headers, "content-range").split("/")[1]),
-            "name": self.parsed_url.path,
+            "name": self.parsed_uri.path,
         }
 
     def download(self, local_file_name: str):
@@ -164,8 +163,8 @@ class S3URI(URI):
     Handles S3 URIs: s3://<bucket>/<key>
     """
 
-    def __init__(self, uri, parsed_url: ParseResult):
-        super().__init__(uri, parsed_url)
+    def __init__(self, uri, parsed_uri: ParseResult):
+        super().__init__(uri, parsed_uri)
         self.s3_provider = S3Provider()
 
     @classmethod
@@ -185,11 +184,11 @@ class S3URI(URI):
 
     @property
     def bucket_name(self):
-        return self.parsed_url.netloc
+        return self.parsed_uri.netloc
 
     @property
     def key(self):
-        return self.parsed_url.path
+        return self.parsed_uri.path
 
     def download(self, local_file_name: str):
         self._disk_space_check()
@@ -217,12 +216,12 @@ class RegisteredSources:
         return cls._registered
 
 
-def from_url(uri: str) -> typing.Optional[URI]:
+def from_uri(uri: str) -> typing.Optional[URI]:
     """Given a URI return a object that can be used by the processing container to download data."""
     for source in RegisteredSources.get():
-        url_obj = source.validate(uri)
-        if url_obj:
-            return url_obj
+        uri_obj = source.validate(uri)
+        if uri_obj:
+            return uri_obj
     return None
 
 

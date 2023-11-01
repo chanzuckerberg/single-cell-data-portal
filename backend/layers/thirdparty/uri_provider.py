@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import requests
 
-from backend.common.utils.dl_sources.uri import URI, MissingHeaderException, from_url
+from backend.common.utils.dl_sources.uri import URI, MissingHeaderException, from_uri
 
 
 @dataclass
@@ -34,21 +34,21 @@ class UriProvider(UriProviderInterface):
         - Dropbox URLs
         - S3 URLs and URIs
         """
-        link = from_url(uri)
+        link = from_uri(uri)
         return link is not None
 
     def parse(self, uri: str) -> URI:
         """
         Returns a parsed URI object
         """
-        return from_url(uri)
+        return from_uri(uri)
 
     def get_file_info(self, uri: str) -> FileInfo:
         """
         Returns the size and the name of the file specified in `uri`, as indicated by its provider
         """
         try:
-            link = from_url(uri)
+            link = from_uri(uri)
             file_info = link.file_info()
 
             return FileInfo(

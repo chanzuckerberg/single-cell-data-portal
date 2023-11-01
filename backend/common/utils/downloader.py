@@ -12,7 +12,7 @@ def download(
     chunk_size: int = 10 * 2**20,
 ) -> None:
     """
-    Download a file from a url and update the processing_status upload fields in the database
+    Download a file from a URI and update the processing_status upload fields in the database
 
     :param uri: The URI of the file to be downloaded.
     :param local_path: The local name of the file be downloaded.
