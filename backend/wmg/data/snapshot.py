@@ -6,6 +6,7 @@ from typing import Dict, Optional
 
 import pandas as pd
 import tiledb
+from ddtrace import tracer
 from pandas import DataFrame
 from tiledb import Array
 
@@ -80,6 +81,7 @@ class WmgSnapshot:
 cached_snapshot: Optional[WmgSnapshot] = None
 
 
+@tracer.wrap(name="load_snapshot", service="wmg-api", resource="query", span_type="wmg-api")
 def load_snapshot(
     *,
     snapshot_schema_version: str,
