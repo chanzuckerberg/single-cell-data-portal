@@ -177,7 +177,9 @@ class WmgQuery:
 
         return query_result_df
 
-    @tracer.wrap(name="list_primary_filter_dimension_term_ids", service="wmg-api", resource="_query", span_type="wmg-api")  
+    @tracer.wrap(
+        name="list_primary_filter_dimension_term_ids", service="wmg-api", resource="_query", span_type="wmg-api"
+    )
     def list_primary_filter_dimension_term_ids(self, primary_dim_name: str):
         return (
             self._snapshot.cell_counts_cube.query(attrs=[], dims=[primary_dim_name])
@@ -187,7 +189,12 @@ class WmgQuery:
             .index.tolist()
         )
 
-    @tracer.wrap(name="list_grouped_primary_filter_dimensions_term_ids", service="wmg-api", resource="_query", span_type="wmg-api")
+    @tracer.wrap(
+        name="list_grouped_primary_filter_dimensions_term_ids",
+        service="wmg-api",
+        resource="_query",
+        span_type="wmg-api",
+    )
     def list_grouped_primary_filter_dimensions_term_ids(
         self, primary_dim_name: str, group_by_dim: str
     ) -> Dict[str, List[str]]:
