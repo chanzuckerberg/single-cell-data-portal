@@ -37,7 +37,7 @@ SWAP_MEMORY_MB = 300000
 
 class ProcessDownload(ProcessingLogic):
     """
-    Base class for handling the `Download and Validate` step of the step function.
+    Base class for handling the `Download` step of the step function.
     This will:
     1. Download the original artifact from the provided URI
     2. estimate memory requirements
