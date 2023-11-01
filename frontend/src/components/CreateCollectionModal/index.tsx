@@ -10,6 +10,7 @@ import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { removeParams } from "src/common/utils/removeParams";
 import { StyledButton } from "./style";
+import { useRouter } from "next/router";
 
 const AsyncContent = loadable(
   () =>
@@ -34,6 +35,8 @@ const CreateCollection: FC<{
   id?: Collection["id"];
   Button?: React.ElementType;
 }> = ({ className, id, Button }) => {
+  const router = useRouter();
+
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
   const urlParams = new URLSearchParams(window.location.search);
   const param = urlParams.get(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
@@ -84,7 +87,9 @@ const CreateCollection: FC<{
 
   function toggleOpen() {
     setIsOpen(!isOpen);
-    if (shouldModuleOpen) removeParams(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
+    if (shouldModuleOpen) {
+      removeParams({ params: QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT, router });
+    }
   }
 };
 
