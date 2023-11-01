@@ -40,7 +40,7 @@ def get_valid_descendants(
     Get valid descendants for a cell type. Here, "validity" can mean one of two things:
     1. The descendant is present in the input list of valid cell types
     2. The descendant is present in the input list of valid cell types and has a different number of cells
-    than the input cell type.
+    than the input cell type. Here, "number of cells" refers to the number of cells of that type AFTER roll-up.
 
     Terms can be suffixed with ";;{A_0}--{B_0}--..." to indicate that only descendants within the same
     group specified by the suffix should be considered. For example, if the term is
@@ -59,8 +59,9 @@ def get_valid_descendants(
         FrozenSet of valid cell types
     cell_counts : dict[str, int], optional, default=None
         Dictionary mapping cell type ontology term IDs (potentially suffixed) to the number of cells of that type.
-        This is used to exclude all descendants of a cell type if the cell type has the same number of cells as one
-        of its descendants. In these cases, the cell type is a redundant node and should be excluded.
+        These cell counts are POST roll-up. This is used to exclude all descendants of a cell type if the cell type
+        has the same number of cells as one of its descendants. In these cases, the cell type is a redundant node
+        and should be excluded.
 
 
     Returns
