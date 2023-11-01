@@ -1,6 +1,0 @@
-INFO     processing:schema_migration.py:210 checking dataset
-ERROR    processing:schema_migration.py:234 {'message': 'rds conversion failed', 'dataset_status': {'upload_status': None, 'validation_status': None, 'cxg_status': None, 'rds_status': None, 'h5ad_status': None, 'processing_status': <DatasetProcessingStatus.FAILURE: 'FAILURE'>, 'validation_message': 'rds conversion failed'}, 'collection_id': 'collection_id', 'collection_version_id': 'collection_version_id', 'dataset_version_id': 'new_failed_dataset_version_id', 'dataset_id': 'dataset_id_2', 'rollback': True}
-INFO     processing:schema_migration.py:210 checking dataset
-ERROR    processing:schema_migration.py:222 {'message': 'Did Not Migrate.', 'collection_id': 'collection_id', 'collection_version_id': 'collection_version_id', 'dataset_version_id': 'new_non_migrated_dataset_version_id', 'dataset_id': 'dataset_id_3', 'rollback': False}
-INFO     processing:schema_migration.py:238 Deleting files
-INFO     processing:schema_migration.py:260 Uploaded to S3
