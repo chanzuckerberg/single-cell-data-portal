@@ -1,5 +1,6 @@
 import json
 import unittest
+from typing import Dict, List
 from unittest.mock import patch
 
 from pytest import approx
@@ -299,15 +300,22 @@ def generate_test_inputs_and_expected_outputs(
     )
 
 
-def sort_filter_api_response_filter_dims_dict(filter_dims_dict):
+def sort_filter_options(filter_options: Dict[str, List[Dict[str, str]]]):
     """
-    This utility function sorts the dictionary of ontology term IDs
-    in the "filter" API response object by ontology term IDs to
-    enable equality checks in test assertions.
+    This utility function sorts the datastructure of ontology term IDs
+    to enable equality checks in test assertions.
 
-    NOTE: This function mutates `filter_dims_dict` by sorting it in-place
+    NOTE: This function mutates `filter_options` by sorting it in-place
+
+    Parameters
+    ----------
+    filter_options : An object that contains values for each dimension
+
+    Returns
+    -------
+    None because this function mutates the function argument
     """
-    for key, value_list in filter_dims_dict.items():
+    for key, value_list in filter_options.items():
         if key != "datasets":
             # The value_list for keys != "datasets", contains
             # a list of dictionaries where each dictionary is
@@ -815,12 +823,12 @@ class WmgApiV2Tests(unittest.TestCase):
             filter_request = dict(filter=filter_dict)
 
             response = self.app.post("/wmg/v2/filters", json=filter_request)
-            actual_response_filter_dims = json.loads(response.data)["filter_dims"]
+            actual_filter_options = json.loads(response.data)["filter_dims"]
 
-            # sorts 'actual_response_filter_dims' in-place
-            sort_filter_api_response_filter_dims_dict(actual_response_filter_dims)
+            # sorts 'actual_filter_options' in-place
+            sort_filter_options(actual_filter_options)
 
-            expected_filters = {
+            expected_filter_options = {
                 "cell_type_terms": [
                     {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
                     {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
@@ -865,7 +873,7 @@ class WmgApiV2Tests(unittest.TestCase):
                 ],
             }
 
-            self.assertEqual(actual_response_filter_dims, expected_filters)
+            self.assertEqual(actual_filter_options, expected_filter_options)
 
     @patch("backend.wmg.api.v2.fetch_datasets_metadata")
     @patch("backend.wmg.api.v2.gene_term_label")
