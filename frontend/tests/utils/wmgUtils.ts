@@ -29,6 +29,37 @@ export const WMG_WITH_SEEDED_GENES = {
   genes: WMG_SEED_GENES,
 };
 
+const WMG_SEED_CELL_TYPES = ["B-1a B cell"];
+/**
+ * B-1a B cell's ontology id is: CL:0000820
+ */
+const WMG_SEED_CELL_TYPE_IDS = ["CL:0000820"];
+
+export const WMG_WITH_SEEDED_GENES_AND_CELL_TYPES = {
+  URL:
+    `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}?` +
+    `genes=${encodeURIComponent(WMG_SEED_GENES.join(","))}&` +
+    `cellTypes=${encodeURIComponent(WMG_SEED_CELL_TYPES.join(","))}&` +
+    "ver=2",
+  genes: WMG_SEED_GENES,
+  cellTypes: WMG_SEED_CELL_TYPES,
+  cellTypeIds: WMG_SEED_CELL_TYPE_IDS,
+};
+
+const WMG_SEED_TISSUES = ["blood", "lung"];
+const WMG_SEED_TISSUE_IDS = ["UBERON:0000178", "UBERON:0002048"];
+
+export const WMG_WITH_SEEDED_GENES_AND_TISSUES = {
+  URL:
+    `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}?` +
+    `genes=${encodeURIComponent(WMG_SEED_GENES.join(","))}&` +
+    `tissues=${encodeURIComponent(WMG_SEED_TISSUE_IDS.join(","))}&` +
+    "ver=2",
+  genes: WMG_SEED_GENES,
+  tissues: WMG_SEED_TISSUES,
+  tissueIds: WMG_SEED_TISSUE_IDS,
+};
+
 const WAIT_FOR_RESPONSE_TIMEOUT_MS = 10 * 1000;
 
 /**
