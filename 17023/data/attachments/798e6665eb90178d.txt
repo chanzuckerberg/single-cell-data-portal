@@ -1,2 +1,0 @@
-INFO     processing:schema_migration.py:294 Error files found
-INFO     processing:schema_migration.py:301 Report
