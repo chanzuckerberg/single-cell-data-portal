@@ -85,7 +85,7 @@ class SchemaMigrate(ProcessingLogic):
                 _resp["can_publish"] = str(False)
 
             if not auto_publish:
-                # auto_publish is off for this migration, overwrite "can_publish" as true.
+                # auto_publish is off for this migration, overwrite "can_publish" as false in all cases.
                 _resp["can_publish"] = str(False)
             _resp.update(
                 collection_id=collection.collection_id.id,

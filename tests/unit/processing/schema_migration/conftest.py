@@ -59,17 +59,27 @@ def published_collection():
 
 
 @pytest.fixture
-def revision(published_collection):
+def revision():
+    published_collection_with_revision = mock.Mock(spec=CollectionVersionWithDatasets, name="published_with_revision")
+    published_collection_with_revision.is_published.return_value = True
+    published_collection_with_revision.is_unpublished_version.return_value = False
+    published_collection_with_revision.is_initial_unpublished_version.return_value = False
+    published_collection_with_revision.collection_id = CollectionId()
+    published_collection_with_revision.version_id = CollectionVersionId()
+    published_collection_with_revision.datasets = []
+    for _i in range(2):
+        published_collection_with_revision.datasets.append(make_mock_dataset_version())
+
     collection = mock.Mock(spec=CollectionVersionWithDatasets, name="revision")
     collection.is_published.return_value = False
     collection.is_unpublished_version.return_value = True
     collection.is_initial_unpublished_version.return_value = False
-    collection.collection_id = published_collection.collection_id
+    collection.collection_id = published_collection_with_revision.collection_id
     collection.version_id = CollectionVersionId()
     collection.datasets = []
-    for _dataset in published_collection.datasets:
+    for _dataset in published_collection_with_revision.datasets:
         collection.datasets.append(make_mock_dataset_version(dataset_id=_dataset.dataset_id.id))
-    return [published_collection, collection]
+    return [published_collection_with_revision, collection]
 
 
 @pytest.fixture
