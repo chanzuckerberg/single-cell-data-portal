@@ -77,7 +77,7 @@ variable frontend_url {
   description = "url for the frontend app"
 }
 
-variable "batch_job_log_group" {
+variable batch_job_log_group {
   type        = string
   description = "The name of the log group for the batch job"
 }
