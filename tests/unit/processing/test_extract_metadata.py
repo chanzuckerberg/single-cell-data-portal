@@ -6,16 +6,14 @@ import pandas
 
 from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 from backend.layers.common.entities import OntologyTermId, TissueOntologyTermId
-from backend.layers.processing.process_download_validate import ProcessDownloadValidate
+from backend.layers.processing.process_validate import ProcessValidate
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 
-class TestProcessingDownloadValidate(BaseProcessingTest):
+class TestProcessingValidate(BaseProcessingTest):
     def setUp(self):
         super().setUp()
-        self.pdv = ProcessDownloadValidate(
-            self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
-        )
+        self.pdv = ProcessValidate(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
 
         def mock_config_fn(name):
             if name == FeatureFlagValues.SCHEMA_4:
