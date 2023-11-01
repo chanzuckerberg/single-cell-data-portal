@@ -23,7 +23,8 @@ describe("CSV download tests", () => {
     const tissues = ["blood", "lung"];
     const fileTypes = ["csv"];
     const folder = subDirectory();
-    //download  csv file
+
+    // download  csv file
     await downloadAndVerifyFiles(page, fileTypes, tissues, folder);
     // verify csv file
     await verifyCsv({
