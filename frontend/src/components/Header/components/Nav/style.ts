@@ -3,6 +3,7 @@ import { Classes } from "@blueprintjs/core";
 import { css } from "@emotion/react";
 import {
   fontWeightBold,
+  fontWeightSemibold,
   gray300,
   gray500,
   grayWhite,
@@ -23,7 +24,7 @@ export const button = (props: CommonThemeProps) => css`
     border-radius: 0;
     color: ${gray300(props)};
     font-size: 13px;
-    font-weight: 500;
+    font-weight: ${fontWeightSemibold(props)};
     height: 22px;
     letter-spacing: -0.1px;
     line-height: 18px;

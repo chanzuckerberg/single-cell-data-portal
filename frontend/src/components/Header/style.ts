@@ -11,7 +11,7 @@ import { PT_GRID_SIZE_PX, PT_TEXT_COLOR } from "../common/theme";
 import { button } from "src/components/Header/components/Nav/style";
 import { spacesL, spacesXl } from "src/common/theme";
 
-export const HEADER_HEIGHT_PX = 48;
+export const HEADER_HEIGHT_PX = 56;
 
 export const Wrapper = styled.div`
   background-color: ${PT_TEXT_COLOR};
