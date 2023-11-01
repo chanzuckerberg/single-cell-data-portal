@@ -47,6 +47,7 @@ def build_dot_plot_matrix(
         cell_counts_tissue_agg, on=["tissue_ontology_term_id"], how="left"
     )
 
+
 @tracer.wrap(name="get_dot_plot_data", service="wmg-api", resource="query", span_type="wmg-api")
 def get_dot_plot_data(
     raw_gene_expression: DataFrame,

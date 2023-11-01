@@ -80,6 +80,7 @@ class WmgSnapshot:
 # Cached data
 cached_snapshot: Optional[WmgSnapshot] = None
 
+
 @tracer.wrap(name="load_snapshot", service="wmg-api", resource="query", span_type="wmg-api")
 def load_snapshot(
     *,

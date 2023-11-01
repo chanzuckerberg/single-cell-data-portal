@@ -14,6 +14,7 @@ from backend.common.utils.rollup import rollup_across_cell_type_descendants, rol
 
 ######################### PUBLIC FUNCTIONS IN ALPHABETIC ORDER ##################################
 
+
 @tracer.wrap(name="rollup", service="wmg-api", resource="query", span_type="wmg-api")
 def rollup(gene_expression_df, cell_counts_grouped_df) -> Tuple[DataFrame, DataFrame]:
     """

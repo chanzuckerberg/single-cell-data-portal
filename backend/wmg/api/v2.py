@@ -33,7 +33,9 @@ from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find
 #  -portal/2132
 
 
-@tracer.wrap(name="primary_filter_dimensions", service="wmg-api", resource="primary_filter_dimensions", span_type="wmg-api")
+@tracer.wrap(
+    name="primary_filter_dimensions", service="wmg-api", resource="primary_filter_dimensions", span_type="wmg-api"
+)
 def primary_filter_dimensions():
     with ServerTiming.time("load snapshot"):
         snapshot: WmgSnapshot = load_snapshot(
@@ -199,6 +201,7 @@ def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
                     return False
     return True
 
+
 @tracer.wrap(name="build_filter_dims_values", service="wmg-api", resource="query", span_type="wmg-api")
 def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot) -> Dict:
     dims = {
@@ -232,6 +235,7 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
     )
 
     return response_filter_dims_values
+
 
 @tracer.wrap(name="build_expression_summary", service="wmg-api", resource="query", span_type="wmg-api")
 def build_expression_summary(
@@ -298,6 +302,7 @@ def build_expression_summary(
 
     return structured_result
 
+
 def fill_out_structured_dict_aggregated(gene_expr_grouped_df, structured_result):
     n = gene_expr_grouped_df["nnz"].astype("int").values
     me = (gene_expr_grouped_df["sum"] / gene_expr_grouped_df["nnz"]).values
@@ -314,6 +319,7 @@ def fill_out_structured_dict_aggregated(gene_expr_grouped_df, structured_result)
             pc=float(pc[i]),
             tpc=float(tpc[i]),
         )
+
 
 def fill_out_structured_dict_compare(rolled_gene_expression_df, structured_result, compare):
     n = rolled_gene_expression_df["nnz"].astype("int").values
@@ -344,6 +350,7 @@ def build_gene_id_label_mapping(gene_ontology_term_ids: List[str]) -> List[dict]
 def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> List[dict]:
     return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
 
+
 def fill_out_structured_tissue_agg(tissue_agg, structured_result):
     tissues = tissue_agg["tissue_ontology_term_id"].values
     n = tissue_agg["n_cells_cell_type"].values
@@ -355,6 +362,7 @@ def fill_out_structured_tissue_agg(tissue_agg, structured_result):
             "total_count": int(n[i]),
             "order": -1,
         }
+
 
 def fill_out_structured_cell_type_agg(cell_type_agg, structured_result, ordering):
     tissues = cell_type_agg["tissue_ontology_term_id"].values
@@ -368,6 +376,7 @@ def fill_out_structured_cell_type_agg(cell_type_agg, structured_result, ordering
             "total_count": int(n[i]),
             "order": ordering.get((tissues[i], cell_types[i]), -1),
         }
+
 
 def fill_out_structured_cell_type_compare(cell_type_agg_compare, structured_result, ordering, compare):
     tissues = cell_type_agg_compare["tissue_ontology_term_id"].values
