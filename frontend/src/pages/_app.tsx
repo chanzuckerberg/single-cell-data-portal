@@ -1,5 +1,6 @@
 import { ThemeProvider as EmotionThemeProvider } from "@emotion/react";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
+import { datadogRum } from "@datadog/browser-rum";
 import { NextPage } from "next";
 import { AppProps } from "next/app";
 import Head from "next/head";
@@ -40,6 +41,22 @@ type NextPageWithLayout = NextPage & {
 type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
 };
+
+datadogRum.init({
+  applicationId: "44f77ca2-1482-404a-ad38-23499bb925e5",
+  clientToken: "pub55d4baaac2091f9656a83da732732a89",
+  site: "datadoghq.com",
+  service: "single-cell-data-portal",
+  env: "<ENV_NAME>",
+  // Specify a version number to identify the deployed version of your application in Datadog
+  // version: '1.0.0',
+  sessionSampleRate: 100,
+  sessionReplaySampleRate: 20,
+  trackUserInteractions: true,
+  trackResources: true,
+  trackLongTasks: true,
+  defaultPrivacyLevel: "mask-user-input",
+});
 
 function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
   const Layout = Component.Layout || DefaultLayout;
