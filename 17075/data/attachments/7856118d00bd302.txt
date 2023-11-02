@@ -1,0 +1,4 @@
+DEBUG    ddtrace.internal.remoteconfig.worker:worker.py:36 RemoteConfigWorker created with polling interval 5
+DEBUG    ddtrace.appsec._remoteconfiguration:_remoteconfiguration.py:66 [1][P: 0] Register ASM Remote Config Callback
+DEBUG    ddtrace.internal.remoteconfig._subscribers:_subscribers.py:31 [1] Subscriber ASM init
+DEBUG    ddtrace.internal.remoteconfig._subscribers:_subscribers.py:57 [1][P: 0] Subscriber ASM starts False
