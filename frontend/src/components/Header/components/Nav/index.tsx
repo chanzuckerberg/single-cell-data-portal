@@ -14,13 +14,8 @@ import {
   Nav as NavWrapper,
 } from "./style";
 import { BetaChip } from "../../style";
-
-export const CENSUS_LINK = "https://chanzuckerberg.github.io/cellxgene-census/";
-
-interface Props {
-  className?: string;
-  pathname: string;
-}
+import { CENSUS_LINK } from "./constants";
+import { Props } from "./types";
 
 export default function Nav({ className, pathname }: Props): JSX.Element {
   const isCensusDirectory = isRouteActive(pathname, ROUTES.CENSUS_DIRECTORY);
