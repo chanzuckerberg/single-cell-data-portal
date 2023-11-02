@@ -77,13 +77,13 @@ class ProcessDownload(ProcessingLogic):
             return string
 
     @staticmethod
-    def get_job_definion_name(dataset_vid: str) -> str:
+    def get_job_definion_name(dataset_version_id: str) -> str:
         if os.getenv("REMOTE_DEV_PREFIX"):
             stack_name = os.environ["REMOTE_DEV_PREFIX"].replace("/", "")
             prefix = f"{os.environ['DEPLOYMENT_STAGE']}-{stack_name}"
         else:
             prefix = f"{os.environ['DEPLOYMENT_STAGE']}"
-        job_definition_name = f"dp-{prefix}-ingest-process-{dataset_vid}"
+        job_definition_name = f"dp-{prefix}-ingest-process-{dataset_version_id}"
         return job_definition_name
 
     @staticmethod
@@ -96,7 +96,7 @@ class ProcessDownload(ProcessingLogic):
         max_vcpu: int = MAX_VCPU,
         swap_memory_MB: int = SWAP_MEMORY_MB,
         memory_per_vcpu: int = MEMORY_PER_VCPU,
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, int]:
         """
         Estimate the resource requirements for a given dataset
 
@@ -113,21 +113,21 @@ class ProcessDownload(ProcessingLogic):
         # Note: this is a rough estimate of the uncompressed size of the dataset. This method avoid loading the entire
         # dataset into memory.
         uncompressed_size_MB = adata.n_obs * adata.n_vars / MB
-        estimated_memory_MB = max([uncompressed_size_MB * memory_modifier, min_memory_MB])
+        estimated_memory_MB = max([int(ceil(uncompressed_size_MB * memory_modifier)), min_memory_MB])
         if estimated_memory_MB > max_memory_MB:
             estimated_memory_MB = max_memory_MB
             estimated_vcpus = max_vcpu
             max_swap = swap_memory_MB
         else:
-            estimated_vcpus = max([estimated_memory_MB / memory_per_vcpu, min_vcpu])
+            estimated_vcpus = max([int(ceil(estimated_memory_MB / memory_per_vcpu)), min_vcpu])
             max_swap = 0
 
-        return {"Vcpus": int(ceil(estimated_vcpus)), "Memory": int(ceil(estimated_memory_MB)), "MaxSwap": max_swap}
+        return {"Vcpus": estimated_vcpus, "Memory": estimated_memory_MB, "MaxSwap": max_swap}
 
-    def create_batch_job_definition_parameters(self, local_filename: str, dataset_vid: str) -> Dict[str, Any]:
+    def create_batch_job_definition_parameters(self, local_filename: str, dataset_version_id: str) -> Dict[str, Any]:
         adata = scanpy.read_h5ad(local_filename, backed="r")
         batch_resources = self.estimate_resource_requirements(adata)
-        job_definition_name = self.get_job_definion_name(dataset_vid)
+        job_definition_name = self.get_job_definion_name(dataset_version_id)
 
         return {  # Using PascalCase to match the Batch API
             "JobDefinitionName": job_definition_name,
@@ -139,18 +139,20 @@ class ProcessDownload(ProcessingLogic):
             },
         }
 
-    def process(self, dataset_vid: DatasetVersionId, dataset_uri: str, artifact_bucket: str, sfn_task_token: str):
+    def process(
+        self, dataset_version_id: DatasetVersionId, dataset_uri: str, artifact_bucket: str, sfn_task_token: str
+    ):
         """
         1. Download the original dataset
         2. Upload the labeled dataset to the artifact bucket
-        :param dataset_vid:
+        :param dataset_version_id:
         :param dataset_uri:
         :param artifact_bucket:
         :param sfn_task_token: use to report back the memory requirements
         :return:
         """
 
-        self.update_processing_status(dataset_vid, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.PENDING)
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.PENDING)
 
         # Download the original dataset from Dropbox
         local_filename = self.download_from_source_uri(
@@ -158,21 +160,21 @@ class ProcessDownload(ProcessingLogic):
             local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
         )
 
-        response = self.create_batch_job_definition_parameters(local_filename, dataset_vid.id)
+        response = self.create_batch_job_definition_parameters(local_filename, dataset_version_id.id)
         self.logger.info(response)
 
-        key_prefix = self.get_key_prefix(dataset_vid.id)
+        key_prefix = self.get_key_prefix(dataset_version_id.id)
         # Upload the original dataset to the artifact bucket
-        self.update_processing_status(dataset_vid, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)
         self.create_artifact(
             local_filename,
             DatasetArtifactType.RAW_H5AD,
             key_prefix,
-            dataset_vid,
+            dataset_version_id,
             artifact_bucket,
             DatasetStatusKey.H5AD,
         )
-        self.update_processing_status(dataset_vid, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
 
         sfn_client = StepFunctionProvider().client
         sfn_client.send_task_success(taskToken=sfn_task_token, output=json.dumps(response))
