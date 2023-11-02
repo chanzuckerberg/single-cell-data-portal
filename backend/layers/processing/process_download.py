@@ -111,7 +111,7 @@ class ProcessDownload(ProcessingLogic):
         max_vcpu: int = MAX_VCPU,
         swap_memory_MB: int = SWAP_MEMORY_MB,
         memory_per_vcpu: int = MEMORY_PER_VCPU,
-    ) -> Dict[str, Any]:
+    ) -> Dict[str, int]:
         """
         Estimate the resource requirements for a given dataset
 
