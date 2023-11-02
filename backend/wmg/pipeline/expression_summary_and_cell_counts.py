@@ -30,7 +30,10 @@ class CensusParameters:
         value_filter = organism_mapping[organism]
         if FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4):
             # Filter out non-tissue tissues and system-level tissues
-            value_filter += " and tissue_type == 'tissue' and tissue_ontology_term_id not in ['UBERON_0001017', 'UBERON:0001007', 'UBERON:0002405', 'UBERON:0000990', 'UBERON:0001004', 'UBERON:0001434']"
+            # TODO: Once cellxgene-census is updated to support tiledbsoma 1.5.0, we can update the tissue filter to use `not in`:
+            # tissue_ontology_term_id not in ['UBERON_0001017', 'UBERON:0001007', 'UBERON:0002405', 'UBERON:0000990', 'UBERON:0001004', 'UBERON:0001434']
+            # This will require updating the pinned versions of cellxgene-census and tiledbsoma in `requirements-wmg-pipeline.txt`
+            value_filter += " and tissue_type == 'tissue' and tissue_general_ontology_term_id != 'UBERON:0001017' and tissue_general_ontology_term_id != 'UBERON:0001007' and tissue_general_ontology_term_id != 'UBERON:0002405' and tissue_general_ontology_term_id != 'UBERON:0000990' and tissue_general_ontology_term_id != 'UBERON:0001004' and tissue_general_ontology_term_id != 'UBERON:0001434'"
         return value_filter
 
 
