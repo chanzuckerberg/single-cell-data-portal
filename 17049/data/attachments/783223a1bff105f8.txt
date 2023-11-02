@@ -1,3 +1,0 @@
-INFO     processing:schema_migration.py:305 3 errors files found
-INFO     processing:schema_migration.py:305 2 migrate_changes files found
-INFO     processing:schema_migration.py:317 Report
