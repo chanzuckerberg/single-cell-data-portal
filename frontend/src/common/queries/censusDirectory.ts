@@ -12,14 +12,12 @@ export interface Project {
   revised_by?: string;
   model_link?: string;
   last_updated?: string;
-  contributor_metadata: {
-    title: string;
-    description: string;
-    contact_name: string;
-    contact_affiliation: string;
-    contact_email: string;
-    DOI?: string;
-  };
+  title: string;
+  description: string;
+  contact_name: string;
+  contact_affiliation: string;
+  contact_email: string;
+  DOI?: string;
 }
 
 export interface ProjectResponse {
@@ -47,14 +45,12 @@ async function fetchProjects(): Promise<ProjectResponse> {
       n_features: 2,
       data_type: "obs_embedding",
       revised_by: "accession_ID_2",
-      contributor_metadata: {
-        DOI: "10.3352/jeehp.2013.10.3",
-        title: "brief title",
-        description: "...",
-        contact_name: "...",
-        contact_email: "...",
-        contact_affiliation: "...",
-      },
+      DOI: "10.3352/jeehp.2013.10.3",
+      title: "brief title",
+      description: "...",
+      contact_name: "...",
+      contact_email: "...",
+      contact_affiliation: "...",
     },
     accession_ID_2: {
       census_version: "2099-10-11",
@@ -65,15 +61,13 @@ async function fetchProjects(): Promise<ProjectResponse> {
       measurement_name: "RNA",
       experiment_name: "homo_sapiens",
       model_link: "http://example.com",
-      contributor_metadata: {
-        contact_affiliation: "Turing Institute for Biomedical Machine Learning",
-        contact_name: "Haotian Cu",
-        contact_email: "mailto:name@example.com",
-        DOI: "10.3352/jeehp.2013.10.3",
-        title: "BioAI",
-        description:
-          "Ligula imperdiet eget et enim id morbi. Pretium diam risus placerat felis vulputate adipiscing sed integer. Mauris commodo risus scelerisque tempus mi venenatis egestas. Sed at scelerisque vulputate egestas vulputate condimentum libero tempus convallis. Nulla id eget fringilla ultrices pellentesque nunc faucibus condimentum. Ornare porta eget porttitor cum arcu id ultricies id. Massa interdum orci risus arcu mattis massa. Amet metus nibh enim nam pellentesque sagittis diam id quam.",
-      },
+      contact_affiliation: "Turing Institute for Biomedical Machine Learning",
+      contact_name: "Haotian Cu",
+      contact_email: "mailto:name@example.com",
+      DOI: "10.3352/jeehp.2013.10.3",
+      title: "BioAI",
+      description:
+        "Ligula imperdiet eget et enim id morbi. Pretium diam risus placerat felis vulputate adipiscing sed integer. Mauris commodo risus scelerisque tempus mi venenatis egestas. Sed at scelerisque vulputate egestas vulputate condimentum libero tempus convallis. Nulla id eget fringilla ultrices pellentesque nunc faucibus condimentum. Ornare porta eget porttitor cum arcu id ultricies id. Massa interdum orci risus arcu mattis massa. Amet metus nibh enim nam pellentesque sagittis diam id quam.",
     },
   };
 }
