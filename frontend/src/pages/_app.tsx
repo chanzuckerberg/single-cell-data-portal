@@ -45,7 +45,7 @@ type AppPropsWithLayout = AppProps & {
 datadogRum.init({
   applicationId: "44f77ca2-1482-404a-ad38-23499bb925e5",
   clientToken: "pub55d4baaac2091f9656a83da732732a89",
-  site: "datadoghq.com",
+  site: "pr-6140-frontend.rdev.single-cell.czi.technology",
   service: "single-cell-data-portal",
   env: "rdev",
   // Specify a version number to identify the deployed version of your application in Datadog
