@@ -5,7 +5,7 @@ from unittest import TestCase
 import boto3
 from moto import mock_s3
 
-from backend.common.utils.dl_sources.url import S3URI, S3URL, DropBoxURL, RegisteredSources, from_uri
+from backend.common.utils.dl_sources.uri import S3URI, S3URL, DropBoxURL, RegisteredSources, from_uri
 
 
 class TestRegisteredSources(unittest.TestCase):
@@ -20,7 +20,7 @@ class TestRegisteredSources(unittest.TestCase):
         RegisteredSources.add(S3URL)
         self.assertIn(S3URL, RegisteredSources.get())
 
-    def test_from_url(self):
+    def test_from_uri(self):
         RegisteredSources.add(S3URL)
         self.assertIsInstance(from_uri("https://somebucket.s3.amazonaws.com"), S3URL)
 
