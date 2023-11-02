@@ -47,7 +47,7 @@ datadogRum.init({
   clientToken: "pub55d4baaac2091f9656a83da732732a89",
   site: "datadoghq.com",
   service: "single-cell-data-portal",
-  env: "<ENV_NAME>",
+  env: "rdev",
   // Specify a version number to identify the deployed version of your application in Datadog
   // version: '1.0.0',
   sessionSampleRate: 100,
