@@ -33,7 +33,6 @@ from tests.unit.backend.wmg.test_query import generate_expected_marker_gene_data
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
-
 # this should only be used for generating expected outputs when using the test snapshot (see test_snapshot.py)
 def generate_expected_term_id_labels_dictionary(
     *,
@@ -300,6 +299,100 @@ def generate_test_inputs_and_expected_outputs(
     )
 
 
+def gen_expected_output_ethnicity_compare_dim(
+    *,
+    genes: list[str],
+    cell_types: list[str],
+    tissues: list[str],
+    ethnicities: list[str],
+    dim_size: int,
+    me: float,
+    cell_count_per_row_cell_counts_cube: int,
+    cell_ordering_func=forward_cell_type_ordering,
+) -> tuple:
+    """
+    Generates expected outputs for the /wmg/v2/query endpoint,
+    where 'self_reported_ethnicity_ontology_term_id' is the compare dimension AND
+    grouping by 'self_reported_ethnicity_ontology_term_id' is done against an
+    EXPECTED list of unique values for 'self_reported_ethnicity_ontology_term_id'.
+
+    This is especially useful to test against schema-4 values for ethnicity where
+    comma-delimited values should be excluded from the grouping. This function could
+    could be more generally useful for testing when expected grouping by the
+    ethnicity terms should be done against an expected list of values.
+
+    Arguments
+    ---------
+    genes: list of gene ontology term IDs
+
+    cell_types: list of cell_type ontology term IDs
+
+    tissues: list of tissue ontology term IDs
+
+    ethnicities: list of ethnicity ontology term IDs (the compare_dim terms)
+
+    dim_size: size of each dimension of the test cube
+
+    me: mean expression value to use for each (gene, tissue, cell_type) combination (scalar)
+
+    cell_count_per_row_cell_counts_cube: num of cells per row in cell_counts cube (scalar)
+
+    Returns
+    -------
+    tuple of (expected_expression_summary, expected_term_id_labels)
+
+    expected_expression_summary: dictionary containing the expected expression summary values
+
+    expected_term_id_labels: dictionary containing the expected term ID labels
+    """
+
+    expected_combinations_per_tissue = 1
+
+    # It is possible that len(ethnicities) != dim_size because
+    # we remove comma-delimited ethnicity ontology term IDs from
+    # downstream processing like grouping and rollup.
+    for dim in expression_summary_non_indexed_dims:
+        if dim != "self_reported_ethnicity_ontology_term_id":
+            expected_combinations_per_tissue *= dim_size
+        else:
+            expected_combinations_per_tissue *= len(ethnicities)
+
+    cell_count_tissue = cell_count_per_row_cell_counts_cube * expected_combinations_per_tissue
+
+    expected_combinations_per_tissue_cell_type = expected_combinations_per_tissue // len(cell_types)
+    nnz_gene_tissue_cell_type = expected_combinations_per_tissue_cell_type
+    cell_count_tissue_cell_type = expected_combinations_per_tissue_cell_type * cell_count_per_row_cell_counts_cube
+    cell_counts_tissue_cell_type_ethncity = cell_count_tissue_cell_type // len(ethnicities)
+    nnz_gene_tissue_cell_type_ethnicity = nnz_gene_tissue_cell_type // len(ethnicities)
+
+    expected_term_id_labels = generate_expected_term_id_labels_dictionary(
+        genes=genes,
+        tissues=tissues,
+        cell_types=cell_types,
+        cell_count_tissue_cell_type=cell_count_tissue_cell_type,
+        compare_terms=ethnicities,
+        cell_counts_tissue_cell_type_compare_dim=cell_counts_tissue_cell_type_ethncity,
+        cell_ordering_func=cell_ordering_func,
+    )
+    expected_expression_summary = generate_expected_expression_summary_dictionary(
+        genes=genes,
+        tissues=tissues,
+        cell_count_tissue=cell_count_tissue,
+        cell_types=cell_types,
+        cell_count_tissue_cell_type=cell_count_tissue_cell_type,
+        nnz_gene_tissue_cell_type=nnz_gene_tissue_cell_type,
+        compare_terms=ethnicities,
+        cell_counts_tissue_cell_type_compare_dim=cell_counts_tissue_cell_type_ethncity,
+        nnz_gene_tissue_cell_type_compare_dim=nnz_gene_tissue_cell_type_ethnicity,
+        me=me,
+    )
+
+    return (
+        expected_expression_summary,
+        expected_term_id_labels,
+    )
+
+
 def sort_filter_options(filter_options: Dict[str, List[Dict[str, str]]]):
     """
     This utility function sorts the datastructure of ontology term IDs
@@ -429,6 +522,7 @@ class WmgApiV2Tests(unittest.TestCase):
         dim_size = 1
         with create_temp_wmg_snapshot(
             dim_size=dim_size,
+            dim_ontology_term_ids_generator_fn=ont_term_id_gen_schema4_ethnicity_variation,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
@@ -458,8 +552,11 @@ class WmgApiV2Tests(unittest.TestCase):
                 "expression_summary": expected_expression_summary,
                 "term_id_labels": expected_term_id_labels,
             }
+
+            actual_response = json.loads(response.data)
+
             self.assert_equality_nested_dict_with_floats(
-                expected=expected_response, actual=json.loads(response.data), key_path=[]
+                expected=expected_response, actual=actual_response, key_path=[]
             )
 
     @patch("backend.wmg.api.v2.gene_term_label")
@@ -471,6 +568,7 @@ class WmgApiV2Tests(unittest.TestCase):
         dim_size = 3
         with create_temp_wmg_snapshot(
             dim_size=dim_size,
+            dim_ontology_term_ids_generator_fn=ont_term_id_gen_schema4_ethnicity_variation,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
@@ -516,6 +614,7 @@ class WmgApiV2Tests(unittest.TestCase):
         dim_size = 3
         with create_temp_wmg_snapshot(
             dim_size=dim_size,
+            dim_ontology_term_ids_generator_fn=ont_term_id_gen_schema4_ethnicity_variation,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
@@ -596,12 +695,82 @@ class WmgApiV2Tests(unittest.TestCase):
     @patch("backend.wmg.api.v2.gene_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
     @patch("backend.wmg.api.v2.load_snapshot")
+    def test__query_request_with_compare__against_schema4_ethnicity_values__correct_response(
+        self, load_snapshot, ontology_term_label, gene_term_label
+    ):
+        dim_size = 3
+        with create_temp_wmg_snapshot(
+            dim_size=dim_size,
+            dim_ontology_term_ids_generator_fn=ont_term_id_gen_schema4_ethnicity_variation,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=all_tens_cell_counts_values,
+        ) as snapshot:
+            # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
+            # expected query response
+            load_snapshot.return_value = snapshot
+
+            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+            # module is separately unit tested, and here we just want to verify the response building logic is correct.
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
+
+            genes = ["gene_ontology_term_id_0", "gene_ontology_term_id_2"]
+            organism = "organism_ontology_term_id_0"
+
+            cell_types = [f"cell_type_ontology_term_id_{i}" for i in range(dim_size)]
+
+            # WMG V2 API does not allow filtering by tissues and therefore the query result
+            # includes all tissues
+            all_tissues = [f"tissue_ontology_term_id_{i}" for i in range(dim_size)]
+
+            # The cube test data with comma-delimited ethnicities is generated such that
+            # if the number of values for the ethnicity column is N, it will generate
+            # (N - 1) single value ethnicity term IDs (suffixed with 0 to N-2) and
+            # 1 comma-delimited ethnicity term ID.
+            # Since we are excluding the the comma-delimited term ID from the grouping, the
+            # output is a function of the single valued ethnicity term IDs.
+            ethnicities = [f"self_reported_ethnicity_ontology_term_id_{i}" for i in range(dim_size - 1)]
+
+            (expected_expression_summary, expected_term_id_labels) = gen_expected_output_ethnicity_compare_dim(
+                genes=genes,
+                cell_types=cell_types,
+                tissues=all_tissues,
+                ethnicities=ethnicities,
+                dim_size=dim_size,
+                me=1.0,
+                cell_count_per_row_cell_counts_cube=10,
+            )
+
+            request = {
+                "filter": dict(gene_ontology_term_ids=genes, organism_ontology_term_id=organism),
+                "compare": "self_reported_ethnicity",
+            }
+
+            response = self.app.post("/wmg/v2/query", json=request)
+
+            self.assertEqual(200, response.status_code)
+
+            expected = {
+                "snapshot_id": "dummy-snapshot",
+                "expression_summary": expected_expression_summary,
+                "term_id_labels": expected_term_id_labels,
+            }
+
+            self.assert_equality_nested_dict_with_floats(
+                expected=expected, actual=json.loads(response.data), key_path=[]
+            )
+
+    @patch("backend.wmg.api.v2.gene_term_label")
+    @patch("backend.wmg.api.v2.ontology_term_label")
+    @patch("backend.wmg.api.v2.load_snapshot")
     def test__query_explicit_cell_ordering__returns_correct_cell_ordering(
         self, load_snapshot, ontology_term_label, gene_term_label
     ):
         dim_size = 2
         with create_temp_wmg_snapshot(
             dim_size=dim_size,
+            dim_ontology_term_ids_generator_fn=ont_term_id_gen_schema4_ethnicity_variation,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
             cell_ordering_generator_fn=reverse_cell_type_ordering,
@@ -638,6 +807,7 @@ class WmgApiV2Tests(unittest.TestCase):
         dim_size = 2
         with create_temp_wmg_snapshot(
             dim_size=dim_size,
+            dim_ontology_term_ids_generator_fn=ont_term_id_gen_schema4_ethnicity_variation,
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=lambda coords: all_X_cell_counts_values(coords, expected_count),
             cell_ordering_generator_fn=reverse_cell_type_ordering,

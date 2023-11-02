@@ -16,13 +16,6 @@ def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:
     all_filter_options = set()
     organism_key = "organism_ontology_term_id__" + organism
     all_filter_options = snapshot.filter_relationships[organism_key].get(dimension, [])
-
-    # For schema-4 we filter out comma-delimited values for `self_reported_ethnicity_ontology_term_id`
-    # from the options list per functional requirements:
-    # See: https://github.com/chanzuckerberg/single-cell/issues/596
-    if dimension == "self_reported_ethnicity_ontology_term_id":
-        all_filter_options = [x for x in all_filter_options if "," not in x.split("__")[1]]
-
     return [option.split("__")[1] for option in all_filter_options]
 
 

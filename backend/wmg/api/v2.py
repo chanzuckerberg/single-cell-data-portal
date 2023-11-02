@@ -278,6 +278,12 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
             else find_dim_option_values(criteria, snapshot, dim)
         )
 
+    # For schema-4 we filter out comma-delimited values for `self_reported_ethnicity_ontology_term_id`
+    # from the options list per functional requirements:
+    # See: https://github.com/chanzuckerberg/single-cell/issues/596
+    ethnicity_term_ids = dims["self_reported_ethnicity_ontology_term_id"]
+    dims["self_reported_ethnicity_ontology_term_id"] = [term_id for term_id in ethnicity_term_ids if "," not in term_id]
+
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(snapshot, dims["dataset_id"]),
         disease_terms=build_ontology_term_id_label_mapping(dims["disease_ontology_term_id"]),
