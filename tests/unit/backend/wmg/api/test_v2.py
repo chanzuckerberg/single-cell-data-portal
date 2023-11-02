@@ -695,7 +695,7 @@ class WmgApiV2Tests(unittest.TestCase):
     @patch("backend.wmg.api.v2.gene_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
     @patch("backend.wmg.api.v2.load_snapshot")
-    def test__query_request_with_compare__against_schema4_ethnicity_values__correct_response(
+    def test__schema4__query_request_with_compare_by_ethnicity__excludes_comma_delimited_ethnicity_values(
         self, load_snapshot, ontology_term_label, gene_term_label
     ):
         dim_size = 3
@@ -708,10 +708,6 @@ class WmgApiV2Tests(unittest.TestCase):
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
             # expected query response
             load_snapshot.return_value = snapshot
-
-            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
-            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
-            # module is separately unit tested, and here we just want to verify the response building logic is correct.
             ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
             gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
 
@@ -967,9 +963,11 @@ class WmgApiV2Tests(unittest.TestCase):
     @patch("backend.wmg.api.v2.gene_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")
     @patch("backend.wmg.api.v2.load_snapshot")
-    def test__filter_request_with_empty_criteria__returns_valid_dim_options__schema4_ethnicity_values(
+    def test__schema4__filter_request_with_empty_criteria__excludes_comma_delimited_ethnicity_values(
         self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
     ):
+        # In this test we expect comma-delimited ethnicity values to NOT BE INCLUDED
+        # in the list of generated options for ethnicities
         dim_size = 3
         with create_temp_wmg_snapshot(
             dim_size=dim_size, dim_ontology_term_ids_generator_fn=ont_term_id_gen_schema4_ethnicity_variation
@@ -1031,6 +1029,97 @@ class WmgApiV2Tests(unittest.TestCase):
                 ],
                 "disease_terms": [],
                 "publication_citations": [],
+                # NOTE: ethnicity options generated does not include comma-delimited ethnicity values
+                # eventhough those values exist in the test cube
+                "self_reported_ethnicity_terms": [
+                    {"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"},
+                    {"self_reported_ethnicity_ontology_term_id_1": "self_reported_ethnicity_ontology_term_id_1_label"},
+                ],
+                "sex_terms": [],
+                "tissue_terms": [
+                    {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"},
+                    {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
+                    {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"},
+                ],
+            }
+
+            self.assertEqual(actual_filter_options, expected_filter_options)
+
+    @patch("backend.wmg.api.v2.fetch_datasets_metadata")
+    @patch("backend.wmg.api.v2.gene_term_label")
+    @patch("backend.wmg.api.v2.ontology_term_label")
+    @patch("backend.wmg.api.v2.load_snapshot")
+    def test__schema4__filter_request_with_nonempty_criteria__excludes_comma_delimited_ethnicity_values(
+        self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
+    ):
+        # In this test we expect comma-delimited ethnicity values to NOT BE INCLUDED
+        # in the list of generated options for ethnicities regardless of what filter options
+        # were selected.
+        dim_size = 3
+        with create_temp_wmg_snapshot(
+            dim_size=dim_size, dim_ontology_term_ids_generator_fn=ont_term_id_gen_schema4_ethnicity_variation
+        ) as snapshot:
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
+            fetch_datasets_metadata.return_value = mock_datasets_metadata([f"dataset_id_{i}" for i in range(dim_size)])
+            load_snapshot.return_value = snapshot
+
+            # Non-empty selection criteria
+            filter_dict = dict(
+                cell_type_ontology_term_ids=["cell_type_ontology_term_id_2"],
+                dataset_ids=[],
+                disease_ontology_term_ids=[],
+                development_stage_ontology_term_ids=[],
+                organism_ontology_term_id="organism_ontology_term_id_0",
+                publication_citations=[],
+                self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
+                sex_ontology_term_ids=[],
+                tissue_ontology_term_ids=["tissue_ontology_term_id_1"],
+            )
+
+            filter_request = dict(filter=filter_dict)
+
+            response = self.app.post("/wmg/v2/filters", json=filter_request)
+            actual_filter_options = json.loads(response.data)["filter_dims"]
+
+            # sorts 'actual_filter_options' in-place
+            sort_filter_options(actual_filter_options)
+
+            expected_filter_options = {
+                "cell_type_terms": [
+                    {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
+                    {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
+                    {"cell_type_ontology_term_id_2": "cell_type_ontology_term_id_2_label"},
+                ],
+                "datasets": [
+                    {
+                        "collection_id": "dataset_id_0_coll_id",
+                        "collection_label": "dataset_id_0_coll_name",
+                        "id": "dataset_id_0",
+                        "label": "dataset_id_0_name",
+                    },
+                    {
+                        "collection_id": "dataset_id_1_coll_id",
+                        "collection_label": "dataset_id_1_coll_name",
+                        "id": "dataset_id_1",
+                        "label": "dataset_id_1_name",
+                    },
+                    {
+                        "collection_id": "dataset_id_2_coll_id",
+                        "collection_label": "dataset_id_2_coll_name",
+                        "id": "dataset_id_2",
+                        "label": "dataset_id_2_name",
+                    },
+                ],
+                "development_stage_terms": [
+                    {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
+                    {"development_stage_ontology_term_id_1": "development_stage_ontology_term_id_1_label"},
+                    {"development_stage_ontology_term_id_2": "development_stage_ontology_term_id_2_label"},
+                ],
+                "disease_terms": [],
+                "publication_citations": [],
+                # NOTE: ethnicity options generated does not include comma-delimited ethnicity values
+                # eventhough those values exist in the test cube
                 "self_reported_ethnicity_terms": [
                     {"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"},
                     {"self_reported_ethnicity_ontology_term_id_1": "self_reported_ethnicity_ontology_term_id_1_label"},
