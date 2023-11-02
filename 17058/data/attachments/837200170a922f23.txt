@@ -1,0 +1,46 @@
+INFO     backend.layers.business.business:business.py:390 {'message': 'ingesting dataset', 'collection_version_id': 67182994-d3e7-497d-9fda-ec9925eeb895, 'url': 'https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0', 'existing_dataset_version_id': None}
+INFO     processing:process.py:103 Processing dataset fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:26 Start download_from_source_uri
+INFO     processing:logger.py:28 Complete download_from_source_uri
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:84 Uploaded [fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1/raw.h5ad] to s3://fake_bucket_name/fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1/raw.h5ad
+INFO     processing:process_logic.py:86 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process.py:103 Processing dataset fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1
+INFO     processing:logger.py:26 Start validate_h5ad_file_and_add_labels
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:28 Complete validate_h5ad_file_and_add_labels
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:84 Uploaded [fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1/local.h5ad] to s3://fake_bucket_name/fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1/local.h5ad
+INFO     processing:process_logic.py:86 Updated database with h5ad.
+INFO     processing:process_logic.py:93 Uploaded fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1.h5ad to s3://fake_datasets_bucket/fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1/fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1.h5ad
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process.py:103 Processing dataset fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1
+INFO     processing:process_logic.py:106 Converting local.h5ad
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:112 Finished converting <MagicMock name='make_cxg' id='140483303231200'> in 0:00:00.000525
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_cxg.py:107 Updating database with cxg artifact for dataset fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1. s3_uri is s3://fake_cxg_bucket/fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1.cxg/
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process.py:103 Processing dataset fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1
+INFO     processing:process_logic.py:106 Converting local.h5ad
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:112 Finished converting <MagicMock name='make_seurat' id='140483301666000'> in 0:00:00.000628
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:84 Uploaded [fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1/local.rds] to s3://fake_bucket_name/fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1/local.rds
+INFO     processing:process_logic.py:86 Updated database with rds.
+INFO     processing:process_logic.py:93 Uploaded fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1.rds to s3://fake_datasets_bucket/fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1/fc2efe50-ce1f-4fa8-81e2-cb18aab1d1a1.rds
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
