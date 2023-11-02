@@ -28,7 +28,9 @@ class TestProcessDownload(BaseProcessingTest):
         stack_name = test_environment["REMOTE_DEV_PREFIX"]
         deployment_stage = test_environment["DEPLOYMENT_STAGE"]
         collection = self.generate_unpublished_collection()
-        dataset_vid, dataset_id = self.business_logic.ingest_dataset(collection.version_id, dropbox_uri, None, None)
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
+            collection.version_id, dropbox_uri, None, None
+        )
         # Mock anndata object
         mock_anndata = Mock(spec=scanpy.AnnData)
         mock_anndata.n_obs = 10000
@@ -41,9 +43,9 @@ class TestProcessDownload(BaseProcessingTest):
 
         # This is where we're at when we start the SFN
         pdv = ProcessDownload(self.business_logic, self.uri_provider, self.s3_provider)
-        pdv.process(dataset_vid, dropbox_uri, bucket_name, "fake_sfn_task_token")
+        pdv.process(dataset_version_id, dropbox_uri, bucket_name, "fake_sfn_task_token")
 
-        status = self.business_logic.get_dataset_status(dataset_vid)
+        status = self.business_logic.get_dataset_status(dataset_version_id)
         self.assertEqual(status.upload_status, DatasetUploadStatus.UPLOADED)
 
         # Assert mocks
@@ -52,7 +54,7 @@ class TestProcessDownload(BaseProcessingTest):
             taskToken="fake_sfn_task_token",
             output=json.dumps(
                 {
-                    "JobDefinitionName": f"dp-{deployment_stage}-{stack_name}-ingest-process-{dataset_vid.id}",
+                    "JobDefinitionName": f"dp-{deployment_stage}-{stack_name}-ingest-process-{dataset_version_id.id}",
                     "Vcpus": 1,
                     "Memory": 4000,
                     "LinuxParameters": {"Swappiness": 60, "MaxSwap": 0},
@@ -61,13 +63,15 @@ class TestProcessDownload(BaseProcessingTest):
         )
 
         # Verify that both the original (raw.h5ad) and the labeled (local.h5ad) files are there
-        self.assertTrue(self.s3_provider.uri_exists(f"s3://{bucket_name}/{stack_name}/{dataset_vid.id}/raw.h5ad"))
+        self.assertTrue(
+            self.s3_provider.uri_exists(f"s3://{bucket_name}/{stack_name}/{dataset_version_id.id}/raw.h5ad")
+        )
 
-        artifacts = list(self.business_logic.get_dataset_artifacts(dataset_vid))
+        artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
         self.assertEqual(1, len(artifacts))
         artifact = artifacts[0]
         artifact.type = DatasetArtifactType.RAW_H5AD
-        artifact.uri = f"s3://fake_bucket_name/{stack_name}/{dataset_vid.id}/raw.h5ad"
+        artifact.uri = f"s3://fake_bucket_name/{stack_name}/{dataset_version_id.id}/raw.h5ad"
 
     def test_download_from_s3_uri(self):
         """
