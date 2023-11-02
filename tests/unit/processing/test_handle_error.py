@@ -400,7 +400,7 @@ def dataset_id() -> str:
 
 
 class TestCleanupArtifacts:
-    @pytest.mark.parametrize("error_step", ["download-validate", "", None])
+    @pytest.mark.parametrize("error_step", ["validate", "", None])
     def test_cleanup_artifacts__OK(self, mock_env_vars, mock_delete_many_from_s3, dataset_id, error_step):
         """Check that all artifacts are deleted for the given cases."""
         cleanup_artifacts(dataset_id, error_step)
