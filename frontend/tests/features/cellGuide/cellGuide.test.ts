@@ -368,7 +368,7 @@ describe("Cell Guide", () => {
               CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN
             );
             await waitForElementAndClick(dropdown);
-            await page.getByRole("option").getByText("Macaca mulatta").click();
+            await page.getByRole("option").getByText("Mus musculus").click();
 
             const rowElementsAfter = await page
               .locator(`${tableSelector} tbody tr`)
@@ -444,7 +444,7 @@ describe("Cell Guide", () => {
               CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN
             );
             await waitForElementAndClick(dropdown);
-            await page.getByRole("option").getByText("Macaca mulatta").click();
+            await page.getByRole("option").getByText("Mus musculus").click();
 
             const rowElementsAfter = await page
               .locator(`${tableSelector} tbody tr`)
