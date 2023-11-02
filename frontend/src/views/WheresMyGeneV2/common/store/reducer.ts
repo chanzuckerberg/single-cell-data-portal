@@ -414,15 +414,19 @@ export interface LoadStateFromURLPayload {
   tissues?: State["selectedTissues"];
   genes: State["selectedGenes"];
   cellTypes?: State["filteredCellTypes"];
+  cellTypeIds?: State["filteredCellTypeIds"];
 }
 
 function loadStateFromURL(
   state: State,
   action: PayloadAction<LoadStateFromURLPayload>
 ): State {
+  const { expandedTissueIds } = state;
+
   const { payload } = action;
 
-  const { compare, filters, genes, tissues } = payload;
+  const { compare, filters, genes, tissues, cellTypes, organism, cellTypeIds } =
+    payload;
 
   return {
     ...state,
@@ -430,9 +434,10 @@ function loadStateFromURL(
     selectedFilters: { ...state.selectedFilters, ...filters },
     selectedGenes: genes,
     selectedTissues: tissues,
-    selectedOrganismId: payload.organism,
-    filteredCellTypes: payload.cellTypes ?? [],
-    expandedTissueIds: filters.tissues ?? [],
+    selectedOrganismId: organism,
+    filteredCellTypes: cellTypes ?? EMPTY_ARRAY,
+    filteredCellTypeIds: cellTypeIds ?? EMPTY_ARRAY,
+    expandedTissueIds: filters.tissues ?? expandedTissueIds,
   };
 }
 

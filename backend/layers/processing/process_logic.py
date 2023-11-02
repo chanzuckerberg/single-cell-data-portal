@@ -11,7 +11,6 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
-from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ConversionFailed
 from backend.layers.processing.logger import logit
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
@@ -26,7 +25,6 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
     business_logic: BusinessLogicInterface
     uri_provider: UriProviderInterface
     s3_provider: S3ProviderInterface
-    downloader: Downloader
     logger: logging.Logger
     schema_version: str
 
@@ -111,7 +109,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
             self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.CONVERTING)
             file_dir = converter(local_filename)
             self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.CONVERTED)
-            self.logger.info(f"Finished converting {converter} in {datetime.now()- start}")
+            self.logger.info(f"Finished converting {converter} in {datetime.now() - start}")
         except Exception:
             raise ConversionFailed(processing_status_key) from None
         return file_dir

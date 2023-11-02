@@ -22,20 +22,20 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "ApplyDefaults": {
         "Type": "Pass",
-        "Next": "DownloadValidate",
+        "Next": "Download",
         "Parameters": {
           "args.$": "States.JsonMerge($.inputDefaults, $$.Execution.Input, false)"
         },
         "ResultPath": "$.withDefaults",
         "OutputPath": "$.withDefaults.args"
       },
-      "DownloadValidate": {
+      "Download": {
         "Type": "Task",
         "Resource": "arn:aws:states:::batch:submitJob.sync",
-        "Next": "CxgSeuratParallel",
+        "Next": "Validate",
         "Parameters": {
-          "JobDefinition": "${var.job_definition_arn}",
-          "JobName": "download-validate",
+          "JobDefinition":"${var.job_definition_arn}",
+          "JobName": "download",
           "JobQueue.$": "$.job_queue",
           "RetryStrategy": {
             "Attempts": ${var.max_attempts},
@@ -66,7 +66,61 @@ resource "aws_sfn_state_machine" "state_machine" {
               },
               {
                 "Name": "STEP_NAME",
-                "Value": "download-validate"
+                "Value": "download"
+              }
+            ]
+          }
+        },
+        "ResultPath": null,
+        "TimeoutSeconds": ${local.timeout},
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "HandleErrors",
+            "ResultPath": "$.error"
+          }
+        ]
+      },
+      "Validate": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::batch:submitJob.sync",
+        "Next": "CxgSeuratParallel",
+        "Parameters": {
+          "JobDefinition":"${var.job_definition_arn}",
+          "JobName": "validate",
+          "JobQueue.$": "$.job_queue",
+          "RetryStrategy": {
+            "Attempts": ${var.max_attempts},
+            "EvaluateOnExit": [
+              {
+                "Action": "EXIT",
+                "OnExitCode": "1"
+              },
+              {
+                "Action": "RETRY",
+                "OnExitCode": "*"
+              }
+            ]
+          },
+          "ContainerOverrides": {
+            "Environment": [
+              {
+                "Name": "DROPBOX_URL",
+                "Value.$": "$.url"
+              },
+              {
+                "Name": "DATASET_ID",
+                "Value.$": "$.dataset_id"
+              },
+              {
+                "Name": "COLLECTION_ID",
+                "Value.$": "$.collection_id"
+              },
+              {
+                "Name": "STEP_NAME",
+                "Value": "validate"
               }
             ]
           }
@@ -86,7 +140,6 @@ resource "aws_sfn_state_machine" "state_machine" {
       "CxgSeuratParallel": {
         "Type": "Parallel",
         "Next": "HandleSuccess",
-        "ResultPath": null,
         "Branches": [
           {
             "StartAt": "Cxg",
@@ -167,25 +220,34 @@ resource "aws_sfn_state_machine" "state_machine" {
                     ]
                   }
                 },
+                "Catch": [
+                  {
+                    "ErrorEquals": [
+                      "States.ALL"
+                    ],
+                    "Next": "CatchSeuratFailure",
+                    "ResultPath": "$.error"
+                  }
+                ],
                 "TimeoutSeconds": ${local.timeout}
+              },
+              "CatchSeuratFailure": {
+                "Type": "Pass",
+                "End": true
               }
             }
           }
-        ],
-        "Catch": [
-            {
-            "ErrorEquals": [
-                "States.ALL"
-            ],
-            "Next": "HandleErrors",
-            "ResultPath": "$.error"
-            }
         ]
       },
       "HandleSuccess": {
         "Type": "Task",
         "InputPath": "$",
         "Resource": "${var.lambda_success_handler}",
+        "Parameters": {
+          "execution_id.$": "$$.Execution.Id",
+          "cxg_job.$": "$[0]",
+          "seurat_job.$": "$[1]"
+        },
         "End": true,
         "Retry": [ {
             "ErrorEquals": ["Lambda.AWSLambdaException"],
@@ -210,7 +272,8 @@ resource "aws_sfn_state_machine" "state_machine" {
             "IntervalSeconds": 1,
             "MaxAttempts": 3,
             "BackoffRate": 2.0
-        } ]
+          }
+        ]
       }
     }
 }

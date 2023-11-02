@@ -13,7 +13,7 @@ from backend.portal.api.providers import get_business_logic
 logger.configure_logging(level=logging.INFO)
 
 
-def handle_failure(event: dict, context) -> None:
+def handle_failure(event: dict, context, delete_artifacts=True) -> None:
     logging.info(event)
     (
         dataset_id,
@@ -28,10 +28,8 @@ def handle_failure(event: dict, context) -> None:
         dataset_id, collection_version_id, error_step_name, error_job_id, error_aws_regions, execution_arn
     )
     update_dataset_processing_status_to_failed(dataset_id)
-    cleanup_artifacts(dataset_id, error_step_name)
-
-
-# write test cases using pytest to test the parse_event function
+    if delete_artifacts:
+        cleanup_artifacts(dataset_id, error_step_name)
 
 
 def parse_event(event: dict):
@@ -85,20 +83,20 @@ def get_failure_slack_notification_message(
     execution_arn: str,
 ) -> dict:
     if dataset_id is None:
-        logger.error("Dataset ID not found")
+        logging.error("Dataset ID not found")
         dataset_id = "None"
         dataset = None
     else:
         dataset = get_business_logic().get_dataset_version(DatasetVersionId(dataset_id))
     if dataset is None:
-        logger.error(f"Dataset {dataset_id} not found")
+        logging.error(f"Dataset {dataset_id} not found")
         dataset_id = dataset_id + "(not found)"
         collection_owner, processing_status = "", ""
     else:
         collection_id = dataset.collection_id
         collection = get_business_logic().get_unpublished_collection_version_from_canonical(collection_id)
         if collection is None:
-            logger.error(f"Collection {collection_id} not found")
+            logging.error(f"Collection {collection_id} not found")
             collection_owner = ""
         else:
             collection_owner = collection.owner
@@ -167,7 +165,7 @@ FAILED_CXG_CLEANUP_MESSAGE = "Failed to clean up cxgs."
 def cleanup_artifacts(dataset_id: str, error_step_name: Optional[str] = None) -> None:
     """Clean up artifacts"""
     object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_id).strip("/")
-    if not error_step_name or error_step_name == "download-validate":
+    if not error_step_name or error_step_name in ["validate", "download"]:
         with logger.LogSuppressed(Exception, message=FAILED_ARTIFACT_CLEANUP_MESSAGE):
             artifact_bucket = os.environ["ARTIFACT_BUCKET"]
             delete_many_from_s3(artifact_bucket, object_key + "/")

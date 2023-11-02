@@ -12,7 +12,7 @@ import {
   TEST_URL,
 } from "tests/common/constants";
 import { test } from "tests/common/test";
-import { tryUntil } from "tests/utils/helpers";
+import { getCellTypeNames, tryUntil } from "tests/utils/helpers";
 import { WMG_WITH_SEEDED_GENES, goToWMG } from "tests/utils/wmgUtils";
 
 const { describe } = test;
@@ -226,6 +226,9 @@ async function verifyConfirmModal({
       expect(await page.getByTestId("tissue-name").count()).not.toBe(
         beforeTissueNameCount
       );
+
+      const afterCellTypeNames = await getCellTypeNames(page);
+      expect(afterCellTypeNames.length).toBe(0);
     },
     { page }
   );
