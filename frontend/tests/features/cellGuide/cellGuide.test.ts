@@ -794,7 +794,10 @@ describe("Cell Guide", () => {
           )
           .click();
 
-        await node.hover();
+        const node2 = page.getByTestId(
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000047__0-has-children-isTargetNode=false`
+        );
+        await node2.hover();
         await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
 
         const newTooltipText = await page
