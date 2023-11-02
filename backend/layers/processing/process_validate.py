@@ -212,7 +212,7 @@ class ProcessValidate(ProcessingLogic):
         datasets_bucket: str,
     ):
         """
-        1. Download the original dataset from Dropbox
+        1. Download the original dataset from URI
         2. Validate and label it
         3. Upload the labeled dataset to the artifact bucket
         4. Upload the labeled dataset to the datasets bucket
