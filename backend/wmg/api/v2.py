@@ -47,6 +47,8 @@ def primary_filter_dimensions():
 @tracer.wrap()
 def query():
     request = connexion.request.json
+    sanitize_api_query_dict(request["filter"])
+
     is_rollup = request.get("is_rollup", True)
     compare = request.get("compare", None)
 
@@ -81,6 +83,13 @@ def query():
 
         cell_counts = q.cell_counts(criteria, compare_dimension=compare)
 
+        # For schema-4 we filter out comma-delimited values for `self_reported_ethnicity_ontology_term_id`
+        # from being included in the grouping and rollup logic per functional requirements:
+        # See: https://github.com/chanzuckerberg/single-cell/issues/596
+        if (compare is not None) and compare == "self_reported_ethnicity_ontology_term_id":
+            expression_summary = df_not_containing_comma_delimited_ethnicity_values(expression_summary)
+            cell_counts = df_not_containing_comma_delimited_ethnicity_values(cell_counts)
+
     with ServerTiming.time("build response"):
         if expression_summary.shape[0] > 0 or cell_counts.shape[0] > 0:
             group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare] if compare else None
@@ -113,6 +122,8 @@ def query():
 @tracer.wrap()
 def filters():
     request = connexion.request.json
+    sanitize_api_query_dict(request["filter"])
+
     criteria = WmgFiltersQueryCriteria(**request["filter"])
 
     with ServerTiming.time("load snapshot"):
@@ -167,6 +178,55 @@ def markers():
     )
 
 
+def df_not_containing_comma_delimited_ethnicity_values(input_df: DataFrame) -> DataFrame:
+    """
+    Return a new dataframe with only the rows that DO NOT contain comma-delimited
+    values in the `self_reported_ethnicity_ontology_term_id` column.
+
+    Parameters
+    ----------
+    input_df: Dataframe
+        A dataframe that contains `self_reported_ethnicity_ontology_term_id` column
+
+    Returns
+    -------
+    A dataframe containing only the rows that do not have a comma-delimited value
+    for the `self_reported_ethnicity_ontology_term_id` column
+    """
+    return input_df[~input_df.self_reported_ethnicity_ontology_term_id.str.contains(",")]
+
+
+def sanitize_api_query_dict(query_dict: Any):
+    """
+    Remove invalid values in the query dictionary encoding the query API
+    request body.
+
+    The assumption is that this function is called at the beginning of the
+    API function. This usage also helps mitigate query injection attacks.
+
+    NOTE: This is a destructive operation in that it mutates `query_dict`.
+
+    Parameters
+    ----------
+    query_dict : json object
+        The query dictionary to sanitize.
+
+    Returns
+    -------
+    None because this function mutates the function argument
+    """
+
+    # Sanitize `self_reported_ethnicity_ontology_term_ids` by removing
+    # comma-delimited values because WMG does not support filtering and grouping
+    # by ethnicity terms that encode mixed ethnicities encoded as a single comma-delimited string
+    # value
+    if "self_reported_ethnicity_ontology_term_ids" in query_dict:
+        ethnicity_term_ids = query_dict["self_reported_ethnicity_ontology_term_ids"]
+
+        ethnicity_term_ids_to_keep = [x for x in ethnicity_term_ids if "," not in x]
+        query_dict["self_reported_ethnicity_ontology_term_ids"] = ethnicity_term_ids_to_keep
+
+
 def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
     return [
         snapshot.dataset_metadata.get(dataset_id, dict(id=dataset_id, label="", collection_id="", collection_label=""))
@@ -217,6 +277,12 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
             if is_criteria_empty(criteria)
             else find_dim_option_values(criteria, snapshot, dim)
         )
+
+    # For schema-4 we filter out comma-delimited values for `self_reported_ethnicity_ontology_term_id`
+    # from the options list per functional requirements:
+    # See: https://github.com/chanzuckerberg/single-cell/issues/596
+    ethnicity_term_ids = dims["self_reported_ethnicity_ontology_term_id"]
+    dims["self_reported_ethnicity_ontology_term_id"] = [term_id for term_id in ethnicity_term_ids if "," not in term_id]
 
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(snapshot, dims["dataset_id"]),

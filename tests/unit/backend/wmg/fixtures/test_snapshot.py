@@ -48,6 +48,27 @@ def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[s
     return [f"{dimension_name}_{i}" for i in range(n_terms)]
 
 
+def ont_term_id_gen_schema4_ethnicity_variation(dimension_name: str, n_terms: int) -> List[str]:
+    """
+    Generates ontology term IDs for all dimensions with special treatment for
+    `self_reported_ethnicity_ontology_term_id` to include schema4 specific format.
+    """
+
+    # For schema4, `self_reported_ethnicity_ontology_term_id` can contain
+    # comma-delimited values. This scheme simply appends a predetermined
+    # comma-delimited value, "self_reported_ethnicity_ontology_term_id_x,self_reported_ethnicity_ontology_term_id_y",
+    # to the end of list of simple ontology term IDs
+    if dimension_name == "self_reported_ethnicity_ontology_term_id":
+        schema4_term_id = "self_reported_ethnicity_ontology_term_id_x,self_reported_ethnicity_ontology_term_id_y"
+        # generate simple ontology term IDs for the first `n_terms-1` values
+        term_ids = simple_ontology_terms_generator(dimension_name, n_terms - 1)
+        term_ids.append(schema4_term_id)
+        return term_ids
+
+    # For all other dimensions compute a simple list of term IDs
+    return simple_ontology_terms_generator(dimension_name, n_terms)
+
+
 def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> List[str]:
     """
     Returns a set of ontology term ids, sampled from real ontologies. While these ontology terms are
@@ -253,8 +274,10 @@ def load_realistic_test_snapshot_tmpdir(snapshot_name: str) -> WmgSnapshot:
 
 @contextlib.contextmanager
 def create_temp_wmg_snapshot(
+    *,
     dim_size=3,
     snapshot_name="dummy-snapshot",
+    dim_ontology_term_ids_generator_fn: Callable[[str, int], List[str]] = simple_ontology_terms_generator,
     expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
     exclude_logical_coord_fn: Callable[[NamedTuple], bool] = None,
     cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
@@ -264,6 +287,7 @@ def create_temp_wmg_snapshot(
         expression_summary_cube_dir, cell_counts_cube_dir = create_cubes(
             cube_dir,
             dim_size,
+            dim_ontology_term_ids_generator_fn=dim_ontology_term_ids_generator_fn,
             exclude_logical_coord_fn=exclude_logical_coord_fn,
             expression_summary_vals_fn=expression_summary_vals_fn,
             cell_counts_fn=cell_counts_generator_fn,
