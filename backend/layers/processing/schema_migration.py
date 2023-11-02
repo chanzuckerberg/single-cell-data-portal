@@ -295,20 +295,20 @@ class SchemaMigrate(ProcessingLogic):
         try:
             report = dict(errors=[], migrate_changes=[])
 
-            def retrieve_report_files_from_s3(directory: str):
+            def retrieve_report_files_from_s3(message_type: str):
                 s3_keys = list(
                     self.s3_provider.list_directory(
                         self.artifact_bucket,
-                        self.get_key_prefix(f"schema_migration/{self.execution_id}/report/{directory}"),
+                        self.get_key_prefix(f"schema_migration/{self.execution_id}/report/{message_type}"),
                     )
                 )
-                self.logger.info(f"{len(s3_keys)} {directory} files found")
+                self.logger.info("Subdirectory Count", extra={"message_type": message_type, "count": len(s3_keys)})
                 for s3_key in s3_keys:
                     local_file = os.path.join(self.local_path, "data.json")
                     self.s3_provider.download_file(self.artifact_bucket, s3_key, local_file)
                     with open(local_file, "r") as f:
                         jn = json.load(f)
-                    report[directory].append(jn)
+                    report[message_type].append(jn)
                 # Cleanup S3 files
                 self.s3_provider.delete_files(self.artifact_bucket, s3_keys)
 
