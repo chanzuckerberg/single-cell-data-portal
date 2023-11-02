@@ -1,5 +1,4 @@
-import { Classes, Intent } from "@blueprintjs/core";
-import { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { API } from "src/common/API";
 import { Dataset, DATASET_ASSET_FORMAT } from "src/common/entities";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
@@ -9,24 +8,50 @@ import CurlLink from "./components/CurlLink";
 import DataFormat from "./components/DataFormat";
 import Details from "./components/Details";
 import Name from "./components/Name";
-import { CancelButton, DownloadButton, Wrapper } from "./style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import {
+  Button,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from "@czi-sds/components";
+import { DialogLoader as Loader } from "src/components/Datasets/components/DownloadDataset/style";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { FEATURES } from "src/common/featureFlags/features";
+import { Spinner } from "@blueprintjs/core";
 
 interface Props {
+  isError?: boolean;
+  isLoading?: boolean;
   onClose: () => void;
   name: string;
   dataAssets: Dataset["dataset_assets"];
 }
 
-const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
+const Content: FC<Props> = ({
+  isError = false,
+  isLoading = false,
+  onClose,
+  name,
+  dataAssets,
+}) => {
+  const isDownloadUX = useFeatureFlag(FEATURES.DOWNLOAD_UX);
   const [selectedFormat, setSelectedFormat] = useState<
     DATASET_ASSET_FORMAT | ""
   >("");
   const [fileSize, setFileSize] = useState<number>(0);
   const [fileName, setFileName] = useState<string>("");
   const [downloadLink, setDownloadLink] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isDownloadLinkLoading, setIsDownloadLinkLoading] =
+    useState<boolean>(false);
+  const isDownloadDisabled =
+    !downloadLink || isDownloadLinkLoading || isError || isLoading;
+  const DialogLoader = isDownloadUX ? (
+    <Loader sdsStyle="minimal" />
+  ) : (
+    <Spinner size={20} />
+  ); // TODO: #5566 hidden under feature flag.
 
   useEffect(() => {
     if (!selectedFormat) return;
@@ -46,7 +71,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
       datasetId,
       setFileName,
       setFileSize,
-      setIsLoading,
+      setIsDownloadLinkLoading,
     });
 
     async function getDownloadLink({
@@ -54,9 +79,9 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
       datasetId,
       setFileName,
       setFileSize,
-      setIsLoading,
+      setIsDownloadLinkLoading,
     }: GetDownloadLinkArgs) {
-      setIsLoading(true);
+      setIsDownloadLinkLoading(true);
 
       const replace = {
         asset_id: assetId,
@@ -82,7 +107,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
         console.error("Please try again");
       }
 
-      setIsLoading(false);
+      setIsDownloadLinkLoading(false);
     }
   }, [selectedFormat, dataAssets]);
 
@@ -106,53 +131,63 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
     handleAnalytics(EVENTS.DOWNLOAD_DATA_FORMAT_CLICKED, format);
   };
 
-  const renderDownload = () => {
-    return (
-      <DownloadButton
-        disabled={!downloadLink || isLoading}
-        data-testid="download-asset-download-button"
-        href={downloadLink}
-        intent={Intent.PRIMARY}
-        onClick={() => handleAnalytics(EVENTS.DOWNLOAD_DATA_COMPLETE)}
-      >
-        Download
-      </DownloadButton>
-    );
-  };
-
   const availableFormats = dataAssets.map((dataAsset) => dataAsset.filetype);
 
   return (
     <>
-      <div className={Classes.DIALOG_BODY}>
-        <Wrapper>
-          <Name name={name} />
-          <DataFormat
-            handleChange={handleChange}
-            isDisabled={isLoading}
-            selectedFormat={selectedFormat}
-            availableFormats={availableFormats}
-          />
-          <Details
-            isLoading={isLoading}
-            fileSize={fileSize}
-            selected={Boolean(fileSize)}
-          />
-          {downloadLink && !isLoading && (
-            <CurlLink
-              fileName={fileName}
-              handleAnalytics={() => handleAnalytics(EVENTS.DOWNLOAD_DATA_COPY)}
-              link={downloadLink}
+      <DialogTitle title="Download Dataset" />
+      <DialogContent>
+        {isError && <div>Dataset download is currently not available.</div>}
+        {isLoading && DialogLoader}
+        {!isError && !isLoading && (
+          <>
+            <Name name={name} />
+            <DataFormat
+              availableFormats={availableFormats}
+              handleChange={handleChange}
+              isDisabled={isDownloadLinkLoading}
+              selectedFormat={selectedFormat}
             />
-          )}
-        </Wrapper>
-      </div>
-      <div className={Classes.DIALOG_FOOTER}>
-        <CancelButton onClick={onClose} minimal>
+            <Details
+              curlPreview={
+                downloadLink &&
+                !isDownloadLinkLoading && (
+                  <CurlLink
+                    fileName={fileName}
+                    handleAnalytics={() =>
+                      handleAnalytics(EVENTS.DOWNLOAD_DATA_COPY)
+                    }
+                    link={downloadLink}
+                  />
+                )
+              }
+              fileSize={fileSize}
+              isLoading={isDownloadLinkLoading}
+              selected={Boolean(fileSize)}
+            />
+          </>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button
+          isAllCaps={false}
+          onClick={onClose}
+          sdsStyle="minimal"
+          sdsType="secondary"
+        >
           Cancel
-        </CancelButton>
-        {renderDownload()}
-      </div>
+        </Button>
+        <Button
+          data-testid="download-asset-download-button"
+          disabled={isDownloadDisabled}
+          href={downloadLink}
+          onClick={() => handleAnalytics(EVENTS.DOWNLOAD_DATA_COMPLETE)}
+          sdsStyle="square"
+          sdsType="primary"
+        >
+          Download
+        </Button>
+      </DialogActions>
     </>
   );
 
@@ -161,7 +196,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
     datasetId: string;
     setFileName: (value: string) => void;
     setFileSize: (value: number) => void;
-    setIsLoading: (value: boolean) => void;
+    setIsDownloadLinkLoading: (value: boolean) => void;
   }
 };
 

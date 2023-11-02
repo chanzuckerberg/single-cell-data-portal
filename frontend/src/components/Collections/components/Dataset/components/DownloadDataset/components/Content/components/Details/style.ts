@@ -1,8 +1,6 @@
-import { Spinner as SpinnerRaw } from "@blueprintjs/core";
 import styled from "@emotion/styled";
+import { FormControl as MFormControl } from "@mui/material";
 
-export const Spinner = styled(SpinnerRaw)`
-  && {
-    justify-content: unset;
-  }
+export const FormControl = styled(MFormControl)`
+  min-height: 160px;
 `;
