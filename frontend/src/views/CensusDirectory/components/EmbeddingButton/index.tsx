@@ -12,8 +12,9 @@ import {
 import { useConnect } from "./connect";
 import { CopyMask } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/DownloadLink/components/CopyMask/style";
 import { DownloadCodeBlock } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/DownloadLink/style";
+import { EmbeddingButtonProps } from "./types";
 
-function EmbeddingButton() {
+function EmbeddingButton(props: EmbeddingButtonProps) {
   const {
     isOpen,
     isCopied,
@@ -24,7 +25,7 @@ function EmbeddingButton() {
     handleButtonClick,
     handleCopyClick,
     handleCopyMouseEnter,
-  } = useConnect();
+  } = useConnect(props);
   return (
     <>
       <StyledButton
