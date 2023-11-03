@@ -1,14 +1,12 @@
-import contextlib
 import json
 import os
-import shutil
 from math import ceil
 from typing import Any, Dict
 
-import requests
 import scanpy
 
 from backend.common.utils.corpora_constants import CorporaConstants
+from backend.common.utils.dl_sources.uri import DownloadFailed
 from backend.common.utils.math_utils import MB
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
@@ -64,23 +62,10 @@ class ProcessDownload(ProcessingLogic):
         file_url = self.uri_provider.parse(source_uri)
         if not file_url:
             raise ValueError(f"Malformed source URI: {source_uri}")
-
-        # This is a bit ugly and should be done polymorphically instead, but Dropbox support will be dropped soon
-        if file_url.scheme == "https":
-            file_size = self.uri_provider.get_file_info(source_uri).size
-            if file_size and file_size >= shutil.disk_usage("/")[2]:
-                raise UploadFailed("Insufficient disk space.")
-            self.download(file_url.url, local_path)
-        elif file_url.scheme == "s3":
-            bucket_name = file_url.netloc
-            key = self.remove_prefix(file_url.path, "/")
-            self.download_from_s3(
-                bucket_name=bucket_name,
-                object_key=key,
-                local_filename=local_path,
-            )
-        else:
-            raise ValueError(f"Download for URI scheme '{file_url.scheme}' not implemented")
+        try:
+            file_url.download(local_path)
+        except DownloadFailed as e:
+            raise UploadFailed(f"Failed to download file from source URI: {source_uri}") from e
         return local_path
 
     # TODO: after upgrading to Python 3.9, replace this with removeprefix()
@@ -193,29 +178,3 @@ class ProcessDownload(ProcessingLogic):
 
         sfn_client = StepFunctionProvider().client
         sfn_client.send_task_success(taskToken=sfn_task_token, output=json.dumps(response))
-
-    def download(
-        self,
-        url: str,
-        local_path: str,
-        chunk_size: int = 10 * 2**20,
-    ) -> None:
-        """
-        Download a file from a url and update the processing_status upload fields in the database
-
-        :param url: The URL of the file to be downloaded.
-        :param local_path: The local name of the file be downloaded.
-        :param chunk_size: The size of downloaded data to copy to memory before saving to disk.
-
-        :return: The current dataset processing status.
-        """
-
-        with contextlib.suppress(Exception), requests.get(url, stream=True) as resp:
-            resp.raise_for_status()
-            with open(local_path, "wb") as fp:
-                self.logger.debug("Starting download.")
-                for chunk in resp.iter_content(chunk_size=chunk_size):
-                    if chunk:
-                        fp.write(chunk)
-                        chunk_size = len(chunk)
-                        self.logger.debug(f"chunk size: {chunk_size}")

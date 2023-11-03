@@ -2298,7 +2298,7 @@ class TestPostRevision(BaseAPIPortalTest):
 
 
 @patch(
-    "backend.common.utils.dl_sources.url.DropBoxURL.file_info",
+    "backend.common.utils.dl_sources.uri.DropBoxURL.file_info",
     return_value={"size": 1, "name": "file.h5ad"},
 )
 @patch("backend.layers.thirdparty.step_function_provider.StepFunctionProvider")
