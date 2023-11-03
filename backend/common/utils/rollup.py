@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Optional
 
 import numba as nb
 import numpy as np
@@ -32,6 +33,66 @@ def ancestors(cell_type):
     return ancestors
 
 
+def get_valid_descendants(
+    cell_type: str, valid_cell_types: frozenset[str], cell_counts: Optional[dict[str, int]] = None
+):
+    """
+    Get valid descendants for a cell type. Here, "validity" can mean one of two things:
+    1. The descendant is present in the input list of valid cell types
+    2. The descendant is present in the input list of valid cell types and has a different number of cells
+    than the input cell type. Here, "number of cells" refers to the number of cells of that type AFTER roll-up.
+
+    Terms can be suffixed with ";;{A_0}--{B_0}--..." to indicate that only descendants within the same
+    group specified by the suffix should be considered. For example, if the term is
+    "CL:0000540;;{tissue_0}--{disease_0}" then only descendants with the same tissue_0 and disease_0
+    will be considered.
+
+    If cell counts are provided, then a cell type has no valid descendants (even itself) if it has the same
+    number of cells as one of its descendants. In these cases, the cell type is a redundant node and should
+    be excluded. Redundant nodes are indicated by an empty list.
+
+    Arguments
+    ---------
+    cell_type : str
+        Cell type (cell type ontology term ID, potentially suffixed)
+    valid_cell_types : frozenset[str]
+        FrozenSet of valid cell types
+    cell_counts : dict[str, int], optional, default=None
+        Dictionary mapping cell type ontology term IDs (potentially suffixed) to the number of cells of that type.
+        These cell counts are POST roll-up. This is used to exclude all descendants of a cell type if the cell type
+        has the same number of cells as one of its descendants. In these cases, the cell type is a redundant node
+        and should be excluded.
+
+
+    Returns
+    -------
+    list[str] - An empty list indicates that the cell type is a redundant node and should be excluded.
+    """
+    # if the input cell types are suffixed, only consider descendants within the same group
+    if ";;" in cell_type:
+        prefix, suffix = cell_type.split(";;")
+        suffix = ";;" + suffix
+    else:
+        prefix = cell_type
+        suffix = ""
+
+    # find descendants of cell type and re-suffix them
+    relatives = [f"{i}{suffix}" for i in descendants(prefix)]
+    valid_relatives = list(valid_cell_types.intersection(relatives))
+    if cell_counts is not None:
+        relative_cell_counts = [
+            cell_counts.get(relative)
+            for relative in valid_relatives
+            if relative != cell_type and cell_counts.get(relative) is not None
+        ]
+        # if the cell type has the same number of cells as one of its descendants, then it is a redundant node
+        # and has no valid relatives (including itself)
+        if cell_counts.get(cell_type) in relative_cell_counts:
+            valid_relatives = []
+
+    return valid_relatives
+
+
 def find_descendants_per_cell_type(cell_types):
     """
     Find the descendants for each cell type in the input list.
@@ -55,30 +116,40 @@ def find_descendants_per_cell_type(cell_types):
     descendants_per_cell_type : list
         List of lists of descendants for each cell type in the input list.
     """
-    # a lookup table to avoid redundant ontology lookups
     lookup_table = {}
-
-    # a set of all cell types in the input list
-    # used to compute intersections with descendants
-    cell_types_set = set(cell_types)
-    relatives_per_cell_type = []
+    cell_types_set = frozenset(cell_types)
+    valid_descendants = []
     for cell_type in cell_types:
-        # if the input cell types are suffixed, only consider descendants within the same group
-        if ";;" in cell_type:
-            prefix, suffix = cell_type.split(";;")
-            suffix = ";;" + suffix
-        else:
-            prefix = cell_type
-            suffix = ""
         if cell_type not in lookup_table:
-            # find descendants of cell type and re-suffix them
-            relatives = [f"{i}{suffix}" for i in descendants(prefix)]
-            # only consider descendants (+suffixes) that are in the input list
-            lookup_table[cell_type] = list(cell_types_set.intersection(relatives))
+            lookup_table[cell_type] = get_valid_descendants(cell_type, cell_types_set)
+        valid_descendants.append(lookup_table[cell_type])
+    return valid_descendants
 
-        relatives_per_cell_type.append(lookup_table[cell_type])
 
-    return relatives_per_cell_type
+def are_cell_types_not_redundant_nodes(cell_types, cell_counts):
+    """
+    Determines whether each cell type in a list of cell types is not a redundant node.
+    Redundance means that a cell type has the same number of cells as one of its descendants. This indicates that
+    the cell type contains exactly the same set of cells as one of its descendant subtrees. The only way this can occur is
+    if the cell type belongs to a linear chain of cell types, all of which have the same number of cells. In these cases,
+    the cell type is redundant and should be excluded. We only wish to keep the leaf nodes of these linear chains.
+
+    Args:
+    - cell_types (list of str): A list of cell type names.
+    - cell_counts (dict): A dictionary mapping cell type names to the number of cells of that type.
+
+    Returns:
+    - is_not_redundant (list of bool): A list of boolean values indicating whether each cell type is a redundant node.
+    """
+    lookup_table = {}
+    is_not_redundant = []
+    cell_types_set = frozenset(cell_types)
+    for cell_type in cell_types:
+        if cell_type not in lookup_table:
+            relatives = get_valid_descendants(cell_type, cell_types_set, cell_counts=cell_counts)
+            lookup_table[cell_type] = len(relatives) > 0
+        is_not_redundant.append(lookup_table[cell_type])
+    return is_not_redundant
 
 
 def are_cell_types_colinear(cell_type1, cell_type2):
