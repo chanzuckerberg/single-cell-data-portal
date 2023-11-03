@@ -2,7 +2,6 @@ import { useQuery } from "react-query";
 import { ENTITIES } from "./entities";
 import { apiTemplateToUrl } from "../utils/apiTemplateToUrl";
 
-// assumed tier 2 for now
 export interface Project {
   census_version: string;
   experiment_name: string;

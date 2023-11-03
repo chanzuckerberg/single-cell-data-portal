@@ -28,7 +28,6 @@ import {
 
 import staticProjects, { type StaticProject } from "census-projects.json";
 import notebookLinks from "census-notebook-links.json";
-import { useRouter } from "next/router";
 
 function DetailItem(props: { label: string; children: string; link?: string }) {
   const ItemContainer = styled.div`
@@ -156,8 +155,6 @@ function CensusDirectory() {
   const maintainedProjects = Object.values(staticProjects).filter(
     (project) => project.tier === 3
   );
-
-  const router = useRouter();
 
   const renderDetailItem = (label: string, value?: string, link?: string) => {
     return value ? (
