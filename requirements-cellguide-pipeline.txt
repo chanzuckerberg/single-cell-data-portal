@@ -33,7 +33,7 @@ six==1.16.0
 tiledb==0.22.3
 typing_extensions==4.7.1
 tzdata==2023.3
-urllib3==1.26.16
+urllib3==1.26.18
 coverage==7.2.7
 pytest==7.4.0
 pytest-subtests==0.11.0
