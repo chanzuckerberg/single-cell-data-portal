@@ -61,10 +61,10 @@ resource aws_batch_job_definition dataset_metadata_update {
   type = "container"
   name = "dp-${var.deployment_stage}-${var.custom_stack_name}-dataset-metadata-update"
   container_properties = jsonencode({
-  "command": "['python3',
-    '-m',
-    'backend.layers.processing.dataset_metadata_update',
-  ]",
+  "command": [\"python3\",
+    \"-m\",
+    \"backend.layers.processing.dataset_metadata_update\",
+  ],
   "jobRoleArn": "${var.batch_role_arn}",
   "image": "${var.image}",
   "memory": var.batch_container_memory_limit,
@@ -92,10 +92,6 @@ resource aws_batch_job_definition dataset_metadata_update {
     {
       "name": "REMOTE_DEV_PREFIX",
       "value": "${var.remote_dev_prefix}"
-    },
-    {
-      "name": "FRONTEND_URL",
-      "value": "${var.frontend_url}"
     }
   ],
   "vcpus": 8,
