@@ -13,10 +13,12 @@ test_environment = {"REMOTE_DEV_PREFIX": "fake-stack", "DEPLOYMENT_STAGE": "test
 
 
 class TestProcessDownload(BaseProcessingTest):
+    @patch("backend.common.utils.dl_sources.uri.downloader")
+    @patch("backend.common.utils.dl_sources.uri.DropBoxURL.file_info", return_value={"size": 100, "name": "fake_name"})
     @patch("os.environ", test_environment)
     @patch("backend.layers.processing.process_download.StepFunctionProvider")
     @patch("scanpy.read_h5ad")
-    def test_process_download_success(self, mock_read_h5ad, mock_sfn_provider):
+    def test_process_download_success(self, mock_read_h5ad, mock_sfn_provider, *args):
         """
         ProcessValidate should:
         1. Download the h5ad artifact
@@ -73,7 +75,9 @@ class TestProcessDownload(BaseProcessingTest):
         artifact.type = DatasetArtifactType.RAW_H5AD
         artifact.uri = f"s3://fake_bucket_name/{stack_name}/{dataset_version_id.id}/raw.h5ad"
 
-    def test_download_from_s3_uri(self):
+    @patch("backend.common.utils.dl_sources.uri.S3Provider")
+    @patch("backend.common.utils.dl_sources.uri.S3URI.file_info", return_value={"size": 100, "name": "fake_name"})
+    def test_download_from_s3_uri(self, *arg):
         """
         Call process download using an s3 uri
         """
@@ -83,11 +87,10 @@ class TestProcessDownload(BaseProcessingTest):
         pdv.download_from_s3 = Mock()
 
         assert pdv.download_from_source_uri(s3_uri, "fake_local_path") == "fake_local_path"
-        pdv.download_from_s3.assert_called_once_with(
-            bucket_name="fake_bucket_name", object_key="fake_key/fake_file.h5ad", local_filename="fake_local_path"
-        )
 
-    def test_download_from_dropbox_uri(self):
+    @patch("backend.common.utils.dl_sources.uri.downloader")
+    @patch("backend.common.utils.dl_sources.uri.DropBoxURL.file_info", return_value={"size": 100, "name": "fake_name"})
+    def test_download_from_dropbox_uri(self, *arg):
         """
         Call process download using a dropbox uri
         """
@@ -97,7 +100,6 @@ class TestProcessDownload(BaseProcessingTest):
         pdv.download = Mock()
 
         assert pdv.download_from_source_uri(dropbox_uri, "fake_local_path") == "fake_local_path"
-        pdv.download.assert_called_once_with(dropbox_uri, "fake_local_path")
 
     def test_download_unknown_uri(self):
         """

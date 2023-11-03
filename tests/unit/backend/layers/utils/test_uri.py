@@ -1,5 +1,6 @@
 import os
 import unittest
+from tempfile import TemporaryDirectory
 from unittest import TestCase
 
 import boto3
@@ -63,3 +64,27 @@ class TestS3URI(TestCase):
 
         self.assertEqual(key, info["name"])
         self.assertEqual(len(content), info["size"])
+
+    @mock_s3
+    def test_download(self):
+        s3 = boto3.client("s3")
+        bucket_name = "bucket"
+        key = "/key"
+        content = "stuff"
+        s3.create_bucket(
+            Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
+        )
+        s3.put_object(Bucket=bucket_name, Key=key, Body=content)
+
+        # add a context manager for a temporary directory
+        with TemporaryDirectory() as tmpdir:
+            # create a temporary file
+            tmpfile = os.path.join(tmpdir, "test.txt")
+            # download the file to the temporary directory
+            s3_uri = from_uri(f"s3://{bucket_name}{key}")
+            s3_uri.download(tmpfile)
+            # read the file contents
+            with open(tmpfile, "r") as f:
+                data = f.read()
+            # assert the contents are correct
+            self.assertEqual(data, content)
