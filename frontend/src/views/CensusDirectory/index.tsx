@@ -34,7 +34,7 @@ function CensusDirectory() {
         This page features models and integrated embeddings of the Census data
         corpus, organized by CELL×GENE’s level of involvement with their
         maintenance and availability. If you’d like to have your project
-        featured here, please
+        featured here, please{" "}
         <Link href="mailto:cellxgene@chanzuckerberg.com">get in touch</Link>!
       </DirectoryDescription>
       {maintainedProjects.length > 0 && (
