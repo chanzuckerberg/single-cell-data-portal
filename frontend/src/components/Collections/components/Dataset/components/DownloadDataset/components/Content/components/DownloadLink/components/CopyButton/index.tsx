@@ -5,12 +5,12 @@ import { Fade } from "@mui/material";
 import { ANIMATION, ANIMATION_STEP } from "./constants";
 
 interface Props {
-  curl: string;
+  downloadLink: string;
   handleAnalytics: () => void;
 }
 
 export default function CopyButton({
-  curl,
+  downloadLink,
   handleAnalytics,
 }: Props): JSX.Element {
   const [animationStep, setAnimationStep] = useState<ANIMATION_STEP>(
@@ -24,7 +24,7 @@ export default function CopyButton({
     if (animation.isCopying) {
       return; // Copying is in progress.
     }
-    copy(curl);
+    copy(downloadLink);
     handleAnalytics();
     setAnimationStep(incrementAnimationState);
   };

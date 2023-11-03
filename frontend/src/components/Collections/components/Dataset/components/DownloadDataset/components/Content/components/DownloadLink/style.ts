@@ -1,10 +1,9 @@
 import styled from "@emotion/styled";
-import { fontBodyS, fontBodyXs } from "@czi-sds/components";
+import { fontBodyS } from "@czi-sds/components";
 import {
   cornersM,
   grey100,
   grey300,
-  grey500,
   spacesM,
   spacesS,
   spacesXxs,
@@ -37,11 +36,6 @@ export const CodeBlock = styled.div`
   }
 `;
 
-export const Caption = styled.div`
-  ${fontBodyXs}
-  color: ${grey500};
-`;
-
 /**
  * @deprecated by CodeBlock styles once "DOWNLOAD_UX" feature flag is removed.
  */
@@ -62,14 +56,4 @@ export const DownloadCodeBlock = styled.div`
     overflow: hidden;
     padding: ${spacesS}px;
   }
-`;
-
-/**
- * @deprecated by Caption styles once "DOWNLOAD_UX" feature flag is removed.
- */
-export const DownloadCaption = styled.div`
-  color: ${OLD_GRAY.TIPS};
-  font-size: 12px;
-  margin-top: -3px;
-  width: 490px;
 `;

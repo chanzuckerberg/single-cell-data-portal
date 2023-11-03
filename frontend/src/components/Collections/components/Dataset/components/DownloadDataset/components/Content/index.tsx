@@ -4,7 +4,7 @@ import { Dataset, DATASET_ASSET_FORMAT } from "src/common/entities";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
-import CurlLink from "./components/CurlLink";
+import DownloadLink from "./components/DownloadLink";
 import DataFormat from "./components/DataFormat";
 import Details from "./components/Details";
 import Name from "./components/Name";
@@ -154,15 +154,16 @@ const Content: FC<Props> = ({
               selectedFormat={selectedFormat}
             />
             <Details
-              curlPreview={
+              downloadPreview={
                 downloadLink &&
                 !isDownloadLinkLoading && (
-                  <CurlLink
+                  <DownloadLink
+                    downloadLink={downloadLink}
                     fileName={fileName}
                     handleAnalytics={() =>
                       handleAnalytics(EVENTS.DOWNLOAD_DATA_COPY)
                     }
-                    link={downloadLink}
+                    selectedFormat={selectedFormat}
                   />
                 )
               }
