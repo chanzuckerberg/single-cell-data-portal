@@ -1,7 +1,7 @@
 import { Tooltip } from "@czi-sds/components";
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { StyledDropdown, Wrapper } from "../common/style";
-import { Label } from "src/views/WheresMyGeneV2/components/InfoPanel/common/style";
+import { FilterLabel } from "../common/style";
 import { LabelWrapper } from "./style";
 import {
   StyledIconImage,
@@ -19,7 +19,7 @@ export default function ColorScale({ setIsScaled }: Props): JSX.Element {
   return (
     <Wrapper>
       <LabelWrapper>
-        <Label>Color Scale</Label>
+        <FilterLabel>Color Scale</FilterLabel>
         <Tooltip
           sdsStyle="dark"
           placement="right"
