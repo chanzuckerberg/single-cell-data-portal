@@ -268,6 +268,16 @@ module upload_sfn {
   lambda_success_handler = module.upload_success_lambda.arn
   lambda_error_handler   = module.upload_error_lambda.arn
   deployment_stage       = local.deployment_stage
+
+  # use for defining the batch job definition
+  image             = "${local.upload_image_repo}:${local.image_tag}"
+  batch_role_arn    = local.batch_role_arn
+  remote_dev_prefix = local.remote_dev_prefix
+  artifact_bucket   = local.artifact_bucket
+  cellxgene_bucket  = local.cellxgene_bucket
+  datasets_bucket   = local.datasets_bucket
+  frontend_url      = local.frontend_url
+  batch_job_log_group = module.upload_batch.batch_job_log_group
 }
 
 module dataset_submissions_lambda {

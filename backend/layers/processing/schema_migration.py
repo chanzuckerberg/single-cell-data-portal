@@ -316,7 +316,7 @@ class SchemaMigrate(ProcessingLogic):
             retrieve_report_files_from_s3("migrate_changes")
             self.logger.info("Report", extra=report)
             report_str = json.dumps(report, indent=4, sort_keys=True)
-            report_message = "Schema migration results."
+            report_message = f"Schema migration results ({os.environ['DEPLOYMENT_STAGE']} env)"
             # if report["errors"]:
             #     report_message += " @sc-oncall-eng"
             self._upload_to_slack("schema_migration_report.json", report_str, report_message)

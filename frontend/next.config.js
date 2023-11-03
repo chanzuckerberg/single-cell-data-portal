@@ -18,6 +18,8 @@ const HUBSPOT_JS_URL = "https://js.hsforms.net";
 
 const HUBSPOT_FORMS_URL = "https://forms.hsforms.com";
 
+const DATADOG_URL = "browser-intake-datadoghq.com";
+
 const SCRIPT_SRC = [
   "'self'",
   "'wasm-unsafe-eval'",
@@ -39,6 +41,7 @@ const defaultSecureHeaders = {
         PLAUSIBLE_URL,
         configs.API_URL,
         configs.CELLGUIDE_DATA_URL,
+        DATADOG_URL,
       ],
       defaultSrc: ["'self'", HUBSPOT_FORMS_URL],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
