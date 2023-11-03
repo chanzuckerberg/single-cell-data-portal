@@ -7,6 +7,7 @@ import os
 from typing import Dict
 
 import scanpy
+from rpy2.robjects.packages import importr
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business import BusinessLogic
@@ -17,6 +18,7 @@ from backend.layers.common.entities import (
     DatasetProcessingStatus,
     DatasetStatusKey,
     DatasetValidationStatus,
+    DatasetVersion,
     DatasetVersionId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
@@ -36,6 +38,87 @@ class DatasetMetadataUpdate(ProcessDownload):
         self.artifact_bucket = artifact_bucket
         self.cellxgene_bucket = cellxgene_bucket
         self.datasets_bucket = datasets_bucket
+
+    def update_h5ad(
+        self,
+        h5ad_s3_uri: str,
+        original_dataset_version: DatasetVersion,
+        key_prefix: str,
+        new_dataset_version_id: DatasetVersionId,
+        metadata_update_dict: Dict[str, str],
+    ):
+        h5ad_filename = self.download_from_source_uri(
+            source_uri=h5ad_s3_uri,
+            local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
+        )
+
+        adata = scanpy.read_h5ad(h5ad_filename, backed="r")
+        metadata = original_dataset_version.metadata
+        for key, val in metadata_update_dict:
+            adata.uns[key] = val
+            if hasattr(metadata, key):
+                setattr(metadata, key, val)
+        adata.write(h5ad_filename)
+        self.business_logic.set_dataset_metadata(new_dataset_version_id, metadata)
+
+        self.create_artifact(
+            h5ad_filename,
+            DatasetArtifactType.H5AD,
+            key_prefix,
+            new_dataset_version_id,
+            self.artifact_bucket,
+            DatasetStatusKey.H5AD,
+            datasets_bucket=self.datasets_bucket,
+        )
+        self.update_processing_status(
+            new_dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID
+        )
+
+    def update_rds(
+        self,
+        rds_s3_uri: str,
+        key_prefix: str,
+        new_dataset_version_id: DatasetVersionId,
+        metadata_update_dict: Dict[str, str],
+    ):
+        seurat_filename = self.download_from_source_uri(
+            source_uri=rds_s3_uri,
+            local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,  # TODO: diff name?
+        )
+        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTING)
+
+        base = importr("base")
+        seurat = importr("SeuratObject")
+
+        rds_object = base.readRDS(seurat_filename)
+
+        for key, val in metadata_update_dict:
+            if seurat.Misc(object=rds_object, slot=key):
+                seurat.Misc(object=rds_object, slot=key)[0] = val
+
+        base.saveRDS(rds_object, file=seurat_filename)
+
+        self.create_artifact(
+            seurat_filename,
+            DatasetArtifactType.RDS,
+            key_prefix,
+            new_dataset_version_id,
+            self.artifact_bucket,
+            DatasetStatusKey.RDS,
+            datasets_bucket=self.datasets_bucket,
+        )
+        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTED)
+
+    def update_cxg(
+        self,
+        cxg_s3_uri: str,
+        key_prefix: str,
+        dataset_version_id: DatasetVersionId,
+    ):
+        # cxg does not save metadata dict, does not need to be updated but does need to be copied over
+        new_cxg_dir = f"s3://{self.cellxgene_bucket}/{key_prefix}.cxg/"
+        self.s3_provider.upload_directory(cxg_s3_uri, new_cxg_dir)
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.CONVERTED)
 
     def update_metadata(
         self,
@@ -65,64 +148,19 @@ class DatasetMetadataUpdate(ProcessDownload):
         self.process(new_dataset_version_id, raw_h5ad_s3_uri, self.artifact_bucket)
 
         key_prefix = self.get_key_prefix(new_dataset_version_id)
-        # update anndata
-        # TODO: factor out any shared logic
+
         if h5ad_s3_uri:
-            h5ad_filename = self.download_from_source_uri(
-                source_uri=h5ad_s3_uri,
-                local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
-            )
-            adata = scanpy.read_h5ad(h5ad_filename, backed="r")
-            metadata = original_dataset_version.metadata
-            for key, val in metadata_update_dict:
-                adata.uns[key] = val
-                if hasattr(metadata, key):
-                    setattr(metadata, key, val)
-            adata.write(h5ad_filename)
-            self.business_logic.set_dataset_metadata(new_dataset_version_id, metadata)
-
-            self.create_artifact(
-                h5ad_filename,
-                DatasetArtifactType.H5AD,
-                key_prefix,
-                new_dataset_version_id,
-                self.artifact_bucket,
-                DatasetStatusKey.H5AD,
-                datasets_bucket=self.datasets_bucket,
-            )
-            self.update_processing_status(
-                new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED
-            )
-            self.update_processing_status(
-                new_dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID
+            self.update_h5ad(
+                h5ad_s3_uri, key_prefix, original_dataset_version, new_dataset_version_id, metadata_update_dict
             )
 
-        # TODO: update seurat metadata dict
         if rds_s3_uri:
-            seurat_filename = self.download_from_source_uri(
-                source_uri=rds_s3_uri,
-                local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,  # TODO: diff name?
-            )
-            self.create_artifact(
-                seurat_filename,
-                DatasetArtifactType.RDS,
-                key_prefix,
-                new_dataset_version_id,
-                self.artifact_bucket,
-                DatasetStatusKey.RDS,
-                datasets_bucket=self.datasets_bucket,
-            )
-            self.update_processing_status(
-                new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTED
-            )
+            self.update_rds(rds_s3_uri, key_prefix, new_dataset_version_id, metadata_update_dict)
 
         if cxg_s3_uri:
-            new_dir = f"s3://{cellxgene_bucket}/{key_prefix}.cxg/"
-            self.s3_provider.upload_directory(cxg_s3_uri, new_dir)
-            self.update_processing_status(
-                new_dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.CONVERTED
-            )
+            self.update_cxg(cxg_s3_uri, key_prefix, new_dataset_version_id)
 
+        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
         self.update_processing_status(
             new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
         )
