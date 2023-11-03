@@ -165,7 +165,7 @@ FAILED_CXG_CLEANUP_MESSAGE = "Failed to clean up cxgs."
 def cleanup_artifacts(dataset_id: str, error_step_name: Optional[str] = None) -> None:
     """Clean up artifacts"""
     object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_id).strip("/")
-    if not error_step_name or error_step_name == "download-validate":
+    if not error_step_name or error_step_name in ["validate", "download"]:
         with logger.LogSuppressed(Exception, message=FAILED_ARTIFACT_CLEANUP_MESSAGE):
             artifact_bucket = os.environ["ARTIFACT_BUCKET"]
             delete_many_from_s3(artifact_bucket, object_key + "/")

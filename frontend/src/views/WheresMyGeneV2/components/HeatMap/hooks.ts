@@ -69,6 +69,13 @@ export function useHandleExpandedTissueIds({
 
   useEffect(() => {
     /**
+     * (thuang): When we enter the cell type filter mode from share link with cellTypes param
+     */
+    if (!prevFilteredCellTypeIds.length && filteredCellTypeIds.length) {
+      expandTissues();
+    }
+
+    /**
      * (thuang): When we exit the tissue filter mode, but still have cell type filter,
      * we want to expand all the tissues.
      */

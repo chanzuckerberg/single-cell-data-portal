@@ -1,3 +1,4 @@
+import { NextRouter } from "next/router";
 import { Dispatch } from "react";
 import { TissueMetadataQueryResponse } from "src/common/queries/cellGuide";
 import { isSSR } from "src/common/utils/isSSR";
@@ -9,6 +10,7 @@ import {
   LoadStateFromURLPayload,
   PayloadAction,
 } from "src/views/WheresMyGeneV2/common/store/reducer";
+import { CellType } from "src/views/WheresMyGeneV2/common/types";
 
 const HUMAN_ORGANISM_ID = "NCBITaxon:9606";
 
@@ -45,11 +47,12 @@ export const generateAndCopyShareUrl = ({
     url.searchParams.set(key, value.join(","));
   });
   url.searchParams.set("genes", genes.join(","));
-  url.searchParams.set("ver", LATEST_SHARE_LINK_VERSION);
 
   if (cellTypes.length > 0) {
     url.searchParams.set("cellTypes", cellTypes.join(","));
   }
+
+  url.searchParams.set("ver", LATEST_SHARE_LINK_VERSION);
 
   const urlString = String(url);
 
@@ -75,15 +78,19 @@ const stripEmptyFilters = (
 };
 
 export const loadStateFromQueryParams = ({
-  params,
-  selectedFilters,
+  cellTypesByName,
   dispatch,
+  params,
+  router,
+  selectedFilters,
   tissues,
 }: {
   params: URLSearchParams;
   selectedFilters: State["selectedFilters"];
   dispatch: Dispatch<PayloadAction<LoadStateFromURLPayload>>;
-  tissues?: TissueMetadataQueryResponse;
+  tissues: TissueMetadataQueryResponse;
+  cellTypesByName: { [name: string]: CellType };
+  router: NextRouter;
 }): LoadStateFromURLPayload | null => {
   if (isSSR()) return null;
 
@@ -125,8 +132,23 @@ export const loadStateFromQueryParams = ({
     paramsToRemove.push("organism");
   }
 
+  const cellTypeNames = Object.keys(cellTypesByName);
+
   // Check for cell types
-  const newFilteredCellTypes = params.get("cellTypes")?.split(delimiter) || [];
+  const newFilteredCellTypes =
+    params
+      .get("cellTypes")
+      ?.split(delimiter)
+      .filter((cellType) => {
+        if (cellTypeNames.indexOf(cellType) !== -1) return true;
+        // Pop toast here
+        console.warn(`Cell type ${cellType} not found in cell types`);
+        return false;
+      }) || [];
+
+  const newFilteredCellTypeIds = newFilteredCellTypes.map(
+    (cellTypeName) => cellTypesByName[cellTypeName].id
+  );
 
   if (newFilteredCellTypes.length > 0) paramsToRemove.push("cellTypes");
 
@@ -141,7 +163,7 @@ export const loadStateFromQueryParams = ({
    * (thuang): Please makes sure we only remove params AFTER pushing all params
    * to `paramsToRemove`
    */
-  removeParams(paramsToRemove);
+  removeParams({ params: paramsToRemove, router });
 
   const payload = {
     compare: newCompare,
@@ -149,6 +171,7 @@ export const loadStateFromQueryParams = ({
     organism: newSelectedOrganism,
     genes: newSelectedGenes,
     cellTypes: newFilteredCellTypes,
+    cellTypeIds: newFilteredCellTypeIds,
   };
 
   dispatch(loadStateFromURL(payload));
@@ -179,7 +202,7 @@ function getNewSelectedFilters({
   selectedFilters,
   delimiter,
 }: {
-  tissues?: TissueMetadataQueryResponse;
+  tissues: TissueMetadataQueryResponse;
   params: URLSearchParams;
   paramsToRemove: string[];
   selectedFilters: State["selectedFilters"];
@@ -194,6 +217,9 @@ function getNewSelectedFilters({
   const tissueIdsByName = new Map(
     Object.entries(tissues ?? {}).map(([id, tissue]) => [tissue.name, id])
   );
+
+  const allTissueNames = Object.keys(tissueIdsByName);
+  const allTissueIds = Object.keys(tissues ?? {});
 
   Object.keys(selectedFilters).forEach((key) => {
     const value = params.get(key);
@@ -210,9 +236,12 @@ function getNewSelectedFilters({
       const tissueIds = [];
       const tissueNames = [];
       for (const tissueParam of tissueParams) {
-        if (tissueParam.includes("UBERON:")) {
+        if (
+          tissueParam.includes("UBERON:") &&
+          allTissueIds.indexOf(tissueParam) !== -1
+        ) {
           tissueIds.push(tissueParam);
-        } else {
+        } else if (allTissueNames.indexOf(tissueParam) !== -1) {
           tissueNames.push(tissueParam);
         }
       }
@@ -224,6 +253,7 @@ function getNewSelectedFilters({
         ) as string[]),
       ];
     } else {
+      // TODO(seve): add input validation for all filter types, ensure that the values are present in the data
       newSelectedFilters[key as keyof State["selectedFilters"]] =
         value.split(delimiter);
     }

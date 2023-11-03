@@ -14,7 +14,6 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
-from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import (
     ConversionFailed,
     ProcessingCanceled,
@@ -24,9 +23,10 @@ from backend.layers.processing.exceptions import (
 )
 from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_cxg import ProcessCxg
-from backend.layers.processing.process_download_validate import ProcessDownloadValidate
+from backend.layers.processing.process_download import ProcessDownload
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.processing.process_seurat import ProcessSeurat
+from backend.layers.processing.process_validate import ProcessValidate
 from backend.layers.processing.schema_migration import SchemaMigrate
 from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
 from backend.layers.thirdparty.schema_validator_provider import (
@@ -43,7 +43,7 @@ class ProcessMain(ProcessingLogic):
     Main class for the dataset pipeline processing
     """
 
-    process_download_validate: ProcessDownloadValidate
+    process_validate: ProcessValidate
     process_seurat: ProcessSeurat
     process_cxg: ProcessCxg
 
@@ -52,21 +52,20 @@ class ProcessMain(ProcessingLogic):
         business_logic: BusinessLogicInterface,
         uri_provider: UriProviderInterface,
         s3_provider: S3ProviderInterface,
-        downloader: Downloader,
         schema_validator: SchemaValidatorProviderInterface,
     ) -> None:
         super().__init__()
         self.business_logic = business_logic
         self.uri_provider = uri_provider
         self.s3_provider = s3_provider
-        self.downloader = downloader
         self.schema_validator = schema_validator
-        self.process_download_validate = ProcessDownloadValidate(
-            self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
+        self.process_download = ProcessDownload(self.business_logic, self.uri_provider, self.s3_provider)
+        self.process_validate = ProcessValidate(
+            self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
         )
         self.process_seurat = ProcessSeurat(self.business_logic, self.uri_provider, self.s3_provider)
         self.process_cxg = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
-        self.schema_migrate = SchemaMigrate(business_logic, schema_validator)
+        self.schema_migrate = SchemaMigrate(self.business_logic, self.schema_validator)
 
     def log_batch_environment(self):
         batch_environment_variables = [
@@ -103,10 +102,10 @@ class ProcessMain(ProcessingLogic):
         """
         self.logger.info(f"Processing dataset {dataset_id}")
         try:
-            if step_name == "download-validate":
-                self.process_download_validate.process(
-                    collection_id, dataset_id, dropbox_uri, artifact_bucket, datasets_bucket
-                )
+            if step_name == "download":
+                self.process_download.process(dataset_id, dropbox_uri, artifact_bucket, os.environ.get("TASK_TOKEN"))
+            elif step_name == "validate":
+                self.process_validate.process(collection_id, dataset_id, artifact_bucket, datasets_bucket)
             elif step_name == "cxg":
                 self.process_cxg.process(dataset_id, artifact_bucket, cxg_bucket)
             elif step_name == "cxg_remaster":
@@ -135,7 +134,7 @@ class ProcessMain(ProcessingLogic):
             return False
         except Exception as e:
             self.logger.exception(f"An unexpected error occurred while processing the data set: {e}")
-            if step_name == "download-validate":
+            if step_name in ["validate", "download"]:
                 self.update_processing_status(dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.FAILED)
             elif step_name == "seurat":
                 self.update_processing_status(dataset_id, DatasetStatusKey.RDS, DatasetConversionStatus.FAILED)
@@ -183,14 +182,12 @@ if __name__ == "__main__":
         uri_provider,
     )
 
-    downloader = Downloader(business_logic)
     schema_validator = SchemaValidatorProvider()
 
     process_main = ProcessMain(
         business_logic=business_logic,
         uri_provider=uri_provider,
         s3_provider=s3_provider,
-        downloader=downloader,
         schema_validator=schema_validator,
     )
 

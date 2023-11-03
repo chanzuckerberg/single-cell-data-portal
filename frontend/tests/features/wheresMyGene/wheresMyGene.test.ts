@@ -21,7 +21,11 @@ import {
   waitForHeatmapToRender,
 } from "tests/utils/wmgUtils";
 
-import { addGene, searchAndAddGene } from "tests/utils/geneUtils";
+import {
+  CELL_TYPE_SEARCH_PLACEHOLDER_TEXT,
+  addGene,
+  searchAndAddGene,
+} from "tests/utils/geneUtils";
 import {
   CELL_TYPE_NAME_LABEL_CLASS_NAME,
   TISSUE_NAME_LABEL_CLASS_NAME,
@@ -137,14 +141,14 @@ describe("Where's My Gene", () => {
 
     await clickUntilOptionsShowUp({
       page,
-      locator: getDatasetSelectorButton(),
+      locator: getDatasetSelectorButton(page),
     });
     const numberOfDatasetsBefore = await countLocator(page.getByRole("option"));
     await page.keyboard.press("Escape");
 
     await clickUntilOptionsShowUp({
       page,
-      locator: getDiseaseSelectorButton(),
+      locator: getDiseaseSelectorButton(page),
     });
 
     const diseaseOption = await page
@@ -163,29 +167,13 @@ describe("Where's My Gene", () => {
 
     await clickUntilOptionsShowUp({
       page,
-      locator: getDatasetSelectorButton(),
+      locator: getDatasetSelectorButton(page),
     });
     const numberOfDatasetsAfter = await countLocator(page.getByRole("option"));
     await page.keyboard.press("Escape");
 
     expect(numberOfDatasetsBefore).toBeGreaterThan(numberOfDatasetsAfter);
     expect(numberOfTissuesBefore).toBeGreaterThan(numberOfTissuesAfter);
-
-    function getDiseaseSelector() {
-      return page.getByTestId(FILTERS_PANEL).getByTestId("disease-filter");
-    }
-
-    function getDiseaseSelectorButton() {
-      return getDiseaseSelector().getByRole("button");
-    }
-
-    function getDatasetSelector() {
-      return page.getByTestId(FILTERS_PANEL).getByTestId("dataset-filter");
-    }
-
-    function getDatasetSelectorButton() {
-      return getDatasetSelector().getByRole("button");
-    }
   });
 
   test("Source Data", async ({ page }) => {
@@ -625,6 +613,14 @@ describe("Where's My Gene", () => {
     );
   });
   describe("Cell Type Filtering", () => {
+    test("Cell Types don't contain UBERON terms", async ({ page }) => {
+      await goToWMG(page);
+      await waitForLoadingSpinnerToResolve(page);
+      await page
+        .getByPlaceholder(CELL_TYPE_SEARCH_PLACEHOLDER_TEXT)
+        .fill("UBERON");
+      await page.keyboard.type("UBERON");
+    });
     test("Filter to multiple cell types and then clear", async ({ page }) => {
       const CELL_TYPE_NAMES = ["B cell", "T cell", "PP cell"];
 
@@ -682,6 +678,28 @@ describe("Where's My Gene", () => {
       expect(textContentBefore).toEqual(textContentBefore2);
     });
   });
+
+  test("only render tissues that contain data", async ({ page }) => {
+    await goToWMG(page);
+    await waitForLoadingSpinnerToResolve(page);
+    await clickUntilOptionsShowUp({
+      page,
+      locator: getDatasetSelectorButton(page),
+    });
+    const datasetOption = await page
+      .getByRole("option")
+      .getByText("Fallopian tube RNA");
+    await datasetOption.click();
+    await page.keyboard.press("Escape");
+
+    await waitForLoadingSpinnerToResolve(page);
+
+    const nonExistentTissue = await page.getByTestId(
+      "cell-type-labels-adipose-tissue"
+    );
+
+    expect(nonExistentTissue).toHaveCount(0);
+  });
 });
 
 async function getNames({
@@ -712,6 +730,21 @@ async function getNames({
   );
 
   return labelsLocator.allTextContents();
+}
+function getDiseaseSelector(page: Page) {
+  return page.getByTestId(FILTERS_PANEL).getByTestId("disease-filter");
+}
+
+function getDiseaseSelectorButton(page: Page) {
+  return getDiseaseSelector(page).getByRole("button");
+}
+
+function getDatasetSelector(page: Page) {
+  return page.getByTestId(FILTERS_PANEL).getByTestId("dataset-filter");
+}
+
+function getDatasetSelectorButton(page: Page) {
+  return getDatasetSelector(page).getByRole("button");
 }
 
 async function clickUntilOptionsShowUp({

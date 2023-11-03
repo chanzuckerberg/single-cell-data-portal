@@ -21,6 +21,7 @@ import { OFF_WHITE, PINK } from "src/common/theme";
 import EmbeddedGoogleSlides from "src/components/EmbeddedGoogleSlides";
 import Layout from "src/components/Layout";
 import { StyledDocsLayout } from "src/components/Layout/style";
+import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
 const DOC_SITE_FOLDER_NAME = "doc-site";
 
@@ -305,9 +306,9 @@ const StyledLeftNav = styled.div`
   width: 100%;
   height: 100vh;
   position: sticky;
-  top: 48px;
+  top: ${HEADER_HEIGHT_PX}px;
   overflow-y: scroll;
-  padding-top: 48px;
+  padding-top: ${HEADER_HEIGHT_PX}px;
   ::-webkit-scrollbar {
     width: 8px;
   }
