@@ -4,7 +4,7 @@ import { Dataset, DATASET_ASSET_FORMAT } from "src/common/entities";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
-import CurlLink from "./components/CurlLink";
+import DownloadLink from "./components/DownloadLink";
 import DataFormat from "./components/DataFormat";
 import Details from "./components/Details";
 import Name from "./components/Name";
@@ -64,11 +64,13 @@ const Content: FC<Props> = ({
       throw Error(`Format ${selectedFormat} not available`);
     }
 
-    const { dataset_id: datasetId, id: assetId } = asset[0];
+    const { dataset_id: datasetId, filename, id: assetId } = asset[0];
 
     getDownloadLink({
       assetId,
       datasetId,
+      filename,
+      isDownloadUX,
       setFileName,
       setFileSize,
       setIsDownloadLinkLoading,
@@ -77,6 +79,8 @@ const Content: FC<Props> = ({
     async function getDownloadLink({
       assetId,
       datasetId,
+      filename,
+      isDownloadUX,
       setFileName,
       setFileSize,
       setIsDownloadLinkLoading,
@@ -94,22 +98,23 @@ const Content: FC<Props> = ({
         const result = await (
           await fetch(`${API_URL}${url}`, {
             ...DEFAULT_FETCH_OPTIONS,
-            method: "POST",
+            method: isDownloadUX ? "GET" : "POST",
           })
         ).json();
 
-        const { file_size, presigned_url, file_name } = result;
+        const { file_size } = result;
+        const downloadURL = isDownloadUX ? result.url : result.presigned_url;
 
         setFileSize(file_size);
-        setDownloadLink(presigned_url);
-        setFileName(file_name);
+        setDownloadLink(downloadURL);
+        setFileName(filename);
       } catch (error) {
         console.error("Please try again");
       }
 
       setIsDownloadLinkLoading(false);
     }
-  }, [selectedFormat, dataAssets]);
+  }, [selectedFormat, dataAssets, isDownloadUX]);
 
   /**
    * Tracks dataset download analytics as specified by the custom analytics event.
@@ -149,15 +154,16 @@ const Content: FC<Props> = ({
               selectedFormat={selectedFormat}
             />
             <Details
-              curlPreview={
+              downloadPreview={
                 downloadLink &&
                 !isDownloadLinkLoading && (
-                  <CurlLink
+                  <DownloadLink
+                    downloadLink={downloadLink}
                     fileName={fileName}
                     handleAnalytics={() =>
                       handleAnalytics(EVENTS.DOWNLOAD_DATA_COPY)
                     }
-                    link={downloadLink}
+                    selectedFormat={selectedFormat}
                   />
                 )
               }
@@ -194,6 +200,8 @@ const Content: FC<Props> = ({
   interface GetDownloadLinkArgs {
     assetId: string;
     datasetId: string;
+    filename: string;
+    isDownloadUX: boolean;
     setFileName: (value: string) => void;
     setFileSize: (value: number) => void;
     setIsDownloadLinkLoading: (value: boolean) => void;
