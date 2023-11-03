@@ -1,11 +1,4 @@
-import {
-  Button,
-  fontBodyS,
-  fontCapsXxxs,
-  fontHeaderL,
-  fontHeaderXl,
-  fontHeaderXxl,
-} from "@czi-sds/components";
+import { fontCapsXxxs } from "@czi-sds/components";
 import styled from "@emotion/styled";
 import Link from "next/link";
 import React from "react";
@@ -14,21 +7,27 @@ import {
   ProjectResponse,
   useProjects,
 } from "src/common/queries/censusDirectory";
-import {
-  fontWeightBold,
-  fontWeightMedium,
-  fontWeightRegular,
-  fontWeightSemibold,
-  gray400,
-  spacesDefault,
-  spacesL,
-  spacesXl,
-  spacesXxs,
-  textSecondary,
-} from "src/common/theme";
+import { fontWeightSemibold, gray400, spacesXxs } from "src/common/theme";
 
 import staticProjects, { type StaticProject } from "census-projects.json";
 import notebookLinks from "census-notebook-links.json";
+import {
+  ProjectContainer,
+  ProjectDetails,
+  ProjectTitle,
+  ProjectSubmitter,
+  ProjectDesctiption,
+  DetailsContainer,
+  ProjectButtons,
+  StyledButton,
+  Content,
+  Header,
+  DirectoryDescription,
+  TierContainer,
+  TierTitle,
+  TierDescription,
+} from "./styles";
+import EmbeddingsButton from "./components/EmbeddingButton";
 
 function DetailItem(props: { label: string; children: string; link?: string }) {
   const ItemContainer = styled.div`
@@ -61,91 +60,6 @@ function DetailItem(props: { label: string; children: string; link?: string }) {
 }
 
 function CensusDirectory() {
-  const Content = styled.div`
-    box-sizing: content-box;
-    padding: 0px 40px;
-    display: flex;
-    flex-direction: column;
-    margin: 80px auto;
-    max-width: 1200px;
-  `;
-
-  const Header = styled.h1`
-    ${fontHeaderXxl}
-    margin-bottom: ${spacesDefault}px;
-    font-weight: ${fontWeightBold};
-  `;
-
-  const Paragraph = styled.p`
-    ${fontBodyS}
-    font-weight: ${fontWeightRegular};
-    margin-bottom: 0;
-  `;
-
-  const DirectoryDescription = styled(Paragraph)`
-    margin-bottom: 80px;
-  `;
-
-  const TierContainer = styled.div`
-    margin-bottom: 120px;
-  `;
-
-  const TierTitle = styled.h3`
-    ${fontHeaderXl}
-    margin-bottom: ${spacesDefault}px;
-    font-weight: ${fontWeightSemibold};
-  `;
-
-  const TierDescription = styled.p`
-    ${fontBodyS}
-    color: ${textSecondary};
-    font-weight: ${fontWeightRegular};
-    margin-bottom: 0;
-  `;
-
-  const ProjectTitle = styled.h4`
-    ${fontHeaderL}
-    font-weight: ${fontWeightSemibold};
-    margin-bottom: ${spacesDefault}px;
-  `;
-
-  const ProjectSubmitter = styled.h4`
-    ${fontBodyS}
-    font-weight: ${fontWeightSemibold};
-    margin-bottom: ${spacesDefault}px;
-  `;
-
-  const ProjectDesctiption = styled(Paragraph)`
-    max-width: 85ch;
-  `;
-
-  const ProjectContainer = styled.div`
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    margin-top: 20px;
-  `;
-  const ProjectButtons = styled.div`
-    display: flex;
-    flex-direction: row;
-    gap: ${spacesDefault}px;
-  `;
-  const ProjectDetails = styled.div`
-    display: flex;
-    flex-direction: column;
-  `;
-  const DetailsContainer = styled.div`
-    display: flex;
-    flex-direction: row;
-    gap: ${spacesXl}px;
-    margin-top: ${spacesL}px;
-  `;
-
-  const StyledButton = styled(Button)`
-    font-weight: ${fontWeightMedium};
-    min-width: 80px;
-  `;
-
   const { data: projects } = useProjects();
 
   const hostedProjects = Object.entries(projects || {}).filter(
@@ -213,9 +127,7 @@ function CensusDirectory() {
         </DetailsContainer>
       </ProjectDetails>
       <ProjectButtons>
-        <StyledButton sdsType="secondary" sdsStyle="square">
-          Embedding
-        </StyledButton>
+        <EmbeddingsButton />
         {project.model_link && (
           <Link href={project.model_link}>
             <StyledButton sdsType="primary" sdsStyle="square">
@@ -230,40 +142,42 @@ function CensusDirectory() {
     <Content>
       <Header>Census Directory</Header>
       <DirectoryDescription>
-        Habitant sit tristique pharetra at. Quis ipsum morbi pharetra venenatis
-        amet purus aliquam nunc. Mi feugiat elementum nec sagittis enim. Turpis
-        purus mi tellus leo in vestibulum enim varius. Ut dictum lobortis in
-        non. Sed rhoncus enim pharetra pulvinar semper faucibus ut at sapien.
-        Parturient pharetra amet sit facilisis sagittis quis. Dignissim
-        fermentum consectetur fames vulputate semper neque est non pharetra.
-        Amet et elementum neque turpis hac bibendum ac id ipsum.
+        This page features models and integrated embeddings of the Census data
+        corpus, organized by CELL×GENE’s level of involvement with their
+        maintenance and availability. If you’d like to have your project
+        featured here, please
+        <Link href="mailto:cellxgene@chanzuckerberg.com">get in touch</Link>!
       </DirectoryDescription>
       {maintainedProjects.length > 0 && (
         <TierContainer>
-          <TierTitle>Census Partners</TierTitle>
+          <TierTitle>CELL×GENE Maintained Projects</TierTitle>
           <TierDescription>
-            Ut nisi non lorem adipiscing. Orci tellus quisque quam ac purus
-            vitae. Aliquet quis egestas viverra nulla quis lectus adipiscing.
+            These projects are actively maintained and regularly updated by
+            CELLxGENE in close collaboration with their creators. Embeddings are
+            accessible via the Census API; models are available via
+            CELLxGENE-maintained links.
           </TierDescription>
           {maintainedProjects.map((project) => renderProject(project))}
         </TierContainer>
       )}
       {hostedProjects.length > 0 && (
         <TierContainer>
-          <TierTitle>Tier 2</TierTitle>
+          <TierTitle>CELLxGENE Hosted Projects</TierTitle>
           <TierDescription>
-            Ut nisi non lorem adipiscing. Orci tellus quisque quam ac purus
-            vitae. Aliquet quis egestas viverra nulla quis lectus adipiscing.
+            CELLxGENE makes these projects available, but does not actively
+            maintain or update them. Embeddings are accessible via the Census
+            API; models are available via CELLxGENE-maintained links.
           </TierDescription>
           {hostedProjects.map(([id, project]) => renderProject(project, id))}
         </TierContainer>
       )}
       {communityProjects.length > 0 && (
         <TierContainer>
-          <TierTitle>Tier 3</TierTitle>
+          <TierTitle>Community Projects</TierTitle>
           <TierDescription>
-            Ut nisi non lorem adipiscing. Orci tellus quisque quam ac purus
-            vitae. Aliquet quis egestas viverra nulla quis lectus adipiscing.
+            The community has also developed many wonderful projects using
+            Census data. While CELLxGENE does not directly host or maintain
+            these projects, we’re excited to showcase them here.
           </TierDescription>
           {communityProjects.map((project) => renderProject(project))}
         </TierContainer>

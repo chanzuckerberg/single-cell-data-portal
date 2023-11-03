@@ -5,7 +5,7 @@ interface Props {
   className?: string;
   onClose: () => void;
   isOpen: boolean;
-  title: string;
+  title?: string;
   isCloseButtonShown?: boolean;
   children: ReactNode;
 }
