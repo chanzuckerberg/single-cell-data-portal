@@ -307,7 +307,6 @@
 
     .figure {
       &Wrapper {
-        background-color: #f8f9fe;
         width: 100px;
         height: 100px;
         border-radius: 50%;
@@ -316,11 +315,6 @@
         align-items: center;
         flex-shrink: 0;
         transition: background-color 0.4s;
-
-        svg path {
-          fill: #0073ff;
-          transition: fill 0.4s;
-        }
       }
 
       &Separator {
@@ -337,14 +331,8 @@
     }
 
     &.active .figureWrapper {
-      background-color: #0073ff;
-
       @media (max-width: 999px) {
         margin-bottom: 15px;
-      }
-
-      svg path {
-        fill: #ffffff;
       }
     }
 
