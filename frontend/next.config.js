@@ -18,6 +18,9 @@ const HUBSPOT_JS_URL = "https://js.hsforms.net";
 
 const HUBSPOT_FORMS_URL = "https://forms.hsforms.com";
 
+const DATADOG_CSP_REPORT =
+  "https://csp-report.browser-intake-datadoghq.com/api/v2/logs?dd-api-key=pub55d4baaac2091f9656a83da732732a89&dd-evp-origin=content-security-policy&ddsource=csp-report";
+
 const SCRIPT_SRC = [
   "'self'",
   "'wasm-unsafe-eval'",
@@ -50,10 +53,7 @@ const defaultSecureHeaders = {
       manifestSrc: ["'self'"],
       mediaSrc: ["'self'"],
       objectSrc: ["'none'"],
-      reportURI:
-        configs.SENTRY_DEPLOYMENT_ENVIRONMENT &&
-        "https://sentry.prod.si.czi.technology/api/167/security/?sentry_key=0432f3b3ceba4bc08d28dfb61fa29707&sentry_environment=" +
-          configs.SENTRY_DEPLOYMENT_ENVIRONMENT,
+      reportURI: DATADOG_CSP_REPORT,
       scriptSrc: isProdBuild ? SCRIPT_SRC : [...SCRIPT_SRC, "'unsafe-eval'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       upgradeInsecureRequests: true,
