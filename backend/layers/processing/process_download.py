@@ -143,8 +143,8 @@ class ProcessDownload(ProcessingLogic):
         self, dataset_version_id: DatasetVersionId, dataset_uri: str, artifact_bucket: str, sfn_task_token: str
     ):
         """
-        1. Download the original dataset
-        2. Upload the labeled dataset to the artifact bucket
+        Process the download step of the step function
+
         :param dataset_version_id:
         :param dataset_uri:
         :param artifact_bucket:

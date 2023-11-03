@@ -61,7 +61,6 @@ import HelpTooltip from "../common/HelpTooltip";
 import { ROUTES } from "src/common/constants/routes";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { CENSUS_LINK } from "src/components/Header/components/Nav";
 import {
   CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE,
   CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE_SELECTOR,
@@ -79,6 +78,7 @@ import {
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/constants";
 import Image from "next/image";
 import { CellType } from "../../../common/OntologyDagView/common/types";
+import { CENSUS_LINK } from "src/components/Header/components/Nav/constants";
 
 function getEmptyComputationalMarkerGenesTableUIMessageDetail(
   allFilteredByLowMarkerScore: boolean

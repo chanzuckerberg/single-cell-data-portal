@@ -368,7 +368,7 @@ describe("Cell Guide", () => {
               CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN
             );
             await waitForElementAndClick(dropdown);
-            await page.getByRole("option").getByText("Macaca mulatta").click();
+            await page.getByRole("option").getByText("Mus musculus").click();
 
             const rowElementsAfter = await page
               .locator(`${tableSelector} tbody tr`)
@@ -444,7 +444,7 @@ describe("Cell Guide", () => {
               CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN
             );
             await waitForElementAndClick(dropdown);
-            await page.getByRole("option").getByText("Macaca mulatta").click();
+            await page.getByRole("option").getByText("Mus musculus").click();
 
             const rowElementsAfter = await page
               .locator(`${tableSelector} tbody tr`)
@@ -769,7 +769,7 @@ describe("Cell Guide", () => {
 
         // hover over the node
         const node = page.getByTestId(
-          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0002319__0-has-children-isTargetNode=false`
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000099__0-has-children-isTargetNode=false`
         );
         await node.hover();
         await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
@@ -794,7 +794,10 @@ describe("Cell Guide", () => {
           )
           .click();
 
-        await node.hover();
+        const node2 = page.getByTestId(
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000047__0-has-children-isTargetNode=false`
+        );
+        await node2.hover();
         await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
 
         const newTooltipText = await page

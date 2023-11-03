@@ -10,6 +10,7 @@ import styled from "@emotion/styled";
 import React from "react";
 import {
   fontWeightBold,
+  fontWeightMedium,
   fontWeightRegular,
   fontWeightSemibold,
   gray400,
@@ -46,6 +47,8 @@ function DetailItem(props: { label: string; children: string }) {
 
 function CensusDirectory() {
   const Content = styled.div`
+    box-sizing: content-box;
+    padding: 0px 40px;
     display: flex;
     flex-direction: column;
     margin: 80px auto;
@@ -124,7 +127,7 @@ function CensusDirectory() {
   `;
 
   const StyledButton = styled(Button)`
-    font-weight: ${fontWeightSemibold};
+    font-weight: ${fontWeightMedium};
     min-width: 80px;
   `;
 
