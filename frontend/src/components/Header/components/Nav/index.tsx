@@ -82,7 +82,7 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
           href={CENSUS_LINK}
           minimal
           onClick={() => {
-            track(EVENTS.CENSUS_CLICK_NAV);
+            track(EVENTS.CENSUS_DOCUMENTATION_CLICK_NAV);
           }}
           rel="noopener"
           target="_self"

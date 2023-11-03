@@ -29,7 +29,7 @@ function CensusDirectory() {
 
   return (
     <Content>
-      <Header>Models & Embeddings Using Census</Header>
+      <Header>Census Spotlight</Header>
       <DirectoryDescription>
         This page features models and integrated embeddings of the Census data
         corpus, organized by CELL×GENE’s level of involvement with their
