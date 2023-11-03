@@ -18,6 +18,8 @@ const HUBSPOT_JS_URL = "https://js.hsforms.net";
 
 const HUBSPOT_FORMS_URL = "https://forms.hsforms.com";
 
+const CROSS_REF_URL = "https://api.crossref.org";
+
 const SCRIPT_SRC = [
   "'self'",
   "'wasm-unsafe-eval'",
@@ -39,12 +41,7 @@ const defaultSecureHeaders = {
         PLAUSIBLE_URL,
         configs.API_URL,
         configs.CELLGUIDE_DATA_URL,
-        // TMP LOCAL BE SERVER
-        // TMP LOCAL BE SERVER
-        // TMP LOCAL BE SERVER
-        // TMP LOCAL BE SERVER
-        // TMP LOCAL BE SERVER
-        "http://localhost:5005/census-directory",
+        CROSS_REF_URL,
       ],
       defaultSrc: ["'self'", HUBSPOT_FORMS_URL],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],

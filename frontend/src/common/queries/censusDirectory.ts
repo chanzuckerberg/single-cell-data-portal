@@ -1,5 +1,6 @@
 import { useQuery } from "react-query";
 import { ENTITIES } from "./entities";
+import { apiTemplateToUrl } from "../utils/apiTemplateToUrl";
 
 // assumed tier 2 for now
 export interface Project {
@@ -18,6 +19,8 @@ export interface Project {
   contact_affiliation: string;
   contact_email: string;
   DOI?: string;
+  publication_info?: string;
+  publication_link?: string;
 }
 
 export interface ProjectResponse {
@@ -36,7 +39,7 @@ async function fetchProjects(): Promise<ProjectResponse> {
   // if (!response.ok) throw result;
 
   // return result.data;
-  return {
+  const data: ProjectResponse = {
     accession_ID_1: {
       census_version: "2099-08-11",
       experiment_name: "homo_sapiens",
@@ -70,6 +73,38 @@ async function fetchProjects(): Promise<ProjectResponse> {
         "Ligula imperdiet eget et enim id morbi. Pretium diam risus placerat felis vulputate adipiscing sed integer. Mauris commodo risus scelerisque tempus mi venenatis egestas. Sed at scelerisque vulputate egestas vulputate condimentum libero tempus convallis. Nulla id eget fringilla ultrices pellentesque nunc faucibus condimentum. Ornare porta eget porttitor cum arcu id ultricies id. Massa interdum orci risus arcu mattis massa. Amet metus nibh enim nam pellentesque sagittis diam id quam.",
     },
   };
+
+  Object.entries(data).forEach(
+    async ([id, project]: [
+      keyof ProjectResponse,
+      ProjectResponse[keyof ProjectResponse],
+    ]) => {
+      if (!project.DOI) return;
+
+      // include a mailto: query param to insure reliable service
+      const url = apiTemplateToUrl(
+        "https://api.crossref.org/works/{DOI}?mailto=cellxgene@cziscience.com",
+        {
+          DOI: encodeURIComponent(project.DOI),
+        }
+      );
+      const response = await fetch(url);
+      const { message: result } = await response.json();
+
+      if (!response.ok) console.error(result);
+
+      const author = result.author[0].family;
+      const journal = result["short-container-title"];
+      const year = result.issued["date-parts"][0][0];
+
+      const publication_info = `${author} et al. (${year}) ${journal}`;
+
+      data[id].publication_info = publication_info;
+      data[id].publication_link = result.URL;
+    }
+  );
+
+  return data;
 }
 
 export const USE_PROJECTS = {

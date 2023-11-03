@@ -1,0 +1,7 @@
+{
+  "accession_ID_1": [["link a", "https://example.com"]],
+  "accession_ID_2": [
+    ["link 1", "https://example.com"],
+    ["link 2", "https://example.com/notebook2"]
+  ]
+}
