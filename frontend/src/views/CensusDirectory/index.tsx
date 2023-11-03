@@ -1,25 +1,9 @@
-import { fontCapsXxxs } from "@czi-sds/components";
-import styled from "@emotion/styled";
 import Link from "next/link";
 import React from "react";
-import {
-  Project,
-  ProjectResponse,
-  useProjects,
-} from "src/common/queries/censusDirectory";
-import { fontWeightSemibold, gray400, spacesXxs } from "src/common/theme";
+import { useProjects } from "src/common/queries/censusDirectory";
 
-import staticProjects, { type StaticProject } from "census-projects.json";
-import notebookLinks from "census-notebook-links.json";
+import staticProjects from "census-projects.json";
 import {
-  ProjectContainer,
-  ProjectDetails,
-  ProjectTitle,
-  ProjectSubmitter,
-  ProjectDesctiption,
-  DetailsContainer,
-  ProjectButtons,
-  StyledButton,
   Content,
   Header,
   DirectoryDescription,
@@ -27,37 +11,7 @@ import {
   TierTitle,
   TierDescription,
 } from "./styles";
-import EmbeddingsButton from "./components/EmbeddingButton";
-
-function DetailItem(props: { label: string; children: string; link?: string }) {
-  const ItemContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: ${spacesXxs}px;
-  `;
-
-  const ItemLabel = styled.div`
-    ${fontCapsXxxs}
-    font-weight: ${fontWeightSemibold};
-    font-feature-settings:
-      "clig" off,
-      "liga" off;
-    color: ${gray400};
-  `;
-
-  return (
-    <ItemContainer>
-      <ItemLabel>{props.label}</ItemLabel>
-      {props.link ? (
-        <Link href={props.link} passHref>
-          {props.children}
-        </Link>
-      ) : (
-        props.children
-      )}
-    </ItemContainer>
-  );
-}
+import Project from "./components/Project";
 
 function CensusDirectory() {
   const { data: projects } = useProjects();
@@ -73,71 +27,6 @@ function CensusDirectory() {
     (project) => project.tier === 3
   );
 
-  const renderDetailItem = (label: string, value?: string, link?: string) => {
-    return value ? (
-      <DetailItem label={label} link={link}>
-        {value}
-      </DetailItem>
-    ) : null;
-  };
-
-  const renderProject = (
-    project: StaticProject | Project,
-    id?: keyof ProjectResponse
-  ) => (
-    <ProjectContainer key={project.title}>
-      <ProjectDetails>
-        <ProjectTitle>{project.title}</ProjectTitle>
-        <ProjectSubmitter>{project.contact_affiliation}</ProjectSubmitter>
-        <ProjectDesctiption>{project.description}</ProjectDesctiption>
-        <DetailsContainer>
-          {renderDetailItem(
-            "contact",
-            project.contact_name,
-            project.contact_email
-          )}
-          {renderDetailItem(
-            "publication",
-            project.publication_info,
-            project.publication_link
-          )}
-          {renderDetailItem(
-            "Last Updated",
-            //convert date to month, day, year
-            new Date(
-              project.last_updated || project.submission_date || ""
-            ).toLocaleDateString("en-US", {
-              dateStyle: "long",
-            })
-          )}
-        </DetailsContainer>
-        <DetailsContainer>
-          {renderDetailItem("Census Version", project.census_version)}
-          {renderDetailItem("experiment", project.experiment_name)}
-          {renderDetailItem("measurement", project.measurement_name)}
-          {renderDetailItem("embedding", project.data_type)}
-          {"notebook_links" in project
-            ? project.notebook_links?.map((link) =>
-                renderDetailItem("notebook", link[0], link[1])
-              )
-            : id &&
-              notebookLinks[id]?.map((link) =>
-                renderDetailItem("notebook", link[0], link[1])
-              )}
-        </DetailsContainer>
-      </ProjectDetails>
-      <ProjectButtons>
-        <EmbeddingsButton />
-        {project.model_link && (
-          <Link href={project.model_link}>
-            <StyledButton sdsType="primary" sdsStyle="square">
-              Model
-            </StyledButton>
-          </Link>
-        )}
-      </ProjectButtons>
-    </ProjectContainer>
-  );
   return (
     <Content>
       <Header>Census Directory</Header>
@@ -157,7 +46,9 @@ function CensusDirectory() {
             accessible via the Census API; models are available via
             CELLxGENE-maintained links.
           </TierDescription>
-          {maintainedProjects.map((project) => renderProject(project))}
+          {maintainedProjects.map((project) => (
+            <Project key={project.title} project={project} />
+          ))}
         </TierContainer>
       )}
       {hostedProjects.length > 0 && (
@@ -168,7 +59,9 @@ function CensusDirectory() {
             maintain or update them. Embeddings are accessible via the Census
             API; models are available via CELLxGENE-maintained links.
           </TierDescription>
-          {hostedProjects.map(([id, project]) => renderProject(project, id))}
+          {hostedProjects.map(([id, project]) => (
+            <Project key={id} id={id} project={project} />
+          ))}
         </TierContainer>
       )}
       {communityProjects.length > 0 && (
@@ -179,7 +72,9 @@ function CensusDirectory() {
             Census data. While CELLxGENE does not directly host or maintain
             these projects, we’re excited to showcase them here.
           </TierDescription>
-          {communityProjects.map((project) => renderProject(project))}
+          {communityProjects.map((project) => (
+            <Project key={project.title} project={project} />
+          ))}
         </TierContainer>
       )}
     </Content>

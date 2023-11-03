@@ -1,6 +1,7 @@
 import {
   Button,
   fontBodyS,
+  fontCapsXxxs,
   fontHeaderL,
   fontHeaderXl,
   fontHeaderXxl,
@@ -12,9 +13,11 @@ import {
   fontWeightMedium,
   fontWeightRegular,
   fontWeightSemibold,
+  gray400,
   spacesDefault,
   spacesL,
   spacesXl,
+  spacesXxs,
   textSecondary,
 } from "src/common/theme";
 
@@ -101,6 +104,21 @@ export const DetailsContainer = styled.div`
 export const StyledButton = styled(Button)`
   font-weight: ${fontWeightMedium};
   min-width: 80px;
+`;
+
+export const ItemContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${spacesXxs}px;
+`;
+
+export const ItemLabel = styled.div`
+  ${fontCapsXxxs}
+  font-weight: ${fontWeightSemibold};
+  font-feature-settings:
+    "clig" off,
+    "liga" off;
+  color: ${gray400};
 `;
 
 export const StyledRadioGroup = styled(RadioGroup)`
