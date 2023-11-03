@@ -42,6 +42,7 @@ const defaultSecureHeaders = {
         PLAUSIBLE_URL,
         configs.API_URL,
         configs.CELLGUIDE_DATA_URL,
+        DATADOG_CSP_REPORT,
       ],
       defaultSrc: ["'self'", HUBSPOT_FORMS_URL],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
