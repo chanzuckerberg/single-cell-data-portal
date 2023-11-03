@@ -8,6 +8,7 @@ from typing import Tuple
 
 import numpy as np
 import pandas as pd
+from ddtrace import tracer
 from pandas import DataFrame
 
 from backend.common.utils.rollup import (
@@ -19,6 +20,7 @@ from backend.common.utils.rollup import (
 ######################### PUBLIC FUNCTIONS IN ALPHABETIC ORDER ##################################
 
 
+@tracer.wrap(name="rollup", service="wmg-api", resource="query", span_type="wmg-api")
 def rollup(gene_expression_df, cell_counts_grouped_df) -> Tuple[DataFrame, DataFrame]:
     """
     Accumulates (or rolls up) cell count values and gene-expression values FOR EACH expressed gene
@@ -66,6 +68,7 @@ def rollup(gene_expression_df, cell_counts_grouped_df) -> Tuple[DataFrame, DataF
 ######################### PRIVATE FUNCTIONS IN ALPHABETIC ORDER ##################################
 
 
+@tracer.wrap(name="_rollup_gene_expression", service="wmg-api", resource="rollup", span_type="wmg-api")
 def _rollup_gene_expression(gene_expression_df, universal_set_cell_counts_df) -> DataFrame:
     """
     Augments the input gene expression dataframe to include
@@ -204,6 +207,7 @@ def _build_cell_count_groups_universal_set(cell_counts_grouped_df) -> DataFrame:
     return universal_set_cell_counts_grouped_df
 
 
+@tracer.wrap(name="_rollup_cell_counts", service="wmg-api", resource="rollup", span_type="wmg-api")
 def _rollup_cell_counts(cell_counts_grouped_df) -> DataFrame:
     """
     Roll up cell count values across cell type descendants in the input cell counts dataframe.
