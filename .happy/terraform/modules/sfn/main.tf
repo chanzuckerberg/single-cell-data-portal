@@ -59,8 +59,8 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Value.$": "$.url"
               },
               {
-                "Name": "DATASET_ID",
-                "Value.$": "$.dataset_id"
+                "Name": "DATASET_VERSION_ID",
+                "Value.$": "$.dataset_version_id"
               },
               {
                 "Name": "COLLECTION_ID",
@@ -167,8 +167,8 @@ resource "aws_sfn_state_machine" "state_machine" {
           "ContainerOverrides": {
             "Environment": [
               {
-                "Name": "DATASET_ID",
-                "Value.$": "$.dataset_id"
+                "Name": "DATASET_VERSION_ID",
+                "Value.$": "$.dataset_version_id"
               },
               {
                 "Name": "COLLECTION_ID",
@@ -224,8 +224,8 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "ContainerOverrides": {
                     "Environment": [
                       {
-                        "Name": "DATASET_ID",
-                        "Value.$": "$.dataset_id"
+                        "Name": "DATASET_VERSION_ID",
+                        "Value.$": "$.dataset_version_id"
                       },
                       {
                         "Name": "STEP_NAME",
@@ -266,8 +266,8 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "ContainerOverrides": {
                     "Environment": [
                       {
-                        "Name": "DATASET_ID",
-                        "Value.$": "$.dataset_id"
+                        "Name": "DATASET_VERSION_ID",
+                        "Value.$": "$.dataset_version_id"
                       },
                       {
                         "Name": "STEP_NAME",
@@ -321,7 +321,7 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Parameters": {
           "execution_id.$": "$$.Execution.Id",
           "error.$": "$.error",
-          "dataset_id.$": "$.dataset_id",
+          "dataset_version_id.$": "$.dataset_version_id",
           "collection_id.$": "$.collection_id"
         },
         "Retry": [ {
