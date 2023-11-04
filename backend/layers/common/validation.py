@@ -19,6 +19,7 @@ valid_consortia = {
     "GenitoUrinary Development Molecular Anatomy Project (GUDMAP)",
     "Gut Cell Atlas",
     "Human BioMolecular Atlas Program (HuBMAP)",
+    "Human Cell Atlas (HCA)",
     "Human Pancreas Analysis Program (HPAP)",
     "Human Tumor Atlas Network (HTAN)",
     "Kidney Precision Medicine Project (KPMP)",
