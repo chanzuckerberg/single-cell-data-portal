@@ -63,10 +63,6 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Value.$": "$.dataset_version_id"
               },
               {
-                "Name": "COLLECTION_ID",
-                "Value.$": "$.collection_id"
-              },
-              {
                 "Name": "STEP_NAME",
                 "Value": "download"
               },
@@ -171,8 +167,8 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Value.$": "$.dataset_version_id"
               },
               {
-                "Name": "COLLECTION_ID",
-                "Value.$": "$.collection_id"
+                "Name": "COLLECTION_VERSION_ID",
+                "Value.$": "$.collection_version_id"
               },
               {
                 "Name": "STEP_NAME",
@@ -322,7 +318,7 @@ resource "aws_sfn_state_machine" "state_machine" {
           "execution_id.$": "$$.Execution.Id",
           "error.$": "$.error",
           "dataset_version_id.$": "$.dataset_version_id",
-          "collection_id.$": "$.collection_id"
+          "collection_version_id.$": "$.collection_version_id"
         },
         "Retry": [ {
             "ErrorEquals": ["Lambda.AWSLambdaException"],
@@ -365,8 +361,8 @@ resource "aws_sfn_state_machine" "state_machine_seurat" {
         "ContainerOverrides": {
           "Environment": [
             {
-              "Name": "DATASET_ID",
-              "Value.$": "$.dataset_id"
+              "Name": "DATASET_VERSION_ID",
+              "Value.$": "$.dataset_version_id"
             },
             {
               "Name": "STEP_NAME",
@@ -401,8 +397,8 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
         "ContainerOverrides": {
           "Environment": [
             {
-              "Name": "DATASET_ID",
-              "Value.$": "$.dataset_id"
+              "Name": "DATASET_VERSION_ID",
+              "Value.$": "$.dataset_version_id"
             },
             {
               "Name": "STEP_NAME",

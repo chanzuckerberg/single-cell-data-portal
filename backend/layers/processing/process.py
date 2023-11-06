@@ -89,7 +89,7 @@ class ProcessMain(ProcessingLogic):
 
     def process(
         self,
-        collection_id: Optional[CollectionVersionId],
+        collection_version_id: Optional[CollectionVersionId],
         dataset_version_id: DatasetVersionId,
         step_name: str,
         dropbox_uri: Optional[str],
@@ -104,10 +104,12 @@ class ProcessMain(ProcessingLogic):
         try:
             if step_name == "download":
                 self.process_download.process(
-                    dataset_version_id, dropbox_uri, artifact_bucket, os.environ.get("TASK_TOKEN")
+                    dataset_version_id, dropbox_uri, artifact_bucket, os.environ["TASK_TOKEN"]
                 )
             elif step_name == "validate":
-                self.process_validate.process(collection_id, dataset_version_id, artifact_bucket, datasets_bucket)
+                self.process_validate.process(
+                    collection_version_id, dataset_version_id, artifact_bucket, datasets_bucket
+                )
             elif step_name == "cxg":
                 self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket)
             elif step_name == "cxg_remaster":
@@ -156,13 +158,15 @@ class ProcessMain(ProcessingLogic):
             rv = self.schema_migrate.migrate(step_name)
         else:
             dataset_version_id = os.environ["DATASET_VERSION_ID"]
-            collection_id = os.environ.get("COLLECTION_ID")
+            collection_version_id = os.environ.get("COLLECTION_VERSION_ID")
             dropbox_uri = os.environ.get("DROPBOX_URL")
             artifact_bucket = os.environ.get("ARTIFACT_BUCKET")
             datasets_bucket = os.environ.get("DATASETS_BUCKET")
             cxg_bucket = os.environ.get("CELLXGENE_BUCKET")
             rv = self.process(
-                collection_id=None if collection_id is None else CollectionVersionId(collection_id),
+                collection_version_id=None
+                if collection_version_id is None
+                else CollectionVersionId(collection_version_id),
                 dataset_version_id=DatasetVersionId(dataset_version_id),
                 step_name=step_name,
                 dropbox_uri=dropbox_uri,

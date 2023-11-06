@@ -56,7 +56,7 @@ class ProcessValidate(ProcessingLogic):
 
     @logit
     def validate_h5ad_file_and_add_labels(
-        self, collection_id: CollectionVersionId, dataset_version_id: DatasetVersionId, local_filename: str
+        self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, local_filename: str
     ) -> Tuple[str, bool]:
         """
         Validates and labels the specified dataset file and updates the processing status in the database
@@ -83,7 +83,7 @@ class ProcessValidate(ProcessingLogic):
             raise ValidationFailed(errors)
         else:
             if FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4):
-                self.populate_dataset_citation(collection_id, dataset_version_id, output_filename)
+                self.populate_dataset_citation(collection_version_id, dataset_version_id, output_filename)
 
             # TODO: optionally, these could be batched into one
             self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
@@ -93,26 +93,26 @@ class ProcessValidate(ProcessingLogic):
             return output_filename, can_convert_to_seurat
 
     def populate_dataset_citation(
-        self, collection_id: CollectionVersionId, dataset_version_id: DatasetVersionId, adata_path: str
+        self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, adata_path: str
     ) -> None:
         """
         Builds citation string and updates the 'uns' dict of the adata at adata_path
 
-        :param collection_id: version ID for collection dataset is being uploaded to
+        :param collection_version_id: version ID for collection dataset is being uploaded to
         :param dataset_version_id: version ID for dataset
         :param adata_path: filepath to adata object that will be updated with citation
         """
         dataset_assets_base_url = CorporaConfig().dataset_assets_base_url
         collections_base_url = CorporaConfig().collections_base_url
         citation = ""
-        collection = self.business_logic.get_collection_version(collection_id, get_tombstoned=False)
+        collection = self.business_logic.get_collection_version(collection_version_id, get_tombstoned=False)
         doi = next((link.uri for link in collection.metadata.links if link.type == "DOI"), None)
         if doi:
             citation += f"Publication: {doi} "
         citation += f"Dataset Version: {dataset_assets_base_url}/{dataset_version_id}.h5ad "
         citation += (
             f"curated and distributed by CZ CELLxGENE Discover in Collection: "
-            f"{collections_base_url}/{collection_id}"
+            f"{collections_base_url}/{collection_version_id}"
         )
         adata = scanpy.read_h5ad(adata_path)
         adata.uns["citation"] = citation
@@ -210,7 +210,7 @@ class ProcessValidate(ProcessingLogic):
 
     def process(
         self,
-        collection_id: CollectionVersionId,
+        collection_version_id: CollectionVersionId,
         dataset_version_id: DatasetVersionId,
         artifact_bucket: str,
         datasets_bucket: str,
@@ -220,7 +220,7 @@ class ProcessValidate(ProcessingLogic):
         2. Validate and label it
         3. Upload the labeled dataset to the artifact bucket
         4. Upload the labeled dataset to the datasets bucket
-        :param collection_id
+        :param collection_version_id
         :param dataset_version_id:
         :param artifact_bucket:
         :param datasets_bucket:
@@ -234,7 +234,7 @@ class ProcessValidate(ProcessingLogic):
 
         # Validate and label the dataset
         file_with_labels, can_convert_to_seurat = self.validate_h5ad_file_and_add_labels(
-            collection_id, dataset_version_id, original_h5ad_artifact_file_name
+            collection_version_id, dataset_version_id, original_h5ad_artifact_file_name
         )
         # Process metadata
         metadata = self.extract_metadata(file_with_labels)
