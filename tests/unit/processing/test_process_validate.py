@@ -11,18 +11,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing.process import ProcessMain
 from backend.layers.processing.process_validate import ProcessValidate
-from tests.unit.processing.base_processing_test import BaseProcessingTest
-
-mock_config_attr = {
-    "collections_base_url": "http://collections",
-    "dataset_assets_base_url": "http://domain",
-    "upload_max_file_size_gb": 1,
-    "schema_4_feature_flag": "True",
-}
-
-
-def mock_config_fn(name):
-    return mock_config_attr[name]
+from tests.unit.processing.base_processing_test import BaseProcessingTest, mock_config_fn
 
 
 class ProcessingTest(BaseProcessingTest):
