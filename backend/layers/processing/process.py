@@ -81,6 +81,7 @@ class ProcessMain(ProcessingLogic):
             "MAX_ATTEMPTS",
             "MIGRATE",
             "REMOTE_DEV_PREFIX",
+            "TASK_TOKEN",
         ]
         env_vars = dict()
         for var in batch_environment_variables:
@@ -100,11 +101,11 @@ class ProcessMain(ProcessingLogic):
         """
         Gets called by the step function at every different step, as defined by `step_name`
         """
-        self.logger.info(f"Processing dataset version {dataset_version_id}")
+        self.logger.info(f"Processing dataset version {dataset_version_id}", extra={"step_name": step_name})
         try:
             if step_name == "download":
                 self.process_download.process(
-                    dataset_version_id, dropbox_uri, artifact_bucket, os.environ["TASK_TOKEN"]
+                    dataset_version_id, dropbox_uri, artifact_bucket, os.environ.get("TASK_TOKEN", "")
                 )
             elif step_name == "validate":
                 self.process_validate.process(
