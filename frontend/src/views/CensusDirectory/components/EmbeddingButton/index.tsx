@@ -1,10 +1,6 @@
 import React from "react";
 import { StyledButton, StyledRadioGroup } from "../../styles";
-import {
-  Code,
-  CodeMask,
-  CodeWrapper,
-} from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/CurlLink/style";
+
 import {
   Button,
   Dialog,
@@ -14,6 +10,8 @@ import {
   DialogTitle,
 } from "@czi-sds/components";
 import { useConnect } from "./connect";
+import { CopyMask } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/DownloadLink/components/CopyMask/style";
+import { DownloadCodeBlock } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/DownloadLink/style";
 
 function EmbeddingButton() {
   const {
@@ -49,15 +47,15 @@ function EmbeddingButton() {
             <InputRadio label="Python" value="python" />
             <InputRadio label="R" value="r" />
           </StyledRadioGroup>
-          <CodeWrapper>
-            <Code>{language === "python" ? pythonCode : rCode}</Code>
-            <CodeMask
+          <DownloadCodeBlock>
+            <code>{language === "python" ? pythonCode : rCode}</code>
+            <CopyMask
               onClick={handleCopyClick}
               onMouseEnter={handleCopyMouseEnter}
             >
               {isCopied ? "Copied!" : "Copy to Clipboard"}
-            </CodeMask>
-          </CodeWrapper>
+            </CopyMask>
+          </DownloadCodeBlock>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleButtonClick}>Close</Button>

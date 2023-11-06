@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Project } from "src/common/queries/censusDirectory";
+import { type Project } from "src/common/queries/censusDirectory";
 import {
   ProjectContainer,
   ProjectDetails,
