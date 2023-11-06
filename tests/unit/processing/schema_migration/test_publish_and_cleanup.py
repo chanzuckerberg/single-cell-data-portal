@@ -1,4 +1,5 @@
 import json
+import os
 from unittest.mock import Mock, patch
 
 import pytest
@@ -35,11 +36,15 @@ def local_schema_migrate(schema_migrate):
     return schema_migrate
 
 
-def json_dumps(response, f, **kwargs):
-    json.dumps(response, **kwargs)  # tests JSON serializability of response
+json_dump_original = json.dump
 
 
-@patch("backend.layers.processing.schema_migration.json.dump", side_effect=json_dumps)
+def mock_json_dump(response, f, **kwargs):
+    with open(os.devnull, "w") as devnull_fp:
+        json_dump_original(response, devnull_fp, **kwargs)  # tests JSON serializability of response
+
+
+@patch("backend.layers.processing.schema_migration.json.dump", side_effect=mock_json_dump)
 class TestPublishAndCleanup:
     def test_OK(self, mock_json, local_schema_migrate):
         datasets = [
