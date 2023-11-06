@@ -61,6 +61,7 @@ class ProcessValidate(ProcessingLogic):
         """
         Validates and labels the specified dataset file and updates the processing status in the database
         :param dataset_version_id: version ID of the dataset to update
+        :param collection_version_id: version ID of the collection dataset is being uploaded to
         :param local_filename: file name of the dataset to validate and label
         :return: file name of labeled dataset, boolean indicating if seurat conversion is possible
         """
@@ -112,7 +113,7 @@ class ProcessValidate(ProcessingLogic):
         citation += f"Dataset Version: {dataset_assets_base_url}/{dataset_version_id}.h5ad "
         citation += (
             f"curated and distributed by CZ CELLxGENE Discover in Collection: "
-            f"{collections_base_url}/{collection_version_id}"
+            f"{collections_base_url}/{collection.collection_id.id}"
         )
         adata = scanpy.read_h5ad(adata_path)
         adata.uns["citation"] = citation
