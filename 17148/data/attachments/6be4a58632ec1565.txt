@@ -1,0 +1,47 @@
+INFO     backend.layers.business.business:business.py:390 {'message': 'ingesting dataset', 'collection_version_id': d5585858-bc7f-42de-b746-1ba33d9fac60, 'url': 'https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0', 'existing_dataset_version_id': None}
+INFO     processing:process.py:103 Processing dataset 78359ef2-c48d-4747-8bc1-121f8389b5e1
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:26 Start download_from_source_uri
+INFO     processing:logger.py:28 Complete download_from_source_uri
+INFO     processing:process_download.py:164 {'JobDefinitionName': 'dp-test-ingest-process-78359ef2-c48d-4747-8bc1-121f8389b5e1', 'Vcpus': 1, 'Memory': 4000, 'LinuxParameters': {'Swappiness': 60, 'MaxSwap': 0}}
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:84 Uploaded [78359ef2-c48d-4747-8bc1-121f8389b5e1/raw.h5ad] to s3://fake_bucket_name/78359ef2-c48d-4747-8bc1-121f8389b5e1/raw.h5ad
+INFO     processing:process_logic.py:86 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process.py:103 Processing dataset 78359ef2-c48d-4747-8bc1-121f8389b5e1
+INFO     processing:logger.py:26 Start validate_h5ad_file_and_add_labels
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:28 Complete validate_h5ad_file_and_add_labels
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:84 Uploaded [78359ef2-c48d-4747-8bc1-121f8389b5e1/local.h5ad] to s3://fake_bucket_name/78359ef2-c48d-4747-8bc1-121f8389b5e1/local.h5ad
+INFO     processing:process_logic.py:86 Updated database with h5ad.
+INFO     processing:process_logic.py:93 Uploaded 78359ef2-c48d-4747-8bc1-121f8389b5e1.h5ad to s3://fake_datasets_bucket/78359ef2-c48d-4747-8bc1-121f8389b5e1/78359ef2-c48d-4747-8bc1-121f8389b5e1.h5ad
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process.py:103 Processing dataset 78359ef2-c48d-4747-8bc1-121f8389b5e1
+INFO     processing:process_logic.py:106 Converting local.h5ad
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:112 Finished converting <MagicMock name='make_cxg' id='140229960357392'> in 0:00:00.000579
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_cxg.py:107 Updating database with cxg artifact for dataset 78359ef2-c48d-4747-8bc1-121f8389b5e1. s3_uri is s3://fake_cxg_bucket/78359ef2-c48d-4747-8bc1-121f8389b5e1.cxg/
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process.py:103 Processing dataset 78359ef2-c48d-4747-8bc1-121f8389b5e1
+INFO     processing:process_logic.py:106 Converting local.h5ad
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:112 Finished converting <MagicMock name='make_seurat' id='140229961009808'> in 0:00:00.000509
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:process_logic.py:84 Uploaded [78359ef2-c48d-4747-8bc1-121f8389b5e1/local.rds] to s3://fake_bucket_name/78359ef2-c48d-4747-8bc1-121f8389b5e1/local.rds
+INFO     processing:process_logic.py:86 Updated database with rds.
+INFO     processing:process_logic.py:93 Uploaded 78359ef2-c48d-4747-8bc1-121f8389b5e1.rds to s3://fake_datasets_bucket/78359ef2-c48d-4747-8bc1-121f8389b5e1/78359ef2-c48d-4747-8bc1-121f8389b5e1.rds
+INFO     processing:process_logic.py:43 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
