@@ -80,6 +80,8 @@ paths:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
                     self_reported_ethnicity_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    tissue_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
                     publication_citations:
                       type: array
                       items:
