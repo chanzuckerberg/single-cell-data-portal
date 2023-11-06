@@ -83,7 +83,7 @@ class DatasetMetadataUpdate(ProcessDownload):
     ):
         seurat_filename = self.download_from_source_uri(
             source_uri=rds_s3_uri,
-            local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,  # TODO: diff name?
+            local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
         )
         self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTING)
 
@@ -115,7 +115,7 @@ class DatasetMetadataUpdate(ProcessDownload):
         key_prefix: str,
         dataset_version_id: DatasetVersionId,
     ):
-        # cxg does not save metadata dict, does not need to be updated but does need to be copied over
+        # TODO: update cxg metadata
         new_cxg_dir = f"s3://{self.cellxgene_bucket}/{key_prefix}.cxg/"
         self.s3_provider.upload_directory(cxg_s3_uri, new_cxg_dir)
         self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.CONVERTED)
@@ -126,39 +126,42 @@ class DatasetMetadataUpdate(ProcessDownload):
         dataset_version_id: DatasetVersionId,
         metadata_update_dict: Dict[str, str],
     ):
-        # TODO: add error checks, skip datasets with non-success processing statuses
         original_dataset_version = self.business_logic.get_dataset_version(dataset_version_id)
-        raw_h5ad_s3_uri = None
-        h5ad_s3_uri = None
-        rds_s3_uri = None
-        cxg_s3_uri = None
-        for artifact in original_dataset_version.artifacts:
-            if artifact.type == DatasetArtifactType.RAW_H5AD:
-                raw_h5ad_s3_uri = artifact.uri
-            elif artifact.type == DatasetArtifactType.H5AD:
-                h5ad_s3_uri = artifact.uri
-            elif artifact.type == DatasetArtifactType.RDS:
-                rds_s3_uri = artifact.uri
-            elif artifact.type == DatasetArtifactType.CXG:
-                cxg_s3_uri = artifact.uri
-        # TODO: factor out the logic we want from ingest dataset from the URI check, so we don't need to pass a uri
+        if original_dataset_version.status.processing_status != DatasetProcessingStatus.SUCCESS:
+            self.logger.info(f"Dataset {dataset_version_id} is not successfully processed. Skipping metadata update.")
+            return
+
+        artifact_uris = {artifact.type: artifact.uri for artifact in original_dataset_version.artifacts}
+        raw_h5ad_uri = artifact_uris[DatasetArtifactType.RAW_H5AD]
+
         new_dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
-            collection_version_id, raw_h5ad_s3_uri, None, dataset_version_id, start_step_function=False
+            collection_version_id=collection_version_id,
+            url=raw_h5ad_uri,
+            file_size=0,
+            existing_dataset_version_id=dataset_version_id,
+            start_step_function=False,
         )
-        self.process(new_dataset_version_id, raw_h5ad_s3_uri, self.artifact_bucket)
+
+        self.process(new_dataset_version_id, raw_h5ad_uri, self.artifact_bucket)
 
         key_prefix = self.get_key_prefix(new_dataset_version_id)
 
-        if h5ad_s3_uri:
+        if DatasetArtifactType.H5AD in artifact_uris:
             self.update_h5ad(
-                h5ad_s3_uri, key_prefix, original_dataset_version, new_dataset_version_id, metadata_update_dict
+                artifact_uris[DatasetArtifactType.H5AD],
+                key_prefix,
+                original_dataset_version,
+                new_dataset_version_id,
+                metadata_update_dict,
             )
 
-        if rds_s3_uri:
-            self.update_rds(rds_s3_uri, key_prefix, new_dataset_version_id, metadata_update_dict)
+        if DatasetArtifactType.RDS in artifact_uris:
+            self.update_rds(
+                artifact_uris[DatasetArtifactType.RDS], key_prefix, new_dataset_version_id, metadata_update_dict
+            )
 
-        if cxg_s3_uri:
-            self.update_cxg(cxg_s3_uri, key_prefix, new_dataset_version_id)
+        if DatasetArtifactType.CXG in artifact_uris:
+            self.update_cxg(artifact_uris[DatasetArtifactType.CXG], key_prefix, new_dataset_version_id)
 
         self.update_processing_status(new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
         self.update_processing_status(
