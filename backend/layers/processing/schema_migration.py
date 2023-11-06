@@ -35,19 +35,19 @@ class SchemaMigrate(ProcessingLogic):
         self.execution_id = os.environ.get("EXECUTION_ID", "test-execution-arn")
         self.logger = logging.getLogger("processing")
         self.local_path: str = "."  # Used for testing
-        self.limit_migration = os.environ.get("LIMIT_MIGRATION", False)  # Run a small migration for testing
-        self.limit_select = 2  # Number of collections to migrate
+        self.limit_migration = os.environ.get("LIMIT_MIGRATION", 0)  # Run a small migration for testing
         self.schema_version = schema_validator.get_current_schema_version()
 
     def limit_collections(self) -> Iterable[CollectionVersion]:
         published_collections = [*self.business_logic.get_collections(CollectionQueryFilter(is_published=True))]
         unpublished_collections = [*self.business_logic.get_collections(CollectionQueryFilter(is_published=False))]
-        if self.limit_migration:
-            select = self.limit_select // 2
+        limit = int(self.limit_migration) if isinstance(self.limit_migration, str) else self.limit_migration
+        if limit > 0:
+            select = limit // 2
             if len(unpublished_collections) >= select:
-                unpublished_collections = random.sample(unpublished_collections, self.limit_select // 2)
+                unpublished_collections = random.sample(unpublished_collections, limit // 2)
             if len(published_collections) >= select:
-                published_collections = random.sample(published_collections, self.limit_select // 2)
+                published_collections = random.sample(published_collections, limit // 2)
         return itertools.chain(unpublished_collections, published_collections)
 
     def gather_collections(self, auto_publish: bool) -> List[Dict[str, str]]:

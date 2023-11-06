@@ -683,7 +683,10 @@ class BusinessLogic(BusinessLogicInterface):
                 if rdev_prefix:
                     dataset_version_s3_object_key = f"{rdev_prefix}/{dataset_version_s3_object_key}"
                 object_keys.add(dataset_version_s3_object_key)
-        self._delete_from_bucket(os.getenv("DATASETS_BUCKET"), list(object_keys))
+        try:
+            self.s3_provider.delete_files(os.getenv("DATASETS_BUCKET"), list(object_keys))
+        except S3DeleteException as e:
+            raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
         return list(object_keys)
 
     def delete_all_dataset_versions_from_public_bucket_for_collection(self, collection_id: CollectionId) -> List[str]:
@@ -893,20 +896,20 @@ class BusinessLogic(BusinessLogicInterface):
         except DatasetVersionNotFoundException:
             return None
 
-    def _delete_from_bucket(self, bucket: str, keys: List[str] = None, prefix: str = None) -> None:
-        try:
-            if keys:
-                self.s3_provider.delete_files(bucket, keys)
-            if prefix:
-                self.s3_provider.delete_prefix(bucket, prefix)
-        except S3DeleteException as e:
-            raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
-
     def delete_artifacts(self, artifacts: List[DatasetArtifact]) -> None:
         for artifact in artifacts:
-            matches_dict = S3_URI_REGEX.match(artifact.uri).groupdict()
-            bucket, key, prefix = matches_dict["bucket"], matches_dict["key"], matches_dict["prefix"]
-            self._delete_from_bucket(bucket, keys=[key] if key else None, prefix=prefix)
+            matches = S3_URI_REGEX.match(artifact.uri)
+            if not matches:
+                raise InvalidURIException(f"Trying to delete invalid URI: {artifact.uri}")
+            bucket, key, prefix = matches.group("bucket", "key", "prefix")
+            try:
+                if key and artifact.type != DatasetArtifactType.CXG:
+                    # Ignore prefix if keys is provided.
+                    self.s3_provider.delete_files(bucket, [key])
+                elif prefix and artifact.type == DatasetArtifactType.CXG:
+                    self.s3_provider.delete_prefix(bucket, prefix)
+            except S3DeleteException as e:
+                raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str
