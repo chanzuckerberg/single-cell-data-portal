@@ -1,4 +1,4 @@
-FROM satijalab/seurat:4.1.0
+FROM satijalab/seurat:5.0.0
 
 # Most of these are required for SCE or R packages
 RUN apt-get update && apt-get -yq install \
@@ -30,4 +30,4 @@ RUN apt-get update && apt-get -yq install \
   R -e "BiocManager::install('LoomExperiment')" && \
   R -e "install.packages(c('devtools', 'igraph'));" && \
   R -e "library(devtools); devtools::install_github('cellgeni/sceasy@v0.0.7')" && \
-  R -e "devtools::install_version('SeuratObject', version = '4.1.1', repos = 'http://cran.rstudio.com/')"
+  R -e "devtools::install_version('SeuratObject', version = '5.0.0', repos = 'http://cran.rstudio.com/')"
