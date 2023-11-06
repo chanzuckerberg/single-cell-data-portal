@@ -87,19 +87,19 @@ async function fetchProjects(): Promise<ProjectResponse> {
           DOI: encodeURIComponent(project.DOI),
         }
       );
-      const response = await fetch(url);
-      const { message: result } = await response.json();
+      try {
+        const response = await fetch(url);
 
-      if (!response.ok) console.error(result);
+        const result = await response.json();
+        if (!response.ok) throw result;
 
-      const author = result.author[0].family;
-      const journal = result["short-container-title"];
-      const year = result.issued["date-parts"][0][0];
+        const publication_info = parseCrossRefResponse(result);
 
-      const publication_info = `${author} et al. (${year}) ${journal}`;
-
-      data[id].publication_info = publication_info;
-      data[id].publication_link = result.URL;
+        data[id].publication_info = publication_info;
+        data[id].publication_link = result.URL;
+      } catch (error) {
+        console.log(error);
+      }
     }
   );
 
@@ -113,4 +113,12 @@ export const USE_PROJECTS = {
 
 export function useProjects() {
   return useQuery<ProjectResponse>([USE_PROJECTS], fetchProjects);
+}
+
+function parseCrossRefResponse({ message }: any) {
+  const author = message.author[0].family;
+  const journal = message["short-container-title"];
+  const year = message.issued["date-parts"][0][0];
+
+  return `${author} et al. (${year}) ${journal}`;
 }
