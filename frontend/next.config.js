@@ -120,7 +120,7 @@ module.exports = {
   async rewrites() {
     return [
       {
-        source: "/js/plausible-script.js",
+        source: "/js/script.js",
         destination: "https://plausible.io/js/script.js",
       },
       {
