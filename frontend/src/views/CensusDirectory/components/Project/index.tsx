@@ -5,7 +5,7 @@ import {
   ProjectDetails,
   ProjectTitle,
   ProjectSubmitter,
-  ProjectDesctiption,
+  ProjectDescription,
   DetailsContainer,
   ProjectButtons,
   StyledButton,
@@ -27,7 +27,7 @@ const Project = ({ project, id }: ProjectProps) => {
       <ProjectDetails>
         <ProjectTitle>{project.title}</ProjectTitle>
         <ProjectSubmitter>{project.contact_affiliation}</ProjectSubmitter>
-        <ProjectDesctiption>{project.description}</ProjectDesctiption>
+        <ProjectDescription>{project.description}</ProjectDescription>
         <DetailsContainer>
           <DetailItem
             label="contact"
