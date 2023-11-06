@@ -1,6 +1,5 @@
-import { StaticProject } from "census-projects.json";
 import Link from "next/link";
-import { Project, ProjectResponse } from "src/common/queries/censusDirectory";
+import { Project } from "src/common/queries/censusDirectory";
 import {
   ProjectContainer,
   ProjectDetails,
@@ -10,28 +9,16 @@ import {
   DetailsContainer,
   ProjectButtons,
   StyledButton,
-} from "../styles";
-import DetailItem from "./DetailItem";
-interface Props {
-  project: StaticProject | Project;
-  id?: keyof ProjectResponse;
-}
+} from "../../styles";
+import DetailItem from "../DetailItem";
 
-import EmbeddingButton from "./EmbeddingButton";
+import EmbeddingButton from "../EmbeddingButton";
 
-import notebookLinks from "census-notebook-links.json";
+import { ProjectProps } from "./types";
+import { useConnect } from "./connect";
 
-const Project = ({ project, id }: Props) => {
-  const date = new Date(
-    project.last_updated || project.submission_date || ""
-  ).toLocaleDateString("en-US", {
-    dateStyle: "long",
-  });
-
-  const projectNotebookLinks: [string, string][] | undefined =
-    "notebook_links" in project
-      ? project.notebook_links
-      : notebookLinks[id ?? ""];
+const Project = ({ project, id }: ProjectProps) => {
+  const { date, projectNotebookLinks } = useConnect({ project, id });
 
   return (
     <ProjectContainer key={project.title}>
