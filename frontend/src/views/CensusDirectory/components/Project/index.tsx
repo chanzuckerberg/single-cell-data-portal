@@ -20,7 +20,10 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 
 const Project = ({ project, id }: ProjectProps) => {
-  const { date, projectNotebookLinks } = useConnect({ project, id });
+  const { date, projectNotebookLinks, projectTier } = useConnect({
+    project,
+    id,
+  });
 
   return (
     <ProjectContainer key={project.title}>
@@ -71,7 +74,7 @@ const Project = ({ project, id }: ProjectProps) => {
               onClick={() => {
                 track(EVENTS.CENSUS_NOTEBOOK_CLICKED, {
                   project: project.title,
-                  category: "tier" in project ? project.tier : "2",
+                  category: projectTier,
                   notebook: link[0],
                 });
               }}
@@ -91,7 +94,7 @@ const Project = ({ project, id }: ProjectProps) => {
               onClick={() => {
                 track(EVENTS.CENSUS_MODEL_CLICKED, {
                   project: project.title,
-                  category: "tier" in project ? project.tier : "2",
+                  category: projectTier,
                 });
               }}
             >
