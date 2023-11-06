@@ -446,8 +446,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
                     "Input": {
                       "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id",
                       "url.$": "$.result.uri",
-                      "dataset_id.$": "$.result.dataset_version_id",
-                      "collection_id.$": "$.result.collection_version_id",
+                      "dataset_version_id.$": "$.result.dataset_version_id",
+                      "collection_version_id.$": "$.result.collection_version_id",
                       "job_queue": "${var.job_queue_arn}"
                     }
                   },
