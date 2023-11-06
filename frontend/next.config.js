@@ -117,6 +117,18 @@ module.exports = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: "/js/plausible-script.js",
+        destination: "https://plausible.io/js/script.js",
+      },
+      {
+        source: "/api/event",
+        destination: "https://plausible.io/api/event",
+      },
+    ];
+  },
   sassOptions: {
     functions: {
       /**
