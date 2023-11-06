@@ -27,7 +27,7 @@ configure_logging(APP_NAME)
 
 def should_configure_datadog_tracing():
     return (
-        DEPLOYMENT_STAGE in ["dev", "staging", "prod"]
+        DEPLOYMENT_STAGE in ["rdev", "dev", "staging", "prod"]
         and os.environ.get("DD_AGENT_HOST", None)
         and os.environ.get("DD_TRACE_AGENT_PORT", None)
     )
