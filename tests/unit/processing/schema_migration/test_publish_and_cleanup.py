@@ -35,7 +35,11 @@ def local_schema_migrate(schema_migrate):
     return schema_migrate
 
 
-@patch("backend.layers.processing.schema_migration.json.dump")
+def json_dumps(response, f, **kwargs):
+    json.dumps(response, **kwargs)  # tests JSON serializability of response
+
+
+@patch("backend.layers.processing.schema_migration.json.dump", side_effect=json_dumps)
 class TestPublishAndCleanup:
     def test_OK(self, mock_json, local_schema_migrate):
         datasets = [
