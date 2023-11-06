@@ -11,8 +11,8 @@ function DetailItem(props: {
     <ItemContainer>
       <ItemLabel>{props.label}</ItemLabel>
       {props.link ? (
-        <Link href={props.link} passHref onClick={props.onClick}>
-          {props.children}
+        <Link href={props.link} passHref>
+          <a onClick={props.onClick}> {props.children}</a>
         </Link>
       ) : (
         props.children
