@@ -3,7 +3,12 @@ import styled from "@emotion/styled";
 import { HEAT_MAP_BASE_CELL_PX, Y_AXIS_CHART_WIDTH_PX } from "../../utils";
 import { ECHART_AXIS_LABEL_COLOR_HEX } from "../XAxisChart/style";
 import { SELECTED_STYLE } from "../../style";
-import { fontWeightSemibold, gray500, spacesXxs } from "src/common/theme";
+import {
+  fontWeightSemibold,
+  gray500,
+  spacesS,
+  spacesXxs,
+} from "src/common/theme";
 import { CommonThemeProps } from "@czi-sds/components";
 
 export const Y_AXIS_TISSUE_WIDTH_PX = 30;
@@ -13,17 +18,6 @@ export const Wrapper = styled.div`
   margin-bottom: ${spacesXxs}px;
   margin-right: ${Y_AXIS_TISSUE_WIDTH_PX}px;
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
-`;
-
-const TISSUE_BORDER_WIDTH_PX = 5;
-
-export const TissueWrapper = styled.div`
-  ${yAxisHeight}
-
-  background-color: white;
-  border-right: ${TISSUE_BORDER_WIDTH_PX}px solid black;
-  width: ${Y_AXIS_TISSUE_WIDTH_PX}px;
-  padding-left: ${TISSUE_BORDER_WIDTH_PX}px;
 `;
 
 export const TissueName = styled.div`
@@ -66,6 +60,7 @@ export const TissueHeaderLabelStyle = styled.div`
   width: 100%;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};
   text-align: left;
+  padding-left: ${spacesS}px;
   ${(props: TissueHeaderLabelStyleProps) => {
     return props.expanded && `font-weight: ${fontWeightSemibold(props)}`;
   }}
@@ -93,7 +88,7 @@ export const CellCountLabelStyle = styled.div`
   border: none;
   color: ${gray500};
   text-align: right;
-  padding-top: 3px;
+  margin-top: 3px;
 `;
 export const FlexRowJustified = styled.div`
   display: flex;

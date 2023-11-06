@@ -10,7 +10,8 @@ import {
 import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/constants";
 import {
   CELL_TYPE_FILTER_WIDTH_PX,
-  DIVIDER_MARGIN_PX,
+  DIVIDER_LEFT_POSITION_PX,
+  DIVIDER_TOP_POSITION_PX,
   Y_AXIS_CHART_WIDTH_PX,
 } from "src/views/WheresMyGeneV2/components/HeatMap/utils";
 import { LEGEND_HEIGHT_PX } from "../InfoPanel/components/Legend/style";
@@ -68,9 +69,9 @@ export const ContainerWrapper = styled.div`
 export const Divider = styled.div`
   height: 100%;
   position: absolute;
-  left: ${CELL_TYPE_FILTER_WIDTH_PX + DIVIDER_MARGIN_PX}px;
+  left: ${DIVIDER_LEFT_POSITION_PX}px;
   width: 1px;
-  top: 0;
+  top: 0px;
   border-right: solid 0.5px ${gray300};
   z-index: ${ZIndex.Divider};
 `;

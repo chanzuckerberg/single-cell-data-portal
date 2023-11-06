@@ -20,6 +20,11 @@ export const CELL_TYPE_FILTER_WIDTH_PX = 300;
 
 export const DIVIDER_MARGIN_PX = 12;
 const CELL_COUNT_COLUMN_WIDTH_PX = 40;
+
+export const DIVIDER_LEFT_POSITION_PX =
+  CELL_TYPE_FILTER_WIDTH_PX +
+  DIVIDER_MARGIN_PX * 2 +
+  CELL_COUNT_COLUMN_WIDTH_PX;
 /**
  * This is needed to ensure the divider is 12px away from the cell count column
  */

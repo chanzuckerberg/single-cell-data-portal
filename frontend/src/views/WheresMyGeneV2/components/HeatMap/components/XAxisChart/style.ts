@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { SELECTED_STYLE } from "../../style";
 import { HEAT_MAP_BASE_CELL_WIDTH_PX } from "../../utils";
 import { GENE_SEARCH_BAR_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/constants";
-import { spacesXxxs } from "src/common/theme";
+import { spacesM, spacesXxxs } from "src/common/theme";
 import { CommonThemeProps } from "@czi-sds/components";
 
 export const ECHART_AXIS_LABEL_COLOR_HEX = "#000000";
@@ -19,7 +19,7 @@ function xAxisOffset(props: CommonThemeProps) {
    * (thuang): This offset is to make sure the x-axis label doesn't overlap the
    * gene search bar.
    */
-  return spacesXxxs?.(props) || 0;
+  return spacesM?.(props) || 0;
 }
 
 export const XAxisContainer = styled.div<XAxisContainerProps>`
