@@ -38,6 +38,7 @@ const Project = ({ project, id }: ProjectProps) => {
             onClick={() => {
               track(EVENTS.CENSUS_CONTACT_CLICKED, {
                 project: project.title,
+                contact: project.contact_name,
               });
             }}
           >
