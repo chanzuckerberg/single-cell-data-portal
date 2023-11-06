@@ -69,7 +69,7 @@ class TestS3URI(TestCase):
     def test_download(self):
         s3 = boto3.client("s3")
         bucket_name = "bucket"
-        key = "/key"
+        key = "/key/file.txt"
         content = "stuff"
         s3.create_bucket(
             Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
@@ -82,6 +82,7 @@ class TestS3URI(TestCase):
             tmpfile = os.path.join(tmpdir, "test.txt")
             # download the file to the temporary directory
             s3_uri = from_uri(f"s3://{bucket_name}{key}")
+            assert isinstance(s3_uri, S3URI)
             s3_uri.download(tmpfile)
             # read the file contents
             with open(tmpfile, "r") as f:
