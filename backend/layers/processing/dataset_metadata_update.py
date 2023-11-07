@@ -209,11 +209,11 @@ if __name__ == "__main__":
 
     artifact_bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
     cellxgene_bucket = os.environ.get("CELLXGENE_BUCKET", "test-cellxgene-bucket")
-    datasets_bucket = os.eniron.get("DATASETS_BUCKET", "test-datasets-bucket")
+    datasets_bucket = os.environ.get("DATASETS_BUCKET", "test-datasets-bucket")
     collection_version_id = CollectionVersionId(os.environ["COLLECTION_VERSION_ID"])
     dataset_version_id = DatasetVersionId(os.environ["DATASET_VERSION_ID"])
     metadata_update_dict = json.loads(os.environ["METADATA_UPDATE_JSON"].strip())
 
-    DatasetMetadataUpdate(business_logic, artifact_bucket, datasets_bucket).update_metadata(
+    DatasetMetadataUpdate(business_logic, artifact_bucket, cellxgene_bucket, datasets_bucket).update_metadata(
         collection_version_id, dataset_version_id, metadata_update_dict
     )
