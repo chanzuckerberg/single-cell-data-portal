@@ -25,9 +25,6 @@ export const StyledComplexFilterInputDropdown = styled(
     color: ${gray500} !important;
     font-weight: 500;
   }
-  button.MuiButtonBase-root {
-    font-weight: 500;
-  }
 `;
 
 export const Wrapper = styled(RawWrapper)`

@@ -21,6 +21,10 @@ export const Wrapper = styled("div")`
 
 export const StyledDropdown = styled(Dropdown)`
   width: 100%;
+  font-weight: 500;
+  .styled-label {
+    font-weight: 500;
+  }
 ` as typeof Dropdown;
 
 export const FilterLabel = styled("label")`
