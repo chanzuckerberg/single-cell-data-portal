@@ -26,7 +26,6 @@ from backend.layers.thirdparty.uri_provider import UriProviderInterface
 MEMORY_MODIFIER = 1.1  # add 10% overhead
 MEMORY_PER_VCPU = 4000
 MIN_MEMORY_MB = 4000
-MIN_VCPU = ceil(MIN_MEMORY_MB // MEMORY_PER_VCPU)
 # The largest machine we are allocating is r5ad.2xlarge. This machine has 64GB of memory and 16 vCPUs.
 MAX_MEMORY_MB = 64000
 MAX_VCPU = 16
