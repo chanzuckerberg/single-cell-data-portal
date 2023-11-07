@@ -48,7 +48,8 @@ class MockS3Provider(S3ProviderInterface):
         object_prefix = f"s3://{bucket_name}/{src_dir}"
         for key in self.mock_s3_fs:
             if key.startswith(object_prefix):
-                yield key
+                prefix_index = key.find(bucket_name) + len(bucket_name + "/")
+                yield key[prefix_index:]
 
     def uri_exists(self, uri: str):
         return uri in self.mock_s3_fs

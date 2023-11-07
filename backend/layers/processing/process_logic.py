@@ -33,16 +33,23 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
 
     def update_processing_status(
         self,
-        dataset_id: DatasetVersionId,
+        dataset_version_id: DatasetVersionId,
         status_key: DatasetStatusKey,
         status_value: DatasetStatusGeneric,
         validation_errors: Optional[List[str]] = None,
     ):
         validation_message = "\n".join(validation_errors) if validation_errors is not None else None
-        self.business_logic.update_dataset_version_status(dataset_id, status_key, status_value, validation_message)
+        self.business_logic.update_dataset_version_status(
+            dataset_version_id, status_key, status_value, validation_message
+        )
         self.logger.info(
             "Updating processing status",
-            extra=dict(validation_message=validation_message, status_key=status_key, status_value=status_value),
+            extra=dict(
+                validation_message=validation_message,
+                status_key=status_key,
+                status_value=status_value,
+                dataset_version_id=dataset_version_id.id,
+            ),
         )
 
     def download_from_s3(self, bucket_name: str, object_key: str, local_filename: str):
@@ -73,16 +80,16 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         file_name: str,
         artifact_type: str,
         key_prefix: str,
-        dataset_id: DatasetVersionId,
+        dataset_version_id: DatasetVersionId,
         artifact_bucket: str,
         processing_status_key: DatasetStatusKey,
         datasets_bucket: Optional[str] = None,  # If provided, dataset will be uploaded to this bucket for public access
     ):
-        self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.UPLOADING)
+        self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADING)
         try:
             s3_uri = self.upload_artifact(file_name, key_prefix, artifact_bucket)
-            self.logger.info(f"Uploaded [{dataset_id}/{file_name}] to {s3_uri}")
-            self.business_logic.add_dataset_artifact(dataset_id, artifact_type, s3_uri)
+            self.logger.info(f"Uploaded [{dataset_version_id}/{file_name}] to {s3_uri}")
+            self.business_logic.add_dataset_artifact(dataset_version_id, artifact_type, s3_uri)
             self.logger.info(f"Updated database with {artifact_type}.")
             if datasets_bucket:
                 key = ".".join((key_prefix, artifact_type))
@@ -90,8 +97,8 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
                     file_name, datasets_bucket, key, extra_args={"ACL": "bucket-owner-full-control"}
                 )
                 datasets_s3_uri = self.make_s3_uri(datasets_bucket, key_prefix, key)
-                self.logger.info(f"Uploaded {dataset_id}.{artifact_type} to {datasets_s3_uri}")
-            self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.UPLOADED)
+                self.logger.info(f"Uploaded {dataset_version_id}.{artifact_type} to {datasets_s3_uri}")
+            self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADED)
         except Exception:
             raise ConversionFailed(processing_status_key) from None
 
@@ -100,15 +107,15 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         converter: Callable,
         local_filename: str,
         error_message: str,
-        dataset_id: DatasetVersionId,
+        dataset_version_id: DatasetVersionId,
         processing_status_key: DatasetStatusKey,
     ) -> str:
         self.logger.info(f"Converting {local_filename}")
         start = datetime.now()
         try:
-            self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.CONVERTING)
+            self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.CONVERTING)
             file_dir = converter(local_filename)
-            self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.CONVERTED)
+            self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.CONVERTED)
             self.logger.info(f"Finished converting {converter} in {datetime.now() - start}")
         except Exception:
             raise ConversionFailed(processing_status_key) from None

@@ -28,12 +28,15 @@ from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find_dim_option_values
 
+
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2132
 
 
-@tracer.wrap()
+@tracer.wrap(
+    name="primary_filter_dimensions", service="wmg-api", resource="primary_filter_dimensions", span_type="wmg-api"
+)
 def primary_filter_dimensions():
     with ServerTiming.time("load snapshot"):
         snapshot: WmgSnapshot = load_snapshot(
@@ -44,9 +47,11 @@ def primary_filter_dimensions():
     return jsonify(snapshot.primary_filter_dimensions)
 
 
-@tracer.wrap()
+@tracer.wrap(name="query", service="wmg-api", resource="query", span_type="wmg-api")
 def query():
     request = connexion.request.json
+    sanitize_api_query_dict(request["filter"])
+
     is_rollup = request.get("is_rollup", True)
     compare = request.get("compare", None)
 
@@ -81,6 +86,13 @@ def query():
 
         cell_counts = q.cell_counts(criteria, compare_dimension=compare)
 
+        # For schema-4 we filter out comma-delimited values for `self_reported_ethnicity_ontology_term_id`
+        # from being included in the grouping and rollup logic per functional requirements:
+        # See: https://github.com/chanzuckerberg/single-cell/issues/596
+        if (compare is not None) and compare == "self_reported_ethnicity_ontology_term_id":
+            expression_summary = df_not_containing_comma_delimited_ethnicity_values(expression_summary)
+            cell_counts = df_not_containing_comma_delimited_ethnicity_values(cell_counts)
+
     with ServerTiming.time("build response"):
         if expression_summary.shape[0] > 0 or cell_counts.shape[0] > 0:
             group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare] if compare else None
@@ -110,9 +122,11 @@ def query():
     return response
 
 
-@tracer.wrap()
+@tracer.wrap(name="filters", service="wmg-api", resource="filters", span_type="wmg-api")
 def filters():
     request = connexion.request.json
+    sanitize_api_query_dict(request["filter"])
+
     criteria = WmgFiltersQueryCriteria(**request["filter"])
 
     with ServerTiming.time("load snapshot"):
@@ -132,7 +146,7 @@ def filters():
     return response
 
 
-@tracer.wrap()
+@tracer.wrap(name="markers", service="wmg-api", resource="markers", span_type="wmg-api")
 def markers():
     request = connexion.request.json
     cell_type = request["celltype"]
@@ -165,6 +179,55 @@ def markers():
             marker_genes=marker_genes,
         )
     )
+
+
+def df_not_containing_comma_delimited_ethnicity_values(input_df: DataFrame) -> DataFrame:
+    """
+    Return a new dataframe with only the rows that DO NOT contain comma-delimited
+    values in the `self_reported_ethnicity_ontology_term_id` column.
+
+    Parameters
+    ----------
+    input_df: Dataframe
+        A dataframe that contains `self_reported_ethnicity_ontology_term_id` column
+
+    Returns
+    -------
+    A dataframe containing only the rows that do not have a comma-delimited value
+    for the `self_reported_ethnicity_ontology_term_id` column
+    """
+    return input_df[~input_df.self_reported_ethnicity_ontology_term_id.str.contains(",")]
+
+
+def sanitize_api_query_dict(query_dict: Any):
+    """
+    Remove invalid values in the query dictionary encoding the query API
+    request body.
+
+    The assumption is that this function is called at the beginning of the
+    API function. This usage also helps mitigate query injection attacks.
+
+    NOTE: This is a destructive operation in that it mutates `query_dict`.
+
+    Parameters
+    ----------
+    query_dict : json object
+        The query dictionary to sanitize.
+
+    Returns
+    -------
+    None because this function mutates the function argument
+    """
+
+    # Sanitize `self_reported_ethnicity_ontology_term_ids` by removing
+    # comma-delimited values because WMG does not support filtering and grouping
+    # by ethnicity terms that encode mixed ethnicities encoded as a single comma-delimited string
+    # value
+    if "self_reported_ethnicity_ontology_term_ids" in query_dict:
+        ethnicity_term_ids = query_dict["self_reported_ethnicity_ontology_term_ids"]
+
+        ethnicity_term_ids_to_keep = [x for x in ethnicity_term_ids if "," not in x]
+        query_dict["self_reported_ethnicity_ontology_term_ids"] = ethnicity_term_ids_to_keep
 
 
 def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
@@ -200,6 +263,7 @@ def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
     return True
 
 
+@tracer.wrap(name="build_filter_dims_values", service="wmg-api", resource="filters", span_type="wmg-api")
 def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot) -> Dict:
     dims = {
         "dataset_id": "",
@@ -218,6 +282,12 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
             else find_dim_option_values(criteria, snapshot, dim)
         )
 
+    # For schema-4 we filter out comma-delimited values for `self_reported_ethnicity_ontology_term_id`
+    # from the options list per functional requirements:
+    # See: https://github.com/chanzuckerberg/single-cell/issues/596
+    ethnicity_term_ids = dims["self_reported_ethnicity_ontology_term_id"]
+    dims["self_reported_ethnicity_ontology_term_id"] = [term_id for term_id in ethnicity_term_ids if "," not in term_id]
+
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(snapshot, dims["dataset_id"]),
         disease_terms=build_ontology_term_id_label_mapping(dims["disease_ontology_term_id"]),
@@ -234,6 +304,7 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
     return response_filter_dims_values
 
 
+@tracer.wrap(name="build_expression_summary", service="wmg-api", resource="query", span_type="wmg-api")
 def build_expression_summary(
     unrolled_gene_expression_df: DataFrame, rolled_gene_expression_df: DataFrame, compare: str
 ) -> dict:
@@ -336,6 +407,7 @@ def fill_out_structured_dict_compare(rolled_gene_expression_df, structured_resul
         )
 
 
+@tracer.wrap(name="build_gene_id_label_mapping", service="wmg-api", resource="query", span_type="wmg-api")
 def build_gene_id_label_mapping(gene_ontology_term_ids: List[str]) -> List[dict]:
     return [
         {gene_ontology_term_id: gene_term_label(gene_ontology_term_id)}
@@ -392,6 +464,7 @@ def fill_out_structured_cell_type_compare(cell_type_agg_compare, structured_resu
 
 
 # getting only cell type metadata, no genes
+@tracer.wrap(name="build_ordered_cell_types_by_tissue", service="wmg-api", resource="query", span_type="wmg-api")
 def build_ordered_cell_types_by_tissue(
     rolled_cell_counts_cell_type_agg: DataFrame,
     cell_counts_cell_type_agg: DataFrame,

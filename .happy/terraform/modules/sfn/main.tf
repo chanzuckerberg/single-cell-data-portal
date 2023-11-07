@@ -4,6 +4,8 @@ locals {
   timeout = 86400 # 24 hours
 }
 
+data aws_region current {}
+
 resource "aws_sfn_state_machine" "state_machine" {
   name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-sfn"
   role_arn = var.role_arn
@@ -32,7 +34,7 @@ resource "aws_sfn_state_machine" "state_machine" {
       "Download": {
         "Type": "Task",
         "Resource": "arn:aws:states:::batch:submitJob.sync",
-        "Next": "Validate",
+        "Next": "RegisterJobDefinition",
         "Parameters": {
           "JobDefinition":"${var.job_definition_arn}",
           "JobName": "download",
@@ -57,21 +59,20 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Value.$": "$.url"
               },
               {
-                "Name": "DATASET_ID",
-                "Value.$": "$.dataset_id"
-              },
-              {
-                "Name": "COLLECTION_ID",
-                "Value.$": "$.collection_id"
+                "Name": "DATASET_VERSION_ID",
+                "Value.$": "$.dataset_version_id"
               },
               {
                 "Name": "STEP_NAME",
                 "Value": "download"
+              },
+              {
+                "Name": "TASK_TOKEN",
+                "Value.$": "$$.Task.Token"
               }
             ]
           }
         },
-        "ResultPath": null,
         "TimeoutSeconds": ${local.timeout},
         "Catch": [
           {
@@ -81,14 +82,69 @@ resource "aws_sfn_state_machine" "state_machine" {
             "Next": "HandleErrors",
             "ResultPath": "$.error"
           }
-        ]
+        ],
+        "ResultPath": "$.batch"
+      },
+      "RegisterJobDefinition": {
+        "Type": "Task",
+        "Next": "Validate",
+        "Parameters": {
+          "JobDefinitionName.$": "$.batch.JobDefinitionName",
+          "Type": "container",
+          "ContainerProperties" :{
+            "Image" : "${var.image}",
+            "JobRoleArn": "${var.batch_role_arn}",
+            "Environment" : [
+              {
+                "Name" : "ARTIFACT_BUCKET",
+                "Value" : "${var.artifact_bucket}"
+              },
+              {
+                "Name" : "CELLXGENE_BUCKET",
+                "Value" : "${var.cellxgene_bucket}"
+              },
+              {
+                "Name" : "DATASETS_BUCKET",
+                "Value" : "${var.datasets_bucket}"
+              },
+              {
+                "Name" : "DEPLOYMENT_STAGE",
+                "Value" : "${var.deployment_stage}"
+              },
+              {
+                "Name" : "AWS_DEFAULT_REGION",
+                "Value" : "${data.aws_region.current.name}"
+              },
+              {
+                "Name" : "REMOTE_DEV_PREFIX",
+                "Value" : "${var.remote_dev_prefix}"
+              },
+              {
+                "Name" : "FRONTEND_URL",
+                "Value" : "${var.frontend_url}"
+              }
+            ],
+            "Vcpus.$" : "$.batch.Vcpus",
+            "Memory.$" : "$.batch.Memory",
+            "LinuxParameters.$" : "$.batch.LinuxParameters",
+            "LogConfiguration" : {
+              "LogDriver" : "awslogs",
+              "Options" : {
+                "awslogs-group" : "${var.batch_job_log_group}",
+                "awslogs-region" : "${data.aws_region.current.name}"
+              }
+            }
+          }
+        },
+        "Resource": "arn:aws:states:::aws-sdk:batch:registerJobDefinition",
+        "ResultPath": "$.batch"
       },
       "Validate": {
         "Type": "Task",
         "Resource": "arn:aws:states:::batch:submitJob.sync",
         "Next": "CxgSeuratParallel",
         "Parameters": {
-          "JobDefinition":"${var.job_definition_arn}",
+          "JobDefinition.$": "$.batch.JobDefinitionName",
           "JobName": "validate",
           "JobQueue.$": "$.job_queue",
           "RetryStrategy": {
@@ -107,16 +163,12 @@ resource "aws_sfn_state_machine" "state_machine" {
           "ContainerOverrides": {
             "Environment": [
               {
-                "Name": "DROPBOX_URL",
-                "Value.$": "$.url"
+                "Name": "DATASET_VERSION_ID",
+                "Value.$": "$.dataset_version_id"
               },
               {
-                "Name": "DATASET_ID",
-                "Value.$": "$.dataset_id"
-              },
-              {
-                "Name": "COLLECTION_ID",
-                "Value.$": "$.collection_id"
+                "Name": "COLLECTION_VERSION_ID",
+                "Value.$": "$.collection_version_id"
               },
               {
                 "Name": "STEP_NAME",
@@ -149,7 +201,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "End": true,
                 "Resource": "arn:aws:states:::batch:submitJob.sync",
                 "Parameters": {
-                  "JobDefinition": "${var.job_definition_arn}",
+                  "JobDefinition.$": "$.batch.JobDefinitionName",
                   "JobName": "cxg",
                   "JobQueue.$": "$.job_queue",
                   "RetryStrategy": {
@@ -168,8 +220,8 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "ContainerOverrides": {
                     "Environment": [
                       {
-                        "Name": "DATASET_ID",
-                        "Value.$": "$.dataset_id"
+                        "Name": "DATASET_VERSION_ID",
+                        "Value.$": "$.dataset_version_id"
                       },
                       {
                         "Name": "STEP_NAME",
@@ -191,7 +243,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "End": true,
                 "Resource": "arn:aws:states:::batch:submitJob.sync",
                 "Parameters": {
-                  "JobDefinition": "${var.job_definition_arn}",
+                  "JobDefinition.$": "$.batch.JobDefinitionName",
                   "JobName": "seurat",
                   "JobQueue.$": "$.job_queue",
                   "RetryStrategy": {
@@ -210,8 +262,8 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "ContainerOverrides": {
                     "Environment": [
                       {
-                        "Name": "DATASET_ID",
-                        "Value.$": "$.dataset_id"
+                        "Name": "DATASET_VERSION_ID",
+                        "Value.$": "$.dataset_version_id"
                       },
                       {
                         "Name": "STEP_NAME",
@@ -248,13 +300,15 @@ resource "aws_sfn_state_machine" "state_machine" {
           "cxg_job.$": "$[0]",
           "seurat_job.$": "$[1]"
         },
-        "End": true,
         "Retry": [ {
             "ErrorEquals": ["Lambda.AWSLambdaException"],
             "IntervalSeconds": 1,
             "MaxAttempts": 3,
             "BackoffRate": 2.0
-        } ]
+        } ],
+        "Next": "DeregisterJobDefinition",
+        "ResultPath": null,
+        "OutputPath": "$.[0]"
       },
       "HandleErrors": {
         "Type": "Task",
@@ -263,17 +317,25 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Parameters": {
           "execution_id.$": "$$.Execution.Id",
           "error.$": "$.error",
-          "dataset_id.$": "$.dataset_id",
-          "collection_id.$": "$.collection_id"
+          "dataset_version_id.$": "$.dataset_version_id",
+          "collection_version_id.$": "$.collection_version_id"
         },
-        "End": true,
         "Retry": [ {
             "ErrorEquals": ["Lambda.AWSLambdaException"],
             "IntervalSeconds": 1,
             "MaxAttempts": 3,
             "BackoffRate": 2.0
-          }
-        ]
+        } ],
+        "Next": "DeregisterJobDefinition",
+        "ResultPath": null
+      },
+      "DeregisterJobDefinition": {
+        "Type": "Task",
+        "End": true,
+        "Parameters": {
+          "JobDefinition.$": "$.batch.JobDefinitionName"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition"
       }
     }
 }
@@ -299,8 +361,8 @@ resource "aws_sfn_state_machine" "state_machine_seurat" {
         "ContainerOverrides": {
           "Environment": [
             {
-              "Name": "DATASET_ID",
-              "Value.$": "$.dataset_id"
+              "Name": "DATASET_VERSION_ID",
+              "Value.$": "$.dataset_version_id"
             },
             {
               "Name": "STEP_NAME",
@@ -335,8 +397,8 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
         "ContainerOverrides": {
           "Environment": [
             {
-              "Name": "DATASET_ID",
-              "Value.$": "$.dataset_id"
+              "Name": "DATASET_VERSION_ID",
+              "Value.$": "$.dataset_version_id"
             },
             {
               "Name": "STEP_NAME",
