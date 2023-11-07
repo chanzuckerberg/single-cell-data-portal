@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Dropdown, fontBodyS, fontBodyXxxs } from "@czi-sds/components";
+import { Dropdown, fontBodyS, fontBodyXxs } from "@czi-sds/components";
 import {
   fontWeightMedium,
   fontWeightSemibold,
@@ -24,7 +24,7 @@ export const StyledDropdown = styled(Dropdown)`
 ` as typeof Dropdown;
 
 export const FilterLabel = styled("label")`
-  ${fontBodyXxxs}
+  ${fontBodyXxs}
 
   color: ${gray500};
   font-weight: ${fontWeightMedium};
