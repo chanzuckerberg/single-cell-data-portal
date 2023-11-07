@@ -91,7 +91,6 @@ class ProcessDownload(ProcessingLogic):
         adata: scanpy.AnnData,
         memory_modifier: float = MEMORY_MODIFIER,
         min_memory_MB: int = MIN_MEMORY_MB,
-        min_vcpu: int = MIN_VCPU,
         max_memory_MB: int = MAX_MEMORY_MB,
         max_vcpu: int = MAX_VCPU,
         swap_memory_MB: int = SWAP_MEMORY_MB,
@@ -103,7 +102,6 @@ class ProcessDownload(ProcessingLogic):
         :param adata: The datasets AnnData object
         :param memory_modifier: A multiplier to increase/decrease the memory requirements by
         :param min_memory_MB: The minimum amount of memory to allocate.
-        :param min_vcpu: The minimum number of vCPUs to allocate.
         :param max_memory_MB: The maximum amount of memory to allocate.
         :param max_vcpu: The maximum number of vCPUs to allocate.
         :param memory_per_vcpu: The amount of memory to allocate per vCPU.
@@ -115,14 +113,14 @@ class ProcessDownload(ProcessingLogic):
         uncompressed_size_MB = adata.n_obs * adata.n_vars / MB
         estimated_memory_MB = max([int(ceil(uncompressed_size_MB * memory_modifier)), min_memory_MB])
         if estimated_memory_MB > max_memory_MB:
-            estimated_memory_MB = max_memory_MB
-            estimated_vcpus = max_vcpu
+            vcpus = max_vcpu
             max_swap = swap_memory_MB
         else:
-            estimated_vcpus = max([int(ceil(estimated_memory_MB / memory_per_vcpu)), min_vcpu])
+            vcpus = int(ceil(estimated_memory_MB / memory_per_vcpu))
             max_swap = 0
+        memory = memory_per_vcpu * vcpus  # round up to nearest memory_per_vcpu
 
-        return {"Vcpus": estimated_vcpus, "Memory": estimated_memory_MB, "MaxSwap": max_swap}
+        return {"Vcpus": vcpus, "Memory": memory, "MaxSwap": max_swap}
 
     def create_batch_job_definition_parameters(self, local_filename: str, dataset_version_id: str) -> Dict[str, Any]:
         adata = scanpy.read_h5ad(local_filename, backed="r")

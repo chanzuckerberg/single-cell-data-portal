@@ -6,7 +6,7 @@ import scanpy
 
 from backend.common.utils.math_utils import GB
 from backend.layers.common.entities import DatasetArtifactType, DatasetUploadStatus
-from backend.layers.processing.process_download import MIN_MEMORY_MB, MIN_VCPU, ProcessDownload
+from backend.layers.processing.process_download import MIN_MEMORY_MB, ProcessDownload
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 test_environment = {"REMOTE_DEV_PREFIX": "fake-stack", "DEPLOYMENT_STAGE": "test"}
@@ -57,7 +57,7 @@ class TestProcessDownload(BaseProcessingTest):
             output=json.dumps(
                 {
                     "JobDefinitionName": f"dp-{deployment_stage}-{stack_name}-ingest-process-{dataset_version_id.id}",
-                    "Vcpus": MIN_VCPU,
+                    "Vcpus": 2,
                     "Memory": MIN_MEMORY_MB,
                     "LinuxParameters": {"Swappiness": 60, "MaxSwap": 0},
                 }
@@ -135,7 +135,6 @@ def memory_settings(
     memory_modifier=1,
     memory_per_vcpu=4000,
     min_memory_mb=4000,
-    min_vcpu=1,
     max_memory_mb=64000,
     max_vcpu=16,
     swap_memory_mb=300000,
@@ -144,7 +143,6 @@ def memory_settings(
         memory_modifier=memory_modifier,
         memory_per_vcpu=memory_per_vcpu,
         min_memory_MB=min_memory_mb,
-        min_vcpu=min_vcpu,
         max_memory_MB=max_memory_mb,
         max_vcpu=max_vcpu,
         swap_memory_MB=swap_memory_mb,
@@ -159,12 +157,12 @@ def memory_settings(
         (
             sample_adata(1, 5 * GB),
             memory_settings(),
-            {"Vcpus": 2, "Memory": 5120, "MaxSwap": 0},
+            {"Vcpus": 2, "Memory": 8000, "MaxSwap": 0},
         ),  # above minimum memory
         (
             sample_adata(1, 5 * GB),
             memory_settings(1.5),
-            {"Vcpus": 2, "Memory": 7680, "MaxSwap": 0},
+            {"Vcpus": 2, "Memory": 8000, "MaxSwap": 0},
         ),  # modifier adjusted
         (
             sample_adata(1, 64 * GB),
