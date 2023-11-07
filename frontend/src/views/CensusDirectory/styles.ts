@@ -53,7 +53,7 @@ export const TierContainer = styled.div`
 export const TierTitle = styled.h3`
   ${fontHeaderXl}
   margin-bottom: ${spacesDefault}px;
-  font-weight: ${fontWeightSemibold};
+  font-weight: ${fontWeightBold};
 `;
 
 export const TierDescription = styled.p`
@@ -75,7 +75,7 @@ export const ProjectSubmitter = styled.h4`
   margin-bottom: ${spacesDefault}px;
 `;
 
-export const ProjectDesctiption = styled(Paragraph)`
+export const ProjectDescription = styled(Paragraph)`
   max-width: 85ch;
 `;
 

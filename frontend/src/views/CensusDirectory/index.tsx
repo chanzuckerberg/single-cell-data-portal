@@ -21,10 +21,10 @@ function CensusDirectory() {
   );
 
   const communityProjects = Object.values(staticProjects).filter(
-    (project) => project.tier === 1
+    (project) => project.tier === 3
   );
   const maintainedProjects = Object.values(staticProjects).filter(
-    (project) => project.tier === 3
+    (project) => project.tier === 1
   );
 
   return (
@@ -42,9 +42,9 @@ function CensusDirectory() {
           <TierTitle>CELL×GENE Maintained Projects</TierTitle>
           <TierDescription>
             These projects are actively maintained and regularly updated by
-            CELLxGENE in close collaboration with their creators. Embeddings are
+            CELL×GENE in close collaboration with their creators. Embeddings are
             accessible via the Census API; models are available via
-            CELLxGENE-maintained links.
+            CELL×GENE-maintained links.
           </TierDescription>
           {maintainedProjects.map((project) => (
             <Project key={project.title} project={project} />
@@ -53,11 +53,11 @@ function CensusDirectory() {
       )}
       {hostedProjects.length > 0 && (
         <TierContainer>
-          <TierTitle>CELLxGENE Hosted Projects</TierTitle>
+          <TierTitle>CELL×GENE Hosted Projects</TierTitle>
           <TierDescription>
-            CELLxGENE makes these projects available, but does not actively
+            CELL×GENE makes these projects available, but does not actively
             maintain or update them. Embeddings are accessible via the Census
-            API; models are available via CELLxGENE-maintained links.
+            API; models are available via CELL×GENE-maintained links.
           </TierDescription>
           {hostedProjects.map(([id, project]) => (
             <Project key={id} id={id} project={project} />
@@ -69,7 +69,7 @@ function CensusDirectory() {
           <TierTitle>Community Projects</TierTitle>
           <TierDescription>
             The community has also developed many wonderful projects using
-            Census data. While CELLxGENE does not directly host or maintain
+            Census data. While CELL×GENE does not directly host or maintain
             these projects, we’re excited to showcase them here.
           </TierDescription>
           {communityProjects.map((project) => (
