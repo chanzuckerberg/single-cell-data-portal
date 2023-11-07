@@ -55,7 +55,7 @@ class DatasetMetadataUpdate(ProcessDownload):
             local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
         )
 
-        adata = scanpy.read_h5ad(h5ad_filename, backed="r+")
+        adata = scanpy.read_h5ad(h5ad_filename)
         metadata = original_dataset_version.metadata
         for key, val in metadata_update_dict.items():
             adata.uns[key] = val
