@@ -2,7 +2,6 @@ from collections import defaultdict
 from typing import Any, Dict, Iterable, List
 
 import connexion
-import ddtrace.profiling.auto  # noqa: F401
 from ddtrace import tracer
 from flask import jsonify
 from pandas import DataFrame

@@ -71,10 +71,6 @@ resource aws_ecs_task_definition task_definition {
         "value": "true"
       },
       {
-        "name": "DD_PROFILING_ENABLED",
-        "value": "true"
-      },
-      {
         "name": "DD_DOGSTATSD_NON_LOCAL_TRAFFIC",
         "value": "true"
       },
