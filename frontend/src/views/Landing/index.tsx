@@ -459,11 +459,8 @@ const LandingPage = (): JSX.Element => {
                     >
                       <div className={styles.contentInfoFigureCol}>
                         <div className={styles.figureWrapper}>
-                          {inView1 ? (
-                            <CensusActiveIcon />
-                          ) : (
-                            <CensusInactiveIcon />
-                          )}
+                          <CensusActiveIcon />
+                          <CensusInactiveIcon />
                         </div>
                         <span className={styles.figureSeparator}></span>
                       </div>
@@ -519,11 +516,8 @@ const LandingPage = (): JSX.Element => {
                     >
                       <div className={styles.contentInfoFigureCol}>
                         <div className={styles.figureWrapper}>
-                          {inView2 ? (
-                            <CellGuideActiveIcon />
-                          ) : (
-                            <CellGuideInactiveIcon />
-                          )}
+                          <CellGuideActiveIcon />
+                          <CellGuideInactiveIcon />
                         </div>
                         <span className={styles.figureSeparator}></span>
                       </div>
@@ -531,7 +525,7 @@ const LandingPage = (): JSX.Element => {
                         <h2>Cell Guide</h2>
                         <p>
                           Explore an interactive encyclopedia of 700+ cell types
-                          that provides detailed definitions, marker genes,
+                          that provides detailed definitions, marker genes,
                           lineage, and relevant datasets in one place.
                         </p>
                         <div className={styles.linkContainer}>
@@ -574,11 +568,8 @@ const LandingPage = (): JSX.Element => {
                     >
                       <div className={styles.contentInfoFigureCol}>
                         <div className={styles.figureWrapper}>
-                          {inView3 ? (
-                            <CollectionsDatasetsActiveIcon />
-                          ) : (
-                            <CollectionsDatasetsInactiveIcon />
-                          )}
+                          <CollectionsDatasetsActiveIcon />
+                          <CollectionsDatasetsInactiveIcon />
                         </div>
                         <span className={styles.figureSeparator}></span>
                       </div>
@@ -628,11 +619,8 @@ const LandingPage = (): JSX.Element => {
                     >
                       <div className={styles.contentInfoFigureCol}>
                         <div className={styles.figureWrapper}>
-                          {inView4 ? (
-                            <GeneExpressionActiveIcon />
-                          ) : (
-                            <GeneExpressionInactiveIcon />
-                          )}
+                          <GeneExpressionActiveIcon />
+                          <GeneExpressionInactiveIcon />
                         </div>
                         <span className={styles.figureSeparator}></span>
                       </div>
@@ -685,11 +673,8 @@ const LandingPage = (): JSX.Element => {
                     >
                       <div className={styles.contentInfoFigureCol}>
                         <div className={styles.figureWrapper}>
-                          {inView5 ? (
-                            <ExplorerActiveIcon />
-                          ) : (
-                            <ExplorerInactiveIcon />
-                          )}
+                          <ExplorerActiveIcon />
+                          <ExplorerInactiveIcon />
                         </div>
                         <span className={styles.figureSeparator}></span>
                       </div>
@@ -781,11 +766,8 @@ const LandingPage = (): JSX.Element => {
                     >
                       <div className={styles.contentInfoFigureCol}>
                         <div className={styles.figureWrapper}>
-                          {inView6 ? (
-                            <AnnotateActiveIcon />
-                          ) : (
-                            <AnnotateInactiveIcon />
-                          )}
+                          <AnnotateActiveIcon />
+                          <AnnotateInactiveIcon />
                         </div>
                       </div>
                       <div className={styles.contentInfoTextCol}>

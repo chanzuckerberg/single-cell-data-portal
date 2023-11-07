@@ -315,6 +315,21 @@
         align-items: center;
         flex-shrink: 0;
         transition: background-color 0.4s;
+        position: relative;
+
+        svg {
+          &:first-child {
+            opacity: 0;
+            transition: opacity 0.4s;
+            position: absolute;
+            top: 0;
+            left: 0;
+          }
+
+          &:last-child {
+            opacity: 1;
+          }
+        }
       }
 
       &Separator {
@@ -333,6 +348,16 @@
     &.active .figureWrapper {
       @media (max-width: 999px) {
         margin-bottom: 15px;
+      }
+
+      svg {
+        &:first-child {
+          opacity: 1;
+        }
+
+        &:last-child {
+          opacity: 0;
+        }
       }
     }
 
