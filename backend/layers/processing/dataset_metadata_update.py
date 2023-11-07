@@ -57,7 +57,7 @@ class DatasetMetadataUpdate(ProcessDownload):
 
         adata = scanpy.read_h5ad(h5ad_filename, backed="r")
         metadata = original_dataset_version.metadata
-        for key, val in metadata_update_dict:
+        for key, val in metadata_update_dict.items():
             adata.uns[key] = val
             if hasattr(metadata, key):
                 setattr(metadata, key, val)
@@ -96,7 +96,7 @@ class DatasetMetadataUpdate(ProcessDownload):
 
         rds_object = base.readRDS(seurat_filename)
 
-        for key, val in metadata_update_dict:
+        for key, val in metadata_update_dict.items():
             seurat_metadata = seurat.Misc(object=rds_object)
             if seurat_metadata.rx2[key]:
                 seurat_metadata[seurat_metadata.names.index(key)] = StrVector(list(val))
@@ -212,7 +212,7 @@ if __name__ == "__main__":
     datasets_bucket = os.environ.get("DATASETS_BUCKET", "test-datasets-bucket")
     collection_version_id = CollectionVersionId(os.environ["COLLECTION_VERSION_ID"])
     dataset_version_id = DatasetVersionId(os.environ["DATASET_VERSION_ID"])
-    metadata_update_dict = json.loads(os.environ["METADATA_UPDATE_JSON"].strip())
+    metadata_update_dict = json.loads(os.environ["METADATA_UPDATE_JSON"])
 
     DatasetMetadataUpdate(business_logic, artifact_bucket, cellxgene_bucket, datasets_bucket).update_metadata(
         collection_version_id, dataset_version_id, metadata_update_dict
