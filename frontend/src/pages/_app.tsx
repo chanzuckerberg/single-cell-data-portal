@@ -56,11 +56,6 @@ datadogRum.init({
   defaultPrivacyLevel: "mask-user-input",
   allowedTracingUrls: [
     "<https://pr-6180-backend.rdev.single-cell.czi.technology>",
-    /https:\/\/.*\.single-cell.czi\.technology/,
-    (url) =>
-      url.startsWith(
-        "<http://pr-6180-backend.rdev.single-cell.czi.technology/wmg/v2/>"
-      ),
   ],
 });
 
