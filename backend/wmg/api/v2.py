@@ -49,6 +49,7 @@ def primary_filter_dimensions():
 
 @tracer.wrap(name="query", service="wmg-api", resource="query", span_type="wmg-api")
 def query():
+    print("query")
     request = connexion.request.json
     sanitize_api_query_dict(request["filter"])
 
