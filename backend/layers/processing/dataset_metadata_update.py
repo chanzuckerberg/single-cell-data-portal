@@ -133,6 +133,7 @@ class DatasetMetadataUpdate(ProcessDownload):
         with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
             for key, value in metadata_update_dict.items():
                 metadata_array.meta[key] = value
+        self.business_logic.add_dataset_artifact(dataset_version_id, DatasetArtifactType.CXG, new_cxg_dir)
         self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.CONVERTED)
 
     def update_metadata(
