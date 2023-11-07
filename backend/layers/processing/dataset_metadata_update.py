@@ -164,8 +164,8 @@ class DatasetMetadataUpdate(ProcessDownload):
         if DatasetArtifactType.H5AD in artifact_uris:
             self.update_h5ad(
                 artifact_uris[DatasetArtifactType.H5AD],
-                key_prefix,
                 original_dataset_version,
+                key_prefix,
                 new_dataset_version_id,
                 metadata_update_dict,
             )
