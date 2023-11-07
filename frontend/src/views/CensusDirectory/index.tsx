@@ -21,10 +21,10 @@ function CensusDirectory() {
   );
 
   const communityProjects = Object.values(staticProjects).filter(
-    (project) => project.tier === 3
+    (project) => project.tier === "community"
   );
   const maintainedProjects = Object.values(staticProjects).filter(
-    (project) => project.tier === 1
+    (project) => project.tier === "maintained"
   );
 
   return (
