@@ -46,7 +46,7 @@ datadogRum.init({
   applicationId: "44f77ca2-1482-404a-ad38-23499bb925e5",
   clientToken: "pub55d4baaac2091f9656a83da732732a89",
   site: "datadoghq.com",
-  service: "single-cell-data-portal",
+  service: "wmg-api",
   env: process.env.NODE_ENV,
   sessionSampleRate: 100,
   sessionReplaySampleRate: 20,
