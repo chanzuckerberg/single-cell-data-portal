@@ -5,7 +5,7 @@ import {
   ProjectDetails,
   ProjectTitle,
   ProjectSubmitter,
-  ProjectDesctiption,
+  ProjectDescription,
   DetailsContainer,
   ProjectButtons,
   StyledButton,
@@ -16,21 +16,44 @@ import EmbeddingButton from "../EmbeddingButton";
 
 import { ProjectProps } from "./types";
 import { useConnect } from "./connect";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 const Project = ({ project, id }: ProjectProps) => {
-  const { date, projectNotebookLinks } = useConnect({ project, id });
+  const { date, projectNotebookLinks, projectTier } = useConnect({
+    project,
+    id,
+  });
 
   return (
     <ProjectContainer key={project.title}>
       <ProjectDetails>
         <ProjectTitle>{project.title}</ProjectTitle>
         <ProjectSubmitter>{project.contact_affiliation}</ProjectSubmitter>
-        <ProjectDesctiption>{project.description}</ProjectDesctiption>
+        <ProjectDescription>{project.description}</ProjectDescription>
         <DetailsContainer>
-          <DetailItem label="contact" link={project.contact_email}>
+          <DetailItem
+            label="contact"
+            link={project.contact_email}
+            onClick={() => {
+              track(EVENTS.CENSUS_CONTACT_CLICKED, {
+                project: project.title,
+                contact: project.contact_name,
+              });
+            }}
+          >
             {project.contact_name}
           </DetailItem>
-          <DetailItem label="publication" link={project.publication_link}>
+          <DetailItem
+            label="publication"
+            link={project.publication_link}
+            onClick={() => {
+              track(EVENTS.CENSUS_PUBLICATION_CLICKED, {
+                publication: project.publication_info,
+                project: project.title,
+              });
+            }}
+          >
             {project.publication_info}
           </DetailItem>
           <DetailItem label="Last Updated">{date}</DetailItem>
@@ -45,17 +68,37 @@ const Project = ({ project, id }: ProjectProps) => {
           </DetailItem>
           <DetailItem label="embedding">{project.data_type}</DetailItem>
           {projectNotebookLinks?.map((link) => (
-            <DetailItem label="notebook" link={link[1]} key={link[1]}>
+            <DetailItem
+              label="notebook"
+              link={link[1]}
+              key={link[1]}
+              onClick={() => {
+                track(EVENTS.CENSUS_NOTEBOOK_CLICKED, {
+                  project: project.title,
+                  category: projectTier,
+                  notebook: link[0],
+                });
+              }}
+            >
               {link[0]}
             </DetailItem>
           ))}
         </DetailsContainer>
       </ProjectDetails>
       <ProjectButtons>
-        <EmbeddingButton />
+        <EmbeddingButton project={project} />
         {project.model_link && (
           <Link href={project.model_link}>
-            <StyledButton sdsType="primary" sdsStyle="square">
+            <StyledButton
+              sdsType="primary"
+              sdsStyle="square"
+              onClick={() => {
+                track(EVENTS.CENSUS_MODEL_CLICKED, {
+                  project: project.title,
+                  category: projectTier,
+                });
+              }}
+            >
               Model
             </StyledButton>
           </Link>
