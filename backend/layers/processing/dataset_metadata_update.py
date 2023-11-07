@@ -159,7 +159,7 @@ class DatasetMetadataUpdate(ProcessDownload):
 
         self.process(new_dataset_version_id, raw_h5ad_uri, self.artifact_bucket)
 
-        key_prefix = self.get_key_prefix(new_dataset_version_id)
+        key_prefix = self.get_key_prefix(new_dataset_version_id.id)
 
         if DatasetArtifactType.H5AD in artifact_uris:
             self.update_h5ad(
