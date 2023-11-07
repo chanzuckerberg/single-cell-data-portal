@@ -47,7 +47,7 @@ datadogRum.init({
   clientToken: "pub55d4baaac2091f9656a83da732732a89",
   site: "datadoghq.com",
   service: "single-cell-data-portal",
-  env: process.env.NODE_ENV,
+  env: "rdev",
   sessionSampleRate: 100,
   sessionReplaySampleRate: 20,
   trackUserInteractions: true,
