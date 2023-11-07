@@ -78,11 +78,17 @@ def query():
                 default = False
                 break
 
-        expression_summary = (
-            q.expression_summary_default(criteria)
-            if default
-            else q.expression_summary(criteria, compare_dimension=compare)
-        )
+        # expression_summary = (
+        #     q.expression_summary_default(criteria)
+        #     if default
+        #     else q.expression_summary(criteria, compare_dimension=compare)
+        # )
+
+        if default:
+            expression_summary_default = q.expression_summary_default(criteria)  # noqa: F841
+            expression_summary = q.expression_summary(criteria, compare_dimension=compare)
+        else:
+            expression_summary = q.expression_summary(criteria, compare_dimension=compare)
 
         cell_counts = q.cell_counts(criteria, compare_dimension=compare)
 
