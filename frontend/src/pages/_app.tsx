@@ -58,7 +58,9 @@ datadogRum.init({
     "<https://pr-6180-backend.rdev.single-cell.czi.technology>",
     /https:\/\/.*\.single-cell.czi\.technology/,
     (url) =>
-      url.startsWith("<https://api.cellxgene.dev.single-cell.czi.technology>"),
+      url.startsWith(
+        "<http://pr-6180-backend.rdev.single-cell.czi.technology/wmg/v2/>"
+      ),
   ],
 });
 
