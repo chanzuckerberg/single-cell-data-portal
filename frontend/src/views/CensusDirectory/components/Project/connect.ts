@@ -1,3 +1,4 @@
+import { getProjectTier } from "../../utils";
 import { ProjectProps } from "./types";
 import notebookLinks from "census-notebook-links.json";
 
@@ -13,5 +14,7 @@ export const useConnect = ({ project, id }: ProjectProps) => {
       ? project.notebook_links
       : notebookLinks[id ?? ""];
 
-  return { date, projectNotebookLinks };
+  const projectTier = getProjectTier(project);
+
+  return { date, projectNotebookLinks, projectTier };
 };

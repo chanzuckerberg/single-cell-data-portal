@@ -52,7 +52,7 @@ class ProcessingTest(BaseProcessingTest):
             citation_str = (
                 f"Publication: http://doi.org/12.2345 "
                 f"Dataset Version: http://domain/{dataset_version_id}.h5ad curated and distributed by "
-                f"CZ CELLxGENE Discover in Collection: http://collections/{collection.version_id}"
+                f"CZ CELLxGENE Discover in Collection: http://collections/{collection.collection_id.id}"
             )
             self.assertEqual(mock_read_h5ad.return_value.uns["citation"], citation_str)
             status = self.business_logic.get_dataset_status(dataset_version_id)
@@ -81,7 +81,7 @@ class ProcessingTest(BaseProcessingTest):
         pdv.populate_dataset_citation(collection.version_id, dataset_version_id, "")
         citation_str = (
             f"Dataset Version: http://domain/{dataset_version_id}.h5ad curated and distributed by "
-            f"CZ CELLxGENE Discover in Collection: http://collections/{collection.version_id}"
+            f"CZ CELLxGENE Discover in Collection: http://collections/{collection.collection_id.id}"
         )
         self.assertEqual(mock_read_h5ad.return_value.uns["citation"], citation_str)
 
