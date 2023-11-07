@@ -5,13 +5,14 @@ function DetailItem(props: {
   label: string;
   children?: string;
   link?: string;
+  onClick?: () => void;
 }) {
   return props.children ? (
     <ItemContainer>
       <ItemLabel>{props.label}</ItemLabel>
       {props.link ? (
         <Link href={props.link} passHref>
-          {props.children}
+          <a onClick={props.onClick}> {props.children}</a>
         </Link>
       ) : (
         props.children
