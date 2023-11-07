@@ -55,11 +55,11 @@ datadogRum.init({
   trackLongTasks: true,
   defaultPrivacyLevel: "mask-user-input",
   allowedTracingUrls: [
-    "<https://pr-6178-backend.rdev.single-cell.czi.technology>",
+    "<https://pr-6179-backend.rdev.single-cell.czi.technology>",
     /https:\/\/.*\.my-api-domain\.com/,
     (url) =>
       url.startsWith(
-        "<https://pr-6178-backend.rdev.single-cell.czi.technology>"
+        "<https://pr-6179-backend.rdev.single-cell.czi.technology>"
       ),
   ],
 });
