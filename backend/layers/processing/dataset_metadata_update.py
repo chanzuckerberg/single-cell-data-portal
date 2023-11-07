@@ -7,6 +7,7 @@ import os
 from typing import Dict
 
 import scanpy
+from rpy2.robjects import StrVector
 from rpy2.robjects.packages import importr
 
 from backend.common.utils.corpora_constants import CorporaConstants
@@ -73,6 +74,7 @@ class DatasetMetadataUpdate(ProcessDownload):
         self.update_processing_status(
             new_dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID
         )
+        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
 
     def update_rds(
         self,
@@ -93,8 +95,9 @@ class DatasetMetadataUpdate(ProcessDownload):
         rds_object = base.readRDS(seurat_filename)
 
         for key, val in metadata_update_dict:
-            if seurat.Misc(object=rds_object, slot=key):
-                seurat.Misc(object=rds_object, slot=key)[0] = val
+            seurat_metadata = seurat.Misc(object=rds_object)
+            if seurat_metadata.rx2[key]:
+                seurat_metadata[seurat_metadata.names.index(key)] = StrVector(list(val))
 
         base.saveRDS(rds_object, file=seurat_filename)
 
@@ -163,7 +166,6 @@ class DatasetMetadataUpdate(ProcessDownload):
         if DatasetArtifactType.CXG in artifact_uris:
             self.update_cxg(artifact_uris[DatasetArtifactType.CXG], key_prefix, new_dataset_version_id)
 
-        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
         self.update_processing_status(
             new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
         )
