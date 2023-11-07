@@ -1,0 +1,13 @@
+INFO     backend.layers.business.business:business.py:390 {'message': 'ingesting dataset', 'collection_version_id': 0098a1df-f09e-4f22-b4fc-5cee1c3224da, 'url': 'https://www.dropbox.com/s/fake_location/test.h5ad?dl=0', 'existing_dataset_version_id': None}
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:26 Start download_from_source_uri
+INFO     processing:logger.py:28 Complete download_from_source_uri
+INFO     processing:process_download.py:164 {'JobDefinitionName': 'dp-test-fake-stack-ingest-process-b6b19f44-19f0-40f2-bb5c-96320b2b15d1', 'Vcpus': 1, 'Memory': 4000, 'LinuxParameters': {'Swappiness': 60, 'MaxSwap': 0}}
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:91 Uploaded [b6b19f44-19f0-40f2-bb5c-96320b2b15d1/raw.h5ad] to s3://fake_bucket_name/fake-stack/b6b19f44-19f0-40f2-bb5c-96320b2b15d1/raw.h5ad
+INFO     processing:process_logic.py:93 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
