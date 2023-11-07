@@ -169,18 +169,29 @@ class DatasetMetadataUpdate(ProcessDownload):
                 new_dataset_version_id,
                 metadata_update_dict,
             )
+        else:
+            self.logger.error(f"Cannot find labeled H5AD artifact uri for {dataset_version_id}.")
+            raise ValueError
 
         if DatasetArtifactType.RDS in artifact_uris:
             self.update_rds(
                 artifact_uris[DatasetArtifactType.RDS], key_prefix, new_dataset_version_id, metadata_update_dict
             )
-        else:
+        elif original_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED:
             self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
+        else:
+            self.logger.error(
+                f"Cannot find RDS artifact uri for {dataset_version_id}, " f"and Conversion Status is not SKIPPED."
+            )
+            raise ValueError
 
         if DatasetArtifactType.CXG in artifact_uris:
             self.update_cxg(
                 artifact_uris[DatasetArtifactType.CXG], key_prefix, new_dataset_version_id, metadata_update_dict
             )
+        else:
+            self.logger.error(f"Cannot find cxg artifact uri for {dataset_version_id}.")
+            raise ValueError
 
         self.update_processing_status(
             new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
@@ -199,7 +210,7 @@ if __name__ == "__main__":
     artifact_bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
     cellxgene_bucket = os.environ.get("CELLXGENE_BUCKET", "test-cellxgene-bucket")
     datasets_bucket = os.eniron.get("DATASETS_BUCKET", "test-datasets-bucket")
-    collection_version_id = CollectionVersionId(os.environ["DATASET_VERSION_ID"])
+    collection_version_id = CollectionVersionId(os.environ["COLLECTION_VERSION_ID"])
     dataset_version_id = DatasetVersionId(os.environ["DATASET_VERSION_ID"])
     metadata_update_dict = json.loads(os.environ["METADATA_UPDATE_JSON"].strip())
 
