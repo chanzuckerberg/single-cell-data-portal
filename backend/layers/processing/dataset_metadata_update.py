@@ -7,10 +7,12 @@ import os
 from typing import Dict
 
 import scanpy
+import tiledb
 from rpy2.robjects import StrVector
 from rpy2.robjects.packages import importr
 
 from backend.common.utils.corpora_constants import CorporaConstants
+from backend.common.utils.tiledb import consolidation_buffer_size
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import (
     CollectionVersionId,
@@ -117,10 +119,20 @@ class DatasetMetadataUpdate(ProcessDownload):
         cxg_s3_uri: str,
         key_prefix: str,
         dataset_version_id: DatasetVersionId,
+        metadata_update_dict: Dict[str, str],
     ):
-        # TODO: update cxg metadata
         new_cxg_dir = f"s3://{self.cellxgene_bucket}/{key_prefix}.cxg/"
         self.s3_provider.upload_directory(cxg_s3_uri, new_cxg_dir)
+        ctx = tiledb.Ctx(
+            {
+                "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
+                "py.deduplicate": True,  # May reduce memory requirements at cost of performance
+            }
+        )
+        array_name = f"{new_cxg_dir}/cxg_group_metadata"
+        with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
+            for key, value in metadata_update_dict.items():
+                metadata_array.meta[key] = value
         self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.CONVERTED)
 
     def update_metadata(
@@ -162,9 +174,13 @@ class DatasetMetadataUpdate(ProcessDownload):
             self.update_rds(
                 artifact_uris[DatasetArtifactType.RDS], key_prefix, new_dataset_version_id, metadata_update_dict
             )
+        else:
+            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
 
         if DatasetArtifactType.CXG in artifact_uris:
-            self.update_cxg(artifact_uris[DatasetArtifactType.CXG], key_prefix, new_dataset_version_id)
+            self.update_cxg(
+                artifact_uris[DatasetArtifactType.CXG], key_prefix, new_dataset_version_id, metadata_update_dict
+            )
 
         self.update_processing_status(
             new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
