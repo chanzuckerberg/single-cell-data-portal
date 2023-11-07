@@ -6,7 +6,7 @@ import scanpy
 
 from backend.common.utils.math_utils import GB
 from backend.layers.common.entities import DatasetArtifactType, DatasetUploadStatus
-from backend.layers.processing.process_download import ProcessDownload
+from backend.layers.processing.process_download import MIN_MEMORY_MB, MIN_VCPU, ProcessDownload
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 test_environment = {"REMOTE_DEV_PREFIX": "fake-stack", "DEPLOYMENT_STAGE": "test"}
@@ -57,8 +57,8 @@ class TestProcessDownload(BaseProcessingTest):
             output=json.dumps(
                 {
                     "JobDefinitionName": f"dp-{deployment_stage}-{stack_name}-ingest-process-{dataset_version_id.id}",
-                    "Vcpus": 1,
-                    "Memory": 4000,
+                    "Vcpus": MIN_VCPU,
+                    "Memory": MIN_MEMORY_MB,
                     "LinuxParameters": {"Swappiness": 60, "MaxSwap": 0},
                 }
             ),
@@ -131,19 +131,51 @@ def mock_read_h5ad():
         yield mock_read_h5ad
 
 
+def memory_settings(
+    memory_modifier=1,
+    memory_per_vcpu=4000,
+    min_memory_mb=4000,
+    min_vcpu=1,
+    max_memory_mb=64000,
+    max_vcpu=16,
+    swap_memory_mb=300000,
+) -> dict:
+    return dict(
+        memory_modifier=memory_modifier,
+        memory_per_vcpu=memory_per_vcpu,
+        min_memory_MB=min_memory_mb,
+        min_vcpu=min_vcpu,
+        max_memory_MB=max_memory_mb,
+        max_vcpu=max_vcpu,
+        swap_memory_MB=swap_memory_mb,
+    )
+
+
 # Arrange
 @pytest.mark.parametrize(
-    "adata, memory_modifier, expected",
+    "adata, memory_settings, expected",
     [
-        (sample_adata(1, 2 * GB), 1, {"Vcpus": 1, "Memory": 4000, "MaxSwap": 0}),  # minimum memory
-        (sample_adata(1, 5 * GB), 1, {"Vcpus": 2, "Memory": 5120, "MaxSwap": 0}),  # above minimum memory
-        (sample_adata(1, 5 * GB), 1.5, {"Vcpus": 2, "Memory": 7680, "MaxSwap": 0}),  # modifier adjusted
-        (sample_adata(1, 64 * GB), 1, {"Vcpus": 16, "Memory": 64000, "MaxSwap": 300000}),  # maximum memory
+        (sample_adata(1, 2 * GB), memory_settings(), {"Vcpus": 1, "Memory": 4000, "MaxSwap": 0}),  # minimum memory
+        (
+            sample_adata(1, 5 * GB),
+            memory_settings(),
+            {"Vcpus": 2, "Memory": 5120, "MaxSwap": 0},
+        ),  # above minimum memory
+        (
+            sample_adata(1, 5 * GB),
+            memory_settings(1.5),
+            {"Vcpus": 2, "Memory": 7680, "MaxSwap": 0},
+        ),  # modifier adjusted
+        (
+            sample_adata(1, 64 * GB),
+            memory_settings(),
+            {"Vcpus": 16, "Memory": 64000, "MaxSwap": 300000},
+        ),  # maximum memory
     ],
 )
-def test_estimate_resource_requirements_positive(mock_ProcessDownload, adata, memory_modifier, expected):
+def test_estimate_resource_requirements_positive(mock_ProcessDownload, adata, memory_settings, expected):
     # Act & Assert
-    assert expected == mock_ProcessDownload.estimate_resource_requirements(adata, memory_modifier=memory_modifier)
+    assert expected == mock_ProcessDownload.estimate_resource_requirements(adata, **memory_settings)
 
 
 @pytest.mark.parametrize(
