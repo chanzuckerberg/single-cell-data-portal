@@ -24,7 +24,7 @@ from backend.layers.thirdparty.step_function_provider import StepFunctionProvide
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
 MEMORY_MODIFIER = 2  # add % overhead
-MEMORY_PER_VCPU = 7800
+MEMORY_PER_VCPU = 8000
 MIN_MEMORY_MB = 16000
 # The largest machine we are allocating is r5a.24xlarge. This machine has 768GB of memory and 96 vCPUs.
 MAX_MEMORY_MB = 768000
