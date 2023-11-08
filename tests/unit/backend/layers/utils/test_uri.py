@@ -40,6 +40,7 @@ class TestS3URI(TestCase):
         self.assertEqual("s3", s3_uri.scheme)
         self.assertEqual("bucket", s3_uri.netloc)
         self.assertEqual("/key", s3_uri.path)
+        self.assertEqual("key", s3_uri.key)
 
     def test__validate_with_invalid_s3_uri__returns_none(self):
         s3_uri = S3URI.validate("s4://bucket/key")
@@ -52,14 +53,15 @@ class TestS3URI(TestCase):
     def test__file_info__returns_file_size(self):
         s3 = boto3.client("s3")
         bucket_name = "bucket"
-        key = "/key"
+        key = "key"
+        uri = "/".join(["s3:/", bucket_name, key])
         content = "stuff"
         s3.create_bucket(
             Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
         )
         s3.put_object(Bucket=bucket_name, Key=key, Body=content)
 
-        s3_uri = from_uri(f"s3://{bucket_name}{key}")
+        s3_uri = from_uri(uri)
         info = s3_uri.file_info()
 
         self.assertEqual(key, info["name"])
@@ -69,7 +71,8 @@ class TestS3URI(TestCase):
     def test_download(self):
         s3 = boto3.client("s3")
         bucket_name = "bucket"
-        key = "/key/file.txt"
+        key = "key/file.txt"
+        uri = "/".join(["s3:/", bucket_name, key])
         content = "stuff"
         s3.create_bucket(
             Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
@@ -81,7 +84,7 @@ class TestS3URI(TestCase):
             # create a temporary file
             tmpfile = os.path.join(tmpdir, "test.txt")
             # download the file to the temporary directory
-            s3_uri = from_uri(f"s3://{bucket_name}{key}")
+            s3_uri = from_uri(uri)
             assert isinstance(s3_uri, S3URI)
             s3_uri.download(tmpfile)
             # read the file contents
