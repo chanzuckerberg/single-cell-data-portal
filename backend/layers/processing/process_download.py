@@ -23,12 +23,12 @@ from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
-MEMORY_MODIFIER = 1.1  # add 10% overhead
-MEMORY_PER_VCPU = 4000
-MIN_MEMORY_MB = 4000
-# The largest machine we are allocating is r5ad.2xlarge. This machine has 64GB of memory and 16 vCPUs.
-MAX_MEMORY_MB = 64000
-MAX_VCPU = 16
+MEMORY_MODIFIER = 2  # add % overhead
+MEMORY_PER_VCPU = 7800
+MIN_MEMORY_MB = 16000
+# The largest machine we are allocating is r5a.24xlarge. This machine has 768GB of memory and 96 vCPUs.
+MAX_MEMORY_MB = 768000
+MAX_VCPU = 96
 SWAP_MODIFIER = 0  # 0 b/c no swap machines are used.
 MAX_SWAP_MEMORY_MB = 300000
 
