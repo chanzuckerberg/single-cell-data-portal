@@ -55,6 +55,7 @@ datadogRum.init({
   trackLongTasks: true,
   defaultPrivacyLevel: "mask-user-input",
 });
+// comment
 
 function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
   const Layout = Component.Layout || DefaultLayout;
