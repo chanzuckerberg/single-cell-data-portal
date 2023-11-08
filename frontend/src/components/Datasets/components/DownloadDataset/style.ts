@@ -35,7 +35,7 @@ export const Dialog = styled(SDSDialog)`
     border: 1px solid ${grey100};
     box-shadow: ${shadowL};
     gap: ${spacesXl}px;
-    min-height: unset;
+    min-height: 570px; /* min-height ensures dialog height consistency in any download state. */
     padding: 32px;
   }
 
