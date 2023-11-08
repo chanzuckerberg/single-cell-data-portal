@@ -18,7 +18,7 @@ export const Header = styled.h5`
 
 export const Label = styled.label`
   ${fontBodyXxs}
-
+  font-weight: 500;
   white-space: nowrap;
   color: ${gray500};
 `;
