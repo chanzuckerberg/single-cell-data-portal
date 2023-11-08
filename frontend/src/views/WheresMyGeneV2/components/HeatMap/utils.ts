@@ -23,7 +23,7 @@ const CELL_COUNT_COLUMN_WIDTH_PX = 40;
 
 export const DIVIDER_LEFT_POSITION_PX =
   CELL_TYPE_FILTER_WIDTH_PX +
-  DIVIDER_MARGIN_PX * 2 +
+  DIVIDER_MARGIN_PX * 3 +
   CELL_COUNT_COLUMN_WIDTH_PX;
 /**
  * This is needed to ensure the divider is 12px away from the cell count column
@@ -134,7 +134,7 @@ export function getFixedWidth(
 }
 
 export const HEAT_MAP_BASE_HEIGHT_PX = 300;
-export const HEAT_MAP_BASE_CELL_PX = 20;
+export const HEAT_MAP_BASE_CELL_PX = 16;
 export const HEAT_MAP_BASE_CELL_WIDTH_PX = 20;
 
 /**
