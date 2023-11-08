@@ -54,10 +54,6 @@ datadogRum.init({
   trackResources: true,
   trackLongTasks: true,
   defaultPrivacyLevel: "mask-user-input",
-  allowedTracingUrls: [
-    (url) =>
-      url.startsWith("https://pr-6193-backend.rdev.single-cell.czi.technology"),
-  ],
 });
 // comment
 
