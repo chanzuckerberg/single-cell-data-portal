@@ -57,9 +57,9 @@ class TestProcessDownload(BaseProcessingTest):
             output=json.dumps(
                 {
                     "JobDefinitionName": f"dp-{deployment_stage}-{stack_name}-ingest-process-{dataset_version_id.id}",
-                    "Vcpus": 4,
+                    "Vcpus": 2,
                     "Memory": 16000,
-                    "LinuxParameters": {"Swappiness": 60, "MaxSwap": 80000},
+                    "LinuxParameters": {"Swappiness": 60, "MaxSwap": 0},
                 }
             ),
         )
