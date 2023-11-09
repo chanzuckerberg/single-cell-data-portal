@@ -56,11 +56,8 @@ const defaultSecureHeaders = {
       manifestSrc: ["'self'"],
       mediaSrc: ["'self'"],
       objectSrc: ["'none'"],
-      reportURI:
-        configs.SENTRY_DEPLOYMENT_ENVIRONMENT &&
-        "https://sentry.prod.si.czi.technology/api/167/security/?sentry_key=0432f3b3ceba4bc08d28dfb61fa29707&sentry_environment=" +
-          configs.SENTRY_DEPLOYMENT_ENVIRONMENT,
-      scriptSrc: isProdBuild ? SCRIPT_SRC : [...SCRIPT_SRC, "'unsafe-eval'"],
+      reportURI: DATADOG_URL,
+      scriptSrc: SCRIPT_SRC,
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       upgradeInsecureRequests: true,
       workerSrc: true,
