@@ -376,8 +376,10 @@ function getTissueCellTypes({
       ? tissueCellTypes
       : sortedTissueCellTypes) || EMPTY_ARRAY;
 
-  ret = ret.filter((cellType) =>
-    displayedCellTypes.has(tissueID + cellType.cellTypeName)
+  ret = ret.filter(
+    (cellType) =>
+      displayedCellTypes.has(tissueID + cellType.cellTypeName) &&
+      cellType.total_count > 9
   );
 
   return ret;
