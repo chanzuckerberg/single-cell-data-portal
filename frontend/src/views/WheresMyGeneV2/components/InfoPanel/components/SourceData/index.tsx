@@ -4,6 +4,7 @@ import { EVENTS } from "src/common/analytics/events";
 import { Content, InfoText, ListSubheader, Wrapper } from "./style";
 import { ROUTES } from "src/common/constants/routes";
 import { useConnect } from "./connect";
+import { SOURCE_DATA_INFO_TEXT } from "./constants";
 
 export default function SourceData(): JSX.Element {
   const { collections } = useConnect();
@@ -12,8 +13,7 @@ export default function SourceData(): JSX.Element {
     <Wrapper>
       <Content>
         <InfoText>
-          Gene Expression is powered by primary data submitted to CZ CELLxGENE
-          Discover. See exceptions and processing notes{" "}
+          {SOURCE_DATA_INFO_TEXT}{" "}
           <a
             href={ROUTES.WMG_DOCS_DATA_PROCESSING}
             target="_blank"

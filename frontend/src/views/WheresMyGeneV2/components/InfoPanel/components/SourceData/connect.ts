@@ -9,13 +9,17 @@ import { Collections } from "./types";
 export const useConnect = () => {
   const { selectedFilters } = useContext(StateContext);
   const { data: filterDimensions } = useFilterDimensions();
+
   let { datasets = [] } = filterDimensions;
+
   if (selectedFilters.datasets.length > 0)
     datasets = datasets.filter((dataset) =>
       selectedFilters.datasets.includes(dataset.id)
     );
+
   const collections: Collections = useMemo(() => {
     return aggregateCollectionsFromDatasets(datasets);
   }, [datasets]);
+
   return { collections };
 };
