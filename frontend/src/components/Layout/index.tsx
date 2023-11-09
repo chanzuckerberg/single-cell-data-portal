@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import Header from "../Header";
 import LandingFooter from "../LandingFooter";
-import LandingHeader from "../LandingHeader";
+import LandingHeader from "../MobileFriendlyHeader";
 import { Wrapper } from "./style";
 
 interface Props {
