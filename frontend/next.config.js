@@ -20,7 +20,7 @@ const HUBSPOT_FORMS_URL = "https://forms.hsforms.com";
 
 const CROSS_REF_URL = "https://api.crossref.org";
 
-const DATADOG_URL = "browser-intake-datadoghq.com";
+const DATADOG_URL = "https://browser-intake-datadoghq.com";
 
 const SCRIPT_SRC = [
   "'self'",
@@ -30,6 +30,7 @@ const SCRIPT_SRC = [
   PLAUSIBLE_URL,
   TWITTER_URL,
   WISTIA_URL,
+  DATADOG_URL,
 ];
 
 const defaultSecureHeaders = {
@@ -56,8 +57,11 @@ const defaultSecureHeaders = {
       manifestSrc: ["'self'"],
       mediaSrc: ["'self'"],
       objectSrc: ["'none'"],
-      reportURI: DATADOG_URL,
-      scriptSrc: SCRIPT_SRC,
+      reportURI:
+        configs.SENTRY_DEPLOYMENT_ENVIRONMENT &&
+        "https://sentry.prod.si.czi.technology/api/167/security/?sentry_key=0432f3b3ceba4bc08d28dfb61fa29707&sentry_environment=" +
+          configs.SENTRY_DEPLOYMENT_ENVIRONMENT,
+      scriptSrc: isProdBuild ? SCRIPT_SRC : [...SCRIPT_SRC, "'unsafe-eval'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       upgradeInsecureRequests: true,
       workerSrc: true,
