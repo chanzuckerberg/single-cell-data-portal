@@ -2802,7 +2802,7 @@ class TestCollectionPostUploadLink(BaseAPIPortalTest):
         with self.subTest("Bad Dropbox link"):
             self.uri_provider.validate = Mock(return_value=True)
             self.uri_provider.get_file_info.side_effect = FileInfoException(
-                "The URL provided causes an error with Dropbox."
+                "The URI provided causes an error with Dropbox."
             )
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
             body = {"url": self.dummy_link}
@@ -2810,7 +2810,7 @@ class TestCollectionPostUploadLink(BaseAPIPortalTest):
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
             self.assertEqual(400, response.status_code)
             print(json.loads(response.data)["detail"])
-            self.assertTrue(json.loads(response.data)["detail"] == "The URL provided causes an error with Dropbox.")
+            self.assertTrue(json.loads(response.data)["detail"] == "The URI provided causes an error with Dropbox.")
 
     # ✅
     def test__oversized__413(self):

@@ -1,23 +1,30 @@
 import styled from "@emotion/styled";
-import { Classes, Colors } from "@blueprintjs/core";
-import { GRAY } from "src/components/common/theme";
+import { Classes } from "@blueprintjs/core";
 import { css } from "@emotion/react";
-import { spacesL } from "src/common/theme";
+import {
+  fontWeightBold,
+  fontWeightSemibold,
+  gray300,
+  gray500,
+  grayWhite,
+  spacesL,
+} from "src/common/theme";
+import { CommonThemeProps, fontCapsXxxs } from "@czi-sds/components";
 
 export const Nav = styled.span`
   display: flex;
   gap: ${spacesL}px;
 `;
 
-export const button = css`
+export const button = (props: CommonThemeProps) => css`
   display: inline-block; /* Wrapper to mimic line height of children. */
 
   .${Classes.BUTTON}.${Classes.MINIMAL} {
     background: none;
     border-radius: 0;
-    color: ${GRAY.D};
+    color: ${gray300(props)};
     font-size: 13px;
-    font-weight: 500;
+    font-weight: ${fontWeightSemibold(props)};
     height: 22px;
     letter-spacing: -0.1px;
     line-height: 18px;
@@ -25,7 +32,7 @@ export const button = css`
     padding: 0;
 
     &.${Classes.ACTIVE}, &:hover {
-      color: ${Colors.WHITE};
+      color: ${grayWhite()};
     }
 
     &:focus {
@@ -37,15 +44,25 @@ export const button = css`
 export const LinkWrapper = styled.span`
   ${button}
   .${Classes.BUTTON}.${Classes.MINIMAL}.${Classes.ACTIVE} {
-    box-shadow: inset 0 -2px 0 ${Colors.WHITE} !important; /* Overrides specificity of BP button active box shadow rule. */
+    box-shadow: inset 0 -2px 0 ${grayWhite} !important; /* Overrides specificity of BP button active box shadow rule. */
   }
-
   align-items: center;
   display: flex;
 `;
 
-export const NavSection = styled.div`
+export const NavSection = styled.span`
   display: flex;
-  direction: column;
-  justify-content: baseline;
+  flex-direction: column;
+  align-items: baseline;
+`;
+
+export const NavSectionTitle = styled.span`
+  ${fontCapsXxxs}
+  color: ${gray500};
+  font-weight: ${fontWeightBold};
+`;
+
+export const NavItemContainer = styled.span`
+  display: flex;
+  gap: ${spacesL}px;
 `;

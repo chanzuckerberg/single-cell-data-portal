@@ -16,7 +16,7 @@ logger.configure_logging(level=logging.INFO)
 def handle_failure(event: dict, context, delete_artifacts=True) -> None:
     logging.info(event)
     (
-        dataset_id,
+        dataset_version_id,
         collection_version_id,
         error_step_name,
         error_job_id,
@@ -25,15 +25,15 @@ def handle_failure(event: dict, context, delete_artifacts=True) -> None:
         execution_arn,
     ) = parse_event(event)
     trigger_slack_notification(
-        dataset_id, collection_version_id, error_step_name, error_job_id, error_aws_regions, execution_arn
+        dataset_version_id, collection_version_id, error_step_name, error_job_id, error_aws_regions, execution_arn
     )
-    update_dataset_processing_status_to_failed(dataset_id)
+    update_dataset_processing_status_to_failed(dataset_version_id)
     if delete_artifacts:
-        cleanup_artifacts(dataset_id, error_step_name)
+        cleanup_artifacts(dataset_version_id, error_step_name)
 
 
 def parse_event(event: dict):
-    dataset_id = event.get("dataset_id")
+    dataset_version_id = event.get("dataset_version_id")
     collection_version_id = event.get("collection_id")
     error_cause = event.get("error", {}).get("Cause", "")
     execution_arn = event.get("execution_id")
@@ -53,7 +53,7 @@ def parse_event(event: dict):
         except KeyError:
             error_aws_regions = None
     return (
-        dataset_id,
+        dataset_version_id,
         collection_version_id,
         error_step_name,
         error_job_id,
@@ -63,34 +63,34 @@ def parse_event(event: dict):
     )
 
 
-def update_dataset_processing_status_to_failed(dataset_id: str) -> None:
+def update_dataset_processing_status_to_failed(dataset_version_id: str) -> None:
     """
     This functions updates the processing status for a given dataset uuid to failed
     """
     with logger.LogSuppressed(Exception, message="Failed to update dataset processing status"):
         # If dataset not in db dont worry about updating its processing status
         get_business_logic().update_dataset_version_status(
-            DatasetVersionId(dataset_id), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
+            DatasetVersionId(dataset_version_id), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
         )
 
 
 def get_failure_slack_notification_message(
-    dataset_id: Optional[str],
+    dataset_version_id: Optional[str],
     collection_version_id: str,
     step_name: Optional[str],
     job_id: Optional[str],
     aws_region: str,
     execution_arn: str,
 ) -> dict:
-    if dataset_id is None:
-        logging.error("Dataset ID not found")
-        dataset_id = "None"
+    if dataset_version_id is None:
+        logging.error("Dataset Version ID not found")
+        dataset_version_id = "None"
         dataset = None
     else:
-        dataset = get_business_logic().get_dataset_version(DatasetVersionId(dataset_id))
+        dataset = get_business_logic().get_dataset_version(DatasetVersionId(dataset_version_id))
     if dataset is None:
-        logging.error(f"Dataset {dataset_id} not found")
-        dataset_id = dataset_id + "(not found)"
+        logging.error(f"Dataset version ID {dataset_version_id} not found")
+        dataset_version_id = dataset_version_id + "(not found)"
         collection_owner, processing_status = "", ""
     else:
         collection_id = dataset.collection_id
@@ -124,7 +124,7 @@ def get_failure_slack_notification_message(
                     f"*Batch Job ID*: <{batch_url}|{job_id}>\n"
                     f"*Step Function ARN*: <{step_function_url}|{execution_arn}>\n"
                     f"*Error Step*: {step_name}\n"
-                    f"*Dataset ID*: {dataset_id}\n"
+                    f"*Dataset Version ID*: {dataset_version_id}\n"
                     f"*Processing Status*:\n",
                 },
             },
@@ -141,7 +141,7 @@ def get_failure_slack_notification_message(
 
 
 def trigger_slack_notification(
-    dataset_id: Optional[str],
+    dataset_version_id: Optional[str],
     collection_version_id: Optional[str],
     step_name: Optional[str],
     job_id: Optional[str],
@@ -150,7 +150,7 @@ def trigger_slack_notification(
 ) -> None:
     with logger.LogSuppressed(Exception, message="Failed to send slack notification"):
         data = get_failure_slack_notification_message(
-            dataset_id, collection_version_id, step_name, job_id, aws_region, execution_arn
+            dataset_version_id, collection_version_id, step_name, job_id, aws_region, execution_arn
         )
         # For these notifications, we should alert #single-cell-wrangling
         webhook = CorporaConfig().wrangling_slack_webhook
@@ -162,9 +162,9 @@ FAILED_DATASET_CLEANUP_MESSAGE = "Failed to clean up datasets."
 FAILED_CXG_CLEANUP_MESSAGE = "Failed to clean up cxgs."
 
 
-def cleanup_artifacts(dataset_id: str, error_step_name: Optional[str] = None) -> None:
+def cleanup_artifacts(dataset_version_id: str, error_step_name: Optional[str] = None) -> None:
     """Clean up artifacts"""
-    object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_id).strip("/")
+    object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_version_id).strip("/")
     if not error_step_name or error_step_name in ["validate", "download"]:
         with logger.LogSuppressed(Exception, message=FAILED_ARTIFACT_CLEANUP_MESSAGE):
             artifact_bucket = os.environ["ARTIFACT_BUCKET"]

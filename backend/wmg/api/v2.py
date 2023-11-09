@@ -28,12 +28,15 @@ from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find_dim_option_values
 
+
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2132
 
 
-@tracer.wrap()
+@tracer.wrap(
+    name="primary_filter_dimensions", service="wmg-api", resource="primary_filter_dimensions", span_type="wmg-api"
+)
 def primary_filter_dimensions():
     with ServerTiming.time("load snapshot"):
         snapshot: WmgSnapshot = load_snapshot(
@@ -44,7 +47,7 @@ def primary_filter_dimensions():
     return jsonify(snapshot.primary_filter_dimensions)
 
 
-@tracer.wrap()
+@tracer.wrap(name="query", service="wmg-api", resource="query", span_type="wmg-api")
 def query():
     request = connexion.request.json
     sanitize_api_query_dict(request["filter"])
@@ -119,7 +122,7 @@ def query():
     return response
 
 
-@tracer.wrap()
+@tracer.wrap(name="filters", service="wmg-api", resource="filters", span_type="wmg-api")
 def filters():
     request = connexion.request.json
     sanitize_api_query_dict(request["filter"])
@@ -143,7 +146,7 @@ def filters():
     return response
 
 
-@tracer.wrap()
+@tracer.wrap(name="markers", service="wmg-api", resource="markers", span_type="wmg-api")
 def markers():
     request = connexion.request.json
     cell_type = request["celltype"]
@@ -260,6 +263,7 @@ def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
     return True
 
 
+@tracer.wrap(name="build_filter_dims_values", service="wmg-api", resource="filters", span_type="wmg-api")
 def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot) -> Dict:
     dims = {
         "dataset_id": "",
@@ -300,6 +304,7 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
     return response_filter_dims_values
 
 
+@tracer.wrap(name="build_expression_summary", service="wmg-api", resource="query", span_type="wmg-api")
 def build_expression_summary(
     unrolled_gene_expression_df: DataFrame, rolled_gene_expression_df: DataFrame, compare: str
 ) -> dict:
@@ -402,6 +407,7 @@ def fill_out_structured_dict_compare(rolled_gene_expression_df, structured_resul
         )
 
 
+@tracer.wrap(name="build_gene_id_label_mapping", service="wmg-api", resource="query", span_type="wmg-api")
 def build_gene_id_label_mapping(gene_ontology_term_ids: List[str]) -> List[dict]:
     return [
         {gene_ontology_term_id: gene_term_label(gene_ontology_term_id)}
@@ -458,6 +464,7 @@ def fill_out_structured_cell_type_compare(cell_type_agg_compare, structured_resu
 
 
 # getting only cell type metadata, no genes
+@tracer.wrap(name="build_ordered_cell_types_by_tissue", service="wmg-api", resource="query", span_type="wmg-api")
 def build_ordered_cell_types_by_tissue(
     rolled_cell_counts_cell_type_agg: DataFrame,
     cell_counts_cell_type_agg: DataFrame,

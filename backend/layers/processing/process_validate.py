@@ -56,17 +56,20 @@ class ProcessValidate(ProcessingLogic):
 
     @logit
     def validate_h5ad_file_and_add_labels(
-        self, collection_id: CollectionVersionId, dataset_id: DatasetVersionId, local_filename: str
+        self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, local_filename: str
     ) -> Tuple[str, bool]:
         """
         Validates and labels the specified dataset file and updates the processing status in the database
-        :param dataset_id: ID of the dataset to update
+        :param dataset_version_id: version ID of the dataset to update
+        :param collection_version_id: version ID of the collection dataset is being uploaded to
         :param local_filename: file name of the dataset to validate and label
         :return: file name of labeled dataset, boolean indicating if seurat conversion is possible
         """
         # TODO: use a provider here
 
-        self.update_processing_status(dataset_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALIDATING)
+        self.update_processing_status(
+            dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALIDATING
+        )
 
         output_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
         try:
@@ -81,34 +84,36 @@ class ProcessValidate(ProcessingLogic):
             raise ValidationFailed(errors)
         else:
             if FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4):
-                self.populate_dataset_citation(collection_id, dataset_id, output_filename)
+                self.populate_dataset_citation(collection_version_id, dataset_version_id, output_filename)
 
             # TODO: optionally, these could be batched into one
-            self.update_processing_status(dataset_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
-            self.update_processing_status(dataset_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID)
+            self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
+            self.update_processing_status(
+                dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID
+            )
             return output_filename, can_convert_to_seurat
 
     def populate_dataset_citation(
-        self, collection_id: CollectionVersionId, dataset_id: DatasetVersionId, adata_path: str
+        self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, adata_path: str
     ) -> None:
         """
         Builds citation string and updates the 'uns' dict of the adata at adata_path
 
-        :param collection_id: version ID for collection dataset is being uploaded to
-        :param dataset_id: version ID for dataset
+        :param collection_version_id: version ID for collection dataset is being uploaded to
+        :param dataset_version_id: version ID for dataset
         :param adata_path: filepath to adata object that will be updated with citation
         """
         dataset_assets_base_url = CorporaConfig().dataset_assets_base_url
         collections_base_url = CorporaConfig().collections_base_url
         citation = ""
-        collection = self.business_logic.get_collection_version(collection_id, get_tombstoned=False)
+        collection = self.business_logic.get_collection_version(collection_version_id, get_tombstoned=False)
         doi = next((link.uri for link in collection.metadata.links if link.type == "DOI"), None)
         if doi:
             citation += f"Publication: {doi} "
-        citation += f"Dataset Version: {dataset_assets_base_url}/{dataset_id}.h5ad "
+        citation += f"Dataset Version: {dataset_assets_base_url}/{dataset_version_id}.h5ad "
         citation += (
             f"curated and distributed by CZ CELLxGENE Discover in Collection: "
-            f"{collections_base_url}/{collection_id}"
+            f"{collections_base_url}/{collection.collection_id.id}"
         )
         adata = scanpy.read_h5ad(adata_path)
         adata.uns["citation"] = citation
@@ -206,46 +211,46 @@ class ProcessValidate(ProcessingLogic):
 
     def process(
         self,
-        collection_id: CollectionVersionId,
-        dataset_id: DatasetVersionId,
+        collection_version_id: CollectionVersionId,
+        dataset_version_id: DatasetVersionId,
         artifact_bucket: str,
         datasets_bucket: str,
     ):
         """
-        1. Download the original dataset from Dropbox
+        1. Download the original dataset from URI
         2. Validate and label it
         3. Upload the labeled dataset to the artifact bucket
         4. Upload the labeled dataset to the datasets bucket
-        :param collection_id
-        :param dataset_id:
+        :param collection_version_id
+        :param dataset_version_id:
         :param artifact_bucket:
         :param datasets_bucket:
         :return:
         """
         # Download the original dataset from S3
-        key_prefix = self.get_key_prefix(dataset_id.id)
+        key_prefix = self.get_key_prefix(dataset_version_id.id)
         original_h5ad_artifact_file_name = CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME
         object_key = f"{key_prefix}/{original_h5ad_artifact_file_name}"
         self.download_from_s3(artifact_bucket, object_key, original_h5ad_artifact_file_name)
 
         # Validate and label the dataset
         file_with_labels, can_convert_to_seurat = self.validate_h5ad_file_and_add_labels(
-            collection_id, dataset_id, original_h5ad_artifact_file_name
+            collection_version_id, dataset_version_id, original_h5ad_artifact_file_name
         )
         # Process metadata
         metadata = self.extract_metadata(file_with_labels)
-        self.business_logic.set_dataset_metadata(dataset_id, metadata)
+        self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
 
         if not can_convert_to_seurat:
-            self.update_processing_status(dataset_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
-            self.logger.info(f"Skipping Seurat conversion for dataset {dataset_id}")
+            self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
+            self.logger.info(f"Skipping Seurat conversion for dataset {dataset_version_id}")
 
         # Upload the labeled dataset to the artifact bucket
         self.create_artifact(
             file_with_labels,
             DatasetArtifactType.H5AD,
             key_prefix,
-            dataset_id,
+            dataset_version_id,
             artifact_bucket,
             DatasetStatusKey.H5AD,
             datasets_bucket=datasets_bucket,

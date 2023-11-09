@@ -16,6 +16,7 @@ from backend.layers.business.business import (
 )
 from backend.layers.business.exceptions import (
     CollectionCreationException,
+    CollectionDeleteException,
     CollectionIsPublishedException,
     CollectionPublishException,
     CollectionUpdateException,
@@ -23,6 +24,7 @@ from backend.layers.business.exceptions import (
     DatasetIngestException,
     DatasetIsTombstonedException,
     DatasetNotFoundException,
+    InvalidURIException,
     NoPreviousDatasetVersionException,
 )
 from backend.layers.common.entities import (
@@ -51,6 +53,7 @@ from backend.layers.thirdparty.crossref_provider import (
     CrossrefException,
     CrossrefProviderInterface,
 )
+from backend.layers.thirdparty.s3_exceptions import S3DeleteException
 from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
@@ -284,9 +287,9 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             # At present, not keeping public dataset assets as rows in DatasetArtifact table
             self.s3_provider.upload_file(None, "datasets", key, None)
         self.database_provider.add_dataset_artifact(
-            dataset_version_id, DatasetArtifactType.CXG.value, f"s3://cellxgene/{dataset_version_id}.cxg"
+            dataset_version_id, DatasetArtifactType.CXG.value, f"s3://cellxgene/{dataset_version_id}.cxg/"
         )
-        self.s3_provider.upload_file(None, "cellxgene", f"{dataset_version_id}.cxg", None)
+        self.s3_provider.upload_file(None, "cellxgene", f"{dataset_version_id}.cxg/", None)
         self.database_provider.update_dataset_upload_status(dataset_version_id, DatasetUploadStatus.UPLOADED)
         self.database_provider.update_dataset_validation_status(dataset_version_id, DatasetValidationStatus.VALID)
         self.database_provider.update_dataset_processing_status(dataset_version_id, DatasetProcessingStatus.SUCCESS)
@@ -1061,19 +1064,104 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         self.assertIsNone(self.business_logic.get_dataset_version(new_dataset_version_id))
         self.assertIsNotNone(self.business_logic.get_dataset_version(updated_new_dataset_version_id))
 
-    @patch("backend.layers.business.business.BusinessLogic._delete_from_bucket")
-    def test_delete_artifacts(self, _delete_from_bucket_mock):
+    def test_delete_artifacts_delete_no_artifacts(self):
+        self.business_logic.s3_provider = Mock()
+        delete_artifacts = self.business_logic.delete_artifacts
+        s3_provider = self.business_logic.s3_provider
+
+        # Arrange
+        # Act
+        delete_artifacts([])
+        # Assert
+        s3_provider.delete_prefix.assert_not_called()
+        s3_provider.delete_files.assert_not_called()
+
+    def test_delete_artifacts_artifact_type_doesnt_match_regex(self):
+        self.business_logic.s3_provider = Mock()
+        delete_artifacts = self.business_logic.delete_artifacts
+        s3_provider = self.business_logic.s3_provider
         bucket = "bucket"
+
+        # Arrange
         artifacts: List[DatasetArtifact] = [
-            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri=f"s3://{bucket}/file.h5ad"),
+            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.CXG, uri=f"s3://{bucket}/file.h5ad"),
+            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri=f"s3://{bucket}/file.cxg/"),
         ]
-        self.business_logic.delete_artifacts(artifacts)
-        _delete_from_bucket_mock.assert_called_with(bucket, keys=["file.h5ad"], prefix=None)
+        # Act
+        delete_artifacts(artifacts)
+        # Assert
+        s3_provider.delete_prefix.assert_not_called()
+        s3_provider.delete_files.assert_not_called()
+
+    def test_delete_artifacts_delete_cxg(self):
+        self.business_logic.s3_provider = Mock()
+        delete_artifacts = self.business_logic.delete_artifacts
+        s3_provider = self.business_logic.s3_provider
+        bucket = "bucket"
+
+        # Arrange
         artifacts: List[DatasetArtifact] = [
             DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.CXG, uri=f"s3://{bucket}/file.cxg/"),
         ]
-        self.business_logic.delete_artifacts(artifacts)
-        _delete_from_bucket_mock.assert_called_with(bucket, keys=None, prefix="file.cxg/")
+        # Act
+        delete_artifacts(artifacts)
+        # Assert
+        s3_provider.delete_prefix.assert_called_with(bucket, "file.cxg/")
+
+    def test_delete_artifacts_with_rdev_prefix(self):
+        self.business_logic.s3_provider = Mock()
+        delete_artifacts = self.business_logic.delete_artifacts
+        s3_provider = self.business_logic.s3_provider
+        bucket = "bucket"
+
+        # Arrange
+        artifacts: List[DatasetArtifact] = [
+            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.CXG, uri=f"s3://{bucket}/rdev/file.cxg/"),
+        ]
+        # Act
+        delete_artifacts(artifacts)
+        # Assert
+        s3_provider.delete_prefix.assert_called_with(bucket, "rdev/file.cxg/")
+
+    def test_delete_artifacts_with_no_match(self):
+        self.business_logic.s3_provider = Mock()
+        delete_artifacts = self.business_logic.delete_artifacts
+
+        ## not matching regex
+        # Arrange
+        artifacts: List[DatasetArtifact] = [
+            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri="s3://file.h5ad"),
+        ]
+        # Act + Assert
+        self.assertRaises(InvalidURIException, delete_artifacts, artifacts)
+
+    def test_delete_artifacts_delete_h5ad(self):
+        self.business_logic.s3_provider = Mock()
+        delete_artifacts = self.business_logic.delete_artifacts
+        s3_provider = self.business_logic.s3_provider
+        bucket = "bucket"
+
+        # Arrange
+        artifacts: List[DatasetArtifact] = [
+            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri=f"s3://{bucket}/file.h5ad"),
+        ]
+        # Act
+        delete_artifacts(artifacts)
+        # Assert
+        s3_provider.delete_files.assert_called_with(bucket, ["file.h5ad"])
+
+    def test_delete_artifacts_CollectionDeleteException_with_H5AD(self):
+        self.business_logic.s3_provider.delete_files = Mock(side_effect=S3DeleteException("error"))
+        delete_artifacts = self.business_logic.delete_artifacts
+        bucket = "bucket"
+
+        # Arrange
+        artifacts: List[DatasetArtifact] = [
+            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri=f"s3://{bucket}/file.h5ad"),
+        ]
+
+        # Act + Assert
+        self.assertRaises(CollectionDeleteException, delete_artifacts, artifacts)
 
 
 class TestGetDataset(BaseBusinessLogicTestCase):
@@ -1224,7 +1312,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         expected = [
             f"s3://artifacts/{dataset_version_id}.h5ad",
             f"s3://artifacts/{dataset_version_id}.rds",
-            f"s3://cellxgene/{dataset_version_id}.cxg",
+            f"s3://cellxgene/{dataset_version_id}.cxg/",
         ]
         self.assertEqual(set(expected), {a.uri for a in artifacts})
 
@@ -1335,14 +1423,14 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
         published_collection = self.initialize_published_collection()
         for dataset in published_collection.datasets:
             cxg_artifact = [artifact for artifact in dataset.artifacts if artifact.type == "cxg"][0]
-            self.assertEqual(cxg_artifact.uri, f"s3://cellxgene/{dataset.version_id}.cxg")
-            self.business_logic.update_dataset_artifact(cxg_artifact.id, "s3://cellxgene/new-name.cxg")
+            self.assertEqual(cxg_artifact.uri, f"s3://cellxgene/{dataset.version_id}.cxg/")
+            self.business_logic.update_dataset_artifact(cxg_artifact.id, "s3://cellxgene/new-name.cxg/")
 
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             updated_cxg_artifact = [
                 artifact for artifact in version_from_db.artifacts if artifact.id == cxg_artifact.id
             ][0]
-            self.assertEqual(updated_cxg_artifact.uri, "s3://cellxgene/new-name.cxg")
+            self.assertEqual(updated_cxg_artifact.uri, "s3://cellxgene/new-name.cxg/")
 
     def test_add_dataset_artifact_wrong_type_fail(self):
         """

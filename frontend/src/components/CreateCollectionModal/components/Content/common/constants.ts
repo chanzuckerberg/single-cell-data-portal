@@ -8,6 +8,7 @@ export enum CONSORTIA {
   GUDMAP = "GenitoUrinary Development Molecular Anatomy Project (GUDMAP)",
   GUT_CELL_ATLAS = "Gut Cell Atlas",
   HUBMAP = "Human BioMolecular Atlas Program (HuBMAP)",
+  HCA = "Human Cell Atlas (HCA)",
   HPAP = "Human Pancreas Analysis Program (HPAP)",
   HTAN = "Human Tumor Atlas Network (HTAN)",
   KPMP = "Kidney Precision Medicine Project (KPMP)",
