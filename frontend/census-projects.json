@@ -1,6 +1,6 @@
 [
   {
-    "tier": 3,
+    "tier": "community",
     "census_version": "LTS 1.0",
     "experiment_name": "homo_sapiens",
     "measurement_name": "RNA",
@@ -18,10 +18,11 @@
     "DOI": null,
     "publication_info": "Cul et al. (2023) bioRxiv",
     "publication_link": "",
+    "project_page": "https://example.com/",
     "notebook_links": [["link A", "https://example.com/"]]
   },
   {
-    "tier": 1,
+    "tier": "maintained",
     "census_version": "LTS 1.0",
     "experiment_name": "homo_sapiens",
     "measurement_name": "RNA",

@@ -86,7 +86,23 @@ const Project = ({ project, id }: ProjectProps) => {
         </DetailsContainer>
       </ProjectDetails>
       <ProjectButtons>
-        <EmbeddingButton project={project} />
+        {"project_page" in project && project.project_page && (
+          <Link href={project.project_page}>
+            <StyledButton
+              sdsType="secondary"
+              sdsStyle="square"
+              onClick={() => {
+                track(EVENTS.CENSUS_PROJECT_LINK_CLICKED, {
+                  project: project.title,
+                  category: projectTier,
+                });
+              }}
+            >
+              Project Page
+            </StyledButton>
+          </Link>
+        )}
+        {projectTier === "hosted" && <EmbeddingButton project={project} />}
         {project.model_link && (
           <Link href={project.model_link}>
             <StyledButton
