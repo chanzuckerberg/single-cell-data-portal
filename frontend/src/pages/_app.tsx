@@ -20,23 +20,6 @@ import "src/layout.css";
 
 const OG_PAGE_TITLE = "Cellxgene Data Portal";
 
-datadogRum.init({
-  applicationId: "44f77ca2-1482-404a-ad38-23499bb925e5",
-  clientToken: "pub55d4baaac2091f9656a83da732732a89",
-  site: "datadoghq.com",
-  service: "single-cell-data-portal",
-  env: process.env.NODE_ENV,
-  sessionSampleRate: 100,
-  sessionReplaySampleRate: 20,
-  trackUserInteractions: true,
-  trackResources: true,
-  trackLongTasks: true,
-  defaultPrivacyLevel: "mask-user-input",
-  allowedTracingUrls: [
-    "https://pr-6193-backend.rdev.single-cell.czi.technology",
-  ],
-});
-
 declare global {
   interface Window {
     plausible: {
@@ -58,6 +41,20 @@ type NextPageWithLayout = NextPage & {
 type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
 };
+
+datadogRum.init({
+  applicationId: "44f77ca2-1482-404a-ad38-23499bb925e5",
+  clientToken: "pub55d4baaac2091f9656a83da732732a89",
+  site: "datadoghq.com",
+  service: "single-cell-data-portal",
+  env: process.env.NODE_ENV,
+  sessionSampleRate: 100,
+  sessionReplaySampleRate: 20,
+  trackUserInteractions: true,
+  trackResources: true,
+  trackLongTasks: true,
+  defaultPrivacyLevel: "mask-user-input",
+});
 
 function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
   const Layout = Component.Layout || DefaultLayout;

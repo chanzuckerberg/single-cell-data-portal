@@ -30,7 +30,6 @@ const SCRIPT_SRC = [
   PLAUSIBLE_URL,
   TWITTER_URL,
   WISTIA_URL,
-  DATADOG_URL,
 ];
 
 const defaultSecureHeaders = {
