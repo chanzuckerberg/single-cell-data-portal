@@ -28,7 +28,7 @@ export default memo(function Filters({
     DropdownMenuProps,
     isHeatmapShown,
     InputDropdownProps,
-    datasets,
+    // datasets,
     selected,
     handle,
     terms,
@@ -40,20 +40,6 @@ export default memo(function Filters({
   return (
     <Wrapper>
       <FilterContainer>
-        <StyledComplexFilter
-          multiple
-          data-testid="dataset-filter"
-          search
-          label="Dataset"
-          options={datasets as unknown as DefaultMenuSelectOption[]}
-          onChange={handle.datasetsChange}
-          value={selected.datasets as unknown as DefaultMenuSelectOption[]}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
-          DropdownMenuProps={DropdownMenuProps}
-          InputDropdownProps={InputDropdownProps}
-        />
         <StyledComplexFilter
           multiple
           data-testid="disease-filter"
