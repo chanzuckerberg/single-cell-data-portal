@@ -1,3 +1,7 @@
+"""
+ Don't skip these tests https://github.com/chanzuckerberg/single-cell-data-portal/blob/655f391d81c89b403422ea81e0d5d69cf3427aa5/tests/functional/backend/corpora/test_api_key.py#L9
+ if modifying this code.
+"""
 from flask import make_response
 
 from backend.common.auth0_manager import auth0_management_session
