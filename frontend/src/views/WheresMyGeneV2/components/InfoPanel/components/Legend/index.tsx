@@ -1,9 +1,5 @@
-import { Dispatch, memo, MouseEventHandler, SetStateAction } from "react";
-import {
-  FilterDimensions,
-  OntologyTerm,
-} from "src/common/queries/wheresMyGene";
-import { CellType, ChartProps } from "src/views/WheresMyGeneV2/common/types";
+import { memo } from "react";
+
 import CitationButton from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/CitationButton";
 import SaveExport from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 import ShareButton from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/ShareButton";
@@ -12,26 +8,7 @@ import RelativeGeneExpression from "../RelativeGeneExpression";
 import { LegendWrapper } from "./style";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import SourceDataButton from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SourceDataButton";
-
-interface Props {
-  isScaled: boolean;
-  handleRightSidebarButtonClick: MouseEventHandler<HTMLButtonElement>;
-  selectedTissues?: Array<string>;
-  selectedGenes: Array<string>;
-  selectedCellTypes: { [tissue: string]: CellType[] };
-  setDownloadStatus: Dispatch<
-    SetStateAction<{
-      isLoading: boolean;
-    }>
-  >;
-  setEchartsRendererMode: Dispatch<SetStateAction<"canvas" | "svg">>;
-  allChartProps: { [tissue: string]: ChartProps };
-  availableFilters: Partial<FilterDimensions>;
-  tissues?: { [name: string]: OntologyTerm };
-  expandedTissueIds?: string[];
-  filteredCellTypes?: string[];
-  maxExpression: number;
-}
+import { Props } from "./types";
 
 export default memo(function Legend({
   isScaled,
