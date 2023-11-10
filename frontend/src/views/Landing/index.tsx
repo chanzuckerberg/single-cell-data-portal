@@ -135,6 +135,7 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "03.04.22 - bioRxiv",
+          citation: "DOI: https://doi.org/10.1101/2021.07.19.452956",
           ctaLink: "https://doi.org/10.1101/2021.07.19.452956",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -142,6 +143,7 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: "13.05.22 - Science",
+          citation: "DOI: 10.1126/science.abl4896",
           ctaLink: "https://www.science.org/doi/10.1126/science.abl4896",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -149,6 +151,7 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: SUB_HEADING,
+          citation: "The Tabula Sapiens Consortium et al. (2021) bioRxiv",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/e5f58829-1a66-40b5-a624-9046778e74f5",
           ctaText: CTA_TEXT_EXPLORE_DATASETS,
@@ -163,6 +166,7 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "13.05.22 - Science",
+          citation: "DOI: 10.1126/science.abl5197",
           ctaLink: "https://doi.org/10.1126/science.abl5197",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -170,6 +174,7 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: "20.07.21 - bioRxiv",
+          citation: "DOI: https://doi.org/10.1101/2021.04.28.441762",
           ctaLink: "https://doi.org/10.1101/2021.04.28.441762",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -177,6 +182,7 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: SUB_HEADING,
+          citation: "Domínguez Conde et al. (2022) Science",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/62ef75e4-cbea-454e-a0ce-998ec40223d3",
           ctaText: CTA_TEXT_EXPLORE_DATASETS,
@@ -190,6 +196,7 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "11.03.21 - bioRxiv",
+          citation: "DOI: https://doi.org/10.1101/2022.03.10.483747",
           ctaLink: "https://doi.org/10.1101/2022.03.10.483747",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -197,6 +204,7 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: SUB_HEADING,
+          citation: "Sikkema et al. (2022) bioRxiv",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/6f6d381a-7701-4781-935c-db10d30de293",
           ctaText: CTA_TEXT_EXPLORE_DATASETS,
@@ -211,6 +219,7 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "08.04.22 - Science",
+          citation: "DOI: 10.1126/science.abf3041",
           ctaLink: "https://doi.org/10.1126/science.abf3041",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -218,6 +227,7 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: SUB_HEADING,
+          citation: "Yazar et al. (2022) Science",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/dde06e0f-ab3b-46be-96a2-a8082383c4a1",
           ctaText: CTA_TEXT_EXPLORE_DATASETS,
@@ -232,6 +242,7 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "08.04.22 - Science",
+          citation: "DOI: 10.1126/science.abf1970",
           ctaLink: "https://doi.org/10.1126/science.abf1970",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -239,6 +250,7 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: SUB_HEADING,
+          citation: "Perez et al. (2022) Science",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/436154da-bcf1-4130-9c8b-120ff9a888f2",
           ctaText: CTA_TEXT_EXPLORE_DATASETS,
@@ -851,9 +863,14 @@ const LandingPage = (): JSX.Element => {
                       }`}
                       key={`article-${articleIndex}-link-${linkIndex}`}
                     >
-                      <span className={styles.pubArticleDate}>
-                        {link.subheading}
-                      </span>
+                      <div className={styles.pubArticleCitationContainer}>
+                        <span className={styles.pubArticleDate}>
+                          {link.subheading}
+                        </span>
+                        <span className={styles.pubArticleCitation}>
+                          {link.citation}
+                        </span>
+                      </div>
                       <div className={styles.pubArticleSubRowInner}>
                         <a
                           className={styles.pubArticleLink}

@@ -578,6 +578,17 @@
     margin-top: 75px;
   }
 
+  &CitationContainer {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &Citation {
+    font-size: 14px;
+    line-height: 24px;
+    color: #545454;
+  }
+
   &Date {
     display: inline-block;
     font-size: 13px;
