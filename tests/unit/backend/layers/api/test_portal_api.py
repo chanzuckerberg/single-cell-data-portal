@@ -1765,7 +1765,7 @@ class TestDataset(BaseAPIPortalTest):
                 # append the dataset_id to the list of dataset ids
                 dataset_ids.append(dataset["dataset_id"])
 
-        self.assertEqual(len(dataset_ids), 6)
+        self.assertEqual(len(dataset_ids), 8)
 
         dataset_ids = list(dataset_ids)
         print("dataset_ids: ", dataset_ids)
