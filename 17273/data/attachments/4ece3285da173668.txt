@@ -1,0 +1,13 @@
+INFO     backend.layers.business.business:business.py:390 {'message': 'ingesting dataset', 'collection_version_id': 67eec62b-eed5-42d6-8526-81939302c6d7, 'url': 'http://fake.url', 'existing_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:390 {'message': 'ingesting dataset', 'collection_version_id': 67eec62b-eed5-42d6-8526-81939302c6d7, 'url': 's3://fake.bucket/raw.h5ad', 'existing_dataset_version_id': 985dd906-e2e2-413c-8183-d748dc3f18eb}
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_download.py:159 {'JobDefinitionName': 'dp-test-ingest-process-b90c56ea-4c52-4087-b235-b0f2c4e1a4d2', 'Vcpus': 2, 'Memory': 16000, 'LinuxParameters': {'Swappiness': 60, 'MaxSwap': 0}}
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:91 Uploaded [b90c56ea-4c52-4087-b235-b0f2c4e1a4d2/raw.h5ad] to s3://artifact_bucket/b90c56ea-4c52-4087-b235-b0f2c4e1a4d2/raw.h5ad
+INFO     processing:process_logic.py:93 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+ERROR    processing:dataset_metadata_update.py:207 Cannot find cxg artifact uri for 985dd906-e2e2-413c-8183-d748dc3f18eb.
