@@ -117,7 +117,7 @@ class ProcessValidate(ProcessingLogic):
         )
         adata = scanpy.read_h5ad(adata_path)
         adata.uns["citation"] = citation
-        adata.write(adata_path)
+        adata.write(adata_path, compression="gzip")
 
     @logit
     def extract_metadata(self, filename) -> DatasetMetadata:
