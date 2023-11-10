@@ -1,0 +1,13 @@
+INFO     backend.layers.business.business:business.py:390 {'message': 'ingesting dataset', 'collection_version_id': 80827452-1d34-4e8d-b113-ac0afad4ba21, 'url': 'http://fake.url', 'existing_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:390 {'message': 'ingesting dataset', 'collection_version_id': 80827452-1d34-4e8d-b113-ac0afad4ba21, 'url': 's3://fake.bucket/raw.h5ad', 'existing_dataset_version_id': 1e5eff53-f8b1-4042-be58-b2d461e3b2e7}
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_download.py:159 {'JobDefinitionName': 'dp-test-ingest-process-829861d6-6a6f-4d92-9da1-f259fd026d7f', 'Vcpus': 2, 'Memory': 16000, 'LinuxParameters': {'Swappiness': 60, 'MaxSwap': 0}}
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:91 Uploaded [829861d6-6a6f-4d92-9da1-f259fd026d7f/raw.h5ad] to s3://artifact_bucket/829861d6-6a6f-4d92-9da1-f259fd026d7f/raw.h5ad
+INFO     processing:process_logic.py:93 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+ERROR    processing:dataset_metadata_update.py:184 Cannot find labeled H5AD artifact uri for 1e5eff53-f8b1-4042-be58-b2d461e3b2e7.
