@@ -64,7 +64,7 @@ class DatasetMetadataUpdate(ProcessDownload):
             adata.uns[key] = val
             if hasattr(metadata, key):
                 setattr(metadata, key, val)
-        adata.write(h5ad_filename)
+        adata.write(h5ad_filename, compression="gzip")
         self.business_logic.set_dataset_metadata(new_dataset_version_id, metadata)
 
         self.create_artifact(
