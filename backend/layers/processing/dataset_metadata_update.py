@@ -32,6 +32,9 @@ from backend.layers.thirdparty.uri_provider import UriProvider
 
 configure_logging(level=logging.INFO)
 
+base = importr("base")
+seurat = importr("SeuratObject")
+
 
 class DatasetMetadataUpdate(ProcessDownload):
     def __init__(
@@ -91,15 +94,13 @@ class DatasetMetadataUpdate(ProcessDownload):
         )
         self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTING)
 
-        base = importr("base")
-        seurat = importr("SeuratObject")
-
         rds_object = base.readRDS(seurat_filename)
 
         for key, val in metadata_update_dict.items():
             seurat_metadata = seurat.Misc(object=rds_object)
             if seurat_metadata.rx2[key]:
-                seurat_metadata[seurat_metadata.names.index(key)] = StrVector(list(val))
+                val = val if isinstance(val, list) else [val]
+                seurat_metadata[seurat_metadata.names.index(key)] = StrVector(val)
 
         base.saveRDS(rds_object, file=seurat_filename)
 
@@ -117,11 +118,10 @@ class DatasetMetadataUpdate(ProcessDownload):
     def update_cxg(
         self,
         cxg_s3_uri: str,
-        key_prefix: str,
+        new_cxg_dir: str,
         dataset_version_id: DatasetVersionId,
         metadata_update_dict: Dict[str, str],
     ):
-        new_cxg_dir = f"s3://{self.cellxgene_bucket}/{key_prefix}.cxg/"
         self.s3_provider.upload_directory(cxg_s3_uri, new_cxg_dir)
         ctx = tiledb.Ctx(
             {
@@ -130,9 +130,14 @@ class DatasetMetadataUpdate(ProcessDownload):
             }
         )
         array_name = f"{new_cxg_dir}/cxg_group_metadata"
-        with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
+        with tiledb.open(array_name, mode="r", ctx=ctx) as metadata_array:
+            cxg_metadata_dict = json.loads(metadata_array.meta["corpora"])
             for key, value in metadata_update_dict.items():
-                metadata_array.meta[key] = value
+                cxg_metadata_dict[key] = value
+
+        with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
+            metadata_array.meta["corpora"] = json.dumps(cxg_metadata_dict)
+
         self.business_logic.add_dataset_artifact(dataset_version_id, DatasetArtifactType.CXG, new_cxg_dir)
         self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.CONVERTED)
 
@@ -148,7 +153,12 @@ class DatasetMetadataUpdate(ProcessDownload):
             return
 
         artifact_uris = {artifact.type: artifact.uri for artifact in original_dataset_version.artifacts}
-        raw_h5ad_uri = artifact_uris[DatasetArtifactType.RAW_H5AD]
+
+        if DatasetArtifactType.RAW_H5AD in artifact_uris:
+            raw_h5ad_uri = artifact_uris[DatasetArtifactType.RAW_H5AD]
+        else:
+            self.logger.error(f"Cannot find raw H5AD artifact uri for {dataset_version_id}.")
+            raise ValueError
 
         new_dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
             collection_version_id=collection_version_id,
@@ -188,7 +198,10 @@ class DatasetMetadataUpdate(ProcessDownload):
 
         if DatasetArtifactType.CXG in artifact_uris:
             self.update_cxg(
-                artifact_uris[DatasetArtifactType.CXG], key_prefix, new_dataset_version_id, metadata_update_dict
+                artifact_uris[DatasetArtifactType.CXG],
+                f"s3://{self.cellxgene_bucket}/{key_prefix}.cxg",
+                new_dataset_version_id,
+                metadata_update_dict,
             )
         else:
             self.logger.error(f"Cannot find cxg artifact uri for {dataset_version_id}.")
