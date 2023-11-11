@@ -9,7 +9,7 @@ class TestFeatureFlag(unittest.TestCase):
         super().setUp()
 
         def mock_config_fn(name):
-            if name == FeatureFlag.SCHEMA_4:
+            if name == FeatureFlag.SCHEMA_4.value:
                 return "True"
 
         self.mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
