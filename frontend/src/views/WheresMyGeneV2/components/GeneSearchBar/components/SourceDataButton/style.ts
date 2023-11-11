@@ -10,12 +10,13 @@ import { error400, fontWeightSemibold } from "src/common/theme";
 
 interface ButtonProps {
   reference?: boolean;
+  refrenceCountSmall?: boolean;
 }
 
 export const BadgeCounter = styled(Badge)`
   background-color: ${error400};
   border-radius: 12px;
-  width: 22px;
+  width: ${(props) => (props.addMargin ? "28px" : "22px")};
   height: 16px;
   text-align: center;
   position: relative;
@@ -60,6 +61,5 @@ export const StyledButtonIcon = styled(ButtonIcon)<ButtonProps>`
   position: relative;
   cursor: pointer;
   top: ${(props) => (props.reference ? "-12px" : "4px")};
-  /* top: -12px; */
   z-index: 1;
 `;

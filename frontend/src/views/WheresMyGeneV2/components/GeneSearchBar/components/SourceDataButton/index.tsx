@@ -20,7 +20,12 @@ export default function SourceDataButton({
   return (
     <StyledButtonDiv className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
       <StyledLabel>Source Data</StyledLabel>
-      {referenceCount > 0 && <BadgeCounter badgeContent={referenceCount} />}
+      {referenceCount > 0 && (
+        <BadgeCounter
+          badgeContent={referenceCount}
+          addMargin={referenceCount > 99}
+        />
+      )}
       <StyledButtonIcon
         data-testid={"source-data-button"}
         onClick={(event) => {

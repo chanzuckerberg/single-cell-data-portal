@@ -1,10 +1,6 @@
-import { useContext, useMemo } from "react";
+import { useContext } from "react";
 import { StateContext } from "src/views/WheresMyGeneV2/common/store";
-import {
-  aggregateCollectionsFromDatasets,
-  useFilterDimensions,
-} from "src/common/queries/wheresMyGene";
-import { Collections } from "./types";
+import { useFilterDimensions } from "src/common/queries/wheresMyGene";
 
 export const useConnect = () => {
   const { selectedFilters } = useContext(StateContext);
@@ -18,9 +14,7 @@ export const useConnect = () => {
     );
   }
 
-  const collections: Collections = useMemo(() => {
-    return aggregateCollectionsFromDatasets(datasets);
-  }, [datasets]);
+  const referenceCount = datasets.length;
 
-  return { collections };
+  return { referenceCount };
 };

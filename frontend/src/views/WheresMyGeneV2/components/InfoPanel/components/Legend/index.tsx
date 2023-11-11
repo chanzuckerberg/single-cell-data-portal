@@ -8,6 +8,7 @@ import RelativeGeneExpression from "../RelativeGeneExpression";
 import { ActionsWrapper, ColorLegendWrapper, LegendWrapper } from "./style";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import SourceDataButton from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SourceDataButton";
+import { useConnect } from "./connect";
 import { Props } from "./types";
 
 export default memo(function Legend({
@@ -24,8 +25,7 @@ export default memo(function Legend({
   filteredCellTypes,
   maxExpression,
 }: Props): JSX.Element {
-  const references = 22;
-
+  const { referenceCount } = useConnect();
   return (
     <LegendWrapper data-testid="legend-wrapper">
       <ActionsWrapper>
@@ -44,7 +44,7 @@ export default memo(function Legend({
         <CitationButton />
         <SourceDataButton
           handleRightSidebarButtonClick={handleRightSidebarButtonClick}
-          referenceCount={references}
+          referenceCount={referenceCount}
         />
       </ActionsWrapper>
       <ColorLegendWrapper>
