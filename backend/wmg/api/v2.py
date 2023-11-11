@@ -36,7 +36,6 @@ from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2132
 
-profiler = Profile()
 logger = logging.getLogger("wmg-v2-api")
 
 
@@ -55,6 +54,7 @@ def primary_filter_dimensions():
 
 @tracer.wrap(name="query", service="wmg-api", resource="query", span_type="wmg-api")
 def query():
+    profiler = Profile()
     request = connexion.request.json
     sanitize_api_query_dict(request["filter"])
 
