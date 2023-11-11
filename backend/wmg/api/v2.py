@@ -1,4 +1,8 @@
+import io
+import logging
 from collections import defaultdict
+from cProfile import Profile
+from pstats import Stats
 from typing import Any, Dict, Iterable, List
 
 import connexion
@@ -28,10 +32,12 @@ from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find_dim_option_values
 
-
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2132
+
+profiler = Profile()
+logger = logging.getLogger("wmg-v2-api")
 
 
 @tracer.wrap(
@@ -78,11 +84,16 @@ def query():
                 default = False
                 break
 
-        expression_summary = (
-            q.expression_summary_default(criteria)
-            if default
-            else q.expression_summary(criteria, compare_dimension=compare)
-        )
+        if default:
+            expression_summary = q.expression_summary_default(criteria)
+        else:
+            expression_summary = profiler.runcall(q.expression_summary, criteria, compare_dimension=compare)
+            s = io.StringIO()
+            stats = Stats(profiler, stream=s)
+            stats.strip_dirs()
+            stats.sort_stats("cumulative")
+            stats.print_stats()
+            logger.info(f"PRATHAP Profiler stats: {s.getvalue()}")
 
         cell_counts = q.cell_counts(criteria, compare_dimension=compare)
 
