@@ -185,6 +185,7 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
 
     snapshot_base_uri = _get_wmg_snapshot_dir_s3_uri(snapshot_dir_path)
     logger.info(f"Loading WMG snapshot from directory path {snapshot_dir_path} into URI {snapshot_base_uri}")
+    logger.info("PRATHAP: Adding some random")
 
     # TODO: Okay to keep TileDB arrays open indefinitely? Is it faster than re-opening each request?
     #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
