@@ -85,7 +85,13 @@ def query():
                 break
 
         if default:
-            expression_summary = q.expression_summary_default(criteria)
+            expression_summary = profiler.runcall(q.expression_summary_default, criteria)
+            s = io.StringIO()
+            stats = Stats(profiler, stream=s)
+            stats.strip_dirs()
+            stats.sort_stats("cumulative")
+            stats.print_stats()
+            logger.info(f"PRATHAP!!! Profiling expression_summary_default:\n{s.getvalue()}")
         else:
             expression_summary = profiler.runcall(q.expression_summary, criteria, compare_dimension=compare)
             s = io.StringIO()
@@ -93,7 +99,7 @@ def query():
             stats.strip_dirs()
             stats.sort_stats("cumulative")
             stats.print_stats()
-            logger.info(f"PRATHAP!!! Profiler stats: {s.getvalue()}")
+            logger.info(f"PRATHAP!!! Profiling expression_summary:\n{s.getvalue()}")
 
         cell_counts = q.cell_counts(criteria, compare_dimension=compare)
 
