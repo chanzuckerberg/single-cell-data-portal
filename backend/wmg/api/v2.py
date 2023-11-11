@@ -93,7 +93,7 @@ def query():
             stats.strip_dirs()
             stats.sort_stats("cumulative")
             stats.print_stats()
-            logger.info(f"PRATHAP Profiler stats: {s.getvalue()}")
+            logger.info(f"PRATHAP!!! Profiler stats: {s.getvalue()}")
 
         cell_counts = q.cell_counts(criteria, compare_dimension=compare)
 
