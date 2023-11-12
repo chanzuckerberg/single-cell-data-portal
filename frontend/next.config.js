@@ -49,7 +49,7 @@ const defaultSecureHeaders = {
       defaultSrc: [
         "'self'",
         HUBSPOT_FORMS_URL,
-        "https://pr-6189-backend.rdev.single-cell.czi.technology",
+        "https://pr-6189-frontend.rdev.single-cell.czi.technology/",
       ],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       formAction: ["'self'", HUBSPOT_FORMS_URL],
