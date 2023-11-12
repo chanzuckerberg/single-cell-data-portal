@@ -46,7 +46,11 @@ const defaultSecureHeaders = {
         CROSS_REF_URL,
         DATADOG_URL,
       ],
-      defaultSrc: ["'self'", HUBSPOT_FORMS_URL],
+      defaultSrc: [
+        "'self'",
+        HUBSPOT_FORMS_URL,
+        "https://pr-6189-backend.rdev.single-cell.czi.technology",
+      ],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       formAction: ["'self'", HUBSPOT_FORMS_URL],
       frameAncestors: ["'none'"],
