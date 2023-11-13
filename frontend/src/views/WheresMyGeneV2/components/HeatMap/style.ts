@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { CommonThemeProps, TagFilter } from "@czi-sds/components";
 
-import { gray300, spacesM, spacesS, spacesXs } from "src/common/theme";
+import { gray300, spacesM, spacesS } from "src/common/theme";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import {
   CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
