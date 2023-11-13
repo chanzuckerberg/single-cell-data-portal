@@ -230,8 +230,21 @@ resource "aws_sfn_state_machine" "state_machine" {
                     ]
                   }
                 },
+                "Catch": [
+                  {
+                    "ErrorEquals": [
+                      "States.ALL"
+                    ],
+                    "Next": "CatchCxgFailure",
+                    "ResultPath": "$.error"
+                  }
+                ],
                 "ResultPath": null,
                 "TimeoutSeconds": 360000
+              },
+              "CatchCxgFailure": {
+                "Type": "Pass",
+                "End": true
               }
             }
           },
