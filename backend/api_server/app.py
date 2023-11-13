@@ -119,7 +119,16 @@ def configure_flask_app(flask_app):
         max_age=600,
         supports_credentials=True,
         origins=allowed_origins,
-        allow_headers=["Content-Type", "Authorization", "traceparent"],
+        allow_headers=[
+            "Content-Type",
+            "Authorization",
+            "traceparent",
+            "x-datadog-trace-id",
+            "x-datadog-parent-id",
+            "x-datadog-origin",
+            "x-datadog-sampling-priority"
+        ], 
+        methods=["OPTIONS"],
     )
     ServerTiming(flask_app, force_debug=True)
     # FIXME, enforce that the flask_secret_key is found once all secrets are setup for all environments
