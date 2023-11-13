@@ -5,6 +5,7 @@ from backend.layers.common.entities import (
     DatasetStatusKey,
     DatasetVersionId,
 )
+from backend.layers.processing.h5ad_data_file import H5ADDataFile
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
@@ -72,15 +73,14 @@ class ProcessCxg(ProcessingLogic):
         """
 
         cxg_output_container = local_filename.replace(".h5ad", ".cxg")
-        raise RuntimeError("DJH Test fail")
-        # try:
-        #     h5ad_data_file = H5ADDataFile(local_filename, var_index_column_name="feature_name")
-        #     h5ad_data_file.to_cxg(cxg_output_container, sparse_threshold=25.0)
-        # except Exception as ex:
-        #     # TODO use a specialized exception
-        #     msg = "CXG conversion failed."
-        #     self.logger.exception(msg)
-        #     raise RuntimeError(msg) from ex
+        try:
+            h5ad_data_file = H5ADDataFile(local_filename, var_index_column_name="feature_name")
+            h5ad_data_file.to_cxg(cxg_output_container, sparse_threshold=25.0)
+        except Exception as ex:
+            # TODO use a specialized exception
+            msg = "CXG conversion failed."
+            self.logger.exception(msg)
+            raise RuntimeError(msg) from ex
 
         return cxg_output_container
 
