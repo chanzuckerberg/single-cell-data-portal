@@ -90,6 +90,15 @@ module.exports = {
   headers() {
     return [
       {
+        headers: [
+          "Access-Control-Allow-Headers",
+          "x-datadog-trace-id, x-datadog-trace-id, x-datadog-origin: rum, x-datadog-sampling-priority: 1",
+        ],
+      },
+      {
+        headers: ["Access-Control-Allow-Methods", "OPTIONS"],
+      },
+      {
         headers: createSecureHeaders(defaultSecureHeaders),
         source: "/(.*)",
       },
