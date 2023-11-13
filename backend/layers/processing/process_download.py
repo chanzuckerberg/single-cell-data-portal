@@ -97,7 +97,7 @@ class ProcessDownload(ProcessingLogic):
         :param memory_modifier: A multiplier to increase/decrease the memory requirements by
         :param min_vcpu: The minimum number of vCPUs to allocate.
         :param max_vcpu: The maximum number of vCPUs to allocate.
-        :param memory_per_vcpu: The amount of memory to allocate per vCPU.
+        :param memory_per_vcpu: The amount of memory to allocate per vCPU. 8000 MB is what AWS uses as the ratio
         :param swap_modifier: The multiplier to increase/decrease the swap memory requirements by
         :param max_swap_memory_MB: The maximum amount of swap memory to allocate.
         :return: A dictionary containing the resource requirements
