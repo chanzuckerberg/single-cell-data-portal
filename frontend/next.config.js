@@ -20,7 +20,7 @@ const HUBSPOT_FORMS_URL = "https://forms.hsforms.com";
 
 const CROSS_REF_URL = "https://api.crossref.org";
 
-const DATADOG_URL = "browser-intake-datadoghq.com";
+const DATADOG_URL = "https://browser-intake-datadoghq.com";
 
 const SCRIPT_SRC = [
   "'self'",
@@ -30,6 +30,7 @@ const SCRIPT_SRC = [
   PLAUSIBLE_URL,
   TWITTER_URL,
   WISTIA_URL,
+  DATADOG_URL,
 ];
 
 const defaultSecureHeaders = {

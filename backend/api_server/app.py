@@ -27,7 +27,7 @@ configure_logging(APP_NAME)
 
 def should_configure_datadog_tracing():
     return (
-        DEPLOYMENT_STAGE in ["dev", "staging", "prod"]
+        DEPLOYMENT_STAGE in ["rdev", "dev", "staging", "prod"]
         and os.environ.get("DD_AGENT_HOST", None)
         and os.environ.get("DD_TRACE_AGENT_PORT", None)
     )
@@ -114,7 +114,22 @@ def configure_flask_app(flask_app):
                 frontend_parse = urlparse(frontend)
                 allowed_origins.append(f"{frontend_parse.scheme}://{frontend_parse.netloc}")
     flask_app.logger.info(f"CORS allowed_origins: {allowed_origins}")
-    CORS(flask_app, max_age=600, supports_credentials=True, origins=allowed_origins, allow_headers=["Content-Type"])
+    CORS(
+        flask_app,
+        max_age=600,
+        supports_credentials=True,
+        origins=allowed_origins,
+        allow_headers=[
+            "Content-Type",
+            "Authorization",
+            "traceparent",
+            "x-datadog-trace-id",
+            "x-datadog-parent-id",
+            "x-datadog-origin",
+            "x-datadog-sampling-priority",
+        ],
+        methods=["OPTIONS"],
+    )
     ServerTiming(flask_app, force_debug=True)
     # FIXME, enforce that the flask_secret_key is found once all secrets are setup for all environments
     require_secure_cookies = not bool(os.getenv("DEV_MODE_COOKIES"))

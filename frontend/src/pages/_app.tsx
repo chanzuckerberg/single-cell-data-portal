@@ -54,6 +54,11 @@ datadogRum.init({
   trackResources: true,
   trackLongTasks: true,
   defaultPrivacyLevel: "mask-user-input",
+  allowedTracingUrls: [
+    configs.API_URL,
+    /https:\/\/.*\.rdev.single-cell.czi\.technology/,
+    (url) => url.startsWith(configs.API_URL),
+  ],
 });
 
 function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
