@@ -1,1 +1,0 @@
-{"levelname": "INFO", "asctime": "2023-11-09T21:58:01.009Z", "name": "root", "message": "create /single-cell-data-portal/tests/unit/backend/fixtures/4630011e-d471-4631-8e5f-7c79474a7613/awesome_matrix_c4ac07a6-89fa-4d0b-b1c7-0569920c0c29", "lineno": 185, "pathname": "/single-cell-data-portal/backend/common/utils/cxg_generation_utils.py", "request_id": ""}
