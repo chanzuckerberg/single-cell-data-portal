@@ -54,7 +54,7 @@ def cprofile_query(*, is_default, q, criteria, compare=None, measure_io=False):
         stats = Stats(profiler, stream=s)
         stats.strip_dirs()
         stats.sort_stats("cumulative")
-        stats.print_callers()
+        stats.print_stats()
         logger.info(
             f"PRATHAP!!! Profiling expression_summary_default with measure_io flag set to: {measure_io}:\n{s.getvalue()}"
         )
@@ -64,7 +64,7 @@ def cprofile_query(*, is_default, q, criteria, compare=None, measure_io=False):
         stats = Stats(profiler, stream=s)
         stats.strip_dirs()
         stats.sort_stats("cumulative")
-        stats.print_callers()
+        stats.print_stats()
         logger.info(
             f"PRATHAP!!! Profiling expression_summary with measure_io flag set to: {measure_io}:\n{s.getvalue()}"
         )
