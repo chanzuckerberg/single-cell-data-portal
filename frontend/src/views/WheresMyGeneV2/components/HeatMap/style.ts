@@ -27,6 +27,7 @@ export function xAxisOffset(props: CommonThemeProps) {
 }
 
 const PADDING_UNDER_HEADERS_PX = 5;
+const TOP_LEFT_CORNER_OFFSET_PX = 6;
 
 export const SELECTED_STYLE = {
   backgroundColor: LIGHT_GRAY.D,
@@ -106,7 +107,7 @@ export const TopLeftCornerMask = styled.div<TopLeftCornerMaskProps>`
   z-index: ${ZIndex.TopLeftCornerMask};
   top: 0px;
   left: 0px;
-  width: ${Y_AXIS_CHART_WIDTH_PX}px;
+  width: ${Y_AXIS_CHART_WIDTH_PX + TOP_LEFT_CORNER_OFFSET_PX}px;
   height: ${(props) =>
     props.height + xAxisOffset(props) || X_AXIS_CHART_HEIGHT_PX}px;
   min-height: ${(props) => props.height}px;
