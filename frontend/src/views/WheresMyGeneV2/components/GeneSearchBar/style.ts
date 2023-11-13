@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { fontBodyXxs } from "@czi-sds/components";
-import { gray500, spacesM } from "src/common/theme";
+import { gray500 } from "src/common/theme";
 import { Button } from "@czi-sds/components";
 import { HEADER_HEIGHT_PX } from "src/components/LandingHeader/style";
 import {
