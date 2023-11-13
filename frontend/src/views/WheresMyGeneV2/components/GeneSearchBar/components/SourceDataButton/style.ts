@@ -9,14 +9,13 @@ import { Badge } from "@mui/base";
 import { error400, fontWeightSemibold } from "src/common/theme";
 
 interface ButtonProps {
-  reference?: boolean;
   refrenceCountSmall?: boolean;
 }
 
 export const BadgeCounter = styled(Badge)`
   background-color: ${error400};
   border-radius: 12px;
-  width: ${(props) => (props.addMargin ? "28px" : "22px")};
+  width: 28px;
   height: 16px;
   text-align: center;
   position: relative;
@@ -58,8 +57,8 @@ export const StyledLabel = styled.div`
 export const StyledButtonIcon = styled(ButtonIcon)<ButtonProps>`
   width: 30px;
   height: 30px;
-  position: relative;
+  position: absolute;
   cursor: pointer;
-  top: ${(props) => (props.reference ? "-12px" : "4px")};
+  top: 99px;
   z-index: 1;
 `;

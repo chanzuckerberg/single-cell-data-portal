@@ -16,16 +16,10 @@ export default function SourceDataButton({
   handleRightSidebarButtonClick: MouseEventHandler<HTMLButtonElement>;
   referenceCount: number;
 }): JSX.Element {
-  const reference = referenceCount !== 0;
   return (
     <StyledButtonDiv className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
       <StyledLabel>Source Data</StyledLabel>
-      {referenceCount > 0 && (
-        <BadgeCounter
-          badgeContent={referenceCount}
-          addMargin={referenceCount > 99}
-        />
-      )}
+      {referenceCount > 0 && <BadgeCounter badgeContent={referenceCount} />}
       <StyledButtonIcon
         data-testid={"source-data-button"}
         onClick={(event) => {
@@ -35,7 +29,6 @@ export default function SourceDataButton({
         sdsSize="medium"
         sdsType="primary"
         sdsIcon="infoCircle"
-        reference={reference}
       />
     </StyledButtonDiv>
   );

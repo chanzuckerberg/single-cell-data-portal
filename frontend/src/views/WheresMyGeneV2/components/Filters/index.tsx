@@ -28,7 +28,6 @@ export default memo(function Filters({
     DropdownMenuProps,
     isHeatmapShown,
     InputDropdownProps,
-    // datasets,
     selected,
     handle,
     terms,
