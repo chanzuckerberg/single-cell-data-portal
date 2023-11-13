@@ -119,7 +119,7 @@ def configure_flask_app(flask_app):
         max_age=600,
         supports_credentials=True,
         origins=allowed_origins,
-        allow_headers=["Content-Type", "traceparent"],
+        allow_headers=["Content-Type"],
         methods=["OPTIONS"],
     )
     ServerTiming(flask_app, force_debug=True)
