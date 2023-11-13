@@ -93,8 +93,7 @@ module.exports = {
         headers: [
           {
             key: "Access-Control-Allow-Headers",
-            value:
-              "x-datadog-trace-id, x-datadog-trace-id, x-datadog-origin: rum, x-datadog-sampling-priority: 1",
+            value: "traceparent",
           },
           { key: "Access-Control-Allow-Methods", value: "OPTIONS" },
         ],
