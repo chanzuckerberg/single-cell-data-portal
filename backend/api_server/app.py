@@ -127,7 +127,7 @@ def configure_flask_app(flask_app):
             "x-datadog-parent-id",
             "x-datadog-origin",
             "x-datadog-sampling-priority",
-        ], 
+        ],
         methods=["OPTIONS"],
     )
     ServerTiming(flask_app, force_debug=True)
