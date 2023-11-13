@@ -185,6 +185,9 @@ services:
     platform: linux/amd64
     profiles:
       - processing
+    depends_on:
+      - localstack
+      - database
     build:
       context: .
       cache_from:
@@ -251,7 +254,7 @@ services:
     networks:
       corporanet:
         aliases:
-          - processing.corporanet.local
+          - wmg.corporanet.local
   cellguide_pipeline:
     image: "${DOCKER_REPO}cellguide-pipeline"
     platform: linux/amd64
@@ -286,7 +289,7 @@ services:
     networks:
       corporanet:
         aliases:
-          - processing.corporanet.local
+          - cg.corporanet.local
   backend:
     image: "${DOCKER_REPO}corpora-backend"
     platform: linux/amd64
