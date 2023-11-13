@@ -7,7 +7,6 @@ export const LegendWrapper = styled.div`
   width: 100%;
   height: ${LEGEND_HEIGHT_PX}px;
   justify-content: space-between;
-  height: ${LEGEND_HEIGHT_PX}px;
 `;
 
 export const ActionsWrapper = styled.div`

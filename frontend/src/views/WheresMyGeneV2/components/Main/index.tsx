@@ -81,9 +81,6 @@ export default function WheresMyGene(): JSX.Element {
     tissuesByID = generateTermsByKey(tissues, "id");
   }
 
-  // const referenceCount = 22;
-  // const [referenceCount, setReferenceCount] = useState<number>(0);
-
   const [allChartProps, setAllChartProps] = useState<{
     [tissue: string]: ChartProps;
   }>({});
