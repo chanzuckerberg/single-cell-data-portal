@@ -1,5 +1,6 @@
 import io
 import logging
+import os
 from collections import defaultdict
 from cProfile import Profile
 from pstats import Stats
@@ -39,6 +40,38 @@ from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find
 logger = logging.getLogger("wmg-v2-api")
 
 
+def not_cpu_time():
+    times = os.times()
+    return times.elapsed - (times.system + times.user)
+
+
+def cprofile_query(*, is_default, q, criteria, compare=None, measure_io=False):
+    profiler = Profile(not_cpu_time) if measure_io else Profile()
+
+    if is_default:
+        expression_summary = profiler.runcall(q.expression_summary_default, criteria)
+        s = io.StringIO()
+        stats = Stats(profiler, stream=s)
+        stats.strip_dirs()
+        stats.sort_stats("cumulative")
+        stats.print_callers()
+        logger.info(
+            f"PRATHAP!!! Profiling expression_summary_default with measure_io flag set to: {measure_io}:\n{s.getvalue()}"
+        )
+    else:
+        expression_summary = profiler.runcall(q.expression_summary, criteria, compare_dimension=compare)
+        s = io.StringIO()
+        stats = Stats(profiler, stream=s)
+        stats.strip_dirs()
+        stats.sort_stats("cumulative")
+        stats.print_callers()
+        logger.info(
+            f"PRATHAP!!! Profiling expression_summary with measure_io flag set to: {measure_io}:\n{s.getvalue()}"
+        )
+
+    return expression_summary
+
+
 @tracer.wrap(
     name="primary_filter_dimensions", service="wmg-api", resource="primary_filter_dimensions", span_type="wmg-api"
 )
@@ -54,7 +87,6 @@ def primary_filter_dimensions():
 
 @tracer.wrap(name="query", service="wmg-api", resource="query", span_type="wmg-api")
 def query():
-    profiler = Profile()
     request = connexion.request.json
     sanitize_api_query_dict(request["filter"])
 
@@ -84,22 +116,9 @@ def query():
                 default = False
                 break
 
-        if default:
-            expression_summary = profiler.runcall(q.expression_summary_default, criteria)
-            s = io.StringIO()
-            stats = Stats(profiler, stream=s)
-            stats.strip_dirs()
-            stats.sort_stats("cumulative")
-            stats.print_stats()
-            logger.info(f"PRATHAP!!! Profiling expression_summary_default:\n{s.getvalue()}")
-        else:
-            expression_summary = profiler.runcall(q.expression_summary, criteria, compare_dimension=compare)
-            s = io.StringIO()
-            stats = Stats(profiler, stream=s)
-            stats.strip_dirs()
-            stats.sort_stats("cumulative")
-            stats.print_stats()
-            logger.info(f"PRATHAP!!! Profiling expression_summary:\n{s.getvalue()}")
+        expression_summary = cprofile_query(
+            is_default=default, q=q, criteria=criteria, compare=compare, measure_io=True
+        )
 
         cell_counts = q.cell_counts(criteria, compare_dimension=compare)
 
