@@ -5,6 +5,7 @@ from typing import Any, Dict
 
 import scanpy
 
+from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.common.utils.dl_sources.uri import DownloadFailed
 from backend.common.utils.math_utils import MB
@@ -23,14 +24,7 @@ from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
-MEMORY_MODIFIER = 2  # adds (x*100)% memory overhead
-MEMORY_PER_VCPU = 8000
-MIN_MEMORY_MB = 16000
-# The largest machine we are allocating is r5a.24xlarge. This machine has 768GB of memory and 96 vCPUs.
-MAX_MEMORY_MB = 768000
-MAX_VCPU = 96
-SWAP_MODIFIER = 0  # 0 b/c no swap machines are used.
-MAX_SWAP_MEMORY_MB = 300000
+config = CorporaConfig()
 
 
 class ProcessDownload(ProcessingLogic):
@@ -89,21 +83,19 @@ class ProcessDownload(ProcessingLogic):
     @staticmethod
     def estimate_resource_requirements(
         adata: scanpy.AnnData,
-        memory_modifier: float = MEMORY_MODIFIER,
-        min_memory_MB: int = MIN_MEMORY_MB,
-        max_memory_MB: int = MAX_MEMORY_MB,
-        max_vcpu: int = MAX_VCPU,
-        max_swap_memory_MB: int = MAX_SWAP_MEMORY_MB,
-        swap_modifier: int = SWAP_MODIFIER,
-        memory_per_vcpu: int = MEMORY_PER_VCPU,
+        memory_modifier: float = config.ingest_memory_modifier,
+        min_vcpu: int = config.ingest_min_vcpu,
+        max_vcpu: int = config.ingest_max_vcpu,
+        max_swap_memory_MB: int = config.ingest_max_swap_memory_mb,
+        swap_modifier: int = config.ingest_swap_modifier,
+        memory_per_vcpu: int = 8000,
     ) -> Dict[str, int]:
         """
         Estimate the resource requirements for a given dataset
 
         :param adata: The datasets AnnData object
         :param memory_modifier: A multiplier to increase/decrease the memory requirements by
-        :param min_memory_MB: The minimum amount of memory to allocate.
-        :param max_memory_MB: The maximum amount of memory to allocate.
+        :param min_vcpu: The minimum number of vCPUs to allocate.
         :param max_vcpu: The maximum number of vCPUs to allocate.
         :param memory_per_vcpu: The amount of memory to allocate per vCPU.
         :param swap_modifier: The multiplier to increase/decrease the swap memory requirements by
@@ -112,6 +104,8 @@ class ProcessDownload(ProcessingLogic):
         """
         # Note: this is a rough estimate of the uncompressed size of the dataset. This method avoid loading the entire
         # dataset into memory.
+        min_memory_MB = min_vcpu * memory_per_vcpu
+        max_memory_MB = max_vcpu * memory_per_vcpu
         uncompressed_size_MB = adata.n_obs * adata.n_vars / MB
         estimated_memory_MB = max([int(ceil(uncompressed_size_MB * memory_modifier)), min_memory_MB])
         vcpus = max_vcpu if estimated_memory_MB > max_memory_MB else int(ceil(estimated_memory_MB / memory_per_vcpu))
