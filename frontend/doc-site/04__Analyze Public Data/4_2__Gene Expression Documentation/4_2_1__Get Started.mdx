@@ -14,24 +14,19 @@ Dot plots visualize values across two dimensions: color and size (Figure 1). The
 
 **Figure 1.** Two metrics are represented in gene expression dot plots, gene expression and percentage of expressing cells.
 
-The combination of these metrics in a grid of genes by cell types allows to make qualitative assessments of gene expression (Figure 2).
+The combination of these metrics in a grid of genes by cell types enables you to assess gene expression (Figure 2).
 
-Genes that are lowly expressed or expressed in a small percentage of cells are difficult to visually identify in a dot plot. This is particularly important for certain marker genes that are specifically but lowly expressed in their target cell types, for example transcription factors and cell-surface receptors.
+Be aware that genes that are lowly expressed or expressed in a small percentage of cells may be difficult to visually identify in a dot plot. This is particularly important for certain marker genes which are specifically but lowly expressed in their target cell types, for example transcription factors and cell-surface receptors.
 
 <Image src={"/doc-site/4-2_figure2.png"} />
 
-**Figure 2.** Types of possible qualitative assessments in a dot plot.
+**Figure 2.** Example of how to interpret the dot plot.
 
 ### How to Make Sense of Normalized Values
 
-The data used to create the averages for the dot plot is quantile normalized and it ranges from 0 to 6 (see "Gene Expression Data Processing" section for details).
-Roughly, low expression has normalized values lower than 2, medium expression
-ranges from 2 to 4, and high expression is higher than 4 (Figure 3). These
-values are used for the dot plot color scheme and are constant and comparable
-across different dot plots. Additionally, the user has the ability to switch to
-a relative scale that maps the lowest and highest expression values in a dot
-plot to the min and max colors, thus providing a wider color range for what's
-shown in a dot plot.
+The data used to create the dot plot is normalized with a log transformation of scaled pseudocounts (`ln(CPTT+1)`) and then averaged (see "Gene Expression Data Processing" section for details).
+
+There are two color scales available: scaled and unscaled. The unscaled color map is fixed to a minimum value of 0 and a maximum value of 8; these are comparable across dot plots. The scaled color map is responsive to the data currently in view, and assigns the minimum value in view to 0 and the maximum value in view to 1; these are not comparable across dot plots.
 
 <Image src={"/doc-site/4-2_figure3.png"} />
 
@@ -47,8 +42,6 @@ The expressions and cell counts of parent cell type terms are <NextLink href="/d
 
 ### Caveats of Normalization
 
-Given that data are <NextLink href="/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_3__Gene%20Expression%20Data%20Processing/#data-normalization">quantile normalized</NextLink> all expression is relative to the cells it is measured in. As such comparisons of absolute expression across cell types could be made if the number of genes measured is equal across all cells. While this assumption is violated, we attempt to minimize negative effects by <NextLink href="/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_3__Gene%20Expression%20Data%20Processing/#removal-of-low-coverage-cells">excluding cells with low gene coverage</NextLink> thus reducing the variance in the number of genes measured across cells.
-
-Nonetheless, caution is advised when finding subtle differences in the dot plot across cell types.
+Given that the data are normalized and concatenated, but not integrated, there may still be significant batch effects present in this data. While normalization and aggregation (taking the mean expression across many cells) somewhat mitigates these artifacts, caution is advised when examining subtle differences in the dot plot across cell types. <NextLink href="https://www.biorxiv.org/content/10.1101/2023.10.30.563174v1">See our manuscript for a detailed analysis.</NextLink>
 
 Users interested in evaluating the pre-normalized absolute expression data can access it through our <NextLink href="https://chanzuckerberg.github.io/cellxgene-census/index.html">CELLxGENE census</NextLink> API.
