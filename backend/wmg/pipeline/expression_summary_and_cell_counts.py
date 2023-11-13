@@ -1,7 +1,7 @@
 import cellxgene_census
 import tiledbsoma as soma
 
-from backend.common.feature_flag import FeatureFlag, FeatureFlagService
+from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 from backend.wmg.pipeline.cell_counts import create_cell_counts_cube
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
@@ -28,7 +28,7 @@ class CensusParameters:
             "mus_musculus": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD}",
         }
         value_filter = organism_mapping[organism]
-        if FeatureFlagService.is_enabled(FeatureFlag.SCHEMA_4):
+        if FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4):
             # Filter out non-tissue tissues and system-level tissues
             # TODO: Once cellxgene-census is updated to support tiledbsoma 1.5.0, we can update the tissue filter to use `not in`:
             # tissue_ontology_term_id not in ['UBERON_0001017', 'UBERON:0001007', 'UBERON:0002405', 'UBERON:0000990', 'UBERON:0001004', 'UBERON:0001434']
