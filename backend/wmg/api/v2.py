@@ -4,6 +4,7 @@ from typing import Any, Dict, Iterable, List
 import connexion
 from ddtrace import tracer
 from flask import jsonify
+from flask_cors import cross_origin
 from pandas import DataFrame
 from server_timing import Timing as ServerTiming
 
@@ -37,6 +38,7 @@ from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find
 @tracer.wrap(
     name="primary_filter_dimensions", service="wmg-api", resource="primary_filter_dimensions", span_type="wmg-api"
 )
+@cross_origin(supports_credentials=True, headers=['Content-Type', 'x-datadog-origin'])
 def primary_filter_dimensions():
     with ServerTiming.time("load snapshot"):
         snapshot: WmgSnapshot = load_snapshot(
