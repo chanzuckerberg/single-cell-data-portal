@@ -15,6 +15,8 @@ interface ContainerProps {
   sidebarWidth: number;
 }
 
+const GENE_SEARCH_LEFT_OFFSET_PX = 24;
+
 export const Container = styled.div`
   height: ${GENE_SEARCH_BAR_HEIGHT_PX}px;
   width: fit-content;
@@ -29,7 +31,8 @@ export const Container = styled.div`
   left: ${({ sidebarWidth }: ContainerProps) =>
     sidebarWidth +
     CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX +
-    Y_AXIS_CHART_WIDTH_PX}px;
+    Y_AXIS_CHART_WIDTH_PX +
+    GENE_SEARCH_LEFT_OFFSET_PX}px;
 `;
 
 export const AutocompleteWrapper = styled.div`
