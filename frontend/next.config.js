@@ -90,16 +90,6 @@ module.exports = {
   headers() {
     return [
       {
-        headers: [
-          {
-            key: "Access-Control-Allow-Headers",
-            value: "traceparent",
-          },
-          { key: "Access-Control-Allow-Methods", value: "OPTIONS" },
-        ],
-        source: "/(.*)",
-      },
-      {
         headers: createSecureHeaders(defaultSecureHeaders),
         source: "/(.*)",
       },
