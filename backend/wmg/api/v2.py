@@ -38,7 +38,7 @@ from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find
 @tracer.wrap(
     name="primary_filter_dimensions", service="wmg-api", resource="primary_filter_dimensions", span_type="wmg-api"
 )
-@cross_origin(supports_credentials=True, headers=['Content-Type', 'x-datadog-origin'])
+@cross_origin(supports_credentials=True, headers=["Content-Type", "x-datadog-origin"])
 def primary_filter_dimensions():
     with ServerTiming.time("load snapshot"):
         snapshot: WmgSnapshot = load_snapshot(
