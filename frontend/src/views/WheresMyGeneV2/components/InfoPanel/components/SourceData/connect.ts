@@ -15,8 +15,6 @@ export const useConnect = () => {
   const useHandleHoverEnd = (event: EVENTS, payload = {}) => {
     return useCallback(() => {
       if (Date.now() - hoverStartTime > HOVER_START_TIME_MS) {
-        // comment
-
         track(event, payload);
       }
     }, [event, payload]);
@@ -30,7 +28,6 @@ export const useConnect = () => {
   const { data: filterDimensions } = useFilterDimensions();
 
   const { datasets = EMPTY_ARRAY } = filterDimensions;
-  // comment
 
   const collections: Collections = useMemo(() => {
     return aggregateCollectionsFromDatasets(datasets);

@@ -24,8 +24,8 @@ export const useConnect = () => {
   const { data: filterDimensions } = useFilterDimensions();
 
   const { datasets = EMPTY_ARRAY } = filterDimensions;
-  // comment
-  const datasetsCount = datasets.length;
 
-  return { datasetsCount, setHoverStartTime, handleLegendHoverEnd };
+  const referenceCount = datasets.length;
+
+  return { referenceCount, setHoverStartTime, handleLegendHoverEnd };
 };
