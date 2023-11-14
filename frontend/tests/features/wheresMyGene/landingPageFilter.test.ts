@@ -15,7 +15,6 @@ import {
   SORT_CELL_TYPES_TOOLTIP_TEXT,
   SORT_GENES_TOOLTIP_TEXT,
 } from "src/views/WheresMyGeneV2/common/constants";
-import { filterSelection } from "./tissueAutoExpand.test";
 import { DISEASE_FILTER_TEST_ID } from "tests/common/constants";
 import { test } from "tests/common/test";
 
@@ -24,6 +23,7 @@ const CELL_TYPE_FILTER = "naive B cell";
 const DISEASE_FILTER_LABEL = "Disease";
 const DISEASE_FILTER_SELECTION = "influenza";
 const DATA_SOURCE_BADGE_TEST_ID = "source-data-badge";
+const TISSUE_FILTER_LABEL = "Tissue";
 
 const { describe } = test;
 
@@ -210,4 +210,62 @@ async function countRecords(page: Page, testId: string) {
   );
 
   return count;
+}
+
+const TOOLTIP_TIMEOUT_MS = 2 * 1000;
+
+/**
+ * clickIntoFilter
+ * Click into the filter and wait for the tooltip to be visible
+ */
+async function clickIntoFilter(
+  page: Page,
+  filterName: string,
+  filterLabel = TISSUE_FILTER_LABEL
+) {
+  await tryUntil(
+    async () => {
+      await page
+        .getByTestId(filterName)
+        .getByRole("button", { name: filterLabel })
+        .click();
+      await expect(page.getByRole("tooltip")).toBeVisible({
+        timeout: TOOLTIP_TIMEOUT_MS,
+      });
+    },
+    { page }
+  );
+}
+
+/**
+ * filterSelection
+ * Filter the selection from the dropdown
+ */
+export async function filterSelection({
+  page,
+  filterTestId,
+  filterLabel,
+  selection,
+  filterSelected = selection,
+}: {
+  page: Page;
+  filterTestId: string;
+  filterLabel: string;
+  selection: string;
+  filterSelected?: string;
+}) {
+  await tryUntil(
+    async () => {
+      await clickIntoFilter(page, filterTestId, filterLabel);
+      const dropDownOption = await page
+        .getByRole("tooltip")
+        .getByText(selection);
+      await dropDownOption.click();
+      await page.keyboard.press("Escape");
+      await expect(
+        page.getByTestId(filterTestId).getByText(filterSelected)
+      ).toBeVisible();
+    },
+    { page }
+  );
 }

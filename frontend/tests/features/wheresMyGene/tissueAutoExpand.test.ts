@@ -516,7 +516,7 @@ async function removeCellFilter(page: Page) {
  * filterSelection
  * Filter the selection from the dropdown
  */
-export async function filterSelection({
+async function filterSelection({
   page,
   filterTestId,
   filterLabel,
