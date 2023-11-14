@@ -1,5 +1,4 @@
-import { useCallback, useContext, useState } from "react";
-import { StateContext } from "src/views/WheresMyGeneV2/common/store";
+import { useCallback, useState } from "react";
 import { useFilterDimensions } from "src/common/queries/wheresMyGene";
 import { EVENTS } from "src/common/analytics/events";
 import { track } from "src/common/analytics";
@@ -20,16 +19,9 @@ export const useConnect = () => {
     { label: COLOR_LEGEND }
   );
 
-  const { selectedFilters } = useContext(StateContext);
   const { data: filterDimensions } = useFilterDimensions();
 
-  let { datasets = [] } = filterDimensions;
-
-  if (selectedFilters.datasets.length > 0) {
-    datasets = datasets.filter((dataset) =>
-      selectedFilters.datasets.includes(dataset.id)
-    );
-  }
+  const { datasets = [] } = filterDimensions;
 
   const referenceCount = datasets.length;
 

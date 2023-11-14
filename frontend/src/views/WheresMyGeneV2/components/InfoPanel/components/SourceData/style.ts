@@ -45,7 +45,7 @@ export const StyledDivTableCell = styled(DivTableCell)`
 `;
 
 export const StyledLabel = styled.div`
-  width: 100%;
+  width: 50px;
   height: 100%;
   padding-left: 8px;
   padding-right: 8px;
@@ -57,4 +57,12 @@ export const StyledLabel = styled.div`
   align-items: center;
   display: inline-flex;
   color: black;
+  ${fontBodyXs}
+`;
+
+export const StyledValue = styled.div`
+  display: inline-flex;
+  align-items: center;
+  color: black;
+  padding: 2px;
 `;
