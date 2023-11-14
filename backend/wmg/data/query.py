@@ -1,17 +1,13 @@
-import logging
 from typing import Dict, List, Union
 
 import numpy as np
 import pandas as pd
-import tiledb
 from ddtrace import tracer
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
 
 from backend.wmg.data.snapshot import WmgSnapshot
-
-logger = logging.getLogger("wmg-v2-api-query")
 
 
 class WmgQueryCriteria(BaseModel):
@@ -90,7 +86,6 @@ class WmgQuery:
 
     @tracer.wrap(name="expression_summary", service="wmg-api", resource="_query", span_type="wmg-api")
     def expression_summary(self, criteria: WmgQueryCriteria, compare_dimension=None) -> DataFrame:
-        logger.info("PRATHAP!!! Querying expression_summary cube!")
         return self._query(
             cube=self._snapshot.expression_summary_cube,
             criteria=criteria,
@@ -99,7 +94,6 @@ class WmgQuery:
 
     @tracer.wrap(name="expression_summary_default", service="wmg-api", resource="_query", span_type="wmg-api")
     def expression_summary_default(self, criteria: WmgQueryCriteria) -> DataFrame:
-        logger.info("PRATHAP!!! Querying expression_summary_default cube!")
         return self._query(
             cube=self._snapshot.expression_summary_default_cube,
             criteria=criteria,
@@ -170,7 +164,6 @@ class WmgQuery:
         # get valid dimensions from schema
         dims = self._cube_query_params.get_dims_for_cube_query(cube)
 
-        tiledb.stats_enable()
         query_result_df = cube.query(
             cond=query_cond or None,
             return_incomplete=True,
@@ -178,9 +171,6 @@ class WmgQuery:
             attrs=attrs,
             dims=dims,
         ).df[tiledb_dims_query]
-        tiledb_stats_str = tiledb.stats_dump(print_out=False, json=True)
-        tiledb.stats_disable()
-        logger.info(f"PRATHAP!!! Tiledb stats dump for query:\n{tiledb_stats_str}")
 
         # Why do we need this pd.concat at all when the `.df[]` already returns
         # a dataframe?

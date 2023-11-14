@@ -7,6 +7,7 @@ from pstats import Stats
 from typing import Any, Dict, Iterable, List
 
 import connexion
+import tiledb
 from ddtrace import tracer
 from flask import jsonify
 from pandas import DataFrame
@@ -120,9 +121,17 @@ def query():
         #     is_default=default, q=q, criteria=criteria, compare=compare, measure_io=True
         # )
         if default:
+            tiledb.stats_enable()
             expression_summary = q.expression_summary_default(criteria)
+            tiledb_stats_str = tiledb.stats_dump(print_out=False, json=True)
+            tiledb.stats_disable()
+            logger.info(f"PRATHAP!!! Tiledb stats expression_summary_default cube:\n{tiledb_stats_str}")
         else:
+            tiledb.stats_enable()
             expression_summary = q.expression_summary(criteria, compare_dimension=compare)
+            tiledb_stats_str = tiledb.stats_dump(print_out=False, json=True)
+            tiledb.stats_disable()
+            logger.info(f"PRATHAP!!! Tiledb stats expression_summary cube:\n{tiledb_stats_str}")
 
         cell_counts = q.cell_counts(criteria, compare_dimension=compare)
 
