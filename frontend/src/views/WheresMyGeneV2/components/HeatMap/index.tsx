@@ -105,7 +105,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
               sidebarWidth={sidebarWidth}
             />
           </XAxisWrapper>
-          <YAxisWrapper top={0}>
+          <YAxisWrapper top={xAxisHeight}>
             {allTissueCellTypes.map(
               ({ tissueId, tissueName, tissueCellTypes }) => {
                 return (
