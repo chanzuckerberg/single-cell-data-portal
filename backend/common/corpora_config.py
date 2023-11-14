@@ -31,6 +31,12 @@ class CorporaConfig(SecretConfig):
             "submission_bucket": os.getenv("DATASET_SUBMISSIONS_BUCKET", "cellxgene-dataset-submissions-test"),
             "collections_base_url": collections_base_url,
             "dataset_assets_base_url": dataset_assets_base_url,
+            "ingest_memory_modifier": 3,  # adds (x*100)% memory overhead
+            "ingest_min_vcpu": 2,
+            # The largest machine we are allocating is r5a.24xlarge. This machine has 768GB of memory and 96 vCPUs.
+            "ingest_max_vcpu": 96,  # assume 8GB per vCPU
+            "ingest_swap_modifier": 0,  # 0 b/c no swap machines are used.
+            "ingest_max_swap_memory_mb": 300000,
         }
         upload_snf_arn = os.getenv("UPLOAD_SFN_ARN")
         if upload_snf_arn:

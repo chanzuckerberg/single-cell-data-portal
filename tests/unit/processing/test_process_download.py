@@ -4,12 +4,15 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 import scanpy
 
+from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.math_utils import GB
 from backend.layers.common.entities import DatasetArtifactType, DatasetUploadStatus
 from backend.layers.processing.process_download import ProcessDownload
+from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 test_environment = {"REMOTE_DEV_PREFIX": "fake-stack", "DEPLOYMENT_STAGE": "test"}
+test_config = CorporaConfig(source=fixture_file_path("bogo_config.json"))
 
 
 class TestProcessDownload(BaseProcessingTest):
@@ -25,6 +28,7 @@ class TestProcessDownload(BaseProcessingTest):
         2. Set upload status to UPLOADED
         3. upload the original file to S3
         """
+        self.mock_config.stop()
         dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=0"
         bucket_name = "fake_bucket_name"
         stack_name = test_environment["REMOTE_DEV_PREFIX"]
@@ -44,7 +48,7 @@ class TestProcessDownload(BaseProcessingTest):
         mock_sfn_provider.return_value = mock_sfn
 
         # This is where we're at when we start the SFN
-        pdv = ProcessDownload(self.business_logic, self.uri_provider, self.s3_provider)
+        pdv = ProcessDownload(self.business_logic, self.uri_provider, self.s3_provider, test_config)
         pdv.process(dataset_version_id, dropbox_uri, bucket_name, "fake_sfn_task_token")
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
@@ -134,8 +138,7 @@ def mock_read_h5ad():
 def memory_settings(
     memory_modifier=1,
     memory_per_vcpu=4000,
-    min_memory_mb=4000,
-    max_memory_mb=64000,
+    min_vcpu=1,
     max_vcpu=16,
     max_swap_memory_mb=300000,
     swap_modifier=5,
@@ -143,8 +146,7 @@ def memory_settings(
     return dict(
         memory_modifier=memory_modifier,
         memory_per_vcpu=memory_per_vcpu,
-        min_memory_MB=min_memory_mb,
-        max_memory_MB=max_memory_mb,
+        min_vcpu=min_vcpu,
         max_vcpu=max_vcpu,
         max_swap_memory_MB=max_swap_memory_mb,
         swap_modifier=swap_modifier,
