@@ -60,9 +60,6 @@ interface Props {
   expandedTissueIds: string[];
 }
 
-// List of Tissues to exclude from FMG
-const FMG_EXCLUDE_TISSUES = ["blood"];
-
 export default memo(function YAxisChart({
   cellTypes = [],
   tissue,
@@ -265,35 +262,32 @@ const CellTypeButton = ({
           </Tooltip>
         </CellTypeLabelStyle>
 
-        {!FMG_EXCLUDE_TISSUES.includes(tissue) &&
-          cellType &&
-          cellType.total_count > 25 &&
-          cellType.optionId === COMPARE_OPTION_ID_FOR_AGGREGATED && (
-            <InfoButtonWrapper
-              className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
-              onClick={() => {
-                if (cellType) {
-                  generateMarkerGenes(cellType, tissueID);
-                  track(EVENTS.WMG_FMG_INFO_CLICKED, {
-                    combination: `${cellType.name}, ${tissue}}`,
-                  });
-                }
-              }}
-            >
-              <StyledImage
-                data-testid="marker-gene-button"
-                src={InfoSVG.src}
-                /**
-                 * (thuang): https://nextjs.org/docs/pages/api-reference/components/image-legacy#layout
-                 * Use the <StyledImage /> width and height, since default is `intrinsic`
-                 */
-                layout="fixed"
-                width="10"
-                height="10"
-                alt={`display marker genes for ${cellType.name}`}
-              />
-            </InfoButtonWrapper>
-          )}
+        {cellType && cellType.optionId === COMPARE_OPTION_ID_FOR_AGGREGATED && (
+          <InfoButtonWrapper
+            className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+            onClick={() => {
+              if (cellType) {
+                generateMarkerGenes(cellType, tissueID);
+                track(EVENTS.WMG_FMG_INFO_CLICKED, {
+                  combination: `${cellType.name}, ${tissue}}`,
+                });
+              }
+            }}
+          >
+            <StyledImage
+              data-testid="marker-gene-button"
+              src={InfoSVG.src}
+              /**
+               * (thuang): https://nextjs.org/docs/pages/api-reference/components/image-legacy#layout
+               * Use the <StyledImage /> width and height, since default is `intrinsic`
+               */
+              layout="fixed"
+              width="10"
+              height="10"
+              alt={`display marker genes for ${cellType.name}`}
+            />
+          </InfoButtonWrapper>
+        )}
       </FlexRow>
       <CellCountLabelStyle
         className={CELL_COUNT_LABEL_CLASS_NAME}
