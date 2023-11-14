@@ -31,7 +31,7 @@ export default function SourceData(): JSX.Element {
           </a>
           .
         </InfoText>
-        <DivTable>
+        <DivTable data-testid="source-data-list">
           <DivTableHead>
             <StyledDivTableCell>Collection</StyledDivTableCell>
             <StyledDivTableCell align>Datasets</StyledDivTableCell>
