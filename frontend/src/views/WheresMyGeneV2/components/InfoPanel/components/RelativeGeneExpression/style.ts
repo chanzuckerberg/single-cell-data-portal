@@ -45,4 +45,7 @@ export const FlexDiv = styled.div`
   display: flex;
 `;
 
-export const TooltipLink = styled.a``;
+export const TooltipLink = styled.a`
+  text-decoration: underline;
+  cursor: pointer;
+`;
