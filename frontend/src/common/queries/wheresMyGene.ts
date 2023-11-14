@@ -28,7 +28,7 @@ import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 import { Dataset } from "@mui/icons-material";
 import { formatCitation } from "../utils/formatCitation";
-
+import { State } from "src/views/WheresMyGeneV2/common/store";
 interface RawOntologyTerm {
   [id: string]: string;
 }
@@ -311,6 +311,7 @@ async function fetchFiltersQuery({
   if (!response.ok) {
     throw json;
   }
+  console.log("json", json);
 
   return json;
 }
@@ -450,6 +451,8 @@ export function useFilterDimensions(version: 1 | 2 = 2): {
   const requestBody = useWMGFiltersQueryRequestBody(version);
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
 
+  console.log("data", data);
+
   return useMemo(() => {
     if (isLoading || !data) return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
 
@@ -468,6 +471,8 @@ export function useFilterDimensions(version: 1 | 2 = 2): {
     const sortedDatasets = Object.values(
       aggregateCollectionsFromDatasets(datasets)
     ).flatMap(({ datasets }) => datasets);
+
+    console.log("sortedDatasets", sortedDatasets);
 
     return {
       data: {
@@ -1187,6 +1192,7 @@ export interface CollectionFromDatasets {
   name: string;
   url: string;
   datasets: Dataset[];
+  total_count: number;
 }
 
 export interface CollectionsFromDatasets {
@@ -1194,7 +1200,8 @@ export interface CollectionsFromDatasets {
 }
 
 export function aggregateCollectionsFromDatasets(
-  datasets: FilterDimensions["datasets"]
+  datasets: FilterDimensions["datasets"],
+  selectedFilters?: State["selectedFilters"]
 ): CollectionsFromDatasets {
   const collections: CollectionsFromDatasets = {};
 
@@ -1205,14 +1212,21 @@ export function aggregateCollectionsFromDatasets(
       collections[collection_label] = {
         datasets: [],
         name: collection_label,
+        total_count: 0,
         url: ROUTES.COLLECTION.replace(":id", collection_id),
       };
     }
 
     collections[collection_label].datasets.push({ ...dataset, id, label });
+    collections[collection_label].total_count++;
   }
 
   for (const collection of Object.values(collections)) {
+    if (selectedFilters && selectedFilters.datasets.length > 0) {
+      collection.datasets.filter((dataset) =>
+        selectedFilters.datasets.includes(dataset.id)
+      );
+    }
     collection.datasets.sort((a, b) => {
       return a.label.localeCompare(b.label);
     });

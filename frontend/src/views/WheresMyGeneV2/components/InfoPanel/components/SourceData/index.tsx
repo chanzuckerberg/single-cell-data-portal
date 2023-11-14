@@ -1,7 +1,15 @@
-import { List, ListItem } from "@czi-sds/components";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { Content, InfoText, ListSubheader, Wrapper } from "./style";
+import {
+  Content,
+  InfoText,
+  StyledDivTableCell,
+  StyledDivTableRow,
+  StyledLabel,
+  StyledLink,
+  Wrapper,
+} from "./style";
+import { DivTable, DivTableHead } from "../../../CellInfoSideBar/style";
 import { ROUTES } from "src/common/constants/routes";
 import { useConnect } from "./connect";
 import { SOURCE_DATA_INFO_TEXT } from "./constants";
@@ -19,43 +27,39 @@ export default function SourceData(): JSX.Element {
             target="_blank"
             rel="noreferrer noopener"
           >
-            here
+            exceptions and processing notes
           </a>
           .
         </InfoText>
-        <List ordered data-testid="source-data-list">
-          {Object.values(collections).map(({ name, url, datasets }) => {
-            return (
-              <ListItem ordered key={name} fontSize="xxxs">
-                <List
-                  key={name}
-                  subheader={
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noopener"
-                      onClick={() => {
-                        track(EVENTS.VIEW_COLLECTION_PAGE_CLICKED, {
-                          collection_name: name,
-                        });
-                      }}
-                    >
-                      <ListSubheader>{name}</ListSubheader>
-                    </a>
-                  }
-                >
-                  {datasets.map(({ id, label }) => {
-                    return (
-                      <ListItem fontSize="xxxs" key={id}>
-                        {label}
-                      </ListItem>
-                    );
-                  })}
-                </List>
-              </ListItem>
-            );
-          })}
-        </List>
+        <DivTable>
+          <DivTableHead>
+            <StyledDivTableCell>Collection</StyledDivTableCell>
+            <StyledDivTableCell align>Datasets</StyledDivTableCell>
+          </DivTableHead>
+          {Object.values(collections).map(
+            ({ name, url, datasets, total_count }) => (
+              <StyledDivTableRow key={name}>
+                <StyledDivTableCell>
+                  <StyledLink
+                    href={url}
+                    target="_blank"
+                    rel="noopener"
+                    onClick={() => {
+                      track(EVENTS.VIEW_COLLECTION_PAGE_CLICKED, {
+                        collection_name: name,
+                      });
+                    }}
+                  >
+                    {name}
+                  </StyledLink>
+                </StyledDivTableCell>
+                <StyledDivTableCell align>
+                  <StyledLabel>{`${datasets.length} of ${total_count}`}</StyledLabel>
+                </StyledDivTableCell>
+              </StyledDivTableRow>
+            )
+          )}
+        </DivTable>
       </Content>
     </Wrapper>
   );

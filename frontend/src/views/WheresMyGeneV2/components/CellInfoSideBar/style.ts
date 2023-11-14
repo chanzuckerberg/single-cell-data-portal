@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Button, fontBodyS } from "@czi-sds/components";
+import { Button, fontBodyS, fontHeaderS } from "@czi-sds/components";
 import Image from "next/image";
 import { fontBodyXxs, getColors } from "@czi-sds/components";
 import {
@@ -163,6 +163,7 @@ export const DivTableCell = styled.div<CellProps>`
 
 export const DivTableHead = styled.div`
   display: table-row;
+  ${fontHeaderS}
   font-weight: 500;
   color: ${gray500};
 `;
