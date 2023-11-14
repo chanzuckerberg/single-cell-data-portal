@@ -13,13 +13,13 @@ interface ButtonProps {
   refrenceCountSmall?: boolean;
 }
 interface StyledBadgeProps extends CommonThemeProps {
-  wide: string;
+  width: string;
 }
 
 export const BadgeCounter = styled(Badge)<StyledBadgeProps>`
   background-color: ${error400};
   border-radius: 12px;
-  width: ${(props) => props.wide};
+  width: ${(props) => props.width};
   height: 16px;
   text-align: center;
   position: relative;
@@ -33,7 +33,7 @@ export const BadgeCounter = styled(Badge)<StyledBadgeProps>`
     margin: 0px;
     ${fontBodyXxxs}
     font-weight: ${fontWeightSemibold};
-    color: #fff;
+    color: white;
   }
 `;
 

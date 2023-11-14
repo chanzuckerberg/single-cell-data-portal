@@ -22,7 +22,7 @@ export default function SourceDataButton({
       {referenceCount > 0 && (
         <BadgeCounter
           badgeContent={referenceCount}
-          wide={referenceCount > 99 ? "28px" : "20px"}
+          width={referenceCount > 99 ? "28px" : "20px"}
         />
       )}
       <StyledButtonIcon

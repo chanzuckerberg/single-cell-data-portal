@@ -1187,7 +1187,6 @@ export interface CollectionFromDatasets {
   name: string;
   url: string;
   datasets: Dataset[];
-  total_count: number;
 }
 
 export interface CollectionsFromDatasets {
@@ -1207,13 +1206,11 @@ export function aggregateCollectionsFromDatasets(
       collections[collection_label] = {
         datasets: [],
         name: collection_label,
-        total_count: 0,
         url: ROUTES.COLLECTION.replace(":id", collection_id),
       };
     }
 
     collections[collection_label].datasets.push({ ...dataset, id, label });
-    collections[collection_label].total_count++;
   }
 
   for (const collection of Object.values(collections)) {
