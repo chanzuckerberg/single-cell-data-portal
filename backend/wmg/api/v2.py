@@ -116,9 +116,13 @@ def query():
                 default = False
                 break
 
-        expression_summary = cprofile_query(
-            is_default=default, q=q, criteria=criteria, compare=compare, measure_io=True
-        )
+        # expression_summary = cprofile_query(
+        #     is_default=default, q=q, criteria=criteria, compare=compare, measure_io=True
+        # )
+        if default:
+            expression_summary = q.expression_summary_default(criteria)
+        else:
+            expression_summary = q.expression_summary(criteria, compare_dimension=compare)
 
         cell_counts = q.cell_counts(criteria, compare_dimension=compare)
 
