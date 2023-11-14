@@ -10,11 +10,15 @@ export const useConnect = () => {
   const { selectedFilters } = useContext(StateContext);
   const { data: filterDimensions } = useFilterDimensions();
 
-  const { datasets = [] } = filterDimensions;
-
+  let { datasets = [] } = filterDimensions;
+  if (selectedFilters.datasets.length > 0) {
+    datasets = datasets.filter((dataset) =>
+      selectedFilters.datasets.includes(dataset.id)
+    );
+  }
   const collections: Collections = useMemo(() => {
-    return aggregateCollectionsFromDatasets(datasets, selectedFilters);
-  }, [datasets, selectedFilters]);
+    return aggregateCollectionsFromDatasets(datasets);
+  }, [datasets]);
 
   return { collections };
 };

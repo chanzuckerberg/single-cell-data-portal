@@ -28,7 +28,7 @@ import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 import { Dataset } from "@mui/icons-material";
 import { formatCitation } from "../utils/formatCitation";
-import { State } from "src/views/WheresMyGeneV2/common/store";
+
 interface RawOntologyTerm {
   [id: string]: string;
 }
@@ -1194,8 +1194,7 @@ export interface CollectionsFromDatasets {
 }
 
 export function aggregateCollectionsFromDatasets(
-  datasets: FilterDimensions["datasets"],
-  selectedFilters?: State["selectedFilters"]
+  datasets: FilterDimensions["datasets"]
 ): CollectionsFromDatasets {
   const collections: CollectionsFromDatasets = {};
 
@@ -1214,11 +1213,6 @@ export function aggregateCollectionsFromDatasets(
   }
 
   for (const collection of Object.values(collections)) {
-    if (selectedFilters && selectedFilters.datasets.length > 0) {
-      collection.datasets.filter((dataset) =>
-        selectedFilters.datasets.includes(dataset.id)
-      );
-    }
     collection.datasets.sort((a, b) => {
       return a.label.localeCompare(b.label);
     });
