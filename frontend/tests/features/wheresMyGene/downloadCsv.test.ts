@@ -14,8 +14,6 @@ import {
 } from "tests/common/constants";
 import { test } from "tests/common/test";
 
-const TISSUE_NODE_TEST_ID = "tissue-name";
-
 const { describe } = test;
 describe("CSV download tests", () => {
   test(`Should verify CSV metadata and header for lung tissue with no group set`, async ({
@@ -23,7 +21,7 @@ describe("CSV download tests", () => {
   }) => {
     // set app state
     await goToWMG(page, SHARED_LINK_NO_GROUP);
-    await expect(page.getByTestId(TISSUE_NODE_TEST_ID)).not.toHaveCount(0);
+    await expect(page.locator("canvas")).not.toHaveCount(0);
 
     const tissues = ["blood", "lung"];
     const fileTypes = ["csv"];
@@ -47,6 +45,8 @@ describe("CSV download tests", () => {
   }) => {
     // set app state
     await goToWMG(page, SHARED_LINK_FILTER);
+    await expect(page.locator("canvas")).not.toHaveCount(0);
+
     const tissues = ["blood", "lung"];
     const fileTypes = ["csv"];
     const folder = subDirectory();
@@ -69,6 +69,8 @@ describe("CSV download tests", () => {
   }) => {
     // set app state
     await goToWMG(page, SHARED_LINK_NO_FILTER);
+    await expect(page.locator("canvas")).not.toHaveCount(0);
+
     const tissues = ["blood", "lung"];
     const fileTypes = ["csv"];
     const folder = subDirectory();
