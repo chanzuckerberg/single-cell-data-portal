@@ -46,4 +46,4 @@ export const SORT_CELL_TYPES_TOOLTIP_TEXT =
 export const SORT_GENES_TOOLTIP_TEXT =
   "Sort genes As Entered or using Hierarchical ordering. Genes are displayed in the order they are added to the dot plot using As Entered ordering. Hierarchical ordering groups genes with similar expression patterns together.";
 
-export const HOVER_START_TIME = 2 * 1000;
+export const HOVER_START_TIME_MS = 2 * 1000;
