@@ -47,14 +47,14 @@ class DatasetMetadataUpdate(ProcessDownload):
 
     def update_h5ad(
         self,
-        h5ad_s3_uri: str,
+        h5ad_uri: str,
         original_dataset_version: DatasetVersion,
         key_prefix: str,
         new_dataset_version_id: DatasetVersionId,
         metadata_update_dict: Dict[str, str],
     ):
         h5ad_filename = self.download_from_source_uri(
-            source_uri=h5ad_s3_uri,
+            source_uri=h5ad_uri,
             local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
         )
 
@@ -83,13 +83,13 @@ class DatasetMetadataUpdate(ProcessDownload):
 
     def update_rds(
         self,
-        rds_s3_uri: str,
+        rds_uri: str,
         key_prefix: str,
         new_dataset_version_id: DatasetVersionId,
         metadata_update_dict: Dict[str, str],
     ):
         seurat_filename = self.download_from_source_uri(
-            source_uri=rds_s3_uri,
+            source_uri=rds_uri,
             local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
         )
         self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTING)
@@ -117,12 +117,12 @@ class DatasetMetadataUpdate(ProcessDownload):
 
     def update_cxg(
         self,
-        cxg_s3_uri: str,
+        cxg_uri: str,
         new_cxg_dir: str,
         dataset_version_id: DatasetVersionId,
         metadata_update_dict: Dict[str, str],
     ):
-        self.s3_provider.upload_directory(cxg_s3_uri, new_cxg_dir)
+        self.s3_provider.upload_directory(cxg_uri, new_cxg_dir)
         ctx = tiledb.Ctx(
             {
                 "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),

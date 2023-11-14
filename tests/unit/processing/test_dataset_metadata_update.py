@@ -31,19 +31,26 @@ seurat = importr("SeuratObject")
 
 
 class TestDatasetMetadataUpdate(BaseProcessingTest):
+    def setUp(self):
+        super().setUp()
+        self.business_logic.s3_provider = MockS3Provider()
+        self.updater = DatasetMetadataUpdate(
+            self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket"
+        )
+
+        def mock_download(source_uri, local_path):
+            return local_path
+
+        self.updater.download_from_source_uri = Mock(side_effect=mock_download)
+
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("scanpy.read_h5ad")
     def test_update_h5ad(self, mock_read_h5ad, *args):
-        self.business_logic.s3_provider = MockS3Provider()
-        updater = DatasetMetadataUpdate(self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket")
-        updater.download_from_source_uri = Mock(return_value="local.h5ad")
-
-        h5ad_s3_uri = "s3://artifact_bucket/dataset_id.h5ad"
         collection_version = self.generate_unpublished_collection(add_datasets=1)
         original_dataset_version = collection_version.datasets[0]
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id=collection_version.version_id,
-            url=h5ad_s3_uri,
+            url=None,
             file_size=0,
             existing_dataset_version_id=original_dataset_version.version_id,
             start_step_function=False,
@@ -57,8 +64,8 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
         mock_anndata.write = Mock()
         mock_read_h5ad.return_value = mock_anndata
 
-        updater.update_h5ad(
-            h5ad_s3_uri, original_dataset_version, key_prefix, new_dataset_version_id, metadata_update_dict
+        self.updater.update_h5ad(
+            None, original_dataset_version, key_prefix, new_dataset_version_id, metadata_update_dict
         )
 
         # check mock_anndata object
@@ -66,8 +73,8 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
         assert mock_anndata.uns["citation"] == "Publication DOI www.doi.org/567.8"
         assert mock_anndata.uns["schema_version"] == "3.0.0"
         # check s3 uris exist
-        assert updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id.id}/local.h5ad")
-        assert updater.s3_provider.uri_exists(f"s3://datasets_bucket/{new_dataset_version_id.id}.h5ad")
+        assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id.id}/local.h5ad")
+        assert self.updater.s3_provider.uri_exists(f"s3://datasets_bucket/{new_dataset_version_id.id}.h5ad")
         # check DB DatasetVersion
         new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
         assert new_dataset_version.metadata.citation == "Publication DOI www.doi.org/567.8"
@@ -92,10 +99,6 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
                 testing_cxg_temp_directory, cxg_metadata, group_metadata_name="cxg_group_metadata"
             )
 
-            self.business_logic.s3_provider = MockS3Provider()
-            updater = DatasetMetadataUpdate(
-                self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket"
-            )
             collection_version = self.generate_unpublished_collection(add_datasets=1)
             original_dataset_version = collection_version.datasets[0]
             new_dataset_version_id, _ = self.business_logic.ingest_dataset(
@@ -106,13 +109,16 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
                 start_step_function=False,
             )
             metadata_update_dict = {"citation": "Publication www.doi.org/567.8", "title": "Dataset Title 2"}
-            updater.update_cxg(None, testing_cxg_temp_directory, new_dataset_version_id, metadata_update_dict)
+            self.updater.update_cxg(None, testing_cxg_temp_directory, new_dataset_version_id, metadata_update_dict)
 
-            assert updater.s3_provider.uri_exists(testing_cxg_temp_directory)
+            # check new cxg directory exists
+            assert self.updater.s3_provider.uri_exists(testing_cxg_temp_directory)
 
+            # check DB artifacts + status are updated
             new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
             artifacts = [(artifact.uri, artifact.type) for artifact in new_dataset_version.artifacts]
             assert (testing_cxg_temp_directory, DatasetArtifactType.CXG) in artifacts
+
             assert new_dataset_version.status.cxg_status == DatasetConversionStatus.CONVERTED
 
             # check cxg metadata is updated
@@ -132,11 +138,7 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
         with tempfile.TemporaryDirectory() as tempdir:
             temp_path = os.path.join(tempdir, "test.rds")
             copy2(fixture_file_path("test.rds"), temp_path)
-            self.business_logic.s3_provider = MockS3Provider()
-            updater = DatasetMetadataUpdate(
-                self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket"
-            )
-            updater.download_from_source_uri = Mock(return_value=temp_path)
+            self.updater.download_from_source_uri = Mock(return_value=temp_path)
 
             collection_version = self.generate_unpublished_collection(add_datasets=1)
             original_dataset_version = collection_version.datasets[0]
@@ -150,7 +152,7 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
             key_prefix = new_dataset_version_id.id
             metadata_update_dict = {"title": "New Dataset Title", "batch_condition": ["batch1", "batch2"]}
 
-            updater.update_rds(None, key_prefix, new_dataset_version_id, metadata_update_dict)
+            self.updater.update_rds(None, key_prefix, new_dataset_version_id, metadata_update_dict)
 
             # check Seurat object metadata is updated
             seurat_object = base.readRDS(temp_path)
@@ -161,9 +163,11 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
             # schema_version should stay the same as base fixture after update of other metadata
             assert seurat.Misc(object=seurat_object, slot="schema_version")[0] == "3.1.0"
 
-            assert updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id.id}/test.rds")
-            assert updater.s3_provider.uri_exists(f"s3://datasets_bucket/{new_dataset_version_id.id}.rds")
+            # check new artifacts are uploaded in expected uris
+            assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id.id}/test.rds")
+            assert self.updater.s3_provider.uri_exists(f"s3://datasets_bucket/{new_dataset_version_id.id}.rds")
 
+            # check artifacts + status updated in DB
             new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
             artifacts = [(artifact.uri, artifact.type) for artifact in new_dataset_version.artifacts]
             assert (f"s3://artifact_bucket/{new_dataset_version_id.id}/test.rds", DatasetArtifactType.RDS) in artifacts
@@ -176,9 +180,6 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdate.update_rds")
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdate.update_cxg")
     def test_update_metadata(self, mock_update_cxg, mock_update_rds, mock_update_h5ad, *args):
-        self.business_logic.s3_provider = MockS3Provider()
-        updater = DatasetMetadataUpdate(self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket")
-        updater.download_from_source_uri = Mock(return_value="raw.h5ad")
         original_dataset_version = self.generate_dataset(
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
@@ -187,7 +188,7 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
         )
         collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
         original_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
-        updater.update_metadata(collection_version_id, original_dataset_version_id, None)
+        self.updater.update_metadata(collection_version_id, original_dataset_version_id, None)
 
         mock_update_cxg.assert_called_once()
         mock_update_rds.assert_called_once()
@@ -202,7 +203,7 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
         assert new_dataset_version.status.upload_status == DatasetUploadStatus.UPLOADED
         assert new_dataset_version.status.processing_status == DatasetProcessingStatus.SUCCESS
 
-        assert updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad")
+        assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad")
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("scanpy.read_h5ad")
@@ -210,9 +211,6 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdate.update_rds")
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdate.update_cxg")
     def test_update_metadata__rds_skipped(self, mock_update_cxg, mock_update_rds, mock_update_h5ad, *args):
-        self.business_logic.s3_provider = MockS3Provider()
-        updater = DatasetMetadataUpdate(self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket")
-        updater.download_from_source_uri = Mock(return_value="raw.h5ad")
         original_dataset_version = self.generate_dataset(
             artifacts=[
                 DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "s3://fake.bucket/raw.h5ad"),
@@ -226,7 +224,7 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
         )
         collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
         dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
-        updater.update_metadata(collection_version_id, dataset_version_id, None)
+        self.updater.update_metadata(collection_version_id, dataset_version_id, None)
 
         mock_update_h5ad.assert_called_once()
         mock_update_cxg.assert_called_once()
@@ -241,14 +239,12 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
         assert new_dataset_version.status.upload_status == DatasetUploadStatus.UPLOADED
         assert new_dataset_version.status.processing_status == DatasetProcessingStatus.SUCCESS
 
-        assert updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad")
+        assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad")
 
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdate.update_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdate.update_rds")
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdate.update_cxg")
     def test_update_metadata__bad_processing_status(self, mock_update_cxg, mock_update_rds, mock_update_h5ad, *args):
-        self.business_logic.s3_provider = MockS3Provider()
-        updater = DatasetMetadataUpdate(self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket")
         original_dataset_version = self.generate_dataset(
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE),
@@ -257,7 +253,7 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
         )
         collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
         original_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
-        updater.update_metadata(collection_version_id, original_dataset_version_id, None)
+        self.updater.update_metadata(collection_version_id, original_dataset_version_id, None)
 
         mock_update_h5ad.assert_not_called()
         mock_update_cxg.assert_not_called()
@@ -271,9 +267,6 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     def test_update_metadata__error_if_missing_raw_h5ad(self, *args):
-        self.business_logic.s3_provider = MockS3Provider()
-        updater = DatasetMetadataUpdate(self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket")
-        updater.download_from_source_uri = Mock(return_value="raw.h5ad")
         original_dataset_version = self.generate_dataset(
             artifacts=[
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, "s3://fake.bucket/local.h5ad"),
@@ -287,7 +280,7 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
         )
 
         with pytest.raises(ValueError):
-            updater.update_metadata(
+            self.updater.update_metadata(
                 CollectionVersionId(original_dataset_version.collection_version_id),
                 DatasetVersionId(original_dataset_version.dataset_version_id),
                 None,
@@ -296,9 +289,6 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("scanpy.read_h5ad")
     def test_update_metadata__error_if_missing_labeled_h5ad(self, *args):
-        self.business_logic.s3_provider = MockS3Provider()
-        updater = DatasetMetadataUpdate(self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket")
-        updater.download_from_source_uri = Mock(return_value="raw.h5ad")
         original_dataset_version = self.generate_dataset(
             artifacts=[
                 DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "s3://fake.bucket/raw.h5ad"),
@@ -312,7 +302,7 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
         )
 
         with pytest.raises(ValueError):
-            updater.update_metadata(
+            self.updater.update_metadata(
                 CollectionVersionId(original_dataset_version.collection_version_id),
                 DatasetVersionId(original_dataset_version.dataset_version_id),
                 None,
@@ -322,9 +312,6 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
     @patch("scanpy.read_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdate.update_h5ad")
     def test_update_metadata__error_if_missing_rds(self, *args):
-        self.business_logic.s3_provider = MockS3Provider()
-        updater = DatasetMetadataUpdate(self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket")
-        updater.download_from_source_uri = Mock(return_value="raw.h5ad")
         original_dataset_version = self.generate_dataset(
             artifacts=[
                 DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "s3://fake.bucket/raw.h5ad"),
@@ -338,7 +325,7 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
         )
 
         with pytest.raises(ValueError):
-            updater.update_metadata(
+            self.updater.update_metadata(
                 CollectionVersionId(original_dataset_version.collection_version_id),
                 DatasetVersionId(original_dataset_version.dataset_version_id),
                 None,
@@ -349,9 +336,6 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdate.update_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdate.update_rds")
     def test_update_metadata__error_if_missing_cxg(self, *args):
-        self.business_logic.s3_provider = MockS3Provider()
-        updater = DatasetMetadataUpdate(self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket")
-        updater.download_from_source_uri = Mock(return_value="raw.h5ad")
         original_dataset_version = self.generate_dataset(
             artifacts=[
                 DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "s3://fake.bucket/raw.h5ad"),
@@ -365,7 +349,7 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
         )
 
         with pytest.raises(ValueError):
-            updater.update_metadata(
+            self.updater.update_metadata(
                 CollectionVersionId(original_dataset_version.collection_version_id),
                 DatasetVersionId(original_dataset_version.dataset_version_id),
                 None,
