@@ -311,7 +311,6 @@ async function fetchFiltersQuery({
   if (!response.ok) {
     throw json;
   }
-  console.log("json", json);
 
   return json;
 }
@@ -451,8 +450,6 @@ export function useFilterDimensions(version: 1 | 2 = 2): {
   const requestBody = useWMGFiltersQueryRequestBody(version);
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
 
-  console.log("data", data);
-
   return useMemo(() => {
     if (isLoading || !data) return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
 
@@ -471,8 +468,6 @@ export function useFilterDimensions(version: 1 | 2 = 2): {
     const sortedDatasets = Object.values(
       aggregateCollectionsFromDatasets(datasets)
     ).flatMap(({ datasets }) => datasets);
-
-    console.log("sortedDatasets", sortedDatasets);
 
     return {
       data: {

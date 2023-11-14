@@ -4,6 +4,7 @@ import {
   fontBodyXxs,
   fontBodyXxxs,
   getColors,
+  CommonThemeProps,
 } from "@czi-sds/components";
 import { Badge } from "@mui/base";
 import { error400, fontWeightSemibold } from "src/common/theme";
@@ -11,11 +12,14 @@ import { error400, fontWeightSemibold } from "src/common/theme";
 interface ButtonProps {
   refrenceCountSmall?: boolean;
 }
+interface StyledBadgeProps extends CommonThemeProps {
+  wide: string;
+}
 
-export const BadgeCounter = styled(Badge)`
+export const BadgeCounter = styled(Badge)<StyledBadgeProps>`
   background-color: ${error400};
   border-radius: 12px;
-  width: 28px;
+  width: ${(props) => props.wide};
   height: 16px;
   text-align: center;
   position: relative;
