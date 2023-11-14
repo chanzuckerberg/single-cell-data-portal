@@ -4,6 +4,7 @@ import { EVENTS } from "src/common/analytics/events";
 import { track } from "src/common/analytics";
 import { COLOR_LEGEND } from "../RelativeGeneExpression/constants";
 import { HOVER_START_TIME } from "src/views/WheresMyGeneV2/common/constants";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
 
 export const useConnect = () => {
   const [hoverStartTime, setHoverStartTime] = useState(0);
@@ -22,7 +23,7 @@ export const useConnect = () => {
 
   const { data: filterDimensions } = useFilterDimensions();
 
-  const { datasets = [] } = filterDimensions;
+  const { datasets = EMPTY_ARRAY } = filterDimensions;
 
   const referenceCount = datasets.length;
 
