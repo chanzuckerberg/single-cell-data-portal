@@ -3,12 +3,12 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 import scanpy
-from unit.backend.fixtures.environment_setup import fixture_file_path
 
 from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.math_utils import GB
 from backend.layers.common.entities import DatasetArtifactType, DatasetUploadStatus
 from backend.layers.processing.process_download import ProcessDownload
+from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 test_environment = {"REMOTE_DEV_PREFIX": "fake-stack", "DEPLOYMENT_STAGE": "test"}
