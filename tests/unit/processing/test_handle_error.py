@@ -88,7 +88,7 @@ def test_parse_event_with_error_cause():
     event = {
         "execution_id": "arn",
         "dataset_version_id": "123",
-        "collection_id": "456",
+        "collection_version_id": "456",
         "error": {"Cause": expected_error_cause},
     }
     (
@@ -111,7 +111,7 @@ def test_parse_event_with_error_cause():
 
 
 def test_parse_event_without_error_cause():
-    event = {"dataset_version_id": "123", "collection_id": "456", "error": {}}
+    event = {"dataset_version_id": "123", "collection_version_id": "456", "error": {}}
 
     (
         dataset_version_id,
@@ -133,7 +133,7 @@ def test_parse_event_without_error_cause():
 
 
 def test_parse_event_with_invalid_error_cause():
-    event = {"dataset_version_id": "123", "collection_id": "456", "error": {"Cause": "invalid JSON"}}
+    event = {"dataset_version_id": "123", "collection_version_id": "456", "error": {"Cause": "invalid JSON"}}
 
     (
         dataset_version_id,

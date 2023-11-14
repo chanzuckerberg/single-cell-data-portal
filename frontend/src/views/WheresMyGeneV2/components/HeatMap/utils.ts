@@ -19,7 +19,15 @@ import { TISSUE_CELL_TYPE_DIVIDER } from "./hooks/useSortedGeneNames";
 export const CELL_TYPE_FILTER_WIDTH_PX = 300;
 
 export const DIVIDER_MARGIN_PX = 12;
+export const GENE_CHART_LEFT_OFFSET_PX = 12;
 const CELL_COUNT_COLUMN_WIDTH_PX = 40;
+const CELL_COUNT_DIVIDER_GAP_PX = 8;
+
+export const DIVIDER_LEFT_POSITION_PX =
+  CELL_TYPE_FILTER_WIDTH_PX +
+  DIVIDER_MARGIN_PX * 2 +
+  CELL_COUNT_DIVIDER_GAP_PX +
+  CELL_COUNT_COLUMN_WIDTH_PX;
 /**
  * This is needed to ensure the divider is 12px away from the cell count column
  */
@@ -129,8 +137,9 @@ export function getFixedWidth(
 }
 
 export const HEAT_MAP_BASE_HEIGHT_PX = 300;
-export const HEAT_MAP_BASE_CELL_PX = 20;
+export const HEAT_MAP_BASE_CELL_PX = 16;
 export const HEAT_MAP_BASE_CELL_WIDTH_PX = 20;
+const HEAT_MAP_TOTAL_CELL_HEIGHT_PX = 19;
 
 /**
  * Approximating the heatmap width by the number of genes.
@@ -147,7 +156,7 @@ export function getHeatmapWidth(
  * Approximating the heatmap height by the number of cells.
  */
 export function getHeatmapHeight(cellTypes: CellType[] = EMPTY_ARRAY): number {
-  return HEAT_MAP_BASE_CELL_PX * cellTypes.length;
+  return HEAT_MAP_TOTAL_CELL_HEIGHT_PX * cellTypes.length;
 }
 
 /**
