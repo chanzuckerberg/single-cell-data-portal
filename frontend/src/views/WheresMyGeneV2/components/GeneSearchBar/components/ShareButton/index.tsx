@@ -2,7 +2,7 @@ import { Notification } from "@czi-sds/components";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { EMPTY_OBJECT, noop } from "src/common/constants/utils";
+import { noop } from "src/common/constants/utils";
 import { isSSR } from "src/common/utils/isSSR";
 import { useRouter } from "next/router";
 
@@ -22,7 +22,6 @@ import {
   StateContext,
 } from "src/views/WheresMyGeneV2/common/store";
 import {
-  CellTypeByTissueName,
   useCellTypesByTissueName,
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
@@ -43,22 +42,7 @@ export default function ShareButton(): JSX.Element {
     filteredCellTypes,
   } = state;
 
-  // (seve): this is done in multiple places, we should consolidate to a single hook
-
-  const {
-    data: rawCellTypesByTissueName,
-    isLoading: isLoadingCellTypesByTissueName,
-  } = useCellTypesByTissueName();
-
-  const [cellTypesByTissueName, setCellTypesByTissueName] =
-    useState<CellTypeByTissueName>(EMPTY_OBJECT);
-
-  // This is needed to prevent overwriting the cellTypesByTissueName state with empty
-  useEffect(() => {
-    if (isLoadingCellTypesByTissueName) return;
-
-    setCellTypesByTissueName(rawCellTypesByTissueName);
-  }, [rawCellTypesByTissueName, isLoadingCellTypesByTissueName]);
+  const { data: cellTypesByTissueName } = useCellTypesByTissueName();
 
   const cellTypesByName = useMemo(() => {
     const result: { [name: string]: CellType } = {};

@@ -56,9 +56,9 @@ const CHART_DATA_TO_AXIS_ENCODING = {
 };
 
 interface Props {
-  cellTypes: CellTypeRow[];
+  tissueCellTypes: CellTypeRow[];
   selectedGeneData?: (GeneExpressionSummary | undefined)[];
-  setIsLoading: Dispatch<
+  setIsLoadingByTissue: Dispatch<
     SetStateAction<{
       [tissue: Tissue]: boolean;
     }>
@@ -86,9 +86,9 @@ const TOOLTIP_THROTTLE_MS = 100;
 let handleDotHoverAnalytic: NodeJS.Timeout;
 
 export default memo(function Chart({
-  cellTypes: dataRows,
+  tissueCellTypes,
   selectedGeneData = EMPTY_ARRAY,
-  setIsLoading,
+  setIsLoadingByTissue,
   tissue,
   scaledMeanExpressionMax,
   scaledMeanExpressionMin,
@@ -108,16 +108,17 @@ export default memo(function Chart({
   );
 
   const [heatmapHeight, setHeatmapHeight] = useState(
-    getHeatmapHeight(dataRows)
+    getHeatmapHeight(tissueCellTypes)
   );
 
   useEffect(() => {
-    setIsLoading((isLoading) => {
+    setIsLoadingByTissue((isLoading) => {
       if (isLoading[tissue]) return isLoading;
 
       return { ...isLoading, [tissue]: true };
     });
-  }, [dataRows, selectedGeneData, setIsLoading, tissue]);
+    // SEVE NOTE: tissueCellTypes is being recreated each render, see if we can memo or generate the object in a static manner
+  }, [tissueCellTypes.length, selectedGeneData, setIsLoadingByTissue, tissue]);
 
   const handleChartMouseMove = useMemo(() => {
     return throttle((params, chart) => {
@@ -136,8 +137,8 @@ export default memo(function Chart({
   // Update heatmap size
   useEffect(() => {
     setHeatmapWidth(getHeatmapWidth(selectedGeneData));
-    setHeatmapHeight(getHeatmapHeight(dataRows));
-  }, [dataRows, selectedGeneData]);
+    setHeatmapHeight(getHeatmapHeight(tissueCellTypes));
+  }, [tissueCellTypes, selectedGeneData]);
 
   // Calculate cellTypeSummaries
   /**
@@ -175,8 +176,8 @@ export default memo(function Chart({
    * `getDebounceMs()`
    */
   useEffect(() => {
-    debouncedIntegrateCellTypesAndGenes(dataRows, selectedGeneData);
-  }, [selectedGeneData, dataRows, debouncedIntegrateCellTypesAndGenes]);
+    debouncedIntegrateCellTypesAndGenes(tissueCellTypes, selectedGeneData);
+  }, [selectedGeneData, tissueCellTypes, debouncedIntegrateCellTypesAndGenes]);
 
   // Generate chartProps
   const debouncedDataToChartFormat = useMemo(() => {
@@ -215,7 +216,7 @@ export default memo(function Chart({
           return newAllChartProps;
         });
 
-        setIsLoading((isLoading) => {
+        setIsLoadingByTissue((isLoading) => {
           if (!isLoading[tissue]) return isLoading;
 
           return { ...isLoading, [tissue]: false };
@@ -226,7 +227,7 @@ export default memo(function Chart({
     );
   }, [
     selectedGeneData,
-    setIsLoading,
+    setIsLoadingByTissue,
     tissue,
     scaledMeanExpressionMax,
     scaledMeanExpressionMin,
@@ -274,7 +275,7 @@ export default memo(function Chart({
         geneIndex === hoveredGeneIndex && dataRowIndex === hoveredDataRowIndex
     );
 
-    const dataRow = dataRows[hoveredDataRowIndex];
+    const dataRow = tissueCellTypes[hoveredDataRowIndex];
     const gene = selectedGeneData[hoveredGeneIndex];
 
     if (!dataPoint || !dataRow || !gene) return null;
@@ -345,7 +346,7 @@ export default memo(function Chart({
     return <StyledTooltipTable data={data || undefined} />;
   }, [
     chartProps,
-    dataRows,
+    tissueCellTypes,
     hoveredGeneIndex,
     hoveredDataRowIndex,
     selectedGeneData,

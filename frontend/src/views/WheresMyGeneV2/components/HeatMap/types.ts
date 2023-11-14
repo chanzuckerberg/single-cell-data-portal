@@ -12,7 +12,7 @@ import {
 
 export interface Props {
   className?: string;
-  cellTypes: { [tissue: Tissue]: CellTypeRow[] };
+  cellTypesByTissueName: { [tissue: Tissue]: CellTypeRow[] };
   genes: State["selectedGenes"];
   selectedGeneExpressionSummariesByTissueName: {
     [tissueName: string]: GeneExpressionSummary[];

@@ -43,7 +43,7 @@ import { useSortedCellTypesByTissueName } from "src/views/WheresMyGeneV2/compone
 import { cloneDeep } from "lodash";
 
 export function useConnect({
-  cellTypes,
+  cellTypesByTissueName,
   cellTypeSortBy,
   genes,
   geneSortBy,
@@ -66,7 +66,10 @@ export function useConnect({
   }, [filteredCellTypes]);
 
   // Loading state per tissue
-  const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
+  const [isLoadingByTissue, setIsLoadingByTissue] = useState(
+    setInitialIsLoading(cellTypesByTissueName)
+  );
+  const [isLoading, setIsLoading] = useState(false);
   const chartWrapperRef = useRef<HTMLDivElement>(null);
   const dispatch = useContext(DispatchContext);
 
@@ -88,14 +91,14 @@ export function useConnect({
   const cellTypesByName = useMemo(() => {
     const result: { [name: string]: CellType } = {};
 
-    Object.values(cellTypes).forEach((cellTypes) => {
+    Object.values(cellTypesByTissueName).forEach((cellTypes) => {
       cellTypes.forEach((cellType) => {
         result[cellType.cellTypeName] = cellType;
       });
     });
 
     return result;
-  }, [cellTypes]);
+  }, [cellTypesByTissueName]);
 
   const generateMarkerGenes = (cellType: CellType, tissueID: string) => {
     dispatch?.(addCellInfoCellType({ cellType, tissueID }));
@@ -109,16 +112,19 @@ export function useConnect({
   const sortedGeneNames = useSortedGeneNames({
     genes,
     geneSortBy,
-    selectedCellTypes: cellTypes,
+    selectedCellTypes: cellTypesByTissueName,
     tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
   });
 
   const sortedCellTypesByTissueName = useSortedCellTypesByTissueName({
     cellTypeSortBy,
     genes,
-    selectedCellTypes: cellTypes,
+    selectedCellTypes: cellTypesByTissueName,
     tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
   });
+
+  // NOTE(seve): We're current recalculating tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap and cellTypesByTissueName when genes change.
+  // tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap is expected since its dependent on gene expression
 
   const geneNameToIndex = useMemo(() => {
     const result: { [key: string]: number } = {};
@@ -153,6 +159,7 @@ export function useConnect({
    * (thuang): Tissues to display after applying filters
    */
   const displayedTissues = useMemo(() => {
+    console.log("recalculating displayed tissues");
     return Object.values(tissuesByName)
       .filter(({ id }) => {
         return !filteredTissueIds.length || filteredTissueIds.includes(id);
@@ -208,6 +215,18 @@ export function useConnect({
     filteredCellTypes,
     sortedCellTypesByTissueName,
   ]);
+
+  useEffect(() => {
+    const heatmapIsLoading = Object.entries(isLoadingByTissue).some(
+      ([tissue, isLoading]) => {
+        // if (isLoading) console.log(tissue);
+        return isLoading;
+      }
+    );
+    // console.log("heatmapIsLoading", heatmapIsLoading);
+
+    setIsLoading(heatmapIsLoading);
+  }, [isLoadingByTissue]);
 
   const handleExpandCollapse = useCallback(
     (tissueId: string, tissueName: Tissue) => {
@@ -276,7 +295,7 @@ export function useConnect({
   /**
    * All tissue cell types to render in YAxisCharts
    */
-  const allTissueCellTypes = useMemo(() => {
+  const allDisplayedTissueCellTypes = useMemo(() => {
     return displayedTissues
       .sort((a, b) => {
         // sort tissues alphabetically
@@ -287,7 +306,7 @@ export function useConnect({
 
         const tissueCellTypes = getTissueCellTypes({
           cellTypeSortBy,
-          cellTypes,
+          cellTypesByTissueName,
           sortedCellTypesByTissueName,
           tissue: name,
           tissueID: id,
@@ -304,7 +323,7 @@ export function useConnect({
       });
   }, [
     cellTypeSortBy,
-    cellTypes,
+    cellTypesByTissueName,
     sortedCellTypesByTissueName,
     displayedCellTypes,
     displayedTissues,
@@ -324,7 +343,7 @@ export function useConnect({
   });
 
   return {
-    allTissueCellTypes,
+    allDisplayedTissueCellTypes,
     chartWrapperRef,
     expandedTissueIds,
     filteredCellTypes,
@@ -332,10 +351,11 @@ export function useConnect({
     handleCellTypeDelete,
     handleExpandCollapse,
     handleFilteredCellTypesChange,
+    isLoadingByTissue,
     isLoading,
     orderedSelectedGeneExpressionSummariesByTissueName,
     selectedCellTypeOptions,
-    setIsLoading,
+    setIsLoadingByTissue,
     sortedGeneNames,
     uniqueCellTypes,
     useHandleExpandedTissueIds,
@@ -344,28 +364,30 @@ export function useConnect({
   };
 }
 
-function setInitialIsLoading(cellTypes: Props["cellTypes"]) {
-  return Object.keys(cellTypes).reduce((isLoading, tissue) => {
+function setInitialIsLoading(
+  cellTypesByTissueName: Props["cellTypesByTissueName"]
+) {
+  return Object.keys(cellTypesByTissueName).reduce((isLoading, tissue) => {
     return { ...isLoading, [tissue]: false };
   }, {});
 }
 
 function getTissueCellTypes({
-  cellTypes,
+  cellTypesByTissueName,
   sortedCellTypesByTissueName,
   tissue,
   tissueID,
   cellTypeSortBy,
   displayedCellTypes,
 }: {
-  cellTypes: { [tissue: Tissue]: CellTypeRow[] };
+  cellTypesByTissueName: Props["cellTypesByTissueName"];
   sortedCellTypesByTissueName: { [tissue: string]: CellTypeRow[] };
   tissue: Tissue;
   tissueID: string;
   cellTypeSortBy: SORT_BY;
   displayedCellTypes: Set<string>;
 }) {
-  const tissueCellTypes = cellTypes[tissue];
+  const tissueCellTypes = cellTypesByTissueName[tissue];
 
   if (!tissueCellTypes || tissueCellTypes.length === 0) return EMPTY_ARRAY;
 

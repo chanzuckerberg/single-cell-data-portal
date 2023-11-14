@@ -3,7 +3,6 @@ import Head from "next/head";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
-  CellTypeByTissueName,
   FilterDimensions,
   GeneExpressionSummariesByTissueName,
   generateTermsByKey,
@@ -95,23 +94,8 @@ export default function WheresMyGene(): JSX.Element {
     [name: string]: OntologyTerm;
   }>({});
 
-  //(seve): These useEffects are deceptively simple.
-  // Their purpose is to avoid updating the state with null/empty values while we're waiting for the api to return data.
+  const { data: cellTypesByTissueName } = useCellTypesByTissueName();
 
-  const {
-    data: rawCellTypesByTissueName,
-    isLoading: isLoadingCellTypesByTissueName,
-  } = useCellTypesByTissueName(2);
-
-  const [cellTypesByTissueName, setCellTypesByTissueName] =
-    useState<CellTypeByTissueName>(EMPTY_OBJECT);
-
-  // This is needed to prevent overwriting the cellTypesByTissueName state with empty
-  useEffect(() => {
-    if (isLoadingCellTypesByTissueName) return;
-
-    setCellTypesByTissueName(rawCellTypesByTissueName);
-  }, [rawCellTypesByTissueName, isLoadingCellTypesByTissueName]);
   /**
    * This holds ALL the geneData we have loaded from the API, including previously
    * and currently selected genes.
@@ -119,7 +103,7 @@ export default function WheresMyGene(): JSX.Element {
    * currently selected.
    */
   const { data: rawGeneExpressionSummariesByTissueName, isLoading } =
-    useGeneExpressionSummariesByTissueName(2);
+    useGeneExpressionSummariesByTissueName();
 
   const [
     geneExpressionSummariesByTissueName,
@@ -409,7 +393,7 @@ export default function WheresMyGene(): JSX.Element {
             geneSortBy={sortBy.genes}
             isScaled={isScaled}
             isLoadingAPI={isLoading}
-            cellTypes={cellTypesByTissueName}
+            cellTypesByTissueName={cellTypesByTissueName}
             genes={selectedGenes}
             selectedGeneExpressionSummariesByTissueName={
               selectedGeneExpressionSummariesByTissueName

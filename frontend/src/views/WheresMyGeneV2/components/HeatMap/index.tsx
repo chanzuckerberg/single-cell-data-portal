@@ -48,7 +48,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
   } = props;
 
   const {
-    allTissueCellTypes,
+    allDisplayedTissueCellTypes,
     chartWrapperRef,
     expandedTissueIds,
     filteredCellTypes,
@@ -59,7 +59,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
     isLoading,
     orderedSelectedGeneExpressionSummariesByTissueName,
     selectedCellTypeOptions,
-    setIsLoading,
+    setIsLoadingByTissue,
     sortedGeneNames,
     uniqueCellTypes,
     xAxisHeight,
@@ -97,7 +97,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
           <CellCountLabel>Cell Count</CellCountLabel>
         </TopLeftCornerMask>
         <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
-          {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
+          {isLoadingAPI || isLoading ? <Loader /> : null}
           <XAxisWrapper id="x-axis-wrapper">
             <XAxisMask data-testid="x-axis-mask" height={xAxisHeight} />
             <XAxisChart
@@ -106,7 +106,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
             />
           </XAxisWrapper>
           <YAxisWrapper top={xAxisHeight}>
-            {allTissueCellTypes.map(
+            {allDisplayedTissueCellTypes.map(
               ({ tissueId, tissueName, tissueCellTypes }) => {
                 return (
                   <YAxisChart
@@ -123,52 +123,56 @@ export default memo(function HeatMap(props: Props): JSX.Element {
             )}
           </YAxisWrapper>
           <ChartWrapper ref={chartWrapperRef} top={xAxisHeight}>
-            {allTissueCellTypes.map(({ tissueName, tissueCellTypes }) => {
-              const selectedGeneData =
-                orderedSelectedGeneExpressionSummariesByTissueName[tissueName];
+            {allDisplayedTissueCellTypes.map(
+              ({ tissueName, tissueCellTypes }) => {
+                const selectedGeneData =
+                  orderedSelectedGeneExpressionSummariesByTissueName[
+                    tissueName
+                  ];
 
-              /**
-               * (thuang): If there is no selected gene data, we don't want to render
-               * the chart, because it will cause the chart to render with 0 width,
-               * which is an error for echarts
-               */
-              if (!selectedGeneData?.length) {
-                const height =
-                  document.getElementById(`${hyphenize(tissueName)}-y-axis`)
-                    ?.clientHeight ?? 0;
+                /**
+                 * (thuang): If there is no selected gene data, we don't want to render
+                 * the chart, because it will cause the chart to render with 0 width,
+                 * which is an error for echarts
+                 */
+                if (!selectedGeneData?.length) {
+                  const height =
+                    document.getElementById(`${hyphenize(tissueName)}-y-axis`)
+                      ?.clientHeight ?? 0;
+
+                  return (
+                    <div
+                      id={`no-chart-data-${hyphenize(tissueName)}`} // Not used, just to make it stand out
+                      key={`${tissueName}-${echartsRendererMode}`}
+                      style={{
+                        height: `${height + MARGIN_BETWEEN_HEATMAPS}px`,
+                      }}
+                    />
+                  );
+                }
 
                 return (
-                  <div
-                    id={`no-chart-data-${hyphenize(tissueName)}`} // Not used, just to make it stand out
+                  <Chart
+                    isScaled={isScaled}
+                    /**
+                     * (thuang): We use `key` to force re-render the HeatMap component
+                     * when the renderer mode changes, so echarts can create new instances
+                     */
                     key={`${tissueName}-${echartsRendererMode}`}
-                    style={{
-                      height: `${height + MARGIN_BETWEEN_HEATMAPS}px`,
-                    }}
+                    tissue={tissueName}
+                    tissueCellTypes={tissueCellTypes}
+                    selectedGeneData={selectedGeneData}
+                    setIsLoadingByTissue={setIsLoadingByTissue}
+                    scaledMeanExpressionMax={scaledMeanExpressionMax}
+                    scaledMeanExpressionMin={scaledMeanExpressionMin}
+                    echartsRendererMode={echartsRendererMode}
+                    setAllChartProps={setAllChartProps}
+                    chartProps={allChartProps[tissueName]}
+                    maxExpression={scaledMeanExpressionMax}
                   />
                 );
               }
-
-              return (
-                <Chart
-                  isScaled={isScaled}
-                  /**
-                   * (thuang): We use `key` to force re-render the HeatMap component
-                   * when the renderer mode changes, so echarts can create new instances
-                   */
-                  key={`${tissueName}-${echartsRendererMode}`}
-                  tissue={tissueName}
-                  cellTypes={tissueCellTypes}
-                  selectedGeneData={selectedGeneData}
-                  setIsLoading={setIsLoading}
-                  scaledMeanExpressionMax={scaledMeanExpressionMax}
-                  scaledMeanExpressionMin={scaledMeanExpressionMin}
-                  echartsRendererMode={echartsRendererMode}
-                  setAllChartProps={setAllChartProps}
-                  chartProps={allChartProps[tissueName]}
-                  maxExpression={scaledMeanExpressionMax}
-                />
-              );
-            })}
+            )}
           </ChartWrapper>
         </Container>
         <Divider className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
@@ -176,7 +180,3 @@ export default memo(function HeatMap(props: Props): JSX.Element {
     </>
   );
 });
-
-function isAnyTissueLoading(isLoading: { [tissue: Tissue]: boolean }) {
-  return Object.values(isLoading).some((isLoading) => isLoading);
-}

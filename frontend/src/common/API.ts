@@ -15,9 +15,9 @@ export enum API {
   USER_COLLECTIONS_INDEX = "/dp/v1/user-collections/index", // Filter-specific endpoint
   USER_DATASETS_INDEX = "/dp/v1/user-datasets/index", // Filter-specific endpoint
   USER_INFO = "/dp/v1/userinfo",
-  WMG_PRIMARY_FILTER_DIMENSIONS = "/wmg/v1/primary_filter_dimensions",
-  WMG_QUERY = "/wmg/v1/query",
-  WMG_FILTERS_QUERY = "/wmg/v1/filters",
+  WMG_PRIMARY_FILTER_DIMENSIONS = "/wmg/v2/primary_filter_dimensions",
+  WMG_QUERY = "/wmg/v2/query",
+  WMG_FILTERS_QUERY = "/wmg/v2/filters",
   WMG_MARKER_GENES = "/wmg/v2/markers",
   WMG_GENE_INFO = "/gene_info/v1/gene_info",
   CENSUS_DIRECTORY = "/census/v1/directory", // TODO: replace with actual endpoint

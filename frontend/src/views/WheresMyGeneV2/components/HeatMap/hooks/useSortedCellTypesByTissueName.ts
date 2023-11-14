@@ -1,5 +1,7 @@
 import { Cluster, agnes } from "ml-hclust";
 import { useMemo } from "react";
+import { EMPTY_ARRAY, noop } from "src/common/constants/utils";
+import { useEffectDebugger } from "src/common/hooks/useEffectDebugger";
 import { CellTypeRow } from "src/common/queries/wheresMyGene";
 import {
   CellTypeGeneExpressionSummaryData,
@@ -23,7 +25,16 @@ export function useSortedCellTypesByTissueName({
   genes,
   cellTypeSortBy,
 }: Props): { [tissue: Tissue]: CellTypeRow[] } {
+  const conditionalDependencies =
+    cellTypeSortBy === SORT_BY.CELL_ONTOLOGY
+      ? EMPTY_ARRAY
+      : [
+          genes,
+          tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
+        ];
+
   return useMemo(() => {
+    console.log("recomputing sorted cell types");
     const isSortByCellOntology = cellTypeSortBy === SORT_BY.CELL_ONTOLOGY;
 
     if (isSortByCellOntology) {
@@ -72,12 +83,8 @@ export function useSortedCellTypesByTissueName({
       sortedCellTypesByTissueName[tissueName] = orderedCellTypes.reverse();
     }
     return sortedCellTypesByTissueName;
-  }, [
-    tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
-    selectedCellTypes,
-    genes,
-    cellTypeSortBy,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- conditional dependencies are dependent on cellTypeSortBy
+  }, [selectedCellTypes, cellTypeSortBy, ...conditionalDependencies]);
 }
 
 function hierarchicalClustering({

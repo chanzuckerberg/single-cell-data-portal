@@ -203,6 +203,7 @@ export default function GeneSearchBar({
     <Container sidebarWidth={sidebarWidth} {...{ className }}>
       <ActionWrapper>
         <AutocompleteWrapper>
+          {/**NOTE(seve): Looks like this component is freezing while the data is loading, closing the dropdown alleviates this}**/}
           <Autocomplete
             /**
              * (thuang): Use React Portal to avoid z-index issues, causing partial
