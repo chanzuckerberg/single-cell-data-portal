@@ -24,7 +24,7 @@ export default memo(function Legend({
   filteredCellTypes,
   maxExpression,
 }: Props): JSX.Element {
-  const { referenceCount } = useConnect();
+  const { datasetsCount } = useConnect();
   return (
     <LegendWrapper data-testid="legend-wrapper">
       <ActionsWrapper>
@@ -43,7 +43,7 @@ export default memo(function Legend({
         <CitationButton />
         <SourceDataButton
           handleRightSidebarButtonClick={handleRightSidebarButtonClick}
-          referenceCount={referenceCount}
+          datasetsCount={datasetsCount}
         />
       </ActionsWrapper>
       <ColorLegendWrapper>

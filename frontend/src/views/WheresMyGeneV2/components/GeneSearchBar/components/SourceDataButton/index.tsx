@@ -11,18 +11,18 @@ import {
 
 export default function SourceDataButton({
   handleRightSidebarButtonClick,
-  referenceCount,
+  datasetsCount,
 }: {
   handleRightSidebarButtonClick: MouseEventHandler<HTMLButtonElement>;
-  referenceCount: number;
+  datasetsCount: number;
 }): JSX.Element {
   return (
     <StyledButtonDiv className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
       <StyledLabel>Source Data</StyledLabel>
-      {referenceCount > 0 && (
+      {datasetsCount > 0 && (
         <BadgeCounter
-          badgeContent={referenceCount}
-          width={referenceCount > 99 ? "28px" : "20px"}
+          badgeContent={datasetsCount}
+          width={datasetsCount > 99 ? "28px" : "20px"}
           data-testid="source-data-badge"
         />
       )}

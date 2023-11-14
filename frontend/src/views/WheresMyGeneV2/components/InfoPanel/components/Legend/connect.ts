@@ -25,7 +25,7 @@ export const useConnect = () => {
 
   const { datasets = EMPTY_ARRAY } = filterDimensions;
 
-  const referenceCount = datasets.length;
+  const datasetsCount = datasets.length;
 
-  return { referenceCount, setHoverStartTime, handleLegendHoverEnd };
+  return { datasetsCount, setHoverStartTime, handleLegendHoverEnd };
 };
