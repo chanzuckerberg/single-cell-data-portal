@@ -45,3 +45,5 @@ export const SORT_CELL_TYPES_TOOLTIP_TEXT =
   "Sort cell types by Cell Ontology or Hierarchical ordering. Cell ontology ordering groups cell types together based on their ontological relationships. Hierarchical ordering groups cell types with similar expression patterns together based on the genes selected.";
 export const SORT_GENES_TOOLTIP_TEXT =
   "Sort genes As Entered or using Hierarchical ordering. Genes are displayed in the order they are added to the dot plot using As Entered ordering. Hierarchical ordering groups genes with similar expression patterns together.";
+
+export const HOVER_START_TIME = 2 * 1000;

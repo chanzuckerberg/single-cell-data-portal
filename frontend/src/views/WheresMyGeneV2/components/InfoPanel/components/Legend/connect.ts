@@ -3,12 +3,13 @@ import { useFilterDimensions } from "src/common/queries/wheresMyGene";
 import { EVENTS } from "src/common/analytics/events";
 import { track } from "src/common/analytics";
 import { COLOR_LEGEND } from "../RelativeGeneExpression/constants";
+import { HOVER_START_TIME } from "src/views/WheresMyGeneV2/common/constants";
 
 export const useConnect = () => {
   const [hoverStartTime, setHoverStartTime] = useState(0);
   const useHandleHoverEnd = (event: EVENTS, payload = {}) => {
     return useCallback(() => {
-      if (Date.now() - hoverStartTime > 2 * 1000) {
+      if (Date.now() - hoverStartTime > HOVER_START_TIME) {
         track(event, payload);
       }
     }, [event, payload]);

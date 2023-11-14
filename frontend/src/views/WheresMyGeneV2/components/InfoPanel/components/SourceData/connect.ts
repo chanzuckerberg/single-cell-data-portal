@@ -1,5 +1,4 @@
-import { useCallback, useContext, useMemo, useState } from "react";
-import { StateContext } from "src/views/WheresMyGeneV2/common/store";
+import { useCallback, useMemo, useState } from "react";
 import {
   aggregateCollectionsFromDatasets,
   useFilterDimensions,
@@ -8,12 +7,14 @@ import { Collections } from "./types";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { SOURCE_DATA } from "./constants";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { HOVER_START_TIME } from "src/views/WheresMyGeneV2/common/constants";
 
 export const useConnect = () => {
   const [hoverStartTime, setHoverStartTime] = useState(0);
   const useHandleHoverEnd = (event: EVENTS, payload = {}) => {
     return useCallback(() => {
-      if (Date.now() - hoverStartTime > 2 * 1000) {
+      if (Date.now() - hoverStartTime > HOVER_START_TIME) {
         track(event, payload);
       }
     }, [event, payload]);
@@ -24,15 +25,10 @@ export const useConnect = () => {
     { label: SOURCE_DATA }
   );
 
-  const { selectedFilters } = useContext(StateContext);
   const { data: filterDimensions } = useFilterDimensions();
 
-  let { datasets = [] } = filterDimensions;
-  if (selectedFilters.datasets.length > 0) {
-    datasets = datasets.filter((dataset) =>
-      selectedFilters.datasets.includes(dataset.id)
-    );
-  }
+  const { datasets = EMPTY_ARRAY } = filterDimensions;
+
   const collections: Collections = useMemo(() => {
     return aggregateCollectionsFromDatasets(datasets);
   }, [datasets]);
