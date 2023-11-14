@@ -1,5 +1,4 @@
 import { memo } from "react";
-
 import CitationButton from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/CitationButton";
 import SaveExport from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 import ShareButton from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/ShareButton";
