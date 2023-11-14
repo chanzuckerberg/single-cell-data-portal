@@ -61,7 +61,6 @@ export const COMPARE_DROPDOWN_ID = "compare-dropdown";
 export const SEX_FILTER_TEST_ID = "sex-filter";
 export const PUBLICATION_FILTER_TEST_ID = "publication-filter";
 export const DISEASE_FILTER_TEST_ID = "disease-filter";
-export const DATASET_FILTER_TEST_ID = "dataset-filter";
 export const CELL_TYPE_FILTER_TEST_ID = "celltype-filter";
 export const SELF_REPORTED_ETHNICITY_FILTER_TEST_ID =
   "self-reported-ethnicity-filter";

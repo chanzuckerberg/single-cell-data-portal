@@ -141,13 +141,6 @@ describe("Where's My Gene", () => {
 
     await clickUntilOptionsShowUp({
       page,
-      locator: getDatasetSelectorButton(page),
-    });
-    const numberOfDatasetsBefore = await countLocator(page.getByRole("option"));
-    await page.keyboard.press("Escape");
-
-    await clickUntilOptionsShowUp({
-      page,
       locator: getDiseaseSelectorButton(page),
     });
 
@@ -169,10 +162,6 @@ describe("Where's My Gene", () => {
       page,
       locator: getDatasetSelectorButton(page),
     });
-    const numberOfDatasetsAfter = await countLocator(page.getByRole("option"));
-    await page.keyboard.press("Escape");
-
-    expect(numberOfDatasetsBefore).toBeGreaterThan(numberOfDatasetsAfter);
     expect(numberOfTissuesBefore).toBeGreaterThan(numberOfTissuesAfter);
   });
 

@@ -3,7 +3,6 @@ import { toInteger } from "lodash";
 import {
   ADD_TISSUE_ID,
   CELL_TYPE_FILTER_TEST_ID,
-  DATASET_FILTER_TEST_ID,
   DISEASE_FILTER_TEST_ID,
   PUBLICATION_FILTER_TEST_ID,
   SELF_REPORTED_ETHNICITY_FILTER_TEST_ID,
@@ -38,13 +37,9 @@ const SELF_REPORTED_ETHNICITY_TISSUE = ["brain", "breast"];
 const DISEASE_FILTER_LABEL = "Disease";
 const DISEASE_FILTER_SELECTION = "influenza";
 
-const DATASET_FILTER_LABEL = "Dataset";
-const DATASET_FILTER_SELECTION = "Combined Samples";
-const DATASET_FILTER_FILTERED_TISSUES = ["axilla", "brain"];
 const EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER = ["blood", "brain"];
 const EXPECTED_EXPANDED_TISSUES = ["blood"];
 const EXPECTED_VISIBLE_CELL = ["B Cell"];
-const EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER = ["axilla", "brain"];
 const EXPECTED_FILTERED_TISSUES_WITH_DISEASE_FILTER = ["blood"];
 const EXPECTED_FILTERED_TISSUES_WITH_SHARE_LINK = ["lung"];
 
@@ -296,32 +291,6 @@ describe("WMG tissue auto-expand", () => {
     await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DISEASE_FILTER);
     await removeCellFilter(page);
     await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DISEASE_FILTER);
-  });
-
-  /**
-   * Tissue auto expansion - cross filter with Dataset filter
-   * Filter 2 Tissues. From the Dataset filter select Combined Samples.
-   * Axilla and Brain should appear only and expanded. Add cell type filter for B Cell. Only B Cell
-   * should appear under Axilla and Brain and expanded. Remove B Cell. Remove Combined Samples. Brain
-   */
-  test("Tissue auto expansion - cross filter with Dataset filter", async ({
-    page,
-  }) => {
-    await loadPageAndTissues(page);
-    await filterTissues(page, DATASET_FILTER_FILTERED_TISSUES);
-    await filterSelection({
-      page,
-      filterTestId: DATASET_FILTER_TEST_ID,
-      filterLabel: DATASET_FILTER_LABEL,
-      selection: DATASET_FILTER_SELECTION,
-    });
-
-    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER);
-    await filterCellTypes(page, CELL_TYPE_FILTERS.slice(0, 1));
-    await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
-    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER);
-    await removeCellFilter(page);
-    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DATASET_FILTER);
   });
 
   test("Share link with genes and cellTypes", async ({ page }) => {
