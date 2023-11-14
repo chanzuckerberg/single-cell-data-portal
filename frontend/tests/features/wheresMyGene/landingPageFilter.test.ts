@@ -1,4 +1,4 @@
-import { expect, test, Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import {
   WMG_WITH_SEEDED_GENES,
   checkPlotSize,
@@ -17,6 +17,7 @@ import {
 } from "src/views/WheresMyGeneV2/common/constants";
 import { filterSelection } from "./tissueAutoExpand.test";
 import { DISEASE_FILTER_TEST_ID } from "tests/common/constants";
+import { test } from "tests/common/test";
 
 const SIDE_BAR_TOGGLE_BUTTON_ID = "side-bar-toggle-button";
 const CELL_TYPE_FILTER = "naive B cell";
