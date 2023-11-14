@@ -5,7 +5,7 @@ import { useMarkerGenes } from "src/common/queries/wheresMyGene";
 import { DispatchContext, State } from "../../common/store";
 import { addSelectedGenes } from "../../common/store/actions";
 import { MARKER_GENE_LABEL, MARKER_SCORE_LABEL } from "./constants";
-import { HOVER_START_TIME } from "../../common/constants";
+import { HOVER_START_TIME_MS } from "../../common/constants";
 
 export const useConnect = ({
   cellInfoCellType,
@@ -43,7 +43,7 @@ export const useConnect = ({
 
   const useHandleHoverEnd = (event: EVENTS, payload = {}) => {
     return useCallback(() => {
-      if (Date.now() - hoverStartTime > HOVER_START_TIME) {
+      if (Date.now() - hoverStartTime > HOVER_START_TIME_MS) {
         track(event, payload);
       }
     }, [event, payload]);

@@ -8,13 +8,13 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { SOURCE_DATA } from "./constants";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
-import { HOVER_START_TIME } from "src/views/WheresMyGeneV2/common/constants";
+import { HOVER_START_TIME_MS } from "src/views/WheresMyGeneV2/common/constants";
 
 export const useConnect = () => {
   const [hoverStartTime, setHoverStartTime] = useState(0);
   const useHandleHoverEnd = (event: EVENTS, payload = {}) => {
     return useCallback(() => {
-      if (Date.now() - hoverStartTime > HOVER_START_TIME) {
+      if (Date.now() - hoverStartTime > HOVER_START_TIME_MS) {
         track(event, payload);
       }
     }, [event, payload]);
