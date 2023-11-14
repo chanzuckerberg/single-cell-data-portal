@@ -11,7 +11,7 @@ import {
   StyledValue,
   Wrapper,
 } from "./style";
-import { DivTable, DivTableHead } from "../../../CellInfoSideBar/style";
+import { DivTable, DivTableHead } from "src/views/WheresMyGeneV2/common/styles";
 import { ROUTES } from "src/common/constants/routes";
 import { useConnect } from "./connect";
 import { SOURCE_DATA_INFO_TEXT } from "./constants";

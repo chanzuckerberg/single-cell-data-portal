@@ -5,7 +5,10 @@ import {
   Header as CommonHeader,
 } from "../../common/style";
 import { gray600 } from "src/common/theme";
-import { DivTableCell, DivTableRow } from "../../../CellInfoSideBar/style";
+import {
+  DivTableCell,
+  DivTableRow,
+} from "src/views/WheresMyGeneV2/common/styles";
 
 export const Wrapper = styled.div`
   overflow-y: scroll;
