@@ -1,1 +1,0 @@
-INFO     cellxgene_census:_open.py:204 The "latest" release is currently 2023-11-06. Specify 'census_version="2023-11-06"' in future calls to open_soma() to ensure data consistency.
