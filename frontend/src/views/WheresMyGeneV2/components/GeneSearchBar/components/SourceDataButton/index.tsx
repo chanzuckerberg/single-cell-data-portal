@@ -23,7 +23,7 @@ export default function SourceDataButton({
         <BadgeCounter
           badgeContent={referenceCount}
           width={referenceCount > 99 ? "28px" : "20px"}
-          data-testid={"source-data-badge"}
+          data-testid="source-data-badge"
         />
       )}
       <StyledButtonIcon
