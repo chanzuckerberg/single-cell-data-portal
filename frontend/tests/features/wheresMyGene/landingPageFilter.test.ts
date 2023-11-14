@@ -1,4 +1,4 @@
-import { expect, test, Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import {
   WMG_WITH_SEEDED_GENES,
   checkPlotSize,
@@ -15,9 +15,15 @@ import {
   SORT_CELL_TYPES_TOOLTIP_TEXT,
   SORT_GENES_TOOLTIP_TEXT,
 } from "src/views/WheresMyGeneV2/common/constants";
+import { filterSelection } from "./tissueAutoExpand.test";
+import { DISEASE_FILTER_TEST_ID } from "tests/common/constants";
+import { test } from "tests/common/test";
 
 const SIDE_BAR_TOGGLE_BUTTON_ID = "side-bar-toggle-button";
 const CELL_TYPE_FILTER = "naive B cell";
+const DISEASE_FILTER_LABEL = "Disease";
+const DISEASE_FILTER_SELECTION = "influenza";
+const DATA_SOURCE_BADGE_TEST_ID = "source-data-badge";
 
 const { describe } = test;
 
@@ -134,24 +140,74 @@ describe("Left side bar", () => {
     }
   );
 
-  async function countRecords(page: Page, testId: string) {
-    const optionLocator = page.getByRole("option");
-
-    let count = 0;
-
+  test("Data Source Button Badge Counter - Check Visible on page load", async ({
+    page,
+  }) => {
     await tryUntil(
       async () => {
-        await page.getByTestId(testId).getByRole("button").click();
-
-        count = await optionLocator.count();
-
-        await page.keyboard.press("Escape");
-
-        expect(count).toBeGreaterThan(0);
+        await goToWMG(page);
+        const badgeCounter = await page.getByTestId(DATA_SOURCE_BADGE_TEST_ID);
+        expect(badgeCounter).toBeVisible();
+        expect(badgeCounter.getByText(/\d+/)).toBeVisible();
       },
       { page }
     );
+  });
 
-    return count;
-  }
+  test("Data Source Button Badge Counter - Check Visible after genes applied", async ({
+    page,
+  }) => {
+    await tryUntil(
+      async () => {
+        await goToPage(WMG_WITH_SEEDED_GENES.URL, page);
+        await waitForHeatmapToRender(page);
+        const badgeCounter = await page.getByTestId(DATA_SOURCE_BADGE_TEST_ID);
+        expect(badgeCounter).toBeVisible();
+        expect(badgeCounter.getByText(/\d+/)).toBeVisible();
+      },
+      { page }
+    );
+  });
+
+  test("Data Source Button Badge Counter - Check Visible after filters applied", async ({
+    page,
+  }) => {
+    await tryUntil(
+      async () => {
+        await goToWMG(page);
+        await filterSelection({
+          page,
+          filterTestId: DISEASE_FILTER_TEST_ID,
+          filterLabel: DISEASE_FILTER_LABEL,
+          selection: DISEASE_FILTER_SELECTION,
+        });
+        const badgeCounter = await page.getByTestId(DATA_SOURCE_BADGE_TEST_ID);
+        expect(badgeCounter).toBeVisible();
+        const count = await badgeCounter.innerText();
+        expect(parseInt(count)).toBeLessThan(99);
+      },
+      { page }
+    );
+  });
 });
+
+async function countRecords(page: Page, testId: string) {
+  const optionLocator = page.getByRole("option");
+
+  let count = 0;
+
+  await tryUntil(
+    async () => {
+      await page.getByTestId(testId).getByRole("button").click();
+
+      count = await optionLocator.count();
+
+      await page.keyboard.press("Escape");
+
+      expect(count).toBeGreaterThan(0);
+    },
+    { page }
+  );
+
+  return count;
+}
