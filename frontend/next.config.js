@@ -64,7 +64,7 @@ const defaultSecureHeaders = {
       scriptSrc: isProdBuild ? SCRIPT_SRC : [...SCRIPT_SRC, "'unsafe-eval'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       upgradeInsecureRequests: true,
-      workerSrc: true,
+      workerSrc: false,
     },
   },
 };
