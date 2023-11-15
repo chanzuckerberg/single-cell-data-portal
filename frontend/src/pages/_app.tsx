@@ -134,6 +134,7 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
         data-domain={configs.PLAUSIBLE_DATA_DOMAIN}
         src="https://plausible.io/js/script.js"
       />
+      <Script data-domain={configs.PLAUSIBLE_DATA_DOMAIN} src="/js/script.js" />
     </>
   );
 }

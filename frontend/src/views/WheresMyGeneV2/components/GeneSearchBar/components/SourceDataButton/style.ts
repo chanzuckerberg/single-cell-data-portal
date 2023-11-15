@@ -1,5 +1,41 @@
 import styled from "@emotion/styled";
-import { ButtonIcon, fontBodyXxs, getColors } from "@czi-sds/components";
+import {
+  ButtonIcon,
+  fontBodyXxs,
+  fontBodyXxxs,
+  getColors,
+  CommonThemeProps,
+} from "@czi-sds/components";
+import { Badge } from "@mui/base";
+import { error400, fontWeightSemibold } from "src/common/theme";
+
+interface ButtonProps {
+  refrenceCountSmall?: boolean;
+}
+interface StyledBadgeProps extends CommonThemeProps {
+  width: string;
+}
+
+export const BadgeCounter = styled(Badge)<StyledBadgeProps>`
+  background-color: ${error400};
+  border-radius: 12px;
+  width: ${(props) => props.width};
+  height: 16px;
+  text-align: center;
+  position: relative;
+  z-index: 22;
+  top: 4px;
+  left: 14px;
+
+  .MuiBadge-badge {
+    position: relative;
+    top: -2px;
+    margin: 0px;
+    ${fontBodyXxxs}
+    font-weight: ${fontWeightSemibold};
+    color: white;
+  }
+`;
 
 export const StyledButtonDiv = styled.div`
   display: flex;
@@ -22,7 +58,11 @@ export const StyledLabel = styled.div`
   }}
 `;
 
-export const StyledButtonIcon = styled(ButtonIcon)`
+export const StyledButtonIcon = styled(ButtonIcon)<ButtonProps>`
   width: 30px;
   height: 30px;
+  position: absolute;
+  cursor: pointer;
+  top: 99px;
+  z-index: 1;
 `;
