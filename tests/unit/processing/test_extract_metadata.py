@@ -4,7 +4,6 @@ import anndata
 import numpy as np
 import pandas
 
-from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 from backend.layers.common.entities import OntologyTermId, TissueOntologyTermId
 from backend.layers.processing.process_validate import ProcessValidate
 from tests.unit.processing.base_processing_test import BaseProcessingTest
@@ -14,16 +13,6 @@ class TestProcessingValidate(BaseProcessingTest):
     def setUp(self):
         super().setUp()
         self.pdv = ProcessValidate(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
-
-        def mock_config_fn(name):
-            if name == FeatureFlagValues.SCHEMA_4:
-                return "True"
-
-        self.mock_config = patch.object(FeatureFlagService, "is_enabled", side_effect=mock_config_fn)
-        self.mock_config.start()
-
-    def tearDown(self):
-        self.mock_config.stop()
 
     @patch("scanpy.read_h5ad")
     def test_extract_metadata(self, mock_read_h5ad):

@@ -21,10 +21,10 @@ function CensusDirectory() {
   );
 
   const communityProjects = Object.values(staticProjects).filter(
-    (project) => project.tier === 3
+    (project) => project.tier === "community"
   );
   const maintainedProjects = Object.values(staticProjects).filter(
-    (project) => project.tier === 1
+    (project) => project.tier === "maintained"
   );
 
   return (
@@ -41,10 +41,10 @@ function CensusDirectory() {
         <TierContainer>
           <TierTitle>CELL×GENE Maintained Projects</TierTitle>
           <TierDescription>
-            These projects are actively maintained and regularly updated by
-            CELL×GENE in close collaboration with their creators. Embeddings are
-            accessible via the Census API; models are available via
-            CELL×GENE-maintained links.
+            These models and their output embeddings are maintained and
+            regularly re-trained by CELL×GENE in close collaboration with their
+            creators. Embeddings are accessible via the Census API;
+            corresponding models are available via CELL×GENE-maintained links.
           </TierDescription>
           {maintainedProjects.map((project) => (
             <Project key={project.title} project={project} />
@@ -55,9 +55,10 @@ function CensusDirectory() {
         <TierContainer>
           <TierTitle>CELL×GENE Hosted Projects</TierTitle>
           <TierDescription>
-            CELL×GENE makes these projects available, but does not actively
-            maintain or update them. Embeddings are accessible via the Census
-            API; models are available via CELL×GENE-maintained links.
+            CELL×GENE makes these embeddings directly available through the
+            Census API, but does not actively maintain or update them.
+            Corresponding models are accessible via external links (when
+            available).
           </TierDescription>
           {hostedProjects.map(([id, project]) => (
             <Project key={id} id={id} project={project} />

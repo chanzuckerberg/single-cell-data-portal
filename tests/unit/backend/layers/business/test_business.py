@@ -4,9 +4,10 @@ import uuid
 from copy import deepcopy
 from datetime import datetime
 from typing import List, Tuple
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 from uuid import uuid4
 
+from backend.common.corpora_config import CorporaConfig
 from backend.layers.business.business import (
     BusinessLogic,
     CollectionMetadataUpdate,
@@ -88,12 +89,8 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
         # Mock CorporaConfig
         # TODO: deduplicate with base_api
-        def mock_config_fn(name):
-            if name == "upload_max_file_size_gb":
-                return 30
-
-        self.mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-        self.mock_config.start()
+        self.mock_config = CorporaConfig()
+        self.mock_config.set({"upload_max_file_size_gb": 30})
 
         # TODO: also deduplicate with base test
         from backend.layers.common import validation
@@ -176,7 +173,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self.s3_provider.mock_s3_fs = set()
 
     def tearDown(self):
-        self.mock_config.stop()
+        self.mock_config.reset()
         if self.run_as_integration:
             self.database_provider._drop_schema()
 

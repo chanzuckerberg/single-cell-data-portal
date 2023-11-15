@@ -44,15 +44,15 @@ resource aws_batch_job_definition schema_migrations_swap {
     resourceRequirements = [
       {
         type= "VCPU",
-        Value="6"
+        Value="32"
       },
       {
         Type="MEMORY",
-        Value = "47500"
+        Value = "256000"
       }
     ]
     linuxParameters= {
-     maxSwap= 200000,
+     maxSwap= 0,
      swappiness= 60
     },
     logConfiguration= {
