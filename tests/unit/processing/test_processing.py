@@ -9,7 +9,7 @@ from backend.layers.common.entities import (
 from backend.layers.processing.process import ProcessMain
 from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_seurat import ProcessSeurat
-from tests.unit.processing.base_processing_test import BaseProcessingTest, mock_config_fn
+from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 
 class ProcessingTest(BaseProcessingTest):
@@ -90,11 +90,10 @@ class ProcessingTest(BaseProcessingTest):
 
     @patch("backend.layers.processing.process_download.StepFunctionProvider")
     @patch("scanpy.read_h5ad")
-    @patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
     @patch("backend.layers.processing.process_validate.ProcessValidate.extract_metadata")
     @patch("backend.layers.processing.process_seurat.ProcessSeurat.make_seurat")
     @patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg")
-    def test_process_all(self, mock_cxg, mock_seurat, mock_h5ad, mock_config, mock_read_h5ad, mock_sfn_provider):
+    def test_process_all(self, mock_cxg, mock_seurat, mock_h5ad, mock_read_h5ad, mock_sfn_provider):
         mock_seurat.return_value = "local.rds"
         mock_cxg.return_value = "local.cxg"
 

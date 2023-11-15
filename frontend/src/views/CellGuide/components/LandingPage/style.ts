@@ -4,7 +4,7 @@ import {
   fontHeaderL,
   fontHeaderXl,
 } from "@czi-sds/components";
-import { MAX_WIDTH_BREAKPOINT_PX } from "src/components/LandingHeader/style";
+import { MAX_WIDTH_BREAKPOINT_PX } from "src/components/MobileFriendlyHeader/style";
 
 interface WrapperProps extends CommonThemeProps {
   searchBarOpen: boolean;

@@ -4,8 +4,9 @@ import typing
 import unittest
 from dataclasses import dataclass
 from typing import List, Optional
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
+from backend.common.corpora_config import CorporaConfig
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import (
     CollectionId,
@@ -77,15 +78,17 @@ class BaseTest(unittest.TestCase):
     def setUp(self):
         super().setUp()
         os.environ.setdefault("APP_NAME", "corpora-api")
-
+        config = {
+            "upload_max_file_size_gb": 30,
+            "collections_base_url": "http://collections",
+            "dataset_assets_base_url": "http://domain",
+            "schema_4_feature_flag": "True",
+        }
         # Mock CorporaConfig
         # TODO: deduplicate with base_api
-        def mock_config_fn(name):
-            if name == "upload_max_file_size_gb":
-                return 30
 
-        self.mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-        self.mock_config.start()
+        self.mock_config = CorporaConfig()
+        self.mock_config.set(config)
 
         from backend.layers.common import validation
 
@@ -164,7 +167,7 @@ class BaseTest(unittest.TestCase):
 
     def tearDown(self):
         super().tearDown()
-        self.mock_config.stop()
+        self.mock_config.reset()
         if self.run_as_integration:
             self.database_provider._drop_schema()
 
