@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test";
 import { goToWMG } from "../../utils/wmgUtils";
 import {
   subDirectory,
@@ -20,6 +21,8 @@ describe("CSV download tests", () => {
   }) => {
     // set app state
     await goToWMG(page, SHARED_LINK_NO_GROUP);
+    await expect(page.locator("canvas")).not.toHaveCount(0);
+
     const tissues = ["blood", "lung"];
     const fileTypes = ["csv"];
     const folder = subDirectory();
@@ -42,6 +45,8 @@ describe("CSV download tests", () => {
   }) => {
     // set app state
     await goToWMG(page, SHARED_LINK_FILTER);
+    await expect(page.locator("canvas")).not.toHaveCount(0);
+
     const tissues = ["blood", "lung"];
     const fileTypes = ["csv"];
     const folder = subDirectory();
@@ -64,6 +69,8 @@ describe("CSV download tests", () => {
   }) => {
     // set app state
     await goToWMG(page, SHARED_LINK_NO_FILTER);
+    await expect(page.locator("canvas")).not.toHaveCount(0);
+
     const tissues = ["blood", "lung"];
     const fileTypes = ["csv"];
     const folder = subDirectory();
