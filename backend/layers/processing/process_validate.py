@@ -3,7 +3,6 @@ from typing import List, Literal, Optional, Tuple
 import numpy
 import scanpy
 
-from backend.common.corpora_config import CorporaConfig
 from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business_interface import BusinessLogicInterface
@@ -103,18 +102,9 @@ class ProcessValidate(ProcessingLogic):
         :param dataset_version_id: version ID for dataset
         :param adata_path: filepath to adata object that will be updated with citation
         """
-        dataset_assets_base_url = CorporaConfig().dataset_assets_base_url
-        collections_base_url = CorporaConfig().collections_base_url
-        citation = ""
         collection = self.business_logic.get_collection_version(collection_version_id, get_tombstoned=False)
         doi = next((link.uri for link in collection.metadata.links if link.type == "DOI"), None)
-        if doi:
-            citation += f"Publication: {doi} "
-        citation += f"Dataset Version: {dataset_assets_base_url}/{dataset_version_id}.h5ad "
-        citation += (
-            f"curated and distributed by CZ CELLxGENE Discover in Collection: "
-            f"{collections_base_url}/{collection.collection_id.id}"
-        )
+        citation = self.business_logic.generate_dataset_citation(collection.collection_id, dataset_version_id, doi)
         adata = scanpy.read_h5ad(adata_path)
         adata.uns["citation"] = citation
         adata.write(adata_path)

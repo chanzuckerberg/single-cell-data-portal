@@ -215,8 +215,9 @@ class DatasetMetadataUpdate(ProcessDownload):
 if __name__ == "__main__":
     business_logic = BusinessLogic(
         DatabaseProvider(),
-        None,  # Not required - decide if we should pass for safety
-        None,  # Not required - decide if we should pass for safety
+        None,
+        None,
+        None,
         S3Provider(),
         UriProvider(),
     )

@@ -48,6 +48,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
+from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
 from backend.layers.thirdparty.crossref_provider import (
     CrossrefDOINotFoundException,
     CrossrefException,
@@ -106,6 +107,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
         # By default these do nothing. They can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()
+        self.batch_job_provider = BatchJobProviderInterface()
         self.step_function_provider = StepFunctionProviderInterface()
         self.step_function_provider.start_step_function = Mock()
         self.s3_provider = MockS3Provider()
@@ -115,6 +117,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
         self.business_logic = BusinessLogic(
             database_provider=self.database_provider,
+            batch_job_provider=self.batch_job_provider,
             crossref_provider=self.crossref_provider,
             step_function_provider=self.step_function_provider,
             s3_provider=self.s3_provider,

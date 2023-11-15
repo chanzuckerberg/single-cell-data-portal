@@ -1,5 +1,6 @@
 from backend.layers.business.business import BusinessLogic
 from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.thirdparty.batch_job_provider import BatchJobProvider
 from backend.layers.thirdparty.cloudfront_provider import CloudfrontProvider
 from backend.layers.thirdparty.crossref_provider import CrossrefProvider
 from backend.layers.thirdparty.s3_provider import S3Provider
@@ -14,7 +15,12 @@ def get_business_logic():
     global _business_logic
     if not _business_logic:
         _business_logic = BusinessLogic(
-            DatabaseProvider(), CrossrefProvider(), StepFunctionProvider(), S3Provider(), UriProvider()
+            DatabaseProvider(),
+            BatchJobProvider(),
+            CrossrefProvider(),
+            StepFunctionProvider(),
+            S3Provider(),
+            UriProvider(),
         )
     return _business_logic
 

@@ -6,6 +6,8 @@ from datetime import datetime
 from functools import reduce
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
+from backend.common.corpora_config import CorporaConfig
+from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
     CollectionMetadataUpdate,
@@ -67,6 +69,7 @@ from backend.layers.common.helpers import (
 )
 from backend.layers.common.regex import S3_URI_REGEX
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
+from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
 from backend.layers.thirdparty.crossref_provider import (
     CrossrefDOINotFoundException,
     CrossrefException,
@@ -82,6 +85,7 @@ logger = logging.getLogger(__name__)
 
 class BusinessLogic(BusinessLogicInterface):
     database_provider: DatabaseProviderInterface
+    batch_job_provider: BatchJobProviderInterface
     crossref_provider: CrossrefProviderInterface
     step_function_provider: StepFunctionProviderInterface
     s3_provider: S3ProviderInterface
@@ -90,11 +94,13 @@ class BusinessLogic(BusinessLogicInterface):
     def __init__(
         self,
         database_provider: DatabaseProviderInterface,
+        batch_job_provider: BatchJobProviderInterface,
         crossref_provider: CrossrefProviderInterface,
         step_function_provider: StepFunctionProviderInterface,
         s3_provider: S3ProviderInterface,
         uri_provider: UriProviderInterface,
     ) -> None:
+        self.batch_job_provider = batch_job_provider
         self.crossref_provider = crossref_provider
         self.database_provider = database_provider
         self.step_function_provider = step_function_provider
@@ -107,10 +113,29 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Return the permanent URL for the given asset.
         """
-        from backend.common.corpora_config import CorporaConfig
-
         base_url = CorporaConfig().dataset_assets_base_url
         return f"{base_url}/{dataset_version_id.id}.{asset_type}"
+
+    @staticmethod
+    def generate_dataset_citation(
+        collection_id: CollectionId, dataset_version_id: DatasetVersionId, doi: str = None
+    ) -> str:
+        """
+        Builds 'citation' string to populate on dataset artifacts
+        """
+        dataset_assets_base_url = CorporaConfig().dataset_assets_base_url
+        collections_base_url = CorporaConfig().collections_base_url
+        citation = ""
+
+        if doi:
+            citation += f"Publication: {doi} "
+        citation += f"Dataset Version: {dataset_assets_base_url}/{dataset_version_id}.h5ad "
+        citation += (
+            f"curated and distributed by CZ CELLxGENE Discover in Collection: "
+            f"{collections_base_url}/{collection_id}"
+        )
+
+        return citation
 
     def _get_publisher_metadata(self, doi: str, errors: list) -> Optional[dict]:
         """
@@ -306,6 +331,8 @@ class BusinessLogic(BusinessLogicInterface):
         unset_publisher_metadata = False
         publisher_metadata_to_set = None
 
+        new_doi = None
+        old_doi = None
         if not ignore_doi_update:
             # Determine if the DOI has changed
             old_doi = next((link.uri for link in current_version.metadata.links if link.type == "DOI"), None)
@@ -339,6 +366,13 @@ class BusinessLogic(BusinessLogicInterface):
         elif publisher_metadata_to_set is not None:
             self.database_provider.save_collection_publisher_metadata(version_id, publisher_metadata_to_set)
         self.database_provider.save_collection_metadata(version_id, new_metadata)
+
+        if not ignore_doi_update and new_doi != old_doi and FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4):
+            for dataset in current_version.datasets:
+                citation = self.generate_dataset_citation(current_version.collection_id, dataset.version_id, new_doi)
+                self.batch_job_provider.start_metadata_update_batch_job(
+                    current_version.version_id, dataset.version_id, {"citation": citation}
+                )
 
     def _assert_collection_version_unpublished(
         self, collection_version_id: CollectionVersionId
@@ -401,8 +435,6 @@ class BusinessLogic(BusinessLogicInterface):
         if file_size is None:
             file_info = self.uri_provider.get_file_info(url)
             file_size = file_info.size
-
-        from backend.common.corpora_config import CorporaConfig
 
         max_file_size_gb = CorporaConfig().upload_max_file_size_gb * 2**30
 

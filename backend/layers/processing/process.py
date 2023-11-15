@@ -185,8 +185,9 @@ if __name__ == "__main__":
 
     business_logic = BusinessLogic(
         database_provider,
-        None,  # Not required - decide if we should pass for safety
-        None,  # Not required - decide if we should pass for safety
+        None,
+        None,
+        None,
         s3_provider,
         uri_provider,
     )

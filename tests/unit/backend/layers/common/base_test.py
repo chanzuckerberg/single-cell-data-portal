@@ -24,6 +24,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
+from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
@@ -102,6 +103,7 @@ class BaseTest(unittest.TestCase):
             self.database_provider = DatabaseProviderMock()
 
         self.crossref_provider = CrossrefProviderInterface()
+        batch_job_provider = BatchJobProviderInterface()
         step_function_provider = StepFunctionProviderInterface()
         self.s3_provider = S3ProviderInterface()
         self.uri_provider = UriProviderInterface()
@@ -159,7 +161,12 @@ class BaseTest(unittest.TestCase):
         )
 
         self.business_logic = BusinessLogic(
-            self.database_provider, self.crossref_provider, step_function_provider, self.s3_provider, self.uri_provider
+            self.database_provider,
+            batch_job_provider,
+            self.crossref_provider,
+            step_function_provider,
+            self.s3_provider,
+            self.uri_provider,
         )
 
     def tearDown(self):

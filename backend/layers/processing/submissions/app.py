@@ -17,6 +17,7 @@ from backend.common.utils.regex import COLLECTION_ID_REGEX, DATASET_ID_REGEX, US
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.exceptions import CollectionNotFoundException, DatasetNotFoundException
 from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.thirdparty.batch_job_provider import BatchJobProvider
 from backend.layers.thirdparty.crossref_provider import CrossrefProvider
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
@@ -42,8 +43,9 @@ def get_business_logic():
         step_function_provider = StepFunctionProvider()
         s3_provider = S3Provider()
         crossref_provider = CrossrefProvider()
+        batch_job_provider = BatchJobProvider()
         _business_logic = BusinessLogic(
-            database_provider, crossref_provider, step_function_provider, s3_provider, uri_provider
+            database_provider, batch_job_provider, crossref_provider, step_function_provider, s3_provider, uri_provider
         )
     return _business_logic
 
