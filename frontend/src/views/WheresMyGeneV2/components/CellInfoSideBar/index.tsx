@@ -156,7 +156,7 @@ function CellInfoSideBar({
         (
           <NoMarkerGenesContainer data-testid="no-marker-genes-warning">
             <NoMarkerGenesHeader>{NO_MARKER_GENES_HEADER}</NoMarkerGenesHeader>
-            <NoMarkerGenesDescription>
+            <NoMarkerGenesDescription data-testid="no-marker-genes-description">
               {FMG_EXCLUDE_TISSUES.includes(tissueInfo.name)
                 ? NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION
                 : cellInfoCellType.cellType.total_count < 25

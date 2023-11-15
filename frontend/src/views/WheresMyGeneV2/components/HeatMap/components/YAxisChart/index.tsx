@@ -265,6 +265,7 @@ const CellTypeButton = ({
         {cellType && cellType.optionId === COMPARE_OPTION_ID_FOR_AGGREGATED && (
           <InfoButtonWrapper
             className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+            data-testid={`cell-type-info-button-${tissue}-${cellType.name}`}
             onClick={() => {
               if (cellType) {
                 generateMarkerGenes(cellType, tissueID);
