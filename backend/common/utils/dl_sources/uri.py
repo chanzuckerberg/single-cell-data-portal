@@ -188,7 +188,7 @@ class S3URI(URI):
 
     @property
     def key(self):
-        return self.parsed_uri.path
+        return self.parsed_uri.path.lstrip("/")
 
     def download(self, local_file_name: str):
         self._disk_space_check()

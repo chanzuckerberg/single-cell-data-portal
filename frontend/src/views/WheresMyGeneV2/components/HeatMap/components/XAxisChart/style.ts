@@ -1,8 +1,10 @@
 import styled from "@emotion/styled";
-import { SELECTED_STYLE } from "../../style";
-import { HEAT_MAP_BASE_CELL_WIDTH_PX } from "../../utils";
+import { SELECTED_STYLE, xAxisOffset } from "../../style";
+import {
+  GENE_CHART_LEFT_OFFSET_PX,
+  HEAT_MAP_BASE_CELL_WIDTH_PX,
+} from "../../utils";
 import { GENE_SEARCH_BAR_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/constants";
-import { spacesXxxs } from "src/common/theme";
 import { CommonThemeProps } from "@czi-sds/components";
 
 export const ECHART_AXIS_LABEL_COLOR_HEX = "#000000";
@@ -14,31 +16,18 @@ interface XAxisContainerProps extends CommonThemeProps {
   width: number;
 }
 
-function xAxisOffset(props: CommonThemeProps) {
-  /**
-   * (thuang): This offset is to make sure the x-axis label doesn't overlap the
-   * gene search bar.
-   */
-  return spacesXxxs?.(props) || 0;
-}
-
 export const XAxisContainer = styled.div<XAxisContainerProps>`
   ${xAxisWidth}
   background-color: white;
   height: ${(props) => {
-    /**
-     * (thuang): This offset is to make sure the x-axis label doesn't overlap the
-     * gene search bar.
-     */
-    const offset = xAxisOffset(props);
-
-    return props.height - GENE_SEARCH_BAR_HEIGHT_PX - offset;
+    return props.height - GENE_SEARCH_BAR_HEIGHT_PX;
   }}px;
   position: absolute;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   margin-top: ${(props) => GENE_SEARCH_BAR_HEIGHT_PX + xAxisOffset(props)}px;
+  margin-left: ${GENE_CHART_LEFT_OFFSET_PX}px;
 `;
 
 interface XAxisWrapperProps {

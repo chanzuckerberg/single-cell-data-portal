@@ -1,3 +1,4 @@
+import os
 import time
 import unittest
 
@@ -6,6 +7,12 @@ from tenacity import retry, stop_after_attempt, wait_incrementing
 from tests.functional.backend.common import BaseFunctionalTestCase
 
 
+@unittest.skipIf(
+    os.environ["DEPLOYMENT_STAGE"] == "rdev",
+    "Skipping for the rdev environment to avoid a flakey race condition. Uncomment if developing this "
+    "feature to run in rdev. Restore this comment before merging to main. See "
+    "https://github.com/chanzuckerberg/single-cell-data-portal/issues/6198",
+)
 class TestApiKey(BaseFunctionalTestCase):
     @classmethod
     def setUpClass(cls):

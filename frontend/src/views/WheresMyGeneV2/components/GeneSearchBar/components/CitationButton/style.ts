@@ -45,7 +45,7 @@ export const StyledNotificationDetails = styled.div`
   margin: 0 !important;
   color: black;
   width: 340px;
-  height: 56px;
+  height: 120px;
   padding: 8px 12px 8px 12px;
   border: 1px solid ${gray200};
   border-radius: 8px;

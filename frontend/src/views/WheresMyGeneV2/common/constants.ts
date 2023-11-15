@@ -32,7 +32,7 @@ export const X_AXIS_CHART_HEIGHT_PX_SVG = 30;
 // Increasing this value adds more space between the gene label and icons
 export const X_AXIS_HOVER_CONTAINER_HEIGHT_PX = 40;
 
-export const MARGIN_BETWEEN_HEATMAPS = 8;
+export const MARGIN_BETWEEN_HEATMAPS = 4;
 
 // Below constants are for left sidebar tooltip text so that tests can import these strings from this file instead
 export const SELECT_TISSUE_GENE_TEXT =
