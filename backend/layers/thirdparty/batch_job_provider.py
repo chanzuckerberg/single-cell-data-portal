@@ -46,11 +46,11 @@ class BatchJobProvider(BatchJobProviderInterface):
                 "environment": [
                     {
                         "name": "COLLECTION_VERSION_ID",
-                        "value": collection_version_id,
+                        "value": collection_version_id.id,
                     },
                     {
                         "name": "DATASET_VERSION_ID",
-                        "value": dataset_version_id,
+                        "value": dataset_version_id.id,
                     },
                     {
                         "name": "METADATA_UPDATE_JSON",
