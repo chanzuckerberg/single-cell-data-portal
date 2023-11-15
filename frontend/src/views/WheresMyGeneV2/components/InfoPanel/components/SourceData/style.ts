@@ -68,4 +68,5 @@ export const StyledValue = styled.div`
   align-items: center;
   color: black;
   padding: 2px;
+  width: 100%;
 `;
