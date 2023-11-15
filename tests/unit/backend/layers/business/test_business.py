@@ -90,7 +90,13 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         # Mock CorporaConfig
         # TODO: deduplicate with base_api
         self.mock_config = CorporaConfig()
-        self.mock_config.set({"upload_max_file_size_gb": 30})
+        self.mock_config.set(
+            {
+                "upload_max_file_size_gb": 30,
+                "schema_4_feature_flag": "True",
+                "dataset_assets_base_url": "https://domain",
+            }
+        )
 
         # TODO: also deduplicate with base test
         from backend.layers.common import validation
