@@ -33,6 +33,7 @@ export default function SourceData(): JSX.Element {
             href={ROUTES.WMG_DOCS_DATA_PROCESSING}
             target="_blank"
             rel="noreferrer noopener"
+            data-testid="documentation-link"
           >
             exceptions and processing notes
           </a>

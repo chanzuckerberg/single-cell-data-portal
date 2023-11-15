@@ -39,8 +39,6 @@ const GENE_LABELS_ID = "[data-testid^=gene-label-]";
 const CELL_TYPE_LABELS_ID = CELL_TYPE_NAME_LABEL_CLASS_NAME;
 const TISSUE_LABELS_ID = TISSUE_NAME_LABEL_CLASS_NAME;
 const ADD_GENE_ID = "add-gene-btn";
-const SOURCE_DATA_BUTTON_ID = "source-data-button";
-const SOURCE_DATA_LIST_SELECTOR = `[data-testid="source-data-list"]`;
 
 // FMG test IDs
 const ADD_TO_DOT_PLOT_BUTTON_TEST_ID = "add-to-dotplot-fmg-button";
@@ -158,51 +156,7 @@ describe("Where's My Gene", () => {
       page.getByTestId(TISSUE_LABELS_ID)
     );
 
-    await clickUntilOptionsShowUp({
-      page,
-      locator: getDatasetSelectorButton(page),
-    });
     expect(numberOfTissuesBefore).toBeGreaterThan(numberOfTissuesAfter);
-  });
-
-  test("Source Data", async ({ page }) => {
-    await goToWMG(page);
-
-    await clickUntilSidebarShowsUp({ page, testId: SOURCE_DATA_BUTTON_ID });
-    await expect(
-      page.getByText(
-        "After filtering cells with low coverage (less than 500 genes expressed)"
-      )
-    ).toBeTruthy();
-
-    await tryUntil(
-      async () => {
-        const numSourceDataListItems = await countLocator(
-          page.locator(SOURCE_DATA_LIST_SELECTOR).locator(".MuiListItem-root")
-        );
-        expect(numSourceDataListItems).toBeGreaterThan(0);
-
-        await page.mouse.click(0, 0);
-
-        function getDatasetSelector() {
-          return page.getByTestId(FILTERS_PANEL).getByTestId("dataset-filter");
-        }
-
-        const numSelectedDatasetsBefore = await countLocator(
-          getDatasetSelector().locator(MUI_CHIP_ROOT)
-        );
-        expect(numSelectedDatasetsBefore).toBe(0);
-        await clickUntilOptionsShowUp({ page, locator: getDatasetSelector() });
-        await selectFirstOption(page);
-        await clickUntilSidebarShowsUp({ page, testId: SOURCE_DATA_BUTTON_ID });
-
-        const numSourceDataListAfterItems = await countLocator(
-          page.locator(SOURCE_DATA_LIST_SELECTOR).locator(".MuiListItem-root")
-        );
-        expect(numSourceDataListAfterItems).toBeGreaterThan(0);
-      },
-      { page }
-    );
   });
 
   test("Hierarchical Clustering", async ({ page }) => {
@@ -667,28 +621,6 @@ describe("Where's My Gene", () => {
       expect(textContentBefore).toEqual(textContentBefore2);
     });
   });
-
-  test("only render tissues that contain data", async ({ page }) => {
-    await goToWMG(page);
-    await waitForLoadingSpinnerToResolve(page);
-    await clickUntilOptionsShowUp({
-      page,
-      locator: getDatasetSelectorButton(page),
-    });
-    const datasetOption = await page
-      .getByRole("option")
-      .getByText("Fallopian tube RNA");
-    await datasetOption.click();
-    await page.keyboard.press("Escape");
-
-    await waitForLoadingSpinnerToResolve(page);
-
-    const nonExistentTissue = await page.getByTestId(
-      "cell-type-labels-adipose-tissue"
-    );
-
-    expect(nonExistentTissue).toHaveCount(0);
-  });
 });
 
 async function getNames({
@@ -728,14 +660,6 @@ function getDiseaseSelectorButton(page: Page) {
   return getDiseaseSelector(page).getByRole("button");
 }
 
-function getDatasetSelector(page: Page) {
-  return page.getByTestId(FILTERS_PANEL).getByTestId("dataset-filter");
-}
-
-function getDatasetSelectorButton(page: Page) {
-  return getDatasetSelector(page).getByRole("button");
-}
-
 async function clickUntilOptionsShowUp({
   page,
   testId,
@@ -757,30 +681,6 @@ async function clickUntilOptionsShowUp({
         throw Error(ERROR_NO_TESTID_OR_LOCATOR);
       }
       await page.getByRole("tooltip").getByRole("option").elementHandles();
-    },
-    { page }
-  );
-}
-
-async function clickUntilSidebarShowsUp({
-  page,
-  testId,
-  locator,
-}: {
-  page: Page;
-  testId?: string;
-  locator?: Locator;
-}) {
-  await tryUntil(
-    async () => {
-      if (testId) {
-        await page.getByTestId(testId).click();
-      } else if (locator) {
-        await locator.click();
-      } else {
-        throw Error(ERROR_NO_TESTID_OR_LOCATOR);
-      }
-      await page.locator(".bp4-drawer-header").elementHandle();
     },
     { page }
   );
