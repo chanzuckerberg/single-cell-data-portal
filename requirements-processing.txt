@@ -11,6 +11,7 @@ dataclasses-json
 ddtrace==2.1.4
 furl
 jsonschema
+memory-profiler==0.61.0 # For Testing
 matplotlib==3.6.3 # 3.7.0 isn't compatible with scanpy: https://github.com/scverse/scanpy/issues/2411
 moto==3.1.3
 numba==0.56.2

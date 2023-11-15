@@ -218,6 +218,14 @@ local-uploadsuccess: .env.ecr ## Run the upload success lambda with a dataset id
 local-cxguser-cookie: ## Get cxguser-cookie
 	docker-compose $(COMPOSE_OPTS) run --rm backend bash -c "cd /single-cell-data-portal && python login.py"
 
+local-cxg-mem-profiler:
+	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
+	bash -c "cd /single-cell-data-portal && mprof run --multiprocess --python python tests/memory_profile/test_process_cxg.py";
+
+local-seurat-mem-profiler:
+	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
+	bash -c "cd /single-cell-data-portal && mprof run --multiprocess --python python tests/memory_profile/test_process_seurat.py";
+
 .PHONY: coverage/combine
 coverage/combine:
 	- docker-compose $(COMPOSE_OPTS) run --rm -T backend bash -c "cd /single-cell-data-portal && coverage combine --data-file=$(COVERAGE_DATA_FILE)"
