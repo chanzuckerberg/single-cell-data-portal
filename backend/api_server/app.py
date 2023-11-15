@@ -119,13 +119,7 @@ def configure_flask_app(flask_app):
         max_age=600,
         supports_credentials=True,
         origins=allowed_origins,
-        allow_headers=[
-            "Content-Type",
-            "X-Datadog-Trace-Id",
-            "X-Datadog-Parent-Id",
-            "X-Datadog-Origin",
-            "X-Datadog-Sampling-Priority",
-        ],
+        allow_headers=["*"],
         methods=["OPTIONS"],
     )
     ServerTiming(flask_app, force_debug=True)
