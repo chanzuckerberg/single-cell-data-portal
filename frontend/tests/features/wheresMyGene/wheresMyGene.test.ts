@@ -32,6 +32,12 @@ import {
 } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 import { test } from "tests/common/test";
 import { MAX_EXPRESSION_LABEL_TEST_ID } from "src/views/WheresMyGeneV2/components/InfoPanel/components/RelativeGeneExpression/constants";
+import assert from "assert";
+import {
+  NO_MARKER_GENES_DESCRIPTION,
+  NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION,
+  TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION,
+} from "src/views/WheresMyGeneV2/components/CellInfoSideBar/constants";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
@@ -44,6 +50,7 @@ const ADD_GENE_ID = "add-gene-btn";
 const ADD_TO_DOT_PLOT_BUTTON_TEST_ID = "add-to-dotplot-fmg-button";
 const NO_MARKER_GENES_WARNING_TEST_ID = "no-marker-genes-warning";
 const MARKER_SCORES_FMG_TEST_ID = "marker-scores-fmg";
+const NO_MARKER_GENES_DESCRIPTION_ID = "no-marker-genes-description";
 
 // gene info test IDs
 const GENE_INFO_BUTTON_X_AXIS_TEST_ID = "gene-info-button-x-axis";
@@ -341,6 +348,70 @@ describe("Where's My Gene", () => {
           FMG_GENE_STRENGTH_THRESHOLD
         );
       }
+    });
+
+    test(`Should verify cell types with < 25 cells have no marker genes`, async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      // Expand blood tissue
+      await expandTissue(page, "adipose-tissue");
+
+      // Click naive B cell info icon
+      await page
+        .getByTestId("cell-type-info-button-adipose tissue-naive B cell")
+        .click();
+
+      // Verify copy is what we expect
+      const noMarkerGenesDescription = (await page
+        .getByTestId(NO_MARKER_GENES_DESCRIPTION_ID)
+        .textContent()) as string;
+      assert.strictEqual(
+        noMarkerGenesDescription.trim(),
+        TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION
+      );
+    });
+    test(`Should verify copy for cell types with no marker genes`, async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      // Expand blood tissue
+      await expandTissue(page, "yolk-sac");
+
+      // Click yolk sac somatic cell info icon
+      await page
+        .getByTestId("cell-type-info-button-yolk sac-somatic cell")
+        .click();
+
+      // Verify copy is what we expect
+      const noMarkerGenesDescription = (await page
+        .getByTestId(NO_MARKER_GENES_DESCRIPTION_ID)
+        .textContent()) as string;
+      assert.strictEqual(
+        noMarkerGenesDescription.trim(),
+        NO_MARKER_GENES_DESCRIPTION
+      );
+    });
+
+    test(`Should verify blood cells have no marker genes`, async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      // Expand blood tissue
+      await expandTissue(page, "blood");
+
+      // Click stem cell info icon
+      await page.getByTestId("cell-type-info-button-blood-stem cell").click();
+
+      // Verify copy is what we expect
+      const noMarkerGenesDescription = (await page
+        .getByTestId(NO_MARKER_GENES_DESCRIPTION_ID)
+        .textContent()) as string;
+      assert.strictEqual(
+        noMarkerGenesDescription.trim(),
+        NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION
+      );
     });
   });
 
