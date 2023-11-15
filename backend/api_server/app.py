@@ -121,10 +121,10 @@ def configure_flask_app(flask_app):
         origins=allowed_origins,
         allow_headers=[
             "Content-Type",
-            "x-datadog-trace-id",
-            "x-datadog-parent-id",
-            "x-datadog-origin",
-            "x-datadog-sampling-priority",
+            "X-Datadog-Trace-Id",
+            "X-Datadog-Parent-Id",
+            "X-Datadog-Origin",
+            "X-Datadog-Sampling-Priority",
         ],
         methods=["OPTIONS"],
     )
