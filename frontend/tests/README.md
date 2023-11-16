@@ -261,11 +261,7 @@ If you see an issue within the Setup that looks like this
 Error: Region is missing
 ```
 
-You can resolve this by updating your AWS config file to include the following snippet. On a Linux/Mac, this should be in `~/.aws/config`.
-```
-[default]
-region         = us-west-2
-```
+You can resolve this by updating your AWS config file to set the region to be `us-west-2`. You can see more [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) on how to do that.
 
 ---
 
