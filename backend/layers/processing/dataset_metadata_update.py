@@ -12,7 +12,6 @@ from rpy2.robjects import StrVector
 from rpy2.robjects.packages import importr
 
 from backend.common.utils.corpora_constants import CorporaConstants
-from backend.common.utils.tiledb import consolidation_buffer_size
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import (
     CollectionVersionId,
@@ -25,6 +24,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.processing.h5ad_data_file import H5ADDataFile
 from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_download import ProcessDownload
 from backend.layers.thirdparty.s3_provider import S3Provider
@@ -123,12 +123,7 @@ class DatasetMetadataUpdate(ProcessDownload):
         metadata_update_dict: Dict[str, str],
     ):
         self.s3_provider.upload_directory(cxg_uri, new_cxg_dir)
-        ctx = tiledb.Ctx(
-            {
-                "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
-                "py.deduplicate": True,  # May reduce memory requirements at cost of performance
-            }
-        )
+        ctx = tiledb.Ctx(H5ADDataFile.tile_db_ctx_config)
         array_name = f"{new_cxg_dir}/cxg_group_metadata"
         with tiledb.open(array_name, mode="r", ctx=ctx) as metadata_array:
             cxg_metadata_dict = json.loads(metadata_array.meta["corpora"])
