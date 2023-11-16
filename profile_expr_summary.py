@@ -4,6 +4,7 @@ import os
 import time
 import random
 import json
+import pprint
 from cProfile import Profile
 from pstats import Stats
 
@@ -87,7 +88,8 @@ def cprofile_profiler(snapshot, query_obj, non_cpu_time=False, num_trials = 1, n
     unique_genes = list(expr_default_cube.gene_ontology_term_id.unique())
 
     profiler = Profile(not_cpu_time) if non_cpu_time else Profile()
-    for _ in range(num_trials):
+    for i in range(num_trials):
+        print(f"###### Trial: {i+1} ######\n\n")
         criteria, compare = get_query_k_random_genes_group_by_disease(unique_genes, num_genes_per_trial)
         
         profiler.runcall(query_obj.expression_summary, criteria, compare_dimension=compare)
@@ -98,9 +100,10 @@ def cprofile_profiler(snapshot, query_obj, non_cpu_time=False, num_trials = 1, n
         stats.sort_stats("tottime")
         stats.print_stats()
 
-        # NOTE: This prints only the first 30 lines of the profile info.
+        # NOTE: This prints only the first 50 lines of the profile info.
         # To print full profile info do: `print(s.getvalue())``
-        print('\n'.join(s.getvalue().split('\n')[:30]))
+        print('\n'.join(s.getvalue().split('\n')[:50]))
+        print("\n\n\n")
 
 def cprofile_wallclock(snapshot, query_obj, num_trials=1, num_genes_per_trial=50):
     print(f"#####CProfile Full Process Time Profiling#####")
@@ -111,6 +114,21 @@ def cprofile_non_cpu_time(snapshot, query_obj, num_trials=1, num_genes_per_trial
     print(f"#####CProfile Non CPU Time Profiling#####")
     print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}")
     cprofile_profiler(snapshot, query_obj, non_cpu_time=True, num_trials=num_trials, num_genes_per_trial=num_genes_per_trial)
+
+# Get profile information directly from tiledb stats dump
+def tiledb_native_profiling_stats(snapshot, query_obj, num_trials=1, num_genes_per_trial=50):
+    expr_default_cube = snapshot.expression_summary_default_cube.df[:]
+    unique_genes = list(expr_default_cube.gene_ontology_term_id.unique())
+
+    for i in range(num_trials):
+        print(f"###### Trial: {i+1} ######\n\n")
+        criteria, compare = get_query_k_random_genes_group_by_disease(unique_genes, num_genes_per_trial)
+        tiledb.stats_enable()
+        query_obj.expression_summary(criteria, compare_dimension=compare)
+        tiledb_stats_str = tiledb.stats_dump(print_out=False, json=True)
+        tiledb.stats_disable()
+        pprint.pprint(tiledb_stats_str)
+        print("\n\n\n")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Profile expression_summary cube query on tiledb')
@@ -138,6 +156,8 @@ if __name__ == "__main__":
         profile_func = cprofile_wallclock
     elif args.profile_type == "cprofile-non-cpu":
         profile_func = cprofile_non_cpu_time
+    elif args.profile_type == "tiledb-stats":
+        profile_func = tiledb_native_profiling_stats
 
     print_profile_results(snapshot, profile_func)
     
