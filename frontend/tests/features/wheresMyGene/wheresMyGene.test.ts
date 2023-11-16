@@ -359,9 +359,11 @@ describe("Where's My Gene", () => {
       await expandTissue(page, "adipose-tissue");
 
       // Click naive B cell info icon
-      await page
-        .getByTestId("cell-type-info-button-adipose tissue-naive B cell")
-        .click();
+      const naiveBCell = page.getByTestId(
+        "cell-type-info-button-adipose tissue-naive B cell"
+      );
+      await naiveBCell.scrollIntoViewIfNeeded();
+      await naiveBCell.click();
 
       // Verify copy is what we expect
       const noMarkerGenesDescription = (await page
@@ -372,18 +374,21 @@ describe("Where's My Gene", () => {
         TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION
       );
     });
+
     test(`Should verify copy for cell types with no marker genes`, async ({
       page,
     }) => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
-      // Expand blood tissue
-      await expandTissue(page, "yolk-sac");
+      // Expand embryo tissue
+      await expandTissue(page, "embryo");
 
       // Click yolk sac somatic cell info icon
-      await page
-        .getByTestId("cell-type-info-button-yolk sac-somatic cell")
-        .click();
+      const hematopoieticCell = page.getByTestId(
+        "cell-type-info-button-embryo-hematopoietic cell"
+      );
+      await hematopoieticCell.scrollIntoViewIfNeeded();
+      await hematopoieticCell.click();
 
       // Verify copy is what we expect
       const noMarkerGenesDescription = (await page
