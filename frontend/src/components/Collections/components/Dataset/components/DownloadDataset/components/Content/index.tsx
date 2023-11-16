@@ -17,9 +17,6 @@ import {
   DialogTitle,
 } from "@czi-sds/components";
 import { DialogLoader as Loader } from "src/components/Datasets/components/DownloadDataset/style";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
-import { FEATURES } from "src/common/featureFlags/features";
-import { Spinner } from "@blueprintjs/core";
 
 interface Props {
   isError?: boolean;
@@ -36,22 +33,15 @@ const Content: FC<Props> = ({
   name,
   dataAssets,
 }) => {
-  const isDownloadUX = useFeatureFlag(FEATURES.DOWNLOAD_UX);
   const [selectedFormat, setSelectedFormat] = useState<
     DATASET_ASSET_FORMAT | ""
   >("");
   const [fileSize, setFileSize] = useState<number>(0);
-  const [fileName, setFileName] = useState<string>("");
   const [downloadLink, setDownloadLink] = useState<string>("");
   const [isDownloadLinkLoading, setIsDownloadLinkLoading] =
     useState<boolean>(false);
   const isDownloadDisabled =
     !downloadLink || isDownloadLinkLoading || isError || isLoading;
-  const DialogLoader = isDownloadUX ? (
-    <Loader sdsStyle="minimal" />
-  ) : (
-    <Spinner size={20} />
-  ); // TODO: #5566 hidden under feature flag.
 
   useEffect(() => {
     if (!selectedFormat) return;
@@ -64,14 +54,11 @@ const Content: FC<Props> = ({
       throw Error(`Format ${selectedFormat} not available`);
     }
 
-    const { dataset_id: datasetId, filename, id: assetId } = asset[0];
+    const { dataset_id: datasetId, id: assetId } = asset[0];
 
     getDownloadLink({
       assetId,
       datasetId,
-      filename,
-      isDownloadUX,
-      setFileName,
       setFileSize,
       setIsDownloadLinkLoading,
     });
@@ -79,9 +66,6 @@ const Content: FC<Props> = ({
     async function getDownloadLink({
       assetId,
       datasetId,
-      filename,
-      isDownloadUX,
-      setFileName,
       setFileSize,
       setIsDownloadLinkLoading,
     }: GetDownloadLinkArgs) {
@@ -98,23 +82,22 @@ const Content: FC<Props> = ({
         const result = await (
           await fetch(`${API_URL}${url}`, {
             ...DEFAULT_FETCH_OPTIONS,
-            method: isDownloadUX ? "GET" : "POST",
+            method: "GET",
           })
         ).json();
 
         const { file_size } = result;
-        const downloadURL = isDownloadUX ? result.url : result.presigned_url;
+        const downloadURL = result.url;
 
         setFileSize(file_size);
         setDownloadLink(downloadURL);
-        setFileName(filename);
       } catch (error) {
         console.error("Please try again");
       }
 
       setIsDownloadLinkLoading(false);
     }
-  }, [selectedFormat, dataAssets, isDownloadUX]);
+  }, [selectedFormat, dataAssets]);
 
   /**
    * Tracks dataset download analytics as specified by the custom analytics event.
@@ -143,7 +126,7 @@ const Content: FC<Props> = ({
       <DialogTitle title="Download Dataset" />
       <DialogContent>
         {isError && <div>Dataset download is currently not available.</div>}
-        {isLoading && DialogLoader}
+        {isLoading && <Loader sdsStyle="minimal" />}
         {!isError && !isLoading && (
           <>
             <Name name={name} />
@@ -159,7 +142,6 @@ const Content: FC<Props> = ({
                 !isDownloadLinkLoading && (
                   <DownloadLink
                     downloadLink={downloadLink}
-                    fileName={fileName}
                     handleAnalytics={() =>
                       handleAnalytics(EVENTS.DOWNLOAD_DATA_COPY)
                     }
@@ -200,9 +182,6 @@ const Content: FC<Props> = ({
   interface GetDownloadLinkArgs {
     assetId: string;
     datasetId: string;
-    filename: string;
-    isDownloadUX: boolean;
-    setFileName: (value: string) => void;
     setFileSize: (value: number) => void;
     setIsDownloadLinkLoading: (value: boolean) => void;
   }
