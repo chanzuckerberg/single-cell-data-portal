@@ -264,7 +264,7 @@ Error: Region is missing
 You can resolve this by updating your AWS config file to include the following snippet. On a Linux/Mac, this should be in `~/.aws/config`.
 ```
 [default]
-role_arn       = arn:aws:iam::699936264352:role/poweruser
+role_arn       = arn:aws:iam::***:role/poweruser // Ask someone else on the team for what this should be
 source_profile = single-cell-dev-poweruser
 region         = us-west-2
 ```
