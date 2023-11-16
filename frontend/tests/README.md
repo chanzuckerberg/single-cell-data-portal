@@ -256,8 +256,6 @@ rm -rf /var/folders/l5/ygnys3jj7n9f12p826j9448c0000gq/T/playwright-transform-cac
 
 If you see an issue within the Setup that looks like this
 ```
-  ✘  2 [setup] › tests/common/playwright.global.setup.ts:10:7 › global setup › login (13.3s)
-🔐🪵 Logging in...
 Error: Region is missing
 ```
 
