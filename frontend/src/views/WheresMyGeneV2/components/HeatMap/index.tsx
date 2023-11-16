@@ -139,7 +139,6 @@ export default memo(function HeatMap(props: Props): JSX.Element {
                         variant="circular"
                         width={19}
                         height={19}
-                        animation="wave"
                         key={i}
                       />
                     ))}
