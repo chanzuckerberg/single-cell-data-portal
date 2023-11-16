@@ -1,10 +1,11 @@
 import json
 import os
 from math import ceil
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import scanpy
 
+from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.common.utils.dl_sources.uri import DownloadFailed
 from backend.common.utils.math_utils import MB
@@ -23,15 +24,6 @@ from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
-MEMORY_MODIFIER = 2  # adds (x*100)% memory overhead
-MEMORY_PER_VCPU = 8000
-MIN_MEMORY_MB = 16000
-# The largest machine we are allocating is r5a.24xlarge. This machine has 768GB of memory and 96 vCPUs.
-MAX_MEMORY_MB = 768000
-MAX_VCPU = 96
-SWAP_MODIFIER = 0  # 0 b/c no swap machines are used.
-MAX_SWAP_MEMORY_MB = 300000
-
 
 class ProcessDownload(ProcessingLogic):
     """
@@ -48,11 +40,13 @@ class ProcessDownload(ProcessingLogic):
         business_logic: BusinessLogicInterface,
         uri_provider: UriProviderInterface,
         s3_provider: S3ProviderInterface,
+        config: Optional[CorporaConfig] = None,
     ) -> None:
         super().__init__()
         self.business_logic = business_logic
         self.uri_provider = uri_provider
         self.s3_provider = s3_provider
+        self.config = config or CorporaConfig()
 
     @logit
     def download_from_source_uri(self, source_uri: str, local_path: str) -> str:
@@ -86,37 +80,59 @@ class ProcessDownload(ProcessingLogic):
         job_definition_name = f"dp-{prefix}-ingest-process-{dataset_version_id}"
         return job_definition_name
 
-    @staticmethod
     def estimate_resource_requirements(
+        self,
         adata: scanpy.AnnData,
-        memory_modifier: float = MEMORY_MODIFIER,
-        min_memory_MB: int = MIN_MEMORY_MB,
-        max_memory_MB: int = MAX_MEMORY_MB,
-        max_vcpu: int = MAX_VCPU,
-        max_swap_memory_MB: int = MAX_SWAP_MEMORY_MB,
-        swap_modifier: int = SWAP_MODIFIER,
-        memory_per_vcpu: int = MEMORY_PER_VCPU,
+        memory_modifier: Optional[float] = None,
+        min_vcpu: Optional[int] = None,
+        max_vcpu: Optional[int] = None,
+        max_swap_memory_MB: Optional[int] = None,
+        swap_modifier: Optional[int] = None,
+        memory_per_vcpu: int = 8000,
     ) -> Dict[str, int]:
         """
         Estimate the resource requirements for a given dataset
 
         :param adata: The datasets AnnData object
         :param memory_modifier: A multiplier to increase/decrease the memory requirements by
-        :param min_memory_MB: The minimum amount of memory to allocate.
-        :param max_memory_MB: The maximum amount of memory to allocate.
+        :param min_vcpu: The minimum number of vCPUs to allocate.
         :param max_vcpu: The maximum number of vCPUs to allocate.
-        :param memory_per_vcpu: The amount of memory to allocate per vCPU.
+        :param memory_per_vcpu: The amount of memory to allocate per vCPU. 8000 MB is what AWS uses as the ratio
         :param swap_modifier: The multiplier to increase/decrease the swap memory requirements by
         :param max_swap_memory_MB: The maximum amount of swap memory to allocate.
         :return: A dictionary containing the resource requirements
         """
+        memory_modifier = memory_modifier or self.config.ingest_memory_modifier
+        min_vcpu = min_vcpu or self.config.ingest_min_vcpu
+        max_vcpu = max_vcpu or self.config.ingest_max_vcpu
+        max_swap_memory_MB = max_swap_memory_MB or self.config.ingest_max_swap_memory_mb
+        swap_modifier = swap_modifier or self.config.ingest_swap_modifier
+
         # Note: this is a rough estimate of the uncompressed size of the dataset. This method avoid loading the entire
         # dataset into memory.
+        min_memory_MB = min_vcpu * memory_per_vcpu
+        max_memory_MB = max_vcpu * memory_per_vcpu
         uncompressed_size_MB = adata.n_obs * adata.n_vars / MB
         estimated_memory_MB = max([int(ceil(uncompressed_size_MB * memory_modifier)), min_memory_MB])
         vcpus = max_vcpu if estimated_memory_MB > max_memory_MB else int(ceil(estimated_memory_MB / memory_per_vcpu))
         memory = memory_per_vcpu * vcpus  # round up to nearest memory_per_vcpu
         max_swap = min([max_swap_memory_MB, memory * swap_modifier])
+        self.logger.info(
+            {
+                "message": "Estimated resource requirements",
+                "memory_modifier": memory_modifier,
+                "swap_modifier": swap_modifier,
+                "min_vcpu": min_vcpu,
+                "max_vcpu": max_vcpu,
+                "max_swap_memory_MB": max_swap_memory_MB,
+                "memory_per_vcpu": memory_per_vcpu,
+                "uncompressed_size_MB": uncompressed_size_MB,
+                "max_swap": max_swap,
+                "memory": memory,
+                "vcpus": vcpus,
+            }
+        )
+
         return {"Vcpus": vcpus, "Memory": memory, "MaxSwap": max_swap}
 
     def create_batch_job_definition_parameters(self, local_filename: str, dataset_version_id: str) -> Dict[str, Any]:

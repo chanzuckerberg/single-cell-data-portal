@@ -134,8 +134,7 @@ def mock_read_h5ad():
 def memory_settings(
     memory_modifier=1,
     memory_per_vcpu=4000,
-    min_memory_mb=4000,
-    max_memory_mb=64000,
+    min_vcpu=1,
     max_vcpu=16,
     max_swap_memory_mb=300000,
     swap_modifier=5,
@@ -143,8 +142,7 @@ def memory_settings(
     return dict(
         memory_modifier=memory_modifier,
         memory_per_vcpu=memory_per_vcpu,
-        min_memory_MB=min_memory_mb,
-        max_memory_MB=max_memory_mb,
+        min_vcpu=min_vcpu,
         max_vcpu=max_vcpu,
         max_swap_memory_MB=max_swap_memory_mb,
         swap_modifier=swap_modifier,
