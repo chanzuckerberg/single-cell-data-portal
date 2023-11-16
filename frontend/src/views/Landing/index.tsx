@@ -336,9 +336,9 @@ const LandingPage = (): JSX.Element => {
             </div>
             <h1>Discover the mechanisms of human health</h1>
             <p>
-              Download and visually explore reference-quality data to understand
-              the functionality of human tissues at the cellular level with Chan
-              Zuckerberg CELL by GENE Discover (CZ CELLxGENE Discover).
+              Download and visually explore data to understand the functionality
+              of human tissues at the cellular level with Chan Zuckerberg CELL
+              by GENE Discover (CZ CELLxGENE Discover).
             </p>
             <div className={styles.heroStatsContainer}>
               <div>
@@ -375,7 +375,7 @@ const LandingPage = (): JSX.Element => {
                       behavior: "smooth",
                     });
 
-                    track(EVENTS.HOMEPAGE_LEARN_FIND_SINGLE_CELL_DATA_CLICKED);
+                    track(EVENTS.HOMEPAGE_SEC_NAV_CENSUS);
                   }}
                 >
                   Census
@@ -389,12 +389,10 @@ const LandingPage = (): JSX.Element => {
                       behavior: "smooth",
                     });
 
-                    track(
-                      EVENTS.HOMEPAGE_LEARN_EXPLORE_GENE_EXPRESSION_CLICKED
-                    );
+                    track(EVENTS.HOMEPAGE_SEC_NAV_CELL_GUIDE);
                   }}
                 >
-                  Cell Guide
+                  CellGuide
                 </div>
               </div>
               <div className={styles.contentNavSubrow}>
@@ -407,7 +405,7 @@ const LandingPage = (): JSX.Element => {
                       behavior: "smooth",
                     });
 
-                    track(EVENTS.HOMEPAGE_LEARN_ANALYZE_DATASETS_CLICKED);
+                    track(EVENTS.HOMEPAGE_SEC_NAV_COLLECTIONS_DATASETS);
                   }}
                 >
                   Collections & Datasets
@@ -421,7 +419,7 @@ const LandingPage = (): JSX.Element => {
                       behavior: "smooth",
                     });
 
-                    track(EVENTS.HOMEPAGE_LEARN_DOWNLOAD_DATA_CLICKED);
+                    track(EVENTS.HOMEPAGE_SEC_NAV_WMG);
                   }}
                 >
                   Gene Expression
@@ -435,7 +433,7 @@ const LandingPage = (): JSX.Element => {
                       behavior: "smooth",
                     });
 
-                    track(EVENTS.HOMEPAGE_LEARN_EXPEDITE_COLLABORATION_CLICKED);
+                    track(EVENTS.HOMEPAGE_SEC_NAV_EXPLORER);
                   }}
                 >
                   Explorer
@@ -449,7 +447,7 @@ const LandingPage = (): JSX.Element => {
                       behavior: "smooth",
                     });
 
-                    track(EVENTS.HOMEPAGE_LEARN_EXPEDITE_COLLABORATION_CLICKED);
+                    track(EVENTS.HOMEPAGE_SEC_ANNOTATE);
                   }}
                 >
                   Annotate
@@ -481,7 +479,7 @@ const LandingPage = (): JSX.Element => {
                         <p>
                           Census provides access to any custom slice of
                           standardized cell data available on CZ CZ CELL×GENE
-                          Discover via R and Python.
+                          Discover in R and Python.
                         </p>
                         <div className={styles.linkContainer}>
                           <Link
@@ -490,9 +488,9 @@ const LandingPage = (): JSX.Element => {
                           >
                             <a
                               onClick={() =>
-                                track(EVENTS.GITHUB_CLICKED, {
-                                  button: "See quick start tutorial",
-                                })
+                                track(
+                                  EVENTS.HOMEPAGE_CENSUS_DOCUMENTATION_CLICKED
+                                )
                               }
                             >
                               See quick start tutorial
@@ -534,7 +532,7 @@ const LandingPage = (): JSX.Element => {
                         <span className={styles.figureSeparator}></span>
                       </div>
                       <div className={styles.contentInfoTextCol}>
-                        <h2>Cell Guide</h2>
+                        <h2>CellGuide</h2>
                         <p>
                           Explore an interactive encyclopedia of 700+ cell types
                           that provides detailed definitions, marker genes,
@@ -544,7 +542,7 @@ const LandingPage = (): JSX.Element => {
                           <Link href={ROUTES.CELL_GUIDE} passHref>
                             <a
                               onClick={() =>
-                                track(EVENTS.CELL_GUIDE_CLICK_NAV, {})
+                                track(EVENTS.HOMEPAGE_CELL_GUIDE_CLICKED)
                               }
                             >
                               Search for a cell type or tissue
@@ -589,14 +587,14 @@ const LandingPage = (): JSX.Element => {
                         <h2>Collections & Datasets</h2>
                         <p>
                           Browse and download hundreds of standardized data
-                          collections and millions of cells characterizing the
+                          collections and 1,000+ datasets characterizing the
                           functionality of healthy mouse and human tissues.
                         </p>
                         <div className={styles.linkContainer}>
                           <a
                             href={`${ROUTES.COLLECTIONS}`}
                             onClick={() =>
-                              track(EVENTS.BROWSE_COLLECTIONS_CLICKED, {})
+                              track(EVENTS.BROWSE_COLLECTIONS_CLICKED)
                             }
                           >
                             Browse data collections
@@ -640,8 +638,8 @@ const LandingPage = (): JSX.Element => {
                         <h2 className={styles.mt16}>Gene Expression</h2>
                         <p>
                           Visualize the expression of genes and gene sets using
-                          the largest integrated resource of over 35 million
-                          cells.
+                          a normalized view of our data corpus of over 35
+                          million cells.
                         </p>
                         <div className={styles.linkContainer}>
                           <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
@@ -698,7 +696,7 @@ const LandingPage = (): JSX.Element => {
                           environmental and genetic factors using an interactive
                           speed no-code UI. Understand published datasets or use
                           them as a launchpad to identify new cell sub-types and
-                          states.
+                          states. 
                         </p>
                         <div className={styles.linkContainer}>
                           <a
@@ -723,10 +721,10 @@ const LandingPage = (): JSX.Element => {
                               <LinkArrow />
                             </span>
                           </a>
-                          <Link href={ROUTES.COLLECTIONS} passHref>
+                          <Link href={ROUTES.DATASETS} passHref>
                             <a
                               onClick={() =>
-                                track(EVENTS.BROWSE_COLLECTIONS_CLICKED, {
+                                track(EVENTS.BROWSE_DATASETS_CLICKED, {
                                   button: "explore the studies",
                                 })
                               }
@@ -785,8 +783,8 @@ const LandingPage = (): JSX.Element => {
                       <div className={styles.contentInfoTextCol}>
                         <h2 className={styles.mt16}>Annotate</h2>
                         <p>
-                          Eliminate communication overhead and expedite cell
-                          type characterization by empowering tissue experts to
+                          Expedite cell type characterization and eliminate
+                          communication overhead by empowering tissue experts to
                           directly explore and annotate datasets.
                         </p>
                         <div className={styles.linkContainer}>
