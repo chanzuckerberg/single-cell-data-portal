@@ -342,7 +342,7 @@ const LandingPage = (): JSX.Element => {
             </p>
             <div className={styles.heroStatsContainer}>
               <div>
-                <span>cells</span>
+                <span>unique cells</span>
                 <p data-testid={LANDING_PAGE_CELLS_HERO_NUM_ID}>
                   {cellsHeroNum}
                 </p>
@@ -354,7 +354,7 @@ const LandingPage = (): JSX.Element => {
                 </p>
               </div>
               <div>
-                <span>donors</span>
+                <span>cell types</span>
                 <p data-testid={LANDING_PAGE_CELLTYPES_HERO_NUM_ID}>
                   {cellTypesHeroNum}
                 </p>
@@ -488,9 +488,7 @@ const LandingPage = (): JSX.Element => {
                           >
                             <a
                               onClick={() =>
-                                track(
-                                  EVENTS.HOMEPAGE_CENSUS_DOCUMENTATION_CLICKED
-                                )
+                                track(EVENTS.CENSUS_DOCUMENTATION_CLICKED)
                               }
                             >
                               See quick start tutorial
@@ -540,11 +538,7 @@ const LandingPage = (): JSX.Element => {
                         </p>
                         <div className={styles.linkContainer}>
                           <Link href={ROUTES.CELL_GUIDE} passHref>
-                            <a
-                              onClick={() =>
-                                track(EVENTS.HOMEPAGE_CELL_GUIDE_CLICKED)
-                              }
-                            >
+                            <a onClick={() => track(EVENTS.CELL_GUIDE_CLICKED)}>
                               Search for a cell type or tissue
                               <span className={styles.linkArrow}>
                                 <LinkArrow />
