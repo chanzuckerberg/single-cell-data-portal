@@ -1,0 +1,14 @@
+INFO     backend.layers.business.business:business.py:390 {'message': 'ingesting dataset', 'collection_version_id': 08f18def-8465-4743-8744-b372cd22f3db, 'url': 'https://www.dropbox.com/s/fake_location/test.h5ad?dl=0', 'existing_dataset_version_id': None}
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:26 Start download_from_source_uri
+INFO     processing:logger.py:28 Complete download_from_source_uri
+INFO     processing:process_download.py:120 {'message': 'Estimated resource requirements', 'memory_modifier': 3, 'swap_modifier': 0, 'min_vcpu': 2, 'max_vcpu': 96, 'max_swap_memory_MB': 300000, 'memory_per_vcpu': 8000, 'uncompressed_size_MB': 95.367431640625, 'max_swap': 0, 'memory': 16000, 'vcpus': 2}
+INFO     processing:process_download.py:175 {'JobDefinitionName': 'dp-test-fake-stack-ingest-process-97225cc9-560c-43a6-80ae-bfeb4fc82aec', 'Vcpus': 2, 'Memory': 16000, 'LinuxParameters': {'Swappiness': 60, 'MaxSwap': 0}}
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:91 Uploaded [97225cc9-560c-43a6-80ae-bfeb4fc82aec/raw.h5ad] to s3://fake_bucket_name/fake-stack/97225cc9-560c-43a6-80ae-bfeb4fc82aec/raw.h5ad
+INFO     processing:process_logic.py:93 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
