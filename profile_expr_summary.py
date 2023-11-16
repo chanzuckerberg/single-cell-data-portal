@@ -1,9 +1,14 @@
 import argparse
+import io
+import os
 import time
 import random
+import json
+from cProfile import Profile
+from pstats import Stats
+
 import tiledb
 import pandas as pd
-import json
 
 from backend.wmg.api.v2 import *
 
@@ -53,12 +58,15 @@ def get_query_k_random_genes_group_by_disease(all_genes, k=50):
     criteria = WmgQueryCriteriaV2(**req["filter"])
     return criteria, compare
 
+# Simple wall clock profiling using time module
 def simple_wallclock(snapshot, query_obj, num_trials=10, num_genes_per_trial=50):
+    print(f"#####Simple Wallclock Profiling#####")
+    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}")
+
     expr_default_cube = snapshot.expression_summary_default_cube.df[:]
     unique_genes = list(expr_default_cube.gene_ontology_term_id.unique())
 
     total_query_time = 0
-    
     for _ in range(num_trials):
         criteria, compare = get_query_k_random_genes_group_by_disease(unique_genes, num_genes_per_trial)
         start = time.perf_counter()
@@ -66,8 +74,43 @@ def simple_wallclock(snapshot, query_obj, num_trials=10, num_genes_per_trial=50)
         end = time.perf_counter()
         total_query_time += (end - start)
 
-    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}")
     print(f"total_query_time: {total_query_time}, avg_query_time: {total_query_time/num_trials}")
+
+# Profiling cpu and non-cpu time using cProfile
+def not_cpu_time():
+    times = os.times()
+    return times.elapsed - (times.system + times.user)
+
+
+def cprofile_profiler(snapshot, query_obj, non_cpu_time=False, num_trials = 1, num_genes_per_trial=50):
+    expr_default_cube = snapshot.expression_summary_default_cube.df[:]
+    unique_genes = list(expr_default_cube.gene_ontology_term_id.unique())
+
+    profiler = Profile(not_cpu_time) if non_cpu_time else Profile()
+    for _ in range(num_trials):
+        criteria, compare = get_query_k_random_genes_group_by_disease(unique_genes, num_genes_per_trial)
+        
+        profiler.runcall(query_obj.expression_summary, criteria, compare_dimension=compare)
+        s = io.StringIO()
+        stats = Stats(profiler, stream=s)
+        stats.strip_dirs()
+        # 'tottime' is time spent in a function A EXCLUDING time spent in the functions A calls
+        stats.sort_stats("tottime")
+        stats.print_stats()
+
+        # NOTE: This prints only the first 30 lines of the profile info.
+        # To print full profile info do: `print(s.getvalue())``
+        print('\n'.join(s.getvalue().split('\n')[:30]))
+
+def cprofile_wallclock(snapshot, query_obj, num_trials=1, num_genes_per_trial=50):
+    print(f"#####CProfile Full Process Time Profiling#####")
+    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}")
+    cprofile_profiler(snapshot, query_obj, num_trials=num_trials, num_genes_per_trial=num_genes_per_trial)
+
+def cprofile_non_cpu_time(snapshot, query_obj, num_trials=1, num_genes_per_trial=50):
+    print(f"#####CProfile Non CPU Time Profiling#####")
+    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}")
+    cprofile_profiler(snapshot, query_obj, non_cpu_time=True, num_trials=num_trials, num_genes_per_trial=num_genes_per_trial)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Profile expression_summary cube query on tiledb')
@@ -91,6 +134,10 @@ if __name__ == "__main__":
     
     if args.profile_type == "simple-wallclock":
         profile_func = simple_wallclock
+    elif args.profile_type == "cprofile-wallclock":
+        profile_func = cprofile_wallclock
+    elif args.profile_type == "cprofile-non-cpu":
+        profile_func = cprofile_non_cpu_time
 
     print_profile_results(snapshot, profile_func)
     
