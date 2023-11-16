@@ -191,7 +191,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "JobDefinition.$": "$.batch.JobDefinitionName",
                   "JobName": "cxg",
                   "JobQueue.$": "$.job_queue",
-                   "ContainerOverrides": {
+                  "ContainerOverrides": {
                     "Environment": [
                       {
                         "Name": "DATASET_VERSION_ID",
