@@ -690,7 +690,7 @@ const LandingPage = (): JSX.Element => {
                           environmental and genetic factors using an interactive
                           speed no-code UI. Understand published datasets or use
                           them as a launchpad to identify new cell sub-types and
-                          states. 
+                          states.
                         </p>
                         <div className={styles.linkContainer}>
                           <a
