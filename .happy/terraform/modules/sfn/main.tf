@@ -147,19 +147,6 @@ resource "aws_sfn_state_machine" "state_machine" {
           "JobDefinition.$": "$.batch.JobDefinitionName",
           "JobName": "validate",
           "JobQueue.$": "$.job_queue",
-          "RetryStrategy": {
-            "Attempts": ${var.max_attempts},
-            "EvaluateOnExit": [
-              {
-                "Action": "EXIT",
-                "OnExitCode": "1"
-              },
-              {
-                "Action": "RETRY",
-                "OnExitCode": "*"
-              }
-            ]
-          },
           "ContainerOverrides": {
             "Environment": [
               {
@@ -204,20 +191,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "JobDefinition.$": "$.batch.JobDefinitionName",
                   "JobName": "cxg",
                   "JobQueue.$": "$.job_queue",
-                  "RetryStrategy": {
-                    "Attempts": ${var.max_attempts},
-                    "EvaluateOnExit": [
-                      {
-                        "Action": "EXIT",
-                        "OnExitCode": "1"
-                      },
-                      {
-                        "Action": "RETRY",
-                        "OnExitCode": "*"
-                      }
-                    ]
-                  },
-                  "ContainerOverrides": {
+                   "ContainerOverrides": {
                     "Environment": [
                       {
                         "Name": "DATASET_VERSION_ID",
@@ -259,19 +233,6 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "JobDefinition.$": "$.batch.JobDefinitionName",
                   "JobName": "seurat",
                   "JobQueue.$": "$.job_queue",
-                  "RetryStrategy": {
-                    "Attempts": ${var.max_attempts},
-                    "EvaluateOnExit": [
-                      {
-                        "Action": "EXIT",
-                        "OnExitCode": "1"
-                      },
-                      {
-                        "Action": "RETRY",
-                        "OnExitCode": "*"
-                      }
-                    ]
-                  },
                   "ContainerOverrides": {
                     "Environment": [
                       {
