@@ -8,7 +8,7 @@ from pytest import approx
 from backend.api_server.app import app
 from backend.wmg.api.v2 import find_dimension_id_from_compare
 from backend.wmg.data.query import MarkerGeneQueryCriteria
-from tests.test_utils import compare_dicts
+from tests.test_utils import CompareDictsAddin
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.test_cube_schema import expression_summary_non_indexed_dims
 from tests.unit.backend.wmg.fixtures.test_primary_filters import (
@@ -430,7 +430,7 @@ def sort_filter_options(filter_options: Dict[str, List[Dict[str, str]]]):
 # backend.wmg.api.v2.rollup() so that we can test backend.wmg.api.v2.query() with
 # rollup operations.
 # see: https://github.com/chanzuckerberg/single-cell-data-portal/issues/4997
-class WmgApiV2Tests(unittest.TestCase):
+class WmgApiV2Tests(unittest.TestCase, CompareDictsAddin):
     """
     Tests WMG API endpoints. Tests the flask app only, and not other stack dependencies, such as S3. Builds and uses a
     temporary WMG cube on local filesystem to avoid dependency on localstack S3.
@@ -793,7 +793,7 @@ class WmgApiV2Tests(unittest.TestCase):
             self.assertEqual(200, response.status_code)
 
             expected = expected_term_id_labels["cell_types"]
-            self.assertTrue(compare_dicts(expected, json.loads(response.data)["term_id_labels"]["cell_types"]))
+            self.assert_dicts_equal(expected, json.loads(response.data)["term_id_labels"]["cell_types"])
 
     @patch("backend.wmg.api.v2.gene_term_label")
     @patch("backend.wmg.api.v2.ontology_term_label")

@@ -8,11 +8,11 @@ from backend.wmg.pipeline.constants import (
 )
 from backend.wmg.pipeline.filter_relationships import create_filter_relationships_graph
 from backend.wmg.pipeline.utils import load_pipeline_state, write_pipeline_state
-from tests.test_utils import compare_dicts
+from tests.test_utils import CompareDictsAddin
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot_tmpdir
 
 
-class FilterRelationshipsTests(unittest.TestCase):
+class FilterRelationshipsTests(unittest.TestCase, CompareDictsAddin):
     @classmethod
     def setUpClass(cls):
         cls.temp_cube_dir = load_realistic_test_snapshot_tmpdir("realistic-test-snapshot")
@@ -39,4 +39,4 @@ class FilterRelationshipsTests(unittest.TestCase):
             filter_relationships = json.load(f)
         pipeline_state = load_pipeline_state(self.temp_cube_dir.name)
         self.assertTrue(pipeline_state.get(FILTER_RELATIONSHIPS_CREATED_FLAG))
-        self.assertTrue(compare_dicts(filter_relationships, self.expected_filter_relationships))
+        self.assert_dicts_equal(filter_relationships, self.expected_filter_relationships)

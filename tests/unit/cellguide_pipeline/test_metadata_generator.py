@@ -7,7 +7,7 @@ from backend.cellguide.pipeline.metadata.metadata_generator import (
 )
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.utils import convert_dataclass_to_dict_and_strip_nones
-from tests.test_utils import compare_dicts
+from tests.test_utils import CompareDictsAddin
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
 )
@@ -20,7 +20,7 @@ from tests.unit.cellguide_pipeline.constants import (
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
 
-class TestMetadataGenerator(unittest.TestCase):
+class TestMetadataGenerator(unittest.TestCase, CompareDictsAddin):
     def test__cell_metadata_generator(self):
         with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{CELLTYPE_METADATA_FIXTURE_FILENAME}", "r") as f:
             expected__cell_metadata = json.load(f)
@@ -32,9 +32,7 @@ class TestMetadataGenerator(unittest.TestCase):
                 all_cell_type_ids_in_corpus=tree_builder.all_cell_type_ids_in_corpus
             )
 
-            self.assertTrue(
-                compare_dicts(convert_dataclass_to_dict_and_strip_nones(cell_metadata), expected__cell_metadata)
-            )
+            self.assert_dicts_equal(convert_dataclass_to_dict_and_strip_nones(cell_metadata), expected__cell_metadata)
 
     def test__tissue_metadata_generator(self):
         with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{TISSUE_METADATA_FIXTURE_FILENAME}", "r") as f:
@@ -46,6 +44,6 @@ class TestMetadataGenerator(unittest.TestCase):
             tissue_metadata = generate_cellguide_tissue_card_metadata(
                 all_tissue_ids_in_corpus=tree_builder.all_tissue_ids_in_corpus
             )
-            self.assertTrue(
-                compare_dicts(convert_dataclass_to_dict_and_strip_nones(tissue_metadata), expected__tissue_metadata)
+            self.assert_dicts_equal(
+                convert_dataclass_to_dict_and_strip_nones(tissue_metadata), expected__tissue_metadata
             )

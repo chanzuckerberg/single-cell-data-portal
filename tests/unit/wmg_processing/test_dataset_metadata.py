@@ -8,12 +8,12 @@ from backend.wmg.pipeline.constants import (
 )
 from backend.wmg.pipeline.dataset_metadata import create_dataset_metadata
 from backend.wmg.pipeline.utils import load_pipeline_state, write_pipeline_state
-from tests.test_utils import compare_dicts
+from tests.test_utils import CompareDictsAddin
 from tests.test_utils.mocks import mock_get_datasets_from_curation_endpoint
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot_tmpdir
 
 
-class DatasetMetadataTests(unittest.TestCase):
+class DatasetMetadataTests(unittest.TestCase, CompareDictsAddin):
     @classmethod
     def setUpClass(cls):
         cls.temp_cube_dir = load_realistic_test_snapshot_tmpdir("realistic-test-snapshot")
@@ -39,4 +39,4 @@ class DatasetMetadataTests(unittest.TestCase):
             dataset_metadata = json.load(f)
         pipeline_state = load_pipeline_state(self.temp_cube_dir.name)
         self.assertTrue(pipeline_state.get(DATASET_METADATA_CREATED_FLAG))
-        self.assertTrue(compare_dicts(dataset_metadata, self.expected_dataset_metadata))
+        self.assert_dicts_equal(dataset_metadata, self.expected_dataset_metadata)

@@ -12,7 +12,7 @@ from backend.cellguide.pipeline.gpt_descriptions.gpt_description_generator impor
     generate_new_seo_gpt_descriptions,
 )
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
-from tests.test_utils import compare_dicts
+from tests.test_utils import CompareDictsAddin
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
 )
@@ -42,7 +42,7 @@ class MockCellGuideConfig:
         self.bucket = "cellguide-data-public-test"
 
 
-class TestGptDescriptionGenerator(unittest.TestCase):
+class TestGptDescriptionGenerator(unittest.TestCase, CompareDictsAddin):
     def test__gpt_description_generator(self):
         expected_outputs = {}
         for obj in WHICH_OBJECTS_DO_NOT_EXIST:
@@ -64,7 +64,7 @@ class TestGptDescriptionGenerator(unittest.TestCase):
             for obj in WHICH_OBJECTS_DO_NOT_EXIST:
                 tree_builder.all_cell_type_ids_to_labels_in_corpus[obj["id"]] = obj["name"]
             new_gpt_descriptions = generate_new_gpt_descriptions(tree_builder.all_cell_type_ids_to_labels_in_corpus)
-            self.assertTrue(compare_dicts(new_gpt_descriptions, expected_outputs))
+            self.assert_dicts_equal(new_gpt_descriptions, expected_outputs)
 
     def test__gpt_seo_description_generator(self):
         expected_outputs = {}
@@ -84,4 +84,4 @@ class TestGptDescriptionGenerator(unittest.TestCase):
         ):
             fake_new_gpt_descriptions = {i["id"]: i["fake_gpt_description"] for i in WHICH_OBJECTS_DO_NOT_EXIST}
             new_gpt_seo_descriptions = generate_new_seo_gpt_descriptions(fake_new_gpt_descriptions)
-            self.assertTrue(compare_dicts(new_gpt_seo_descriptions, expected_outputs))
+            self.assert_dict_equal(new_gpt_seo_descriptions, expected_outputs)

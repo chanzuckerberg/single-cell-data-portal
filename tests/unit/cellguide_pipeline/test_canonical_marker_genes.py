@@ -10,7 +10,7 @@ from backend.cellguide.pipeline.canonical_marker_genes.utils import (
     get_title_and_citation_from_doi,
 )
 from backend.cellguide.pipeline.utils import convert_dataclass_to_dict_and_strip_nones
-from tests.test_utils import compare_dicts
+from tests.test_utils import CompareDictsAddin
 from tests.test_utils.mocks import mock_get_asctb_master_sheet, mock_get_title_and_citation_from_doi
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
@@ -23,7 +23,7 @@ from tests.unit.cellguide_pipeline.constants import (
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
 
-class CanonicalMarkerGeneCompilerTests(unittest.TestCase):
+class CanonicalMarkerGeneCompilerTests(unittest.TestCase, CompareDictsAddin):
     def test__canonical_marker_genes(self):
         with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{CANONICAL_MARKER_GENES_FIXTURE_FILENAME}", "r") as f:
             expected__canonical_marker_genes = json.load(f)
@@ -49,7 +49,7 @@ class CanonicalMarkerGeneCompilerTests(unittest.TestCase):
                 canonical_marker_genes = convert_dataclass_to_dict_and_strip_nones(
                     marker_gene_compiler.get_processed_asctb_table_entries()
                 )
-            self.assertTrue(compare_dicts(canonical_marker_genes, expected__canonical_marker_genes))
+            self.assert_dicts_equal(canonical_marker_genes, expected__canonical_marker_genes)
 
 
 class CanonicalMarkerGeneCompilerUtilsTests(unittest.TestCase):

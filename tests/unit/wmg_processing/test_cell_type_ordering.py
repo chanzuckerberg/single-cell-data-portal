@@ -8,11 +8,11 @@ from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
 )
 from backend.wmg.pipeline.utils import load_pipeline_state, write_pipeline_state
-from tests.test_utils import compare_dicts
+from tests.test_utils import CompareDictsAddin
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot_tmpdir
 
 
-class CellTypeOrderingTests(unittest.TestCase):
+class CellTypeOrderingTests(unittest.TestCase, CompareDictsAddin):
     @classmethod
     def setUpClass(cls):
         cls.temp_cube_dir = load_realistic_test_snapshot_tmpdir("realistic-test-snapshot")
@@ -39,4 +39,4 @@ class CellTypeOrderingTests(unittest.TestCase):
             cell_type_orderings = json.load(f)
         pipeline_state = load_pipeline_state(self.temp_cube_dir.name)
         self.assertTrue(pipeline_state.get(CELL_TYPE_ORDERING_CREATED_FLAG))
-        self.assertTrue(compare_dicts(cell_type_orderings, self.expected_cell_type_orderings))
+        self.assert_dicts_equal(cell_type_orderings, self.expected_cell_type_orderings)

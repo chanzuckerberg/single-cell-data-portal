@@ -9,13 +9,13 @@ from backend.wmg.pipeline.constants import (
 )
 from backend.wmg.pipeline.primary_filter_dimensions import create_primary_filter_dimensions
 from backend.wmg.pipeline.utils import load_pipeline_state, write_pipeline_state
-from tests.test_utils import compare_dicts
+from tests.test_utils import CompareDictsAddin
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot_tmpdir
 
 TEST_SNAPSHOT_NAME = "realistic-test-snapshot"
 
 
-class PrimaryFilterDimensionsTests(unittest.TestCase):
+class PrimaryFilterDimensionsTests(unittest.TestCase, CompareDictsAddin):
     @classmethod
     def setUpClass(cls):
         cls.temp_cube_dir = load_realistic_test_snapshot_tmpdir(TEST_SNAPSHOT_NAME)
@@ -44,4 +44,4 @@ class PrimaryFilterDimensionsTests(unittest.TestCase):
             primary_filter_dimensions["snapshot_id"] = TEST_SNAPSHOT_NAME
         pipeline_state = load_pipeline_state(self.temp_cube_dir.name)
         self.assertTrue(pipeline_state.get(PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG))
-        self.assertTrue(compare_dicts(primary_filter_dimensions, self.expected_primary_filter_dimensions))
+        self.assert_dicts_equal(primary_filter_dimensions, self.expected_primary_filter_dimensions)
