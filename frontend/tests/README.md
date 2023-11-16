@@ -254,12 +254,7 @@ rm -rf /var/folders/l5/ygnys3jj7n9f12p826j9448c0000gq/T/playwright-transform-cac
 
 ### AWS Region Missing in Setup
 
-If you see an issue within the Setup that looks like this
-```
-Error: Region is missing
-```
-
-You can resolve this by updating your AWS config file to set the region to be `us-west-2`. You can see more [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) on how to do that.
+If you see an error within the Setup that looks like "Region is missing", you can resolve this by updating your AWS config file to set the region to be `us-west-2`. You can see more [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) on how to do that.
 
 ---
 
