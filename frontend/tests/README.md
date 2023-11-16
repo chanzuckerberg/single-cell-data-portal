@@ -233,6 +233,7 @@ Before running any tests, start with [mise en place](../README.md#mise-en-place)
 ### preSetup Access Token
 
 If you see an issue that looks like this
+
 ```
   ✘  1 [preSetup] › tests/common/playwright.global.preSetup.ts:11:7 › global preSetup › Get access token (0ms)
 Error: ENOENT: no such file or directory, open '/var/folders/l5/ygnys3jj7n9f12p826j9448c0000gq/T/playwright-transform-cache-503/f7/context_f76b0cdd8a23a6ac47b3cccbc8fed32460f74ab0.js'
@@ -247,14 +248,27 @@ Error: ENOENT: no such file or directory, open '/var/folders/l5/ygnys3jj7n9f12p8
   13 | import { SKIP_LOGIN } from "tests/common/constants";
   14 | import { shouldUseRdevToken } from "tests/utils/helpers";
 ```
+
 You can resolve it by just removing the folder
+
 ```
 rm -rf /var/folders/l5/ygnys3jj7n9f12p826j9448c0000gq/T/playwright-transform-cache-503
 ```
 
 ### AWS Region Missing in Setup
 
-If you see an error within the Setup that looks like "Region is missing", you can resolve this by updating your AWS config file to set the region to be `us-west-2`. You can see more [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) on how to do that.
+If you see an error within the Setup that looks like:
+
+```
+BOTO_ENDPOINT_URL not assigned, assuming running on deployment
+  ✓  1 [preSetup] › tests/common/playwright.global.preSetup.ts:11:7 › global preSetup › Get access token (38ms)
+BOTO_ENDPOINT_URL not assigned, assuming running on deployment
+  ✘  2 [setup] › tests/common/playwright.global.setup.ts:10:7 › global setup › login (13.3s)
+🔐🪵 Logging in...
+Error: Region is missing
+```
+
+You can resolve this by updating your AWS config file to set the region to be `us-west-2`. You can see more [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) on how to do that.
 
 ---
 
