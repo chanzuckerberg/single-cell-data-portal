@@ -187,7 +187,7 @@ class DatasetMetadataUpdate(ProcessDownload):
             self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
         else:
             self.logger.error(
-                f"Cannot find RDS artifact uri for {dataset_version_id}, " f"and Conversion Status is not SKIPPED."
+                f"Cannot find RDS artifact uri for {dataset_version_id}, and Conversion Status is not SKIPPED."
             )
             raise ValueError
 
