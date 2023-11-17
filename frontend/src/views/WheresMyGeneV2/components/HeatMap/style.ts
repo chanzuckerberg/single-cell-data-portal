@@ -17,6 +17,7 @@ import {
 import { LEGEND_HEIGHT_PX } from "../InfoPanel/components/Legend/style";
 import { LEGEND_MARGIN_BOTTOM_PX } from "../../style";
 import { LIGHT_GRAY } from "src/components/common/theme";
+import { Skeleton } from "@mui/material";
 
 export function xAxisOffset(props: CommonThemeProps) {
   /**
@@ -119,6 +120,7 @@ export const TopLeftCornerMask = styled.div<TopLeftCornerMaskProps>`
 
 interface ChartWrapperProps extends CommonThemeProps {
   top: number;
+  hidden: boolean;
 }
 
 export const ChartWrapper = styled.div<ChartWrapperProps>`
@@ -128,6 +130,7 @@ export const ChartWrapper = styled.div<ChartWrapperProps>`
   padding-top: ${(props) => xAxisOffset(props) + PADDING_UNDER_HEADERS_PX}px;
   left: ${Y_AXIS_CHART_WIDTH_PX}px;
   top: ${(props) => props.top}px;
+  visibility: ${(props) => (props.hidden ? "hidden" : "visible")};
 `;
 
 export const StyledTag = styled(TagFilter)`
@@ -156,4 +159,18 @@ export const YAxisWrapper = styled.div<YAxisWrapperProps>`
   padding-top: ${(props) => xAxisOffset(props) + PADDING_UNDER_HEADERS_PX}px;
   /* Somehow Firefox requires this to scroll */
   overflow: hidden;
+`;
+
+export const StyledSkeleton = styled(Skeleton)`
+  margin: 0px 0px 4px 1px;
+`;
+
+export const SkeletonContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const SkeletonWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
 `;

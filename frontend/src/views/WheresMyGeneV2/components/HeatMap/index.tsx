@@ -8,6 +8,8 @@ import {
   ChartWrapper,
   Container,
   ContainerWrapper,
+  SkeletonContainer,
+  SkeletonWrapper,
   StyledTag,
   XAxisMask,
   YAxisWrapper,
@@ -28,6 +30,7 @@ import {
   Divider,
   TopLeftCornerMask,
   XAxisWrapper,
+  StyledSkeleton,
 } from "./style";
 
 import { useConnect } from "src/views/WheresMyGeneV2/components/HeatMap/connect";
@@ -61,6 +64,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
     selectedCellTypeOptions,
     setIsLoading,
     sortedGeneNames,
+    totalElementsCount,
     uniqueCellTypes,
     xAxisHeight,
   } = useConnect(props);
@@ -97,7 +101,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
           <CellCountLabel>Cell Count</CellCountLabel>
         </TopLeftCornerMask>
         <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
-          {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
+          {isLoadingAPI || (isAnyTissueLoading(isLoading) && <Loader />)}
           <XAxisWrapper id="x-axis-wrapper">
             <XAxisMask data-testid="x-axis-mask" height={xAxisHeight} />
             <XAxisChart
@@ -122,7 +126,34 @@ export default memo(function HeatMap(props: Props): JSX.Element {
               }
             )}
           </YAxisWrapper>
-          <ChartWrapper ref={chartWrapperRef} top={xAxisHeight}>
+          {isLoadingAPI ||
+            (isAnyTissueLoading(isLoading) && (
+              <ChartWrapper
+                top={xAxisHeight}
+                hidden={!isAnyTissueLoading(isLoading)}
+              >
+                <SkeletonContainer>
+                  {[...Array(totalElementsCount)].map((_, index) => (
+                    <SkeletonWrapper key={index} data-testid="skeleton-wrapper">
+                      {[...Array(sortedGeneNames.length)].map((_, index) => (
+                        <StyledSkeleton
+                          variant="circular"
+                          width={19}
+                          height={19}
+                          key={index}
+                          data-testid="skeleton-circle"
+                        />
+                      ))}
+                    </SkeletonWrapper>
+                  ))}
+                </SkeletonContainer>
+              </ChartWrapper>
+            ))}
+          <ChartWrapper
+            ref={chartWrapperRef}
+            top={xAxisHeight}
+            hidden={isAnyTissueLoading(isLoading)}
+          >
             {allTissueCellTypes.map(({ tissueName, tissueCellTypes }) => {
               const selectedGeneData =
                 orderedSelectedGeneExpressionSummariesByTissueName[tissueName];
