@@ -24,8 +24,10 @@ def local_disk_snapshot():
 def s3_snapshot():
     def tiledb_open_s3_uri(s3_uri):
         # TODO (fix): Is this config correct?
-        tiledb_config = WmgConfig(deployment="stage", source="aws").tiledb_config_overrides
-        return tiledb.open(s3_uri, ctx=create_ctx(json.loads(tiledb_config)))
+        return tiledb.open(
+            s3_uri,
+            config=tiledb.Config(
+                {"vfs.s3.region": "us-west-2", 'py.init_buffer_bytes': 128*1024**2}))
     
     return WmgSnapshot(snapshot_identifier="",
                        expression_summary_cube=tiledb_open_s3_uri('s3://cellxgene-wmg-staging/snapshots/v3/1699207434/expression_summary'),
