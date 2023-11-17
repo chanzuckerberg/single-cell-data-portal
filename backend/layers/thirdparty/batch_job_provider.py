@@ -6,7 +6,6 @@ from typing import Dict
 import boto3
 
 from backend.layers.common.entities import (
-    CollectionVersionId,
     DatasetVersionId,
 )
 
@@ -14,8 +13,8 @@ from backend.layers.common.entities import (
 class BatchJobProviderInterface:
     def start_metadata_update_batch_job(
         self,
-        collection_version_id: CollectionVersionId,
-        dataset_version_id: DatasetVersionId,
+        old_dataset_version_id: DatasetVersionId,
+        new_dataset_version_id: DatasetVersionId,
         metadata_update_dict: Dict[str, str],
     ) -> None:
         pass
@@ -27,8 +26,8 @@ class BatchJobProvider(BatchJobProviderInterface):
 
     def start_metadata_update_batch_job(
         self,
-        collection_version_id: CollectionVersionId,
-        dataset_version_id: DatasetVersionId,
+        old_dataset_version_id: DatasetVersionId,
+        new_dataset_version_id: DatasetVersionId,
         metadata_update_dict: Dict[str, str],
     ) -> Dict[str, str]:
         """
@@ -39,18 +38,18 @@ class BatchJobProvider(BatchJobProviderInterface):
         if os.environ.get("REMOTE_DEV_PREFIX"):
             stack_name = os.environ.get("REMOTE_DEV_PREFIX").replace("/", "")
         return self.client.submit_job(
-            jobName=f"metadata_update_{dataset_version_id}_{int(time())}",
+            jobName=f"metadata_update_{new_dataset_version_id}_{int(time())}",
             jobQueue=f"dp-{deployment_stage}",
             jobDefinition=f"dp-{deployment_stage}-{stack_name}-dataset-metadata-update",
             containerOverrides={
                 "environment": [
                     {
-                        "name": "COLLECTION_VERSION_ID",
-                        "value": collection_version_id.id,
+                        "name": "OLD_DATASET_VERSION_ID",
+                        "value": old_dataset_version_id.id,
                     },
                     {
-                        "name": "DATASET_VERSION_ID",
-                        "value": dataset_version_id.id,
+                        "name": "NEW_DATASET_VERSION_ID",
+                        "value": new_dataset_version_id.id,
                     },
                     {
                         "name": "METADATA_UPDATE_JSON",

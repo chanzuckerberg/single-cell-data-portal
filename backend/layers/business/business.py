@@ -137,6 +137,37 @@ class BusinessLogic(BusinessLogicInterface):
 
         return citation
 
+    def trigger_dataset_artifact_update(
+        self,
+        collection_version: CollectionVersion,
+        metadata_update_dict: Dict[str, str],
+        old_dataset_version_id: DatasetVersionId,
+        new_dataset_version_id: DatasetVersionId = None,
+    ):
+        """
+        Sets up and triggers batch job to copy a previous dataset version into a new dataset version, then
+        update the dataset artifacts and metadata of the new dataset version with a given map of changes,
+        as a lightweight alternative to a full re-ingestion of an existing dataset.
+        """
+        if collection_version.is_published():
+            raise CollectionIsPublishedException(
+                [
+                    f"Collection version {collection_version.version_id.id} is published,"
+                    f" cannot trigger artifact reprocessing for its datasets"
+                ]
+            )
+        new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
+            collection_version.version_id, old_dataset_version_id, new_dataset_version_id
+        )
+        # Sets an initial processing status for the new dataset version
+        self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.WAITING)
+        self.database_provider.update_dataset_processing_status(
+            new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
+        )
+        self.batch_job_provider.start_metadata_update_batch_job(
+            old_dataset_version_id, new_dataset_version.version_id, metadata_update_dict
+        )
+
     def _get_publisher_metadata(self, doi: str, errors: list) -> Optional[dict]:
         """
         Retrieves publisher metadata from Crossref.
@@ -340,6 +371,11 @@ class BusinessLogic(BusinessLogicInterface):
                 None if body.links is None else next((link.uri for link in body.links if link.type == "DOI"), None)
             )
 
+            if old_doi != new_doi:
+                for dataset in current_version.datasets:
+                    if dataset.status.processing_status == dataset.processing_status.PENDING:
+                        errors.append("Cannot update DOI while datasets have PENDING processing status.")
+
             if old_doi and new_doi is None:
                 # If the DOI was deleted, remove the publisher_metadata field
                 unset_publisher_metadata = True
@@ -369,9 +405,18 @@ class BusinessLogic(BusinessLogicInterface):
 
         if not ignore_doi_update and new_doi != old_doi and FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4):
             for dataset in current_version.datasets:
-                citation = self.generate_dataset_citation(current_version.collection_id, dataset.version_id, new_doi)
-                self.batch_job_provider.start_metadata_update_batch_job(
-                    current_version.version_id, dataset.version_id, {"citation": citation}
+                if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
+                    self.logger.info(
+                        f"Dataset {dataset.version_id.id} is not successfully processed. Skipping metadata update."
+                    )
+                    continue
+
+                new_dataset_version_id = DatasetVersionId()
+                citation = self.generate_dataset_citation(
+                    current_version.collection_id, new_dataset_version_id, new_doi
+                )
+                self.trigger_dataset_artifact_update(
+                    current_version, {"citation": citation}, dataset.version_id, new_dataset_version_id
                 )
 
     def _assert_collection_version_unpublished(

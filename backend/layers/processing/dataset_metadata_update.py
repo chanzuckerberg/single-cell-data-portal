@@ -15,7 +15,6 @@ from backend.common.utils.corpora_constants import CorporaConstants
 from backend.common.utils.tiledb import consolidation_buffer_size
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import (
-    CollectionVersionId,
     DatasetArtifactType,
     DatasetConversionStatus,
     DatasetProcessingStatus,
@@ -48,7 +47,7 @@ class DatasetMetadataUpdate(ProcessDownload):
     def update_h5ad(
         self,
         h5ad_uri: str,
-        original_dataset_version: DatasetVersion,
+        old_dataset_version: DatasetVersion,
         key_prefix: str,
         new_dataset_version_id: DatasetVersionId,
         metadata_update_dict: Dict[str, str],
@@ -59,7 +58,7 @@ class DatasetMetadataUpdate(ProcessDownload):
         )
 
         adata = scanpy.read_h5ad(h5ad_filename)
-        metadata = original_dataset_version.metadata
+        metadata = old_dataset_version.metadata
         for key, val in metadata_update_dict.items():
             adata.uns[key] = val
             if hasattr(metadata, key):
@@ -143,68 +142,65 @@ class DatasetMetadataUpdate(ProcessDownload):
 
     def update_metadata(
         self,
-        collection_version_id: CollectionVersionId,
-        dataset_version_id: DatasetVersionId,
+        old_dataset_version_id: DatasetVersionId,
+        new_dataset_version_id: DatasetVersionId,
         metadata_update_dict: Dict[str, str],
     ):
-        original_dataset_version = self.business_logic.get_dataset_version(dataset_version_id)
-        if original_dataset_version.status.processing_status != DatasetProcessingStatus.SUCCESS:
-            self.logger.info(f"Dataset {dataset_version_id} is not successfully processed. Skipping metadata update.")
+        old_dataset_version = self.business_logic.get_dataset_version(old_dataset_version_id)
+        if old_dataset_version.status.processing_status != DatasetProcessingStatus.SUCCESS:
+            self.logger.info(
+                f"Dataset {old_dataset_version_id} is not successfully processed. Skipping metadata update."
+            )
             return
 
-        artifact_uris = {artifact.type: artifact.uri for artifact in original_dataset_version.artifacts}
+        artifact_uris = {artifact.type: artifact.uri for artifact in old_dataset_version.artifacts}
 
         if DatasetArtifactType.RAW_H5AD in artifact_uris:
             raw_h5ad_uri = artifact_uris[DatasetArtifactType.RAW_H5AD]
         else:
-            self.logger.error(f"Cannot find raw H5AD artifact uri for {dataset_version_id}.")
+            self.logger.error(f"Cannot find raw H5AD artifact uri for {old_dataset_version_id}.")
             raise ValueError
-
-        new_dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
-            collection_version_id=collection_version_id,
-            url=raw_h5ad_uri,
-            file_size=0,
-            existing_dataset_version_id=dataset_version_id,
-            start_step_function=False,
-        )
 
         self.process(new_dataset_version_id, raw_h5ad_uri, self.artifact_bucket)
 
-        key_prefix = self.get_key_prefix(new_dataset_version_id.id)
+        new_artifact_key_prefix = self.get_key_prefix(new_dataset_version_id.id)
 
         if DatasetArtifactType.H5AD in artifact_uris:
             self.update_h5ad(
                 artifact_uris[DatasetArtifactType.H5AD],
-                original_dataset_version,
-                key_prefix,
+                old_dataset_version,
+                new_artifact_key_prefix,
                 new_dataset_version_id,
                 metadata_update_dict,
             )
         else:
-            self.logger.error(f"Cannot find labeled H5AD artifact uri for {dataset_version_id}.")
+            self.logger.error(f"Cannot find labeled H5AD artifact uri for {old_dataset_version_id}.")
             raise ValueError
 
         if DatasetArtifactType.RDS in artifact_uris:
             self.update_rds(
-                artifact_uris[DatasetArtifactType.RDS], key_prefix, new_dataset_version_id, metadata_update_dict
+                artifact_uris[DatasetArtifactType.RDS],
+                new_artifact_key_prefix,
+                new_dataset_version_id,
+                metadata_update_dict,
             )
-        elif original_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED:
+        elif old_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED:
             self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
         else:
             self.logger.error(
-                f"Cannot find RDS artifact uri for {dataset_version_id}, " f"and Conversion Status is not SKIPPED."
+                f"Cannot find RDS artifact uri for {old_dataset_version_id}, " f"and Conversion Status is not SKIPPED."
             )
             raise ValueError
 
         if DatasetArtifactType.CXG in artifact_uris:
             self.update_cxg(
                 artifact_uris[DatasetArtifactType.CXG],
-                f"s3://{self.cellxgene_bucket}/{key_prefix}.cxg",
+                f"s3://{self.cellxgene_bucket}/{new_artifact_key_prefix}.cxg",
                 new_dataset_version_id,
                 metadata_update_dict,
             )
         else:
-            self.logger.error(f"Cannot find cxg artifact uri for {dataset_version_id}.")
+            self.logger.error(f"Cannot find cxg artifact uri for {old_dataset_version_id}.")
             raise ValueError
 
         self.update_processing_status(
@@ -225,10 +221,10 @@ if __name__ == "__main__":
     artifact_bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
     cellxgene_bucket = os.environ.get("CELLXGENE_BUCKET", "test-cellxgene-bucket")
     datasets_bucket = os.environ.get("DATASETS_BUCKET", "test-datasets-bucket")
-    collection_version_id = CollectionVersionId(os.environ["COLLECTION_VERSION_ID"])
-    dataset_version_id = DatasetVersionId(os.environ["DATASET_VERSION_ID"])
+    old_dataset_version_id = DatasetVersionId(os.environ["OLD_DATASET_VERSION_ID"])
+    new_dataset_version_id = DatasetVersionId(os.environ["NEW_DATASET_VERSION_ID"])
     metadata_update_dict = json.loads(os.environ["METADATA_UPDATE_JSON"])
 
     DatasetMetadataUpdate(business_logic, artifact_bucket, cellxgene_bucket, datasets_bucket).update_metadata(
-        collection_version_id, dataset_version_id, metadata_update_dict
+        old_dataset_version_id, new_dataset_version_id, metadata_update_dict
     )

@@ -187,8 +187,15 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
             ]
         )
         collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
-        original_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
-        self.updater.update_metadata(collection_version_id, original_dataset_version_id, None)
+        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=old_dataset_version_id,
+            start_step_function=False,
+        )
+        self.updater.update_metadata(old_dataset_version_id, new_dataset_version_id, None)
 
         mock_update_cxg.assert_called_once()
         mock_update_rds.assert_called_once()
@@ -223,8 +230,15 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
             ],
         )
         collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
-        dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
-        self.updater.update_metadata(collection_version_id, dataset_version_id, None)
+        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=old_dataset_version_id,
+            start_step_function=False,
+        )
+        self.updater.update_metadata(old_dataset_version_id, new_dataset_version_id, None)
 
         mock_update_h5ad.assert_called_once()
         mock_update_cxg.assert_called_once()
@@ -252,8 +266,15 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
             ]
         )
         collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
-        original_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
-        self.updater.update_metadata(collection_version_id, original_dataset_version_id, None)
+        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=old_dataset_version_id,
+            start_step_function=False,
+        )
+        self.updater.update_metadata(old_dataset_version_id, new_dataset_version_id, None)
 
         mock_update_h5ad.assert_not_called()
         mock_update_cxg.assert_not_called()
@@ -263,7 +284,7 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
         dataset_version = collection_version.datasets[0]
 
         # no ingest or update triggered
-        assert dataset_version.version_id == original_dataset_version_id
+        assert dataset_version.version_id == old_dataset_version_id
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     def test_update_metadata__error_if_missing_raw_h5ad(self, *args):
@@ -278,11 +299,20 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
             ],
         )
+        collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
+        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=old_dataset_version_id,
+            start_step_function=False,
+        )
 
         with pytest.raises(ValueError):
             self.updater.update_metadata(
-                CollectionVersionId(original_dataset_version.collection_version_id),
-                DatasetVersionId(original_dataset_version.dataset_version_id),
+                old_dataset_version_id,
+                new_dataset_version_id,
                 None,
             )
 
@@ -300,11 +330,20 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
             ],
         )
+        collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
+        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=old_dataset_version_id,
+            start_step_function=False,
+        )
 
         with pytest.raises(ValueError):
             self.updater.update_metadata(
-                CollectionVersionId(original_dataset_version.collection_version_id),
-                DatasetVersionId(original_dataset_version.dataset_version_id),
+                old_dataset_version_id,
+                new_dataset_version_id,
                 None,
             )
 
@@ -323,11 +362,20 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
             ],
         )
+        collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
+        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=old_dataset_version_id,
+            start_step_function=False,
+        )
 
         with pytest.raises(ValueError):
             self.updater.update_metadata(
-                CollectionVersionId(original_dataset_version.collection_version_id),
-                DatasetVersionId(original_dataset_version.dataset_version_id),
+                old_dataset_version_id,
+                new_dataset_version_id,
                 None,
             )
 
@@ -347,10 +395,19 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
             ],
         )
+        collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
+        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=old_dataset_version_id,
+            start_step_function=False,
+        )
 
         with pytest.raises(ValueError):
             self.updater.update_metadata(
-                CollectionVersionId(original_dataset_version.collection_version_id),
-                DatasetVersionId(original_dataset_version.dataset_version_id),
+                old_dataset_version_id,
+                new_dataset_version_id,
                 None,
             )
