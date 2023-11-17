@@ -414,7 +414,7 @@ class BusinessLogic(BusinessLogicInterface):
                     )
                     continue
 
-                new_dataset_version_id = self.create_empty_version_for_existing_dataset(
+                new_dataset_version_id, _ = self.create_empty_version_for_existing_dataset(
                     current_version.version_id, dataset.version_id
                 )
                 citation = self.generate_dataset_citation(
