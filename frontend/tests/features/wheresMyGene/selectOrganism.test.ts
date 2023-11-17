@@ -4,7 +4,6 @@ import {
   ADD_TISSUE_ID,
   CELL_TYPE_FILTER_TEST_ID,
   COMPARE_DROPDOWN_ID,
-  DATASET_FILTER_TEST_ID,
   DISEASE_FILTER_TEST_ID,
   PUBLICATION_FILTER_TEST_ID,
   SELF_REPORTED_ETHNICITY_FILTER_TEST_ID,
@@ -53,19 +52,6 @@ describe("Select organism", () => {
       page,
     }) => {
       await verifyConfirmModal({ page, url: WMG_WITH_SEEDED_GENES.URL });
-    });
-
-    test("With dataset `22 integrated samples` selected, it prompts confirm modal on change", async ({
-      page,
-    }) => {
-      await verifyConfirmModal({
-        page,
-        url:
-          `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}?` +
-          "datasets=9d8e5dca-03a3-457d-b7fb-844c75735c83&ver=2",
-        testId: DATASET_FILTER_TEST_ID,
-        text: "22 integrated samples",
-      });
     });
 
     test("With disease `normal` selected, it prompts confirm modal on change", async ({

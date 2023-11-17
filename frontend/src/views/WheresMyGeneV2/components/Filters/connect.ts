@@ -287,6 +287,5 @@ export const useConnect = ({
     DropdownMenuProps,
     isHeatmapShown,
     InputDropdownProps,
-    datasets,
   };
 };

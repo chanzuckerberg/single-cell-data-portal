@@ -18,12 +18,7 @@ import {
   TooltipContent,
   TissueName,
   TooltipButton,
-  DivTable,
-  DivTableRow,
-  DivTableCell,
-  DivTableHead,
   ButtonWrapper,
-  DivTableLegend,
   TooltipLink,
 } from "./style";
 import { Link } from "src/components/GeneInfoSideBar/style";
@@ -46,6 +41,13 @@ import {
   TABLE_HEADER_SCORE,
 } from "./constants";
 import { useConnect } from "./connect";
+import {
+  DivTable,
+  DivTableCell,
+  DivTableHead,
+  DivTableLegend,
+  DivTableRow,
+} from "../../common/styles";
 
 function CellInfoSideBar({
   cellInfoCellType,

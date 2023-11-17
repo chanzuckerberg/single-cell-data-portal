@@ -44,3 +44,8 @@ export const LabelWrapper = styled.div`
 export const FlexDiv = styled.div`
   display: flex;
 `;
+
+export const TooltipLink = styled.a`
+  text-decoration: underline;
+  cursor: pointer;
+`;
