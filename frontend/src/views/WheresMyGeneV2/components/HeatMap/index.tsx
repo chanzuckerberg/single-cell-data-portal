@@ -101,7 +101,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
           <CellCountLabel>Cell Count</CellCountLabel>
         </TopLeftCornerMask>
         <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
-          {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
+          {isLoadingAPI || (isAnyTissueLoading(isLoading) && <Loader />)}
           <XAxisWrapper id="x-axis-wrapper">
             <XAxisMask data-testid="x-axis-mask" height={xAxisHeight} />
             <XAxisChart
@@ -126,27 +126,29 @@ export default memo(function HeatMap(props: Props): JSX.Element {
               }
             )}
           </YAxisWrapper>
-          {isLoadingAPI || isAnyTissueLoading(isLoading) ? (
-            <ChartWrapper
-              top={xAxisHeight}
-              hidden={!isAnyTissueLoading(isLoading)}
-            >
-              <SkeletonContainer>
-                {[...Array(totalElementsCount)].map((i) => (
-                  <SkeletonWrapper key={i}>
-                    {[...Array(sortedGeneNames.length)].map((i) => (
-                      <StyledSkeleton
-                        variant="circular"
-                        width={19}
-                        height={19}
-                        key={i}
-                      />
-                    ))}
-                  </SkeletonWrapper>
-                ))}
-              </SkeletonContainer>
-            </ChartWrapper>
-          ) : null}
+          {isLoadingAPI ||
+            (isAnyTissueLoading(isLoading) && (
+              <ChartWrapper
+                top={xAxisHeight}
+                hidden={!isAnyTissueLoading(isLoading)}
+              >
+                <SkeletonContainer>
+                  {[...Array(totalElementsCount)].map((_, index) => (
+                    <SkeletonWrapper key={index} data-testid="skeleton-wrapper">
+                      {[...Array(sortedGeneNames.length)].map((_, index) => (
+                        <StyledSkeleton
+                          variant="circular"
+                          width={19}
+                          height={19}
+                          key={index}
+                          data-testid="skeleton-circle"
+                        />
+                      ))}
+                    </SkeletonWrapper>
+                  ))}
+                </SkeletonContainer>
+              </ChartWrapper>
+            ))}
           <ChartWrapper
             ref={chartWrapperRef}
             top={xAxisHeight}
