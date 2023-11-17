@@ -138,7 +138,7 @@ const Content: FC<Props> = ({
             />
             <Details
               downloadPreview={
-                downloadLink &&
+                !!downloadLink &&
                 !isDownloadLinkLoading && (
                   <DownloadLink
                     downloadLink={downloadLink}
