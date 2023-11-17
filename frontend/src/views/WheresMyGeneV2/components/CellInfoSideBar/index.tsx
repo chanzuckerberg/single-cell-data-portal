@@ -28,7 +28,7 @@ import InfoSVG from "src/common/images/info-sign-icon.svg";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
 import { CellInfoBarProps } from "./types";
 import {
-  FMG_EXCLUDE_TISSUES,
+  TISSUES_WITHOUT_MARKER_GENES,
   MARKER_GENES_TOOLTIP_CONTENT,
   MARKER_GENE_LABEL,
   MARKER_SCORE_CELLGUIDE_LINK_TEXT,
@@ -77,7 +77,7 @@ function CellInfoSideBar({
   const shouldShowEmptyState =
     numMarkerGenes === 0 ||
     cellInfoCellType.cellType.total_count < 25 ||
-    FMG_EXCLUDE_TISSUES.includes(tissueInfo.name);
+    TISSUES_WITHOUT_MARKER_GENES.includes(tissueInfo.name);
 
   return (
     <>
@@ -157,7 +157,7 @@ function CellInfoSideBar({
           <NoMarkerGenesContainer data-testid="no-marker-genes-warning">
             <NoMarkerGenesHeader>{NO_MARKER_GENES_HEADER}</NoMarkerGenesHeader>
             <NoMarkerGenesDescription data-testid="no-marker-genes-description">
-              {FMG_EXCLUDE_TISSUES.includes(tissueInfo.name)
+              {TISSUES_WITHOUT_MARKER_GENES.includes(tissueInfo.name)
                 ? NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION
                 : cellInfoCellType.cellType.total_count < 25
                 ? TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION

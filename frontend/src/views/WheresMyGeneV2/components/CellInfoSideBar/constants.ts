@@ -17,4 +17,4 @@ export const NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION =
   "Cell types within Blood are closely related, so we are unable to generate high value marker genes at this time.";
 export const TABLE_HEADER_GENE = "Gene";
 export const TABLE_HEADER_SCORE = "Marker Score";
-export const FMG_EXCLUDE_TISSUES = ["blood"];
+export const TISSUES_WITHOUT_MARKER_GENES = ["blood"];
