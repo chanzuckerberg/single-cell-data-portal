@@ -127,8 +127,7 @@ class DatasetMetadataUpdate(ProcessDownload):
         array_name = f"{new_cxg_dir}/cxg_group_metadata"
         with tiledb.open(array_name, mode="r", ctx=ctx) as metadata_array:
             cxg_metadata_dict = json.loads(metadata_array.meta["corpora"])
-            for key, value in metadata_update_dict.items():
-                cxg_metadata_dict[key] = value
+            cxg_metadata_dict.update(metadata_update_dict)
 
         with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
             metadata_array.meta["corpora"] = json.dumps(cxg_metadata_dict)
