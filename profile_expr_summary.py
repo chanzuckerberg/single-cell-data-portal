@@ -9,14 +9,27 @@ from cProfile import Profile
 from pstats import Stats
 
 import tiledb
+from tiledb import Array
 import pandas as pd
 
+from backend.wmg.config import WmgConfig
+from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.api.v2 import *
 
 def local_disk_snapshot():
     return WmgSnapshot(snapshot_identifier="",
-    expression_summary_cube=tiledb.open('staging-snapshot/expression_summary'),
-    expression_summary_default_cube=tiledb.open('staging-snapshot/expression_summary_default'))
+                       expression_summary_cube=tiledb.open('staging-snapshot/expression_summary'),
+                       expression_summary_default_cube=tiledb.open('staging-snapshot/expression_summary_default'))
+
+def s3_snapshot():
+    def tiledb_open_s3_uri(s3_uri):
+        # TODO (fix): Is this config correct?
+        tiledb_config = WmgConfig(deployment="stage", source="aws").tiledb_config_overrides
+        return tiledb.open(s3_uri, ctx=create_ctx(json.loads(tiledb_config)))
+    
+    return WmgSnapshot(snapshot_identifier="",
+                       expression_summary_cube=tiledb_open_s3_uri('s3://cellxgene-wmg-staging/snapshots/v3/1699207434/expression_summary'),
+                       expression_summary_default_cube=tiledb_open_s3_uri('ss3://cellxgene-wmg-staging/snapshots/v3/1699207434/expression_summary_default'))
 
 def print_profile_results_web_app_query(snapshot, profile_func, randomize_reqs):
     expr_default_cube = snapshot.expression_summary_default_cube.df[:]
@@ -368,6 +381,8 @@ if __name__ == "__main__":
 
     if args.data_location == "local":
         snapshot = local_disk_snapshot()
+    elif args.data_location == "s3":
+        snapshot = s3_snapshot()
     
     # Profile the function executed by the web-app.
     # This involves constructing the arguments needed to
