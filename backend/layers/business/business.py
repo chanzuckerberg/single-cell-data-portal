@@ -373,8 +373,14 @@ class BusinessLogic(BusinessLogicInterface):
 
             if old_doi != new_doi:
                 for dataset in current_version.datasets:
-                    if dataset.status.processing_status == dataset.processing_status.PENDING:
-                        errors.append("Cannot update DOI while datasets have PENDING processing status.")
+                    if dataset.status.processing_status not in [
+                        DatasetProcessingStatus.SUCCESS,
+                        DatasetProcessingStatus.FAILURE,
+                    ]:
+                        errors.append(
+                            "Cannot update DOI while a dataset has a non-finalized "
+                            "(SUCCESS, FAILURE) processing status."
+                        )
 
             if old_doi and new_doi is None:
                 # If the DOI was deleted, remove the publisher_metadata field

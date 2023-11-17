@@ -267,21 +267,13 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
         )
         collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
         old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
-        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            collection_version_id=collection_version_id,
-            url=None,
-            file_size=0,
-            existing_dataset_version_id=old_dataset_version_id,
-            start_step_function=False,
-        )
-        self.updater.update_metadata(old_dataset_version_id, new_dataset_version_id, None)
+        self.updater.update_metadata(old_dataset_version_id, None, None)
 
         mock_update_h5ad.assert_not_called()
         mock_update_cxg.assert_not_called()
         mock_update_rds.assert_not_called()
 
-        collection_version = self.business_logic.get_collection_version(collection_version_id)
-        dataset_version = collection_version.datasets[0]
+        dataset_version = self.business_logic.get_collection_version(collection_version_id).datasets[0]
 
         # no ingest or update triggered
         assert dataset_version.version_id == old_dataset_version_id
