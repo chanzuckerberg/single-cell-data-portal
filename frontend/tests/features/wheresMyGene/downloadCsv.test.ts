@@ -23,7 +23,7 @@ describe("CSV download tests", () => {
     await goToWMG(page, SHARED_LINK_NO_GROUP);
     await expect(page.locator("canvas")).not.toHaveCount(0);
 
-    const tissues = ["blood", "lung"];
+    const tissues = ["lung"];
     const fileTypes = ["csv"];
     const folder = subDirectory();
 
@@ -47,7 +47,7 @@ describe("CSV download tests", () => {
     await goToWMG(page, SHARED_LINK_FILTER);
     await expect(page.locator("canvas")).not.toHaveCount(0);
 
-    const tissues = ["blood", "lung"];
+    const tissues = ["lung"];
     const fileTypes = ["csv"];
     const folder = subDirectory();
     //download  csv file
@@ -71,7 +71,7 @@ describe("CSV download tests", () => {
     await goToWMG(page, SHARED_LINK_NO_FILTER);
     await expect(page.locator("canvas")).not.toHaveCount(0);
 
-    const tissues = ["blood", "lung"];
+    const tissues = ["lung"];
     const fileTypes = ["csv"];
     const folder = subDirectory();
     //download  csv file

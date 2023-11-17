@@ -34,12 +34,12 @@ export const SHARED_LINK = `${TEST_URL}/gene-expression?compare=disease&diseases
 
 export const SHARED_LINK_WITHOUT_COMPARE = `${TEST_URL}/gene-expression?diseases=MONDO%3A0100096&ethnicities=unknown&sexes=PATO%3A0000383%2CPATO%3A0000384&tissues=UBERON%3A0000178%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6%2CMALAT1&ver=2`;
 
-export const SIMPLE_SHARED_LINK = `${TEST_URL}/gene-expression?tissues=UBERON%3A0000178%2CUBERON%3A0002048&genes=DPM1&ver=2`;
+export const SIMPLE_SHARED_LINK = `${TEST_URL}/gene-expression?tissues=UBERON%3A0000178%2CUBERON%3A0002048&genes=DPM1%2CMALAT1%2CTNMD%2CTSPAN6&ver=2`;
 
 export const SHARED_LINK_NO_FILTER = `${TEST_URL}/gene-expression?tissues=UBERON%3A0000178%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2`;
 
-export const SHARED_LINK_FILTER = `${TEST_URL}/gene-expression?compare=disease&sexes=PATO%3A0000383&tissues=UBERON%3A0000178%2CUBERON%3A0002048&genes=DPM1&ver=2`;
-export const SHARED_LINK_NO_GROUP = `${TEST_URL}/gene-expression?compare=disease&diseases=PATO%3A0000461&tissues=UBERON%3A0000178%2CUBERON%3A0002048&genes=DPM1&ver=2`;
+export const SHARED_LINK_FILTER = `${TEST_URL}/gene-expression?compare=disease&sexes=PATO%3A0000383&tissues=UBERON%3A0000178%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2`;
+export const SHARED_LINK_NO_GROUP = `${TEST_URL}/gene-expression?compare=disease&diseases=PATO%3A0000461&tissues=UBERON%3A0000178%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2`;
 
 export const ADD_GENE_BTN = "add-gene-btn";
 
