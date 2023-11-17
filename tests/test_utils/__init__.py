@@ -26,9 +26,9 @@ class CompareDictsAddin:
         @contextmanager
         def path(key):
             try:
-                yield path.append(key)
+                yield _path.append(key)
             finally:
-                path.pop()
+                _path.pop()
 
         def _compare_dict(_dict1, _dict2):
             if len(_dict1) != len(_dict2):
