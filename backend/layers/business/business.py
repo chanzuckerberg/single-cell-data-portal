@@ -156,16 +156,13 @@ class BusinessLogic(BusinessLogicInterface):
                     f" cannot trigger artifact reprocessing for its datasets"
                 ]
             )
-        new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
-            collection_version.version_id, old_dataset_version_id, new_dataset_version_id
-        )
-        # Sets an initial processing status for the new dataset version
-        self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.WAITING)
-        self.database_provider.update_dataset_processing_status(
-            new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
-        )
+        if new_dataset_version_id is None:
+            new_dataset_version_id, _ = self.create_empty_version_for_existing_dataset(
+                collection_version.version_id, old_dataset_version_id
+            )
+
         self.batch_job_provider.start_metadata_update_batch_job(
-            old_dataset_version_id, new_dataset_version.version_id, metadata_update_dict
+            old_dataset_version_id, new_dataset_version_id, metadata_update_dict
         )
 
     def _get_publisher_metadata(self, doi: str, errors: list) -> Optional[dict]:
@@ -417,7 +414,9 @@ class BusinessLogic(BusinessLogicInterface):
                     )
                     continue
 
-                new_dataset_version_id = DatasetVersionId()
+                new_dataset_version_id = self.create_empty_version_for_existing_dataset(
+                    current_version.version_id, dataset.version_id
+                )
                 citation = self.generate_dataset_citation(
                     current_version.collection_id, new_dataset_version_id, new_doi
                 )
@@ -453,6 +452,25 @@ class BusinessLogic(BusinessLogicInterface):
         )
 
         self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.NA)
+        self.database_provider.update_dataset_processing_status(
+            new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
+        )
+
+        return (new_dataset_version.version_id, new_dataset_version.dataset_id)
+
+    def create_empty_version_for_existing_dataset(
+        self, collection_version_id: CollectionVersionId, current_dataset_version_id: DatasetVersionId
+    ) -> Tuple[DatasetVersionId, DatasetId]:
+        """
+        Creates an empty dataset version that can be later used for ingestion, for existing datasets
+        """
+        self._assert_collection_version_unpublished(collection_version_id)
+
+        new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
+            collection_version_id, current_dataset_version_id
+        )
+
+        self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.WAITING)
         self.database_provider.update_dataset_processing_status(
             new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
         )
