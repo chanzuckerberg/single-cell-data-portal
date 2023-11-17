@@ -33,7 +33,7 @@ module.exports = {
     // Allows for the parsing of modern ECMAScript features
     sourceType: "module", // Allows for the use of imports
   },
-  plugins: ["@typescript-eslint", "sonarjs", "@blueprintjs"],
+  plugins: ["@typescript-eslint", "sonarjs", "@blueprintjs", "jsx-expressions"],
   rules: {
     "@typescript-eslint/camelcase": 0,
     // Disable prop-types as we use TypeScript for type checking
@@ -57,6 +57,7 @@ module.exports = {
     // React Hooks
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "error",
+    "jsx-expressions/strict-logical-expressions": "error",
   },
   settings: {
     "mdx/code-blocks": true,
