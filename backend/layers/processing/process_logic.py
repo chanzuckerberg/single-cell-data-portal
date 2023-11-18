@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime
 from os.path import basename, join
 from typing import Callable, List, Optional
@@ -72,6 +73,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
             join(key_prefix, file_base),
             extra_args={"ACL": "bucket-owner-full-control"},
         )
+        os.remove(file_name)
         return self.make_s3_uri(artifact_bucket, key_prefix, file_base)
 
     @logit
@@ -101,6 +103,9 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
             self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADED)
         except Exception:
             raise ConversionFailed(processing_status_key) from None
+        finally:
+            # Remove the converted file from container after upload
+            os.remove(file_name)
 
     def convert_file(
         self,
@@ -119,6 +124,9 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
             self.logger.info(f"Finished converting {converter} in {datetime.now() - start}")
         except Exception:
             raise ConversionFailed(processing_status_key) from None
+        finally:
+            # Remove the original file from container after conversion
+            os.remove(local_filename)
         return file_dir
 
     def get_key_prefix(self, identifier: str) -> str:

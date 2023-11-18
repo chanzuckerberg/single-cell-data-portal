@@ -189,3 +189,4 @@ class ProcessDownload(ProcessingLogic):
 
         sfn_client = StepFunctionProvider().client
         sfn_client.send_task_success(taskToken=sfn_task_token, output=json.dumps(response))
+        os.remove(local_filename)  # remove the local file form the container after uploading.
