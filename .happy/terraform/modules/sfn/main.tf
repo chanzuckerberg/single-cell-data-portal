@@ -147,19 +147,6 @@ resource "aws_sfn_state_machine" "state_machine" {
           "JobDefinition.$": "$.batch.JobDefinitionName",
           "JobName": "validate",
           "JobQueue.$": "$.job_queue",
-          "RetryStrategy": {
-            "Attempts": ${var.max_attempts},
-            "EvaluateOnExit": [
-              {
-                "Action": "EXIT",
-                "OnExitCode": "1"
-              },
-              {
-                "Action": "RETRY",
-                "OnExitCode": "*"
-              }
-            ]
-          },
           "ContainerOverrides": {
             "Environment": [
               {
@@ -204,19 +191,6 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "JobDefinition.$": "$.batch.JobDefinitionName",
                   "JobName": "cxg",
                   "JobQueue.$": "$.job_queue",
-                  "RetryStrategy": {
-                    "Attempts": ${var.max_attempts},
-                    "EvaluateOnExit": [
-                      {
-                        "Action": "EXIT",
-                        "OnExitCode": "1"
-                      },
-                      {
-                        "Action": "RETRY",
-                        "OnExitCode": "*"
-                      }
-                    ]
-                  },
                   "ContainerOverrides": {
                     "Environment": [
                       {
@@ -230,8 +204,21 @@ resource "aws_sfn_state_machine" "state_machine" {
                     ]
                   }
                 },
+                "Catch": [
+                  {
+                    "ErrorEquals": [
+                      "States.ALL"
+                    ],
+                    "Next": "CatchCxgFailure",
+                    "ResultPath": "$.error"
+                  }
+                ],
                 "ResultPath": null,
                 "TimeoutSeconds": 360000
+              },
+              "CatchCxgFailure": {
+                "Type": "Pass",
+                "End": true
               }
             }
           },
@@ -246,19 +233,6 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "JobDefinition.$": "$.batch.JobDefinitionName",
                   "JobName": "seurat",
                   "JobQueue.$": "$.job_queue",
-                  "RetryStrategy": {
-                    "Attempts": ${var.max_attempts},
-                    "EvaluateOnExit": [
-                      {
-                        "Action": "EXIT",
-                        "OnExitCode": "1"
-                      },
-                      {
-                        "Action": "RETRY",
-                        "OnExitCode": "*"
-                      }
-                    ]
-                  },
                   "ContainerOverrides": {
                     "Environment": [
                       {

@@ -15,7 +15,7 @@ export default function CountAndTotal({
     rowCount && totalCount ? `${rowCount} of ${totalCount}` : "";
   return (
     <>
-      {countAndTotal && (
+      {!!countAndTotal && (
         <Tag
           color="gray"
           hover={false}

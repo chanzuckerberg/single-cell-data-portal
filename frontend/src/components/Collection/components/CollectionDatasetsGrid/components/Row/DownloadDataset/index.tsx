@@ -1,12 +1,7 @@
 import React, { ElementType, FC, useState } from "react";
 import { useDatasetAssets } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DownloadDataset/util";
 import Content from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content";
-import {
-  Dialog as DownloadUXDialog,
-  DownloadDialog,
-} from "src/components/Datasets/components/DownloadDataset/style";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
-import { FEATURES } from "src/common/featureFlags/features";
+import { Dialog } from "src/components/Datasets/components/DownloadDataset/style";
 
 interface Props {
   Button: ElementType;
@@ -27,9 +22,7 @@ const DownloadDataset: FC<Props> = ({
   isDisabled = false,
   name,
 }) => {
-  const isDownloadUX = useFeatureFlag(FEATURES.DOWNLOAD_UX);
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const Dialog = isDownloadUX ? DownloadUXDialog : DownloadDialog; // TODO(cc) Download UI #5566 hidden under feature flag.
 
   // Fetch the dataset assets on open of download modal.
   const { datasetAssets, isError, isLoading } = useDatasetAssets(

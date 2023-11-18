@@ -34,7 +34,7 @@ def handle_failure(event: dict, context, delete_artifacts=True) -> None:
 
 def parse_event(event: dict):
     dataset_version_id = event.get("dataset_version_id")
-    collection_version_id = event.get("collection_id")
+    collection_version_id = event.get("collection_version_id")
     error_cause = event.get("error", {}).get("Cause", "")
     execution_arn = event.get("execution_id")
     try:
