@@ -53,5 +53,5 @@ variable frontend_url {
 variable batch_container_memory_limit {
   type        = number
   description = "Memory hard limit for the batch container"
-  default     = 63500
+  default     = 256000
 }

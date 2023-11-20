@@ -1,5 +1,3 @@
-import os
-
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
     DatasetArtifactType,
@@ -91,7 +89,6 @@ class ProcessCxg(ProcessingLogic):
         Copy cxg files to the cellxgene bucket (under the given object key) for access by the explorer
         """
         self.s3_provider.upload_directory(cxg_dir, s3_uri)
-        os.rmdir(cxg_dir)  # remove cxg files from container after uploading
 
     def process_cxg(self, local_filename, dataset_version_id, cellxgene_bucket, current_artifacts=None):
         cxg_dir = self.convert_file(

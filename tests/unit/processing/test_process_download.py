@@ -1,8 +1,7 @@
 import json
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import Mock, patch
 
 import pytest
-import scanpy
 
 from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.math_utils import GB
@@ -20,15 +19,13 @@ class TestProcessDownload(BaseProcessingTest):
     @patch("backend.common.utils.dl_sources.uri.DropBoxURL.file_info", return_value={"size": 100, "name": "fake_name"})
     @patch("os.environ", test_environment)
     @patch("backend.layers.processing.process_download.StepFunctionProvider")
-    @patch("scanpy.read_h5ad")
-    def test_process_download_success(self, mock_read_h5ad, mock_sfn_provider, *args):
+    def test_process_download_success(self, mock_sfn_provider, *args):
         """
         ProcessValidate should:
         1. Download the h5ad artifact
         2. Set upload status to UPLOADED
         3. upload the original file to S3
         """
-        self.mock_config.stop()
         dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=0"
         bucket_name = "fake_bucket_name"
         stack_name = test_environment["REMOTE_DEV_PREFIX"]
@@ -37,11 +34,6 @@ class TestProcessDownload(BaseProcessingTest):
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
             collection.version_id, dropbox_uri, None, None
         )
-        # Mock anndata object
-        mock_anndata = Mock(spec=scanpy.AnnData)
-        mock_anndata.n_obs = 10000
-        mock_anndata.n_vars = 10000
-        mock_read_h5ad.return_value = mock_anndata
 
         # Mock SFN client
         mock_sfn = Mock()
@@ -49,13 +41,13 @@ class TestProcessDownload(BaseProcessingTest):
 
         # This is where we're at when we start the SFN
         pdv = ProcessDownload(self.business_logic, self.uri_provider, self.s3_provider, test_config)
+        pdv._get_size_of_h5ad = Mock(return_value=100)
         pdv.process(dataset_version_id, dropbox_uri, bucket_name, "fake_sfn_task_token")
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
         self.assertEqual(status.upload_status, DatasetUploadStatus.UPLOADED)
 
         # Assert mocks
-        mock_read_h5ad.assert_called_with("raw.h5ad", backed="r")
         mock_sfn.client.send_task_success.assert_called_with(
             taskToken="fake_sfn_task_token",
             output=json.dumps(
@@ -122,19 +114,6 @@ def mock_ProcessDownload():
     return ProcessDownload(Mock(), Mock(), Mock())
 
 
-def sample_adata(n_obs: int, n_vars: int):
-    # Create a sample AnnData object for testing
-    adata = MagicMock(spec=scanpy.AnnData, n_obs=n_obs, n_vars=n_vars)
-    return adata
-
-
-@pytest.fixture
-def mock_read_h5ad():
-    with patch("scanpy.read_h5ad") as mock_read_h5ad:
-        mock_read_h5ad.return_value = sample_adata(1, 2 * GB)
-        yield mock_read_h5ad
-
-
 def memory_settings(
     memory_modifier=1,
     memory_per_vcpu=4000,
@@ -155,29 +134,29 @@ def memory_settings(
 
 # Arrange
 @pytest.mark.parametrize(
-    "adata, memory_settings, expected",
+    "size_of_adata, memory_settings, expected",
     [
-        (sample_adata(1, 2 * GB), memory_settings(), {"Vcpus": 1, "Memory": 4000, "MaxSwap": 20000}),  # minimum memory
+        (2 * GB, memory_settings(), {"Vcpus": 1, "Memory": 4000, "MaxSwap": 20000}),  # minimum memory
         (
-            sample_adata(1, 5 * GB),
+            5 * GB,
             memory_settings(),
             {"Vcpus": 2, "Memory": 8000, "MaxSwap": 40000},
         ),  # above minimum memory
         (
-            sample_adata(1, 5 * GB),
+            5 * GB,
             memory_settings(1.5),
             {"Vcpus": 2, "Memory": 8000, "MaxSwap": 40000},
         ),  # modifier adjusted
         (
-            sample_adata(1, 64 * GB),
+            64 * GB,
             memory_settings(),
             {"Vcpus": 16, "Memory": 64000, "MaxSwap": 300000},
         ),  # maximum memory
     ],
 )
-def test_estimate_resource_requirements_positive(mock_ProcessDownload, adata, memory_settings, expected):
+def test_estimate_resource_requirements_positive(mock_ProcessDownload, size_of_adata, memory_settings, expected):
     # Act & Assert
-    assert expected == mock_ProcessDownload.estimate_resource_requirements(adata, **memory_settings)
+    assert expected == mock_ProcessDownload.estimate_resource_requirements(size_of_adata, **memory_settings)
 
 
 @pytest.mark.parametrize(
@@ -205,8 +184,9 @@ def test_remove_prefix(mock_ProcessDownload):
     assert mock_ProcessDownload.remove_prefix("prefixfake", "prefix") == "fake"
 
 
-def test_create_batch_job_definition_parameters(mock_ProcessDownload, mock_read_h5ad):
+def test_create_batch_job_definition_parameters(mock_ProcessDownload):
     # Arrange
+    mock_ProcessDownload._get_size_of_h5ad = Mock(return_value=100)
     mock_ProcessDownload.get_job_definion_name = Mock(return_value="fake_job_definition_name")
     mock_ProcessDownload.estimate_resource_requirements = Mock(return_value={"Vcpus": 1, "Memory": 4000, "MaxSwap": 0})
 
@@ -214,7 +194,7 @@ def test_create_batch_job_definition_parameters(mock_ProcessDownload, mock_read_
     resp = mock_ProcessDownload.create_batch_job_definition_parameters("local_file.h5ad", "fake_dataset_id")
 
     # Assert
-    mock_ProcessDownload.estimate_resource_requirements.assert_called_once_with(mock_read_h5ad.return_value)
+    mock_ProcessDownload.estimate_resource_requirements.assert_called_once_with(100)
     mock_ProcessDownload.get_job_definion_name.assert_called_once_with("fake_dataset_id")
     assert resp == {
         "JobDefinitionName": "fake_job_definition_name",

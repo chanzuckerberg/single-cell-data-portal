@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from math import ceil
 from typing import Any, Dict, Optional
 
@@ -82,7 +83,7 @@ class ProcessDownload(ProcessingLogic):
 
     def estimate_resource_requirements(
         self,
-        adata: scanpy.AnnData,
+        size_of_adata: int,
         memory_modifier: Optional[float] = None,
         min_vcpu: Optional[int] = None,
         max_vcpu: Optional[int] = None,
@@ -93,7 +94,7 @@ class ProcessDownload(ProcessingLogic):
         """
         Estimate the resource requirements for a given dataset
 
-        :param adata: The datasets AnnData object
+        :param size_of_adata: the results of getsizeof on the h5ad
         :param memory_modifier: A multiplier to increase/decrease the memory requirements by
         :param min_vcpu: The minimum number of vCPUs to allocate.
         :param max_vcpu: The maximum number of vCPUs to allocate.
@@ -112,7 +113,7 @@ class ProcessDownload(ProcessingLogic):
         # dataset into memory.
         min_memory_MB = min_vcpu * memory_per_vcpu
         max_memory_MB = max_vcpu * memory_per_vcpu
-        uncompressed_size_MB = adata.n_obs * adata.n_vars / MB
+        uncompressed_size_MB = size_of_adata / MB
         estimated_memory_MB = max([int(ceil(uncompressed_size_MB * memory_modifier)), min_memory_MB])
         vcpus = max_vcpu if estimated_memory_MB > max_memory_MB else int(ceil(estimated_memory_MB / memory_per_vcpu))
         memory = memory_per_vcpu * vcpus  # round up to nearest memory_per_vcpu
@@ -135,9 +136,12 @@ class ProcessDownload(ProcessingLogic):
 
         return {"Vcpus": vcpus, "Memory": memory, "MaxSwap": max_swap}
 
+    def _get_size_of_h5ad(self, local_filename: str) -> int:
+        return sys.getsizeof(scanpy.read_h5ad(local_filename))
+
     def create_batch_job_definition_parameters(self, local_filename: str, dataset_version_id: str) -> Dict[str, Any]:
-        adata = scanpy.read_h5ad(local_filename, backed="r")
-        batch_resources = self.estimate_resource_requirements(adata)
+        h5ad_size = self._get_size_of_h5ad(local_filename)
+        batch_resources = self.estimate_resource_requirements(h5ad_size)
         job_definition_name = self.get_job_definion_name(dataset_version_id)
 
         return {  # Using PascalCase to match the Batch API
