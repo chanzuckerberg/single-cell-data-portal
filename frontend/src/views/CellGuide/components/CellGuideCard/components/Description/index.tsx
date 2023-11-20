@@ -302,7 +302,7 @@ export default function Description({
         synonyms={synonyms}
         data-testid={CELL_GUIDE_CARD_SYNONYMS}
       />
-      {descriptionValidated && !inSideBar && (
+      {!!descriptionValidated && !inSideBar && (
         <ReferencesWrapper>
           <Label>Citations</Label>
           {descriptionValidatedReferences.map((ref, index) => {
@@ -364,7 +364,7 @@ export default function Description({
 
   const experimentalDescriptionComponent = (
     <>
-      {descriptionCl &&
+      {!!descriptionCl &&
         !inSideBar &&
         !descriptionValidated &&
         clDescriptionComponent}
