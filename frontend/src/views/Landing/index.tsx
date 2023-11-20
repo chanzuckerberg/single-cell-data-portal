@@ -478,7 +478,7 @@ const LandingPage = (): JSX.Element => {
                         <h2 className={styles.mt16}>Census</h2>
                         <p>
                           Census provides access to any custom slice of
-                          standardized cell data available on CZ CZ CELL×GENE
+                          standardized cell data available on CZ CELLxGENE
                           Discover in R and Python.
                         </p>
                         <div className={styles.linkContainer}>
@@ -644,7 +644,7 @@ const LandingPage = (): JSX.Element => {
                                 })
                               }
                             >
-                              See how it works
+                              Explore the tool
                               <span className={styles.linkArrow}>
                                 <LinkArrow />
                               </span>
@@ -817,10 +817,10 @@ const LandingPage = (): JSX.Element => {
               <div className={styles.freethinkVideoSectionTextContainer}>
                 <h2>Behind-the-scenes of Chan Zuckerberg CELLxGENE</h2>
                 <p>
-                  Watch a behind-the-scenes look at Chan Zuckerberg CELLxGENE
-                  (CZ CELLxGENE) and explore how the platform can help
-                  scientists quickly surface important information that could
-                  lead to discoveries in treating disease.
+                  Watch a behind-the-scenes look at CZ CELLxGENE and explore how
+                  the platform can help scientists quickly surface important
+                  information that could lead to discoveries in treating
+                  disease.
                 </p>
               </div>
               <a
