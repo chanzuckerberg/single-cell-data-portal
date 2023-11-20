@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from backend.layers.common.entities import DatasetArtifactType, Link
+from backend.layers.common.entities import Link
 
 
 @dataclass
