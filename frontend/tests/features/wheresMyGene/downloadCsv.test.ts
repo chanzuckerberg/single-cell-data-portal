@@ -21,7 +21,7 @@ describe("CSV download tests", () => {
   }) => {
     // set app state
     await goToWMG(page, SHARED_LINK_NO_GROUP);
-    await expect(page.locator("canvas")).not.toHaveCount(0), { timeout: 40000 };
+    await expect(page.locator("canvas")).not.toHaveCount(0, { timeout: 20000 });
 
     const tissues = ["blood", "lung"];
     const fileTypes = ["csv"];
@@ -45,7 +45,7 @@ describe("CSV download tests", () => {
   }) => {
     // set app state
     await goToWMG(page, SHARED_LINK_FILTER);
-    await expect(page.locator("canvas")).not.toHaveCount(0), { timeout: 40000 };
+    await expect(page.locator("canvas")).not.toHaveCount(0, { timeout: 20000 });
 
     const tissues = ["blood", "lung"];
     const fileTypes = ["csv"];
@@ -69,7 +69,7 @@ describe("CSV download tests", () => {
   }) => {
     // set app state
     await goToWMG(page, SHARED_LINK_NO_FILTER);
-    await expect(page.locator("canvas")).not.toHaveCount(0), { timeout: 40000 };
+    await expect(page.locator("canvas")).not.toHaveCount(0, { timeout: 20000 });
 
     const tissues = ["blood", "lung"];
     const fileTypes = ["csv"];
