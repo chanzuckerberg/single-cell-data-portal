@@ -86,7 +86,7 @@ const Project = ({ project, id }: ProjectProps) => {
         </DetailsContainer>
       </ProjectDetails>
       <ProjectButtons>
-        {"project_page" in project && project.project_page && (
+        {"project_page" in project && !!project.project_page && (
           <Link href={project.project_page}>
             <StyledButton
               sdsType="secondary"
@@ -103,7 +103,7 @@ const Project = ({ project, id }: ProjectProps) => {
           </Link>
         )}
         {projectTier === "hosted" && <EmbeddingButton project={project} />}
-        {project.model_link && (
+        {!!project.model_link && (
           <Link href={project.model_link}>
             <StyledButton
               sdsType="primary"
