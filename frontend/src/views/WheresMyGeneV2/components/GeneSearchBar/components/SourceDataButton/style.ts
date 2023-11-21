@@ -63,6 +63,6 @@ export const StyledButtonIcon = styled(ButtonIcon)<ButtonProps>`
   height: 30px;
   position: absolute;
   cursor: pointer;
-  top: 99px;
+  padding-top: 34px;
   z-index: 1;
 `;

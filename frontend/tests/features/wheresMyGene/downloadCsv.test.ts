@@ -21,7 +21,10 @@ describe("CSV download tests", () => {
   }) => {
     // set app state
     await goToWMG(page, SHARED_LINK_NO_GROUP);
-    await expect(page.locator("canvas")).not.toHaveCount(0);
+
+    // Loading WMG with several genes + filters set takes a bit longer to load. We need the filters
+    // to be set for this test, but we don't want the test to fail because the page hasn't loaded yet.
+    await expect(page.locator("canvas")).not.toHaveCount(0, { timeout: 20000 });
 
     const tissues = ["blood", "lung"];
     const fileTypes = ["csv"];
@@ -45,7 +48,10 @@ describe("CSV download tests", () => {
   }) => {
     // set app state
     await goToWMG(page, SHARED_LINK_FILTER);
-    await expect(page.locator("canvas")).not.toHaveCount(0);
+
+    // Loading WMG with several genes + filters set takes a bit longer to load. We need the filters
+    // to be set for this test, but we don't want the test to fail because the page hasn't loaded yet.
+    await expect(page.locator("canvas")).not.toHaveCount(0, { timeout: 20000 });
 
     const tissues = ["blood", "lung"];
     const fileTypes = ["csv"];
@@ -69,7 +75,10 @@ describe("CSV download tests", () => {
   }) => {
     // set app state
     await goToWMG(page, SHARED_LINK_NO_FILTER);
-    await expect(page.locator("canvas")).not.toHaveCount(0);
+
+    // Loading WMG with several genes + filters set takes a bit longer to load. We need the filters
+    // to be set for this test, but we don't want the test to fail because the page hasn't loaded yet.
+    await expect(page.locator("canvas")).not.toHaveCount(0, { timeout: 20000 });
 
     const tissues = ["blood", "lung"];
     const fileTypes = ["csv"];

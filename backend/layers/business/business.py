@@ -11,7 +11,6 @@ from backend.layers.business.entities import (
     CollectionMetadataUpdate,
     CollectionQueryFilter,
     DatasetArtifactDownloadData,
-    DeprecatedDatasetArtifactDownloadData,
 )
 from backend.layers.business.exceptions import (
     ArtifactNotFoundException,
@@ -543,26 +542,6 @@ class BusinessLogic(BusinessLogicInterface):
         url = self.generate_permanent_url(dataset_version_id, artifact.type)
 
         return DatasetArtifactDownloadData(file_size, url)
-
-    # TODO: Superseded by get_dataset_artifact_download_data. Remove with #5697.
-    def get_dataset_artifact_download_data_deprecated(
-        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
-    ) -> DeprecatedDatasetArtifactDownloadData:
-        """
-        Returns download data for an artifact, including a presigned URL
-        """
-        artifacts = self.get_dataset_artifacts(dataset_version_id)
-        artifact = next((a for a in artifacts if a.id == artifact_id), None)
-
-        if not artifact:
-            raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")
-
-        file_name = artifact.uri.split("/")[-1]
-        file_type = artifact.type
-        file_size = self.s3_provider.get_file_size(artifact.uri)
-        presigned_url = self.s3_provider.generate_presigned_url(artifact.uri)
-
-        return DeprecatedDatasetArtifactDownloadData(file_name, file_type, file_size, presigned_url)
 
     def get_dataset_status(self, dataset_version_id: DatasetVersionId) -> DatasetStatus:
         """
