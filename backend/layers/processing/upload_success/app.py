@@ -24,8 +24,10 @@ def success_handler(events: dict, context) -> None:
 
     if cxg_job.get("error"):
         handle_failure(cxg_job, context)
+        exit(1)
     elif seurat_job.get("error"):
         handle_failure(seurat_job, context, delete_artifacts=False)
+        exit(1)
     else:
         business_logic.update_dataset_version_status(
             DatasetVersionId(cxg_job["dataset_version_id"]),
