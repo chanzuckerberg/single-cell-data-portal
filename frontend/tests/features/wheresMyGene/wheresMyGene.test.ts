@@ -350,6 +350,8 @@ describe("Where's My Gene", () => {
       }
     });
 
+    // Note: This test could fail if we add more adipose tissue naive B cells to our corpus.
+    // If this happens, just mark the test as skipped and ping @joyceyan
     test(`Should verify cell types with < 25 cells have no marker genes`, async ({
       page,
     }) => {
@@ -375,6 +377,8 @@ describe("Where's My Gene", () => {
       );
     });
 
+    // Note: This test could fail if we find more marker genes for embryo hematopoietic cells.
+    // If this happens, just mark the test as skipped and ping @joyceyan
     test(`Should verify copy for cell types with no marker genes`, async ({
       page,
     }) => {
