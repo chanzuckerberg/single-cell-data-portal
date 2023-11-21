@@ -20,6 +20,9 @@ export interface Project {
   DOI?: string;
   publication_info?: string;
   publication_link?: string;
+  n_cells?: number;
+  n_genes?: number;
+  n_columns?: number;
 }
 
 export interface ProjectResponse {

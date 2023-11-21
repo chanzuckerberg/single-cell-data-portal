@@ -19,7 +19,9 @@
     "publication_info": "Cul et al. (2023) bioRxiv",
     "publication_link": "",
     "project_page": "https://example.com/",
-    "notebook_links": [["link A", "https://example.com/"]]
+    "notebook_links": [["link A", "https://example.com/"]],
+    "n_cells": 6523,
+    "n_columns": 8721
   },
   {
     "tier": "maintained",
@@ -40,6 +42,8 @@
     "DOI": null,
     "publication_info": "Cul et al. (2023) bioRxiv",
     "publication_link": "",
-    "notebook_links": [["link A", "https://example.com/"]]
+    "notebook_links": [["link A", "https://example.com/"]],
+    "n_genes": 1312,
+    "n_columns": 2312
   }
 ]
