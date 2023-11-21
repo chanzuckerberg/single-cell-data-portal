@@ -308,7 +308,8 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Parameters": {
           "JobDefinition.$": "$[0].batch.JobDefinitionName"
         },
-        "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition"
+        "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition",
+        "ResultPath": null
       },
       "CheckForCxgOrSeuratErrors": {
         "Type": "Choice",
