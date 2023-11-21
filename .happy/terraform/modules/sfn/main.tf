@@ -312,19 +312,21 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "CheckForCxgOrSeuratErrors": {
         "Type": "Choice",
-        "Choices": {
-          "Or": [
-            {
-              "Variable": "$[0].error,
-              "IsPresent": true
-            },
-            {
-              "Variable": "$[1].error,
-              "IsPresent": true
-            }
-          ],
-          "Next": "ConversionError"
-        },
+        "Choices": [
+          {
+            "Or": [
+              {
+                "Variable": "$[0].error",
+                "IsPresent": true
+              },
+              {
+                "Variable": "$[1].error",
+                "IsPresent": true
+              }
+            ],
+            "Next": "ConversionError"
+          }
+        ],
         "Default": "EndPass"
       },
       "ConversionError": {
