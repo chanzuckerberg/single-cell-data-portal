@@ -1,1 +1,0 @@
-WARNING  root:business.py:180 CrossrefException on create_collection: Mocked CrossrefFetchException. Will ignore metadata.

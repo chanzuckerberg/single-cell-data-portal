@@ -1,0 +1,13 @@
+INFO     backend.layers.business.business:business.py:390 {'message': 'ingesting dataset', 'collection_version_id': 0e17f0a5-348e-4c36-bee1-a88b2366e164, 'url': 'https://www.dropbox.com/s/fake_location/test.h5ad?dl=0', 'existing_dataset_version_id': None}
+INFO     processing:logger.py:26 Start validate_h5ad_file_and_add_labels
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete validate_h5ad_file_and_add_labels
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:91 Uploaded [3eca585b-f001-4a3c-8e19-7ef6ce4156bf/local.h5ad] to s3://fake_bucket_name/3eca585b-f001-4a3c-8e19-7ef6ce4156bf/local.h5ad
+INFO     processing:process_logic.py:93 Updated database with h5ad.
+INFO     processing:process_logic.py:100 Uploaded 3eca585b-f001-4a3c-8e19-7ef6ce4156bf.h5ad to s3://fake_datasets_bucket/3eca585b-f001-4a3c-8e19-7ef6ce4156bf/3eca585b-f001-4a3c-8e19-7ef6ce4156bf.h5ad
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
