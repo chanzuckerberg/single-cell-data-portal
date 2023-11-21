@@ -20,5 +20,4 @@ export enum API {
   WMG_FILTERS_QUERY = "/wmg/v1/filters",
   WMG_MARKER_GENES = "/wmg/v2/markers",
   WMG_GENE_INFO = "/gene_info/v1/gene_info",
-  CENSUS_DIRECTORY = "/census/v1/directory", // TODO: replace with actual endpoint
 }
