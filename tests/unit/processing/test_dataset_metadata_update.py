@@ -12,6 +12,7 @@ from rpy2.robjects.packages import importr
 from backend.common.utils.cxg_generation_utils import convert_dictionary_to_cxg_group
 from backend.layers.common.entities import (
     CollectionVersionId,
+    DatasetArtifactMetadataUpdate,
     DatasetArtifactType,
     DatasetConversionStatus,
     DatasetProcessingStatus,
@@ -56,7 +57,9 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
             start_step_function=False,
         )
         key_prefix = new_dataset_version_id.id
-        metadata_update_dict = {"citation": "Publication DOI www.doi.org/567.8"}
+        metadata_update = DatasetArtifactMetadataUpdate(
+            citation="Publication DOI www.doi.org/567.8", title="New Dataset Title"
+        )
 
         # Mock anndata object
         mock_anndata = Mock(spec=scanpy.AnnData)
@@ -64,13 +67,12 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
         mock_anndata.write = Mock()
         mock_read_h5ad.return_value = mock_anndata
 
-        self.updater.update_h5ad(
-            None, original_dataset_version, key_prefix, new_dataset_version_id, metadata_update_dict
-        )
+        self.updater.update_h5ad(None, original_dataset_version, key_prefix, new_dataset_version_id, metadata_update)
 
         # check mock_anndata object
         mock_read_h5ad.assert_called_with("local.h5ad")
         assert mock_anndata.uns["citation"] == "Publication DOI www.doi.org/567.8"
+        assert mock_anndata.uns["title"] == "New Dataset Title"
         assert mock_anndata.uns["schema_version"] == "3.0.0"
         # check s3 uris exist
         assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id.id}/local.h5ad")
@@ -78,6 +80,7 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
         # check DB DatasetVersion
         new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
         assert new_dataset_version.metadata.citation == "Publication DOI www.doi.org/567.8"
+        assert new_dataset_version.metadata.name == "New Dataset Title"
         assert new_dataset_version.metadata.schema_version == collection_version.datasets[0].metadata.schema_version
         artifacts = [(artifact.uri, artifact.type) for artifact in new_dataset_version.artifacts]
         assert (f"s3://artifact_bucket/{new_dataset_version_id.id}/local.h5ad", DatasetArtifactType.H5AD) in artifacts
@@ -108,8 +111,10 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
                 existing_dataset_version_id=original_dataset_version.version_id,
                 start_step_function=False,
             )
-            metadata_update_dict = {"citation": "Publication www.doi.org/567.8", "title": "Dataset Title 2"}
-            self.updater.update_cxg(None, testing_cxg_temp_directory, new_dataset_version_id, metadata_update_dict)
+            metadata_update = DatasetArtifactMetadataUpdate(
+                citation="Publication www.doi.org/567.8", title="New Dataset Title"
+            )
+            self.updater.update_cxg(None, testing_cxg_temp_directory, new_dataset_version_id, metadata_update)
 
             # check new cxg directory exists
             assert self.updater.s3_provider.uri_exists(testing_cxg_temp_directory)
@@ -128,7 +133,11 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
             expected_metadata = {
                 "cxg_version": "1.0.0",
                 "corpora": json.dumps(
-                    {"schema_version": "3.0.0", "citation": "Publication www.doi.org/567.8", "title": "Dataset Title 2"}
+                    {
+                        "schema_version": "3.0.0",
+                        "citation": "Publication www.doi.org/567.8",
+                        "title": "New Dataset Title",
+                    }
                 ),
             }
 
@@ -150,16 +159,13 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
                 start_step_function=False,
             )
             key_prefix = new_dataset_version_id.id
-            metadata_update_dict = {"title": "New Dataset Title", "batch_condition": ["batch1", "batch2"]}
+            metadata_update_dict = DatasetArtifactMetadataUpdate(title="New Dataset Title")
 
             self.updater.update_rds(None, key_prefix, new_dataset_version_id, metadata_update_dict)
 
             # check Seurat object metadata is updated
             seurat_object = base.readRDS(temp_path)
             assert seurat.Misc(object=seurat_object, slot="title")[0] == "New Dataset Title"
-            assert len(seurat.Misc(object=seurat_object, slot="batch_condition")) == 2
-            assert seurat.Misc(object=seurat_object, slot="batch_condition")[0] == "batch1"
-            assert seurat.Misc(object=seurat_object, slot="batch_condition")[1] == "batch2"
             # schema_version should stay the same as base fixture after update of other metadata
             assert seurat.Misc(object=seurat_object, slot="schema_version")[0] == "3.1.0"
 
@@ -187,8 +193,15 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
             ]
         )
         collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
-        original_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
-        self.updater.update_metadata(collection_version_id, original_dataset_version_id, None)
+        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=old_dataset_version_id,
+            start_step_function=False,
+        )
+        self.updater.update_metadata(old_dataset_version_id, new_dataset_version_id, None)
 
         mock_update_cxg.assert_called_once()
         mock_update_rds.assert_called_once()
@@ -223,8 +236,15 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
             ],
         )
         collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
-        dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
-        self.updater.update_metadata(collection_version_id, dataset_version_id, None)
+        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=old_dataset_version_id,
+            start_step_function=False,
+        )
+        self.updater.update_metadata(old_dataset_version_id, new_dataset_version_id, None)
 
         mock_update_h5ad.assert_called_once()
         mock_update_cxg.assert_called_once()
@@ -252,18 +272,17 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
             ]
         )
         collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
-        original_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
-        self.updater.update_metadata(collection_version_id, original_dataset_version_id, None)
+        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        self.updater.update_metadata(old_dataset_version_id, None, None)
 
         mock_update_h5ad.assert_not_called()
         mock_update_cxg.assert_not_called()
         mock_update_rds.assert_not_called()
 
-        collection_version = self.business_logic.get_collection_version(collection_version_id)
-        dataset_version = collection_version.datasets[0]
+        dataset_version = self.business_logic.get_collection_version(collection_version_id).datasets[0]
 
         # no ingest or update triggered
-        assert dataset_version.version_id == original_dataset_version_id
+        assert dataset_version.version_id == old_dataset_version_id
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     def test_update_metadata__error_if_missing_raw_h5ad(self, *args):
@@ -278,11 +297,20 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
             ],
         )
+        collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
+        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=old_dataset_version_id,
+            start_step_function=False,
+        )
 
         with pytest.raises(ValueError):
             self.updater.update_metadata(
-                CollectionVersionId(original_dataset_version.collection_version_id),
-                DatasetVersionId(original_dataset_version.dataset_version_id),
+                old_dataset_version_id,
+                new_dataset_version_id,
                 None,
             )
 
@@ -300,11 +328,20 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
             ],
         )
+        collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
+        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=old_dataset_version_id,
+            start_step_function=False,
+        )
 
         with pytest.raises(ValueError):
             self.updater.update_metadata(
-                CollectionVersionId(original_dataset_version.collection_version_id),
-                DatasetVersionId(original_dataset_version.dataset_version_id),
+                old_dataset_version_id,
+                new_dataset_version_id,
                 None,
             )
 
@@ -323,11 +360,20 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
             ],
         )
+        collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
+        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=old_dataset_version_id,
+            start_step_function=False,
+        )
 
         with pytest.raises(ValueError):
             self.updater.update_metadata(
-                CollectionVersionId(original_dataset_version.collection_version_id),
-                DatasetVersionId(original_dataset_version.dataset_version_id),
+                old_dataset_version_id,
+                new_dataset_version_id,
                 None,
             )
 
@@ -347,10 +393,19 @@ class TestDatasetMetadataUpdate(BaseProcessingTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
             ],
         )
+        collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
+        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=old_dataset_version_id,
+            start_step_function=False,
+        )
 
         with pytest.raises(ValueError):
             self.updater.update_metadata(
-                CollectionVersionId(original_dataset_version.collection_version_id),
-                DatasetVersionId(original_dataset_version.dataset_version_id),
+                old_dataset_version_id,
+                new_dataset_version_id,
                 None,
             )
