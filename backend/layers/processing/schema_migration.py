@@ -123,7 +123,7 @@ class SchemaMigrate(ProcessingLogic):
             existing_dataset_version_id=DatasetVersionId(dataset_version_id),
             start_step_function=False,  # The schema_migration sfn will start the ingest sfn
         )
-        sfn_name = sfn_name_generator(dataset_version_id, prefix="migrate")
+        sfn_name = sfn_name_generator(new_dataset_version_id, prefix="migrate")
         return {
             "collection_version_id": collection_version_id,
             "dataset_version_id": new_dataset_version_id.id,
