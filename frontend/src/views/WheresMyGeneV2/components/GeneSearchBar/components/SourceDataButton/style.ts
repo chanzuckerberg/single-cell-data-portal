@@ -61,8 +61,8 @@ export const StyledLabel = styled.div`
 export const StyledButtonIcon = styled(ButtonIcon)<ButtonProps>`
   width: 30px;
   height: 30px;
-  position: relative;
+  position: absolute;
   cursor: pointer;
-  padding-bottom: 24px;
+  padding-top: 34px;
   z-index: 1;
 `;
