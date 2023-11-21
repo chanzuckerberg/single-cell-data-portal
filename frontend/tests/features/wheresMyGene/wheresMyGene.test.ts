@@ -1,7 +1,10 @@
 import { expect, Page, Locator } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
-import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/constants";
+import {
+  FMG_GENE_STRENGTH_THRESHOLD,
+  FMG_SPECIFICITY_THRESHOLD,
+} from "src/views/WheresMyGeneV2/common/constants";
 import {
   expandTissue,
   goToPage,
@@ -36,6 +39,8 @@ import assert from "assert";
 import {
   NO_MARKER_GENES_DESCRIPTION,
   NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION,
+  TABLE_HEADER_SCORE,
+  TABLE_HEADER_SPECIFICITY,
   TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION,
 } from "src/views/WheresMyGeneV2/components/CellInfoSideBar/constants";
 
@@ -51,6 +56,9 @@ const ADD_TO_DOT_PLOT_BUTTON_TEST_ID = "add-to-dotplot-fmg-button";
 const NO_MARKER_GENES_WARNING_TEST_ID = "no-marker-genes-warning";
 const MARKER_SCORES_FMG_TEST_ID = "marker-scores-fmg";
 const NO_MARKER_GENES_DESCRIPTION_ID = "no-marker-genes-description";
+const EFFECT_SIZE_HEADER_ID = "marker-genes-table-header-score";
+const SPECIFICITY_HEADER_ID = "marker-genes-table-specificity";
+const SPECIFICITY_TEST_ID = "specificity-fmg";
 
 // gene info test IDs
 const GENE_INFO_BUTTON_X_AXIS_TEST_ID = "gene-info-button-x-axis";
@@ -421,6 +429,41 @@ describe("Where's My Gene", () => {
         noMarkerGenesDescription.trim(),
         NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION
       );
+    });
+
+    test.only(`Should verify effect size and specificity column`, async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      // Expand adipose tissue
+      await expandTissue(page, "adipose-tissue");
+
+      // Click into a cell type that has marker genes
+      await page
+        .getByTestId("cell-type-info-button-adipose tissue-phagocyte")
+        .click();
+
+      // Verify header copy is what we expect
+      const effectSizeHeader = (await page
+        .getByTestId(EFFECT_SIZE_HEADER_ID)
+        .textContent()) as string;
+      assert.strictEqual(effectSizeHeader.trim(), TABLE_HEADER_SCORE);
+      const specificityHeader = (await page
+        .getByTestId(SPECIFICITY_HEADER_ID)
+        .textContent()) as string;
+      assert.strictEqual(specificityHeader.trim(), TABLE_HEADER_SPECIFICITY);
+
+      // Verify specificity values are valid
+      const specificityScores = await page
+        .getByTestId(SPECIFICITY_TEST_ID)
+        .allTextContents();
+
+      for (const specificityScore of specificityScores) {
+        expect(parseFloat(specificityScore)).toBeGreaterThanOrEqual(
+          FMG_SPECIFICITY_THRESHOLD
+        );
+      }
     });
   });
 

@@ -182,7 +182,7 @@ function CellInfoSideBar({
                 Copy
               </CopyGenesButton>
             </DivTableCell>
-            <DivTableCell align>
+            <DivTableCell align data-testid="marker-genes-table-header-score">
               {TABLE_HEADER_SCORE}
               <Tooltip
                 sdsStyle="dark"
@@ -232,7 +232,7 @@ function CellInfoSideBar({
                 </TooltipButton>
               </Tooltip>
             </DivTableCell>
-            <DivTableCell align>
+            <DivTableCell align data-testid="marker-genes-table-specificity">
               {TABLE_HEADER_SPECIFICITY}
               <Tooltip
                 sdsStyle="dark"
