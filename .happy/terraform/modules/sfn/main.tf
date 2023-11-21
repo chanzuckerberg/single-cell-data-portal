@@ -281,8 +281,7 @@ resource "aws_sfn_state_machine" "state_machine" {
             "BackoffRate": 2.0
         } ],
         "Next": "DeregisterJobDefinition",
-        "ResultPath": null,
-        "OutputPath": "$.[0]"
+        "ResultPath": null
       },
       "HandleErrors": {
         "Type": "Task",
@@ -305,11 +304,36 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "DeregisterJobDefinition": {
         "Type": "Task",
-        "End": true,
+        "Next": "CheckForCxgOrSeuratErrors",
         "Parameters": {
-          "JobDefinition.$": "$.batch.JobDefinitionName"
+          "JobDefinition.$": "$[0].batch.JobDefinitionName"
         },
         "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition"
+      },
+      "CheckForCxgOrSeuratErrors": {
+        "Type": "Choice",
+        "Choices": {
+          "Or": [
+            {
+              "Variable": "$[0].error,
+              "IsPresent": true
+            },
+            {
+              "Variable": "$[1].error,
+              "IsPresent": true
+            }
+          ],
+          "Next": "ConversionError"
+        },
+        "Default": "EndPass"
+      },
+      "ConversionError": {
+        "Type": "Fail",
+        "Cause": "CXG and/or Seurat conversion failed."
+      },
+      "EndPass": {
+        "Type": "Pass",
+        "End": true
       }
     }
 }
