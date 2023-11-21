@@ -96,11 +96,11 @@ resource aws_batch_job_definition schema_migrations {
     resourceRequirements = [
                   {
               type= "VCPU",
-              Value="2"
+              Value="1"
             },
             {
               Type="MEMORY",
-              Value = "2048"
+              Value = "4096"
             }
     ]
     logConfiguration= {
@@ -148,7 +148,7 @@ resource aws_batch_job_definition pubish_revisions {
     resourceRequirements = [
       {
         type= "VCPU",
-        Value="2"
+        Value="1"
       },
       {
         Type="MEMORY",

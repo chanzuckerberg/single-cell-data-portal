@@ -42,9 +42,9 @@ resource aws_batch_job_definition batch_job_def {
       "value": "${var.frontend_url}"
     }
   ],
-  "vcpus": 8,
+  "vcpus": 4,
   "linuxParameters": {
-     "maxSwap": 800000,
+     "maxSwap": 0,
      "swappiness": 60
   },
   "logConfiguration": {
