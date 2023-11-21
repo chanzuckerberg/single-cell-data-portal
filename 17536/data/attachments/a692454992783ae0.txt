@@ -1,0 +1,14 @@
+INFO     backend.layers.business.business:business.py:390 {'message': 'ingesting dataset', 'collection_version_id': 59586349-b2d3-414e-b8fd-405e74124964, 'url': 'http://fake.url', 'existing_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:390 {'message': 'ingesting dataset', 'collection_version_id': 59586349-b2d3-414e-b8fd-405e74124964, 'url': 's3://fake.bucket/raw.h5ad', 'existing_dataset_version_id': 67104fdf-adec-43db-bf80-df5b9f64022d}
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_download.py:120 {'message': 'Estimated resource requirements', 'memory_modifier': 3, 'swap_modifier': 0, 'min_vcpu': 2, 'max_vcpu': 96, 'max_swap_memory_MB': 300000, 'memory_per_vcpu': 8000, 'uncompressed_size_MB': <MagicMock name='read_h5ad().n_obs.__mul__().__truediv__()' id='140144653020896'>, 'max_swap': 0, 'memory': 16000, 'vcpus': 2}
+INFO     processing:process_download.py:175 {'JobDefinitionName': 'dp-test-ingest-process-6fd9e177-74d0-4259-8956-c4a34d5952cf', 'Vcpus': 2, 'Memory': 16000, 'LinuxParameters': {'Swappiness': 60, 'MaxSwap': 0}}
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:91 Uploaded [6fd9e177-74d0-4259-8956-c4a34d5952cf/raw.h5ad] to s3://artifact_bucket/6fd9e177-74d0-4259-8956-c4a34d5952cf/raw.h5ad
+INFO     processing:process_logic.py:93 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+ERROR    processing:dataset_metadata_update.py:188 Cannot find RDS artifact uri for 67104fdf-adec-43db-bf80-df5b9f64022d, and Conversion Status is not SKIPPED.
