@@ -7,8 +7,6 @@ import { BetaChip } from "src/components/Header/style";
 import {
   ButtonContainer,
   CopyGenesButton,
-  MarkerStrengthContainer,
-  MarkerStrengthLabel,
   NoMarkerGenesContainer,
   NoMarkerGenesDescription,
   NoMarkerGenesHeader,
@@ -33,22 +31,26 @@ import {
   MARKER_GENE_LABEL,
   MARKER_SCORE_CELLGUIDE_LINK_TEXT,
   MARKER_SCORE_DOTPLOT_BUTTON_TEXT,
+  MARKER_SCORE_HIGH_CONTENT,
   MARKER_SCORE_LABEL,
+  MARKER_SCORE_LOW_CONTENT,
+  MARKER_SCORE_MEDIUM_CONTENT,
   MARKER_SCORE_TOOLTIP_CONTENT,
   MARKER_SCORE_TOOLTIP_LINK_TEXT,
   NO_MARKER_GENES_DESCRIPTION,
   NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION,
   NO_MARKER_GENES_HEADER,
+  SPECIFICITY_TOOLTIP_CONTENT,
   TABLE_HEADER_GENE,
   TABLE_HEADER_SCORE,
   TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION,
+  TABLE_HEADER_SPECIFICITY,
 } from "./constants";
 import { useConnect } from "./connect";
 import {
   DivTable,
   DivTableCell,
   DivTableHead,
-  DivTableLegend,
   DivTableRow,
 } from "../../common/styles";
 
@@ -168,7 +170,18 @@ function CellInfoSideBar({
       ) : (
         <DivTable>
           <DivTableHead>
-            <DivTableCell>{TABLE_HEADER_GENE}</DivTableCell>
+            <DivTableCell>
+              {TABLE_HEADER_GENE}
+              <CopyGenesButton
+                onClick={handleCopyGenes}
+                sdsType="primary"
+                sdsStyle="minimal"
+                isAllCaps={false}
+                startIcon={<Icon sdsIcon="copy" sdsSize="s" sdsType="button" />}
+              >
+                Copy
+              </CopyGenesButton>
+            </DivTableCell>
             <DivTableCell align>
               {TABLE_HEADER_SCORE}
               <Tooltip
@@ -183,6 +196,56 @@ function CellInfoSideBar({
                   <StyledTooltip>
                     <TooltipContent>
                       {MARKER_SCORE_TOOLTIP_CONTENT}
+                      <br />
+                      <br />
+                      {MARKER_SCORE_LOW_CONTENT}
+                      <br />
+                      {MARKER_SCORE_MEDIUM_CONTENT}
+                      <br />
+                      {MARKER_SCORE_HIGH_CONTENT}
+                      <br />
+                    </TooltipContent>
+                    <TooltipLink
+                      href={ROUTES.FMG_DOCS}
+                      rel="noopener"
+                      target="_blank"
+                      onClick={() => {
+                        track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
+                          label: MARKER_SCORE_LABEL,
+                        });
+                        track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
+                          label: MARKER_SCORE_LABEL,
+                        });
+                      }}
+                    >
+                      {MARKER_SCORE_TOOLTIP_LINK_TEXT}
+                    </TooltipLink>
+                  </StyledTooltip>
+                }
+              >
+                <TooltipButton
+                  sdsStyle="minimal"
+                  sdsType="secondary"
+                  isAllCaps={false}
+                >
+                  <StyledIconImage src={questionMarkIcon} />
+                </TooltipButton>
+              </Tooltip>
+            </DivTableCell>
+            <DivTableCell align>
+              {TABLE_HEADER_SPECIFICITY}
+              <Tooltip
+                sdsStyle="dark"
+                placement="bottom"
+                width="default"
+                className="fmg-tooltip-icon"
+                arrow
+                onOpen={() => setHoverStartTime(Date.now())}
+                onClose={handleMarkerScoreHoverEnd}
+                title={
+                  <StyledTooltip>
+                    <TooltipContent>
+                      {SPECIFICITY_TOOLTIP_CONTENT}
                     </TooltipContent>
                     <TooltipLink
                       href={ROUTES.FMG_DOCS}
@@ -212,26 +275,6 @@ function CellInfoSideBar({
               </Tooltip>
             </DivTableCell>
           </DivTableHead>
-          <DivTableLegend>
-            <DivTableCell>
-              <CopyGenesButton
-                onClick={handleCopyGenes}
-                sdsType="primary"
-                sdsStyle="minimal"
-                isAllCaps={false}
-                startIcon={<Icon sdsIcon="copy" sdsSize="s" sdsType="button" />}
-              >
-                Copy
-              </CopyGenesButton>
-            </DivTableCell>
-            <DivTableCell align>
-              <MarkerStrengthContainer>
-                <MarkerStrengthLabel>{"Low: <1"}</MarkerStrengthLabel>
-                <MarkerStrengthLabel>{"Medium: 1-2"}</MarkerStrengthLabel>
-                <MarkerStrengthLabel>{"High: >2"}</MarkerStrengthLabel>
-              </MarkerStrengthContainer>
-            </DivTableCell>
-          </DivTableLegend>
           {Object.entries(data.marker_genes).map(([symbol, metadata]) => (
             <DivTableRow key={symbol}>
               <DivTableCell>
@@ -257,6 +300,9 @@ function CellInfoSideBar({
               </DivTableCell>
               <DivTableCell data-testid="marker-scores-fmg" align>
                 {metadata.marker_score.toPrecision(4)}
+              </DivTableCell>
+              <DivTableCell data-testid="specificity-fmg" align>
+                {metadata.specificity.toPrecision(4)}
               </DivTableCell>
             </DivTableRow>
           ))}
