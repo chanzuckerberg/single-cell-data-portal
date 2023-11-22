@@ -1,0 +1,1 @@
+ERROR    root:app.py:100 Collection collection123 not found
