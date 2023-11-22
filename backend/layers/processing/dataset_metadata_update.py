@@ -39,7 +39,7 @@ seurat = importr("SeuratObject")
 ARTIFACT_TO_DB_FIELD = {"title": "name"}
 
 
-class DatasetMetadataUpdate(ProcessDownload):
+class DatasetMetadataUpdater(ProcessDownload):
     def __init__(
         self, business_logic: BusinessLogic, artifact_bucket: str, cellxgene_bucket: str, datasets_bucket: str
     ) -> None:
@@ -272,6 +272,6 @@ if __name__ == "__main__":
     old_dataset_version_id = DatasetVersionId(os.environ["OLD_DATASET_VERSION_ID"])
     new_dataset_version_id = DatasetVersionId(os.environ["NEW_DATASET_VERSION_ID"])
     metadata_update = DatasetArtifactMetadataUpdate(**json.loads(os.environ["METADATA_UPDATE_JSON"]))
-    DatasetMetadataUpdate(business_logic, artifact_bucket, cellxgene_bucket, datasets_bucket).update_metadata(
+    DatasetMetadataUpdater(business_logic, artifact_bucket, cellxgene_bucket, datasets_bucket).update_metadata(
         old_dataset_version_id, new_dataset_version_id, metadata_update
     )
