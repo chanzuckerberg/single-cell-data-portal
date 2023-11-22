@@ -3,8 +3,8 @@ Creates a new DatasetVersion to update metadata across dataset artifacts
 """
 import json
 import logging
+import multiprocessing
 import os
-import threading
 
 import scanpy
 import tiledb
@@ -166,75 +166,82 @@ class DatasetMetadataUpdater(ProcessDownload):
 
         new_artifact_key_prefix = self.get_key_prefix(new_dataset_version_id.id)
 
-        threads = list()
+        with multiprocessing.Pool() as pool:
+            if DatasetArtifactType.H5AD in artifact_uris:
+                self.logger.info("Main: Starting thread for h5ad update")
+                pool.starmap_async(
+                    self.update_h5ad,
+                    [
+                        (
+                            artifact_uris[DatasetArtifactType.H5AD],
+                            old_dataset_version,
+                            new_artifact_key_prefix,
+                            new_dataset_version_id,
+                            metadata_update,
+                        )
+                    ],
+                )
+            else:
+                self.logger.error(f"Cannot find labeled H5AD artifact uri for {old_dataset_version_id}.")
+                self.update_processing_status(
+                    new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.FAILED
+                )
+                self.update_processing_status(
+                    new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
+                )
+                raise ValueError
 
-        if DatasetArtifactType.H5AD in artifact_uris:
-            self.logger.info("Main: Starting thread for h5ad update")
-            x = threading.Thread(
-                target=self.update_h5ad,
-                args=(
-                    artifact_uris[DatasetArtifactType.H5AD],
-                    old_dataset_version,
-                    new_artifact_key_prefix,
-                    new_dataset_version_id,
-                    metadata_update,
-                ),
-            )
-            threads.append(x)
-            x.start()
-        else:
-            self.logger.error(f"Cannot find labeled H5AD artifact uri for {old_dataset_version_id}.")
-            self.update_processing_status(
-                new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
-            )
-            raise ValueError
+            if DatasetArtifactType.RDS in artifact_uris:
+                self.logger.info("Main: Starting thread for rds update")
+                pool.starmap_async(
+                    self.update_rds,
+                    [
+                        (
+                            artifact_uris[DatasetArtifactType.RDS],
+                            new_artifact_key_prefix,
+                            new_dataset_version_id,
+                            metadata_update,
+                        )
+                    ],
+                )
+            elif old_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED:
+                self.update_processing_status(
+                    new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED
+                )
+            else:
+                self.logger.error(
+                    f"Cannot find RDS artifact uri for {old_dataset_version_id}, and Conversion Status is not SKIPPED."
+                )
+                self.update_processing_status(
+                    new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.FAILED
+                )
+                self.update_processing_status(
+                    new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
+                )
+                raise ValueError
 
-        if DatasetArtifactType.RDS in artifact_uris:
-            self.logger.info("Main: Starting thread for rds update")
-            x = threading.Thread(
-                target=self.update_rds,
-                args=(
-                    artifact_uris[DatasetArtifactType.RDS],
-                    new_artifact_key_prefix,
-                    new_dataset_version_id,
-                    metadata_update,
-                ),
-            )
-            threads.append(x)
-            x.start()
-        elif old_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED:
-            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
-        else:
-            self.logger.error(
-                f"Cannot find RDS artifact uri for {old_dataset_version_id}, and Conversion Status is not SKIPPED."
-            )
-            self.update_processing_status(
-                new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
-            )
-            raise ValueError
-
-        if DatasetArtifactType.CXG in artifact_uris:
-            self.logger.info("Main: Starting thread for cxg update")
-            x = threading.Thread(
-                target=self.update_cxg,
-                args=(
-                    artifact_uris[DatasetArtifactType.CXG],
-                    f"s3://{self.cellxgene_bucket}/{new_artifact_key_prefix}.cxg",
-                    new_dataset_version_id,
-                    metadata_update,
-                ),
-            )
-            threads.append(x)
-            x.start()
-        else:
-            self.logger.error(f"Cannot find cxg artifact uri for {old_dataset_version_id}.")
-            self.update_processing_status(
-                new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
-            )
-            raise ValueError
-
-        for thread in threads:
-            thread.join()
+            if DatasetArtifactType.CXG in artifact_uris:
+                self.logger.info("Main: Starting thread for cxg update")
+                pool.starmap_async(
+                    self.update_cxg,
+                    [
+                        (
+                            artifact_uris[DatasetArtifactType.CXG],
+                            f"s3://{self.cellxgene_bucket}/{new_artifact_key_prefix}.cxg",
+                            new_dataset_version_id,
+                            metadata_update,
+                        )
+                    ],
+                )
+            else:
+                self.logger.error(f"Cannot find cxg artifact uri for {old_dataset_version_id}.")
+                self.update_processing_status(
+                    new_dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.FAILED
+                )
+                self.update_processing_status(
+                    new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
+                )
+                raise ValueError
 
         if self.has_valid_artifact_statuses(new_dataset_version_id):
             self.update_processing_status(
