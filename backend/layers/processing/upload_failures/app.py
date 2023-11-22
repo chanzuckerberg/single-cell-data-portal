@@ -1,3 +1,4 @@
+import contextlib
 import json
 import logging
 import os
@@ -148,7 +149,7 @@ def trigger_slack_notification(
     aws_region: str,
     execution_arn: str,
 ) -> None:
-    with logger.LogSuppressed(Exception, message="Failed to send slack notification"):
+    with contextlib.suppress(Exception):
         data = get_failure_slack_notification_message(
             dataset_version_id, collection_version_id, step_name, job_id, aws_region, execution_arn
         )
