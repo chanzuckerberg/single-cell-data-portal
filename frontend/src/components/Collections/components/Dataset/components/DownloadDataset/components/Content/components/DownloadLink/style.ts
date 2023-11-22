@@ -36,9 +36,6 @@ export const CodeBlock = styled.div`
   }
 `;
 
-/**
- * @deprecated by CodeBlock styles once "DOWNLOAD_UX" feature flag is removed.
- */
 export const DownloadCodeBlock = styled.div`
   margin-top: 14px;
   position: relative;

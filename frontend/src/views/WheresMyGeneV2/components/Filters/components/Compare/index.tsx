@@ -1,5 +1,5 @@
 import { Wrapper, Label, StyledDropdown } from "../common/style";
-import { LabelWrapper, NewChip } from "./style";
+import { CompareWrapper, LabelWrapper } from "./style";
 import {
   COMPARE_OPTIONS,
   GROUP_BY_TOOLTIP_TEXT,
@@ -21,7 +21,7 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
   });
 
   return (
-    <div>
+    <CompareWrapper>
       <LabelWrapper>
         <Label>
           Group By
@@ -52,7 +52,6 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
             </TooltipButton>
           </Tooltip>
         </Label>
-        <NewChip label="NEW" />
       </LabelWrapper>
       <Wrapper>
         <StyledDropdown
@@ -64,6 +63,6 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
           value={optionLabel}
         />
       </Wrapper>
-    </div>
+    </CompareWrapper>
   );
 }

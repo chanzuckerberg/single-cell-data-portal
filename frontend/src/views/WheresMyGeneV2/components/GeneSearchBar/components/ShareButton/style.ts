@@ -29,6 +29,7 @@ export const StyledLabel = styled.div`
 export const StyledButtonIcon = styled(ButtonIcon)`
   width: 30px;
   height: 30px;
+  top: 4px;
 `;
 
 export const StyledNotificationWrapper = styled(NotificationWrapper)`

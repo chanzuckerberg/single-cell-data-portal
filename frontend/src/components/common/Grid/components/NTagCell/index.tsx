@@ -29,7 +29,7 @@ export default function NTagCell({ label, values }: Props): JSX.Element {
   ) : (
     <>
       {/* optionally pinned value */}
-      {pinned && <Box mb={2}>{pinned}</Box>}
+      {!!pinned && <Box mb={2}>{pinned}</Box>}
       {/* +ntag values */}
       <NTag label={label} values={unpinned} />
     </>

@@ -32,6 +32,12 @@ import {
 } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 import { test } from "tests/common/test";
 import { MAX_EXPRESSION_LABEL_TEST_ID } from "src/views/WheresMyGeneV2/components/InfoPanel/components/RelativeGeneExpression/constants";
+import assert from "assert";
+import {
+  NO_MARKER_GENES_DESCRIPTION,
+  NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION,
+  TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION,
+} from "src/views/WheresMyGeneV2/components/CellInfoSideBar/constants";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
@@ -39,13 +45,12 @@ const GENE_LABELS_ID = "[data-testid^=gene-label-]";
 const CELL_TYPE_LABELS_ID = CELL_TYPE_NAME_LABEL_CLASS_NAME;
 const TISSUE_LABELS_ID = TISSUE_NAME_LABEL_CLASS_NAME;
 const ADD_GENE_ID = "add-gene-btn";
-const SOURCE_DATA_BUTTON_ID = "source-data-button";
-const SOURCE_DATA_LIST_SELECTOR = `[data-testid="source-data-list"]`;
 
 // FMG test IDs
 const ADD_TO_DOT_PLOT_BUTTON_TEST_ID = "add-to-dotplot-fmg-button";
 const NO_MARKER_GENES_WARNING_TEST_ID = "no-marker-genes-warning";
 const MARKER_SCORES_FMG_TEST_ID = "marker-scores-fmg";
+const NO_MARKER_GENES_DESCRIPTION_ID = "no-marker-genes-description";
 
 // gene info test IDs
 const GENE_INFO_BUTTON_X_AXIS_TEST_ID = "gene-info-button-x-axis";
@@ -141,13 +146,6 @@ describe("Where's My Gene", () => {
 
     await clickUntilOptionsShowUp({
       page,
-      locator: getDatasetSelectorButton(page),
-    });
-    const numberOfDatasetsBefore = await countLocator(page.getByRole("option"));
-    await page.keyboard.press("Escape");
-
-    await clickUntilOptionsShowUp({
-      page,
       locator: getDiseaseSelectorButton(page),
     });
 
@@ -165,55 +163,7 @@ describe("Where's My Gene", () => {
       page.getByTestId(TISSUE_LABELS_ID)
     );
 
-    await clickUntilOptionsShowUp({
-      page,
-      locator: getDatasetSelectorButton(page),
-    });
-    const numberOfDatasetsAfter = await countLocator(page.getByRole("option"));
-    await page.keyboard.press("Escape");
-
-    expect(numberOfDatasetsBefore).toBeGreaterThan(numberOfDatasetsAfter);
     expect(numberOfTissuesBefore).toBeGreaterThan(numberOfTissuesAfter);
-  });
-
-  test("Source Data", async ({ page }) => {
-    await goToWMG(page);
-
-    await clickUntilSidebarShowsUp({ page, testId: SOURCE_DATA_BUTTON_ID });
-    await expect(
-      page.getByText(
-        "After filtering cells with low coverage (less than 500 genes expressed)"
-      )
-    ).toBeTruthy();
-
-    await tryUntil(
-      async () => {
-        const numSourceDataListItems = await countLocator(
-          page.locator(SOURCE_DATA_LIST_SELECTOR).locator(".MuiListItem-root")
-        );
-        expect(numSourceDataListItems).toBeGreaterThan(0);
-
-        await page.mouse.click(0, 0);
-
-        function getDatasetSelector() {
-          return page.getByTestId(FILTERS_PANEL).getByTestId("dataset-filter");
-        }
-
-        const numSelectedDatasetsBefore = await countLocator(
-          getDatasetSelector().locator(MUI_CHIP_ROOT)
-        );
-        expect(numSelectedDatasetsBefore).toBe(0);
-        await clickUntilOptionsShowUp({ page, locator: getDatasetSelector() });
-        await selectFirstOption(page);
-        await clickUntilSidebarShowsUp({ page, testId: SOURCE_DATA_BUTTON_ID });
-
-        const numSourceDataListAfterItems = await countLocator(
-          page.locator(SOURCE_DATA_LIST_SELECTOR).locator(".MuiListItem-root")
-        );
-        expect(numSourceDataListAfterItems).toBeGreaterThan(0);
-      },
-      { page }
-    );
   });
 
   test("Hierarchical Clustering", async ({ page }) => {
@@ -398,6 +348,79 @@ describe("Where's My Gene", () => {
           FMG_GENE_STRENGTH_THRESHOLD
         );
       }
+    });
+
+    // Note: This test could fail if we add more adipose tissue naive B cells to our corpus.
+    // If this happens, just mark the test as skipped and ping @joyceyan
+    test(`Should verify cell types with < 25 cells have no marker genes`, async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      // Expand blood tissue
+      await expandTissue(page, "adipose-tissue");
+
+      // Click naive B cell info icon
+      const naiveBCell = page.getByTestId(
+        "cell-type-info-button-adipose tissue-naive B cell"
+      );
+      await naiveBCell.scrollIntoViewIfNeeded();
+      await naiveBCell.click();
+
+      // Verify copy is what we expect
+      const noMarkerGenesDescription = (await page
+        .getByTestId(NO_MARKER_GENES_DESCRIPTION_ID)
+        .textContent()) as string;
+      assert.strictEqual(
+        noMarkerGenesDescription.trim(),
+        TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION
+      );
+    });
+
+    // Note: This test could fail if we find more marker genes for embryo hematopoietic cells.
+    // If this happens, just mark the test as skipped and ping @joyceyan
+    test(`Should verify copy for cell types with no marker genes`, async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      // Expand embryo tissue
+      await expandTissue(page, "embryo");
+
+      // Click yolk sac somatic cell info icon
+      const hematopoieticCell = page.getByTestId(
+        "cell-type-info-button-embryo-hematopoietic cell"
+      );
+      await hematopoieticCell.scrollIntoViewIfNeeded();
+      await hematopoieticCell.click();
+
+      // Verify copy is what we expect
+      const noMarkerGenesDescription = (await page
+        .getByTestId(NO_MARKER_GENES_DESCRIPTION_ID)
+        .textContent()) as string;
+      assert.strictEqual(
+        noMarkerGenesDescription.trim(),
+        NO_MARKER_GENES_DESCRIPTION
+      );
+    });
+
+    test(`Should verify blood cells have no marker genes`, async ({ page }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      // Expand blood tissue
+      await expandTissue(page, "blood");
+
+      // Click stem cell info icon
+      await page.getByTestId("cell-type-info-button-blood-stem cell").click();
+
+      // Verify copy is what we expect
+      const noMarkerGenesDescription = (await page
+        .getByTestId(NO_MARKER_GENES_DESCRIPTION_ID)
+        .textContent()) as string;
+      assert.strictEqual(
+        noMarkerGenesDescription.trim(),
+        NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION
+      );
     });
   });
 
@@ -678,28 +701,6 @@ describe("Where's My Gene", () => {
       expect(textContentBefore).toEqual(textContentBefore2);
     });
   });
-
-  test("only render tissues that contain data", async ({ page }) => {
-    await goToWMG(page);
-    await waitForLoadingSpinnerToResolve(page);
-    await clickUntilOptionsShowUp({
-      page,
-      locator: getDatasetSelectorButton(page),
-    });
-    const datasetOption = await page
-      .getByRole("option")
-      .getByText("Fallopian tube RNA");
-    await datasetOption.click();
-    await page.keyboard.press("Escape");
-
-    await waitForLoadingSpinnerToResolve(page);
-
-    const nonExistentTissue = await page.getByTestId(
-      "cell-type-labels-adipose-tissue"
-    );
-
-    expect(nonExistentTissue).toHaveCount(0);
-  });
 });
 
 async function getNames({
@@ -739,14 +740,6 @@ function getDiseaseSelectorButton(page: Page) {
   return getDiseaseSelector(page).getByRole("button");
 }
 
-function getDatasetSelector(page: Page) {
-  return page.getByTestId(FILTERS_PANEL).getByTestId("dataset-filter");
-}
-
-function getDatasetSelectorButton(page: Page) {
-  return getDatasetSelector(page).getByRole("button");
-}
-
 async function clickUntilOptionsShowUp({
   page,
   testId,
@@ -768,30 +761,6 @@ async function clickUntilOptionsShowUp({
         throw Error(ERROR_NO_TESTID_OR_LOCATOR);
       }
       await page.getByRole("tooltip").getByRole("option").elementHandles();
-    },
-    { page }
-  );
-}
-
-async function clickUntilSidebarShowsUp({
-  page,
-  testId,
-  locator,
-}: {
-  page: Page;
-  testId?: string;
-  locator?: Locator;
-}) {
-  await tryUntil(
-    async () => {
-      if (testId) {
-        await page.getByTestId(testId).click();
-      } else if (locator) {
-        await locator.click();
-      } else {
-        throw Error(ERROR_NO_TESTID_OR_LOCATOR);
-      }
-      await page.locator(".bp4-drawer-header").elementHandle();
     },
     { page }
   );
