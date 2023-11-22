@@ -304,14 +304,14 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "DeregisterJobDefinition": {
         "Type": "Task",
-        "Next": "CheckForCxgOrSeuratErrors",
+        "Next": "CheckForErrors",
         "Parameters": {
           "JobDefinition.$": "$[0].batch.JobDefinitionName"
         },
         "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition",
         "ResultPath": null
       },
-      "CheckForCxgOrSeuratErrors": {
+      "CheckForErrors": {
         "Type": "Choice",
         "Choices": [
           {
@@ -326,6 +326,11 @@ resource "aws_sfn_state_machine" "state_machine" {
               }
             ],
             "Next": "ConversionError"
+          },
+          {
+            "Variable": "$.error",
+            "IsPresent": true,
+            "Next": "DownloadValidateError"
           }
         ],
         "Default": "EndPass"
@@ -333,6 +338,10 @@ resource "aws_sfn_state_machine" "state_machine" {
       "ConversionError": {
         "Type": "Fail",
         "Cause": "CXG and/or Seurat conversion failed."
+      },
+      "DownloadValidateError": {
+        "Type": "Fail",
+        "Cause": "An error occurred during Download/Validate."
       },
       "EndPass": {
         "Type": "Pass",

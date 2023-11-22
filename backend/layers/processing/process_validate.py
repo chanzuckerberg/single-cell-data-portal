@@ -227,6 +227,7 @@ class ProcessValidate(ProcessingLogic):
         :param datasets_bucket:
         :return:
         """
+        exit(1)
         # Download the original dataset from S3
         key_prefix = self.get_key_prefix(dataset_version_id.id)
         original_h5ad_artifact_file_name = CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME
