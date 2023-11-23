@@ -1,22 +1,30 @@
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useContext } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { StateContext } from "src/views/WheresMyGeneV2/common/store";
-import { CITATION_NOTIFICATION_TEXT } from "./constants";
+import {
+  CITATION_NOTIFICATION_LABEL,
+  CITATION_NOTIFICATION_TEXT,
+} from "./constants";
+import { useNotification } from "src/common/hooks/useNotification";
 
 export const useConnect = () => {
+  const { createNotification } = useNotification();
   const state = useContext(StateContext);
   const { selectedGenes } = state;
-  const [showCitationNotification, setShowCitationNotification] = useState(0);
   const copyCitation = useCallback(() => {
     track(EVENTS.WMG_CITATION_CLICKED);
-    setShowCitationNotification((prev) => prev + 1);
+    createNotification({
+      message: CITATION_NOTIFICATION_TEXT,
+      intent: "info",
+      sdsIcon: "quote",
+      label: CITATION_NOTIFICATION_LABEL,
+    });
     navigator.clipboard.writeText(CITATION_NOTIFICATION_TEXT);
   }, []);
 
   return {
     selectedGenes,
-    showCitationNotification,
     copyCitation,
   };
 };

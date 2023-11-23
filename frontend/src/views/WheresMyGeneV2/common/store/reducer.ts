@@ -5,10 +5,20 @@ import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { GENE_SEARCH_BAR_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/constants";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import { IconNameToSizes } from "@czi-sds/components";
+// import { ExposedNotificationProps } from "@czi-sds/components";
 
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
   payload: Payload;
+}
+
+export interface ExposedNotificationProps {
+  message: string;
+  notificationId?: string;
+  intent: "info" | "success" | "warning" | "error";
+  sdsIcon: keyof IconNameToSizes;
+  label: string;
 }
 
 export interface State {
@@ -43,6 +53,7 @@ export interface State {
   filteredCellTypes: string[];
   filteredCellTypeIds: string[];
   expandedTissueIds: string[];
+  notifications: ExposedNotificationProps[];
 }
 
 const EMPTY_FILTERS: State["selectedFilters"] = {
@@ -75,6 +86,7 @@ export const INITIAL_STATE: State = {
   filteredCellTypes: [],
   filteredCellTypeIds: [],
   expandedTissueIds: [],
+  notifications: [],
 };
 
 export const REDUCERS = {
@@ -101,6 +113,8 @@ export const REDUCERS = {
   setFilteredCellTypes,
   toggleExpandedTissueId,
   autoExpandTissues,
+  addNotification,
+  // clearNotification,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -545,3 +559,43 @@ function autoExpandTissues(
     expandedTissueIds: payload,
   };
 }
+
+function addNotification(
+  state: State,
+  action: PayloadAction<ExposedNotificationProps>
+): State {
+  const {
+    payload: { message, notificationId, intent, sdsIcon, label },
+  } = action;
+
+  const newNotification: ExposedNotificationProps = {
+    message,
+    notificationId,
+    intent,
+    sdsIcon,
+    label,
+  };
+  console.log("addNotification", newNotification);
+
+  return {
+    ...state,
+    notifications: [...state.notifications, newNotification],
+  };
+}
+
+// function clearNotification(
+//   state: State,
+//   action: PayloadAction<{ notificationId: string }>
+// ) {
+//   const {
+//     payload: { notificationId },
+//   } = action;
+//   const { notifications } = state;
+//   console.log("clearNotification");
+//   return {
+//     ...state,
+//     notifications: notifications.filter(
+//       (notification) => notification.notificationId !== notificationId
+//     ),
+//   };
+// }
