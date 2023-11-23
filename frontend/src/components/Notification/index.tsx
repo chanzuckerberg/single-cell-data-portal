@@ -6,11 +6,10 @@ import {
   StyledNotificationLabel,
 } from "./style";
 import { NotificationWrapper } from "../common/Filter/common/style";
-import { Props } from "./types";
 import { useContext } from "react";
 import { StateContext } from "src/views/WheresMyGeneV2/common/store";
 
-export default function Notification({}: Props): JSX.Element {
+export default function Notification(): JSX.Element {
   const state = useContext(StateContext);
   const { notifications } = state;
   console.log(notifications);
@@ -27,7 +26,7 @@ export default function Notification({}: Props): JSX.Element {
             icon={
               <StyledIcon
                 sdsIcon={notification.sdsIcon}
-                sdsSize={"l"}
+                sdsSize={notification.sdsSize}
                 sdsType={"static"}
               />
             }
@@ -35,7 +34,9 @@ export default function Notification({}: Props): JSX.Element {
             <StyledNotificationLabel data-testid="notification">
               {notification.label}
             </StyledNotificationLabel>
-            <StyledNotificationDetails>
+            <StyledNotificationDetails
+              isCitation={notification?.isCitation ?? false}
+            >
               {notification.message}
             </StyledNotificationDetails>
           </SDSNotification>

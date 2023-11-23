@@ -18,7 +18,9 @@ export interface ExposedNotificationProps {
   notificationId?: string;
   intent: "info" | "success" | "warning" | "error";
   sdsIcon: keyof IconNameToSizes;
+  sdsSize: "s" | "l" | "xs" | "xl";
   label: string;
+  isCitation?: boolean;
 }
 
 export interface State {
@@ -565,7 +567,15 @@ function addNotification(
   action: PayloadAction<ExposedNotificationProps>
 ): State {
   const {
-    payload: { message, notificationId, intent, sdsIcon, label },
+    payload: {
+      message,
+      notificationId,
+      intent,
+      sdsIcon,
+      sdsSize,
+      label,
+      isCitation,
+    },
   } = action;
 
   const newNotification: ExposedNotificationProps = {
@@ -573,7 +583,9 @@ function addNotification(
     notificationId,
     intent,
     sdsIcon,
+    sdsSize,
     label,
+    isCitation,
   };
   console.log("addNotification", newNotification);
 

@@ -17,12 +17,17 @@ import {
 import { getCompareOptionNameById } from "src/views/WheresMyGeneV2/common/constants";
 import { CellType } from "src/views/WheresMyGeneV2/common/types";
 import { useTissueMetadata } from "src/common/queries/cellGuide";
+import { useNotification } from "src/common/hooks/useNotification";
+import { SHARE_NOTIFICATION_LABEL, SHARE_NOTIFICATION_TEXT } from "./constants";
 
 export function useConnect() {
-  const [showURLCopyNotification, setShowURLCopyNotification] = useState(0);
+  const [cellTypesByTissueName, setCellTypesByTissueName] =
+    useState<CellTypeByTissueName>(EMPTY_OBJECT);
 
   const state = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
+  const { createNotification } = useNotification();
+
   const { data: tissues } = useTissueMetadata();
   const { isLoading: isLoadingFilterDims } = usePrimaryFilterDimensions();
   const router = useRouter();
@@ -35,15 +40,10 @@ export function useConnect() {
     filteredCellTypes,
   } = state;
 
-  // (seve): this is done in multiple places, we should consolidate to a single hook
-
   const {
     data: rawCellTypesByTissueName,
     isLoading: isLoadingCellTypesByTissueName,
   } = useCellTypesByTissueName();
-
-  const [cellTypesByTissueName, setCellTypesByTissueName] =
-    useState<CellTypeByTissueName>(EMPTY_OBJECT);
 
   // This is needed to prevent overwriting the cellTypesByTissueName state with empty
   useEffect(() => {
@@ -68,8 +68,13 @@ export function useConnect() {
   );
 
   const copyShareUrl = useCallback(() => {
-    if (!dispatch) return;
-
+    createNotification({
+      message: SHARE_NOTIFICATION_TEXT,
+      intent: "info",
+      sdsIcon: "link",
+      sdsSize: "s",
+      label: SHARE_NOTIFICATION_LABEL,
+    });
     generateAndCopyShareUrl({
       compare,
       filters: selectedFilters,
@@ -92,13 +97,10 @@ export function useConnect() {
       tissue_filter: selectedFilters.tissues,
       cell_types_selected: filteredCellTypeIDs,
     });
-
-    setShowURLCopyNotification((prev) => prev + 1);
   }, [
     selectedFilters,
     selectedGenes,
     selectedOrganismId,
-    dispatch,
     compare,
     filteredCellTypes,
     mapCellTypesToIDs,
@@ -154,5 +156,5 @@ export function useConnect() {
     router,
   ]);
 
-  return { showURLCopyNotification, copyShareUrl, selectedGenes };
+  return { copyShareUrl, selectedGenes };
 }

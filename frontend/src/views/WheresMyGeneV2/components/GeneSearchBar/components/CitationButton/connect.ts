@@ -18,7 +18,9 @@ export const useConnect = () => {
       message: CITATION_NOTIFICATION_TEXT,
       intent: "info",
       sdsIcon: "quote",
+      sdsSize: "l",
       label: CITATION_NOTIFICATION_LABEL,
+      isCitation: true,
     });
     navigator.clipboard.writeText(CITATION_NOTIFICATION_TEXT);
   }, []);

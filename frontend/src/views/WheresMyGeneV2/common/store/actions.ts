@@ -226,7 +226,9 @@ export function addNotification(payload: {
   notificationId: ExposedNotificationProps["notificationId"];
   intent: ExposedNotificationProps["intent"];
   sdsIcon: ExposedNotificationProps["sdsIcon"];
+  sdsSize: ExposedNotificationProps["sdsSize"];
   label: ExposedNotificationProps["label"];
+  isCitation: ExposedNotificationProps["isCitation"];
 }): GetActionTypeOfReducer<(typeof REDUCERS)["addNotification"]> {
   return {
     payload,

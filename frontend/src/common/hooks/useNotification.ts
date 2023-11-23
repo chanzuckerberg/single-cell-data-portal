@@ -15,12 +15,22 @@ export function useNotification() {
     intent,
     sdsIcon,
     label,
+    sdsSize,
+    isCitation,
   }: ExposedNotificationProps) {
     const notificationId = uuid();
 
     if (!dispatch) return;
     dispatch(
-      addNotification({ message, notificationId, intent, sdsIcon, label })
+      addNotification({
+        message,
+        notificationId,
+        intent,
+        sdsIcon,
+        sdsSize,
+        label,
+        isCitation,
+      })
     );
     // setTimeout(() => {
     //   dispatch(clearNotification({ notificationId }));
