@@ -23,7 +23,7 @@ export const useConnect = () => {
       isCitation: true,
     });
     navigator.clipboard.writeText(CITATION_NOTIFICATION_TEXT);
-  }, []);
+  }, [createNotification]);
 
   return {
     selectedGenes,

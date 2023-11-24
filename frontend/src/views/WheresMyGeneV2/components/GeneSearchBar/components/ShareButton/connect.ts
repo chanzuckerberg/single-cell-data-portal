@@ -104,6 +104,7 @@ export function useConnect() {
     compare,
     filteredCellTypes,
     mapCellTypesToIDs,
+    createNotification,
   ]);
 
   useEffect(() => {
