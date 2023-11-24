@@ -40,10 +40,6 @@ export const StyledNotificationDetails = styled.div<StyledNotificationDetailsPro
     const { isCitation } = props;
     const border = isCitation ? ` 1px solid #EAEAEA` : null;
     const backgroundColor = isCitation ? ` #F8F8F8` : null;
-    console.log("isCitation", isCitation);
-    console.log("border", border);
-    console.log("backgroundColor", backgroundColor);
-
     return `
       border: ${border};
       background-color: ${backgroundColor};
