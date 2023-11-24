@@ -4,7 +4,7 @@ import { useConnect } from "./connect";
 import { CITATION_BUTTON_LABEL } from "./constants";
 
 export default function CitationButton(): JSX.Element {
-  const { copyCitation, selectedGenes } = useConnect();
+  const { copyCitation, isDisabled } = useConnect();
 
   return (
     <StyledButtonDiv className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
@@ -15,7 +15,7 @@ export default function CitationButton(): JSX.Element {
         sdsSize="medium"
         sdsType="primary"
         sdsIcon="quote"
-        disabled={selectedGenes.length === 0}
+        disabled={isDisabled}
       />
     </StyledButtonDiv>
   );

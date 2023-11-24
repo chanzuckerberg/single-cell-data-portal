@@ -19,8 +19,11 @@ import { CellType } from "src/views/WheresMyGeneV2/common/types";
 import { useTissueMetadata } from "src/common/queries/cellGuide";
 import { useNotification } from "src/common/hooks/useNotification";
 import { SHARE_NOTIFICATION_LABEL, SHARE_NOTIFICATION_TEXT } from "./constants";
+import { NOTIFICATION_AUTO_DISMISS_TIMEOUT } from "src/components/Notification/constants";
 
 export function useConnect() {
+  const [isDisabled, setIsDisabled] = useState(false);
+
   const [cellTypesByTissueName, setCellTypesByTissueName] =
     useState<CellTypeByTissueName>(EMPTY_OBJECT);
 
@@ -68,6 +71,7 @@ export function useConnect() {
   );
 
   const copyShareUrl = useCallback(() => {
+    setIsDisabled(true);
     createNotification({
       message: SHARE_NOTIFICATION_TEXT,
       intent: "info",
@@ -97,6 +101,9 @@ export function useConnect() {
       tissue_filter: selectedFilters.tissues,
       cell_types_selected: filteredCellTypeIDs,
     });
+    setTimeout(() => {
+      setIsDisabled(false);
+    }, NOTIFICATION_AUTO_DISMISS_TIMEOUT);
   }, [
     selectedFilters,
     selectedGenes,
@@ -155,7 +162,8 @@ export function useConnect() {
     mapCellTypesToIDs,
     tissues,
     router,
+    isDisabled,
   ]);
 
-  return { copyShareUrl, selectedGenes };
+  return { copyShareUrl, isDisabled };
 }

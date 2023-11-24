@@ -8,6 +8,7 @@ import {
 import { NotificationWrapper } from "../common/Filter/common/style";
 import { useContext } from "react";
 import { StateContext } from "src/views/WheresMyGeneV2/common/store";
+import { NOTIFICATION_AUTO_DISMISS_TIMEOUT } from "./constants";
 
 export default function Notification(): JSX.Element {
   const state = useContext(StateContext);
@@ -18,7 +19,7 @@ export default function Notification(): JSX.Element {
         notifications.map((notification) => (
           <SDSNotification
             key={notification.notificationId}
-            autoDismiss={5000}
+            autoDismiss={NOTIFICATION_AUTO_DISMISS_TIMEOUT}
             onClose={noop}
             slideDirection="left"
             intent={notification.intent}
