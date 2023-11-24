@@ -165,5 +165,5 @@ export function useConnect() {
     isDisabled,
   ]);
 
-  return { copyShareUrl, isDisabled };
+  return { copyShareUrl, isDisabled, selectedGenes };
 }
