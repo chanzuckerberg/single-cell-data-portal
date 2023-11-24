@@ -12,7 +12,6 @@ import { StateContext } from "src/views/WheresMyGeneV2/common/store";
 export default function Notification(): JSX.Element {
   const state = useContext(StateContext);
   const { notifications } = state;
-  console.log(notifications);
   return (
     <NotificationWrapper>
       {notifications.length > 0 &&

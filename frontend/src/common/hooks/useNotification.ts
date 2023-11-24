@@ -5,7 +5,7 @@ import {
   addNotification,
   //   clearNotification,
 } from "src/views/WheresMyGeneV2/common/store/actions";
-import { ExposedNotificationProps } from "src/views/WheresMyGeneV2/common/store/reducer";
+import { NotificationProps } from "src/views/WheresMyGeneV2/common/store/reducer";
 
 export function useNotification() {
   const dispatch = useContext(DispatchContext);
@@ -17,7 +17,7 @@ export function useNotification() {
     label,
     sdsSize,
     isCitation,
-  }: ExposedNotificationProps) {
+  }: NotificationProps) {
     const notificationId = uuid();
 
     if (!dispatch) return;
@@ -32,9 +32,6 @@ export function useNotification() {
         isCitation,
       })
     );
-    // setTimeout(() => {
-    //   dispatch(clearNotification({ notificationId }));
-    // }, 10000);
   }
 
   return {

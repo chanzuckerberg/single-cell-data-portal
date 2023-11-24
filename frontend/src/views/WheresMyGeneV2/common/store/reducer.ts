@@ -6,14 +6,13 @@ import { GENE_SEARCH_BAR_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/const
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { IconNameToSizes } from "@czi-sds/components";
-// import { ExposedNotificationProps } from "@czi-sds/components";
 
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
   payload: Payload;
 }
 
-export interface ExposedNotificationProps {
+export interface NotificationProps {
   message: string;
   notificationId?: string;
   intent: "info" | "success" | "warning" | "error";
@@ -55,7 +54,7 @@ export interface State {
   filteredCellTypes: string[];
   filteredCellTypeIds: string[];
   expandedTissueIds: string[];
-  notifications: ExposedNotificationProps[];
+  notifications: NotificationProps[];
 }
 
 const EMPTY_FILTERS: State["selectedFilters"] = {
@@ -564,7 +563,7 @@ function autoExpandTissues(
 
 function addNotification(
   state: State,
-  action: PayloadAction<ExposedNotificationProps>
+  action: PayloadAction<NotificationProps>
 ): State {
   const {
     payload: {
@@ -578,7 +577,7 @@ function addNotification(
     },
   } = action;
 
-  const newNotification: ExposedNotificationProps = {
+  const newNotification: NotificationProps = {
     message,
     notificationId,
     intent,
@@ -587,27 +586,9 @@ function addNotification(
     label,
     isCitation,
   };
-  console.log("addNotification", newNotification);
 
   return {
     ...state,
     notifications: [...state.notifications, newNotification],
   };
 }
-
-// function clearNotification(
-//   state: State,
-//   action: PayloadAction<{ notificationId: string }>
-// ) {
-//   const {
-//     payload: { notificationId },
-//   } = action;
-//   const { notifications } = state;
-//   console.log("clearNotification");
-//   return {
-//     ...state,
-//     notifications: notifications.filter(
-//       (notification) => notification.notificationId !== notificationId
-//     ),
-//   };
-// }

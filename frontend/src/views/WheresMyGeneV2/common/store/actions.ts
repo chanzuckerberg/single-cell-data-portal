@@ -9,7 +9,7 @@ import {
   REDUCERS,
   SetFilteredCellTypesPayload,
   State,
-  ExposedNotificationProps,
+  NotificationProps,
 } from "./reducer";
 
 export function deleteSingleGene(
@@ -222,28 +222,19 @@ export function autoExpandTissues(
 }
 
 export function addNotification(payload: {
-  message: ExposedNotificationProps["message"];
-  notificationId: ExposedNotificationProps["notificationId"];
-  intent: ExposedNotificationProps["intent"];
-  sdsIcon: ExposedNotificationProps["sdsIcon"];
-  sdsSize: ExposedNotificationProps["sdsSize"];
-  label: ExposedNotificationProps["label"];
-  isCitation: ExposedNotificationProps["isCitation"];
+  message: NotificationProps["message"];
+  notificationId: NotificationProps["notificationId"];
+  intent: NotificationProps["intent"];
+  sdsIcon: NotificationProps["sdsIcon"];
+  sdsSize: NotificationProps["sdsSize"];
+  label: NotificationProps["label"];
+  isCitation: NotificationProps["isCitation"];
 }): GetActionTypeOfReducer<(typeof REDUCERS)["addNotification"]> {
   return {
     payload,
     type: "addNotification",
   };
 }
-
-// export function clearNotification(payload: {
-//   notificationId: string;
-// }): GetActionTypeOfReducer<(typeof REDUCERS)["clearNotification"]> {
-//   return {
-//     payload,
-//     type: "clearNotification",
-//   };
-// }
 
 type GetActionTypeOfReducer<T> = T extends (
   state: never,

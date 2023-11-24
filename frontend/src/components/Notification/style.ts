@@ -7,7 +7,6 @@ import {
 } from "@czi-sds/components";
 import { NotificationWrapper } from "src/components/common/Filter/common/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
-import { gray100, gray200 } from "src/common/theme";
 
 interface StyledNotificationDetailsProps extends CommonThemeProps {
   isCitation: boolean;
@@ -36,9 +35,18 @@ export const StyledNotificationDetails = styled.div<StyledNotificationDetailsPro
   width: 340px;
   height: auto;
   padding: 8px 12px 8px 12px;
-  border: ${(props) =>
-    props.isCitation === true ? `1px solid ${gray200};` : "0"};
   border-radius: 8px;
-  background-color: ${(props) =>
-    props.isCitation === true ? `${gray100};` : "inherit"};
+  ${(props) => {
+    const { isCitation } = props;
+    const border = isCitation ? ` 1px solid #EAEAEA` : null;
+    const backgroundColor = isCitation ? ` #F8F8F8` : null;
+    console.log("isCitation", isCitation);
+    console.log("border", border);
+    console.log("backgroundColor", backgroundColor);
+
+    return `
+      border: ${border};
+      background-color: ${backgroundColor};
+    `;
+  }}
 `;
