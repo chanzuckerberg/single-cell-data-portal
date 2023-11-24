@@ -50,6 +50,10 @@ describe("Tests for Gene Expression page", () => {
     await expect(page.getByTestId(LEGEND_WRAPPER)).toContainText("Share");
     await expect(page.getByTestId("share-button")).toBeDisabled();
 
+    // Citation
+    await expect(page.getByTestId(LEGEND_WRAPPER)).toContainText("Citation");
+    await expect(page.getByTestId("citation-button")).toBeEnabled();
+
     // Source data
     await expect(page.getByTestId(LEGEND_WRAPPER)).toContainText("Source Data");
     await expect(
