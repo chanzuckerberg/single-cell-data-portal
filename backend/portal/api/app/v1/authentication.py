@@ -197,6 +197,14 @@ def check_token(token: dict) -> dict:
     return payload
 
 
+def x_curation_access_token_func(token: str) -> dict:
+    """
+    Custom authorizer function that uses the X-Curation-Authorization header, intended to be used when the Authorization
+    header is already being used by the oauth proxy (for rdev).
+    """
+    return assert_authorized_token(token, CorporaAuthConfig().curation_audience)
+
+
 def curation_access_token_func(token):
     return assert_authorized_token(token, CorporaAuthConfig().curation_audience)
 

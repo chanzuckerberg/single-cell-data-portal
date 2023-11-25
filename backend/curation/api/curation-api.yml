@@ -1675,6 +1675,11 @@ components:
             $ref: "#/components/schemas/problem"
       description: Exceed File Size Limit
   securitySchemes:
+    xCuratorAccess:
+      type: apiKey
+      name: X-Curation-Authorization
+      in: header
+      x-apiKeyInfoFunc: backend.portal.api.app.v1.authentication.x_curation_access_token_func
     curatorAccess:
       bearerFormat: JWT
       scheme: bearer
