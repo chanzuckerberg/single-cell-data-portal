@@ -99,6 +99,7 @@ paths:
         * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.actions.get
       security:
+        - xCuratorAccessLenient: []
         - curatorAccessLenient: []
         - {}
       tags:
@@ -151,6 +152,7 @@ paths:
       tags:
         - Collection
       security:
+        - xCuratorAccess: []
         - curatorAccess: []
       requestBody:
         content:
@@ -189,6 +191,7 @@ paths:
         * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.actions.get
       security:
+        - xCuratorAccessLenient: []
         - curatorAccessLenient: []
         - {}
       tags:
@@ -219,6 +222,7 @@ paths:
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.actions.patch
       security:
+        - xCuratorAccess: []
         - curatorAccess: []
       tags:
         - Collection
@@ -275,6 +279,7 @@ paths:
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.actions.delete
       security:
+        - xCuratorAccess: []
         - curatorAccess: []
       tags:
         - Collection
@@ -310,6 +315,7 @@ paths:
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.revision.post
       security:
+        - xCuratorAccess: []
         - curatorAccess: []
       tags:
         - Collection
@@ -340,6 +346,7 @@ paths:
         * Required: provide your access token in the request header as `Authorization: bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.actions.post
       security:
+        - xCuratorAccess: []
         - curatorAccess: []
       tags:
         - Collection
@@ -378,6 +385,7 @@ paths:
       tags:
         - Collection
       security:
+        - xCuratorAccess: []
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
@@ -441,6 +449,7 @@ paths:
       tags:
         - Collection
       security:
+        - xCuratorAccess: []
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
@@ -523,6 +532,7 @@ paths:
 
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       security:
+        - xCuratorAccess: []
         - curatorAccess: []
       operationId: backend.curation.api.v1.curation.collections.collection_id.s3_upload_credentials.get
       parameters:
@@ -1675,11 +1685,6 @@ components:
             $ref: "#/components/schemas/problem"
       description: Exceed File Size Limit
   securitySchemes:
-    xCuratorAccess:
-      type: apiKey
-      name: X-Curation-Authorization
-      in: header
-      x-apiKeyInfoFunc: backend.portal.api.app.v1.authentication.x_curation_access_token_func
     curatorAccess:
       bearerFormat: JWT
       scheme: bearer
@@ -1690,3 +1695,13 @@ components:
       scheme: bearer
       type: http
       x-bearerInfoFunc: backend.portal.api.app.v1.authentication.curation_access_token_func_lenient
+    xCuratorAccess:
+      type: apiKey
+      name: X-Curation-Authorization
+      in: header
+      x-apiKeyInfoFunc: backend.portal.api.app.v1.authentication.x_curation_access_token_func
+    xCuratorAccessLenient:
+      type: apiKey
+      name: X-Curation-Authorization
+      in: header
+      x-apiKeyInfoFunc: backend.portal.api.app.v1.authentication.x_curation_access_token_func_lenient

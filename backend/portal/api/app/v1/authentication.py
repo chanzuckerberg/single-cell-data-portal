@@ -206,6 +206,16 @@ def x_curation_access_token_func(token: str) -> dict:
     return assert_authorized_token(token, CorporaAuthConfig().curation_audience)
 
 
+def x_curation_access_token_func_lenient(token: str) -> dict:
+    """
+    Custom authorizer function that uses the X-Curation-Authorization header, intended to be used when the Authorization
+    header is already being used by the oauth proxy (for rdev). Lenient version that allows endpoints to work even if
+    authentication fails.
+    """
+    logging.warning(f"DJH x_curation {token}")
+    return assert_authorized_token(token, CorporaAuthConfig().curation_audience)
+
+
 def curation_access_token_func(token):
     logging.warning(f"DJH regular {token}")
     return assert_authorized_token(token, CorporaAuthConfig().curation_audience)
