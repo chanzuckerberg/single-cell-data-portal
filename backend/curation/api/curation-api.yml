@@ -280,7 +280,7 @@ paths:
       operationId: backend.curation.api.v1.curation.collections.collection_id.actions.delete
       security:
         - xCuratorAccess: []
-        - curatorAccess: []
+      #        - curatorAccess: []
       tags:
         - Collection
       parameters:
