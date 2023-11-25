@@ -1699,9 +1699,9 @@ components:
       type: apiKey
       name: x-curation-authorization
       in: header
-      x-apiKeyInfoFunc: backend.portal.api.app.v1.authentication.x_curation_access_token_func
+      x-apikeyInfoFunc: backend.portal.api.app.v1.authentication.x_curation_access_token_func
     xCuratorAccessLenient:
       type: apiKey
       name: x-curation-authorization
       in: header
-      x-apiKeyInfoFunc: backend.portal.api.app.v1.authentication.x_curation_access_token_func_lenient
+      x-apikeyInfoFunc: backend.portal.api.app.v1.authentication.x_curation_access_token_func_lenient
