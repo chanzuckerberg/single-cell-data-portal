@@ -1697,11 +1697,11 @@ components:
       x-bearerInfoFunc: backend.portal.api.app.v1.authentication.curation_access_token_func_lenient
     xCuratorAccess:
       type: apiKey
-      name: X-Curation-Authorization
+      name: x-curation-authorization
       in: header
       x-apiKeyInfoFunc: backend.portal.api.app.v1.authentication.x_curation_access_token_func
     xCuratorAccessLenient:
       type: apiKey
-      name: X-Curation-Authorization
+      name: x-curation-authorization
       in: header
       x-apiKeyInfoFunc: backend.portal.api.app.v1.authentication.x_curation_access_token_func_lenient
