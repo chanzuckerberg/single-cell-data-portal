@@ -1,0 +1,6 @@
+INFO     backend.layers.business.business:business.py:389 {'message': 'ingesting dataset', 'collection_version_id': 9b1ea0b4-0038-4622-8ba6-f071e55a80ba, 'url': 'https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0', 'existing_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:389 {'message': 'ingesting dataset', 'collection_version_id': d996fcad-f627-4a8a-b39a-21a3c94f2f2c, 'url': 'https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0', 'existing_dataset_version_id': None}
+INFO     processing:process.py:104 Processing dataset version 4c2f257d-b606-4772-a43c-2f5324a138d0
+INFO     processing:logger.py:26 Start validate_h5ad_file_and_add_labels
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:45 Updating processing status
