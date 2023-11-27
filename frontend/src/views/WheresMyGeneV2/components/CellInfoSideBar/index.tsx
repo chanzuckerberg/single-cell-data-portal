@@ -26,23 +26,25 @@ import InfoSVG from "src/common/images/info-sign-icon.svg";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
 import { CellInfoBarProps } from "./types";
 import {
-  TISSUES_WITHOUT_MARKER_GENES,
   MARKER_GENES_TOOLTIP_CONTENT,
   MARKER_GENE_LABEL,
-  MARKER_SCORE_CELLGUIDE_LINK_TEXT,
-  MARKER_SCORE_DOTPLOT_BUTTON_TEXT,
   MARKER_SCORE_HIGH_CONTENT,
   MARKER_SCORE_LABEL,
   MARKER_SCORE_LOW_CONTENT,
   MARKER_SCORE_MEDIUM_CONTENT,
   MARKER_SCORE_TOOLTIP_CONTENT,
   MARKER_SCORE_TOOLTIP_LINK_TEXT,
+  EFFECT_SIZE,
+} from "src/common/constants/markerGenes";
+import {
+  TISSUES_WITHOUT_MARKER_GENES,
+  MARKER_SCORE_CELLGUIDE_LINK_TEXT,
+  MARKER_SCORE_DOTPLOT_BUTTON_TEXT,
   NO_MARKER_GENES_DESCRIPTION,
   NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION,
   NO_MARKER_GENES_HEADER,
   SPECIFICITY_TOOLTIP_CONTENT,
   TABLE_HEADER_GENE,
-  TABLE_HEADER_SCORE,
   TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION,
   TABLE_HEADER_SPECIFICITY,
 } from "./constants";
@@ -183,7 +185,7 @@ function CellInfoSideBar({
               </CopyGenesButton>
             </DivTableCell>
             <DivTableCell align data-testid="marker-genes-table-header-score">
-              {TABLE_HEADER_SCORE}
+              {EFFECT_SIZE}
               <Tooltip
                 sdsStyle="dark"
                 placement="bottom"

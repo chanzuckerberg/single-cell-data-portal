@@ -79,6 +79,17 @@ import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/con
 import Image from "next/image";
 import { CellType } from "../../../common/OntologyDagView/common/types";
 import { CENSUS_LINK } from "src/components/Header/components/Nav/constants";
+import {
+  EFFECT_SIZE,
+  EXPRESSION_SCORE_TOOLTIP_CONTENT,
+  MARKER_SCORE_HIGH_CONTENT,
+  MARKER_SCORE_LOW_CONTENT,
+  MARKER_SCORE_MEDIUM_CONTENT,
+  MARKER_SCORE_TOOLTIP_CONTENT,
+  MARKER_SCORE_TOOLTIP_LINK_TEXT,
+  MEAN_EXPRESSION,
+  MEAN_EXPRESSION_ABBREVIATED,
+} from "src/common/constants/markerGenes";
 
 function getEmptyComputationalMarkerGenesTableUIMessageDetail(
   allFilteredByLowMarkerScore: boolean
@@ -228,29 +239,26 @@ const MarkerGeneTables = ({
       marker_score: (
         <div>
           <StyledHeadCellContent>
-            Marker Score
+            {EFFECT_SIZE}
             <HelpTooltip
               skinnyMode={skinnyMode}
-              title="Marker Score"
+              title={EFFECT_SIZE}
               setTooltipContent={setTooltipContent}
               dark
               buttonDataTestId={MARKER_SCORE_TOOLTIP_TEST_ID}
               text={
                 <>
-                  Marker score interpretation:
+                  {MARKER_SCORE_TOOLTIP_CONTENT}
+                  <br />
                   <br />
                   <MarkerStrengthContainer>
-                    {"Low: <1 | Medium: 1-2 | High: >2"}
+                    {MARKER_SCORE_LOW_CONTENT} | {MARKER_SCORE_MEDIUM_CONTENT} |{" "}
+                    {MARKER_SCORE_HIGH_CONTENT}
                   </MarkerStrengthContainer>
                   <br />
                   <div>
-                    Marker genes are highly and uniquely expressed in the cell
-                    type relative to all other cell types.
-                  </div>
-                  <br />
-                  <div>
                     <a href={ROUTES.FMG_DOCS} rel="noopener" target="_blank">
-                      Click to read more about the identification method.
+                      {MARKER_SCORE_TOOLTIP_LINK_TEXT}
                     </a>
                   </div>
                 </>
@@ -261,26 +269,14 @@ const MarkerGeneTables = ({
       ),
       me: (
         <StyledHeadCellContent>
-          {!isPastBreakpoint ? "Expression Score" : "Exp. Score"}
+          {!isPastBreakpoint ? MEAN_EXPRESSION : MEAN_EXPRESSION_ABBREVIATED}
           <HelpTooltip
             skinnyMode={skinnyMode}
-            title="Expression Score"
+            title={MEAN_EXPRESSION}
             setTooltipContent={setTooltipContent}
             dark
             buttonDataTestId={EXPRESSION_SCORE_TOOLTIP_TEST_ID}
-            text={
-              <div>
-                The expression score is the average{" "}
-                <a
-                  href={ROUTES.WMG_DOCS_DATA_PROCESSING}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  rankit-normalized gene expression
-                </a>{" "}
-                among cells in the cell type that have non-zero values.
-              </div>
-            }
+            text={<div>{EXPRESSION_SCORE_TOOLTIP_CONTENT}</div>}
           />
         </StyledHeadCellContent>
       ),

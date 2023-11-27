@@ -68,6 +68,7 @@ import {
   CELLGUIDE_VIEW_PAGE_SIDEBAR_BUTTON_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideInfoSideBar/constants";
 import { test } from "tests/common/test";
+import { EXPRESSION_SCORE_TOOLTIP_CONTENT } from "src/common/constants/markerGenes";
 
 const { describe } = test;
 
@@ -408,8 +409,8 @@ describe("Cell Guide", () => {
         expect(columnHeaders).toEqual([
           "Symbol",
           "Name",
-          "Marker Score",
-          "Expression Score",
+          "Effect Size",
+          "Mean Expression",
           "% of Cells",
         ]);
         const rowElements = await page
@@ -784,7 +785,7 @@ describe("Cell Guide", () => {
         const legendText = await page
           .getByTestId(CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID)
           .textContent();
-        expect(legendText).toContain("Marker Score");
+        expect(legendText).toContain("Effect Size");
         expect(legendText).toContain("Expressed in Cells(%)");
 
         // deactivate marker gene mode and check that the legend and tooltips reverted
@@ -986,10 +987,7 @@ describe("Cell Guide", () => {
       await isElementVisible(page, EXPRESSION_SCORE_TOOLTIP_TEST_ID);
       await page.getByTestId(EXPRESSION_SCORE_TOOLTIP_TEST_ID).hover();
 
-      await checkTooltipContent(
-        page,
-        "The expression score is the average rankit-normalized gene expression among cells in the cell type that have non-zero values."
-      );
+      await checkTooltipContent(page, EXPRESSION_SCORE_TOOLTIP_CONTENT);
     });
 
     test("Percent of Cells tooltip", async ({ page }) => {

@@ -39,10 +39,10 @@ import assert from "assert";
 import {
   NO_MARKER_GENES_DESCRIPTION,
   NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION,
-  TABLE_HEADER_SCORE,
   TABLE_HEADER_SPECIFICITY,
   TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION,
 } from "src/views/WheresMyGeneV2/components/CellInfoSideBar/constants";
+import { EFFECT_SIZE } from "src/common/constants/markerGenes";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
@@ -431,7 +431,7 @@ describe("Where's My Gene", () => {
       );
     });
 
-    test.only(`Should verify effect size and specificity column`, async ({
+    test(`Should verify effect size and specificity column`, async ({
       page,
     }) => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
@@ -448,7 +448,7 @@ describe("Where's My Gene", () => {
       const effectSizeHeader = (await page
         .getByTestId(EFFECT_SIZE_HEADER_ID)
         .textContent()) as string;
-      assert.strictEqual(effectSizeHeader.trim(), TABLE_HEADER_SCORE);
+      assert.strictEqual(effectSizeHeader.trim(), EFFECT_SIZE);
       const specificityHeader = (await page
         .getByTestId(SPECIFICITY_HEADER_ID)
         .textContent()) as string;
