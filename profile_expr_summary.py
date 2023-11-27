@@ -30,7 +30,7 @@ def s3_snapshot():
     
     return WmgSnapshot(snapshot_identifier="",
                        expression_summary_cube=tiledb_open_s3_uri('s3://cellxgene-wmg-staging/snapshots/v3/1701021778/expression_summary'),
-                       expression_summary_default_cube=tiledb_open_s3_uri('ss3://cellxgene-wmg-staging/snapshots/v3/1701021778/expression_summary_default'))
+                       expression_summary_default_cube=tiledb_open_s3_uri('s3://cellxgene-wmg-staging/snapshots/v3/1701021778/expression_summary_default'))
 
 def print_profile_results_web_app_query(snapshot, profile_func, randomize_reqs):
     expr_default_cube = snapshot.expression_summary_default_cube.df[:]
