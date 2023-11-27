@@ -115,7 +115,6 @@ export const REDUCERS = {
   toggleExpandedTissueId,
   autoExpandTissues,
   addNotification,
-  // clearNotification,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
