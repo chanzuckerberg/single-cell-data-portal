@@ -1727,12 +1727,15 @@ class TestDataset(BaseAPIPortalTest):
         self.assertEqual(response.status_code, 401)
 
     # ✅
-    def test__get_all_datasets_for_index_with_ontology_expansion(self):
+    def test__get_all_datasets_for_index_with_ontology_expansion_deprecated(self):
+        # TODO deprecated - remove with #6266. Keeping temporarily to ensure
+        # backwards compatibility while running both 3.0.0 and 4.0.0 (behind
+        # a feature flag) versions of the code.
         import copy
 
         modified_metadata = copy.deepcopy(self.sample_dataset_metadata)
         modified_metadata.development_stage = [OntologyTermId("Test", "HsapDv:0000008")]
-        modified_metadata.tissue = [TissueOntologyTermId("Test", "UBERON:0002048", "cell culture")]
+        modified_metadata.tissue = [TissueOntologyTermId("Test", "UBERON:0002048")]
         modified_metadata.cell_type = [OntologyTermId("Test", "CL:0000738")]
 
         dataset = self.generate_dataset(metadata=modified_metadata, publish=True)
@@ -1779,6 +1782,66 @@ class TestDataset(BaseAPIPortalTest):
                     "UBERON:0000065",
                     "UBERON:0005177",
                     "UBERON:0001004",
+                ],
+            )
+
+            self.assertEqual(actual_dataset["cell_type"], convert_ontology(modified_metadata.cell_type))
+            self.assertCountEqual(
+                actual_dataset["cell_type_ancestors"],
+                [
+                    "CL:0000255",
+                    "CL:0002371",
+                    "CL:0000988",
+                    "CL:0000738",
+                    "CL:0000548",
+                    "CL:0000219",
+                    "CL:0000003",
+                    "CL:0002242",
+                ],
+            )
+
+    def test__get_all_datasets_for_index_with_ontology_expansion(self):
+        # Schema 4.0.0 version of
+        # test__get_all_datasets_for_index_with_ontology_expansion_deprecated
+        # above. Remove this comment with #6266.
+        import copy
+
+        modified_metadata = copy.deepcopy(self.sample_dataset_metadata)
+        modified_metadata.development_stage = [OntologyTermId("Test", "HsapDv:0000008")]
+        modified_metadata.tissue = [TissueOntologyTermId("Test", "UBERON:0000995", "organoid")]
+        modified_metadata.cell_type = [OntologyTermId("Test", "CL:0000738")]
+
+        dataset = self.generate_dataset(metadata=modified_metadata, publish=True)
+
+        test_url = furl(path="/dp/v1/datasets/index")
+
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+
+        actual_dataset = None
+        for d in body:
+            if d["id"] == dataset.dataset_version_id:
+                actual_dataset = d
+        self.assertIsNotNone(actual_dataset)
+
+        def convert_ontology(ontologies):
+            return [dataclasses.asdict(o) for o in ontologies]
+
+        if actual_dataset is not None:  # pylance
+            self.assertEqual(actual_dataset["development_stage"], convert_ontology(modified_metadata.development_stage))
+            self.assertEqual(
+                actual_dataset["development_stage_ancestors"],
+                ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"],
+            )
+
+            self.assertEqual(actual_dataset["tissue"], convert_ontology(modified_metadata.tissue))
+            # TODO update with fix for #6192.
+            self.assertCountEqual(
+                actual_dataset["tissue_ancestors"],
+                [
+                    "UBERON:0000995 (organoid)"
                 ],
             )
 
