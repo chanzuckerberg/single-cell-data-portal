@@ -18,8 +18,6 @@ export const StyledNotificationWrapper = styled.div`
   position: absolute;
   z-index: 999;
   overflow: hidden;
-  top: ${spacesXl};
-  right: 24px;
 `;
 
 export const StyledIcon = styled(Icon)`
