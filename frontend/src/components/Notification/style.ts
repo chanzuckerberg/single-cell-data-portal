@@ -8,7 +8,7 @@ import {
   getCorners,
   getSpaces,
 } from "@czi-sds/components";
-import { spacesM, spacesXl } from "src/common/theme";
+import { spacesM } from "src/common/theme";
 
 interface StyledNotificationDetailsProps extends CommonThemeProps {
   isCitation: boolean;
