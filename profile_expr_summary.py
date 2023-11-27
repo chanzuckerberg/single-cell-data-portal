@@ -3,7 +3,6 @@ import io
 import os
 import time
 import random
-import json
 import pprint
 from cProfile import Profile
 from pstats import Stats
@@ -152,9 +151,9 @@ def simple_wallclock_raw_query(
             dims=cube_indexed_dims,
         ).df[indexed_dims_query]
 
-        end = time.perf_counter()
-
         result_df = pd.concat(df_indexer_obj)
+
+        end = time.perf_counter()
         total_query_time += (end - start)
 
     print(f"total_query_time: {total_query_time}, avg_query_time: {total_query_time/num_trials}")
@@ -237,13 +236,16 @@ def cprofile_profiler_raw_query(
     profiler = Profile(not_cpu_time) if non_cpu_time else Profile()
 
     def tiledb_raw_query(indexed_dims_query):
-        return expr_summary_array.query(
+        df_indexer_obj = expr_summary_array.query(
             cond=None,
             return_incomplete=True,
             use_arrow=True,
             attrs=cube_non_indexed_attrs,
             dims=cube_indexed_dims,
         ).df[indexed_dims_query]
+
+        result_df = pd.concat(df_indexer_obj)
+        return result_df
     
     for i in range(num_trials):
         print(f"###### Trial: {i+1} ######\n\n")
@@ -346,9 +348,9 @@ def tiledb_native_profiling_stats_raw_query(
             attrs=cube_non_indexed_attrs,
             dims=cube_indexed_dims,
         ).df[indexed_dims_query]
+        result_df = pd.concat(df_indexer_obj)
         tiledb_stats_str = tiledb.stats_dump(print_out=False, json=True)
         tiledb.stats_disable()
-        result_df = pd.concat(df_indexer_obj)
         pprint.pprint(tiledb_stats_str)
         print("\n\n\n")
 

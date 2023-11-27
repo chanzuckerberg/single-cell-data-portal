@@ -1,6 +1,7 @@
 import argparse
 import time
 import pprint
+import pandas as pd
 import tiledb
 
 def tiledb_query_params():
@@ -57,6 +58,7 @@ def profile_query_time(tiledb_array):
             attrs=non_indexed_atts,
             dims=index_dims,
         ).df[query]
+    result_df = pd.concat(df_indexer_obj)
     
     end = time.perf_counter()
 
@@ -75,7 +77,7 @@ def profile_query_tiledb_stats(tiledb_array):
             attrs=non_indexed_atts,
             dims=index_dims,
         ).df[query]
-    
+    result_df = pd.concat(df_indexer_obj)
     tiledb_stats_str = tiledb.stats_dump(print_out=False, json=True)
     tiledb.stats_disable()
     pprint.pprint(tiledb_stats_str)
