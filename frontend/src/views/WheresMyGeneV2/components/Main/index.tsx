@@ -93,6 +93,7 @@ export default function WheresMyGene(): JSX.Element {
       <Head>
         <title>Gene Expression - CZ CELLxGENE Discover</title>
       </Head>
+
       <SideBar
         label="Filters"
         SideBarWrapperComponent={SideBarWrapper}
@@ -152,6 +153,7 @@ export default function WheresMyGene(): JSX.Element {
             </StyledBannerContainer>
           )}
           <Top id="top-legend">
+            <Notification />
             <Legend
               selectedCellTypes={cellTypesByTissueName}
               selectedGenes={selectedGenes}
@@ -166,7 +168,6 @@ export default function WheresMyGene(): JSX.Element {
               filteredCellTypes={filteredCellTypes}
               maxExpression={scaledMeanExpressionMax}
             />
-            <Notification />
           </Top>
           <StyledSidebarDrawer
             position="right"

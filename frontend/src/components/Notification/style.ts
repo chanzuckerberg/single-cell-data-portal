@@ -4,16 +4,21 @@ import {
   Icon,
   fontBodyXs,
   fontHeaderXs,
+  getColors,
+  getCorners,
+  getSpaces,
 } from "@czi-sds/components";
-import { NotificationWrapper } from "src/components/common/Filter/common/style";
-import { HEADER_HEIGHT_PX } from "src/components/Header/style";
+import { spacesM, spacesXl } from "src/common/theme";
 
 interface StyledNotificationDetailsProps extends CommonThemeProps {
   isCitation: boolean;
 }
 
-export const StyledNotificationWrapper = styled(NotificationWrapper)`
-  top: ${HEADER_HEIGHT_PX}px;
+export const StyledNotificationWrapper = styled.div`
+  position: absolute;
+  z-index: 999;
+  overflow: hidden;
+  top: ${spacesXl};
   right: 24px;
 `;
 
@@ -25,6 +30,7 @@ export const StyledIcon = styled(Icon)`
 export const StyledNotificationLabel = styled.div`
   ${fontHeaderXs}
   margin: 0 !important;
+  padding-bottom: ${spacesM}px;
   color: black;
 `;
 
@@ -34,15 +40,21 @@ export const StyledNotificationDetails = styled.div<StyledNotificationDetailsPro
   color: black;
   width: 340px;
   height: auto;
-  padding: 8px 12px 8px 12px;
-  border-radius: 8px;
   ${(props) => {
     const { isCitation } = props;
-    const border = isCitation ? ` 1px solid #EAEAEA` : null;
-    const backgroundColor = isCitation ? ` #F8F8F8` : null;
+    const colors = getColors(props);
+    const spaces = getSpaces(props);
+    const corners = getCorners(props);
+    const border = isCitation && `border: 1px solid ${colors?.gray[200]}`;
+    const backgroundColor =
+      isCitation && `background-color: ${colors?.gray[100]}`;
+    const padding = isCitation && `padding: ${spaces?.m}px`;
+    const borderRadius = isCitation && `border-radius: ${corners?.m}px`;
     return `
-      border: ${border};
-      background-color: ${backgroundColor};
+      ${border};
+      ${backgroundColor};
+      ${padding};
+      ${borderRadius};
     `;
   }}
 `;
