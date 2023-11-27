@@ -444,7 +444,7 @@ describe("Where's My Gene", () => {
         .getByTestId("cell-type-info-button-adipose tissue-phagocyte")
         .click();
 
-      // Verify header copy is what we expect
+      // Verify header copy
       const effectSizeHeader = (await page
         .getByTestId(EFFECT_SIZE_HEADER_ID)
         .textContent()) as string;
