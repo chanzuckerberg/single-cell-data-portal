@@ -1840,9 +1840,7 @@ class TestDataset(BaseAPIPortalTest):
             # TODO update with fix for #6192.
             self.assertCountEqual(
                 actual_dataset["tissue_ancestors"],
-                [
-                    "UBERON:0000995 (organoid)"
-                ],
+                ["UBERON:0000995 (organoid)"],
             )
 
             self.assertEqual(actual_dataset["cell_type"], convert_ontology(modified_metadata.cell_type))

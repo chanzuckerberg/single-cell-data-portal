@@ -36,14 +36,16 @@ def enrich_dataset_with_ancestors(dataset, key, ontology_mapping):
     if unique_ancestors:
         dataset[f"{key}_ancestors"] = unique_ancestors
 
+
 def generate_tagged_ontology_id(tissue):
     """
     Generate ontology ID tagged with tissue_type for the given tissue. For
     example, UBERON:1234567 (organoid).
     """
     tissue_id = tissue["ontology_term_id"]
-    tissue_type = tissue["tissue_type"]
-    # TODO(cc) revisit None here, is this possible during migration only? 
-    if ( tissue_type is None or tissue_type == "tissue" ):
+    # Handle possible None for tissue_type (possible during migration): default
+    # to "tissue".
+    tissue_type = tissue["tissue_type"] or "tissue"
+    if tissue_type == "tissue":
         return tissue_id
     return f"{tissue_id} ({tissue_type})"
