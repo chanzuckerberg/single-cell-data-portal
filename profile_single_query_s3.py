@@ -43,7 +43,7 @@ def open_local_disk_tiledb_array():
 
 def open_s3_tiledb_array():
     return tiledb.open(
-            's3://cellxgene-wmg-staging/snapshots/v3/1699207434/expression_summary',
+            's3://cellxgene-wmg-staging/snapshots/v3/1701021778/expression_summary',
             config=tiledb.Config(
                 {"vfs.s3.region": "us-west-2", 'py.init_buffer_bytes': 128*1024**2}))
 
