@@ -4,8 +4,11 @@ import { EVENTS } from "src/common/analytics/events";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
 import { DispatchContext, State } from "../../common/store";
 import { addSelectedGenes } from "../../common/store/actions";
-import { MARKER_GENE_LABEL, MARKER_SCORE_LABEL } from "./constants";
 import { HOVER_START_TIME_MS } from "../../common/constants";
+import {
+  MARKER_GENE_LABEL,
+  MARKER_SCORE_LABEL,
+} from "src/common/constants/markerGenes";
 
 export const useConnect = ({
   cellInfoCellType,
