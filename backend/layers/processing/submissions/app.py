@@ -97,7 +97,7 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
             collection_version_id=collection_version.version_id,
             url=s3_uri,
             file_size=size,
-            existing_dataset_version_id=dataset_version.version_id,
+            current_dataset_version_id=dataset_version.version_id,
         )
 
 

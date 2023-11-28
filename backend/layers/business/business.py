@@ -49,6 +49,7 @@ from backend.layers.common.entities import (
     CollectionVersionWithPublishedDatasets,
     DatasetArtifact,
     DatasetArtifactId,
+    DatasetArtifactMetadataUpdate,
     DatasetArtifactType,
     DatasetConversionStatus,
     DatasetId,
@@ -131,8 +132,7 @@ class BusinessLogic(BusinessLogicInterface):
             citation += f"Publication: {doi} "
         citation += f"Dataset Version: {dataset_assets_base_url}/{dataset_version_id}.h5ad "
         citation += (
-            f"curated and distributed by CZ CELLxGENE Discover in Collection: "
-            f"{collections_base_url}/{collection_id}"
+            f"curated and distributed by CZ CELLxGENE Discover in Collection: {collections_base_url}/{collection_id}"
         )
 
         return citation
@@ -140,8 +140,8 @@ class BusinessLogic(BusinessLogicInterface):
     def trigger_dataset_artifact_update(
         self,
         collection_version: CollectionVersion,
-        metadata_update_dict: Dict[str, str],
-        old_dataset_version_id: DatasetVersionId,
+        metadata_update: DatasetArtifactMetadataUpdate,
+        current_dataset_version_id: DatasetVersionId,
         new_dataset_version_id: DatasetVersionId = None,
     ):
         """
@@ -157,12 +157,12 @@ class BusinessLogic(BusinessLogicInterface):
                 ]
             )
         if new_dataset_version_id is None:
-            new_dataset_version_id, _ = self.create_empty_version_for_existing_dataset(
-                collection_version.version_id, old_dataset_version_id
+            new_dataset_version_id, _ = self.create_empty_dataset_version_for_current_dataset(
+                collection_version.version_id, current_dataset_version_id
             )
 
         self.batch_job_provider.start_metadata_update_batch_job(
-            old_dataset_version_id, new_dataset_version_id, metadata_update_dict
+            current_dataset_version_id, new_dataset_version_id, metadata_update
         )
 
     def _get_publisher_metadata(self, doi: str, errors: list) -> Optional[dict]:
@@ -350,8 +350,8 @@ class BusinessLogic(BusinessLogicInterface):
         # Check metadata
         validation.verify_collection_metadata_update(body, errors)
 
-        current_version = self.get_collection_version(version_id)
-        if current_version.published_at is not None:
+        current_collection_version = self.get_collection_version(version_id)
+        if current_collection_version.published_at is not None:
             raise CollectionUpdateException(["Cannot update a published collection"])
 
         # Determine if publisher metadata should be unset, ignored or set at the end of the method.
@@ -363,13 +363,16 @@ class BusinessLogic(BusinessLogicInterface):
         old_doi = None
         if not ignore_doi_update:
             # Determine if the DOI has changed
-            old_doi = next((link.uri for link in current_version.metadata.links if link.type == "DOI"), None)
+            old_doi = next((link.uri for link in current_collection_version.metadata.links if link.type == "DOI"), None)
             new_doi = (
                 None if body.links is None else next((link.uri for link in body.links if link.type == "DOI"), None)
             )
 
             if old_doi != new_doi:
-                for dataset in current_version.datasets:
+                for dataset in current_collection_version.datasets:
+                    # Avoid reprocessing a dataset while it is already processing to avoid race conditions
+                    # We only support all-or-nothing dataset DOI updates in a collection to avoid mismatching citations
+                    # in a collection.
                     if dataset.status.processing_status not in [
                         DatasetProcessingStatus.SUCCESS,
                         DatasetProcessingStatus.FAILURE,
@@ -390,7 +393,7 @@ class BusinessLogic(BusinessLogicInterface):
             raise CollectionUpdateException(errors)
 
         # Merge the updated fields in the existing metadata object. Use a copy to ensure immutability.
-        new_metadata = copy.deepcopy(current_version.metadata)
+        new_metadata = copy.deepcopy(current_collection_version.metadata)
         for field in vars(body):
             if hasattr(body, field) and (value := getattr(body, field)) is not None:
                 if isinstance(value, str):
@@ -407,21 +410,22 @@ class BusinessLogic(BusinessLogicInterface):
         self.database_provider.save_collection_metadata(version_id, new_metadata)
 
         if not ignore_doi_update and new_doi != old_doi and FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4):
-            for dataset in current_version.datasets:
+            for dataset in current_collection_version.datasets:
                 if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
                     self.logger.info(
                         f"Dataset {dataset.version_id.id} is not successfully processed. Skipping metadata update."
                     )
                     continue
 
-                new_dataset_version_id, _ = self.create_empty_version_for_existing_dataset(
-                    current_version.version_id, dataset.version_id
+                new_dataset_version_id, _ = self.create_empty_dataset_version_for_current_dataset(
+                    current_collection_version.version_id, dataset.version_id
                 )
                 citation = self.generate_dataset_citation(
-                    current_version.collection_id, new_dataset_version_id, new_doi
+                    current_collection_version.collection_id, new_dataset_version_id, new_doi
                 )
+                metadata_update = DatasetArtifactMetadataUpdate(citation=citation)
                 self.trigger_dataset_artifact_update(
-                    current_version, {"citation": citation}, dataset.version_id, new_dataset_version_id
+                    current_collection_version, metadata_update, dataset.version_id, new_dataset_version_id
                 )
 
     def _assert_collection_version_unpublished(
@@ -458,7 +462,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         return (new_dataset_version.version_id, new_dataset_version.dataset_id)
 
-    def create_empty_version_for_existing_dataset(
+    def create_empty_dataset_version_for_current_dataset(
         self, collection_version_id: CollectionVersionId, current_dataset_version_id: DatasetVersionId
     ) -> Tuple[DatasetVersionId, DatasetId]:
         """
@@ -483,7 +487,7 @@ class BusinessLogic(BusinessLogicInterface):
         collection_version_id: CollectionVersionId,
         url: str,
         file_size: Optional[int],
-        existing_dataset_version_id: Optional[DatasetVersionId],
+        current_dataset_version_id: Optional[DatasetVersionId],
         start_step_function: bool = True,
     ) -> Tuple[DatasetVersionId, DatasetId]:
         """
@@ -495,7 +499,7 @@ class BusinessLogic(BusinessLogicInterface):
                 "message": "ingesting dataset",
                 "collection_version_id": collection_version_id,
                 "url": url,
-                "existing_dataset_version_id": existing_dataset_version_id,
+                "current_dataset_version_id": current_dataset_version_id,
             }
         )
         if not self.uri_provider.validate(url):
@@ -515,17 +519,17 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Creates a dataset version that the processing pipeline will point to
         new_dataset_version: DatasetVersion
-        if existing_dataset_version_id is not None:
+        if current_dataset_version_id is not None:
             # Ensure that the dataset belongs to the collection
-            if existing_dataset_version_id not in [d.version_id for d in collection.datasets]:
+            if current_dataset_version_id not in [d.version_id for d in collection.datasets]:
                 raise DatasetNotFoundException(
-                    f"Dataset {existing_dataset_version_id.id} does not belong to the desired collection"
+                    f"Dataset {current_dataset_version_id.id} does not belong to the desired collection"
                 )
 
-            dataset_version = self.database_provider.get_dataset_version(existing_dataset_version_id)
+            dataset_version = self.database_provider.get_dataset_version(current_dataset_version_id)
             if dataset_version is None:
                 raise DatasetNotFoundException(
-                    f"Trying to replace non existent dataset {existing_dataset_version_id.id}"
+                    f"Trying to replace non existent dataset {current_dataset_version_id.id}"
                 )
 
             if dataset_version.status.processing_status not in [
@@ -534,7 +538,7 @@ class BusinessLogic(BusinessLogicInterface):
                 DatasetProcessingStatus.INITIALIZED,
             ]:
                 raise DatasetInWrongStatusException(
-                    f"Unable to reprocess dataset {existing_dataset_version_id.id}: processing status is "
+                    f"Unable to reprocess dataset {current_dataset_version_id.id}: processing status is "
                     f"{dataset_version.status.processing_status.name}"
                 )
 
@@ -548,7 +552,7 @@ class BusinessLogic(BusinessLogicInterface):
                 new_dataset_version = dataset_version
             else:
                 new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
-                    collection_version_id, existing_dataset_version_id
+                    collection_version_id, current_dataset_version_id
                 )
         else:
             new_dataset_version = self.database_provider.create_canonical_dataset(collection_version_id)

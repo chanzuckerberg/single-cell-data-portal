@@ -6,6 +6,7 @@ from typing import Dict
 import boto3
 
 from backend.layers.common.entities import (
+    DatasetArtifactMetadataUpdate,
     DatasetVersionId,
 )
 
@@ -13,9 +14,9 @@ from backend.layers.common.entities import (
 class BatchJobProviderInterface:
     def start_metadata_update_batch_job(
         self,
-        old_dataset_version_id: DatasetVersionId,
+        current_dataset_version_id: DatasetVersionId,
         new_dataset_version_id: DatasetVersionId,
-        metadata_update_dict: Dict[str, str],
+        metadata_update: DatasetArtifactMetadataUpdate,
     ) -> None:
         pass
 
@@ -26,9 +27,9 @@ class BatchJobProvider(BatchJobProviderInterface):
 
     def start_metadata_update_batch_job(
         self,
-        old_dataset_version_id: DatasetVersionId,
+        current_dataset_version_id: DatasetVersionId,
         new_dataset_version_id: DatasetVersionId,
-        metadata_update_dict: Dict[str, str],
+        metadata_update: DatasetArtifactMetadataUpdate,
     ) -> Dict[str, str]:
         """
         Starts a Batch Job that updates metadata on all dataset artifacts with indicated mapped changes
@@ -44,8 +45,8 @@ class BatchJobProvider(BatchJobProviderInterface):
             containerOverrides={
                 "environment": [
                     {
-                        "name": "OLD_DATASET_VERSION_ID",
-                        "value": old_dataset_version_id.id,
+                        "name": "CURRENT_DATASET_VERSION_ID",
+                        "value": current_dataset_version_id.id,
                     },
                     {
                         "name": "NEW_DATASET_VERSION_ID",
@@ -53,7 +54,7 @@ class BatchJobProvider(BatchJobProviderInterface):
                     },
                     {
                         "name": "METADATA_UPDATE_JSON",
-                        "value": json.dumps(metadata_update_dict),
+                        "value": json.dumps(metadata_update.as_dict_without_none_values()),
                     },
                 ]
             },
