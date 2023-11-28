@@ -32,7 +32,7 @@ def s3_snapshot():
                        expression_summary_cube=tiledb_open_s3_uri('s3://cellxgene-wmg-staging/snapshots/v3/1701021778/expression_summary'),
                        expression_summary_default_cube=tiledb_open_s3_uri('s3://cellxgene-wmg-staging/snapshots/v3/1701021778/expression_summary_default'))
 
-def print_profile_results_web_app_query(snapshot, profile_func, randomize_reqs):
+def print_profile_results_web_app_query(snapshot, profile_func, randomize_reqs, num_trials, wait):
     expr_default_cube = snapshot.expression_summary_default_cube.df[:]
     unique_genes = list(expr_default_cube.gene_ontology_term_id.unique())
 
@@ -42,9 +42,9 @@ def print_profile_results_web_app_query(snapshot, profile_func, randomize_reqs):
         )
     
     query_obj = WmgQuery(snapshot, cube_query_params)
-    profile_func(query_obj, unique_genes, randomize_reqs)
+    profile_func(query_obj, unique_genes, randomize_reqs, num_trials, wait)
 
-def print_profile_results_raw_query(snapshot, profile_func, randomize_reqs):
+def print_profile_results_raw_query(snapshot, profile_func, randomize_reqs, num_trials, wait):
     expr_default_cube = snapshot.expression_summary_default_cube.df[:]
     unique_genes = list(expr_default_cube.gene_ontology_term_id.unique())
 
@@ -55,7 +55,9 @@ def print_profile_results_raw_query(snapshot, profile_func, randomize_reqs):
         cube_indexed_dims,
         cube_non_indexed_attrs,
         unique_genes,
-        randomize_reqs)
+        randomize_reqs,
+        num_trials,
+        wait)
 
 def gene_sample(randomize, all_genes, k):
     if randomize:
@@ -108,12 +110,14 @@ def simple_wallclock_web_app_query(
         query_obj,
         unique_genes,
         randomize_reqs,
-        num_trials=1,
+        num_trials,
+        wait,
         num_genes_per_trial=50):
     print(f"#####Simple Wallclock Profiling WEB APP QUERY#####")
-    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}")
+    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}, randomize_queries: {randomize_reqs}, wait_time: {wait}")
 
     total_query_time = 0
+    query_times = []
     for _ in range(num_trials):
         criteria, compare = get_query_k_random_genes_group_by_disease(
             randomize_reqs,
@@ -122,9 +126,12 @@ def simple_wallclock_web_app_query(
         start = time.perf_counter()
         result_df = query_obj.expression_summary(criteria, compare_dimension=compare)
         end = time.perf_counter()
+        query_times.append(end - start)
         total_query_time += (end - start)
+        time.sleep(wait)
 
     print(f"total_query_time: {total_query_time}, avg_query_time: {total_query_time/num_trials}")
+    print(f"query_times: {query_times}")
 
 def simple_wallclock_raw_query(
         expr_summary_array,
@@ -132,12 +139,14 @@ def simple_wallclock_raw_query(
         cube_non_indexed_attrs,
         all_genes,
         randomize_reqs,
-        num_trials=1,
+        num_trials,
+        wait,
         num_genes_per_trial=50):
     print(f"#####Simple Wallclock Profiling RAW QUERY#####")
-    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}")
+    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}, randomize_queries: {randomize_reqs}, wait_time: {wait}")
 
     total_query_time = 0
+    query_times = []
     for _ in range(num_trials):
         random_genes = gene_sample(randomize_reqs, all_genes, num_genes_per_trial)
         indexed_dims_query = tuple([random_genes, [], 'NCBITaxon:9606'])
@@ -154,9 +163,12 @@ def simple_wallclock_raw_query(
         result_df = pd.concat(df_indexer_obj)
 
         end = time.perf_counter()
+        query_times.append(end - start)
         total_query_time += (end - start)
+        time.sleep(wait)
 
     print(f"total_query_time: {total_query_time}, avg_query_time: {total_query_time/num_trials}")
+    print(f"query_times: {query_times}")
 
 # Profiling cpu and non-cpu time using cProfile
 def not_cpu_time():
@@ -168,9 +180,10 @@ def cprofile_profiler_web_app_query(
         query_obj,
         unique_genes,
         randomize_reqs,
-        non_cpu_time=False,
-        num_trials = 1,
-        num_genes_per_trial=50):
+        num_trials,
+        wait,
+        num_genes_per_trial=50,
+        non_cpu_time=False):
     profiler = Profile(not_cpu_time) if non_cpu_time else Profile()
     
     for i in range(num_trials):
@@ -192,37 +205,42 @@ def cprofile_profiler_web_app_query(
         # To print full profile info do: `print(s.getvalue())``
         print('\n'.join(s.getvalue().split('\n')[:50]))
         print("\n\n\n")
+        time.sleep(wait)
 
 def cprofile_wallclock_web_app_query(
         query_obj,
         unique_genes,
         randomize_reqs,
-        num_trials=1,
+        num_trials,
+        wait,
         num_genes_per_trial=50):
     print(f"#####CProfile Full Process Time Profiling WEB APP QUERY#####")
-    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}")
+    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}, randomize_queries: {randomize_reqs}, wait_time: {wait}")
     cprofile_profiler_web_app_query(
         query_obj,
         unique_genes,
         randomize_reqs,
-        num_trials=num_trials,
+        num_trials,
+        wait,
         num_genes_per_trial=num_genes_per_trial)
 
 def cprofile_non_cpu_time_web_app_query(
         query_obj,
         unique_genes,
         randomize_reqs,
-        num_trials=1,
+        num_trials,
+        wait,
         num_genes_per_trial=50):
     print(f"#####CProfile Non CPU Time Profiling WEB APP QUERY#####")
-    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}")
+    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}, randomize_queries: {randomize_reqs}, wait_time: {wait}")
     cprofile_profiler_web_app_query(
         query_obj,
         unique_genes,
         randomize_reqs,
-        non_cpu_time=True,
-        num_trials=num_trials,
-        num_genes_per_trial=num_genes_per_trial)
+        num_trials,
+        wait,
+        num_genes_per_trial=num_genes_per_trial,
+        non_cpu_time=True)
 
 def cprofile_profiler_raw_query(
         expr_summary_array,
@@ -230,9 +248,10 @@ def cprofile_profiler_raw_query(
         cube_non_indexed_attrs,
         all_genes,
         randomize_reqs,
-        non_cpu_time=False,
-        num_trials = 1,
-        num_genes_per_trial=50):
+        num_trials,
+        wait,
+        num_genes_per_trial=50,
+        non_cpu_time=False):
     profiler = Profile(not_cpu_time) if non_cpu_time else Profile()
 
     def tiledb_raw_query(indexed_dims_query):
@@ -264,6 +283,7 @@ def cprofile_profiler_raw_query(
         # To print full profile info do: `print(s.getvalue())``
         print('\n'.join(s.getvalue().split('\n')[:50]))
         print("\n\n\n")
+        time.sleep(wait)
 
 def cprofile_wallclock_raw_query(
         expr_summary_array,
@@ -271,17 +291,19 @@ def cprofile_wallclock_raw_query(
         cube_non_indexed_attrs,
         all_genes,
         randomize_reqs,
-        num_trials=1,
+        num_trials,
+        wait,
         num_genes_per_trial=50):
     print(f"#####CProfile Full Process Time Profiling RAW QUERY#####")
-    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}")
+    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}, randomize_queries: {randomize_reqs}, wait_time: {wait}")
     cprofile_profiler_raw_query(
         expr_summary_array,
         cube_indexed_dims,
         cube_non_indexed_attrs,
         all_genes,
         randomize_reqs,
-        num_trials=num_trials,
+        num_trials,
+        wait,
         num_genes_per_trial=num_genes_per_trial)
 
 def cprofile_non_cpu_time_raw_query(
@@ -290,29 +312,33 @@ def cprofile_non_cpu_time_raw_query(
         cube_non_indexed_attrs,
         all_genes,
         randomize_reqs,
-        num_trials=1,
+        num_trials,
+        wait,
         num_genes_per_trial=50):
     print(f"#####CProfile Non CPU Time Profiling RAW QUERY#####")
-    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}")
+    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}, randomize_queries: {randomize_reqs}, wait_time: {wait}")
     cprofile_profiler_raw_query(
         expr_summary_array,
         cube_indexed_dims,
         cube_non_indexed_attrs,
         all_genes,
         randomize_reqs,
-        non_cpu_time=True,
-        num_trials=num_trials,
-        num_genes_per_trial=num_genes_per_trial)
+        num_trials,
+        wait,
+        num_genes_per_trial=num_genes_per_trial,
+        non_cpu_time=True)
 
 # Get profile information directly from tiledb stats dump
 def tiledb_native_profiling_stats_web_app_query(
         query_obj, 
         unique_genes,
         randomize_reqs,
-        num_trials=1,
+        num_trials,
+        wait,
         num_genes_per_trial=50):
     print(f"#####Tiledb Stats WEB APP QUERY#####")
-
+    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}, randomize_queries: {randomize_reqs}, wait_time: {wait}")
+    
     for i in range(num_trials):
         print(f"###### Trial: {i+1} ######\n\n")
         criteria, compare = get_query_k_random_genes_group_by_disease(
@@ -325,6 +351,7 @@ def tiledb_native_profiling_stats_web_app_query(
         tiledb.stats_disable()
         pprint.pprint(tiledb_stats_str)
         print("\n\n\n")
+        time.sleep(wait)
 
 def tiledb_native_profiling_stats_raw_query(
         expr_summary_array,
@@ -332,10 +359,12 @@ def tiledb_native_profiling_stats_raw_query(
         cube_non_indexed_attrs,
         all_genes,
         randomize_reqs,
-        num_trials=1,
+        num_trials,
+        wait,
         num_genes_per_trial=50):
     print(f"#####Tiledb Stats RAW QUERY#####")
-
+    print(f"num_trials: {num_trials}, num_genes_per_trial: {num_genes_per_trial}, randomize_queries: {randomize_reqs}, wait_time: {wait}")
+    
     for i in range(num_trials):
         print(f"###### Trial: {i+1} ######\n\n")
         random_genes = gene_sample(randomize_reqs, all_genes, num_genes_per_trial)
@@ -353,6 +382,7 @@ def tiledb_native_profiling_stats_raw_query(
         tiledb.stats_disable()
         pprint.pprint(tiledb_stats_str)
         print("\n\n\n")
+        time.sleep(wait)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Profile expression_summary cube query')
@@ -376,10 +406,22 @@ if __name__ == "__main__":
         help='"raw-query" executes just the portion of the function that calls tiledb')
     
     parser.add_argument(
+        '--num-trials',
+        type=int,
+        default=1,
+        help='Specify number of trials to run')
+    
+    parser.add_argument(
         '--random',
         type=bool,
         default=False,
         help='Specify if the request should be randomly generated or not')
+    
+    parser.add_argument(
+        '--wait',
+        type=float,
+        default=0.1,
+        help='Specify number of seconds to wait between trials')
     
     args = parser.parse_args()
 
@@ -403,7 +445,7 @@ if __name__ == "__main__":
         elif args.profile_type == "tiledb-stats":
             profile_func = tiledb_native_profiling_stats_web_app_query
         
-        print_profile_results_web_app_query(snapshot, profile_func, args.random)
+        print_profile_results_web_app_query(snapshot, profile_func, args.random, args.num_trials, args.wait)
     
     # Profile just the tiledb query. THE LATENCY OBSERVED HERE
     # IS ENTIRELY ATTRIBUTED TILED!!!
@@ -417,7 +459,7 @@ if __name__ == "__main__":
         elif args.profile_type == "tiledb-stats":
             profile_func = tiledb_native_profiling_stats_raw_query
         
-        print_profile_results_raw_query(snapshot, profile_func, args.random)
+        print_profile_results_raw_query(snapshot, profile_func, args.random, args.num_trials, args.wait)
     
 
 
