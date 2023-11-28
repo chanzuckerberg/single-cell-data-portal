@@ -148,7 +148,7 @@ def simple_wallclock_raw_query(
 
     total_query_time = 0
     query_times = []
-    for _ in range(num_trials):
+    for i in range(num_trials):
         random_genes = gene_sample(randomize_reqs, all_genes, num_genes_per_trial)
         indexed_dims_query = tuple([random_genes, [], 'NCBITaxon:9606'])
         start = time.perf_counter()
