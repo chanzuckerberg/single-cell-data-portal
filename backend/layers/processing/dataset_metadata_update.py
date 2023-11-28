@@ -97,7 +97,7 @@ class DatasetMetadataUpdater(ProcessDownload):
     ):
         seurat_filename = self.download_from_source_uri(
             source_uri=rds_uri,
-            local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
+            local_path=CorporaConstants.LABELED_RDS_ARTIFACT_FILENAME,
         )
         self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTING)
 
@@ -173,6 +173,7 @@ class DatasetMetadataUpdater(ProcessDownload):
             self.logger.error(f"Cannot find raw H5AD artifact uri for {current_dataset_version_id}.")
             raise ValueError
 
+        # uploads current dataset version's raw h5ad to artifact bucket directory for the new dataset version
         self.process(new_dataset_version_id, raw_h5ad_uri, self.artifact_bucket)
 
         new_artifact_key_prefix = self.get_key_prefix(new_dataset_version_id.id)
@@ -244,7 +245,8 @@ class DatasetMetadataUpdater(ProcessDownload):
                     new_dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.FAILED
                 )
 
-        # blocking call on async jobs before checking for valid artifact statuses
+        # blocking call on async functions before checking for valid artifact statuses
+        # calls .get() to ensure any exceptions in the async functions are raised to main
         [j.get() for j in artifact_jobs]
 
         if self.has_valid_artifact_statuses(new_dataset_version_id):
