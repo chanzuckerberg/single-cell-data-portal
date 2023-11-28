@@ -166,20 +166,22 @@ class DatasetMetadataUpdater(ProcessDownload):
 
         new_artifact_key_prefix = self.get_key_prefix(new_dataset_version_id.id)
 
+        artifact_jobs = []
+
         with multiprocessing.Pool() as pool:
             if DatasetArtifactType.H5AD in artifact_uris:
                 self.logger.info("Main: Starting thread for h5ad update")
-                pool.starmap_async(
-                    self.update_h5ad,
-                    [
+                artifact_jobs.append(
+                    pool.apply_async(
+                        self.update_h5ad,
                         (
                             artifact_uris[DatasetArtifactType.H5AD],
                             old_dataset_version,
                             new_artifact_key_prefix,
                             new_dataset_version_id,
                             metadata_update,
-                        )
-                    ],
+                        ),
+                    )
                 )
             else:
                 self.logger.error(f"Cannot find labeled H5AD artifact uri for {old_dataset_version_id}.")
@@ -193,16 +195,16 @@ class DatasetMetadataUpdater(ProcessDownload):
 
             if DatasetArtifactType.RDS in artifact_uris:
                 self.logger.info("Main: Starting thread for rds update")
-                pool.starmap_async(
-                    self.update_rds,
-                    [
+                artifact_jobs.append(
+                    pool.apply_async(
+                        self.update_rds,
                         (
                             artifact_uris[DatasetArtifactType.RDS],
                             new_artifact_key_prefix,
                             new_dataset_version_id,
                             metadata_update,
-                        )
-                    ],
+                        ),
+                    )
                 )
             elif old_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED:
                 self.update_processing_status(
@@ -222,16 +224,16 @@ class DatasetMetadataUpdater(ProcessDownload):
 
             if DatasetArtifactType.CXG in artifact_uris:
                 self.logger.info("Main: Starting thread for cxg update")
-                pool.starmap_async(
-                    self.update_cxg,
-                    [
+                artifact_jobs.append(
+                    pool.apply_async(
+                        self.update_cxg,
                         (
                             artifact_uris[DatasetArtifactType.CXG],
                             f"s3://{self.cellxgene_bucket}/{new_artifact_key_prefix}.cxg",
                             new_dataset_version_id,
                             metadata_update,
-                        )
-                    ],
+                        ),
+                    )
                 )
             else:
                 self.logger.error(f"Cannot find cxg artifact uri for {old_dataset_version_id}.")
@@ -242,7 +244,7 @@ class DatasetMetadataUpdater(ProcessDownload):
                     new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
                 )
                 raise ValueError
-
+        [j.get() for j in artifact_jobs]  # Waits for all jobs to finish; raises if errors
         if self.has_valid_artifact_statuses(new_dataset_version_id):
             self.update_processing_status(
                 new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
