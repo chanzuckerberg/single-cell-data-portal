@@ -273,6 +273,7 @@ if __name__ == "__main__":
         DatabaseProvider(),
         None,
         None,
+        None,
         S3Provider(),
         UriProvider(),
     )
