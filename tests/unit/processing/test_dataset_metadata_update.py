@@ -33,6 +33,16 @@ base = importr("base")
 seurat = importr("SeuratObject")
 
 
+def mock_apply_async(func, args=()):
+    return Mock(return_value=func(*args))
+
+
+mock_enter = Mock(apply_async=Mock(side_effect=mock_apply_async))
+mock_pool = Mock(__enter__=Mock(return_value=mock_enter), __exit__=Mock())
+mock_pool_constructor = Mock(return_value=mock_pool)
+
+
+@patch("backend.layers.processing.dataset_metadata_update.multiprocessing.Pool", mock_pool_constructor)
 class TestDatasetMetadataUpdater(BaseProcessingTest):
     def setUp(self):
         super().setUp()
@@ -51,12 +61,12 @@ class TestDatasetMetadataUpdater(BaseProcessingTest):
     @patch("scanpy.read_h5ad")
     def test_update_h5ad(self, mock_read_h5ad, *args):
         collection_version = self.generate_unpublished_collection(add_datasets=1)
-        original_dataset_version = collection_version.datasets[0]
+        current_dataset_version = collection_version.datasets[0]
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id=collection_version.version_id,
             url=None,
             file_size=0,
-            existing_dataset_version_id=original_dataset_version.version_id,
+            existing_dataset_version_id=current_dataset_version.version_id,
             start_step_function=False,
         )
         key_prefix = new_dataset_version_id.id
@@ -70,7 +80,7 @@ class TestDatasetMetadataUpdater(BaseProcessingTest):
         mock_anndata.write = Mock()
         mock_read_h5ad.return_value = mock_anndata
 
-        self.updater.update_h5ad(None, original_dataset_version, key_prefix, new_dataset_version_id, metadata_update)
+        self.updater.update_h5ad(None, current_dataset_version, key_prefix, new_dataset_version_id, metadata_update)
 
         # check mock_anndata object
         mock_read_h5ad.assert_called_with(self.local_filename, backed="r")
@@ -111,12 +121,12 @@ class TestDatasetMetadataUpdater(BaseProcessingTest):
             )
 
             collection_version = self.generate_unpublished_collection(add_datasets=1)
-            original_dataset_version = collection_version.datasets[0]
+            current_dataset_version = collection_version.datasets[0]
             new_dataset_version_id, _ = self.business_logic.ingest_dataset(
                 collection_version_id=collection_version.version_id,
                 url=None,
                 file_size=0,
-                existing_dataset_version_id=original_dataset_version.version_id,
+                existing_dataset_version_id=current_dataset_version.version_id,
                 start_step_function=False,
             )
             metadata_update = DatasetArtifactMetadataUpdate(
@@ -158,12 +168,12 @@ class TestDatasetMetadataUpdater(BaseProcessingTest):
             self.updater.download_from_source_uri = Mock(return_value=temp_path)
 
             collection_version = self.generate_unpublished_collection(add_datasets=1)
-            original_dataset_version = collection_version.datasets[0]
+            current_dataset_version = collection_version.datasets[0]
             new_dataset_version_id, _ = self.business_logic.ingest_dataset(
                 collection_version_id=collection_version.version_id,
                 url=None,
                 file_size=0,
-                existing_dataset_version_id=original_dataset_version.version_id,
+                existing_dataset_version_id=current_dataset_version.version_id,
                 start_step_function=False,
             )
             key_prefix = new_dataset_version_id.id
@@ -250,27 +260,27 @@ class TestDatasetMetadataUpdater(BaseProcessingTest):
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_rds")
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_cxg")
     def test_update_metadata(self, mock_update_cxg, mock_update_rds, mock_update_h5ad, *args):
-        original_dataset_version = self.generate_dataset(
+        current_dataset_version = self.generate_dataset(
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
             ]
         )
-        collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
-        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
+        current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id=collection_version_id,
             url=None,
             file_size=0,
-            existing_dataset_version_id=old_dataset_version_id,
+            existing_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
         )
         self.updater.has_valid_artifact_statuses = Mock(return_value=True)
-        self.updater.update_metadata(old_dataset_version_id, new_dataset_version_id, None)
+        self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
 
-        mock_update_cxg.assert_called_once()
-        mock_update_rds.assert_called_once()
         mock_update_h5ad.assert_called_once()
+        mock_update_rds.assert_called_once()
+        mock_update_cxg.assert_called_once()
 
         # check that collection version maps to dataset version with updated metadata
         collection_version = self.business_logic.get_collection_version(collection_version_id)
@@ -290,7 +300,7 @@ class TestDatasetMetadataUpdater(BaseProcessingTest):
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_rds")
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_cxg")
     def test_update_metadata__rds_skipped(self, mock_update_cxg, mock_update_rds, mock_update_h5ad, *args):
-        original_dataset_version = self.generate_dataset(
+        current_dataset_version = self.generate_dataset(
             artifacts=[
                 DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "s3://fake.bucket/raw.h5ad"),
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, "s3://fake.bucket/local.h5ad"),
@@ -301,17 +311,17 @@ class TestDatasetMetadataUpdater(BaseProcessingTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.SKIPPED),
             ],
         )
-        collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
-        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
+        current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id=collection_version_id,
             url=None,
             file_size=0,
-            existing_dataset_version_id=old_dataset_version_id,
+            existing_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
         )
         self.updater.has_valid_artifact_statuses = Mock(return_value=True)
-        self.updater.update_metadata(old_dataset_version_id, new_dataset_version_id, None)
+        self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
 
         mock_update_h5ad.assert_called_once()
         mock_update_cxg.assert_called_once()
@@ -329,178 +339,185 @@ class TestDatasetMetadataUpdater(BaseProcessingTest):
 
         assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad")
 
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_h5ad")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_rds")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_cxg")
-    def test_update_metadata__bad_processing_status(self, mock_update_cxg, mock_update_rds, mock_update_h5ad, *args):
-        original_dataset_version = self.generate_dataset(
+    def test_update_metadata__current_dataset_version_bad_processing_status(self):
+        current_dataset_version = self.generate_dataset(
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
             ]
         )
-        collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
-        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
-        self.updater.update_metadata(old_dataset_version_id, None, None)
+        current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
+        self.updater.process = Mock()
+        self.updater.update_metadata(current_dataset_version_id, None, None)
 
-        mock_update_h5ad.assert_not_called()
-        mock_update_cxg.assert_not_called()
-        mock_update_rds.assert_not_called()
+        self.updater.process.assert_not_called()
 
-        dataset_version = self.business_logic.get_collection_version(collection_version_id).datasets[0]
-
-        # no ingest or update triggered
-        assert dataset_version.version_id == old_dataset_version_id
-
-    @patch("backend.common.utils.dl_sources.uri.downloader")
-    def test_update_metadata__error_if_missing_raw_h5ad(self, *args):
-        original_dataset_version = self.generate_dataset(
-            artifacts=[
-                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "s3://fake.bucket/local.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.CXG, "s3://fake.bucket/local.cxg"),
-                DatasetArtifactUpdate(DatasetArtifactType.RDS, "s3://fake.bucket/local.rds"),
-            ],
-            statuses=[
-                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
-                DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
-            ],
-        )
-        collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
-        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
-        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            collection_version_id=collection_version_id,
-            url=None,
-            file_size=0,
-            existing_dataset_version_id=old_dataset_version_id,
-            start_step_function=False,
-        )
-
-        with pytest.raises(ValueError):
-            self.updater.update_metadata(
-                old_dataset_version_id,
-                new_dataset_version_id,
-                None,
-            )
-
-    @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("scanpy.read_h5ad")
-    def test_update_metadata__error_if_missing_labeled_h5ad(self, *args):
-        original_dataset_version = self.generate_dataset(
-            artifacts=[
-                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "s3://fake.bucket/raw.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.CXG, "s3://fake.bucket/local.cxg"),
-                DatasetArtifactUpdate(DatasetArtifactType.RDS, "s3://fake.bucket/local.rds"),
-            ],
-            statuses=[
-                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
-                DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
-            ],
-        )
-        collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
-        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
-        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            collection_version_id=collection_version_id,
-            url=None,
-            file_size=0,
-            existing_dataset_version_id=old_dataset_version_id,
-            start_step_function=False,
-        )
-
-        with pytest.raises(ValueError):
-            self.updater.update_metadata(
-                old_dataset_version_id,
-                new_dataset_version_id,
-                None,
-            )
-
-    @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("scanpy.read_h5ad")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_h5ad")
-    def test_update_metadata__error_if_missing_rds(self, *args):
-        original_dataset_version = self.generate_dataset(
-            artifacts=[
-                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "s3://fake.bucket/raw.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "s3://fake.bucket/local.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.CXG, "s3://fake.bucket/local.cxg"),
-            ],
-            statuses=[
-                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
-                DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
-            ],
-        )
-        collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
-        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
-        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            collection_version_id=collection_version_id,
-            url=None,
-            file_size=0,
-            existing_dataset_version_id=old_dataset_version_id,
-            start_step_function=False,
-        )
-
-        with pytest.raises(ValueError):
-            self.updater.update_metadata(
-                old_dataset_version_id,
-                new_dataset_version_id,
-                None,
-            )
-
-    @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("scanpy.read_h5ad")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_h5ad")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_rds")
-    def test_update_metadata__error_if_missing_cxg(self, *args):
-        original_dataset_version = self.generate_dataset(
-            artifacts=[
-                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "s3://fake.bucket/raw.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "s3://fake.bucket/local.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.RDS, "s3://fake.bucket/local.rds"),
-            ],
-            statuses=[
-                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
-                DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
-            ],
-        )
-        collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
-        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
-        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            collection_version_id=collection_version_id,
-            url=None,
-            file_size=0,
-            existing_dataset_version_id=old_dataset_version_id,
-            start_step_function=False,
-        )
-
-        with pytest.raises(ValueError):
-            self.updater.update_metadata(
-                old_dataset_version_id,
-                new_dataset_version_id,
-                None,
-            )
-
-    @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("scanpy.read_h5ad")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_h5ad")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_rds")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_cxg")
-    def test_update_metadata__invalid_artifact_status(self, mock_update_cxg, mock_update_rds, mock_update_h5ad, *args):
-        original_dataset_version = self.generate_dataset(
+    def test_update_metadata__new_dataset_version_bad_processing_status(self):
+        current_dataset_version = self.generate_dataset(
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
             ]
         )
-        collection_version_id = CollectionVersionId(original_dataset_version.collection_version_id)
-        old_dataset_version_id = DatasetVersionId(original_dataset_version.dataset_version_id)
+        current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
+        new_dataset_version = self.generate_dataset(
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+            ]
+        )
+        new_dataset_version_id = DatasetVersionId(new_dataset_version.dataset_version_id)
+        self.updater.process = Mock()
+        self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
+
+        self.updater.process.assert_not_called()
+
+    @patch("backend.common.utils.dl_sources.uri.downloader")
+    def test_update_metadata__error_if_missing_raw_h5ad(self, *args):
+        current_dataset_version = self.generate_dataset(
+            artifacts=[
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "s3://fake.bucket/local.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.CXG, "s3://fake.bucket/local.cxg"),
+                DatasetArtifactUpdate(DatasetArtifactType.RDS, "s3://fake.bucket/local.rds"),
+            ],
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+            ],
+        )
+        collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
+        current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id=collection_version_id,
             url=None,
             file_size=0,
-            existing_dataset_version_id=old_dataset_version_id,
+            existing_dataset_version_id=current_dataset_version_id,
+            start_step_function=False,
+        )
+
+        with pytest.raises(ValueError):
+            self.updater.update_metadata(
+                current_dataset_version_id,
+                new_dataset_version_id,
+                None,
+            )
+
+    @patch("backend.common.utils.dl_sources.uri.downloader")
+    @patch("scanpy.read_h5ad")
+    def test_update_metadata__missing_labeled_h5ad(self, *args):
+        current_dataset_version = self.generate_dataset(
+            artifacts=[
+                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "s3://fake.bucket/raw.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.CXG, "s3://fake.bucket/local.cxg"),
+                DatasetArtifactUpdate(DatasetArtifactType.RDS, "s3://fake.bucket/local.rds"),
+            ],
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+            ],
+        )
+        collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
+        current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=current_dataset_version_id,
+            start_step_function=False,
+        )
+
+        self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
+
+        new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
+
+        assert new_dataset_version.status.h5ad_status == DatasetConversionStatus.FAILED
+        assert new_dataset_version.status.processing_status == DatasetProcessingStatus.FAILURE
+
+    @patch("backend.common.utils.dl_sources.uri.downloader")
+    @patch("scanpy.read_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_h5ad")
+    def test_update_metadata__missing_rds(self, *args):
+        current_dataset_version = self.generate_dataset(
+            artifacts=[
+                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "s3://fake.bucket/raw.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "s3://fake.bucket/local.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.CXG, "s3://fake.bucket/local.cxg"),
+            ],
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+            ],
+        )
+        collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
+        current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=current_dataset_version_id,
+            start_step_function=False,
+        )
+
+        self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
+
+        new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
+
+        assert new_dataset_version.status.rds_status == DatasetConversionStatus.FAILED
+        assert new_dataset_version.status.processing_status == DatasetProcessingStatus.FAILURE
+
+    @patch("backend.common.utils.dl_sources.uri.downloader")
+    @patch("scanpy.read_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_rds")
+    def test_update_metadata__missing_cxg(self, *args):
+        current_dataset_version = self.generate_dataset(
+            artifacts=[
+                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "s3://fake.bucket/raw.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "s3://fake.bucket/local.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.RDS, "s3://fake.bucket/local.rds"),
+            ],
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+            ],
+        )
+        collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
+        current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=current_dataset_version_id,
+            start_step_function=False,
+        )
+
+        self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
+
+        new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
+
+        assert new_dataset_version.status.cxg_status == DatasetConversionStatus.FAILED
+        assert new_dataset_version.status.processing_status == DatasetProcessingStatus.FAILURE
+
+    @patch("backend.common.utils.dl_sources.uri.downloader")
+    @patch("scanpy.read_h5ad")
+    def test_update_metadata__invalid_artifact_status(self, *args):
+        current_dataset_version = self.generate_dataset(
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+            ]
+        )
+        collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
+        current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            existing_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
         )
         self.updater.has_valid_artifact_statuses = Mock(return_value=False)
-        self.updater.update_metadata(old_dataset_version_id, new_dataset_version_id, None)
+        self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
 
         collection_version = self.business_logic.get_collection_version(collection_version_id)
         new_dataset_version = collection_version.datasets[0]
