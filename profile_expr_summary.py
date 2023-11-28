@@ -118,7 +118,7 @@ def simple_wallclock_web_app_query(
 
     total_query_time = 0
     query_times = []
-    for _ in range(num_trials):
+    for i in range(num_trials):
         criteria, compare = get_query_k_random_genes_group_by_disease(
             randomize_reqs,
             unique_genes,
@@ -128,6 +128,7 @@ def simple_wallclock_web_app_query(
         end = time.perf_counter()
         query_times.append(end - start)
         total_query_time += (end - start)
+        print(f"trial {i}: query_time: {end - start}")
         time.sleep(wait)
 
     print(f"total_query_time: {total_query_time}, avg_query_time: {total_query_time/num_trials}")
@@ -165,6 +166,7 @@ def simple_wallclock_raw_query(
         end = time.perf_counter()
         query_times.append(end - start)
         total_query_time += (end - start)
+        print(f"trial {i}: query_time: {end - start}")
         time.sleep(wait)
 
     print(f"total_query_time: {total_query_time}, avg_query_time: {total_query_time/num_trials}")
