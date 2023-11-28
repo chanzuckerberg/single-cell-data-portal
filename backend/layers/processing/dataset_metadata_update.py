@@ -82,6 +82,7 @@ class DatasetMetadataUpdater(ProcessDownload):
             DatasetStatusKey.H5AD,
             datasets_bucket=self.datasets_bucket,
         )
+        os.remove(h5ad_filename)
         self.update_processing_status(
             new_dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID
         )
@@ -119,6 +120,7 @@ class DatasetMetadataUpdater(ProcessDownload):
             DatasetStatusKey.RDS,
             datasets_bucket=self.datasets_bucket,
         )
+        os.remove(seurat_filename)
         self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTED)
 
     def update_cxg(

@@ -58,6 +58,7 @@ class TestDatasetMetadataUpdater(BaseProcessingTest):
         self.local_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
+    @patch("backend.layers.processing.dataset_metadata_update.os.remove")
     @patch("scanpy.read_h5ad")
     def test_update_h5ad(self, mock_read_h5ad, *args):
         collection_version = self.generate_unpublished_collection(add_datasets=1)
@@ -161,7 +162,8 @@ class TestDatasetMetadataUpdater(BaseProcessingTest):
 
             assert expected_metadata == actual_stored_metadata
 
-    def test_update_rds(self):
+    @patch("backend.layers.processing.dataset_metadata_update.os.remove")
+    def test_update_rds(self, *args):
         with tempfile.TemporaryDirectory() as tempdir:
             temp_path = os.path.join(tempdir, "test.rds")
             copy2(fixture_file_path("test.rds"), temp_path)
