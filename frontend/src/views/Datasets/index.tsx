@@ -39,6 +39,8 @@ import { CATEGORY_FILTER_DENY_LIST } from "src/views/Datasets/common/constants";
 import { useViewMode, VIEW_MODE } from "src/common/hooks/useViewMode";
 import { DatasetsView as View } from "./style";
 import { GridLoader as Loader } from "src/components/common/Grid/components/Loader/style";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { FEATURES } from "src/common/featureFlags/features";
 
 /**
  * Collection ID object key.
@@ -87,6 +89,9 @@ export default function Datasets(): JSX.Element {
   useExplainNewTab(
     "To maintain your in-progress work on the previous dataset, we opened a new tab."
   );
+
+  // Check if we're running 4.0.0. TODO remove with #6266.
+  const isSchema4 = useFeatureFlag(FEATURES.SCHEMA_4_0_0);
 
   // Filterable datasets joined from datasets and collections responses.
   const {
@@ -272,6 +277,12 @@ export default function Datasets(): JSX.Element {
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.TISSUE_CALCULATED,
       },
+      // Hidden, required for filter.
+      {
+        accessor: "tissueType",
+        filter: "includesSome",
+        id: CATEGORY_FILTER_ID.TISSUE_TYPE,
+      },
     ],
     []
   );
@@ -312,6 +323,7 @@ export default function Datasets(): JSX.Element {
           CATEGORY_FILTER_ID.SEX,
           CATEGORY_FILTER_ID.SUSPENSION_TYPE,
           CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+          CATEGORY_FILTER_ID.TISSUE_TYPE,
           EXPLORER_URL,
           IS_OVER_MAX_CELL_COUNT,
         ],
@@ -338,15 +350,18 @@ export default function Datasets(): JSX.Element {
   // Determine the set of categories to display for the datasets view.
   const categories = useMemo<Set<CATEGORY_FILTER_ID>>(() => {
     return Object.values(CATEGORY_FILTER_ID)
-      .filter(
-        (categoryFilterId: CATEGORY_FILTER_ID) =>
-          !CATEGORY_FILTER_DENY_LIST.includes(categoryFilterId)
-      )
+      .filter((categoryFilterId: CATEGORY_FILTER_ID) => {
+        // TODO remove with #6266.
+        if (categoryFilterId === CATEGORY_FILTER_ID.TISSUE_TYPE) {
+          return isSchema4;
+        }
+        return !CATEGORY_FILTER_DENY_LIST.includes(categoryFilterId);
+      })
       .reduce((accum, categoryFilterId: CATEGORY_FILTER_ID) => {
         accum.add(categoryFilterId);
         return accum;
       }, new Set<CATEGORY_FILTER_ID>());
-  }, []);
+  }, [isSchema4]);
 
   // Set up filter instance.
   const filterInstance = useCategoryFilter(

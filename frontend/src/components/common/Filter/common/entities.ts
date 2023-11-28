@@ -19,6 +19,7 @@ export enum ANALYTICS_PAYLOAD_KEY {
   SUSPENSION_TYPE = "suspension_type",
   SYSTEM = "system",
   TISSUE = "tissue",
+  TISSUE_TYPE = "tissue_type",
 }
 
 // ** Label discriminating unions ** //
@@ -136,6 +137,7 @@ export enum CATEGORY_FILTER_ID {
   "STATUS" = "STATUS",
   "SUSPENSION_TYPE" = "SUSPENSION_TYPE",
   "TISSUE_CALCULATED" = "TISSUE_CALCULATED",
+  "TISSUE_TYPE" = "TISSUE_TYPE",
 }
 
 // ** Category filter types ** //
@@ -342,6 +344,7 @@ export interface Categories {
   tissue: Ontology[];
   tissue_ancestors: string[];
   tissueCalculated: string[];
+  tissueType: TISSUE_TYPE[];
 }
 
 /**
@@ -753,4 +756,13 @@ export interface SelectCategoryView {
  */
 export interface Testable {
   testId?: string;
+}
+
+/**
+ * Set of tissue types.
+ */
+export enum TISSUE_TYPE {
+  TISSUE = "tissue",
+  CELL_CULTURE = "cell culture",
+  ORGANOID = "organoid",
 }

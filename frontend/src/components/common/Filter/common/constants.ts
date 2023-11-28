@@ -904,6 +904,18 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     valueSourceKind: "NONE",
     viewKind: "MULTI_PANEL",
   },
+  {
+    analyticsEvent: EVENTS.FILTER_SELECT_TISSUE_TYPE,
+    analyticsPayloadKey: ANALYTICS_PAYLOAD_KEY.TISSUE_TYPE,
+    categoryFilterId: CATEGORY_FILTER_ID.TISSUE_TYPE,
+    filterOnKey: "tissueType",
+    label: "Tissue Type",
+    labelKind: "VALUE",
+    matchKind: "INCLUDES_SOME",
+    multiselect: true,
+    valueSourceKind: "NONE",
+    viewKind: "SELECT",
+  },
 ];
 
 /**

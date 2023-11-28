@@ -53,12 +53,17 @@ import RevisionButton from "src/components/common/Grid/components/RevisionButton
 import CategoryFilters from "src/components/common/Filter/components/Filters";
 import { useViewMode, VIEW_MODE } from "src/common/hooks/useViewMode";
 import { GridLoader as Loader } from "src/components/common/Grid/components/Loader/style";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { FEATURES } from "src/common/featureFlags/features";
 
 export default function Collections(): JSX.Element {
   const { mode, status } = useViewMode();
 
   // Pop toast if user has been redirected from a tombstoned collection.
   useExplainTombstoned();
+
+  // Check if we're running 4.0.0. TODO remove with #6266.
+  const isSchema4 = useFeatureFlag(FEATURES.SCHEMA_4_0_0);
 
   // Filterable collection datasets joined from datasets index and collections (or user-collections) index responses.
   const {
@@ -251,6 +256,12 @@ export default function Collections(): JSX.Element {
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.TISSUE_CALCULATED,
       },
+      // Hidden, required for filter.
+      {
+        accessor: "tissueType",
+        filter: "includesSome",
+        id: CATEGORY_FILTER_ID.TISSUE_TYPE,
+      },
     ],
     []
   );
@@ -291,15 +302,18 @@ export default function Collections(): JSX.Element {
   // Determine the set of categories to display for the collections view.
   const categories = useMemo<Set<CATEGORY_FILTER_ID>>(() => {
     return Object.values(CATEGORY_FILTER_ID)
-      .filter(
-        (categoryFilterId: CATEGORY_FILTER_ID) =>
-          !CATEGORY_FILTER_DENY_LIST[mode].includes(categoryFilterId)
-      )
+      .filter((categoryFilterId: CATEGORY_FILTER_ID) => {
+        // TODO remove with #6266.
+        if (categoryFilterId === CATEGORY_FILTER_ID.TISSUE_TYPE) {
+          return isSchema4;
+        }
+        return !CATEGORY_FILTER_DENY_LIST[mode].includes(categoryFilterId);
+      })
       .reduce((accum, categoryFilterId: CATEGORY_FILTER_ID) => {
         accum.add(categoryFilterId);
         return accum;
       }, new Set<CATEGORY_FILTER_ID>());
-  }, [mode]);
+  }, [mode, isSchema4]);
 
   // Determine the hidden columns.
   const hiddenColumns = useMemo<string[]>(() => COLUMN_DENY_LIST[mode], [mode]);

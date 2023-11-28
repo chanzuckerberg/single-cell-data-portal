@@ -2,4 +2,5 @@ export enum FEATURES {
   GENE_SETS = "gs",
   CURATOR = "curator",
   FILTER = "filter",
+  SCHEMA_4_0_0 = "schema4",
 }
