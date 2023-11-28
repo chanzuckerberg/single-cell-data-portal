@@ -151,7 +151,7 @@ class ProcessDownload(ProcessingLogic):
         }
 
     def process(
-        self, dataset_version_id: DatasetVersionId, dataset_uri: str, artifact_bucket: str, sfn_task_token: str
+        self, dataset_version_id: DatasetVersionId, dataset_uri: str, artifact_bucket: str, sfn_task_token: str = None
     ):
         """
         Process the download step of the step function
@@ -170,7 +170,7 @@ class ProcessDownload(ProcessingLogic):
             source_uri=dataset_uri,
             local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
         )
-
+        raise ValueError
         response = self.create_batch_job_definition_parameters(local_filename, dataset_version_id.id)
         self.logger.info(response)
 
@@ -187,5 +187,6 @@ class ProcessDownload(ProcessingLogic):
         )
         self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
 
-        sfn_client = StepFunctionProvider().client
-        sfn_client.send_task_success(taskToken=sfn_task_token, output=json.dumps(response))
+        if sfn_task_token:
+            sfn_client = StepFunctionProvider().client
+            sfn_client.send_task_success(taskToken=sfn_task_token, output=json.dumps(response))
