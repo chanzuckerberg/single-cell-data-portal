@@ -53,6 +53,7 @@ import { useConnect } from "./connect";
 import {
   DivTable,
   DivTableCell,
+  DivTableCellPadded,
   DivTableHead,
   DivTableRow,
 } from "../../common/styles";
@@ -302,12 +303,12 @@ function CellInfoSideBar({
                   />
                 </InfoButtonWrapper>
               </DivTableCell>
-              <DivTableCell data-testid="marker-scores-fmg" align>
+              <DivTableCellPadded data-testid="marker-scores-fmg" align>
                 {metadata.marker_score.toPrecision(4)}
-              </DivTableCell>
-              <DivTableCell data-testid="specificity-fmg" align>
+              </DivTableCellPadded>
+              <DivTableCellPadded data-testid="specificity-fmg" align>
                 {metadata.specificity.toPrecision(4)}
-              </DivTableCell>
+              </DivTableCellPadded>
             </DivTableRow>
           ))}
         </DivTable>
