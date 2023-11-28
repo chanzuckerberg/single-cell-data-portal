@@ -1,11 +1,12 @@
 import os
 from multiprocessing.pool import Pool
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Union
 
 import anndata
 import numpy as np
 import pandas as pd
 import requests
+from scipy import sparse
 
 from backend.common.utils.math_utils import GB
 from datasets import DATASETS
@@ -40,20 +41,50 @@ def memtest(file_name: str) -> Dict[str, int]:
     ad = anndata.read_h5ad(file_name)
     try:
         return {
-            "size_on_disk": os.path.getsize(file_name),
-            "sizeof": ad.__sizeof__(),
-            "estimated": ad.n_obs * ad.n_vars,
-            "non-zeros": np.count_nonzero(ad.X)
+            "size_on_disk": os.path.getsize(file_name) / GB,
+            "sizeof": ad.__sizeof__() / GB,
+            "estimated": ad.n_obs * ad.n_vars / GB,
+            "non-zeros": count_matrix_nonzero(ad)
         }
     finally:
         ad.file.close()
 
+def count_matrix_nonzero(adata: anndata.AnnData) -> int:
+    matrix = adata.X
+    if adata.n_obs == 0 or adata.n_vars == 0:
+        matrix_format = "dense"
+    else:
+        matrix_slice = matrix[0:1, 0:1]
+        if isinstance(matrix_slice, sparse.spmatrix):
+            matrix_format = matrix_slice.format
+        elif isinstance(matrix_slice, np.ndarray):
+            matrix_format = "dense"
+
+    def chunk_matrix(chunk_size: int = 10_000,):
+        start = 0
+        n = matrix.shape[0]
+        for i in range(int(n // chunk_size)):
+            end = start + chunk_size
+            yield matrix[start:end]
+            start = end
+        if start < n:
+            yield matrix[start:n]
+
+    nnz = 0
+    for matrix_chunk in chunk_matrix():
+        nnz += matrix_chunk.count_nonzero() if matrix_format != "dense" else np.count_nonzero(matrix_chunk)
+    return nnz
+
 
 def update_dataframe(dataset):
     print(f"Updating dataframe with {dataset['dataset_id']}")
-    results.loc[len(results.index)] = [dataset['dataset_id'], dataset['dataset_version_id'],
-                                       dataset["size_on_disk"] / GB, dataset['sizeof'] / GB, dataset['estimated'] /
-                                       GB, dataset['non-zeros']]
+    results.loc[len(results.index)] = [
+        dataset['dataset_id'],
+        dataset['dataset_version_id'],
+        dataset["size_on_disk"],
+        dataset['sizeof'],
+        dataset['estimated'],
+        dataset['non-zeros']]
     # write the dataframe to a csv using the PID to make it unique
     results.to_csv(f"memory_metrics_{os.getpid()}.csv", index=False)
 
@@ -78,6 +109,7 @@ def combine_csvs():
     df.set_index("dataset_id", inplace=True)
     df = df.drop_duplicates()
     df.to_csv("memory_metrics.csv")
+    return df
 
 
 def make_df():
@@ -104,9 +136,9 @@ def filter_datasets():
 
 def main():
     combine_csvs()
-    datasets = filter_datasets()[:10]
+    datasets = filter_datasets()
     print(f"Processing {len(datasets)} datasets")
-    with Pool(5, initializer=initialize_pool) as pool:
+    with Pool(1, initializer=initialize_pool) as pool:
         pool.map(job, datasets)
     combine_csvs()
 
