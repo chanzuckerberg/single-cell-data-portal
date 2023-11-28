@@ -489,6 +489,10 @@
     h2 {
       font-size: 28px;
       line-height: 35.28px;
+
+      .noWrap {
+        white-space: nowrap;
+      }
     }
 
     p {

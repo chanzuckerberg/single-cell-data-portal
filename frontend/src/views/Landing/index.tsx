@@ -815,7 +815,11 @@ const LandingPage = (): JSX.Element => {
           <div className={styles.freethinkVideoSection}>
             <div className={styles.freethinkVideoSectionWrapper}>
               <div className={styles.freethinkVideoSectionTextContainer}>
-                <h2>Behind-the-scenes of Chan Zuckerberg CELLxGENE</h2>
+                <h2>
+                  Behind-the-scenes of{" "}
+                  <span className={styles.noWrap}>Chan Zuckerberg</span>{" "}
+                  CELLxGENE
+                </h2>
                 <p>
                   Watch a behind-the-scenes look at CZ CELLxGENE and explore how
                   the platform can help scientists quickly surface important
