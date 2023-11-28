@@ -43,10 +43,11 @@ import {
   NO_MARKER_GENES_DESCRIPTION,
   NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION,
   NO_MARKER_GENES_HEADER,
-  SPECIFICITY_TOOLTIP_CONTENT,
   TABLE_HEADER_GENE,
   TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION,
   TABLE_HEADER_SPECIFICITY,
+  SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF,
+  SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF,
 } from "./constants";
 import { useConnect } from "./connect";
 import {
@@ -247,7 +248,8 @@ function CellInfoSideBar({
                 title={
                   <StyledTooltip>
                     <TooltipContent>
-                      {SPECIFICITY_TOOLTIP_CONTENT}
+                      {SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF} {tissueInfo.name}{" "}
+                      {SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF}
                     </TooltipContent>
                     <TooltipLink
                       href={ROUTES.FMG_DOCS}

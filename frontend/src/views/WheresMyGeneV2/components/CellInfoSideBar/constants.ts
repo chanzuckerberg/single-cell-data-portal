@@ -1,5 +1,7 @@
-export const SPECIFICITY_TOOLTIP_CONTENT =
-  "Specificity indicates the percentage of cell types in the corpus with a lower Effect Size for this gene. Higher Specificity values indicate markers which are more specific for this cell type.";
+export const SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF =
+  "Specificity indicates the percentage of cell types in";
+export const SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF =
+  "with a lower Effect Size for this gene. Higher Specificity values indicate markers which are more specific for this cell type.";
 export const MARKER_SCORE_CELLGUIDE_LINK_TEXT = "Open in CellGuide";
 export const MARKER_SCORE_DOTPLOT_BUTTON_TEXT = "Add to Dot Plot";
 export const NO_MARKER_GENES_HEADER = "No Marker Genes";
