@@ -1,5 +1,0 @@
-WARNING  root:authentication.py:230 DJH lenient not_owner
-WARNING  root:authentication.py:230 DJH lenient not_owner
-WARNING  root:authentication.py:230 DJH lenient super
-WARNING  root:authentication.py:230 DJH lenient super
-WARNING  root:authentication.py:230 DJH lenient super
