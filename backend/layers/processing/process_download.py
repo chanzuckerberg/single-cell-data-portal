@@ -159,7 +159,7 @@ class ProcessDownload(ProcessingLogic):
         :param dataset_version_id:
         :param dataset_uri:
         :param artifact_bucket:
-        :param sfn_task_token: use to report back the memory requirements
+        :param sfn_task_token: use to report back the memory requirements, if called in a step function
         :return:
         """
 

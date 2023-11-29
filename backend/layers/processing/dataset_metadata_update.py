@@ -39,13 +39,18 @@ configure_logging(level=logging.INFO)
 ARTIFACT_TO_DB_FIELD = {"title": "name"}
 
 
-class DatasetMetadataUpdater(ProcessDownload):
-    def __init__(
-        self, business_logic: BusinessLogic, artifact_bucket: str, cellxgene_bucket: str, datasets_bucket: str
-    ) -> None:
-        super().__init__(business_logic, business_logic.uri_provider, business_logic.s3_provider)
+class DatasetMetadataUpdaterWorker(ProcessDownload):
+    def __init__(self, artifact_bucket: str, datasets_bucket: str) -> None:
+        # init each worker with business logic backed by non-shared DB connection
+        self.business_logic = BusinessLogic(
+            DatabaseProvider(),
+            None,
+            None,
+            S3Provider(),
+            UriProvider(),
+        )
+        super().__init__(self.business_logic, self.business_logic.uri_provider, self.business_logic.s3_provider)
         self.artifact_bucket = artifact_bucket
-        self.cellxgene_bucket = cellxgene_bucket
         self.datasets_bucket = datasets_bucket
 
     def update_h5ad(
@@ -97,7 +102,7 @@ class DatasetMetadataUpdater(ProcessDownload):
     ):
         seurat_filename = self.download_from_source_uri(
             source_uri=rds_uri,
-            local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
+            local_path=CorporaConstants.LABELED_RDS_ARTIFACT_FILENAME,
         )
         self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTING)
 
@@ -143,6 +148,16 @@ class DatasetMetadataUpdater(ProcessDownload):
         self.business_logic.add_dataset_artifact(dataset_version_id, DatasetArtifactType.CXG, new_cxg_dir)
         self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.CONVERTED)
 
+
+class DatasetMetadataUpdater(ProcessDownload):
+    def __init__(
+        self, business_logic: BusinessLogic, artifact_bucket: str, cellxgene_bucket: str, datasets_bucket: str
+    ) -> None:
+        super().__init__(business_logic, business_logic.uri_provider, business_logic.s3_provider)
+        self.artifact_bucket = artifact_bucket
+        self.cellxgene_bucket = cellxgene_bucket
+        self.datasets_bucket = datasets_bucket
+
     def update_metadata(
         self,
         current_dataset_version_id: DatasetVersionId,
@@ -173,18 +188,19 @@ class DatasetMetadataUpdater(ProcessDownload):
             self.logger.error(f"Cannot find raw H5AD artifact uri for {current_dataset_version_id}.")
             raise ValueError
 
+        # uploads current dataset version's raw h5ad to artifact bucket directory for the new dataset version
         self.process(new_dataset_version_id, raw_h5ad_uri, self.artifact_bucket)
 
         new_artifact_key_prefix = self.get_key_prefix(new_dataset_version_id.id)
 
         artifact_jobs = []
 
-        with multiprocessing.Pool() as pool:
+        with multiprocessing.Pool(processes=3) as pool:
             if DatasetArtifactType.H5AD in artifact_uris:
                 self.logger.info("Main: Starting thread for h5ad update")
                 artifact_jobs.append(
                     pool.apply_async(
-                        self.update_h5ad,
+                        DatasetMetadataUpdaterWorker(self.artifact_bucket, self.datasets_bucket).update_h5ad,
                         (
                             artifact_uris[DatasetArtifactType.H5AD],
                             current_dataset_version,
@@ -204,7 +220,7 @@ class DatasetMetadataUpdater(ProcessDownload):
                 self.logger.info("Main: Starting thread for rds update")
                 artifact_jobs.append(
                     pool.apply_async(
-                        self.update_rds,
+                        DatasetMetadataUpdaterWorker(self.artifact_bucket, self.datasets_bucket).update_rds,
                         (
                             artifact_uris[DatasetArtifactType.RDS],
                             new_artifact_key_prefix,
@@ -229,7 +245,7 @@ class DatasetMetadataUpdater(ProcessDownload):
                 self.logger.info("Main: Starting thread for cxg update")
                 artifact_jobs.append(
                     pool.apply_async(
-                        self.update_cxg,
+                        DatasetMetadataUpdaterWorker(self.artifact_bucket, self.datasets_bucket).update_cxg,
                         (
                             artifact_uris[DatasetArtifactType.CXG],
                             f"s3://{self.cellxgene_bucket}/{new_artifact_key_prefix}.cxg",
@@ -244,7 +260,8 @@ class DatasetMetadataUpdater(ProcessDownload):
                     new_dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.FAILED
                 )
 
-        # blocking call on async jobs before checking for valid artifact statuses
+        # blocking call on async functions before checking for valid artifact statuses
+        # calls .get() to ensure any exceptions in the async functions are raised to main
         [j.get() for j in artifact_jobs]
 
         if self.has_valid_artifact_statuses(new_dataset_version_id):
