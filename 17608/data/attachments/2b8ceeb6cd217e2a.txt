@@ -1,3 +1,0 @@
-INFO     backend.layers.business.business:business.py:389 {'message': 'ingesting dataset', 'collection_version_id': a9408eca-28b4-49a0-a6e7-263a5e1d45a0, 'url': 'http://fake.url', 'existing_dataset_version_id': None}
-INFO     backend.layers.business.business:business.py:389 {'message': 'ingesting dataset', 'collection_version_id': 580081c3-92e9-4330-891c-7944044538bd, 'url': 'http://fake.url', 'existing_dataset_version_id': None}
-INFO     processing:dataset_metadata_update.py:163 Dataset fb2b710e-8917-4e3f-bf9b-5bc6779eb6a8 has processing status DatasetProcessingStatus.SUCCESS rather than expected INITIALIZED.Skipping metadata update.
