@@ -1002,7 +1002,7 @@ describe("Cell Guide", () => {
       await checkTooltipContent(page, MARKER_SCORE_TOOLTIP_LINK_TEXT);
     });
 
-    test.only("Specificity tooltip", async ({ page }) => {
+    test("Specificity tooltip", async ({ page }) => {
       await goToPage(
         `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`,
         page
