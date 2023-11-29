@@ -23,7 +23,8 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersionId,
 )
-from backend.layers.processing.dataset_metadata_update import DatasetMetadataUpdater
+from backend.layers.persistence.persistence_mock import DatabaseProviderMock
+from backend.layers.processing.dataset_metadata_update import DatasetMetadataUpdater, DatasetMetadataUpdaterWorker
 from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
@@ -55,13 +56,14 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             return local_path
 
         self.updater.download_from_source_uri = Mock(side_effect=mock_download)
-        self.local_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("scanpy.read_h5ad")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_h5ad")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_rds")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_cxg")
+    @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
+    @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker.update_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker.update_rds")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker.update_cxg")
     def test_update_metadata(self, mock_update_cxg, mock_update_rds, mock_update_h5ad, *args):
         current_dataset_version = self.generate_dataset(
             statuses=[
@@ -99,9 +101,11 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("scanpy.read_h5ad")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_h5ad")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_rds")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_cxg")
+    @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
+    @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker.update_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker.update_rds")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker.update_cxg")
     def test_update_metadata__rds_skipped(self, mock_update_cxg, mock_update_rds, mock_update_h5ad, *args):
         current_dataset_version = self.generate_dataset(
             artifacts=[
@@ -238,7 +242,9 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("scanpy.read_h5ad")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
+    @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker.update_h5ad")
     def test_update_metadata__missing_rds(self, *args):
         current_dataset_version = self.generate_dataset(
             artifacts=[
@@ -270,8 +276,10 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("scanpy.read_h5ad")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_h5ad")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_rds")
+    @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
+    @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker.update_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker.update_rds")
     def test_update_metadata__missing_cxg(self, *args):
         current_dataset_version = self.generate_dataset(
             artifacts=[
@@ -327,19 +335,18 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         assert new_dataset_version.status.processing_status == DatasetProcessingStatus.FAILURE
 
 
-class TestUpdateArtifacts(BaseProcessingTest):
+class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
+    @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
+    @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
     def setUp(self):
         super().setUp()
-        self.business_logic.s3_provider = MockS3Provider()
-        self.updater = DatasetMetadataUpdater(
-            self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket"
-        )
+        self.updater = DatasetMetadataUpdaterWorker("artifact_bucket", "datasets_bucket")
+        self.updater.business_logic = self.business_logic
 
         def mock_download(source_uri, local_path):
             return local_path
 
         self.updater.download_from_source_uri = Mock(side_effect=mock_download)
-        self.local_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("backend.layers.processing.dataset_metadata_update.os.remove")
@@ -367,15 +374,14 @@ class TestUpdateArtifacts(BaseProcessingTest):
 
         self.updater.update_h5ad(None, current_dataset_version, key_prefix, new_dataset_version_id, metadata_update)
 
+        local_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
         # check mock_anndata object
-        mock_read_h5ad.assert_called_with(self.local_filename, backed="r")
+        mock_read_h5ad.assert_called_with(local_filename, backed="r")
         assert mock_anndata.uns["citation"] == "Publication DOI www.doi.org/567.8"
         assert mock_anndata.uns["title"] == "New Dataset Title"
         assert mock_anndata.uns["schema_version"] == "3.0.0"
         # check s3 uris exist
-        assert self.updater.s3_provider.uri_exists(
-            f"s3://artifact_bucket/{new_dataset_version_id.id}/{self.local_filename}"
-        )
+        assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id.id}/{local_filename}")
         assert self.updater.s3_provider.uri_exists(f"s3://datasets_bucket/{new_dataset_version_id.id}.h5ad")
         # check DB DatasetVersion
         new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
@@ -384,7 +390,7 @@ class TestUpdateArtifacts(BaseProcessingTest):
         assert new_dataset_version.metadata.schema_version == collection_version.datasets[0].metadata.schema_version
         artifacts = [(artifact.uri, artifact.type) for artifact in new_dataset_version.artifacts]
         assert (
-            f"s3://artifact_bucket/{new_dataset_version_id.id}/{self.local_filename}",
+            f"s3://artifact_bucket/{new_dataset_version_id.id}/{local_filename}",
             DatasetArtifactType.H5AD,
         ) in artifacts
         # check processing status
@@ -483,6 +489,14 @@ class TestUpdateArtifacts(BaseProcessingTest):
             assert (f"s3://artifact_bucket/{new_dataset_version_id.id}/test.rds", DatasetArtifactType.RDS) in artifacts
 
             assert new_dataset_version.status.rds_status == DatasetConversionStatus.CONVERTED
+
+
+class TestValidArtifactStatuses(BaseProcessingTest):
+    def setUp(self):
+        super().setUp()
+        self.updater = DatasetMetadataUpdater(
+            self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket"
+        )
 
     @parameterized.expand([DatasetConversionStatus.CONVERTED, DatasetConversionStatus.SKIPPED])
     def test_has_valid_artifact_statuses(self, rds_status):
