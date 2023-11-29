@@ -299,7 +299,16 @@ resource "aws_sfn_state_machine" "state_machine" {
             "MaxAttempts": 3,
             "BackoffRate": 2.0
         } ],
-        "Next": "DeregisterJobDefinition",
+        "Next": "DeregisterJobDefinitionAfterHandleErrors",
+        "ResultPath": null
+      },
+      "DeregisterJobDefinitionAfterHandleErrors": {
+        "Type": "Task",
+        "Next": "CheckForErrors",
+        "Parameters": {
+          "JobDefinition.$": "$.batch.JobDefinitionName"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition",
         "ResultPath": null
       },
       "DeregisterJobDefinition": {
@@ -315,6 +324,11 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Type": "Choice",
         "Choices": [
           {
+            "Variable": "$.error",
+            "IsPresent": true,
+            "Next": "DownloadValidateError"
+          },
+          {
             "Or": [
               {
                 "Variable": "$[0].error",
@@ -326,11 +340,6 @@ resource "aws_sfn_state_machine" "state_machine" {
               }
             ],
             "Next": "ConversionError"
-          },
-          {
-            "Variable": "$.error",
-            "IsPresent": true,
-            "Next": "DownloadValidateError"
           }
         ],
         "Default": "EndPass"
