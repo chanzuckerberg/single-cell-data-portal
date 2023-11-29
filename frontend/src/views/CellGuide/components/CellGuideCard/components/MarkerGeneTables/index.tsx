@@ -50,6 +50,7 @@ import {
 import {
   ComputationalMarkerGeneTableData,
   useComputationalMarkerGenesTableRowsAndFilters,
+  useSelectedOrganForTooltipCopy,
 } from "./hooks/computational_markers";
 import treeDendrogram from "src/common/images/TreeDendogram.svg";
 import {
@@ -74,6 +75,7 @@ import {
   MARKER_GENES_CANONICAL_BREAKPOINT_PX,
   MARKER_GENES_COMPUTATIONAL_BREAKPOINT_PX,
   MARKER_GENES_TREE_ICON_BUTTON_TEST_ID,
+  SPECIFICITY_TOOLTIP_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/constants";
 import Image from "next/image";
@@ -89,6 +91,7 @@ import {
   MARKER_SCORE_TOOLTIP_LINK_TEXT,
   MEAN_EXPRESSION,
   MEAN_EXPRESSION_ABBREVIATED,
+  TABLE_HEADER_SPECIFICITY,
 } from "src/common/constants/markerGenes";
 
 function getEmptyComputationalMarkerGenesTableUIMessageDetail(
@@ -116,6 +119,7 @@ interface TableRowEnrichedGenes {
   symbol: ReactNode;
   name: ReactNode;
   marker_score: ReactNode;
+  specificity: ReactNode;
   me: ReactNode;
   pc: ReactNode;
 }
@@ -228,6 +232,10 @@ const MarkerGeneTables = ({
   const { data: enrichedGenes } = useComputationalMarkers(cellTypeId);
   const { data: canonicalMarkers } = useCanonicalMarkers(cellTypeId);
 
+  const { specificityCopy } = useSelectedOrganForTooltipCopy({
+    selectedOrganName: organName,
+  });
+
   // Computational marker gene table column names
   const tableColumnNamesEnrichedGenes: Record<
     keyof TableRowEnrichedGenes,
@@ -263,6 +271,21 @@ const MarkerGeneTables = ({
                   </div>
                 </>
               }
+            />
+          </StyledHeadCellContent>
+        </div>
+      ),
+      specificity: (
+        <div>
+          <StyledHeadCellContent>
+            {TABLE_HEADER_SPECIFICITY}
+            <HelpTooltip
+              skinnyMode={skinnyMode}
+              title={TABLE_HEADER_SPECIFICITY}
+              setTooltipContent={setTooltipContent}
+              dark
+              buttonDataTestId={SPECIFICITY_TOOLTIP_TEST_ID}
+              text={specificityCopy}
             />
           </StyledHeadCellContent>
         </div>
@@ -307,7 +330,7 @@ const MarkerGeneTables = ({
         </StyledHeadCellContent>
       ),
     }),
-    [setTooltipContent, skinnyMode, isPastBreakpoint]
+    [setTooltipContent, skinnyMode, isPastBreakpoint, specificityCopy]
   );
 
   const allTissuesLabelToIdMap = useAllTissuesLookupTables(cellTypeId);
@@ -441,6 +464,9 @@ const MarkerGeneTables = ({
           marker_score: (
             <StyledCellNumerical> {row.marker_score} </StyledCellNumerical>
           ),
+          specificity: (
+            <StyledCellNumerical> {row.specificity} </StyledCellNumerical>
+          ),
           symbolId: row.symbol,
           symbol: getSymbol(row, true),
         }))
@@ -517,8 +543,8 @@ const MarkerGeneTables = ({
   const tableComponent = useMemo(() => {
     const tableColumnsEnrichedGenes: Array<keyof TableRowEnrichedGenes> =
       !isPastBreakpoint
-        ? ["symbol", "name", "marker_score", "me", "pc"]
-        : ["symbol", "marker_score", "me", "pc"];
+        ? ["symbol", "name", "marker_score", "specificity", "me", "pc"]
+        : ["symbol", "marker_score", "specificity", "me", "pc"];
 
     const tableColumnsCanonicalGenes: Array<keyof TableRowCanonicalGenes> =
       !isPastBreakpoint

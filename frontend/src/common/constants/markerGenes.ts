@@ -14,3 +14,10 @@ export const EXPRESSION_SCORE_TOOLTIP_CONTENT =
   "Average ln(CPTT+1)-normalized gene expression among cells in the cell type.";
 export const MEAN_EXPRESSION = "Mean Expression";
 export const MEAN_EXPRESSION_ABBREVIATED = "Mean Exp.";
+export const TABLE_HEADER_SPECIFICITY = "Specificity";
+export const SPECIFICITY_TOOLTIP_CONTENT_NO_TISSUE =
+  "Specificity indicates the percentage of cell types in the corpus with a lower Effect Size for this gene. Higher Specificity values indicate markers which are more specific for this cell type.";
+export const SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF =
+  "Specificity indicates the percentage of cell types in";
+export const SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF =
+  "with a lower Effect Size for this gene. Higher Specificity values indicate markers which are more specific for this cell type.";
