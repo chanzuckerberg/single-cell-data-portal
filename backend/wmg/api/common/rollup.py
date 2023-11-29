@@ -80,9 +80,9 @@ def _rollup_gene_expression(gene_expression_df, universal_set_cell_counts_df) ->
     numeric column (nnz, sum, sqsum). The rows of these 2D arrays are the (tissue, cell_type, <compare_dimension>).
     The columns of these 2D arrays are the genes. The 2D arrays are then stacked into a 3D array.
     Because gene expressions are sparse, we need to add missing data corresponding to (tissue, cell_type, <compare_dimension>)
-    combinations present in the cell counts dataframe. This is done by vertically stacking (axis=0) empty arrays
-    corresponding to the missing combinations. The 3D array is then rolled up along the first dimension which aggregates
-    the rows across cell type descendants for cell types present in the same group (tissue, <compare_dimension>).
+    combinations present in the cell counts dataframe and not present in the gene expression dataframe. This is done by vertically
+    stacking (axis=0) empty arrays corresponding to the missing combinations. The 3D array is then rolled up along the first dimension
+    which aggregates the rows across cell type descendants for cell types present in the same group (tissue, <compare_dimension>).
     The resulting non-zero values in the 3D array are then converted back to a tidy dataframe.
 
 
