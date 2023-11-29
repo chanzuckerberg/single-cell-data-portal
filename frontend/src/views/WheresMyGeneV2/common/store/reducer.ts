@@ -5,10 +5,21 @@ import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { GENE_SEARCH_BAR_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/constants";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import { IconNameToSizes } from "@czi-sds/components";
 
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
   payload: Payload;
+}
+
+export interface NotificationProps {
+  message: string;
+  notificationId?: string;
+  intent: "info" | "success" | "warning" | "error";
+  sdsIcon: keyof IconNameToSizes;
+  sdsSize: "s" | "l" | "xs" | "xl";
+  label: string;
+  isCitation?: boolean;
 }
 
 export interface State {
@@ -43,6 +54,7 @@ export interface State {
   filteredCellTypes: string[];
   filteredCellTypeIds: string[];
   expandedTissueIds: string[];
+  notifications: NotificationProps[];
 }
 
 const EMPTY_FILTERS: State["selectedFilters"] = {
@@ -75,6 +87,7 @@ export const INITIAL_STATE: State = {
   filteredCellTypes: [],
   filteredCellTypeIds: [],
   expandedTissueIds: [],
+  notifications: [],
 };
 
 export const REDUCERS = {
@@ -101,6 +114,7 @@ export const REDUCERS = {
   setFilteredCellTypes,
   toggleExpandedTissueId,
   autoExpandTissues,
+  addNotification,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -543,5 +557,37 @@ function autoExpandTissues(
   return {
     ...state,
     expandedTissueIds: payload,
+  };
+}
+
+function addNotification(
+  state: State,
+  action: PayloadAction<NotificationProps>
+): State {
+  const {
+    payload: {
+      message,
+      notificationId,
+      intent,
+      sdsIcon,
+      sdsSize,
+      label,
+      isCitation,
+    },
+  } = action;
+
+  const newNotification: NotificationProps = {
+    message,
+    notificationId,
+    intent,
+    sdsIcon,
+    sdsSize,
+    label,
+    isCitation,
+  };
+
+  return {
+    ...state,
+    notifications: [...state.notifications, newNotification],
   };
 }
