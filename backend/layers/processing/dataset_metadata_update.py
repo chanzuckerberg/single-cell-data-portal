@@ -46,6 +46,7 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
             DatabaseProvider(),
             None,
             None,
+            None,
             S3Provider(),
             UriProvider(),
         )

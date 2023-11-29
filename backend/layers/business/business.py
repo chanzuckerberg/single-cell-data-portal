@@ -360,15 +360,17 @@ class BusinessLogic(BusinessLogicInterface):
         publisher_metadata_to_set = None
 
         new_doi = None
-        old_doi = None
+        current_doi = None
         if not ignore_doi_update:
             # Determine if the DOI has changed
-            old_doi = next((link.uri for link in current_collection_version.metadata.links if link.type == "DOI"), None)
+            current_doi = next(
+                (link.uri for link in current_collection_version.metadata.links if link.type == "DOI"), None
+            )
             new_doi = (
                 None if body.links is None else next((link.uri for link in body.links if link.type == "DOI"), None)
             )
 
-            if old_doi != new_doi:
+            if current_doi != new_doi:
                 for dataset in current_collection_version.datasets:
                     # Avoid reprocessing a dataset while it is already processing to avoid race conditions
                     # We only support all-or-nothing dataset DOI updates in a collection to avoid mismatching citations
@@ -382,10 +384,10 @@ class BusinessLogic(BusinessLogicInterface):
                             "(SUCCESS, FAILURE) processing status."
                         )
 
-            if old_doi and new_doi is None:
+            if current_doi and new_doi is None:
                 # If the DOI was deleted, remove the publisher_metadata field
                 unset_publisher_metadata = True
-            elif (new_doi is not None) and new_doi != old_doi:
+            elif (new_doi is not None) and new_doi != current_doi:
                 # If the DOI has changed, fetch and update the metadata
                 publisher_metadata_to_set = self._get_publisher_metadata(new_doi, errors)
 
@@ -409,7 +411,11 @@ class BusinessLogic(BusinessLogicInterface):
             self.database_provider.save_collection_publisher_metadata(version_id, publisher_metadata_to_set)
         self.database_provider.save_collection_metadata(version_id, new_metadata)
 
-        if not ignore_doi_update and new_doi != old_doi and FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4):
+        if (
+            not ignore_doi_update
+            and new_doi != current_doi
+            and FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4)
+        ):
             for dataset in current_collection_version.datasets:
                 if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
                     self.logger.info(
