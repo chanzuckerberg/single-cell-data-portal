@@ -498,7 +498,7 @@ export const CELL_TYPE_LEVEL_2_ONTOLOGY_TERM_SET: OntologyTermSet = {
     },
     {
       label: "female germ cell",
-      ontology_term_cel "CL:0000021",
+      ontology_term_id: "CL:0000021",
     },
     {
       label: "stem cell",
