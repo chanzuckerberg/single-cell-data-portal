@@ -276,95 +276,95 @@ export const CELL_TYPE_CELL_CLASS_ONTOLOGY_TERM_SET: OntologyTermSet = {
   [ONTOLOGY_VIEW_KEY.UBERON]: [
     {
       label: "cardiocyte",
-      ontology_term_id: "CL_0002494"
+      ontology_term_id: "CL_0002494",
     },
     {
       label: "connective tissue cell",
-      ontology_term_id: "CL_0002320"
+      ontology_term_id: "CL_0002320",
     },
     {
       label: "defensive cell",
-      ontology_term_id: "CL_0000473"
+      ontology_term_id: "CL_0000473",
     },
     {
       label: "epithelial cell",
-      ontology_term_id: "CL_0000066"
+      ontology_term_id: "CL_0000066",
     },
     {
       label: "hematopoietic cell",
-      ontology_term_id: "CL_0000988"
+      ontology_term_id: "CL_0000988",
     },
     {
       label: "neural cell",
-      ontology_term_id: "CL_0002319"
+      ontology_term_id: "CL_0002319",
     },
     {
       label: "precursor cell",
-      ontology_term_id: "CL_0011115"
+      ontology_term_id: "CL_0011115",
     },
     {
       label: "secretory cell",
-      ontology_term_id: "CL_0000151"
+      ontology_term_id: "CL_0000151",
     },
     {
       label: "germ cell line",
-      ontology_term_id: "CL:0000039"
+      ontology_term_id: "CL:0000039",
     },
     {
       label: "ciliated cell",
-      ontology_term_id: "CL:0000064"
+      ontology_term_id: "CL:0000064",
     },
     {
       label: "contractile cell",
-      ontology_term_id: "CL:0000183"
+      ontology_term_id: "CL:0000183",
     },
     {
       label: "cell of skeletal muscle",
-      ontology_term_id: "CL:0000188"
+      ontology_term_id: "CL:0000188",
     },
     {
       label: "motile cell",
-      ontology_term_id: "CL:0000219"
+      ontology_term_id: "CL:0000219",
     },
     {
       label: "stuff accumulating cell",
-      ontology_term_id: "CL:0000325"
+      ontology_term_id: "CL:0000325",
     },
     {
       label: "extraembryonic cell",
-      ontology_term_id: "CL:0000349"
+      ontology_term_id: "CL:0000349",
     },
     {
       label: "germ cell",
-      ontology_term_id: "CL:0000586"
+      ontology_term_id: "CL:0000586",
     },
     {
       label: "supporting cell",
-      ontology_term_id: "CL:0000630"
+      ontology_term_id: "CL:0000630",
     },
     {
       label: "bone cell",
-      ontology_term_id: "CL:0001035"
+      ontology_term_id: "CL:0001035",
     },
     {
       label: "abnormal cell",
-      ontology_term_id: "CL:0001061"
+      ontology_term_id: "CL:0001061",
     },
     {
       label: "embryonic cell (metazoa)",
-      ontology_term_id: "CL:0002321"
+      ontology_term_id: "CL:0002321",
     },
     {
       label: "transit amplifying cell",
-      ontology_term_id: "CL:0009010"
+      ontology_term_id: "CL:0009010",
     },
     {
       label: "lower urinary tract cell",
-      ontology_term_id: "CL:1000600"
+      ontology_term_id: "CL:1000600",
     },
     {
       label: "perivascular cell",
-      ontology_term_id: "CL:4033054"
+      ontology_term_id: "CL:4033054",
     },
   ],
 };
@@ -378,297 +378,297 @@ export const CELL_TYPE_LEVEL_2_ONTOLOGY_TERM_SET: OntologyTermSet = {
   [ONTOLOGY_VIEW_KEY.UBERON]: [
     {
       label: "CD4-positive, alpha-beta T cell",
-      ontology_term_id: "CL_0000624"
+      ontology_term_id: "CL_0000624",
     },
     {
       label: "CD8-positive, alpha-beta T cell",
-      ontology_term_id: "CL_0000625"
+      ontology_term_id: "CL_0000625",
     },
     {
       label: "T cell",
-      ontology_term_id: "CL_0000084"
+      ontology_term_id: "CL_0000084",
     },
     {
       label: "B cell",
-      ontology_term_id: "CL_0000236"
+      ontology_term_id: "CL_0000236",
     },
     {
       label: "dendritic cell",
-      ontology_term_id: "CL_0000451"
+      ontology_term_id: "CL_0000451",
     },
     {
       label: "monocyte",
-      ontology_term_id: "CL_0000576"
+      ontology_term_id: "CL_0000576",
     },
     {
       label: "macrophage",
-      ontology_term_id: "CL_0000235"
+      ontology_term_id: "CL_0000235",
     },
     {
       label: "lymphocyte",
-      ontology_term_id: "CL_0000542"
+      ontology_term_id: "CL_0000542",
     },
     {
       label: "leukocyte",
-      ontology_term_id: "CL_0000738"
+      ontology_term_id: "CL_0000738",
     },
     {
       label: "myeloid cell",
-      ontology_term_id: "CL_0000763"
+      ontology_term_id: "CL_0000763",
     },
     {
       label: "hematopoietic precursor cell",
-      ontology_term_id: "CL_0008001"
+      ontology_term_id: "CL_0008001",
     },
     {
       label: "phagocyte",
-      ontology_term_id: "CL_0000234"
+      ontology_term_id: "CL_0000234",
     },
     {
       label: "glutamatergic neuron",
-      ontology_term_id: "CL_0000679"
+      ontology_term_id: "CL_0000679",
     },
     {
       label: "GABAergic neuron",
-      ontology_term_id: "CL_0000617"
+      ontology_term_id: "CL_0000617",
     },
     {
       label: "interneuron",
-      ontology_term_id: "CL_0000099"
+      ontology_term_id: "CL_0000099",
     },
     {
       label: "glial cell",
-      ontology_term_id: "CL_0000125"
+      ontology_term_id: "CL_0000125",
     },
     {
       label: "sensory neuron",
-      ontology_term_id: "CL_0000101"
+      ontology_term_id: "CL_0000101",
     },
     {
       label: "motor neuron",
-      ontology_term_id: "CL_0000100"
+      ontology_term_id: "CL_0000100",
     },
     {
       label: "CNS neuron (sensu Vertebrata)",
-      ontology_term_id: "CL_0000117"
+      ontology_term_id: "CL_0000117",
     },
     {
       label: "neuron",
-      ontology_term_id: "CL_0000540"
+      ontology_term_id: "CL_0000540",
     },
     {
       label: "pericyte",
-      ontology_term_id: "CL_0000669"
+      ontology_term_id: "CL_0000669",
     },
     {
       label: "stromal cell",
-      ontology_term_id: "CL_0000499"
+      ontology_term_id: "CL_0000499",
     },
     {
       label: "fibroblast",
-      ontology_term_id: "CL_0000057"
+      ontology_term_id: "CL_0000057",
     },
     {
       label: "exocrine cell",
-      ontology_term_id: "CL_0000152"
+      ontology_term_id: "CL_0000152",
     },
     {
       label: "endocrine cell",
-      ontology_term_id: "CL_0000163"
+      ontology_term_id: "CL_0000163",
     },
     {
       label: "endothelial cell",
-      ontology_term_id: "CL_0000115"
+      ontology_term_id: "CL_0000115",
     },
     {
       label: "endo-epithelial cell",
-      ontology_term_id: "CL_0002076"
+      ontology_term_id: "CL_0002076",
     },
     {
       label: "meso-epithelial cell",
-      ontology_term_id: "CL_0002078"
+      ontology_term_id: "CL_0002078",
     },
     {
       label: "progenitor cell",
-      ontology_term_id: "CL_0011026"
+      ontology_term_id: "CL_0011026",
     },
     {
       label: "male germ cell",
-      ontology_term_id: "CL:0000015"
+      ontology_term_id: "CL:0000015",
     },
     {
       label: "female germ cell",
-      ontology_term_id: "CL:0000021"
+      ontology_term_cel "CL:0000021",
     },
     {
       label: "stem cell",
-      ontology_term_id: "CL:0000034"
+      ontology_term_id: "CL:0000034",
     },
     {
       label: "non-terminally differentiated cell",
-      ontology_term_id: "CL:0000055"
+      ontology_term_id: "CL:0000055",
     },
     {
       label: "duct epithelial cell",
-      ontology_term_id: "CL:0000068"
+      ontology_term_id: "CL:0000068",
     },
     {
       label: "columnar/cuboidal epithelial cell",
-      ontology_term_id: "CL:0000075"
+      ontology_term_id: "CL:0000075",
     },
     {
       label: "squamous epithelial cell",
-      ontology_term_id: "CL:0000076"
+      ontology_term_id: "CL:0000076",
     },
     {
       label: "stratified epithelial cell",
-      ontology_term_id: "CL:0000079"
+      ontology_term_id: "CL:0000079",
     },
     {
       label: "epithelial cell of lung",
-      ontology_term_id: "CL:0000082"
+      ontology_term_id: "CL:0000082",
     },
     {
       label: "epithelial cell of pancreas",
-      ontology_term_id: "CL:0000083"
+      ontology_term_id: "CL:0000083",
     },
     {
       label: "neuron associated cell",
-      ontology_term_id: "CL:0000095"
+      ontology_term_id: "CL:0000095",
     },
     {
       label: "sensory epithelial cell",
-      ontology_term_id: "CL:0000098"
+      ontology_term_id: "CL:0000098",
     },
     {
       label: "fat cell",
-      ontology_term_id: "CL:0000136"
+      ontology_term_id: "CL:0000136",
     },
     {
       label: "pigment cell",
-      ontology_term_id: "CL:0000147"
+      ontology_term_id: "CL:0000147",
     },
     {
       label: "glandular epithelial cell",
-      ontology_term_id: "CL:0000150"
+      ontology_term_id: "CL:0000150",
     },
     {
       label: "seromucus secreting cell",
-      ontology_term_id: "CL:0000159"
+      ontology_term_id: "CL:0000159",
     },
     {
       label: "hepatocyte",
-      ontology_term_id: "CL:0000182"
+      ontology_term_id: "CL:0000182",
     },
     {
       label: "myofibroblast cell",
-      ontology_term_id: "CL:0000186"
+      ontology_term_id: "CL:0000186",
     },
     {
       label: "muscle cell",
-      ontology_term_id: "CL:0000187"
+      ontology_term_id: "CL:0000187",
     },
     {
       label: "ectodermal cell",
-      ontology_term_id: "CL:0000221"
+      ontology_term_id: "CL:0000221",
     },
     {
       label: "mesodermal cell",
-      ontology_term_id: "CL:0000222"
+      ontology_term_id: "CL:0000222",
     },
     {
       label: "urothelial cell",
-      ontology_term_id: "CL:0000244"
+      ontology_term_id: "CL:0000244",
     },
     {
       label: "trophoblast cell",
-      ontology_term_id: "CL:0000351"
+      ontology_term_id: "CL:0000351",
     },
     {
       label: "enterocyte",
-      ontology_term_id: "CL:0000584"
+      ontology_term_id: "CL:0000584",
     },
     {
       label: "germ cell",
-      ontology_term_id: "CL:0000586"
+      ontology_term_id: "CL:0000586",
     },
     {
       label: "primordial germ cell",
-      ontology_term_id: "CL:0000670"
+      ontology_term_id: "CL:0000670",
     },
     {
       label: "muscle precursor cell",
-      ontology_term_id: "CL:0000680"
+      ontology_term_id: "CL:0000680",
     },
     {
       label: "neoplastic cell",
-      ontology_term_id: "CL:0001063"
+      ontology_term_id: "CL:0001063",
     },
     {
       label: "ecto-epithelial cell",
-      ontology_term_id: "CL:0002077"
+      ontology_term_id: "CL:0002077",
     },
     {
       label: "vertebrate lens cell",
-      ontology_term_id: "CL:0002222"
+      ontology_term_id: "CL:0002222",
     },
     {
       label: "mammary gland epithelial cell",
-      ontology_term_id: "CL:0002327"
+     o ontology_term_id: "CL:0002327",
     },
     {
       label: "adventitial cell",
-      ontology_term_id: "CL:0002503"
+      ontology_term_id: "CL:0002503",
     },
     {
       label: "kidney epithelial cell",
-      ontology_term_id: "CL:0002518"
+      ontology_term_id: "CL:0002518",
     },
     {
       label: "epithelial cell of cervix",
-      ontology_term_id: "CL:0002535"
+      ontology_term_id: "CL:0002535",
     },
     {
       label: "epithelial cell of amnion",
-      ontology_term_id: "CL:0002536"
+      ontology_term_id: "CL:0002536",
     },
     {
       label: "ionocyte",
-      ontology_term_id: "CL:0005006"
+      ontology_term_id: "CL:0005006",
     },
     {
       label: "mesenchymal cell",
-      ontology_term_id: "CL:0008019"
+      ontology_term_id: "CL:0008019",
     },
     {
       label: "mural cell",
-      ontology_term_id: "CL:0008034"
+      ontology_term_id: "CL:0008034",
     },
     {
       label: "transit amplifying cell",
-      ontology_term_id: "CL:0009010"
+      ontology_term_id: "CL:0009010",
     },
     {
       label: "epithelial cell of urethra",
-      ontology_term_id: "CL:1000296"
+      ontology_term_id: "CL:1000296",
     },
     {
       label: "kidney cell",
-      ontology_term_id: "CL:1000497"
+      ontology_term_id: "CL:1000497",
     },
     {
       label: "pituitary gland cell",
-      ontology_term_id: "CL:2000004"
+      ontology_term_id: "CL:2000004",
     },
     {
       label: "ovarian surface epithelial cell",
-      ontology_term_id: "CL:2000064"
+      ontology_term_id: "CL:2000064",
     },
     {
       label: "interstitial cell",
-      ontology_term_id: "CL:4030031"
+      ontology_term_id: "CL:4030031",
     },
-  ],
+      ],
 };
 /* eslint-enable sonarjs/no-duplicate-string -- disable no dupes, this value is hand-curated */
 
