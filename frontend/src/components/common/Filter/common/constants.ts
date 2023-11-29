@@ -668,7 +668,7 @@ export const CELL_TYPE_LEVEL_2_ONTOLOGY_TERM_SET: OntologyTermSet = {
       label: "interstitial cell",
       ontology_term_id: "CL:4030031",
     },
-      ],
+  ],
 };
 /* eslint-enable sonarjs/no-duplicate-string -- disable no dupes, this value is hand-curated */
 
