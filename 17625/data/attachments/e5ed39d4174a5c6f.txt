@@ -1,0 +1,15 @@
+INFO     root:h5ad_data_file.py:171 Reading in AnnData dataset: f7ffa694-a173-4cda-8a7a-7a7fc5aafe43.h5ad
+INFO     root:h5ad_data_file.py:173 Completed reading in AnnData dataset!
+INFO     root:h5ad_data_file.py:60 Beginning writing to CXG.
+INFO     root:h5ad_data_file.py:69 	...group created, with name /single-cell-data-portal/tests/unit/backend/fixtures/96232e9f-bf4d-4dbb-b628-1fdd467b4bfe.cxg
+INFO     root:h5ad_data_file.py:74 	...dataset metadata saved
+INFO     root:h5ad_data_file.py:77 	...dataset obs dataframe saved
+INFO     root:h5ad_data_file.py:80 	...dataset var dataframe saved
+INFO     root:h5ad_data_file.py:128 		.../single-cell-data-portal/tests/unit/backend/fixtures/96232e9f-bf4d-4dbb-b628-1fdd467b4bfe.cxg/emb/awesome_embedding embedding created
+INFO     root:h5ad_data_file.py:83 	...dataset embeddings saved
+INFO     root:matrix_utils.py:52 Matrix is not sparse. Percentage of non-zero elements (exact): 100.00
+INFO     root:h5ad_data_file.py:95 is_sparse: False
+INFO     root:cxg_generation_utils.py:185 create /single-cell-data-portal/tests/unit/backend/fixtures/96232e9f-bf4d-4dbb-b628-1fdd467b4bfe.cxg/X
+INFO     root:h5ad_data_file.py:100 start consolidating
+INFO     root:h5ad_data_file.py:86 	...dataset X matrix saved
+INFO     root:h5ad_data_file.py:88 Completed writing to CXG.
