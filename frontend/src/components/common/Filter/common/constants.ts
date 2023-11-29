@@ -614,7 +614,7 @@ export const CELL_TYPE_LEVEL_2_ONTOLOGY_TERM_SET: OntologyTermSet = {
     },
     {
       label: "mammary gland epithelial cell",
-     o ontology_term_id: "CL:0002327",
+      ontology_term_id: "CL:0002327",
     },
     {
       label: "adventitial cell",
