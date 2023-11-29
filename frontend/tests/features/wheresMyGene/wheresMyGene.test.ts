@@ -6,8 +6,10 @@ import {
   FMG_SPECIFICITY_THRESHOLD,
 } from "src/views/WheresMyGeneV2/common/constants";
 import {
+  checkTooltipContent,
   expandTissue,
   goToPage,
+  isElementVisible,
   selectNthOption,
   tryUntil,
   waitForLoadingSpinnerToResolve,
@@ -42,7 +44,15 @@ import {
   TABLE_HEADER_SPECIFICITY,
   TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION,
 } from "src/views/WheresMyGeneV2/components/CellInfoSideBar/constants";
-import { EFFECT_SIZE } from "src/common/constants/markerGenes";
+import {
+  EFFECT_SIZE,
+  MARKER_SCORE_TOOLTIP_CONTENT,
+  MARKER_SCORE_TOOLTIP_LINK_TEXT,
+  MARKER_SCORE_TOOLTIP_TEST_ID,
+  SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF,
+  SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF,
+  SPECIFICITY_TOOLTIP_TEST_ID,
+} from "src/common/constants/markerGenes";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
@@ -431,7 +441,7 @@ describe("Where's My Gene", () => {
       );
     });
 
-    test(`Should verify effect size and specificity column`, async ({
+    test.only(`Should verify effect size and specificity column`, async ({
       page,
     }) => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
@@ -444,15 +454,31 @@ describe("Where's My Gene", () => {
         .getByTestId("cell-type-info-button-adipose tissue-phagocyte")
         .click();
 
-      // Verify header copy
+      // Verify effect size header and tooltip
       const effectSizeHeader = (await page
         .getByTestId(EFFECT_SIZE_HEADER_ID)
         .textContent()) as string;
       assert.strictEqual(effectSizeHeader.trim(), EFFECT_SIZE);
+
+      await isElementVisible(page, MARKER_SCORE_TOOLTIP_TEST_ID);
+      await page.getByTestId(MARKER_SCORE_TOOLTIP_TEST_ID).hover();
+      await checkTooltipContent(page, MARKER_SCORE_TOOLTIP_CONTENT);
+      await checkTooltipContent(page, MARKER_SCORE_TOOLTIP_LINK_TEXT);
+
+      // Verify specificity header and tooltip
       const specificityHeader = (await page
         .getByTestId(SPECIFICITY_HEADER_ID)
         .textContent()) as string;
       assert.strictEqual(specificityHeader.trim(), TABLE_HEADER_SPECIFICITY);
+
+      await isElementVisible(page, SPECIFICITY_TOOLTIP_TEST_ID);
+      await page.getByTestId(SPECIFICITY_TOOLTIP_TEST_ID).hover();
+      await checkTooltipContent(
+        page,
+        SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF +
+          " adipose tissue " +
+          SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF
+      );
 
       // Verify specificity values are valid
       const specificityScores = await page

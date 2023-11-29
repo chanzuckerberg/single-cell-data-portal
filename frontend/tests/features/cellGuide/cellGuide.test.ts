@@ -1,7 +1,10 @@
 import { Page, expect, Locator } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import {
+  WAIT_FOR_TIMEOUT_MS,
+  checkTooltipContent,
   goToPage,
+  isElementVisible,
   takeSnapshotOfMetaTags,
   tryUntil,
 } from "tests/utils/helpers";
@@ -62,17 +65,24 @@ import {
   MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID,
   PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
   MARKER_GENES_TREE_ICON_BUTTON_TEST_ID,
+  MARKER_SCORE_TOOLTIP_TEST_ID,
+  SPECIFICITY_TOOLTIP_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
 import {
   CELLGUIDE_INFO_SIDEBAR_TEST_ID,
   CELLGUIDE_VIEW_PAGE_SIDEBAR_BUTTON_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideInfoSideBar/constants";
 import { test } from "tests/common/test";
-import { EXPRESSION_SCORE_TOOLTIP_CONTENT } from "src/common/constants/markerGenes";
+import {
+  EXPRESSION_SCORE_TOOLTIP_CONTENT,
+  MARKER_SCORE_TOOLTIP_CONTENT,
+  MARKER_SCORE_TOOLTIP_LINK_TEXT,
+  SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF,
+  SPECIFICITY_TOOLTIP_CONTENT_NO_TISSUE,
+  SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF,
+} from "src/common/constants/markerGenes";
 
 const { describe } = test;
-
-const WAIT_FOR_TIMEOUT_MS = 30 * 1000;
 
 const NEURON_CELL_TYPE_ID = "CL_0000540";
 const GLIOBLAST_CELL_TYPE_ID = "CL_0000030";
@@ -410,6 +420,7 @@ describe("Cell Guide", () => {
           "Symbol",
           "Name",
           "Effect Size",
+          "Specificity",
           "Mean Expression",
           "% of Cells",
         ]);
@@ -975,7 +986,7 @@ describe("Cell Guide", () => {
       );
     });
 
-    test("Expression Score tooltip", async ({ page }) => {
+    test("Effect Size tooltip", async ({ page }) => {
       await goToPage(
         `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`,
         page
@@ -984,6 +995,60 @@ describe("Cell Guide", () => {
       await page.getByTestId(computationalTabButton).click();
 
       // Check expression score tooltip
+      await isElementVisible(page, MARKER_SCORE_TOOLTIP_TEST_ID);
+      await page.getByTestId(MARKER_SCORE_TOOLTIP_TEST_ID).hover();
+
+      await checkTooltipContent(page, MARKER_SCORE_TOOLTIP_CONTENT);
+      await checkTooltipContent(page, MARKER_SCORE_TOOLTIP_LINK_TEXT);
+    });
+
+    test.only("Specificity tooltip", async ({ page }) => {
+      await goToPage(
+        `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`,
+        page
+      );
+
+      await page.getByTestId(computationalTabButton).click();
+
+      // Check specificity tooltip with no tissue specified
+      await isElementVisible(page, SPECIFICITY_TOOLTIP_TEST_ID);
+      await page.getByTestId(SPECIFICITY_TOOLTIP_TEST_ID).hover();
+      await checkTooltipContent(page, SPECIFICITY_TOOLTIP_CONTENT_NO_TISSUE);
+
+      // Switch to brain
+      const dropdown = page.getByTestId(
+        CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN
+      );
+
+      await tryUntil(
+        async () => {
+          // Switch to brain tissue
+          await waitForElementAndClick(dropdown);
+          await page.getByRole("option").getByText("brain").click();
+
+          // Check that tooltip content has changed
+          await isElementVisible(page, SPECIFICITY_TOOLTIP_TEST_ID);
+          await page.getByTestId(SPECIFICITY_TOOLTIP_TEST_ID).hover();
+          await checkTooltipContent(
+            page,
+            SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF +
+              " brain " +
+              SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF
+          );
+        },
+        { page }
+      );
+    });
+
+    test("Mean Expression tooltip", async ({ page }) => {
+      await goToPage(
+        `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`,
+        page
+      );
+
+      await page.getByTestId(computationalTabButton).click();
+
+      // Check mean expression tooltip
       await isElementVisible(page, EXPRESSION_SCORE_TOOLTIP_TEST_ID);
       await page.getByTestId(EXPRESSION_SCORE_TOOLTIP_TEST_ID).hover();
 
@@ -1009,24 +1074,6 @@ describe("Cell Guide", () => {
     });
   });
 });
-
-async function checkTooltipContent(page: Page, text: string) {
-  // check role tooltip is visible
-  const tooltipLocator = page.getByRole("tooltip");
-
-  await tryUntil(
-    async () => {
-      await tooltipLocator.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
-      const tooltipLocatorVisible = await tooltipLocator.isVisible();
-      expect(tooltipLocatorVisible).toBe(true);
-    },
-    { page }
-  );
-
-  // check that tooltip contains text
-  const tooltipText = await tooltipLocator.textContent();
-  expect(tooltipText).toContain(text);
-}
 
 async function selectCanonicalMarkerGeneTable(page: Page) {
   const tableSelector = `[data-testid='${CELL_GUIDE_CARD_CANONICAL_MARKER_GENES_TABLE}']`;
@@ -1059,18 +1106,6 @@ async function selectComputationalMarkerGeneTable(page: Page) {
       await page
         .locator(tableSelector)
         .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
-    },
-    { page }
-  );
-}
-
-async function isElementVisible(page: Page, testId: string) {
-  await tryUntil(
-    async () => {
-      const element = page.getByTestId(testId);
-      await element.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
-      const isVisible = await element.isVisible();
-      expect(isVisible).toBe(true);
     },
     { page }
   );

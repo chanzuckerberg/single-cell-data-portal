@@ -21,3 +21,10 @@ export const SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF =
   "Specificity indicates the percentage of cell types in";
 export const SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF =
   "with a lower Effect Size for this gene. Higher Specificity values indicate markers which are more specific for this cell type.";
+
+export const MARKER_SCORE_TOOLTIP_TEST_ID = "marker-genes-effect-size-tooltip";
+export const SPECIFICITY_TOOLTIP_TEST_ID = "marker-genes-specificity-tooltip";
+export const MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID =
+  "marker-genes-computational-help-tooltip";
+export const MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID =
+  "marker-genes-canonical-help-tooltip";

@@ -35,9 +35,8 @@ import {
   MARKER_SCORE_TOOLTIP_CONTENT,
   MARKER_SCORE_TOOLTIP_LINK_TEXT,
   EFFECT_SIZE,
-  TABLE_HEADER_SPECIFICITY,
-  SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF,
-  SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF,
+  MARKER_SCORE_TOOLTIP_TEST_ID,
+  SPECIFICITY_TOOLTIP_TEST_ID,
 } from "src/common/constants/markerGenes";
 import {
   TISSUES_WITHOUT_MARKER_GENES,
@@ -48,6 +47,9 @@ import {
   NO_MARKER_GENES_HEADER,
   TABLE_HEADER_GENE,
   TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION,
+  TABLE_HEADER_SPECIFICITY,
+  SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF,
+  SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF,
 } from "./constants";
 import { useConnect } from "./connect";
 import {
@@ -231,6 +233,7 @@ function CellInfoSideBar({
                   sdsStyle="minimal"
                   sdsType="secondary"
                   isAllCaps={false}
+                  data-testid={MARKER_SCORE_TOOLTIP_TEST_ID}
                 >
                   <StyledIconImage src={questionMarkIcon} />
                 </TooltipButton>
@@ -274,6 +277,7 @@ function CellInfoSideBar({
                   sdsStyle="minimal"
                   sdsType="secondary"
                   isAllCaps={false}
+                  data-testid={SPECIFICITY_TOOLTIP_TEST_ID}
                 >
                   <StyledIconImage src={questionMarkIcon} />
                 </TooltipButton>
