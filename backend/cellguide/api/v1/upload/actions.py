@@ -26,8 +26,8 @@ def post(body: dict, token_info: dict):
     for reference in references:
         try:
             requests.get(reference)
-        except:
-            raise ForbiddenHTTPException("Invalid url")
+        except Exception as e:
+            raise ForbiddenHTTPException("Invalid url") from e
 
     file_content = {"description": description, "references": references}
 
