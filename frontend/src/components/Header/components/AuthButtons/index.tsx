@@ -68,7 +68,7 @@ function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        {curatorAPIFeature && (
+        {!!curatorAPIFeature && (
           <div>
             <CuratorAPIKeyGenerator />
             <MenuDivider />

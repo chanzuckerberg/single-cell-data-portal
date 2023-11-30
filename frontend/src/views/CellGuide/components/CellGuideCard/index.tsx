@@ -449,7 +449,7 @@ export default function CellGuideCard({
 
           {
             // Split right sidebar view if fmg AND gene info is populated
-            geneInfoGene && (
+            !!geneInfoGene && (
               <GeneInfoSideBar
                 geneInfoGene={geneInfoGene}
                 handleClose={handleCloseGeneInfoSideBar}

@@ -83,10 +83,13 @@ const Project = ({ project, id }: ProjectProps) => {
               {link[0]}
             </DetailItem>
           ))}
+          <DetailItem label="cells">{project.n_cells}</DetailItem>
+          <DetailItem label="genes">{project.n_genes}</DetailItem>
+          <DetailItem label="columns">{project.n_columns}</DetailItem>
         </DetailsContainer>
       </ProjectDetails>
       <ProjectButtons>
-        {"project_page" in project && project.project_page && (
+        {"project_page" in project && !!project.project_page && (
           <Link href={project.project_page}>
             <StyledButton
               sdsType="secondary"
@@ -103,7 +106,7 @@ const Project = ({ project, id }: ProjectProps) => {
           </Link>
         )}
         {projectTier === "hosted" && <EmbeddingButton project={project} />}
-        {project.model_link && (
+        {!!project.model_link && (
           <Link href={project.model_link}>
             <StyledButton
               sdsType="primary"

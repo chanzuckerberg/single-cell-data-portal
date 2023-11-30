@@ -293,6 +293,33 @@ describe("WMG tissue auto-expand", () => {
     await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DISEASE_FILTER);
   });
 
+  test("Publication Filter - Verify that No Publication is pinned to the bottom of the list", async ({
+    page,
+  }) => {
+    await tryUntil(
+      async () => {
+        await goToWMG(page);
+        await clickIntoFilter(
+          page,
+          PUBLICATION_FILTER_TEST_ID,
+          PUBLICATION_FILTER_LABEL
+        );
+        const count = await page
+          .getByRole("listbox")
+          .getByRole("option")
+          .count();
+        await expect(
+          page
+            .getByRole("tooltip")
+            .locator(`[data-option-index="${count - 1}"]`)
+            .locator("span")
+            .getByText("No Publication")
+        ).toBeVisible();
+      },
+      { page }
+    );
+  });
+
   test("Share link with genes and cellTypes", async ({ page }) => {
     await Promise.all([
       /**

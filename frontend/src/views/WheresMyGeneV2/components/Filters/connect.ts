@@ -260,6 +260,18 @@ export const useConnect = ({
     sdsStyle: "minimal",
   } as Partial<InputDropdownProps>;
 
+  const sortedPublicationCitations = useMemo(() => {
+    const sortedCitations = [...publication_citations];
+    sortedCitations.sort((a, b) =>
+      a.name === "No Publication"
+        ? 1
+        : b.name === "No Publication"
+        ? -1
+        : a.name.localeCompare(b.name)
+    );
+    return sortedCitations;
+  }, [publication_citations]);
+
   return {
     handle: {
       tissuesChange: handleTissuesChange,
@@ -280,7 +292,7 @@ export const useConnect = ({
     terms: {
       tissue: tissue_terms,
       sex: sex_terms,
-      publication: publication_citations,
+      publication: sortedPublicationCitations,
       self_reported_ethnicity: self_reported_ethnicity_terms,
       disease: disease_terms,
     },

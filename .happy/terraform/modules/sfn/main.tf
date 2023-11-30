@@ -147,19 +147,6 @@ resource "aws_sfn_state_machine" "state_machine" {
           "JobDefinition.$": "$.batch.JobDefinitionName",
           "JobName": "validate",
           "JobQueue.$": "$.job_queue",
-          "RetryStrategy": {
-            "Attempts": ${var.max_attempts},
-            "EvaluateOnExit": [
-              {
-                "Action": "EXIT",
-                "OnExitCode": "1"
-              },
-              {
-                "Action": "RETRY",
-                "OnExitCode": "*"
-              }
-            ]
-          },
           "ContainerOverrides": {
             "Environment": [
               {
@@ -204,19 +191,6 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "JobDefinition.$": "$.batch.JobDefinitionName",
                   "JobName": "cxg",
                   "JobQueue.$": "$.job_queue",
-                  "RetryStrategy": {
-                    "Attempts": ${var.max_attempts},
-                    "EvaluateOnExit": [
-                      {
-                        "Action": "EXIT",
-                        "OnExitCode": "1"
-                      },
-                      {
-                        "Action": "RETRY",
-                        "OnExitCode": "*"
-                      }
-                    ]
-                  },
                   "ContainerOverrides": {
                     "Environment": [
                       {
@@ -259,19 +233,6 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "JobDefinition.$": "$.batch.JobDefinitionName",
                   "JobName": "seurat",
                   "JobQueue.$": "$.job_queue",
-                  "RetryStrategy": {
-                    "Attempts": ${var.max_attempts},
-                    "EvaluateOnExit": [
-                      {
-                        "Action": "EXIT",
-                        "OnExitCode": "1"
-                      },
-                      {
-                        "Action": "RETRY",
-                        "OnExitCode": "*"
-                      }
-                    ]
-                  },
                   "ContainerOverrides": {
                     "Environment": [
                       {
@@ -320,8 +281,7 @@ resource "aws_sfn_state_machine" "state_machine" {
             "BackoffRate": 2.0
         } ],
         "Next": "DeregisterJobDefinition",
-        "ResultPath": null,
-        "OutputPath": "$.[0]"
+        "ResultPath": null
       },
       "HandleErrors": {
         "Type": "Task",
@@ -339,16 +299,62 @@ resource "aws_sfn_state_machine" "state_machine" {
             "MaxAttempts": 3,
             "BackoffRate": 2.0
         } ],
-        "Next": "DeregisterJobDefinition",
+        "Next": "DeregisterJobDefinitionAfterHandleErrors",
+        "ResultPath": null
+      },
+      "DeregisterJobDefinitionAfterHandleErrors": {
+        "Type": "Task",
+        "Next": "CheckForErrors",
+        "Parameters": {
+          "JobDefinition.$": "$.batch.JobDefinitionName"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition",
         "ResultPath": null
       },
       "DeregisterJobDefinition": {
         "Type": "Task",
-        "End": true,
+        "Next": "CheckForErrors",
         "Parameters": {
-          "JobDefinition.$": "$.batch.JobDefinitionName"
+          "JobDefinition.$": "$[0].batch.JobDefinitionName"
         },
-        "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition"
+        "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition",
+        "ResultPath": null
+      },
+      "CheckForErrors": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.error",
+            "IsPresent": true,
+            "Next": "DownloadValidateError"
+          },
+          {
+            "Or": [
+              {
+                "Variable": "$[0].error",
+                "IsPresent": true
+              },
+              {
+                "Variable": "$[1].error",
+                "IsPresent": true
+              }
+            ],
+            "Next": "ConversionError"
+          }
+        ],
+        "Default": "EndPass"
+      },
+      "ConversionError": {
+        "Type": "Fail",
+        "Cause": "CXG and/or Seurat conversion failed."
+      },
+      "DownloadValidateError": {
+        "Type": "Fail",
+        "Cause": "An error occurred during Download/Validate."
+      },
+      "EndPass": {
+        "Type": "Pass",
+        "End": true
       }
     }
 }

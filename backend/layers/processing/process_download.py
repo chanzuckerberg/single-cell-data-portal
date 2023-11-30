@@ -117,6 +117,22 @@ class ProcessDownload(ProcessingLogic):
         vcpus = max_vcpu if estimated_memory_MB > max_memory_MB else int(ceil(estimated_memory_MB / memory_per_vcpu))
         memory = memory_per_vcpu * vcpus  # round up to nearest memory_per_vcpu
         max_swap = min([max_swap_memory_MB, memory * swap_modifier])
+        self.logger.info(
+            {
+                "message": "Estimated resource requirements",
+                "memory_modifier": memory_modifier,
+                "swap_modifier": swap_modifier,
+                "min_vcpu": min_vcpu,
+                "max_vcpu": max_vcpu,
+                "max_swap_memory_MB": max_swap_memory_MB,
+                "memory_per_vcpu": memory_per_vcpu,
+                "uncompressed_size_MB": uncompressed_size_MB,
+                "max_swap": max_swap,
+                "memory": memory,
+                "vcpus": vcpus,
+            }
+        )
+
         return {"Vcpus": vcpus, "Memory": memory, "MaxSwap": max_swap}
 
     def create_batch_job_definition_parameters(self, local_filename: str, dataset_version_id: str) -> Dict[str, Any]:
