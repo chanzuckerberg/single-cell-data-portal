@@ -308,10 +308,10 @@ function CellInfoSideBar({
                 </InfoButtonWrapper>
               </DivTableCell>
               <DivTableCellPadded data-testid="marker-scores-fmg" align>
-                {metadata.marker_score.toPrecision(4)}
+                {metadata.marker_score.toFixed(2)}
               </DivTableCellPadded>
               <DivTableCellPadded data-testid="specificity-fmg" align>
-                {metadata.specificity.toPrecision(4)}
+                {metadata.specificity.toFixed(2)}
               </DivTableCellPadded>
             </DivTableRow>
           ))}
