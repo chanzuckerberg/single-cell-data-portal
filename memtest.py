@@ -129,7 +129,9 @@ def initialize_pool():
 def filter_datasets():
     """skip datasets that are already in the memory_memory.csv file"""
     df = pd.read_csv("memory_metrics.csv", index_col="dataset_id")
-    ds = [dataset for dataset in DATASETS if dataset['dataset_id'] not in df.index.values]
+    ds = [dataset for dataset in DATASETS
+          if dataset['dataset_id'] not in df.index.values
+          ]
     assert ds, "No datasets to process"
     return ds
 
@@ -138,7 +140,7 @@ def main():
     combine_csvs()
     datasets = filter_datasets()
     print(f"Processing {len(datasets)} datasets")
-    with Pool(1, initializer=initialize_pool) as pool:
+    with Pool(10, initializer=initialize_pool) as pool:
         pool.map(job, datasets)
     combine_csvs()
 
