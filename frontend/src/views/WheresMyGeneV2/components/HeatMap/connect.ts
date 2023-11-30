@@ -310,6 +310,15 @@ export function useConnect({
     displayedTissues,
   ]);
 
+  const totalElementsCount = useMemo(() => {
+    return allTissueCellTypes.reduce((count, element) => {
+      if (element.tissueCellTypes.length > 0) {
+        return count + element.tissueCellTypes.length + 1;
+      }
+      return count++;
+    }, 0);
+  }, [allTissueCellTypes]);
+
   useTrackHeatMapLoaded({
     selectedGenes: genes,
     displayedCellTypes,
@@ -337,6 +346,7 @@ export function useConnect({
     selectedCellTypeOptions,
     setIsLoading,
     sortedGeneNames,
+    totalElementsCount,
     uniqueCellTypes,
     useHandleExpandedTissueIds,
     useTrackHeatMapLoaded,
@@ -376,8 +386,10 @@ function getTissueCellTypes({
       ? tissueCellTypes
       : sortedTissueCellTypes) || EMPTY_ARRAY;
 
-  ret = ret.filter((cellType) =>
-    displayedCellTypes.has(tissueID + cellType.cellTypeName)
+  ret = ret.filter(
+    (cellType) =>
+      displayedCellTypes.has(tissueID + cellType.cellTypeName) &&
+      cellType.total_count > 9
   );
 
   return ret;

@@ -8,6 +8,7 @@ import requests
 from backend.api_server.app import app
 from backend.common.utils.http_exceptions import NotFoundHTTPException
 from backend.gene_info.api import ensembl_ids, ncbi_provider
+from backend.gene_info.config import GeneInfoConfig
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 
 
@@ -25,15 +26,15 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
             "show_warning_banner": False,
         }
 
-        self.mock_config = patch("backend.gene_info.config.GeneInfoConfig.__getattr__", return_value="mock_key")
-        self.mock_config.start()
+        self.mock_config = GeneInfoConfig()
+        self.mock_config.set({"key": "mock_key"})
 
     @classmethod
     def setUpClass(cls) -> None:
         cls.maxDiff = None
 
     def tearDown(self):
-        self.mock_config.stop()
+        self.mock_config.reset()
 
     @patch("backend.gene_info.api.ncbi_provider.urllib.request.urlopen")
     @patch("backend.gene_info.api.v1.NCBIProvider._search_gene_uid")

@@ -54,9 +54,6 @@ describe("Right side bar", () => {
     expect(
       await page.getByTestId("source-data-list").locator("a").count()
     ).toBeGreaterThan(0);
-
-    // expect the header to be visible
-    await expect(page.locator("h5")).toContainText("Methodology");
   });
   test("Should links out to scExpression documentation", async ({
     page,
@@ -69,7 +66,7 @@ describe("Right side bar", () => {
     const [newPage] = await Promise.all([
       context.waitForEvent("page"),
       //click our documentation link
-      await page.locator("a").getByText("our documentation").click(),
+      await page.getByTestId("documentation-link").click(),
     ]);
 
     // wait until the new page fully loads
@@ -77,9 +74,7 @@ describe("Right side bar", () => {
 
     // expect the header on the new page to be visible
     expect(
-      newPage.locator(
-        getById("gene-expression--query-gene-expression-across-tissues")
-      )
+      newPage.locator(getById("gene-expression-data-processing"))
     ).toBeVisible();
   });
 });

@@ -5,17 +5,6 @@ from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorP
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProvider
 from tests.unit.backend.layers.common.base_test import BaseTest
 
-mock_config_attr = {
-    "collections_base_url": "http://collections",
-    "dataset_assets_base_url": "http://domain",
-    "upload_max_file_size_gb": 1,
-    "schema_4_feature_flag": "True",
-}
-
-
-def mock_config_fn(name):
-    return mock_config_attr[name]
-
 
 class BaseProcessingTest(BaseTest):
     def setUp(self):

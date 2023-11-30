@@ -60,7 +60,9 @@ export function useSortedCellTypesByTissueName({
         const cellTypeOptions = cellTypeOptionsByCellTypeId[cellType.id] || [];
 
         // (thuang): Reverse the order, so `unknown` shows up last
-        orderedCellTypes.push(cellType, ...cellTypeOptions.reverse());
+        if (cellType.id.includes("UBERON"))
+          orderedCellTypes.unshift(cellType, ...cellTypeOptions.reverse());
+        else orderedCellTypes.push(cellType, ...cellTypeOptions.reverse());
       }
 
       /**
@@ -108,8 +110,7 @@ function hierarchicalClustering({
 
       const { meanExpression, percentage } = cellTypeGeneExpressionSummaryData;
 
-      // push tissue summary expression to the front
-      if (!percentage) return -1;
+      if (percentage === undefined) return 0;
 
       return meanExpression * percentage;
     });

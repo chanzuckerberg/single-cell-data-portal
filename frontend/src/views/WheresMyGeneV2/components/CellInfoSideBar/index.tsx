@@ -18,12 +18,7 @@ import {
   TooltipContent,
   TissueName,
   TooltipButton,
-  DivTable,
-  DivTableRow,
-  DivTableCell,
-  DivTableHead,
   ButtonWrapper,
-  DivTableLegend,
   TooltipLink,
 } from "./style";
 import { Link } from "src/components/GeneInfoSideBar/style";
@@ -33,6 +28,7 @@ import InfoSVG from "src/common/images/info-sign-icon.svg";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
 import { CellInfoBarProps } from "./types";
 import {
+  TISSUES_WITHOUT_MARKER_GENES,
   MARKER_GENES_TOOLTIP_CONTENT,
   MARKER_GENE_LABEL,
   MARKER_SCORE_CELLGUIDE_LINK_TEXT,
@@ -41,11 +37,20 @@ import {
   MARKER_SCORE_TOOLTIP_CONTENT,
   MARKER_SCORE_TOOLTIP_LINK_TEXT,
   NO_MARKER_GENES_DESCRIPTION,
+  NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION,
   NO_MARKER_GENES_HEADER,
   TABLE_HEADER_GENE,
   TABLE_HEADER_SCORE,
+  TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION,
 } from "./constants";
 import { useConnect } from "./connect";
+import {
+  DivTable,
+  DivTableCell,
+  DivTableHead,
+  DivTableLegend,
+  DivTableRow,
+} from "../../common/styles";
 
 function CellInfoSideBar({
   cellInfoCellType,
@@ -66,9 +71,13 @@ function CellInfoSideBar({
 
   if (isLoading || !data) return null;
 
-  const numMarkerGenes = Object.keys(data.marker_genes).length;
-
   if (!cellInfoCellType) return null;
+
+  const numMarkerGenes = Object.keys(data.marker_genes).length;
+  const shouldShowEmptyState =
+    numMarkerGenes === 0 ||
+    cellInfoCellType.cellType.total_count < 25 ||
+    TISSUES_WITHOUT_MARKER_GENES.includes(tissueInfo.name);
 
   return (
     <>
@@ -135,20 +144,24 @@ function CellInfoSideBar({
           sdsType="primary"
           isAllCaps={false}
           style={{ fontWeight: "500" }}
-          disabled={!numMarkerGenes}
+          disabled={shouldShowEmptyState}
         >
           {MARKER_SCORE_DOTPLOT_BUTTON_TEXT}
         </Button>
       </ButtonContainer>
-      {!numMarkerGenes ? (
+      {shouldShowEmptyState ? (
         (track(EVENTS.WMG_FMG_NO_MARKER_GENES, {
           combination: `${cellInfoCellType.cellType.id}, ${tissueInfo.id}`,
         }),
         (
           <NoMarkerGenesContainer data-testid="no-marker-genes-warning">
             <NoMarkerGenesHeader>{NO_MARKER_GENES_HEADER}</NoMarkerGenesHeader>
-            <NoMarkerGenesDescription>
-              {NO_MARKER_GENES_DESCRIPTION}
+            <NoMarkerGenesDescription data-testid="no-marker-genes-description">
+              {TISSUES_WITHOUT_MARKER_GENES.includes(tissueInfo.name)
+                ? NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION
+                : cellInfoCellType.cellType.total_count < 25
+                ? TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION
+                : NO_MARKER_GENES_DESCRIPTION}
             </NoMarkerGenesDescription>
           </NoMarkerGenesContainer>
         ))

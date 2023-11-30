@@ -81,10 +81,10 @@ For each gene in our reference files, length was calculated by creating non-over
 
 ## Data Normalization
 
-Read counts are normalized using a log transformation of pseudocounts per 10,000 reads (ln(CPTT+1)).
+Read counts are normalized using a log transformation of pseudocounts per 10,000 reads, ln(CPTT+1).
 Normalized matrices from multiple datasets of the same tissue are then concatenated.
 
-This normalization is not designed to correct batch effects; while normalization and subsequent aggregation of data across many observations (mean expression values) mitigates these effects to some degree, users should be aware that batch effects may still be present in the data.
+This normalization is not designed to correct batch effects; while normalization and subsequent aggregation of data across many observations (mean expression values) mitigates these effects to some degree, users should be aware that batch effects may still be present in the data. <NextLink href="https://www.biorxiv.org/content/10.1101/2023.10.30.563174v1">See our manuscript for a detailed analysis.</NextLink>
 
 ## Removal of Noisy Ultra-low Expression Values
 

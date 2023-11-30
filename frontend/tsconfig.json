@@ -41,6 +41,6 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "src/common/constants/nodeEnv.js"
+    "**/*.js",
   ]
 }

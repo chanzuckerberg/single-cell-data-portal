@@ -11,7 +11,6 @@ from backend.layers.business.entities import (
     CollectionMetadataUpdate,
     CollectionQueryFilter,
     DatasetArtifactDownloadData,
-    DeprecatedDatasetArtifactDownloadData,
 )
 from backend.layers.business.exceptions import (
     ArtifactNotFoundException,
@@ -544,26 +543,6 @@ class BusinessLogic(BusinessLogicInterface):
 
         return DatasetArtifactDownloadData(file_size, url)
 
-    # TODO: Superseded by get_dataset_artifact_download_data. Remove with #5697.
-    def get_dataset_artifact_download_data_deprecated(
-        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
-    ) -> DeprecatedDatasetArtifactDownloadData:
-        """
-        Returns download data for an artifact, including a presigned URL
-        """
-        artifacts = self.get_dataset_artifacts(dataset_version_id)
-        artifact = next((a for a in artifacts if a.id == artifact_id), None)
-
-        if not artifact:
-            raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")
-
-        file_name = artifact.uri.split("/")[-1]
-        file_type = artifact.type
-        file_size = self.s3_provider.get_file_size(artifact.uri)
-        presigned_url = self.s3_provider.generate_presigned_url(artifact.uri)
-
-        return DeprecatedDatasetArtifactDownloadData(file_name, file_type, file_size, presigned_url)
-
     def get_dataset_status(self, dataset_version_id: DatasetVersionId) -> DatasetStatus:
         """
         Returns the dataset status for a specific dataset version
@@ -683,7 +662,10 @@ class BusinessLogic(BusinessLogicInterface):
                 if rdev_prefix:
                     dataset_version_s3_object_key = f"{rdev_prefix}/{dataset_version_s3_object_key}"
                 object_keys.add(dataset_version_s3_object_key)
-        self._delete_from_bucket(os.getenv("DATASETS_BUCKET"), list(object_keys))
+        try:
+            self.s3_provider.delete_files(os.getenv("DATASETS_BUCKET"), list(object_keys))
+        except S3DeleteException as e:
+            raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
         return list(object_keys)
 
     def delete_all_dataset_versions_from_public_bucket_for_collection(self, collection_id: CollectionId) -> List[str]:
@@ -893,20 +875,20 @@ class BusinessLogic(BusinessLogicInterface):
         except DatasetVersionNotFoundException:
             return None
 
-    def _delete_from_bucket(self, bucket: str, keys: List[str] = None, prefix: str = None) -> None:
-        try:
-            if keys:
-                self.s3_provider.delete_files(bucket, keys)
-            if prefix:
-                self.s3_provider.delete_prefix(bucket, prefix)
-        except S3DeleteException as e:
-            raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
-
     def delete_artifacts(self, artifacts: List[DatasetArtifact]) -> None:
         for artifact in artifacts:
-            matches_dict = S3_URI_REGEX.match(artifact.uri).groupdict()
-            bucket, key, prefix = matches_dict["bucket"], matches_dict["key"], matches_dict["prefix"]
-            self._delete_from_bucket(bucket, keys=[key] if key else None, prefix=prefix)
+            matches = S3_URI_REGEX.match(artifact.uri)
+            if not matches:
+                raise InvalidURIException(f"Trying to delete invalid URI: {artifact.uri}")
+            bucket, key, prefix = matches.group("bucket", "key", "prefix")
+            try:
+                if key and artifact.type != DatasetArtifactType.CXG:
+                    # Ignore prefix if keys is provided.
+                    self.s3_provider.delete_files(bucket, [key])
+                elif prefix and artifact.type == DatasetArtifactType.CXG:
+                    self.s3_provider.delete_prefix(bucket, prefix)
+            except S3DeleteException as e:
+                raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str

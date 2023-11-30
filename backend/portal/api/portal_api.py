@@ -678,38 +678,6 @@ def get_dataset_asset(dataset_id: str, asset_id: str):
     return make_response(response, 200)
 
 
-def post_dataset_asset(dataset_id: str, asset_id: str):
-    """
-    Requests to download a dataset asset, by generating a presigned_url.
-    """
-
-    version = get_business_logic().get_dataset_version(DatasetVersionId(dataset_id))
-    if version is None:
-        raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}' not found.")
-
-    try:
-        download_data = get_business_logic().get_dataset_artifact_download_data_deprecated(
-            DatasetVersionId(dataset_id), DatasetArtifactId(asset_id)
-        )
-    except ArtifactNotFoundException:
-        raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}/asset/{asset_id}' not found.") from None
-
-    if download_data.file_size is None:
-        raise ServerErrorHTTPException() from None
-
-    if download_data.presigned_url is None:
-        raise ServerErrorHTTPException()
-
-    response = {
-        "dataset_id": dataset_id,
-        "file_name": download_data.file_name,
-        "file_size": download_data.file_size,
-        "presigned_url": download_data.presigned_url,
-    }
-
-    return make_response(response, 200)
-
-
 def get_dataset_assets(dataset_id: str):
     """
     Returns a list of all the artifacts registered to a dataset.

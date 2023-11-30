@@ -430,7 +430,7 @@ export default function OntologyDagView({
                 <Legend isTissue={!cellTypeId} selectedGene={selectedGene} />
               )}
               <RightAligned>
-                {selectedGene && (
+                {!!selectedGene && (
                   <StyledTagFilter
                     data-testid={
                       CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
@@ -485,9 +485,9 @@ export default function OntologyDagView({
                       </>
                     )}
                     {tooltipData &&
-                      tooltipData.marker_score &&
-                      tooltipData.me &&
-                      tooltipData.pc && (
+                      !!tooltipData.marker_score &&
+                      !!tooltipData.me &&
+                      !!tooltipData.pc && (
                         <>
                           <br />
                           <br />

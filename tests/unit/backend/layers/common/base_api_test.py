@@ -4,6 +4,7 @@ import time
 import unittest
 from unittest.mock import patch
 
+from backend.common.corpora_config import CorporaAuthConfig, CorporaConfig
 from backend.layers.thirdparty.cdn_provider_interface import CDNProviderInterface
 from tests.unit.backend.layers.api.config import TOKEN_EXPIRES
 from tests.unit.backend.layers.common.base_test import BaseTest
@@ -79,14 +80,17 @@ class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
             "schema_4_feature_flag": "True",
         }
 
-        def mock_config_fn(name):
-            return mock_config_attr[name]
+        self.mock_auth_config = CorporaAuthConfig()
+        self.mock_auth_config.set(
+            dict(
+                api_base_url="mock_api_base_url",
+                auth0_domain="mock_auth0_domain",
+                curation_audience="mock_curation_audience",
+            )
+        )
 
-        self.mock = patch("backend.common.corpora_config.CorporaAuthConfig.__getattr__", return_value="mock_audience")
-        self.mock.start()
-
-        self.mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-        self.mock_config.start()
+        self.mock_config = CorporaConfig()
+        self.mock_config.set(mock_config_attr)
 
         self.cloudfront_provider = CDNProviderInterface()
 
@@ -108,7 +112,8 @@ class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
         # Disable mocking of business logic and cloudfront provider
         self.mock_business_logic.stop()
         self.mock_cloudfront_provider.stop()
-        self.mock_config.stop()
+        self.mock_config.reset()
+        self.mock_auth_config.reset()
 
     def get_cxguser_token(self, user="owner"):
         """

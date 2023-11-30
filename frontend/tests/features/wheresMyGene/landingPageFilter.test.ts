@@ -1,4 +1,4 @@
-import { expect, test, Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import {
   WMG_WITH_SEEDED_GENES,
   checkPlotSize,
@@ -15,9 +15,15 @@ import {
   SORT_CELL_TYPES_TOOLTIP_TEXT,
   SORT_GENES_TOOLTIP_TEXT,
 } from "src/views/WheresMyGeneV2/common/constants";
+import { DISEASE_FILTER_TEST_ID } from "tests/common/constants";
+import { test } from "tests/common/test";
 
 const SIDE_BAR_TOGGLE_BUTTON_ID = "side-bar-toggle-button";
 const CELL_TYPE_FILTER = "naive B cell";
+const DISEASE_FILTER_LABEL = "Disease";
+const DISEASE_FILTER_SELECTION = "influenza";
+const DATA_SOURCE_BADGE_TEST_ID = "source-data-badge";
+const TISSUE_FILTER_LABEL = "Tissue";
 
 const { describe } = test;
 
@@ -32,66 +38,65 @@ describe("Left side bar", () => {
     expect(await page.getByTestId("add-organism").isVisible()).toBeFalsy();
   });
 
-  [
-    "dataset-filter",
-    "disease-filter",
-    "self-reported-ethnicity-filter",
-    "sex-filter",
-  ].forEach((filterOption) => {
-    test(`Should be able select and de-select options for ${filterOption} filter`, async ({
-      page,
-    }) => {
-      await goToPage(WMG_WITH_SEEDED_GENES.URL, page);
+  ["disease-filter", "self-reported-ethnicity-filter", "sex-filter"].forEach(
+    (filterOption) => {
+      test(`Should be able select and de-select options for ${filterOption} filter`, async ({
+        page,
+      }) => {
+        await goToPage(WMG_WITH_SEEDED_GENES.URL, page);
 
-      await waitForHeatmapToRender(page);
-      await tryUntil(
-        async () => {
-          // check the count of source data displayed before adding a filter
-          const countBeforeFilter = await checkSourceData(page);
+        await waitForHeatmapToRender(page);
+        await tryUntil(
+          async () => {
+            // check the count of source data displayed before adding a filter
+            const countBeforeFilter = await checkSourceData(page);
 
-          // verify source data loading some data
-          expect(countBeforeFilter).toBeGreaterThan(0);
+            // verify source data loading some data
+            expect(countBeforeFilter).toBeGreaterThan(0);
 
-          // check plot height before adding a filter
-          const plotSizeBeforeFilter = await checkPlotSize(page);
+            // check plot height before adding a filter
+            const plotSizeBeforeFilter = await checkPlotSize(page);
 
-          // verify data plot data loading some data
-          expect(plotSizeBeforeFilter).toBeGreaterThan(0);
+            // verify data plot data loading some data
+            expect(plotSizeBeforeFilter).toBeGreaterThan(0);
 
-          // select a filter
-          await selectSecondaryFilterOption(page, filterOption);
+            // select a filter
+            await selectSecondaryFilterOption(page, filterOption);
 
-          await tryUntil(
-            async () => {
-              // check the count of source data displayed after adding a filter
-              const countAfterFilter = await checkSourceData(page);
+            await tryUntil(
+              async () => {
+                // check the count of source data displayed after adding a filter
+                const countAfterFilter = await checkSourceData(page);
 
-              //check plot height after adding a filter
-              const plotSizeAfterFilter = await checkPlotSize(page);
+                //check plot height after adding a filter
+                const plotSizeAfterFilter = await checkPlotSize(page);
 
-              // verify source data changed after filter is applied
-              expect(countBeforeFilter === countAfterFilter).toBeFalsy();
+                // verify source data changed after filter is applied
+                expect(countBeforeFilter === countAfterFilter).toBeFalsy();
 
-              // verify data plot data changed after filter was applied
-              expect(plotSizeBeforeFilter === plotSizeAfterFilter).toBeFalsy();
-            },
-            { page }
-          );
+                // verify data plot data changed after filter was applied
+                expect(
+                  plotSizeBeforeFilter === plotSizeAfterFilter
+                ).toBeFalsy();
+              },
+              { page }
+            );
 
-          // uncheck filter
-          await deSelectSecondaryFilterOption(page, filterOption);
-        },
-        {
-          page,
-          /**
-           * (thuang): Give up after N times, because the app state might not
-           * be recoverable at this point
-           */
-          maxRetry: 3,
-        }
-      );
-    });
-  });
+            // uncheck filter
+            await deSelectSecondaryFilterOption(page, filterOption);
+          },
+          {
+            page,
+            /**
+             * (thuang): Give up after N times, because the app state might not
+             * be recoverable at this point
+             */
+            maxRetry: 3,
+          }
+        );
+      });
+    }
+  );
 
   test("Left side bar tooltips", async ({ page }) => {
     await goToPage(WMG_WITH_SEEDED_GENES.URL, page);
@@ -113,49 +118,154 @@ describe("Left side bar", () => {
     expect(page.getByText(SORT_GENES_TOOLTIP_TEXT)).toBeTruthy();
   });
 
-  [
-    "dataset-filter",
-    "disease-filter",
-    "publication-filter",
-    "tissue-filter",
-  ].forEach((testId) => {
-    test(`Ensure that cell type filter cross-filters with ${testId}`, async ({
-      page,
-    }) => {
-      await goToPage(WMG_WITH_SEEDED_GENES.URL, page);
+  ["disease-filter", "publication-filter", "tissue-filter"].forEach(
+    (testId) => {
+      test(`Ensure that cell type filter cross-filters with ${testId}`, async ({
+        page,
+      }) => {
+        await goToPage(WMG_WITH_SEEDED_GENES.URL, page);
 
-      await waitForHeatmapToRender(page);
+        await waitForHeatmapToRender(page);
 
-      const numberOfRecordsBefore = await countRecords(page, testId);
+        const numberOfRecordsBefore = await countRecords(page, testId);
 
-      await page.getByRole("combobox").first().click();
-      await page.getByRole("option", { name: CELL_TYPE_FILTER }).click();
-      await page.keyboard.press("Escape");
-
-      const numberOfRecordsAfter = await countRecords(page, testId);
-
-      expect(numberOfRecordsBefore).toBeGreaterThan(numberOfRecordsAfter);
-    });
-  });
-
-  async function countRecords(page: Page, testId: string) {
-    const optionLocator = page.getByRole("option");
-
-    let count = 0;
-
-    await tryUntil(
-      async () => {
-        await page.getByTestId(testId).getByRole("button").click();
-
-        count = await optionLocator.count();
-
+        await page.getByRole("combobox").first().click();
+        await page.getByRole("option", { name: CELL_TYPE_FILTER }).click();
         await page.keyboard.press("Escape");
 
-        expect(count).toBeGreaterThan(0);
+        const numberOfRecordsAfter = await countRecords(page, testId);
+
+        expect(numberOfRecordsBefore).toBeGreaterThan(numberOfRecordsAfter);
+      });
+    }
+  );
+
+  test("Data Source Button Badge Counter - Check Visible on page load", async ({
+    page,
+  }) => {
+    await tryUntil(
+      async () => {
+        await goToWMG(page);
+        const badgeCounter = await page.getByTestId(DATA_SOURCE_BADGE_TEST_ID);
+        expect(badgeCounter).toBeVisible();
+        expect(badgeCounter.getByText(/\d+/)).toBeVisible();
       },
       { page }
     );
+  });
 
-    return count;
-  }
+  test("Data Source Button Badge Counter - Check Visible after genes applied", async ({
+    page,
+  }) => {
+    await tryUntil(
+      async () => {
+        await goToPage(WMG_WITH_SEEDED_GENES.URL, page);
+        await waitForHeatmapToRender(page);
+        const badgeCounter = await page.getByTestId(DATA_SOURCE_BADGE_TEST_ID);
+        expect(badgeCounter).toBeVisible();
+        expect(badgeCounter.getByText(/\d+/)).toBeVisible();
+      },
+      { page }
+    );
+  });
+
+  test("Data Source Button Badge Counter - Check Visible after filters applied", async ({
+    page,
+  }) => {
+    await tryUntil(
+      async () => {
+        await goToWMG(page);
+        await filterSelection({
+          page,
+          filterTestId: DISEASE_FILTER_TEST_ID,
+          filterLabel: DISEASE_FILTER_LABEL,
+          selection: DISEASE_FILTER_SELECTION,
+        });
+        const badgeCounter = await page.getByTestId(DATA_SOURCE_BADGE_TEST_ID);
+        expect(badgeCounter).toBeVisible();
+        const count = await badgeCounter.innerText();
+        expect(parseInt(count)).toBeLessThan(99);
+      },
+      { page }
+    );
+  });
 });
+
+async function countRecords(page: Page, testId: string) {
+  const optionLocator = page.getByRole("option");
+
+  let count = 0;
+
+  await tryUntil(
+    async () => {
+      await page.getByTestId(testId).getByRole("button").click();
+
+      count = await optionLocator.count();
+
+      await page.keyboard.press("Escape");
+
+      expect(count).toBeGreaterThan(0);
+    },
+    { page }
+  );
+
+  return count;
+}
+
+const TOOLTIP_TIMEOUT_MS = 2 * 1000;
+
+/**
+ * clickIntoFilter
+ * Click into the filter and wait for the tooltip to be visible
+ */
+async function clickIntoFilter(
+  page: Page,
+  filterName: string,
+  filterLabel = TISSUE_FILTER_LABEL
+) {
+  await tryUntil(
+    async () => {
+      await page
+        .getByTestId(filterName)
+        .getByRole("button", { name: filterLabel })
+        .click();
+      await expect(page.getByRole("tooltip")).toBeVisible({
+        timeout: TOOLTIP_TIMEOUT_MS,
+      });
+    },
+    { page }
+  );
+}
+
+/**
+ * filterSelection
+ * Filter the selection from the dropdown
+ */
+export async function filterSelection({
+  page,
+  filterTestId,
+  filterLabel,
+  selection,
+  filterSelected = selection,
+}: {
+  page: Page;
+  filterTestId: string;
+  filterLabel: string;
+  selection: string;
+  filterSelected?: string;
+}) {
+  await tryUntil(
+    async () => {
+      await clickIntoFilter(page, filterTestId, filterLabel);
+      const dropDownOption = await page
+        .getByRole("tooltip")
+        .getByText(selection);
+      await dropDownOption.click();
+      await page.keyboard.press("Escape");
+      await expect(
+        page.getByTestId(filterTestId).getByText(filterSelected)
+      ).toBeVisible();
+    },
+    { page }
+  );
+}

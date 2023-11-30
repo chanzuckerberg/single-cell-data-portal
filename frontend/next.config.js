@@ -18,6 +18,8 @@ const HUBSPOT_JS_URL = "https://js.hsforms.net";
 
 const HUBSPOT_FORMS_URL = "https://forms.hsforms.com";
 
+const CROSS_REF_URL = "https://api.crossref.org";
+
 const DATADOG_URL = "browser-intake-datadoghq.com";
 
 const SCRIPT_SRC = [
@@ -41,6 +43,7 @@ const defaultSecureHeaders = {
         PLAUSIBLE_URL,
         configs.API_URL,
         configs.CELLGUIDE_DATA_URL,
+        CROSS_REF_URL,
         DATADOG_URL,
       ],
       defaultSrc: ["'self'", HUBSPOT_FORMS_URL],

@@ -28,5 +28,7 @@ def success_handler(events: dict, context) -> None:
         handle_failure(seurat_job, context, delete_artifacts=False)
     else:
         business_logic.update_dataset_version_status(
-            DatasetVersionId(cxg_job["dataset_id"]), DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
+            DatasetVersionId(cxg_job["dataset_version_id"]),
+            DatasetStatusKey.PROCESSING,
+            DatasetProcessingStatus.SUCCESS,
         )

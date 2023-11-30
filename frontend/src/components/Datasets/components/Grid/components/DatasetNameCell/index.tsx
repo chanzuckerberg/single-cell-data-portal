@@ -21,7 +21,7 @@ export default function DatasetNameCell({
   return (
     <>
       <Title>{name}</Title>
-      {collectionName &&
+      {!!collectionName &&
         (collectionId ? (
           <SubTitle>
             <LinkCell

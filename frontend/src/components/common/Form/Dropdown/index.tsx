@@ -53,7 +53,7 @@ export default function Dropdown({
 }: Props): JSX.Element {
   return (
     <DropdownForm isSelected={isOptionSelected(value)}>
-      {text && (
+      {!!text && (
         <FormLabelText>
           <span>{text}</span>
           {optionalField && <Optional>(optional)</Optional>}

@@ -187,7 +187,7 @@ export default function GeneSearchBar({
       const newSelected = [...selectedGeneOptions];
       const parsedPaste = pull(uniq(input.split(/[ ,]+/)), "");
 
-      parsedPaste.map((item) => {
+      parsedPaste.forEach((item) => {
         const newItem = genesByName.get(item.toLowerCase());
         if (!newItem) {
           handleGeneNotFound(item);

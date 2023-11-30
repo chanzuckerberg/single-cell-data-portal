@@ -5,15 +5,12 @@ import { fontBodyXxs, getColors } from "@czi-sds/components";
 import {
   fontWeightSemibold,
   gray500,
-  gray300,
-  gray100,
+  spacesXl,
+  spacesXxl,
+  spacesXxs,
 } from "src/common/theme";
 
 export const CELL_INFO_SIDEBAR_WIDTH_PX = 400;
-
-interface CellProps {
-  align?: boolean;
-}
 
 export const ButtonContainer = styled.div`
   display: flex;
@@ -113,12 +110,15 @@ export const NoMarkerGenesContainer = styled("div")`
 
   justify-content: center;
   text-align: center;
+
+  padding: ${spacesXxl}px ${spacesXl}px;
 `;
 
 export const NoMarkerGenesHeader = styled("span")`
   ${fontBodyS}
   color: black;
   font-weight: 500;
+  padding-bottom: ${spacesXxs}px;
 `;
 
 export const NoMarkerGenesDescription = styled("span")`
@@ -129,48 +129,4 @@ export const NoMarkerGenesDescription = styled("span")`
       color: ${colors?.gray[500]};
     `;
   }}
-`;
-
-export const DivTable = styled.div`
-  display: table;
-  width: 100%;
-  max-width: 600px;
-  border-collapse: collapse;
-`;
-
-export const DivTableRow = styled.div`
-  display: table-row;
-  line-height: 24px;
-  &:nth-of-type(even) {
-    background-color: ${gray100};
-  }
-`;
-
-export const DivTableCell = styled.div<CellProps>`
-  display: table-cell;
-  padding: 4px, 0px, 4px, 0px;
-  text-align: ${(props) => (props.align ? "right" : "left")};
-  @media (max-width: 600px) {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-
-    &:not(:last-child) {
-      margin-bottom: 0.625rem;
-    }
-  }
-`;
-
-export const DivTableHead = styled.div`
-  display: table-row;
-  font-weight: 500;
-  color: ${gray500};
-`;
-
-export const DivTableLegend = styled.div`
-  display: table-row;
-  font-weight: bold;
-  font-size: 1.2em;
-  color: ${gray500};
-  border-bottom: 1px solid ${gray300};
 `;

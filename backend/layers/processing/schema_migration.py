@@ -6,6 +6,7 @@ import random
 from typing import Any, Dict, Iterable, List
 
 from backend.common.corpora_config import CorporaConfig
+from backend.common.utils.json import CustomJSONEncoder
 from backend.common.utils.result_notification import upload_to_slack
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.entities import CollectionQueryFilter
@@ -34,19 +35,12 @@ class SchemaMigrate(ProcessingLogic):
         self.execution_id = os.environ.get("EXECUTION_ID", "test-execution-arn")
         self.logger = logging.getLogger("processing")
         self.local_path: str = "."  # Used for testing
-        self.limit_migration = os.environ.get("LIMIT_MIGRATION", False)  # Run a small migration for testing
-        self.limit_select = 2  # Number of collections to migrate
+        self.limit_migration = os.environ.get("LIMIT_MIGRATION", 0)  # Run a small migration for testing
         self.schema_version = schema_validator.get_current_schema_version()
 
-    def limit_collections(self) -> Iterable[CollectionVersion]:
+    def fetch_collections(self) -> Iterable[CollectionVersion]:
         published_collections = [*self.business_logic.get_collections(CollectionQueryFilter(is_published=True))]
         unpublished_collections = [*self.business_logic.get_collections(CollectionQueryFilter(is_published=False))]
-        if self.limit_migration:
-            select = self.limit_select // 2
-            if len(unpublished_collections) >= select:
-                unpublished_collections = random.sample(unpublished_collections, self.limit_select // 2)
-            if len(published_collections) >= select:
-                published_collections = random.sample(published_collections, self.limit_select // 2)
         return itertools.chain(unpublished_collections, published_collections)
 
     def gather_collections(self, auto_publish: bool) -> List[Dict[str, str]]:
@@ -68,7 +62,7 @@ class SchemaMigrate(ProcessingLogic):
 
         has_revision = set()
         # iterates over unpublished collections first, so published versions are skipped if there is an active revision
-        for collection in self.limit_collections():
+        for collection in self.fetch_collections():
             _resp = {}
             if collection.is_published() and collection.collection_id.id in has_revision:
                 continue
@@ -92,6 +86,12 @@ class SchemaMigrate(ProcessingLogic):
                 collection_version_id=collection.version_id.id,
             )
             response.append(_resp)
+
+        # For testing purposes, only migrate a randomly sampled subset of the collections gathered
+        limit = int(self.limit_migration) if isinstance(self.limit_migration, str) else self.limit_migration
+        if limit > 0:
+            response = random.sample(response, limit)
+
         return response
 
     def dataset_migrate(
@@ -123,7 +123,7 @@ class SchemaMigrate(ProcessingLogic):
             existing_dataset_version_id=DatasetVersionId(dataset_version_id),
             start_step_function=False,  # The schema_migration sfn will start the ingest sfn
         )
-        sfn_name = sfn_name_generator(dataset_version_id, prefix="migrate")
+        sfn_name = sfn_name_generator(new_dataset_version_id, prefix="migrate")
         return {
             "collection_version_id": collection_version_id,
             "dataset_version_id": new_dataset_version_id.id,
@@ -256,7 +256,7 @@ class SchemaMigrate(ProcessingLogic):
         local_file = os.path.join(self.local_path, file_name)
         key_name = self.get_key_prefix(f"schema_migration/{self.execution_id}/{directory}/{file_name}")
         with open(local_file, "w") as f:
-            json.dump(response, f)
+            json.dump(response, f, cls=CustomJSONEncoder)
         self.s3_provider.upload_file(local_file, self.artifact_bucket, key_name, {})
         self.logger.info(
             "Uploaded to S3", extra={"file_name": local_file, "bucket": self.artifact_bucket, "key": key_name}
@@ -315,7 +315,7 @@ class SchemaMigrate(ProcessingLogic):
             retrieve_report_files_from_s3("errors")
             retrieve_report_files_from_s3("migrate_changes")
             self.logger.info("Report", extra=report)
-            report_str = json.dumps(report, indent=4, sort_keys=True)
+            report_str = json.dumps(report, indent=4, sort_keys=True, cls=CustomJSONEncoder)
             report_message = f"Schema migration results ({os.environ['DEPLOYMENT_STAGE']} env)"
             # if report["errors"]:
             #     report_message += " @sc-oncall-eng"
@@ -371,5 +371,7 @@ class SchemaMigrate(ProcessingLogic):
             response = self.report()
         self.logger.info("output", extra={"response": response})
         sfn_client = StepFunctionProvider().client
-        sfn_client.send_task_success(taskToken=os.environ["TASK_TOKEN"], output=json.dumps(response))
+        sfn_client.send_task_success(
+            taskToken=os.environ["TASK_TOKEN"], output=json.dumps(response, cls=CustomJSONEncoder)
+        )
         return True

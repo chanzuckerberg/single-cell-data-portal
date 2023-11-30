@@ -4,8 +4,8 @@ import Nav from "src/components/Header/components/Nav";
 import { NavDivider } from "src/components/Header/components/Nav/components/NavDivider/style";
 import { spacesL, spacesXl } from "src/common/theme";
 import { fontHeaderM } from "@czi-sds/components";
+import { HEADER_HEIGHT_PX } from "../Header/style";
 
-export const HEADER_HEIGHT_PX = 48;
 export const MAX_WIDTH_BREAKPOINT_PX = 768;
 
 export const Wrapper = styled.div`

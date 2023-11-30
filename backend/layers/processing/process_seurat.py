@@ -40,19 +40,19 @@ class ProcessSeurat(ProcessingLogic):
         self.uri_provider = uri_provider
         self.s3_provider = s3_provider
 
-    def process(self, dataset_id: DatasetVersionId, artifact_bucket: str, datasets_bucket: str):
+    def process(self, dataset_version_id: DatasetVersionId, artifact_bucket: str, datasets_bucket: str):
         """
         1. Download the labeled dataset from the artifact bucket
         2. Convert it to Seurat format
         3. Upload the Seurat file to the artifact bucket
-        :param dataset_id:
+        :param dataset_version_id:
         :param artifact_bucket:
         :param datasets_bucket:
         :return:
         """
 
         # If the validator previously marked the dataset as rds_status.SKIPPED, do not start the Seurat processing
-        dataset = self.business_logic.get_dataset_version(dataset_id)
+        dataset = self.business_logic.get_dataset_version(dataset_version_id)
 
         if dataset is None:
             raise Exception("Dataset not found")  # TODO: maybe improve
@@ -63,7 +63,7 @@ class ProcessSeurat(ProcessingLogic):
 
         labeled_h5ad_filename = "local.h5ad"
 
-        key_prefix = self.get_key_prefix(dataset_id.id)
+        key_prefix = self.get_key_prefix(dataset_version_id.id)
         object_key = f"{key_prefix}/{labeled_h5ad_filename}"
         self.download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
@@ -71,7 +71,7 @@ class ProcessSeurat(ProcessingLogic):
             self.make_seurat,
             labeled_h5ad_filename,
             "Failed to convert dataset to Seurat format.",
-            dataset_id,
+            dataset_version_id,
             DatasetStatusKey.RDS,
         )
 
@@ -79,7 +79,7 @@ class ProcessSeurat(ProcessingLogic):
             seurat_filename,
             DatasetArtifactType.RDS,
             key_prefix,
-            dataset_id,
+            dataset_version_id,
             artifact_bucket,
             DatasetStatusKey.RDS,
             datasets_bucket=datasets_bucket,
