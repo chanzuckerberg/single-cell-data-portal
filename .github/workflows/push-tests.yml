@@ -51,7 +51,7 @@ jobs:
         run: |
           cd frontend
           npm ci
-          cp frontend/src/configs/local.js frontend/src/configs/configs.js
+          cp src/configs/local.js src/configs/configs.js
           npm run lint
       - uses: 8398a7/action-slack@v3
         with:
