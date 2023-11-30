@@ -10,7 +10,6 @@ from backend.common.utils.http_exceptions import ForbiddenHTTPException
 from backend.layers.auth.user_info import UserInfo
 
 
-
 def post(body: dict, token_info: dict):
     try:
         UserInfo(token_info).is_cxg_admin()
