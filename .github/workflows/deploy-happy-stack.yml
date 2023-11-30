@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v2
         with:
-          node-version: 15
+          node-version: "16.14.2"
       - name: Configure AWS Prod Credentials
         uses: aws-actions/configure-aws-credentials@v2
         if: github.event.deployment.environment == 'prod'
