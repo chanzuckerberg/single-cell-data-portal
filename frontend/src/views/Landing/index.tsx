@@ -586,9 +586,9 @@ const LandingPage = (): JSX.Element => {
                         </p>
                         <div className={styles.linkContainer}>
                           <a
-                            href={`${ROUTES.COLLECTIONS}`}
+                            href={`${ROUTES.DATASETS}`}
                             onClick={() =>
-                              track(EVENTS.BROWSE_COLLECTIONS_CLICKED)
+                              track(EVENTS.BROWSE_DATASETS_CLICKED)
                             }
                           >
                             Browse data collections
