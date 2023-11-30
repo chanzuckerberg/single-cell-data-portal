@@ -25,9 +25,6 @@ jobs:
   lint:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/setup-node@v2
-        with:
-          node-version: "16.14.2"
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -42,6 +39,9 @@ jobs:
         with:
           fetch-depth: 2
       - uses: actions/setup-python@v3
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16.14.2"
       - name: check backend
         uses: pre-commit/action@v3.0.0
       - name: check frontend
