@@ -77,7 +77,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             collection_version_id=collection_version_id,
             url=None,
             file_size=0,
-            existing_dataset_version_id=current_dataset_version_id,
+            current_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
         )
         self.updater.has_valid_artifact_statuses = Mock(return_value=True)
@@ -124,7 +124,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             collection_version_id=collection_version_id,
             url=None,
             file_size=0,
-            existing_dataset_version_id=current_dataset_version_id,
+            current_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
         )
         self.updater.has_valid_artifact_statuses = Mock(return_value=True)
@@ -198,7 +198,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             collection_version_id=collection_version_id,
             url=None,
             file_size=0,
-            existing_dataset_version_id=current_dataset_version_id,
+            current_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
         )
 
@@ -229,7 +229,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             collection_version_id=collection_version_id,
             url=None,
             file_size=0,
-            existing_dataset_version_id=current_dataset_version_id,
+            current_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
         )
 
@@ -263,7 +263,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             collection_version_id=collection_version_id,
             url=None,
             file_size=0,
-            existing_dataset_version_id=current_dataset_version_id,
+            current_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
         )
 
@@ -298,7 +298,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             collection_version_id=collection_version_id,
             url=None,
             file_size=0,
-            existing_dataset_version_id=current_dataset_version_id,
+            current_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
         )
 
@@ -324,7 +324,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             collection_version_id=collection_version_id,
             url=None,
             file_size=0,
-            existing_dataset_version_id=current_dataset_version_id,
+            current_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
         )
         self.updater.has_valid_artifact_statuses = Mock(return_value=False)
@@ -358,7 +358,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
             collection_version_id=collection_version.version_id,
             url=None,
             file_size=0,
-            existing_dataset_version_id=current_dataset_version.version_id,
+            current_dataset_version_id=current_dataset_version.version_id,
             start_step_function=False,
         )
         key_prefix = new_dataset_version_id.id
@@ -417,7 +417,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
                 collection_version_id=collection_version.version_id,
                 url=None,
                 file_size=0,
-                existing_dataset_version_id=current_dataset_version.version_id,
+                current_dataset_version_id=current_dataset_version.version_id,
                 start_step_function=False,
             )
             metadata_update = DatasetArtifactMetadataUpdate(
@@ -465,7 +465,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
                 collection_version_id=collection_version.version_id,
                 url=None,
                 file_size=0,
-                existing_dataset_version_id=current_dataset_version.version_id,
+                current_dataset_version_id=current_dataset_version.version_id,
                 start_step_function=False,
             )
             key_prefix = new_dataset_version_id.id
