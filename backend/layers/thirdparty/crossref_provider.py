@@ -129,7 +129,14 @@ class CrossrefProvider(CrossrefProviderInterface):
                     parsed_authors.append({"name": author["name"]})
 
             # Preprint
-            is_preprint = message.get("subtype") == "preprint"
+            if is_preprint := message.get("subtype") == "preprint":
+                try:
+                    published_doi = message["relation"]["is-preprint-of"]
+                    # the new DOI to query for ...
+                    if published_doi[0]["id-type"] == "doi":
+                        return self.fetch_metadata(published_doi[0]["id"])
+                except KeyError:
+                    pass
 
             return {
                 "authors": parsed_authors,
