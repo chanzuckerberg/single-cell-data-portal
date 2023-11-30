@@ -759,7 +759,7 @@ export interface Testable {
  * Set of tissue types.
  */
 export enum TISSUE_TYPE {
-  TISSUE = "tissue",
   CELL_CULTURE = "cell culture",
   ORGANOID = "organoid",
+  TISSUE = "tissue",
 }
