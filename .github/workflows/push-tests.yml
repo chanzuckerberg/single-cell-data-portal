@@ -49,16 +49,10 @@ jobs:
           cache-dependency-path: "frontend/package-lock.json"
       - name: check frontend
         run: |
-<<<<<<< HEAD
           cd frontend
           npm ci
           cp src/configs/local.js src/configs/configs.js
           npm run lint
-=======
-          sudo chown -R 1001:127 "/root/.npm"
-          cp frontend/src/configs/local.js frontend/src/configs/configs.js
-          docker-compose run --no-deps --rm frontend make lint
->>>>>>> f3ef81b49681 (sudo chown)
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
