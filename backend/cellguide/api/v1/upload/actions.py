@@ -10,7 +10,6 @@ import re
 
 
 def post(body: dict, token_info: dict):
-
     try:
         UserInfo(token_info).is_cxg_admin()
     except Exception as e:
@@ -20,7 +19,7 @@ def post(body: dict, token_info: dict):
     references = body["references"]
     description = body["description"]
 
-    if not re.match(r'^CL_\d{7}$', cell_onthology_id):
+    if not re.match(r"^CL_\d{7}$", cell_onthology_id):
         raise ForbiddenHTTPException("Invalid cell_onthology_id format. Example: CL_0000030")
 
     for reference in references:
@@ -28,21 +27,16 @@ def post(body: dict, token_info: dict):
             requests.get(reference)
         except:
             raise ForbiddenHTTPException("Invalid url")
-        
 
-    file_content = {
-        "description": description,
-        "references": references
-    }
-    
+    file_content = {"description": description, "references": references}
 
     env = os.getenv("DEPLOYMENT_STAGE")
-    file_name = f'{cell_onthology_id}.json'
-    key_name = f'validated_descriptions/{file_name}'
-    bucket_name = f'cellguide-data-public-{env}'
-    with open(file_name, 'w') as f:
+    file_name = f"{cell_onthology_id}.json"
+    key_name = f"validated_descriptions/{file_name}"
+    bucket_name = f"cellguide-data-public-{env}"
+    with open(file_name, "w") as f:
         json.dump(file_content, f)
-    
+
     s3_provider = S3Provider()
     s3_provider.upload_file(file_name, bucket_name, key_name, {})
 
