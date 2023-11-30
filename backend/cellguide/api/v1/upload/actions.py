@@ -46,5 +46,7 @@ def post(body: dict, token_info: dict):
     s3_provider = S3Provider()
     s3_provider.upload_file(file_name, bucket_name, key_name, {})
 
+    os.remove(file_name)
+
     file_content["cell_onthology_id"] = cell_onthology_id
     return make_response(jsonify(file_content), 201)
