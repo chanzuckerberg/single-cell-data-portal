@@ -67,7 +67,7 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
             local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
         )
 
-        adata = scanpy.read_h5ad(h5ad_filename, backed="r")
+        adata = scanpy.read_h5ad(h5ad_filename)
         metadata = current_dataset_version.metadata
         # maps artifact name for metadata field to DB field name, if different
         for key, val in metadata_update.as_dict_without_none_values().items():
