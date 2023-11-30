@@ -159,6 +159,50 @@ class DatasetMetadataUpdater(ProcessDownload):
         self.cellxgene_bucket = cellxgene_bucket
         self.datasets_bucket = datasets_bucket
 
+    @staticmethod
+    def update_h5ad(
+        artifact_bucket: str,
+        datasets_bucket: str,
+        h5ad_uri: str,
+        current_dataset_version: DatasetVersion,
+        new_key_prefix: str,
+        new_dataset_version_id: DatasetVersionId,
+        metadata_update: DatasetArtifactMetadataUpdate,
+    ):
+        DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket).update_h5ad(
+            h5ad_uri,
+            current_dataset_version,
+            new_key_prefix,
+            new_dataset_version_id,
+            metadata_update,
+        )
+
+    @staticmethod
+    def update_rds(
+        artifact_bucket: str,
+        datasets_bucket: str,
+        rds_uri: str,
+        new_key_prefix: str,
+        new_dataset_version_id: DatasetVersionId,
+        metadata_update: DatasetArtifactMetadataUpdate,
+    ):
+        DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket).update_rds(
+            rds_uri, new_key_prefix, new_dataset_version_id, metadata_update
+        )
+
+    @staticmethod
+    def update_cxg(
+        artifact_bucket: str,
+        datasets_bucket: str,
+        cxg_uri: str,
+        new_cxg_dir: str,
+        dataset_version_id: DatasetVersionId,
+        metadata_update: DatasetArtifactMetadataUpdate,
+    ):
+        DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket).update_cxg(
+            cxg_uri, new_cxg_dir, dataset_version_id, metadata_update
+        )
+
     def update_metadata(
         self,
         current_dataset_version_id: DatasetVersionId,
@@ -197,13 +241,14 @@ class DatasetMetadataUpdater(ProcessDownload):
         artifact_jobs = []
 
         with multiprocessing.Pool(processes=3) as pool:
-            h5ad_worker = DatasetMetadataUpdaterWorker(self.artifact_bucket, self.datasets_bucket)
             if DatasetArtifactType.H5AD in artifact_uris:
                 self.logger.info("Main: Starting thread for h5ad update")
                 artifact_jobs.append(
                     pool.apply_async(
-                        h5ad_worker.update_h5ad,
+                        DatasetMetadataUpdater.update_h5ad,
                         (
+                            self.artifact_bucket,
+                            self.datasets_bucket,
                             artifact_uris[DatasetArtifactType.H5AD],
                             current_dataset_version,
                             new_artifact_key_prefix,
@@ -220,11 +265,12 @@ class DatasetMetadataUpdater(ProcessDownload):
 
             if DatasetArtifactType.RDS in artifact_uris:
                 self.logger.info("Main: Starting thread for rds update")
-                rds_worker = DatasetMetadataUpdaterWorker(self.artifact_bucket, self.datasets_bucket)
                 artifact_jobs.append(
                     pool.apply_async(
-                        rds_worker.update_rds,
+                        DatasetMetadataUpdater.update_rds,
                         (
+                            self.artifact_bucket,
+                            self.datasets_bucket,
                             artifact_uris[DatasetArtifactType.RDS],
                             new_artifact_key_prefix,
                             new_dataset_version_id,
@@ -246,11 +292,12 @@ class DatasetMetadataUpdater(ProcessDownload):
 
             if DatasetArtifactType.CXG in artifact_uris:
                 self.logger.info("Main: Starting thread for cxg update")
-                cxg_worker = DatasetMetadataUpdaterWorker(self.artifact_bucket, self.datasets_bucket)
                 artifact_jobs.append(
                     pool.apply_async(
-                        cxg_worker.update_cxg,
+                        DatasetMetadataUpdater.update_cxg,
                         (
+                            self.artifact_bucket,
+                            self.datasets_bucket,
                             artifact_uris[DatasetArtifactType.CXG],
                             f"s3://{self.cellxgene_bucket}/{new_artifact_key_prefix}.cxg",
                             new_dataset_version_id,
