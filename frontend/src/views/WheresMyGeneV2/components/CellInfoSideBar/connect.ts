@@ -8,6 +8,7 @@ import { HOVER_START_TIME_MS } from "../../common/constants";
 import {
   MARKER_GENE_LABEL,
   MARKER_SCORE_LABEL,
+  SPECIFICITY_LABEL,
 } from "src/common/constants/markerGenes";
 
 export const useConnect = ({
@@ -60,6 +61,10 @@ export const useConnect = ({
     EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER,
     { label: MARKER_SCORE_LABEL }
   );
+  const handleSpecificityHoverEnd = useHandleHoverEnd(
+    EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER,
+    { label: SPECIFICITY_LABEL }
+  );
 
   return {
     handleCopyGenes,
@@ -68,6 +73,7 @@ export const useConnect = ({
     data,
     handleFmgHoverEnd,
     handleMarkerScoreHoverEnd,
+    handleSpecificityHoverEnd,
     setHoverStartTime,
   };
 };

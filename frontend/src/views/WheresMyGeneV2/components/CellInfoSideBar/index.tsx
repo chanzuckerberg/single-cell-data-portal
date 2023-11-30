@@ -72,6 +72,7 @@ function CellInfoSideBar({
     handleDisplayGenes,
     handleFmgHoverEnd,
     handleMarkerScoreHoverEnd,
+    handleSpecificityHoverEnd,
     setHoverStartTime,
   } = useConnect({
     cellInfoCellType,
@@ -248,7 +249,7 @@ function CellInfoSideBar({
                 className="fmg-tooltip-icon"
                 arrow
                 onOpen={() => setHoverStartTime(Date.now())}
-                onClose={handleMarkerScoreHoverEnd}
+                onClose={handleSpecificityHoverEnd}
                 title={
                   <StyledTooltip>
                     <TooltipContent>

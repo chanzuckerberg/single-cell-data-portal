@@ -1,5 +1,7 @@
 export const MARKER_GENE_LABEL = "marker genes";
 export const MARKER_SCORE_LABEL = "marker score";
+export const SPECIFICITY_LABEL = "specificity";
+
 export const MARKER_GENES_TOOLTIP_CONTENT =
   "Marker genes are highly and uniquely expressed in the cell type relative to all other cell types.";
 export const MARKER_SCORE_TOOLTIP_CONTENT =
