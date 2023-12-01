@@ -83,6 +83,9 @@ const Project = ({ project, id }: ProjectProps) => {
               {link[0]}
             </DetailItem>
           ))}
+          <DetailItem label="cells">{project.n_cells}</DetailItem>
+          <DetailItem label="genes">{project.n_genes}</DetailItem>
+          <DetailItem label="columns">{project.n_columns}</DetailItem>
         </DetailsContainer>
       </ProjectDetails>
       <ProjectButtons>

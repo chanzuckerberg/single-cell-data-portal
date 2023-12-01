@@ -34,8 +34,8 @@ import { CELL_INFO_SIDEBAR_WIDTH_PX } from "src/views/WheresMyGeneV2/components/
 import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
 import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
 import { StyledRightSideBar } from "./style";
-import NormalizationNotification from "../GeneSearchBar/components/NormalizationNotification";
 import { useConnect } from "src/views/WheresMyGeneV2/components/Main/connect";
+import Notification from "src/components/Notification";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -93,7 +93,7 @@ export default function WheresMyGene(): JSX.Element {
       <Head>
         <title>Gene Expression - CZ CELLxGENE Discover</title>
       </Head>
-      <NormalizationNotification />
+
       <SideBar
         label="Filters"
         SideBarWrapperComponent={SideBarWrapper}
@@ -146,15 +146,14 @@ export default function WheresMyGene(): JSX.Element {
       <View id="view" overflow="hidden">
         <Wrapper>
           {isLoading && <Loader />}
-
           {/* Used for PNG and SVG exports to render message banner to render in output */}
           {downloadStatus.isLoading && (
             <StyledBannerContainer>
               <UnderlyingDataChangeBanner />
             </StyledBannerContainer>
           )}
-
           <Top id="top-legend">
+            <Notification />
             <Legend
               selectedCellTypes={cellTypesByTissueName}
               selectedGenes={selectedGenes}
@@ -170,7 +169,6 @@ export default function WheresMyGene(): JSX.Element {
               maxExpression={scaledMeanExpressionMax}
             />
           </Top>
-
           <StyledSidebarDrawer
             position="right"
             isOpen={isSourceDatasetSidebarOpen}
