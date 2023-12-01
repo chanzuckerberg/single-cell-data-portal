@@ -5,7 +5,7 @@ import re
 import requests
 from flask import jsonify, make_response
 
-from backend.cellguide.pipeline.providers.s3_provider import S3Provider
+from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.common.utils.http_exceptions import ForbiddenHTTPException
 from backend.layers.auth.user_info import UserInfo
 
