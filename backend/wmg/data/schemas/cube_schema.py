@@ -22,6 +22,7 @@ expression_summary_indexed_dims_no_gene_ontology = [
 # client-side filtering, which may result in less efficient querying.
 expression_summary_non_indexed_dims = [
     "cell_type_ontology_term_id",
+    "cell_type_ontology_term_id_ancestors",
     "tissue_original_ontology_term_id",
     "dataset_id",
     "disease_ontology_term_id",

@@ -4,6 +4,7 @@ import os
 import tiledb
 from tiledbsoma import ExperimentAxisQuery
 
+from backend.common.utils.rollup import ancestors
 from backend.wmg.data.schemas.cube_schema import (
     cell_counts_logical_dims,
     cell_counts_schema,
@@ -48,6 +49,22 @@ def create_cell_counts_cube(*, query: ExperimentAxisQuery, corpus_path: str, org
     ]
     n_cells = df["n_cells"].to_numpy()
     df["n_cells"] = n_cells
+
+    # The following is used to create a dictionary of ancestors for each cell type id.
+    # If a cell type id is not already present in the dictionary, it is added along with its ancestors.
+    # The 'ancestors' function is used to get the ancestors of a cell type id.
+    # The 'apply' function is then used to apply the 'get_ancestors' function to each cell type id in the dataframe.
+    # This results in a new column in the dataframe, 'cell_type_ontology_term_id_ancestors', which contains the ancestors of each cell type id.
+    # These ancestors are later used as part of the rollup operation.
+    logger.info("Creating the cell type ancestors column.")
+    ancestors_dict = {}
+
+    def get_ancestors(cell_type_id):
+        if cell_type_id not in ancestors_dict:
+            ancestors_dict[cell_type_id] = ",".join(ancestors(cell_type_id))
+        return ancestors_dict[cell_type_id]
+
+    obs_df["cell_type_ontology_term_id_ancestors"] = obs_df["cell_type_ontology_term_id"].apply(get_ancestors)
 
     uri = os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)
     create_empty_cube_if_needed(uri, cell_counts_schema)

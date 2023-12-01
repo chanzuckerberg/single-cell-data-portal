@@ -10,6 +10,7 @@ from numba import njit
 from scipy import sparse
 from tiledbsoma import ExperimentAxisQuery
 
+from backend.common.utils.rollup import ancestors
 from backend.wmg.data.schemas.cube_schema import (
     expression_summary_indexed_dims_no_gene_ontology,
     expression_summary_non_indexed_dims,
@@ -85,7 +86,12 @@ class ExpressionSummaryCubeBuilder:
             tuple: A tuple containing the dimensions (list) and values (keys) of the cube.
         """
         cube_index, cell_labels = self._make_cube_index(
-            cube_dims=[dim for dim in cube_dims if dim != "publication_citation"]
+            cube_dims=[
+                dim
+                for dim in cube_dims
+                if dim != "publication_citation"
+                and dim != "cell_type_ontology_term_id_ancestors"  # these attrs require special handling
+            ]
         )
 
         n_groups = len(cube_index)
@@ -292,6 +298,14 @@ class ExpressionSummaryCubeBuilder:
         if "publication_citation" in other_cube_attrs:
             dataset_dict = return_dataset_dict_w_publications()
 
+        # this is used to get a comma-separated list of ancestors for each cell type id
+        ancestors_dict = {}
+
+        def get_ancestors(cell_type_id):
+            if cell_type_id not in ancestors_dict:
+                ancestors_dict[cell_type_id] = ",".join(ancestors(cell_type_id))
+            return ancestors_dict[cell_type_id]
+
         for grp in cube_index.to_records():
             (
                 *dim_or_attr_values,
@@ -317,13 +331,17 @@ class ExpressionSummaryCubeBuilder:
             vals["sqsum"][idx : idx + n_vals] = cube_sqsum[cube_idx, mask]
 
             for _, k in enumerate(other_cube_attrs):
-                if k != "publication_citation":
+                if k != "publication_citation" and k != "cell_type_ontology_term_id_ancestors":
                     vals[k][idx : idx + n_vals] = dim_or_attr_values[k]
 
             if "publication_citation" in other_cube_attrs:
                 vals["publication_citation"][idx : idx + n_vals] = remove_accents(
                     dataset_dict.get(dim_or_attr_values["dataset_id"], "No Publication")
                 )
+
+            vals["cell_type_ontology_term_id_ancestors"][idx : idx + n_vals] = get_ancestors(
+                dim_or_attr_values["cell_type_ontology_term_id"]
+            )
 
             idx += n_vals
 

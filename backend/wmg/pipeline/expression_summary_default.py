@@ -52,10 +52,16 @@ def create_expression_summary_default_cube(corpus_path: str):
                 dfs.append(row)
         expression_summary_df = pd.concat(dfs, axis=0)
 
+        numeric_cols = expression_summary_df.select_dtypes(include="number").columns.tolist()
+        agg_funcs = {col: "sum" for col in numeric_cols}
+        agg_funcs["cell_type_ontology_term_id_ancestors"] = "first"
         # TODO: Explore if staying in PyArrow space incurs less memory overhead. If so, use PyArrow groupby
         expression_summary_df_default = (
-            expression_summary_df.groupby(expression_summary_indexed_dims + expression_summary_non_indexed_dims)
-            .sum(numeric_only=True)
+            expression_summary_df.groupby(
+                expression_summary_indexed_dims + expression_summary_non_indexed_dims,
+                as_index=False,
+            )
+            .agg(agg_funcs)
             .reset_index()
         )
 

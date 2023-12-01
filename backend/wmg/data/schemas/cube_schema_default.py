@@ -24,7 +24,7 @@ expression_summary_indexed_dims_no_gene_ontology = [
 # These are the queryable cube dimensions that will be modeled as
 # TileDB `Attrs` (i.e. (non-indexed") and thus will require
 # client-side filtering, which may result in less efficient querying.
-expression_summary_non_indexed_dims = ["cell_type_ontology_term_id"]
+expression_summary_non_indexed_dims = ["cell_type_ontology_term_id", "cell_type_ontology_term_id_ancestors"]
 
 # The full set of logical cube dimensions by which the cube can be queried.
 expression_summary_logical_dims = expression_summary_indexed_dims + expression_summary_non_indexed_dims
