@@ -3,8 +3,8 @@ Creates a new DatasetVersion to update metadata across dataset artifacts
 """
 import json
 import logging
-import multiprocessing
 import os
+from multiprocessing import Process
 
 import scanpy
 import tiledb
@@ -240,80 +240,70 @@ class DatasetMetadataUpdater(ProcessDownload):
 
         artifact_jobs = []
 
-        with multiprocessing.Pool(processes=3) as pool:
-            if DatasetArtifactType.H5AD in artifact_uris:
-                self.logger.info("Main: Starting thread for h5ad update")
-                artifact_jobs.append(
-                    pool.apply_async(
-                        DatasetMetadataUpdater.update_h5ad,
-                        (
-                            self.artifact_bucket,
-                            self.datasets_bucket,
-                            artifact_uris[DatasetArtifactType.H5AD],
-                            current_dataset_version,
-                            new_artifact_key_prefix,
-                            new_dataset_version_id,
-                            metadata_update,
-                        ),
-                    )
-                )
-            else:
-                self.logger.error(f"Cannot find labeled H5AD artifact uri for {current_dataset_version_id}.")
-                self.update_processing_status(
-                    new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.FAILED
-                )
+        if DatasetArtifactType.H5AD in artifact_uris:
+            self.logger.info("Main: Starting thread for h5ad update")
+            h5ad_job = Process(
+                target=DatasetMetadataUpdater.update_h5ad,
+                args=(
+                    self.artifact_bucket,
+                    self.datasets_bucket,
+                    artifact_uris[DatasetArtifactType.H5AD],
+                    current_dataset_version,
+                    new_artifact_key_prefix,
+                    new_dataset_version_id,
+                    metadata_update,
+                ),
+            )
+            artifact_jobs.append(h5ad_job)
+            h5ad_job.start()
+        else:
+            self.logger.error(f"Cannot find labeled H5AD artifact uri for {current_dataset_version_id}.")
+            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.FAILED)
 
-            if DatasetArtifactType.RDS in artifact_uris:
-                self.logger.info("Main: Starting thread for rds update")
-                artifact_jobs.append(
-                    pool.apply_async(
-                        DatasetMetadataUpdater.update_rds,
-                        (
-                            self.artifact_bucket,
-                            self.datasets_bucket,
-                            artifact_uris[DatasetArtifactType.RDS],
-                            new_artifact_key_prefix,
-                            new_dataset_version_id,
-                            metadata_update,
-                        ),
-                    )
-                )
-            elif current_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED:
-                self.update_processing_status(
-                    new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED
-                )
-            else:
-                self.logger.error(
-                    f"Cannot find RDS artifact uri for {current_dataset_version_id}, and Conversion Status is not SKIPPED."
-                )
-                self.update_processing_status(
-                    new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.FAILED
-                )
+        if DatasetArtifactType.RDS in artifact_uris:
+            self.logger.info("Main: Starting thread for rds update")
+            rds_job = Process(
+                target=DatasetMetadataUpdater.update_rds,
+                args=(
+                    self.artifact_bucket,
+                    self.datasets_bucket,
+                    artifact_uris[DatasetArtifactType.RDS],
+                    new_artifact_key_prefix,
+                    new_dataset_version_id,
+                    metadata_update,
+                ),
+            )
+            artifact_jobs.append(rds_job)
+            rds_job.start()
+        elif current_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED:
+            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
+        else:
+            self.logger.error(
+                f"Cannot find RDS artifact uri for {current_dataset_version_id}, and Conversion Status is not SKIPPED."
+            )
+            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.FAILED)
 
-            if DatasetArtifactType.CXG in artifact_uris:
-                self.logger.info("Main: Starting thread for cxg update")
-                artifact_jobs.append(
-                    pool.apply_async(
-                        DatasetMetadataUpdater.update_cxg,
-                        (
-                            self.artifact_bucket,
-                            self.datasets_bucket,
-                            artifact_uris[DatasetArtifactType.CXG],
-                            f"s3://{self.cellxgene_bucket}/{new_artifact_key_prefix}.cxg",
-                            new_dataset_version_id,
-                            metadata_update,
-                        ),
-                    )
-                )
-            else:
-                self.logger.error(f"Cannot find cxg artifact uri for {current_dataset_version_id}.")
-                self.update_processing_status(
-                    new_dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.FAILED
-                )
+        if DatasetArtifactType.CXG in artifact_uris:
+            self.logger.info("Main: Starting thread for cxg update")
+            cxg_job = Process(
+                target=DatasetMetadataUpdater.update_cxg,
+                args=(
+                    self.artifact_bucket,
+                    self.datasets_bucket,
+                    artifact_uris[DatasetArtifactType.CXG],
+                    f"s3://{self.cellxgene_bucket}/{new_artifact_key_prefix}.cxg",
+                    new_dataset_version_id,
+                    metadata_update,
+                ),
+            )
+            artifact_jobs.append(cxg_job)
+            cxg_job.start()
+        else:
+            self.logger.error(f"Cannot find cxg artifact uri for {current_dataset_version_id}.")
+            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.FAILED)
 
         # blocking call on async functions before checking for valid artifact statuses
-        # calls .get() to ensure any exceptions in the async functions are raised to main
-        [j.get() for j in artifact_jobs]
+        [j.join() for j in artifact_jobs]
 
         if self.has_valid_artifact_statuses(new_dataset_version_id):
             self.update_processing_status(
