@@ -451,7 +451,7 @@ function buildCollectionRows(
  * @param tissue - Tissue ontology to convert.
  * @returns Tissue ontology converted to true ontology object.
  */
-function createTaggedTissueOntology(tissue: TissueOntology): Ontology {
+export function createTaggedTissueOntology(tissue: TissueOntology): Ontology {
   const { label, ontology_term_id, tissue_type } = tissue;
   // Handle tissue type tissue (or no tissue type for pre-4.0.0).
   if (!tissue_type || tissue_type === TISSUE_TYPE.TISSUE) {
