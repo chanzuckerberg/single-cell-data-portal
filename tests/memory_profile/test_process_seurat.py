@@ -1,3 +1,6 @@
+"""Use to profile memory usage of process_cxg.py for a given h5ad file.
+To run in the docker container use: $ make local-seurat-mem-profiler
+"""
 from backend.layers.processing.process_seurat import ProcessSeurat
 from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 
