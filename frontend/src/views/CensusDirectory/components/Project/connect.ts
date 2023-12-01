@@ -16,5 +16,28 @@ export const useConnect = ({ project, id }: ProjectProps) => {
 
   const projectTier = getProjectTier(project);
 
-  return { date, projectNotebookLinks, projectTier };
+  let authorsString = "";
+  const primary_affiliation = project.primary_contact?.affiliation || "";
+  const affiliations = new Map<string, string[]>();
+  affiliations.set(primary_affiliation, [project.primary_contact?.name || ""]);
+  project.additional_contacts?.forEach((contact) => {
+    const affiliationNames = affiliations.get(contact.affiliation) || [];
+    affiliationNames.push(contact.name);
+    affiliations.set(contact.affiliation, affiliationNames);
+  });
+
+  let index = 0;
+  affiliations.forEach((names, affiliation) => {
+    if (index > 0) authorsString += " · ";
+    index++;
+
+    if (names.length > 1) {
+      const last = names.pop();
+      authorsString += `${names.join(", ")} & ${last} at ${affiliation}`;
+    } else {
+      authorsString += `${names[0]} at ${affiliation}`;
+    }
+  });
+
+  return { date, projectNotebookLinks, projectTier, authorsString };
 };
