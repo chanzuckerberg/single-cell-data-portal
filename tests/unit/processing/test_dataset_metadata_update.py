@@ -34,16 +34,14 @@ base = importr("base")
 seurat = importr("SeuratObject")
 
 
-def mock_apply_async(func, args=()):
-    return Mock(return_value=func(*args))
+def mock_process(target, args=()):
+    return Mock(return_value=target(*args))
 
 
-mock_enter = Mock(apply_async=Mock(side_effect=mock_apply_async))
-mock_pool = Mock(__enter__=Mock(return_value=mock_enter), __exit__=Mock())
-mock_pool_constructor = Mock(return_value=mock_pool)
+mock_process = Mock(side_effect=mock_process)
 
 
-@patch("backend.layers.processing.dataset_metadata_update.multiprocessing.Pool", mock_pool_constructor)
+@patch("backend.layers.processing.dataset_metadata_update.Process", mock_process)
 class TestUpdateMetadataHandler(BaseProcessingTest):
     def setUp(self):
         super().setUp()
@@ -211,6 +209,8 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("scanpy.read_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_rds")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_cxg")
     def test_update_metadata__missing_labeled_h5ad(self, *args):
         current_dataset_version = self.generate_dataset(
             artifacts=[
@@ -244,7 +244,8 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
     @patch("scanpy.read_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
     @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker.update_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_cxg")
     def test_update_metadata__missing_rds(self, *args):
         current_dataset_version = self.generate_dataset(
             artifacts=[
@@ -278,8 +279,8 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
     @patch("scanpy.read_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
     @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker.update_h5ad")
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker.update_rds")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_rds")
     def test_update_metadata__missing_cxg(self, *args):
         current_dataset_version = self.generate_dataset(
             artifacts=[
@@ -311,6 +312,9 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("scanpy.read_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_rds")
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater.update_cxg")
     def test_update_metadata__invalid_artifact_status(self, *args):
         current_dataset_version = self.generate_dataset(
             statuses=[
@@ -376,7 +380,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
 
         local_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
         # check mock_anndata object
-        mock_read_h5ad.assert_called_with(local_filename, backed="r")
+        mock_read_h5ad.assert_called_with(local_filename)
         assert mock_anndata.uns["citation"] == "Publication DOI www.doi.org/567.8"
         assert mock_anndata.uns["title"] == "New Dataset Title"
         assert mock_anndata.uns["schema_version"] == "3.0.0"
