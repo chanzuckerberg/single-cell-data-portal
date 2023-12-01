@@ -232,8 +232,7 @@ class DatasetMetadataUpdater(ProcessDownload):
             self.logger.error(f"Cannot find raw H5AD artifact uri for {current_dataset_version_id}.")
             raise ValueError
 
-        # uploads current dataset version's raw h5ad to artifact bucket directory for the new dataset version
-        self.process(new_dataset_version_id, raw_h5ad_uri, self.artifact_bucket)
+        self.upload_raw_h5ad(new_dataset_version_id, raw_h5ad_uri, self.artifact_bucket)
 
         new_artifact_key_prefix = self.get_key_prefix(new_dataset_version_id.id)
 
