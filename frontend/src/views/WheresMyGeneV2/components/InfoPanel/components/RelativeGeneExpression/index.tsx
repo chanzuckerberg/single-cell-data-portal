@@ -1,8 +1,8 @@
 import Image from "next/image";
 import { Tooltip } from "@czi-sds/components";
-import { Content, Label, LowHigh } from "../../common/style";
+import { Content, LowHigh } from "../../common/style";
 import plasmaImage from "./plasma.png";
-import { ContentWrapper, Wrapper, TooltipLink } from "./style";
+import { ContentWrapper, Wrapper, TooltipLink, Label } from "./style";
 import { MAX_EXPRESSION_LABEL_TEST_ID } from "./constants";
 import {
   StyledIconImage,

@@ -2,7 +2,13 @@ import styled from "@emotion/styled";
 import { Button, fontBodyS } from "@czi-sds/components";
 import Image from "next/image";
 import { fontBodyXxs, getColors } from "@czi-sds/components";
-import { fontWeightSemibold, gray500 } from "src/common/theme";
+import {
+  fontWeightSemibold,
+  gray500,
+  spacesXl,
+  spacesXxl,
+  spacesXxs,
+} from "src/common/theme";
 
 export const CELL_INFO_SIDEBAR_WIDTH_PX = 400;
 
@@ -104,12 +110,15 @@ export const NoMarkerGenesContainer = styled("div")`
 
   justify-content: center;
   text-align: center;
+
+  padding: ${spacesXxl}px ${spacesXl}px;
 `;
 
 export const NoMarkerGenesHeader = styled("span")`
   ${fontBodyS}
   color: black;
   font-weight: 500;
+  padding-bottom: ${spacesXxs}px;
 `;
 
 export const NoMarkerGenesDescription = styled("span")`

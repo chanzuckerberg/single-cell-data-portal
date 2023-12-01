@@ -26,7 +26,7 @@ export const Dot = styled.span`
 
 export const Dots = styled.div`
   display: flex;
-  margin-bottom: 3px;
+  margin: 4px 0px 4px 0px;
   justify-content: space-between;
   align-items: center;
 `;
