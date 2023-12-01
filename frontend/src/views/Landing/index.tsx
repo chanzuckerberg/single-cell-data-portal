@@ -591,7 +591,7 @@ const LandingPage = (): JSX.Element => {
                               track(EVENTS.BROWSE_DATASETS_CLICKED)
                             }
                           >
-                            Browse data collections
+                            Browse datasets
                             <span className={styles.linkArrow}>
                               <LinkArrow />
                             </span>
