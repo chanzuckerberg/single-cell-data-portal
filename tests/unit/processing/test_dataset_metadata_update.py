@@ -152,10 +152,10 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             ]
         )
         current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
-        self.updater.process = Mock()
+        self.updater.upload_raw_h5ad = Mock()
         self.updater.update_metadata(current_dataset_version_id, None, None)
 
-        self.updater.process.assert_not_called()
+        self.updater.upload_raw_h5ad.assert_not_called()
 
     def test_update_metadata__new_dataset_version_bad_processing_status(self):
         current_dataset_version = self.generate_dataset(
@@ -172,10 +172,10 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             ]
         )
         new_dataset_version_id = DatasetVersionId(new_dataset_version.dataset_version_id)
-        self.updater.process = Mock()
+        self.updater.upload_raw_h5ad = Mock()
         self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
 
-        self.updater.process.assert_not_called()
+        self.updater.upload_raw_h5ad.assert_not_called()
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     def test_update_metadata__error_if_missing_raw_h5ad(self, *args):
