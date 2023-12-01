@@ -379,10 +379,7 @@ class BusinessLogic(BusinessLogicInterface):
                         DatasetProcessingStatus.SUCCESS,
                         DatasetProcessingStatus.FAILURE,
                     ]:
-                        errors.append(
-                            "Cannot update DOI while a dataset has a non-finalized "
-                            "(SUCCESS, FAILURE) processing status."
-                        )
+                        errors.append("Cannot update DOI while a dataset is processing or awaiting upload")
 
             if current_doi and new_doi is None:
                 # If the DOI was deleted, remove the publisher_metadata field
@@ -411,10 +408,8 @@ class BusinessLogic(BusinessLogicInterface):
             self.database_provider.save_collection_publisher_metadata(version_id, publisher_metadata_to_set)
         self.database_provider.save_collection_metadata(version_id, new_metadata)
 
-        if (
-            not ignore_doi_update
-            and new_doi != current_doi
-            and FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4)
+        if all(
+            [not ignore_doi_update, new_doi != current_doi, FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4)]
         ):
             for dataset in current_collection_version.datasets:
                 if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:

@@ -42,6 +42,12 @@ const DEFAULT_BACKGROUND_REFETCH = {
 };
 
 /**
+ * Error text returned from BE when DOI is updated but there are datasets with a non-finalized state
+ */
+const INVALID_DOI_DATASET_STATUS_MESSAGE =
+  "Cannot update DOI while a dataset is processing or awaiting upload";
+
+/**
  * Error text returned from BE when DOI format is identified as invalid.
  */
 const INVALID_DOI_FORMAT_MESSAGE = "Invalid DOI";
@@ -651,7 +657,9 @@ function isInvalidDOI(status: number, errors?: Error[]): boolean {
   // There's a DOI error; check if it's an error we report on.
   const { reason } = doiError;
   return (
-    reason === INVALID_DOI_MESSAGE || reason === INVALID_DOI_FORMAT_MESSAGE
+    reason === INVALID_DOI_MESSAGE ||
+    reason === INVALID_DOI_FORMAT_MESSAGE ||
+    reason === INVALID_DOI_DATASET_STATUS_MESSAGE
   );
 }
 
