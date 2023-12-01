@@ -11,6 +11,7 @@ export const LegendWrapper = styled.div`
 
 export const ActionsWrapper = styled.div`
   display: flex;
+  padding-top: 2px;
 `;
 
 export const ColorLegendWrapper = styled.div`

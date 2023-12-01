@@ -1,10 +1,15 @@
 import { expect, Page, Locator } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
-import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/constants";
 import {
+  FMG_GENE_STRENGTH_THRESHOLD,
+  FMG_SPECIFICITY_THRESHOLD,
+} from "src/views/WheresMyGeneV2/common/constants";
+import {
+  checkTooltipContent,
   expandTissue,
   goToPage,
+  isElementVisible,
   selectNthOption,
   tryUntil,
   waitForLoadingSpinnerToResolve,
@@ -36,8 +41,18 @@ import assert from "assert";
 import {
   NO_MARKER_GENES_DESCRIPTION,
   NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION,
+  TABLE_HEADER_SPECIFICITY,
   TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION,
 } from "src/views/WheresMyGeneV2/components/CellInfoSideBar/constants";
+import {
+  EFFECT_SIZE,
+  MARKER_SCORE_TOOLTIP_CONTENT,
+  MARKER_SCORE_TOOLTIP_LINK_TEXT,
+  MARKER_SCORE_TOOLTIP_TEST_ID,
+  SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF,
+  SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF,
+  SPECIFICITY_TOOLTIP_TEST_ID,
+} from "src/common/constants/markerGenes";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
@@ -51,6 +66,9 @@ const ADD_TO_DOT_PLOT_BUTTON_TEST_ID = "add-to-dotplot-fmg-button";
 const NO_MARKER_GENES_WARNING_TEST_ID = "no-marker-genes-warning";
 const MARKER_SCORES_FMG_TEST_ID = "marker-scores-fmg";
 const NO_MARKER_GENES_DESCRIPTION_ID = "no-marker-genes-description";
+const EFFECT_SIZE_HEADER_ID = "marker-genes-table-header-score";
+const SPECIFICITY_HEADER_ID = "marker-genes-table-specificity";
+const SPECIFICITY_TEST_ID = "specificity-fmg";
 
 // gene info test IDs
 const GENE_INFO_BUTTON_X_AXIS_TEST_ID = "gene-info-button-x-axis";
@@ -421,6 +439,57 @@ describe("Where's My Gene", () => {
         noMarkerGenesDescription.trim(),
         NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION
       );
+    });
+
+    test(`Should verify effect size and specificity column`, async ({
+      page,
+    }) => {
+      await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+      // Expand adipose tissue
+      await expandTissue(page, "adipose-tissue");
+
+      // Click into a cell type that has marker genes
+      await page
+        .getByTestId("cell-type-info-button-adipose tissue-phagocyte")
+        .click();
+
+      // Verify effect size header and tooltip
+      const effectSizeHeader = (await page
+        .getByTestId(EFFECT_SIZE_HEADER_ID)
+        .textContent()) as string;
+      assert.strictEqual(effectSizeHeader.trim(), EFFECT_SIZE);
+
+      await isElementVisible(page, MARKER_SCORE_TOOLTIP_TEST_ID);
+      await page.getByTestId(MARKER_SCORE_TOOLTIP_TEST_ID).hover();
+      await checkTooltipContent(page, MARKER_SCORE_TOOLTIP_CONTENT);
+      await checkTooltipContent(page, MARKER_SCORE_TOOLTIP_LINK_TEXT);
+
+      // Verify specificity header and tooltip
+      const specificityHeader = (await page
+        .getByTestId(SPECIFICITY_HEADER_ID)
+        .textContent()) as string;
+      assert.strictEqual(specificityHeader.trim(), TABLE_HEADER_SPECIFICITY);
+
+      await isElementVisible(page, SPECIFICITY_TOOLTIP_TEST_ID);
+      await page.getByTestId(SPECIFICITY_TOOLTIP_TEST_ID).hover();
+      await checkTooltipContent(
+        page,
+        SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF +
+          " adipose tissue " +
+          SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF
+      );
+
+      // Verify specificity values are valid
+      const specificityScores = await page
+        .getByTestId(SPECIFICITY_TEST_ID)
+        .allTextContents();
+
+      for (const specificityScore of specificityScores) {
+        expect(parseFloat(specificityScore)).toBeGreaterThanOrEqual(
+          FMG_SPECIFICITY_THRESHOLD
+        );
+      }
     });
   });
 

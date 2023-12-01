@@ -50,6 +50,7 @@ import {
 import {
   ComputationalMarkerGeneTableData,
   useComputationalMarkerGenesTableRowsAndFilters,
+  useSelectedOrganForTooltipCopy,
 } from "./hooks/computational_markers";
 import treeDendrogram from "src/common/images/TreeDendogram.svg";
 import {
@@ -67,9 +68,6 @@ import {
   CELL_GUIDE_CARD_ENRICHED_GENES_TABLE,
   CELL_GUIDE_CARD_ENRICHED_GENES_TABLE_SELECTOR,
   EXPRESSION_SCORE_TOOLTIP_TEST_ID,
-  MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID,
-  MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID,
-  MARKER_SCORE_TOOLTIP_TEST_ID,
   PERCENT_OF_CELLS_TOOLTIP_TEST_ID,
   MARKER_GENES_CANONICAL_BREAKPOINT_PX,
   MARKER_GENES_COMPUTATIONAL_BREAKPOINT_PX,
@@ -79,6 +77,22 @@ import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/con
 import Image from "next/image";
 import { CellType } from "../../../common/OntologyDagView/common/types";
 import { CENSUS_LINK } from "src/components/Header/components/Nav/constants";
+import {
+  EFFECT_SIZE,
+  EXPRESSION_SCORE_TOOLTIP_CONTENT,
+  MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID,
+  MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID,
+  MARKER_SCORE_HIGH_CONTENT,
+  MARKER_SCORE_LOW_CONTENT,
+  MARKER_SCORE_MEDIUM_CONTENT,
+  MARKER_SCORE_TOOLTIP_CONTENT,
+  MARKER_SCORE_TOOLTIP_LINK_TEXT,
+  MARKER_SCORE_TOOLTIP_TEST_ID,
+  MEAN_EXPRESSION,
+  MEAN_EXPRESSION_ABBREVIATED,
+  SPECIFICITY_TOOLTIP_TEST_ID,
+  TABLE_HEADER_SPECIFICITY,
+} from "src/common/constants/markerGenes";
 
 function getEmptyComputationalMarkerGenesTableUIMessageDetail(
   allFilteredByLowMarkerScore: boolean
@@ -105,6 +119,7 @@ interface TableRowEnrichedGenes {
   symbol: ReactNode;
   name: ReactNode;
   marker_score: ReactNode;
+  specificity: ReactNode;
   me: ReactNode;
   pc: ReactNode;
 }
@@ -217,6 +232,10 @@ const MarkerGeneTables = ({
   const { data: enrichedGenes } = useComputationalMarkers(cellTypeId);
   const { data: canonicalMarkers } = useCanonicalMarkers(cellTypeId);
 
+  const { specificityCopy } = useSelectedOrganForTooltipCopy({
+    selectedOrganName: organName,
+  });
+
   // Computational marker gene table column names
   const tableColumnNamesEnrichedGenes: Record<
     keyof TableRowEnrichedGenes,
@@ -228,29 +247,26 @@ const MarkerGeneTables = ({
       marker_score: (
         <div>
           <StyledHeadCellContent>
-            Marker Score
+            {EFFECT_SIZE}
             <HelpTooltip
               skinnyMode={skinnyMode}
-              title="Marker Score"
+              title={EFFECT_SIZE}
               setTooltipContent={setTooltipContent}
               dark
               buttonDataTestId={MARKER_SCORE_TOOLTIP_TEST_ID}
               text={
                 <>
-                  Marker score interpretation:
+                  {MARKER_SCORE_TOOLTIP_CONTENT}
+                  <br />
                   <br />
                   <MarkerStrengthContainer>
-                    {"Low: <1 | Medium: 1-2 | High: >2"}
+                    {MARKER_SCORE_LOW_CONTENT} | {MARKER_SCORE_MEDIUM_CONTENT} |{" "}
+                    {MARKER_SCORE_HIGH_CONTENT}
                   </MarkerStrengthContainer>
                   <br />
                   <div>
-                    Marker genes are highly and uniquely expressed in the cell
-                    type relative to all other cell types.
-                  </div>
-                  <br />
-                  <div>
                     <a href={ROUTES.FMG_DOCS} rel="noopener" target="_blank">
-                      Click to read more about the identification method.
+                      {MARKER_SCORE_TOOLTIP_LINK_TEXT}
                     </a>
                   </div>
                 </>
@@ -259,28 +275,31 @@ const MarkerGeneTables = ({
           </StyledHeadCellContent>
         </div>
       ),
+      specificity: (
+        <div>
+          <StyledHeadCellContent>
+            {TABLE_HEADER_SPECIFICITY}
+            <HelpTooltip
+              skinnyMode={skinnyMode}
+              title={TABLE_HEADER_SPECIFICITY}
+              setTooltipContent={setTooltipContent}
+              dark
+              buttonDataTestId={SPECIFICITY_TOOLTIP_TEST_ID}
+              text={specificityCopy}
+            />
+          </StyledHeadCellContent>
+        </div>
+      ),
       me: (
         <StyledHeadCellContent>
-          {!isPastBreakpoint ? "Expression Score" : "Exp. Score"}
+          {!isPastBreakpoint ? MEAN_EXPRESSION : MEAN_EXPRESSION_ABBREVIATED}
           <HelpTooltip
             skinnyMode={skinnyMode}
-            title="Expression Score"
+            title={MEAN_EXPRESSION}
             setTooltipContent={setTooltipContent}
             dark
             buttonDataTestId={EXPRESSION_SCORE_TOOLTIP_TEST_ID}
-            text={
-              <div>
-                The expression score is the average{" "}
-                <a
-                  href={ROUTES.WMG_DOCS_DATA_PROCESSING}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  rankit-normalized gene expression
-                </a>{" "}
-                among cells in the cell type that have non-zero values.
-              </div>
-            }
+            text={<div>{EXPRESSION_SCORE_TOOLTIP_CONTENT}</div>}
           />
         </StyledHeadCellContent>
       ),
@@ -311,7 +330,7 @@ const MarkerGeneTables = ({
         </StyledHeadCellContent>
       ),
     }),
-    [setTooltipContent, skinnyMode, isPastBreakpoint]
+    [setTooltipContent, skinnyMode, isPastBreakpoint, specificityCopy]
   );
 
   const allTissuesLabelToIdMap = useAllTissuesLookupTables(cellTypeId);
@@ -445,6 +464,9 @@ const MarkerGeneTables = ({
           marker_score: (
             <StyledCellNumerical> {row.marker_score} </StyledCellNumerical>
           ),
+          specificity: (
+            <StyledCellNumerical> {row.specificity} </StyledCellNumerical>
+          ),
           symbolId: row.symbol,
           symbol: getSymbol(row, true),
         }))
@@ -521,8 +543,8 @@ const MarkerGeneTables = ({
   const tableComponent = useMemo(() => {
     const tableColumnsEnrichedGenes: Array<keyof TableRowEnrichedGenes> =
       !isPastBreakpoint
-        ? ["symbol", "name", "marker_score", "me", "pc"]
-        : ["symbol", "marker_score", "me", "pc"];
+        ? ["symbol", "name", "marker_score", "specificity", "me", "pc"]
+        : ["symbol", "marker_score", "specificity", "me", "pc"];
 
     const tableColumnsCanonicalGenes: Array<keyof TableRowCanonicalGenes> =
       !isPastBreakpoint

@@ -1,5 +1,7 @@
+import { fontBodyXxs } from "@czi-sds/components";
 import styled from "@emotion/styled";
 import { FormControlLabel } from "@mui/material";
+import { gray500 } from "src/common/theme";
 
 export const Wrapper = styled.div`
   padding: 0 10px;
@@ -26,6 +28,7 @@ export const Dots = styled.div`
 export const ContentWrapper = styled.div`
   display: flex;
   position: relative;
+  margin: 2px 0px 4px 0px;
 `;
 
 export const StyledFormControlLabel = styled(FormControlLabel)`
@@ -48,4 +51,11 @@ export const FlexDiv = styled.div`
 export const TooltipLink = styled.a`
   text-decoration: underline;
   cursor: pointer;
+`;
+
+export const Label = styled.label`
+  ${fontBodyXxs}
+  font-weight: 400;
+  white-space: nowrap;
+  color: ${gray500};
 `;

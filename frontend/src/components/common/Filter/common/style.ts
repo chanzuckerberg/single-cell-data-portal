@@ -24,9 +24,3 @@ export const InfoButtonWrapper = styled.span`
   cursor: pointer;
   margin-left: ${spacesXxs}px;
 `;
-
-export const NotificationWrapper = styled.div`
-  position: absolute;
-  z-index: 999;
-  overflow: hidden;
-`;
