@@ -31,7 +31,8 @@ def post(body: dict, token_info: dict):
 
     file_content = {"description": description, "references": references}
 
-    env = os.getenv("DEPLOYMENT_STAGE")
+    env = os.getenv("DEPLOYMENT_STAGE") 
+    env = "dev" if env == "rdev" else env
     file_name = f"{cell_onthology_id}.json"
     key_name = f"validated_descriptions/{file_name}"
     bucket_name = f"cellguide-data-public-{env}"
