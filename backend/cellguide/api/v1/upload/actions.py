@@ -39,7 +39,7 @@ def post(body: dict, token_info: dict):
         json.dump(file_content, f)
 
     s3_provider = S3Provider()
-    
+
     try:
         s3_provider.upload_file(file_name, bucket_name, key_name, {})
     except Exception as e:
