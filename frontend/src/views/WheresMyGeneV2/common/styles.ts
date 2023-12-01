@@ -1,8 +1,14 @@
-import { fontHeaderS } from "@czi-sds/components";
+import { CommonThemeProps, fontHeaderS } from "@czi-sds/components";
 import styled from "@emotion/styled";
-import { gray100, gray300, gray500 } from "src/common/theme";
+import {
+  gray100,
+  gray300,
+  gray500,
+  spacesL,
+  spacesXxs,
+} from "src/common/theme";
 
-interface CellProps {
+interface CellProps extends CommonThemeProps {
   align?: boolean;
 }
 
@@ -23,7 +29,7 @@ export const DivTableRow = styled.div`
 
 export const DivTableCell = styled.div<CellProps>`
   display: table-cell;
-  padding: 4px, 0px, 4px, 0px;
+  padding: ${spacesXxs}px 0px ${spacesXxs}px 0px;
   text-align: ${(props) => (props.align ? "right" : "left")};
   @media (max-width: 600px) {
     display: block;
@@ -34,6 +40,10 @@ export const DivTableCell = styled.div<CellProps>`
       margin-bottom: 0.625rem;
     }
   }
+`;
+
+export const DivTableCellPadded = styled(DivTableCell)`
+  padding-right: ${spacesL}px !important;
 `;
 
 export const DivTableHead = styled.div`

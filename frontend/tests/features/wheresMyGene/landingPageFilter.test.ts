@@ -147,7 +147,7 @@ describe("Left side bar", () => {
       async () => {
         await goToWMG(page);
         const badgeCounter = await page.getByTestId(DATA_SOURCE_BADGE_TEST_ID);
-        expect(badgeCounter).toBeVisible();
+        await expect(badgeCounter).toBeVisible({ timeout: 30000 });
         expect(badgeCounter.getByText(/\d+/)).toBeVisible();
       },
       { page }

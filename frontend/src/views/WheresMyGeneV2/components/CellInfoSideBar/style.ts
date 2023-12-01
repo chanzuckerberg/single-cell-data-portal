@@ -8,6 +8,8 @@ import {
   spacesXl,
   spacesXxl,
   spacesXxs,
+  spacesL,
+  spacesM,
 } from "src/common/theme";
 
 export const CELL_INFO_SIDEBAR_WIDTH_PX = 400;
@@ -48,7 +50,7 @@ export const StyledTooltip = styled("div")`
 `;
 
 export const TooltipContent = styled("div")`
-  padding: 0px 0px 8px 0px;
+  padding: 0px 0px ${spacesL}px 0px;
 `;
 
 export const TooltipLink = styled("a")`
@@ -75,6 +77,7 @@ export const CopyGenesButton = styled(Button)`
   ${fontBodyS}
   font-weight: 500;
   margin-left: -5px;
+  padding-left: ${spacesM}px;
 `;
 
 export const MarkerStrengthContainer = styled("div")`

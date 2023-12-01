@@ -1,6 +1,7 @@
 export const GENE_SEARCH_BAR_HEIGHT_PX = 32;
 export const HEATMAP_CONTAINER_ID = "heatmap-container-id";
 export const FMG_GENE_STRENGTH_THRESHOLD = 0.5;
+export const FMG_SPECIFICITY_THRESHOLD = 0.0;
 
 /**
  * (thuang): The `id` options here must match what the BE expects

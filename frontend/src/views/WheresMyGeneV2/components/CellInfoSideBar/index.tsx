@@ -7,8 +7,6 @@ import { BetaChip } from "src/components/Header/style";
 import {
   ButtonContainer,
   CopyGenesButton,
-  MarkerStrengthContainer,
-  MarkerStrengthLabel,
   NoMarkerGenesContainer,
   NoMarkerGenesDescription,
   NoMarkerGenesHeader,
@@ -28,27 +26,37 @@ import InfoSVG from "src/common/images/info-sign-icon.svg";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
 import { CellInfoBarProps } from "./types";
 import {
-  TISSUES_WITHOUT_MARKER_GENES,
   MARKER_GENES_TOOLTIP_CONTENT,
   MARKER_GENE_LABEL,
-  MARKER_SCORE_CELLGUIDE_LINK_TEXT,
-  MARKER_SCORE_DOTPLOT_BUTTON_TEXT,
+  MARKER_SCORE_HIGH_CONTENT,
   MARKER_SCORE_LABEL,
+  MARKER_SCORE_LOW_CONTENT,
+  MARKER_SCORE_MEDIUM_CONTENT,
   MARKER_SCORE_TOOLTIP_CONTENT,
   MARKER_SCORE_TOOLTIP_LINK_TEXT,
+  EFFECT_SIZE,
+  MARKER_SCORE_TOOLTIP_TEST_ID,
+  SPECIFICITY_TOOLTIP_TEST_ID,
+} from "src/common/constants/markerGenes";
+import {
+  TISSUES_WITHOUT_MARKER_GENES,
+  MARKER_SCORE_CELLGUIDE_LINK_TEXT,
+  MARKER_SCORE_DOTPLOT_BUTTON_TEXT,
   NO_MARKER_GENES_DESCRIPTION,
   NO_MARKER_GENES_FOR_BLOOD_DESCRIPTION,
   NO_MARKER_GENES_HEADER,
   TABLE_HEADER_GENE,
-  TABLE_HEADER_SCORE,
   TOO_FEW_CELLS_NO_MARKER_GENES_DESCRIPTION,
+  TABLE_HEADER_SPECIFICITY,
+  SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF,
+  SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF,
 } from "./constants";
 import { useConnect } from "./connect";
 import {
   DivTable,
   DivTableCell,
+  DivTableCellPadded,
   DivTableHead,
-  DivTableLegend,
   DivTableRow,
 } from "../../common/styles";
 
@@ -64,6 +72,7 @@ function CellInfoSideBar({
     handleDisplayGenes,
     handleFmgHoverEnd,
     handleMarkerScoreHoverEnd,
+    handleSpecificityHoverEnd,
     setHoverStartTime,
   } = useConnect({
     cellInfoCellType,
@@ -168,9 +177,20 @@ function CellInfoSideBar({
       ) : (
         <DivTable>
           <DivTableHead>
-            <DivTableCell>{TABLE_HEADER_GENE}</DivTableCell>
-            <DivTableCell align>
-              {TABLE_HEADER_SCORE}
+            <DivTableCell>
+              {TABLE_HEADER_GENE}
+              <CopyGenesButton
+                onClick={handleCopyGenes}
+                sdsType="primary"
+                sdsStyle="minimal"
+                isAllCaps={false}
+                startIcon={<Icon sdsIcon="copy" sdsSize="s" sdsType="button" />}
+              >
+                Copy
+              </CopyGenesButton>
+            </DivTableCell>
+            <DivTableCell align data-testid="marker-genes-table-header-score">
+              {EFFECT_SIZE}
               <Tooltip
                 sdsStyle="dark"
                 placement="bottom"
@@ -183,6 +203,14 @@ function CellInfoSideBar({
                   <StyledTooltip>
                     <TooltipContent>
                       {MARKER_SCORE_TOOLTIP_CONTENT}
+                      <br />
+                      <br />
+                      {MARKER_SCORE_LOW_CONTENT}
+                      <br />
+                      {MARKER_SCORE_MEDIUM_CONTENT}
+                      <br />
+                      {MARKER_SCORE_HIGH_CONTENT}
+                      <br />
                     </TooltipContent>
                     <TooltipLink
                       href={ROUTES.FMG_DOCS}
@@ -206,32 +234,57 @@ function CellInfoSideBar({
                   sdsStyle="minimal"
                   sdsType="secondary"
                   isAllCaps={false}
+                  data-testid={MARKER_SCORE_TOOLTIP_TEST_ID}
+                >
+                  <StyledIconImage src={questionMarkIcon} />
+                </TooltipButton>
+              </Tooltip>
+            </DivTableCell>
+            <DivTableCell align data-testid="marker-genes-table-specificity">
+              {TABLE_HEADER_SPECIFICITY}
+              <Tooltip
+                sdsStyle="dark"
+                placement="bottom"
+                width="default"
+                className="fmg-tooltip-icon"
+                arrow
+                onOpen={() => setHoverStartTime(Date.now())}
+                onClose={handleSpecificityHoverEnd}
+                title={
+                  <StyledTooltip>
+                    <TooltipContent>
+                      {SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF} {tissueInfo.name}{" "}
+                      {SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF}
+                    </TooltipContent>
+                    <TooltipLink
+                      href={ROUTES.FMG_DOCS}
+                      rel="noopener"
+                      target="_blank"
+                      onClick={() => {
+                        track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER, {
+                          label: MARKER_SCORE_LABEL,
+                        });
+                        track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED, {
+                          label: MARKER_SCORE_LABEL,
+                        });
+                      }}
+                    >
+                      {MARKER_SCORE_TOOLTIP_LINK_TEXT}
+                    </TooltipLink>
+                  </StyledTooltip>
+                }
+              >
+                <TooltipButton
+                  sdsStyle="minimal"
+                  sdsType="secondary"
+                  isAllCaps={false}
+                  data-testid={SPECIFICITY_TOOLTIP_TEST_ID}
                 >
                   <StyledIconImage src={questionMarkIcon} />
                 </TooltipButton>
               </Tooltip>
             </DivTableCell>
           </DivTableHead>
-          <DivTableLegend>
-            <DivTableCell>
-              <CopyGenesButton
-                onClick={handleCopyGenes}
-                sdsType="primary"
-                sdsStyle="minimal"
-                isAllCaps={false}
-                startIcon={<Icon sdsIcon="copy" sdsSize="s" sdsType="button" />}
-              >
-                Copy
-              </CopyGenesButton>
-            </DivTableCell>
-            <DivTableCell align>
-              <MarkerStrengthContainer>
-                <MarkerStrengthLabel>{"Low: <1"}</MarkerStrengthLabel>
-                <MarkerStrengthLabel>{"Medium: 1-2"}</MarkerStrengthLabel>
-                <MarkerStrengthLabel>{"High: >2"}</MarkerStrengthLabel>
-              </MarkerStrengthContainer>
-            </DivTableCell>
-          </DivTableLegend>
           {Object.entries(data.marker_genes).map(([symbol, metadata]) => (
             <DivTableRow key={symbol}>
               <DivTableCell>
@@ -255,9 +308,12 @@ function CellInfoSideBar({
                   />
                 </InfoButtonWrapper>
               </DivTableCell>
-              <DivTableCell data-testid="marker-scores-fmg" align>
-                {metadata.marker_score.toPrecision(4)}
-              </DivTableCell>
+              <DivTableCellPadded data-testid="marker-scores-fmg" align>
+                {metadata.marker_score.toFixed(2)}
+              </DivTableCellPadded>
+              <DivTableCellPadded data-testid="specificity-fmg" align>
+                {metadata.specificity.toFixed(2)}
+              </DivTableCellPadded>
             </DivTableRow>
           ))}
         </DivTable>
