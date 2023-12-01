@@ -16,35 +16,6 @@ servers:
   - description: Staging environment
     url: https://api.cellxgene.staging.single-cell.czi.technology
 paths:
-  /v1/auth/token:
-    post:
-      summary: Generate an access token
-      tags:
-        - Authentication
-      description: |
-        Returns a bearer access token that must be passed in an Authorization header to requests that
-        require authorization such as uploading a new Desciption file for CellGuide.
-      operationId: backend.cellguide.api.v1.auth.token.post
-      parameters:
-        - in: header
-          name: x-api-key
-          schema:
-            type: string
-            example: "<YOUR-API-KEY>"
-          required: true
-          description: Your API key.```
-      responses:
-        "201":
-          description: Created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  access_token:
-                    type: string
-        "401":
-          $ref: "#/components/responses/401"
   /v1/upload:
     post:
       summary: Post a new description object for CellGuide

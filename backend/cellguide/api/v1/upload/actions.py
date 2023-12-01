@@ -27,19 +27,23 @@ def post(body: dict, token_info: dict):
         try:
             requests.get(reference)
         except Exception as e:
-            raise ForbiddenHTTPException("Invalid url") from e
+            raise ForbiddenHTTPException(f"Invalid url {reference}") from e
 
     file_content = {"description": description, "references": references}
-
     env = os.getenv("DEPLOYMENT_STAGE")
     file_name = f"{cell_onthology_id}.json"
     key_name = f"validated_descriptions/{file_name}"
     bucket_name = f"cellguide-data-public-{env}"
+
     with open(file_name, "w") as f:
         json.dump(file_content, f)
 
     s3_provider = S3Provider()
-    s3_provider.upload_file(file_name, bucket_name, key_name, {})
+    
+    try:
+        s3_provider.upload_file(file_name, bucket_name, key_name, {})
+    except Exception as e:
+        raise ForbiddenHTTPException("Failed to upload file to S3") from e
 
     os.remove(file_name)
 
