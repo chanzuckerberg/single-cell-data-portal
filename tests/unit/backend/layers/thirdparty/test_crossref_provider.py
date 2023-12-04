@@ -115,33 +115,60 @@ class TestCrossrefProvider(unittest.TestCase):
             },
         }
 
-        preprint_body = copy.deepcopy(body)
-        response_preprint = make_response(preprint_body)
-
-        published_body = copy.deepcopy(body)
-        del published_body["message"]["subtype"]
-        published_body["message"]["author"][0]["given"] = "Jonathan"
-        response_published = make_response(published_body)
-
-        responses = [response_published, response_preprint]
-
-        mock_get.side_effect = lambda *x, **y: responses.pop()
         provider = CrossrefProvider()
-        res = provider.fetch_metadata("preprint_doi")
-        calls = mock_get.call_args_list
-        assert len(calls) == 2
 
-        expected_response = {
-            "authors": [{"given": "Jonathan", "family": "Doe"}, {"given": "Jane", "family": "Doe"}],
-            "published_year": 2021,
-            "published_month": 11,
-            "published_day": 10,
-            "published_at": 1636502400.0,
-            "journal": "Nature",
-            "is_preprint": False,
-        }
+        with self.subTest("Published DOI is used when available"):
+            preprint_body = copy.deepcopy(body)
+            response_preprint = make_response(preprint_body)
 
-        self.assertDictEqual(expected_response, res)
+            published_body = copy.deepcopy(body)
+            del published_body["message"]["subtype"]
+            published_body["message"]["author"][0]["given"] = "Jonathan"
+            response_published = make_response(published_body)
+
+            responses = [response_published, response_preprint]
+            mock_get.side_effect = lambda *x, **y: responses.pop()
+            res = provider.fetch_metadata("preprint_doi")
+
+            expected_response = {
+                "authors": [{"given": "Jonathan", "family": "Doe"}, {"given": "Jane", "family": "Doe"}],
+                "published_year": 2021,
+                "published_month": 11,
+                "published_day": 10,
+                "published_at": 1636502400.0,
+                "journal": "Nature",
+                "is_preprint": False,
+            }
+
+            self.assertDictEqual(expected_response, res)
+
+        with self.subTest("Preprint DOI is used when published is referenced but cannot be retrieved") and patch.object(
+            provider, "fetch_published_metadata"
+        ) as fetch_published_metadata_mock:
+            fetch_published_metadata_mock.return_value = None
+
+            preprint_body = copy.deepcopy(body)
+            response_preprint = make_response(preprint_body)
+
+            published_body = copy.deepcopy(body)
+            del published_body["message"]["subtype"]
+            response_published = make_response(published_body)
+
+            responses = [response_published, response_preprint]
+            mock_get.side_effect = lambda *x, **y: responses.pop()
+            res = provider.fetch_metadata("preprint_doi")
+
+            expected_response = {
+                "authors": [{"given": "John", "family": "Doe"}, {"given": "Jane", "family": "Doe"}],
+                "published_year": 2021,
+                "published_month": 11,
+                "published_day": 10,
+                "published_at": 1636502400.0,
+                "journal": "Nature",
+                "is_preprint": True,
+            }
+
+            self.assertDictEqual(expected_response, res)
 
     @patch("backend.layers.thirdparty.crossref_provider.requests.get")
     @patch("backend.layers.thirdparty.crossref_provider.CorporaConfig")

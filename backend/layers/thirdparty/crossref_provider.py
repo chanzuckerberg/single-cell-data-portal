@@ -128,14 +128,11 @@ class CrossrefProvider(CrossrefProviderInterface):
                     parsed_authors.append({"name": author["name"]})
 
             # Preprint
-            if is_preprint := message.get("subtype") == "preprint":
-                try:
-                    published_doi = message["relation"]["is-preprint-of"]
-                    # the new DOI to query for ...
-                    if published_doi[0]["id-type"] == "doi":
-                        return self.fetch_metadata(published_doi[0]["id"])
-                except Exception:  # if fetch of published doi errors out, just use preprint doi
-                    pass
+            is_preprint = message.get("subtype") == "preprint"
+            if is_preprint:
+                published_metadata = self.fetch_published_metadata(message)
+                if published_metadata:  # if not, use preprint doi
+                    return published_metadata
 
             return {
                 "authors": parsed_authors,
@@ -148,3 +145,12 @@ class CrossrefProvider(CrossrefProviderInterface):
             }
         except Exception as e:
             raise CrossrefParseException("Cannot parse metadata from Crossref") from e
+
+    def fetch_published_metadata(self, doi_response_message: dict) -> dict:
+        try:
+            published_doi = doi_response_message["relation"]["is-preprint-of"]
+            # the new DOI to query for ...
+            if published_doi[0]["id-type"] == "doi":
+                return self.fetch_metadata(published_doi[0]["id"])
+        except Exception:  # if fetch of published doi errors out, just use preprint doi
+            pass
