@@ -89,7 +89,7 @@ export const USE_PROJECTS = {
 };
 
 export function useProjects() {
-  return useQuery<ProjectResponse>([USE_PROJECTS], fetchProjects);
+  return useQuery<ProjectResponse | undefined>([USE_PROJECTS], fetchProjects);
 }
 
 function parseCrossRefResponse({ message }: any) {
