@@ -68,7 +68,7 @@ def create_cell_counts_cube(*, query: ExperimentAxisQuery, corpus_path: str, org
             ancestors_dict[cell_type_id] = ",".join(ancestors(cell_type_id))
         return ancestors_dict[cell_type_id]
 
-    obs_df["cell_type_ontology_term_id_ancestors"] = obs_df["cell_type_ontology_term_id"].apply(get_ancestors)
+    df["cell_type_ontology_term_id_ancestors"] = df["cell_type_ontology_term_id"].apply(get_ancestors)
 
     uri = os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)
     create_empty_cube_if_needed(uri, cell_counts_schema)
