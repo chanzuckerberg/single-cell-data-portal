@@ -251,6 +251,7 @@ class DatasetMetadataUpdater(ProcessDownload):
                     new_dataset_version_id,
                     metadata_update,
                 ),
+                name=DatasetStatusKey.H5AD.value,
             )
             artifact_jobs.append(h5ad_job)
             h5ad_job.start()
@@ -270,6 +271,7 @@ class DatasetMetadataUpdater(ProcessDownload):
                     new_dataset_version_id,
                     metadata_update,
                 ),
+                name=DatasetStatusKey.RDS.value,
             )
             artifact_jobs.append(rds_job)
             rds_job.start()
@@ -293,6 +295,7 @@ class DatasetMetadataUpdater(ProcessDownload):
                     new_dataset_version_id,
                     metadata_update,
                 ),
+                name=DatasetStatusKey.CXG.value,
             )
             artifact_jobs.append(cxg_job)
             cxg_job.start()
@@ -302,6 +305,15 @@ class DatasetMetadataUpdater(ProcessDownload):
 
         # blocking call on async functions before checking for valid artifact statuses
         [j.join() for j in artifact_jobs]
+        for job in artifact_jobs:
+            if job.exitcode != 0:
+                self.logger.error(f"{job.name} subprocess exited with nonzero {job.exitcode}")
+                self.update_processing_status(
+                    new_dataset_version_id, DatasetStatusKey(job.name), DatasetConversionStatus.FAILED
+                )
+                self.update_processing_status(
+                    new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
+                )
 
         if self.has_valid_artifact_statuses(new_dataset_version_id):
             self.update_processing_status(
