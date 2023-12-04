@@ -58,7 +58,8 @@ def create_expression_summary_default_cube(corpus_path: str):
         # TODO: Explore if staying in PyArrow space incurs less memory overhead. If so, use PyArrow groupby
         expression_summary_df_default = (
             expression_summary_df.groupby(
-                expression_summary_indexed_dims + expression_summary_non_indexed_dims,
+                expression_summary_indexed_dims
+                + [dim for dim in expression_summary_non_indexed_dims if dim != "cell_type_ontology_term_id_ancestors"],
                 as_index=False,
             )
             .agg(agg_funcs)
