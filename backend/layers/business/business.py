@@ -379,7 +379,12 @@ class BusinessLogic(BusinessLogicInterface):
                         DatasetProcessingStatus.SUCCESS,
                         DatasetProcessingStatus.FAILURE,
                     ]:
-                        errors.append("Cannot update DOI while a dataset is processing or awaiting upload")
+                        errors.append(
+                            {
+                                "link_type": CollectionLinkType.DOI,
+                                "reason": "Cannot update DOI while a dataset is processing or awaiting upload.",
+                            }
+                        )
 
             if current_doi and new_doi is None:
                 # If the DOI was deleted, remove the publisher_metadata field

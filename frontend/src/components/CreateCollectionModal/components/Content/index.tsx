@@ -25,7 +25,11 @@ import {
   sortConsortia,
 } from "src/components/CreateCollectionModal/components/Content/common/utils";
 import { getDOIPath } from "src/views/Collection/utils";
-import { CONSORTIA, INVALID_DOI_ERROR_MESSAGE } from "./common/constants";
+import {
+  CONSORTIA,
+  INVALID_DOI_ERROR_MESSAGE,
+  INVALID_DATASET_STATUS_FOR_DOI_UPDATE,
+} from "./common/constants";
 import AddLink from "./components/AddLink";
 import LinkInput, { LinkValue } from "./components/LinkInput";
 import {
@@ -351,7 +355,7 @@ const Content: FC<Props> = (props) => {
 
     // Handle the case where DOI is invalid.
     if (isInvalidDOI) {
-      setLinks(updateLinkErrors(links, true));
+      setLinks(updateLinkErrors(links, true, false));
       return;
     }
 
@@ -376,10 +380,12 @@ const Content: FC<Props> = (props) => {
 
     setIsLoading(false);
 
-    // Handle the case where DOI is invalid.
-    const { isInvalidDOI } = response;
-    if (isInvalidDOI) {
-      setLinks(updateLinkErrors(links, true));
+    // Handle the case where DOI update is invalid.
+    var { isInvalidDOI, hasInvalidDatasetStatus } = response;
+    if (isInvalidDOI || hasInvalidDatasetStatus) {
+      isInvalidDOI = isInvalidDOI ? true : false;
+      hasInvalidDatasetStatus = hasInvalidDatasetStatus ? true : false;
+      setLinks(updateLinkErrors(links, isInvalidDOI, hasInvalidDatasetStatus));
       return;
     }
 
@@ -451,14 +457,26 @@ const Content: FC<Props> = (props) => {
    * TODO generalize beyond DOI link type once all links are validated on the BE (#1916).
    * @param links - Current set of selected links.
    * @param isInvalidDOI - True if the server has indicated the submitted DOI is invalid.
+   * @param hasInvalidDatasetStatus - True if server has indicated the submitted DOI update cannot be completed due to
+   * non-finalized processing statuses for datasets in the Collection
    * @returns Array of links with error messages updated according to server-side errors.
    */
-  function updateLinkErrors(links: Link[], isInvalidDOI: boolean): Link[] {
+  function updateLinkErrors(
+    links: Link[],
+    isInvalidDOI: boolean,
+    hasInvalidDatasetStatus: boolean
+  ): Link[] {
     return links.map((link) => {
       if (isLinkTypeDOI(link.linkType) && isInvalidDOI) {
         return {
           ...link,
           errorMessage: INVALID_DOI_ERROR_MESSAGE,
+        };
+      }
+      if (isLinkTypeDOI(link.linkType) && hasInvalidDatasetStatus) {
+        return {
+          ...link,
+          errorMessage: INVALID_DATASET_STATUS_FOR_DOI_UPDATE,
         };
       }
       return link;
