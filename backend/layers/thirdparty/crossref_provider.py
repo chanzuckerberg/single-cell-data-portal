@@ -69,7 +69,7 @@ class CrossrefProvider(CrossrefProviderInterface):
             )
             res.raise_for_status()
         except Exception as e:
-            if res.status_code == 404:
+            if e.response is not None and e.response.status_code == 404:
                 raise CrossrefDOINotFoundException from e
             else:
                 raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
@@ -82,7 +82,6 @@ class CrossrefProvider(CrossrefProviderInterface):
         If the Crossref API URI isn't in the configuration, we will just return an empty object.
         This is to avoid calling Crossref in non-production environments.
         """
-
         res = self._fetch_crossref_payload(doi)
 
         try:
