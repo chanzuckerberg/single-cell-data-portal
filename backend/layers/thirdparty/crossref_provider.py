@@ -134,7 +134,7 @@ class CrossrefProvider(CrossrefProviderInterface):
                     # the new DOI to query for ...
                     if published_doi[0]["id-type"] == "doi":
                         return self.fetch_metadata(published_doi[0]["id"])
-                except KeyError:
+                except Exception:  # if fetch of published doi errors out, just use preprint doi
                     pass
 
             return {
