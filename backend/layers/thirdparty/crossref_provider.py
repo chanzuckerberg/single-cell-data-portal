@@ -69,7 +69,7 @@ class CrossrefProvider(CrossrefProviderInterface):
             )
             res.raise_for_status()
         except Exception as e:
-            if res.status_code == 404:
+            if e.response is not None and e.response.status_code == 404:
                 raise CrossrefDOINotFoundException from e
             else:
                 raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
@@ -82,7 +82,6 @@ class CrossrefProvider(CrossrefProviderInterface):
         If the Crossref API URI isn't in the configuration, we will just return an empty object.
         This is to avoid calling Crossref in non-production environments.
         """
-
         res = self._fetch_crossref_payload(doi)
 
         try:
@@ -130,6 +129,10 @@ class CrossrefProvider(CrossrefProviderInterface):
 
             # Preprint
             is_preprint = message.get("subtype") == "preprint"
+            if is_preprint:
+                published_metadata = self.fetch_published_metadata(message)
+                if published_metadata:  # if not, use preprint doi
+                    return published_metadata
 
             return {
                 "authors": parsed_authors,
@@ -143,19 +146,11 @@ class CrossrefProvider(CrossrefProviderInterface):
         except Exception as e:
             raise CrossrefParseException("Cannot parse metadata from Crossref") from e
 
-    def fetch_preprint_published_doi(self, doi):
-        """
-        Given a preprint DOI, returns the DOI of the published paper, if available.
-        """
-
-        res = self._fetch_crossref_payload(doi)
-        message = res.json()["message"]
-        is_preprint = message.get("subtype") == "preprint"
-
-        if is_preprint:
-            try:
-                published_doi = message["relation"]["is-preprint-of"]
-                if published_doi[0]["id-type"] == "doi":
-                    return published_doi[0]["id"]
-            except Exception:
-                pass
+    def fetch_published_metadata(self, doi_response_message: dict) -> dict:
+        try:
+            published_doi = doi_response_message["relation"]["is-preprint-of"]
+            # the new DOI to query for ...
+            if published_doi[0]["id-type"] == "doi":
+                return self.fetch_metadata(published_doi[0]["id"])
+        except Exception:  # if fetch of published doi errors out, just use preprint doi
+            pass
