@@ -40,10 +40,7 @@ def post(body: dict, token_info: dict):
 
     s3_provider = S3Provider()
 
-    try:
-        s3_provider.upload_file(file_name, bucket_name, key_name, {})
-    except Exception as e:
-        raise ForbiddenHTTPException("Failed to upload file to S3") from e
+    s3_provider.upload_file(file_name, bucket_name, key_name, {})
 
     os.remove(file_name)
 
