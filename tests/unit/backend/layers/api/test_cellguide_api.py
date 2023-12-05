@@ -9,7 +9,6 @@ class TestPostCellGuide(BaseAPIPortalTest):
         self.test_cellguide_desciprtion_upload = dict(
             cell_onthology_id="CL_0000030",
             description="this is a description",
-            contact_name="john doe",
             references=["https://doi.org/10.1073/pnas.97.12.6242", "https://f1000research.com/articles/9-233/v1"],
         )
 

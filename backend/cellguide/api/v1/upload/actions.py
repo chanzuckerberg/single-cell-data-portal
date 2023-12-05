@@ -37,7 +37,6 @@ def post(body: dict, token_info: dict):
 
     s3_client = boto3.client("s3")
     file_content_str = json.dumps(file_content)
-
     s3_client.put_object(Body=file_content_str, Bucket=bucket_name, Key=key_name)
 
     file_content["cell_onthology_id"] = cell_onthology_id
