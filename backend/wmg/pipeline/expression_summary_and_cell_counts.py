@@ -1,10 +1,18 @@
-import cellxgene_census
-import tiledbsoma as soma
+import os
 
+import cellxgene_census
+import tiledb
+import tiledbsoma as soma
+from packaging import version
+
+from backend.wmg.data.snapshot import (
+    CELL_COUNTS_CUBE_NAME,
+)
 from backend.wmg.pipeline.cell_counts import create_cell_counts_cube
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     GENE_EXPRESSION_COUNT_MIN_THRESHOLD,
+    MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION,
 )
 from backend.wmg.pipeline.expression_summary import ExpressionSummaryCubeBuilder
 from backend.wmg.pipeline.utils import (
@@ -38,6 +46,21 @@ def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
     with cellxgene_census.open_soma(
         census_version=CensusParameters.census_version,
     ) as census:
+        census_schema_version = (
+            census["census_info"]["summary"]
+            .read()
+            .concat()
+            .to_pandas()
+            .set_index("label")
+            .loc["census_schema_version", "value"]
+        )
+        major_census_schema_version = version.parse(census_schema_version).major
+        if major_census_schema_version > MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION:
+            raise ValueError(
+                f"Unsupported census schema version: {census_schema_version}. "
+                f"Please use a version of cellxgene-census that supports census schema version {MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION} or lower."
+            )
+
         for organismInfo in ORGANISM_INFO:
             organism = organismInfo["label"]
             organismId = organismInfo["id"]
@@ -53,6 +76,11 @@ def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
                         query=query, corpus_path=corpus_path, organismId=organismId
                     ).create_expression_summary_cube()
                     create_cell_counts_cube(query=query, corpus_path=corpus_path, organismId=organismId)
+
+    # write census schema version to cell counts cube metadata
+    cell_counts_uri = os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)
+    with tiledb.open(cell_counts_uri, mode="w") as A:
+        A.meta["census_schema_version"] = census_schema_version
 
     pipeline_state[EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG] = True
     write_pipeline_state(pipeline_state, corpus_path)
