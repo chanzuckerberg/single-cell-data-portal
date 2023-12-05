@@ -45,7 +45,7 @@ const DEFAULT_BACKGROUND_REFETCH = {
  * Error text returned from BE when DOI is updated but there are datasets with a non-finalized state
  */
 const INVALID_DATASET_STATUS_MESSAGE =
-  "Cannot update DOI while a dataset is processing or awaiting upload";
+  "Cannot update DOI while a dataset is processing or awaiting upload.";
 
 /**
  * Error text returned from BE when DOI format is identified as invalid.
