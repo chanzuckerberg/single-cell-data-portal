@@ -1,8 +1,8 @@
-import boto3
 import json
 import os
 import re
 
+import boto3
 import requests
 from flask import jsonify, make_response
 
@@ -35,14 +35,10 @@ def post(body: dict, token_info: dict):
     key_name = f"validated_descriptions/{file_name}"
     bucket_name = f"cellguide-data-public-{env}"
 
-    s3_client = boto3.client('s3')
+    s3_client = boto3.client("s3")
     file_content_str = json.dumps(file_content)
 
-    s3_client.put_object(
-        Body=file_content_str,
-        Bucket=bucket_name,
-        Key=key_name
-    )
+    s3_client.put_object(Body=file_content_str, Bucket=bucket_name, Key=key_name)
 
     file_content["cell_onthology_id"] = cell_onthology_id
     return make_response(jsonify(file_content), 201)
