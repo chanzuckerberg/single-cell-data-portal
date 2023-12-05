@@ -150,7 +150,8 @@ class CrossrefProvider(CrossrefProviderInterface):
         try:
             published_doi = doi_response_message["relation"]["is-preprint-of"]
             # the new DOI to query for ...
-            if published_doi[0]["id-type"] == "doi":
-                return self.fetch_metadata(published_doi[0]["id"])
+            for entity in published_doi:
+                if entity["id-type"] == "doi":
+                    return self.fetch_metadata(entity["id"])
         except Exception:  # if fetch of published doi errors out, just use preprint doi
             pass

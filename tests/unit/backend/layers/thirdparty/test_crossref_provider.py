@@ -106,10 +106,11 @@ class TestCrossrefProvider(unittest.TestCase):
                 "subtype": "preprint",
                 "relation": {
                     "is-preprint-of": [
+                        {"id-type": "not_doi"},
                         {
                             "id": "published_doi",
                             "id-type": "doi",
-                        }
+                        },
                     ]
                 },
             },
