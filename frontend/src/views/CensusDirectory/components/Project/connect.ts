@@ -26,10 +26,8 @@ export const useConnect = ({ project, id }: ProjectProps) => {
     affiliations.set(contact.affiliation, affiliationNames);
   });
 
-  let index = 0;
   affiliations.forEach((names, affiliation) => {
-    if (index > 0) authorsString += " · ";
-    index++;
+    authorsString.length > 0 && (authorsString += " · ");
 
     if (names.length > 1) {
       const last = names.pop();
