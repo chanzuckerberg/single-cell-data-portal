@@ -46,14 +46,15 @@ def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
     with cellxgene_census.open_soma(
         census_version=CensusParameters.census_version,
     ) as census:
-        census_schema_version = (
+        census_schema_version, census_build_date = (
             census["census_info"]["summary"]
             .read()
             .concat()
             .to_pandas()
             .set_index("label")
-            .loc["census_schema_version", "value"]
-        )
+            .loc[["census_schema_version", "census_build_date"], "value"]
+        ).tolist()
+
         major_census_schema_version = version.parse(census_schema_version).major
         if major_census_schema_version > MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION:
             raise ValueError(
@@ -81,6 +82,7 @@ def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
     cell_counts_uri = os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)
     with tiledb.open(cell_counts_uri, mode="w") as A:
         A.meta["census_schema_version"] = census_schema_version
+        A.meta["census_build_date"] = census_build_date
 
     pipeline_state[EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG] = True
     write_pipeline_state(pipeline_state, corpus_path)
