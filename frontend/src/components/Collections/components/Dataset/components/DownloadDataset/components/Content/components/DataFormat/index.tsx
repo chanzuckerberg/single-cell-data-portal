@@ -54,7 +54,7 @@ const DataFormat: FC<Props> = ({
           <span>
             <InputRadio
               disabled={isDisabled || !isRDS}
-              label=".rds (Seurat v4)"
+              label=".rds (Seurat v5)"
               value={DATASET_ASSET_FORMAT.RDS}
             />
           </span>
