@@ -18,6 +18,7 @@ class TestProcessDownload(BaseProcessingTest):
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("backend.common.utils.dl_sources.uri.DropBoxURL.file_info", return_value={"size": 100, "name": "fake_name"})
     @patch("os.environ", test_environment)
+    @patch("os.path.getsize", return_value=50)
     @patch("backend.layers.processing.process_download.StepFunctionProvider")
     def test_process_download_success(self, mock_sfn_provider, *args):
         """
@@ -134,29 +135,36 @@ def memory_settings(
 
 # Arrange
 @pytest.mark.parametrize(
-    "size_of_adata, memory_settings, expected",
+    "size_of_adata, compression_ratio, memory_settings, expected",
     [
-        (2 * GB, memory_settings(), {"Vcpus": 1, "Memory": 4000, "MaxSwap": 20000}),  # minimum memory
+        (2 * GB, 1, memory_settings(), {"Vcpus": 1, "Memory": 4000, "MaxSwap": 20000}),  # minimum memory
         (
             5 * GB,
+            1,
             memory_settings(),
             {"Vcpus": 2, "Memory": 8000, "MaxSwap": 40000},
         ),  # above minimum memory
         (
             5 * GB,
+            1,
             memory_settings(1.5),
             {"Vcpus": 2, "Memory": 8000, "MaxSwap": 40000},
         ),  # modifier adjusted
         (
             64 * GB,
+            1,
             memory_settings(),
             {"Vcpus": 16, "Memory": 64000, "MaxSwap": 300000},
         ),  # maximum memory
     ],
 )
-def test_estimate_resource_requirements_positive(mock_ProcessDownload, size_of_adata, memory_settings, expected):
+def test_estimate_resource_requirements_positive(
+    mock_ProcessDownload, size_of_adata, compression_ratio, memory_settings, expected
+):
     # Act & Assert
-    assert expected == mock_ProcessDownload.estimate_resource_requirements(size_of_adata, **memory_settings)
+    assert expected == mock_ProcessDownload.estimate_resource_requirements(
+        size_of_adata, compression_ratio, **memory_settings
+    )
 
 
 @pytest.mark.parametrize(
@@ -184,7 +192,8 @@ def test_remove_prefix(mock_ProcessDownload):
     assert mock_ProcessDownload.remove_prefix("prefixfake", "prefix") == "fake"
 
 
-def test_create_batch_job_definition_parameters(mock_ProcessDownload):
+@patch("os.path.getsize", return_value=100)
+def test_create_batch_job_definition_parameters(mock_path, mock_ProcessDownload):
     # Arrange
     mock_ProcessDownload._get_size_of_h5ad = Mock(return_value=100)
     mock_ProcessDownload.get_job_definion_name = Mock(return_value="fake_job_definition_name")
@@ -194,7 +203,7 @@ def test_create_batch_job_definition_parameters(mock_ProcessDownload):
     resp = mock_ProcessDownload.create_batch_job_definition_parameters("local_file.h5ad", "fake_dataset_id")
 
     # Assert
-    mock_ProcessDownload.estimate_resource_requirements.assert_called_once_with(100)
+    mock_ProcessDownload.estimate_resource_requirements.assert_called_once_with(100, 1)
     mock_ProcessDownload.get_job_definion_name.assert_called_once_with("fake_dataset_id")
     assert resp == {
         "JobDefinitionName": "fake_job_definition_name",
