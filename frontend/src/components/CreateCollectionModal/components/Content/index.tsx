@@ -381,7 +381,7 @@ const Content: FC<Props> = (props) => {
     setIsLoading(false);
 
     // Handle the case where DOI update is invalid.
-    var { isInvalidDOI, hasInvalidDatasetStatus } = response;
+    let { isInvalidDOI, hasInvalidDatasetStatus } = response;
     if (isInvalidDOI || hasInvalidDatasetStatus) {
       isInvalidDOI = isInvalidDOI ? true : false;
       hasInvalidDatasetStatus = hasInvalidDatasetStatus ? true : false;
