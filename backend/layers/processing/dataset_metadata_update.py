@@ -5,6 +5,7 @@ import json
 import logging
 import os
 from multiprocessing import Process
+from typing import Tuple
 
 import scanpy
 import tiledb
@@ -24,6 +25,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.processing.exceptions import ProcessingException
 from backend.layers.processing.h5ad_data_file import H5ADDataFile
 from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_download import ProcessDownload
@@ -303,7 +305,8 @@ class DatasetMetadataUpdater(ProcessDownload):
         # blocking call on async functions before checking for valid artifact statuses
         [j.join() for j in artifact_jobs]
 
-        if self.has_valid_artifact_statuses(new_dataset_version_id):
+        has_valid_artifact_statuses, artifact_statuses = self.has_valid_artifact_statuses(new_dataset_version_id)
+        if has_valid_artifact_statuses:
             self.update_processing_status(
                 new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
             )
@@ -311,8 +314,12 @@ class DatasetMetadataUpdater(ProcessDownload):
             self.update_processing_status(
                 new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
             )
+            self.logger.error(
+                f"DatasetConversionStatus values for dataset version id {new_dataset_version_id} are {artifact_statuses.items()}"
+            )
+            raise ProcessingException() from None
 
-    def has_valid_artifact_statuses(self, dataset_version_id: DatasetVersionId) -> bool:
+    def has_valid_artifact_statuses(self, dataset_version_id: DatasetVersionId) -> Tuple[bool, dict]:
         dataset_version = self.business_logic.get_dataset_version(dataset_version_id)
         return (
             dataset_version.status.h5ad_status == DatasetConversionStatus.CONVERTED
@@ -321,7 +328,11 @@ class DatasetMetadataUpdater(ProcessDownload):
                 dataset_version.status.rds_status == DatasetConversionStatus.CONVERTED
                 or dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
             )
-        )
+        ), {
+            "h5ad_status": dataset_version.status.h5ad_status,
+            "cxg_status": dataset_version.status.cxg_status,
+            "rds_status": dataset_version.status.rds_status,
+        }
 
 
 if __name__ == "__main__":
