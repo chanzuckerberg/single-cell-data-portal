@@ -4,11 +4,17 @@ import os
 import tempfile
 import unittest
 from unittest import mock
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from backend.wmg.data.snapshot import _get_wmg_snapshot_schema_dir_path
 from backend.wmg.pipeline import logger, main
+from backend.wmg.pipeline.constants import MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION
+from backend.wmg.pipeline.expression_summary_and_cell_counts import create_expression_summary_and_cell_counts_cubes
 from backend.wmg.pipeline.load_cube import _get_wmg_snapshot_s3_fullpath
+
+
+def mock_census_schema_version_unsupported(_census):
+    return f"{MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION+1}.0.0", "2023-11-27"
 
 
 @contextlib.contextmanager
@@ -78,3 +84,15 @@ class TestCubePipe(unittest.TestCase):
             read_versioned_snapshot=False,
         )
         self.assertEqual(root_read_path, "")
+
+    def test__pipeline_fails_if_census_schema_version_unsupported(self):
+        # test that the pipeline fails if the census schema version is unsupported
+        with patch(
+            "backend.wmg.pipeline.expression_summary_and_cell_counts.get_census_version_and_build_date",
+            mock_census_schema_version_unsupported,
+        ):
+            try:
+                create_expression_summary_and_cell_counts_cubes(corpus_path="test")
+                self.fail("Expected ValueError to be raised due to unsupported census schema version.")
+            except ValueError:
+                pass
