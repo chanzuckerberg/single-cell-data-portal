@@ -25,6 +25,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.processing.dataset_metadata_update import DatasetMetadataUpdater, DatasetMetadataUpdaterWorker
+from backend.layers.processing.exceptions import ProcessingFailed
 from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
@@ -230,7 +231,8 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             start_step_function=False,
         )
 
-        self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
+        with pytest.raises(ProcessingFailed):
+            self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
 
         new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
 
@@ -264,7 +266,8 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             start_step_function=False,
         )
 
-        self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
+        with pytest.raises(ProcessingFailed):
+            self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
 
         new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
 
@@ -298,7 +301,8 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             start_step_function=False,
         )
 
-        self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
+        with pytest.raises(ProcessingFailed):
+            self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
 
         new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
 
@@ -325,7 +329,8 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             start_step_function=False,
         )
         self.updater.has_valid_artifact_statuses = Mock(return_value=False)
-        self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
+        with pytest.raises(ProcessingFailed):
+            self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
 
         collection_version = self.business_logic.get_collection_version(collection_version_id)
         new_dataset_version = collection_version.datasets[0]
