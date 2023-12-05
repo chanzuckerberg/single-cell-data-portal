@@ -1,0 +1,16 @@
+INFO     backend.layers.business.business:business.py:389 {'message': 'ingesting dataset', 'collection_version_id': e22067ab-a1ec-4265-9eba-24f6ae497294, 'url': 'http://fake.url', 'existing_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:389 {'message': 'ingesting dataset', 'collection_version_id': e22067ab-a1ec-4265-9eba-24f6ae497294, 'url': None, 'existing_dataset_version_id': 6f928887-903c-4bf6-9a00-735e96033a80}
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:91 Uploaded [bfe34ad6-ea15-4f7e-a69b-52142282d9ab/raw.h5ad] to s3://artifact_bucket/bfe34ad6-ea15-4f7e-a69b-52142282d9ab/raw.h5ad
+INFO     processing:process_logic.py:93 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+ERROR    processing:dataset_metadata_update.py:259 Cannot find labeled H5AD artifact uri for 6f928887-903c-4bf6-9a00-735e96033a80.
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:dataset_metadata_update.py:263 Main: Starting thread for rds update
+INFO     processing:dataset_metadata_update.py:286 Main: Starting thread for cxg update
+INFO     processing:process_logic.py:45 Updating processing status
