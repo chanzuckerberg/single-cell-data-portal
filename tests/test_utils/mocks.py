@@ -2,6 +2,7 @@ import json
 
 import numpy as np
 
+from backend.wmg.pipeline.constants import MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION
 from tests.unit.cellguide_pipeline.constants import (
     ASCTB_MASTER_SHEET_FIXTURE_FILENAME,
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
@@ -58,3 +59,7 @@ class MockCensusParameters:
 
 def mock_return_dataset_dict_w_publications():
     return {}
+
+
+def mock_census_schema_version_unsupported(_census):
+    return f"{MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION+1}.0.0", "2023-11-27"

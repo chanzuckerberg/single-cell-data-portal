@@ -40,20 +40,35 @@ class CensusParameters:
         return value_filter
 
 
+def get_census_version_and_build_date(census: soma.Collection):
+    """
+    Retrieves the census schema version and build date from the given census collection.
+
+    Parameters:
+    census (soma.Collection): The census collection to retrieve the schema version and build date from.
+
+    Returns:
+    tuple: A tuple containing the census schema version and build date.
+    """
+    census_schema_version, census_build_date = (
+        census["census_info"]["summary"]
+        .read()
+        .concat()
+        .to_pandas()
+        .set_index("label")
+        .loc[["census_schema_version", "census_build_date"], "value"]
+    ).tolist()
+
+    return census_schema_version, census_build_date
+
+
 def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
     pipeline_state = load_pipeline_state(corpus_path)
 
     with cellxgene_census.open_soma(
         census_version=CensusParameters.census_version,
     ) as census:
-        census_schema_version, census_build_date = (
-            census["census_info"]["summary"]
-            .read()
-            .concat()
-            .to_pandas()
-            .set_index("label")
-            .loc[["census_schema_version", "census_build_date"], "value"]
-        ).tolist()
+        census_schema_version, census_build_date = get_census_version_and_build_date(census)
 
         major_census_schema_version = version.parse(census_schema_version).major
         if major_census_schema_version > MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION:
