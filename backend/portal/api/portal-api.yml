@@ -581,42 +581,6 @@ paths:
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
-    post:
-      tags:
-        - datasets
-      summary: Request to download a dataset
-      description: >-
-        Request to download a file which on success will generate a pre-signed URL to download the dataset.
-      operationId: backend.portal.api.portal_api.post_dataset_asset
-      parameters:
-        - $ref: "#/components/parameters/path_dataset_id"
-        - name: asset_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  dataset_id:
-                    $ref: "#/components/schemas/dataset_id"
-                  presigned_url:
-                    type: string
-                  file_name:
-                    type: string
-                  file_size:
-                    type: number
-        "401":
-          $ref: "#/components/responses/401"
-        "403":
-          $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
 
   /v1/datasets/{dataset_id}/status:
     get:

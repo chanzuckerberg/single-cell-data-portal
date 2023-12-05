@@ -180,6 +180,7 @@ const TissueHeaderButton = ({
           sdsSize="s"
           color="gray"
           sdsType="static"
+          shade={300}
         />
         <TissueHeaderLabelStyle expanded={expanded}>
           <TissueLabel

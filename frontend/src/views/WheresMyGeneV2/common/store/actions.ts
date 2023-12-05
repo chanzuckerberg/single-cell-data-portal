@@ -9,6 +9,7 @@ import {
   REDUCERS,
   SetFilteredCellTypesPayload,
   State,
+  NotificationProps,
 } from "./reducer";
 
 export function deleteSingleGene(
@@ -217,6 +218,21 @@ export function autoExpandTissues(
   return {
     payload,
     type: "autoExpandTissues",
+  };
+}
+
+export function addNotification(payload: {
+  message: NotificationProps["message"];
+  notificationId: NotificationProps["notificationId"];
+  intent: NotificationProps["intent"];
+  sdsIcon: NotificationProps["sdsIcon"];
+  sdsSize: NotificationProps["sdsSize"];
+  label: NotificationProps["label"];
+  isCitation: NotificationProps["isCitation"];
+}): GetActionTypeOfReducer<(typeof REDUCERS)["addNotification"]> {
+  return {
+    payload,
+    type: "addNotification",
   };
 }
 

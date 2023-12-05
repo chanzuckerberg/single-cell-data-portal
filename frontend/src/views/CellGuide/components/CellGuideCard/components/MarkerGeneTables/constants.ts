@@ -24,14 +24,6 @@ export const EXPRESSION_SCORE_TOOLTIP_TEST_ID =
 export const PERCENT_OF_CELLS_TOOLTIP_TEST_ID =
   "cell-guide-card-percent-of-cells-tooltip";
 
-export const MARKER_SCORE_TOOLTIP_TEST_ID =
-  "cell-guide-card-marker-score-tooltip";
-
-export const MARKER_GENES_COMPUTATIONAL_TOOLTIP_TEST_ID =
-  "marker-genes-computational-help-tooltip";
-export const MARKER_GENES_CANONICAL_TOOLTIP_TEST_ID =
-  "marker-genes-canonical-help-tooltip";
-
 export const MARKER_GENES_TREE_ICON_BUTTON_TEST_ID = (gene: string) =>
   `marker-gene-table-eye-button-${gene}`;
 

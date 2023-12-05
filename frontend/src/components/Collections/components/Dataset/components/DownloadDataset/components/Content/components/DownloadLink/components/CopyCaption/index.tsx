@@ -40,7 +40,7 @@ export default function CopyCaption({ selectedFormat }: Props): JSX.Element {
               rel="noreferrer noopener"
               target="_blank"
             >
-              Seurat V4 object
+              Seurat v5 object
             </Link>
             .
           </>
