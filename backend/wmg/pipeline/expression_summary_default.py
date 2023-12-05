@@ -60,12 +60,10 @@ def create_expression_summary_default_cube(corpus_path: str):
             expression_summary_df.groupby(
                 expression_summary_indexed_dims
                 + [dim for dim in expression_summary_non_indexed_dims if dim != "cell_type_ontology_term_id_ancestors"],
-                as_index=False,
             )
             .agg(agg_funcs)
             .reset_index()
         )
-
         create_empty_cube_if_needed(expression_summary_default_uri, expression_summary_schema)
         logger.info(f"Writing cube to {expression_summary_default_uri}")
         tiledb.from_pandas(expression_summary_default_uri, expression_summary_df_default, mode="append")
