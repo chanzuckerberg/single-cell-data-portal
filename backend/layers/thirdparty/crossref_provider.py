@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from typing import Optional
 from urllib.parse import urlparse
 
 import requests
@@ -146,7 +147,7 @@ class CrossrefProvider(CrossrefProviderInterface):
         except Exception as e:
             raise CrossrefParseException("Cannot parse metadata from Crossref") from e
 
-    def fetch_published_metadata(self, doi_response_message: dict) -> dict:
+    def fetch_published_metadata(self, doi_response_message: dict) -> Optional[dict]:
         try:
             published_doi = doi_response_message["relation"]["is-preprint-of"]
             # the new DOI to query for ...
@@ -155,3 +156,4 @@ class CrossrefProvider(CrossrefProviderInterface):
                     return self.fetch_metadata(entity["id"])
         except Exception:  # if fetch of published doi errors out, just use preprint doi
             pass
+        return None
