@@ -15,14 +15,13 @@ class TestPostCellGuide(BaseAPIPortalTest):
                 references=["https://doi.org/10.1073/pnas.97.12.6242", "https://f1000research.com/articles/9-233/v1"],
             )
         )
+        self.s3_provider = MockS3Provider()
 
     def test__upload_description__no_auth(self):
         response = self.app.post("/cellguide/v1/upload", self.test_cellguide_description_upload)
         self.assertEqual(401, response.status_code)
 
-    @patch("backend.cellguide.api.v1.upload.actions.post")
-    def test__upload_description__OK(self, m):
-        m.new = MockS3Provider
+    def test__upload_description__OK(self):
 
         headers = self.make_cxg_admin_header()
         response = self.app.post(
