@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 from backend.common.corpora_config import CorporaAuthConfig, CorporaConfig
 from backend.layers.thirdparty.cdn_provider_interface import CDNProviderInterface
+from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from tests.unit.backend.layers.api.config import TOKEN_EXPIRES
 from tests.unit.backend.layers.common.base_test import BaseTest
 
@@ -97,7 +98,7 @@ class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
         from backend.api_server.app import app
 
         self.app = app.test_client(use_cookies=False)
-
+        self.s3_provider = MockS3Provider()
         # Mock all the dependencies of the API classes
         self.mock_business_logic = patch("backend.portal.api.providers._business_logic", new=self.business_logic)
         self.mock_business_logic.start()
