@@ -1,14 +1,21 @@
+from backend.api_server.app import app
 import json
-from unittest.mock import patch
+import pytest
+from unittest.mock import patch, MagicMock
 
 from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
 
-@patch("backend.layers.thirdparty.s3_provider_mock.MockS3Provider", new=MockS3Provider)
+def mock_put_object(bucket_name, key_name, file_content_str):
+    print("BUCKET", bucket_name)
+    assert bucket_name == 'cellguide-data-public-dev'
+    return None
+
 class TestPostCellGuide(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
+        self.client = app.test_client()
         self.test_cellguide_description_upload = json.dumps(
             dict(
                 cell_onthology_id="CL_0000030",
@@ -17,14 +24,20 @@ class TestPostCellGuide(BaseAPIPortalTest):
             )
         )
 
+
     def test__upload_description__no_auth(self):
         response = self.app.post("/cellguide/v1/upload", self.test_cellguide_description_upload)
         self.assertEqual(401, response.status_code)
+    
+    @patch('backend.layers.thirdparty.s3_provider.S3Provider')
+    def test__upload_description__OK(self, mock_s3_client):
+        mock_s3 = MagicMock()
+        mock_s3.put_object = mock_put_object
+        mock_s3_client.return_value = mock_s3
 
-    def test__upload_description__OK(self):
 
         headers = self.make_cxg_admin_header()
-        response = self.app.post(
+        response = self.client.post(
             "/cellguide/v1/upload",
             headers=headers,
             data=self.test_cellguide_description_upload,
