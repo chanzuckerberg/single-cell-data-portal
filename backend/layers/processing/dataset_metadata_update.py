@@ -47,6 +47,7 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
             DatabaseProvider(),
             None,
             None,
+            None,
             S3Provider(),
             UriProvider(),
         )
@@ -330,6 +331,7 @@ class DatasetMetadataUpdater(ProcessDownload):
 if __name__ == "__main__":
     business_logic = BusinessLogic(
         DatabaseProvider(),
+        None,
         None,
         None,
         S3Provider(),
