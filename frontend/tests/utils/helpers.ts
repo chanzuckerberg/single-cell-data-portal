@@ -53,6 +53,7 @@ export const shouldUseRdevToken =
   process.env.RDEV_TOKEN === "true" || TEST_ENV === "rdev";
 
 export const TIMEOUT_MS = 3 * 1000;
+export const WAIT_FOR_TIMEOUT_MS = 3 * 1000;
 
 // (seve): We use TEST_ENV to describe the environment that playwright is running against. Sometimes the FE tests are run against a local instance of the app which points at a deployed instance of the backend.
 
@@ -539,4 +540,34 @@ export async function collapseTissue(page: Page, tissueName: string) {
 
 export async function waitForLoadingSpinnerToResolve(page: Page) {
   await page.getByText("Loading").first().waitFor({ state: "hidden" });
+}
+
+export async function isElementVisible(page: Page, testId: string) {
+  await tryUntil(
+    async () => {
+      const element = page.getByTestId(testId);
+      await element.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+      const isVisible = await element.isVisible();
+      expect(isVisible).toBe(true);
+    },
+    { page }
+  );
+}
+
+export async function checkTooltipContent(page: Page, text: string) {
+  // check role tooltip is visible
+  const tooltipLocator = page.getByRole("tooltip");
+
+  await tryUntil(
+    async () => {
+      await tooltipLocator.waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+      const tooltipLocatorVisible = await tooltipLocator.isVisible();
+      expect(tooltipLocatorVisible).toBe(true);
+    },
+    { page }
+  );
+
+  // check that tooltip contains text
+  const tooltipText = await tooltipLocator.textContent();
+  expect(tooltipText).toContain(text);
 }

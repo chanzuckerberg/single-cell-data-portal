@@ -3,8 +3,12 @@ import { TEST_URL } from "../../common/constants";
 import { ROUTES } from "src/common/constants/routes";
 import { ADD_GENE_BTN } from "tests/common/constants";
 import { getById } from "tests/utils/selectors";
-import { tryUntil } from "tests/utils/helpers";
+import { goToPage, tryUntil } from "tests/utils/helpers";
 import { test } from "tests/common/test";
+import {
+  waitForHeatmapToRender,
+  WMG_WITH_SEEDED_GENES,
+} from "tests/utils/wmgUtils";
 
 const { describe } = test;
 const ALERT =
@@ -45,10 +49,6 @@ describe("Tests for Gene Expression page", () => {
     // Download
     await expect(page.getByTestId(LEGEND_WRAPPER)).toContainText("Download");
     await expect(page.getByTestId("download-button")).toBeDisabled();
-
-    // Share
-    await expect(page.getByTestId(LEGEND_WRAPPER)).toContainText("Share");
-    await expect(page.getByTestId("share-button")).toBeDisabled();
 
     // Source data
     await expect(page.getByTestId(LEGEND_WRAPPER)).toContainText("Source Data");
@@ -114,6 +114,86 @@ describe("Tests for Gene Expression page", () => {
         await expect(
           page.getByTestId("laptop-with-cell-data-on-screen")
         ).toBeVisible();
+      },
+      { page }
+    );
+  });
+});
+
+describe("Tests for Citation, Share and Notifications", () => {
+  test("Citation Button - check visibility, notification and disabled state", async ({
+    page,
+  }) => {
+    /**
+     * Check Citation button is enabled on landing page without genes
+     */
+    await goToWMG(page);
+    await expect(page.getByTestId(LEGEND_WRAPPER)).toContainText("Citation");
+    const citationButton = page.getByTestId("citation-button");
+    await expect(citationButton).toBeEnabled();
+    /**
+     * Check Citation button is disabled after click and notification is shown
+     */
+    await citationButton.click();
+    await expect(citationButton).toBeDisabled();
+    const notification = page.getByTestId("notification");
+    await expect(notification).toBeVisible();
+    await expect(notification).toContainText("Citation copied to clipboard");
+    /**
+     * Check that notification is removed after timeout and button is enabled
+     */
+    await tryUntil(
+      async () => {
+        await expect(notification).toBeHidden();
+        await expect(citationButton).toBeEnabled();
+      },
+      { page }
+    );
+  });
+  test("Share Button - check visibility, notification and disabled state", async ({
+    page,
+  }) => {
+    /**
+     * Check Share button is disabled on landing page without genes
+     */
+    await goToWMG(page);
+    await expect(page.getByTestId(LEGEND_WRAPPER)).toContainText("Share");
+    const shareButton = page.getByTestId("share-button");
+    await expect(shareButton).toBeDisabled();
+    /**
+     * Check Share button is enabled on landing page with genes
+     */
+    await goToPage(WMG_WITH_SEEDED_GENES.URL, page);
+    await waitForHeatmapToRender(page);
+    await expect(shareButton).toBeEnabled();
+    /**
+     * Check Share button is disabled after clicking and notification is shown
+     */
+    await shareButton.click();
+    await expect(shareButton).toBeDisabled();
+    const notification = page.getByTestId("notification");
+    await expect(notification).toBeVisible();
+    await expect(notification).toContainText("Share URL copied to clipboard");
+    /**
+     * Check that notification is removed after timeout and button is enabled
+     */
+    await tryUntil(
+      async () => {
+        await expect(notification).toBeHidden();
+        await expect(shareButton).toBeEnabled();
+      },
+      { page }
+    );
+    /**
+     * Check that notifications stack and are removed in order for both buttons
+     */
+    const citationButton = page.getByTestId("citation-button");
+    await citationButton.click();
+    await shareButton.click();
+    await expect(notification).toHaveCount(2);
+    await tryUntil(
+      async () => {
+        await expect(notification).toHaveCount(0);
       },
       { page }
     );

@@ -24,6 +24,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.processing.exceptions import ProcessingFailed
 from backend.layers.processing.h5ad_data_file import H5ADDataFile
 from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_download import ProcessDownload
@@ -312,6 +313,8 @@ class DatasetMetadataUpdater(ProcessDownload):
             self.update_processing_status(
                 new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
             )
+            status = self.business_logic.get_dataset_version(new_dataset_version_id).status
+            raise ProcessingFailed(f"Artifact reprocessing failed, with statuses: {status.to_dict()}")
 
     def has_valid_artifact_statuses(self, dataset_version_id: DatasetVersionId) -> bool:
         dataset_version = self.business_logic.get_dataset_version(dataset_version_id)

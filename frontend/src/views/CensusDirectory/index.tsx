@@ -1,6 +1,9 @@
 import Link from "next/link";
 import React from "react";
-import { useProjects } from "src/common/queries/censusDirectory";
+import {
+  type Project as ProjectType,
+  useProjects,
+} from "src/common/queries/censusDirectory";
 
 import staticProjects from "census-projects.json";
 import {
@@ -16,9 +19,9 @@ import Project from "./components/Project";
 function CensusDirectory() {
   const { data: projects } = useProjects();
 
-  const hostedProjects = Object.entries(projects || {}).filter(
-    ([_, project]) => !project.revised_by
-  );
+  const hostedProjects = Object.entries(
+    projects ?? ({} as ProjectType[])
+  ).filter(([_, project]) => !project.revised_by);
 
   const communityProjects = Object.values(staticProjects).filter(
     (project) => project.tier === "community"
