@@ -1,7 +1,6 @@
 import json
 from unittest.mock import MagicMock, patch
 
-from backend.api_server.app import app
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
 
@@ -13,7 +12,6 @@ def mock_put_object(bucket_name, key_name, file_content_str):
 class TestPostCellGuide(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
-        self.client = app.test_client()
         self.test_cellguide_description_upload = json.dumps(
             dict(
                 cell_onthology_id="CL_0000030",
@@ -31,9 +29,8 @@ class TestPostCellGuide(BaseAPIPortalTest):
         mock_s3 = MagicMock()
         mock_s3.put_object = mock_put_object
         mock_s3_client.return_value = mock_s3
-
         headers = self.make_cxg_admin_header()
-        response = self.client.post(
+        response = self.app.post(
             "/cellguide/v1/upload",
             headers=headers,
             data=self.test_cellguide_description_upload,
