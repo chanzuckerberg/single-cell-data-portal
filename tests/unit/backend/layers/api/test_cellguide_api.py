@@ -1,5 +1,4 @@
 import json
-from unittest.mock import patch
 
 from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
