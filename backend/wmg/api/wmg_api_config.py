@@ -23,7 +23,11 @@ WMG_API_FORCE_LOAD_SNAPSHOT_ID = None
 # This is important because the cube allocates a large amount of memory for
 # each attribute and dimension retrieved. Therefore, strictly specifying the
 # attributes and dimensions to retrieve makes the query more memory efficient
-READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES = ["gene_ontology_term_id", "cell_type_ontology_term_id"]
+READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES = [
+    "gene_ontology_term_id",
+    "cell_type_ontology_term_id",
+    "cell_type_ontology_term_id_ancestors",
+]
 READER_WMG_CUBE_QUERY_VALID_DIMENSIONS = [
     "gene_ontology_term_id",
     "tissue_ontology_term_id",

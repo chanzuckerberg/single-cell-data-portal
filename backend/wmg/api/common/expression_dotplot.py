@@ -6,6 +6,7 @@ and cell count data structures process and return to the client.
 
 from typing import List, Tuple
 
+import numpy as np
 from ddtrace import tracer
 from pandas import DataFrame
 
@@ -18,14 +19,17 @@ def agg_cell_type_counts(cell_counts: DataFrame, group_by_terms: List[str] = Non
     # Aggregate cube data by tissue, cell type
     if group_by_terms is None:
         group_by_terms = DEFAULT_GROUP_BY_TERMS
-    cell_counts_cell_type_agg = cell_counts.groupby(group_by_terms, as_index=True).sum(numeric_only=True)
+
+    agg_dict = _generate_agg_dict_for_groupby(cell_counts)
+    cell_counts_cell_type_agg = cell_counts.groupby(group_by_terms, as_index=True).agg(agg_dict)
     cell_counts_cell_type_agg.rename(columns={"n_total_cells": "n_cells_cell_type"}, inplace=True)
     return cell_counts_cell_type_agg
 
 
 def agg_tissue_counts(cell_counts: DataFrame) -> DataFrame:
     # Aggregate cube data by tissue
-    cell_counts_tissue_agg = cell_counts.groupby(["tissue_ontology_term_id"], as_index=True).sum(numeric_only=True)
+    agg_dict = _generate_agg_dict_for_groupby(cell_counts)
+    cell_counts_tissue_agg = cell_counts.groupby(["tissue_ontology_term_id"], as_index=True).agg(agg_dict)
     cell_counts_tissue_agg.rename(columns={"n_total_cells": "n_cells_tissue"}, inplace=True)
     return cell_counts_tissue_agg
 
@@ -40,8 +44,9 @@ def build_dot_plot_matrix(
         group_by_terms = DEFAULT_GROUP_BY_TERMS
 
     # Aggregate cube data by gene, tissue, cell type
-    expr_summary_agg = raw_gene_expression.groupby(["gene_ontology_term_id"] + group_by_terms, as_index=False).sum(
-        numeric_only=True
+    agg_dict = _generate_agg_dict_for_groupby(raw_gene_expression)
+    expr_summary_agg = raw_gene_expression.groupby(["gene_ontology_term_id"] + group_by_terms, as_index=False).agg(
+        agg_dict
     )
     return expr_summary_agg.join(cell_counts_cell_type_agg, on=group_by_terms, how="left").join(
         cell_counts_tissue_agg, on=["tissue_ontology_term_id"], how="left"
@@ -63,3 +68,10 @@ def get_dot_plot_data(
         raw_gene_expression, cell_counts_cell_type_agg, cell_counts_tissue_agg, group_by_terms
     )
     return dot_plot_matrix_df, cell_counts_cell_type_agg
+
+
+######################### PRIVATE FUNCTIONS IN ALPHABETICAL ORDER ##################################
+def _generate_agg_dict_for_groupby(df: DataFrame):
+    agg_dict = {col: "sum" for col in df.columns if np.issubdtype(df[col].dtype, np.number)}
+    agg_dict["cell_type_ontology_term_id_ancestors"] = "first"
+    return agg_dict
