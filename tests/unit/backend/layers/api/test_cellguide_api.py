@@ -1,7 +1,7 @@
 import json
 from unittest.mock import patch
-from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 
+from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
 
@@ -20,7 +20,7 @@ class TestPostCellGuide(BaseAPIPortalTest):
         response = self.app.post("/cellguide/v1/upload", self.test_cellguide_description_upload)
         self.assertEqual(401, response.status_code)
 
-    @patch("backend.layers.thirdparty.s3_provider.S3Provider")
+    @patch("backend.cellguide.api.v1.upload.actions.post")
     def test__upload_description__OK(self, m):
         m.new = MockS3Provider
 
