@@ -754,7 +754,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         """
         version = self.initialize_empty_unpublished_collection()
 
-        new_dataset_version_id, _ = self.business_logic.create_empty_dataset(version.version_id)
+        new_dataset_version_id = self.business_logic.create_empty_dataset(version.version_id).version_id
 
         new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
         self.assertIsNotNone(new_dataset_version)
@@ -765,9 +765,9 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
 
     def test_create_empty_dataset_version_for_current_dataset(self):
         collection, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
-        new_dataset_version_id, _ = self.business_logic.create_empty_dataset_version_for_current_dataset(
+        new_dataset_version_id = self.business_logic.create_empty_dataset_version_for_current_dataset(
             revision.version_id, revision.datasets[0].version_id
-        )
+        ).version_id
         revision_after_update = self.database_provider.get_collection_version(revision.version_id)
         self.assertEqual(len(revision_after_update.datasets), 1)
         self.assertEqual(revision_after_update.datasets[0], new_dataset_version_id)
@@ -916,7 +916,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         without creating a new dataset version
         """
         version = self.initialize_empty_unpublished_collection()
-        dataset_version_to_replace_id, _ = self.business_logic.create_empty_dataset(version.version_id)
+        dataset_version_to_replace_id = self.business_logic.create_empty_dataset(version.version_id).version_id
         dataset_version_to_replace = self.business_logic.get_dataset_version(dataset_version_to_replace_id)
         url = "http://test/dataset.url"
 
@@ -995,7 +995,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
 
     def test_delete_new_dataset_in_revision__ok(self):
         collection, revision = self.initialize_collection_with_an_unpublished_revision()
-        new_dataset_version_id, _ = self.business_logic.create_empty_dataset(revision.version_id)
+        new_dataset_version_id = self.business_logic.create_empty_dataset(revision.version_id).version_id
         revision = self.business_logic.get_collection_version(revision.version_id)
         self.complete_dataset_processing_with_success(new_dataset_version_id)
         # Dataset is added

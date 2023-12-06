@@ -157,9 +157,9 @@ class BusinessLogic(BusinessLogicInterface):
                 ]
             )
         if new_dataset_version_id is None:
-            new_dataset_version_id, _ = self.create_empty_dataset_version_for_current_dataset(
+            new_dataset_version_id = self.create_empty_dataset_version_for_current_dataset(
                 collection_version.version_id, current_dataset_version_id
-            )
+            ).version_id
 
         self.batch_job_provider.start_metadata_update_batch_job(
             current_dataset_version_id, new_dataset_version_id, metadata_update
@@ -385,6 +385,7 @@ class BusinessLogic(BusinessLogicInterface):
                                 "reason": "Cannot update DOI while a dataset is processing or awaiting upload.",
                             }
                         )
+                        break
 
             if current_doi and new_doi is None:
                 # If the DOI was deleted, remove the publisher_metadata field
@@ -423,9 +424,9 @@ class BusinessLogic(BusinessLogicInterface):
                     )
                     continue
 
-                new_dataset_version_id, _ = self.create_empty_dataset_version_for_current_dataset(
+                new_dataset_version_id = self.create_empty_dataset_version_for_current_dataset(
                     current_collection_version.version_id, dataset.version_id
-                )
+                ).version_id
                 citation = self.generate_dataset_citation(
                     current_collection_version.collection_id, new_dataset_version_id, new_doi
                 )
@@ -449,7 +450,7 @@ class BusinessLogic(BusinessLogicInterface):
             raise CollectionIsPublishedException([f"Collection version {collection_version_id.id} is published"])
         return collection_version
 
-    def create_empty_dataset(self, collection_version_id: CollectionVersionId) -> Tuple[DatasetVersionId, DatasetId]:
+    def create_empty_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         """
         Creates an empty dataset that can be later used for ingestion
         """
@@ -466,11 +467,11 @@ class BusinessLogic(BusinessLogicInterface):
             new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
         )
 
-        return (new_dataset_version.version_id, new_dataset_version.dataset_id)
+        return new_dataset_version
 
     def create_empty_dataset_version_for_current_dataset(
         self, collection_version_id: CollectionVersionId, current_dataset_version_id: DatasetVersionId
-    ) -> Tuple[DatasetVersionId, DatasetId]:
+    ) -> DatasetVersion:
         """
         Creates an empty dataset version that can be later used for ingestion, for existing datasets
         """
@@ -485,7 +486,7 @@ class BusinessLogic(BusinessLogicInterface):
             new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
         )
 
-        return (new_dataset_version.version_id, new_dataset_version.dataset_id)
+        return new_dataset_version
 
     # TODO: Alternatives: 1) return DatasetVersion 2) Return a new class
     def ingest_dataset(
