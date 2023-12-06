@@ -4,12 +4,9 @@ The API public methods call the public methods in this module to perform the rol
 """
 
 
+import numpy as np
 from ddtrace import tracer
 from pandas import DataFrame
-
-from backend.common.utils.rollup import (
-    rollup_across_cell_type_descendants,
-)
 
 ######################### PUBLIC FUNCTIONS IN ALPHABETIC ORDER ##################################
 
@@ -37,8 +34,17 @@ def rollup(gene_expression_df, universal_set_cell_counts_df) -> DataFrame:
     universal_set_cell_counts_df.rename(
         columns={"cell_type_ontology_term_id_ancestors": "cell_type_ontology_term_id"}, inplace=True
     )
+    # get non-numeric column names
+    ge_dim_cols = [
+        col for col in gene_expression_df.columns if not np.issubtype(gene_expression_df[col].dtype, np.number)
+    ]
+    cc_dim_cols = [
+        col
+        for col in universal_set_cell_counts_df.columns
+        if not np.issubtype(universal_set_cell_counts_df[col].dtype, np.number)
+    ]
 
-    rolled_up_gene_expression_df = rollup_across_cell_type_descendants(gene_expression_df)
-    rolled_up_universal_set_cell_counts_df = rollup_across_cell_type_descendants(universal_set_cell_counts_df)
+    rolled_up_gene_expression_df = gene_expression_df.groupby(ge_dim_cols, as_index=False).sum()
+    rolled_up_universal_set_cell_counts_df = universal_set_cell_counts_df.groupby(cc_dim_cols, as_index=False).sum()
 
     return rolled_up_gene_expression_df, rolled_up_universal_set_cell_counts_df
