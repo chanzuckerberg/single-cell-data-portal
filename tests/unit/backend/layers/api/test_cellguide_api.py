@@ -1,4 +1,6 @@
 import json
+from unittest.mock import patch
+from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
@@ -6,7 +8,7 @@ from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 class TestPostCellGuide(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
-        self.test_cellguide_desciprtion_upload = json.dumps(
+        self.test_cellguide_description_upload = json.dumps(
             dict(
                 cell_onthology_id="CL_0000030",
                 description="this is a description",
@@ -15,16 +17,18 @@ class TestPostCellGuide(BaseAPIPortalTest):
         )
 
     def test__upload_description__no_auth(self):
-        response = self.app.post("/cellguide/v1/upload", self.test_cellguide_desciprtion_upload)
+        response = self.app.post("/cellguide/v1/upload", self.test_cellguide_description_upload)
         self.assertEqual(401, response.status_code)
 
-    def test__upload_description__OK(self):
+    @patch("backend.layers.thirdparty.s3_provider.S3Provider")
+    def test__upload_description__OK(self, m):
+        m.new = MockS3Provider
 
         headers = self.make_cxg_admin_header()
         response = self.app.post(
             "/cellguide/v1/upload",
             headers=headers,
-            data=self.test_cellguide_desciprtion_upload,
+            data=self.test_cellguide_description_upload,
         )
         self.assertIn("cell_onthology_id", response.json.keys())
         self.assertIn("description", response.json.keys())
