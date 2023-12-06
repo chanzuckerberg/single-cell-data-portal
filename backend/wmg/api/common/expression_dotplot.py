@@ -28,8 +28,7 @@ def agg_cell_type_counts(cell_counts: DataFrame, group_by_terms: List[str] = Non
 
 def agg_tissue_counts(cell_counts: DataFrame) -> DataFrame:
     # Aggregate cube data by tissue
-    agg_dict = _generate_agg_dict_for_groupby(cell_counts)
-    cell_counts_tissue_agg = cell_counts.groupby(["tissue_ontology_term_id"], as_index=True).agg(agg_dict)
+    cell_counts_tissue_agg = cell_counts.groupby(["tissue_ontology_term_id"], as_index=True).sum(numeric_only=True)
     cell_counts_tissue_agg.rename(columns={"n_total_cells": "n_cells_tissue"}, inplace=True)
     return cell_counts_tissue_agg
 
@@ -48,6 +47,8 @@ def build_dot_plot_matrix(
     expr_summary_agg = raw_gene_expression.groupby(["gene_ontology_term_id"] + group_by_terms, as_index=False).agg(
         agg_dict
     )
+    del expr_summary_agg["cell_type_ontology_term_id_ancestors"]
+
     return expr_summary_agg.join(cell_counts_cell_type_agg, on=group_by_terms, how="left").join(
         cell_counts_tissue_agg, on=["tissue_ontology_term_id"], how="left"
     )
