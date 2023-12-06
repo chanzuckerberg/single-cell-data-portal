@@ -332,13 +332,12 @@ class BusinessLogic(BusinessLogicInterface):
                 yield collection_version
 
     def update_collection_version(
-        self, version_id: CollectionVersionId, body: CollectionMetadataUpdate, ignore_doi_update: bool = False
+        self, version_id: CollectionVersionId, body: CollectionMetadataUpdate, apply_doi_update: bool = True
     ) -> None:
         """
         Updates a collection version by replacing parts of its metadata.
         If the DOI in the links changed, it should also update its publisher metadata.
-        If `ignore_doi_update` is set to True, no DOI updates should be issued
-
+        If `apply_doi_update` is set to False, no DOI updates should be issued
         """
 
         # TODO: CollectionMetadataUpdate should probably be used for collection creation as well
@@ -360,7 +359,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         new_doi = None
         current_doi = None
-        if not ignore_doi_update:
+        if apply_doi_update:
             # Determine if the DOI has changed
             current_doi = next(
                 (link.uri for link in current_collection_version.metadata.links if link.type == "DOI"), None
@@ -413,9 +412,7 @@ class BusinessLogic(BusinessLogicInterface):
             self.database_provider.save_collection_publisher_metadata(version_id, publisher_metadata_to_set)
         self.database_provider.save_collection_metadata(version_id, new_metadata)
 
-        if all(
-            [not ignore_doi_update, new_doi != current_doi, FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4)]
-        ):
+        if all([apply_doi_update, new_doi != current_doi, FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4)]):
             for dataset in current_collection_version.datasets:
                 if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
                     self.logger.info(
