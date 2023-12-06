@@ -150,19 +150,15 @@ class ProcessDownload(ProcessingLogic):
             },
         }
 
-    def process(
-        self, dataset_version_id: DatasetVersionId, dataset_uri: str, artifact_bucket: str, sfn_task_token: str
-    ):
+    def upload_raw_h5ad(self, dataset_version_id: DatasetVersionId, dataset_uri: str, artifact_bucket: str) -> str:
         """
-        Process the download step of the step function
+        Upload raw h5ad from dataset_uri to artifact bucket
 
         :param dataset_version_id:
         :param dataset_uri:
         :param artifact_bucket:
-        :param sfn_task_token: use to report back the memory requirements
-        :return:
+        :return: local_filename: Local filepath to raw h5ad
         """
-
         self.update_processing_status(dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.PENDING)
 
         # Download the original dataset from Dropbox
@@ -170,9 +166,6 @@ class ProcessDownload(ProcessingLogic):
             source_uri=dataset_uri,
             local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
         )
-
-        response = self.create_batch_job_definition_parameters(local_filename, dataset_version_id.id)
-        self.logger.info(response)
 
         key_prefix = self.get_key_prefix(dataset_version_id.id)
         # Upload the original dataset to the artifact bucket
@@ -186,6 +179,25 @@ class ProcessDownload(ProcessingLogic):
             DatasetStatusKey.H5AD,
         )
         self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
+
+        return local_filename
+
+    def process(
+        self, dataset_version_id: DatasetVersionId, dataset_uri: str, artifact_bucket: str, sfn_task_token: str
+    ):
+        """
+        Process the download step of the step function--download raw H5AD locally, upload to artifact bucket, and report
+        processing job memory estimates to Step Function
+
+        :param dataset_version_id:
+        :param dataset_uri:
+        :param artifact_bucket:
+        :param sfn_task_token: use to report back the memory requirements, if called in a step function
+        """
+        local_filename = self.upload_raw_h5ad(dataset_version_id, dataset_uri, artifact_bucket)
+
+        response = self.create_batch_job_definition_parameters(local_filename, dataset_version_id.id)
+        self.logger.info(response)
 
         sfn_client = StepFunctionProvider().client
         sfn_client.send_task_success(taskToken=sfn_task_token, output=json.dumps(response))
