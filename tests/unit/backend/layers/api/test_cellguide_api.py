@@ -6,7 +6,6 @@ from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
 
 def mock_put_object(bucket_name, key_name, file_content_str):
-    print("BUCKET", bucket_name)
     assert bucket_name == "cellguide-data-public-dev"
     return None
 
@@ -27,7 +26,7 @@ class TestPostCellGuide(BaseAPIPortalTest):
         response = self.app.post("/cellguide/v1/upload", self.test_cellguide_description_upload)
         self.assertEqual(401, response.status_code)
 
-    @patch("backend.layers.thirdparty.s3_provider.S3Provider")
+    @patch("backend.layers.thirdparty.s3_provider_mock.MockS3Provider")
     def test__upload_description__OK(self, mock_s3_client):
         mock_s3 = MagicMock()
         mock_s3.put_object = mock_put_object
