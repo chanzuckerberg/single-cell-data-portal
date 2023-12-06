@@ -1,8 +1,11 @@
 import json
+from unittest.mock import patch
 
+from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
 
+@patch("backend.layers.thirdparty.s3_provider_mock.MockS3Provider", new=MockS3Provider)
 class TestPostCellGuide(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
