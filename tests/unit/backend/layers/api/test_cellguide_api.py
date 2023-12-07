@@ -53,9 +53,6 @@ class TestPostCellGuide(BaseAPIPortalTest):
 
     @mock_s3
     def test__upload_bad_data(self):
-        s3 = S3Provider()
-        s3.create_bucket(bucket_name="cellguide-data-public-dev", location="us-west-2")
-
         self.payload["cell_onthology_id"] = "CL_0000xx03"
         response = self.app.post(
             "/cellguide/v1/upload",
@@ -64,6 +61,7 @@ class TestPostCellGuide(BaseAPIPortalTest):
         )
         self.assertEqual(403, response.status_code)
 
+        self.payload["cell_onthology_id"] = "CL_0000030"
         self.payload["references"] = ["https://notvalidurl"]
         response = self.app.post(
             "/cellguide/v1/upload",
