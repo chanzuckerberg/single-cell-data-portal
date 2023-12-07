@@ -83,6 +83,7 @@ class BaseTest(unittest.TestCase):
             "upload_max_file_size_gb": 30,
             "collections_base_url": "http://collections",
             "dataset_assets_base_url": "http://domain",
+            "citation_update_feature_flag": "True",
             "schema_4_feature_flag": "True",
         }
         # Mock CorporaConfig
