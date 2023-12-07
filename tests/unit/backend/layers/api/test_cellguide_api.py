@@ -16,18 +16,33 @@ class TestPostCellGuide(BaseAPIPortalTest):
         )
 
     def test__upload_description__no_auth(self):
-        response = self.app.post("/cellguide/v1/upload", self.payload)
+        response = self.app.post(
+            "/cellguide/v1/upload",
+            headers=self.make_not_auth_header(),
+            data=self.payload,
+        )
+        data = json.loads(response.data.decode())
+        self.assertEqual("Unauthorized", data["title"])
         self.assertEqual(401, response.status_code)
+
+    def test__upload_description__wrong_auth(self):
+        response = self.app.post(
+            "/cellguide/v1/upload",
+            headers=self.make_super_curator_header(),
+            data=self.payload,
+        )
+        data = json.loads(response.data.decode())
+        self.assertEqual("Bad Request", data["title"])
+        self.assertEqual(400, response.status_code)
 
     @mock_s3
     def test__upload_description__OK(self):
         s3 = S3Provider()
         s3.create_bucket(bucket_name="cellguide-data-public-dev", location="us-west-2")
 
-        headers = self.make_cxg_admin_header()
         response = self.app.post(
             "/cellguide/v1/upload",
-            headers=headers,
+            headers=self.make_cxg_admin_header(),
             data=json.dumps(self.payload),
         )
 
@@ -35,3 +50,24 @@ class TestPostCellGuide(BaseAPIPortalTest):
         self.assertIn("description", response.json.keys())
         self.assertIn("references", response.json.keys())
         self.assertEqual(201, response.status_code)
+
+    @mock_s3
+    def test__upload_bad_data(self):
+        s3 = S3Provider()
+        s3.create_bucket(bucket_name="cellguide-data-public-dev", location="us-west-2")
+
+        self.payload["cell_onthology_id"] = "CL_0000xx03"
+        response = self.app.post(
+            "/cellguide/v1/upload",
+            headers=self.make_cxg_admin_header(),
+            data=json.dumps(self.payload),
+        )
+        self.assertEqual(403, response.status_code)
+
+        self.payload["references"] = ["https://notvalidurl"]
+        response = self.app.post(
+            "/cellguide/v1/upload",
+            headers=self.make_cxg_admin_header(),
+            data=json.dumps(self.payload),
+        )
+        self.assertEqual(403, response.status_code)
