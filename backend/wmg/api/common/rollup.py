@@ -51,7 +51,7 @@ def rollup(gene_expression_df, cell_counts_df) -> DataFrame:
     rolled_up_gene_expression_df = gene_expression_df.groupby(ge_dim_cols).agg(agg_dict)
     rolled_up_cell_counts_df = cell_counts_df.groupby(cc_dim_cols).sum()
 
-    return filter_out_redundant_nodes(rolled_up_gene_expression_df), filter_out_redundant_nodes(
+    return filter_out_redundant_nodes(rolled_up_gene_expression_df).reset_index(), filter_out_redundant_nodes(
         rolled_up_cell_counts_df
     )
 
