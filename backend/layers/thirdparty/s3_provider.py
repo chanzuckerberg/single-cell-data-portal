@@ -150,3 +150,9 @@ class S3Provider(S3ProviderInterface):
             Key=object_key,
             Body=body,
         )
+
+    def create_bucket(self, bucket_name: str, location: str) -> None:
+        """
+        Creates a bucket
+        """
+        self.client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": f"{location}"})
