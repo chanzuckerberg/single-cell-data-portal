@@ -94,6 +94,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             {
                 "upload_max_file_size_gb": 30,
                 "schema_4_feature_flag": "True",
+                "citation_update_feature_flag": "True",
                 "dataset_assets_base_url": "https://dataset_assets_domain",
                 "collections_base_url": "https://collections_domain",
             }
