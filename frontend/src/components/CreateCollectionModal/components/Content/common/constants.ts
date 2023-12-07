@@ -24,3 +24,6 @@ export const DEBOUNCE_TIME_MS = 100;
  */
 export const INVALID_DOI_ERROR_MESSAGE =
   "This DOI could not be found. Please correct or remove it.";
+
+export const INVALID_DATASET_STATUS_FOR_DOI_UPDATE =
+  "Cannot update DOI while a dataset is processing or awaiting upload.";

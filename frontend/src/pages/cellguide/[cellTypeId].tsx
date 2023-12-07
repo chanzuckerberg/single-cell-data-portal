@@ -1,3 +1,11 @@
+/**
+ * IMPORTANT(thuang): `frontend/src/pages/cellguide/tissues/[tissueId]/cell-types/[cellTypeId].tsx`
+ * imports the exports from this file, since both routes use the same components.
+ * If we export more things from this file, we need to export them from the other file as well,
+ * to make sure that /cellguide/tissues/[tissueId]/cell-types/[cellTypeId] route continue
+ * to work.
+ */
+
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import CellGuideCard from "src/views/CellGuide/components/CellGuideCard";
 import {

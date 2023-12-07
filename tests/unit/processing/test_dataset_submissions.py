@@ -57,7 +57,7 @@ class TestDatasetSubmissions(BaseTest):
         Processing starts when an update of a dataset is uploaded by its ID by the collection owner.
         """
         version = self.generate_unpublished_collection()
-        dataset_version_id, _ = self.business_logic.create_empty_dataset(version.version_id)
+        dataset_version_id = self.business_logic.create_empty_dataset(version.version_id).version_id
 
         mock_ingest = self.business_logic.ingest_dataset = Mock()
 
@@ -70,7 +70,7 @@ class TestDatasetSubmissions(BaseTest):
         Processing starts when an update of a dataset is uploaded by its ID by a super curator
         """
         version = self.generate_unpublished_collection()
-        dataset_version_id, _ = self.business_logic.create_empty_dataset(version.version_id)
+        dataset_version_id = self.business_logic.create_empty_dataset(version.version_id).version_id
 
         mock_ingest = self.business_logic.ingest_dataset = Mock()
 
@@ -84,7 +84,7 @@ class TestDatasetSubmissions(BaseTest):
 
         """
         version = self.generate_unpublished_collection()
-        _, dataset_id = self.business_logic.create_empty_dataset(version.version_id)
+        dataset_id = self.business_logic.create_empty_dataset(version.version_id).dataset_id
 
         mock_ingest = self.business_logic.ingest_dataset = Mock()
 

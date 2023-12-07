@@ -1,5 +1,5 @@
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
@@ -191,6 +191,16 @@ class DatasetMetadata:
     feature_reference: Optional[List[str]] = None
     raw_data_location: Optional[str] = None
     primary_cell_count: Optional[int] = None
+
+
+@dataclass
+class DatasetArtifactMetadataUpdate:
+    title: Optional[str] = None
+    schema_version: Optional[str] = None
+    citation: Optional[str] = None
+
+    def as_dict_without_none_values(self):
+        return {key: value for key, value in asdict(self).items() if value is not None}
 
 
 @dataclass

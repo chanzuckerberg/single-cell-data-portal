@@ -6,7 +6,7 @@ from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.processing.upload_failures.app import handle_failure
 
 database_provider = DatabaseProvider()
-business_logic = BusinessLogic(database_provider, None, None, None, None)
+business_logic = BusinessLogic(database_provider, None, None, None, None, None)
 
 logger = logging.getLogger("processing")
 
