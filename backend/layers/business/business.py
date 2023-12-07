@@ -412,7 +412,9 @@ class BusinessLogic(BusinessLogicInterface):
             self.database_provider.save_collection_publisher_metadata(version_id, publisher_metadata_to_set)
         self.database_provider.save_collection_metadata(version_id, new_metadata)
 
-        if all([apply_doi_update, new_doi != current_doi, FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4)]):
+        if all(
+            [apply_doi_update, new_doi != current_doi, FeatureFlagService.is_enabled(FeatureFlagValues.CITATION_UPDATE)]
+        ):
             for dataset in current_collection_version.datasets:
                 if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
                     self.logger.info(
