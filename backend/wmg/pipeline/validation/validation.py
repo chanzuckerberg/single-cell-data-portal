@@ -22,7 +22,7 @@ class Validation:
         self.env = os.getenv("DEPLOYMENT_STAGE")
         self.validation_dataset_id = "3de0ad6d-4378-4f62-b37b-ec0b75a50d94"
         self.MIN_CUBE_SIZE_GB = 2
-        self.MIN_TISSUE_COUNT = 53
+        self.MIN_TISSUE_COUNT = 49
         self.MIN_SPECIES_COUNT = 2
         self.MIN_DATASET_COUNT = 254
         self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT = 80

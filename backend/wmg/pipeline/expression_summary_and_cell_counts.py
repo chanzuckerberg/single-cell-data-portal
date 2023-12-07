@@ -1,10 +1,15 @@
+import os
+
 import cellxgene_census
+import tiledb
 import tiledbsoma as soma
+from packaging import version
 
 from backend.wmg.pipeline.cell_counts import create_cell_counts_cube
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     GENE_EXPRESSION_COUNT_MIN_THRESHOLD,
+    MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION,
 )
 from backend.wmg.pipeline.expression_summary import ExpressionSummaryCubeBuilder
 from backend.wmg.pipeline.utils import (
@@ -27,13 +32,31 @@ class CensusParameters:
             "mus_musculus": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD}",
         }
         value_filter = organism_mapping[organism]
-        if False:
-            # Filter out non-tissue tissues and system-level tissues
-            # TODO: Once cellxgene-census is updated to support tiledbsoma 1.5.0, we can update the tissue filter to use `not in`:
-            # tissue_ontology_term_id not in ['UBERON_0001017', 'UBERON:0001007', 'UBERON:0002405', 'UBERON:0000990', 'UBERON:0001004', 'UBERON:0001434']
-            # This will require updating the pinned versions of cellxgene-census and tiledbsoma in `requirements-wmg-pipeline.txt`
-            value_filter += " and tissue_type == 'tissue' and tissue_general_ontology_term_id != 'UBERON:0001017' and tissue_general_ontology_term_id != 'UBERON:0001007' and tissue_general_ontology_term_id != 'UBERON:0002405' and tissue_general_ontology_term_id != 'UBERON:0000990' and tissue_general_ontology_term_id != 'UBERON:0001004' and tissue_general_ontology_term_id != 'UBERON:0001434'"
+        # Filter out system-level tissues. Census filters out organoids + cell cultures
+        value_filter += " and tissue_general_ontology_term_id not in ['UBERON:0001017', 'UBERON:0001007', 'UBERON:0002405', 'UBERON:0000990', 'UBERON:0001004', 'UBERON:0001434']"
         return value_filter
+
+
+def get_census_version_and_build_date(census: soma.Collection):
+    """
+    Retrieves the census schema version and build date from the given census collection.
+
+    Parameters:
+    census (soma.Collection): The census collection to retrieve the schema version and build date from.
+
+    Returns:
+    tuple: A tuple containing the census schema version and build date.
+    """
+    census_schema_version, census_build_date = (
+        census["census_info"]["summary"]
+        .read()
+        .concat()
+        .to_pandas()
+        .set_index("label")
+        .loc[["census_schema_version", "census_build_date"], "value"]
+    ).tolist()
+
+    return census_schema_version, census_build_date
 
 
 def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
@@ -42,6 +65,15 @@ def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
     with cellxgene_census.open_soma(
         census_version=CensusParameters.census_version,
     ) as census:
+        census_schema_version, census_build_date = get_census_version_and_build_date(census)
+
+        major_census_schema_version = version.parse(census_schema_version).major
+        if major_census_schema_version > MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION:
+            raise ValueError(
+                f"Unsupported census schema version: {census_schema_version}. "
+                f"Please use a version of cellxgene-census that supports census schema version {MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION} or lower."
+            )
+
         for organismInfo in ORGANISM_INFO:
             organism = organismInfo["label"]
             organismId = organismInfo["id"]
@@ -57,6 +89,12 @@ def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
                         query=query, corpus_path=corpus_path, organismId=organismId
                     ).create_expression_summary_cube()
                     create_cell_counts_cube(query=query, corpus_path=corpus_path, organismId=organismId)
+
+    # write census schema version to cell counts cube metadata
+    cell_counts_uri = os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)
+    with tiledb.open(cell_counts_uri, mode="w") as A:
+        A.meta["census_schema_version"] = census_schema_version
+        A.meta["census_build_date"] = census_build_date
 
     pipeline_state[EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG] = True
     write_pipeline_state(pipeline_state, corpus_path)
