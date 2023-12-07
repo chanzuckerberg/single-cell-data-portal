@@ -18,10 +18,14 @@ import { ALL_TISSUES, HOMO_SAPIENS, NO_ORGAN_ID } from "../constants";
 export function useOrganAndOrganismFilterListForCellType(cellTypeId: string): {
   organsMap: Map<string, string>;
   organismsList: string[];
+  isSuccess: boolean;
 } {
-  const { data: computationalMarkers } = useComputationalMarkers(cellTypeId);
+  const {
+    data: computationalMarkers,
+    isSuccess: isComputationalMarkersSuccess,
+  } = useComputationalMarkers(cellTypeId);
 
-  const organLabelToIdMap = useAllOrgansLookupTables();
+  const { data: organLabelToIdMap, isSuccess } = useAllOrgansLookupTables();
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
   return useMemo(() => {
@@ -66,6 +70,17 @@ export function useOrganAndOrganismFilterListForCellType(cellTypeId: string): {
     return {
       organsMap: sortedFilteredOrganMap,
       organismsList: sortedOrganismList,
+      /**
+       * (thuang): Expose `isSuccess`, so `CellGuide/components/CellGuideCard/connect.ts`
+       * can use it to determine if the data is ready and determine if the user should
+       * be redirected to the tissue agnostic cell type page.
+       */
+      isSuccess: isComputationalMarkersSuccess && isSuccess,
     };
-  }, [computationalMarkers, organLabelToIdMap]);
+  }, [
+    computationalMarkers,
+    organLabelToIdMap,
+    isSuccess,
+    isComputationalMarkersSuccess,
+  ]);
 }
