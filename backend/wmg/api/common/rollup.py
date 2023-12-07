@@ -15,7 +15,7 @@ from backend.common.utils.rollup import are_cell_types_not_redundant_nodes
 
 
 @tracer.wrap(name="rollup", service="wmg-api", resource="query", span_type="wmg-api")
-def rollup(df) -> DataFrame:
+def rollup(df, filter_redundant_nodes=True) -> DataFrame:
     if df.shape[0] == 0:
         return df
 
@@ -39,7 +39,8 @@ def rollup(df) -> DataFrame:
     dim_cols = [col for col in df.columns if not np.issubdtype(df[col].dtype, np.number)]
     agg_dict = {col: "sum" if col != "n_cells_tissue" else "first" for col in df.columns if col not in dim_cols}
     rolled_up_df = df.groupby(dim_cols).agg(agg_dict)
-    rolled_up_df = filter_out_redundant_nodes(rolled_up_df)
+    if filter_redundant_nodes:
+        rolled_up_df = filter_out_redundant_nodes(rolled_up_df)
 
     if not is_multi_index:
         rolled_up_df = rolled_up_df.reset_index()
