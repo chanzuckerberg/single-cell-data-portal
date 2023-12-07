@@ -5,6 +5,7 @@ The API public methods call the public methods in this module to perform the rol
 
 
 import numpy as np
+import pandas as pd
 from ddtrace import tracer
 from pandas import DataFrame
 
@@ -14,46 +15,36 @@ from backend.common.utils.rollup import are_cell_types_not_redundant_nodes
 
 
 @tracer.wrap(name="rollup", service="wmg-api", resource="query", span_type="wmg-api")
-def rollup(gene_expression_df, cell_counts_df) -> DataFrame:
-    # if the gene expression dataframe is empty, then there is nothing to roll up
-    if gene_expression_df.shape[0] == 0 or cell_counts_df.shape[0] == 0:
-        return gene_expression_df, cell_counts_df
+def rollup(df) -> DataFrame:
+    if df.shape[0] == 0:
+        return df
 
-    gene_expression_df["cell_type_ontology_term_id_ancestors"] = gene_expression_df[
-        "cell_type_ontology_term_id_ancestors"
-    ].apply(lambda x: x.split(","))
-    cell_counts_df["cell_type_ontology_term_id_ancestors"] = cell_counts_df[
-        "cell_type_ontology_term_id_ancestors"
-    ].apply(lambda x: x.split(","))
-    cell_counts_df = cell_counts_df.reset_index()
+    df = df.copy()
 
-    del gene_expression_df["cell_type_ontology_term_id"]
-    del cell_counts_df["cell_type_ontology_term_id"]
-
-    gene_expression_df = gene_expression_df.explode("cell_type_ontology_term_id_ancestors")
-    cell_counts_df = cell_counts_df.explode("cell_type_ontology_term_id_ancestors")
-
-    gene_expression_df.rename(
-        columns={"cell_type_ontology_term_id_ancestors": "cell_type_ontology_term_id"}, inplace=True
+    df["cell_type_ontology_term_id_ancestors"] = df["cell_type_ontology_term_id_ancestors"].apply(
+        lambda x: x.split(",")
     )
-    cell_counts_df.rename(columns={"cell_type_ontology_term_id_ancestors": "cell_type_ontology_term_id"}, inplace=True)
-    # get non-numeric column names
-    ge_dim_cols = [
-        col for col in gene_expression_df.columns if not np.issubdtype(gene_expression_df[col].dtype, np.number)
-    ]
-    cc_dim_cols = [col for col in cell_counts_df.columns if not np.issubdtype(cell_counts_df[col].dtype, np.number)]
 
-    agg_dict = {
-        col: "sum" if col != "n_cells_tissue" else "first"
-        for col in gene_expression_df.columns
-        if col not in ge_dim_cols
-    }
-    rolled_up_gene_expression_df = gene_expression_df.groupby(ge_dim_cols).agg(agg_dict)
-    rolled_up_cell_counts_df = cell_counts_df.groupby(cc_dim_cols).sum()
+    is_multi_index = isinstance(df.index, pd.MultiIndex)
+    if is_multi_index:
+        list(df.index.names)
+        df = df.reset_index()
 
-    return filter_out_redundant_nodes(rolled_up_gene_expression_df).reset_index(), filter_out_redundant_nodes(
-        rolled_up_cell_counts_df
-    )
+    del df["cell_type_ontology_term_id"]
+
+    df = df.explode("cell_type_ontology_term_id_ancestors")
+
+    df.rename(columns={"cell_type_ontology_term_id_ancestors": "cell_type_ontology_term_id"}, inplace=True)
+
+    dim_cols = [col for col in df.columns if not np.issubdtype(df[col].dtype, np.number)]
+    agg_dict = {col: "sum" if col != "n_cells_tissue" else "first" for col in df.columns if col not in dim_cols}
+    rolled_up_df = df.groupby(dim_cols).agg(agg_dict)
+    rolled_up_df = filter_out_redundant_nodes(rolled_up_df)
+
+    if not is_multi_index:
+        rolled_up_df = rolled_up_df.reset_index()
+
+    return rolled_up_df
 
 
 def filter_out_redundant_nodes(df):
