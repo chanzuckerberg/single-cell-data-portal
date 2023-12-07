@@ -11,8 +11,11 @@ import {
   calculateRecency,
   CollectionResponse,
   createPublicationDateValues,
+  createTaggedTissueOntology,
+  TissueOntology,
 } from "src/common/queries/filter";
 import { PUBLICATION_DATE_VALUES } from "src/components/common/Filter/common/constants";
+import { TISSUE_TYPE } from "src/components/common/Filter/common/entities";
 import { test } from "tests/common/test";
 
 const { describe } = test;
@@ -170,6 +173,60 @@ describe("filter", () => {
       } as PublisherMetadata;
       const summaryCitation = buildSummaryCitation(publisherMetadata);
       expect(summaryCitation).toEqual(`${family} et al. (${year}) ${journal}`);
+    });
+  });
+  describe("Process tissue type", () => {
+    test("handles 3.x.x format", () => {
+      // TODO remove this test with #6266.
+      const tissue = {
+        label: "brain",
+        ontology_term_id: "UBERON:0000955",
+      } as TissueOntology; // Force 3.x.x format.
+
+      const processedTissue = createTaggedTissueOntology(tissue);
+      expect(processedTissue.label).toEqual(tissue.label);
+      expect(processedTissue.ontology_term_id).toEqual(tissue.ontology_term_id);
+    });
+    test("handles organoid", () => {
+      const tissue = {
+        label: "brain",
+        ontology_term_id: "UBERON:0000955",
+        tissue_type: TISSUE_TYPE.ORGANOID,
+      };
+
+      const processedTissue = createTaggedTissueOntology(tissue);
+      expect(processedTissue.label).toEqual(
+        `${tissue.label} (${TISSUE_TYPE.ORGANOID})`
+      );
+      expect(processedTissue.ontology_term_id).toEqual(
+        `${tissue.ontology_term_id} (${TISSUE_TYPE.ORGANOID})`
+      );
+    });
+    test("handles cell culture", () => {
+      const tissue = {
+        label: "epithelial cell",
+        ontology_term_id: "CL:0000066",
+        tissue_type: TISSUE_TYPE.CELL_CULTURE,
+      };
+
+      const processedTissue = createTaggedTissueOntology(tissue);
+      expect(processedTissue.label).toEqual(
+        `${tissue.label} (${TISSUE_TYPE.CELL_CULTURE})`
+      );
+      expect(processedTissue.ontology_term_id).toEqual(
+        `${tissue.ontology_term_id} (${TISSUE_TYPE.CELL_CULTURE})`
+      );
+    });
+    test("handles tissue", () => {
+      const tissue = {
+        label: "brain",
+        ontology_term_id: "UBERON:0000955",
+        tissue_type: TISSUE_TYPE.TISSUE,
+      };
+
+      const processedTissue = createTaggedTissueOntology(tissue);
+      expect(processedTissue.label).toEqual(tissue.label);
+      expect(processedTissue.ontology_term_id).toEqual(tissue.ontology_term_id);
     });
   });
 });
