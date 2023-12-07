@@ -1053,7 +1053,7 @@ function useWMGQueryRequestBody(version: 1 | 2) {
         publication_citations: publications,
         ...(version === 1 && { tissue_ontology_term_ids }),
       },
-      is_rollup: true, // this could be made toggleable by users in the future
+      is_rollup: false, // this could be made toggleable by users in the future
     };
   }, [
     data,
