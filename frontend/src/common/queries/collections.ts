@@ -42,6 +42,12 @@ const DEFAULT_BACKGROUND_REFETCH = {
 };
 
 /**
+ * Error text returned from BE when DOI is updated but there are datasets with a non-finalized state
+ */
+const INVALID_DATASET_STATUS_MESSAGE =
+  "Cannot update DOI while a dataset is processing or awaiting upload.";
+
+/**
  * Error text returned from BE when DOI format is identified as invalid.
  */
 const INVALID_DOI_FORMAT_MESSAGE = "Invalid DOI";
@@ -66,6 +72,7 @@ export interface CollectionCreateResponse {
 export interface CollectionEditResponse {
   collection?: Collection;
   isInvalidDOI?: boolean;
+  hasInvalidDatasetStatus?: boolean;
 }
 
 /**
@@ -423,6 +430,9 @@ const editCollection = async function ({
   if (isInvalidDOI(response.status, result.detail)) {
     return { isInvalidDOI: true };
   }
+  if (hasInvalidDatasetStatus(response.status, result.detail)) {
+    return { hasInvalidDatasetStatus: true };
+  }
 
   if (!response.ok) {
     throw result;
@@ -653,6 +663,44 @@ function isInvalidDOI(status: number, errors?: Error[]): boolean {
   return (
     reason === INVALID_DOI_MESSAGE || reason === INVALID_DOI_FORMAT_MESSAGE
   );
+}
+
+/**
+ * Determine if an otherwise valid DOI update has failed validation on the BE due to datasets existing in a non-final
+ * state (i.e. INITIALIZED or PENDING rather than SUCCESS or FAILURE)
+ *
+ * Expected response for valid DOI update for a collection with at least one dataset with a processing status other than
+ * SUCCESS or FAILURE
+ * {
+ *   "detail": [{
+ *       link_type: "DOI",
+ *       reason: "Cannot update DOI while a dataset is processing or awaiting upload."
+ *   }],
+ *   "status": 400,
+ *   "title": "Bad Request",
+ *   "type": "about:blank"
+ * }
+ *
+ * TODO generalize beyond DOI link type once all links are validated on the BE (#1916).
+ *
+ * @param status - Response status returned from server.
+ * @param errors - Array of errors returned from server, if any.
+ * @returns True if DOI update has been deemed invalid due to dataset processing statuses in the Collection
+ */
+function hasInvalidDatasetStatus(status: number, errors?: Error[]): boolean {
+  if (status !== HTTP_STATUS_CODE.BAD_REQUEST || !errors) {
+    return false;
+  }
+
+  // Check if the errors returned from the server contain a DOI error.
+  const doiError = findErrorByKey(errors, ERROR_KEY.DOI);
+  if (!doiError) {
+    return false;
+  }
+
+  // There's a DOI error; check if it's about invalid processing dataset status for a DOI update
+  const { reason } = doiError;
+  return reason === INVALID_DATASET_STATUS_MESSAGE;
 }
 
 /**
