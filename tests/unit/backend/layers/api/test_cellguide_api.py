@@ -51,7 +51,6 @@ class TestPostCellGuide(BaseAPIPortalTest):
         self.assertIn("references", response.json.keys())
         self.assertEqual(201, response.status_code)
 
-    @mock_s3
     def test__upload_bad_data(self):
         self.payload["cell_onthology_id"] = "CL_0000xx03"
         response = self.app.post(
