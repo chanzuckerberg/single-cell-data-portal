@@ -168,9 +168,9 @@ function fetchCollection() {
       (dataset: DatasetResponse) => {
         // It's possible for a dataset not to have tissues defined during
         // upload; protect with [].
-        const tissue =
-          dataset.tissue ??
-          [].map((tissue) => createTaggedTissueOntology(tissue));
+        const tissue = (dataset.tissue ?? []).map((tissue) =>
+          createTaggedTissueOntology(tissue)
+        );
         return { ...dataset, tissue };
       }
     );
