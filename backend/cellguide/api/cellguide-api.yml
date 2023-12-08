@@ -33,7 +33,7 @@ paths:
               additionalProperties: false
               $ref: "#/components/schemas/cellguide_description"
               required:
-                - cell_onthology_id
+                - cell_ontology_term_id
                 - description
                 - references
       responses:
@@ -51,14 +51,14 @@ components:
   schemas:
     cellguide_description:
       properties:
-        cell_onthology_id:
-          $ref: "#/components/schemas/cell_onthology_id"
+        cell_ontology_term_id:
+          $ref: "#/components/schemas/cell_ontology_term_id"
         description:
           $ref: "#/components/schemas/cell_description"
         references:
           $ref: "#/components/schemas/references"
       type: object
-    cell_onthology_id:
+    cell_ontology_term_id:
       description: Cell Anthology ID
       example: CL_0000030
       type: string

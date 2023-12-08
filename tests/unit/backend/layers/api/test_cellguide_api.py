@@ -10,7 +10,7 @@ class TestPostCellGuide(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
         self.payload = dict(
-            cell_onthology_id="CL_0000030",
+            cell_ontology_term_id="CL_0000030",
             description="this is a description",
             references=["https://doi.org/10.1073/pnas.97.12.6242", "https://f1000research.com/articles/9-233/v1"],
         )
@@ -46,13 +46,13 @@ class TestPostCellGuide(BaseAPIPortalTest):
             data=json.dumps(self.payload),
         )
 
-        self.assertIn("cell_onthology_id", response.json.keys())
+        self.assertIn("cell_ontology_term_id", response.json.keys())
         self.assertIn("description", response.json.keys())
         self.assertIn("references", response.json.keys())
         self.assertEqual(201, response.status_code)
 
     def test__upload_bad_data(self):
-        self.payload["cell_onthology_id"] = "CL_0000xx03"
+        self.payload["cell_ontology_term_id"] = "CL_0000xx03"
         response = self.app.post(
             "/cellguide/v1/upload",
             headers=self.make_cxg_admin_header(),
@@ -60,7 +60,7 @@ class TestPostCellGuide(BaseAPIPortalTest):
         )
         self.assertEqual(403, response.status_code)
 
-        self.payload["cell_onthology_id"] = "CL_0000030"
+        self.payload["cell_ontology_term_id"] = "CL_0000030"
         self.payload["references"] = ["https://notvalidurl"]
         response = self.app.post(
             "/cellguide/v1/upload",
