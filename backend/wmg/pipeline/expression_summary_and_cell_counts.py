@@ -35,7 +35,7 @@ class CensusParameters:
             "mus_musculus": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD}",
         }
         value_filter = organism_mapping[organism]
-        # Filter out system-level tissues. Census filters out organoids + cell cultures
+        # Filter out system-level tissues. Census filters out organoids + cell cultures.
         value_filter += " and tissue_general_ontology_term_id != 'UBERON:0001017' and tissue_general_ontology_term_id != 'UBERON:0001007' and tissue_general_ontology_term_id != 'UBERON:0002405' and tissue_general_ontology_term_id != 'UBERON:0000990' and tissue_general_ontology_term_id != 'UBERON:0001004' and tissue_general_ontology_term_id != 'UBERON:0001434'"
         return value_filter
 
