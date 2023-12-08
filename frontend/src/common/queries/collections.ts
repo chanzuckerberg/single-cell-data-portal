@@ -166,9 +166,11 @@ function fetchCollection() {
     // Convert tissue ontology objects to core ontology objects.
     const datasets: Dataset[] = json.datasets.map(
       (dataset: DatasetResponse) => {
-        const tissue = dataset.tissue.map((tissue) =>
-          createTaggedTissueOntology(tissue)
-        );
+        // It's possible for a dataset not to have tissues defined during
+        // upload; protect with [].
+        const tissue =
+          dataset.tissue ??
+          [].map((tissue) => createTaggedTissueOntology(tissue));
         return { ...dataset, tissue };
       }
     );
