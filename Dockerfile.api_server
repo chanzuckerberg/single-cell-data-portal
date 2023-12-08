@@ -4,6 +4,8 @@ ENV APP_NAME=corpora-api
 ENV EXPORT_ENV_VARS_TO_LAMBDA="APP_NAME DEPLOYMENT_STAGE"
 ENV LC_ALL=C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
+# For lighter weight Docker images
+ENV PIP_NO_CACHE_DIR=1
 
 RUN apt-get update && \
     apt-get install -y python3 libhdf5-dev python3-h5py gettext moreutils build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests python3-aiohttp llvm jq && \
@@ -18,13 +20,13 @@ RUN python3 -m pip install cmake
 EXPOSE 5000
 
 # Install utilities to /single-cell-data-portal so we can run db migrations.
-ADD container_init.sh /single-cell-data-portal/container_init.sh
-ADD scripts /single-cell-data-portal/scripts
-ADD backend /single-cell-data-portal/backend
-WORKDIR /single-cell-data-portal/backend/api_server
-RUN poetry install --with=test
-WORKDIR /
-ADD tests /single-cell-data-portal/tests
+COPY container_init.sh /single-cell-data-portal/container_init.sh
+COPY scripts /single-cell-data-portal/scripts
+COPY backend /single-cell-data-portal/backend
+COPY pyproject.toml /single-cell-data-poral/pyproject.toml
+RUN poetry install --with=dev,api_server --no-cache
+
+COPY tests /single-cell-data-portal/tests
 
 
 ARG HAPPY_BRANCH="unknown"
