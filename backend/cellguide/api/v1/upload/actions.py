@@ -11,6 +11,19 @@ from backend.layers.thirdparty.s3_provider import S3Provider
 
 
 def post(body: dict, token_info: dict):
+    """
+    Uploads a JSON file to an S3 bucket with the provided data.
+
+    Args:
+        body (dict): The request body containing the data to be uploaded.
+        token_info (dict): The token information for authentication.
+
+    Returns:
+        The response object containing the uploaded file content.
+
+    Raises:
+        ForbiddenHTTPException: If the user is not authorized or if the provided data is invalid.
+    """
     try:
         UserInfo(token_info).is_cxg_admin()
     except Exception as e:
@@ -45,6 +58,15 @@ def post(body: dict, token_info: dict):
 
 
 def validate_url(reference):
+    """
+    Validates the given URL.
+
+    Args:
+        reference (str): The URL to be validated.
+
+    Raises:
+        ForbiddenHTTPException: If the URL is invalid.
+    """
     try:
         requests.get(reference)
     except Exception as e:
