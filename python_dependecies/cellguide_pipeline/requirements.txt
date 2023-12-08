@@ -28,15 +28,12 @@ python-dateutil==2.8.2
 pytz==2023.3
 requests==2.31.0
 s3transfer==0.6.1
-scipy==1.11.1
+scipy
 six==1.16.0
 tiledb==0.22.3
 typing_extensions==4.7.1
 tzdata==2023.3
 urllib3==1.26.16
-coverage==7.2.7
-pytest==7.4.0
-pytest-subtests==0.11.0
-allure-pytest==2.13.2
 pyarrow==12.0.0
 dask==2023.8.1
+poetry init && poetry add $(cat requirements.txt) && poetry add $(cat ../requirements-dev.txt) --group dev
