@@ -24,25 +24,25 @@ def post(body: dict, token_info: dict):
         raise ForbiddenHTTPException("Invalid cell_onthology_id format. Example: CL_0000030")
 
     for reference in references:
-        try:
-            requests.get(reference)
-        except Exception as e:
-            raise ForbiddenHTTPException(f"Invalid url {reference}") from e
+        validate_url(reference)
 
-    file_content = {"description": description, "references": references}
-
-    if os.getenv("DEPLOYMENT_STAGE") == "rdev" or os.getenv("DEPLOYMENT_STAGE") == "test":
-        env = "dev"
-    else:
-        env = os.getenv("DEPLOYMENT_STAGE")
+    env = "dev" if os.getenv("DEPLOYMENT_STAGE") in ["rdev", "test"] else os.getenv("DEPLOYMENT_STAGE")
 
     file_name = f"{cell_onthology_id}.json"
     key_name = f"validated_descriptions/{file_name}"
     bucket_name = f"cellguide-data-public-{env}"
+    file_content = {"description": description, "references": references}
+    file_content_str = json.dumps(file_content)
 
     s3_provider = S3Provider()
-    file_content_str = json.dumps(file_content)
     s3_provider.put_object(bucket_name, key_name, file_content_str)
 
     file_content["cell_onthology_id"] = cell_onthology_id
     return make_response(jsonify(file_content), 201)
+
+
+def validate_url(reference):
+    try:
+        requests.get(reference)
+    except Exception as e:
+        raise ForbiddenHTTPException(f"Invalid url {reference}") from e
