@@ -9,6 +9,9 @@ RUN /usr/local/bin/python -m pip install --upgrade pip && \
 ENV PIP_NO_CACHE_DIR=1
 
 WORKDIR /
+RUN pip3 install poetry
+COPY python_dependencies/cellguide_pipeline/ /
+RUN poetry export --with=dev --without-hashes --format=requirements.txt > requirements.txt
 
 ADD requirements-cellguide-pipeline.txt requirements-cellguide-pipeline.txt
 RUN pip3 install -r requirements-cellguide-pipeline.txt

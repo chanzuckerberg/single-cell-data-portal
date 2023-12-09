@@ -13,7 +13,9 @@ RUN apt-get update && \
 
 # Don't re-run pip install unless either requirements.txt has changed.
 WORKDIR /single-cell-data-portal
-ADD python_dependencies/api_server/requirements.txt requirements.txt
+RUN python3 -m pip install poetry
+COPY python_dependencies/api_server/ /
+RUN poetry export --with=dev --without-hashes --format=requirements.txt > requirements.txt
 
 # TODO: Determine if cmake is really needed for ddtrace
 # see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
