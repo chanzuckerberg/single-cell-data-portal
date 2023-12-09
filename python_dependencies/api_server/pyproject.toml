@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "api-server"
+authors = ["The Single Cell Portal Team"]
+version = "0.1.0"
+description = "Single Cell Portal API Server"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+alembic = ">=1.9, <2.0"
+anndata = "0.8.0"
+authlib = "0.14.3"
+boto3 = ">=1.11.17"
+botocore = ">=1.14.17"
+connexion = {version = "2.13.0", extras = ["swagger-ui"]}
+dataclasses-json = "0.5.7"
+datadog = "0.47.0"
+ddtrace = "2.1.4"
+flask = "2.2.3"
+flask-cors = ">=3.0.6"
+flask-server-timing = "0.1.2"
+furl = "^2.1.3"
+gunicorn = {version = ">=20.1.0", extras = ["gevent"]}
+jsonschema = "^4.20.0"
+matplotlib = "3.6.3"
+numba = "0.56.2"
+numpy = "1.23.5"
+owlready2 = "0.40.0"
+pandas = "1.5.3"
+psutil = "5.9.5"
+psycopg2-binary = ">=2.8.5"
+pydantic = "1.10.7"
+pymysql = "0.9.3"
+python-jose = {version = ">=3.1.0", extras = ["cryptography"]}
+python-json-logger = "^2.0.7"
+requests = ">=2.22.0"
+scanpy = "1.9.3"
+sqlalchemy-utils = ">=0.36.8"
+sqlalchemy = ">=1.4.0"
+tenacity = "^8.2.3"
+tiledb = "0.22.3"
+werkzeug = "2.2.3"
+
+[tool.poetry.group.dev.dependencies]
+allure-pytest = "<3"
+click = ">=8.1.3"
+coverage = ">=6.5.0"
+moto = "3.1.3"
+pytest = "^7.4.3"
+pytest-subtests = "^0.11.0"
+
+
+[build-system]
+requires = ["poetry-core==1.8.1"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,5 @@
+allure-pytest<3
+coverage
+pytest
+pytest-subtests
+moto==3.1.3

@@ -6,10 +6,7 @@
 !/requirements-api-server.txt
 !/requirements-processing.txt
 !/requirements-submissions.txt
-!/python_dependecies/upload_handler/requirements.txt
-!/python_dependecies/upload_handler/requirements.txt
-!/python_dependecies/wmg/requirements.txt
-!/python_dependecies/cellguide_pipeline/requirements.txt
+!/python_dependencies/**
 !/backend/**
 !/tests/**
 !/scripts/**
