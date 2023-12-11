@@ -291,8 +291,6 @@ export const OFF_WHITE = "#f8f8f8";
 
 export const PINK = "#E9429A";
 
-export const blue300 = themeOptions.colors.blue;
-
 // Font Weights
 export const fontWeightBold = (props: CommonThemeProps) =>
   getFontWeights(props)?.bold;
