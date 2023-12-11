@@ -53,33 +53,35 @@ async function fetchProjects(): Promise<ProjectResponse | undefined> {
     if (!response.ok) throw result;
 
     const data = result as ProjectResponse;
-    Object.entries(data).forEach(
-      async ([id, project]: [
-        keyof ProjectResponse,
-        ProjectResponse[keyof ProjectResponse],
-      ]) => {
-        if (!project.DOI) return;
 
-        // include a mailto: query param to insure reliable service
-        const url = apiTemplateToUrl(
-          "https://api.crossref.org/works/{DOI}?mailto=cellxgene@cziscience.com",
-          {
-            DOI: encodeURIComponent(project.DOI),
-          }
-        );
+    await Promise.all(
+      Object.entries(data).map(
+        async ([id, project]: [
+          keyof ProjectResponse,
+          ProjectResponse[keyof ProjectResponse],
+        ]) => {
+          if (!project.DOI) return;
 
-        const response = await fetch(url);
+          // include a mailto: query param to insure reliable service
+          const url = apiTemplateToUrl(
+            "https://api.crossref.org/works/{DOI}?mailto=cellxgene@cziscience.com",
+            {
+              DOI: encodeURIComponent(project.DOI),
+            }
+          );
 
-        const result = await response.json();
-        if (!response.ok) throw result;
+          const response = await fetch(url);
 
-        const publication_info = parseCrossRefResponse(result);
+          const result = await response.json();
+          if (!response.ok) throw result;
 
-        data[id].publication_info = publication_info;
-        data[id].publication_link = result.URL;
-        data[id].id = String(id);
-        data[id].tier = "hosted";
-      }
+          const publication_info = parseCrossRefResponse(result);
+
+          data[id].publication_info = publication_info;
+          data[id].publication_link = result.message.URL;
+          data[id].tier = "hosted";
+        }
+      )
     );
     return data;
   } catch (error) {
