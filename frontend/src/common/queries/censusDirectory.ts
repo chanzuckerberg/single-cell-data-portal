@@ -6,6 +6,8 @@ import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { API } from "../API";
 
 export interface Project {
+  id: string;
+  tier: "hosted";
   census_version: string;
   experiment_name: string;
   measurement_name: string;
@@ -75,6 +77,8 @@ async function fetchProjects(): Promise<ProjectResponse | undefined> {
 
         data[id].publication_info = publication_info;
         data[id].publication_link = result.URL;
+        data[id].id = String(id);
+        data[id].tier = "hosted";
       }
     );
     return data;

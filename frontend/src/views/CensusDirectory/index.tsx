@@ -13,7 +13,7 @@ import {
   TierContainer,
   TierTitle,
   TierDescription,
-} from "./styles";
+} from "./style";
 import Project from "./components/Project";
 
 function CensusDirectory() {

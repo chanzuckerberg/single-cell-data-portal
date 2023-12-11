@@ -209,6 +209,12 @@ export const textSecondary = (props: CommonThemeProps) =>
 export const primary100 = (props: CommonThemeProps) =>
   getColors(props)?.primary[100];
 
+export const primary200 = (props: CommonThemeProps) =>
+  getColors(props)?.primary[200];
+
+export const primary300 = (props: CommonThemeProps) =>
+  getColors(props)?.primary[300];
+
 export const primary400 = (props: CommonThemeProps) =>
   getColors(props)?.primary[400];
 
@@ -284,6 +290,8 @@ export const beta600 = (props: CommonThemeProps) => getColors(props)?.beta[600];
 export const OFF_WHITE = "#f8f8f8";
 
 export const PINK = "#E9429A";
+
+export const blue300 = themeOptions.colors.blue;
 
 // Font Weights
 export const fontWeightBold = (props: CommonThemeProps) =>

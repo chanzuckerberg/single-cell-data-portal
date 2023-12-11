@@ -141,4 +141,16 @@ module.exports = {
       ),
     },
   },
+  webpack: (config, { webpack }) => {
+    return {
+      ...config,
+      plugins: [
+        ...config.plugins,
+        new webpack.ContextReplacementPlugin(
+          /highlight.js\/lib\/languages$/,
+          new RegExp(`^./(${["javascript", "python", "r"].join("|")})$`)
+        ),
+      ],
+    };
+  },
 };

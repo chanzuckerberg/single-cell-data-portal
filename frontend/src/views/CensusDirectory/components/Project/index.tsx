@@ -9,7 +9,7 @@ import {
   DetailsContainer,
   ProjectButtons,
   StyledButton,
-} from "../../styles";
+} from "../../style";
 import DetailItem from "../DetailItem";
 
 import EmbeddingButton from "../EmbeddingButton";
@@ -107,7 +107,7 @@ const Project = ({ project, id }: ProjectProps) => {
             </StyledButton>
           </Link>
         )}
-        {projectTier === "hosted" && <EmbeddingButton project={project} />}
+        {projectTier !== "community" && <EmbeddingButton project={project} />}
         {!!project.model_link && (
           <Link href={project.model_link}>
             <StyledButton
