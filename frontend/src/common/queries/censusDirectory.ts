@@ -1,7 +1,7 @@
 import { useQuery } from "react-query";
 import { ENTITIES } from "./entities";
 import { apiTemplateToUrl } from "../utils/apiTemplateToUrl";
-import { CENSUS_SPOTLIGHT_DATA_URL } from "src/configs/configs";
+import { CENSUS_MODELS_DATA_URL } from "src/configs/configs";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { API } from "../API";
 
@@ -41,7 +41,7 @@ export interface ProjectResponse {
 
 async function fetchProjects(): Promise<ProjectResponse | undefined> {
   const response = await fetch(
-    CENSUS_SPOTLIGHT_DATA_URL + API.CENSUS_SPOTLIGHT_MANIFEST,
+    CENSUS_MODELS_DATA_URL + API.CENSUS_MODELS_MANIFEST,
     {
       ...DEFAULT_FETCH_OPTIONS,
       ...JSON_BODY_FETCH_OPTIONS,

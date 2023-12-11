@@ -43,7 +43,7 @@ const defaultSecureHeaders = {
         PLAUSIBLE_URL,
         configs.API_URL,
         configs.CELLGUIDE_DATA_URL,
-        configs.CENSUS_SPOTLIGHT_DATA_URL,
+        configs.CENSUS_MODELS_DATA_URL,
         CROSS_REF_URL,
         DATADOG_URL,
       ],
