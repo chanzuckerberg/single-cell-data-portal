@@ -35,7 +35,6 @@ export default class Document extends RawDocument {
             href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,800&amp;display=swap"
             rel="stylesheet"
           />
-          <link rel="stylesheet" href="/atom-one-dark.css" />
         </Head>
         <body data-api-url={API_URL}>
           <Main />

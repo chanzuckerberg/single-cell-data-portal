@@ -1,13 +1,6 @@
-html,
-p,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-a,
-div {
+@import "react-highlight/node_modules/highlight.js/styles/atom-one-dark.css"
+    html,
+  p, h1, h2, h3, h4, h5, h6, a, div {
   font-family: "Inter", sans-serif;
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
