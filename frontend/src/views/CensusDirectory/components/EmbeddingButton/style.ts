@@ -6,16 +6,11 @@ import {
 } from "@czi-sds/components";
 import styled from "@emotion/styled";
 import {
-  cornersM,
   fontWeightSemibold,
   gray300,
   gray400,
-  grey100,
-  grey300,
   primary200,
   primary300,
-  spacesM,
-  spacesS,
 } from "src/common/theme";
 
 interface CodeSnippetProps extends CommonThemeProps {

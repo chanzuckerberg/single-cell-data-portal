@@ -77,25 +77,28 @@ export const useConnect = ({ project }: EmbeddingButtonProps) => {
   // These can be derived from the static S3 namespace + the accessor_id or will be a static url provided in json blob
   const uri = `s3://cellxgene-contrib-archive/contrib/cell-census/${project.id}`;
 
-  const codeSnippetRef = useCallback((node: HTMLDivElement) => {
-    if (node !== null) {
-      const lines = node.innerText.split("\n");
+  const codeSnippetRef = useCallback(
+    (node: HTMLDivElement) => {
+      if (node !== null) {
+        const lines = node.innerText.split("\n");
 
-      const newLineHeight =
-        node.clientHeight /
-        (lines.length - NUMBER_OF_EXTRA_LINES + NUMBER_OF_PADDING_LINES);
+        const newLineHeight =
+          node.clientHeight /
+          (lines.length - NUMBER_OF_EXTRA_LINES + NUMBER_OF_PADDING_LINES);
 
-      // index of the URI line
-      const lineIndex = lines.findIndex((line: string) => line.includes(uri));
+        // index of the URI line
+        const lineIndex = lines.findIndex((line: string) => line.includes(uri));
 
-      setURITopPosition(
-        newLineHeight * lineIndex +
-          NUMBER_OF_PADDING_LINES +
-          LINE_HIGHLIGHT_BACKGROUND_PADDING / 2
-      );
-      setLineHeight(newLineHeight + LINE_HIGHLIGHT_BACKGROUND_PADDING);
-    }
-  }, []);
+        setURITopPosition(
+          newLineHeight * lineIndex +
+            NUMBER_OF_PADDING_LINES +
+            LINE_HIGHLIGHT_BACKGROUND_PADDING / 2
+        );
+        setLineHeight(newLineHeight + LINE_HIGHLIGHT_BACKGROUND_PADDING);
+      }
+    },
+    [uri]
+  );
 
   const handleCopyMouseEnter = () => setIsCopied(false);
 

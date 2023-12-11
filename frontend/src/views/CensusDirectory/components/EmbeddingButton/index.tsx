@@ -85,7 +85,9 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
           <Break />
           <Label>Code Examples</Label>
           <div>
-            If you'd like to see more advanced access patterns, explore this{" "}
+            {
+              "If you'd like to see more advanced access patterns, explore this "
+            }
             <Link
               href={
                 projectTier === "maintained"
