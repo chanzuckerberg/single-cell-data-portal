@@ -23,29 +23,28 @@ export const CodeSnippet = styled.div<CodeSnippetProps>`
     position: absolute;
     padding: 0;
     color: ${primary300};
-    & > button {
-      top: 8px;
-    }
-    /* URI Container */
-    & > div {
-      position: absolute;
-      top: ${({ uriTopPosition }) => uriTopPosition}px;
-      left: 0;
-      width: 100%;
-      height: ${({ lineHeight }) => lineHeight}px;
-      background: rgba(255, 255, 255, 0.05);
-      & > button {
-        top: 5px;
-        span {
-          content: "Copy URI";
-        }
-      }
-    }
-
-    &:hover {
-      color: ${primary200};
-    }
     right: 8px;
+    font-weight: 500;
+  }
+  & > button {
+    top: 8px;
+  }
+
+  /* URI Container */
+  & > div {
+    position: absolute;
+    top: ${({ uriTopPosition }) => uriTopPosition}px;
+    left: 0;
+    width: 100%;
+    height: ${({ lineHeight }) => lineHeight}px;
+    background: rgba(255, 255, 255, 0.05);
+    & > button {
+      top: 5px;
+    }
+  }
+
+  button:hover {
+    color: ${primary200};
   }
 `;
 export const StyledDialogContent = styled(DialogContent)`
