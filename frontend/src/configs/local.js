@@ -12,6 +12,7 @@ const configs = {
   // API_URL: "https://api.cellxgene.cziscience.com",
   // Local container
   // API_URL: "https://backend.corporanet.local:5000",
+  CENSUS_SPOTLIGHT_DATA_URL: "https://contrib.cellxgene.cziscience.com",
   PLAUSIBLE_DATA_DOMAIN: "cellxgene.staging.single-cell.czi.technology",
 };
 

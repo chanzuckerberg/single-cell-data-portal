@@ -29,6 +29,11 @@ class H5ADDataFile:
     another format (currently just CXG is supported).
     """
 
+    tile_db_ctx_config = {
+        "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
+        "py.deduplicate": True,  # May reduce memory requirements at cost of performance
+    }
+
     def __init__(
         self,
         input_filename,
@@ -58,12 +63,7 @@ class H5ADDataFile:
         """
 
         logging.info("Beginning writing to CXG.")
-        ctx = tiledb.Ctx(
-            {
-                "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
-                "py.deduplicate": True,  # May reduce memory requirements at cost of performance
-            }
-        )
+        ctx = tiledb.Ctx(self.tile_db_ctx_config)
 
         tiledb.group_create(output_cxg_directory, ctx=ctx)
         logging.info(f"\t...group created, with name {output_cxg_directory}")

@@ -22,11 +22,12 @@ self.mock_config.set(dict(schema_4_feature_flag="True"))
 ```
 """
 
-FeatureFlag = Literal["schema_4_feature_flag"]
+FeatureFlag = Literal["schema_4_feature_flag", "citation_update_feature_flag"]
 
 
 class FeatureFlagValues:
     SCHEMA_4 = "schema_4_feature_flag"
+    CITATION_UPDATE = "citation_update_feature_flag"
 
 
 class FeatureFlagService:

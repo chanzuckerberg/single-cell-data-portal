@@ -25,6 +25,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
+from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
@@ -82,6 +83,7 @@ class BaseTest(unittest.TestCase):
             "upload_max_file_size_gb": 30,
             "collections_base_url": "http://collections",
             "dataset_assets_base_url": "http://domain",
+            "citation_update_feature_flag": "True",
             "schema_4_feature_flag": "True",
         }
         # Mock CorporaConfig
@@ -105,6 +107,7 @@ class BaseTest(unittest.TestCase):
             self.database_provider = DatabaseProviderMock()
 
         self.crossref_provider = CrossrefProviderInterface()
+        batch_job_provider = BatchJobProviderInterface()
         step_function_provider = StepFunctionProviderInterface()
         self.s3_provider = S3ProviderInterface()
         self.uri_provider = UriProviderInterface()
@@ -162,7 +165,12 @@ class BaseTest(unittest.TestCase):
         )
 
         self.business_logic = BusinessLogic(
-            self.database_provider, self.crossref_provider, step_function_provider, self.s3_provider, self.uri_provider
+            self.database_provider,
+            batch_job_provider,
+            self.crossref_provider,
+            step_function_provider,
+            self.s3_provider,
+            self.uri_provider,
         )
 
     def tearDown(self):
@@ -283,6 +291,7 @@ class BaseTest(unittest.TestCase):
             )
         if artifacts is None:
             artifacts = [
+                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, f"s3://fake.bucket/{dataset_version_id}/raw.h5ad"),
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, f"s3://fake.bucket/{dataset_version_id}/local.h5ad"),
                 DatasetArtifactUpdate(DatasetArtifactType.CXG, f"s3://fake.bucket/{dataset_version_id}/local.cxg"),
                 DatasetArtifactUpdate(DatasetArtifactType.RDS, f"s3://fake.bucket/{dataset_version_id}/local.rds"),
