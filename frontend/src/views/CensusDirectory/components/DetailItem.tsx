@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ItemContainer, ItemLabel } from "../styles";
+import { ItemContainer, ItemLabel } from "../style";
 
 function formatValueIfNumber(value: string | number) {
   const formatter = new Intl.NumberFormat("en", {
