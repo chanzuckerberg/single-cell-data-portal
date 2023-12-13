@@ -1,53 +1,115 @@
 [
   {
-    "tier": "community",
-    "census_version": "LTS 1.0",
+    "tier": "maintained",
+    "title": "Geneformer embeddings fine-tuned for CELLxGENE Census cell subclass classification",
+    "description": "Geneformer is a foundation transformer model pretrained on a large-scale corpus of ~30 million single cell transcriptomes to enable context-aware predictions in settings with limited data in network biology.\nThese cell embeddings are derived from a Geneformer model CZI fine-tuned for cell subclass classification. As the fine-tuning procedure remains experimental and wasn’t performed by the Geneformer authors, these embeddings should not be used to assess performance of the Geneformer ",
+    "primary_contact": {
+      "name": "CELLxGENE Discover Team",
+      "email": "soma@chanzuckerberg.com",
+      "affiliation": "CZI"
+    },
+    "DOI": "10.1038/s41586-023-06139-9",
+    "publication_info": "",
+    "publication_link": "",
+    "project_page": "",
+    "additional_information": "Beginning with the geneformer-12L-30M pretrained model published by Theodoris et al. (huggingface.co/ctheodoris/Geneformer), a BertForSequenceClassification model was trained to predict cell subclass (as annotated in CELLxGENE Discover see https://cellxgene.cziscience.com/collections). Embeddings were then generated using Geneformer’s EmbExtractor module with emb_layer=0.\nFor full details and a reproducible workflow please see: https://github.com/chanzuckerberg/cellxgene-census/blob/main/tools/models/geneformer/README.md",
+    "model_link": "s3://cellxgene-contrib-public/models/geneformer/2023-10-23/homo_sapiens/fined-tuned-model/",
+    "data_type": "obs",
+    "census_version": "2023-12-15",
     "experiment_name": "homo_sapiens",
     "measurement_name": "RNA",
-    "submission_date": "10-22-23",
+    "n_cells": 36227903,
+    "n_columns": 512,
+    "n_features": 512,
+    "notebook_links": [["Using trained model", "https://chanzuckerberg.github.io/cellxgene-census/notebooks/analysis_demo/comp_bio_geneformer_prediction.html"]],
+    "submission_date": "2023-11-06",
     "last_updated": null,
-    "revised_by": null,
-    "model_link": null,
-    "n_features": 2,
-    "data_type": "obs",
-    "title": "scGPT",
-    "description": "Ligula imperdiet eget et enim id morbi. Pretium diam risus placerat felis vulputate adipiscing sed integer. Mauris commodo risus scelerisque tempus mi venenatis egestas. Sed at scelerisque vulputate egestas vulputate condimentum libero tempus convallis. Nulla id eget fringilla ultrices pellentesque nunc faucibus condimentum. Ornare porta eget porttitor cum arcu id ultricies id. Massa interdum orci risus arcu mattis massa. Amet metus nibh enim nam pellentesque sagittis diam id quam.",
-    "primary_contact": {
-      "name": "Haotian Cui",
-      "email": "user@example.com",
-      "affiliation": "WangLab at University of Toronto"
-    },
-    "DOI": null,
-    "publication_info": "Cul et al. (2023) bioRxiv",
-    "publication_link": "",
-    "project_page": "https://example.com/",
-    "notebook_links": [["link A", "https://example.com/"]],
-    "n_cells": 6523,
-    "n_columns": 8721
+    "revised_by": null
   },
   {
     "tier": "maintained",
-    "census_version": "LTS 1.0",
+    "title": "scVI integrated-embeddings with explicit modeling of batch effects",
+    "description": "scVI uses autoencoding-variational Bayes optimization to learn the underlying latent state of gene expression and to approximate the distributions that underlie observed expression values, while accounting for batch effects and limited sensitivity.\nThese cell embeddings are derived from an scVI model trained on all primary Census cells while accounting for the batch effects of sequencing assay, dataset, donor, and suspension type (cell vs nucleus). Then embeddings were obtained as the latent space for all Census cells after performing a forward pass through the trained model.\nThese embeddings are made in collaboration with the scVI team from Nir Yosef’s laboratory. For questions about scVI please refer to the scverse discourse forum https://discourse.scverse.org/.",
+    "primary_contact": {
+      "name": "CELLxGENE Discover Team",
+      "email": "soma@chanzuckerberg.com",
+      "affiliation": "CZI"
+    },
+    "additional_contacts": [
+      {
+        "name": "Nir Yosef",
+        "email": "nir.yosef@weizmann.ac.il",
+        "affiliation": "Weizmann Institute of Science, Israel"
+      },
+      {
+        "name": "Can Ergen",
+        "email": "cergen@berkeley.edu",
+        "affiliation": "UC Berkeley"
+      },
+      {
+        "name": "Martin Kim",
+        "email": "martinkim@berkeley.edu",
+        "affiliation": "UC Berkeley"
+      }
+    ],
+    "DOI": "10.1038/s41592-018-0229-2",
+    "additional_information": "scVI was trained on primary cells from Census with at least 300 expressed genes, and on the top 8000 highly variable genes with the Census method highly_variable_genes, which implements Scanpy’s Seurat flavor to be used on count data while accounting for batch effects. The scVI parameters are: n_layer=1, n_hidden=500 and dropout_rate=0.1, and the training was run for a total of 20 epochs. An embedding with n_latent=200 was obtained by performing a forward pass on the model to get the latent representation across all Census cells, without additional retraining.\nModel is available for the scArches workflow and census data can be loaded as minified data to test for organ-level differential abundance and similar.\nFor full details and a reproducible workflow please see: https://github.com/chanzuckerberg/cellxgene-census/blob/main/tools/models/scvi/README.md",
+    "model_link": "s3://cellxgene-contrib-public/models/scvi/2023-10-23/homo_sapiens/model.pt",
+    "census_version": "2023-12-15",
+    "data_type": "obs",
     "experiment_name": "homo_sapiens",
     "measurement_name": "RNA",
-    "submission_date": "10-22-23",
-    "last_updated": null,
-    "revised_by": null,
-    "model_link": null,
-    "n_features": 2,
-    "data_type": "obs",
-    "title": "scGPT",
-    "description": "Ligula imperdiet eget et enim id morbi. Pretium diam risus placerat felis vulputate adipiscing sed integer. Mauris commodo risus scelerisque tempus mi venenatis egestas. Sed at scelerisque vulputate egestas vulputate condimentum libero tempus convallis. Nulla id eget fringilla ultrices pellentesque nunc faucibus condimentum. Ornare porta eget porttitor cum arcu id ultricies id. Massa interdum orci risus arcu mattis massa. Amet metus nibh enim nam pellentesque sagittis diam id quam.",
-    "primary_contact": {
-      "name": "Haotian Cui",
-      "affiliation": "WangLab at University of Toronto",
-      "email": "user@example.com"
-    },
-    "DOI": null,
-    "publication_info": "Cul et al. (2023) bioRxiv",
+    "n_cells": 62998417,
+    "n_columns": 200,
+    "n_features": 200,
+    "submission_date": "2023-11-18",
+    "publication_info": "",
     "publication_link": "",
-    "notebook_links": [["link A", "https://example.com/"]],
-    "n_genes": 1312,
-    "n_columns": 2312
+    "notebook_links": [["Using trained model", "https://chanzuckerberg.github.io/cellxgene-census/notebooks/analysis_demo/comp_bio_scvi_model_use.html"]],
+    "last_updated": null,
+    "revised_by": null
+  },
+  {
+    "tier": "maintained",
+    "title": "scVI integrated-embeddings with explicit modeling of batch effects",
+    "description": "scVI uses autoencoding-variational Bayes optimization to learn the underlying latent state of gene expression and to approximate the distributions that underlie observed expression values, while accounting for batch effects and limited sensitivity.\nThese cell embeddings are derived from an scVI model trained on all primary Census cells while accounting for the batch effects of sequencing assay, dataset, donor, and suspension type (cell vs nucleus). Then embeddings were obtained as the latent space for all Census cells after performing a forward pass through the trained model.\nThese embeddings are made in collaboration with the scVI team from Nir Yosef’s laboratory. For questions about scVI please refer to the scverse discourse forum https://discourse.scverse.org/.",
+    "primary_contact": {
+      "name": "CELLxGENE Discover Team",
+      "email": "soma@chanzuckerberg.com",
+      "affiliation": "CZI"
+    },
+    "additional_contacts": [
+      {
+        "name": "Nir Yosef",
+        "email": "nir.yosef@weizmann.ac.il",
+        "affiliation": "Weizmann Institute of Science, Israel"
+      },
+      {
+        "name": "Can Ergen",
+        "email": "cergen@berkeley.edu",
+        "affiliation": "UC Berkeley"
+      },
+      {
+        "name": "Martin Kim",
+        "email": "martinkim@berkeley.edu",
+        "affiliation": "UC Berkeley"
+      }
+    ],
+    "DOI": "10.1038/s41592-018-0229-2",
+    "additional_information": "scVI was trained on primary cells from Census with at least 300 expressed genes, and on the top 8000 highly variable genes with the Census method highly_variable_genes, which implements Scanpy’s Seurat flavor to be used on count data while accounting for batch effects. The scVI parameters are: n_layer=1, n_hidden=500 and dropout_rate=0.1, and the training was run for a total of 20 epochs. An embedding with n_latent=200 was obtained by performing a forward pass on the model to get the latent representation across all Census cells, without additional retraining.\nModel is available for the scArches workflow and census data can be loaded as minified data to test for organ-level differential abundance and similar.\nFor full details and a reproducible workflow please see: https://github.com/chanzuckerberg/cellxgene-census/blob/main/tools/models/scvi/README.md",
+    "model_link": "s3://cellxgene-contrib-public/models/scvi/2023-10-23/mus_musculus/model.pt",
+    "census_version": "2023-12-15",
+    "data_type": "obs",
+    "experiment_name": "mus_musculus",
+    "measurement_name": "RNA",
+    "n_cells": 5684805,
+    "n_columns": 200,
+    "n_features": 200,
+    "submission_date": "2023-11-18",
+    "publication_info": "",
+    "publication_link": "",
+    "notebook_links": [["Using trained model", "https://chanzuckerberg.github.io/cellxgene-census/notebooks/analysis_demo/comp_bio_scvi_model_use.html"]],
+    "last_updated": null,
+    "revised_by": null
   }
 ]
