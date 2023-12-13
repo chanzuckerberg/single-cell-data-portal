@@ -19,6 +19,12 @@ interface CodeSnippetProps extends CommonThemeProps {
 }
 export const CodeSnippet = styled.div<CodeSnippetProps>`
   position: relative;
+  max-height: 250px;
+  overflow-y: scroll;
+
+  pre {
+    margin: 0;
+  }
   button {
     position: absolute;
     padding: 0;
@@ -49,6 +55,9 @@ export const CodeSnippet = styled.div<CodeSnippetProps>`
 `;
 export const StyledDialogContent = styled(DialogContent)`
   padding: 4px;
+  & > * {
+    margin: 24px 0;
+  }
 `;
 export const Label = styled.label`
   ${fontCapsXxxs}
