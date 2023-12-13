@@ -1,5 +1,5 @@
 import React from "react";
-import { StyledButton } from "../../style";
+import { StyledButton } from "../../../../style";
 
 import { Dialog, InputRadio, DialogTitle } from "@czi-sds/components";
 import { useConnect } from "./connect";
@@ -27,10 +27,12 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
     handleButtonClick,
   } = useConnect(props);
 
+  if (project.tier === "community") return null;
+
   return (
     <>
       <StyledButton
-        sdsType="secondary"
+        sdsType="primary"
         sdsStyle="square"
         onClick={handleButtonClick}
       >
