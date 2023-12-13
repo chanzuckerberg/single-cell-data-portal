@@ -52,61 +52,65 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
               <InputRadio disabled label="R (coming soon)" value="r" />
             </RadioGroup>
           </div>
-          <Label>Quick Start</Label>
-          <CodeSnippet
-            ref={codeSnippetRef}
-            uriTopPosition={uriTopPosition}
-            lineHeight={lineHeight}
-          >
-            <Highlight className={language}>{codeSnippet}</Highlight>
-            <CopyButton
-              downloadLink={codeSnippet}
-              handleAnalytics={() =>
-                track(EVENTS.CENSUS_EMBEDDING_COPIED, {
-                  project: project.title,
-                  category: projectTier,
-                  version: language,
-                })
-              }
-            />
-            {projectTier === "hosted" && (
-              <div>
-                <CopyButton
-                  downloadLink={uri}
-                  handleAnalytics={() =>
-                    track(EVENTS.CENSUS_EMBEDDING_COPIED, {
-                      project: project.title,
-                      category: projectTier,
-                      version: "URI",
-                    })
-                  }
-                />
-              </div>
-            )}
-          </CodeSnippet>
-          <Break />
-          <Label>Code Examples</Label>
           <div>
-            {
-              "If you'd like to see more advanced access patterns, explore this "
-            }
-            <Link
-              href={
-                projectTier === "maintained"
-                  ? "https://chanzuckerberg.github.io/cellxgene-census/notebooks/api_demo/census_access_maintained_embeddings.html"
-                  : "https://chanzuckerberg.github.io/cellxgene-census/notebooks/api_demo/census_embedding.html"
-              }
-              onClick={() =>
-                track(EVENTS.CENSUS_EMBEDDING_NOTEBOOK_CLICKED, {
-                  project: project.title,
-                  category: projectTier,
-                  version: language,
-                })
-              }
+            <Label>Quick Start</Label>
+            <CodeSnippet
+              ref={codeSnippetRef}
+              uriTopPosition={uriTopPosition}
+              lineHeight={lineHeight}
             >
-              Jupyter Notebook
-            </Link>
-            !
+              <Highlight className={language}>{codeSnippet}</Highlight>
+              <CopyButton
+                downloadLink={codeSnippet}
+                handleAnalytics={() =>
+                  track(EVENTS.CENSUS_EMBEDDING_COPIED, {
+                    project: project.title,
+                    category: projectTier,
+                    version: language,
+                  })
+                }
+              />
+              {projectTier === "hosted" && (
+                <div>
+                  <CopyButton
+                    downloadLink={uri}
+                    handleAnalytics={() =>
+                      track(EVENTS.CENSUS_EMBEDDING_COPIED, {
+                        project: project.title,
+                        category: projectTier,
+                        version: "URI",
+                      })
+                    }
+                  />
+                </div>
+              )}
+            </CodeSnippet>
+          </div>
+          <Break />
+          <div>
+            <Label>Code Examples</Label>
+            <div>
+              {
+                "If you'd like to see more advanced access patterns, explore this "
+              }
+              <Link
+                href={
+                  projectTier === "maintained"
+                    ? "https://chanzuckerberg.github.io/cellxgene-census/notebooks/api_demo/census_access_maintained_embeddings.html"
+                    : "https://chanzuckerberg.github.io/cellxgene-census/notebooks/api_demo/census_embedding.html"
+                }
+                onClick={() =>
+                  track(EVENTS.CENSUS_EMBEDDING_NOTEBOOK_CLICKED, {
+                    project: project.title,
+                    category: projectTier,
+                    version: language,
+                  })
+                }
+              >
+                Jupyter Notebook
+              </Link>
+              !
+            </div>
           </div>
         </StyledDialogContent>
       </Dialog>

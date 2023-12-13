@@ -35,7 +35,6 @@ function pythonCodeSnippet(project: StaticProject | Project): string {
   from cellxgene_census.experimental import get_embedding
 
   embedding_uri = ${uri}
-
   census = cellxgene_census.open_soma(census_version="${censusVersion}")
 
   adata = cellxgene_census.get_anndata(
@@ -44,9 +43,7 @@ function pythonCodeSnippet(project: StaticProject | Project): string {
       measurement_name = "${measurement}",
       obs_value_filter = "tissue == 'tongue'",
   )
-
   embeddings = get_embedding("${censusVersion}", embedding_uri, adata.obs["soma_joinid"])
-
   adata.obsm["emb"] = embeddings`;
 }
 
@@ -86,7 +83,7 @@ export const useConnect = ({ project }: EmbeddingButtonProps) => {
         const lineIndex = lines.findIndex((line: string) => line.includes(uri));
 
         setURITopPosition(
-          newLineHeight * lineIndex +
+          newLineHeight * (lineIndex + 1) +
             NUMBER_OF_PADDING_LINES +
             LINE_HIGHLIGHT_BACKGROUND_PADDING / 2
         );
