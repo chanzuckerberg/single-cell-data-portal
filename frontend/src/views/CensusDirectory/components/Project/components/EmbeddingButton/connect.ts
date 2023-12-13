@@ -2,9 +2,9 @@ import { useCallback, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EmbeddingButtonProps } from "./types";
-import { getProjectTier } from "../../../../utils";
 import { Project } from "src/common/queries/censusDirectory";
 import { StaticProject } from "census-projects.json";
+import { getProjectTier } from "src/views/CensusDirectory/utils";
 
 // The div contains two lines of the word copy
 const NUMBER_OF_EXTRA_LINES = 2;

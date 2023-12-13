@@ -1,5 +1,4 @@
 import React from "react";
-import { StyledButton } from "../../../../style";
 
 import { Dialog, InputRadio, DialogTitle } from "@czi-sds/components";
 import { useConnect } from "./connect";
@@ -11,6 +10,7 @@ import Highlight from "react-highlight";
 import { RadioGroup } from "@mui/material";
 import Link from "next/link";
 import { StyledDialogContent, Label, CodeSnippet, Break } from "./style";
+import { StyledButton } from "src/components/CreateCollectionModal/style";
 
 function EmbeddingButton(props: EmbeddingButtonProps) {
   const { project } = props;
