@@ -21,10 +21,8 @@ function pythonCodeSnippet(project: StaticProject | Project): string {
   const uri = `"s3://cellxgene-contrib-archive/contrib/cell-census/${project.id}"`;
 
   return project.tier === "maintained"
-    ? `
-    import cellxgene_census
+    ? `    import cellxgene_census
 
-    # Census version should be gotten from the metadata
     census = cellxgene_census.open_soma(census_version="${project.census_version}")
     adata = cellxgene_census.get_anndata(
         census,
@@ -33,13 +31,11 @@ function pythonCodeSnippet(project: StaticProject | Project): string {
         obs_value_filter = "tissue == 'tongue'",
         obsm_layers = "${project.obs_matrix}"
     )`
-    : `
-  import cellxgene_census
+    : `  import cellxgene_census
   from cellxgene_census.experimental import get_embedding
 
   embedding_uri = ${uri}
 
-  # Census version should be gotten from the metadata
   census = cellxgene_census.open_soma(census_version="${censusVersion}")
 
   adata = cellxgene_census.get_anndata(

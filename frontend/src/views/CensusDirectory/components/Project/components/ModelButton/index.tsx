@@ -13,7 +13,7 @@ const ModelButton = ({ project }: { project: StaticProject | Project }) => {
       sdsType="secondary"
       sdsStyle="square"
       onClick={() => {
-        track(EVENTS.CENSUS_MODEL_CLICKED, {
+        track(EVENTS.CENSUS_MODEL_COPIED, {
           project: project.title,
           category: project.tier,
         });
