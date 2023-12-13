@@ -12,12 +12,13 @@ import {
 } from "../../style";
 import DetailItem from "../DetailItem";
 
-import EmbeddingButton from "../EmbeddingButton";
+import EmbeddingButton from "./components/EmbeddingButton";
 
 import { ProjectProps } from "./types";
 import { useConnect } from "./connect";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import ModelButton from "./components/ModelButton";
 
 const Project = ({ project, id }: ProjectProps) => {
   const { date, projectNotebookLinks, projectTier, authorsString } = useConnect(
@@ -107,23 +108,8 @@ const Project = ({ project, id }: ProjectProps) => {
             </StyledButton>
           </Link>
         )}
-        {projectTier !== "community" && <EmbeddingButton project={project} />}
-        {!!project.model_link && (
-          <Link href={project.model_link}>
-            <StyledButton
-              sdsType="primary"
-              sdsStyle="square"
-              onClick={() => {
-                track(EVENTS.CENSUS_MODEL_CLICKED, {
-                  project: project.title,
-                  category: projectTier,
-                });
-              }}
-            >
-              Model
-            </StyledButton>
-          </Link>
-        )}
+        <ModelButton project={project} />
+        <EmbeddingButton project={project} />
       </ProjectButtons>
     </ProjectContainer>
   );
