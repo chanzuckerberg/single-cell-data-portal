@@ -2,9 +2,9 @@ import { useCallback, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EmbeddingButtonProps } from "./types";
-import { getProjectTier } from "../../utils";
 import { Project } from "src/common/queries/censusDirectory";
 import { StaticProject } from "census-projects.json";
+import { getProjectTier } from "src/views/CensusDirectory/utils";
 
 // The div contains two lines of the word copy
 const NUMBER_OF_EXTRA_LINES = 2;
@@ -21,10 +21,8 @@ function pythonCodeSnippet(project: StaticProject | Project): string {
   const uri = `"s3://cellxgene-contrib-archive/contrib/cell-census/${project.id}"`;
 
   return project.tier === "maintained"
-    ? `
-    import cellxgene_census
+    ? `    import cellxgene_census
 
-    # Census version should be gotten from the metadata
     census = cellxgene_census.open_soma(census_version="${project.census_version}")
     adata = cellxgene_census.get_anndata(
         census,
@@ -33,13 +31,10 @@ function pythonCodeSnippet(project: StaticProject | Project): string {
         obs_value_filter = "tissue == 'tongue'",
         obsm_layers = "${project.obs_matrix}"
     )`
-    : `
-  import cellxgene_census
+    : `  import cellxgene_census
   from cellxgene_census.experimental import get_embedding
 
   embedding_uri = ${uri}
-
-  # Census version should be gotten from the metadata
   census = cellxgene_census.open_soma(census_version="${censusVersion}")
 
   adata = cellxgene_census.get_anndata(
@@ -48,9 +43,7 @@ function pythonCodeSnippet(project: StaticProject | Project): string {
       measurement_name = "${measurement}",
       obs_value_filter = "tissue == 'tongue'",
   )
-
   embeddings = get_embedding("${censusVersion}", embedding_uri, adata.obs["soma_joinid"])
-
   adata.obsm["emb"] = embeddings`;
 }
 
@@ -90,7 +83,7 @@ export const useConnect = ({ project }: EmbeddingButtonProps) => {
         const lineIndex = lines.findIndex((line: string) => line.includes(uri));
 
         setURITopPosition(
-          newLineHeight * lineIndex +
+          newLineHeight * (lineIndex + 1) +
             NUMBER_OF_PADDING_LINES +
             LINE_HIGHLIGHT_BACKGROUND_PADDING / 2
         );
