@@ -4,7 +4,9 @@
 
 1. Do **NOT** import `.tsx` files in your tests, otherwise we'll get weird parsing errors, due to Playwright parser not parsing SVG files at the moment.
 
-## How to run E2E tests from your local machine
+1. Use `test` from `import { test } from "tests/common/test"` instead of `import { test } from "@playwright/test"`
+
+## How to run e2e tests from your local machine
 
 See the [#how](#how) section
 
@@ -18,6 +20,8 @@ See the [#how](#how) section
    - Example: `RETRY=false npm run e2e`
 1. `USE_COOKIE`: Manually use your own cookie for authenticated tests. Should only be used locally. **The cookie value is set by modifying the `MANUAL_COOKIE` variable in `playwright.config.ts`**
    - Example: `USE_COOKIE=true npm run e2e`
+1. `RDEV_TOKEN`: Fetch and use access token to access an rdev BE in local FE. NOTE: This requires manually changing your local FE to hit an rdev BE URL
+   - Example: `RDEV_TOKEN=true npm run e2e`
 
 ## Cheat Sheet
 
@@ -44,47 +48,74 @@ See the [#how](#how) section
 
    ![Image](https://user-images.githubusercontent.com/13063165/212924587-4b84e5f6-b147-40e9-8c75-d7b9ab6b7ca1.png)
 
-1. `npx playwright show-trace`: Use [Playwright Trace Viewer](https://playwright.dev/docs/trace-viewer) to inspect what the test did play by play along with the network responses at any given time
+1. `npm run e2e-trace`: Use [Playwright Trace Viewer](https://playwright.dev/docs/trace-viewer) to inspect what the test did play by play along with the network responses at any given time
 
    - [Source](https://playwright.dev/docs/trace-viewer)
 
-   - Example: `npx playwright show-trace PATH_TO_TRACE.zip`
+   - Example: `npm run e2e-trace PATH_TO_TRACE.zip`
 
      ![Trace Viewer](https://user-images.githubusercontent.com/6309723/196768996-899f1086-13e8-4c3d-804a-eb050bfa6c71.gif)
 
 ### What
 
-Running E2E tests locally means the tests are run in your local machine against the web app that's either running locally as well (localhost, docker) OR a deployed environment (dev, staging, prod, and rdev)
+Running e2e tests locally means the tests are run in your local machine against the web app that's either running locally as well (localhost, docker) OR a deployed environment (dev, staging, prod, and rdev)
 
 ### When
 
 There are a few scenarios you might want to run tests locally:
 
-#### Against local app (`make local-init` or `npm run dev`)
+#### Against local app (`npm run dev` (recommended) or `make local-init`)
 
 1. You are preparing a new PR and you want to make sure all existing tests pass, and/or you want to add new tests to cover your new feature or bug fix
 
-2. A PR E2E test failed, and you want to see if the test failure is environment dependent.
+2. A PR e2e test failed, and you want to see if the test failure is BE environment dependent.
 
-   E.g., there are two ways to run your FE app locally, either in a Docker container through make commands (`make local-init`) or straight up using `npm run dev` in the `/frontend` directory. PR E2E test runs against local app in a Docker container, so if you run local tests against `npm run dev` started local app and everything is passing, but failing against `make` started Docker container local app, then likely the issue is related to the FE app inside a Docker container.
+   Since PR e2e tests run against their own PR rdev, the quickest way to test if the test failure is BE environment dependent is to test out your local FE with different BE environments and see if the test fail in one BE environment, but not in another
 
-3. A GHA E2E test against a deployed environment (dev, staging, prod, rdev) failed, and you want to see if the test failure is environment dependent.
+   For example, the following steps will test local FE + rdev BE and local FE + staging BE:
+
+   local FE + rdev BE:
+
+   1. Go to `frontend/src/configs/configs.js` and change API_URL to your rdev BE URL.
+      e.g., `API_URL: "https://pr-6062-backend.rdev.single-cell.czi.technology",`
+
+   1. Restart your local FE server, so the local FE app will connect to the rdev BE
+
+   1. Visit https://localhost:3000/ from your favorite browser and make sure the app works
+
+   1. Run `RDEV_TOKEN=true npm run e2e`
+      1. IMPORTANT: `RDEV_TOKEN` flag needs to be set, so the test suite setup will fetch and use rdev token. **Otherwise the browsers that Playwright runs will get CORS error when hitting rdev BE endpoints from your local FE app**. This can be confusing, especially since testing the app from the step above will work with your favorite browser, since your browser likely has cached an access token in your browser cookies, which is NOT available in the browsers Playwright spins up
+      1. You'll likely want to add `.only` to specific test(s) instead of running the whole test suite. See [Cheat Sheet](#cheat-sheet) section for details
+
+   local FE + staging BE:
+
+   1. Go to `frontend/src/configs/configs.js` and change API_URL to staging BE URL.
+      e.g., `API_URL: "https://api.cellxgene.staging.single-cell.czi.technology",`
+
+   1. Restart your local FE server, so the local FE app will connect to the staging BE
+
+   1. Visit https://localhost:3000/ from your favorite browser and make sure the app works
+
+   1. Run `npm run e2e`
+      1. NOTE: We don't need to pass `RDEV_TOKEN=true` here, since we're hitting staging BE
+
+3. A GHA e2e test against a deployed environment (dev, staging, prod, rdev) failed, and you want to see if the test failure is environment dependent.
 
    E.g., when a test fails against a deployed environment, it's helpful to run the same test locally against your local app to see if it's passing. Because if it is passing, the test failure could be environment dependent, such as env dependent data, data size, AWS machine size, third party rate limiting and/or outage
 
 #### Against a deployed app (dev, staging, prod, rdev)
 
-1. A GHA E2E test against a deployed environment failed, and you want to see if it's just flaky.
+1. A GHA e2e test against a deployed environment failed, and you want to see if it's just flaky.
 
    E.g., since tests run a lot slower in GHA vs. locally due to several reasons, such as not as powerful machine, long GHA test queue, and that GHA can't run tests in parallel in the same machine (not many CPUs to utilize), it's sometimes just a lot faster to run that one failed test locally against the same deployed environment
 
-2. A GHA E2E test against a deployed environment failed, and you want to debug the test code.
+2. A GHA e2e test against a deployed environment failed, and you want to debug the test code.
 
    E.g., sometimes a test failure is only reproducible in a deployed environment, in such case, you have no choice but to debug the test against the deployed environment
 
 ### Where
 
-All the E2E test commands can be found in `frontend/Makefile` and `frontend/package.json`. The `frontend/Makefile` commands are wrappers of `frontend/package.json` commands, so you can use either.
+All the e2e test commands can be found in `frontend/Makefile` and `frontend/package.json`. The `frontend/Makefile` commands are wrappers of `frontend/package.json` commands, so you can use either.
 
 ### How
 
@@ -136,10 +167,10 @@ Before running any tests, start with [mise en place](../README.md#mise-en-place)
 
 1. local -> rdev
 
-   1. Manually check your rdev link is working. E.g., https://thuang-nav-explorer.rdev.single-cell.czi.technology
+   1. Manually check your rdev link is working. E.g., https://pr-6062-frontend.rdev.single-cell.czi.technology
    1. In `frontend/` directory, run `RDEV_LINK=YOUR_RDEV_LINK_HERE TEST_ACCOUNT_PASS=PUT_PASSWORD_HERE npm run e2e-rdev`.
 
-   - NOTE: Replace `YOUR_RDEV_LINK_HERE` with your rdev link. E.g., `https://thuang-nav-explorer.rdev.single-cell.czi.technology`
+   - NOTE: Replace `YOUR_RDEV_LINK_HERE` with your rdev link. E.g., `https://pr-6062-frontend.rdev.single-cell.czi.technology`
    - NOTE: Replace `PUT_PASSWORD_HERE` with `corpora/backend/rdev/auth0-secret.test_account_password` in AWS Secret Manager
 
 1. Running Auth-related Tests Locally
@@ -154,7 +185,7 @@ Before running any tests, start with [mise en place](../README.md#mise-en-place)
       - Example: `HEADFUL=true SKIP_LOGIN=true USE_COOKIE=true npm run e2e -- -- tests/features/collection/revision.test.ts`
       - It is recommended to add `.only()` for the tests that you're interested in so that the whole test suite isn't run.
 
-## How to debug Github action failed E2E tests
+## How to debug Github action failed e2e tests
 
 1. The following steps will use [this GHA page](https://github.com/chanzuckerberg/single-cell-data-portal/actions/runs/3276702818) as an example
 1. Go to the failed Github Action summary page
@@ -167,10 +198,10 @@ Before running any tests, start with [mise en place](../README.md#mise-en-place)
    1. `test-failed-*.png` shows the screenshot of the app state before the test exists
    1. `video.webm` shows the whole test session, so you can see what the test actually did
    1. `trace.zip` use [Playwright Trace Viewer](https://playwright.dev/docs/trace-viewer) to inspect what the test did play by play along with the network responses at any given time.
-      1. In the test directory, run `npx playwright show-trace trace.zip`
+      1. In the test directory, run `npm run e2e-trace trace.zip`
          ![test results](https://user-images.githubusercontent.com/6309723/196766317-95afbb3c-2890-42af-a42e-0b1f7702d73c.png)
          ![Trace Viewer](https://user-images.githubusercontent.com/6309723/196768996-899f1086-13e8-4c3d-804a-eb050bfa6c71.gif)
-1. If the information above is not enough to help you pinpoint the root cause of the test failure, we can use [Playwright Inspector](https://playwright.dev/docs/debug) to rerun the [test locally](#how-to-run-e2e-tests-locally) and debug the test steps live
+1. If the information above is not enough to help you pinpoint the root cause of the test failure, we can use [Playwright Inspector](https://playwright.dev/docs/debug) to rerun the [test locally](#how-to-run-e2e-tests-locally) with `--debug` flag and debug the test steps live
 
    1. Find the test you want to debug.
       The `test-results` directory name is part of the test name, so you can use that to find the actual test case.
@@ -186,9 +217,8 @@ Before running any tests, start with [mise en place](../README.md#mise-en-place)
 
    1. Since we're debugging Dev environment, we need to use the `local -> dev` command as shown in the [How](#how) section above.
 
-   1. In `single-cell-data-portal/frontend/`, run `TEST_ACCOUNT_PASS=PUT_PASSWORD_HERE npm run e2e-dev --/YOUR_DIRECTORY_PATH/single-cell-data-portal/frontend/tests/features/collection/collection.test.ts -- -- --debug`.
+   1. In `single-cell-data-portal/frontend/`, run `npm run e2e-dev -- --debug`.
 
-      NOTE: `PUT_PASSWORD_HERE` needs to be replaced with the actual test account Auth0 password, and `YOUR_DIRECTORY_PATH` needs to be where your `single-cell-data-portal` directory lives
       NOTE: To run in one specific browser, run `npm run e2e-dev -- --project chromium` (chromium|firefox|edge)
 
    1. Playwright will now spin up a browser window and a debugging console for you to inspect the test live!
@@ -197,6 +227,48 @@ Before running any tests, start with [mise en place](../README.md#mise-en-place)
       1. For more information, visit [Playwright Inspector](https://playwright.dev/docs/debug)
 
       ![Playwright Inspector](https://user-images.githubusercontent.com/6309723/196775284-81bd4853-b4c6-45c4-827b-22e97b97ee06.png)
+
+## Troubleshooting
+
+### preSetup Access Token
+
+If you see an issue that looks like this
+
+```
+  ✘  1 [preSetup] › tests/common/playwright.global.preSetup.ts:11:7 › global preSetup › Get access token (0ms)
+Error: ENOENT: no such file or directory, open '/var/folders/l5/ygnys3jj7n9f12p826j9448c0000gq/T/playwright-transform-cache-503/f7/context_f76b0cdd8a23a6ac47b3cccbc8fed32460f74ab0.js'
+
+   at playwright.config.ts:11
+
+   9 | import fs from "fs";
+  10 | import { LOGIN_STATE_FILENAME } from "tests/common/constants";
+> 11 | import { COMMON_PLAYWRIGHT_CONTEXT } from "tests/common/context";
+     | ^
+  12 | import { getFeatureFlags } from "tests/common/featureFlags";
+  13 | import { SKIP_LOGIN } from "tests/common/constants";
+  14 | import { shouldUseRdevToken } from "tests/utils/helpers";
+```
+
+You can resolve it by just removing the folder
+
+```
+rm -rf /var/folders/l5/ygnys3jj7n9f12p826j9448c0000gq/T/playwright-transform-cache-503
+```
+
+### AWS Region Missing in Setup
+
+If you see an error within the Setup that looks like:
+
+```
+BOTO_ENDPOINT_URL not assigned, assuming running on deployment
+  ✓  1 [preSetup] › tests/common/playwright.global.preSetup.ts:11:7 › global preSetup › Get access token (38ms)
+BOTO_ENDPOINT_URL not assigned, assuming running on deployment
+  ✘  2 [setup] › tests/common/playwright.global.setup.ts:10:7 › global setup › login (13.3s)
+🔐🪵 Logging in...
+Error: Region is missing
+```
+
+You can resolve this by updating your AWS config file to set the region to be `us-west-2`. You can see more [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html) on how to do that.
 
 ---
 

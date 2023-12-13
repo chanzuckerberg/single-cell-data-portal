@@ -1,4 +1,10 @@
-import React, { useMemo, useEffect, useState } from "react";
+import React, {
+  useMemo,
+  useEffect,
+  useState,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import { Group } from "@visx/group";
 import { Global } from "@emotion/react";
 import { useTooltip, useTooltipInPortal } from "@visx/tooltip";
@@ -69,7 +75,7 @@ interface TreeProps {
   tissueId: string;
   tissueName: string;
   selectGene?: (gene: string) => void;
-  setCellInfoCellType?: (props: CellType | null) => void;
+  setCellInfoCellType?: Dispatch<SetStateAction<CellType | null>>;
 }
 
 // This determines the initial Zoom position and scale
@@ -430,7 +436,7 @@ export default function OntologyDagView({
                 <Legend isTissue={!cellTypeId} selectedGene={selectedGene} />
               )}
               <RightAligned>
-                {selectedGene && (
+                {!!selectedGene && (
                   <StyledTagFilter
                     data-testid={
                       CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
@@ -485,9 +491,9 @@ export default function OntologyDagView({
                       </>
                     )}
                     {tooltipData &&
-                      tooltipData.marker_score &&
-                      tooltipData.me &&
-                      tooltipData.pc && (
+                      !!tooltipData.marker_score &&
+                      !!tooltipData.me &&
+                      !!tooltipData.pc && (
                         <>
                           <br />
                           <br />
@@ -531,6 +537,7 @@ export default function OntologyDagView({
                         <AnimatedLinks tree={tree} duration={duration} />
                         <AnimatedNodes
                           tree={tree}
+                          tissueId={tissueId}
                           cellTypeId={cellTypeId}
                           duration={duration}
                           setDuration={setDuration}

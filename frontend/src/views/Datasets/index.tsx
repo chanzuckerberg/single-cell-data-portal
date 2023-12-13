@@ -38,7 +38,7 @@ import { ALIGNMENT } from "src/components/common/Grid/common/entities";
 import { CATEGORY_FILTER_DENY_LIST } from "src/views/Datasets/common/constants";
 import { useViewMode, VIEW_MODE } from "src/common/hooks/useViewMode";
 import { DatasetsView as View } from "./style";
-import Loader from "src/components/common/Grid/components/Loader";
+import { GridLoader as Loader } from "src/components/common/Grid/components/Loader/style";
 
 /**
  * Collection ID object key.

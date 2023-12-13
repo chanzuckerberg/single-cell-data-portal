@@ -10,7 +10,8 @@ from backend.cellguide.pipeline.canonical_marker_genes.utils import (
     get_title_and_citation_from_doi,
 )
 from backend.cellguide.pipeline.utils import convert_dataclass_to_dict_and_strip_nones
-from tests.test_utils.dict_compare import compare_dicts
+from tests.test_utils import compare_dicts
+from tests.test_utils.mocks import mock_get_asctb_master_sheet, mock_get_title_and_citation_from_doi
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
 )
@@ -18,7 +19,6 @@ from tests.unit.cellguide_pipeline.constants import (
     CANONICAL_MARKER_GENES_FIXTURE_FILENAME,
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
 )
-from tests.unit.cellguide_pipeline.mocks import mock_get_asctb_master_sheet, mock_get_title_and_citation_from_doi
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
 

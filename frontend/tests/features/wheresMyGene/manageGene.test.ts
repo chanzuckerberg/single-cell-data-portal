@@ -1,4 +1,5 @@
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
+import { test } from "tests/common/test";
 import {
   ADD_GENE_SEARCH_PLACEHOLDER_TEXT,
   searchAndAddGene,

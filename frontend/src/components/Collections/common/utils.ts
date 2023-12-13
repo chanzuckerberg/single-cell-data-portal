@@ -24,7 +24,7 @@ export function useExplainTombstoned(): void {
         message:
           "This collection was withdrawn. You’ve been redirected to Collections.",
       });
-      removeParams("tombstoned_collection_id");
+      removeParams({ params: "tombstoned_collection_id", router });
     }
-  }, [tombstoned_collection_id, isReady]);
+  }, [tombstoned_collection_id, isReady, router]);
 }

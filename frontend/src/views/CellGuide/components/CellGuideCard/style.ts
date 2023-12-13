@@ -17,7 +17,7 @@ import {
   spacesS,
   spacesXxl,
 } from "src/common/theme";
-import { StyledDiv } from "src/views/WheresMyGene/components/ScreenTint/style";
+import { StyledDiv } from "src/views/WheresMyGeneV2/components/ScreenTint/style";
 import { keyframes } from "@emotion/react";
 import { DEFAULT_ONTOLOGY_WIDTH } from "../common/OntologyDagView/common/constants";
 import { SKINNY_MODE_BREAKPOINT_WIDTH } from "./constants";

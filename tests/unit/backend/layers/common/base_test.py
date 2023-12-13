@@ -4,8 +4,9 @@ import typing
 import unittest
 from dataclasses import dataclass
 from typing import List, Optional
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
+from backend.common.corpora_config import CorporaConfig
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import (
     CollectionId,
@@ -20,9 +21,11 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
     OntologyTermId,
+    TissueOntologyTermId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
+from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
@@ -76,15 +79,18 @@ class BaseTest(unittest.TestCase):
     def setUp(self):
         super().setUp()
         os.environ.setdefault("APP_NAME", "corpora-api")
-
+        config = {
+            "upload_max_file_size_gb": 30,
+            "collections_base_url": "http://collections",
+            "dataset_assets_base_url": "http://domain",
+            "citation_update_feature_flag": "True",
+            "schema_4_feature_flag": "True",
+        }
         # Mock CorporaConfig
         # TODO: deduplicate with base_api
-        def mock_config_fn(name):
-            if name == "upload_max_file_size_gb":
-                return 30
 
-        mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-        mock_config.start()
+        self.mock_config = CorporaConfig()
+        self.mock_config.set(config)
 
         from backend.layers.common import validation
 
@@ -101,6 +107,7 @@ class BaseTest(unittest.TestCase):
             self.database_provider = DatabaseProviderMock()
 
         self.crossref_provider = CrossrefProviderInterface()
+        batch_job_provider = BatchJobProviderInterface()
         step_function_provider = StepFunctionProviderInterface()
         self.s3_provider = S3ProviderInterface()
         self.uri_provider = UriProviderInterface()
@@ -110,7 +117,11 @@ class BaseTest(unittest.TestCase):
         self.sample_dataset_metadata = DatasetMetadata(
             name="test_dataset_name",
             organism=[OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
-            tissue=[OntologyTermId(label="test_tissue_label", ontology_term_id="test_tissue_term_id")],
+            tissue=[
+                TissueOntologyTermId(
+                    label="test_tissue_label", ontology_term_id="test_tissue_term_id", tissue_type="tissue"
+                )
+            ],
             assay=[OntologyTermId(label="test_assay_label", ontology_term_id="test_assay_term_id")],
             disease=[OntologyTermId(label="test_disease_label", ontology_term_id="test_disease_term_id")],
             sex=[OntologyTermId(label="test_sex_label", ontology_term_id="test_sex_term_id")],
@@ -132,6 +143,16 @@ class BaseTest(unittest.TestCase):
             donor_id=["test_donor_1"],
             is_primary_data="BOTH",
             x_approximate_distribution="normal",
+            default_embedding="X_embedding_1",
+            embeddings=["X_embedding_1", "X_embedding_2"],
+            feature_biotype=["gene"],
+            feature_count=400,
+            feature_reference=["NCBITaxon:9606"],
+            raw_data_location="raw.X",
+            citation="Publication: https://doi.org/12.2345/science.abc1234 Dataset Version: "
+            "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
+            "CZ CELLxGENE Discover in Collection: "
+            "https://cellxgene.cziscience.com/collections/collection_id",
         )
 
         self.sample_collection_metadata = CollectionMetadata(
@@ -144,11 +165,17 @@ class BaseTest(unittest.TestCase):
         )
 
         self.business_logic = BusinessLogic(
-            self.database_provider, self.crossref_provider, step_function_provider, self.s3_provider, self.uri_provider
+            self.database_provider,
+            batch_job_provider,
+            self.crossref_provider,
+            step_function_provider,
+            self.s3_provider,
+            self.uri_provider,
         )
 
     def tearDown(self):
         super().tearDown()
+        self.mock_config.reset()
         if self.run_as_integration:
             self.database_provider._drop_schema()
 
@@ -264,6 +291,7 @@ class BaseTest(unittest.TestCase):
             )
         if artifacts is None:
             artifacts = [
+                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, f"s3://fake.bucket/{dataset_version_id}/raw.h5ad"),
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, f"s3://fake.bucket/{dataset_version_id}/local.h5ad"),
                 DatasetArtifactUpdate(DatasetArtifactType.CXG, f"s3://fake.bucket/{dataset_version_id}/local.cxg"),
                 DatasetArtifactUpdate(DatasetArtifactType.RDS, f"s3://fake.bucket/{dataset_version_id}/local.rds"),

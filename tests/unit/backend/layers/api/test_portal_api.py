@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 
 from furl import furl
 
-from backend.layers.business.entities import DatasetArtifactDownloadData, DeprecatedDatasetArtifactDownloadData
+from backend.layers.business.entities import DatasetArtifactDownloadData
 from backend.layers.common.entities import (
     CollectionId,
     CollectionVersionId,
@@ -18,6 +18,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
     OntologyTermId,
+    TissueOntologyTermId,
 )
 from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.layers.thirdparty.uri_provider import FileInfo, FileInfoException
@@ -124,7 +125,13 @@ class TestCollection(BaseAPIPortalTest):
                     ],
                     "sex": [{"label": "test_sex_label", "ontology_term_id": "test_sex_term_id"}],
                     "suspension_type": ["test_suspension_type"],
-                    "tissue": [{"label": "test_tissue_label", "ontology_term_id": "test_tissue_term_id"}],
+                    "tissue": [
+                        {
+                            "label": "test_tissue_label",
+                            "ontology_term_id": "test_tissue_term_id",
+                            "tissue_type": "tissue",
+                        }
+                    ],
                     "tombstone": False,
                     "updated_at": mock.ANY,
                     "x_approximate_distribution": "normal",
@@ -175,7 +182,13 @@ class TestCollection(BaseAPIPortalTest):
                     ],
                     "sex": [{"label": "test_sex_label", "ontology_term_id": "test_sex_term_id"}],
                     "suspension_type": ["test_suspension_type"],
-                    "tissue": [{"label": "test_tissue_label", "ontology_term_id": "test_tissue_term_id"}],
+                    "tissue": [
+                        {
+                            "label": "test_tissue_label",
+                            "ontology_term_id": "test_tissue_term_id",
+                            "tissue_type": "tissue",
+                        }
+                    ],
                     "tombstone": False,
                     "updated_at": mock.ANY,
                     "x_approximate_distribution": "normal",
@@ -1579,62 +1592,6 @@ class TestDataset(BaseAPIPortalTest):
         self.assertEqual(f"'dataset/{dataset.dataset_version_id}/asset/fake_asset' not found.", body["detail"])
 
     # ✅
-    def test__post_dataset_asset__OK(self):
-        self.business_logic.get_dataset_artifact_download_data_deprecated = Mock(
-            return_value=DeprecatedDatasetArtifactDownloadData(
-                "asset.h5ad", DatasetArtifactType.H5AD, 1000, "http://presigned.url"
-            )
-        )
-        version = self.generate_dataset(
-            artifacts=[DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad")]
-        )
-        dataset_version_id = version.dataset_version_id
-        artifact_id = version.artifact_ids[0]
-
-        test_url = furl(path=f"/dp/v1/datasets/{dataset_version_id}/asset/{artifact_id}")
-        response = self.app.post(test_url.url, headers=dict(host="localhost"))
-        self.assertEqual(200, response.status_code)
-
-        actual_body = json.loads(response.data)
-        self.assertEqual(actual_body["presigned_url"], "http://presigned.url")
-        self.assertEqual(actual_body["dataset_id"], version.dataset_version_id)
-        self.assertEqual(actual_body["file_size"], 1000)
-        self.assertEqual(actual_body["file_name"], "asset.h5ad")
-
-    # ✅, but I think the behavior could be improved
-    def test__post_dataset_asset__file_SERVER_ERROR(self):
-        """
-        `post_dataset_asset` should throw 500 if presigned_url or file_size aren't returned from the server
-        """
-        version = self.generate_dataset(
-            artifacts=[DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad")]
-        )
-        dataset_version_id = version.dataset_version_id
-        artifact_id = version.artifact_ids[0]
-
-        test_url = furl(path=f"/dp/v1/datasets/{dataset_version_id}/asset/{artifact_id}")
-        response = self.app.post(test_url.url, headers=dict(host="localhost"))
-        self.assertEqual(500, response.status_code)
-
-    # ✅
-    def test__post_dataset_asset__dataset_NOT_FOUND(self):
-        fake_id = DatasetVersionId()
-        test_url = furl(path=f"/dp/v1/datasets/{fake_id}/asset/{fake_id}")
-        response = self.app.post(test_url.url, headers=dict(host="localhost"))
-        self.assertEqual(404, response.status_code)
-        body = json.loads(response.data)
-        self.assertEqual(f"'dataset/{fake_id}' not found.", body["detail"])
-
-    # ✅
-    def test__post_dataset_asset__asset_NOT_FOUND(self):
-        dataset = self.generate_dataset()
-        test_url = furl(path=f"/dp/v1/datasets/{dataset.dataset_version_id}/asset/fake_asset")
-        response = self.app.post(test_url.url, headers=dict(host="localhost"))
-        self.assertEqual(404, response.status_code)
-        body = json.loads(response.data)
-        self.assertEqual(f"'dataset/{dataset.dataset_version_id}/asset/fake_asset' not found.", body["detail"])
-
-    # ✅
     def test__get_status__ok(self):
         dataset = self.generate_dataset(
             statuses=[
@@ -1752,7 +1709,7 @@ class TestDataset(BaseAPIPortalTest):
                 # append the dataset_id to the list of dataset ids
                 dataset_ids.append(dataset["dataset_id"])
 
-        self.assertEqual(len(dataset_ids), 6)
+        self.assertEqual(len(dataset_ids), 8)
 
         dataset_ids = list(dataset_ids)
         print("dataset_ids: ", dataset_ids)
@@ -1770,12 +1727,15 @@ class TestDataset(BaseAPIPortalTest):
         self.assertEqual(response.status_code, 401)
 
     # ✅
-    def test__get_all_datasets_for_index_with_ontology_expansion(self):
+    def test__get_all_datasets_for_index_with_ontology_expansion_deprecated(self):
+        # TODO deprecated - remove with #6266. Keeping temporarily to ensure
+        # backwards compatibility while running both 3.0.0 and 4.0.0 (behind
+        # a feature flag) versions of the code.
         import copy
 
         modified_metadata = copy.deepcopy(self.sample_dataset_metadata)
         modified_metadata.development_stage = [OntologyTermId("Test", "HsapDv:0000008")]
-        modified_metadata.tissue = [OntologyTermId("Test", "UBERON:0002048")]
+        modified_metadata.tissue = [TissueOntologyTermId("Test", "UBERON:0002048")]
         modified_metadata.cell_type = [OntologyTermId("Test", "CL:0000738")]
 
         dataset = self.generate_dataset(metadata=modified_metadata, publish=True)
@@ -1823,6 +1783,64 @@ class TestDataset(BaseAPIPortalTest):
                     "UBERON:0005177",
                     "UBERON:0001004",
                 ],
+            )
+
+            self.assertEqual(actual_dataset["cell_type"], convert_ontology(modified_metadata.cell_type))
+            self.assertCountEqual(
+                actual_dataset["cell_type_ancestors"],
+                [
+                    "CL:0000255",
+                    "CL:0002371",
+                    "CL:0000988",
+                    "CL:0000738",
+                    "CL:0000548",
+                    "CL:0000219",
+                    "CL:0000003",
+                    "CL:0002242",
+                ],
+            )
+
+    def test__get_all_datasets_for_index_with_ontology_expansion(self):
+        # Schema 4.0.0 version of
+        # test__get_all_datasets_for_index_with_ontology_expansion_deprecated
+        # above. Remove this comment with #6266.
+        import copy
+
+        modified_metadata = copy.deepcopy(self.sample_dataset_metadata)
+        modified_metadata.development_stage = [OntologyTermId("Test", "HsapDv:0000008")]
+        modified_metadata.tissue = [TissueOntologyTermId("Test", "UBERON:0000995", "organoid")]
+        modified_metadata.cell_type = [OntologyTermId("Test", "CL:0000738")]
+
+        dataset = self.generate_dataset(metadata=modified_metadata, publish=True)
+
+        test_url = furl(path="/dp/v1/datasets/index")
+
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+
+        actual_dataset = None
+        for d in body:
+            if d["id"] == dataset.dataset_version_id:
+                actual_dataset = d
+        self.assertIsNotNone(actual_dataset)
+
+        def convert_ontology(ontologies):
+            return [dataclasses.asdict(o) for o in ontologies]
+
+        if actual_dataset is not None:  # pylance
+            self.assertEqual(actual_dataset["development_stage"], convert_ontology(modified_metadata.development_stage))
+            self.assertEqual(
+                actual_dataset["development_stage_ancestors"],
+                ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"],
+            )
+
+            self.assertEqual(actual_dataset["tissue"], convert_ontology(modified_metadata.tissue))
+            # TODO update with fix for #6192.
+            self.assertCountEqual(
+                actual_dataset["tissue_ancestors"],
+                ["UBERON:0000995 (organoid)"],
             )
 
             self.assertEqual(actual_dataset["cell_type"], convert_ontology(modified_metadata.cell_type))
@@ -2789,7 +2807,7 @@ class TestCollectionPostUploadLink(BaseAPIPortalTest):
         with self.subTest("Bad Dropbox link"):
             self.uri_provider.validate = Mock(return_value=True)
             self.uri_provider.get_file_info.side_effect = FileInfoException(
-                "The URL provided causes an error with Dropbox."
+                "The URI provided causes an error with Dropbox."
             )
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
             body = {"url": self.dummy_link}
@@ -2797,7 +2815,7 @@ class TestCollectionPostUploadLink(BaseAPIPortalTest):
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
             self.assertEqual(400, response.status_code)
             print(json.loads(response.data)["detail"])
-            self.assertTrue(json.loads(response.data)["detail"] == "The URL provided causes an error with Dropbox.")
+            self.assertTrue(json.loads(response.data)["detail"] == "The URI provided causes an error with Dropbox.")
 
     # ✅
     def test__oversized__413(self):

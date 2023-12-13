@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { expandTissue, getCellTypeNames, goToPage } from "tests/utils/helpers";
 import { TEST_URL } from "tests/common/constants";
 import { ROUTES } from "src/common/constants/routes";
@@ -6,6 +6,7 @@ import {
   CELL_TYPE_NAME_LABEL_CLASS_NAME,
   CELL_TYPE_ROW_CLASS_NAME,
 } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
+import { test } from "tests/common/test";
 const { describe } = test;
 
 describe("cell tooltip", () => {

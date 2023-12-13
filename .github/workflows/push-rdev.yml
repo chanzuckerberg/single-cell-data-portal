@@ -60,11 +60,12 @@ jobs:
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
-          export IMAGE_TAG=branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
+          export IMAGE_TAG=sha-${GITHUB_SHA:0:7}
+          export BRANCH_TAG=branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
           happy push devstack --env dev --slice ${{ matrix.image }} \
           --docker-compose-env-file envfile --aws-profile "" \
-          --tags ${STACK_NAME},${IMAGE_TAG}
+          --tags ${STACK_NAME},${IMAGE_TAG},${BRANCH_TAG}
 
   summarize:
     runs-on: ubuntu-22.04

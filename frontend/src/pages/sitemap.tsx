@@ -10,7 +10,7 @@ import {
 } from "src/common/queries/cellGuide";
 import { useMemo, useState, useEffect } from "react";
 import { fontWeightSemibold } from "src/common/theme";
-import { MAX_WIDTH_BREAKPOINT_PX } from "src/components/LandingHeader/style";
+import { MAX_WIDTH_BREAKPOINT_PX } from "src/components/MobileFriendlyHeader/style";
 
 const DOC_SITE_FOLDER_NAME = "doc-site";
 

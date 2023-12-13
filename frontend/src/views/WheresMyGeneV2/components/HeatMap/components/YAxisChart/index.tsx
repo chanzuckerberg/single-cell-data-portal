@@ -1,16 +1,23 @@
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../../../GeneSearchBar/components/SaveExport";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
 import { Icon, Tooltip } from "@czi-sds/components";
-import InfoSVG from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/icons/info-sign-icon.svg";
+import InfoSVG from "src/common/images/info-sign-icon.svg";
 
 import {
   COMPARE_OPTION_ID_FOR_AGGREGATED,
   CellTypeRow,
 } from "src/common/queries/wheresMyGene";
-import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
+import { CellType, Tissue } from "src/views/WheresMyGeneV2/common/types";
 import {
   CellTypeMetadata,
   Y_AXIS_CHART_WIDTH_PX,
@@ -19,8 +26,8 @@ import {
   getAllSerializedCellTypeMetadata,
   getHeatmapHeight,
   hyphenize,
-} from "src/views/WheresMyGene/components/HeatMap/utils";
-import { SELECTED_STYLE } from "src/views/WheresMyGene/components/HeatMap/style";
+} from "src/views/WheresMyGeneV2/components/HeatMap/utils";
+import { SELECTED_STYLE } from "src/views/WheresMyGeneV2/components/HeatMap/style";
 import {
   CellCountLabelStyle,
   CellTypeLabelStyle,
@@ -33,7 +40,7 @@ import {
   TissueHeaderLabelStyle,
   Wrapper,
   TissueLabel,
-} from "src/views/WheresMyGene/components/HeatMap/components/YAxisChart/style";
+} from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/style";
 import {
   CELL_COUNT_LABEL_CLASS_NAME,
   CELL_TYPE_ROW_CLASS_NAME,
@@ -41,6 +48,8 @@ import {
   TISSUE_NAME_LABEL_CLASS_NAME,
   CELL_TYPE_NAME_LABEL_CLASS_NAME,
 } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
+import { formatCitation } from "src/common/utils/formatCitation";
+import { StateContext } from "src/views/WheresMyGeneV2/common/store";
 
 interface Props {
   cellTypes: CellTypeRow[];
@@ -50,9 +59,6 @@ interface Props {
   handleExpandCollapse: (tissueID: string, tissueName: Tissue) => void;
   expandedTissueIds: string[];
 }
-
-// List of Tissues to exclude from FMG
-const FMG_EXCLUDE_TISSUES = ["blood"];
 
 export default memo(function YAxisChart({
   cellTypes = [],
@@ -76,6 +82,7 @@ export default memo(function YAxisChart({
   const cellTypeMetadata = useMemo(() => {
     return getAllSerializedCellTypeMetadata(cellTypes, tissue);
   }, [cellTypes, tissue]);
+  const { compare } = useContext(StateContext);
 
   return (
     <Wrapper id={`${hyphenize(tissue)}-y-axis`}>
@@ -87,16 +94,18 @@ export default memo(function YAxisChart({
           .slice()
           .reverse()
           .map((cellType) => {
-            const { name } = deserializeCellTypeMetadata(
+            const { name, isAggregated } = deserializeCellTypeMetadata(
               cellType as CellTypeMetadata
             );
-
             const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
             const selectedFont = `${fontWeight} ${fontSize}px ${fontFamily}`;
             const expanded = expandedTissueIds.includes(tissueID);
-
+            let formattedName = name;
+            if (compare && compare === "publication" && !isAggregated) {
+              formattedName = formatCitation(name);
+            }
             const { text: paddedName } = formatLabel(
-              name,
+              formattedName,
               Y_AXIS_CHART_WIDTH_PX - 90, // scale based on y-axis width
               selectedFont // prevents selected style from overlapping count
             );
@@ -171,16 +180,15 @@ const TissueHeaderButton = ({
           sdsSize="s"
           color="gray"
           sdsType="static"
+          shade={300}
         />
-        <TissueHeaderLabelStyle>
-          <div>
-            <TissueLabel
-              className={TISSUE_NAME_LABEL_CLASS_NAME}
-              data-testid={TISSUE_NAME_LABEL_CLASS_NAME}
-            >
-              {capitalize(formattedName)}
-            </TissueLabel>
-          </div>
+        <TissueHeaderLabelStyle expanded={expanded}>
+          <TissueLabel
+            className={TISSUE_NAME_LABEL_CLASS_NAME}
+            data-testid={TISSUE_NAME_LABEL_CLASS_NAME}
+          >
+            {capitalize(formattedName)}
+          </TissueLabel>
         </TissueHeaderLabelStyle>
       </FlexRow>
       <CellCountLabelStyle
@@ -255,35 +263,33 @@ const CellTypeButton = ({
           </Tooltip>
         </CellTypeLabelStyle>
 
-        {!FMG_EXCLUDE_TISSUES.includes(tissue) &&
-          cellType &&
-          cellType.total_count > 25 &&
-          cellType.optionId === COMPARE_OPTION_ID_FOR_AGGREGATED && (
-            <InfoButtonWrapper
-              className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
-              onClick={() => {
-                if (cellType) {
-                  generateMarkerGenes(cellType, tissueID);
-                  track(EVENTS.WMG_FMG_INFO_CLICKED, {
-                    combination: `${cellType.name}, ${tissue}}`,
-                  });
-                }
-              }}
-            >
-              <StyledImage
-                data-testid="marker-gene-button"
-                src={InfoSVG.src}
-                /**
-                 * (thuang): https://nextjs.org/docs/pages/api-reference/components/image-legacy#layout
-                 * Use the <StyledImage /> width and height, since default is `intrinsic`
-                 */
-                layout="fixed"
-                width="10"
-                height="10"
-                alt={`display marker genes for ${cellType.name}`}
-              />
-            </InfoButtonWrapper>
-          )}
+        {cellType && cellType.optionId === COMPARE_OPTION_ID_FOR_AGGREGATED && (
+          <InfoButtonWrapper
+            className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+            data-testid={`cell-type-info-button-${tissue}-${cellType.name}`}
+            onClick={() => {
+              if (cellType) {
+                generateMarkerGenes(cellType, tissueID);
+                track(EVENTS.WMG_FMG_INFO_CLICKED, {
+                  combination: `${cellType.name}, ${tissue}}`,
+                });
+              }
+            }}
+          >
+            <StyledImage
+              data-testid="marker-gene-button"
+              src={InfoSVG.src}
+              /**
+               * (thuang): https://nextjs.org/docs/pages/api-reference/components/image-legacy#layout
+               * Use the <StyledImage /> width and height, since default is `intrinsic`
+               */
+              layout="fixed"
+              width="10"
+              height="10"
+              alt={`display marker genes for ${cellType.name}`}
+            />
+          </InfoButtonWrapper>
+        )}
       </FlexRow>
       <CellCountLabelStyle
         className={CELL_COUNT_LABEL_CLASS_NAME}

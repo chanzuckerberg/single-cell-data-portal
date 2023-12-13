@@ -14,10 +14,12 @@ import { EVENTS } from "src/common/analytics/events";
 import { track } from "src/common/analytics";
 import { MouseEventHandler, useState } from "react";
 import { useRouter } from "next/router";
-import { ROUTES } from "src/common/constants/routes";
+import { getCellTypeLink } from "src/views/CellGuide/common/utils";
+import { NO_ORGAN_ID } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
 
 interface AnimatedNodesProps {
   tree: HierarchyPointNode<TreeNodeWithState>;
+  tissueId?: string;
   cellTypeId?: string;
   duration: number;
   setDuration: (duration: number) => void;
@@ -54,6 +56,7 @@ interface AnimationNode {
 export default function AnimatedNodes({
   tree,
   cellTypeId,
+  tissueId = NO_ORGAN_ID,
   duration,
   setDuration,
   toggleTriggerRender,
@@ -74,7 +77,12 @@ export default function AnimatedNodes({
     if (setCellInfoCellType) {
       setCellInfoCellType({ cellTypeId, cellTypeName });
     } else {
-      router.push(`${ROUTES.CELL_GUIDE}/${cellTypeId.replace(":", "_")}`);
+      const url = getCellTypeLink({
+        tissueId,
+        cellTypeId,
+      });
+
+      router.push(url);
     }
   };
 
@@ -82,12 +90,14 @@ export default function AnimatedNodes({
     event: React.MouseEvent<HTMLDivElement>,
     datum: TreeNodeWithState
   ) => {
-    const id = setTimeout(() => {
-      track(EVENTS.CG_TREE_NODE_HOVER, {
-        cell_type: datum.name,
-      });
-    }, 2 * 1000);
-    setTimerId(id);
+    if (!timerId) {
+      const id = setTimeout(() => {
+        track(EVENTS.CG_TREE_NODE_HOVER, {
+          cell_type: datum.name,
+        });
+      }, 2 * 1000);
+      setTimerId(id);
+    }
     const ownerSVGElement = findSVGParent(event.target as Node);
     if (event.target instanceof HTMLDivElement && ownerSVGElement) {
       const coords = localPoint(ownerSVGElement, event);

@@ -15,12 +15,12 @@ import Toast from "src/views/Collection/components/Toast";
 import {
   DispatchContext,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
+} from "src/views/WheresMyGeneV2/common/store";
 import {
   deleteAllGenes,
   selectGenes,
-} from "src/views/WheresMyGene/common/store/actions";
-import { Gene } from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/store/actions";
+import { Gene } from "src/views/WheresMyGeneV2/common/types";
 import {
   ActionWrapper,
   AutocompleteWrapper,
@@ -187,7 +187,7 @@ export default function GeneSearchBar({
       const newSelected = [...selectedGeneOptions];
       const parsedPaste = pull(uniq(input.split(/[ ,]+/)), "");
 
-      parsedPaste.map((item) => {
+      parsedPaste.forEach((item) => {
         const newItem = genesByName.get(item.toLowerCase());
         if (!newItem) {
           handleGeneNotFound(item);

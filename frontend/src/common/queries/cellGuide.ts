@@ -248,6 +248,7 @@ export interface ComputationalMarkersQueryResponseEntry {
   me: number;
   pc: number;
   marker_score: number;
+  specificity: number;
   symbol: string;
   name: string;
   groupby_dims: {
@@ -369,6 +370,7 @@ interface MarkerGenePresenceQueryResponse {
         me: number;
         pc: number;
         marker_score: number;
+        specificity: number;
         cell_type_id: string;
       }[];
     };
@@ -470,11 +472,20 @@ export const fetchTissueMetadata =
   };
 
 /* ========== Lookup tables for organs ========== */
-export function useAllOrgansLookupTables(): Map<string, string> {
-  const { data: allOrgansData } = useTissueMetadata();
+export function useAllOrgansLookupTables(): {
+  data: Map<string, string>;
+  isSuccess: boolean;
+} {
+  /**
+   * (thuang): Expose `isSuccess`, so `CellGuide/components/CellGuideCard/connect.ts`
+   * can use it to determine if the data is ready and determine if the user should
+   * be redirected to the tissue agnostic cell type page.
+   */
+  const { data: allOrgansData, isSuccess } = useTissueMetadata();
+
   return useMemo(() => {
     if (!allOrgansData) {
-      return new Map<string, string>();
+      return { data: new Map<string, string>(), isSuccess };
     }
 
     const allOrgansLabelToIdMap = new Map<string, string>();
@@ -482,8 +493,12 @@ export function useAllOrgansLookupTables(): Map<string, string> {
       const organData = allOrgansData[organId];
       allOrgansLabelToIdMap.set(organData.name, organData.id);
     }
-    return allOrgansLabelToIdMap;
-  }, [allOrgansData]);
+
+    return {
+      data: allOrgansLabelToIdMap,
+      isSuccess,
+    };
+  }, [allOrgansData, isSuccess]);
 }
 
 /* ========== Lookup tables for tissues ========== */

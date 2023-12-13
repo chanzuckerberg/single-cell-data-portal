@@ -6,7 +6,7 @@ from urllib.parse import quote
 import requests
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from tests.functional.backend.common import TEST_DATASET_URI, BaseFunctionalTestCase
+from tests.functional.backend.common import BaseFunctionalTestCase
 
 
 class TestRevisions(BaseFunctionalTestCase):
@@ -52,8 +52,8 @@ class TestRevisions(BaseFunctionalTestCase):
 
         collection_id = self.create_collection(headers)
 
-        dataset_1_dropbox_url = TEST_DATASET_URI
-        dataset_2_dropbox_url = TEST_DATASET_URI
+        dataset_1_dropbox_url = self.test_dataset_uri
+        dataset_2_dropbox_url = self.test_dataset_uri
 
         # Uploads a dataset
         self.upload_and_wait(collection_id, dataset_1_dropbox_url)

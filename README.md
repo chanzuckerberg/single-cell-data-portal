@@ -80,7 +80,7 @@ Please take a look at the tutorial notebooks in `example_dev_notebooks` for exam
 3. Run a specific suite of tests using `DEPLOYMENT_STAGE=<deployed_env> python3 -m unittest <path_to_functional_test>`. For example, `DEPLOYMENT_STAGE=dev python3 -m unittest tests/functional/backend/corpora/test_revisions.py`
 4. Run all functional tests by using `DEPLOYMENT_STAGE=<deployed_env> python3 -m unittest discover tests/functional/backend`
 
-### Running E2E Tests
+### Running e2e Tests
 
 Follow instructions in [e2e tests README](frontend/tests/README.md)
 

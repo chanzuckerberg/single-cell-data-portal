@@ -6,7 +6,7 @@ import { LANDING_PAGE_HEADER } from "src/views/CellGuide/components/LandingPage/
 import CellGuideMobileHeader from "../CellGuideMobileHeader";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { throttle } from "lodash";
-import { MAX_WIDTH_BREAKPOINT_PX } from "src/components/LandingHeader/style";
+import { MAX_WIDTH_BREAKPOINT_PX } from "src/components/MobileFriendlyHeader/style";
 
 const TITLE = "CellGuide Cell Types and Cell Tissues - CZ CELLxGENE";
 

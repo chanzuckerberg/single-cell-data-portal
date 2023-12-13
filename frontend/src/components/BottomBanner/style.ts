@@ -1,15 +1,7 @@
 import styled from "@emotion/styled";
-import {
-  Banner,
-  Button,
-  ButtonIcon,
-  fontBodyS,
-  fontBodyXxxs,
-  fontHeaderXl,
-  InputText,
-} from "@czi-sds/components";
+import { Banner, ButtonIcon, fontBodyS } from "@czi-sds/components";
 import Modal from "../common/Modal";
-import { beta100, beta400, error400, gray500 } from "src/common/theme";
+import { beta100, beta400, gray500 } from "src/common/theme";
 import { SKINNY_MODE_BREAKPOINT_WIDTH } from "src/views/CellGuide/components/CellGuideCard/constants";
 
 export const BOTTOM_BANNER_ID = "bottom-banner";
@@ -63,6 +55,7 @@ export const StyledBottomBannerWrapper = styled.div`
 `;
 
 export const StyledLink = styled.a`
+  padding: 0px 5px 0px 5px;
   text-decoration-line: underline;
   color: #8f5aff;
   font-weight: 500;
@@ -89,88 +82,6 @@ export const StyledCloseButtonIcon = styled(ButtonIcon, {
   @media only screen and (max-width: 600px) {
     ${hideCloseButton}
   }
-`;
-
-export const StyledTitle = styled.div`
-  ${fontHeaderXl}
-
-  letter-spacing: -0.019em;
-  font-size: 24px !important;
-  margin: 0;
-  height: auto !important;
-
-  padding-top: 16px;
-  padding-bottom: 8px;
-`;
-
-export const StyledDescription = styled.div`
-  ${fontBodyS}
-
-  letter-spacing: -0.006em;
-  padding-bottom: 16px;
-`;
-
-export const StyledForm = styled.form`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  height: 34px;
-  margin-bottom: 0;
-  align-items: center;
-  width: 100%;
-`;
-
-export const StyledInputText = styled(InputText)`
-  .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
-    border-color: #5826c1 !important;
-  }
-
-  flex: 1;
-  margin-right: 4px;
-  margin-bottom: 0px;
-  display: inline-flex;
-`;
-
-export const StyledSubmitButton = styled(Button)`
-  padding: 6px 12px;
-  width: 91px;
-  height: 34px;
-  background: #8f5aff;
-  font-weight: 500;
-
-  :hover {
-    background: #5826c1;
-  }
-`;
-
-export const StyledDisclaimer = styled.div`
-  ${fontBodyXxxs}
-
-  letter-spacing: -0.005em;
-
-  /*
-   * beta intent does not exist for SDS banner, but the colors do
-   * targeting specific id to overwrite style
-   */
-  color: ${gray500};
-`;
-
-export const StyledErrorMessage = styled.div`
-  ${fontBodyXxxs}
-
-  letter-spacing: -0.005em;
-
-  align-self: flex-start;
-
-  height: 16px;
-  margin-top: 4px;
-  margin-bottom: 4px;
-
-  /*
-   * beta intent does not exist for SDS banner, but the colors do
-   * targeting specific id to overwrite style
-   */
-  color: ${error400};
 `;
 
 export const NewsletterModal = styled(Modal)`

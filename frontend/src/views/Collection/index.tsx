@@ -64,9 +64,9 @@ const Collection: FC = () => {
       message:
         "A dataset was withdrawn. You've been redirected to the parent collection.",
     });
-    removeParams("tombstoned_dataset_id");
+    removeParams({ params: "tombstoned_dataset_id", router });
     setHasShownWithdrawToast(true);
-  }, [tombstoned_dataset_id, collection, hasShownWithdrawToast]);
+  }, [tombstoned_dataset_id, collection, hasShownWithdrawToast, router]);
 
   useEffect(() => {
     if (isTombstonedCollection(collection)) {

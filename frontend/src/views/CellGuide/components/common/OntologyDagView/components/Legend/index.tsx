@@ -20,6 +20,7 @@ import {
   nodePieChartCircleScaler,
   secondaryColor,
 } from "../../common/constants";
+import { EFFECT_SIZE } from "src/common/constants/markerGenes";
 interface LegendProps {
   selectedGene: string | undefined;
   isTissue?: boolean;
@@ -90,7 +91,7 @@ export default function Legend({ selectedGene, isTissue }: LegendProps) {
 
   const markerScoreLegendComponent = (
     <LegendItemWrapper>
-      Marker Score
+      {EFFECT_SIZE}
       <MarkerScoreWrapper>
         {Array.from({ length: numMarkerScores }).map((_, i) => (
           <FlexColumn key={i}>

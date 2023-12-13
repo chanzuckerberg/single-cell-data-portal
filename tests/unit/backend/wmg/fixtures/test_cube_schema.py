@@ -35,7 +35,7 @@ expression_summary_domain = tiledb.Domain(
 )
 
 expression_summary_logical_attrs = [
-    tiledb.Attr(name="nnz", dtype=np.uint64, filters=filters),  # TODO: Why uint64?
+    tiledb.Attr(name="nnz", dtype=np.uint64, filters=filters),
     tiledb.Attr(name="sum", dtype=np.float32, filters=filters),
     tiledb.Attr(name="sqsum", dtype=np.float32, filters=filters),
 ]

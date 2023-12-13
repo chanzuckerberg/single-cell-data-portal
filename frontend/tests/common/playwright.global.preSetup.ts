@@ -1,4 +1,4 @@
-import { test } from "@playwright/test";
+import { test } from "tests/common/test";
 import { getAccessToken } from "tests/utils/helpers";
 
 const { describe } = test;

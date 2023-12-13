@@ -3,14 +3,20 @@ import {
   ComputationalMarkersQueryResponse,
   ComputationalMarkersQueryResponseEntry,
 } from "src/common/queries/cellGuide";
-import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
+import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/constants";
 import { isTissueIdDescendantOfAncestorTissueId } from "src/views/CellGuide/common/utils";
 import { ALL_TISSUES, NO_ORGAN_ID } from "../constants";
+import {
+  SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF,
+  SPECIFICITY_TOOLTIP_CONTENT_NO_TISSUE,
+  SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF,
+} from "src/common/constants/markerGenes";
 
 export interface ComputationalMarkerGeneTableData {
   symbol: string;
   name: string;
   marker_score: string;
+  specificity: string;
   me: string;
   pc: string;
 }
@@ -89,6 +95,33 @@ function _applyOrderedSelectionCriteria({
   };
 }
 
+export function useSelectedOrganForTooltipCopy({
+  selectedOrganName,
+}: {
+  selectedOrganName: string;
+}): {
+  specificityCopy: string;
+} {
+  return useMemo(() => {
+    let specificityCopy = SPECIFICITY_TOOLTIP_CONTENT_NO_TISSUE;
+    if (
+      selectedOrganName != null &&
+      selectedOrganName != undefined &&
+      selectedOrganName != "Tissue Agnostic"
+    ) {
+      specificityCopy =
+        SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF +
+        " " +
+        selectedOrganName +
+        " " +
+        SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF;
+    }
+    return {
+      specificityCopy: specificityCopy,
+    };
+  }, [selectedOrganName]);
+}
+
 export function useComputationalMarkerGenesTableRowsAndFilters({
   genes,
   allTissuesLabelToIdMap,
@@ -131,12 +164,13 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
         continue;
       }
 
-      const { pc, me, name, symbol, marker_score } = markerGene;
+      const { pc, me, name, symbol, marker_score, specificity } = markerGene;
 
       rows.push({
         symbol,
         name,
         marker_score: marker_score.toFixed(2),
+        specificity: specificity.toFixed(2),
         me: me.toFixed(2),
         pc: (pc * 100).toFixed(1),
       });

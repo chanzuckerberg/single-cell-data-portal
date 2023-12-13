@@ -129,10 +129,10 @@ local-stop: ## Stop the local dev environment.
 .PHONY: local-clean
 local-clean: ## Remove everything related to the local dev environment (including db data!)
 	-if [ -f ./oauth/pkcs12/server.crt ] ; then \
-	    export CERT=$$(docker run -v $(PWD)/oauth/pkcs12:/tmp/certs --workdir /tmp/certs --rm=true --entrypoint "" soluto/oidc-server-mock:0.3.0 bash -c "openssl x509 -in server.crt -outform DER | sha1sum | cut -d ' ' -f 1"); \
-	    echo ""; \
-	    echo "Removing this certificate requires sudo access"; \
-	    sudo security delete-certificate -Z $${CERT} /Library/Keychains/System.keychain; \
+		export CERT=$$(docker run -v $(PWD)/oauth/pkcs12:/tmp/certs --workdir /tmp/certs --rm=true --entrypoint "" soluto/oidc-server-mock:0.3.0 bash -c "openssl x509 -in server.crt -outform DER | sha1sum | cut -d ' ' -f 1"); \
+		echo ""; \
+		echo "Removing this certificate requires sudo access"; \
+		sudo security delete-certificate -Z $${CERT} /Library/Keychains/System.keychain; \
 	fi;
 	-rm -rf ./oauth/pkcs12/server*
 	-rm -rf ./oauth/pkcs12/certificate*

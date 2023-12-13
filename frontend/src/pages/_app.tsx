@@ -1,5 +1,6 @@
 import { ThemeProvider as EmotionThemeProvider } from "@emotion/react";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
+import { datadogRum } from "@datadog/browser-rum";
 import { NextPage } from "next";
 import { AppProps } from "next/app";
 import Head from "next/head";
@@ -9,6 +10,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import { EVENTS } from "src/common/analytics/events";
 import { checkFeatureFlags } from "src/common/featureFlags";
+import { networkGuard } from "src/common/networkGuard";
 import { theme } from "src/common/theme";
 import DefaultLayout from "src/components/Layout/components/defaultLayout";
 import configs from "src/configs/configs";
@@ -30,6 +32,7 @@ declare global {
 const queryClient = new QueryClient();
 
 checkFeatureFlags();
+networkGuard();
 
 type NextPageWithLayout = NextPage & {
   Layout?: FC;
@@ -38,6 +41,20 @@ type NextPageWithLayout = NextPage & {
 type AppPropsWithLayout = AppProps & {
   Component: NextPageWithLayout;
 };
+
+datadogRum.init({
+  applicationId: "44f77ca2-1482-404a-ad38-23499bb925e5",
+  clientToken: "pub55d4baaac2091f9656a83da732732a89",
+  site: "datadoghq.com",
+  service: "single-cell-data-portal",
+  env: process.env.NODE_ENV,
+  sessionSampleRate: 100,
+  sessionReplaySampleRate: 20,
+  trackUserInteractions: true,
+  trackResources: true,
+  trackLongTasks: true,
+  defaultPrivacyLevel: "mask-user-input",
+});
 
 function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
   const Layout = Component.Layout || DefaultLayout;
@@ -110,10 +127,7 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
           </EmotionThemeProvider>
         </StyledEngineProvider>
       </QueryClientProvider>
-      <Script
-        data-domain={configs.PLAUSIBLE_DATA_DOMAIN}
-        src="https://plausible.io/js/script.js"
-      />
+      <Script data-domain={configs.PLAUSIBLE_DATA_DOMAIN} src="/js/script.js" />
     </>
   );
 }

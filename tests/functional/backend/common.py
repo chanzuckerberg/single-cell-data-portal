@@ -10,6 +10,7 @@ from requests.adapters import HTTPAdapter, Response
 from requests.packages.urllib3.util import Retry
 
 from backend.common.corpora_config import CorporaAuthConfig
+from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 
 API_URL = {
     "prod": "https://api.cellxgene.cziscience.com",
@@ -27,10 +28,6 @@ AUDIENCE = {
     "rdev": "api.cellxgene.dev.single-cell.czi.technology",
 }
 
-TEST_DATASET_URI = (
-    "https://www.dropbox.com/scl/fi/phrt3ru8ulep7ttnwttu2/example_valid.h5ad?rlkey=mmcm2qd9xrnbqle3l3vyii0gx&dl=0"
-)
-
 
 class BaseFunctionalTestCase(unittest.TestCase):
     session: requests.Session
@@ -38,10 +35,22 @@ class BaseFunctionalTestCase(unittest.TestCase):
     deployment_stage: str
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls, smoke_tests: bool = False):
         super().setUpClass()
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
         cls.config = CorporaAuthConfig()
+        cls.is_using_schema_4 = FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4)
+        cls.test_dataset_uri = (
+            (
+                "https://www.dropbox.com/scl/fi/d99hpw3p2cxtmi7v4kyv5/"
+                "4_0_0_test_dataset.h5ad?rlkey=i5ownt8g1mropbu41r7fa0i06&dl=0"
+            )
+            if cls.is_using_schema_4
+            else (
+                "https://www.dropbox.com/scl/fi/phrt3ru8ulep7ttnwttu2/"
+                "example_valid.h5ad?rlkey=mmcm2qd9xrnbqle3l3vyii0gx&dl=0"
+            )
+        )
         cls.session = requests.Session()
         # apply retry config to idempotent http methods we use + POST requests, which are currently all either
         # idempotent (wmg queries) or low risk to rerun in dev/staging. Update if this changes in functional tests.
@@ -54,7 +63,11 @@ class BaseFunctionalTestCase(unittest.TestCase):
         cls.session.mount("https://", HTTPAdapter(max_retries=retry_config))
         if cls.deployment_stage == "rdev":
             cls.get_oauth2_proxy_access_token()
-        token = cls.get_auth_token(cls.config.functest_account_username, cls.config.functest_account_password)
+        if smoke_tests:
+            username, password = cls.config.test_account_username, cls.config.test_account_password
+        else:
+            username, password = cls.config.functest_account_username, cls.config.functest_account_password
+        token = cls.get_auth_token(username, password)
         cls.curator_cookie = cls.make_cookie(token)
         cls.api = API_URL.get(cls.deployment_stage)
         cls.test_collection_id = "005d611a-14d5-4fbf-846e-571a1f874f70"

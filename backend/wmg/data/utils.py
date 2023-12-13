@@ -1,59 +1,15 @@
-import logging
 import os
-import time
-from typing import Dict, List
+from typing import Dict
 
 import numpy as np
+import pandas as pd
 import requests
-import tiledb
 import yaml
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
 from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
 from backend.wmg.data.constants import CL_PINNED_CONFIG_URL, WMG_PINNED_SCHEMA_VERSION
-from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME
-
-
-def log_func_runtime(func):
-    # This decorator function logs the execution time of the function object passed
-    def wrap_func(*args, **kwargs):
-        logger = logging.getLogger(func.__module__)
-        start = time.perf_counter()
-        result = func(*args, **kwargs)
-        stop = time.perf_counter()
-        logger.info(f"Function {func.__name__} executed in {(stop-start):.4f}s")
-        return result
-
-    return wrap_func
-
-
-def get_all_dataset_ids(tdb_group: str) -> List[str]:
-    with tiledb.open(f"{tdb_group}/{OBS_ARRAY_NAME}", "r") as obs:
-        all_dataset_ids = obs.query(attrs=[], dims=["dataset_id"]).df[:].dataset_id.unique()
-    all_dataset_ids.sort()
-    return all_dataset_ids
-
-
-@log_func_runtime
-def get_expression_summary_cube_gene_count(tbd_group: str) -> int:
-    with tiledb.open(tbd_group) as obs:
-        gene_count = len(obs.query(dims=["gene_ontology_term_id"]).df[:].gene_ontology_term_id.unique())
-    return gene_count
-
-
-@log_func_runtime
-def get_cell_count_cube_count(tbd_group: str) -> int:
-    with tiledb.open(tbd_group) as obs:
-        cell_count = obs.query(attrs=["n_cells"]).df[:].n_cells.sum()
-    return cell_count
-
-
-def create_empty_cube(uri: str, schema):
-    """
-    Create an empty cube with expected schema (dimensions and attributes) at given uri
-    """
-    tiledb.Array.create(uri, schema, overwrite=True)
 
 
 def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:
@@ -157,7 +113,7 @@ def setup_retry_session(retries=3, backoff_factor=2, status_forcelist=(500, 502,
     return session
 
 
-def get_datasets_from_curation_api():
+def get_datasets_from_discover_api():
     # hardcode to staging backend if deployment is rdev or test
     deployment_stage = os.environ.get("DEPLOYMENT_STAGE")
     API_URL = DEPLOYMENT_STAGE_TO_API_URL.get(
@@ -174,7 +130,7 @@ def get_datasets_from_curation_api():
     return datasets
 
 
-def get_collections_from_curation_api():
+def get_collections_from_discover_api():
     # hardcode to staging backend if deployment is rdev or test
     deployment_stage = os.environ.get("DEPLOYMENT_STAGE")
     API_URL = DEPLOYMENT_STAGE_TO_API_URL.get(
@@ -189,24 +145,6 @@ def get_collections_from_curation_api():
         if response.status_code == 200:
             collections = response.json()
     return collections
-
-
-def to_dict(a, b):
-    """
-    convert a flat key array (a) and a value array (b) into a dictionary with values grouped by keys
-    """
-    a = np.array(a)
-    b = np.array(b)
-    idx = np.argsort(a)
-    a = a[idx]
-    b = b[idx]
-    bounds = np.where(a[:-1] != a[1:])[0] + 1
-    bounds = np.append(np.append(0, bounds), a.size)
-    bounds_left = bounds[:-1]
-    bounds_right = bounds[1:]
-    slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
-    d = dict(zip(np.unique(a), [list(set(x)) for x in slists]))
-    return d
 
 
 def get_pinned_ontology_url(name: str):
@@ -227,3 +165,60 @@ def get_pinned_ontology_url(name: str):
     cl_url = decoded_yaml["CL"]["urls"][key]
     cl_url = cl_url.split("cl.owl")[0] + name
     return cl_url
+
+
+def build_filter_relationships(cell_counts_df: pd.DataFrame):
+    # get a dataframe of the columns that are not numeric
+    df_filters = cell_counts_df.select_dtypes(exclude="number")
+    # get a numpy array of the column names with shape (1, n_cols)
+    cols = df_filters.columns.values[None, :]
+
+    # tile the column names row-wise to match the shape of the dataframe and concatenate to the values
+    # this ensures that filter values will never collide across columns.
+    mat = np.tile(cols, (cell_counts_df.shape[0], 1)) + "__" + df_filters.values
+
+    # for each cell, get all pairwise combinations of filters compresent in that cell
+    # these are the edges of the filter relationships graph
+    Xs = []
+    Ys = []
+    for i in range(mat.shape[0]):
+        Xs.extend(np.repeat(mat[i], mat[i].size))
+        Ys.extend(np.tile(mat[i], mat[i].size))
+
+    # get all the unique combinations of filters
+    Xs, Ys = np.unique(np.array((Xs, Ys)), axis=1)
+
+    # exclude self-relationships
+    filt = Xs != Ys
+    Xs, Ys = Xs[filt], Ys[filt]
+
+    # convert the edges to a linked list representation
+    filter_relationships_linked_list = to_dict(Xs, Ys)
+
+    # reorganize the linked list representation to a nested linked list representation
+    # where the filter columns are separated into distinct dictionaries
+    # e.g. instead of {"cell_type_ontology_term_id__beta cell": ["dataset_id__Single cell transcriptome analysis of human pancreas", "assay_ontology_term_id__assay_type", ...], ...},
+    # it's now {"cell_type_ontology_term_id__beta cell": {"dataset_id": ["dataset_id__Single cell transcriptome analysis of human pancreas", ...], "assay_ontology_term_id": ["assay_ontology_term_id__assay_type", ...], ...}, ...}.
+    # This structure is easier to parse by the `/query` endpoint.
+    for k, v in filter_relationships_linked_list.items():
+        filter_relationships_linked_list[k] = to_dict([x.split("__")[0] for x in v], v)
+
+    return filter_relationships_linked_list
+
+
+def to_dict(a, b):
+    """
+    convert a flat key array (a) and a value array (b) into a dictionary with values grouped by keys
+    """
+    a = np.array(a)
+    b = np.array(b)
+    idx = np.argsort(a)
+    a = a[idx]
+    b = b[idx]
+    bounds = np.where(a[:-1] != a[1:])[0] + 1
+    bounds = np.append(np.append(0, bounds), a.size)
+    bounds_left = bounds[:-1]
+    bounds_right = bounds[1:]
+    slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
+    d = dict(zip(np.unique(a), [list(set(x)) for x in slists]))
+    return d

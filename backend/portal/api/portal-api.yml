@@ -581,42 +581,6 @@ paths:
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
-    post:
-      tags:
-        - datasets
-      summary: Request to download a dataset
-      description: >-
-        Request to download a file which on success will generate a pre-signed URL to download the dataset.
-      operationId: backend.portal.api.portal_api.post_dataset_asset
-      parameters:
-        - $ref: "#/components/parameters/path_dataset_id"
-        - name: asset_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  dataset_id:
-                    $ref: "#/components/schemas/dataset_id"
-                  presigned_url:
-                    type: string
-                  file_name:
-                    type: string
-                  file_size:
-                    type: number
-        "401":
-          $ref: "#/components/responses/401"
-        "403":
-          $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
 
   /v1/datasets/{dataset_id}/status:
     get:
@@ -738,7 +702,7 @@ paths:
                     assay:
                       $ref: "#/components/schemas/ontology_element_array"
                     tissue:
-                      $ref: "#/components/schemas/ontology_element_array"
+                      $ref: "#/components/schemas/tissue_element_array"
                     tissue_ancestors:
                       type: array
                       items:
@@ -821,7 +785,7 @@ paths:
                     assay:
                       $ref: "#/components/schemas/ontology_element_array"
                     tissue:
-                      $ref: "#/components/schemas/ontology_element_array"
+                      $ref: "#/components/schemas/tissue_element_array"
                     tissue_ancestors:
                       type: array
                       items:
@@ -1074,6 +1038,7 @@ components:
           | GenitoUrinary Development Molecular Anatomy Project (GUDMAP)  |
           | Gut Cell Atlas  |
           | Human BioMolecular Atlas Program (HuBMAP)  |
+          | Human Cell Atlas (HCA)  |
           | Human Pancreas Analysis Program (HPAP) |
           | Human Tumor Atlas Network (HTAN)  |
           | Kidney Precision Medicine Project (KPMP)  |
@@ -1175,6 +1140,16 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/ontology_element"
+    tissue_element_array:
+      type: array
+      items:
+        allOf:
+          - $ref: "#/components/schemas/ontology_element"
+          - type: object
+            properties:
+              tissue_type:
+                type: string
+                nullable: true
     dataset:
       type: object
       required:
@@ -1188,7 +1163,7 @@ components:
         assay:
           $ref: "#/components/schemas/ontology_element_array"
         tissue:
-          $ref: "#/components/schemas/ontology_element_array"
+          $ref: "#/components/schemas/tissue_element_array"
         disease:
           $ref: "#/components/schemas/ontology_element_array"
         sex:

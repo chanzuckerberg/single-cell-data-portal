@@ -3,7 +3,7 @@
  */
 
 // App dependencies
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { PublisherMetadata } from "src/common/entities";
 import {
   buildSummaryCitation,
@@ -11,8 +11,13 @@ import {
   calculateRecency,
   CollectionResponse,
   createPublicationDateValues,
+  createTaggedTissueOntology,
+  TissueOntology,
+  processSelfReportedEthnicity,
 } from "src/common/queries/filter";
 import { PUBLICATION_DATE_VALUES } from "src/components/common/Filter/common/constants";
+import { TISSUE_TYPE } from "src/components/common/Filter/common/entities";
+import { test } from "tests/common/test";
 
 const { describe } = test;
 
@@ -169,6 +174,94 @@ describe("filter", () => {
       } as PublisherMetadata;
       const summaryCitation = buildSummaryCitation(publisherMetadata);
       expect(summaryCitation).toEqual(`${family} et al. (${year}) ${journal}`);
+    });
+  });
+  describe("Process tissue type", () => {
+    test("handles 3.x.x format", () => {
+      // TODO remove this test with #6266.
+      const tissue = {
+        label: "brain",
+        ontology_term_id: "UBERON:0000955",
+      } as TissueOntology; // Force 3.x.x format.
+
+      const processedTissue = createTaggedTissueOntology(tissue);
+      expect(processedTissue.label).toEqual(tissue.label);
+      expect(processedTissue.ontology_term_id).toEqual(tissue.ontology_term_id);
+    });
+    test("handles organoid", () => {
+      const tissue = {
+        label: "brain",
+        ontology_term_id: "UBERON:0000955",
+        tissue_type: TISSUE_TYPE.ORGANOID,
+      };
+
+      const processedTissue = createTaggedTissueOntology(tissue);
+      expect(processedTissue.label).toEqual(
+        `${tissue.label} (${TISSUE_TYPE.ORGANOID})`
+      );
+      expect(processedTissue.ontology_term_id).toEqual(
+        `${tissue.ontology_term_id} (${TISSUE_TYPE.ORGANOID})`
+      );
+    });
+    test("handles cell culture", () => {
+      const tissue = {
+        label: "epithelial cell",
+        ontology_term_id: "CL:0000066",
+        tissue_type: TISSUE_TYPE.CELL_CULTURE,
+      };
+
+      const processedTissue = createTaggedTissueOntology(tissue);
+      expect(processedTissue.label).toEqual(
+        `${tissue.label} (${TISSUE_TYPE.CELL_CULTURE})`
+      );
+      expect(processedTissue.ontology_term_id).toEqual(
+        `${tissue.ontology_term_id} (${TISSUE_TYPE.CELL_CULTURE})`
+      );
+    });
+    test("handles tissue", () => {
+      const tissue = {
+        label: "brain",
+        ontology_term_id: "UBERON:0000955",
+        tissue_type: TISSUE_TYPE.TISSUE,
+      };
+
+      const processedTissue = createTaggedTissueOntology(tissue);
+      expect(processedTissue.label).toEqual(tissue.label);
+      expect(processedTissue.ontology_term_id).toEqual(tissue.ontology_term_id);
+    });
+  });
+  describe("Process Self Reported Ethnicity", () => {
+    const LABEL_ASIAN = "Asian";
+    const LABEL_DUTCH = "Dutch";
+    const LABEL_CUBAN = "Cuban";
+    const ONTOLOGY_TERM_ID_ASIAN = "HANCESTRO:0008";
+    const ONTOLOGY_TERM_ID_DUTCH = "HANCESTRO:0320";
+    const ONTOLOGY_TERM_ID_CUBAN = "HANCESTRO:0405";
+    test("splits multiethnicity", () => {
+      const selfReportedEthnicity = {
+        label: `${LABEL_ASIAN},${LABEL_DUTCH},${LABEL_CUBAN}`,
+        ontology_term_id: `${ONTOLOGY_TERM_ID_ASIAN},${ONTOLOGY_TERM_ID_DUTCH},${ONTOLOGY_TERM_ID_CUBAN}`,
+      };
+      const ethnicities = processSelfReportedEthnicity([selfReportedEthnicity]);
+      expect(ethnicities.length).toEqual(3);
+      const [asian, dutch, cuban] = ethnicities;
+      expect(asian.label).toEqual(LABEL_ASIAN);
+      expect(asian.ontology_term_id).toEqual(ONTOLOGY_TERM_ID_ASIAN);
+      expect(dutch.label).toEqual(LABEL_DUTCH);
+      expect(dutch.ontology_term_id).toEqual(ONTOLOGY_TERM_ID_DUTCH);
+      expect(cuban.label).toEqual(LABEL_CUBAN);
+      expect(cuban.ontology_term_id).toEqual(ONTOLOGY_TERM_ID_CUBAN);
+    });
+    test("handles single ethnicity", () => {
+      const selfReportedEthnicity = {
+        label: `${LABEL_ASIAN}`,
+        ontology_term_id: `${ONTOLOGY_TERM_ID_ASIAN}`,
+      };
+      const ethnicities = processSelfReportedEthnicity([selfReportedEthnicity]);
+      expect(ethnicities.length).toEqual(1);
+      const [asian] = ethnicities;
+      expect(asian.label).toEqual(LABEL_ASIAN);
+      expect(asian.ontology_term_id).toEqual(ONTOLOGY_TERM_ID_ASIAN);
     });
   });
 });

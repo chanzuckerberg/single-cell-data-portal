@@ -4,18 +4,19 @@ import uuid
 from copy import deepcopy
 from datetime import datetime
 from typing import List, Tuple
-from unittest.mock import Mock, patch
+from unittest.mock import ANY, Mock, call
 from uuid import uuid4
 
+from backend.common.corpora_config import CorporaConfig
 from backend.layers.business.business import (
     BusinessLogic,
     CollectionMetadataUpdate,
     CollectionQueryFilter,
     DatasetArtifactDownloadData,
-    DeprecatedDatasetArtifactDownloadData,
 )
 from backend.layers.business.exceptions import (
     CollectionCreationException,
+    CollectionDeleteException,
     CollectionIsPublishedException,
     CollectionPublishException,
     CollectionUpdateException,
@@ -23,6 +24,7 @@ from backend.layers.business.exceptions import (
     DatasetIngestException,
     DatasetIsTombstonedException,
     DatasetNotFoundException,
+    InvalidURIException,
     NoPreviousDatasetVersionException,
 )
 from backend.layers.common.entities import (
@@ -33,6 +35,7 @@ from backend.layers.common.entities import (
     CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
+    DatasetArtifactMetadataUpdate,
     DatasetArtifactType,
     DatasetId,
     DatasetMetadata,
@@ -42,14 +45,17 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
     OntologyTermId,
+    TissueOntologyTermId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
+from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
 from backend.layers.thirdparty.crossref_provider import (
     CrossrefDOINotFoundException,
     CrossrefException,
     CrossrefProviderInterface,
 )
+from backend.layers.thirdparty.s3_exceptions import S3DeleteException
 from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
@@ -83,12 +89,16 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
         # Mock CorporaConfig
         # TODO: deduplicate with base_api
-        def mock_config_fn(name):
-            if name == "upload_max_file_size_gb":
-                return 30
-
-        mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-        mock_config.start()
+        self.mock_config = CorporaConfig()
+        self.mock_config.set(
+            {
+                "upload_max_file_size_gb": 30,
+                "schema_4_feature_flag": "True",
+                "citation_update_feature_flag": "True",
+                "dataset_assets_base_url": "https://dataset_assets_domain",
+                "collections_base_url": "https://collections_domain",
+            }
+        )
 
         # TODO: also deduplicate with base test
         from backend.layers.common import validation
@@ -102,6 +112,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
         # By default these do nothing. They can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()
+        self.batch_job_provider = BatchJobProviderInterface()
         self.step_function_provider = StepFunctionProviderInterface()
         self.step_function_provider.start_step_function = Mock()
         self.s3_provider = MockS3Provider()
@@ -111,6 +122,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
         self.business_logic = BusinessLogic(
             database_provider=self.database_provider,
+            batch_job_provider=self.batch_job_provider,
             crossref_provider=self.crossref_provider,
             step_function_provider=self.step_function_provider,
             s3_provider=self.s3_provider,
@@ -129,7 +141,11 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self.sample_dataset_metadata = DatasetMetadata(
             name="test_dataset_name",
             organism=[OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
-            tissue=[OntologyTermId(label="test_tissue_label", ontology_term_id="test_tissue_term_id")],
+            tissue=[
+                TissueOntologyTermId(
+                    label="test_tissue_label", ontology_term_id="test_tissue_term_id", tissue_type="tissue"
+                )
+            ],
             assay=[OntologyTermId(label="test_assay_label", ontology_term_id="test_assay_term_id")],
             disease=[OntologyTermId(label="test_disease_label", ontology_term_id="test_disease_term_id")],
             sex=[OntologyTermId(label="test_sex_label", ontology_term_id="test_sex_term_id")],
@@ -151,10 +167,21 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             donor_id=["test_donor_1"],
             is_primary_data="BOTH",
             x_approximate_distribution="normal",
+            default_embedding="X_embedding_1",
+            embeddings=["X_embedding_1", "X_embedding_2"],
+            feature_biotype=["gene"],
+            feature_count=400,
+            feature_reference=["NCBITaxon:9606"],
+            raw_data_location="raw.X",
+            citation="Publication: https://doi.org/12.2345/science.abc1234 Dataset Version: "
+            "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
+            "CZ CELLxGENE Discover in Collection: "
+            "https://cellxgene.cziscience.com/collections/collection_id",
         )
         self.s3_provider.mock_s3_fs = set()
 
     def tearDown(self):
+        self.mock_config.reset()
         if self.run_as_integration:
             self.database_provider._drop_schema()
 
@@ -268,9 +295,9 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             # At present, not keeping public dataset assets as rows in DatasetArtifact table
             self.s3_provider.upload_file(None, "datasets", key, None)
         self.database_provider.add_dataset_artifact(
-            dataset_version_id, DatasetArtifactType.CXG.value, f"s3://cellxgene/{dataset_version_id}.cxg"
+            dataset_version_id, DatasetArtifactType.CXG.value, f"s3://cellxgene/{dataset_version_id}.cxg/"
         )
-        self.s3_provider.upload_file(None, "cellxgene", f"{dataset_version_id}.cxg", None)
+        self.s3_provider.upload_file(None, "cellxgene", f"{dataset_version_id}.cxg/", None)
         self.database_provider.update_dataset_upload_status(dataset_version_id, DatasetUploadStatus.UPLOADED)
         self.database_provider.update_dataset_validation_status(dataset_version_id, DatasetValidationStatus.VALID)
         self.database_provider.update_dataset_processing_status(dataset_version_id, DatasetProcessingStatus.SUCCESS)
@@ -660,12 +687,63 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
 
         expected_updated_publisher_metadata = {"authors": ["New Test Author"]}
         self.crossref_provider.fetch_metadata = Mock(return_value=expected_updated_publisher_metadata)
+        self.batch_job_provider.start_metadata_update_batch_job = Mock()
 
         self.business_logic.update_collection_version(version.version_id, body)
 
         self.crossref_provider.fetch_metadata.assert_called_once()
+        self.batch_job_provider.start_metadata_update_batch_job.assert_not_called()  # no datasets to update
         updated_version = self.database_provider.get_collection_version(version.version_id)
         self.assertEqual(updated_version.publisher_metadata, expected_updated_publisher_metadata)
+
+    def test_update_collection_change_doi__trigger_dataset_artifact_updates(self):
+        """
+        A collection updated with a new DOI and containing datasets should trigger artifact updates to update citation
+        for each dataset
+        """
+        _, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=2)
+
+        body = CollectionMetadataUpdate(
+            name=None,
+            description=None,
+            contact_name=None,
+            contact_email=None,
+            links=[Link("new test doi", "DOI", "http://new.test.doi")],
+            consortia=None,
+        )
+        self.batch_job_provider.start_metadata_update_batch_job = Mock()
+        self.business_logic.generate_dataset_citation = Mock(return_value="test citation")
+        self.business_logic.update_collection_version(revision.version_id, body)
+
+        assert self.batch_job_provider.start_metadata_update_batch_job.call_count == 2
+        self.batch_job_provider.start_metadata_update_batch_job.assert_has_calls(
+            [
+                call(revision.datasets[0].version_id, ANY, DatasetArtifactMetadataUpdate(citation="test citation")),
+                call(revision.datasets[1].version_id, ANY, DatasetArtifactMetadataUpdate(citation="test citation")),
+            ]
+        )
+
+    def test_update_published_collection_fail__dataset_status_pending(self):
+        """
+        Updating a collection version with a DOI change IF there is a dataset in non-finalized status should fail
+        """
+        _, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=2)
+        self.business_logic.create_empty_dataset_version_for_current_dataset(
+            revision.version_id,
+            revision.datasets[0].version_id,
+        )
+
+        body = CollectionMetadataUpdate(
+            name=None,
+            description=None,
+            contact_name=None,
+            contact_email=None,
+            links=[Link("new test doi", "DOI", "http://new.test.doi")],
+            consortia=None,
+        )
+
+        with self.assertRaises(CollectionUpdateException):
+            self.business_logic.update_collection_version(revision.version_id, body)
 
 
 class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
@@ -676,7 +754,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         """
         version = self.initialize_empty_unpublished_collection()
 
-        new_dataset_version_id, _ = self.business_logic.create_empty_dataset(version.version_id)
+        new_dataset_version_id = self.business_logic.create_empty_dataset(version.version_id).version_id
 
         new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
         self.assertIsNotNone(new_dataset_version)
@@ -684,6 +762,29 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.assertEqual(new_dataset_version.collection_id, version.collection_id)
         self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.NA)
         self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
+
+    def test_create_empty_dataset_version_for_current_dataset(self):
+        collection, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        new_dataset_version_id = self.business_logic.create_empty_dataset_version_for_current_dataset(
+            revision.version_id, revision.datasets[0].version_id
+        ).version_id
+        revision_after_update = self.database_provider.get_collection_version(revision.version_id)
+        self.assertEqual(len(revision_after_update.datasets), 1)
+        self.assertEqual(revision_after_update.datasets[0], new_dataset_version_id)
+
+        new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
+        self.assertIsNotNone(new_dataset_version)
+        self.assertIsNone(new_dataset_version.metadata)
+        self.assertEqual(new_dataset_version.collection_id, collection.collection_id)
+        self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
+        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
+
+    def test_create_empty_dataset_version_for_current_dataset__error_if_published(self):
+        collection, _ = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        with self.assertRaises(CollectionIsPublishedException):
+            self.business_logic.create_empty_dataset_version_for_current_dataset(
+                collection.version_id, collection.datasets[0].version_id
+            )
 
     def test_add_dataset_to_unpublished_collection_ok(self):
         """
@@ -815,7 +916,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         without creating a new dataset version
         """
         version = self.initialize_empty_unpublished_collection()
-        dataset_version_to_replace_id, _ = self.business_logic.create_empty_dataset(version.version_id)
+        dataset_version_to_replace_id = self.business_logic.create_empty_dataset(version.version_id).version_id
         dataset_version_to_replace = self.business_logic.get_dataset_version(dataset_version_to_replace_id)
         url = "http://test/dataset.url"
 
@@ -894,7 +995,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
 
     def test_delete_new_dataset_in_revision__ok(self):
         collection, revision = self.initialize_collection_with_an_unpublished_revision()
-        new_dataset_version_id, _ = self.business_logic.create_empty_dataset(revision.version_id)
+        new_dataset_version_id = self.business_logic.create_empty_dataset(revision.version_id).version_id
         revision = self.business_logic.get_collection_version(revision.version_id)
         self.complete_dataset_processing_with_success(new_dataset_version_id)
         # Dataset is added
@@ -1045,19 +1146,104 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         self.assertIsNone(self.business_logic.get_dataset_version(new_dataset_version_id))
         self.assertIsNotNone(self.business_logic.get_dataset_version(updated_new_dataset_version_id))
 
-    @patch("backend.layers.business.business.BusinessLogic._delete_from_bucket")
-    def test_delete_artifacts(self, _delete_from_bucket_mock):
+    def test_delete_artifacts_delete_no_artifacts(self):
+        self.business_logic.s3_provider = Mock()
+        delete_artifacts = self.business_logic.delete_artifacts
+        s3_provider = self.business_logic.s3_provider
+
+        # Arrange
+        # Act
+        delete_artifacts([])
+        # Assert
+        s3_provider.delete_prefix.assert_not_called()
+        s3_provider.delete_files.assert_not_called()
+
+    def test_delete_artifacts_artifact_type_doesnt_match_regex(self):
+        self.business_logic.s3_provider = Mock()
+        delete_artifacts = self.business_logic.delete_artifacts
+        s3_provider = self.business_logic.s3_provider
         bucket = "bucket"
+
+        # Arrange
         artifacts: List[DatasetArtifact] = [
-            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri=f"s3://{bucket}/file.h5ad"),
+            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.CXG, uri=f"s3://{bucket}/file.h5ad"),
+            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri=f"s3://{bucket}/file.cxg/"),
         ]
-        self.business_logic.delete_artifacts(artifacts)
-        _delete_from_bucket_mock.assert_called_with(bucket, keys=["file.h5ad"], prefix=None)
+        # Act
+        delete_artifacts(artifacts)
+        # Assert
+        s3_provider.delete_prefix.assert_not_called()
+        s3_provider.delete_files.assert_not_called()
+
+    def test_delete_artifacts_delete_cxg(self):
+        self.business_logic.s3_provider = Mock()
+        delete_artifacts = self.business_logic.delete_artifacts
+        s3_provider = self.business_logic.s3_provider
+        bucket = "bucket"
+
+        # Arrange
         artifacts: List[DatasetArtifact] = [
             DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.CXG, uri=f"s3://{bucket}/file.cxg/"),
         ]
-        self.business_logic.delete_artifacts(artifacts)
-        _delete_from_bucket_mock.assert_called_with(bucket, keys=None, prefix="file.cxg/")
+        # Act
+        delete_artifacts(artifacts)
+        # Assert
+        s3_provider.delete_prefix.assert_called_with(bucket, "file.cxg/")
+
+    def test_delete_artifacts_with_rdev_prefix(self):
+        self.business_logic.s3_provider = Mock()
+        delete_artifacts = self.business_logic.delete_artifacts
+        s3_provider = self.business_logic.s3_provider
+        bucket = "bucket"
+
+        # Arrange
+        artifacts: List[DatasetArtifact] = [
+            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.CXG, uri=f"s3://{bucket}/rdev/file.cxg/"),
+        ]
+        # Act
+        delete_artifacts(artifacts)
+        # Assert
+        s3_provider.delete_prefix.assert_called_with(bucket, "rdev/file.cxg/")
+
+    def test_delete_artifacts_with_no_match(self):
+        self.business_logic.s3_provider = Mock()
+        delete_artifacts = self.business_logic.delete_artifacts
+
+        ## not matching regex
+        # Arrange
+        artifacts: List[DatasetArtifact] = [
+            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri="s3://file.h5ad"),
+        ]
+        # Act + Assert
+        self.assertRaises(InvalidURIException, delete_artifacts, artifacts)
+
+    def test_delete_artifacts_delete_h5ad(self):
+        self.business_logic.s3_provider = Mock()
+        delete_artifacts = self.business_logic.delete_artifacts
+        s3_provider = self.business_logic.s3_provider
+        bucket = "bucket"
+
+        # Arrange
+        artifacts: List[DatasetArtifact] = [
+            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri=f"s3://{bucket}/file.h5ad"),
+        ]
+        # Act
+        delete_artifacts(artifacts)
+        # Assert
+        s3_provider.delete_files.assert_called_with(bucket, ["file.h5ad"])
+
+    def test_delete_artifacts_CollectionDeleteException_with_H5AD(self):
+        self.business_logic.s3_provider.delete_files = Mock(side_effect=S3DeleteException("error"))
+        delete_artifacts = self.business_logic.delete_artifacts
+        bucket = "bucket"
+
+        # Arrange
+        artifacts: List[DatasetArtifact] = [
+            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri=f"s3://{bucket}/file.h5ad"),
+        ]
+
+        # Act + Assert
+        self.assertRaises(CollectionDeleteException, delete_artifacts, artifacts)
 
 
 class TestGetDataset(BaseBusinessLogicTestCase):
@@ -1208,7 +1394,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         expected = [
             f"s3://artifacts/{dataset_version_id}.h5ad",
             f"s3://artifacts/{dataset_version_id}.rds",
-            f"s3://cellxgene/{dataset_version_id}.cxg",
+            f"s3://cellxgene/{dataset_version_id}.cxg/",
         ]
         self.assertEqual(set(expected), {a.uri for a in artifacts})
 
@@ -1230,31 +1416,6 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         # TODO: requires mocking of the S3 provider. implement later
         download_data = self.business_logic.get_dataset_artifact_download_data(dataset.version_id, artifact.id)
         expected_download_data = DatasetArtifactDownloadData(expected_file_size, expected_permanent_url)
-        self.assertEqual(download_data, expected_download_data)
-
-    # Superseded. Remove with #5697.
-    def test_get_dataset_artifact_download_data_deprecated_ok(self):
-        """
-        Calling `get_dataset_artifact_download_dat_deprecated` should yield downloadable data
-        """
-        published_version = self.initialize_published_collection()
-        dataset = published_version.datasets[0]
-        artifact = next(artifact for artifact in dataset.artifacts if artifact.type == DatasetArtifactType.H5AD)
-        self.assertIsNotNone(artifact)
-
-        expected_file_size = 12345
-        expected_presigned_url = "http://fake.presigned/url"
-
-        self.s3_provider.get_file_size = Mock(return_value=expected_file_size)
-        self.s3_provider.generate_presigned_url = Mock(return_value=expected_presigned_url)
-
-        # TODO: requires mocking of the S3 provider. implement later
-        download_data = self.business_logic.get_dataset_artifact_download_data_deprecated(
-            dataset.version_id, artifact.id
-        )
-        expected_download_data = DeprecatedDatasetArtifactDownloadData(
-            f"{dataset.version_id}.h5ad", DatasetArtifactType.H5AD, expected_file_size, expected_presigned_url
-        )
         self.assertEqual(download_data, expected_download_data)
 
     def test_get_dataset_status_for_uploaded_dataset_ok(self):
@@ -1319,14 +1480,14 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
         published_collection = self.initialize_published_collection()
         for dataset in published_collection.datasets:
             cxg_artifact = [artifact for artifact in dataset.artifacts if artifact.type == "cxg"][0]
-            self.assertEqual(cxg_artifact.uri, f"s3://cellxgene/{dataset.version_id}.cxg")
-            self.business_logic.update_dataset_artifact(cxg_artifact.id, "s3://cellxgene/new-name.cxg")
+            self.assertEqual(cxg_artifact.uri, f"s3://cellxgene/{dataset.version_id}.cxg/")
+            self.business_logic.update_dataset_artifact(cxg_artifact.id, "s3://cellxgene/new-name.cxg/")
 
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             updated_cxg_artifact = [
                 artifact for artifact in version_from_db.artifacts if artifact.id == cxg_artifact.id
             ][0]
-            self.assertEqual(updated_cxg_artifact.uri, "s3://cellxgene/new-name.cxg")
+            self.assertEqual(updated_cxg_artifact.uri, "s3://cellxgene/new-name.cxg/")
 
     def test_add_dataset_artifact_wrong_type_fail(self):
         """
@@ -2089,6 +2250,77 @@ class TestConcurrentUpdates(BaseBusinessLogicTestCase):
         self.assertIsNotNone(dv)
         if dv is not None:
             self.assertEqual(len(dv.artifacts), 13)
+
+
+class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
+    """
+    Test methods related to updating metadata fields on dataset artifacts
+    """
+
+    def test_generate_dataset_citation(self):
+        collection = self.initialize_unpublished_collection(num_datasets=1)
+        dataset_version_id = collection.datasets[0].version_id
+        doi = "https://doi.org/12.2345/science.abc1234"
+        expected = (
+            f"Publication: {doi} Dataset Version: {self.mock_config.dataset_assets_base_url}/{dataset_version_id}.h5ad "
+            "curated and distributed by CZ CELLxGENE Discover in Collection: "
+            f"{self.mock_config.collections_base_url}/{collection.collection_id}"
+        )
+
+        self.assertEqual(
+            expected,
+            self.business_logic.generate_dataset_citation(collection.collection_id, dataset_version_id, doi),
+        )
+
+    def test_generate_dataset_citation__no_doi(self):
+        collection = self.initialize_unpublished_collection(num_datasets=1)
+        dataset_version_id = collection.datasets[0].version_id
+        expected = (
+            f"Dataset Version: {self.mock_config.dataset_assets_base_url}/{dataset_version_id}.h5ad "
+            "curated and distributed by CZ CELLxGENE Discover in Collection: "
+            f"{self.mock_config.collections_base_url}/{collection.collection_id}"
+        )
+
+        self.assertEqual(
+            expected, self.business_logic.generate_dataset_citation(collection.collection_id, dataset_version_id)
+        )
+
+    def test_trigger_dataset_artifact_update(self):
+        metadata_update = DatasetArtifactMetadataUpdate(schema_version="4.0.0")
+
+        _, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        current_dataset_version_id = revision.datasets[0].version_id
+        self.batch_job_provider.start_metadata_update_batch_job = Mock()
+        self.business_logic.trigger_dataset_artifact_update(revision, metadata_update, current_dataset_version_id)
+        self.batch_job_provider.start_metadata_update_batch_job.assert_called_once()
+
+    def test_trigger_dataset_artifact_update__with_new_dataset_version_id(self):
+        metadata_update = DatasetArtifactMetadataUpdate(schema_version="4.0.0")
+
+        _, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        current_dataset_version_id = revision.datasets[0].version_id
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            revision.version_id,
+            None,
+            None,
+            current_dataset_version_id=current_dataset_version_id,
+            start_step_function=False,
+        )
+
+        self.batch_job_provider.start_metadata_update_batch_job = Mock()
+        self.business_logic.trigger_dataset_artifact_update(
+            revision, metadata_update, current_dataset_version_id, new_dataset_version_id
+        )
+        self.batch_job_provider.start_metadata_update_batch_job.assert_called_once_with(
+            current_dataset_version_id, new_dataset_version_id, metadata_update
+        )
+
+    def test_trigger_dataset_artifact_update__error_if_published(self):
+        metadata_update = DatasetArtifactMetadataUpdate(schema_version="4.0.0")
+        collection, _ = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        current_dataset_version_id = collection.datasets[0].version_id
+        with self.assertRaises(CollectionIsPublishedException):
+            self.business_logic.trigger_dataset_artifact_update(collection, metadata_update, current_dataset_version_id)
 
 
 if __name__ == "__main__":

@@ -1,12 +1,12 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API_URL } from "src/configs/configs";
-import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
+import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/constants";
 import {
   DispatchContext,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
-import { setSnapshotId } from "src/views/WheresMyGene/common/store/actions";
+} from "src/views/WheresMyGeneV2/common/store";
+import { setSnapshotId } from "src/views/WheresMyGeneV2/common/store/actions";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
@@ -18,7 +18,7 @@ import {
   RawCellTypeGeneExpressionSummaryData,
   ViewId,
   Organism as IOrganism,
-} from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/types";
 import { API } from "../API";
 import { APIV2 } from "src/common/tempAPIV2";
 
@@ -27,6 +27,7 @@ import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 import { Dataset } from "@mui/icons-material";
+import { formatCitation } from "../utils/formatCitation";
 
 interface RawOntologyTerm {
   [id: string]: string;
@@ -478,7 +479,7 @@ export function useFilterDimensions(version: 1 | 2 = 2): {
         disease_terms: disease_terms.map(toEntity),
         self_reported_ethnicity_terms:
           self_reported_ethnicity_terms.map(toEntity),
-        publication_citations: publication_citations.map(stringToEntity),
+        publication_citations: publication_citations.map(toCitationEntity),
         sex_terms: sex_terms.map(toEntity),
         tissue_terms: tissue_terms.map(toEntity),
       },
@@ -736,6 +737,7 @@ interface TermIdLabels {
         order: number;
         total_count: number;
         viewId: ViewId;
+        isAggregated: boolean;
       };
     };
   };
@@ -1029,9 +1031,11 @@ function useWMGQueryRequestBody(version: 1 | 2) {
       return null;
     }
     const gene_ontology_term_ids = selectedGenes.map((geneName) => {
-      return organismGenesByName[geneName].id;
+      return organismGenesByName[geneName]?.id;
     });
+
     if (!gene_ontology_term_ids.length) gene_ontology_term_ids.push(".");
+
     const tissue_ontology_term_ids = selectedTissues?.map((tissueName) => {
       return tissuesByName[tissueName].id;
     });
@@ -1159,8 +1163,11 @@ function toEntity(item: RawOntologyTerm) {
   return { id, name: name || id || "" };
 }
 
-function stringToEntity(item: string) {
-  return { id: item, name: item };
+function toCitationEntity(citation: string) {
+  return {
+    id: citation,
+    name: formatCitation(citation),
+  };
 }
 
 function useSnapshotId(): string | null {
@@ -1314,8 +1321,8 @@ export interface MarkerGenesByCellType {
 
 export interface MarkerGene {
   gene_ontology_term_id: string;
-  effect_size: number;
-  p_value: number;
+  marker_score: number;
+  specificity: number;
 }
 
 export interface MarkerGeneResponse<T = MarkerGene[]> {
@@ -1344,7 +1351,7 @@ export function useMarkerGenes({
 
   function filterMarkerGenes(markerGenes: MarkerGene[]): MarkerGene[] {
     return markerGenes.filter(
-      (markerGene) => markerGene.effect_size >= FMG_GENE_STRENGTH_THRESHOLD
+      (markerGene) => markerGene.marker_score >= FMG_GENE_STRENGTH_THRESHOLD
     );
   }
 

@@ -1,11 +1,17 @@
 import React from "react";
 import { LoadingIndicator } from "@czi-sds/components";
-import { Loader as GridLoader } from "./style";
 
-export default function Loader(): JSX.Element {
+interface Props {
+  sdsStyle?: "minimal" | "tag";
+}
+
+export default function Loader({
+  sdsStyle = "tag",
+  ...props /* Spread props to allow for data-testid and other Loader props. */
+}: Props): JSX.Element {
   return (
-    <GridLoader>
-      <LoadingIndicator sdsStyle="tag" />
-    </GridLoader>
+    <div {...props}>
+      <LoadingIndicator sdsStyle={sdsStyle} />
+    </div>
   );
 }

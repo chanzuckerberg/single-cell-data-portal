@@ -1,4 +1,5 @@
 import contextlib
+import gzip
 import json
 import os
 import sys
@@ -19,19 +20,16 @@ from backend.wmg.data.schemas.cube_schema import expression_summary_schema as ex
 from backend.wmg.data.schemas.cube_schema_default import (
     expression_summary_schema as expression_summary_default_schema_actual,
 )
-from backend.wmg.data.schemas.expression_summary_fmg_cube_schema import (
-    expression_summary_fmg_schema as expression_summary_fmg_schema_actual,
-)
 from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema as marker_genes_schema_actual
 from backend.wmg.data.snapshot import (
     CELL_TYPE_ORDERINGS_FILENAME,
-    DATASET_TO_GENE_IDS_FILENAME,
+    DATASET_METADATA_FILENAME,
     FILTER_RELATIONSHIPS_FILENAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
     WmgSnapshot,
 )
 from backend.wmg.data.tiledb import create_ctx
-from backend.wmg.pipeline.summary_cubes.cell_count import create_filter_relationships_graph
+from backend.wmg.data.utils import build_filter_relationships
 from tests.unit.backend.wmg.fixtures import FIXTURES_ROOT
 from tests.unit.backend.wmg.fixtures.test_cube_schema import (
     cell_counts_indexed_dims,
@@ -48,6 +46,27 @@ from tests.unit.backend.wmg.fixtures.test_primary_filters import build_precomput
 
 def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:
     return [f"{dimension_name}_{i}" for i in range(n_terms)]
+
+
+def ont_term_id_gen_schema4_ethnicity_variation(dimension_name: str, n_terms: int) -> List[str]:
+    """
+    Generates ontology term IDs for all dimensions with special treatment for
+    `self_reported_ethnicity_ontology_term_id` to include schema4 specific format.
+    """
+
+    # For schema4, `self_reported_ethnicity_ontology_term_id` can contain
+    # comma-delimited values. This scheme simply appends a predetermined
+    # comma-delimited value, "self_reported_ethnicity_ontology_term_id_x,self_reported_ethnicity_ontology_term_id_y",
+    # to the end of list of simple ontology term IDs
+    if dimension_name == "self_reported_ethnicity_ontology_term_id":
+        schema4_term_id = "self_reported_ethnicity_ontology_term_id_x,self_reported_ethnicity_ontology_term_id_y"
+        # generate simple ontology term IDs for the first `n_terms-1` values
+        term_ids = simple_ontology_terms_generator(dimension_name, n_terms - 1)
+        term_ids.append(schema4_term_id)
+        return term_ids
+
+    # For all other dimensions compute a simple list of term IDs
+    return simple_ontology_terms_generator(dimension_name, n_terms)
 
 
 def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> List[str]:
@@ -164,16 +183,12 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
     with tempfile.TemporaryDirectory() as cube_dir:
         cell_counts = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/cell_counts.csv.gz", index_col=0)
         expression_summary = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary.csv.gz", index_col=0)
-        expression_summary_fmg = pd.read_csv(
-            f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_fmg.csv.gz", index_col=0
-        )
         expression_summary_default = pd.read_csv(
             f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_default.csv.gz", index_col=0
         )
         marker_genes = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/marker_genes.csv.gz", index_col=0)
 
         tiledb.Array.create(f"{cube_dir}/expression_summary", expression_summary_schema_actual, overwrite=True)
-        tiledb.Array.create(f"{cube_dir}/expression_summary_fmg", expression_summary_fmg_schema_actual, overwrite=True)
         tiledb.Array.create(
             f"{cube_dir}/expression_summary_default", expression_summary_default_schema_actual, overwrite=True
         )
@@ -181,7 +196,6 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
         tiledb.Array.create(f"{cube_dir}/marker_genes", marker_genes_schema_actual, overwrite=True)
 
         tiledb.from_pandas(f"{cube_dir}/expression_summary", expression_summary, mode="append")
-        tiledb.from_pandas(f"{cube_dir}/expression_summary_fmg", expression_summary_fmg, mode="append")
         tiledb.from_pandas(f"{cube_dir}/expression_summary_default", expression_summary_default, mode="append")
         tiledb.from_pandas(f"{cube_dir}/cell_counts", cell_counts, mode="append")
         tiledb.from_pandas(f"{cube_dir}/marker_genes", marker_genes, mode="append")
@@ -189,40 +203,81 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
         with tiledb.open(f"{cube_dir}/expression_summary", ctx=create_ctx()) as expression_summary_cube, tiledb.open(
             f"{cube_dir}/expression_summary_default", ctx=create_ctx()
         ) as expression_summary_default_cube, tiledb.open(
-            f"{cube_dir}/expression_summary_fmg", ctx=create_ctx()
-        ) as expression_summary_fmg_cube, tiledb.open(
             f"{cube_dir}/cell_counts", ctx=create_ctx()
         ) as cell_counts_cube, tiledb.open(
             f"{cube_dir}/marker_genes", ctx=create_ctx()
-        ) as marker_genes_cube, open(
-            f"{FIXTURES_ROOT}/{snapshot_name}/{DATASET_TO_GENE_IDS_FILENAME}", "r"
-        ) as f, open(
-            f"{FIXTURES_ROOT}/{snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}", "r"
-        ) as fr, open(
-            f"{FIXTURES_ROOT}/{snapshot_name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "r"
-        ) as fp:
-            dataset_to_gene_ids = json.load(f)
+        ) as marker_genes_cube, gzip.open(
+            f"{FIXTURES_ROOT}/{snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}.gz", "rt"
+        ) as fr, gzip.open(
+            f"{FIXTURES_ROOT}/{snapshot_name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}.gz", "rt"
+        ) as fp, gzip.open(
+            f"{FIXTURES_ROOT}/{snapshot_name}/{DATASET_METADATA_FILENAME}.gz", "rt"
+        ) as fd:
             filter_relationships = json.load(fr)
             primary_filter_dimensions = json.load(fp)
+            dataset_metadata = json.load(fd)
             yield WmgSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
-                expression_summary_fmg_cube=expression_summary_fmg_cube,
                 expression_summary_default_cube=expression_summary_default_cube,
                 marker_genes_cube=marker_genes_cube,
                 cell_counts_cube=cell_counts_cube,
-                cell_type_orderings=None,
                 primary_filter_dimensions=primary_filter_dimensions,
-                dataset_to_gene_ids=dataset_to_gene_ids,
                 filter_relationships=filter_relationships,
-                dataset_metadata=None,
+                dataset_metadata=dataset_metadata,
             )
+
+
+def load_realistic_test_snapshot_tmpdir(snapshot_name: str) -> WmgSnapshot:
+    cube_dir_temp = tempfile.TemporaryDirectory()
+    cube_dir = cube_dir_temp.name
+
+    cell_counts = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/cell_counts.csv.gz", index_col=0)
+    expression_summary = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary.csv.gz", index_col=0)
+    expression_summary_default = pd.read_csv(
+        f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_default.csv.gz", index_col=0
+    )
+    marker_genes = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/marker_genes.csv.gz", index_col=0)
+
+    tiledb.Array.create(f"{cube_dir}/expression_summary", expression_summary_schema_actual, overwrite=True)
+    tiledb.Array.create(
+        f"{cube_dir}/expression_summary_default", expression_summary_default_schema_actual, overwrite=True
+    )
+    tiledb.Array.create(f"{cube_dir}/cell_counts", cell_counts_schema_actual, overwrite=True)
+    tiledb.Array.create(f"{cube_dir}/marker_genes", marker_genes_schema_actual, overwrite=True)
+
+    tiledb.from_pandas(f"{cube_dir}/expression_summary", expression_summary, mode="append")
+    tiledb.from_pandas(f"{cube_dir}/expression_summary_default", expression_summary_default, mode="append")
+    tiledb.from_pandas(f"{cube_dir}/cell_counts", cell_counts, mode="append")
+    tiledb.from_pandas(f"{cube_dir}/marker_genes", marker_genes, mode="append")
+    with gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}.gz", "rt") as fr, gzip.open(
+        f"{FIXTURES_ROOT}/{snapshot_name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}.gz", "rt"
+    ) as fp, gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{DATASET_METADATA_FILENAME}.gz", "rt") as fd, gzip.open(
+        f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_TYPE_ORDERINGS_FILENAME}.gz", "rt"
+    ) as fc:
+        filter_relationships = json.load(fr)
+        primary_filter_dimensions = json.load(fp)
+        dataset_metadata = json.load(fd)
+        cell_type_orderings = json.load(fc)
+
+    with open(f"{cube_dir}/{FILTER_RELATIONSHIPS_FILENAME}", "w") as fr_out:
+        json.dump(filter_relationships, fr_out)
+    with open(f"{cube_dir}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "w") as fp_out:
+        json.dump(primary_filter_dimensions, fp_out)
+    with open(f"{cube_dir}/{DATASET_METADATA_FILENAME}", "w") as fd_out:
+        json.dump(dataset_metadata, fd_out)
+    with open(f"{cube_dir}/{CELL_TYPE_ORDERINGS_FILENAME}", "w") as fc_out:
+        json.dump(cell_type_orderings, fc_out)
+
+    return cube_dir_temp
 
 
 @contextlib.contextmanager
 def create_temp_wmg_snapshot(
+    *,
     dim_size=3,
     snapshot_name="dummy-snapshot",
+    dim_ontology_term_ids_generator_fn: Callable[[str, int], List[str]] = simple_ontology_terms_generator,
     expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
     exclude_logical_coord_fn: Callable[[NamedTuple], bool] = None,
     cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
@@ -232,31 +287,31 @@ def create_temp_wmg_snapshot(
         expression_summary_cube_dir, cell_counts_cube_dir = create_cubes(
             cube_dir,
             dim_size,
+            dim_ontology_term_ids_generator_fn=dim_ontology_term_ids_generator_fn,
             exclude_logical_coord_fn=exclude_logical_coord_fn,
             expression_summary_vals_fn=expression_summary_vals_fn,
             cell_counts_fn=cell_counts_generator_fn,
         )
 
-        cell_type_orderings = build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn)
+        cell_type_orderings = (
+            build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn)
+            .set_index(["tissue_ontology_term_id", "cell_type_ontology_term_id"])["order"]
+            .to_dict()
+        )
         primary_filter_dimensions = build_precomputed_primary_filters()
 
         with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube, tiledb.open(
             cell_counts_cube_dir, ctx=create_ctx()
         ) as cell_counts_cube:
             cc = cell_counts_cube.df[:]
-            filter_relationships = create_filter_relationships_graph(cc)
+            filter_relationships = build_filter_relationships(cc)
             yield WmgSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
-                expression_summary_default_cube=None,
-                expression_summary_fmg_cube=None,
-                marker_genes_cube=None,
                 cell_counts_cube=cell_counts_cube,
                 cell_type_orderings=cell_type_orderings,
                 primary_filter_dimensions=primary_filter_dimensions,
-                dataset_to_gene_ids=None,
                 filter_relationships=filter_relationships,
-                dataset_metadata=None,
             )
 
 

@@ -44,15 +44,15 @@ resource aws_batch_job_definition schema_migrations_swap {
     resourceRequirements = [
       {
         type= "VCPU",
-        Value="6"
+        Value="32"
       },
       {
         Type="MEMORY",
-        Value = "47500"
+        Value = "256000"
       }
     ]
     linuxParameters= {
-     maxSwap= 200000,
+     maxSwap= 0,
      swappiness= 60
     },
     logConfiguration= {
@@ -113,6 +113,59 @@ resource aws_batch_job_definition schema_migrations {
   })
 }
 
+resource aws_batch_job_definition pubish_revisions {
+  type = "container"
+  name = "dp-${var.deployment_stage}-${var.custom_stack_name}-${local.name}-publish-revisions"
+  container_properties = jsonencode({
+    command = ["python3",
+      "-m",
+      "backend.layers.processing.publish_revisions",
+    ],
+    jobRoleArn= var.batch_role_arn,
+    image= var.image,
+    environment= [
+      {
+        name= "ARTIFACT_BUCKET",
+        value= var.artifact_bucket
+      },
+      {
+        name= "DEPLOYMENT_STAGE",
+        value= var.deployment_stage
+      },
+      {
+        name= "AWS_DEFAULT_REGION",
+        value= data.aws_region.current.name
+      },
+      {
+        name= "REMOTE_DEV_PREFIX",
+        value= var.remote_dev_prefix
+      },
+      {
+        name= "DATASETS_BUCKET",
+        value= var.datasets_bucket
+      },
+    ],
+    resourceRequirements = [
+      {
+        type= "VCPU",
+        Value="2"
+      },
+      {
+        Type="MEMORY",
+        Value = "4096"
+      }
+    ]
+    logConfiguration= {
+      logDriver= "awslogs",
+      options= {
+        awslogs-group= aws_cloudwatch_log_group.batch_cloud_watch_logs_group.id,
+        awslogs-region= data.aws_region.current.name
+      }
+    }
+  })
+}
+
+
 resource aws_sfn_state_machine sfn_schema_migration {
   name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-${local.name}-sfn"
   role_arn = var.sfn_role_arn
@@ -127,7 +180,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
         "Next": "ApplyDefaults",
         "ResultPath": "$.inputDefaults",
         "Parameters": {
-          "auto_publish": "False"
+          "auto_publish": "False",
+          "limit_migration": "0"
         }
     },
     "ApplyDefaults": {
@@ -170,6 +224,10 @@ resource aws_sfn_state_machine sfn_schema_migration {
             {
               "Name": "AUTO_PUBLISH",
               "Value.$": "$.auto_publish"
+            },
+            {
+              "Name": "LIMIT_MIGRATION",
+              "Value.$": "$.limit_migration"
             }
           ]
         }
@@ -388,8 +446,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
                     "Input": {
                       "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id",
                       "url.$": "$.result.uri",
-                      "dataset_id.$": "$.result.dataset_version_id",
-                      "collection_id.$": "$.result.collection_version_id",
+                      "dataset_version_id.$": "$.result.dataset_version_id",
+                      "collection_version_id.$": "$.result.collection_version_id",
                       "job_queue": "${var.job_queue_arn}"
                     }
                   },

@@ -267,7 +267,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         version = self.collections_versions.get(version_id.id)
         if not version:
             return None
-        version = self._update_version_with_canonical(version, update_datasets=True)
+        version = self._update_version_with_canonical(version, update_datasets=True, get_tombstoned=get_tombstoned)
         if not get_tombstoned and version.canonical_collection.tombstoned:
             return None
         return version

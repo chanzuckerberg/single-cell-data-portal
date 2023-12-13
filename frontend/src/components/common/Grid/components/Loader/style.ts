@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
+import Loader from "./index";
 
-export const Loader = styled.div`
+export const GridLoader = styled(Loader)`
   align-self: flex-start;
   grid-area: content;
   justify-self: center;

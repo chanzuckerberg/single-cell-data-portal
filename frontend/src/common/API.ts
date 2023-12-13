@@ -20,4 +20,5 @@ export enum API {
   WMG_FILTERS_QUERY = "/wmg/v1/filters",
   WMG_MARKER_GENES = "/wmg/v2/markers",
   WMG_GENE_INFO = "/gene_info/v1/gene_info",
+  CENSUS_SPOTLIGHT_MANIFEST = "/contrib/cell-census/contributions.json",
 }

@@ -1,6 +1,6 @@
 /**
  * (thuang): TEMP. Remove when we do https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/corpora-data-portal/917
- * This component is used temporarily for E2E testing and trying out different
+ * This component is used temporarily for e2e testing and trying out different
  * CSV files
  */
 import { ChangeEvent, FC, useState } from "react";

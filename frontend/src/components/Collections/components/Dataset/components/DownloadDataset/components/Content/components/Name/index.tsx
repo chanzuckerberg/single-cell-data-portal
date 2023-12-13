@@ -1,15 +1,15 @@
+import { FormControl, FormLabel } from "@mui/material";
 import { FC } from "react";
-import { Section, Text, Title } from "../common/style";
 
 interface Props {
   name: string;
 }
 
 const Name: FC<Props> = ({ name }) => (
-  <Section>
-    <Title>NAME</Title>
-    <Text data-testid="download-asset-name">{name}</Text>
-  </Section>
+  <FormControl>
+    <FormLabel>Name</FormLabel>
+    <div data-testid="download-asset-name">{name}</div>
+  </FormControl>
 );
 
 export default Name;

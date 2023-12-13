@@ -3,8 +3,9 @@
  */
 
 // App dependencies
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { getDOIPath } from "src/views/Collection/utils";
+import { test } from "tests/common/test";
 
 const { describe } = test;
 

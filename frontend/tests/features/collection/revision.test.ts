@@ -31,7 +31,7 @@ describe("Collection Revision @loggedIn", () => {
    * TODO(#5666): Enable this test once #5666 is resolved
    * https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/gh/chanzuckerberg/single-cell-data-portal/5666
    */
-  test.skip("starts a revision", async ({ page }) => {
+  test("starts a revision", async ({ page }) => {
     const collectionName = await startRevision(page);
 
     const publishButton = await page.$(getTestID("publish-collection-button"));
@@ -74,7 +74,8 @@ describe("Collection Revision @loggedIn", () => {
    * TODO(#5666): Enable this test once #5666 is resolved
    * https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/gh/chanzuckerberg/single-cell-data-portal/5666
    */
-  test.skip("allows editing", async ({ page }) => {
+
+  test("allows editing", async ({ page }) => {
     await startRevision(page);
 
     const collectionName = await getInnerText(
@@ -157,6 +158,11 @@ describe("Collection Revision @loggedIn", () => {
   });
 });
 
+/**
+ * (thuang): Wait for 1 min instead of the default 3 minutes, so we fail faster
+ */
+const WAIT_FOR_MIN_USABLE_COLLECTION_TIMEOUT_MS = 1 * 60 * 1000; // 1 minute
+
 async function startRevision(page: Page): Promise<string> {
   const MIN_USABLE_COLLECTION_COUNT = 4;
 
@@ -182,16 +188,23 @@ async function startRevision(page: Page): Promise<string> {
           { page }
         );
       } catch {
-        await page
-          .getByTestId(COLLECTION_ROW_WRITE_REVISION_ID)
-          .first()
-          .getByTestId(COLLECTION_VIEW_REVISION)
-          .click();
-        await deleteRevision(page);
+        const hasAnyRevision =
+          (await page.getByTestId(COLLECTION_ROW_WRITE_REVISION_ID).count()) >
+          0;
+
+        if (hasAnyRevision) {
+          await page
+            .getByTestId(COLLECTION_ROW_WRITE_REVISION_ID)
+            .first()
+            .getByTestId(COLLECTION_VIEW_REVISION)
+            .click();
+          await deleteRevision(page);
+        }
+
         throw new Error("No available collection");
       }
     },
-    { page }
+    { page, timeoutMs: WAIT_FOR_MIN_USABLE_COLLECTION_TIMEOUT_MS }
   );
 
   // (thuang): We randomly select a collection row to start a revision

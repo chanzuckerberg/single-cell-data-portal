@@ -1,7 +1,8 @@
-import { expect, test } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import { goToPage } from "tests/utils/helpers";
 import { TEST_URL } from "../../common/constants";
+import { test } from "tests/common/test";
 
 const { describe } = test;
 

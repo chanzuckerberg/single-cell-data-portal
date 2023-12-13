@@ -19,6 +19,9 @@ class TestDatasetSubmissions(BaseTest):
         )
         self.mock.start()
 
+    def tearDown(self):
+        self.mock.stop()
+
     def test__missing_curator_file_name__raises_error(self):
         mock_collection_id = EntityId()
         s3_event = create_s3_event(key=f"{self.user_name}/{mock_collection_id}/")
@@ -54,7 +57,7 @@ class TestDatasetSubmissions(BaseTest):
         Processing starts when an update of a dataset is uploaded by its ID by the collection owner.
         """
         version = self.generate_unpublished_collection()
-        dataset_version_id, _ = self.business_logic.create_empty_dataset(version.version_id)
+        dataset_version_id = self.business_logic.create_empty_dataset(version.version_id).version_id
 
         mock_ingest = self.business_logic.ingest_dataset = Mock()
 
@@ -67,7 +70,7 @@ class TestDatasetSubmissions(BaseTest):
         Processing starts when an update of a dataset is uploaded by its ID by a super curator
         """
         version = self.generate_unpublished_collection()
-        dataset_version_id, _ = self.business_logic.create_empty_dataset(version.version_id)
+        dataset_version_id = self.business_logic.create_empty_dataset(version.version_id).version_id
 
         mock_ingest = self.business_logic.ingest_dataset = Mock()
 
@@ -81,7 +84,7 @@ class TestDatasetSubmissions(BaseTest):
 
         """
         version = self.generate_unpublished_collection()
-        _, dataset_id = self.business_logic.create_empty_dataset(version.version_id)
+        dataset_id = self.business_logic.create_empty_dataset(version.version_id).dataset_id
 
         mock_ingest = self.business_logic.ingest_dataset = Mock()
 

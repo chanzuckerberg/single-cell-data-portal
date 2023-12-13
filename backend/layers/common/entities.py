@@ -1,5 +1,5 @@
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
@@ -158,13 +158,18 @@ class OntologyTermId:
     ontology_term_id: str
 
 
+@dataclass
+class TissueOntologyTermId(OntologyTermId):
+    tissue_type: Optional[str] = None
+
+
 @dataclass_json
 @dataclass
 class DatasetMetadata:
     name: str
     schema_version: str
     organism: List[OntologyTermId]
-    tissue: List[OntologyTermId]
+    tissue: List[TissueOntologyTermId]
     assay: List[OntologyTermId]
     disease: List[OntologyTermId]
     sex: List[OntologyTermId]
@@ -178,7 +183,24 @@ class DatasetMetadata:
     donor_id: List[str]
     is_primary_data: str
     x_approximate_distribution: Optional[str]
+    citation: Optional[str] = None
+    default_embedding: Optional[str] = None
+    embeddings: Optional[List[str]] = None
+    feature_biotype: Optional[List[str]] = None
+    feature_count: Optional[int] = None
+    feature_reference: Optional[List[str]] = None
+    raw_data_location: Optional[str] = None
     primary_cell_count: Optional[int] = None
+
+
+@dataclass
+class DatasetArtifactMetadataUpdate:
+    title: Optional[str] = None
+    schema_version: Optional[str] = None
+    citation: Optional[str] = None
+
+    def as_dict_without_none_values(self):
+        return {key: value for key, value in asdict(self).items() if value is not None}
 
 
 @dataclass

@@ -28,12 +28,15 @@ from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find_dim_option_values
 
+
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2132
 
 
-@tracer.wrap()
+@tracer.wrap(
+    name="primary_filter_dimensions", service="wmg-api", resource="primary_filter_dimensions", span_type="wmg-api"
+)
 def primary_filter_dimensions():
     with ServerTiming.time("load snapshot"):
         snapshot: WmgSnapshot = load_snapshot(
@@ -44,9 +47,11 @@ def primary_filter_dimensions():
     return jsonify(snapshot.primary_filter_dimensions)
 
 
-@tracer.wrap()
+@tracer.wrap(name="query", service="wmg-api", resource="query", span_type="wmg-api")
 def query():
     request = connexion.request.json
+    sanitize_api_query_dict(request["filter"])
+
     is_rollup = request.get("is_rollup", True)
     compare = request.get("compare", None)
 
@@ -61,12 +66,11 @@ def query():
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
         )
 
-    with ServerTiming.time("query and build response"):
+    with ServerTiming.time("query tiledb"):
         cube_query_params = WmgCubeQueryParams(
             cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
             cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
         )
-
         q = WmgQuery(snapshot, cube_query_params)
         default = snapshot.expression_summary_default_cube is not None and compare is None
         for dim in criteria.dict():
@@ -81,6 +85,15 @@ def query():
         )
 
         cell_counts = q.cell_counts(criteria, compare_dimension=compare)
+
+        # For schema-4 we filter out comma-delimited values for `self_reported_ethnicity_ontology_term_id`
+        # from being included in the grouping and rollup logic per functional requirements:
+        # See: https://github.com/chanzuckerberg/single-cell/issues/596
+        if (compare is not None) and compare == "self_reported_ethnicity_ontology_term_id":
+            expression_summary = df_not_containing_comma_delimited_ethnicity_values(expression_summary)
+            cell_counts = df_not_containing_comma_delimited_ethnicity_values(cell_counts)
+
+    with ServerTiming.time("build response"):
         if expression_summary.shape[0] > 0 or cell_counts.shape[0] > 0:
             group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare] if compare else None
 
@@ -99,7 +112,7 @@ def query():
                     term_id_labels=dict(
                         genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
                         cell_types=build_ordered_cell_types_by_tissue(
-                            rolled_cell_counts_grouped_df, snapshot.cell_type_orderings, compare
+                            rolled_cell_counts_grouped_df, cell_counts_grouped_df, snapshot.cell_type_orderings, compare
                         ),
                     ),
                 )
@@ -109,9 +122,11 @@ def query():
     return response
 
 
-@tracer.wrap()
+@tracer.wrap(name="filters", service="wmg-api", resource="filters", span_type="wmg-api")
 def filters():
     request = connexion.request.json
+    sanitize_api_query_dict(request["filter"])
+
     criteria = WmgFiltersQueryCriteria(**request["filter"])
 
     with ServerTiming.time("load snapshot"):
@@ -131,7 +146,7 @@ def filters():
     return response
 
 
-@tracer.wrap()
+@tracer.wrap(name="markers", service="wmg-api", resource="markers", span_type="wmg-api")
 def markers():
     request = connexion.request.json
     cell_type = request["celltype"]
@@ -164,6 +179,55 @@ def markers():
             marker_genes=marker_genes,
         )
     )
+
+
+def df_not_containing_comma_delimited_ethnicity_values(input_df: DataFrame) -> DataFrame:
+    """
+    Return a new dataframe with only the rows that DO NOT contain comma-delimited
+    values in the `self_reported_ethnicity_ontology_term_id` column.
+
+    Parameters
+    ----------
+    input_df: Dataframe
+        A dataframe that contains `self_reported_ethnicity_ontology_term_id` column
+
+    Returns
+    -------
+    A dataframe containing only the rows that do not have a comma-delimited value
+    for the `self_reported_ethnicity_ontology_term_id` column
+    """
+    return input_df[~input_df.self_reported_ethnicity_ontology_term_id.str.contains(",")]
+
+
+def sanitize_api_query_dict(query_dict: Any):
+    """
+    Remove invalid values in the query dictionary encoding the query API
+    request body.
+
+    The assumption is that this function is called at the beginning of the
+    API function. This usage also helps mitigate query injection attacks.
+
+    NOTE: This is a destructive operation in that it mutates `query_dict`.
+
+    Parameters
+    ----------
+    query_dict : json object
+        The query dictionary to sanitize.
+
+    Returns
+    -------
+    None because this function mutates the function argument
+    """
+
+    # Sanitize `self_reported_ethnicity_ontology_term_ids` by removing
+    # comma-delimited values because WMG does not support filtering and grouping
+    # by ethnicity terms that encode mixed ethnicities encoded as a single comma-delimited string
+    # value
+    if "self_reported_ethnicity_ontology_term_ids" in query_dict:
+        ethnicity_term_ids = query_dict["self_reported_ethnicity_ontology_term_ids"]
+
+        ethnicity_term_ids_to_keep = [x for x in ethnicity_term_ids if "," not in x]
+        query_dict["self_reported_ethnicity_ontology_term_ids"] = ethnicity_term_ids_to_keep
 
 
 def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
@@ -199,6 +263,7 @@ def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
     return True
 
 
+@tracer.wrap(name="build_filter_dims_values", service="wmg-api", resource="filters", span_type="wmg-api")
 def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot) -> Dict:
     dims = {
         "dataset_id": "",
@@ -217,6 +282,12 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
             else find_dim_option_values(criteria, snapshot, dim)
         )
 
+    # For schema-4 we filter out comma-delimited values for `self_reported_ethnicity_ontology_term_id`
+    # from the options list per functional requirements:
+    # See: https://github.com/chanzuckerberg/single-cell/issues/596
+    ethnicity_term_ids = dims["self_reported_ethnicity_ontology_term_id"]
+    dims["self_reported_ethnicity_ontology_term_id"] = [term_id for term_id in ethnicity_term_ids if "," not in term_id]
+
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(snapshot, dims["dataset_id"]),
         disease_terms=build_ontology_term_id_label_mapping(dims["disease_ontology_term_id"]),
@@ -233,6 +304,7 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
     return response_filter_dims_values
 
 
+@tracer.wrap(name="build_expression_summary", service="wmg-api", resource="query", span_type="wmg-api")
 def build_expression_summary(
     unrolled_gene_expression_df: DataFrame, rolled_gene_expression_df: DataFrame, compare: str
 ) -> dict:
@@ -335,6 +407,7 @@ def fill_out_structured_dict_compare(rolled_gene_expression_df, structured_resul
         )
 
 
+@tracer.wrap(name="build_gene_id_label_mapping", service="wmg-api", resource="query", span_type="wmg-api")
 def build_gene_id_label_mapping(gene_ontology_term_ids: List[str]) -> List[dict]:
     return [
         {gene_ontology_term_id: gene_term_label(gene_ontology_term_id)}
@@ -346,90 +419,78 @@ def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> Li
     return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
 
 
+def fill_out_structured_tissue_agg(tissue_agg, structured_result):
+    tissues = tissue_agg["tissue_ontology_term_id"].values
+    n = tissue_agg["n_cells_cell_type"].values
+
+    for i in range(len(tissues)):
+        structured_result[tissues[i]]["tissue_stats"]["aggregated"] = {
+            "tissue_ontology_term_id": tissues[i],
+            "name": ontology_term_label(tissues[i]),
+            "total_count": int(n[i]),
+            "order": -1,
+        }
+
+
+def fill_out_structured_cell_type_agg(cell_type_agg, structured_result, ordering):
+    tissues = cell_type_agg["tissue_ontology_term_id"].values
+    cell_types = cell_type_agg["cell_type_ontology_term_id"].values
+    n = cell_type_agg["n_cells_cell_type"].values
+
+    for i in range(len(tissues)):
+        structured_result[tissues[i]][cell_types[i]]["aggregated"] = {
+            "cell_type_ontology_term_id": cell_types[i],
+            "name": ontology_term_label(cell_types[i]),
+            "total_count": int(n[i]),
+            "order": ordering.get((tissues[i], cell_types[i]), -1),
+        }
+
+
+def fill_out_structured_cell_type_compare(cell_type_agg_compare, structured_result, ordering, compare):
+    tissues = cell_type_agg_compare["tissue_ontology_term_id"].values
+    cell_types = cell_type_agg_compare["cell_type_ontology_term_id"].values
+    n = cell_type_agg_compare["n_cells_cell_type"].values
+    compare = cell_type_agg_compare[compare].values
+
+    for i in range(len(tissues)):
+        id_to_label = build_ontology_term_id_label_mapping([compare[i]])[0]
+        name = id_to_label.pop(compare[i])
+        structured_result[tissues[i]][cell_types[i]][compare[i]] = {
+            "cell_type_ontology_term_id": cell_types[i],
+            "name": name if name else compare[i],
+            "total_count": int(n[i]),
+            "order": int(ordering.get((tissues[i], cell_types[i]), -1)),
+        }
+
+
 # getting only cell type metadata, no genes
+@tracer.wrap(name="build_ordered_cell_types_by_tissue", service="wmg-api", resource="query", span_type="wmg-api")
 def build_ordered_cell_types_by_tissue(
+    rolled_cell_counts_cell_type_agg: DataFrame,
     cell_counts_cell_type_agg: DataFrame,
-    cell_type_orderings: DataFrame,
+    cell_type_orderings: dict,
     compare: str,
 ) -> Dict[str, Dict[str, Dict[str, Any]]]:
-    distinct_tissues_cell_types = cell_counts_cell_type_agg.reset_index().rename(
-        columns={"n_cells_cell_type": "n_total_cells"}
-    )
-
-    # building order for cell types for FE to use
-    cell_type_orderings["order"] = range(cell_type_orderings.shape[0])
-
-    # make a multi index
-    cell_type_orderings = cell_type_orderings.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).first()
-
-    indexer = list(
-        zip(
-            distinct_tissues_cell_types["tissue_ontology_term_id"],
-            distinct_tissues_cell_types["cell_type_ontology_term_id"],
-        )
-    )
-    indexer_bool_filter = []
-    indexer_filter = []
-    for index in indexer:
-        indexer_bool_filter.append(index in cell_type_orderings.index)
-        if index in cell_type_orderings.index:
-            indexer_filter.append(index)
-
-    joined = distinct_tissues_cell_types[indexer_bool_filter]
-
-    for column in cell_type_orderings:
-        joined[column] = list(cell_type_orderings[column][indexer_filter])
-
-    # Remove cell types without counts
-    joined = joined[joined["n_total_cells"].notnull()]
-
+    cell_counts_cell_type_agg = cell_counts_cell_type_agg.reset_index()
+    rolled_cell_counts_cell_type_agg = rolled_cell_counts_cell_type_agg.reset_index()
     # Create nested dicts with tissue_ontology_term_id keys, cell_type_ontology_term_id respectively
     structured_result: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(lambda: defaultdict(dict))
 
     # Populate aggregated cell counts for each tissue
-    joined_agg = joined.groupby(["tissue_ontology_term_id"], as_index=False).agg({"n_total_cells": "sum"})
-
-    for i in range(joined_agg.shape[0]):
-        row = joined_agg.iloc[i]
-        structured_result[row.tissue_ontology_term_id]["tissue_stats"]["aggregated"] = {
-            "tissue_ontology_term_id": row.tissue_ontology_term_id,
-            "name": ontology_term_label(row.tissue_ontology_term_id),
-            "total_count": int(row.n_total_cells),
-            "order": -1,
-        }
+    tissue_agg = cell_counts_cell_type_agg.groupby(["tissue_ontology_term_id"], as_index=False).sum(numeric_only=True)
+    fill_out_structured_tissue_agg(tissue_agg, structured_result)
 
     # Populate aggregated cell counts for each (tissue, cell_type) combination
-    joined_agg = joined.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False).agg(
-        {"order": "first"}
-    )
+    cell_type_agg = rolled_cell_counts_cell_type_agg.groupby(
+        ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
+    ).sum(numeric_only=True)
 
-    agg = cell_counts_cell_type_agg.groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"]).sum().T
-
-    for i in range(joined_agg.shape[0]):
-        row = joined_agg.iloc[i]
-        structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id]["aggregated"] = {
-            "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
-            "name": ontology_term_label(row.cell_type_ontology_term_id),
-            "total_count": int(agg[row.tissue_ontology_term_id][row.cell_type_ontology_term_id]["n_cells_cell_type"]),
-            "order": int(row.order),
-        }
+    fill_out_structured_cell_type_agg(cell_type_agg, structured_result, cell_type_orderings)
 
     # Populate aggregated cell counts for each (tissue, cell_type, <compare_dimension>) combination
-    cell_counts_cell_type_agg_T = cell_counts_cell_type_agg.T
     if compare:
-        for i in range(joined.shape[0]):
-            row = joined.iloc[i]
-            id_to_label = build_ontology_term_id_label_mapping([row[compare]])[0]
-            name = id_to_label.pop(row[compare])
-            structured_result[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][row[compare]] = {
-                "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
-                "name": name if name else row[compare],
-                "total_count": int(
-                    cell_counts_cell_type_agg_T[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
-                        row[compare]
-                    ]["n_cells_cell_type"]
-                ),
-                "order": int(row.order),
-            }
+        fill_out_structured_cell_type_compare(
+            rolled_cell_counts_cell_type_agg, structured_result, cell_type_orderings, compare
+        )
 
     return structured_result
