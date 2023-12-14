@@ -77,7 +77,7 @@ class H5ADWorker(H5ADWorkerBase, CreateUpdatedArtifactMixin):
         self.current_dataset_version = current_dataset_version
         self.metadata_update = metadata_update
 
-    def act(self, adata: scanpy.AnnData):
+    def update(self, adata: scanpy.AnnData):
         metadata = self.current_dataset_version.metadata
         # maps artifact name for metadata field to DB field name, if different
         for key, val in self.metadata_update.as_dict_without_none_values().items():
@@ -107,7 +107,7 @@ class RDSWorker(RDSWorkerBase, CreateUpdatedArtifactMixin):
         self.current_dataset_version_id = current_dataset_version_id
         self.metadata_update = metadata_update
 
-    def act(self, rds_object):
+    def update(self, rds_object):
         for key, val in self.metadata_update.as_dict_without_none_values().items():
             seurat_metadata = seurat.Misc(object=rds_object)
             if seurat_metadata.rx2[key]:
@@ -134,7 +134,7 @@ class CXGWorker(CXGWorkerBase):
         self.dataset_version_id = dataset_version_id
         self.metadata_update = metadata_update
 
-    def act(self):
+    def update(self):
         ctx = tiledb.Ctx(H5ADDataFile.tile_db_ctx_config)
         array_name = f"{self.new_cxg_dir}/cxg_group_metadata"
         with tiledb.open(array_name, mode="r", ctx=ctx) as metadata_array:
@@ -169,7 +169,7 @@ class DatasetMetadataReprocess(ProcessDownload):
     ):
         H5ADWorker(
             artifact_bucket, datasets_bucket, h5ad_uri, current_dataset_version, new_key_prefix, metadata_update
-        ).update()
+        ).run()
 
     @staticmethod
     def update_rds(
@@ -182,7 +182,7 @@ class DatasetMetadataReprocess(ProcessDownload):
     ):
         RDSWorker(
             artifact_bucket, datasets_bucket, rds_uri, new_key_prefix, current_dataset_version_id, metadata_update
-        ).update()
+        ).run()
 
     @staticmethod
     def update_cxg(
@@ -192,7 +192,7 @@ class DatasetMetadataReprocess(ProcessDownload):
         new_cxg_dir: str,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
-        CXGWorker(artifact_bucket, datasets_bucket, cxg_uri, new_cxg_dir, metadata_update).update()
+        CXGWorker(artifact_bucket, datasets_bucket, cxg_uri, new_cxg_dir, metadata_update).run()
 
     def update_dataset_metadata(
         self,

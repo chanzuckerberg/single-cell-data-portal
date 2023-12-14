@@ -41,9 +41,9 @@ class CXGWorkerBase(DatasetMetadataUpdaterWorker):
         self.cxg_uri = cxg_uri
         self.new_cxg_dir = new_cxg_dir
 
-    def update(self) -> None:
+    def run(self) -> None:
         self.s3_provider.upload_directory(self.cxg_uri, self.new_cxg_dir)
-        self.act()
+        self.update()
         self.post()
 
     def post(self) -> None:
@@ -53,7 +53,7 @@ class CXGWorkerBase(DatasetMetadataUpdaterWorker):
         """
         pass
 
-    def act(self) -> None:
+    def update(self) -> None:
         """
         Update the cxg object in the destination directory
         """
@@ -65,7 +65,7 @@ class H5ADWorkerBase(DatasetMetadataUpdaterWorker):
         super().__init__(artifact_bucket, datasets_bucket)
         self.h5ad_uri = h5ad_uri
 
-    def update(self) -> None:
+    def run(self) -> None:
         """
         Update the anndata object
         """
@@ -75,7 +75,7 @@ class H5ADWorkerBase(DatasetMetadataUpdaterWorker):
         )
         try:
             adata = scanpy.read_h5ad(h5ad_filename)
-            self.act(adata)
+            self.update(adata)
             adata.write_h5ad(compression="gzip")
             self.post(h5ad_filename)
         finally:
@@ -89,7 +89,7 @@ class H5ADWorkerBase(DatasetMetadataUpdaterWorker):
         """
         pass
 
-    def act(self, adata: scanpy.AnnData) -> None:
+    def update(self, adata: scanpy.AnnData) -> None:
         """
         Update the anndata object in place
         :param adata:
@@ -102,7 +102,7 @@ class RDSWorkerBase(DatasetMetadataUpdaterWorker):
         super().__init__(artifact_bucket, datasets_bucket)
         self.rds_uri = rds_uri
 
-    def update(self) -> None:
+    def run(self) -> None:
         """
         Update the seurat object
         """
@@ -112,7 +112,7 @@ class RDSWorkerBase(DatasetMetadataUpdaterWorker):
         )
         try:
             rds_object = base.readRDS(seurat_filename)
-            self.act(rds_object)
+            self.update(rds_object)
             base.saveRDS(rds_object, file=seurat_filename)
             self.post(seurat_filename)
         finally:
@@ -126,7 +126,7 @@ class RDSWorkerBase(DatasetMetadataUpdaterWorker):
         """
         pass
 
-    def act(self, rds_object) -> None:
+    def update(self, rds_object) -> None:
         """
         Update the seurat object in place
         :param rds_object:
