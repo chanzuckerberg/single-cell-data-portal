@@ -2264,7 +2264,7 @@ class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
         expected = (
             f"Publication: {doi} Dataset Version: {self.mock_config.dataset_assets_base_url}/{dataset_version_id}.h5ad "
             "curated and distributed by CZ CELLxGENE Discover in Collection: "
-            f"{self.mock_config.collections_base_url}/{collection.collection_id}"
+            f"{self.mock_config.collections_base_url}/collections/{collection.collection_id}"
         )
 
         self.assertEqual(
@@ -2278,7 +2278,7 @@ class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
         expected = (
             f"Dataset Version: {self.mock_config.dataset_assets_base_url}/{dataset_version_id}.h5ad "
             "curated and distributed by CZ CELLxGENE Discover in Collection: "
-            f"{self.mock_config.collections_base_url}/{collection.collection_id}"
+            f"{self.mock_config.collections_base_url}/collections/{collection.collection_id}"
         )
 
         self.assertEqual(

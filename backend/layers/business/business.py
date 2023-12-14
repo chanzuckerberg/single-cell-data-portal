@@ -124,15 +124,13 @@ class BusinessLogic(BusinessLogicInterface):
         Builds 'citation' string to populate on dataset artifacts
         """
         dataset_assets_base_url = CorporaConfig().dataset_assets_base_url
-        collections_base_url = CorporaConfig().collections_base_url
+        collections_url = f"{CorporaConfig().collections_base_url}/collections"
         citation = ""
 
         if doi:
             citation += f"Publication: {doi} "
         citation += f"Dataset Version: {dataset_assets_base_url}/{dataset_version_id}.h5ad "
-        citation += (
-            f"curated and distributed by CZ CELLxGENE Discover in Collection: {collections_base_url}/{collection_id}"
-        )
+        citation += f"curated and distributed by CZ CELLxGENE Discover in Collection: {collections_url}/{collection_id}"
 
         return citation
 

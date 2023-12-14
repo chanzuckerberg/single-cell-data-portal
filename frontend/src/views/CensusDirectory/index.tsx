@@ -13,7 +13,7 @@ import {
   TierContainer,
   TierTitle,
   TierDescription,
-} from "./styles";
+} from "./style";
 import Project from "./components/Project";
 
 function CensusDirectory() {
@@ -32,7 +32,7 @@ function CensusDirectory() {
 
   return (
     <Content>
-      <Header>Census Spotlight</Header>
+      <Header>Census Models</Header>
       <DirectoryDescription>
         <p>
           This page features models and integrated embeddings of the Census data
