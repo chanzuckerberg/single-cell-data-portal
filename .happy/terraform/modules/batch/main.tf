@@ -106,7 +106,7 @@ resource aws_batch_job_definition dataset_metadata_update {
 })
 }
 
-resource aws_batch_job_definition dataset_metadata_update {
+resource aws_batch_job_definition reprocess_dataset_metadata {
   type = "container"
   name = "dp-${var.deployment_stage}-${var.custom_stack_name}-reprocess-dataset-metadata"
   container_properties = jsonencode({
