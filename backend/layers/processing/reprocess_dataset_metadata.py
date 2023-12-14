@@ -11,7 +11,6 @@ import tiledb
 from rpy2.robjects import StrVector
 from rpy2.robjects.packages import importr
 
-from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import (
     CollectionVersionId,
@@ -19,6 +18,7 @@ from backend.layers.common.entities import (
     DatasetArtifactType,
     DatasetConversionStatus,
     DatasetProcessingStatus,
+    DatasetStatusKey,
     DatasetVersion,
     DatasetVersionId,
 )
@@ -27,6 +27,7 @@ from backend.layers.processing.exceptions import ProcessingFailed
 from backend.layers.processing.h5ad_data_file import H5ADDataFile
 from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_download import ProcessDownload
+from backend.layers.processing.reprocess_base import CXGWorkerBase, H5ADWorkerBase, RDSWorkerBase
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.uri_provider import UriProvider
 
@@ -36,21 +37,7 @@ seurat = importr("SeuratObject")
 configure_logging(level=logging.INFO)
 
 
-class DatasetMetadataReprocessWorker(ProcessDownload):
-    def __init__(self, artifact_bucket: str, datasets_bucket: str) -> None:
-        # init each worker with business logic backed by non-shared DB connection
-        self.business_logic = BusinessLogic(
-            DatabaseProvider(),
-            None,
-            None,
-            None,
-            S3Provider(),
-            UriProvider(),
-        )
-        super().__init__(self.business_logic, self.business_logic.uri_provider, self.business_logic.s3_provider)
-        self.artifact_bucket = artifact_bucket
-        self.datasets_bucket = datasets_bucket
-
+class CreateUpdatedArtifactMixin:
     def create_updated_artifacts(
         self,
         file_name: str,
@@ -73,75 +60,93 @@ class DatasetMetadataReprocessWorker(ProcessDownload):
             self.logger.error(f"Uploading Artifact {artifact_type} from dataset {dataset_version_id} failed.")
             raise ProcessingFailed from None
 
-    def update_h5ad(
+
+class H5ADWorker(H5ADWorkerBase, CreateUpdatedArtifactMixin):
+    def __init__(
         self,
+        artifact_bucket: str,
         h5ad_uri: str,
+        datasets_bucket: str,
         current_dataset_version: DatasetVersion,
         new_key_prefix: str,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
-        h5ad_filename = self.download_from_source_uri(
-            source_uri=h5ad_uri,
-            local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
-        )
+        super().__init__(artifact_bucket, datasets_bucket, h5ad_uri)
+        self.current_dataset_version = current_dataset_version
+        self.new_key_prefix = new_key_prefix
+        self.current_dataset_version = current_dataset_version
+        self.metadata_update = metadata_update
 
-        adata = scanpy.read_h5ad(h5ad_filename)
-        metadata = current_dataset_version.metadata
+    def act(self, adata: scanpy.AnnData):
+        metadata = self.current_dataset_version.metadata
         # maps artifact name for metadata field to DB field name, if different
-        for key, val in metadata_update.as_dict_without_none_values().items():
+        for key, val in self.metadata_update.as_dict_without_none_values().items():
             adata.uns[key] = val
             setattr(metadata, key, val)
 
-        adata.write(h5ad_filename, compression="gzip")
-        current_dataset_version_id = current_dataset_version.version_id
-        self.business_logic.set_dataset_metadata(current_dataset_version_id, metadata)
+    def post(self, h5ad_filename: str):
+        current_dataset_version_id = self.current_dataset_version.version_id
+        self.business_logic.set_dataset_metadata(current_dataset_version_id, self.current_dataset_version.metadata)
         self.create_updated_artifacts(
-            h5ad_filename, DatasetArtifactType.H5AD, new_key_prefix, current_dataset_version_id
+            h5ad_filename, DatasetArtifactType.H5AD, self.new_key_prefix, current_dataset_version_id
         )
-        os.remove(h5ad_filename)
 
-    def update_rds(
+
+class RDSWorker(RDSWorkerBase, CreateUpdatedArtifactMixin):
+    def __init__(
         self,
+        artifact_bucket: str,
+        datasets_bucket: str,
         rds_uri: str,
         new_key_prefix: str,
         current_dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
-        seurat_filename = self.download_from_source_uri(
-            source_uri=rds_uri,
-            local_path=CorporaConstants.LABELED_RDS_ARTIFACT_FILENAME,
-        )
+        super().__init__(artifact_bucket, datasets_bucket, rds_uri)
+        self.new_key_prefix = new_key_prefix
+        self.current_dataset_version_id = current_dataset_version_id
+        self.metadata_update = metadata_update
 
-        rds_object = base.readRDS(seurat_filename)
-
-        for key, val in metadata_update.as_dict_without_none_values().items():
+    def act(self, rds_object):
+        for key, val in self.metadata_update.as_dict_without_none_values().items():
             seurat_metadata = seurat.Misc(object=rds_object)
             if seurat_metadata.rx2[key]:
                 val = val if isinstance(val, list) else [val]
                 seurat_metadata[seurat_metadata.names.index(key)] = StrVector(val)
 
-        base.saveRDS(rds_object, file=seurat_filename)
-
+    def post(self, rds_filename: str):
         self.create_updated_artifacts(
-            seurat_filename, DatasetArtifactType.RDS, new_key_prefix, current_dataset_version_id
+            rds_filename, DatasetArtifactType.RDS, self.new_key_prefix, self.current_dataset_version_id
         )
-        os.remove(seurat_filename)
 
-    def update_cxg(
+
+class CXGWorker(CXGWorkerBase):
+    def __init__(
         self,
+        artifact_bucket: str,
+        datasets_bucket: str,
         cxg_uri: str,
         new_cxg_dir: str,
+        dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
-    ):
-        self.s3_provider.upload_directory(cxg_uri, new_cxg_dir)
+    ) -> None:
+        super().__init__(artifact_bucket, datasets_bucket, cxg_uri, new_cxg_dir)
+        self.dataset_version_id = dataset_version_id
+        self.metadata_update = metadata_update
+
+    def act(self):
         ctx = tiledb.Ctx(H5ADDataFile.tile_db_ctx_config)
-        array_name = f"{new_cxg_dir}/cxg_group_metadata"
+        array_name = f"{self.new_cxg_dir}/cxg_group_metadata"
         with tiledb.open(array_name, mode="r", ctx=ctx) as metadata_array:
             cxg_metadata_dict = json.loads(metadata_array.meta["corpora"])
-            cxg_metadata_dict.update(metadata_update.as_dict_without_none_values())
+            cxg_metadata_dict.update(self.metadata_update.as_dict_without_none_values())
 
         with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
             metadata_array.meta["corpora"] = json.dumps(cxg_metadata_dict)
+
+    def post(self):
+        self.business_logic.add_dataset_artifact(self.dataset_version_id, DatasetArtifactType.CXG, self.new_cxg_dir)
+        self.update_processing_status(self.dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.CONVERTED)
 
 
 class DatasetMetadataReprocess(ProcessDownload):
@@ -162,12 +167,9 @@ class DatasetMetadataReprocess(ProcessDownload):
         new_key_prefix: str,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
-        DatasetMetadataReprocessWorker(artifact_bucket, datasets_bucket).update_h5ad(
-            h5ad_uri,
-            current_dataset_version,
-            new_key_prefix,
-            metadata_update,
-        )
+        H5ADWorker(
+            artifact_bucket, datasets_bucket, h5ad_uri, current_dataset_version, new_key_prefix, metadata_update
+        ).update()
 
     @staticmethod
     def update_rds(
@@ -178,9 +180,9 @@ class DatasetMetadataReprocess(ProcessDownload):
         current_dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
-        DatasetMetadataReprocessWorker(artifact_bucket, datasets_bucket).update_rds(
-            rds_uri, new_key_prefix, current_dataset_version_id, metadata_update
-        )
+        RDSWorker(
+            artifact_bucket, datasets_bucket, rds_uri, new_key_prefix, current_dataset_version_id, metadata_update
+        ).update()
 
     @staticmethod
     def update_cxg(
@@ -190,9 +192,7 @@ class DatasetMetadataReprocess(ProcessDownload):
         new_cxg_dir: str,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
-        DatasetMetadataReprocessWorker(artifact_bucket, datasets_bucket).update_cxg(
-            cxg_uri, new_cxg_dir, metadata_update
-        )
+        CXGWorker(artifact_bucket, datasets_bucket, cxg_uri, new_cxg_dir, metadata_update).update()
 
     def update_dataset_metadata(
         self,
