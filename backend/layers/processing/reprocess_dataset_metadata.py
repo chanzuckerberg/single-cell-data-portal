@@ -208,7 +208,7 @@ class DatasetMetadataReprocess(ProcessDownload):
 
         artifact_uris = {artifact.type: artifact.uri for artifact in current_dataset_version.artifacts}
 
-        new_artifact_key_prefix = self.get_key_prefix(current_dataset_version_id) + "_updated"
+        new_artifact_key_prefix = self.get_key_prefix(current_dataset_version_id.id) + "_updated"
 
         artifact_jobs = []
 
