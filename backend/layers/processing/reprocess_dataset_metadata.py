@@ -275,18 +275,19 @@ class DatasetMetadataReprocess(ProcessDownload):
         # blocking call on async functions before checking for valid artifact statuses
         [j.join() for j in artifact_jobs]
 
-    def update_dataset_citations_in_collection(
+    def update_dataset_citation(
         self,
         collection_version_id: CollectionVersionId,
+        dataset_version_id: DatasetVersionId,
     ):
+
         collection_version = self.business_logic.get_collection_version(collection_version_id)
         doi = next((link.uri for link in collection_version.metadata.links if link.type == "DOI"), None)
-        for dataset in collection_version.datasets:
-            new_citation = self.business_logic.generate_dataset_citation(
-                collection_version.collection_id, dataset.version_id, doi
-            )
-            metadata_update = DatasetArtifactMetadataUpdate(citation=new_citation)
-            self.update_dataset_metadata(dataset.version_id, metadata_update)
+        new_citation = self.business_logic.generate_dataset_citation(
+            collection_version.collection_id, dataset_version_id, doi
+        )
+        metadata_update = DatasetArtifactMetadataUpdate(citation=new_citation)
+        self.update_dataset_metadata(dataset_version_id, metadata_update)
 
 
 if __name__ == "__main__":
@@ -303,6 +304,7 @@ if __name__ == "__main__":
     cellxgene_bucket = os.environ.get("CELLXGENE_BUCKET", "test-cellxgene-bucket")
     datasets_bucket = os.environ.get("DATASETS_BUCKET", "test-datasets-bucket")
     collection_version_id = CollectionVersionId(os.environ["COLLECTION_VERSION_ID"])
+    dataset_version_id = DatasetVersionId(os.environ["DATASET_VERSION_ID"])
     DatasetMetadataReprocess(
         business_logic, artifact_bucket, cellxgene_bucket, datasets_bucket
-    ).update_dataset_citations_in_collection(collection_version_id)
+    ).update_dataset_citation(collection_version_id, dataset_version_id)
