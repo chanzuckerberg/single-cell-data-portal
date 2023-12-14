@@ -365,7 +365,7 @@ def _rollup_testcases():
 @pytest.mark.parametrize(
     "name,input_cell_counts_df,expected_cell_counts_df,input_gene_expr_df," "expected_gene_expr_df", _rollup_testcases()
 )
-def test__rollup(self, _, input_cell_counts_df, expected_cell_counts_df, input_gene_expr_df, expected_gene_expr_df):
+def test__rollup(name, input_cell_counts_df, expected_cell_counts_df, input_gene_expr_df, expected_gene_expr_df):
     """
     Test that the `rollup` function correctly accumulates (or rolls up) gene-expression
     values FOR EACH expressed gene and cell count values up the cell type ANCESTOR paths
