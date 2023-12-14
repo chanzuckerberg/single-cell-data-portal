@@ -106,6 +106,55 @@ resource aws_batch_job_definition dataset_metadata_update {
 })
 }
 
+resource aws_batch_job_definition dataset_metadata_update {
+  type = "container"
+  name = "dp-${var.deployment_stage}-${var.custom_stack_name}-reprocess-dataset-metadata"
+  container_properties = jsonencode({
+  "command": ["python3", "-m", "backend.layers.processing.reprocess_dataset_metadata"],
+  "jobRoleArn": "${var.batch_role_arn}",
+  "image": "${var.image}",
+  "memory": var.batch_container_memory_limit,
+  "environment": [
+    {
+      "name": "ARTIFACT_BUCKET",
+      "value": "${var.artifact_bucket}"
+    },
+    {
+      "name": "CELLXGENE_BUCKET",
+      "value": "${var.cellxgene_bucket}"
+    },
+    {
+      "name": "DATASETS_BUCKET",
+      "value": "${var.datasets_bucket}"
+    },
+    {
+      "name": "DEPLOYMENT_STAGE",
+      "value": "${var.deployment_stage}"
+    },
+    {
+      "name": "AWS_DEFAULT_REGION",
+      "value": "${data.aws_region.current.name}"
+    },
+    {
+      "name": "REMOTE_DEV_PREFIX",
+      "value": "${var.remote_dev_prefix}"
+    }
+  ],
+  "vcpus": 8,
+  "linuxParameters": {
+     "maxSwap": 800000,
+     "swappiness": 60
+  },
+  "logConfiguration": {
+    "logDriver": "awslogs",
+    "options": {
+      "awslogs-group": "${aws_cloudwatch_log_group.cloud_watch_logs_group.id}",
+      "awslogs-region": "${data.aws_region.current.name}"
+    }
+  }
+})
+}
+
 resource aws_cloudwatch_log_group cloud_watch_logs_group {
   retention_in_days = 365
   name              = "/dp/${var.deployment_stage}/${var.custom_stack_name}/upload"
