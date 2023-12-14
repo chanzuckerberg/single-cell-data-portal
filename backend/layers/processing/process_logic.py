@@ -80,25 +80,24 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         file_name: str,
         artifact_type: str,
         key_prefix: str,
-        dataset_version_id: DatasetVersionId,
         artifact_bucket: str,
         processing_status_key: DatasetStatusKey,
         datasets_bucket: Optional[str] = None,  # If provided, dataset will be uploaded to this bucket for public access
     ):
-        self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADING)
+        # self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADING)
         try:
-            s3_uri = self.upload_artifact(file_name, key_prefix, artifact_bucket)
-            self.logger.info(f"Uploaded [{dataset_version_id}/{file_name}] to {s3_uri}")
-            self.business_logic.add_dataset_artifact(dataset_version_id, artifact_type, s3_uri)
-            self.logger.info(f"Updated database with {artifact_type}.")
-            if datasets_bucket:
-                key = ".".join((key_prefix, artifact_type))
-                self.s3_provider.upload_file(
-                    file_name, datasets_bucket, key, extra_args={"ACL": "bucket-owner-full-control"}
-                )
-                datasets_s3_uri = self.make_s3_uri(datasets_bucket, key_prefix, key)
-                self.logger.info(f"Uploaded {dataset_version_id}.{artifact_type} to {datasets_s3_uri}")
-            self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADED)
+            self.upload_artifact(file_name, key_prefix, artifact_bucket)
+            # self.logger.info(f"Uploaded [{dataset_version_id}/{file_name}] to {s3_uri}")
+            # self.business_logic.add_dataset_artifact(dataset_version_id, artifact_type, s3_uri)
+            # self.logger.info(f"Updated database with {artifact_type}.")
+            # if datasets_bucket:
+            #     key = ".".join((key_prefix, artifact_type))
+            #     self.s3_provider.upload_file(
+            #         file_name, datasets_bucket, key, extra_args={"ACL": "bucket-owner-full-control"}
+            #     )
+            #     datasets_s3_uri = self.make_s3_uri(datasets_bucket, key_prefix, key)
+            #     self.logger.info(f"Uploaded {dataset_version_id}.{artifact_type} to {datasets_s3_uri}")
+            # self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADED)
         except Exception:
             raise ConversionFailed(processing_status_key) from None
 

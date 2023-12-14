@@ -1,4 +1,3 @@
-import copy
 import logging
 import os
 from collections import defaultdict
@@ -7,7 +6,6 @@ from functools import reduce
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 from backend.common.corpora_config import CorporaConfig
-from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
     CollectionMetadataUpdate,
@@ -61,7 +59,6 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
-    Link,
     PublishedDatasetVersion,
 )
 from backend.layers.common.helpers import (
@@ -141,7 +138,6 @@ class BusinessLogic(BusinessLogicInterface):
         collection_version: CollectionVersion,
         metadata_update: DatasetArtifactMetadataUpdate,
         current_dataset_version_id: DatasetVersionId,
-        new_dataset_version_id: DatasetVersionId = None,
     ):
         """
         Sets up and triggers batch job to copy a previous dataset version into a new dataset version, then
@@ -155,14 +151,8 @@ class BusinessLogic(BusinessLogicInterface):
                     f" cannot trigger artifact reprocessing for its datasets"
                 ]
             )
-        if new_dataset_version_id is None:
-            new_dataset_version_id = self.create_empty_dataset_version_for_current_dataset(
-                collection_version.version_id, current_dataset_version_id
-            ).version_id
 
-        self.batch_job_provider.start_metadata_update_batch_job(
-            current_dataset_version_id, new_dataset_version_id, metadata_update
-        )
+        self.batch_job_provider.start_metadata_update_batch_job(current_dataset_version_id, metadata_update)
 
     def _get_publisher_metadata(self, doi: str, errors: list) -> Optional[dict]:
         """
@@ -340,98 +330,23 @@ class BusinessLogic(BusinessLogicInterface):
         If `apply_doi_update` is set to False, no DOI updates should be issued
         """
 
-        # TODO: CollectionMetadataUpdate should probably be used for collection creation as well
-        # TODO: link.type should DEFINITELY move to an enum. pylance will help with the refactor
-        sanitize(body)
-        errors = []
-
-        # Check metadata
-        validation.verify_collection_metadata_update(body, errors)
-
         current_collection_version = self.get_collection_version(version_id)
-        if current_collection_version.published_at is not None:
-            raise CollectionUpdateException(["Cannot update a published collection"])
 
-        # Determine if publisher metadata should be unset, ignored or set at the end of the method.
-        # Note: the update needs to be done at the end to ensure atomicity
-        unset_publisher_metadata = False
-        publisher_metadata_to_set = None
+        # Determine if the DOI has changed
+        current_doi = next((link.uri for link in current_collection_version.metadata.links if link.type == "DOI"), None)
 
-        new_doi = None
-        current_doi = None
-        if apply_doi_update:
-            # Determine if the DOI has changed
-            current_doi = next(
-                (link.uri for link in current_collection_version.metadata.links if link.type == "DOI"), None
-            )
-            new_doi = (
-                None if body.links is None else next((link.uri for link in body.links if link.type == "DOI"), None)
-            )
-
-            if current_doi != new_doi:
-                for dataset in current_collection_version.datasets:
-                    # Avoid reprocessing a dataset while it is already processing to avoid race conditions
-                    # We only support all-or-nothing dataset DOI updates in a collection to avoid mismatching citations
-                    # in a collection.
-                    if dataset.status.processing_status not in [
-                        DatasetProcessingStatus.SUCCESS,
-                        DatasetProcessingStatus.FAILURE,
-                    ]:
-                        errors.append(
-                            {
-                                "link_type": CollectionLinkType.DOI,
-                                "reason": "Cannot update DOI while a dataset is processing or awaiting upload.",
-                            }
-                        )
-                        break
-
-            if current_doi and new_doi is None:
-                # If the DOI was deleted, remove the publisher_metadata field
-                unset_publisher_metadata = True
-            elif (new_doi is not None) and new_doi != current_doi:
-                # If the DOI has changed, fetch and update the metadata
-                publisher_metadata_to_set = self._get_publisher_metadata(new_doi, errors)
-
-        if errors:
-            raise CollectionUpdateException(errors)
-
-        # Merge the updated fields in the existing metadata object. Use a copy to ensure immutability.
-        new_metadata = copy.deepcopy(current_collection_version.metadata)
-        for field in vars(body):
-            if hasattr(body, field) and (value := getattr(body, field)) is not None:
-                if isinstance(value, str):
-                    value.strip()
-                if isinstance(value, Link):
-                    value.strip_fields()
-                setattr(new_metadata, field, value)
-
-        # Issue all updates
-        if unset_publisher_metadata:
-            self.database_provider.save_collection_publisher_metadata(version_id, None)
-        elif publisher_metadata_to_set is not None:
-            self.database_provider.save_collection_publisher_metadata(version_id, publisher_metadata_to_set)
-        self.database_provider.save_collection_metadata(version_id, new_metadata)
-
-        if all(
-            [apply_doi_update, new_doi != current_doi, FeatureFlagService.is_enabled(FeatureFlagValues.CITATION_UPDATE)]
-        ):
-            for dataset in current_collection_version.datasets:
-                if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
-                    self.logger.info(
-                        f"Dataset {dataset.version_id.id} is not successfully processed. Skipping metadata update."
-                    )
-                    continue
-
-                new_dataset_version_id = self.create_empty_dataset_version_for_current_dataset(
-                    current_collection_version.version_id, dataset.version_id
-                ).version_id
-                citation = self.generate_dataset_citation(
-                    current_collection_version.collection_id, new_dataset_version_id, new_doi
+        for dataset in current_collection_version.datasets:
+            if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
+                self.logger.info(
+                    f"Dataset {dataset.version_id.id} is not successfully processed. Skipping metadata update."
                 )
-                metadata_update = DatasetArtifactMetadataUpdate(citation=citation)
-                self.trigger_dataset_artifact_update(
-                    current_collection_version, metadata_update, dataset.version_id, new_dataset_version_id
-                )
+                continue
+
+            citation = self.generate_dataset_citation(
+                current_collection_version.collection_id, dataset.version_id, current_doi
+            )
+            metadata_update = DatasetArtifactMetadataUpdate(citation=citation)
+            self.trigger_dataset_artifact_update(current_collection_version, metadata_update, dataset.version_id)
 
     def _assert_collection_version_unpublished(
         self, collection_version_id: CollectionVersionId

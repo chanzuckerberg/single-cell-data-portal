@@ -15,7 +15,6 @@ class BatchJobProviderInterface:
     def start_metadata_update_batch_job(
         self,
         current_dataset_version_id: DatasetVersionId,
-        new_dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ) -> None:
         pass
@@ -28,7 +27,6 @@ class BatchJobProvider(BatchJobProviderInterface):
     def start_metadata_update_batch_job(
         self,
         current_dataset_version_id: DatasetVersionId,
-        new_dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ) -> Dict[str, str]:
         """
@@ -39,7 +37,7 @@ class BatchJobProvider(BatchJobProviderInterface):
         if os.environ.get("REMOTE_DEV_PREFIX"):
             stack_name = os.environ.get("REMOTE_DEV_PREFIX").replace("/", "")
         return self.client.submit_job(
-            jobName=f"metadata_update_{new_dataset_version_id}_{int(time())}",
+            jobName=f"metadata_update_{current_dataset_version_id}_{int(time())}",
             jobQueue=f"dp-{deployment_stage}",
             jobDefinition=f"dp-{deployment_stage}-{stack_name}-dataset-metadata-update",
             containerOverrides={
@@ -47,10 +45,6 @@ class BatchJobProvider(BatchJobProviderInterface):
                     {
                         "name": "CURRENT_DATASET_VERSION_ID",
                         "value": current_dataset_version_id.id,
-                    },
-                    {
-                        "name": "NEW_DATASET_VERSION_ID",
-                        "value": new_dataset_version_id.id,
                     },
                     {
                         "name": "METADATA_UPDATE_JSON",

@@ -2,7 +2,11 @@ from dataclasses import asdict
 
 from flask import Response, jsonify, make_response
 
-from backend.common.utils.http_exceptions import InvalidParametersHTTPException, MethodNotAllowedException
+from backend.common.utils.http_exceptions import (
+    ForbiddenHTTPException,
+    InvalidParametersHTTPException,
+    MethodNotAllowedException,
+)
 from backend.curation.api.v1.curation.collections.common import (
     extract_doi_from_links,
     get_inferred_collection_version,
@@ -39,7 +43,10 @@ def get(collection_id: str, token_info: dict) -> Response:
 
 
 def patch(collection_id: str, body: dict, token_info: dict) -> Response:
+
     user_info = UserInfo(token_info)
+    if not user_info.is_cxg_admin():
+        raise ForbiddenHTTPException("Unauthorized") from None
 
     if "links" in body and not body["links"]:
         raise InvalidParametersHTTPException(detail="If provided, the 'links' array may not be empty")

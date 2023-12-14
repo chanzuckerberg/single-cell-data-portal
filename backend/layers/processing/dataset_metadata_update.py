@@ -19,12 +19,10 @@ from backend.layers.common.entities import (
     DatasetConversionStatus,
     DatasetProcessingStatus,
     DatasetStatusKey,
-    DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
-from backend.layers.processing.exceptions import ProcessingFailed
 from backend.layers.processing.h5ad_data_file import H5ADDataFile
 from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_download import ProcessDownload
@@ -60,7 +58,6 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
         h5ad_uri: str,
         current_dataset_version: DatasetVersion,
         new_key_prefix: str,
-        new_dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
         h5ad_filename = self.download_from_source_uri(
@@ -78,35 +75,32 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
             setattr(metadata, db_field, val)
 
         adata.write(h5ad_filename, compression="gzip")
-        self.business_logic.set_dataset_metadata(new_dataset_version_id, metadata)
+        # self.business_logic.set_dataset_metadata(new_dataset_version_id, metadata)
 
         self.create_artifact(
             h5ad_filename,
             DatasetArtifactType.H5AD,
             new_key_prefix,
-            new_dataset_version_id,
             self.artifact_bucket,
             DatasetStatusKey.H5AD,
-            datasets_bucket=self.datasets_bucket,
         )
         os.remove(h5ad_filename)
-        self.update_processing_status(
-            new_dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID
-        )
-        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
+        # self.update_processing_status(
+        #     new_dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID
+        # )
+        # self.update_processing_status(new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
 
     def update_rds(
         self,
         rds_uri: str,
         new_key_prefix: str,
-        new_dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
         seurat_filename = self.download_from_source_uri(
             source_uri=rds_uri,
             local_path=CorporaConstants.LABELED_RDS_ARTIFACT_FILENAME,
         )
-        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTING)
+        # self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTING)
 
         rds_object = base.readRDS(seurat_filename)
 
@@ -122,19 +116,16 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
             seurat_filename,
             DatasetArtifactType.RDS,
             new_key_prefix,
-            new_dataset_version_id,
             self.artifact_bucket,
             DatasetStatusKey.RDS,
-            datasets_bucket=self.datasets_bucket,
         )
         os.remove(seurat_filename)
-        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTED)
+        # self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTED)
 
     def update_cxg(
         self,
         cxg_uri: str,
         new_cxg_dir: str,
-        dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
         self.s3_provider.upload_directory(cxg_uri, new_cxg_dir)
@@ -147,8 +138,8 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
         with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
             metadata_array.meta["corpora"] = json.dumps(cxg_metadata_dict)
 
-        self.business_logic.add_dataset_artifact(dataset_version_id, DatasetArtifactType.CXG, new_cxg_dir)
-        self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.CONVERTED)
+        # self.business_logic.add_dataset_artifact(dataset_version_id, DatasetArtifactType.CXG, new_cxg_dir)
+        # self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.CONVERTED)
 
 
 class DatasetMetadataUpdater(ProcessDownload):
@@ -167,14 +158,12 @@ class DatasetMetadataUpdater(ProcessDownload):
         h5ad_uri: str,
         current_dataset_version: DatasetVersion,
         new_key_prefix: str,
-        new_dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
         DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket).update_h5ad(
             h5ad_uri,
             current_dataset_version,
             new_key_prefix,
-            new_dataset_version_id,
             metadata_update,
         )
 
@@ -184,11 +173,10 @@ class DatasetMetadataUpdater(ProcessDownload):
         datasets_bucket: str,
         rds_uri: str,
         new_key_prefix: str,
-        new_dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
         DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket).update_rds(
-            rds_uri, new_key_prefix, new_dataset_version_id, metadata_update
+            rds_uri, new_key_prefix, metadata_update
         )
 
     @staticmethod
@@ -197,17 +185,13 @@ class DatasetMetadataUpdater(ProcessDownload):
         datasets_bucket: str,
         cxg_uri: str,
         new_cxg_dir: str,
-        dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
-        DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket).update_cxg(
-            cxg_uri, new_cxg_dir, dataset_version_id, metadata_update
-        )
+        DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket).update_cxg(cxg_uri, new_cxg_dir, metadata_update)
 
     def update_metadata(
         self,
         current_dataset_version_id: DatasetVersionId,
-        new_dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
         current_dataset_version = self.business_logic.get_dataset_version(current_dataset_version_id)
@@ -219,24 +203,24 @@ class DatasetMetadataUpdater(ProcessDownload):
 
         artifact_uris = {artifact.type: artifact.uri for artifact in current_dataset_version.artifacts}
 
-        new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
-        if new_dataset_version.status.processing_status != DatasetProcessingStatus.INITIALIZED:
-            self.logger.info(
-                f"Dataset {new_dataset_version_id} has processing status "
-                f"{new_dataset_version.status.processing_status} rather than expected INITIALIZED."
-                f"Skipping metadata update."
-            )
-            return
+        # new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
+        # if new_dataset_version.status.processing_status != DatasetProcessingStatus.INITIALIZED:
+        #     self.logger.info(
+        #         f"Dataset {new_dataset_version_id} has processing status "
+        #         f"{new_dataset_version.status.processing_status} rather than expected INITIALIZED."
+        #         f"Skipping metadata update."
+        #     )
+        #     return
 
-        if DatasetArtifactType.RAW_H5AD in artifact_uris:
-            raw_h5ad_uri = artifact_uris[DatasetArtifactType.RAW_H5AD]
-        else:
-            self.logger.error(f"Cannot find raw H5AD artifact uri for {current_dataset_version_id}.")
-            raise ValueError
+        # if DatasetArtifactType.RAW_H5AD in artifact_uris:
+        #     raw_h5ad_uri = artifact_uris[DatasetArtifactType.RAW_H5AD]
+        # else:
+        #     self.logger.error(f"Cannot find raw H5AD artifact uri for {current_dataset_version_id}.")
+        #     raise ValueError
 
-        self.upload_raw_h5ad(new_dataset_version_id, raw_h5ad_uri, self.artifact_bucket)
+        # self.upload_raw_h5ad(new_dataset_version_id, raw_h5ad_uri, self.artifact_bucket)
 
-        new_artifact_key_prefix = self.get_key_prefix(new_dataset_version_id.id)
+        new_artifact_key_prefix = self.get_key_prefix(current_dataset_version_id) + "_updated"
 
         artifact_jobs = []
 
@@ -250,7 +234,6 @@ class DatasetMetadataUpdater(ProcessDownload):
                     artifact_uris[DatasetArtifactType.H5AD],
                     current_dataset_version,
                     new_artifact_key_prefix,
-                    new_dataset_version_id,
                     metadata_update,
                 ),
             )
@@ -258,7 +241,6 @@ class DatasetMetadataUpdater(ProcessDownload):
             h5ad_job.start()
         else:
             self.logger.error(f"Cannot find labeled H5AD artifact uri for {current_dataset_version_id}.")
-            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.FAILED)
 
         if DatasetArtifactType.RDS in artifact_uris:
             self.logger.info("Main: Starting thread for rds update")
@@ -269,19 +251,17 @@ class DatasetMetadataUpdater(ProcessDownload):
                     self.datasets_bucket,
                     artifact_uris[DatasetArtifactType.RDS],
                     new_artifact_key_prefix,
-                    new_dataset_version_id,
                     metadata_update,
                 ),
             )
             artifact_jobs.append(rds_job)
             rds_job.start()
         elif current_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED:
-            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
+            pass
         else:
             self.logger.error(
                 f"Cannot find RDS artifact uri for {current_dataset_version_id}, and Conversion Status is not SKIPPED."
             )
-            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.FAILED)
 
         if DatasetArtifactType.CXG in artifact_uris:
             self.logger.info("Main: Starting thread for cxg update")
@@ -292,7 +272,6 @@ class DatasetMetadataUpdater(ProcessDownload):
                     self.datasets_bucket,
                     artifact_uris[DatasetArtifactType.CXG],
                     f"s3://{self.cellxgene_bucket}/{new_artifact_key_prefix}.cxg",
-                    new_dataset_version_id,
                     metadata_update,
                 ),
             )
@@ -300,21 +279,20 @@ class DatasetMetadataUpdater(ProcessDownload):
             cxg_job.start()
         else:
             self.logger.error(f"Cannot find cxg artifact uri for {current_dataset_version_id}.")
-            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.FAILED)
 
         # blocking call on async functions before checking for valid artifact statuses
         [j.join() for j in artifact_jobs]
 
-        if self.has_valid_artifact_statuses(new_dataset_version_id):
-            self.update_processing_status(
-                new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
-            )
-        else:
-            self.update_processing_status(
-                new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
-            )
-            status = self.business_logic.get_dataset_version(new_dataset_version_id).status
-            raise ProcessingFailed(f"Artifact reprocessing failed, with statuses: {status.to_dict()}")
+        # if self.has_valid_artifact_statuses(new_dataset_version_id):
+        #     self.update_processing_status(
+        #         new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS
+        #     )
+        # else:
+        #     self.update_processing_status(
+        #         new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
+        #     )
+        #     status = self.business_logic.get_dataset_version(new_dataset_version_id).status
+        #     raise ProcessingFailed(f"Artifact reprocessing failed, with statuses: {status.to_dict()}")
 
     def has_valid_artifact_statuses(self, dataset_version_id: DatasetVersionId) -> bool:
         dataset_version = self.business_logic.get_dataset_version(dataset_version_id)
@@ -342,8 +320,7 @@ if __name__ == "__main__":
     cellxgene_bucket = os.environ.get("CELLXGENE_BUCKET", "test-cellxgene-bucket")
     datasets_bucket = os.environ.get("DATASETS_BUCKET", "test-datasets-bucket")
     current_dataset_version_id = DatasetVersionId(os.environ["CURRENT_DATASET_VERSION_ID"])
-    new_dataset_version_id = DatasetVersionId(os.environ["NEW_DATASET_VERSION_ID"])
     metadata_update = DatasetArtifactMetadataUpdate(**json.loads(os.environ["METADATA_UPDATE_JSON"]))
     DatasetMetadataUpdater(business_logic, artifact_bucket, cellxgene_bucket, datasets_bucket).update_metadata(
-        current_dataset_version_id, new_dataset_version_id, metadata_update
+        current_dataset_version_id, metadata_update
     )
