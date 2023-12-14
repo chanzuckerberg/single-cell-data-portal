@@ -4,7 +4,7 @@ import logging
 import uuid
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 from sqlalchemy import create_engine, delete
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
@@ -651,6 +651,16 @@ class DatabaseProvider(DatabaseProviderInterface):
                     dataset.published_at = published_at
 
             return dataset_version_ids_to_delete_from_s3
+
+    def set_collection_versions_as_canonical(self, collection_map: Dict[str, CollectionVersionId]) -> None:
+        """
+        Sets Collection Version as canonical collection for each mapped pair of IDs
+        """
+        with self._manage_session() as session:
+            # update canonical collection -> collection version mapping
+            collections = session.query(CollectionTable).filter(CollectionTable.id.in_(collection_map.keys())).all()
+            for collection in collections:
+                collection.version_id = collection_map[collection.id].id
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId, get_tombstoned: bool = False) -> DatasetVersion:
         """

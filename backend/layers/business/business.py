@@ -215,7 +215,7 @@ class BusinessLogic(BusinessLogicInterface):
 
     def get_collection_map_to_latest_published_version_by_schema(
         self, schema_version: str
-    ) -> Dict[CollectionId, CollectionVersion]:
+    ) -> Dict[str, CollectionVersion]:
         has_wildcards = "_" in schema_version
         collection_versions = self.database_provider.get_collection_versions_by_schema(schema_version, has_wildcards)
 
@@ -1100,4 +1100,12 @@ class BusinessLogic(BusinessLogicInterface):
         )
         self.database_provider.replace_dataset_in_collection_version(
             collection_version_id, current_version.version_id, previous_version_id
+        )
+
+    def set_collection_versions_as_canonical(self, collection_map: Dict[str, CollectionVersion]):
+        self.database_provider.set_collection_versions_as_canonical(
+            {
+                collection_id: collection_version.version_id
+                for collection_id, collection_version in collection_map.items()
+            }
         )
