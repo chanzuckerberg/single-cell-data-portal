@@ -17,7 +17,6 @@ numba==0.56.2
 numpy==1.23.2
 owlready2==0.40.0
 pandas==1.4.4
-parameterized
 psutil>=5.9.0
 psycopg2-binary>=2.8.5
 pyarrow>=1.0

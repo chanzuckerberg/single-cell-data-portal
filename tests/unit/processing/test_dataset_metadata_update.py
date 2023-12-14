@@ -7,7 +7,6 @@ from unittest.mock import Mock, patch
 import pytest
 import scanpy
 import tiledb
-from parameterized import parameterized
 from rpy2.robjects.packages import importr
 
 from backend.common.utils.corpora_constants import CorporaConstants
@@ -500,7 +499,7 @@ class TestValidArtifactStatuses(BaseProcessingTest):
             self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket"
         )
 
-    @parameterized.expand([DatasetConversionStatus.CONVERTED, DatasetConversionStatus.SKIPPED])
+    @pytest.mark.parametrize("rds_status", [DatasetConversionStatus.CONVERTED, DatasetConversionStatus.SKIPPED])
     def test_has_valid_artifact_statuses(self, rds_status):
         dataset_version = self.generate_dataset(
             statuses=[
@@ -514,7 +513,7 @@ class TestValidArtifactStatuses(BaseProcessingTest):
         dataset_version_id = DatasetVersionId(dataset_version.dataset_version_id)
         assert self.updater.has_valid_artifact_statuses(dataset_version_id) is True
 
-    @parameterized.expand([DatasetConversionStatus.CONVERTING, DatasetConversionStatus.FAILED])
+    @pytest.mark.parametrize("rde_status", [DatasetConversionStatus.CONVERTING, DatasetConversionStatus.FAILED])
     def test_has_valid_artifact_statuses__invalid_rds_status(self, rds_status):
         dataset_version = self.generate_dataset(
             statuses=[
@@ -528,7 +527,7 @@ class TestValidArtifactStatuses(BaseProcessingTest):
         dataset_version_id = DatasetVersionId(dataset_version.dataset_version_id)
         assert self.updater.has_valid_artifact_statuses(dataset_version_id) is False
 
-    @parameterized.expand([DatasetConversionStatus.CONVERTING, DatasetConversionStatus.FAILED])
+    @pytest.mark.parametrize("h5ad_status", [DatasetConversionStatus.CONVERTING, DatasetConversionStatus.FAILED])
     def test_has_valid_artifact_statuses__invalid_h5ad_status(self, h5ad_status):
         dataset_version = self.generate_dataset(
             statuses=[
@@ -542,7 +541,7 @@ class TestValidArtifactStatuses(BaseProcessingTest):
         dataset_version_id = DatasetVersionId(dataset_version.dataset_version_id)
         assert self.updater.has_valid_artifact_statuses(dataset_version_id) is False
 
-    @parameterized.expand([DatasetConversionStatus.CONVERTING, DatasetConversionStatus.FAILED])
+    @pytest.mark.parametrize("cxg_status", [DatasetConversionStatus.CONVERTING, DatasetConversionStatus.FAILED])
     def test_has_valid_artifact_statuses__invalid_cxg_status(self, cxg_status):
         dataset_version = self.generate_dataset(
             statuses=[
