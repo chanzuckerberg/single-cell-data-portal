@@ -44,5 +44,4 @@ class PrimaryFilterDimensionsTests(unittest.TestCase):
             primary_filter_dimensions["snapshot_id"] = TEST_SNAPSHOT_NAME
         pipeline_state = load_pipeline_state(self.temp_cube_dir.name)
         self.assertTrue(pipeline_state.get(PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG))
-        print(primary_filter_dimensions)
         self.assertTrue(compare_dicts(primary_filter_dimensions, self.expected_primary_filter_dimensions))
