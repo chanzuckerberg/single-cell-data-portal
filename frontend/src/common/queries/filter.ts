@@ -53,6 +53,11 @@ const QUERY_ID_COLLECTIONS = "collectionsIndex";
 const QUERY_ID_DATASETS = "datasetIndex";
 
 /**
+ * Value used to separate multiple ethnicities in self reported ethnicity.
+ */
+const DELIMITER_MULTI_ETHNICITY = ",";
+
+/**
  * Model returned on fetch of collections or datasets: materialized view models (rows) as well as fetch status.
  */
 export interface FetchCategoriesRows<T extends Categories> {
@@ -930,6 +935,19 @@ function isAuthorPerson(author: Author | Consortium): author is Author {
 }
 
 /**
+ * Returns true if the given self reported ethnicity ontology term contains
+ * mutliple ethnicities.
+ * @param selfReportedEthnicity - Self reported ethnicity ontology term to
+ * check for multiple ethnicities.
+ * @returns True if the given ontology contains multiple ethnicity values.
+ */
+function isMultiEthnicity(selfReportedEthnicity: Ontology): boolean {
+  return selfReportedEthnicity.ontology_term_id.includes(
+    DELIMITER_MULTI_ETHNICITY
+  );
+}
+
+/**
  * Created a map of collections keyed by their ID.
  * @param collections - Collections returned from collection/index endpoint.
  * @returns Map of collections keyed by their ID.
@@ -1006,12 +1024,42 @@ function processDatasetResponse(
     ...tagOntologyTermsAsExplicit(tissue),
   ];
 
+  // Split multiple self reported ethnicities into separate values.
+  const selfReportedEthnicities = processSelfReportedEthnicity(
+    dataset.self_reported_ethnicity
+  );
+
   return {
     ...dataset,
     cellTypeCalculated,
-    tissue,
+    self_reported_ethnicity: selfReportedEthnicities,
     tissueCalculated,
+    tissue,
   };
+}
+
+/**
+ * Split multiple self reported enthicity ontology values into separate
+ * ontology values to facilitate filtering on individual values.
+ * @param selfReportedEthnicities Array of self reported enthicity ontology
+ * values to possibly split.
+ * @returns Array of self reported enthicity ontology values.
+ */
+export function processSelfReportedEthnicity(
+  selfReportedEthnicities: Ontology[]
+): Ontology[] {
+  return selfReportedEthnicities.reduce(
+    (accum: Ontology[], selfReportedEthnicity) => {
+      if (isMultiEthnicity(selfReportedEthnicity)) {
+        accum.push(...splitMultiEthnicity(selfReportedEthnicity));
+      } else {
+        accum.push(selfReportedEthnicity);
+      }
+
+      return accum;
+    },
+    []
+  );
 }
 
 /**
@@ -1105,6 +1153,22 @@ function sortCategoryValues<T extends Categories>(row: T): T {
  */
 function sortOntologies(o0: Ontology, o1: Ontology): number {
   return COLLATOR_CASE_INSENSITIVE.compare(o0.label, o1.label);
+}
+
+/**
+ * Split the given multiple ethnicity ontology term into separate values.
+ * @param selfReportedEthnicity - Ontology term with multiple, comma-separated values.
+ * @returns Array of single self reported enthicity ontology values.
+ */
+function splitMultiEthnicity(selfReportedEthnicity: Ontology): Ontology[] {
+  const { label, ontology_term_id } = selfReportedEthnicity;
+  const labels = label.split(DELIMITER_MULTI_ETHNICITY);
+  const ontologyTermIds = ontology_term_id.split(DELIMITER_MULTI_ETHNICITY);
+
+  return ontologyTermIds.map((ontologyTermId, index) => ({
+    label: labels[index],
+    ontology_term_id: ontologyTermId,
+  }));
 }
 
 /**

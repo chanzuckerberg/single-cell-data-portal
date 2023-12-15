@@ -209,6 +209,12 @@ export const textSecondary = (props: CommonThemeProps) =>
 export const primary100 = (props: CommonThemeProps) =>
   getColors(props)?.primary[100];
 
+export const primary200 = (props: CommonThemeProps) =>
+  getColors(props)?.primary[200];
+
+export const primary300 = (props: CommonThemeProps) =>
+  getColors(props)?.primary[300];
+
 export const primary400 = (props: CommonThemeProps) =>
   getColors(props)?.primary[400];
 

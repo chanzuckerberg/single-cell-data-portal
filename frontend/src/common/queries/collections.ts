@@ -8,7 +8,9 @@ import {
 import { Collection, COLLECTION_STATUS, Dataset } from "src/common/entities";
 import {
   buildSummaryCitation,
+  createTaggedTissueOntology,
   ProcessedCollectionResponse,
+  TissueOntology,
   USE_COLLECTIONS_INDEX,
   USE_DATASETS_INDEX,
 } from "src/common/queries/filter";
@@ -105,6 +107,12 @@ enum ERROR_VALUE {
  */
 type Error = { [key in ERROR_KEY]?: ERROR_VALUE } & { reason: string };
 
+/**
+ * Model of response dataset object returned from collection endpoint; models
+ * tissue as an array of tissue ontology objects.
+ */
+type DatasetResponse = Omit<Dataset, "tissue"> & { tissue: TissueOntology[] };
+
 function idError(id: string | null) {
   if (!id) {
     throw Error("No collection id given");
@@ -123,9 +131,9 @@ export type CollectionError = {
   type: string;
 };
 
-function generateDatasetMap(json: { datasets: Dataset[] }) {
+function generateDatasetMap(datasets: Dataset[]) {
   const datasetMap = new Map() as Collection["datasets"];
-  for (const dataset of json.datasets) {
+  for (const dataset of datasets) {
     datasetMap.set(dataset.original_id || dataset.id, dataset);
   }
   return datasetMap;
@@ -155,9 +163,21 @@ function fetchCollection() {
       throw json;
     }
 
+    // Convert tissue ontology objects to core ontology objects.
+    const datasets: Dataset[] = json.datasets.map(
+      (dataset: DatasetResponse) => {
+        // It's possible for a dataset not to have tissues defined during
+        // upload; protect with [].
+        const tissue = (dataset.tissue ?? []).map((tissue) =>
+          createTaggedTissueOntology(tissue)
+        );
+        return { ...dataset, tissue };
+      }
+    );
+
     const collection: Collection = {
       ...json,
-      datasets: generateDatasetMap(json),
+      datasets: generateDatasetMap(datasets),
     };
 
     let publishedCounterpart;
@@ -172,7 +192,7 @@ function fetchCollection() {
       if (response.ok) {
         publishedCounterpart = {
           ...json,
-          datasets: generateDatasetMap(json),
+          datasets: generateDatasetMap(datasets),
         };
       }
     }
