@@ -69,7 +69,9 @@ const Project = ({ clobberedProjects }: ProjectProps) => {
           <DetailItem label="measurement">
             {sharedProject.measurement_name}
           </DetailItem>
-          <DetailItem label="embedding">{sharedProject.data_type}</DetailItem>
+          <DetailItem label="embedding">
+            {sharedProject.data_type === "obs_embedding" ? "obs" : "var"}
+          </DetailItem>
           {projectNotebookLinks?.map((link) => (
             <DetailItem
               label="notebook"
