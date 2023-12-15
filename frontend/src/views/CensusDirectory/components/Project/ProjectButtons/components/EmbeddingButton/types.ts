@@ -3,5 +3,5 @@ import { UnionProject } from "../../../types";
 
 export interface EmbeddingButtonProps {
   project: UnionProject;
-  uniqueMetadata: ClobberedProjects[number][0];
+  uniqueMetadata?: ClobberedProjects[number][0];
 }

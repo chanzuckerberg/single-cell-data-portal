@@ -15,7 +15,6 @@ export const ButtonsRow = styled.div`
   gap: ${spacesDefault}px;
   margin-bottom: ${spacesXl}px;
 
-  // item container
   & > div {
     margin-right: ${spacesXl}px;
   }

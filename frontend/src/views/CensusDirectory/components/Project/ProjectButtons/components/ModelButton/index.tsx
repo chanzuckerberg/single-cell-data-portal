@@ -11,7 +11,7 @@ const ModelButton = ({
   uniqueMetadata,
 }: {
   project: UnionProject;
-  uniqueMetadata: ClobberedProjects[number][0];
+  uniqueMetadata?: ClobberedProjects[number][0];
 }) => {
   if (!project.model_link) return null;
   return project.model_link.startsWith("s3") ? (

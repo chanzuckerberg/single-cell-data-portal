@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/cognitive-complexity */
 import { ProjectProps } from "./types";
 import notebookLinks from "census-notebook-links.json";
 
