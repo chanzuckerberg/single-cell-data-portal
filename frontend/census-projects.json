@@ -1,39 +1,6 @@
 [
   {
     "tier": "maintained",
-    "title": "Geneformer embeddings fine-tuned for CELLxGENE Census cell subclass classification",
-    "description": "Geneformer is a foundation transformer model pretrained on a large-scale corpus of ~30 million single cell transcriptomes to enable context-aware predictions in settings with limited data in network biology.\nThese cell embeddings are derived from a Geneformer model CZI fine-tuned for cell subclass classification. As the fine-tuning procedure remains experimental and wasn’t performed by the Geneformer authors, these embeddings should not be used to assess performance of the Geneformer ",
-    "primary_contact": {
-      "name": "CELLxGENE Discover Team",
-      "email": "soma@chanzuckerberg.com",
-      "affiliation": "CZI"
-    },
-    "DOI": "10.1038/s41586-023-06139-9",
-    "publication_info": "",
-    "publication_link": "",
-    "project_page": "",
-    "additional_information": "Beginning with the geneformer-12L-30M pretrained model published by Theodoris et al. (huggingface.co/ctheodoris/Geneformer), a BertForSequenceClassification model was trained to predict cell subclass (as annotated in CELLxGENE Discover see https://cellxgene.cziscience.com/collections). Embeddings were then generated using Geneformer’s EmbExtractor module with emb_layer=0.\nFor full details and a reproducible workflow please see: https://github.com/chanzuckerberg/cellxgene-census/blob/main/tools/models/geneformer/README.md",
-    "model_link": "s3://cellxgene-contrib-public/models/geneformer/2023-12-15/homo_sapiens/fined-tuned-model/",
-    "data_type": "obs_embedding",
-    "obsm_layer": "geneformer",
-    "census_version": "2023-12-15",
-    "experiment_name": "homo_sapiens",
-    "measurement_name": "RNA",
-    "n_cells": 62998417,
-    "n_columns": 512,
-    "n_features": 512,
-    "notebook_links": [
-      [
-        "Using trained model",
-        "https://chanzuckerberg.github.io/cellxgene-census/notebooks/analysis_demo/comp_bio_geneformer_prediction.html"
-      ]
-    ],
-    "submission_date": "2023-11-06",
-    "last_updated": null,
-    "revised_by": null
-  },
-  {
-    "tier": "maintained",
     "title": "scVI integrated-embeddings with explicit modeling of batch effects",
     "description": "scVI uses autoencoding-variational Bayes optimization to learn the underlying latent state of gene expression and to approximate the distributions that underlie observed expression values, while accounting for batch effects and limited sensitivity.\nThese cell embeddings are derived from an scVI model trained on all primary Census cells while accounting for the batch effects of sequencing assay, dataset, donor, and suspension type (cell vs nucleus). Then embeddings were obtained as the latent space for all Census cells after performing a forward pass through the trained model.\nThese embeddings are made in collaboration with the scVI team from Nir Yosef’s laboratory. For questions about scVI please refer to the scverse discourse forum https://discourse.scverse.org/.",
     "primary_contact": {
@@ -130,6 +97,40 @@
     "last_updated": null,
     "revised_by": null
   },
+  {
+    "tier": "maintained",
+    "title": "Geneformer embeddings fine-tuned for CELLxGENE Census cell subclass classification",
+    "description": "Geneformer is a foundation transformer model pretrained on a large-scale corpus of ~30 million single cell transcriptomes to enable context-aware predictions in settings with limited data in network biology.\nThese cell embeddings are derived from a Geneformer model CZI fine-tuned for cell subclass classification. As the fine-tuning procedure remains experimental and wasn’t performed by the Geneformer authors, these embeddings should not be used to assess performance of the Geneformer ",
+    "primary_contact": {
+      "name": "CELLxGENE Discover Team",
+      "email": "soma@chanzuckerberg.com",
+      "affiliation": "CZI"
+    },
+    "DOI": "10.1038/s41586-023-06139-9",
+    "publication_info": "",
+    "publication_link": "",
+    "project_page": "",
+    "additional_information": "Beginning with the geneformer-12L-30M pretrained model published by Theodoris et al. (huggingface.co/ctheodoris/Geneformer), a BertForSequenceClassification model was trained to predict cell subclass (as annotated in CELLxGENE Discover see https://cellxgene.cziscience.com/collections). Embeddings were then generated using Geneformer’s EmbExtractor module with emb_layer=0.\nFor full details and a reproducible workflow please see: https://github.com/chanzuckerberg/cellxgene-census/blob/main/tools/models/geneformer/README.md",
+    "model_link": "s3://cellxgene-contrib-public/models/geneformer/2023-12-15/homo_sapiens/fined-tuned-model/",
+    "data_type": "obs_embedding",
+    "obsm_layer": "geneformer",
+    "census_version": "2023-12-15",
+    "experiment_name": "homo_sapiens",
+    "measurement_name": "RNA",
+    "n_cells": 62998417,
+    "n_columns": 512,
+    "n_features": 512,
+    "notebook_links": [
+      [
+        "Using trained model",
+        "https://chanzuckerberg.github.io/cellxgene-census/notebooks/analysis_demo/comp_bio_geneformer_prediction.html"
+      ]
+    ],
+    "submission_date": "2023-11-06",
+    "last_updated": null,
+    "revised_by": null
+  },
+
   {
     "tier": "community",
     "title": "PINNACLE: Contextual AI Model for Single-Cell Protein Biology",
