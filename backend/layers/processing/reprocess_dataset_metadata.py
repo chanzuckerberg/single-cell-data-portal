@@ -128,7 +128,7 @@ class DatasetMetadataReprocessWorker(ProcessDownload):
             seurat_metadata += new_key_vector
             r.assign("rds_object", rds_object)
             r.assign("seurat_metadata", seurat_metadata)
-            r("rds_object@misc <- rds_misc")
+            r("rds_object@misc <- seurat_metadata")
             rds_object = r["rds_object"]
 
         base.saveRDS(rds_object, file=seurat_filename)
