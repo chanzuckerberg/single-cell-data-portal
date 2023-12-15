@@ -9,7 +9,7 @@ import { EVENTS } from "src/common/analytics/events";
 import Highlight from "react-highlight";
 import { RadioGroup } from "@mui/material";
 import { StyledDialogContent, Label, CodeSnippet, Break } from "./style";
-import { StyledButton } from "src/components/CreateCollectionModal/style";
+import { StyledButton } from "../../style";
 
 function EmbeddingButton(props: EmbeddingButtonProps) {
   const { project, uniqueMetadata } = props;

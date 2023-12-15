@@ -81,7 +81,7 @@ export const ProjectContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  margin-top: 20px;
+  margin-top: 40px;
 `;
 
 export const ProjectDetails = styled.div`

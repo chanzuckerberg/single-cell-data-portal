@@ -16,6 +16,8 @@ import {
 } from "./style";
 import Project from "./components/Project";
 import { clobberAndDifferentiateProjectMetadata } from "./utils";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 function CensusDirectory() {
   const { data: projects } = useProjects();
@@ -49,8 +51,18 @@ function CensusDirectory() {
           provide feedback!
         </p>
         <p>
-          {/* TODO: add link to notebooks once available */}
-          Please <Link href="">see these tutorials</Link> for usage details.
+          Please{" "}
+          <a
+            href="https://chanzuckerberg.github.io/cellxgene-census/examples.html"
+            target="__blank"
+            rel="noopener noreferrer"
+            onClick={() => {
+              track(EVENTS.CENSUS_MODELS_TUTORIALS_CLICKED);
+            }}
+          >
+            see these tutorials
+          </a>{" "}
+          for usage details.
         </p>
         <p>
           If you’d like to have your project featured here, please{" "}

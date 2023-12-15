@@ -23,7 +23,11 @@ const ProjectButtons = ({
     return (
       <ButtonsRow>
         {"project_page" in sharedProject && !!sharedProject.project_page && (
-          <Link href={sharedProject.project_page}>
+          <a
+            href={sharedProject.model_link}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <StyledButton
               sdsType="secondary"
               sdsStyle="square"
@@ -36,7 +40,7 @@ const ProjectButtons = ({
             >
               Project Page
             </StyledButton>
-          </Link>
+          </a>
         )}
         <ModelButton project={clobberedProjects[1][0]} />
         <EmbeddingButton project={clobberedProjects[1][0]} />

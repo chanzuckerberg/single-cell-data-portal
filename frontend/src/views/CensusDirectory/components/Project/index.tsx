@@ -15,6 +15,11 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import ProjectButtons from "./ProjectButtons";
 
+const DATA_TYPE_TO_EMBEDDING: { [key: string]: string } = {
+  obs_embedding: "obs",
+  var_embedding: "var",
+};
+
 const Project = ({ clobberedProjects }: ProjectProps) => {
   const {
     date,
@@ -70,7 +75,9 @@ const Project = ({ clobberedProjects }: ProjectProps) => {
             {sharedProject.measurement_name}
           </DetailItem>
           <DetailItem label="embedding">
-            {sharedProject.data_type === "obs_embedding" ? "obs" : "var"}
+            {sharedProject.data_type
+              ? DATA_TYPE_TO_EMBEDDING[sharedProject.data_type]
+              : undefined}
           </DetailItem>
           {projectNotebookLinks?.map((link) => (
             <DetailItem

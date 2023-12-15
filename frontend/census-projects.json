@@ -213,12 +213,12 @@
     "additional_contacts": [
       {
         "name": "Jialong Jiang",
-        "email": "jiangjl@caltech.edu" ,
+        "email": "jiangjl@caltech.edu",
         "affiliation": "Thomson Lab, Caltech"
       },
       {
         "name": "Yingying Gong",
-        "email": "ygong@caltech.edu" ,
+        "email": "ygong@caltech.edu",
         "affiliation": "Thomson Lab, Caltech"
       }
     ],

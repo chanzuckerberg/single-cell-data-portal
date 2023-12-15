@@ -1,6 +1,6 @@
 import { Button } from "@czi-sds/components";
 import styled from "@emotion/styled";
-import { fontWeightMedium, spacesDefault, spacesXl } from "src/common/theme";
+import { spacesDefault, spacesXl } from "src/common/theme";
 
 export const ButtonsColumn = styled.div`
   display: flex;
@@ -21,6 +21,6 @@ export const ButtonsRow = styled.div`
 `;
 
 export const StyledButton = styled(Button)`
-  font-weight: ${fontWeightMedium};
+  font-weight: 500;
   min-width: 80px;
 `;

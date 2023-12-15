@@ -36,7 +36,7 @@ const ModelButton = ({
       Copy Model URI
     </StyledButton>
   ) : (
-    <Link href={project.model_link}>
+    <a href={project.model_link} target="_blank" rel="noopener noreferrer">
       <StyledButton
         sdsType="secondary"
         sdsStyle="square"
@@ -49,7 +49,7 @@ const ModelButton = ({
       >
         Model Page
       </StyledButton>
-    </Link>
+    </a>
   );
 };
 
