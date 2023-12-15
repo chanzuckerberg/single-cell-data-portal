@@ -47,19 +47,22 @@ function pythonCodeSnippet(project: UnionProject): string {
 }
 
 function rCodeSnippet(project: UnionProject): string {
+  const censusVersion = project.census_version;
   const organism = project.experiment_name;
 
   return project.tier === "maintained"
-    ? `  library("Seurat")
+    ? `    library("cellxgene.census")
+    library("Seurat")
 
-  seurat_obj <- get_seurat(
-    census,
-    organism = "${organism}",
-    obs_value_filter = "tissue_general == 'central nervous system'",
-    obs_column_names = c("cell_type"),
-    obsm_layers = c("${project.obs_matrix}")
-  )
-  `
+    census <- open_soma(census_version = "${censusVersion}")
+    seurat_obj <- get_seurat(
+      census,
+      organism = "${organism}",
+      obs_value_filter = "tissue_general == 'central nervous system'",
+      obs_column_names = c("cell_type"),
+      obsm_layers = c("${project.obs_matrix}")
+    )
+    `
     : "";
 }
 
