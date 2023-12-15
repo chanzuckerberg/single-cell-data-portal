@@ -19,7 +19,7 @@
     "census_version": "2023-12-15",
     "experiment_name": "homo_sapiens",
     "measurement_name": "RNA",
-    "n_cells": 36227903,
+    "n_cells": 62998417,
     "n_columns": 512,
     "n_features": 512,
     "notebook_links": [
