@@ -120,6 +120,8 @@ resource aws_batch_job_definition dataset_metadata_update {
 }
 
 resource aws_batch_job_definition reprocess_dataset_metadata {
+  # this was used to reprocess dataset metadata in place when an error was found after publishing cellxgene schema 4.0
+  # TODO: can be removed after 4.0 migration is complete
   type = "container"
   name = "dp-${var.deployment_stage}-${var.custom_stack_name}-reprocess-dataset-metadata"
   container_properties = jsonencode({
@@ -157,6 +159,19 @@ resource aws_batch_job_definition reprocess_dataset_metadata {
   "linuxParameters": {
      "maxSwap": 800000,
      "swappiness": 60
+  },
+    "retryStrategy": {
+    "attempts": 3,
+    "evaluateOnExit": [
+      {
+          "action": "RETRY",
+          "onReason": "Task failed to start"
+      },
+      {
+          "action": "EXIT",
+          "onReason": "*"
+      }
+    ]
   },
   "logConfiguration": {
     "logDriver": "awslogs",

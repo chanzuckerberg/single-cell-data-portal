@@ -1,5 +1,8 @@
 """
 Updates citations in-place across dataset artifacts for a Collection
+
+this was used to reprocess dataset metadata in place when an error was found after publishing cellxgene schema 4.0
+TODO: can be removed after 4.0 migration is complete
 """
 import json
 import logging
