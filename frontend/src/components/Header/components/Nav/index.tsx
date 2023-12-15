@@ -177,7 +177,7 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
                   onClick={() => {
                     track(EVENTS.CENSUS_DIRECTORY_CLICK_NAV);
                   }}
-                  text="Spotlight"
+                  text="Models"
                 />
               </Link>
             </LinkWrapper>

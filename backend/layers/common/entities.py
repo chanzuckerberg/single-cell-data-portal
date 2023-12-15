@@ -198,6 +198,7 @@ class DatasetArtifactMetadataUpdate:
     title: Optional[str] = None
     schema_version: Optional[str] = None
     citation: Optional[str] = None
+    schema_reference: Optional[str] = None
 
     def as_dict_without_none_values(self):
         return {key: value for key, value in asdict(self).items() if value is not None}
