@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import Toast from "src/views/Collection/components/Toast";

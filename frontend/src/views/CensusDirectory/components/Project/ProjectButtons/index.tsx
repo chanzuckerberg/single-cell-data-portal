@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ClobberedProjects } from "src/views/CensusDirectory/utils";
