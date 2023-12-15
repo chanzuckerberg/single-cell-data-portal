@@ -122,5 +122,5 @@ export const ItemLabel = styled.div`
 `;
 
 export const StyledRadioGroup = styled(RadioGroup)`
-  padding: 8px;
+  padding-left: 8px;
 `;
