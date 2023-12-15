@@ -1,10 +1,9 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EmbeddingButtonProps } from "./types";
-import { Project } from "src/common/queries/censusDirectory";
-import { StaticProject } from "census-projects.json";
 import { getProjectTier } from "src/views/CensusDirectory/utils";
+import { UnionProject } from "../../../types";
 
 // The div contains two lines of the word copy
 const NUMBER_OF_EXTRA_LINES = 2;
@@ -13,7 +12,7 @@ const NUMBER_OF_PADDING_LINES = 1;
 // Total amount of padding around the highlighted line
 const LINE_HIGHLIGHT_BACKGROUND_PADDING = 8;
 
-function pythonCodeSnippet(project: StaticProject | Project): string {
+function pythonCodeSnippet(project: UnionProject): string {
   const censusVersion = project.census_version;
   const organism = project.experiment_name;
   const measurement = project.measurement_name;
@@ -28,8 +27,8 @@ function pythonCodeSnippet(project: StaticProject | Project): string {
         census,
         organism = "${organism}",
         measurement_name = "${measurement}",
-        obs_value_filter = "tissue == 'tongue'",
-        obsm_layers = "${project.obs_matrix}"
+        obs_value_filter = "tissue == 'central nervous system'",
+        obsm_layers = ["${project.obs_matrix}"]
     )`
     : `  import cellxgene_census
   from cellxgene_census.experimental import get_embedding
@@ -41,10 +40,27 @@ function pythonCodeSnippet(project: StaticProject | Project): string {
       census,
       organism = "${organism}",
       measurement_name = "${measurement}",
-      obs_value_filter = "tissue == 'tongue'",
+      obs_value_filter = "tissue == 'central nervous system'",
   )
   embeddings = get_embedding("${censusVersion}", embedding_uri, adata.obs["soma_joinid"])
   adata.obsm["emb"] = embeddings`;
+}
+
+function rCodeSnippet(project: UnionProject): string {
+  const organism = project.experiment_name;
+
+  return project.tier === "maintained"
+    ? `  library("Seurat")
+
+  seurat_obj <- get_seurat(
+    census,
+    organism = "${organism}",
+    obs_value_filter = "tissue_general == 'central nervous system'",
+    obs_column_names = c("cell_type"),
+    obsm_layers = c("${project.obs_matrix}")
+  )
+  `
+    : "";
 }
 
 export const useConnect = ({ project }: EmbeddingButtonProps) => {
@@ -65,7 +81,8 @@ export const useConnect = ({ project }: EmbeddingButtonProps) => {
     setIsOpen(!isOpen);
   }, [isOpen, projectTier, project.title]);
 
-  const codeSnippet = language === "python" ? pythonCodeSnippet(project) : "";
+  const codeSnippet =
+    language === "python" ? pythonCodeSnippet(project) : rCodeSnippet(project);
 
   // These can be derived from the static S3 namespace + the accessor_id or will be a static url provided in json blob
   const uri = `s3://cellxgene-contrib-archive/contrib/cell-census/${project.id}`;
@@ -93,6 +110,27 @@ export const useConnect = ({ project }: EmbeddingButtonProps) => {
     [uri]
   );
 
+  const [jupyterNotebookLink, setJupyterNotebookLink] = useState("");
+  useEffect(() => {
+    if (projectTier === "maintained") {
+      if (language === "python") {
+        setJupyterNotebookLink(
+          "https://chanzuckerberg.github.io/cellxgene-census/notebooks/api_demo/census_access_maintained_embeddings.html"
+        );
+      } else {
+        setJupyterNotebookLink(
+          "https://chanzuckerberg.github.io/cellxgene-census/r/articles/census_access_maintained_embeddings.html"
+        );
+      }
+    } else {
+      if (language === "python") {
+        setJupyterNotebookLink(
+          "https://chanzuckerberg.github.io/cellxgene-census/notebooks/api_demo/census_embedding.html"
+        );
+      }
+    }
+  }, [language, projectTier]);
+
   const handleCopyMouseEnter = () => setIsCopied(false);
 
   return {
@@ -104,6 +142,7 @@ export const useConnect = ({ project }: EmbeddingButtonProps) => {
     uri,
     uriTopPosition,
     lineHeight,
+    jupyterNotebookLink,
     codeSnippetRef,
     setLanguage,
     handleButtonClick,

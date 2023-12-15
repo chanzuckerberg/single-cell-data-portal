@@ -1,26 +1,53 @@
-import { getProjectTier } from "../../utils";
 import { ProjectProps } from "./types";
 import notebookLinks from "census-notebook-links.json";
 
-export const useConnect = ({ project, id }: ProjectProps) => {
-  const date = new Date(
-    project.last_updated || project.submission_date || ""
-  ).toLocaleDateString("en-US", {
+export const useConnect = ({ clobberedProjects }: ProjectProps) => {
+  const sharedProject = clobberedProjects[0];
+
+  let date = new Date(
+    sharedProject.last_updated || sharedProject.submission_date || 0
+  );
+
+  if (date === new Date("1970-01-01")) {
+    clobberedProjects[1].forEach((project) => {
+      const projectDate = new Date(
+        project.last_updated || project.submission_date || 0
+      );
+      // check if the project date is more recent than the current date
+      if (projectDate > date) {
+        date = projectDate;
+      }
+    });
+  }
+
+  const formattedDate = date.toLocaleDateString("en-US", {
     dateStyle: "long",
   });
 
-  const projectNotebookLinks: [string, string][] | undefined =
-    "notebook_links" in project
-      ? project.notebook_links
-      : notebookLinks[id ?? ""];
+  const projectNotebookLinks: [string, string][] =
+    ("notebook_links" in sharedProject
+      ? sharedProject.notebook_links
+      : notebookLinks[sharedProject.id ?? ""]) ?? [];
 
-  const projectTier = getProjectTier(project);
+  if (projectNotebookLinks.length === 0) {
+    clobberedProjects[1].forEach((project) => {
+      projectNotebookLinks?.push(
+        ...(("notebook_links" in project
+          ? project.notebook_links
+          : notebookLinks[project.id ?? ""]) ?? [])
+      );
+    });
+  }
+
+  const projectTier = sharedProject.tier;
 
   let authorsString = "";
-  const primary_affiliation = project.primary_contact?.affiliation || "";
+  const primary_affiliation = sharedProject.primary_contact?.affiliation || "";
   const affiliations = new Map<string, string[]>();
-  affiliations.set(primary_affiliation, [project.primary_contact?.name || ""]);
-  project.additional_contacts?.forEach((contact) => {
+  affiliations.set(primary_affiliation, [
+    sharedProject.primary_contact?.name || "",
+  ]);
+  sharedProject.additional_contacts?.forEach((contact) => {
     const affiliationNames = affiliations.get(contact.affiliation) || [];
     affiliationNames.push(contact.name);
     affiliations.set(contact.affiliation, affiliationNames);
@@ -37,5 +64,11 @@ export const useConnect = ({ project, id }: ProjectProps) => {
     }
   });
 
-  return { date, projectNotebookLinks, projectTier, authorsString };
+  return {
+    date: formattedDate,
+    projectNotebookLinks,
+    projectTier,
+    authorsString,
+    sharedProject,
+  };
 };
