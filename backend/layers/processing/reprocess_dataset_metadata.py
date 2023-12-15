@@ -8,7 +8,7 @@ from multiprocessing import Process
 
 import scanpy
 import tiledb
-from rpy2.robjects import StrVector
+from rpy2.robjects import ListVector, StrVector, r
 from rpy2.robjects.packages import importr
 
 from backend.common.utils.corpora_constants import CorporaConstants
@@ -114,11 +114,22 @@ class DatasetMetadataReprocessWorker(ProcessDownload):
 
         rds_object = base.readRDS(seurat_filename)
 
+        new_keys = []
+        seurat_metadata = seurat.Misc(object=rds_object)
         for key, val in metadata_update.as_dict_without_none_values().items():
-            seurat_metadata = seurat.Misc(object=rds_object)
             if seurat_metadata.rx2[key]:
                 val = val if isinstance(val, list) else [val]
                 seurat_metadata[seurat_metadata.names.index(key)] = StrVector(val)
+            else:
+                new_keys.append((key, val))
+
+        if new_keys:
+            new_key_vector = ListVector({k: v for k, v in new_keys})
+            seurat_metadata += new_key_vector
+            r.assign("rds_object", rds_object)
+            r.assign("seurat_metadata", seurat_metadata)
+            r("rds_object@misc <- rds_misc")
+            rds_object = r["rds_object"]
 
         base.saveRDS(rds_object, file=seurat_filename)
 
@@ -233,6 +244,10 @@ class DatasetMetadataReprocess(ProcessDownload):
 
         if DatasetArtifactType.RDS in artifact_uris:
             self.logger.info("Main: Starting thread for rds update")
+            # RDS-only, one-time
+            metadata_update.schema_reference = (
+                "https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.0.0/schema.md"
+            )
             rds_job = Process(
                 target=DatasetMetadataReprocess.update_rds,
                 args=(
