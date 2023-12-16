@@ -2,7 +2,7 @@
   {
     "tier": "maintained",
     "title": "Geneformer embeddings fine-tuned for CELLxGENE Census cell subclass classification",
-    "description": "Geneformer is a foundation transformer model pretrained on a large-scale corpus of ~30 million single cell transcriptomes to enable context-aware predictions in settings with limited data in network biology.\nThese cell embeddings are derived from a Geneformer model CZI fine-tuned for cell subclass classification. As the fine-tuning procedure remains experimental and wasn’t performed by the Geneformer authors, these embeddings should not be used to assess performance of the Geneformer ",
+    "description": "Geneformer is a foundation transformer model pretrained on a large-scale corpus of ~30 million single cell transcriptomes to enable context-aware predictions in settings with limited data in network biology.\nThese cell embeddings are derived from a Geneformer model CZI fine-tuned for cell subclass classification. As the fine-tuning procedure remains experimental and wasn’t performed by the Geneformer authors, these embeddings should not be used to assess performance of the pre-trained Geneformer model.",
     "primary_contact": {
       "name": "CELLxGENE Discover Team",
       "email": "soma@chanzuckerberg.com",
