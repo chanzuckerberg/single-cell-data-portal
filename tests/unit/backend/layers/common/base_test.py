@@ -81,8 +81,9 @@ class BaseTest(unittest.TestCase):
         os.environ.setdefault("APP_NAME", "corpora-api")
         config = {
             "upload_max_file_size_gb": 30,
-            "collections_base_url": "http://collections",
+            "collections_base_url": "https://domain",
             "dataset_assets_base_url": "http://domain",
+            "citation_update_feature_flag": "True",
             "schema_4_feature_flag": "True",
         }
         # Mock CorporaConfig

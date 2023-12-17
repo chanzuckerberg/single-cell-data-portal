@@ -754,3 +754,12 @@ export interface SelectCategoryView {
 export interface Testable {
   testId?: string;
 }
+
+/**
+ * Set of tissue types.
+ */
+export enum TISSUE_TYPE {
+  CELL_CULTURE = "cell culture",
+  ORGANOID = "organoid",
+  TISSUE = "tissue",
+}
