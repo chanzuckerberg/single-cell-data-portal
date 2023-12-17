@@ -54,10 +54,6 @@ class CrossrefProvider(CrossrefProviderInterface):
         return (year, month, day)
 
     def _fetch_crossref_payload(self, doi):
-        # Remove the https://doi.org part
-        parsed = urlparse(doi)
-        if parsed.scheme and parsed.netloc:
-            doi = parsed.path
 
         if self.crossref_api_key is None:
             logging.info("No Crossref API key found, skipping metadata fetching.")
@@ -83,6 +79,11 @@ class CrossrefProvider(CrossrefProviderInterface):
         If the Crossref API URI isn't in the configuration, we will just return an empty object.
         This is to avoid calling Crossref in non-production environments.
         """
+        # Remove the https://doi.org part
+        parsed = urlparse(doi)
+        if parsed.scheme and parsed.netloc:
+            doi = parsed.path
+
         res = self._fetch_crossref_payload(doi)
 
         try:
