@@ -185,13 +185,19 @@ export const LoadingWrapper = styled.div<LoadingProps>`
   align-items: center;
   position: fixed;
   top: 600px;
-  left: ${(props) => 510 + (props.left * 24) / 2}px;
+  left: ${(props) =>
+    (props.left < 13 ? 640 : 510) + (props.left * 19 * 1.27) / 2}px;
 `;
 
-export const LoadingLabel = styled.div`
+interface LoadingLabelProps extends CommonThemeProps {
+  hidden: boolean;
+}
+
+export const LoadingLabel = styled.div<LoadingLabelProps>`
   color: black;
   ${fontHeaderXl}
   padding-top: 20px;
+  visibility: ${(props) => (props.hidden ? "hidden" : "visible")};
 `;
 
 export const LoadingSpinner = styled.div`

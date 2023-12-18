@@ -128,7 +128,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
             (isAnyTissueLoading(isLoading) && (
               <ChartWrapper
                 top={xAxisHeight}
-                visible={isAnyTissueLoading(isLoading) || isLoadingAPI}
+                visible={isLoadingAPI || isAnyTissueLoading(isLoading)}
               >
                 <LoadingContainer
                   height={totalElementsCount}
@@ -136,7 +136,9 @@ export default memo(function HeatMap(props: Props): JSX.Element {
                 >
                   <LoadingWrapper left={sortedGeneNames.length}>
                     <LoadingSpinner />
-                    <LoadingLabel>Loading Data...</LoadingLabel>
+                    <LoadingLabel hidden={sortedGeneNames.length < 10}>
+                      Loading Data...
+                    </LoadingLabel>
                   </LoadingWrapper>
                 </LoadingContainer>
               </ChartWrapper>
