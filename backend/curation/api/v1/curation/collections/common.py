@@ -4,7 +4,6 @@ from urllib.parse import urlparse
 from uuid import UUID
 
 from backend.common.corpora_config import CorporaConfig
-from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, GoneHTTPException, NotFoundHTTPException
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business import BusinessLogic
@@ -227,10 +226,6 @@ def reshape_dataset_for_curation_api(
 
             if col is not None:
                 ds[column] = col
-
-    if ds.get("tissue") is not None and not FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4):
-        for tissue in ds["tissue"]:
-            del tissue["tissue_type"]
 
     ds["dataset_id"] = dataset_version.dataset_id.id
     ds["dataset_version_id"] = dataset_version.version_id.id
