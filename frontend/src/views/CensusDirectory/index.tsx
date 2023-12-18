@@ -42,8 +42,11 @@ function CensusDirectory() {
           provide feedback!
         </p>
         <p>
-          {/* TODO: add link to notebooks once available */}
-          Please <Link href="">see these tutorials</Link> for usage details.
+          Please{" "}
+          <Link href="https://chanzuckerberg.github.io/cellxgene-census/examples.html">
+            see these tutorials
+          </Link>{" "}
+          for usage details.
         </p>
         <p>
           If you’d like to have your project featured here, please{" "}
@@ -52,15 +55,15 @@ function CensusDirectory() {
       </DirectoryDescription>
       {maintainedProjects.length > 0 && (
         <TierContainer>
-          <TierTitle>CELL×GENE Maintained Projects</TierTitle>
+          <TierTitle>CELL×GENE Collaboration Projects</TierTitle>
           <TierDescription>
-            These models and their output embeddings are maintained and
-            regularly re-trained by CELL×GENE in close collaboration with their
-            creators. Embeddings are accessible via the Census API;
-            corresponding models are available via CELL×GENE-maintained links.
+            These models and their output embeddings are ongoing collaborations.
+            CZI and the partner labs are improving the models as the Census
+            resource grows. Embeddings are accessible via the Census API;
+            corresponding models are available for download.
             <br />
             Please{" "}
-            <Link href="mailto:cellxgene@chanzuckerberg.com">
+            <Link href="mailto:soma@chanzuckerberg.com">
               contact the CELL×GENE team with feedback
             </Link>
             .
@@ -80,7 +83,7 @@ function CensusDirectory() {
             available).
             <br />
             For issues accessing these embeddings, please{" "}
-            <Link href="mailto:cellxgene@chanzuckerberg.com">
+            <Link href="mailto:soma@chanzuckerberg.com">
               contact the CELL×GENE team
             </Link>
             . For feedback on the embeddings themselves, please contact the
