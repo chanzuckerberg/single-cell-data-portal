@@ -7,11 +7,13 @@ import { ANIMATION, ANIMATION_STEP } from "./constants";
 interface Props {
   downloadLink: string;
   handleAnalytics: () => void;
+  label?: string;
 }
 
 export default function CopyButton({
   downloadLink,
   handleAnalytics,
+  label = "Copy",
 }: Props): JSX.Element {
   const [animationStep, setAnimationStep] = useState<ANIMATION_STEP>(
     ANIMATION_STEP.IDLE
@@ -61,7 +63,7 @@ export default function CopyButton({
         onExited={onUpdateAnimationStep}
         timeout={animation.timeout}
       >
-        <span>{getButtonText(animationStep)}</span>
+        <span>{getButtonText(animationStep, label)}</span>
       </Fade>
     </Button>
   );
@@ -72,14 +74,14 @@ export default function CopyButton({
  * @param step - Current animation step.
  * @returns button text.
  */
-function getButtonText(step: number): string {
+function getButtonText(step: number, label: string): string {
   if (
     step === ANIMATION_STEP.COPIED_ENTER ||
     step === ANIMATION_STEP.COPIED_EXIT
   ) {
     return "Copied";
   }
-  return "Copy";
+  return label;
 }
 
 /**
