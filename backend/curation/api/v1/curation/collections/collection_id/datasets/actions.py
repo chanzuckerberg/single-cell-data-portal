@@ -19,6 +19,6 @@ def post(token_info: dict, collection_id: str):
     if collection_version.published_at is not None:
         raise MethodNotAllowedException("Collection must be PRIVATE Collection, or a revision of a PUBLIC Collection.")
 
-    _, dataset_id = business_logic.create_empty_dataset(collection_version.version_id)
+    dataset_version = business_logic.create_empty_dataset(collection_version.version_id)
 
-    return make_response(jsonify({"dataset_id": dataset_id.id}), 201)
+    return make_response(jsonify({"dataset_id": dataset_version.dataset_id.id}), 201)

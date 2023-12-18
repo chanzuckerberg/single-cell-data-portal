@@ -28,3 +28,32 @@ export function filterDescendantsOfAncestorTissueId(
 
   return tissueIdList.filter((value) => descendantSet.has(value));
 }
+
+import { ROUTES } from "src/common/constants/routes";
+import { NO_ORGAN_ID } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
+
+export function getCellTypeLink({
+  /**
+   * (thuang): `queryTissueId` can be undefined when a user is on `/cellguide/:cellTypeId` route
+   * instead of `/cellguide/tissues/:tissueId/cell-types/:cellTypeId` route.
+   *
+   * NOTE: `tissue` and `organ` in variable names are interchangeable here.
+   */
+  tissueId = NO_ORGAN_ID,
+  cellTypeId,
+}: {
+  tissueId: string;
+  cellTypeId: string;
+}) {
+  const urlCellTypeId = cellTypeId.replace(":", "_") ?? "";
+  const urlTissueId = tissueId.replace(":", "_") || NO_ORGAN_ID;
+
+  if (tissueId === NO_ORGAN_ID) {
+    return ROUTES.CELL_GUIDE_CELL_TYPE.replace(":cellTypeId", urlCellTypeId);
+  } else {
+    return ROUTES.CELL_GUIDE_TISSUE_SPECIFIC_CELL_TYPE.replace(
+      ":tissueId",
+      urlTissueId
+    ).replace(":cellTypeId", urlCellTypeId);
+  }
+}
