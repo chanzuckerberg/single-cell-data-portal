@@ -15,19 +15,28 @@ import {
   TierDescription,
 } from "./style";
 import Project from "./components/Project";
+import { clobberAndDifferentiateProjectMetadata } from "./utils";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 function CensusDirectory() {
   const { data: projects } = useProjects();
 
-  const hostedProjects = Object.entries(
-    projects ?? ({} as ProjectType[])
-  ).filter(([_, project]) => !project.revised_by);
-
-  const communityProjects = Object.values(staticProjects).filter(
-    (project) => project.tier === "community"
+  const hostedProjects = clobberAndDifferentiateProjectMetadata(
+    Object.values(projects ?? ({} as ProjectType[])).filter(
+      (project) => !project.revised_by
+    )
   );
-  const maintainedProjects = Object.values(staticProjects).filter(
-    (project) => project.tier === "maintained"
+
+  const communityProjects = clobberAndDifferentiateProjectMetadata(
+    Object.values(staticProjects).filter(
+      (project) => project.tier === "community"
+    )
+  );
+  const maintainedProjects = clobberAndDifferentiateProjectMetadata(
+    Object.values(staticProjects).filter(
+      (project) => project.tier === "maintained"
+    )
   );
 
   return (
@@ -43,14 +52,21 @@ function CensusDirectory() {
         </p>
         <p>
           Please{" "}
-          <Link href="https://chanzuckerberg.github.io/cellxgene-census/examples.html">
+          <a
+            href="https://chanzuckerberg.github.io/cellxgene-census/examples.html"
+            target="__blank"
+            rel="noopener noreferrer"
+            onClick={() => {
+              track(EVENTS.CENSUS_MODELS_TUTORIALS_CLICKED);
+            }}
+          >
             see these tutorials
-          </Link>{" "}
+          </a>{" "}
           for usage details.
         </p>
         <p>
           If you’d like to have your project featured here, please{" "}
-          <Link href="mailto:cellxgene@chanzuckerberg.com">get in touch</Link>.
+          <Link href="mailto:soma@chanzuckerberg.com">get in touch</Link>.
         </p>
       </DirectoryDescription>
       {maintainedProjects.length > 0 && (
@@ -68,8 +84,11 @@ function CensusDirectory() {
             </Link>
             .
           </TierDescription>
-          {maintainedProjects.map((project) => (
-            <Project key={project.title} project={project} />
+          {maintainedProjects.map((clobberedProjects) => (
+            <Project
+              key={clobberedProjects[0].id}
+              clobberedProjects={clobberedProjects}
+            />
           ))}
         </TierContainer>
       )}
@@ -89,8 +108,11 @@ function CensusDirectory() {
             . For feedback on the embeddings themselves, please contact the
             creators.
           </TierDescription>
-          {hostedProjects.map(([id, project]) => (
-            <Project key={id} id={id} project={project} />
+          {hostedProjects.map((clobberedProjects) => (
+            <Project
+              key={clobberedProjects[0].id}
+              clobberedProjects={clobberedProjects}
+            />
           ))}
         </TierContainer>
       )}
@@ -104,8 +126,11 @@ function CensusDirectory() {
             <br />
             Please contact their creators with questions or feedback.
           </TierDescription>
-          {communityProjects.map((project) => (
-            <Project key={project.title} project={project} />
+          {communityProjects.map((clobberedProjects) => (
+            <Project
+              key={clobberedProjects[0].id}
+              clobberedProjects={clobberedProjects}
+            />
           ))}
         </TierContainer>
       )}
