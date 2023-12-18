@@ -25,7 +25,7 @@ function pythonCodeSnippet(project: UnionProject, uri: string): string {
         census,
         organism = "${organism}",
         measurement_name = "${measurement}",
-        obs_value_filter = "tissue == 'central nervous system'",
+        obs_value_filter = "tissue_general == 'central nervous system'",
         obsm_layers = ["${project.obsm_layer}"]
     )`
     : `  import cellxgene_census
@@ -39,7 +39,7 @@ function pythonCodeSnippet(project: UnionProject, uri: string): string {
       census,
       organism = "${organism}",
       measurement_name = "${measurement}",
-      obs_value_filter = "tissue == 'central nervous system'",
+      obs_value_filter = "tissue_general == 'central nervous system'",
   )
   embeddings = get_embedding("${censusVersion}", embedding_uri, adata.obs["soma_joinid"]).toarray())
   adata.obsm["emb"] = embeddings`;
