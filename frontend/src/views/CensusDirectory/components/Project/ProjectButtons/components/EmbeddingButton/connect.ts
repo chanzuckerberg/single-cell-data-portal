@@ -41,7 +41,7 @@ function pythonCodeSnippet(project: UnionProject, uri: string): string {
       measurement_name = "${measurement}",
       obs_value_filter = "tissue_general == 'central nervous system'",
   )
-  embeddings = get_embedding("${censusVersion}", embedding_uri, adata.obs["soma_joinid"]).toarray())
+  embeddings = get_embedding("${censusVersion}", embedding_uri, adata.obs["soma_joinid"]).tonumpy())
   adata.obsm["emb"] = embeddings`;
 }
 
