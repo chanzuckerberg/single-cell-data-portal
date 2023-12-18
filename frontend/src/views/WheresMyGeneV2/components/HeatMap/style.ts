@@ -190,7 +190,7 @@ export const LoadingWrapper = styled.div<LoadingProps>`
 
 export const LoadingLabel = styled.div`
   color: black;
-  ${fontHeaderXl};
+  ${fontHeaderXl}
   padding-top: 20px;
 `;
 
