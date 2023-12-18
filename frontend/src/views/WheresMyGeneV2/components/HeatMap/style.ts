@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
-import { CommonThemeProps, TagFilter } from "@czi-sds/components";
+import { CommonThemeProps, TagFilter, fontHeaderXl } from "@czi-sds/components";
 
-import { gray300, spacesM, spacesS } from "src/common/theme";
+import { gray100, gray400, gray300, spacesM, spacesS } from "src/common/theme";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import {
   CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
@@ -17,7 +17,6 @@ import {
 import { LEGEND_HEIGHT_PX } from "../InfoPanel/components/Legend/style";
 import { LEGEND_MARGIN_BOTTOM_PX } from "../../style";
 import { LIGHT_GRAY } from "src/components/common/theme";
-import { Skeleton } from "@mui/material";
 
 export function xAxisOffset(props: CommonThemeProps) {
   /**
@@ -120,7 +119,7 @@ export const TopLeftCornerMask = styled.div<TopLeftCornerMaskProps>`
 
 interface ChartWrapperProps extends CommonThemeProps {
   top: number;
-  hidden: boolean;
+  visible: boolean;
 }
 
 export const ChartWrapper = styled.div<ChartWrapperProps>`
@@ -130,7 +129,8 @@ export const ChartWrapper = styled.div<ChartWrapperProps>`
   padding-top: ${(props) => xAxisOffset(props) + PADDING_UNDER_HEADERS_PX}px;
   left: ${Y_AXIS_CHART_WIDTH_PX}px;
   top: ${(props) => props.top}px;
-  visibility: ${(props) => (props.hidden ? "hidden" : "visible")};
+  visibility: ${(props) => (props.visible ? "visible" : "hidden")};
+  width: 100%;
 `;
 
 export const StyledTag = styled(TagFilter)`
@@ -161,16 +161,57 @@ export const YAxisWrapper = styled.div<YAxisWrapperProps>`
   overflow: hidden;
 `;
 
-export const StyledSkeleton = styled(Skeleton)`
-  margin: 0px 0px 4px 1px;
+interface LoadingContainerProps extends CommonThemeProps {
+  height: number;
+  width: number;
+}
+
+export const LoadingContainer = styled.div<LoadingContainerProps>`
+  position: absolute;
+  display: flex;
+  width: ${(props) => props.width * 20}px;
+  height: ${(props) => props.height * 20}px;
+  background-color: ${gray100};
 `;
 
-export const SkeletonContainer = styled.div`
+interface LoadingProps extends CommonThemeProps {
+  left: number;
+}
+
+export const LoadingWrapper = styled.div<LoadingProps>`
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 600px;
+  left: ${(props) => 510 + (props.left * 24) / 2}px;
 `;
 
-export const SkeletonWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
+export const LoadingLabel = styled.div`
+  color: black;
+  ${fontHeaderXl};
+  padding-top: 20px;
+`;
+
+export const LoadingSpinner = styled.div`
+  --d: 10.6px;
+  width: 1.9px;
+  height: 1.9px;
+  border-radius: 50%;
+  color: ${gray400};
+  box-shadow:
+    calc(1 * var(--d)) calc(0 * var(--d)) 0 0,
+    calc(0.707 * var(--d)) calc(0.707 * var(--d)) 0 0.5px,
+    calc(0 * var(--d)) calc(1 * var(--d)) 0 1px,
+    calc(-0.707 * var(--d)) calc(0.707 * var(--d)) 0 1.4px,
+    calc(-1 * var(--d)) calc(0 * var(--d)) 0 1.9px,
+    calc(-0.707 * var(--d)) calc(-0.707 * var(--d)) 0 2.4px;
+  animation: spinner 1s infinite steps(8);
+
+  @keyframes spinner {
+    100% {
+      transform: rotate(1turn);
+    }
+  }
 `;
