@@ -578,13 +578,6 @@ code {
   padding-top: 0.2em;
   padding-bottom: 0.2em;
 }
-code:before,
-code:after,
-tt:before,
-tt:after {
-  letter-spacing: -0.2em;
-  content: " ";
-}
 @media only screen and (max-width: 480px) {
   html {
     font-size: 100%;
