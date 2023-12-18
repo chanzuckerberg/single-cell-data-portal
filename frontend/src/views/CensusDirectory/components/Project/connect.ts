@@ -2,17 +2,21 @@
 import { ProjectProps } from "./types";
 import notebookLinks from "census-notebook-links.json";
 
+const DEFAULT_EPOCH_TIME = 0;
+
 export const useConnect = ({ clobberedProjects }: ProjectProps) => {
   const sharedProject = clobberedProjects[0];
 
   let date = new Date(
-    sharedProject.last_updated || sharedProject.submission_date || 0
+    sharedProject.last_updated ||
+      sharedProject.submission_date ||
+      DEFAULT_EPOCH_TIME
   );
 
-  if (date === new Date("1970-01-01")) {
+  if (date.getDate() === DEFAULT_EPOCH_TIME) {
     clobberedProjects[1].forEach((project) => {
       const projectDate = new Date(
-        project.last_updated || project.submission_date || 0
+        project.last_updated || project.submission_date || DEFAULT_EPOCH_TIME
       );
       // check if the project date is more recent than the current date
       if (projectDate > date) {

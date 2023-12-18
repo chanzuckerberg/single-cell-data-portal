@@ -18,7 +18,8 @@ const ProjectButtons = ({
   clobberedProjects: ClobberedProjects[number];
 }) => {
   const sharedProject = clobberedProjects[0];
-  if (clobberedProjects[1].length === 1) {
+  const projects = clobberedProjects[1];
+  if (projects.length === 1) {
     return (
       <ButtonsRow>
         {"project_page" in sharedProject && !!sharedProject.project_page && (
@@ -41,15 +42,15 @@ const ProjectButtons = ({
             </StyledButton>
           </a>
         )}
-        <ModelButton project={clobberedProjects[1][0]} />
-        <EmbeddingButton project={clobberedProjects[1][0]} />
+        <ModelButton project={projects[0]} />
+        <EmbeddingButton project={projects[0]} />
       </ButtonsRow>
     );
   }
 
   return (
     <ButtonsColumn>
-      {clobberedProjects[1].map((project) => {
+      {projects.map((project) => {
         const uniqueMetadata = Object.fromEntries(
           Object.entries(project).filter(([key, value]) => {
             return !(key in sharedProject) && value;

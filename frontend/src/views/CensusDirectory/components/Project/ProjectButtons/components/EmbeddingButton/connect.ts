@@ -12,6 +12,13 @@ const NUMBER_OF_PADDING_LINES = 1;
 // Total amount of padding around the highlighted line
 const LINE_HIGHLIGHT_BACKGROUND_PADDING = 8;
 
+const MAINTAINED_PYTHON_NOTEBOOK_LINK =
+  "https://chanzuckerberg.github.io/cellxgene-census/notebooks/api_demo/census_access_maintained_embeddings.html";
+const MAINTAINED_R_NOTEBOOK_LINK =
+  "https://chanzuckerberg.github.io/cellxgene-census/r/articles/census_access_maintained_embeddings.html";
+const HOSTED_PYTHON_NOTEBOOK_LINK =
+  "https://chanzuckerberg.github.io/cellxgene-census/notebooks/api_demo/census_embedding.html";
+
 function pythonCodeSnippet(project: UnionProject, uri: string): string {
   const censusVersion = project.census_version;
   const organism = project.experiment_name;
@@ -41,7 +48,7 @@ function pythonCodeSnippet(project: UnionProject, uri: string): string {
       measurement_name = "${measurement}",
       obs_value_filter = "tissue_general == 'central nervous system'",
   )
-  embeddings = get_embedding("${censusVersion}", embedding_uri, adata.obs["soma_joinid"]).tonumpy())
+  embeddings = get_embedding("${censusVersion}", embedding_uri, adata.obs["soma_joinid"]).to_numpy())
   adata.obsm["emb"] = embeddings`;
 }
 
@@ -116,19 +123,13 @@ export const useConnect = ({ project }: EmbeddingButtonProps) => {
   useEffect(() => {
     if (projectTier === "maintained") {
       if (language === "python") {
-        setNotebookLink(
-          "https://chanzuckerberg.github.io/cellxgene-census/notebooks/api_demo/census_access_maintained_embeddings.html"
-        );
+        setNotebookLink(MAINTAINED_PYTHON_NOTEBOOK_LINK);
       } else {
-        setNotebookLink(
-          "https://chanzuckerberg.github.io/cellxgene-census/r/articles/census_access_maintained_embeddings.html"
-        );
+        setNotebookLink(MAINTAINED_R_NOTEBOOK_LINK);
       }
     } else {
       if (language === "python") {
-        setNotebookLink(
-          "https://chanzuckerberg.github.io/cellxgene-census/notebooks/api_demo/census_embedding.html"
-        );
+        setNotebookLink(HOSTED_PYTHON_NOTEBOOK_LINK);
       }
     }
   }, [language, projectTier]);
