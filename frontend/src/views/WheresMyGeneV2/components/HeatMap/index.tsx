@@ -136,7 +136,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
                 >
                   <LoadingWrapper left={sortedGeneNames.length}>
                     <LoadingSpinner />
-                    <LoadingLabel hidden={sortedGeneNames.length < 10}>
+                    <LoadingLabel hidden={sortedGeneNames.length < 13}>
                       Loading Data...
                     </LoadingLabel>
                   </LoadingWrapper>
@@ -146,7 +146,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
           <ChartWrapper
             ref={chartWrapperRef}
             top={xAxisHeight}
-            visible={!isAnyTissueLoading(isLoading)}
+            visible={!isAnyTissueLoading(isLoading) && !isLoadingAPI}
           >
             {allTissueCellTypes.map(({ tissueName, tissueCellTypes }) => {
               const selectedGeneData =
