@@ -1,12 +1,17 @@
-import { StaticProject } from "census-projects.json";
-import Link from "next/link";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { Project } from "src/common/queries/censusDirectory";
-import { StyledButton } from "src/views/CensusDirectory/style";
 import Toast from "src/views/Collection/components/Toast";
+import { UnionProject } from "../../../types";
+import { StyledButton } from "../../style";
+import { ClobberedProjects } from "src/views/CensusDirectory/utils";
 
-const ModelButton = ({ project }: { project: StaticProject | Project }) => {
+const ModelButton = ({
+  project,
+  uniqueMetadata,
+}: {
+  project: UnionProject;
+  uniqueMetadata?: ClobberedProjects[number][0];
+}) => {
   if (!project.model_link) return null;
   return project.model_link.startsWith("s3") ? (
     <StyledButton
@@ -16,6 +21,7 @@ const ModelButton = ({ project }: { project: StaticProject | Project }) => {
         track(EVENTS.CENSUS_MODEL_COPIED, {
           project: project.title,
           category: project.tier,
+          ...uniqueMetadata,
         });
         // copy URI to clipboard
         navigator.clipboard.writeText(project.model_link || "");
@@ -29,7 +35,7 @@ const ModelButton = ({ project }: { project: StaticProject | Project }) => {
       Copy Model URI
     </StyledButton>
   ) : (
-    <Link href={project.model_link}>
+    <a href={project.model_link} target="_blank" rel="noopener noreferrer">
       <StyledButton
         sdsType="secondary"
         sdsStyle="square"
@@ -42,7 +48,7 @@ const ModelButton = ({ project }: { project: StaticProject | Project }) => {
       >
         Model Page
       </StyledButton>
-    </Link>
+    </a>
   );
 };
 
