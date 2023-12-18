@@ -40,7 +40,7 @@ const Project = ({ clobberedProjects }: ProjectProps) => {
         <DetailsContainer>
           <DetailItem
             label="contact"
-            link={sharedProject.primary_contact?.email}
+            link={"mailto:" + sharedProject.primary_contact?.email}
             onClick={() => {
               track(EVENTS.CENSUS_CONTACT_CLICKED, {
                 project: sharedProject.title,
