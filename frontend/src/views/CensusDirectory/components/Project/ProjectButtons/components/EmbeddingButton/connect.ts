@@ -31,7 +31,7 @@ function pythonCodeSnippet(project: UnionProject, uri: string): string {
     : `  import cellxgene_census
   from cellxgene_census.experimental import get_embedding
 
-  embedding_uri =
+  embedding_uri = \\
       "${uri}"
   census = cellxgene_census.open_soma(census_version="${censusVersion}")
 
@@ -41,7 +41,7 @@ function pythonCodeSnippet(project: UnionProject, uri: string): string {
       measurement_name = "${measurement}",
       obs_value_filter = "tissue == 'central nervous system'",
   )
-  embeddings = get_embedding("${censusVersion}", embedding_uri, adata.obs["soma_joinid"])
+  embeddings = get_embedding("${censusVersion}", embedding_uri, adata.obs["soma_joinid"]).toarray())
   adata.obsm["emb"] = embeddings`;
 }
 
