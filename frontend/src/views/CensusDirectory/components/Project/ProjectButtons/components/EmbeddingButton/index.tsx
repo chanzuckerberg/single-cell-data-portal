@@ -8,18 +8,18 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import Highlight from "react-highlight";
 import { RadioGroup } from "@mui/material";
-import Link from "next/link";
 import { StyledDialogContent, Label, CodeSnippet, Break } from "./style";
-import { StyledButton } from "src/components/CreateCollectionModal/style";
+import { StyledButton } from "../../style";
 
 function EmbeddingButton(props: EmbeddingButtonProps) {
-  const { project } = props;
+  const { project, uniqueMetadata } = props;
   const {
     isOpen,
     language,
     codeSnippet,
     projectTier,
     uri,
+    notebookLink,
     codeSnippetRef,
     uriTopPosition,
     lineHeight,
@@ -49,7 +49,11 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
               row
             >
               <InputRadio label="Python" value="python" />
-              <InputRadio disabled label="R (coming soon)" value="r" />
+              <InputRadio
+                disabled={projectTier !== "maintained"}
+                label={projectTier === "maintained" ? "R" : "R (coming soon)"}
+                value="r"
+              />
             </RadioGroup>
           </div>
           <div>
@@ -67,6 +71,7 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
                     project: project.title,
                     category: projectTier,
                     version: language,
+                    ...uniqueMetadata,
                   })
                 }
               />
@@ -79,6 +84,7 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
                         project: project.title,
                         category: projectTier,
                         version: "URI",
+                        ...uniqueMetadata,
                       })
                     }
                   />
@@ -93,22 +99,19 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
               {
                 "If you'd like to see more advanced access patterns, explore this "
               }
-              <Link
-                href={
-                  projectTier === "maintained"
-                    ? "https://chanzuckerberg.github.io/cellxgene-census/notebooks/api_demo/census_access_maintained_embeddings.html"
-                    : "https://chanzuckerberg.github.io/cellxgene-census/notebooks/api_demo/census_embedding.html"
-                }
+              <a
+                href={notebookLink}
                 onClick={() =>
                   track(EVENTS.CENSUS_EMBEDDING_NOTEBOOK_CLICKED, {
                     project: project.title,
                     category: projectTier,
                     version: language,
+                    ...uniqueMetadata,
                   })
                 }
               >
-                Jupyter Notebook
-              </Link>
+                {language === "python" ? "Jupyter" : "R"} Notebook
+              </a>
               !
             </div>
           </div>
