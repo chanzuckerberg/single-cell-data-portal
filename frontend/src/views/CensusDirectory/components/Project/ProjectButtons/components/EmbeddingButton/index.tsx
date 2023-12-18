@@ -66,6 +66,7 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
               <Highlight className={language}>{codeSnippet}</Highlight>
               <CopyButton
                 downloadLink={codeSnippet}
+                label="Copy All"
                 handleAnalytics={() =>
                   track(EVENTS.CENSUS_EMBEDDING_COPIED, {
                     project: project.title,
@@ -79,6 +80,7 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
                 <div>
                   <CopyButton
                     downloadLink={uri}
+                    label="Copy URI"
                     handleAnalytics={() =>
                       track(EVENTS.CENSUS_EMBEDDING_COPIED, {
                         project: project.title,

@@ -25,31 +25,31 @@ function pythonCodeSnippet(project: UnionProject, uri: string): string {
   const measurement = project.measurement_name;
 
   return project.tier === "maintained"
-    ? `    import cellxgene_census
+    ? `import cellxgene_census
 
-    census = cellxgene_census.open_soma(census_version="${project.census_version}")
-    adata = cellxgene_census.get_anndata(
-        census,
-        organism = "${organism}",
-        measurement_name = "${measurement}",
-        obs_value_filter = "tissue_general == 'central nervous system'",
-        obsm_layers = ["${project.obsm_layer}"]
-    )`
-    : `  import cellxgene_census
-  from cellxgene_census.experimental import get_embedding
+census = cellxgene_census.open_soma(census_version="${project.census_version}")
+adata = cellxgene_census.get_anndata(
+    census,
+    organism = "${organism}",
+    measurement_name = "${measurement}",
+    obs_value_filter = "tissue_general == 'central nervous system'",
+    obsm_layers = ["${project.obsm_layer}"]
+)`
+    : `import cellxgene_census
+from cellxgene_census.experimental import get_embedding
 
-  embedding_uri = \\
-      "${uri}"
-  census = cellxgene_census.open_soma(census_version="${censusVersion}")
+embedding_uri = \\
+    "${uri}"
+census = cellxgene_census.open_soma(census_version="${censusVersion}")
 
-  adata = cellxgene_census.get_anndata(
-      census,
-      organism = "${organism}",
-      measurement_name = "${measurement}",
-      obs_value_filter = "tissue_general == 'central nervous system'",
-  )
-  embeddings = get_embedding("${censusVersion}", embedding_uri, adata.obs["soma_joinid"]).to_numpy())
-  adata.obsm["emb"] = embeddings`;
+adata = cellxgene_census.get_anndata(
+    census,
+    organism = "${organism}",
+    measurement_name = "${measurement}",
+    obs_value_filter = "tissue_general == 'central nervous system'",
+)
+embeddings = get_embedding("${censusVersion}", embedding_uri, adata.obs["soma_joinid"].to_numpy())
+adata.obsm["emb"] = embeddings`;
 }
 
 function rCodeSnippet(project: UnionProject): string {
@@ -57,18 +57,17 @@ function rCodeSnippet(project: UnionProject): string {
   const organism = project.experiment_name;
 
   return project.tier === "maintained"
-    ? `    library("cellxgene.census")
-    library("Seurat")
+    ? `library("cellxgene.census")
+library("Seurat")
 
-    census <- open_soma(census_version = "${censusVersion}")
-    seurat_obj <- get_seurat(
-      census,
-      organism = "${organism}",
-      obs_value_filter = "tissue_general == 'central nervous system'",
-      obs_column_names = c("cell_type"),
-      obsm_layers = c("${project.obsm_layer}")
-    )
-    `
+census <- open_soma(census_version = "${censusVersion}")
+seurat_obj <- get_seurat(
+  census,
+  organism = "${organism}",
+  obs_value_filter = "tissue_general == 'central nervous system'",
+  obs_column_names = c("cell_type"),
+  obsm_layers = c("${project.obsm_layer}")
+)`
     : "";
 }
 
