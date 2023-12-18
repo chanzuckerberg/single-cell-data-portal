@@ -11,6 +11,7 @@ RUN apt update && \
 	add-apt-repository ppa:deadsnakes/ppa
 RUN apt install python3.10 -y && \
 	apt install python3.10-distutils -y && \
+	apt install python3.10-dev -y && \
 	curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
 RUN python3 -m pip install --upgrade pip
@@ -20,7 +21,7 @@ ENV PIP_NO_CACHE_DIR=1
 
 # Install python dependencies
 # Remove packaging dependency once pyparser>3 is supported.
-RUN  python3.10 -m pip install python-igraph louvain packaging awscli
+RUN  python3 -m pip install python-igraph louvain packaging awscli
 
 
 ADD requirements-processing.txt requirements-processing.txt
