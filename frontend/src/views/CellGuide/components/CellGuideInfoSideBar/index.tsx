@@ -3,7 +3,6 @@ import { RightSidebarProperties } from "src/components/common/RightSideBar";
 import { CellType } from "../common/OntologyDagView/common/types";
 import Description from "../CellGuideCard/components/Description";
 import MarkerGeneTables from "../CellGuideCard/components/MarkerGeneTables";
-import { ROUTES } from "src/common/constants/routes";
 import { MarkerGeneTableWrapper, StyledLink } from "./style";
 import {
   CELLGUIDE_VIEW_PAGE_SIDEBAR_BUTTON_TEST_ID,
@@ -12,6 +11,7 @@ import {
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { useRouter } from "next/router";
+import { getCellTypeLink } from "src/views/CellGuide/common/utils";
 
 export interface CellGuideInfoBarProps extends RightSidebarProperties {
   cellInfoCellType: CellType;
@@ -44,14 +44,19 @@ function CellGuideInfoBar({
   setCellInfoCellType,
 }: CellGuideInfoBarProps): JSX.Element | null {
   const router = useRouter();
+
+  const { cellTypeId, cellTypeName } = cellInfoCellType;
+
+  const cellTypeUrl = getCellTypeLink({
+    tissueId: selectedOrganId,
+    cellTypeId,
+  });
+
   return (
     <div data-testid={CELLGUIDE_INFO_SIDEBAR_TEST_ID}>
       <StyledLink
         data-testid={CELLGUIDE_VIEW_PAGE_SIDEBAR_BUTTON_TEST_ID}
-        href={`${ROUTES.CELL_GUIDE}/${cellInfoCellType.cellTypeId.replace(
-          ":",
-          "_"
-        )}`}
+        href={cellTypeUrl}
         onClick={(e) => {
           if (!e.metaKey && !e.ctrlKey) {
             e.preventDefault();
@@ -60,15 +65,15 @@ function CellGuideInfoBar({
             router.push(href);
           }
           track(EVENTS.CG_VIEW_CELLGUIDE_PAGE_CLICKED, {
-            cell_type: cellInfoCellType.cellTypeName,
+            cell_type: cellTypeName,
           });
         }}
       >
         View CellGuide Page
       </StyledLink>
       <Description
-        cellTypeId={cellInfoCellType.cellTypeId}
-        cellTypeName={cellInfoCellType.cellTypeName}
+        cellTypeId={cellTypeId}
+        cellTypeName={cellTypeName}
         skinnyMode={true}
         setTooltipContent={setTooltipContent}
         inSideBar
@@ -76,11 +81,11 @@ function CellGuideInfoBar({
       <MarkerGeneTableWrapper>
         <MarkerGeneTables
           setTooltipContent={setTooltipContent}
-          key={cellInfoCellType.cellTypeId}
-          cellTypeId={cellInfoCellType.cellTypeId}
+          key={cellTypeId}
+          cellTypeId={cellTypeId}
           setGeneInfoGene={setGeneInfoGene}
           setCellInfoCellType={setCellInfoCellType}
-          cellTypeName={cellInfoCellType.cellTypeName}
+          cellTypeName={cellTypeName}
           skinnyMode={skinnyMode}
           cellInfoCellType={cellInfoCellType}
           organName={selectedOrganName}

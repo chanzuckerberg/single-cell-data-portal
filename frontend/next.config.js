@@ -43,6 +43,7 @@ const defaultSecureHeaders = {
         PLAUSIBLE_URL,
         configs.API_URL,
         configs.CELLGUIDE_DATA_URL,
+        configs.CENSUS_MODELS_DATA_URL,
         CROSS_REF_URL,
         DATADOG_URL,
       ],
@@ -139,5 +140,17 @@ module.exports = {
         }
       ),
     },
+  },
+  webpack: (config, { webpack }) => {
+    return {
+      ...config,
+      plugins: [
+        ...config.plugins,
+        new webpack.ContextReplacementPlugin(
+          /highlight.js\/lib\/languages$/,
+          new RegExp(`^./(${["javascript", "python", "r"].join("|")})$`)
+        ),
+      ],
+    };
   },
 };

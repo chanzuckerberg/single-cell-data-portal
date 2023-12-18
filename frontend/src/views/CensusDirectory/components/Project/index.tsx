@@ -9,40 +9,43 @@ import {
   DetailsContainer,
   ProjectButtons,
   StyledButton,
-} from "../../styles";
+} from "../../style";
 import DetailItem from "../DetailItem";
 
-import EmbeddingButton from "../EmbeddingButton";
+import EmbeddingButton from "./components/EmbeddingButton";
 
 import { ProjectProps } from "./types";
 import { useConnect } from "./connect";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import ModelButton from "./components/ModelButton";
 
 const Project = ({ project, id }: ProjectProps) => {
-  const { date, projectNotebookLinks, projectTier } = useConnect({
-    project,
-    id,
-  });
+  const { date, projectNotebookLinks, projectTier, authorsString } = useConnect(
+    {
+      project,
+      id,
+    }
+  );
 
   return (
     <ProjectContainer key={project.title}>
       <ProjectDetails>
         <ProjectTitle>{project.title}</ProjectTitle>
-        <ProjectSubmitter>{project.contact_affiliation}</ProjectSubmitter>
+        <ProjectSubmitter>{authorsString}</ProjectSubmitter>
         <ProjectDescription>{project.description}</ProjectDescription>
         <DetailsContainer>
           <DetailItem
             label="contact"
-            link={project.contact_email}
+            link={project.primary_contact?.email}
             onClick={() => {
               track(EVENTS.CENSUS_CONTACT_CLICKED, {
                 project: project.title,
-                contact: project.contact_name,
+                contact: project.primary_contact?.name,
               });
             }}
           >
-            {project.contact_name}
+            {project.primary_contact?.name}
           </DetailItem>
           <DetailItem
             label="publication"
@@ -105,23 +108,8 @@ const Project = ({ project, id }: ProjectProps) => {
             </StyledButton>
           </Link>
         )}
-        {projectTier === "hosted" && <EmbeddingButton project={project} />}
-        {!!project.model_link && (
-          <Link href={project.model_link}>
-            <StyledButton
-              sdsType="primary"
-              sdsStyle="square"
-              onClick={() => {
-                track(EVENTS.CENSUS_MODEL_CLICKED, {
-                  project: project.title,
-                  category: projectTier,
-                });
-              }}
-            >
-              Model
-            </StyledButton>
-          </Link>
-        )}
+        <ModelButton project={project} />
+        <EmbeddingButton project={project} />
       </ProjectButtons>
     </ProjectContainer>
   );

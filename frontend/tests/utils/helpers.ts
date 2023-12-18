@@ -496,6 +496,12 @@ export async function takeSnapshotOfMetaTags(name: string, page: Page) {
         )
       ).sort();
 
+      /**
+       * (thuang): Whenever snapshot updates, make sure to update the snapshot
+       * for linux files as well.
+       * NOTE: I had to use `cp FILE_NAME-darwin.txt FILE_NAME-linux.txt` to copy
+       * to avoid failed snapshot test in GHA for some reason
+       */
       expect(JSON.stringify(allMetaTagsHTML)).toMatchSnapshot({
         name: name + "-seoMetaTags.txt",
       });

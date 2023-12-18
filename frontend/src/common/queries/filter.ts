@@ -29,6 +29,7 @@ import {
   CATEGORY_VALUE_KEY,
   CollectionRow,
   DatasetRow,
+  TISSUE_TYPE,
 } from "src/components/common/Filter/common/entities";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 import { API_URL } from "src/configs/configs";
@@ -50,6 +51,11 @@ const QUERY_ID_COLLECTIONS = "collectionsIndex";
  * Query key for /datasets/index
  */
 const QUERY_ID_DATASETS = "datasetIndex";
+
+/**
+ * Value used to separate multiple ethnicities in self reported ethnicity.
+ */
+const DELIMITER_MULTI_ETHNICITY = ",";
 
 /**
  * Model returned on fetch of collections or datasets: materialized view models (rows) as well as fetch status.
@@ -129,7 +135,7 @@ export interface DatasetResponse {
   revised_at?: number;
   sex: Ontology[];
   suspension_type: string[];
-  tissue: Ontology[];
+  tissue: TissueOntology[];
   tissue_ancestors: string[];
 }
 
@@ -137,10 +143,16 @@ export interface DatasetResponse {
  * Model of /datasets/index JSON response that has been modified to include calculated fields that facilitate filter
  * functionality.
  */
-export interface ProcessedDatasetResponse extends DatasetResponse {
+export type ProcessedDatasetResponse = Omit<DatasetResponse, "tissue"> & {
   cellTypeCalculated: string[]; // Field to drive cell class, cell subclass and cell type filter functionality.
+  tissue: Ontology[]; // Processed dataset has tissue TissueOntology[] mapped to Ontology[].
   tissueCalculated: string[]; // Field to drive tissue system, tissue organ and tissue filter functionality.
-}
+};
+
+/**
+ * Tissue-specifc ontology model: label, ontology ID and tissue
+ */
+export type TissueOntology = Ontology & { tissue_type: TISSUE_TYPE };
 
 /**
  * Query key for caching collections returned from /collections/index endpoint.
@@ -436,6 +448,32 @@ function buildCollectionRows(
 }
 
 /**
+ * Convert Schema 4.0.0+ tissue ontology model (label, ontology term ID and
+ * tissue type) to "core" ontology model (label and ontology term ID only)
+ * by tagging the label and ontology term ID with tissue type and dropping
+ * tissue type value. Continuing with this tagged format minimizes changes
+ * to the core filter functionality with migration to Schema 4.0.0 and beyond.
+ * @param tissue - Tissue ontology to convert.
+ * @returns Tissue ontology converted to true ontology object.
+ */
+export function createTaggedTissueOntology(tissue: TissueOntology): Ontology {
+  const { label, ontology_term_id, tissue_type } = tissue;
+  // Handle tissue type tissue (or no tissue type for pre-4.0.0).
+  if (!tissue_type || tissue_type === TISSUE_TYPE.TISSUE) {
+    return {
+      label,
+      ontology_term_id,
+    };
+  }
+
+  // Handle cell culture or organoid.
+  return {
+    label: `${label} (${tissue_type})`,
+    ontology_term_id: `${ontology_term_id} (${tissue_type})`,
+  };
+}
+
+/**
  * Join dataset and collection information to facilitate filter over datasets.
  * @param collectionsById - Collections keyed by their ID.
  * @param datasets - Datasets returned from datasets/index endpoint.
@@ -610,7 +648,7 @@ function createCollectionRowTestId(
  * @returns Number representing seconds since Unix epoch.
  */
 export function calculateRecency(
-  response: CollectionResponse | DatasetResponse,
+  response: CollectionResponse | ProcessedDatasetResponse,
   publisherMetadata?: PublisherMetadata
 ): number {
   // Pull date value from publication metadata if specified.
@@ -840,7 +878,7 @@ function getCollectionStatus(
  * @returns Tuple containing collections publication month (1-indexed) and year.
  */
 function getPublicationMonthYear(
-  response: CollectionResponse | DatasetResponse,
+  response: CollectionResponse | ProcessedDatasetResponse,
   publisherMetadata?: PublisherMetadata
 ): [number, number] {
   // Pull month and year from publication metadata if specified.
@@ -894,6 +932,19 @@ function groupDatasetRowsByCollection(
  */
 function isAuthorPerson(author: Author | Consortium): author is Author {
   return (author as Author).given !== undefined;
+}
+
+/**
+ * Returns true if the given self reported ethnicity ontology term contains
+ * mutliple ethnicities.
+ * @param selfReportedEthnicity - Self reported ethnicity ontology term to
+ * check for multiple ethnicities.
+ * @returns True if the given ontology contains multiple ethnicity values.
+ */
+function isMultiEthnicity(selfReportedEthnicity: Ontology): boolean {
+  return selfReportedEthnicity.ontology_term_id.includes(
+    DELIMITER_MULTI_ETHNICITY
+  );
 }
 
 /**
@@ -958,6 +1009,11 @@ function processCollectionResponse(
 function processDatasetResponse(
   dataset: DatasetResponse
 ): ProcessedDatasetResponse {
+  // Convert tissue ontology objects to core ontology objects.
+  const tissue = dataset.tissue.map((tissue) =>
+    createTaggedTissueOntology(tissue)
+  );
+
   // Build up values to facilitate ontology-aware cel type and tissue filtering.
   const cellTypeCalculated = [
     ...tagAncestorsAsInferred(dataset.cell_type_ancestors),
@@ -965,13 +1021,45 @@ function processDatasetResponse(
   ];
   const tissueCalculated = [
     ...tagAncestorsAsInferred(dataset.tissue_ancestors),
-    ...tagOntologyTermsAsExplicit(dataset.tissue),
+    ...tagOntologyTermsAsExplicit(tissue),
   ];
+
+  // Split multiple self reported ethnicities into separate values.
+  const selfReportedEthnicities = processSelfReportedEthnicity(
+    dataset.self_reported_ethnicity
+  );
+
   return {
     ...dataset,
     cellTypeCalculated,
+    self_reported_ethnicity: selfReportedEthnicities,
     tissueCalculated,
+    tissue,
   };
+}
+
+/**
+ * Split multiple self reported enthicity ontology values into separate
+ * ontology values to facilitate filtering on individual values.
+ * @param selfReportedEthnicities Array of self reported enthicity ontology
+ * values to possibly split.
+ * @returns Array of self reported enthicity ontology values.
+ */
+export function processSelfReportedEthnicity(
+  selfReportedEthnicities: Ontology[]
+): Ontology[] {
+  return selfReportedEthnicities.reduce(
+    (accum: Ontology[], selfReportedEthnicity) => {
+      if (isMultiEthnicity(selfReportedEthnicity)) {
+        accum.push(...splitMultiEthnicity(selfReportedEthnicity));
+      } else {
+        accum.push(selfReportedEthnicity);
+      }
+
+      return accum;
+    },
+    []
+  );
 }
 
 /**
@@ -1068,6 +1156,22 @@ function sortOntologies(o0: Ontology, o1: Ontology): number {
 }
 
 /**
+ * Split the given multiple ethnicity ontology term into separate values.
+ * @param selfReportedEthnicity - Ontology term with multiple, comma-separated values.
+ * @returns Array of single self reported enthicity ontology values.
+ */
+function splitMultiEthnicity(selfReportedEthnicity: Ontology): Ontology[] {
+  const { label, ontology_term_id } = selfReportedEthnicity;
+  const labels = label.split(DELIMITER_MULTI_ETHNICITY);
+  const ontologyTermIds = ontology_term_id.split(DELIMITER_MULTI_ETHNICITY);
+
+  return ontologyTermIds.map((ontologyTermId, index) => ({
+    label: labels[index],
+    ontology_term_id: ontologyTermId,
+  }));
+}
+
+/**
  * Convert each ontology term ID into one marked as "inferred", use by tissue multi-panel category filter. For example,
  * both the tissue system and the tissue organ panels contain inferred values and allow us to execute an "includes"
  * filter in tissue ancestors rather than an exact match. So, selecting blood (in the tissue organ panel) returns
@@ -1096,7 +1200,7 @@ function tagOntologyTermsAsExplicit(ontologyTermIds: Ontology[]): string[] {
 
 /**
  * De-dupe ontologies in the given array.
- * @param ontologies - Array of ontologies to remove duplicated from.
+ * @param ontologies - Array of ontologies to remove duplicates from.
  * @returns Array containing set of ontologies.
  */
 function uniqueOntologies(ontologies: Ontology[]): Ontology[] {
