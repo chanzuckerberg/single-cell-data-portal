@@ -66,7 +66,7 @@ function CensusDirectory() {
         </p>
         <p>
           If you’d like to have your project featured here, please{" "}
-          <Link href="mailto:cellxgene@chanzuckerberg.com">get in touch</Link>.
+          <Link href="mailto:soma@chanzuckerberg.com">get in touch</Link>.
         </p>
       </DirectoryDescription>
       {maintainedProjects.length > 0 && (

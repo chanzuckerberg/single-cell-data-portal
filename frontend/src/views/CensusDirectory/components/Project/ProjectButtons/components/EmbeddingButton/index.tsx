@@ -19,7 +19,7 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
     codeSnippet,
     projectTier,
     uri,
-    jupyterNotebookLink,
+    notebookLink,
     codeSnippetRef,
     uriTopPosition,
     lineHeight,
@@ -100,7 +100,7 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
                 "If you'd like to see more advanced access patterns, explore this "
               }
               <a
-                href={jupyterNotebookLink}
+                href={notebookLink}
                 onClick={() =>
                   track(EVENTS.CENSUS_EMBEDDING_NOTEBOOK_CLICKED, {
                     project: project.title,
@@ -110,7 +110,7 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
                   })
                 }
               >
-                Jupyter Notebook
+                {language === "python" ? "Jupyter" : "R"} Notebook
               </a>
               !
             </div>

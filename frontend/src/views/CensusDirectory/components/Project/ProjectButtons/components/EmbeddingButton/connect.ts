@@ -12,12 +12,10 @@ const NUMBER_OF_PADDING_LINES = 1;
 // Total amount of padding around the highlighted line
 const LINE_HIGHLIGHT_BACKGROUND_PADDING = 8;
 
-function pythonCodeSnippet(project: UnionProject): string {
+function pythonCodeSnippet(project: UnionProject, uri: string): string {
   const censusVersion = project.census_version;
   const organism = project.experiment_name;
   const measurement = project.measurement_name;
-
-  const uri = `"s3://cellxgene-contrib-archive/contrib/cell-census/${project.id}"`;
 
   return project.tier === "maintained"
     ? `    import cellxgene_census
@@ -28,12 +26,13 @@ function pythonCodeSnippet(project: UnionProject): string {
         organism = "${organism}",
         measurement_name = "${measurement}",
         obs_value_filter = "tissue == 'central nervous system'",
-        obsm_layers = ["${project.obs_matrix}"]
+        obsm_layers = ["${project.obsm_layer}"]
     )`
     : `  import cellxgene_census
   from cellxgene_census.experimental import get_embedding
 
-  embedding_uri = ${uri}
+  embedding_uri =
+      "${uri}"
   census = cellxgene_census.open_soma(census_version="${censusVersion}")
 
   adata = cellxgene_census.get_anndata(
@@ -60,7 +59,7 @@ function rCodeSnippet(project: UnionProject): string {
       organism = "${organism}",
       obs_value_filter = "tissue_general == 'central nervous system'",
       obs_column_names = c("cell_type"),
-      obsm_layers = c("${project.obs_matrix}")
+      obsm_layers = c("${project.obsm_layer}")
     )
     `
     : "";
@@ -84,11 +83,12 @@ export const useConnect = ({ project }: EmbeddingButtonProps) => {
     setIsOpen(!isOpen);
   }, [isOpen, projectTier, project.title]);
 
-  const codeSnippet =
-    language === "python" ? pythonCodeSnippet(project) : rCodeSnippet(project);
+  const uri = `s3://cellxgene-contrib-public/contrib/cell-census/soma/${project.census_version}/${project.id}`;
 
-  // These can be derived from the static S3 namespace + the accessor_id or will be a static url provided in json blob
-  const uri = `s3://cellxgene-contrib-archive/contrib/cell-census/${project.id}`;
+  const codeSnippet =
+    language === "python"
+      ? pythonCodeSnippet(project, uri)
+      : rCodeSnippet(project);
 
   const codeSnippetRef = useCallback(
     (node: HTMLDivElement) => {
@@ -103,8 +103,7 @@ export const useConnect = ({ project }: EmbeddingButtonProps) => {
         const lineIndex = lines.findIndex((line: string) => line.includes(uri));
 
         setURITopPosition(
-          newLineHeight * (lineIndex + 1) +
-            NUMBER_OF_PADDING_LINES +
+          newLineHeight * (lineIndex + 1 + NUMBER_OF_PADDING_LINES) +
             LINE_HIGHLIGHT_BACKGROUND_PADDING / 2
         );
         setLineHeight(newLineHeight + LINE_HIGHLIGHT_BACKGROUND_PADDING);
@@ -113,21 +112,21 @@ export const useConnect = ({ project }: EmbeddingButtonProps) => {
     [uri]
   );
 
-  const [jupyterNotebookLink, setJupyterNotebookLink] = useState("");
+  const [notebookLink, setNotebookLink] = useState("");
   useEffect(() => {
     if (projectTier === "maintained") {
       if (language === "python") {
-        setJupyterNotebookLink(
+        setNotebookLink(
           "https://chanzuckerberg.github.io/cellxgene-census/notebooks/api_demo/census_access_maintained_embeddings.html"
         );
       } else {
-        setJupyterNotebookLink(
+        setNotebookLink(
           "https://chanzuckerberg.github.io/cellxgene-census/r/articles/census_access_maintained_embeddings.html"
         );
       }
     } else {
       if (language === "python") {
-        setJupyterNotebookLink(
+        setNotebookLink(
           "https://chanzuckerberg.github.io/cellxgene-census/notebooks/api_demo/census_embedding.html"
         );
       }
@@ -145,7 +144,7 @@ export const useConnect = ({ project }: EmbeddingButtonProps) => {
     uri,
     uriTopPosition,
     lineHeight,
-    jupyterNotebookLink,
+    notebookLink,
     codeSnippetRef,
     setLanguage,
     handleButtonClick,
