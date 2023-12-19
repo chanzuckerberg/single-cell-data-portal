@@ -13,12 +13,8 @@ ENV PIP_NO_CACHE_DIR=1
 # Install python dependencies
 # Remove packaging dependency once pyparser>3 is supported.
 RUN pip3 install python-igraph==0.8.3 louvain==0.7.0 packaging==21.0 awscli
-
-
-RUN pip3 install poetry
 COPY python_dependencies/processing/ /
-RUN poetry export --with=dev --without-hashes --format=requirements.txt > requirements.txt
-RUN pip3 install -r requirements.txt
+RUN python3 -m pip install -r requirements.txt -r requirements-dev.txt
 
 ADD backend/__init__.py backend/__init__.py
 ADD backend/layers backend/layers

@@ -6,10 +6,8 @@ COPY backend/layers ./backend/layers
 # For lighter weight Docker images
 ENV PIP_NO_CACHE_DIR=1
 
-RUN pip3 install poetry
 COPY python_dependencies/submissions/ /
-RUN poetry export --with=dev --without-hashes --format=requirements.txt > requirements.txt
-RUN pip3 install -r requirements.txt
+RUN python3 -m pip install -r requirements.txt -r requirements-dev.txt
 
 COPY backend/__init__.py ./backend/__init.py
 COPY backend/common ./backend/common

@@ -11,10 +11,8 @@ ENV PIP_NO_CACHE_DIR=1
 
 WORKDIR /
 
-RUN pip3 install poetry
 COPY python_dependencies/wmg/ /
-RUN poetry export --with=dev --without-hashes --format=requirements.txt > requirements.txt
-RUN pip3 install -r requirements.txt
+RUN python3 -m pip install -r requirements.txt -r requirements-dev.txt
 
 ADD backend/__init__.py backend/__init__.py
 ADD backend/wmg/__init__.py backend/wmg/__init__.py
