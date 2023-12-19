@@ -7,7 +7,13 @@ import {
   CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX,
   CONTENT_WRAPPER_TOP_BOTTOM_PADDING_PX,
 } from "src/components/Layout/style";
-import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/constants";
+import {
+  LOADER_HIDE_LABEL_THRESHOLD,
+  LOADER_POSITION_MULTIPLIER,
+  LOADER_POSITION_MULTIPLIER_LABEL,
+  LOADER_POSITION_MULTIPLIER_NO_LABEL,
+  X_AXIS_CHART_HEIGHT_PX,
+} from "src/views/WheresMyGeneV2/common/constants";
 import {
   CELL_TYPE_FILTER_WIDTH_PX,
   DIVIDER_LEFT_POSITION_PX,
@@ -175,7 +181,7 @@ export const LoadingContainer = styled.div<LoadingContainerProps>`
 `;
 
 interface LoadingProps extends CommonThemeProps {
-  left: number;
+  geneCount: number;
 }
 
 export const LoadingWrapper = styled.div<LoadingProps>`
@@ -185,7 +191,18 @@ export const LoadingWrapper = styled.div<LoadingProps>`
   align-items: center;
   position: fixed;
   top: 600px;
-  left: ${(props) => ((props.left + 62) * 19) / 2}px;
+  /**  
+  * This is a multiplier to keep the loader centered 
+  * under any number of genes selected, as well as hide 
+  * the label when there are under 13 genes selcted
+  */
+  left: ${(props) =>
+    ((props.geneCount +
+      (props.geneCount < LOADER_HIDE_LABEL_THRESHOLD
+        ? LOADER_POSITION_MULTIPLIER_NO_LABEL
+        : LOADER_POSITION_MULTIPLIER_LABEL)) *
+      LOADER_POSITION_MULTIPLIER) /
+    2}px;
 `;
 
 interface LoadingLabelProps extends CommonThemeProps {

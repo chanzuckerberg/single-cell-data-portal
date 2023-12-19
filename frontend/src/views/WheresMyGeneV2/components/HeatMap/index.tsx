@@ -5,6 +5,8 @@ import YAxisChart from "./components/YAxisChart";
 import { CellCountLabel } from "src/views/WheresMyGeneV2/components/HeatMap/components/XAxisChart/style";
 import {
   HEATMAP_CONTAINER_ID,
+  LOADER_HIDE_LABEL_THRESHOLD,
+  LOADER_LABEL_TEXT,
   MARGIN_BETWEEN_HEATMAPS,
 } from "src/views/WheresMyGeneV2/common/constants";
 import Loader from "src/views/WheresMyGeneV2/components/Loader";
@@ -53,6 +55,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
     chartWrapperRef,
     expandedTissueIds,
     filteredCellTypes,
+    geneCount,
     generateMarkerGenes,
     handleCellTypeDelete,
     handleExpandCollapse,
@@ -124,25 +127,23 @@ export default memo(function HeatMap(props: Props): JSX.Element {
               }
             )}
           </YAxisWrapper>
-          {isLoadingAPI ||
-            (isAnyTissueLoading(isLoading) && (
-              <ChartWrapper
-                top={xAxisHeight}
-                visible={isLoadingAPI || isAnyTissueLoading(isLoading)}
-              >
-                <LoadingContainer
-                  height={totalElementsCount}
-                  width={sortedGeneNames.length}
-                >
-                  <LoadingWrapper left={sortedGeneNames.length}>
-                    <LoadingSpinner />
-                    <LoadingLabel visible={sortedGeneNames.length > 12}>
-                      Loading Data...
-                    </LoadingLabel>
-                  </LoadingWrapper>
-                </LoadingContainer>
-              </ChartWrapper>
-            ))}
+          {isAnyTissueLoading(isLoading) && (
+            <ChartWrapper
+              top={xAxisHeight}
+              visible={isLoadingAPI || isAnyTissueLoading(isLoading)}
+            >
+              <LoadingContainer height={totalElementsCount} width={geneCount}>
+                <LoadingWrapper geneCount={geneCount}>
+                  <LoadingSpinner />
+                  <LoadingLabel
+                    visible={geneCount > LOADER_HIDE_LABEL_THRESHOLD}
+                  >
+                    {LOADER_LABEL_TEXT}
+                  </LoadingLabel>
+                </LoadingWrapper>
+              </LoadingContainer>
+            </ChartWrapper>
+          )}
           <ChartWrapper
             ref={chartWrapperRef}
             top={xAxisHeight}
