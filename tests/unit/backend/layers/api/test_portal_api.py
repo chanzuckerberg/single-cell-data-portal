@@ -1709,7 +1709,7 @@ class TestDataset(BaseAPIPortalTest):
                 # append the dataset_id to the list of dataset ids
                 dataset_ids.append(dataset["dataset_id"])
 
-        self.assertEqual(len(dataset_ids), 6)
+        self.assertEqual(len(dataset_ids), 8)
 
         dataset_ids = list(dataset_ids)
         print("dataset_ids: ", dataset_ids)
@@ -1808,7 +1808,7 @@ class TestDataset(BaseAPIPortalTest):
 
         modified_metadata = copy.deepcopy(self.sample_dataset_metadata)
         modified_metadata.development_stage = [OntologyTermId("Test", "HsapDv:0000008")]
-        modified_metadata.tissue = [TissueOntologyTermId("Test", "UBERON:0000995", "organoid")]
+        modified_metadata.tissue = [TissueOntologyTermId("Test", "UBERON:0000966", "organoid")]
         modified_metadata.cell_type = [OntologyTermId("Test", "CL:0000738")]
 
         dataset = self.generate_dataset(metadata=modified_metadata, publish=True)
@@ -1840,7 +1840,7 @@ class TestDataset(BaseAPIPortalTest):
             # TODO update with fix for #6192.
             self.assertCountEqual(
                 actual_dataset["tissue_ancestors"],
-                ["UBERON:0000995 (organoid)"],
+                ["UBERON:0000966 (organoid)"],
             )
 
             self.assertEqual(actual_dataset["cell_type"], convert_ontology(modified_metadata.cell_type))

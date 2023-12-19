@@ -1,5 +1,4 @@
 import {
-  Button,
   fontBodyS,
   fontCapsXxxs,
   fontHeaderL,
@@ -10,7 +9,6 @@ import styled from "@emotion/styled";
 import { RadioGroup } from "@mui/material";
 import {
   fontWeightBold,
-  fontWeightMedium,
   fontWeightRegular,
   fontWeightSemibold,
   gray400,
@@ -83,27 +81,19 @@ export const ProjectContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  margin-top: 20px;
+  margin-top: 40px;
 `;
-export const ProjectButtons = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: ${spacesDefault}px;
-`;
+
 export const ProjectDetails = styled.div`
   display: flex;
   flex-direction: column;
+  max-width: 720px;
 `;
 export const DetailsContainer = styled.div`
   display: flex;
   flex-direction: row;
   gap: ${spacesXl}px;
   margin-top: ${spacesL}px;
-`;
-
-export const StyledButton = styled(Button)`
-  font-weight: ${fontWeightMedium};
-  min-width: 80px;
 `;
 
 export const ItemContainer = styled.div`
@@ -122,5 +112,5 @@ export const ItemLabel = styled.div`
 `;
 
 export const StyledRadioGroup = styled(RadioGroup)`
-  padding: 8px;
+  padding-left: 8px;
 `;

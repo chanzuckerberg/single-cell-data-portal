@@ -1,11 +1,13 @@
 import { useQuery } from "react-query";
 import { ENTITIES } from "./entities";
 import { apiTemplateToUrl } from "../utils/apiTemplateToUrl";
-import { CENSUS_SPOTLIGHT_DATA_URL } from "src/configs/configs";
+import { CENSUS_MODELS_DATA_URL } from "src/configs/configs";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { API } from "../API";
 
 export interface Project {
+  id: string;
+  tier: "hosted";
   census_version: string;
   experiment_name: string;
   measurement_name: string;
@@ -39,7 +41,7 @@ export interface ProjectResponse {
 
 async function fetchProjects(): Promise<ProjectResponse | undefined> {
   const response = await fetch(
-    CENSUS_SPOTLIGHT_DATA_URL + API.CENSUS_SPOTLIGHT_MANIFEST,
+    CENSUS_MODELS_DATA_URL + API.CENSUS_MODELS_MANIFEST,
     {
       ...DEFAULT_FETCH_OPTIONS,
       ...JSON_BODY_FETCH_OPTIONS,
@@ -51,31 +53,35 @@ async function fetchProjects(): Promise<ProjectResponse | undefined> {
     if (!response.ok) throw result;
 
     const data = result as ProjectResponse;
-    Object.entries(data).forEach(
-      async ([id, project]: [
-        keyof ProjectResponse,
-        ProjectResponse[keyof ProjectResponse],
-      ]) => {
-        if (!project.DOI) return;
 
-        // include a mailto: query param to insure reliable service
-        const url = apiTemplateToUrl(
-          "https://api.crossref.org/works/{DOI}?mailto=cellxgene@cziscience.com",
-          {
-            DOI: encodeURIComponent(project.DOI),
-          }
-        );
+    await Promise.all(
+      Object.entries(data).map(
+        async ([id, project]: [
+          keyof ProjectResponse,
+          ProjectResponse[keyof ProjectResponse],
+        ]) => {
+          if (!project.DOI) return;
 
-        const response = await fetch(url);
+          // include a mailto: query param to insure reliable service
+          const url = apiTemplateToUrl(
+            "https://api.crossref.org/works/{DOI}?mailto=cellxgene@cziscience.com",
+            {
+              DOI: encodeURIComponent(project.DOI),
+            }
+          );
 
-        const result = await response.json();
-        if (!response.ok) throw result;
+          const response = await fetch(url);
 
-        const publication_info = parseCrossRefResponse(result);
+          const result = await response.json();
+          if (!response.ok) throw result;
 
-        data[id].publication_info = publication_info;
-        data[id].publication_link = result.URL;
-      }
+          const publication_info = parseCrossRefResponse(result);
+
+          data[id].publication_info = publication_info;
+          data[id].publication_link = result.message.URL;
+          data[id].tier = "hosted";
+        }
+      )
     );
     return data;
   } catch (error) {

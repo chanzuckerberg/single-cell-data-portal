@@ -4,7 +4,7 @@ import uuid
 from copy import deepcopy
 from datetime import datetime
 from typing import List, Tuple
-from unittest.mock import Mock
+from unittest.mock import ANY, Mock, call
 from uuid import uuid4
 
 from backend.common.corpora_config import CorporaConfig
@@ -35,6 +35,7 @@ from backend.layers.common.entities import (
     CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
+    DatasetArtifactMetadataUpdate,
     DatasetArtifactType,
     DatasetId,
     DatasetMetadata,
@@ -48,6 +49,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
+from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
 from backend.layers.thirdparty.crossref_provider import (
     CrossrefDOINotFoundException,
     CrossrefException,
@@ -88,7 +90,15 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         # Mock CorporaConfig
         # TODO: deduplicate with base_api
         self.mock_config = CorporaConfig()
-        self.mock_config.set({"upload_max_file_size_gb": 30})
+        self.mock_config.set(
+            {
+                "upload_max_file_size_gb": 30,
+                "schema_4_feature_flag": "True",
+                "citation_update_feature_flag": "True",
+                "dataset_assets_base_url": "https://dataset_assets_domain",
+                "collections_base_url": "https://collections_domain",
+            }
+        )
 
         # TODO: also deduplicate with base test
         from backend.layers.common import validation
@@ -102,6 +112,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
         # By default these do nothing. They can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()
+        self.batch_job_provider = BatchJobProviderInterface()
         self.step_function_provider = StepFunctionProviderInterface()
         self.step_function_provider.start_step_function = Mock()
         self.s3_provider = MockS3Provider()
@@ -111,6 +122,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
         self.business_logic = BusinessLogic(
             database_provider=self.database_provider,
+            batch_job_provider=self.batch_job_provider,
             crossref_provider=self.crossref_provider,
             step_function_provider=self.step_function_provider,
             s3_provider=self.s3_provider,
@@ -675,12 +687,63 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
 
         expected_updated_publisher_metadata = {"authors": ["New Test Author"]}
         self.crossref_provider.fetch_metadata = Mock(return_value=expected_updated_publisher_metadata)
+        self.batch_job_provider.start_metadata_update_batch_job = Mock()
 
         self.business_logic.update_collection_version(version.version_id, body)
 
         self.crossref_provider.fetch_metadata.assert_called_once()
+        self.batch_job_provider.start_metadata_update_batch_job.assert_not_called()  # no datasets to update
         updated_version = self.database_provider.get_collection_version(version.version_id)
         self.assertEqual(updated_version.publisher_metadata, expected_updated_publisher_metadata)
+
+    def test_update_collection_change_doi__trigger_dataset_artifact_updates(self):
+        """
+        A collection updated with a new DOI and containing datasets should trigger artifact updates to update citation
+        for each dataset
+        """
+        _, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=2)
+
+        body = CollectionMetadataUpdate(
+            name=None,
+            description=None,
+            contact_name=None,
+            contact_email=None,
+            links=[Link("new test doi", "DOI", "http://new.test.doi")],
+            consortia=None,
+        )
+        self.batch_job_provider.start_metadata_update_batch_job = Mock()
+        self.business_logic.generate_dataset_citation = Mock(return_value="test citation")
+        self.business_logic.update_collection_version(revision.version_id, body)
+
+        assert self.batch_job_provider.start_metadata_update_batch_job.call_count == 2
+        self.batch_job_provider.start_metadata_update_batch_job.assert_has_calls(
+            [
+                call(revision.datasets[0].version_id, ANY, DatasetArtifactMetadataUpdate(citation="test citation")),
+                call(revision.datasets[1].version_id, ANY, DatasetArtifactMetadataUpdate(citation="test citation")),
+            ]
+        )
+
+    def test_update_published_collection_fail__dataset_status_pending(self):
+        """
+        Updating a collection version with a DOI change IF there is a dataset in non-finalized status should fail
+        """
+        _, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=2)
+        self.business_logic.create_empty_dataset_version_for_current_dataset(
+            revision.version_id,
+            revision.datasets[0].version_id,
+        )
+
+        body = CollectionMetadataUpdate(
+            name=None,
+            description=None,
+            contact_name=None,
+            contact_email=None,
+            links=[Link("new test doi", "DOI", "http://new.test.doi")],
+            consortia=None,
+        )
+
+        with self.assertRaises(CollectionUpdateException):
+            self.business_logic.update_collection_version(revision.version_id, body)
 
 
 class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
@@ -691,7 +754,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         """
         version = self.initialize_empty_unpublished_collection()
 
-        new_dataset_version_id, _ = self.business_logic.create_empty_dataset(version.version_id)
+        new_dataset_version_id = self.business_logic.create_empty_dataset(version.version_id).version_id
 
         new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
         self.assertIsNotNone(new_dataset_version)
@@ -699,6 +762,29 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.assertEqual(new_dataset_version.collection_id, version.collection_id)
         self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.NA)
         self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
+
+    def test_create_empty_dataset_version_for_current_dataset(self):
+        collection, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        new_dataset_version_id = self.business_logic.create_empty_dataset_version_for_current_dataset(
+            revision.version_id, revision.datasets[0].version_id
+        ).version_id
+        revision_after_update = self.database_provider.get_collection_version(revision.version_id)
+        self.assertEqual(len(revision_after_update.datasets), 1)
+        self.assertEqual(revision_after_update.datasets[0], new_dataset_version_id)
+
+        new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
+        self.assertIsNotNone(new_dataset_version)
+        self.assertIsNone(new_dataset_version.metadata)
+        self.assertEqual(new_dataset_version.collection_id, collection.collection_id)
+        self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
+        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
+
+    def test_create_empty_dataset_version_for_current_dataset__error_if_published(self):
+        collection, _ = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        with self.assertRaises(CollectionIsPublishedException):
+            self.business_logic.create_empty_dataset_version_for_current_dataset(
+                collection.version_id, collection.datasets[0].version_id
+            )
 
     def test_add_dataset_to_unpublished_collection_ok(self):
         """
@@ -830,7 +916,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         without creating a new dataset version
         """
         version = self.initialize_empty_unpublished_collection()
-        dataset_version_to_replace_id, _ = self.business_logic.create_empty_dataset(version.version_id)
+        dataset_version_to_replace_id = self.business_logic.create_empty_dataset(version.version_id).version_id
         dataset_version_to_replace = self.business_logic.get_dataset_version(dataset_version_to_replace_id)
         url = "http://test/dataset.url"
 
@@ -909,7 +995,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
 
     def test_delete_new_dataset_in_revision__ok(self):
         collection, revision = self.initialize_collection_with_an_unpublished_revision()
-        new_dataset_version_id, _ = self.business_logic.create_empty_dataset(revision.version_id)
+        new_dataset_version_id = self.business_logic.create_empty_dataset(revision.version_id).version_id
         revision = self.business_logic.get_collection_version(revision.version_id)
         self.complete_dataset_processing_with_success(new_dataset_version_id)
         # Dataset is added
@@ -2164,6 +2250,77 @@ class TestConcurrentUpdates(BaseBusinessLogicTestCase):
         self.assertIsNotNone(dv)
         if dv is not None:
             self.assertEqual(len(dv.artifacts), 13)
+
+
+class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
+    """
+    Test methods related to updating metadata fields on dataset artifacts
+    """
+
+    def test_generate_dataset_citation(self):
+        collection = self.initialize_unpublished_collection(num_datasets=1)
+        dataset_version_id = collection.datasets[0].version_id
+        doi = "https://doi.org/12.2345/science.abc1234"
+        expected = (
+            f"Publication: {doi} Dataset Version: {self.mock_config.dataset_assets_base_url}/{dataset_version_id}.h5ad "
+            "curated and distributed by CZ CELLxGENE Discover in Collection: "
+            f"{self.mock_config.collections_base_url}/collections/{collection.collection_id}"
+        )
+
+        self.assertEqual(
+            expected,
+            self.business_logic.generate_dataset_citation(collection.collection_id, dataset_version_id, doi),
+        )
+
+    def test_generate_dataset_citation__no_doi(self):
+        collection = self.initialize_unpublished_collection(num_datasets=1)
+        dataset_version_id = collection.datasets[0].version_id
+        expected = (
+            f"Dataset Version: {self.mock_config.dataset_assets_base_url}/{dataset_version_id}.h5ad "
+            "curated and distributed by CZ CELLxGENE Discover in Collection: "
+            f"{self.mock_config.collections_base_url}/collections/{collection.collection_id}"
+        )
+
+        self.assertEqual(
+            expected, self.business_logic.generate_dataset_citation(collection.collection_id, dataset_version_id)
+        )
+
+    def test_trigger_dataset_artifact_update(self):
+        metadata_update = DatasetArtifactMetadataUpdate(schema_version="4.0.0")
+
+        _, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        current_dataset_version_id = revision.datasets[0].version_id
+        self.batch_job_provider.start_metadata_update_batch_job = Mock()
+        self.business_logic.trigger_dataset_artifact_update(revision, metadata_update, current_dataset_version_id)
+        self.batch_job_provider.start_metadata_update_batch_job.assert_called_once()
+
+    def test_trigger_dataset_artifact_update__with_new_dataset_version_id(self):
+        metadata_update = DatasetArtifactMetadataUpdate(schema_version="4.0.0")
+
+        _, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        current_dataset_version_id = revision.datasets[0].version_id
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            revision.version_id,
+            None,
+            None,
+            current_dataset_version_id=current_dataset_version_id,
+            start_step_function=False,
+        )
+
+        self.batch_job_provider.start_metadata_update_batch_job = Mock()
+        self.business_logic.trigger_dataset_artifact_update(
+            revision, metadata_update, current_dataset_version_id, new_dataset_version_id
+        )
+        self.batch_job_provider.start_metadata_update_batch_job.assert_called_once_with(
+            current_dataset_version_id, new_dataset_version_id, metadata_update
+        )
+
+    def test_trigger_dataset_artifact_update__error_if_published(self):
+        metadata_update = DatasetArtifactMetadataUpdate(schema_version="4.0.0")
+        collection, _ = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        current_dataset_version_id = collection.datasets[0].version_id
+        with self.assertRaises(CollectionIsPublishedException):
+            self.business_logic.trigger_dataset_artifact_update(collection, metadata_update, current_dataset_version_id)
 
 
 if __name__ == "__main__":

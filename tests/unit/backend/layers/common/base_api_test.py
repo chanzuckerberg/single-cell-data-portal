@@ -77,6 +77,7 @@ class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
             "submission_bucket": "cellxgene-dataset-submissions-test",
             "upload_max_file_size_gb": 1,
             "dataset_assets_base_url": "http://domain",
+            "citation_update_feature_flag": "True",
             "schema_4_feature_flag": "True",
         }
 
