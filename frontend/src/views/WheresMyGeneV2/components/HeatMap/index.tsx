@@ -136,7 +136,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
                 >
                   <LoadingWrapper left={sortedGeneNames.length}>
                     <LoadingSpinner />
-                    <LoadingLabel hidden={sortedGeneNames.length < 13}>
+                    <LoadingLabel visible={sortedGeneNames.length > 12}>
                       Loading Data...
                     </LoadingLabel>
                   </LoadingWrapper>
