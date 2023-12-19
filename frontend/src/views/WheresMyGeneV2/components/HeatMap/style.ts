@@ -194,7 +194,7 @@ export const LoadingWrapper = styled.div<LoadingProps>`
   /**  
   * This is a multiplier to keep the loader centered 
   * under any number of genes selected, as well as hide 
-  * the label when there are under 13 genes selcted
+  * the label when there are under x genes selected
   */
   left: ${(props) =>
     ((props.geneCount +
