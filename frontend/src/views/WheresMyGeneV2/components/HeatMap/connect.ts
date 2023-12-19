@@ -332,11 +332,14 @@ export function useConnect({
     dispatch,
   });
 
+  const geneCount = sortedGeneNames.length;
+
   return {
     allTissueCellTypes,
     chartWrapperRef,
     expandedTissueIds,
     filteredCellTypes,
+    geneCount,
     generateMarkerGenes,
     handleCellTypeDelete,
     handleExpandCollapse,
