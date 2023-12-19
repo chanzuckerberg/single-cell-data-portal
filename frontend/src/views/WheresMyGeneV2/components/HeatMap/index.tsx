@@ -5,7 +5,7 @@ import YAxisChart from "./components/YAxisChart";
 import { CellCountLabel } from "src/views/WheresMyGeneV2/components/HeatMap/components/XAxisChart/style";
 import {
   HEATMAP_CONTAINER_ID,
-  LOADER_HIDE_LABEL_THRESHOLD,
+  LOADER_WITH_LABEL_THRESHOLD,
   LOADER_LABEL_TEXT,
   MARGIN_BETWEEN_HEATMAPS,
 } from "src/views/WheresMyGeneV2/common/constants";
@@ -139,7 +139,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
                 >
                   <LoadingSpinner />
                   <LoadingLabel
-                    visible={geneCount > LOADER_HIDE_LABEL_THRESHOLD}
+                    visible={geneCount > LOADER_WITH_LABEL_THRESHOLD}
                   >
                     {LOADER_LABEL_TEXT}
                   </LoadingLabel>
