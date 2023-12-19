@@ -133,7 +133,10 @@ export default memo(function HeatMap(props: Props): JSX.Element {
               visible={isAnyTissueLoading(isLoading)}
             >
               <LoadingContainer height={totalElementsCount} width={geneCount}>
-                <LoadingWrapper geneCount={geneCount}>
+                <LoadingWrapper
+                  geneCount={geneCount}
+                  sidebarWidth={sidebarWidth}
+                >
                   <LoadingSpinner />
                   <LoadingLabel
                     visible={geneCount > LOADER_HIDE_LABEL_THRESHOLD}
