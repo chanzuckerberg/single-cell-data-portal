@@ -11,6 +11,7 @@ import sharp from "sharp";
 import { goToWMG } from "./wmgUtils";
 import { CELL_TYPE_ROW_CLASS_NAME } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 import { tryUntil } from "tests/utils/helpers";
+import { getCurrentDate } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport/utils";
 
 const EXPECTED_HEADER = [
   "Tissue",
@@ -118,13 +119,11 @@ export async function downloadAndVerifyFiles(
   fileTypes
     .filter((ext) => ext !== "csv") // Do not include csv since it downloads as one file for all tissues
     .forEach((extension: string) => {
-      tissues.forEach((tissue) => {
-        expect(
-          fs.existsSync(
-            `${downloadPath}/${subDirectory}/${tissue}.${extension}`
-          )
-        ).toBeTruthy();
-      });
+      expect(
+        fs.existsSync(
+          `${downloadPath}/${subDirectory}/CELLxGENE_gene_expression_${getCurrentDate()}.${extension}`
+        )
+      ).toBeTruthy();
     });
 }
 
@@ -388,7 +387,7 @@ export async function captureTissueSnapshot(
   await page.locator(geneCanvasId).nth(0).screenshot({ path: geneSnapshot });
 }
 
-export async function verifySvgDownload(
+export async function verifyImageDownload(
   page: Page,
   sharedLink: string,
   tissues: string[],
@@ -402,7 +401,8 @@ export async function verifySvgDownload(
     // const geneSnapshot = `${downloadPath}/${folder}/gene_${i}.png`;
 
     await goToWMG(page, sharedLink);
-    await downloadAndVerifyFiles(page, ["svg"], tissues, folder);
+    await downloadAndVerifyFiles(page, ["svg", "png"], tissues, folder);
+
     // await captureTissueSnapshot(page, downloadPath, folder, tissues, i);
     // await compareSvg(
     //   page,
@@ -412,6 +412,7 @@ export async function verifySvgDownload(
     //   folder,
     //   tissues[i]
     // );
+
     await deleteDownloadedFiles(`./tests/downloads/${folder}`);
   }
 }
@@ -478,18 +479,4 @@ export async function downloadGeneFile(
     const zip = new AdmZip(fileName);
     zip.extractAllTo(dirPath);
   }
-}
-
-/**
- * (ashin-czi): Gets the date in mmddyy format
- * Copied from `frontend/src/views/WheresMyGene/components/GeneSearchBar/components/SaveExport/csvUtils.ts`
- * since Playwright doesn't like importing from that file due to its dependency on `d3`
- */
-export function getCurrentDate() {
-  const today = new Date();
-  const month = (today.getMonth() + 1).toString().padStart(2, "0");
-  const day = today.getDate().toString().padStart(2, "0");
-  const year = today.getFullYear().toString().slice(-2);
-
-  return month + day + year;
 }
