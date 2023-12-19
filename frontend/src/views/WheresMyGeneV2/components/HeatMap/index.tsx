@@ -102,7 +102,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
           <CellCountLabel>Cell Count</CellCountLabel>
         </TopLeftCornerMask>
         <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
-          {isLoadingAPI || (isAnyTissueLoading(isLoading) && <Loader />)}
+          {/* {isLoadingAPI || (isAnyTissueLoading(isLoading) && <Loader />)} */}
           <XAxisWrapper id="x-axis-wrapper">
             <XAxisMask data-testid="x-axis-mask" height={xAxisHeight} />
             <XAxisChart
@@ -127,10 +127,12 @@ export default memo(function HeatMap(props: Props): JSX.Element {
               }
             )}
           </YAxisWrapper>
-          {isAnyTissueLoading(isLoading) && (
+          {(isLoadingAPI || isAnyTissueLoading(isLoading)) && (
             <ChartWrapper
               top={xAxisHeight}
-              visible={isAnyTissueLoading(isLoading)}
+              visible={
+                (isLoadingAPI || isAnyTissueLoading(isLoading)) && geneCount > 0
+              }
             >
               <LoadingContainer height={totalElementsCount} width={geneCount}>
                 <LoadingWrapper
