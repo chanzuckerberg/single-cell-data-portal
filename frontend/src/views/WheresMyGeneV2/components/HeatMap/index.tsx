@@ -130,7 +130,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
           {isAnyTissueLoading(isLoading) && (
             <ChartWrapper
               top={xAxisHeight}
-              visible={isLoadingAPI || isAnyTissueLoading(isLoading)}
+              visible={isAnyTissueLoading(isLoading)}
             >
               <LoadingContainer height={totalElementsCount} width={geneCount}>
                 <LoadingWrapper geneCount={geneCount}>
