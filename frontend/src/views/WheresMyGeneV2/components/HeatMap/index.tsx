@@ -2,24 +2,13 @@ import { memo } from "react";
 
 import { Tissue } from "src/views/WheresMyGeneV2/common/types";
 import YAxisChart from "./components/YAxisChart";
-
-import {
-  CellTypeTagContainer,
-  ChartWrapper,
-  Container,
-  ContainerWrapper,
-  SkeletonContainer,
-  SkeletonWrapper,
-  StyledTag,
-  XAxisMask,
-  YAxisWrapper,
-} from "src/views/WheresMyGeneV2/components/HeatMap/style";
 import { CellCountLabel } from "src/views/WheresMyGeneV2/components/HeatMap/components/XAxisChart/style";
 import {
   HEATMAP_CONTAINER_ID,
+  LOADER_WITH_LABEL_THRESHOLD,
+  LOADER_LABEL_TEXT,
   MARGIN_BETWEEN_HEATMAPS,
 } from "src/views/WheresMyGeneV2/common/constants";
-import Loader from "src/views/WheresMyGeneV2/components/Loader";
 import XAxisChart from "src/views/WheresMyGeneV2/components/HeatMap/components/XAxisChart";
 import Chart from "src/views/WheresMyGeneV2/components/HeatMap/components/Chart";
 import { hyphenize } from "src/views/WheresMyGeneV2/components/HeatMap/utils";
@@ -27,10 +16,20 @@ import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/Sa
 import { Autocomplete } from "@czi-sds/components";
 import {
   CellTypeFilterContainer,
+  CellTypeTagContainer,
+  ChartWrapper,
+  Container,
+  ContainerWrapper,
   Divider,
+  LoadingContainer,
+  LoadingLabel,
+  LoadingSpinner,
+  LoadingWrapper,
+  StyledTag,
   TopLeftCornerMask,
+  XAxisMask,
   XAxisWrapper,
-  StyledSkeleton,
+  YAxisWrapper,
 } from "./style";
 
 import { useConnect } from "src/views/WheresMyGeneV2/components/HeatMap/connect";
@@ -55,6 +54,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
     chartWrapperRef,
     expandedTissueIds,
     filteredCellTypes,
+    geneCount,
     generateMarkerGenes,
     handleCellTypeDelete,
     handleExpandCollapse,
@@ -101,7 +101,6 @@ export default memo(function HeatMap(props: Props): JSX.Element {
           <CellCountLabel>Cell Count</CellCountLabel>
         </TopLeftCornerMask>
         <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
-          {isLoadingAPI || (isAnyTissueLoading(isLoading) && <Loader />)}
           <XAxisWrapper id="x-axis-wrapper">
             <XAxisMask data-testid="x-axis-mask" height={xAxisHeight} />
             <XAxisChart
@@ -126,33 +125,32 @@ export default memo(function HeatMap(props: Props): JSX.Element {
               }
             )}
           </YAxisWrapper>
-          {isLoadingAPI ||
-            (isAnyTissueLoading(isLoading) && (
-              <ChartWrapper
-                top={xAxisHeight}
-                hidden={!isAnyTissueLoading(isLoading)}
-              >
-                <SkeletonContainer>
-                  {[...Array(totalElementsCount)].map((_, index) => (
-                    <SkeletonWrapper key={index} data-testid="skeleton-wrapper">
-                      {[...Array(sortedGeneNames.length)].map((_, index) => (
-                        <StyledSkeleton
-                          variant="circular"
-                          width={19}
-                          height={19}
-                          key={index}
-                          data-testid="skeleton-circle"
-                        />
-                      ))}
-                    </SkeletonWrapper>
-                  ))}
-                </SkeletonContainer>
-              </ChartWrapper>
-            ))}
+          {(isLoadingAPI || isAnyTissueLoading(isLoading)) && (
+            <ChartWrapper
+              top={xAxisHeight}
+              visible={
+                (isLoadingAPI || isAnyTissueLoading(isLoading)) && geneCount > 0
+              }
+            >
+              <LoadingContainer height={totalElementsCount} width={geneCount}>
+                <LoadingWrapper
+                  geneCount={geneCount}
+                  sidebarWidth={sidebarWidth}
+                >
+                  <LoadingSpinner />
+                  <LoadingLabel
+                    visible={geneCount > LOADER_WITH_LABEL_THRESHOLD}
+                  >
+                    {LOADER_LABEL_TEXT}
+                  </LoadingLabel>
+                </LoadingWrapper>
+              </LoadingContainer>
+            </ChartWrapper>
+          )}
           <ChartWrapper
             ref={chartWrapperRef}
             top={xAxisHeight}
-            hidden={isAnyTissueLoading(isLoading)}
+            visible={!isAnyTissueLoading(isLoading) && !isLoadingAPI}
           >
             {allTissueCellTypes.map(({ tissueName, tissueCellTypes }) => {
               const selectedGeneData =
