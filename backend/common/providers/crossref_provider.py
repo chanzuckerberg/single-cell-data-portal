@@ -1,3 +1,4 @@
+import html
 import logging
 from datetime import datetime
 from urllib.parse import urlparse
@@ -101,13 +102,15 @@ class CrossrefProvider:
             # Journal
             try:
                 if "short-container-title" in message and message["short-container-title"]:
-                    journal = message["short-container-title"][0]
+                    raw_journal = message["short-container-title"][0]
                 elif "container-title" in message and message["container-title"]:
-                    journal = message["container-title"][0]
+                    raw_journal = message["container-title"][0]
                 elif "institution" in message:
-                    journal = message["institution"][0]["name"]
+                    raw_journal = message["institution"][0]["name"]
             except Exception:
                 raise CrossrefParseException("Journal node missing") from None
+
+            journal = html.unescape(raw_journal)
 
             # Authors
             # Note: make sure that the order is preserved, as it is a relevant information
@@ -138,7 +141,6 @@ class CrossrefProvider:
             raise CrossrefParseException("Cannot parse metadata from Crossref") from e
 
     def fetch_preprint_published_doi(self, doi):
-
         res = self._fetch_crossref_payload(doi)
         message = res.json()["message"]
         is_preprint = message.get("subtype") == "preprint"
