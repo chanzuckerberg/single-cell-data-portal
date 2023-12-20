@@ -64,14 +64,14 @@ class DatabaseProvider(DatabaseProviderInterface):
         from sqlalchemy.schema import DropSchema
 
         with contextlib.suppress(ProgrammingError):
-            self._engine.execute(DropSchema(self._schema_name, cascade=True))
+            self._engine.Connection.execute(DropSchema(self._schema_name, cascade=True))
 
     def _create_schema(self):
         from sqlalchemy.schema import CreateSchema
 
         from backend.layers.persistence.orm import metadata
 
-        self._engine.execute(CreateSchema(self._schema_name))
+        self._engine.Connection.execute(CreateSchema(self._schema_name))
         metadata.schema = self._schema_name
         metadata.create_all(bind=self._engine)
 
