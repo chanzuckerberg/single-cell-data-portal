@@ -93,12 +93,20 @@ LABEL "com.datadoghq.ad.init_configs"='[{}]'
 LABEL "com.datadoghq.ad.instances"='[{ "proc_name": "backend.api_server.app:app" }]'
 EXPOSE 5000
 
+WORKDIR /single-cell-data-portal
 COPY tests /single-cell-data-portal/tests
 COPY scripts /single-cell-data-portal/scripts
 COPY backend /single-cell-data-portal/backend
 
-WORKDIR /single-cell-data-portal
+################################
+# LOCAL-DEV
+# setup for local development
+################################
+FROM builder-base as local-dev
+
+# Use locally-generated cert for HTTPS in containerized local environment; deployed envs use ELB
+ENV HTTPS_CERT_AND_KEY="--certfile /tmp/pkcs12/server.crt --keyfile /tmp/pkcs12/server.key"
+
 # Note: Using just 1 worker for dev/test env. Multiple workers are used in deployment envs, as defined in Terraform code.
 # Note: keep-alive timeout should always be greater than the idle timeout of the load balancer (60 seconds)
-ENTRYPOINT ["gunicorn", "${HTTPS_CERT_AND_KEY}", "--worker-class", "gevent", -"-workers", "1", "--bind", "0.0.0.0:5000",
-"backend.api_server.app:app"," --max-requests", "10000", "--timeout", "180", "--keep-alive", "61", "--log-level", "info"]
+ENTRYPOINT ["gunicorn", "${HTTPS_CERT_AND_KEY}", "--worker-class", "gevent", -"-workers", "1", "--bind", "0.0.0.0:5000", "backend.api_server.app:app"," --max-requests", "10000", "--timeout", "180", "--keep-alive", "61", "--log-level", "info"]
