@@ -304,12 +304,11 @@ services:
         - HAPPY_BRANCH=$HAPPY_BRANCH
         - HAPPY_TAG
     restart: always
-    command: ["./container_init.sh"]
     depends_on:
       - localstack
       - database
     ports:
-      - "5000:5000"
+      - "5001:5000"
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
