@@ -6,8 +6,7 @@
 !/requirements-backend.txt
 !/requirements-processing.txt
 !/requirements-submissions.txt
-!/requirements-upload-failures.txt
-!/requirements-upload-success.txt
+!/python_dependencies/**
 !/requirements-wmg-pipeline.txt
 !/requirements-cellguide-pipeline.txt
 !/backend/**
