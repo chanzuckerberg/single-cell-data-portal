@@ -77,6 +77,11 @@ COPY python_dependencies/backend/ ./
 RUN --mount=type=cache,target=/root/.cache \
     poetry install --with=dev
 
+
+################################
+# BUILDER-BASE
+# Used to build deps + create our virtual environment
+################################
 # Install utilities to /single-cell-data-portal so we can run db migrations.
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
@@ -98,15 +103,10 @@ COPY tests /single-cell-data-portal/tests
 COPY scripts /single-cell-data-portal/scripts
 COPY backend /single-cell-data-portal/backend
 
-################################
-# LOCAL-DEV
-# setup for local development
-################################
-FROM builder-base as local-dev
-
-# Use locally-generated cert for HTTPS in containerized local environment; deployed envs use ELB
-ENV HTTPS_CERT_AND_KEY="--certfile /tmp/pkcs12/server.crt --keyfile /tmp/pkcs12/server.key"
-
 # Note: Using just 1 worker for dev/test env. Multiple workers are used in deployment envs, as defined in Terraform code.
-# Note: keep-alive timeout should always be greater than the idle timeout of the load balancer (60 seconds)
-ENTRYPOINT ["gunicorn", "${HTTPS_CERT_AND_KEY}", "--worker-class", "gevent", -"-workers", "1", "--bind", "0.0.0.0:5000", "backend.api_server.app:app"," --max-requests", "10000", "--timeout", "180", "--keep-alive", "61", "--log-level", "info"]
+ENTRYPOINT ["gunicorn", "--worker-class", "gevent", "--workers", "1", "--bind", "0.0.0.0:5000", \
+    		# Note: keep-alive timeout should always be greater than the idle timeout of the load balancer (60 seconds)
+    		"--max-requests", "10000", "--timeout", "180", "--keep-alive", "61", "--log-level",  "info", \
+    		# Use locally-generated cert for HTTPS in containerized local environment; deployed envs use ELB
+    		"--certfile", "/tmp/pkcs12/server.crt", "--keyfile", "/tmp/pkcs12/server.key", \
+    		"backend.api_server.app:app"]
