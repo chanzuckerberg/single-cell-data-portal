@@ -120,11 +120,11 @@ local-sync: local-rebuild local-init  ## Re-sync the local-environment state aft
 
 .PHONY: local-start
 local-start: .env.ecr ## Start a local dev environment that's been stopped.
-	docker-compose $(COMPOSE_OPTS) up -d
+	docker-compose $(COMPOSE_OPTS) up -d backend frontend database oidc localstack
 
 .PHONY: local-stop
 local-stop: ## Stop the local dev environment.
-	docker-compose stop
+	docker-compose stop frontend backend frontend database oidc localstack
 
 .PHONY: local-clean
 local-clean: ## Remove everything related to the local dev environment (including db data!)
