@@ -41,9 +41,15 @@ def tiledb_query_params():
 def open_local_disk_tiledb_array():
     return tiledb.open('staging-snapshot/expression_summary')
 
+def open_mount_s3_tiledb_array():
+    return tiledb.open(
+        'wmg-cube-mount-s3/snapshots/v3/170283621/expression_summary',
+        config=tiledb.Config(
+                {"vfs.s3.region": "us-west-2", 'py.init_buffer_bytes': 128*1024**2}))
+
 def open_s3_tiledb_array():
     return tiledb.open(
-            's3://cellxgene-wmg-staging/snapshots/v3/1701021778/expression_summary',
+            's3://cellxgene-wmg-staging/snapshots/v3/1702836210/expression_summary',
             config=tiledb.Config(
                 {"vfs.s3.region": "us-west-2", 'py.init_buffer_bytes': 128*1024**2}))
 
@@ -89,8 +95,8 @@ if __name__ == "__main__":
     parser.add_argument(
         '--data-location',
         required=True,
-        choices=['local', 's3'],
-        help='Specify data location (local or s3)')
+        choices=['local', 's3', 'mount-s3'],
+        help='Specify data location (local or s3 or mount-s3)')
     
     parser.add_argument(
         '--profile-type',
@@ -104,6 +110,8 @@ if __name__ == "__main__":
         tiledb_array = open_local_disk_tiledb_array()
     elif args.data_location == "s3":
         tiledb_array = open_s3_tiledb_array()
+    elif args.data_location == 'mount-s3':
+        tiledb_array = open_mount_s3_tiledb_array()
     
     if args.profile_type == 'simple-wallclock':
         profile_query_time(tiledb_array)
