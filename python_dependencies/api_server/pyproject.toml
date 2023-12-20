@@ -39,6 +39,9 @@ sqlalchemy = ">=1.4.0"
 tenacity = "^8.2.3"
 tiledb = "0.22.3"
 werkzeug = "2.2.3"
+# TODO: Determine if cmake is really needed for ddtrace
+# see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
+cmake = "^3.28.1"
 
 [tool.poetry.group.dev.dependencies]
 allure-pytest = "<3"

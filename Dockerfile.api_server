@@ -1,31 +1,77 @@
-FROM ubuntu:22.04
+# syntax=docker/dockerfile:1
+# Keep this syntax directive! It's used to enable Docker BuildKit
 
-ENV APP_NAME=corpora-api
-ENV EXPORT_ENV_VARS_TO_LAMBDA="APP_NAME DEPLOYMENT_STAGE"
-ENV LC_ALL=C.UTF-8
-ENV DEBIAN_FRONTEND=noninteractive
-# For lighter weight Docker images
-ENV PIP_NO_CACHE_DIR=1
+# Based on https://gist.github.com/usr-ein/c42d98abca3cb4632ab0c2c6aff8c88a
 
-RUN apt-get update && \
-    apt-get install -y python3 libhdf5-dev python3-h5py gettext moreutils build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests python3-aiohttp llvm jq && \
-    rm -rf /var/lib/apt/lists/*
+ARG BASE_TAG=branch-main
 
-# Don't re-run pip install unless either requirements.txt has changed.
-WORKDIR /single-cell-data-portal
-COPY python_dependencies/api_server/ /single-cell-data-portal
+################################
+# PYTHON-BASE
+# Sets up all our shared environment variables
+################################
+FROM ubuntu:22.04 as python-base
+    # python
+ENV PYTHONUNBUFFERED=1 \
+    # prevents python creating .pyc files
+    PYTHONDONTWRITEBYTECODE=1 \
+    \
+    # pip
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
+    PIP_DEFAULT_TIMEOUT=100 \
+    \
+    # poetry
+    # https://python-poetry.org/docs/configuration/#using-environment-variables
+    POETRY_VERSION=1.7.1 \
+    # make poetry install to this location
+    POETRY_HOME="/opt/poetry" \
+    # make poetry create the virtual environment in the project's root
+    # it gets named `.venv`
+    POETRY_VIRTUALENVS_IN_PROJECT=true \
+    # do not ask any interactive question
+    POETRY_NO_INTERACTION=1 \
+    \
+    # paths
+    # this is where our requirements + virtual environment will live
+    PYSETUP_PATH="/opt/pysetup" \
+    VENV_PATH="/opt/pysetup/.venv"
 
-# TODO: Determine if cmake is really needed for ddtrace
-# see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
-RUN python3 -m pip install cmake
-RUN python3 -m pip install -r requirements.txt -r requirements-dev.txt
-EXPOSE 5000
+ENV APP_NAME=corpora-api \
+	EXPORT_ENV_VARS_TO_LAMBDA="APP_NAME DEPLOYMENT_STAGE" \
+	LC_ALL=C.UTF-8 \
+	DEBIAN_FRONTEND=noninteractive
 
-# Install utilities to /single-cell-data-portal so we can run db migrations.
-ADD tests /single-cell-data-portal/tests
-ADD scripts /single-cell-data-portal/scripts
-ADD backend /single-cell-data-portal/backend
-ADD container_init.sh /single-cell-data-portal/container_init.sh
+# prepend poetry and venv to path
+ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
+
+
+################################
+# BUILDER-BASE
+# Used to build deps + create our virtual environment
+################################
+FROM python-base as builder-base
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+        # deps for installing poetry
+        curl \
+        # deps for building python deps
+        build-essential
+
+# pre-existing
+RUN apt-get install -y python3 libhdf5-dev python3-h5py gettext moreutils build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests python3-aiohttp llvm jq
+
+# install poetry - respects $POETRY_VERSION & $POETRY_HOME
+# The --mount will mount the buildx cache directory to where
+# Poetry and Pip store their cache so that they can re-use it
+RUN --mount=type=cache,target=/root/.cache \
+    curl -sSL https://install.python-poetry.org | python3 -
+
+# copy project requirement files here to ensure they will be cached.
+WORKDIR $PYSETUP_PATH
+COPY python_dependencies/api_server/ ./
+
+# install runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
+RUN --mount=type=cache,target=/root/.cache \
+    poetry install --without=dev
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
@@ -40,5 +86,40 @@ ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 LABEL "com.datadoghq.ad.check_names"='["gunicorn"]'
 LABEL "com.datadoghq.ad.init_configs"='[{}]'
 LABEL "com.datadoghq.ad.instances"='[{ "proc_name": "backend.api_server.app:app" }]'
+EXPOSE 5000
 
+################################
+# DEVELOPMENT
+# Image used during development / testing
+################################
+FROM python-base as development
+ENV DEPLOYMENT_STAGE=dev
+WORKDIR $PYSETUP_PATH
+
+# copy in our built poetry + venv
+COPY --from=builder-base $POETRY_HOME $POETRY_HOME
+COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
+
+# quicker install as runtime deps are already installed
+RUN --mount=type=cache,target=/root/.cache \
+    poetry install --with=dev
+
+# Install utilities to /single-cell-data-portal so we can run db migrations.
+ADD tests /single-cell-data-portal/tests
+ADD scripts /single-cell-data-portal/scripts
+ADD backend /single-cell-data-portal/backend
+ADD container_init.sh /single-cell-data-portal/container_init.sh
+
+
+################################
+# PRODUCTION
+# Final image used for runtime
+################################
+FROM python-base as production
+ENV DEPLOYMENT_STAGE=prod
+COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
+COPY backend /single-cell-data-portal/backend
+COPY container_init.sh /single-cell-data-portal/container_init.sh
+
+WORKDIR /
 ENTRYPOINT ["/single-cell-data-portal/container_init.sh"]
