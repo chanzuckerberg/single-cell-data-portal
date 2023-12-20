@@ -20,7 +20,7 @@ Username: User1 / Password: pwd ([users are defined here](oauth/users.json))
 
 ### Containers managed by the dev environment
 
-The data portal dev environment is a set of containers defined in [docker-compose.yml](docker-compose.yml). The [backend docker image](Dockerfile.backend) and [frontend docker image](frontend/Dockerfile) are built locally. Update any of these files as necessary and run `make local-sync` to sync your dev environment with these configs.
+The data portal dev environment is a set of containers defined in [docker-compose.yml](docker-compose.yml). The [backend docker image](Dockerfile.api_server) and [frontend docker image](frontend/Dockerfile) are built locally. Update any of these files as necessary and run `make local-sync` to sync your dev environment with these configs.
 
 ![Dev Environment Containers](docs/docker_dev.jpg)
 
