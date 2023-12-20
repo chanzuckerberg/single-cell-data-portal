@@ -93,7 +93,6 @@ EXPOSE 5000
 # Image used during development / testing
 ################################
 FROM python-base as development
-ENV DEPLOYMENT_STAGE=dev
 WORKDIR $PYSETUP_PATH
 
 # copy in our built poetry + venv
@@ -116,7 +115,6 @@ ADD container_init.sh /single-cell-data-portal/container_init.sh
 # Final image used for runtime
 ################################
 FROM python-base as production
-ENV DEPLOYMENT_STAGE=prod
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 COPY backend /single-cell-data-portal/backend
 COPY container_init.sh /single-cell-data-portal/container_init.sh

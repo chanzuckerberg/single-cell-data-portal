@@ -82,7 +82,6 @@ ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 # Image used during development / testing
 ################################
 FROM python-base as development
-ENV DEPLOYMENT_STAGE=dev
 WORKDIR $PYSETUP_PATH
 
 # copy in our built poetry + venv
@@ -102,7 +101,6 @@ COPY ./backend /backend/
 # Final image used for runtime
 ################################
 FROM python-base as production
-ENV DEPLOYMENT_STAGE=prod
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 COPY ./backend /backend/
 
