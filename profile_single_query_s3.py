@@ -42,10 +42,7 @@ def open_local_disk_tiledb_array():
     return tiledb.open('staging-snapshot/expression_summary')
 
 def open_mount_s3_tiledb_array():
-    return tiledb.open(
-        'wmg-cube-mount-s3/snapshots/v3/170283621/expression_summary',
-        config=tiledb.Config(
-                {"vfs.s3.region": "us-west-2", 'py.init_buffer_bytes': 128*1024**2}))
+    return tiledb.open('wmg-cube-mount-s3/snapshots/v3/1702836210/expression_summary')
 
 def open_s3_tiledb_array():
     return tiledb.open(
