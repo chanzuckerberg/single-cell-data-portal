@@ -21,6 +21,11 @@ def local_disk_snapshot():
                        expression_summary_cube=tiledb.open('staging-snapshot/expression_summary'),
                        expression_summary_default_cube=tiledb.open('staging-snapshot/expression_summary_default'))
 
+def mount_s3_snapshot():
+    return WmgSnapshot(snapshot_identifier="",
+                       expression_summary_cube=tiledb.open('wmg-cube-mount-s3/snapshots/v3/1702836210/expression_summary'),
+                       expression_summary_default_cube=tiledb.open('wmg-cube-mount-s3/snapshots/v3/1702836210/expression_summary_default'))
+
 def s3_snapshot():
     def tiledb_open_s3_uri(s3_uri):
         # TODO (fix): Is this config correct?
@@ -393,8 +398,8 @@ if __name__ == "__main__":
     parser.add_argument(
         '--data-location',
         required=True,
-        choices=['local', 's3'],
-        help='Specify data location (local or s3)')
+        choices=['local', 's3', 'mount-s3'],
+        help='Specify data location (local or s3 or mount-s3)')
     
     parser.add_argument(
         '--profile-type',
@@ -432,6 +437,8 @@ if __name__ == "__main__":
         snapshot = local_disk_snapshot()
     elif args.data_location == "s3":
         snapshot = s3_snapshot()
+    elif args.data_location == "mount-s3":
+        snapshot = mount_s3_snapshot()
     
     # Profile the function executed by the web-app.
     # This involves constructing the arguments needed to
