@@ -1,31 +1,71 @@
+# syntax=docker/dockerfile:1
+# Keep this syntax directive! It's used to enable Docker BuildKit
 ARG BASE_TAG=branch-main
 
+#Based on https://gist.github.com/usr-ein/c42d98abca3cb4632ab0c2c6aff8c88a
+
+################################
+# PYTHON BUILDER-BASE
+# Used to build deps + create our virtual environment for python
+################################
+FROM python:3.10 as python-base
+
+    # python
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    # pip
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
+    PIP_DEFAULT_TIMEOUT=100 \
+    # poetry
+    POETRY_VERSION=1.7.1 \
+    POETRY_HOME="/opt/poetry" \
+    POETRY_VIRTUALENVS_IN_PROJECT=true \
+    POETRY_NO_INTERACTION=1 \
+    # paths
+    PYSETUP_PATH="/opt/pysetup" \
+    VENV_PATH="/opt/pysetup/.venv"
+
+
+# prepend poetry and venv to path
+ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
+
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+        # deps for installing poetry
+        curl \
+        # deps for building python deps
+        build-essential
+
+# install poetry - respects $POETRY_VERSION & $POETRY_HOME
+# The --mount will mount the buildx cache directory to where
+# Poetry and Pip store their cache so that they can re-use it
+RUN --mount=type=cache,target=/root/.cache \
+    curl -sSL https://install.python-poetry.org | python3 -
+
+# copy project requirement files here to ensure they will be cached.
+WORKDIR $PYSETUP_PATH
+COPY python_dependencies/processing/ ./
+
+# install runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
+RUN --mount=type=cache,target=/root/.cache \
+    poetry install --with=dev --no-root
+
+
+################################
+# PRODUCTION
+# Final image used for runtime
+################################
 FROM ghcr.io/chanzuckerberg/corpora-upload-base:$BASE_TAG
 
-# Install cellxgene so we get the remote server that has the converter in it
-# The cellxgene install script expects executables named python and pip, not python3 and pip3
+    # python
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    # paths
+    PYSETUP_PATH="/opt/pysetup" \
+    VENV_PATH="/opt/pysetup/.venv"
 
-RUN apt update && \
-	apt install curl -y && \
-	apt install software-properties-common -y && \
-	add-apt-repository ppa:deadsnakes/ppa
-RUN apt install python3.10 -y && \
-	apt install python3.10-distutils -y && \
-	apt install python3.10-dev -y && \
-	curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
-RUN python3 -m pip install --upgrade pip
-
-# For lighter weight Docker images
-ENV PIP_NO_CACHE_DIR=1
-
-# Install python dependencies
-# Remove packaging dependency once pyparser>3 is supported.
-RUN  python3 -m pip install python-igraph louvain packaging awscli
-
-
-ADD requirements-processing.txt requirements-processing.txt
-RUN python3 -m pip install -r requirements-processing.txt
+COPY --from=python-base $PYSETUP_PATH $PYSETUP_PATH
+ENV PATH="$VENV_PATH/bin:$PATH"
 
 ADD backend/__init__.py backend/__init__.py
 ADD backend/layers backend/layers
@@ -38,4 +78,6 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD ["python3", "-m", "backend.layers.processing.process"]
+# loop the containers so it can be inspected
+CMD ["/bin/bash", "-c", "while true; do sleep 30; done;"]
+
