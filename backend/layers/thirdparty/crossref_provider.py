@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Tuple
 from urllib.parse import urlparse
 
 import requests
@@ -9,7 +9,10 @@ from backend.common.corpora_config import CorporaConfig
 
 
 class CrossrefProviderInterface:
-    def fetch_metadata(self, doi: str) -> dict:
+    def doi_curie_from_link(self, doi: str) -> str:
+        pass
+
+    def fetch_metadata(self, doi: str) -> Tuple[dict, str]:
         pass
 
     def fetch_preprint_published_doi(self, doi):
@@ -73,18 +76,24 @@ class CrossrefProvider(CrossrefProviderInterface):
 
         return res
 
-    def fetch_metadata(self, doi: str) -> dict:
-        """
-        Fetches and extracts publisher metadata from Crossref for a specified DOI.
-        If the Crossref API URI isn't in the configuration, we will just return an empty object.
-        This is to avoid calling Crossref in non-production environments.
-        """
+    def doi_curie_from_link(self, doi: str) -> str:
         # Remove the https://doi.org part
         parsed = urlparse(doi)
         if parsed.scheme and parsed.netloc:
             doi = parsed.path
+        return doi
 
-        res = self._fetch_crossref_payload(doi)
+    def fetch_metadata(self, doi: str) -> Tuple[dict, str]:
+        """
+        Fetches and extracts publisher metadata from Crossref for a specified DOI.
+        If the Crossref API URI isn't in the configuration, we will just return an empty object.
+        This is to avoid calling Crossref in non-production environments.
+        :param doi: str - DOI uri link or curie identifier
+        return: tuple - publisher metadata dict and DOI curie identifier
+        """
+        doi_curie = self.doi_curie_from_link(doi)
+
+        res = self._fetch_crossref_payload(doi_curie)
 
         try:
             message = res.json()["message"]
@@ -133,22 +142,25 @@ class CrossrefProvider(CrossrefProviderInterface):
             is_preprint = message.get("subtype") == "preprint"
             if is_preprint:
                 published_metadata = self.fetch_published_metadata(message)
-                if published_metadata:  # if not, use preprint doi
+                if published_metadata:  # if not, use preprint doi curie
                     return published_metadata
 
-            return {
-                "authors": parsed_authors,
-                "published_year": published_year,
-                "published_month": published_month,
-                "published_day": published_day,
-                "published_at": datetime.timestamp(datetime(published_year, published_month, published_day)),
-                "journal": journal,
-                "is_preprint": is_preprint,
-            }
+            return (
+                {
+                    "authors": parsed_authors,
+                    "published_year": published_year,
+                    "published_month": published_month,
+                    "published_day": published_day,
+                    "published_at": datetime.timestamp(datetime(published_year, published_month, published_day)),
+                    "journal": journal,
+                    "is_preprint": is_preprint,
+                },
+                doi_curie,
+            )
         except Exception as e:
             raise CrossrefParseException("Cannot parse metadata from Crossref") from e
 
-    def fetch_published_metadata(self, doi_response_message: dict) -> Optional[dict]:
+    def fetch_published_metadata(self, doi_response_message: dict) -> Optional[Tuple[dict, str]]:
         try:
             published_doi = doi_response_message["relation"]["is-preprint-of"]
             # the new DOI to query for ...
