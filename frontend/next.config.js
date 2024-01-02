@@ -83,6 +83,12 @@ docSiteSecureHeaders.contentSecurityPolicy.directives.frameSrc =
   docSiteFrameSrc;
 
 module.exports = {
+  /**
+   * (thuang): Strict mode is highly recommended and is on by default in Next.js
+   * starting 13.4.0.
+   * https://nextjs.org/docs/pages/api-reference/next-config-js/reactStrictMode
+   */
+  reactStrictMode: true,
   compiler: { emotion: true },
   async generateBuildId() {
     // Return null to allow next.js to fallback to default behavior

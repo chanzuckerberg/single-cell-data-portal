@@ -121,6 +121,7 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
             <ThemeProvider theme={theme}>
               <Layout>
                 <Component {...pageProps} />
+                <div id="bp-toaster"></div>
               </Layout>
               <ReactQueryDevtools />
             </ThemeProvider>
