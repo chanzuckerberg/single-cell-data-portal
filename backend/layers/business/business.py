@@ -362,16 +362,18 @@ class BusinessLogic(BusinessLogicInterface):
 
         new_doi = None
         current_doi = None
+        print(f"\napply_doi_update {apply_doi_update}\n")
         if apply_doi_update:
             # Determine if the DOI has changed
             current_doi = next(
                 (link.uri for link in current_collection_version.metadata.links if link.type == "DOI"), None
             )
             # Format new doi link correctly; current link will have format https://doi.org/{curie_identifier}
-
+            print(f"current_doi {current_doi} new_doi {new_doi}")
             if new_doi_curie := self.crossref_provider.doi_curie_from_link(
                 (None if body.links is None else next((link.uri for link in body.links if link.type == "DOI"), None))
             ):
+                print(f"the new doi curie is {new_doi_curie}")
                 new_doi = f"https://doi.org/{new_doi_curie}"
 
             if current_doi != new_doi:
@@ -390,9 +392,10 @@ class BusinessLogic(BusinessLogicInterface):
                             }
                         )
                         break
-
+            print(f"next current_doi {current_doi} new_doi {new_doi}")
             if current_doi and new_doi is None:
                 # If the DOI was deleted, remove the publisher_metadata field
+                print(f"\nUNSETTING with current_doi {current_doi}\n")
                 unset_publisher_metadata = True
             elif new_doi and new_doi != current_doi:
                 # If the DOI has changed, fetch and update the metadata
