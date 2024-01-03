@@ -17,6 +17,7 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE,
+  CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CONTENT,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
 import { CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID } from "src/views/CellGuide/components/common/OntologyDagView/components/Legend/constants";
 import { CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/CellGuide/components/common/OntologyDagView/components/Node/constants";
@@ -904,17 +905,37 @@ describe("Cell Guide", () => {
           CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
         );
 
-        /**
-         * Hover over the `neural cell` node, since it will still be in the tree
-         * view window when on a small viewport size.
-         * Otherwise, choosing a different node will risk it being hidden and
-         * not be hoverable
-         */
-        const node = page.getByTestId(
-          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0002319__0-has-children-isTargetNode=false`
+        const neuralNodeId = `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0002319__0-has-children-isTargetNode=false`;
+
+        await isElementVisible(page, neuralNodeId);
+
+        const dagContent = page.getByTestId(
+          CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CONTENT
         );
-        await node.hover();
-        await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+
+        await dagContent.hover();
+
+        await tryUntil(
+          async () => {
+            /**
+             * (thuang): Zoom out the tree view a little, in case the node is half hidden
+             * and not hoverable
+             */
+            await page.mouse.wheel(0, 1);
+            /**
+             * Hover over the `neural cell` node, since it will still be in the tree
+             * view window when on a small viewport size.
+             * Otherwise, choosing a different node will risk it being hidden and
+             * not be hoverable
+             */
+            await page.getByTestId(neuralNodeId).hover();
+            await isElementVisible(
+              page,
+              CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP
+            );
+          },
+          { page }
+        );
 
         // assert that the tooltip text contains the marker gene information
         const tooltipText = await page
