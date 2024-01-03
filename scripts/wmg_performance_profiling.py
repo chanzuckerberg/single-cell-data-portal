@@ -300,6 +300,7 @@ if __name__ == "__main__":
         "total_time_download": sum([d["download_time"] for d in profiling_dicts]),
         "total_response_size_mb": sum([d["response_size_mb"] for d in profiling_dicts]),
     }
+    print(f"Total number of queries executed: {len(profiling_dicts)}")
     print("Total time backend:", profiling_results["total_time_backend"])
     print("Total time response:", profiling_results["total_time_response"])
     print("Total time download:", profiling_results["total_time_download"])
