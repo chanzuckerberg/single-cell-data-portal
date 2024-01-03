@@ -69,7 +69,7 @@ class CrossrefProvider(CrossrefProviderInterface):
                 headers={"Crossref-Plus-API-Token": f"Bearer {self.crossref_api_key}"},
             )
             res.raise_for_status()
-        except Exception as e:
+        except requests.RequestException as e:
             if e.response is not None and e.response.status_code == 404:
                 raise CrossrefDOINotFoundException from e
             else:
@@ -95,6 +95,8 @@ class CrossrefProvider(CrossrefProviderInterface):
         doi_curie = self.doi_curie_from_link(doi)
 
         res = self._fetch_crossref_payload(doi_curie)
+        if not res:
+            return
 
         try:
             message = res.json()["message"]
