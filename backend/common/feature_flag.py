@@ -11,26 +11,26 @@ To add a new feature flag, add it to the FeatureFlag and FeatureFlagValues strin
 
 To use a feature flag:
 ```
-if FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4):
-  <logic that only applies if schema 4 is enabled>
+if FeatureFlagService.is_enabled(FeatureFlagValues.<feature_flag_value_name>):
+  <logic that only applies if feature flag is enabled>
 ```
 
 To mock a feature flag in a test:
 ```
 self.mock_config = CorporaConfig()
-self.mock_config.set(dict(schema_4_feature_flag="True"))
+self.mock_config.set(dict(<feature_flag_value_name>="True"))
 ```
 """
 
-FeatureFlag = Literal["schema_4_feature_flag", "citation_update_feature_flag"]
+FeatureFlag = Literal["citation_update_feature_flag"]
 
 
 class FeatureFlagValues:
-    SCHEMA_4 = "schema_4_feature_flag"
     CITATION_UPDATE = "citation_update_feature_flag"
 
 
 class FeatureFlagService:
+    @staticmethod
     def is_enabled(feature_flag: FeatureFlag) -> bool:
         flag_value = getattr(CorporaConfig(), feature_flag, "").lower()
         return flag_value == "true"
