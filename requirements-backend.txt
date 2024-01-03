@@ -26,7 +26,6 @@ numba==0.56.2 # required for where's my gene
 numpy==1.23.5  # required for where's my gene
 owlready2==0.40.0
 pandas==1.5.3 # required for where's my gene
-parameterized
 psutil==5.9.5
 psycopg2-binary>=2.8.5
 pyarrow==12.0.0 # required for where's my gene
