@@ -18,7 +18,6 @@
     "@mui/base": "^5.0.0-beta.3",
     "@mui/lab": "^5.0.0-alpha.136",
     "@mui/material": "^5.14.0",
-    "@mui/styles": "^5.14.0",
     "@playwright/test": "^1.40.0",
     "@types/d3-scale-chromatic": "^3.0.0",
     "@vgrid/sass-inline-svg": "^1.0.1",
