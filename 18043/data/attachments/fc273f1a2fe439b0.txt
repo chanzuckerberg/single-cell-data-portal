@@ -1,0 +1,1 @@
+{"levelname": "INFO", "asctime": "2024-01-03T19:08:15.003Z", "name": "backend.layers.business.business", "message": "ingesting dataset", "lineno": 500, "pathname": "/single-cell-data-portal/backend/layers/business/business.py", "collection_version_id": "27da2ac6-32ff-41e0-ac8d-a4b2c0dd10e2", "url": "http://fake.url", "current_dataset_version_id": null}
