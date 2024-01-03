@@ -19,8 +19,8 @@ class TestCrossrefProvider(unittest.TestCase):
     @patch("backend.layers.thirdparty.crossref_provider.requests.get")
     def test__provider_does_not_call_crossref_in_test(self, mock_get):
         provider = CrossrefProvider()
-        with self.assertRaises(CrossrefParseException):
-            provider.fetch_metadata("test_doi")
+        res = provider.fetch_metadata("test_doi")
+        self.assertIsNone(res)
         mock_get.assert_not_called()
 
     @patch("backend.layers.thirdparty.crossref_provider.requests.get")
@@ -258,7 +258,7 @@ class TestCrossrefProvider(unittest.TestCase):
 
         mock_get.return_value = response
         provider = CrossrefProvider()
-        res = provider.fetch_metadata("test_doi")
+        author_data, _ = provider.fetch_metadata("test_doi")
         mock_get.assert_called_once()
 
         expected_response = {
@@ -273,7 +273,7 @@ class TestCrossrefProvider(unittest.TestCase):
             "is_preprint": False,
         }
 
-        self.assertDictEqual(expected_response, res)
+        self.assertDictEqual(expected_response, author_data)
 
     @patch("backend.layers.thirdparty.crossref_provider.requests.get")
     @patch("backend.layers.thirdparty.crossref_provider.CorporaConfig")

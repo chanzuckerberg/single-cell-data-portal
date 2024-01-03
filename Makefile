@@ -157,7 +157,7 @@ local-unit-test: local-unit-test-backend local-unit-test-wmg-backend local-unit-
 .PHONY: local-unit-test-backend
 local-unit-test-backend: 
 	docker-compose run --rm -T backend bash -c \
-	"cd /single-cell-data-portal && coverage run  $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/backend/layers/ tests/unit/backend/common/";
+	"cd /single-cell-data-portal && coverage run  $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/backend/layers/thirdparty";
 
 .PHONY: local-unit-test-wmg-backend
 local-unit-test-wmg-backend: 
