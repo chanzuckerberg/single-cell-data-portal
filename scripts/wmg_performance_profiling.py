@@ -247,11 +247,14 @@ for groupby in GROUPBY_OPTIONS:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run WMG performance profiling against a deployed environment")
     parser.add_argument("api_url", type=str, help="The WMG API url to query")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Increase output verbosity")
     args = parser.parse_args()
     api_url = args.api_url
+    verbose = args.verbose
     profiling_dicts = []
     for i, body in enumerate(POST_BODIES):
-        print(f"Executing query {i+1}/{len(POST_BODIES)} with body: {body}")
+        if verbose:
+            print(f"Executing query {i+1}/{len(POST_BODIES)} with body: {body}")
 
         response = requests.post(
             f"{api_url}/wmg/v2/query", data=json.dumps(body), headers={"Content-Type": "application/json"}
@@ -279,7 +282,8 @@ if __name__ == "__main__":
         response_size = len(response.content) / (1024 * 1024)
         profiling_dict["response_size_mb"] = response_size
 
-        print("Profiling results:", profiling_dict)
+        if verbose:
+            print("Profiling results:", profiling_dict)
 
         profiling_dict["params"] = {
             "payload": body,
@@ -305,3 +309,5 @@ if __name__ == "__main__":
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     with open(f"profiling_results_{timestamp}.json", "w") as f:
         json.dump(profiling_dicts, f)
+
+        print(f"Profiling results output to {f.name}")
