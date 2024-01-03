@@ -1,10 +1,8 @@
 import { type StaticProject } from "census-projects.json";
-import {
-  type Project,
-  type ProjectResponse,
-} from "src/common/queries/censusDirectory";
+import { type Project } from "src/common/queries/censusDirectory";
+import { type ClobberedProjects } from "../../utils";
 
+export type UnionProject = StaticProject | Project;
 export interface ProjectProps {
-  project: StaticProject | Project;
-  id?: keyof ProjectResponse;
+  clobberedProjects: ClobberedProjects[number];
 }
