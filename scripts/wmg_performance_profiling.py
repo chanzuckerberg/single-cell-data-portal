@@ -285,9 +285,21 @@ if __name__ == "__main__":
             "payload": body,
             "num_genes": len(body["filter"]["gene_ontology_term_ids"]),
             "compare": body.get("compare"),
-            "api_url": api_url,
         }
         profiling_dicts.append(profiling_dict)
+
+    profiling_results = {
+        "profiles": profiling_dicts,
+        "api_url": api_url,
+        "total_time_backend": sum([d["total_time_backend"] for d in profiling_dicts]),
+        "total_time_response": sum([d["total_time_response"] for d in profiling_dicts]),
+        "total_time_download": sum([d["download_time"] for d in profiling_dicts]),
+        "total_response_size_mb": sum([d["response_size_mb"] for d in profiling_dicts]),
+    }
+    print("Total time backend:", profiling_results["total_time_backend"])
+    print("Total time response:", profiling_results["total_time_response"])
+    print("Total time download:", profiling_results["total_time_download"])
+    print("Total response size (MB):", profiling_results["total_response_size_mb"])
 
     # Write the profiling results to a file
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
