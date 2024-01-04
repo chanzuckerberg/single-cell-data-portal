@@ -27,6 +27,8 @@ class ProcessingTest(BaseProcessingTest):
         6. upload the labeled file to S3
         """
         dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=0"
+        self.crossref_provider.doi_curie_from_link = Mock(return_value="12.2345")
+        self.crossref_provider.fetch_metadata = Mock(return_value=({}, "12.2345"))
 
         collection = self.generate_unpublished_collection(
             links=[Link(name=None, type="DOI", uri="http://doi.org/12.2345")]
@@ -49,7 +51,7 @@ class ProcessingTest(BaseProcessingTest):
             pdv = ProcessValidate(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
             pdv.process(collection.version_id, dataset_version_id, "fake_bucket_name", "fake_datasets_bucket")
             citation_str = (
-                f"Publication: http://doi.org/12.2345 "
+                f"Publication: https://doi.org/12.2345 "
                 f"Dataset Version: http://domain/{dataset_version_id}.h5ad curated and distributed by "
                 f"CZ CELLxGENE Discover in Collection: https://domain/collections/{collection.collection_id.id}"
             )

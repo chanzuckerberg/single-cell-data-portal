@@ -13,8 +13,8 @@ class CrossrefProviderInterface:
     def doi_curie_from_link(self, doi: str) -> str:
         pass
 
-    def fetch_metadata(self, doi: str) -> Tuple[dict, str]:
-        pass
+    def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str]]:
+        return None, None
 
     def fetch_preprint_published_doi(self, doi):
         pass
