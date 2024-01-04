@@ -146,9 +146,9 @@ class CrossrefProvider(CrossrefProviderInterface):
             # Preprint
             is_preprint = message.get("subtype") == "preprint"
             if is_preprint:
-                published_metadata = self.fetch_published_metadata(message)
-                if published_metadata:  # if not, use preprint doi curie
-                    return published_metadata
+                published_metadata, published_doi_curie = self.fetch_published_metadata(message)
+                if published_metadata and published_doi_curie:  # if not, use preprint doi curie
+                    return published_metadata, published_doi_curie
 
             return (
                 {

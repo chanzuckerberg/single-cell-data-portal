@@ -146,7 +146,7 @@ class TestCrossrefProvider(unittest.TestCase):
         with self.subTest("Preprint DOI is used when published is referenced but cannot be retrieved") and patch.object(
             provider, "fetch_published_metadata"
         ) as fetch_published_metadata_mock:
-            fetch_published_metadata_mock.return_value = None
+            fetch_published_metadata_mock.return_value = (None, None)
 
             preprint_body = copy.deepcopy(body)
             response_preprint = make_response(preprint_body)
