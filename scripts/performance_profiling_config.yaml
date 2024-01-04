@@ -9,5 +9,5 @@ params:
   # Outputs verbose logs if true.
   VERBOSE: false
 
-  # Outputs summary plots of the profiling results if true.
+  # Outputs summary plots of the profiling results if true. Requires matplotlib.
   PLOTS: true
