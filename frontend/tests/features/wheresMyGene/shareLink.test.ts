@@ -25,14 +25,11 @@ const tissueIds = TISSUES.map((tissue) => tissue.id);
 
 const GENES = ["DPM1", "TNMD", "TSPAN6"];
 
-const DATASETS = [
+const PUBLICATIONS = [
+  // (thuang): This publication has blood and lung tissues
   {
-    id: "d8da613f-e681-4c69-b463-e94f5e66847f",
-    text: "A molecular single-cell lung atlas of lethal COVID-19",
-  },
-  {
-    id: "de2c780c-1747-40bd-9ccf-9588ec186cee",
-    text: "Immunophenotyping of COVID-19 and influenza highlights the role of type I interferons in development of severe COVID-19",
+    id: "Ren et al. Cell 2021",
+    text: "Ren  et al. (2021)  Cell",
   },
 ];
 
@@ -53,8 +50,8 @@ const CELL_TYPES = ["natural killer cell"];
 const SHARE_LINK_SEARCH_PARAMS = new URLSearchParams();
 SHARE_LINK_SEARCH_PARAMS.set("compare", COMPARE);
 SHARE_LINK_SEARCH_PARAMS.set(
-  "datasets",
-  DATASETS.map((dataset) => dataset.id).join()
+  "publications",
+  PUBLICATIONS.map((publication) => publication.id).join()
 );
 SHARE_LINK_SEARCH_PARAMS.set(
   "diseases",
@@ -113,7 +110,7 @@ describe("Share link tests", () => {
     });
   });
 
-  test.skip("Should generate share link with correct format for all query param types", async ({
+  test("Should generate share link with correct format for all query param types", async ({
     page,
     browserName,
   }) => {
@@ -130,8 +127,7 @@ describe("Share link tests", () => {
           linkVersion: LATEST_SHARE_LINK_VERSION,
           tissueIds,
           genes: GENES,
-          // TODO(seve): #6131 test is currently failing on dataset param, should investigate and reenable
-          // datasets: DATASETS,
+          publications: PUBLICATIONS,
           sexes: SEXES,
           diseases: DISEASES,
           ethnicities: ETHNICITIES,
@@ -168,7 +164,7 @@ async function verifyShareLink({
   linkVersion,
   tissueIds,
   genes,
-  datasets,
+  publications,
   sexes,
   diseases,
   ethnicities,
@@ -179,7 +175,7 @@ async function verifyShareLink({
   linkVersion: string;
   tissueIds?: string[];
   genes?: string[];
-  datasets?: ExpectedParam[];
+  publications?: ExpectedParam[];
   sexes?: ExpectedParam[];
   diseases?: ExpectedParam[];
   ethnicities?: string[];
@@ -194,6 +190,11 @@ async function verifyShareLink({
   const clipboardText: string = await page.evaluate(
     "navigator.clipboard.readText()"
   );
+
+  /**
+   * (thuang): The param order below needs to match the order from the ShareButton
+   * component
+   */
 
   // split parameters
   const urlParams = new URLSearchParams(
@@ -210,15 +211,6 @@ async function verifyShareLink({
     searchParams.set(param, compare);
   }
 
-  // datasets
-  if (datasets !== undefined) {
-    const param = "datasets";
-
-    const data = await verifyParameter(page, urlParams, param, datasets);
-
-    searchParams.set(param, String(data));
-  }
-
   // diseases
   if (diseases !== undefined) {
     const param = "diseases";
@@ -233,6 +225,15 @@ async function verifyShareLink({
     const param = "ethnicities";
 
     const data = await verifyParameter(page, urlParams, param, ethnicities);
+
+    searchParams.set(param, String(data));
+  }
+
+  // publications
+  if (publications !== undefined) {
+    const param = "publications";
+
+    const data = await verifyParameter(page, urlParams, param, publications);
 
     searchParams.set(param, String(data));
   }
@@ -299,10 +300,10 @@ async function verifyParameter(
   const expectedIds = expectedParams.map((expectedParam) => expectedParam.id);
 
   switch (param) {
-    case "datasets": {
+    case "publications": {
       const paramValues = getParamValues(param);
 
-      // verify datasets have been selected
+      // verify publications have been selected
       paramValues.forEach(async (_id: string) => {
         const item = expectedParams.find(
           (expectedParam) => expectedParam.id === _id
