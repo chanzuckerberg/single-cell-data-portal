@@ -443,7 +443,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run WMG performance profiling against a deployed environment")
     parser.add_argument("api_url", type=str, help="The WMG API url to query")
     parser.add_argument(
-        "-c", "--cookie", type=str, help="If profiling an rdev, provide the auth cookie used by the frontend"
+        "-c",
+        "--cookie",
+        type=str,
+        help='If profiling an rdev, provide the auth cookie used by the frontend, e.g. `--cookie "_oauth2_proxy=..."`',
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="Increase output verbosity")
     parser.add_argument("-p", "--plots", action="store_true", help="Generate summary plots. Requires `matplotlib`.")
