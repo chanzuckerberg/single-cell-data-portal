@@ -5,6 +5,7 @@ from backend.wmg.data.snapshot import CELL_TYPE_ANCESTORS_FILENAME
 from backend.wmg.pipeline.cell_type_ancestors import create_cell_type_ancestors
 from backend.wmg.pipeline.constants import (
     CELL_TYPE_ANCESTORS_CREATED_FLAG,
+    EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
 )
 from backend.wmg.pipeline.utils import load_pipeline_state, write_pipeline_state
 from tests.test_utils import compare_dicts
@@ -17,6 +18,11 @@ class CellTypeAncestorTests(unittest.TestCase):
         cls.temp_cube_dir = load_realistic_test_snapshot_tmpdir("realistic-test-snapshot")
         with open(f"{cls.temp_cube_dir.name}/{CELL_TYPE_ANCESTORS_FILENAME}") as f:
             cls.expected_cell_type_ancestors = json.load(f)
+
+    def setUp(self):
+        pipeline_state = load_pipeline_state(self.temp_cube_dir.name)
+        pipeline_state[EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG] = True
+        write_pipeline_state(pipeline_state, self.temp_cube_dir.name)
 
     def tearDown(self):
         pipeline_state = load_pipeline_state(self.temp_cube_dir.name)
