@@ -37,7 +37,7 @@
    - `brew install graphviz`
    - `pip install --global-option=build_ext --global-option="-I$(brew --prefix graphviz)/include/" --global-option="-L$(brew --prefix graphviz)/lib/" pygraphviz==1.11`
 
-1. Install packages for WMG api - `pip install -r requirements-backend.txt`
+1. Install packages for WMG api - `pip install -r ./python_dependecies/backend/requirements.txt`
 1. Install packages for WMG pipeline - `pip install -r requirements-wmg-pipeline.txt`
 
 ### Run unit tests for WMG
