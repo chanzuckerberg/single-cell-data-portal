@@ -5,7 +5,7 @@ from unittest.mock import patch
 from requests import RequestException
 from requests.models import HTTPError, Response
 
-from backend.common.providers.crossref_provider import (
+from backend.layers.thirdparty.crossref_provider import (
     CrossrefDOINotFoundException,
     CrossrefException,
     CrossrefFetchException,
@@ -15,15 +15,15 @@ from backend.common.providers.crossref_provider import (
 
 
 class TestCrossrefProvider(unittest.TestCase):
-    @patch("backend.common.providers.crossref_provider.requests.get")
+    @patch("backend.layers.thirdparty.crossref_provider.requests.get")
     def test__provider_does_not_call_crossref_in_test(self, mock_get):
         provider = CrossrefProvider()
         res = provider.fetch_metadata("test_doi")
         self.assertIsNone(res)
         mock_get.assert_not_called()
 
-    @patch("backend.common.providers.crossref_provider.requests.get")
-    @patch("backend.common.providers.crossref_provider.CorporaConfig")
+    @patch("backend.layers.thirdparty.crossref_provider.requests.get")
+    @patch("backend.layers.thirdparty.crossref_provider.CorporaConfig")
     def test__provider_calls_crossref_if_api_key_defined(self, mock_config, mock_get):
         # Defining a mocked CorporaConfig will allow the provider to consider the `crossref_api_key`
         # not None, so it will go ahead and do the mocked call.
@@ -71,8 +71,8 @@ class TestCrossrefProvider(unittest.TestCase):
 
         self.assertDictEqual(expected_response, res)
 
-    @patch("backend.common.providers.crossref_provider.requests.get")
-    @patch("backend.common.providers.crossref_provider.CorporaConfig")
+    @patch("backend.layers.thirdparty.crossref_provider.requests.get")
+    @patch("backend.layers.thirdparty.crossref_provider.CorporaConfig")
     def test__provider_parses_authors_and_dates_correctly(self, mock_config, mock_get):
         response = Response()
         response.status_code = 200
@@ -136,8 +136,8 @@ class TestCrossrefProvider(unittest.TestCase):
 
         self.assertDictEqual(expected_response, res)
 
-    @patch("backend.common.providers.crossref_provider.requests.get")
-    @patch("backend.common.providers.crossref_provider.CorporaConfig")
+    @patch("backend.layers.thirdparty.crossref_provider.requests.get")
+    @patch("backend.layers.thirdparty.crossref_provider.CorporaConfig")
     def test__provider_unescapes_journal_correctly(self, mock_config, mock_get):
         response = Response()
         response.status_code = 200
@@ -175,8 +175,8 @@ class TestCrossrefProvider(unittest.TestCase):
 
         self.assertDictEqual(expected_response, res)
 
-    @patch("backend.common.providers.crossref_provider.requests.get")
-    @patch("backend.common.providers.crossref_provider.CorporaConfig")
+    @patch("backend.layers.thirdparty.crossref_provider.requests.get")
+    @patch("backend.layers.thirdparty.crossref_provider.CorporaConfig")
     def test__provider_throws_exception_if_request_fails(self, mock_config, mock_get):
         """
         Asserts a CrossrefFetchException if the GET request fails for any reason
@@ -192,8 +192,8 @@ class TestCrossrefProvider(unittest.TestCase):
         with self.assertRaises(CrossrefException):
             provider.fetch_metadata("test_doi")
 
-    @patch("backend.common.providers.crossref_provider.requests.get")
-    @patch("backend.common.providers.crossref_provider.CorporaConfig")
+    @patch("backend.layers.thirdparty.crossref_provider.requests.get")
+    @patch("backend.layers.thirdparty.crossref_provider.CorporaConfig")
     def test__provider_throws_exception_if_request_fails_with_404(self, mock_config, mock_get):
         """
         Asserts a CrossrefFetchException if the GET request fails for any reason
@@ -207,8 +207,8 @@ class TestCrossrefProvider(unittest.TestCase):
         with self.assertRaises(CrossrefDOINotFoundException):
             provider.fetch_metadata("test_doi")
 
-    @patch("backend.common.providers.crossref_provider.requests.get")
-    @patch("backend.common.providers.crossref_provider.CorporaConfig")
+    @patch("backend.layers.thirdparty.crossref_provider.requests.get")
+    @patch("backend.layers.thirdparty.crossref_provider.CorporaConfig")
     def test__provider_throws_exception_if_request_fails_with_non_2xx_code(self, mock_config, mock_get):
         """
         Asserts a CrossrefFetchException if the GET request return a 500 error (any non 2xx will work)
@@ -223,8 +223,8 @@ class TestCrossrefProvider(unittest.TestCase):
         with self.assertRaises(CrossrefFetchException):
             provider.fetch_metadata("test_doi")
 
-    @patch("backend.common.providers.crossref_provider.requests.get")
-    @patch("backend.common.providers.crossref_provider.CorporaConfig")
+    @patch("backend.layers.thirdparty.crossref_provider.requests.get")
+    @patch("backend.layers.thirdparty.crossref_provider.CorporaConfig")
     def test__provider_throws_exception_if_request_cannot_be_parsed(self, mock_config, mock_get):
         """
         Asserts an CrossrefParseException if the GET request succeeds but cannot be parsed
