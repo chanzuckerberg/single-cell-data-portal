@@ -1,0 +1,11 @@
+
+apply_doi_update True
+
+current_doi None new_doi None
+next current_doi None new_doi None
+
+new metadata CollectionMetadata(name='collection name', description='This is a test collection', contact_name='person human', contact_email='person@human.com', links=[Link(name='DOI Link', type='DOI', uri='http://doi.org/10.1016')], consortia=['Consortia 1'])
+
+
+all: (True, None, None, True)
+

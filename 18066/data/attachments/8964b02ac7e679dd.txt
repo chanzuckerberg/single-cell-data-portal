@@ -1,0 +1,9 @@
+
+apply_doi_update False
+
+
+new metadata CollectionMetadata(name='A new name', description='description', contact_name='jane dough', contact_email='janedough@email.com', links=[Link(name='name', type='RAW_DATA', uri='http://test_link.place')], consortia=['Consortia 4'])
+
+
+all: (False, None, None, True)
+
