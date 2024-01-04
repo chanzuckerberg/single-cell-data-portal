@@ -2,7 +2,7 @@
 name = "processing"
 version = "0.1.0"
 description = ""
-authors = []
+authors = ["Chanzuckerberg Initiative Foundation"]
 readme = "README.md"
 
 [tool.poetry.dependencies]

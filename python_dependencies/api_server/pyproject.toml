@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "api-server"
-authors = ["The Single Cell Portal Team"]
+authors = ["Chanzuckerberg Initiative Foundation"]
 version = "0.1.0"
 description = "Single Cell Portal API Server"
 
