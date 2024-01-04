@@ -84,7 +84,7 @@ class CrossrefProvider(CrossrefProviderInterface):
             doi = parsed.path
         return doi
 
-    def fetch_metadata(self, doi: str) -> Tuple[dict, str]:
+    def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str]]:
         """
         Fetches and extracts publisher metadata from Crossref for a specified DOI.
         If the Crossref API URI isn't in the configuration, we will just return an empty object.
@@ -96,7 +96,7 @@ class CrossrefProvider(CrossrefProviderInterface):
 
         res = self._fetch_crossref_payload(doi_curie)
         if not res:
-            return
+            return None, None
 
         try:
             message = res.json()["message"]
@@ -165,7 +165,7 @@ class CrossrefProvider(CrossrefProviderInterface):
         except Exception as e:
             raise CrossrefParseException("Cannot parse metadata from Crossref") from e
 
-    def fetch_published_metadata(self, doi_response_message: dict) -> Optional[Tuple[dict, str]]:
+    def fetch_published_metadata(self, doi_response_message: dict) -> Tuple[Optional[dict], Optional[str]]:
         try:
             published_doi = doi_response_message["relation"]["is-preprint-of"]
             # the new DOI to query for ...
@@ -173,5 +173,4 @@ class CrossrefProvider(CrossrefProviderInterface):
                 if entity["id-type"] == "doi":
                     return self.fetch_metadata(entity["id"])
         except Exception:  # if fetch of published doi errors out, just use preprint doi
-            pass
-        return None
+            return None, None
