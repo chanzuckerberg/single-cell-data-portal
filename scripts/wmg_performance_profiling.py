@@ -442,22 +442,27 @@ for groupby in GROUPBY_OPTIONS:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run WMG performance profiling against a deployed environment")
     parser.add_argument("api_url", type=str, help="The WMG API url to query")
+    parser.add_argument(
+        "-c", "--cookie", type=str, help="If profiling an rdev, provide the auth cookie used by the frontend"
+    )
     parser.add_argument("-v", "--verbose", action="store_true", help="Increase output verbosity")
     parser.add_argument("-p", "--plots", action="store_true", help="Generate summary plots. Requires `matplotlib`.")
     args = parser.parse_args()
     api_url = args.api_url
     verbose = args.verbose
     generate_plots = args.plots
+
     profiling_dicts = []
     for i, body in enumerate(POST_BODIES):
         if verbose:
             print(f"Executing query {i+1}/{len(POST_BODIES)} with body: {body}")
 
-        response = requests.post(
-            f"{api_url}/wmg/v2/query", data=json.dumps(body), headers={"Content-Type": "application/json"}
-        )
-        server_timing_header = response.headers.get("Server-Timing")
+        headers = {"Content-Type": "application/json"}
+        if args.cookie:
+            headers["Cookie"] = args.cookie
+        response = requests.post(f"{api_url}/wmg/v2/query", data=json.dumps(body), headers=headers)
 
+        server_timing_header = response.headers.get("Server-Timing")
         assert response.status_code == 200
         assert server_timing_header is not None
 
