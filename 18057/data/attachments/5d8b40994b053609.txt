@@ -1,0 +1,9 @@
+
+apply_doi_update False
+
+
+new metadata CollectionMetadata(name='collection', description='description', contact_name='john doe', contact_email='johndoe@email.com', links=[], consortia=[])
+
+
+all: (False, None, None, True)
+
