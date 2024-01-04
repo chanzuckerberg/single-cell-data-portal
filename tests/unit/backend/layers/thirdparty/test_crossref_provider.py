@@ -19,8 +19,8 @@ class TestCrossrefProvider(unittest.TestCase):
     @patch("backend.layers.thirdparty.crossref_provider.requests.get")
     def test__provider_does_not_call_crossref_in_test(self, mock_get):
         provider = CrossrefProvider()
-        res = provider.fetch_metadata("test_doi")
-        self.assertIsNone(res)
+        metadata, doi = provider.fetch_metadata("test_doi")
+        self.assertIsNone(metadata)
         mock_get.assert_not_called()
 
     @patch("backend.layers.thirdparty.crossref_provider.requests.get")
