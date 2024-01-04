@@ -218,7 +218,11 @@ function getNewSelectedFilters({
     Object.entries(tissues ?? {}).map(([id, tissue]) => [tissue.name, id])
   );
 
-  const allTissueNames = Object.keys(tissueIdsByName);
+  /**
+   * (thuang): Warning - Map doesn't work with Object.keys(), so we need to use
+   * Map.keys() instead
+   */
+  const allTissueNames = Array.from(tissueIdsByName.keys());
   const allTissueIds = Object.keys(tissues ?? {});
 
   Object.keys(selectedFilters).forEach((key) => {
@@ -235,6 +239,7 @@ function getNewSelectedFilters({
       const tissueParams = value.split(delimiter);
       const tissueIds = [];
       const tissueNames = [];
+
       for (const tissueParam of tissueParams) {
         if (
           tissueParam.includes("UBERON:") &&
