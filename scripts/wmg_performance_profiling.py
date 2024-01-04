@@ -506,7 +506,7 @@ if __name__ == "__main__":
     # Write the profiling results to a file
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     with open(f"profiling_results_{timestamp}.json", "w") as f:
-        json.dump(profiling_dicts, f)
+        json.dump(profiling_results, f)
 
         print(f"Profiling results output to {f.name}")
 
@@ -515,12 +515,12 @@ if __name__ == "__main__":
         import matplotlib.pyplot as plt
 
         # Generate matplotlib plots for the collected metrics
-        metrics = ["total_time_backend", "total_time_response", "download_time"]
+        metrics = ["query-tiledb", "build-response", "total_time_backend"]
         num_genes = [d["params"]["num_genes"] for d in profiling_dicts]
         compare_options = {d["params"]["compare"] for d in profiling_dicts}
 
         fig, axs = plt.subplots(len(metrics), 1)
-        fig.set_size_inches(6, 10)
+        fig.set_size_inches(8, 12)
         for i, metric in enumerate(metrics):
             for compare_option in compare_options:
                 for sex_criteria in SEX_CRITERIA:
@@ -533,13 +533,14 @@ if __name__ == "__main__":
                     metric_values = [d[metric] for d in compare_dicts]
                     num_genes_compare = [d["params"]["num_genes"] for d in compare_dicts]
 
-                    axs[i].plot(
-                        num_genes_compare, metric_values, label=f"compare={compare_option},sex criteria={sex_criteria}"
-                    )
+                    axs[i].plot(num_genes_compare, metric_values, label=f"{compare_option} {sex_criteria}")
                     axs[i].set_title(f"{metric} vs number of genes")
                     axs[i].set_xlabel("number of genes")
                     axs[i].set_ylabel(metric)
             axs[i].legend(loc="center left", bbox_to_anchor=(1, 0.5))
+        fig.subplots_adjust(right=0.85)  # Adjust the whitespace on the right
+        fig.tight_layout(pad=3.0)
+        plt.rcParams.update({"font.size": 10})
 
         # Save the plots to a PDF
         fig.savefig(f"profiling_plots_{timestamp}.pdf")
