@@ -1,22 +1,14 @@
-# syntax=docker/dockerfile:1
-# Keep this syntax directive! It's used to enable Docker BuildKit
-
-# Based on https://gist.github.com/usr-ein/c42d98abca3cb4632ab0c2c6aff8c88a
-
 ARG BASE_TAG=branch-main
 
-################################
-# PYTHON-BASE
-# Sets up all our shared environment variables
-################################
-FROM python:3.10 as python-base
+FROM python:3.10
 
-    # python
+# python
 ENV PYTHONUNBUFFERED=1 \
     # prevents python creating .pyc files
     PYTHONDONTWRITEBYTECODE=1 \
     \
     # pip
+    PIP_NO_CACHE_DIR=off \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
     PIP_DEFAULT_TIMEOUT=100 \
     \
@@ -41,10 +33,7 @@ ENV PYTHONUNBUFFERED=1 \
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 
 
-################################
-# BUILDER-BASE
-# Used to build deps + create our virtual environment
-################################
+# `builder-base` stage is used to build deps + create our virtual environment
 FROM python-base as builder-base
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
@@ -54,34 +43,23 @@ RUN apt-get update \
         build-essential
 
 # install poetry - respects $POETRY_VERSION & $POETRY_HOME
-# The --mount will mount the buildx cache directory to where
-# Poetry and Pip store their cache so that they can re-use it
-RUN --mount=type=cache,target=/root/.cache \
-    curl -sSL https://install.python-poetry.org | python3 -
+RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python3
+
+RUN /usr/local/bin/python -m pip install --upgrade pip && \
+    apt update && apt -y install graphviz graphviz-dev && \
+    rm -rf /var/lib/apt/lists/* && \
+    pip3 install awscli
 
 # copy project requirement files here to ensure they will be cached.
 WORKDIR $PYSETUP_PATH
 COPY python_dependencies/wmg/ ./
 
-# install graphvis a dependency of pygraphviz
-RUN apt -y install graphviz graphviz-dev
-
 # install runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
-RUN --mount=type=cache,target=/root/.cache \
-    poetry install --without=dev --no-root
+RUN poetry install --no-interaction --no-ansi
 
-ARG HAPPY_BRANCH="unknown"
-ARG HAPPY_COMMIT=""
-LABEL branch=${HAPPY_BRANCH}
-LABEL commit=${HAPPY_COMMIT}
-ENV COMMIT_SHA=${HAPPY_COMMIT}
-ENV COMMIT_BRANCH=${HAPPY_BRANCH}
-
-################################
-# DEVELOPMENT
-# Image used during development / testing
-################################
+# `development` image is used during development / testing
 FROM python-base as development
+ENV DEPLOYMENT_STAGE=dev
 WORKDIR $PYSETUP_PATH
 
 # copy in our built poetry + venv
@@ -89,20 +67,33 @@ COPY --from=builder-base $POETRY_HOME $POETRY_HOME
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
 # quicker install as runtime deps are already installed
-RUN --mount=type=cache,target=/root/.cache \
-    poetry install --with=dev
+RUN poetry install
 
 # mount code
 WORKDIR /
-COPY ./backend /backend/
+ADD backend/__init__.py backend/__init__.py
+ADD backend/wmg/__init__.py backend/wmg/__init__.py
+ADD backend/wmg/config.py backend/wmg/config.py
+ADD backend/wmg/data backend/wmg/data
+ADD backend/wmg/pipeline backend/wmg/pipeline
+ADD backend/wmg/api backend/wmg/api
+ADD backend/cellguide/pipeline backend/cellguide/pipeline
+ADD backend/layers backend/layers
+ADD backend/common backend/common
 
-################################
-# PRODUCTION
-# Final image used for runtime
-################################
+
+# `production` image used for runtime
 FROM python-base as production
+ENV DEPLOYMENT_STAGE=prod
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 COPY ./backend /backend/
+
+ARG HAPPY_BRANCH="unknown"
+ARG HAPPY_COMMIT=""
+LABEL branch=${HAPPY_BRANCH}
+LABEL commit=${HAPPY_COMMIT}
+ENV COMMIT_SHA=${HAPPY_COMMIT}
+ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
 WORKDIR /
 CMD ["python3", "-m", "backend.wmg.pipeline"]
