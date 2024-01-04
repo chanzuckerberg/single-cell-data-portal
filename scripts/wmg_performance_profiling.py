@@ -1,14 +1,16 @@
-import argparse
 import datetime
 import json
 import os
 import sys
 
 import requests
+import yaml
+from tqdm import tqdm
 
 # Add the root directory to the Python module search path so you can reference backend
 # without needing to move this script to the root directory to run it.
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+scripts_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(scripts_dir)
 sys.path.append(root_dir)
 
 # The set of random genes to use for the profiling. These are genes that are present in Census.
@@ -440,29 +442,24 @@ for groupby in GROUPBY_OPTIONS:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run WMG performance profiling against a deployed environment")
-    parser.add_argument("api_url", type=str, help="The WMG API url to query")
-    parser.add_argument(
-        "-c",
-        "--cookie",
-        type=str,
-        help='If profiling an rdev, provide the auth cookie used by the frontend, e.g. `--cookie "_oauth2_proxy=..."`',
-    )
-    parser.add_argument("-v", "--verbose", action="store_true", help="Increase output verbosity")
-    parser.add_argument("-p", "--plots", action="store_true", help="Generate summary plots. Requires `matplotlib`.")
-    args = parser.parse_args()
-    api_url = args.api_url
-    verbose = args.verbose
-    generate_plots = args.plots
+    with open(f"{scripts_dir}/performance_profiling_config.yaml", "r") as file:
+        data = yaml.safe_load(file)
+
+    # Parsing parameters from the config file
+    rdev_auth_cookie = data["params"]["RDEV_AUTH_COOKIE"]
+    api_url = data["params"]["API_URL"]
+    verbose = data["params"]["VERBOSE"]
+    generate_plots = data["params"]["PLOTS"]
 
     profiling_dicts = []
-    for i, body in enumerate(POST_BODIES):
+
+    for i, body in enumerate(tqdm(POST_BODIES, disable=verbose)):
         if verbose:
             print(f"Executing query {i+1}/{len(POST_BODIES)} with body: {body}")
 
         headers = {"Content-Type": "application/json"}
-        if args.cookie:
-            headers["Cookie"] = args.cookie
+        if rdev_auth_cookie != "_oauth2_proxy=..." and rdev_auth_cookie != "":
+            headers["Cookie"] = rdev_auth_cookie
         response = requests.post(f"{api_url}/wmg/v2/query", data=json.dumps(body), headers=headers)
 
         server_timing_header = response.headers.get("Server-Timing")
