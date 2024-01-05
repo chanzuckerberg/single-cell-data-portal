@@ -33,6 +33,8 @@ WORKDIR $PYSETUP_PATH
 ADD python_dependencies/submissions/ $PYSETUP_PATH
 RUN poetry install --no-root
 
+# return to the directory expected by AWS lambda
+WORKDIR /var/task
 COPY backend/layers/processing/upload_failures backend/layers/processing/upload_failures
 COPY backend/layers/processing/upload_success .
 COPY backend/layers ./backend/layers
