@@ -392,6 +392,8 @@ class BusinessLogic(BusinessLogicInterface):
                             }
                         )
                         break
+            elif doi_link := next((link for link in body.links if link.type == "DOI"), None):
+                doi_link.uri = new_doi  # Ensures we submit DOI link in correct format
             print(f"next current_doi {current_doi} new_doi {new_doi}")
             if current_doi and new_doi is None:
                 # If the DOI was deleted, remove the publisher_metadata field
