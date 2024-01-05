@@ -1,9 +1,0 @@
-
-apply_doi_update False
-
-
-new metadata CollectionMetadata(name='A new name, and only a new name', description='described', contact_name='john doe', contact_email='john.doe@email.com', links=[Link(name='name', type='RAW_DATA', uri='http://test_link.place')], consortia=[])
-
-
-all: (False, None, None, True)
-
