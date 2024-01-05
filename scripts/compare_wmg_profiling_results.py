@@ -17,11 +17,11 @@ sys.path.append(root_dir)
 def generate_scatter_plots(json1, json2):
     # Load the profiling results
     with open(json1, "r") as f1, open(json2, "r") as f2:
+        metrics = json.load(f1)["profiling_metrics_keys"]
         profiling_results1 = json.load(f1)["profiles"]
         profiling_results2 = json.load(f2)["profiles"]
 
     # Create a new figure for each metric
-    metrics = ["query-tiledb", "build-response", "total_time_backend"]
     compare_options = {d["params"]["compare"] for d in profiling_results1}
     sex_criteria = [
         ast.literal_eval(i)

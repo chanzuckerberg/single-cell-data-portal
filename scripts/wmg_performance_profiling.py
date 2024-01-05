@@ -452,7 +452,7 @@ if __name__ == "__main__":
     generate_plots = data["params"]["PLOTS"]
 
     profiling_dicts = []
-
+    profiling_metrics_keys = []
     for i, body in enumerate(tqdm(POST_BODIES, disable=verbose)):
         if verbose:
             print(f"Executing query {i+1}/{len(POST_BODIES)} with body: {body}")
@@ -476,6 +476,7 @@ if __name__ == "__main__":
             dur = float(dur) / 1000
             profiling_dict[name] = dur
             total_time += dur
+            profiling_metrics_keys.append(name)
         response_time = response.elapsed.total_seconds()
         download_time = response_time - total_time
         profiling_dict["total_time_backend"] = total_time
@@ -501,6 +502,7 @@ if __name__ == "__main__":
         "total_time_response": sum([d["total_time_response"] for d in profiling_dicts]),
         "total_time_download": sum([d["download_time"] for d in profiling_dicts]),
         "total_response_size_mb": sum([d["response_size_mb"] for d in profiling_dicts]),
+        "profiling_metrics_keys": profiling_metrics_keys,
     }
     print(f"Total number of queries executed: {len(profiling_dicts)}")
     print("Total time backend:", profiling_results["total_time_backend"])
@@ -520,7 +522,7 @@ if __name__ == "__main__":
         import matplotlib.pyplot as plt
 
         # Generate matplotlib plots for the collected metrics
-        metrics = ["query-tiledb", "build-response", "total_time_backend"]
+        metrics = profiling_metrics_keys + ["total_time_backend"]
         num_genes = [d["params"]["num_genes"] for d in profiling_dicts]
         compare_options = {d["params"]["compare"] for d in profiling_dicts}
 
