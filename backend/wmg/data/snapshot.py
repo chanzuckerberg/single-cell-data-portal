@@ -76,8 +76,8 @@ class WmgSnapshot:
     # dataset metadata dictionary
     dataset_metadata: Optional[Dict] = field(default=None)
 
-    # cell type ancestors dictionary
-    cell_type_ancestors: Optional[Dict] = field(default=None)
+    # cell type ancestors pandas Series
+    cell_type_ancestors: Optional[pd.Series] = field(default=None)
 
 
 # Cached data
@@ -203,7 +203,7 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
         primary_filter_dimensions=primary_filter_dimensions,
         filter_relationships=filter_relationships,
         dataset_metadata=dataset_metadata,
-        cell_type_ancestors=cell_type_ancestors,
+        cell_type_ancestors=pd.Series(cell_type_ancestors),
     )
 
 
