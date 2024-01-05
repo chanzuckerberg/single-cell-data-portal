@@ -297,7 +297,7 @@ services:
       context: .
       cache_from:
         - "${DOCKER_REPO}corpora-backend:branch-main"
-      dockerfile: Dockerfile.api_server
+      dockerfile: Dockerfile.backend
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT=$HAPPY_COMMIT
