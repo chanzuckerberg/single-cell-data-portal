@@ -81,7 +81,7 @@ class CrossrefProvider(CrossrefProviderInterface):
         # Remove the https://doi.org part
         parsed = urlparse(doi)
         if parsed.scheme and parsed.netloc:
-            doi = parsed.path
+            doi = parsed.path.lstrip("/")
         return doi
 
     def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str]]:

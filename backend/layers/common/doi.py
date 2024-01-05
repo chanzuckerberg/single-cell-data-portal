@@ -37,7 +37,7 @@ def portal_get_normalized_doi_url(doi_node: dict, errors: list) -> Optional[str]
     doi_url = doi_node["link_url"]
     parsed = urlparse(doi_url)
     if not parsed.scheme and not parsed.netloc:
-        parsed_doi = parsed.path
+        parsed_doi = parsed.path.lstrip("/")
         if not DOI_REGEX_COMPILED.match(parsed_doi):
             errors.append({"link_type": "DOI", "reason": "Invalid DOI"})
             return None
