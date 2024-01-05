@@ -15,14 +15,14 @@ from backend.common.utils.rollup import are_cell_types_not_redundant_nodes
 
 
 @tracer.wrap(name="rollup", service="wmg-api", resource="query", span_type="wmg-api")
-def rollup(df, filter_redundant_nodes=True) -> DataFrame:
+def rollup(df, cell_type_ancestors, filter_redundant_nodes=True) -> DataFrame:
     if df.shape[0] == 0:
         return df
 
     df = df.copy()
 
-    df["cell_type_ontology_term_id_ancestors"] = df["cell_type_ontology_term_id_ancestors"].apply(
-        lambda x: x.split(",")
+    df["cell_type_ontology_term_id_ancestors"] = df["cell_type_ontology_term_id"].apply(
+        lambda x: cell_type_ancestors.get(x, [x])
     )
 
     is_multi_index = isinstance(df.index, pd.MultiIndex)
