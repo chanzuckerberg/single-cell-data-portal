@@ -2,11 +2,9 @@
 **
 
 # Allow files and directories
-!/requirements.txt
-!/requirements-api-server.txt
+!/python_dependencies/**
 !/requirements-processing.txt
 !/requirements-submissions.txt
-!/python_dependencies/**
 !/backend/**
 !/tests/**
 !/scripts/**
