@@ -3,7 +3,6 @@ name = "upload-handler"
 version = "0.1.0"
 description = ""
 authors = ["Chanzuckerberg Initiative Foundation"]
-readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"

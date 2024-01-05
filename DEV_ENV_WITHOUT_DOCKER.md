@@ -5,7 +5,7 @@
 ### Install python packages needed for WMG
 
 1. Make sure that you have successfully completed the [prerequisite installation steps](./README.md#pre-requisite-installations-and-setups)
-1. _Create and activate_ a python virtual environment using your preferred method. Some options are [`venv`](https://realpython.com/python-virtual-environments-a-primer/) and [`miniconda`](https://conda.io/projects/conda/en/stable/user-guide/install/macos.html#install-macos-silent). Here is a [cheatsheet of commands](https://conda.io/projects/conda/en/stable/user-guide/cheatsheet.html) to manage your virtual environment with `miniconda`.
+1. \_Create and activate_a python virtual environment using your preferred method. Some options are [`venv`](https://realpython.com/python-virtual-environments-a-primer/) and [`miniconda`](https://conda.io/projects/conda/en/stable/user-guide/install/macos.html#install-macos-silent). Here is a [cheatsheet of commands](https://conda.io/projects/conda/en/stable/user-guide/cheatsheet.html) to manage your virtual environment with `miniconda`.
 
    **NOTE:** _As of this writing on 06/12/2023, you should create your virtual environment with_ `python 3.10` _or greater_
 
@@ -37,8 +37,8 @@
    - `brew install graphviz`
    - `pip install --global-option=build_ext --global-option="-I$(brew --prefix graphviz)/include/" --global-option="-L$(brew --prefix graphviz)/lib/" pygraphviz==1.11`
 
-1. Install packages for WMG api - `pip install -r ./python_dependecies/backend/requirements.txt`
-1. Install packages for WMG pipeline - `pip install poetry && cd ./python_dependecies/wmg && poetry install --no-root`
+1. Install packages for WMG api - `cd ./python_dependecies/backend/ && pip install .`
+1. Install packages for WMG pipeline - `cd ./python_dependecies/wmg/ && pip install .`
 
 ### Run unit tests for WMG
 
