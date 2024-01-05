@@ -41,6 +41,7 @@ RUN poetry install --no-root
 # Remove packaging dependency once pyparser>3 is supported.
 RUN pip3 install python-igraph==0.8.3 louvain==0.7.0 packaging==21.0 awscli
 
+WORKDIR /
 ADD backend/__init__.py backend/__init__.py
 ADD backend/layers backend/layers
 ADD backend/common backend/common

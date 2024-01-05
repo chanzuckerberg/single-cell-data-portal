@@ -38,7 +38,7 @@ python-json-logger = "^2.0.7"
 requests = ">=2.22.0"
 scanpy = "1.9.3"
 sqlalchemy-utils = ">=0.36.8"
-sqlalchemy = "<2"
+sqlalchemy = ">=1.3.17,<2"
 tenacity = "^8.2.3"
 tiledb = "0.22.3" # Must be kept in sync with ruff version in .pre-commit-config.yaml
 werkzeug = "2.2.3"
