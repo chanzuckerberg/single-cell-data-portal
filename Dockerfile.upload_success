@@ -1,6 +1,6 @@
 FROM public.ecr.aws/lambda/python:3.8
 
-COPY python_dependencies/upload_handler/ /
+COPY python_dependencies/upload_handler/ .
 RUN python3 -m pip install -r requirements.txt -r requirements-dev.txt
 
 COPY backend/layers/processing/upload_failures backend/layers/processing/upload_failures
