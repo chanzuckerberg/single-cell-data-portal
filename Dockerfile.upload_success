@@ -30,7 +30,7 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 
 # copy project requirement files here to ensure they will be cached.
 WORKDIR $PYSETUP_PATH
-ADD python_dependencies/submissions/ $PYSETUP_PATH
+ADD python_dependencies/upload_handler/ $PYSETUP_PATH
 RUN poetry install --no-root
 
 # return to the directory expected by AWS lambda
