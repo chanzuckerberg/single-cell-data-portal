@@ -9,7 +9,6 @@ import numpy as np
 import tiledb
 from pandas import Categorical, DataFrame, Series
 
-from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.processing.h5ad_data_file import H5ADDataFile
 from tests.unit.backend.fixtures.environment_setup import fixture_file_path
@@ -22,17 +21,12 @@ class TestH5ADDataFile(unittest.TestCase):
 
         self.sample_output_directory = path.splitext(self.sample_h5ad_filename)[0] + ".cxg"
 
-        self.mock_config = CorporaConfig()
-        self.mock_config.set({"schema_4_feature_flag": "True"})
-
     def tearDown(self):
         if self.sample_h5ad_filename:
             remove(self.sample_h5ad_filename)
 
         if path.isdir(self.sample_output_directory):
             rmtree(self.sample_output_directory)
-
-        self.mock_config.reset()
 
     def test__create_h5ad_data_file__non_h5ad_raises_exception(self):
         non_h5ad_filename = "my_fancy_dataset.csv"

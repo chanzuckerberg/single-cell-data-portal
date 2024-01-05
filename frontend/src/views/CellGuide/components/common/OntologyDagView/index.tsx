@@ -58,6 +58,7 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE,
   MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE,
   ANIMAL_CELL_ID,
+  CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CONTENT,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
 import {
   ALL_TISSUES,
@@ -518,6 +519,7 @@ export default function OntologyDagView({
                 height={height}
                 ref={zoom.containerRef}
                 isDragging={zoom.isDragging}
+                data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CONTENT}
               >
                 <RectClipPath id="zoom-clip" width={width} height={height} />
                 <rect
