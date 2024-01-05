@@ -421,9 +421,7 @@ jobs:
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ steps.check.outputs.status }}
-          fields: repo,commit,author,eventName,workflow,job,mention
-          mention: "subteam^S02KZL4SQM6"
-          if_mention: "always"
+          fields: repo,commit,author,eventName,workflow,job
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: steps.check.outputs.status == 'failure' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
