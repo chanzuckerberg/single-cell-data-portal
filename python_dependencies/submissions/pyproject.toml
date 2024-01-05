@@ -15,7 +15,6 @@ requests = "^2.31.0"
 sqlalchemy = ">=1.3.17,<2"
 tenacity = "^8.2.3"
 
-
 [tool.poetry.group.dev.dependencies]
 allure-pytest = "<3"
 coverage = ">=6.5.0"

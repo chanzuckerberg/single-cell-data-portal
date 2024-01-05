@@ -42,10 +42,6 @@ WORKDIR $PYSETUP_PATH
 ADD python_dependencies/backend/ $PYSETUP_PATH
 RUN poetry install --no-root
 
-# TODO: Determine if cmake is really needed for ddtrace
-# see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
-RUN python3 -m pip install cmake
-
 WORKDIR /single-cell-data-portal
 EXPOSE 5000
 
