@@ -20,9 +20,13 @@ def rollup(df: pd.DataFrame, cell_type_ancestors: pd.Series, filter_redundant_no
         return df
 
     df = df.copy()
-    df["cell_type_ontology_term_id_ancestors"] = cell_type_ancestors[
+    # cell type ontology term ids can be in the index or in a column
+    cell_types = (
         df.index.get_level_values("cell_type_ontology_term_id")
-    ].values
+        if "cell_type_ontology_term_id" not in df.columns
+        else df["cell_type_ontology_term_id"].values
+    )
+    df["cell_type_ontology_term_id_ancestors"] = cell_type_ancestors[cell_types].values
 
     is_multi_index = isinstance(df.index, pd.MultiIndex)
     if is_multi_index:
