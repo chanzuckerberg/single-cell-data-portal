@@ -1,0 +1,1 @@
+{"levelname": "DEBUG", "asctime": "2024-01-05T23:44:03.005Z", "name": "h5py._conv", "message": "Creating converter from 3 to 5", "lineno": 78, "pathname": "/opt/pysetup/.venv/lib/python3.10/site-packages/h5py/_hl/attrs.py", "request_id": ""}
