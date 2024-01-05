@@ -23,6 +23,7 @@ CELL_COUNTS_CUBE_NAME = "cell_counts"
 MARKER_GENES_CUBE_NAME = "marker_genes"
 FILTER_RELATIONSHIPS_FILENAME = "filter_relationships.json"
 DATASET_METADATA_FILENAME = "dataset_metadata.json"
+CELL_TYPE_ANCESTORS_FILENAME = "cell_type_ancestors.json"
 
 STACK_NAME = os.environ.get("REMOTE_DEV_PREFIX")
 

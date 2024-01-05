@@ -22,6 +22,7 @@ from backend.wmg.data.schemas.cube_schema_default import (
 )
 from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema as marker_genes_schema_actual
 from backend.wmg.data.snapshot import (
+    CELL_TYPE_ANCESTORS_FILENAME,
     CELL_TYPE_ORDERINGS_FILENAME,
     DATASET_METADATA_FILENAME,
     FILTER_RELATIONSHIPS_FILENAME,
@@ -254,11 +255,14 @@ def load_realistic_test_snapshot_tmpdir(snapshot_name: str) -> WmgSnapshot:
         f"{FIXTURES_ROOT}/{snapshot_name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}.gz", "rt"
     ) as fp, gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{DATASET_METADATA_FILENAME}.gz", "rt") as fd, gzip.open(
         f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_TYPE_ORDERINGS_FILENAME}.gz", "rt"
-    ) as fc:
+    ) as fc, gzip.open(
+        f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_TYPE_ANCESTORS_FILENAME}.gz", "rt"
+    ) as fca:
         filter_relationships = json.load(fr)
         primary_filter_dimensions = json.load(fp)
         dataset_metadata = json.load(fd)
         cell_type_orderings = json.load(fc)
+        cell_type_ancestors = json.load(fca)
 
     with open(f"{cube_dir}/{FILTER_RELATIONSHIPS_FILENAME}", "w") as fr_out:
         json.dump(filter_relationships, fr_out)
@@ -268,6 +272,8 @@ def load_realistic_test_snapshot_tmpdir(snapshot_name: str) -> WmgSnapshot:
         json.dump(dataset_metadata, fd_out)
     with open(f"{cube_dir}/{CELL_TYPE_ORDERINGS_FILENAME}", "w") as fc_out:
         json.dump(cell_type_orderings, fc_out)
+    with open(f"{cube_dir}/{CELL_TYPE_ANCESTORS_FILENAME}", "w") as fca_out:
+        json.dump(cell_type_ancestors, fca_out)
 
     return cube_dir_temp
 
