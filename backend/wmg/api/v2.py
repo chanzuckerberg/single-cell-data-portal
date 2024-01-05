@@ -101,9 +101,13 @@ def query():
                 expression_summary, cell_counts, group_by_terms
             )
             if is_rollup:
-                rolled_gene_expression_df, rolled_cell_counts_grouped_df = rollup(
-                    gene_expression_df, cell_counts_grouped_df
-                )
+                rolled_gene_expression_df = rollup(gene_expression_df, filter_redundant_nodes=False)
+                rolled_cell_counts_grouped_df = rollup(cell_counts_grouped_df)
+                # rolled_gene_expression_df = rolled_gene_expression_df[
+                #     rolled_gene_expression_df["cell_type_ontology_term_id"].isin(
+                #         cell_counts_grouped_df["cell_type_ontology_term_id"].unique()
+                #     )
+                # ]
 
             response = jsonify(
                 dict(
