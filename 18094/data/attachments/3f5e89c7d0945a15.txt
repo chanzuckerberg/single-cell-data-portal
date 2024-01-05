@@ -1,0 +1,64 @@
+
+apply_doi_update True
+
+current_doi None new_doi None
+next current_doi None new_doi None
+
+new metadata CollectionMetadata(name='test_collection', description='described', contact_name='john doe', contact_email='john.doe@email.com', links=[Link(name='DOI Link', type='DOI', uri='http://doi.org/10.1016')], consortia=['Consortia 1', 'Consortia 2'])
+
+
+all: (True, None, None, True)
+
+
+apply_doi_update True
+
+current_doi http://doi.org/10.1016 new_doi None
+next current_doi http://doi.org/10.1016 new_doi None
+
+UNSETTING with current_doi http://doi.org/10.1016
+
+
+new metadata CollectionMetadata(name='test_collection', description='described', contact_name='john doe', contact_email='john.doe@email.com', links=[], consortia=['Consortia 1', 'Consortia 2'])
+
+
+all: (True, None, 'http://doi.org/10.1016', True)
+
+
+apply_doi_update True
+
+current_doi None new_doi None
+next current_doi None new_doi None
+
+new metadata CollectionMetadata(name='test_collection', description='described', contact_name='john doe', contact_email='john.doe@email.com', links=[Link(name='New name', type='DOI', uri='http://doi.org/10.1016')], consortia=['Consortia 1', 'Consortia 2'])
+
+
+all: (True, None, None, True)
+
+
+apply_doi_update True
+
+current_doi http://doi.org/10.1016 new_doi None
+next current_doi http://doi.org/10.1016 new_doi None
+
+UNSETTING with current_doi http://doi.org/10.1016
+
+
+new metadata CollectionMetadata(name='test_collection', description='described', contact_name='john doe', contact_email='john.doe@email.com', links=[Link(name='Link 1', type='OTHER', uri='http://link.com'), Link(name='DOI Link', type='DOI', uri='http://doi.org/10.1016')], consortia=['Consortia 1', 'Consortia 2'])
+
+
+all: (True, None, 'http://doi.org/10.1016', True)
+
+
+apply_doi_update True
+
+current_doi http://doi.org/10.1016 new_doi None
+next current_doi http://doi.org/10.1016 new_doi None
+
+UNSETTING with current_doi http://doi.org/10.1016
+
+
+new metadata CollectionMetadata(name='test_collection', description='described', contact_name='john doe', contact_email='john.doe@email.com', links=[], consortia=['Consortia 1', 'Consortia 2'])
+
+
+all: (True, None, 'http://doi.org/10.1016', True)
+

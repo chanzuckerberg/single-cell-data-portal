@@ -1,0 +1,11 @@
+
+apply_doi_update True
+
+current_doi None new_doi None
+next current_doi None new_doi None
+
+new metadata CollectionMetadata(name='new collection name', description='new collection description', contact_name='new contact name', contact_email='new_email@czi.com', links=[Link(name='test link 2', type='other', uri='http://example.com/other')], consortia=['Consortia 1'])
+
+
+all: (True, None, None, True)
+

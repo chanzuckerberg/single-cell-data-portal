@@ -1,0 +1,12 @@
+
+apply_doi_update True
+
+current_doi https://doi.org/123 new_doi None
+the new doi curie is 10.1234/5678
+next current_doi https://doi.org/123 new_doi https://doi.org/10.1234/5678
+
+new metadata CollectionMetadata(name='test_collection', description='described', contact_name='john doe', contact_email='john.doe@email.com', links=[Link(name='Link 1', type='DOI', uri='https://doi.org/10.1234/5678')], consortia=['Consortia 1', 'Consortia 2'])
+
+
+all: (True, 'https://doi.org/10.1234/5678', 'https://doi.org/123', True)
+

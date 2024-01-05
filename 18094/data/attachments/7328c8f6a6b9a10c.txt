@@ -1,0 +1,9 @@
+
+apply_doi_update False
+
+
+new metadata CollectionMetadata(name='test_collection', description='described', contact_name='john doe', contact_email='john.doe@email.com', links=[Link(name='doi', type='DOI', uri='https://doi.org/10.1011/something')], consortia=[])
+
+
+all: (False, None, None, True)
+
