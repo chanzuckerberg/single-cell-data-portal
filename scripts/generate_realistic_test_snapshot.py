@@ -10,6 +10,7 @@ import tiledb
 
 from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
+    CELL_TYPE_ANCESTORS_FILENAME,
     CELL_TYPE_ORDERINGS_FILENAME,
     DATASET_METADATA_FILENAME,
     EXPRESSION_SUMMARY_CUBE_NAME,
@@ -49,6 +50,7 @@ class FixtureType(Enum):
     primary_filter_dimensions = "primary_filter_dimensions"
     cell_type_orderings = "cell_type_orderings"
     filter_relationships = "filter_relationships"
+    cell_type_ancestors = "cell_type_ancestors"
 
 
 if __name__ == "__main__":
@@ -119,6 +121,7 @@ if __name__ == "__main__":
             PRIMARY_FILTER_DIMENSIONS_FILENAME,
             CELL_TYPE_ORDERINGS_FILENAME,
             FILTER_RELATIONSHIPS_FILENAME,
+            CELL_TYPE_ANCESTORS_FILENAME,
         ]:
             if filename.split(".json")[0] == fixture_type or fixture_type == FixtureType.all.value:
                 path = os.path.join(new_snapshot, filename)
