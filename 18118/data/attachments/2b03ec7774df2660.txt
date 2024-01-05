@@ -1,0 +1,1 @@
+DEBUG    h5py._conv:attrs.py:78 Creating converter from 3 to 5
