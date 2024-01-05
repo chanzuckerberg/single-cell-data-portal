@@ -1,6 +1,0 @@
-
-apply_doi_update True
-
-current_doi https://doi.org/10.1011/something new_doi None
-the new doi curie is 10.1016/bad_doi
-next current_doi https://doi.org/10.1011/something new_doi https://doi.org/10.1016/bad_doi

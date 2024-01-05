@@ -1,6 +1,0 @@
-
-apply_doi_update True
-
-current_doi None new_doi None
-the new doi curie is new.test.doi
-next current_doi None new_doi https://doi.org/new.test.doi
