@@ -6,7 +6,7 @@ COPY backend/layers ./backend/layers
 # For lighter weight Docker images
 ENV PIP_NO_CACHE_DIR=1
 
-COPY /python_dependecies/submissions/ .
+COPY /python_dependencies/submissions/ .
 RUN pip3 install -r requirements.txt
 
 COPY backend/__init__.py ./backend/__init.py
