@@ -11,12 +11,12 @@ RUN apt-get update && \
 
 # Don't re-run pip install unless either requirements.txt has changed.
 WORKDIR /single-cell-data-portal
-ADD requirements-backend.txt requirements-backend.txt
+COPY /python_dependecies/backend/ .
 
 # TODO: Determine if cmake is really needed for ddtrace
 # see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
 RUN python3 -m pip install cmake
-RUN python3 -m pip install -r requirements-backend.txt
+RUN python3 -m pip install -r requirements.txt
 EXPOSE 5000
 
 # Install utilities to /single-cell-data-portal so we can run db migrations.
