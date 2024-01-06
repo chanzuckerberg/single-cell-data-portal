@@ -2,14 +2,7 @@
 **
 
 # Allow files and directories
-!/requirements.txt
-!/python_dependecies/backend/requirements.txt
-!/python_dependecies/processing/requirements.txt
-!/python_dependecies/submissions/requirements.txt
-!/requirements-upload-failures.txt
-!/python_dependecies/upload_handler/requirements.txt
-!/python_dependecies/wmg/requirements.txt
-!/python_dependecies/cellguide_pipeline/requirements.txt
+!/python_dependencies/**
 !/backend/**
 !/tests/**
 !/scripts/**
