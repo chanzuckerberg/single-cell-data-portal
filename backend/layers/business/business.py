@@ -363,24 +363,18 @@ class BusinessLogic(BusinessLogicInterface):
 
         new_doi = None
         current_doi = None
-        print(f"\napply_doi_update {apply_doi_update}\n")
-        print(f"\n\nbody is {body}\n")
         if apply_doi_update and body.links is not None:  # empty list is used to reset DOI
             # Determine if the DOI has changed
             current_doi = next(
                 (link.uri for link in current_collection_version.metadata.links if link.type == "DOI"), None
             )
             # Format new doi link correctly; current link will have format https://doi.org/{curie_identifier}
-            print(f"current_doi {current_doi} new_doi {new_doi}")
             if new_doi_curie := doi_curie_from_link(
                 next((link.uri for link in body.links if link.type == "DOI"), None)
             ):
-                print(f"the new doi curie is {new_doi_curie}")
                 new_doi = f"https://doi.org/{new_doi_curie}"
             else:
-                uri = next((link.uri for link in body.links if link.type == "DOI"), None)
-                print(f"uri is {uri}")
-                print(f"\ndjh should not get here {doi_curie_from_link(uri)}")
+                next((link.uri for link in body.links if link.type == "DOI"), None)
             if current_doi != new_doi:
                 for dataset in current_collection_version.datasets:
                     # Avoid reprocessing a dataset while it is already processing to avoid race conditions
@@ -399,10 +393,8 @@ class BusinessLogic(BusinessLogicInterface):
                         break
             elif doi_link := next((link for link in body.links if link.type == "DOI"), None):
                 doi_link.uri = new_doi  # Ensures we submit DOI link in correct format
-            print(f"next current_doi {current_doi} new_doi {new_doi}")
             if current_doi and new_doi is None:
                 # If the DOI was deleted, remove the publisher_metadata field
-                print(f"\nUNSETTING with current_doi {current_doi}\n")
                 unset_publisher_metadata = True
             elif new_doi and new_doi != current_doi:
                 # If the DOI has changed, fetch and update the metadata
@@ -423,17 +415,12 @@ class BusinessLogic(BusinessLogicInterface):
                     value.strip_fields()
                 setattr(new_metadata, field, value)
 
-        print(f"\nnew metadata {new_metadata}\n")
-
         # Issue all updates
         if unset_publisher_metadata:
             self.database_provider.save_collection_publisher_metadata(version_id, None)
         elif publisher_metadata_to_set is not None:
             self.database_provider.save_collection_publisher_metadata(version_id, publisher_metadata_to_set)
         self.database_provider.save_collection_metadata(version_id, new_metadata)
-        print(
-            f"\nall: {apply_doi_update, new_doi, current_doi, FeatureFlagService.is_enabled(FeatureFlagValues.CITATION_UPDATE)}\n"
-        )
         if all(
             [apply_doi_update, new_doi != current_doi, FeatureFlagService.is_enabled(FeatureFlagValues.CITATION_UPDATE)]
         ):

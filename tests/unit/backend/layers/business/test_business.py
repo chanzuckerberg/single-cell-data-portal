@@ -687,7 +687,6 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         expected_updated_publisher_metadata = ({"authors": ["New Test Author"]}, "new.test.doi")
         self.crossref_provider.fetch_metadata = Mock(return_value=expected_updated_publisher_metadata)
         self.batch_job_provider.start_metadata_update_batch_job = Mock()
-        print("\n\nGOING TO UPDATE COLLECTION VERSION\n")
         self.business_logic.update_collection_version(version.version_id, body)
 
         self.crossref_provider.fetch_metadata.assert_called_once()
@@ -715,7 +714,6 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         self.crossref_provider.fetch_metadata = Mock(return_value=({"authors": ["New Test Author"]}, "new.test.doi"))
 
         self.business_logic.update_collection_version(revision.version_id, body)
-        print(f"call count {self.batch_job_provider.start_metadata_update_batch_job.call_count}\n")
         assert self.batch_job_provider.start_metadata_update_batch_job.call_count == 2
         self.batch_job_provider.start_metadata_update_batch_job.assert_has_calls(
             [
