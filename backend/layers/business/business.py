@@ -37,6 +37,7 @@ from backend.layers.business.exceptions import (
 )
 from backend.layers.common import validation
 from backend.layers.common.cleanup import sanitize
+from backend.layers.common.doi import doi_curie_from_link
 from backend.layers.common.entities import (
     CanonicalCollection,
     CollectionId,
@@ -363,19 +364,23 @@ class BusinessLogic(BusinessLogicInterface):
         new_doi = None
         current_doi = None
         print(f"\napply_doi_update {apply_doi_update}\n")
-        if apply_doi_update:
+        print(f"\n\nbody is {body}\n")
+        if apply_doi_update and body.links is not None:  # empty list is used to reset DOI
             # Determine if the DOI has changed
             current_doi = next(
                 (link.uri for link in current_collection_version.metadata.links if link.type == "DOI"), None
             )
             # Format new doi link correctly; current link will have format https://doi.org/{curie_identifier}
             print(f"current_doi {current_doi} new_doi {new_doi}")
-            if new_doi_curie := self.crossref_provider.doi_curie_from_link(
-                (None if body.links is None else next((link.uri for link in body.links if link.type == "DOI"), None))
+            if new_doi_curie := doi_curie_from_link(
+                next((link.uri for link in body.links if link.type == "DOI"), None)
             ):
                 print(f"the new doi curie is {new_doi_curie}")
                 new_doi = f"https://doi.org/{new_doi_curie}"
-
+            else:
+                uri = next((link.uri for link in body.links if link.type == "DOI"), None)
+                print(f"uri is {uri}")
+                print(f"\ndjh should not get here {doi_curie_from_link(uri)}")
             if current_doi != new_doi:
                 for dataset in current_collection_version.datasets:
                     # Avoid reprocessing a dataset while it is already processing to avoid race conditions

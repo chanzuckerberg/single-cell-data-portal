@@ -2,17 +2,14 @@ import html
 import logging
 from datetime import datetime
 from typing import Optional, Tuple
-from urllib.parse import urlparse
 
 import requests
 
 from backend.common.corpora_config import CorporaConfig
+from backend.layers.common.doi import doi_curie_from_link
 
 
 class CrossrefProviderInterface:
-    def doi_curie_from_link(self, doi: str) -> str:
-        pass
-
     def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str]]:
         return None, None
 
@@ -77,13 +74,6 @@ class CrossrefProvider(CrossrefProviderInterface):
 
         return res
 
-    def doi_curie_from_link(self, doi: str) -> str:
-        # Remove the https://doi.org part
-        parsed = urlparse(doi)
-        if parsed.scheme and parsed.netloc:
-            doi = parsed.path.lstrip("/")
-        return doi
-
     def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str]]:
         """
         Fetches and extracts publisher metadata from Crossref for a specified DOI.
@@ -92,7 +82,7 @@ class CrossrefProvider(CrossrefProviderInterface):
         :param doi: str - DOI uri link or curie identifier
         return: tuple - publisher metadata dict and DOI curie identifier
         """
-        doi_curie = self.doi_curie_from_link(doi)
+        doi_curie = doi_curie_from_link(doi)
 
         res = self._fetch_crossref_payload(doi_curie)
         if not res:

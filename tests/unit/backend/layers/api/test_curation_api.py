@@ -1356,7 +1356,6 @@ class TestPatchCollectionID(BaseAPIPortalTest):
             {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
         ]
         self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.2020"))
-        self.crossref_provider.doi_curie_from_link = Mock(return_value="10.2020")
         collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
         self.assertEqual(initial_consortia, original_collection["consortia"])
@@ -1376,7 +1375,6 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         self.crossref_provider.fetch_metadata = Mock(
             return_value=(generate_mock_publisher_metadata(), "10.1011/something")
         )
-        self.crossref_provider.doi_curie_from_link = Mock(return_value="10.1011/something")
         collection = self.generate_collection(links=links, visibility="PRIVATE")
         collection_id = collection.collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
@@ -1397,7 +1395,6 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         ]
         mock_publisher_metadata = generate_mock_publisher_metadata()
         self.crossref_provider.fetch_metadata = Mock(return_value=(mock_publisher_metadata, "10.1011/something"))
-        self.crossref_provider.doi_curie_from_link = Mock(return_value="10.1011/something")
 
         collection = self.generate_collection(links=links, visibility="PRIVATE")
         collection_id = collection.collection_id
@@ -1425,7 +1422,6 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         ]
         mock_publisher_metadata = generate_mock_publisher_metadata()
         self.crossref_provider.fetch_metadata = Mock(return_value=(mock_publisher_metadata, "10.1011/something"))
-        self.crossref_provider.doi_curie_from_link = Mock(return_value="10.1011/something")
 
         collection = self.generate_collection(links=links, visibility="PRIVATE")
         self.assertIsNotNone(collection.publisher_metadata)
@@ -1433,7 +1429,6 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
 
         self.crossref_provider.fetch_metadata = Mock(side_effect=CrossrefDOINotFoundException())
-        self.crossref_provider.doi_curie_from_link = Mock(return_value="10.1016/bad_doi")
 
         # Only compare to first item in links list because "DOI" type gets removed from Curator API response
         self.assertEqual(links[:1], original_collection["links"])
@@ -1796,7 +1791,6 @@ class TestGetDatasets(BaseAPIPortalTest):
         self.crossref_provider.fetch_metadata = Mock(
             return_value=(generate_mock_publisher_metadata(), "12.3456/j.celrep")
         )
-        self.crossref_provider.doi_curie_from_link = Mock(return_value="12.3456/j.celrep")
         published_collection_1 = self.generate_published_collection(
             add_datasets=2,
             metadata=CollectionMetadata(
@@ -1811,7 +1805,6 @@ class TestGetDatasets(BaseAPIPortalTest):
         self.crossref_provider.fetch_metadata = Mock(
             return_value=(generate_mock_publisher_metadata(), "78.91011/j.celrep")
         )
-        self.crossref_provider.doi_curie_from_link = Mock(return_value="78.91011/j.celrep")
         published_collection_2 = self.generate_published_collection(
             owner="other owner",
             curator_name="other curator",
@@ -1904,7 +1897,6 @@ class TestGetDatasets(BaseAPIPortalTest):
         self.crossref_provider.fetch_metadata = Mock(
             return_value=(generate_mock_publisher_metadata(), "12.3456/j.celrep")
         )
-        self.crossref_provider.doi_curie_from_link = Mock(return_value="12.3456/j.celrep")
         published_collection_1 = self.generate_published_collection(
             add_datasets=2,
             metadata=CollectionMetadata(
@@ -1919,7 +1911,6 @@ class TestGetDatasets(BaseAPIPortalTest):
         self.crossref_provider.fetch_metadata = Mock(
             return_value=(generate_mock_publisher_metadata(), "78.91011/j.celrep")
         )
-        self.crossref_provider.doi_curie_from_link = Mock(return_value="78.91011/j.celrep")
         published_collection_2 = self.generate_published_collection(
             owner="other owner",
             curator_name="other curator",
@@ -1937,7 +1928,6 @@ class TestGetDatasets(BaseAPIPortalTest):
         self.crossref_provider.fetch_metadata = Mock(
             return_value=(generate_mock_publisher_metadata(), "78.91011/j.celrep")
         )
-        self.crossref_provider.doi_curie_from_link = Mock(return_value="78.91011/j.celrep")
         published_collection_3 = self.generate_published_collection(
             owner="other owner",
             curator_name="other curator",
