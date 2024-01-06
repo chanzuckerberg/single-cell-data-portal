@@ -1,3 +1,4 @@
+import copy
 import json
 import unittest
 from unittest.mock import patch
@@ -18,8 +19,8 @@ class TestCrossrefProvider(unittest.TestCase):
     @patch("backend.layers.thirdparty.crossref_provider.requests.get")
     def test__provider_does_not_call_crossref_in_test(self, mock_get):
         provider = CrossrefProvider()
-        res = provider.fetch_metadata("test_doi")
-        self.assertIsNone(res)
+        metadata, doi = provider.fetch_metadata("test_doi")
+        self.assertIsNone(metadata)
         mock_get.assert_not_called()
 
     @patch("backend.layers.thirdparty.crossref_provider.requests.get")
@@ -56,7 +57,8 @@ class TestCrossrefProvider(unittest.TestCase):
 
         mock_get.return_value = response
         provider = CrossrefProvider()
-        res = provider.fetch_metadata("test_doi")
+        res, doi_curie_from_crossref = provider.fetch_metadata("test_doi")
+        self.assertEqual("test_doi", doi_curie_from_crossref)
         mock_get.assert_called_once()
 
         expected_response = {
@@ -70,6 +72,104 @@ class TestCrossrefProvider(unittest.TestCase):
         }
 
         self.assertDictEqual(expected_response, res)
+
+    @patch("backend.layers.thirdparty.crossref_provider.requests.get")
+    @patch("backend.layers.thirdparty.crossref_provider.CorporaConfig")
+    def test__published_doi_used_if_exists_for_preprint(self, mock_config, mock_get):
+
+        # Defining a mocked CorporaConfig will allow the provider to consider the `crossref_api_key`
+        # not None, so it will go ahead and do the mocked call.
+
+        def make_response(content):
+            response = Response()
+            response.status_code = 200
+            response._content = str.encode(json.dumps(content))
+            return response
+
+        body = {
+            "status": "ok",
+            "message": {
+                "author": [
+                    {
+                        "given": "John",
+                        "family": "Doe",
+                        "sequence": "first",
+                    },
+                    {
+                        "given": "Jane",
+                        "family": "Doe",
+                        "sequence": "additional",
+                    },
+                ],
+                "published-online": {"date-parts": [[2021, 11, 10]]},
+                "container-title": ["Nature"],
+                "subtype": "preprint",
+                "relation": {
+                    "is-preprint-of": [
+                        {"id-type": "not_doi"},
+                        {
+                            "id": "published_doi",
+                            "id-type": "doi",
+                        },
+                    ]
+                },
+            },
+        }
+
+        provider = CrossrefProvider()
+
+        with self.subTest("Published DOI is used when available"):
+            preprint_body = copy.deepcopy(body)
+            response_preprint = make_response(preprint_body)
+
+            published_body = copy.deepcopy(body)
+            del published_body["message"]["subtype"]
+            published_body["message"]["author"][0]["given"] = "Jonathan"
+            response_published = make_response(published_body)
+
+            responses = [response_published, response_preprint]
+            mock_get.side_effect = lambda *x, **y: responses.pop()
+            res, doi_curie_from_crossref = provider.fetch_metadata("preprint_doi")
+            self.assertEqual("published_doi", doi_curie_from_crossref)
+            expected_response = {
+                "authors": [{"given": "Jonathan", "family": "Doe"}, {"given": "Jane", "family": "Doe"}],
+                "published_year": 2021,
+                "published_month": 11,
+                "published_day": 10,
+                "published_at": 1636502400.0,
+                "journal": "Nature",
+                "is_preprint": False,
+            }
+
+            self.assertDictEqual(expected_response, res)
+
+        with self.subTest("Preprint DOI is used when published is referenced but cannot be retrieved") and patch.object(
+            provider, "fetch_published_metadata"
+        ) as fetch_published_metadata_mock:
+            fetch_published_metadata_mock.return_value = (None, None)
+
+            preprint_body = copy.deepcopy(body)
+            response_preprint = make_response(preprint_body)
+
+            published_body = copy.deepcopy(body)
+            del published_body["message"]["subtype"]
+            response_published = make_response(published_body)
+
+            responses = [response_published, response_preprint]
+            mock_get.side_effect = lambda *x, **y: responses.pop()
+            res, doi_curie_from_crossref = provider.fetch_metadata("preprint_doi")
+            self.assertEqual("preprint_doi", doi_curie_from_crossref)
+            expected_response = {
+                "authors": [{"given": "John", "family": "Doe"}, {"given": "Jane", "family": "Doe"}],
+                "published_year": 2021,
+                "published_month": 11,
+                "published_day": 10,
+                "published_at": 1636502400.0,
+                "journal": "Nature",
+                "is_preprint": True,
+            }
+
+            self.assertDictEqual(expected_response, res)
 
     @patch("backend.layers.thirdparty.crossref_provider.requests.get")
     @patch("backend.layers.thirdparty.crossref_provider.CorporaConfig")
@@ -114,7 +214,7 @@ class TestCrossrefProvider(unittest.TestCase):
 
         mock_get.return_value = response
         provider = CrossrefProvider()
-        res = provider.fetch_metadata("test_doi")
+        res, _ = provider.fetch_metadata("test_doi")
         mock_get.assert_called_once()
 
         expected_response = {
@@ -158,7 +258,7 @@ class TestCrossrefProvider(unittest.TestCase):
 
         mock_get.return_value = response
         provider = CrossrefProvider()
-        res = provider.fetch_metadata("test_doi")
+        author_data, _ = provider.fetch_metadata("test_doi")
         mock_get.assert_called_once()
 
         expected_response = {
@@ -173,7 +273,7 @@ class TestCrossrefProvider(unittest.TestCase):
             "is_preprint": False,
         }
 
-        self.assertDictEqual(expected_response, res)
+        self.assertDictEqual(expected_response, author_data)
 
     @patch("backend.layers.thirdparty.crossref_provider.requests.get")
     @patch("backend.layers.thirdparty.crossref_provider.CorporaConfig")
