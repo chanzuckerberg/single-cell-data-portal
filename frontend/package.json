@@ -34,7 +34,7 @@
     "csv": "^6.3.1",
     "d3-scale-chromatic": "^3.0.0",
     "downloadjs": "^1.4.7",
-    "echarts": "^5.4.2",
+    "echarts": "^5.4.3",
     "html-to-image": "^1.11.11",
     "jschardet": "^2.3.0",
     "lodash": "^4.17.21",
