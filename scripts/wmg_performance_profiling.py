@@ -10,6 +10,11 @@ from tqdm import tqdm
 
 
 def generate_scatter_plots(json1, json2):
+    """
+    Compares the profiling results from two JSON files and generates scatter plots for each metric.
+
+    By definition, json1 is the current API and json2 is the reference API.
+    """
     import matplotlib.pyplot as plt
 
     # Load the profiling results
@@ -51,8 +56,8 @@ def generate_scatter_plots(json1, json2):
                 axs[row, col].plot([0, max_value], [0, max_value], "k:")
                 axs[row, col].scatter(metric_values1, metric_values2)
                 axs[row, col].set_title(f"compare: {compare_option}, sex: {sex}")
-                axs[row, col].set_xlabel("Run 1")
-                axs[row, col].set_ylabel("Run 2")
+                axs[row, col].set_xlabel("Current API")
+                axs[row, col].set_ylabel("Reference API")
                 axs[row, col].set_xlim(0, max_value + 0.5)
                 axs[row, col].set_ylim(0, max_value + 0.5)
 
