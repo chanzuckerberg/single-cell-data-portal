@@ -84,7 +84,6 @@ class BaseTest(unittest.TestCase):
             "collections_base_url": "https://domain",
             "dataset_assets_base_url": "http://domain",
             "citation_update_feature_flag": "True",
-            "schema_4_feature_flag": "True",
         }
         # Mock CorporaConfig
         # TODO: deduplicate with base_api

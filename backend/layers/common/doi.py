@@ -28,6 +28,14 @@ def curation_get_normalized_doi_url(doi: str, errors: list) -> Optional[str]:
     return f"https://doi.org/{doi}"
 
 
+def doi_curie_from_link(doi: str) -> str:
+    # Remove the https://doi.org/ (or other) domain part
+    parsed = urlparse(doi)
+    if parsed.scheme and parsed.netloc:
+        doi = parsed.path.lstrip("/")
+    return doi
+
+
 def portal_get_normalized_doi_url(doi_node: dict, errors: list) -> Optional[str]:
     """
     1. Check for DOI uniqueness in the payload
@@ -37,7 +45,7 @@ def portal_get_normalized_doi_url(doi_node: dict, errors: list) -> Optional[str]
     doi_url = doi_node["link_url"]
     parsed = urlparse(doi_url)
     if not parsed.scheme and not parsed.netloc:
-        parsed_doi = parsed.path
+        parsed_doi = parsed.path.lstrip("/")
         if not DOI_REGEX_COMPILED.match(parsed_doi):
             errors.append({"link_type": "DOI", "reason": "Invalid DOI"})
             return None

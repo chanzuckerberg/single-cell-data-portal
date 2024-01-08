@@ -93,7 +93,6 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self.mock_config.set(
             {
                 "upload_max_file_size_gb": 30,
-                "schema_4_feature_flag": "True",
                 "citation_update_feature_flag": "True",
                 "dataset_assets_base_url": "https://dataset_assets_domain",
                 "collections_base_url": "https://collections_domain",
@@ -362,21 +361,21 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         A collection can be created with a valid DOI, and the publisher metadata will be added
         to the collection
         """
-        links_with_doi = [Link("test doi", "DOI", "http://good.doi")]
+        links_with_doi = [Link("test doi", "DOI", "https://doi.org/good/doi")]
         self.sample_collection_metadata.links = links_with_doi
 
         expected_publisher_metadata = {"authors": ["Test Author"]}
-        self.crossref_provider.fetch_metadata = Mock(return_value=expected_publisher_metadata)
+        self.crossref_provider.fetch_metadata = Mock(return_value=(expected_publisher_metadata, "good/doi"))
 
         collection = self.business_logic.create_collection(
             test_user_name, test_curator_name, self.sample_collection_metadata
         )
 
-        self.crossref_provider.fetch_metadata.assert_called_with("http://good.doi")
+        self.crossref_provider.fetch_metadata.assert_called_with("https://doi.org/good/doi")
 
         collection_from_database = self.database_provider.get_collection_version(collection.version_id)
         self.assertEqual(1, len(collection_from_database.metadata.links))
-        self.assertEqual(collection_from_database.metadata.links[0].uri, "http://good.doi")
+        self.assertEqual(collection_from_database.metadata.links[0].uri, "https://doi.org/good/doi")
         self.assertIsNotNone(collection_from_database.publisher_metadata)
         self.assertEqual(collection_from_database.publisher_metadata, expected_publisher_metadata)
 
@@ -635,11 +634,11 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         A collection updated with the same DOI should not trigger a Crossref call
         """
         metadata = self.sample_collection_metadata
-        links = [Link("test doi", "DOI", "http://test.doi")]
+        links = [Link("test doi", "DOI", "https://doi.org/test/doi")]
         metadata.links = links
 
         expected_publisher_metadata = {"authors": ["Test Author"]}
-        self.crossref_provider.fetch_metadata = Mock(return_value=expected_publisher_metadata)
+        self.crossref_provider.fetch_metadata = Mock(return_value=(expected_publisher_metadata, "test/doi"))
 
         # We need to call `business_logic.create_collection` so that the publisher metadata is populated
         version = self.business_logic.create_collection(test_user_name, test_curator_name, metadata)
@@ -666,10 +665,10 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         A collection updated with a new DOI should get new publisher metadata from Crossref
         """
         metadata = self.sample_collection_metadata
-        links = [Link("test doi", "DOI", "http://test.doi")]
+        links = [Link("test doi", "DOI", "http://doi.org/test.doi")]
         metadata.links = links
 
-        self.crossref_provider.fetch_metadata = Mock(return_value={"authors": ["Test Author"]})
+        self.crossref_provider.fetch_metadata = Mock(return_value=({"authors": ["Test Author"]}, "test.doi"))
 
         # We need to call `business_logic.create_collection` so that the publisher metadata is populated
         version = self.business_logic.create_collection(test_user_name, test_curator_name, metadata)
@@ -681,20 +680,19 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             description=None,
             contact_name=None,
             contact_email=None,
-            links=[Link("new test doi", "DOI", "http://new.test.doi")],
+            links=[Link("new test doi", "DOI", "http://doi.org/new.test.doi")],
             consortia=None,
         )
 
-        expected_updated_publisher_metadata = {"authors": ["New Test Author"]}
+        expected_updated_publisher_metadata = ({"authors": ["New Test Author"]}, "new.test.doi")
         self.crossref_provider.fetch_metadata = Mock(return_value=expected_updated_publisher_metadata)
         self.batch_job_provider.start_metadata_update_batch_job = Mock()
-
         self.business_logic.update_collection_version(version.version_id, body)
 
         self.crossref_provider.fetch_metadata.assert_called_once()
         self.batch_job_provider.start_metadata_update_batch_job.assert_not_called()  # no datasets to update
         updated_version = self.database_provider.get_collection_version(version.version_id)
-        self.assertEqual(updated_version.publisher_metadata, expected_updated_publisher_metadata)
+        self.assertEqual(updated_version.publisher_metadata, expected_updated_publisher_metadata[0])
 
     def test_update_collection_change_doi__trigger_dataset_artifact_updates(self):
         """
@@ -708,13 +706,14 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             description=None,
             contact_name=None,
             contact_email=None,
-            links=[Link("new test doi", "DOI", "http://new.test.doi")],
+            links=[Link("new test doi", "DOI", "http://doi.org/new.test.doi")],
             consortia=None,
         )
         self.batch_job_provider.start_metadata_update_batch_job = Mock()
         self.business_logic.generate_dataset_citation = Mock(return_value="test citation")
-        self.business_logic.update_collection_version(revision.version_id, body)
+        self.crossref_provider.fetch_metadata = Mock(return_value=({"authors": ["New Test Author"]}, "new.test.doi"))
 
+        self.business_logic.update_collection_version(revision.version_id, body)
         assert self.batch_job_provider.start_metadata_update_batch_job.call_count == 2
         self.batch_job_provider.start_metadata_update_batch_job.assert_has_calls(
             [
@@ -738,9 +737,10 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             description=None,
             contact_name=None,
             contact_email=None,
-            links=[Link("new test doi", "DOI", "http://new.test.doi")],
+            links=[Link("new test doi", "DOI", "http://doi.org/new.test.doi")],
             consortia=None,
         )
+        self.crossref_provider.fetch_metadata = Mock(return_value=({"authors": ["New Test Author"]}, "new.test.doi"))
 
         with self.assertRaises(CollectionUpdateException):
             self.business_logic.update_collection_version(revision.version_id, body)

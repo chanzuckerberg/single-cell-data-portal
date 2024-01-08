@@ -33,6 +33,8 @@ export const StyledModal = styled(Modal)`
     font-size: 24px !important;
     margin: 0px !important;
   }
+  z-index: 10;
+  position: relative;
 `;
 
 export const StyledTitle = styled.div`
