@@ -68,7 +68,7 @@
     "@babel/preset-typescript": "^7.22.5",
     "@blueprintjs/eslint-plugin": "^2.9.1",
     "@next/eslint-plugin-next": "^11.1.4",
-    "@types/adm-zip": "^0.5.0",
+    "@types/adm-zip": "^0.5.5",
     "@types/downloadjs": "^1.4.3",
     "@types/loadable__component": "^5.13.4",
     "@types/lodash": "^4.14.195",
