@@ -1,11 +1,10 @@
-import Slider from "@mui/material/Slider";
 import React, { SyntheticEvent, useState } from "react";
 import {
   OnFilterFn,
   RangeCategoryView,
 } from "src/components/common/Filter/common/entities";
 import { formatNumberToScale } from "src/components/common/Filter/common/utils";
-import { useSliderStyles } from "src/components/common/Filter/components/FilterContent/components/FilterRange/style";
+import { StyledSlider } from "src/components/common/Filter/components/FilterContent/components/FilterRange/style";
 
 /**
  * Value returned on change events from MUI Slider.
@@ -38,7 +37,6 @@ export default function FilterRange({
   onFilter,
 }: Props): JSX.Element {
   const { categoryFilterId, max, min, selectedMax, selectedMin } = categoryView;
-  const classes = useSliderStyles();
   const [range, setRange] = useState<SliderRange>([
     selectedMin || min,
     selectedMax || max,
@@ -62,8 +60,8 @@ export default function FilterRange({
   };
 
   return (
-    <Slider
-      className={classes.root}
+    <StyledSlider
+      data-testid="filter-range-slider"
       color="primary"
       marks={marks}
       max={max}
