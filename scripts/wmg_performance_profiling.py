@@ -1,3 +1,4 @@
+import ast
 import datetime
 import json
 import os
@@ -12,6 +13,84 @@ from tqdm import tqdm
 scripts_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(scripts_dir)
 sys.path.append(root_dir)
+
+IGNORE_METRICS = ["load-snapshot"]
+
+
+def generate_scatter_plots(json1, json2, ignore_metrics=IGNORE_METRICS):
+    """
+    Compares the profiling results from two JSON files and generates scatter plots for each metric.
+
+    By definition, json1 is the current API and json2 is the reference API.
+    """
+    import matplotlib.pyplot as plt
+
+    # Load the profiling results
+    with open(json1, "r") as f1, open(json2, "r") as f2:
+        dict1 = json.load(f1)
+        dict2 = json.load(f2)
+        metrics1 = dict1["profiling_metrics_keys"]
+        metrics2 = dict2["profiling_metrics_keys"]
+        metrics = sorted(set(metrics1).intersection(metrics2))
+        profiling_results1 = dict1["profiles"]
+        profiling_results2 = dict2["profiles"]
+
+    for m in ignore_metrics:
+        if m in metrics:
+            metrics.remove(m)
+
+    # Create a new figure for each metric
+    compare_options = {d["params"]["compare"] for d in profiling_results1}
+    sex_criteria = [
+        ast.literal_eval(i)
+        for i in {str(d["params"]["payload"]["filter"]["sex_ontology_term_ids"]) for d in profiling_results1}
+    ]
+    num_conditions = len(compare_options) * len(sex_criteria)
+
+    fig, axs = plt.subplots(len(metrics), num_conditions)
+    fig.set_size_inches(4 * num_conditions, 12)
+
+    # Generate scatter plots for the collected metrics
+    for i, metric in enumerate(metrics):
+        for j, compare_option in enumerate(compare_options):
+            for k, sex in enumerate(sex_criteria):
+                metric_values1 = [
+                    d[metric]
+                    for d in profiling_results1
+                    if d["params"]["compare"] == compare_option
+                    and d["params"]["payload"]["filter"]["sex_ontology_term_ids"] == sex
+                ]
+                metric_values2 = [
+                    d[metric]
+                    for d in profiling_results2
+                    if d["params"]["compare"] == compare_option
+                    and d["params"]["payload"]["filter"]["sex_ontology_term_ids"] == sex
+                ]
+
+                max_value = max(metric_values1 + metric_values2)
+                row, col = i, j * len(sex_criteria) + k
+                axs[row, col].plot([0, max_value], [0, max_value], "k:")
+                axs[row, col].scatter(metric_values1, metric_values2)
+                axs[row, col].set_title(f"compare: {compare_option}, sex: {sex}")
+                axs[row, col].set_xlabel("Current API")
+                axs[row, col].set_ylabel("Reference API")
+                axs[row, col].set_xlim(0, max_value * 1.05)
+                axs[row, col].set_ylim(0, max_value * 1.05)
+
+    # Manually add super-titles for each row
+    for i, metric in enumerate(metrics):
+        # Calculate y position for the super-title of each row
+        y_position = 1 - (i - 0.01) / len(metrics)
+        fig.text(0.5, y_position, metric, ha="center", va="center", fontsize=14, weight="bold")
+
+    fig.tight_layout(pad=3.0)
+    plt.rcParams.update({"font.size": 10})
+
+    # Save the scatter plots to a PDF
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    fig.savefig(f"scatter_plots_{timestamp}.pdf")
+    print(f"Scatter plots output to scatter_plots_{timestamp}.pdf")
+
 
 # The set of random genes to use for the profiling. These are genes that are present in Census.
 GENE_SETS = [
@@ -448,105 +527,127 @@ if __name__ == "__main__":
     # Parsing parameters from the config file
     rdev_auth_cookie = data["params"]["RDEV_AUTH_COOKIE"]
     api_url = data["params"]["API_URL"]
+    api_url_reference = data["params"]["API_URL_REFERENCE"]
     verbose = data["params"]["VERBOSE"]
     generate_plots = data["params"]["PLOTS"]
 
-    profiling_dicts = []
+    api_urls = [api_url]
+    if api_url_reference != "":
+        api_urls.append(api_url_reference)
 
-    for i, body in enumerate(tqdm(POST_BODIES, disable=verbose)):
-        if verbose:
-            print(f"Executing query {i+1}/{len(POST_BODIES)} with body: {body}")
+    output_files = []
+    for api_url in api_urls:
+        print("Profiling API:", api_url)
 
-        headers = {"Content-Type": "application/json"}
-        if rdev_auth_cookie != "_oauth2_proxy=..." and rdev_auth_cookie != "":
-            headers["Cookie"] = rdev_auth_cookie
-        response = requests.post(f"{api_url}/wmg/v2/query", data=json.dumps(body), headers=headers)
+        profiling_dicts = []
+        profiling_metrics_keys = set()
+        for i, body in enumerate(tqdm(POST_BODIES, disable=verbose)):
+            if verbose:
+                print(f"Executing query {i+1}/{len(POST_BODIES)} with body: {body}")
 
-        server_timing_header = response.headers.get("Server-Timing")
-        assert response.status_code == 200
-        assert server_timing_header is not None
+            headers = {"Content-Type": "application/json"}
+            if rdev_auth_cookie != "_oauth2_proxy=..." and rdev_auth_cookie != "":
+                headers["Cookie"] = rdev_auth_cookie
+            response = requests.post(f"{api_url}/wmg/v2/query", data=json.dumps(body), headers=headers)
 
-        # Parse the server timing header to get the profiling results
-        server_timing_values = server_timing_header.split(", ")
-        profiling_dict = {}
-        total_time = 0
-        for value in server_timing_values:
-            name, dur = value.split(";dur=")
-            dur, _ = dur.split(";desc")
-            dur = float(dur) / 1000
-            profiling_dict[name] = dur
-            total_time += dur
-        response_time = response.elapsed.total_seconds()
-        download_time = response_time - total_time
-        profiling_dict["total_time_backend"] = total_time
-        profiling_dict["total_time_response"] = response_time
-        profiling_dict["download_time"] = download_time
-        response_size = len(response.content) / (1024 * 1024)
-        profiling_dict["response_size_mb"] = response_size
+            server_timing_header = response.headers.get("Server-Timing")
+            assert response.status_code == 200
+            assert server_timing_header is not None
 
-        if verbose:
-            print("Profiling results:", profiling_dict)
+            # Parse the server timing header to get the profiling results
+            server_timing_values = server_timing_header.split(", ")
+            profiling_dict = {}
+            total_time = 0
+            for value in server_timing_values:
+                name, dur = value.split(";dur=")
+                dur, _ = dur.split(";desc")
+                dur = float(dur) / 1000
+                profiling_dict[name] = dur
+                total_time += dur
+                profiling_metrics_keys.add(name)
+            response_time = response.elapsed.total_seconds()
+            download_time = response_time - total_time
+            profiling_dict["total_time_backend"] = total_time
+            profiling_dict["total_time_response"] = response_time
+            profiling_dict["download_time"] = download_time
+            response_size = len(response.content) / (1024 * 1024)
+            profiling_dict["response_size_mb"] = response_size
+            profiling_metrics_keys.add("total_time_backend")
+            profiling_metrics_keys.add("response_size_mb")
 
-        profiling_dict["params"] = {
-            "payload": body,
-            "num_genes": len(body["filter"]["gene_ontology_term_ids"]),
-            "compare": body.get("compare"),
+            if verbose:
+                print("Profiling results:", profiling_dict)
+
+            profiling_dict["params"] = {
+                "payload": body,
+                "num_genes": len(body["filter"]["gene_ontology_term_ids"]),
+                "compare": body.get("compare"),
+            }
+            profiling_dicts.append(profiling_dict)
+
+        profiling_results = {
+            "profiles": profiling_dicts,
+            "api_url": api_url,
+            "total_time_backend": sum([d["total_time_backend"] for d in profiling_dicts]),
+            "total_time_response": sum([d["total_time_response"] for d in profiling_dicts]),
+            "total_time_download": sum([d["download_time"] for d in profiling_dicts]),
+            "total_response_size_mb": sum([d["response_size_mb"] for d in profiling_dicts]),
+            "profiling_metrics_keys": list(profiling_metrics_keys),
         }
-        profiling_dicts.append(profiling_dict)
+        print(f"Total number of queries executed: {len(profiling_dicts)}")
+        print("Total time backend:", profiling_results["total_time_backend"])
+        print("Total time response:", profiling_results["total_time_response"])
+        print("Total time download:", profiling_results["total_time_download"])
+        print("Total response size (MB):", profiling_results["total_response_size_mb"])
 
-    profiling_results = {
-        "profiles": profiling_dicts,
-        "api_url": api_url,
-        "total_time_backend": sum([d["total_time_backend"] for d in profiling_dicts]),
-        "total_time_response": sum([d["total_time_response"] for d in profiling_dicts]),
-        "total_time_download": sum([d["download_time"] for d in profiling_dicts]),
-        "total_response_size_mb": sum([d["response_size_mb"] for d in profiling_dicts]),
-    }
-    print(f"Total number of queries executed: {len(profiling_dicts)}")
-    print("Total time backend:", profiling_results["total_time_backend"])
-    print("Total time response:", profiling_results["total_time_response"])
-    print("Total time download:", profiling_results["total_time_download"])
-    print("Total response size (MB):", profiling_results["total_response_size_mb"])
+        # Write the profiling results to a file
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        with open(f"profiling_results_{timestamp}.json", "w") as f:
+            json.dump(profiling_results, f)
 
-    # Write the profiling results to a file
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    with open(f"profiling_results_{timestamp}.json", "w") as f:
-        json.dump(profiling_results, f)
+            print(f"Profiling results output to {f.name}")
+            output_files.append(f.name)
 
-        print(f"Profiling results output to {f.name}")
+        # Create a new figure for each metric
+        if generate_plots:
+            import matplotlib.pyplot as plt
 
-    # Create a new figure for each metric
-    if generate_plots:
-        import matplotlib.pyplot as plt
+            # Generate matplotlib plots for the collected metrics
+            metrics = list(profiling_metrics_keys)
 
-        # Generate matplotlib plots for the collected metrics
-        metrics = ["query-tiledb", "build-response", "total_time_backend"]
-        num_genes = [d["params"]["num_genes"] for d in profiling_dicts]
-        compare_options = {d["params"]["compare"] for d in profiling_dicts}
+            for m in IGNORE_METRICS:
+                if m in metrics:
+                    metrics.remove(m)
 
-        fig, axs = plt.subplots(len(metrics), 1)
-        fig.set_size_inches(8, 12)
-        for i, metric in enumerate(metrics):
-            for compare_option in compare_options:
-                for sex_criteria in SEX_CRITERIA:
-                    compare_dicts = [
-                        d
-                        for d in profiling_dicts
-                        if d["params"]["compare"] == compare_option
-                        and d["params"]["payload"]["filter"]["sex_ontology_term_ids"] == sex_criteria
-                    ]
-                    metric_values = [d[metric] for d in compare_dicts]
-                    num_genes_compare = [d["params"]["num_genes"] for d in compare_dicts]
+            num_genes = [d["params"]["num_genes"] for d in profiling_dicts]
+            compare_options = {d["params"]["compare"] for d in profiling_dicts}
 
-                    axs[i].plot(num_genes_compare, metric_values, label=f"{compare_option} {sex_criteria}")
-                    axs[i].set_title(f"{metric} vs number of genes")
-                    axs[i].set_xlabel("number of genes")
-                    axs[i].set_ylabel(metric)
-            axs[i].legend(loc="center left", bbox_to_anchor=(1, 0.5))
-        fig.subplots_adjust(right=0.85)  # Adjust the whitespace on the right
-        fig.tight_layout(pad=3.0)
-        plt.rcParams.update({"font.size": 10})
+            fig, axs = plt.subplots(len(metrics), 1)
+            fig.set_size_inches(8, 12)
+            for i, metric in enumerate(metrics):
+                for compare_option in compare_options:
+                    for sex_criteria in SEX_CRITERIA:
+                        compare_dicts = [
+                            d
+                            for d in profiling_dicts
+                            if d["params"]["compare"] == compare_option
+                            and d["params"]["payload"]["filter"]["sex_ontology_term_ids"] == sex_criteria
+                        ]
+                        metric_values = [d[metric] for d in compare_dicts]
+                        num_genes_compare = [d["params"]["num_genes"] for d in compare_dicts]
 
-        # Save the plots to a PDF
-        fig.savefig(f"profiling_plots_{timestamp}.pdf")
-        print(f"Profiling plots output to profiling_plots_{timestamp}.pdf")
+                        axs[i].plot(num_genes_compare, metric_values, label=f"{compare_option} {sex_criteria}")
+                        axs[i].set_title(f"{metric} vs number of genes")
+                        axs[i].set_xlabel("number of genes")
+                        axs[i].set_ylabel(metric)
+                axs[i].legend(loc="center left", bbox_to_anchor=(1, 0.5))
+            fig.subplots_adjust(right=0.85)  # Adjust the whitespace on the right
+            fig.tight_layout(pad=3.0)
+            plt.rcParams.update({"font.size": 10})
+
+            # Save the plots to a PDF
+            fig.savefig(f"profiling_plots_{timestamp}.pdf")
+            print(f"Profiling plots output to profiling_plots_{timestamp}.pdf")
+
+    if len(api_urls) == 2:
+        generate_scatter_plots(output_files[0], output_files[1])
