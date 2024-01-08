@@ -8,8 +8,16 @@ import requests
 import yaml
 from tqdm import tqdm
 
+# Add the root directory to the Python module search path so you can reference backend
+# without needing to move this script to the root directory to run it.
+scripts_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(scripts_dir)
+sys.path.append(root_dir)
 
-def generate_scatter_plots(json1, json2):
+IGNORE_METRICS = ["load-snapshot"]
+
+
+def generate_scatter_plots(json1, json2, ignore_metrics=IGNORE_METRICS):
     """
     Compares the profiling results from two JSON files and generates scatter plots for each metric.
 
@@ -19,9 +27,18 @@ def generate_scatter_plots(json1, json2):
 
     # Load the profiling results
     with open(json1, "r") as f1, open(json2, "r") as f2:
-        metrics = json.load(f1)["profiling_metrics_keys"]
-        profiling_results1 = json.load(f1)["profiles"]
-        profiling_results2 = json.load(f2)["profiles"]
+        dict1 = json.load(f1)
+        dict2 = json.load(f2)
+        metrics1 = dict1["profiling_metrics_keys"]
+        metrics2 = dict2["profiling_metrics_keys"]
+        metrics = sorted(set(metrics1).intersection(metrics2))
+        profiling_results1 = dict1["profiles"]
+        profiling_results2 = dict2["profiles"]
+
+    metrics += ["total_time_backend"]
+    for m in ignore_metrics:
+        if m in metrics:
+            metrics.remove(m)
 
     # Create a new figure for each metric
     compare_options = {d["params"]["compare"] for d in profiling_results1}
@@ -58,8 +75,8 @@ def generate_scatter_plots(json1, json2):
                 axs[row, col].set_title(f"compare: {compare_option}, sex: {sex}")
                 axs[row, col].set_xlabel("Current API")
                 axs[row, col].set_ylabel("Reference API")
-                axs[row, col].set_xlim(0, max_value + 0.5)
-                axs[row, col].set_ylim(0, max_value + 0.5)
+                axs[row, col].set_xlim(0, max_value * 1.05)
+                axs[row, col].set_ylim(0, max_value * 1.05)
 
     # Manually add super-titles for each row
     for i, metric in enumerate(metrics):
@@ -75,12 +92,6 @@ def generate_scatter_plots(json1, json2):
     fig.savefig(f"scatter_plots_{timestamp}.pdf")
     print(f"Scatter plots output to scatter_plots_{timestamp}.pdf")
 
-
-# Add the root directory to the Python module search path so you can reference backend
-# without needing to move this script to the root directory to run it.
-scripts_dir = os.path.dirname(os.path.abspath(__file__))
-root_dir = os.path.dirname(scripts_dir)
-sys.path.append(root_dir)
 
 # The set of random genes to use for the profiling. These are genes that are present in Census.
 GENE_SETS = [
@@ -602,6 +613,11 @@ if __name__ == "__main__":
 
             # Generate matplotlib plots for the collected metrics
             metrics = profiling_metrics_keys + ["total_time_backend"]
+
+            for m in IGNORE_METRICS:
+                if m in metrics:
+                    metrics.remove(m)
+
             num_genes = [d["params"]["num_genes"] for d in profiling_dicts]
             compare_options = {d["params"]["compare"] for d in profiling_dicts}
 
