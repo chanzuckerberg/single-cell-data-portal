@@ -38,7 +38,7 @@ jobs:
         with:
           fetch-depth: 1
       - name: Delete deployment
-        uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
+        uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@install-happy-v1.7.0
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ env.STACK_NAME }}

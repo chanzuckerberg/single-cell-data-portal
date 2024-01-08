@@ -89,7 +89,7 @@ jobs:
         with:
           fetch-depth: 1
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.7.0
         with:
           happy_version: "0.110.1"
       - name: Push images
@@ -123,7 +123,7 @@ jobs:
         with:
           fetch-depth: 1
       - name: Update deployment
-        uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
+        uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@install-happy-v1.7.0
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ env.STACK_NAME }}
@@ -324,7 +324,7 @@ jobs:
           retention-days: 20
 
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.7.0
         with:
           happy_version: "0.110.1"
 

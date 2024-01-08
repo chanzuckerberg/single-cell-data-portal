@@ -49,7 +49,7 @@ jobs:
           ref: ${{ env.GITHUB_BRANCH }}
           fetch-depth: 1
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.7.0
         with:
           happy_version: "0.110.1"
       - name: Push images

@@ -53,7 +53,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update deployment
-        uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@deploy-happy-stack-v1.7.2
+        uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@install-happy-v1.7.0
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ github.event.deployment.environment }}stack
