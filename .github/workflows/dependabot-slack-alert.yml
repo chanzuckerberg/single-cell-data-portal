@@ -1,0 +1,18 @@
+name: Dependabot-Slack
+on:
+  pull_request:
+    types:
+      - opened
+    branches:
+      - dependabot/** # Dependabot branch
+
+jobs:
+  dependabot_slack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: 8398a7/action-slack@v3
+        with:
+          fields: repo,commit,author,eventName,workflow,job,mention
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
