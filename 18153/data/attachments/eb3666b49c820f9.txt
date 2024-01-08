@@ -1,1 +1,0 @@
-{"levelname": "INFO", "asctime": "2024-01-08T16:41:26.008Z", "name": "root", "message": "s3_event", "lineno": 60, "pathname": "/single-cell-data-portal/backend/layers/processing/submissions/app.py", "Records": [{"s3": {"bucket": {"name": "some_bucket"}, "object": {"key": "test_user_id/b1931ec1-053a-4f9a-b92d-18a922b55c5b/a0d4267b-3561-4230-b5a2-3f8e740d4128", "size": 0}}}]}
