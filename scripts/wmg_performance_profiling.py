@@ -35,7 +35,6 @@ def generate_scatter_plots(json1, json2, ignore_metrics=IGNORE_METRICS):
         profiling_results1 = dict1["profiles"]
         profiling_results2 = dict2["profiles"]
 
-    metrics += ["total_time_backend"]
     for m in ignore_metrics:
         if m in metrics:
             metrics.remove(m)
@@ -541,7 +540,7 @@ if __name__ == "__main__":
         print("Profiling API:", api_url)
 
         profiling_dicts = []
-        profiling_metrics_keys = []
+        profiling_metrics_keys = set()
         for i, body in enumerate(tqdm(POST_BODIES, disable=verbose)):
             if verbose:
                 print(f"Executing query {i+1}/{len(POST_BODIES)} with body: {body}")
@@ -565,7 +564,7 @@ if __name__ == "__main__":
                 dur = float(dur) / 1000
                 profiling_dict[name] = dur
                 total_time += dur
-                profiling_metrics_keys.append(name)
+                profiling_metrics_keys.add(name)
             response_time = response.elapsed.total_seconds()
             download_time = response_time - total_time
             profiling_dict["total_time_backend"] = total_time
@@ -573,6 +572,8 @@ if __name__ == "__main__":
             profiling_dict["download_time"] = download_time
             response_size = len(response.content) / (1024 * 1024)
             profiling_dict["response_size_mb"] = response_size
+            profiling_metrics_keys.add("total_time_backend")
+            profiling_metrics_keys.add("response_size_mb")
 
             if verbose:
                 print("Profiling results:", profiling_dict)
@@ -591,7 +592,7 @@ if __name__ == "__main__":
             "total_time_response": sum([d["total_time_response"] for d in profiling_dicts]),
             "total_time_download": sum([d["download_time"] for d in profiling_dicts]),
             "total_response_size_mb": sum([d["response_size_mb"] for d in profiling_dicts]),
-            "profiling_metrics_keys": profiling_metrics_keys,
+            "profiling_metrics_keys": list(profiling_metrics_keys),
         }
         print(f"Total number of queries executed: {len(profiling_dicts)}")
         print("Total time backend:", profiling_results["total_time_backend"])
@@ -612,7 +613,7 @@ if __name__ == "__main__":
             import matplotlib.pyplot as plt
 
             # Generate matplotlib plots for the collected metrics
-            metrics = profiling_metrics_keys + ["total_time_backend"]
+            metrics = list(profiling_metrics_keys)
 
             for m in IGNORE_METRICS:
                 if m in metrics:
