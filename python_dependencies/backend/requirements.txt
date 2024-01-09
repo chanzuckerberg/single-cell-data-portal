@@ -1,5 +1,5 @@
 alembic>=1.9, <2
-anndata==0.8.0
+anndata==0.10.4
 allure-pytest<3
 Authlib==0.14.3
 black==22.3.0  # Must be kept in sync with black version in .pre-commit-config.yaml
