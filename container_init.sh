@@ -5,6 +5,12 @@ echo "| starting backend container"
 echo " ====="
 echo
 
+echo "| Downloading WMG data snapshot from S3 to local disk..."
+if [ "${DEPLOYMENT_STAGE}" != "test" ]; then
+  aws s3 sync "s3://${CELLXGENE_BUCKET}/snapshots" /tmp/wmg_snapshot_disk_cache
+fi
+echo "| Finished downloading WMG data snapshot from S3"
+
 # If user passed a command line, run it in place of the server
 if [ $# -ne 0 ]; then
   exec "$@"

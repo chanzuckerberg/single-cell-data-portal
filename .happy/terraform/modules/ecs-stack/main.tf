@@ -112,6 +112,9 @@ module frontend_service {
   task_role_arn              = local.ecs_role_arn
   service_port               = 9000
   memory                     = var.frontend_memory
+  
+  # 30gb of disk storage allocated for the task running the frontend container
+  task_storage_size_gb       = 30 
   cpu                        = 2048
   deployment_stage           = local.deployment_stage
   step_function_arn          = module.upload_sfn.step_function_arn
@@ -141,6 +144,9 @@ module backend_service {
   security_groups            = local.security_groups
   task_role_arn              = local.ecs_role_arn
   service_port               = 5000
+
+  # 100gb of disk storage allocated for the task running backend container 
+  task_storage_size_gb       = 100
   memory                     = var.backend_memory
   cpu                        = var.backend_cpus * 1024
   cmd                        = local.backend_cmd

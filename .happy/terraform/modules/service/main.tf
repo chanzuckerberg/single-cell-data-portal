@@ -39,6 +39,9 @@ resource aws_ecs_task_definition task_definition {
   task_role_arn            = var.task_role_arn
   execution_role_arn       = var.execution_role
   requires_compatibilities = ["FARGATE"]
+  ephemeral_storage {
+    size_in_gb = var.task_storage_size_gb
+  }
   container_definitions = <<EOF
 [
   {
@@ -174,6 +177,10 @@ resource aws_ecs_task_definition task_definition {
       {
         "name": "DATASET_SUBMISSIONS_BUCKET",
         "value": "${var.dataset_submissions_bucket}"
+      },
+      {
+        "name": "CELLXGENE_BUCKET",
+        "value": "${var.cellxgene_bucket}"
       },
       {
         "name": "DATASETS_BUCKET",
