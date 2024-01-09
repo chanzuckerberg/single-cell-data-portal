@@ -38,5 +38,5 @@ coverage==7.2.7
 pytest==7.4.0
 pytest-subtests==0.11.0
 allure-pytest==2.13.2
-pyarrow==12.0.0
+pyarrow==14.0.1
 dask==2023.8.1
