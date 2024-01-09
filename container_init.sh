@@ -5,11 +5,17 @@ echo "| starting backend container"
 echo " ====="
 echo
 
-echo "| Downloading WMG data snapshot from S3 to local disk..."
-if [ "${DEPLOYMENT_STAGE}" != "test" ]; then
-  aws s3 sync "s3://${CELLXGENE_BUCKET}/snapshots" /tmp/wmg_snapshot_disk_cache
+if [[ "$DEPLOYMENT_STAGE" == "rdev" && -n "${REMOTE_DEV_PREFIX}" ]]; then
+  echo "| Downloading WMG data snapshot for RDEV stack: ${REMOTE_DEV_PREFIX} from S3 to local disk..."
+  aws s3 sync "s3://env-rdev-wmg/${REMOTE_DEV_PREFIX}/snapshots" /tmp/wmg_snapshot_disk_cache
+elif [[ "${DEPLOYMENT_STAGE}" == "dev" || "${DEPLOYMENT_STAGE}" == "staging" || "${DEPLOYMENT_STAGE}" == "prod" ]]; then
+  echo "| Downloading WMG data snapshot for deployment env: ${DEPLOYMENT_STAGE} from S3 to local disk..."
+  aws s3 sync "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots" /tmp/wmg_snapshot_disk_cache
+else
+  echo "| Skipping downloading WMG data snapshot for deployment env: ${DEPLOYMENT_STAGE}..."
 fi
-echo "| Finished downloading WMG data snapshot from S3"
+
+echo "| Finished downloading WMG data snapshot from S3 for valid deployment environments"
 
 # If user passed a command line, run it in place of the server
 if [ $# -ne 0 ]; then

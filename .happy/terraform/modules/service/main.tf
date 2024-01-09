@@ -179,10 +179,6 @@ resource aws_ecs_task_definition task_definition {
         "value": "${var.dataset_submissions_bucket}"
       },
       {
-        "name": "CELLXGENE_BUCKET",
-        "value": "${var.cellxgene_bucket}"
-      },
-      {
         "name": "DATASETS_BUCKET",
         "value": "${var.datasets_bucket}"
       },
