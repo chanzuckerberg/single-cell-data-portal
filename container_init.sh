@@ -11,12 +11,14 @@ echo
 if [[ "${DEPLOYMENT_STAGE}" == "rdev" && -n "${REMOTE_DEV_PREFIX}" ]]; then
   echo "| Downloading WMG data snapshot for RDEV stack: ${REMOTE_DEV_PREFIX} from S3 to local disk..."
   strip_slash_remote_dev_prefix="${REMOTE_DEV_PREFIX//\//}" # strips ALL "/"
-  echo aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots" "${WMG_DISK_CACHE_PATH}"
-  aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots" "${WMG_DISK_CACHE_PATH}"
+  echo "WMG_DISK_CACHE_PATH env var value is: ${WMG_DISK_CACHE_PATH}"
+  echo aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots" /tmp/wmg_disk_cache
+  aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots" /tmp/wmg_disk_cache
 elif [[ "${DEPLOYMENT_STAGE}" == "dev" || "${DEPLOYMENT_STAGE}" == "staging" || "${DEPLOYMENT_STAGE}" == "prod" ]]; then
   echo "| Downloading WMG data snapshot for deployment env: ${DEPLOYMENT_STAGE} from S3 to local disk..."
-  echo aws s3 sync "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots" "${WMG_DISK_CACHE_PATH}"
-  aws s3 sync "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots" "${WMG_DISK_CACHE_PATH}"
+  echo "WMG_DISK_CACHE_PATH env var value is: ${WMG_DISK_CACHE_PATH}"
+  echo aws s3 sync "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots" /tmp/wmg_disk_cache
+  aws s3 sync "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots" /tmp/wmg_disk_cache
 else
   echo "| Skipping downloading WMG data snapshot for deployment env: ${DEPLOYMENT_STAGE}..."
 fi
