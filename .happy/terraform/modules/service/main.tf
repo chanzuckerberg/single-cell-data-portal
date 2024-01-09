@@ -40,7 +40,7 @@ resource aws_ecs_task_definition task_definition {
   execution_role_arn       = var.execution_role
   requires_compatibilities = ["FARGATE"]
   ephemeral_storage {
-    size_in_gb = var.task_storage_size_gb
+    size_in_gib = var.task_storage_size_gb
   }
   container_definitions = <<EOF
 [
