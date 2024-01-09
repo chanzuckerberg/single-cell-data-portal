@@ -16,7 +16,7 @@ jobs:
         id: get_checks
         run: |
           checks=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                       "https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/actions/runs?actor=czibuildbot" | jq -r '.workflow_runs[] | select(.display_title == "stage")[0] | .conclusion')
+                       "https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/actions/runs?actor=czibuildbot" | jq -r '.workflow_runs[] | select(.display_title == "stage") | .conclusion' | head -n 1)
           if [ "$checks" == "success" ]; then
             echo "All checks passed!"
           else
