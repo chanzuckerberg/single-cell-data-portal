@@ -21,7 +21,9 @@ from backend.wmg.pipeline.constants import (
     CELL_TYPE_ORDERING_CREATED_FLAG,
     DATASET_METADATA_CREATED_FLAG,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
+    EXPRESSION_SUMMARY_CELL_TYPE_CUBE_CREATED_FLAG,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,
+    EXPRESSION_SUMMARY_TISSUE_CUBE_CREATED_FLAG,
     FILTER_RELATIONSHIPS_CREATED_FLAG,
     MARKER_GENES_CUBE_CREATED_FLAG,
     PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG,
@@ -30,7 +32,9 @@ from backend.wmg.pipeline.constants import (
 from backend.wmg.pipeline.dataset_metadata import create_dataset_metadata
 from backend.wmg.pipeline.errors import PipelineStepMissing
 from backend.wmg.pipeline.expression_summary_and_cell_counts import create_expression_summary_and_cell_counts_cubes
+from backend.wmg.pipeline.expression_summary_cell_type import create_expression_summary_cell_type_cube
 from backend.wmg.pipeline.expression_summary_default import create_expression_summary_default_cube
+from backend.wmg.pipeline.expression_summary_tissue import create_expression_summary_tissue_cube
 from backend.wmg.pipeline.filter_relationships import create_filter_relationships_graph
 from backend.wmg.pipeline.load_cube import upload_artifacts_to_s3
 from backend.wmg.pipeline.marker_genes import create_marker_genes_cube
@@ -46,6 +50,8 @@ PIPELINE_STEPS = [
         "step": create_expression_summary_and_cell_counts_cubes,
     },
     {"flag": EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG, "step": create_expression_summary_default_cube},
+    {"flag": EXPRESSION_SUMMARY_TISSUE_CUBE_CREATED_FLAG, "step": create_expression_summary_tissue_cube},
+    {"flag": EXPRESSION_SUMMARY_CELL_TYPE_CUBE_CREATED_FLAG, "step": create_expression_summary_cell_type_cube},
     {"flag": CELL_TYPE_ANCESTORS_CREATED_FLAG, "step": create_cell_type_ancestors},
     {"flag": FILTER_RELATIONSHIPS_CREATED_FLAG, "step": create_filter_relationships_graph},
     {"flag": PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG, "step": create_primary_filter_dimensions},

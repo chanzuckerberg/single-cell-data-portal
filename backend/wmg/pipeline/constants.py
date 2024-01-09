@@ -11,6 +11,8 @@ PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG = "primary_filter_dimensions_created"
 DATASET_METADATA_CREATED_FLAG = "dataset_metadata_created"
 CELL_TYPE_ANCESTORS_CREATED_FLAG = "cell_type_ancestors_created"
 CELL_TYPE_ORDERING_CREATED_FLAG = "cell_type_ordering_created"
+EXPRESSION_SUMMARY_TISSUE_CUBE_CREATED_FLAG = "expression_summary_tissue_cube_created"
+EXPRESSION_SUMMARY_CELL_TYPE_CUBE_CREATED_FLAG = "expression_summary_cell_type_cube_created"
 
 PIPELINE_STATE_FILENAME = "pipeline_state.json"
 
@@ -31,6 +33,6 @@ ASSAYS_FOR_GENE_LENGTH_NORMALIZATION = [
 
 TARGET_LIBRARY_SIZE = 10_000
 
-WMG_DATA_SCHEMA_VERSION = "v3"
+WMG_DATA_SCHEMA_VERSION = "v4"
 
 MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION = 1
