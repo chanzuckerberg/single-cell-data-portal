@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Docker meta
         id: meta
-        uses: crazy-max/ghaction-docker-meta@v2
+        uses: crazy-max/ghaction-docker-meta@v5
         with:
           # list of Docker images to use as base name for tags
           images: ghcr.io/${{ github.repository_owner }}/corpora-upload-base
