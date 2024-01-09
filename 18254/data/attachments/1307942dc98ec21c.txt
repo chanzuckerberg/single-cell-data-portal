@@ -1,0 +1,12 @@
+INFO     backend.layers.business.business:business.py:511 {'message': 'ingesting dataset', 'collection_version_id': 1a7f09e9-3e2e-4c1d-9d94-8518661c0845, 'url': 'nothing', 'current_dataset_version_id': None}
+INFO     processing:process_logic.py:113 Converting local.h5ad
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:119 Finished converting <MagicMock name='make_seurat' id='140418609241536'> in 0:00:00.000546
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:91 Uploaded [c0c43310-f9c5-4c95-b37a-9e9c601dbbe3/local.rds] to s3://fake_bucket_name/c0c43310-f9c5-4c95-b37a-9e9c601dbbe3/local.rds
+INFO     processing:process_logic.py:93 Updated database with rds.
+INFO     processing:process_logic.py:100 Uploaded c0c43310-f9c5-4c95-b37a-9e9c601dbbe3.rds to s3://fake_datasets_bucket/c0c43310-f9c5-4c95-b37a-9e9c601dbbe3/c0c43310-f9c5-4c95-b37a-9e9c601dbbe3.rds
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
