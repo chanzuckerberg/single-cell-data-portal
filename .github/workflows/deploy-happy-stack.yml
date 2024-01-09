@@ -20,14 +20,14 @@ jobs:
         with:
           node-version: "16.14.2"
       - name: Configure AWS Prod Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment == 'prod'
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment != 'prod'
         with:
           aws-region: us-west-2
@@ -35,12 +35,12 @@ jobs:
           role-duration-seconds: 2700
       # Login to ECR needed solely to be able to retrieve cached layers
       - name: Login to Prod ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         if: github.event.deployment.environment == 'prod'
         with:
           registry: ${{ secrets.ECR_REPO_PROD }}
       - name: Login to ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
@@ -138,7 +138,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: "16.14.2"
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - uses: actions/checkout@v2
@@ -146,14 +146,14 @@ jobs:
           ref: ${{ github.event.deployment.sha }}
           fetch-depth: 1
       - name: Configure AWS Prod Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment == 'prod'
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment != 'prod'
         with:
           aws-region: us-west-2
@@ -220,13 +220,13 @@ jobs:
         with:
           node-version: "16.14.2"
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1800
       - name: Login to ECR
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
@@ -306,14 +306,14 @@ jobs:
       - upgrade
     steps:
       - name: Configure AWS Prod Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment == 'prod'
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment != 'prod'
         with:
           aws-region: us-west-2
@@ -323,7 +323,7 @@ jobs:
         with:
           ref: ${{ github.event.deployment.sha }}
           fetch-depth: 1
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - name: Run functional test
@@ -361,14 +361,14 @@ jobs:
       - upgrade
     steps:
       - name: Configure AWS Prod Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment == 'prod'
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment != 'prod'
         with:
           aws-region: us-west-2
@@ -376,12 +376,12 @@ jobs:
           role-duration-seconds: 2700
       # Login to ECR needed solely to be able to retrieve cached layers
       - name: Login to Prod ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         if: github.event.deployment.environment == 'prod'
         with:
           registry: ${{ secrets.ECR_REPO_PROD }}
       - name: Login to ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2

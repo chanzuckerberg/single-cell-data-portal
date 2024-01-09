@@ -1,0 +1,41 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+  - package-ecosystem: pip
+    directory: "/python_dependencies/backend/"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: pip
+    directory: "/python_dependencies/wmg/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+  - package-ecosystem: pip
+    directory: "/python_dependencies/upload_handler/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+  - package-ecosystem: pip
+    directory: "/python_dependencies/submissions/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+  - package-ecosystem: pip
+    directory: "/python_dependencies/cellguide_pipeline/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+  - package-ecosystem: pip
+    directory: "/python_dependencies/processing/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+  - package-ecosystem: npm
+    directory: "/frontend/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"

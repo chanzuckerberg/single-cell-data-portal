@@ -451,7 +451,7 @@ describe("Where's My Gene", () => {
 
       // Click into a cell type that has marker genes
       await page
-        .getByTestId("cell-type-info-button-adipose tissue-phagocyte")
+        .getByTestId("cell-type-info-button-adipose tissue-contractile cell")
         .click();
 
       // Verify effect size header and tooltip
