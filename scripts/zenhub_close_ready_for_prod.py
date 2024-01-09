@@ -1,16 +1,21 @@
 """
 This script closes issues in the Ready for Prod pipeline that are not blocked by open issues or PRs.
 """
+import json
 import os
 from typing import List
 
 import requests
 
-access_token = os.environ["zenhub_api_key"]
+access_token = os.environ["ZENHUB_TOKEN"]
 endpoint = "https://api.zenhub.com/public/graphql"
 headers = {"Authorization": f"Bearer {access_token}"}
 pipeline_id = "Z2lkOi8vcmFwdG9yL1BpcGVsaW5lLzIyMDg1MDE"  # "Ready for Prod" pipeline in "single-cell" workspace
 repo_id = "Z2lkOi8vcmFwdG9yL1JlcG9zaXRvcnkvNTM5NzQwOTg"  # "single-cell-data-portal" repo
+
+
+def format_issue(issue: dict) -> str:
+    return f"#{issue['number']} ({issue['title']})"
 
 
 def close_ready_for_prod() -> None:
@@ -60,39 +65,42 @@ def close_ready_for_prod() -> None:
     for issue in issues:
         if issue["connectedPrs"]["nodes"]:
             # Filter out issue if it has any open PRs connected to it.
-            open_prs = [
-                f"PR #{i['number']}: {i['title']}" for i in issue["connectedPrs"]["nodes"] if i["state"] == "OPEN"
-            ]
+            open_prs = [format_issue(i) for i in issue["connectedPrs"]["nodes"] if i["state"] == "OPEN"]
             if open_prs:
-                print(f"issue #{issue['number']} has open PRs:", *open_prs, sep="\n\t")
+                print(f"Issue #{issue['number']} has open pull requests:", *open_prs, sep="\n\t")
                 continue
         if issue["blockingIssues"]["nodes"]:
             # Filter out issue if it is blocked by any open issues this is not also in the ready for prod pipeline.
             blocking_issues = [
-                f"issue #{i['number']}: {i['title']}"
+                format_issue(i)
                 for i in issue["blockingIssues"]["nodes"]
-                if i["state"] == "OPEN" and i["id"] != issue_ids
+                if i["state"] == "OPEN" and i["id"] not in issue_ids
             ]
             if blocking_issues:
-                print(f"Issue {issue['number']} is blocked by:", *blocking_issues, sep="\n\t")
+                print(f"Issue {format_issue(issue)}, is blocked by:", *blocking_issues, sep="\n\t")
                 continue
-            closing_issues.append(issue["id"])
-            closing_issue_strings.append(f"issue #{issue['number']}: {issue['title']}")
+        closing_issues.append(issue["id"])
+        closing_issue_strings.append(format_issue(issue))
 
     # Close issues.
-    print("Closing issues:", *closing_issue_strings, sep="\n\t")
-    mutate_close_isses = """mutation closeIssues {
-      closeIssues(input: {
-          issueIds: $CLOSING_ISSUES
-      }) {
-          successCount
-      }
-    }""".replace(
-        "$CLOSING_ISSUES", str(closing_issues)
-    )
-    resp = requests.post(endpoint, json={"query": mutate_close_isses}, headers=headers)
-    resp.raise_for_status()
-    print(resp.json())
+    if not closing_issues:
+        print("No issues to close.")
+        return
+    else:
+        print("Closing issues:", *closing_issue_strings, sep="\n\t")
+        mutate_close_isses = """mutation closeIssues {
+          closeIssues(input: {
+              issueIds: $CLOSING_ISSUES
+          }) {
+              successCount
+          }
+        }""".replace(
+            "$CLOSING_ISSUES", json.dumps(closing_issues)
+        )
+        resp = requests.post(endpoint, json={"query": mutate_close_isses}, headers=headers)
+        resp.raise_for_status()
+        print(resp.json())
+        assert resp.json()["data"]["closeIssues"]["successCount"] == len(closing_issues)
 
 
 if __name__ == "__main__":
