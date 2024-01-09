@@ -14,7 +14,7 @@ dataclasses-json==0.5.7
 # see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
 datadog==0.47.0
 ddtrace==2.1.4
-Flask==2.2.3
+Flask==3.0.0
 Flask-Cors>=3.0.6
 flask-server-timing==0.1.2
 furl
