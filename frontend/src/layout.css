@@ -139,6 +139,11 @@ img {
   padding-left: 0;
   padding-right: 0;
   padding-top: 0;
+  /* (thuang): `height: auto;` is needed to ensure responsive aspect ratio is
+    correct when using `next/image`.
+    @see: https://nextjs.org/docs/pages/building-your-application/optimizing/images#responsive
+   */
+  height: auto;
 }
 svg:not(:root) {
   overflow: hidden;

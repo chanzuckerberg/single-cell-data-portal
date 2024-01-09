@@ -1,5 +1,4 @@
 import { Page, expect } from "@playwright/test";
-import { URLSearchParams } from "next/dist/compiled/@edge-runtime/primitives/url";
 import { LATEST_SHARE_LINK_VERSION } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/ShareButton/utils";
 
 import { TEST_URL } from "tests/common/constants";

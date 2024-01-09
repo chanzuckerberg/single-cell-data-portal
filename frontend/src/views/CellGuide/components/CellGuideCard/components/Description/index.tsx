@@ -222,7 +222,7 @@ export default function Description({
             });
           }}
         >
-          <StyledIconImage src={questionMarkIcon} />
+          <StyledIconImage alt="question mark" src={questionMarkIcon} />
         </StyledLink>
       </StyledTooltip>
     </SourceLink>

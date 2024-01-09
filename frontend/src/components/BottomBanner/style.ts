@@ -85,7 +85,7 @@ export const StyledCloseButtonIcon = styled(ButtonIcon, {
 `;
 
 export const NewsletterModal = styled(Modal)`
-  .bp4-dialog-header {
+  .bp5-dialog-header {
     display: none !important;
   }
 

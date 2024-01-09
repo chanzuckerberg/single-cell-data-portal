@@ -185,7 +185,7 @@ const FileListItem = ({
   const formattedFileName = file.split("__")[1];
 
   return (
-    <NextLink href={href} passHref>
+    <NextLink key={file} href={href}>
       <li key={file} className={isActiveFile ? "active-file" : ""}>
         {formattedFileName}
       </li>
@@ -394,7 +394,7 @@ const ImageContainer = styled.div`
 const DocsImage = ({ src }: ImageProps) => {
   return (
     <ImageContainer>
-      <StyledImage src={src} layout={"fill"} />
+      <StyledImage alt="image" src={src} layout={"fill"} />
     </ImageContainer>
   );
 };

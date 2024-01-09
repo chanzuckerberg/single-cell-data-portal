@@ -25,7 +25,8 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
           <NavSectionTitle>Application</NavSectionTitle>
           <NavItemContainer>
             <LinkWrapper>
-              <Link href={ROUTES.COLLECTIONS} passHref>
+              {/* (thuang): use `legacyBehavior` prop, since `<AnchorButton />` is `<a />` */}
+              <Link href={ROUTES.COLLECTIONS} passHref legacyBehavior>
                 <AnchorButton
                   active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
                   data-testid="collections-link"
@@ -39,7 +40,8 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
               </Link>
             </LinkWrapper>
             <LinkWrapper>
-              <Link href={ROUTES.DATASETS} passHref>
+              {/* (thuang): use `legacyBehavior` prop, since `<AnchorButton />` is `<a />` */}
+              <Link href={ROUTES.DATASETS} passHref legacyBehavior>
                 <AnchorButton
                   active={isRouteActive(pathname, ROUTES.DATASETS)}
                   href="passHref"
@@ -52,7 +54,8 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
               </Link>
             </LinkWrapper>
             <LinkWrapper>
-              <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
+              {/* (thuang): use `legacyBehavior` prop, since `<AnchorButton />` is `<a />` */}
+              <Link href={ROUTES.WHERE_IS_MY_GENE} passHref legacyBehavior>
                 <AnchorButton
                   active={isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)}
                   href="passHref"
@@ -65,7 +68,8 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
               </Link>
             </LinkWrapper>
             <LinkWrapper>
-              <Link href={ROUTES.CELL_GUIDE} passHref>
+              {/* (thuang): use `legacyBehavior` prop, since `<AnchorButton />` is `<a />` */}
+              <Link href={ROUTES.CELL_GUIDE} passHref legacyBehavior>
                 <AnchorButton
                   active={isRouteActive(pathname, ROUTES.CELL_GUIDE)}
                   href="passHref"
@@ -97,7 +101,8 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
               />
             </LinkWrapper>
             <LinkWrapper>
-              <Link href={ROUTES.CENSUS_DIRECTORY} passHref>
+              {/* (thuang): use `legacyBehavior` prop, since `<AnchorButton />` is `<a />` */}
+              <Link href={ROUTES.CENSUS_DIRECTORY} passHref legacyBehavior>
                 <AnchorButton
                   active={isRouteActive(pathname, ROUTES.CENSUS_DIRECTORY)}
                   href="passHref"

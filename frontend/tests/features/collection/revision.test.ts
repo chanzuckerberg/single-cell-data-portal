@@ -292,7 +292,7 @@ async function deleteRevision(page: Page) {
   await page.getByTestId(DROPDOWN_CANCEL_ID).click();
 
   await page
-    .locator(".bp4-alert-footer")
+    .locator(".bp5-alert-footer")
     .locator("button")
     .filter({ hasText: "Cancel Revision" })
     .click();

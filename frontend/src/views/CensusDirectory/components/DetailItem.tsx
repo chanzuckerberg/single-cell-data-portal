@@ -23,8 +23,8 @@ function DetailItem(props: {
     <ItemContainer>
       <ItemLabel>{props.label}</ItemLabel>
       {props.link ? (
-        <Link href={props.link} passHref>
-          <a onClick={props.onClick}> {formatValueIfNumber(props.children)}</a>
+        <Link href={props.link} onClick={props.onClick}>
+          {formatValueIfNumber(props.children)}
         </Link>
       ) : (
         formatValueIfNumber(props.children)
