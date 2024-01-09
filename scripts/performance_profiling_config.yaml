@@ -2,12 +2,15 @@ params:
   # The backend API url of the deployment you wish to profile.
   API_URL: "https://api.cellxgene.staging.single-cell.czi.technology"
 
+  # OPTIONAL: The backend API url of the reference deployment you wish to profile against.
+  API_URL_REFERENCE: ""
+
   # If you are profiling an rdev deployment, you must provide the auth cookie.
   # To get the auth cookie, log into the rdev deployment, open the browser dev tools, and copy the cookie from the request headers.
-  RDEV_AUTH_COOKIE: "_oauth2_proxy=..."
+  RDEV_AUTH_COOKIE: ""
 
   # Outputs verbose logs if true.
   VERBOSE: false
 
   # Outputs summary plots of the profiling results if true. Requires matplotlib.
-  PLOTS: true
+  PLOTS: false
