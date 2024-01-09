@@ -213,10 +213,13 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
             f"{FIXTURES_ROOT}/{snapshot_name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}.gz", "rt"
         ) as fp, gzip.open(
             f"{FIXTURES_ROOT}/{snapshot_name}/{DATASET_METADATA_FILENAME}.gz", "rt"
-        ) as fd:
+        ) as fd, gzip.open(
+            f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_TYPE_ANCESTORS_FILENAME}.gz", "rt"
+        ) as fca:
             filter_relationships = json.load(fr)
             primary_filter_dimensions = json.load(fp)
             dataset_metadata = json.load(fd)
+            cell_type_ancestors = json.load(fca)
             yield WmgSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
@@ -226,6 +229,7 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
                 primary_filter_dimensions=primary_filter_dimensions,
                 filter_relationships=filter_relationships,
                 dataset_metadata=dataset_metadata,
+                cell_type_ancestors=cell_type_ancestors,
             )
 
 
