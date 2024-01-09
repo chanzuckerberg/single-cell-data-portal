@@ -14,8 +14,10 @@ from backend.common.utils.result_notification import (
     notify_slack,
 )
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME
+from backend.wmg.pipeline.cell_type_ancestors import create_cell_type_ancestors
 from backend.wmg.pipeline.cell_type_ordering import create_cell_type_ordering
 from backend.wmg.pipeline.constants import (
+    CELL_TYPE_ANCESTORS_CREATED_FLAG,
     CELL_TYPE_ORDERING_CREATED_FLAG,
     DATASET_METADATA_CREATED_FLAG,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
@@ -44,6 +46,7 @@ PIPELINE_STEPS = [
         "step": create_expression_summary_and_cell_counts_cubes,
     },
     {"flag": EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG, "step": create_expression_summary_default_cube},
+    {"flag": CELL_TYPE_ANCESTORS_CREATED_FLAG, "step": create_cell_type_ancestors},
     {"flag": FILTER_RELATIONSHIPS_CREATED_FLAG, "step": create_filter_relationships_graph},
     {"flag": PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG, "step": create_primary_filter_dimensions},
     {"flag": MARKER_GENES_CUBE_CREATED_FLAG, "step": create_marker_genes_cube},
