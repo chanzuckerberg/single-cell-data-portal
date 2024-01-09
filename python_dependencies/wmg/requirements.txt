@@ -34,6 +34,6 @@ scanpy==1.9.3
 scipy==1.10.1
 SQLAlchemy==1.4.49
 SQLAlchemy-Utils==0.41.1
-tenacity==8.2.2
+tenacity==8.2.3
 tiledbsoma>=1.6.1 # WMG pipeline always reads the latest version of Census so we need to use the latest package version
 dask==2023.8.1
