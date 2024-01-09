@@ -5,15 +5,18 @@ echo "| starting backend container"
 echo " ====="
 echo
 
-if [[ "$DEPLOYMENT_STAGE" == "rdev" && -n "${REMOTE_DEV_PREFIX}" ]]; then
+# Download WMG data snapshot to the local disk of the compute node on AWS
+# This is done as optimization because retrieving data from local disk is
+# significantly faster than retrieving data from S3
+if [[ "${DEPLOYMENT_STAGE}" == "rdev" && -n "${REMOTE_DEV_PREFIX}" ]]; then
   echo "| Downloading WMG data snapshot for RDEV stack: ${REMOTE_DEV_PREFIX} from S3 to local disk..."
   strip_slash_remote_dev_prefix="${REMOTE_DEV_PREFIX//\//}" # strips ALL "/"
-  echo aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots" /tmp/wmg_snapshot_disk_cache
-  aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots" /tmp/wmg_snapshot_disk_cache
+  echo aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots" "${WMG_DISK_CACHE_PATH}"
+  aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots" "${WMG_DISK_CACHE_PATH}"
 elif [[ "${DEPLOYMENT_STAGE}" == "dev" || "${DEPLOYMENT_STAGE}" == "staging" || "${DEPLOYMENT_STAGE}" == "prod" ]]; then
   echo "| Downloading WMG data snapshot for deployment env: ${DEPLOYMENT_STAGE} from S3 to local disk..."
-  echo aws s3 sync "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots" /tmp/wmg_snapshot_disk_cache
-  aws s3 sync "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots" /tmp/wmg_snapshot_disk_cache
+  echo aws s3 sync "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots" "${WMG_DISK_CACHE_PATH}"
+  aws s3 sync "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots" "${WMG_DISK_CACHE_PATH}"
 else
   echo "| Skipping downloading WMG data snapshot for deployment env: ${DEPLOYMENT_STAGE}..."
 fi
