@@ -9,7 +9,7 @@ charset-normalizer==3.2.0
 ddtrace==2.1.4
 fastobo==0.12.2
 h5py==3.9.0
-idna==3.4
+idna==3.6
 jmespath==1.0.1
 llvmlite==0.40.1
 natsort==8.4.0
