@@ -39,7 +39,7 @@ jobs:
       image_tag: ${{ steps.push_images.outputs.image_tag }}
     steps:
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}

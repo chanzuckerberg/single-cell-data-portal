@@ -30,8 +30,7 @@ def create_cell_type_ancestors(corpus_path: str) -> None:
     valid_cell_types = cell_counts_df["cell_type_ontology_term_id"].unique()
     ancestors_dict = {}
     for cell_type_id in valid_cell_types:
-        cell_type_ancestors = sorted(set(ancestors(cell_type_id)).intersection(valid_cell_types))
-        ancestors_dict[cell_type_id] = ",".join(cell_type_ancestors)
+        ancestors_dict[cell_type_id] = sorted(set(ancestors(cell_type_id)).intersection(valid_cell_types))
 
     logger.info("Writing cell type ancestors file")
     with open(f"{corpus_path}/{CELL_TYPE_ANCESTORS_FILENAME}", "w") as f:
