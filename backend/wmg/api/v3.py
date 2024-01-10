@@ -7,7 +7,7 @@ from flask import jsonify
 from pandas import DataFrame
 from server_timing import Timing as ServerTiming
 
-from backend.wmg.api.common.expression_dotplot import get_dot_plot_data
+from backend.wmg.api.common.expression_dotplot import DEFAULT_GROUP_BY_TERMS, get_dot_plot_data
 from backend.wmg.api.common.rollup import rollup
 from backend.wmg.api.wmg_api_config import (
     READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
@@ -63,6 +63,9 @@ def query():
     if compare:
         compare = find_dimension_id_from_compare(compare)
 
+    group_by_terms = (
+        ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare] if compare else DEFAULT_GROUP_BY_TERMS
+    )
     criteria = WmgQueryCriteria(**request["filter"])
 
     with ServerTiming.time("load snapshot"):
@@ -91,6 +94,7 @@ def query():
             )
         elif mode == "tissue-gene":
             expression_summary = q.expression_summary_tissue(criteria)
+            group_by_terms.remove("cell_type_ontology_term_id")
         elif mode == "celltype-gene":
             expression_summary = q.expression_summary_cell_type(criteria)
 
@@ -105,31 +109,30 @@ def query():
 
     with ServerTiming.time("build response"):
         if expression_summary.shape[0] > 0 or cell_counts.shape[0] > 0:
-            group_by_terms = ["tissue_ontology_term_id", "cell_type_ontology_term_id", compare] if compare else None
-
             gene_expression_df, cell_counts_grouped_df = get_dot_plot_data(
                 expression_summary, cell_counts, group_by_terms
             )
 
-            # do not filter out redundant nodes for gene expressions. certain cell types may only
-            # appear redundant because they do not express a particular gene and are thus missing
-            # from the gene expression dataframe.
-            rolled_gene_expression_df = rollup(
-                gene_expression_df, snapshot.cell_type_ancestors, filter_redundant_nodes=False
-            )
-            rolled_cell_counts_grouped_df = rollup(cell_counts_grouped_df, snapshot.cell_type_ancestors)
+            if mode != "tissue-gene":
+                # do not filter out redundant nodes for gene expressions. certain cell types may only
+                # appear redundant because they do not express a particular gene and are thus missing
+                # from the gene expression dataframe.
+                rolled_gene_expression_df = rollup(
+                    gene_expression_df, snapshot.cell_type_ancestors, filter_redundant_nodes=False
+                )
+                rolled_cell_counts_grouped_df = rollup(cell_counts_grouped_df, snapshot.cell_type_ancestors)
 
-            # filter out rows that do not have a corresponding cell type in the cell counts dataframe
-            # as these will not be displayed in the UI anyway
+                # filter out rows that do not have a corresponding cell type in the cell counts dataframe
+                # as these will not be displayed in the UI anyway
 
-            with ServerTiming.time("filter out rows"):
-                rolled_gene_expression_df = rolled_gene_expression_df[
-                    rolled_gene_expression_df["cell_type_ontology_term_id"].isin(
-                        cell_counts_grouped_df.index.levels[
-                            cell_counts_grouped_df.index.names.index("cell_type_ontology_term_id")
-                        ]
-                    )
-                ]
+                with ServerTiming.time("filter out rows"):
+                    rolled_gene_expression_df = rolled_gene_expression_df[
+                        rolled_gene_expression_df["cell_type_ontology_term_id"].isin(
+                            cell_counts_grouped_df.index.levels[
+                                cell_counts_grouped_df.index.names.index("cell_type_ontology_term_id")
+                            ]
+                        )
+                    ]
 
             response = jsonify(
                 dict(
