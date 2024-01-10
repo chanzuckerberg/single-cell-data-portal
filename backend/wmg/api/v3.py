@@ -133,6 +133,9 @@ def query():
                             ]
                         )
                     ]
+            else:
+                rolled_gene_expression_df = gene_expression_df
+                rolled_cell_counts_grouped_df = cell_counts_grouped_df
 
             response = jsonify(
                 dict(
