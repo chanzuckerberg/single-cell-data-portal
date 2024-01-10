@@ -27,7 +27,6 @@ def cli(ctx, deployment):
     """
     os.environ["DEPLOYMENT_STAGE"] = deployment
     api_base = {
-        "rdev": "https://pr-6426-backend.rdev.single-cell.czi.technology",
         "test" or "dev": "https://api.cellxgene.dev.single-cell.czi.technology",
         "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
         "production": "https://api.cellxgene.cziscience.com",
