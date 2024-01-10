@@ -13,7 +13,7 @@ from backend.wmg.data.snapshot import WmgSnapshot
 class WmgQueryCriteria(BaseModel):
     gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)  # required!
     organism_ontology_term_id: str  # required!
-    tissue_ontology_term_ids: List[str] = Field(unique_items=True, min_items=1)  # required!
+    tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)  # required!
     tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
@@ -22,9 +22,10 @@ class WmgQueryCriteria(BaseModel):
     disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     self_reported_ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    publication_citations: List[str] = Field(default=[], unique_items=True, min_items=0)
 
 
-class WmgQueryCriteriaV2(BaseModel):
+class WmgQueryCriteriaTissue(BaseModel):
     gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)  # required!
     organism_ontology_term_id: str  # required!
     tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
@@ -39,10 +40,11 @@ class WmgQueryCriteriaV2(BaseModel):
     publication_citations: List[str] = Field(default=[], unique_items=True, min_items=0)
 
 
-class WmgQueryCriteriaV3(BaseModel):
+class WmgQueryCriteriaCellType(BaseModel):
     gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)  # required!
+    cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)  # required!
     organism_ontology_term_id: str  # required!
-    tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)  # required!
+    tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
@@ -114,6 +116,20 @@ class WmgQuery:
             criteria=criteria,
         )
 
+    @tracer.wrap(name="expression_summary_tissue", service="wmg-api", resource="_query", span_type="wmg-api")
+    def expression_summary_tissue(self, criteria: WmgQueryCriteria) -> DataFrame:
+        return self._query(
+            cube=self._snapshot.expression_summary_tissue_cube,
+            criteria=criteria,
+        )
+
+    @tracer.wrap(name="expression_summary_cell_type", service="wmg-api", resource="_query", span_type="wmg-api")
+    def expression_summary_cell_type(self, criteria: WmgQueryCriteria) -> DataFrame:
+        return self._query(
+            cube=self._snapshot.expression_summary_cell_type_cube,
+            criteria=criteria,
+        )
+
     @tracer.wrap(name="marker_genes", service="wmg-api", resource="_query", span_type="wmg-api")
     def marker_genes(self, criteria: MarkerGeneQueryCriteria) -> DataFrame:
         return self._query(
@@ -136,7 +152,7 @@ class WmgQuery:
     def _query(
         self,
         cube: Array,
-        criteria: Union[WmgQueryCriteria, WmgQueryCriteriaV2, WmgQueryCriteriaV3, MarkerGeneQueryCriteria],
+        criteria: Union[WmgQueryCriteria, MarkerGeneQueryCriteria],
         compare_dimension=None,
     ) -> DataFrame:
         indexed_dims = self._cube_query_params.get_indexed_dims_to_lookup_query_criteria(

@@ -21,7 +21,7 @@ from backend.wmg.data.query import (
     WmgCubeQueryParams,
     WmgFiltersQueryCriteria,
     WmgQuery,
-    WmgQueryCriteriaV3,
+    WmgQueryCriteria,
     retrieve_top_n_markers,
 )
 from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
@@ -52,13 +52,18 @@ def query():
     request = connexion.request.json
     sanitize_api_query_dict(request["filter"])
 
-    is_rollup = request.get("is_rollup", True)
     compare = request.get("compare", None)
+    mode = request.get("query_mode", "tissue-celltype-gene")
+
+    if mode not in ["tissue-celltype-gene", "tissue-gene", "celltype-gene"]:
+        raise ValueError(
+            f"Invalid query mode {mode}. Mode must be one of tissue-celltype-gene, tissue-gene, celltype-gene"
+        )
 
     if compare:
         compare = find_dimension_id_from_compare(compare)
 
-    criteria = WmgQueryCriteriaV3(**request["filter"])
+    criteria = WmgQueryCriteria(**request["filter"])
 
     with ServerTiming.time("load snapshot"):
         snapshot: WmgSnapshot = load_snapshot(
@@ -78,11 +83,16 @@ def query():
                 default = False
                 break
 
-        expression_summary = (
-            q.expression_summary_default(criteria)
-            if default
-            else q.expression_summary(criteria, compare_dimension=compare)
-        )
+        if mode == "tissue-celltype-gene":
+            expression_summary = (
+                q.expression_summary_default(criteria)
+                if default
+                else q.expression_summary(criteria, compare_dimension=compare)
+            )
+        elif mode == "tissue-gene":
+            expression_summary = q.expression_summary_tissue(criteria)
+        elif mode == "celltype-gene":
+            expression_summary = q.expression_summary_cell_type(criteria)
 
         cell_counts = q.cell_counts(criteria, compare_dimension=compare)
 
@@ -100,26 +110,26 @@ def query():
             gene_expression_df, cell_counts_grouped_df = get_dot_plot_data(
                 expression_summary, cell_counts, group_by_terms
             )
-            if is_rollup:
-                # do not filter out redundant nodes for gene expressions. certain cell types may only
-                # appear redundant because they do not express a particular gene and are thus missing
-                # from the gene expression dataframe.
-                rolled_gene_expression_df = rollup(
-                    gene_expression_df, snapshot.cell_type_ancestors, filter_redundant_nodes=False
-                )
-                rolled_cell_counts_grouped_df = rollup(cell_counts_grouped_df, snapshot.cell_type_ancestors)
 
-                # filter out rows that do not have a corresponding cell type in the cell counts dataframe
-                # as these will not be displayed in the UI anyway
+            # do not filter out redundant nodes for gene expressions. certain cell types may only
+            # appear redundant because they do not express a particular gene and are thus missing
+            # from the gene expression dataframe.
+            rolled_gene_expression_df = rollup(
+                gene_expression_df, snapshot.cell_type_ancestors, filter_redundant_nodes=False
+            )
+            rolled_cell_counts_grouped_df = rollup(cell_counts_grouped_df, snapshot.cell_type_ancestors)
 
-                with ServerTiming.time("filter out rows"):
-                    rolled_gene_expression_df = rolled_gene_expression_df[
-                        rolled_gene_expression_df["cell_type_ontology_term_id"].isin(
-                            cell_counts_grouped_df.index.levels[
-                                cell_counts_grouped_df.index.names.index("cell_type_ontology_term_id")
-                            ]
-                        )
-                    ]
+            # filter out rows that do not have a corresponding cell type in the cell counts dataframe
+            # as these will not be displayed in the UI anyway
+
+            with ServerTiming.time("filter out rows"):
+                rolled_gene_expression_df = rolled_gene_expression_df[
+                    rolled_gene_expression_df["cell_type_ontology_term_id"].isin(
+                        cell_counts_grouped_df.index.levels[
+                            cell_counts_grouped_df.index.names.index("cell_type_ontology_term_id")
+                        ]
+                    )
+                ]
 
             response = jsonify(
                 dict(
@@ -131,6 +141,7 @@ def query():
                             rolled_cell_counts_grouped_df, cell_counts_grouped_df, snapshot.cell_type_orderings, compare
                         ),
                     ),
+                    query_mode=mode,
                 )
             )
         else:  # no data, return empty json

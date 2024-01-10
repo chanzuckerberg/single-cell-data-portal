@@ -81,6 +81,7 @@ def create_flask_app():
     curation_api.blueprint.json_encoder = CurationJSONEncoder
     add_api(base_path="/wmg", spec_file="wmg/api/wmg-api.yml")
     add_api(base_path="/wmg/v2", spec_file="wmg/api/wmg-api-v2.yml")
+    add_api(base_path="/wmg/v3", spec_file="wmg/api/wmg-api-v3.yml")
     add_api(base_path="/gene_info", spec_file="gene_info/api/gene-info-api.yml")
 
     # Initialize gene checker to go ahead and create a dictionary of all

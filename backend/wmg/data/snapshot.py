@@ -57,6 +57,9 @@ class WmgSnapshot:
     # See the full schema at backend/wmg/data/schemas/cube_schema_default.py.
     expression_summary_default_cube: Optional[Array] = field(default=None)
 
+    expression_summary_tissue_cube: Optional[Array] = field(default=None)
+    expression_summary_cell_type_cube: Optional[Array] = field(default=None)
+
     # TileDB array containing the precomputed marker genes.
     # See the full schema at backend/wmg/data/schemas/marker_gene_cube_schema.py.
     marker_genes_cube: Optional[Array] = field(default=None)
@@ -197,6 +200,8 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
         snapshot_identifier=snapshot_id,
         expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
         expression_summary_default_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
+        expression_summary_tissue_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_TISSUE_CUBE_NAME}"),
+        expression_summary_cell_type_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CELL_TYPE_CUBE_NAME}"),
         marker_genes_cube=_open_cube(f"{snapshot_base_uri}/{MARKER_GENES_CUBE_NAME}"),
         cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
         cell_type_orderings=cell_type_orderings.set_index(["tissue_ontology_term_id", "cell_type_ontology_term_id"])[
