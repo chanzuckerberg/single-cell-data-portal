@@ -1,10 +1,6 @@
-# When this config flag is set, the API
-# will first check if a valid data snapshot
-# exists on the local disk. If valid data
-# snapshot exists on local disk, then direct
-# all reads to the local disk snapshot.
-# If the data does not exist on local disk or
-# the data is invalid, then read from S3
+# When this config flag is set, the API will load the snapshot
+# from the local disk. When the flag is False, the API
+# will load the snapshot from S3
 WMG_API_READ_LOCAL_DISK_CACHED_SNAPSHOT = True
 
 # When the API is set to read a particular

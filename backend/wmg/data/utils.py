@@ -12,6 +12,29 @@ from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
 from backend.wmg.data.constants import CL_PINNED_CONFIG_URL, WMG_PINNED_SCHEMA_VERSION
 
 
+# TODO: Set up WMG_DISK_CACHE_PATH environment variable so that this function
+# can be simplified to be a environment variable lookup.
+def get_wmg_snapshot_local_disk_path():
+    """
+    Return the path on the filesystem where the WMG data snapshot is stored.
+
+    NOTE: Returns a string representing a file path only for REMOTE environments on AWS.
+    For local development environment (where DEPLOYMENT_STAGE = "test"), this function
+    return None.
+    """
+    deployment_stage = os.environ.get("DEPLOYMENT_STAGE")
+
+    if deployment_stage == "test":
+        return None
+
+    stack_name = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
+
+    if stack_name:
+        return f"/tmp/wmg_disk_cache/{stack_name}/snapshots"
+
+    return "/tmp/wmg_disk_cache/snapshots"
+
+
 def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:
     all_filter_options = set()
     organism_key = "organism_ontology_term_id__" + organism

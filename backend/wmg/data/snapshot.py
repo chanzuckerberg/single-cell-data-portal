@@ -104,10 +104,7 @@ def load_snapshot(
     global cached_snapshot
 
     if not (snapshot_local_disk_path and _local_disk_snapshot_is_valid(snapshot_local_disk_path)):
-        logger.info("Loading WMG data snapshot from S3")
         snapshot_local_disk_path = None
-    else:
-        logger.info(f"Loading WMG data snapshot from local disk: {snapshot_local_disk_path}")
 
     should_reload, snapshot_id = _should_reload_snapshot(
         snapshot_schema_version=snapshot_schema_version,
