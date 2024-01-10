@@ -6,7 +6,7 @@ import unittest
 from unittest import mock
 from unittest.mock import Mock, patch
 
-from backend.wmg.data.snapshot import _get_wmg_snapshot_schema_dir_path
+from backend.wmg.data.snapshot import _get_wmg_snapshot_schema_dir_rel_path
 from backend.wmg.pipeline import logger, main
 from backend.wmg.pipeline.constants import MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION
 from backend.wmg.pipeline.expression_summary_and_cell_counts import create_expression_summary_and_cell_counts_cubes
@@ -71,7 +71,7 @@ class TestCubePipe(unittest.TestCase):
         self.assertEqual(dest_path, f"s3://{wmg_bucket_name}/snapshots/v1/snapshot-id")
 
         # Verify that we're reading from the versioned path
-        verioned_read_path = _get_wmg_snapshot_schema_dir_path(snapshot_schema_version="v1")
+        verioned_read_path = _get_wmg_snapshot_schema_dir_rel_path(snapshot_schema_version="v1")
         self.assertEqual(verioned_read_path, "snapshots/v1")
 
     def test__pipeline_fails_if_census_schema_version_unsupported(self):
