@@ -8,7 +8,7 @@ from typing import Iterable, List, Tuple
 
 import requests
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)
 
 pipeline_id = "Z2lkOi8vcmFwdG9yL1BpcGVsaW5lLzMwNTE5ODA"  # "Done" pipeline in "single-cell" workspace

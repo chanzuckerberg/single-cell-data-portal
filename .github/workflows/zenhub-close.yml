@@ -1,4 +1,4 @@
-name: Issue Ready for Production
+name: Zenhub Close Issue Ready for Prod
 
 on:
   push:
@@ -19,6 +19,6 @@ jobs:
       - name: Close Issue
         run: |
           pip install requests
-          python3 ./scripts/zenhub_close.py
+          python3 ./scripts/zenhub_close.py >> $GITHUB_STEP_SUMMARY
         env:
           ZENHUB_TOKEN: ${{ secrets.ZENHUB_TOKEN }}
