@@ -94,6 +94,12 @@ paths:
                     - self_reported_ethnicity
                     - disease
                     - publication
+                query_mode:
+                  type: string
+                  enum:
+                    - tissue-celltype-gene
+                    - tissue-gene
+                    - celltype-gene
               required:
                 - filter
               additionalProperties: false
