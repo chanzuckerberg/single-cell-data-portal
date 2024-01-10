@@ -27,12 +27,7 @@ def get_wmg_snapshot_local_disk_path():
     if deployment_stage == "test":
         return None
 
-    stack_name = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
-
-    if stack_name:
-        return f"/tmp/wmg_disk_cache/{stack_name}/snapshots"
-
-    return "/tmp/wmg_disk_cache/snapshots"
+    return "/tmp/wmg_disk_cache"
 
 
 def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:
