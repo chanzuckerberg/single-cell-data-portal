@@ -11,8 +11,8 @@ import requests
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-pipeline_id = "Z2lkOi8vcmFwdG9yL1BpcGVsaW5lLzIyMDg1MDE"  # "Ready for Prod" pipeline in "single-cell" workspace
-repo_id = "Z2lkOi8vcmFwdG9yL1JlcG9zaXRvcnkvNTM5NzQwOTg"  # "single-cell-data-portal" repo
+pipeline_id = "Z2lkOi8vcmFwdG9yL1BpcGVsaW5lLzMwNTE5ODA"  # "Done" pipeline in "single-cell" workspace
+repo_id = "Z2lkOi8vcmFwdG9yL1JlcG9zaXRvcnkvMTMzNDEyNzQ1"  # "Zenhub-experiment" repo
 
 
 def get_issues(pipeline_id: str, repo_id: str) -> List[dict]:

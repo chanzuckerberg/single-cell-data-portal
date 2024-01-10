@@ -3,7 +3,7 @@ name: Issue Ready for Production
 on:
   push:
     branches:
-      - prod
+      - test/zenhub2
 
 jobs:
   # run the python script to close the issue in zenhub
