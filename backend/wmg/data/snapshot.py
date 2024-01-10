@@ -89,7 +89,6 @@ def load_snapshot(
     *,
     snapshot_schema_version: str,
     explicit_snapshot_id_to_load: Optional[str] = None,
-    read_versioned_snapshot: bool = True,
 ) -> WmgSnapshot:
     """
     Loads and caches the snapshot identified by the snapshot schema version and a snapshot id.
@@ -106,37 +105,34 @@ def load_snapshot(
     should_reload, snapshot_id = _should_reload_snapshot(
         snapshot_schema_version=snapshot_schema_version,
         explicit_snapshot_id_to_load=explicit_snapshot_id_to_load,
-        read_versioned_snapshot=read_versioned_snapshot,
     )
 
     if should_reload:
         cached_snapshot = _load_snapshot(
             snapshot_schema_version=snapshot_schema_version,
             snapshot_id=snapshot_id,
-            read_versioned_snapshot=read_versioned_snapshot,
         )
 
     return cached_snapshot
 
 
 ###################################### PRIVATE INTERFACE #################################
-def _get_latest_snapshot_id(*, snapshot_schema_version: str, read_versioned_snapshot: bool) -> str:
+def _get_latest_snapshot_id(*, snapshot_schema_version: str) -> str:
     """
     Get latest snapshot id for a given snapshot schema version
     """
     data_schema_dir_path = _get_wmg_snapshot_schema_dir_path(
         snapshot_schema_version=snapshot_schema_version,
-        read_versioned_snapshot=read_versioned_snapshot,
     )
     file_name = "latest_snapshot_identifier"
 
-    key_path = f"{data_schema_dir_path}/{file_name}" if data_schema_dir_path else file_name
+    key_path = f"{data_schema_dir_path}/{file_name}"
 
     latest_snapshot_id = _read_value_at_s3_key(key_path)
     return latest_snapshot_id
 
 
-def _get_wmg_snapshot_schema_dir_path(*, snapshot_schema_version: str, read_versioned_snapshot: bool) -> str:
+def _get_wmg_snapshot_schema_dir_path(*, snapshot_schema_version: str) -> str:
     """
     Get path to a particular snapshot schema version.
     """
@@ -145,18 +141,15 @@ def _get_wmg_snapshot_schema_dir_path(*, snapshot_schema_version: str, read_vers
     if WMG_ROOT_DIR_PATH:
         data_schema_dir_path = f"{WMG_ROOT_DIR_PATH}/{data_schema_dir_path}"
 
-    if read_versioned_snapshot:
-        return data_schema_dir_path
-    return WMG_ROOT_DIR_PATH
+    return data_schema_dir_path
 
 
-def _get_wmg_snapshot_dir_path(*, snapshot_schema_version: str, snapshot_id: str, read_versioned_snapshot: bool) -> str:
+def _get_wmg_snapshot_dir_path(*, snapshot_schema_version: str, snapshot_id: str) -> str:
     """
     Get path to the snapshot id directory for a the given snapshot schema version.
     """
     data_schema_dir_path = _get_wmg_snapshot_schema_dir_path(
         snapshot_schema_version=snapshot_schema_version,
-        read_versioned_snapshot=read_versioned_snapshot,
     )
 
     snapshot_id_dir_path = f"{data_schema_dir_path}/{snapshot_id}" if data_schema_dir_path else snapshot_id
@@ -172,11 +165,10 @@ def _get_wmg_snapshot_dir_s3_uri(snapshot_dir_path: str) -> str:
     return os.path.join("s3://", wmg_config.bucket, snapshot_dir_path)
 
 
-def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versioned_snapshot: bool) -> WmgSnapshot:
+def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str) -> WmgSnapshot:
     snapshot_dir_path = _get_wmg_snapshot_dir_path(
         snapshot_schema_version=snapshot_schema_version,
         snapshot_id=snapshot_id,
-        read_versioned_snapshot=read_versioned_snapshot,
     )
 
     cell_type_orderings = _load_cell_type_order(snapshot_dir_path)
@@ -259,7 +251,6 @@ def _should_reload_snapshot(
     *,
     snapshot_schema_version: str,
     explicit_snapshot_id_to_load: Optional[str] = None,
-    read_versioned_snapshot: bool,
 ) -> tuple[bool, str]:
     """
     Returns a pair: (<should_reload>, <snapshot_id>) where <should_reload> is a boolean indicating
@@ -267,7 +258,7 @@ def _should_reload_snapshot(
     the in-memory data structure represents.
     """
     snapshot_id = explicit_snapshot_id_to_load or _get_latest_snapshot_id(
-        snapshot_schema_version=snapshot_schema_version, read_versioned_snapshot=read_versioned_snapshot
+        snapshot_schema_version=snapshot_schema_version
     )
 
     if cached_snapshot is None:
