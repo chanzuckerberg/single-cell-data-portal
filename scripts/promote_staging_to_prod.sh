@@ -8,6 +8,7 @@ else
   exit 1
 fi
 
+echo "fetch origin branch history"
 git fetch
 echo "Stash any local changes"
 git stash
@@ -27,4 +28,4 @@ git merge --verbose staging -m "Merging staging branch into prod branch"
 echo "Merge completed"
 
 echo "Pushing to Prod"
-# git push origin prod
+git push origin prod
