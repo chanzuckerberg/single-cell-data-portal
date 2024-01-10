@@ -32,6 +32,7 @@ WMG_ROOT_DIR_PATH = STACK_NAME.strip("/") if STACK_NAME else ""
 
 logger = logging.getLogger("wmg")
 
+### TEMPORARY REFERENCE PR CREATED TO DO COMPARATIVE PERFORMANCE TESTING ####
 ###################################### PUBLIC INTERFACE #################################
 
 
