@@ -230,6 +230,6 @@ coverage/report-xml: coverage/combine
 coverage/report-html: coverage/combine
 	docker-compose $(COMPOSE_OPTS) run --rm -T backend bash -c "cd /single-cell-data-portal && coverage html --data-file=$(COVERAGE_DATA_FILE) -i --skip-empty"
 
-.PHONY: promote-staging-to-prod # set GITHUB_PAT env var OR call as "make GITHUB_PAT=<github_pat> promote-staging-to-prod"
+.PHONY: promote-staging-to-prod
 promote-staging-to-prod:
-	curl -X POST https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/dispatches -H 'Accept: application/vnd.github.everest-preview+json' --data '{"event_type": "deployment"}' --header 'authorization: Bearer $(GITHUB_PAT)'
+	./scripts/promote_staging_to_prod.sh
