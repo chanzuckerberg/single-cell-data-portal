@@ -1,0 +1,6 @@
+INFO     scripts.zenhub_close:zenhub_close.py:113 Not closed: #102 (Sample Issue 2)
+	Blocked by:
+		#301 (Blocked Issue)
+	Open PRs:
+		#202 (PR Title 2)
+INFO     scripts.zenhub_close:zenhub_close.py:123 No issues to close.
