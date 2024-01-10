@@ -195,6 +195,9 @@ class WmgQuery:
         # get valid dimensions from schema
         dims = self._cube_query_params.get_dims_for_cube_query(cube)
 
+        if "tissue_ontology_term_id" not in dims:
+            attrs.append("tissue_ontology_term_id")
+
         query_result_df = pd.concat(
             cube.query(
                 cond=query_cond or None,
