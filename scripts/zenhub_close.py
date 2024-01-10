@@ -4,11 +4,12 @@ This script closes issues in the Ready for Prod pipeline that are not blocked by
 import json
 import logging
 import os
+import sys
 from typing import Iterable, List, Tuple
 
 import requests
 
-logging.basicConfig(level=logging.INFO, format="%(message)s")
+logging.basicConfig(level=logging.INFO, format="%(message)s", handlers=[logging.StreamHandler(sys.stdout)])
 logger = logging.getLogger(__name__)
 
 pipeline_id = "Z2lkOi8vcmFwdG9yL1BpcGVsaW5lLzMwNTE5ODA"  # "Done" pipeline in "single-cell" workspace
