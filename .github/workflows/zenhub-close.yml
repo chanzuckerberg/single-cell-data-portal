@@ -19,6 +19,6 @@ jobs:
       - name: Close Issue
         run: |
           pip install requests
-          python3 ./scripts/zenhub_close_ready_for_prod.py
+          python3 ./scripts/zenhub_close.py
         env:
           ZENHUB_TOKEN: ${{ secrets.ZENHUB_TOKEN }}
