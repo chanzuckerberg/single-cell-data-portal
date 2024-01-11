@@ -160,6 +160,10 @@ module backend_service {
   dataset_submissions_bucket = local.dataset_submissions_bucket
   datasets_bucket            = local.datasets_bucket
   execution_role             = local.ecs_execution_role
+
+  # Bump health_check_interval from 15 seconds to 30 seconds so that WMG snapshot download,
+  # which at the time of this writing is around 27GB, has time to complete.
+  health_check_interval      = 30 
   dd_key_secret_arn          = var.dd_key_secret_arn
 
   wait_for_steady_state = local.wait_for_steady_state
