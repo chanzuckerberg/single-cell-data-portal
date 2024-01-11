@@ -14,9 +14,9 @@ if [[ "${DEPLOYMENT_STAGE}" == "rdev" && -n "${REMOTE_DEV_PREFIX}" ]]; then
   strip_slash_remote_dev_prefix="${REMOTE_DEV_PREFIX//\//}" # strips ALL "/"
 
   echo "WMG_DISK_CACHE_PATH env var value is: ${WMG_DISK_CACHE_PATH}"
-  echo aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots/v3" "/tmp/wmg_disk_cache/${strip_slash_remote_dev_prefix}/snapshots/v3"
+  echo aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots" "/tmp/wmg_disk_cache/${strip_slash_remote_dev_prefix}/snapshots"
   
-  aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots/v3" "/tmp/wmg_disk_cache/${strip_slash_remote_dev_prefix}/snapshots/v3"
+  aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots" "/tmp/wmg_disk_cache/${strip_slash_remote_dev_prefix}/snapshots"
 elif [[ "${DEPLOYMENT_STAGE}" == "dev" || "${DEPLOYMENT_STAGE}" == "staging" || "${DEPLOYMENT_STAGE}" == "prod" ]]; then
   echo "| Downloading WMG data snapshot for deployment env: ${DEPLOYMENT_STAGE} from S3 to local disk..."
   echo "WMG_DISK_CACHE_PATH env var value is: ${WMG_DISK_CACHE_PATH}"
