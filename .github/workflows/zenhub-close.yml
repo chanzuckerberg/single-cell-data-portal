@@ -1,0 +1,24 @@
+name: Zenhub Close Issue Ready for Prod
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  # run the python script to close the issue in zenhub
+  close-issue:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Close Issue
+        run: |
+          pip install requests
+          python3 ./scripts/zenhub_close.py >> $GITHUB_STEP_SUMMARY
+        env:
+          ZENHUB_TOKEN: ${{ secrets.ZENHUB_TOKEN }}
