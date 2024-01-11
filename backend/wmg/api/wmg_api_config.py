@@ -1,7 +1,7 @@
 # When this config flag is set, the API will load the snapshot
 # from the local disk. When the flag is False, the API
 # will load the snapshot from S3
-WMG_API_READ_LOCAL_DISK_CACHED_SNAPSHOT = True
+WMG_API_READ_LOCAL_DISK_CACHED_SNAPSHOT = False
 
 # When the API is set to read a particular
 # snapshot schema version, it will load the
