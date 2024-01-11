@@ -210,7 +210,9 @@ def _local_disk_snapshot_is_valid(snapshot_local_disk_path: str) -> bool:
     At a minimum, this function should check that the local disk path exists.
     """
     if not os.path.exists(snapshot_local_disk_path):
-        logger.warning(f"The WMG data on local disk path: {snapshot_local_disk_path} is invalid")
+        logger.warning(
+            f"The WMG data on local disk path: {snapshot_local_disk_path} does not exist. Falling back to S3..."
+        )
         return False
 
     return True
@@ -295,6 +297,17 @@ def _should_reload_snapshot(
     if cached_snapshot is None:
         logger.info(f"Loading snapshot id: {snapshot_id}")
         return (True, snapshot_id)
+    # IMPORTANT NOTE: Updating cached_snapshot when snapshot_identifer value of
+    # cached_snapshot is different from snapshot_id on S3 or filesystem means that
+    # the cached_snapshot could be updated with an older snapshot if the snapshot_id
+    # on S3 or filesystem is updated to be an older snapshot_id.
+    # This might be useful if we want to remove a corrupt wmg snapshot by simply
+    # updating the latest_snapshot_identifer file to be an older snapshot_id without
+    # requiring updating the explicit_snapshot_id_to_load in code and deploying.
+    # Such an approach to rollback (updating the latest_snapshot_identifier on S3/filesystem)
+    # should only be used in emergencies. The normal rollback of updating the code's
+    # config file and redeploying should be used in all other scenarios as this form of
+    # rollback provides an audit log via git commit history.
     elif snapshot_id != cached_snapshot.snapshot_identifier:
         logger.info(
             f"Reloading snapshot. Detected snapshot id update from cached "
