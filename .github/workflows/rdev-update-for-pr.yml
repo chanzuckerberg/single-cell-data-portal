@@ -61,12 +61,12 @@ jobs:
   build_images:
     uses: ./.github/workflows/build-images.yml
     secrets: inherit
-    needs: get_previous_image_digests
 
   deploy-rdev:
     runs-on: ubuntu-22.04
     needs:
       - build_images
+      - get_previous_image_digests
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
