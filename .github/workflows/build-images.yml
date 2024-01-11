@@ -3,9 +3,9 @@ name: rdev build-images
 on:
   workflow_call:
     outputs:
-      iamge_tag:
+      image_tag:
         description: "the image tag to be pushed"
-        value: ${{ jobs.create-image-tag.outputs.image_tag }}
+        value: ${{ jobs.build_images.outputs.image_tag }}
 env:
   # Force using BuildKit instead of normal Docker, required so that metadata
   # is written/read to allow us to use layers of previous builds as cache.
@@ -18,18 +18,6 @@ permissions:
   id-token: write
 
 jobs:
-  create-image-tag:
-    runs-on: ubuntu-22.04
-    outputs:
-      image_tag: ${{ steps.create-image-tag.outputs.image_tag }}
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
-      - name: Create image tag
-        id: create-image-tag
-        run: echo "image_tag=sha-${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
-
   build_images:
     strategy:
       matrix:
@@ -42,7 +30,8 @@ jobs:
           - wmg_processing
           - cellguide_pipeline
     runs-on: ubuntu-22.04
-    needs: create-image-tag
+    outputs:
+      image_tag: ${{ steps.push_images.outputs.image_tag }}
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -63,12 +52,12 @@ jobs:
           happy_version: "0.110.1"
       - name: Push images
         id: push_images
-        env:
-          IMAGE_TAG: ${{ needs.create-image-tag.outputs.image_tag }}
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
+          export IMAGE_TAG=sha-${GITHUB_SHA:0:7}
           export BRANCH_TAG=branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
           happy push devstack --env dev --slice ${{ matrix.image }} \
           --docker-compose-env-file envfile --aws-profile "" \
           --tags ${STACK_NAME},${IMAGE_TAG},${BRANCH_TAG}
