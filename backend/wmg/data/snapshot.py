@@ -103,7 +103,14 @@ def load_snapshot(
     """
     global cached_snapshot
 
-    if not (snapshot_local_disk_path and _local_disk_snapshot_is_valid(snapshot_local_disk_path)):
+    if not (
+        snapshot_local_disk_path
+        and _local_disk_snapshot_is_valid(
+            snapshot_local_disk_path=snapshot_local_disk_path,
+            snapshot_schema_version=snapshot_schema_version,
+            explicit_snapshot_id_to_load=explicit_snapshot_id_to_load,
+        )
+    ):
         snapshot_local_disk_path = None
 
     should_reload, snapshot_id = _should_reload_snapshot(
@@ -203,17 +210,30 @@ def _load_snapshot(
     )
 
 
-def _local_disk_snapshot_is_valid(snapshot_local_disk_path: str) -> bool:
+def _local_disk_snapshot_is_valid(
+    *,
+    snapshot_local_disk_path: str,
+    snapshot_schema_version: str,
+    explicit_snapshot_id_to_load: Optional[str] = None,
+) -> bool:
     """
-    Checks that the path on local disk contains valid WMG data.
-
-    At a minimum, this function should check that the local disk path exists.
+    Checks that the path on local disk contains valid WMG snapshot.
     """
     if not os.path.exists(snapshot_local_disk_path):
-        logger.warning(
-            f"The WMG data on local disk path: {snapshot_local_disk_path} does not exist. Falling back to S3..."
-        )
+        logger.warning(f"{snapshot_local_disk_path} does not exist. Falling back to S3 to load WMG snapshot...")
         return False
+    else:
+        if explicit_snapshot_id_to_load:
+            snapshot_id = explicit_snapshot_id_to_load
+        else:
+            snapshot_id = _get_latest_snapshot_id(snapshot_schema_version, snapshot_local_disk_path)
+
+        snapshot_rel_path = _get_wmg_snapshot_rel_path(snapshot_schema_version, snapshot_id)
+        snapshot_full_path = _get_wmg_snapshot_fullpath(snapshot_rel_path, snapshot_local_disk_path)
+
+        if not os.path.exists(snapshot_full_path):
+            logger.warning(f"{snapshot_full_path} does not exist. Falling back to S3 to load WMG snapshot...")
+            return False
 
     return True
 
