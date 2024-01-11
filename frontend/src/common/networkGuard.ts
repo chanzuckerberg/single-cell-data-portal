@@ -17,17 +17,15 @@ const maxRequests = 500;
 let timeoutExpiration = 0;
 let hasReachedMaxRequests = false;
 
-type FetchArgs = [input: RequestInfo | URL, init?: RequestInit | undefined];
-
 export function networkGuard() {
   if (isSSR()) return;
 
   // Intercept network requests
   const originalFetch = window.fetch;
 
-  window.fetch = newFetch;
+  window.fetch = newFetch as typeof window.fetch;
 
-  function newFetch(...args: FetchArgs) {
+  function newFetch(...args: Parameters<typeof window.fetch>) {
     requestCount++;
 
     if (!timeoutExpiration) {
