@@ -1,0 +1,2 @@
+INFO     backend.layers.business.business:business.py:511 {'message': 'ingesting dataset', 'collection_version_id': 69620264-172b-4c08-afa0-f7232e21a141, 'url': 'http://fake.url', 'current_dataset_version_id': None}
+INFO     processing:dataset_metadata_update.py:215 Dataset d1372370-b11a-4b09-8614-69446e271af3 is not successfully processed. Skipping metadata update.
