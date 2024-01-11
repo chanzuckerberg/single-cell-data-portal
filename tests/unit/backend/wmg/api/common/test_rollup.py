@@ -2,6 +2,8 @@
 
 In detail, this module tests the public and private functions defined in `backend.wmg.api.common.rollup` module.
 """
+import gzip
+import json
 from typing import List
 
 import pandas as pd
@@ -10,6 +12,8 @@ from pandas import DataFrame
 from pandas.testing import assert_frame_equal
 
 from backend.wmg.api.common.rollup import rollup
+from backend.wmg.data.snapshot import CELL_TYPE_ANCESTORS_FILENAME
+from tests.unit.backend.wmg.fixtures import FIXTURES_ROOT
 
 
 def _create_cell_counts_df_helper(cell_counts_rows: List[list], columns: List[str], index_cols: List[str]) -> DataFrame:
@@ -405,16 +409,36 @@ def test__rollup(name, input_cell_counts_df, expected_cell_counts_df, input_gene
     # Arrange
     cell_counts_df_index_list = list(input_cell_counts_df.index.names)
 
-    # Act
+    with gzip.open(f"{FIXTURES_ROOT}/realistic-test-snapshot/{CELL_TYPE_ANCESTORS_FILENAME}.gz", "rt") as fca:
+        cell_type_ancestors_dict = json.load(fca)
+        cell_type_ancestors_dict["CL:0000127"] = ["CL:0000127"]
+        cell_type_ancestors_dict["CL:0000644"] = ["CL:0000127", "CL:0000644"]
+        cell_type_ancestors_dict["CL:0002605"] = ["CL:0000127", "CL:0002605"]
+        cell_type_ancestors_dict["CL:0002627"] = ["CL:0000127", "CL:0002627"]
 
-    # Note that we are creating copies of the input dataframes before passing them as
-    # arguments to the `rollup` function so that if the `rollup` function mutates the
-    # argument values, the input to the test is not affected.
-    rolled_up_gene_expr_df, rolled_up_cell_counts_df = rollup(input_gene_expr_df.copy(), input_cell_counts_df.copy())
+        # The backend currently has a requirement that only cell types that are in the input
+        # are valid ancestors. While this is not a requirement of the rollup function itself,
+        # we handle this edge case to ensure parity between tests and current functionality
+        # of the backend.
+        ancestor_keys = list(cell_type_ancestors_dict.keys())
+        for key in ancestor_keys:
+            if key not in input_cell_counts_df.index.get_level_values("cell_type_ontology_term_id"):
+                del cell_type_ancestors_dict[key]
+                for ancestor in cell_type_ancestors_dict.values():
+                    if key in ancestor:
+                        ancestor.remove(key)
+        cell_type_ancestors = pd.Series(cell_type_ancestors_dict)
+
+    rolled_up_gene_expr_df = rollup(input_gene_expr_df, cell_type_ancestors, filter_redundant_nodes=False)
+    rolled_up_cell_counts_df = rollup(input_cell_counts_df, cell_type_ancestors, filter_redundant_nodes=True)
 
     # Assert
     rolled_up_cell_counts_df.reset_index(inplace=True)
     expected_cell_counts_df.reset_index(inplace=True)
+
+    rolled_up_cell_counts_df = rolled_up_cell_counts_df[expected_cell_counts_df.columns]
+    rolled_up_cell_counts_df.sort_values(cell_counts_df_index_list, inplace=True)
+    expected_cell_counts_df.sort_values(cell_counts_df_index_list, inplace=True)
 
     assert_frame_equal(
         rolled_up_cell_counts_df.reset_index(drop=True),
@@ -425,7 +449,9 @@ def test__rollup(name, input_cell_counts_df, expected_cell_counts_df, input_gene
     # sort the rolled up gene expression dataframe so that the correct rows are compared with
     # the expected gene expression rows in the assert call
     sort_columns_for_rolled_gene_expr_df = list(cell_counts_df_index_list) + ["gene_ontology_term_id"]
+    rolled_up_gene_expr_df = rolled_up_gene_expr_df[expected_gene_expr_df.columns]
     rolled_up_gene_expr_df.sort_values(sort_columns_for_rolled_gene_expr_df, inplace=True)
+    expected_gene_expr_df.sort_values(sort_columns_for_rolled_gene_expr_df, inplace=True)
 
     assert_frame_equal(
         rolled_up_gene_expr_df.reset_index(drop=True),

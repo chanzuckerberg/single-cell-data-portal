@@ -23,6 +23,7 @@ CELL_COUNTS_CUBE_NAME = "cell_counts"
 MARKER_GENES_CUBE_NAME = "marker_genes"
 FILTER_RELATIONSHIPS_FILENAME = "filter_relationships.json"
 DATASET_METADATA_FILENAME = "dataset_metadata.json"
+CELL_TYPE_ANCESTORS_FILENAME = "cell_type_ancestors.json"
 
 STACK_NAME = os.environ.get("REMOTE_DEV_PREFIX")
 
@@ -73,8 +74,10 @@ class WmgSnapshot:
     filter_relationships: Optional[Dict] = field(default=None)
 
     # dataset metadata dictionary
-
     dataset_metadata: Optional[Dict] = field(default=None)
+
+    # cell type ancestors pandas Series
+    cell_type_ancestors: Optional[pd.Series] = field(default=None)
 
 
 # Cached data
@@ -179,9 +182,8 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
     cell_type_orderings = _load_cell_type_order(snapshot_dir_path)
     primary_filter_dimensions = _load_primary_filter_data(snapshot_dir_path)
     filter_relationships = _load_filter_graph_data(snapshot_dir_path)
-
-    # TODO: Once the pipeline generates the V2 snapshot, the ternary can be removed
-    dataset_metadata = _load_dataset_metadata(snapshot_dir_path) if snapshot_schema_version != "v1" else None
+    cell_type_ancestors = _load_cell_type_ancestors(snapshot_dir_path)
+    dataset_metadata = _load_dataset_metadata(snapshot_dir_path)
 
     snapshot_base_uri = _get_wmg_snapshot_dir_s3_uri(snapshot_dir_path)
     logger.info(f"Loading WMG snapshot from directory path {snapshot_dir_path} into URI {snapshot_base_uri}")
@@ -201,6 +203,7 @@ def _load_snapshot(*, snapshot_schema_version: str, snapshot_id: str, read_versi
         primary_filter_dimensions=primary_filter_dimensions,
         filter_relationships=filter_relationships,
         dataset_metadata=dataset_metadata,
+        cell_type_ancestors=pd.Series(cell_type_ancestors),
     )
 
 
@@ -220,6 +223,11 @@ def _load_primary_filter_data(snapshot_dir_path: str) -> Dict:
 
 def _load_dataset_metadata(snapshot_dir_path: str) -> Dict:
     key_path = f"{snapshot_dir_path}/{DATASET_METADATA_FILENAME}"
+    return json.loads(_read_value_at_s3_key(key_path))
+
+
+def _load_cell_type_ancestors(snapshot_dir_path: str) -> Dict:
+    key_path = f"{snapshot_dir_path}/{CELL_TYPE_ANCESTORS_FILENAME}"
     return json.loads(_read_value_at_s3_key(key_path))
 
 

@@ -18,16 +18,16 @@ jobs:
     steps:
       - uses: actions/setup-node@v2
         with:
-          node-version: "16.14.2"
+          node-version: "20.10.0"
       - name: Configure AWS Prod Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment == 'prod'
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment != 'prod'
         with:
           aws-region: us-west-2
@@ -35,12 +35,12 @@ jobs:
           role-duration-seconds: 2700
       # Login to ECR needed solely to be able to retrieve cached layers
       - name: Login to Prod ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         if: github.event.deployment.environment == 'prod'
         with:
           registry: ${{ secrets.ECR_REPO_PROD }}
       - name: Login to ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
@@ -90,7 +90,8 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: "here"
+          mention: "subteam^S02K38PMTTQ"
+          if_mention: "always"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
@@ -136,8 +137,8 @@ jobs:
     steps:
       - uses: actions/setup-node@v2
         with:
-          node-version: "16.14.2"
-      - uses: actions/setup-python@v4
+          node-version: "20.10.0"
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - uses: actions/checkout@v2
@@ -145,14 +146,14 @@ jobs:
           ref: ${{ github.event.deployment.sha }}
           fetch-depth: 1
       - name: Configure AWS Prod Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment == 'prod'
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment != 'prod'
         with:
           aws-region: us-west-2
@@ -217,15 +218,15 @@ jobs:
     steps:
       - uses: actions/setup-node@v3
         with:
-          node-version: "16.14.2"
+          node-version: "20.10.0"
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1800
       - name: Login to ECR
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
@@ -305,14 +306,14 @@ jobs:
       - upgrade
     steps:
       - name: Configure AWS Prod Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment == 'prod'
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment != 'prod'
         with:
           aws-region: us-west-2
@@ -322,7 +323,7 @@ jobs:
         with:
           ref: ${{ github.event.deployment.sha }}
           fetch-depth: 1
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - name: Run functional test
@@ -360,14 +361,14 @@ jobs:
       - upgrade
     steps:
       - name: Configure AWS Prod Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment == 'prod'
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment != 'prod'
         with:
           aws-region: us-west-2
@@ -375,12 +376,12 @@ jobs:
           role-duration-seconds: 2700
       # Login to ECR needed solely to be able to retrieve cached layers
       - name: Login to Prod ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         if: github.event.deployment.environment == 'prod'
         with:
           registry: ${{ secrets.ECR_REPO_PROD }}
       - name: Login to ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
@@ -412,7 +413,17 @@ jobs:
         with:
           status: ${{ steps.check.outputs.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: "here"
+          mention: "subteam^S02KZL4SQM6,subteam^S03MNFMGD0F"
+          if_mention: "always"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: steps.check.outputs.status == 'failure' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+        if: github.ref == 'refs/heads/prod'
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ steps.check.outputs.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "subteam^S02K38PMTTQ"
+          if_mention: "always"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: steps.check.outputs.status == 'failure' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')

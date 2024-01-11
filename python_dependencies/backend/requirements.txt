@@ -8,7 +8,7 @@ botocore>=1.14.17
 click==8.1.3
 connexion[swagger-ui]==2.13.0
 coverage>=6.5.0
-dataclasses-json==0.5.7
+dataclasses-json==0.6.3
 
 # TODO: Check if this is really essential for APM tracing
 # see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
@@ -44,5 +44,5 @@ setproctitle==1.3.2 # for gunicorn integration with datadog
 SQLAlchemy-Utils>=0.36.8
 SQLAlchemy>=1.4.0,<1.5
 tenacity
-tiledb==0.22.3  # Portal's tiledb version should always be the same or older than Explorer's
+tiledb==0.24.0  # Portal's tiledb version should always be the same or older than Explorer's
 Werkzeug==2.2.3
