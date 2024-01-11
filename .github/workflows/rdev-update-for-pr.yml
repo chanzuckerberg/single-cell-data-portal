@@ -271,7 +271,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v3
         with:
-          node-version: "16.14.2"
+          node-version: "20.10.0"
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -402,7 +402,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v2
         with:
-          node-version: "16.14.2"
+          node-version: "20.10.0"
       - uses: actions/checkout@v3
         with:
           fetch-depth: 2
