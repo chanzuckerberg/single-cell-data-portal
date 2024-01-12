@@ -1,0 +1,3 @@
+INFO     backend.layers.business.business:business.py:511 {'message': 'ingesting dataset', 'collection_version_id': 2df1048c-4fc3-4cfd-b641-9e2f46b2681d, 'url': 'http://fake.url', 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:511 {'message': 'ingesting dataset', 'collection_version_id': 2df1048c-4fc3-4cfd-b641-9e2f46b2681d, 'url': None, 'current_dataset_version_id': 6d944a87-a830-4675-9170-5eb69e03ba8e}
+INFO     processing:process_logic.py:45 Updating processing status
