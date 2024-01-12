@@ -22,10 +22,10 @@ echo "fetch origin branch history"
 git fetch origin
 echo "Checking out 'staging' branch and pull latest"
 git checkout staging
-git reset --hard origin staging
+git reset --hard origin/staging
 echo "Checking out 'prod' branch and pull latest"
 git checkout prod
-git reset --hard origin prod
+git reset --hard origin/prod
 echo "Confirming checked out branch receiving merge is: $(git branch --show-current)"
 
 echo "Latest commit on 'prod' branch is: $(git log -1 --format='%H' prod)"
