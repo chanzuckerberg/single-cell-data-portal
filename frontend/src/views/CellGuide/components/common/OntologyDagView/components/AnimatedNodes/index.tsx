@@ -65,7 +65,7 @@ export default function AnimatedNodes({
   cellTypesWithMarkerGeneStats,
   setCellInfoCellType,
 }: AnimatedNodesProps) {
-  const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For hover event
+  const [timerId, setTimerId] = useState<number | null>(null); // For hover event
   const router = useRouter();
   const handleAnimationEnd = (node: HierarchyPointNode<TreeNodeWithState>) => {
     // Update the starting position of the node to be its current position
@@ -91,7 +91,11 @@ export default function AnimatedNodes({
     datum: TreeNodeWithState
   ) => {
     if (!timerId) {
-      const id = setTimeout(() => {
+      /**
+       * (thuang): Use window.setTimeout instead of setTimeout to avoid
+       * NodeJS setTimeout type being used
+       */
+      const id = window.setTimeout(() => {
         track(EVENTS.CG_TREE_NODE_HOVER, {
           cell_type: datum.name,
         });
@@ -233,7 +237,11 @@ export default function AnimatedNodes({
   function handleMouseOut() {
     hideTooltip();
     if (timerId) {
-      clearTimeout(timerId);
+      /**
+       * (thuang): Use window.clearTimeout instead of clearTimeout to avoid
+       * NodeJS clearTimeout type being used
+       */
+      window.clearTimeout(timerId);
       setTimerId(null);
     }
   }

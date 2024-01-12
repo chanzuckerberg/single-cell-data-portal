@@ -17,7 +17,7 @@ The following steps will start a FE server that connects to `dev` API. (See [use
 1. Install [`nvm`](https://github.com/nvm-sh/nvm)
    - Example: `brew install nvm`
 1. Check `.nvmrc` to see which version of node to download.
-   - Example: `nvm install 16.14.2 && nvm use 16.14.2`
+   - Example: `nvm install 20.10.0 && nvm use 20.10.0`
 1. Install npm packages and playwright browsers
    - Example: `npm i && npx playwright install`
 1. Copy configs file `frontend/src/configs/local.js` to `frontend/src/configs/configs.js`
