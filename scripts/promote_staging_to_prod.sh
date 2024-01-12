@@ -8,16 +8,19 @@ else
   exit 1
 fi
 
+if [[ $(git diff HEAD) ]]; then
+  echo "Local has uncommitted changes, please commit or stash and try again."
+  exit 1
+fi
+
 echo "fetch origin branch history"
-git fetch
-echo "Stash any local changes"
-git stash
+git fetch origin
 echo "Checking out 'staging' branch and pull latest"
 git checkout staging
-git pull origin staging
+git reset --hard origin staging
 echo "Checking out 'prod' branch and pull latest"
 git checkout prod
-git pull origin prod
+git reset --hard origin prod
 echo "Confirming checked out branch receiving merge is: $(git branch --show-current)"
 
 echo "Latest commit on 'prod' branch is: $(git log -1 --format='%H' prod)"
@@ -28,4 +31,4 @@ git merge --verbose staging -m "Merging staging branch into prod branch"
 echo "Merge completed"
 
 echo "Pushing to Prod"
-git push origin prod
+# git push origin prod
