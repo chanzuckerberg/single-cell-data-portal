@@ -31,4 +31,4 @@ git merge --verbose staging -m "Merging staging branch into prod branch"
 echo "Merge completed"
 
 echo "Pushing to Prod"
-# git push origin prod
+git push origin prod
