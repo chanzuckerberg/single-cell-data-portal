@@ -5,8 +5,7 @@ on:
     branches:
       - main
       - prod
-  repository_dispatch:
-    types: [build-images-for-staging, build-images-for-prod]
+  workflow_call:
 env:
   # Force using BuildKit instead of normal Docker, required so that metadata
   # is written/read to allow us to use layers of previous builds as cache.
