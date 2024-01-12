@@ -6,7 +6,7 @@ updates:
       interval: "weekly"
       day: "sunday"
   - package-ecosystem: pip
-    directory: "/python_dependencies/backend/"
+    directory: "/python_dependencies/api_server/"
     schedule:
       interval: "daily"
   - package-ecosystem: pip

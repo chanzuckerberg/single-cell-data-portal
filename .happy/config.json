@@ -6,7 +6,7 @@
   "default_compose_env_file": ".env.ecr",
   "services": [
     "frontend",
-    "backend",
+    "api_server",
     "cellguide_pipeline",
     "processing",
     "dataset_submissions",
@@ -18,7 +18,7 @@
     "frontend": {
         "profile": "fullstack"
     },
-    "backend": {
+    "api_server": {
         "profile": "fullstack"
     },
     "cellguide_pipeline": {

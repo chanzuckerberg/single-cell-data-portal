@@ -91,7 +91,7 @@ jobs:
       - name: Run unit tests
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          make local-unit-test-backend
+          make local-unit-test-api_server
 
       - name: Upload coverage results as an artifact
         uses: actions/upload-artifact@v3
@@ -116,7 +116,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
-  backend-wmg-unit-test:
+  api_server-wmg-unit-test:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -145,7 +145,7 @@ jobs:
       - name: Run unit tests
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          make local-unit-test-wmg-backend
+          make local-unit-test-wmg-api_server
 
       - name: Upload coverage results as an artifact
         uses: actions/upload-artifact@v3
@@ -394,7 +394,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
-  backend-integration-test:
+  api_server-integration-test:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -424,11 +424,11 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          make local-rebuild-backend
+          make local-rebuild-api_server
       - name: Run tests against postgres instance
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          make local-integration-test-backend
+          make local-integration-test-api_server
       - name: Upload coverage results as an artifact
         uses: actions/upload-artifact@v3
         with:
@@ -453,9 +453,9 @@ jobs:
 
   submit-codecoverage:
     needs:
-      - backend-unit-test
-      - backend-integration-test
-      - backend-wmg-unit-test
+      - api_server-unit-test
+      - api_server-integration-test
+      - api_server-wmg-unit-test
       - wmg-processing-unit-test
       - processing-unit-test
       - cellguide-pipeline-unit-test
@@ -493,9 +493,9 @@ jobs:
 
   publish-test-report:
     needs:
-      - backend-unit-test
-      - backend-wmg-unit-test
-      - backend-integration-test
+      - api_server-unit-test
+      - api_server-wmg-unit-test
+      - api_server-integration-test
       - wmg-processing-unit-test
       - processing-unit-test
       - cellguide-pipeline-unit-test
