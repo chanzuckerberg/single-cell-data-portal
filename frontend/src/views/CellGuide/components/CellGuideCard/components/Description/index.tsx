@@ -85,7 +85,7 @@ export default function Description({
     number | undefined
   >(DESCRIPTION_BREAKPOINT_HEIGHT_PX);
 
-  const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For chatgpt hover event
+  const [timerId, setTimerId] = useState<number | null>(null); // For chatgpt hover event
   const { isPastBreakpoint, containerRef } = useIsComponentPastBreakpointHeight(
     DESCRIPTION_BREAKPOINT_HEIGHT_PX
   );
@@ -192,7 +192,11 @@ export default function Description({
         <StyledLink
           data-testid={CELL_GUIDE_CARD_GPT_TOOLTIP_LINK}
           onMouseOver={() => {
-            const id = setTimeout(() => {
+            /**
+             * (thuang): Specify window.setTimeout, so Typescript doesn't use
+             * the Node.js setTimeout type, which is incorrect.
+             */
+            const id = window.setTimeout(() => {
               track(EVENTS.CG_CHAT_GPT_HOVER);
             }, 2 * 1000);
             setTimerId(id);

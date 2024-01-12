@@ -18,7 +18,7 @@ export default function CopyButton({
   const [animationStep, setAnimationStep] = useState<ANIMATION_STEP>(
     ANIMATION_STEP.IDLE
   );
-  const timeoutRef = useRef<NodeJS.Timer>();
+  const timeoutRef = useRef<number>();
   const animation = ANIMATION[animationStep];
 
   // Copy to clipboard, handle analytics, and initiate the copy animation.
@@ -35,7 +35,11 @@ export default function CopyButton({
   // Executes while copy animation is in progress for "COPY_EXIT", "COPIED_ENTER" and "COPIED_EXIT", "COPY_ENTER".
   // Increments the animation step.
   const onUpdateAnimationStep = () => {
-    timeoutRef.current = setTimeout(() => {
+    /**
+     * (thuang): Use window.setTimeout instead of setTimeout to avoid
+     * NodeJS setTimeout type being used
+     */
+    timeoutRef.current = window.setTimeout(() => {
       // Executes the next animation progression, after duration of the current animation is complete.
       setAnimationStep(incrementAnimationState);
     }, animation.duration);
