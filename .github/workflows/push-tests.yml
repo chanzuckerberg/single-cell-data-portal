@@ -1,12 +1,12 @@
 name: Push Tests
 
 on:
-  pull_request:
-    branches:
-      - "*"
   push:
     branches:
       - "main"
+      - "prod"
+
+  workflow_call:
 
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
