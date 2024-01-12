@@ -56,4 +56,4 @@ jobs:
           fields: repo,eventName,workflow,job
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: matrix.branch == 'prod' || always() # Pick up events even if the job fails or is canceled.
+        if: matrix.branch == 'prod' && always() # Pick up events even if the job fails or is canceled.
