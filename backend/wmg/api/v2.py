@@ -1,3 +1,4 @@
+import os
 from collections import defaultdict
 from typing import Any, Dict, Iterable, List
 
@@ -13,7 +14,8 @@ from backend.wmg.api.wmg_api_config import (
     READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
     READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
     WMG_API_FORCE_LOAD_SNAPSHOT_ID,
-    WMG_API_READ_LOCAL_DISK_CACHED_SNAPSHOT,
+    WMG_API_READ_FS_CACHED_SNAPSHOT,
+    WMG_API_SNAPSHOT_FS_CACHE_ROOT_PATH,
     WMG_API_SNAPSHOT_SCHEMA_VERSION,
 )
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
@@ -31,10 +33,12 @@ from backend.wmg.data.utils import (
     depluralize,
     find_all_dim_option_values,
     find_dim_option_values,
-    get_wmg_snapshot_local_disk_path,
 )
 
-SNAPSHOT_LOCAL_DISK_PATH = get_wmg_snapshot_local_disk_path() if WMG_API_READ_LOCAL_DISK_CACHED_SNAPSHOT else None
+DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
+SNAPSHOT_LOCAL_DISK_PATH = (
+    WMG_API_SNAPSHOT_FS_CACHE_ROOT_PATH if (WMG_API_READ_FS_CACHED_SNAPSHOT and DEPLOYMENT_STAGE != "test") else None
+)
 
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
