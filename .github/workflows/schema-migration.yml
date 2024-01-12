@@ -27,7 +27,7 @@ jobs:
 
   trigger-schema-migration:
     runs-on: ubuntu-22.04
-    needs: rebuild-and-push-processing-image-prod
+    needs: rebuild-processing-images
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
