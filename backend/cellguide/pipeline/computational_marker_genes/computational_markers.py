@@ -45,7 +45,6 @@ MARKER_SCORE_THRESHOLD = 0.5
 # This file contains blacklisted marker genes that match the following criteria:
 # Ensembl 104 gene IDs that are annotated with the GO terms: ['GO:0005840', 'GO:0005739']
 # These GO terms correspond to the cellular components "ribosome" and "mitochondrion".
-
 MARKER_GENE_BLACKLIST_FILENAME = "marker_gene_blacklist.txt"
 
 
