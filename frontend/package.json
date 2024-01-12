@@ -68,11 +68,11 @@
     "@babel/preset-typescript": "^7.22.5",
     "@blueprintjs/eslint-plugin": "^2.9.1",
     "@next/eslint-plugin-next": "^11.1.4",
-    "@types/adm-zip": "^0.5.0",
+    "@types/adm-zip": "^0.5.5",
     "@types/downloadjs": "^1.4.3",
     "@types/loadable__component": "^5.13.4",
     "@types/lodash": "^4.14.195",
-    "@types/node": "^17.0.45",
+    "@types/node": "^20.10.0",
     "@types/pako": "^2.0.0",
     "@types/papaparse": "^5.3.7",
     "@types/pixelmatch": "^5.2.4",
@@ -113,7 +113,7 @@
     "typescript": "^4.9.5"
   },
   "engines": {
-    "node": "v16.14.2"
+    "node": "v20.10.0"
   },
   "keywords": [
     "cellxgene",
