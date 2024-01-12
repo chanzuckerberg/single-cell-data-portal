@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         image:
-          - frontend # pushed both the frontend and backend images
+          - frontend # pushed both the frontend and api_server images
           - upload_failures
           - upload_success
           - dataset_submissions
