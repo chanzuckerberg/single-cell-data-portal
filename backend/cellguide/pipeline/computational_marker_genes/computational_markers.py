@@ -42,6 +42,12 @@ or any arbitrary combinations of metadata dimensions.
 
 MARKER_SCORE_THRESHOLD = 0.5
 
+# This file contains blacklisted marker genes that match the following criteria:
+# Ensembl 104 gene IDs that are annotated with the GO terms: ['GO:0005840', 'GO:0005739']
+# These GO terms correspond to the cellular components "ribosome" and "mitochondrion".
+
+MARKER_GENE_BLACKLIST_FILENAME = "marker_gene_blacklist.txt"
+
 
 class MarkerGenesCalculator:
     def __init__(self, *, snapshot: WmgSnapshot, all_cell_type_ids_in_corpus: list[str], groupby_terms: list[str]):
@@ -477,6 +483,9 @@ class MarkerGenesCalculator:
 
         # reset the index to convert MultiIndex back into columns
         markers_df = markers_df.reset_index()
+        with open(MARKER_GENE_BLACKLIST_FILENAME, "r") as f:
+            marker_gene_blacklist = f.read().split(",")
+        markers_df = markers_df[~markers_df["gene_ontology_term_id"].isin(marker_gene_blacklist)]
 
         # get the top `num_marker_genes` genes per metadata group
         top_per_group = (
