@@ -30,4 +30,4 @@ jobs:
   build_images_and_create_deployment:
     needs: merge_staging_to_prod
     uses: ./.github/workflows/build-images-and-create-deployment.yml
-    secrets: inherits
+    secrets: inherit
