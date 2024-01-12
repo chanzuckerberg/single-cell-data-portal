@@ -16,6 +16,7 @@ permissions:
 on:
   repository_dispatch:
     types: [rebuild-processing]
+  workflow_call:
 
 jobs:
   rebuild-and-push-processing-image:
