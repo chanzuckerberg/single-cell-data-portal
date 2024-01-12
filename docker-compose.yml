@@ -51,7 +51,7 @@ services:
         - HAPPY_TAG
     restart: always
     depends_on:
-      - backend
+      - api_server
     ports:
       - "3000:3000"
     command: ["./container_init.sh"]
@@ -287,7 +287,7 @@ services:
       corporanet:
         aliases:
           - processing.corporanet.local
-  backend:
+  api_server:
     image: "${DOCKER_REPO}corpora-backend"
     platform: linux/amd64
     profiles:
@@ -297,7 +297,7 @@ services:
       context: .
       cache_from:
         - "${DOCKER_REPO}corpora-backend:branch-main"
-      dockerfile: Dockerfile.backend
+      dockerfile: Dockerfile.api_server
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT=$HAPPY_COMMIT

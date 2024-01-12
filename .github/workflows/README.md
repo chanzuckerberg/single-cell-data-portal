@@ -17,7 +17,7 @@
   - Runs playwright against deployed frontend app uploading any artifacts
     - https://github.com/chanzuckerberg/single-cell-data-portal/blob/6a423183c255737d2a44e40447a91d0ece041a41/.github/workflows/deploy-happy-stack.yml#L133-L144
 - ##### `functional-test`:
-  - If environment is not `prod` start up backend container and run `make local-functional-test`
+  - If environment is not `prod` start up api_server container and run `make local-functional-test`
   - https://github.com/chanzuckerberg/single-cell-data-portal/blob/6a423183c255737d2a44e40447a91d0ece041a41/Makefile#L215-L223
     - https://github.com/chanzuckerberg/single-cell-data-portal/blob/6a423183c255737d2a44e40447a91d0ece041a41/Makefile#L49-L51
 - ##### `performance-test`:
@@ -53,7 +53,7 @@ TODO
 
 - ##### `lint`:
 
-  - Inside backend container: `make lint`
+  - Inside api_server container: `make lint`
     - https://github.com/chanzuckerberg/single-cell-data-portal/blob/6a423183c255737d2a44e40447a91d0ece041a41/Makefile#L19-L20
   - Inside frontend container: (frontend/Makefile)`make lint`
     - https://github.com/chanzuckerberg/single-cell-data-portal/blob/6a423183c255737d2a44e40447a91d0ece041a41/frontend/Makefile#L18-L19
@@ -76,7 +76,7 @@ TODO
 
 - ##### `push-prod-images`: TODO
 
-- ##### `backend-unit-test`:
+- ##### `api_server-unit-test`:
 
   - Checks if containers need to be rebuilt based on diffs on docker + requirements files
   - Runs tests in docker-compose: https://github.com/chanzuckerberg/single-cell-data-portal/blob/6a423183c255737d2a44e40447a91d0ece041a41/.github/workflows/push-tests.yml#L214-L216
