@@ -89,7 +89,7 @@ def load_snapshot(
     *,
     snapshot_schema_version: str,
     explicit_snapshot_id_to_load: Optional[str] = None,
-    snapshot_local_disk_path: Optional[str] = None,
+    snapshot_fs_root_path: Optional[str] = None,
 ) -> WmgSnapshot:
     """
     Loads and caches the snapshot identified by the snapshot schema version and a snapshot id.
@@ -100,52 +100,91 @@ def load_snapshot(
 
     The snapshot representation is cached in memory. Therefore, multiple calls to this function
     will simply return the cached snapshot if there isn't a newer snapshot id.
+
+    Args:
+        snapshot_schema_version (str): The version of the snapshot schema.
+        explicit_snapshot_id_to_load (str, optional): The explicit snapshot id to load. Defaults to None.
+        snapshot_fs_root_path (str, optional): The root path of the snapshot on the local filesystem. Defaults to None.
+
+    Returns:
+        WmgSnapshot: The loaded snapshot.
+
     """
     global cached_snapshot
 
     if not (
-        snapshot_local_disk_path
+        snapshot_fs_root_path
         and _local_disk_snapshot_is_valid(
-            snapshot_local_disk_path=snapshot_local_disk_path,
+            snapshot_fs_root_path=snapshot_fs_root_path,
             snapshot_schema_version=snapshot_schema_version,
             explicit_snapshot_id_to_load=explicit_snapshot_id_to_load,
         )
     ):
-        snapshot_local_disk_path = None
+        snapshot_fs_root_path = None
 
     should_reload, snapshot_id = _should_reload_snapshot(
         snapshot_schema_version=snapshot_schema_version,
         explicit_snapshot_id_to_load=explicit_snapshot_id_to_load,
-        snapshot_local_disk_path=snapshot_local_disk_path,
+        snapshot_fs_root_path=snapshot_fs_root_path,
     )
 
     if should_reload:
         cached_snapshot = _load_snapshot(
             snapshot_schema_version=snapshot_schema_version,
             snapshot_id=snapshot_id,
-            snapshot_local_disk_path=snapshot_local_disk_path,
+            snapshot_fs_root_path=snapshot_fs_root_path,
         )
 
     return cached_snapshot
 
 
 ###################################### PRIVATE INTERFACE #################################
-def _get_latest_snapshot_id(snapshot_schema_version: str, snapshot_local_disk_path: Optional[str] = None) -> str:
+def _get_latest_snapshot_id(snapshot_schema_version: str, snapshot_fs_root_path: Optional[str] = None) -> str:
     """
     Get latest snapshot id for a given snapshot schema version
+
+    Args:
+        snapshot_schema_version (str): The version of the snapshot schema.
+        snapshot_fs_root_path (str, optional): The root path of the snapshot on the local filesystem. Defaults to None.
+
+    Returns:
+        str: The latest snapshot id for the given snapshot schema version.
     """
     data_schema_dir_path = _get_wmg_snapshot_schema_dir_rel_path(snapshot_schema_version)
     file_name = "latest_snapshot_identifier"
 
     rel_path = f"{data_schema_dir_path}/{file_name}"
 
-    latest_snapshot_id = _read_wmg_data_file(rel_path, snapshot_local_disk_path)
+    latest_snapshot_id = _read_wmg_data_file(rel_path, snapshot_fs_root_path)
     return latest_snapshot_id
 
 
 def _get_wmg_snapshot_schema_dir_rel_path(snapshot_schema_version: str) -> str:
     """
     Get relative path to a particular snapshot schema version.
+
+    That is, the relative path is the path that does not include root path where the data
+    resides.
+
+    Examples:
+
+    1. An S3 fullpath to a snapshot schema version maybe s3://env-rdev-wmg/pr-6447/snapshots/v3.
+    Here, "s3://env-rdev-wmg" is the S3 bucket. The S3 bucket is considered the "root" of the
+    fullpath. Therefore, "pr-6447/snapshots/v3" would be the relative path returned by this function.
+
+    2. A filesystem fullpath to a snapshot schema version maybe:
+    /single-cell-data-portal/wmg_snapshot_cache/snapshots/v3.
+    Here, "/single-cell-data-portal/wmg_snapshot_cache" is considered the "root" of the
+    fullpath. Therefore "snapshots/v3" would be the relative path returned by
+    this function.
+
+    Args:
+        snapshot_schema_version (str): The version of the snapshot schema.
+
+    Returns:
+        str: The relative path to the snapshot schema version.
+
+
     """
     data_schema_dir_rel_path = f"snapshots/{snapshot_schema_version}"
 
@@ -158,6 +197,30 @@ def _get_wmg_snapshot_schema_dir_rel_path(snapshot_schema_version: str) -> str:
 def _get_wmg_snapshot_rel_path(snapshot_schema_version: str, snapshot_id: str) -> str:
     """
     Get relative path to the snapshot id directory for a the given snapshot schema version.
+
+    That is, the relative path is the path that does not include root path where the data
+    resides.
+
+    Examples:
+
+    1. An S3 fullpath to a particular snapshot_id maybe: s3://env-rdev-wmg/pr-6447/snapshots/v3/1704754452.
+    Here, "s3://env-rdev-wmg" is the S3 bucket. The S3 bucket is considered the "root" of the
+    fullpath. Therefore, "pr-6447/snapshots/v3/1704754452" would be the relative path
+    returned by this function.
+
+    2. A filesystem fullpath to a particular snapshot_id maybe:
+    /single-cell-data-portal/wmg_snapshot_cache/snapshots/v3/1704754452.
+    Here, "/single-cell-data-portal/wmg_snapshot_cache" is considered the "root" of the
+    fullpath. Therefore "snapshots/v3/1704754452" would be the relative path returned by
+    this function.
+
+    Args:
+        snapshot_schema_version (str): The version of the snapshot schema.
+        snapshot_id (str): The unique identifier of the snapshot.
+
+    Returns:
+        str: The relative path to the snapshot id directory for the given snapshot schema version.
+
     """
     data_schema_dir_rel_path = _get_wmg_snapshot_schema_dir_rel_path(snapshot_schema_version)
 
@@ -165,30 +228,56 @@ def _get_wmg_snapshot_rel_path(snapshot_schema_version: str, snapshot_id: str) -
     return snapshot_id_dir_rel_path
 
 
-def _get_wmg_snapshot_fullpath(snapshot_rel_path: str, snapshot_local_disk_path: Optional[str] = None) -> str:
+def _get_wmg_snapshot_fullpath(snapshot_rel_path: str, snapshot_fs_root_path: Optional[str] = None) -> str:
     """
     Return the full path of the snapshot on local disk or S3 URI of the snapshot.
+
+    Examples:
+
+    1. For snapshot on S3, this maybe: s3://env-rdev-wmg/pr-6447/snapshots/v3/1704754452.
+
+    2. For snapshot on local disk, this maybe:
+    /single-cell-data-portal/wmg_snapshot_cache/snapshots/v3/1704754452
+
+    Args:
+        snapshot_rel_path (str): The relative path of the snapshot.
+        snapshot_fs_root_path (Optional[str]): The root path of the snapshot in the filesystem. Defaults to None.
+
+    Returns:
+        str: The full path of the snapshot on local disk or S3 URI of the snapshot.
     """
 
-    if snapshot_local_disk_path:
-        return os.path.join(snapshot_local_disk_path, snapshot_rel_path)
+    if snapshot_fs_root_path:
+        return os.path.join(snapshot_fs_root_path, snapshot_rel_path)
 
     wmg_config = WmgConfig()
     return os.path.join("s3://", wmg_config.bucket, snapshot_rel_path)
 
 
 def _load_snapshot(
-    *, snapshot_schema_version: str, snapshot_id: str, snapshot_local_disk_path: Optional[str] = None
+    *, snapshot_schema_version: str, snapshot_id: str, snapshot_fs_root_path: Optional[str] = None
 ) -> WmgSnapshot:
+    """
+    Load a snapshot given its schema version, id, and root path in the filesystem.
+
+    Args:
+        snapshot_schema_version (str): The version of the snapshot schema.
+        snapshot_id (str): The unique identifier of the snapshot.
+        snapshot_fs_root_path (Optional[str]): The root path of the snapshot in the filesystem. Defaults to None.
+
+    Returns:
+        WmgSnapshot: The loaded snapshot.
+    """
+
     snapshot_rel_path = _get_wmg_snapshot_rel_path(snapshot_schema_version, snapshot_id)
 
-    cell_type_orderings = _load_cell_type_order(snapshot_rel_path, snapshot_local_disk_path)
-    primary_filter_dimensions = _load_primary_filter_data(snapshot_rel_path, snapshot_local_disk_path)
-    filter_relationships = _load_filter_graph_data(snapshot_rel_path, snapshot_local_disk_path)
-    cell_type_ancestors = _load_cell_type_ancestors(snapshot_rel_path, snapshot_local_disk_path)
-    dataset_metadata = _load_dataset_metadata(snapshot_rel_path, snapshot_local_disk_path)
+    cell_type_orderings = _load_cell_type_order(snapshot_rel_path, snapshot_fs_root_path)
+    primary_filter_dimensions = _load_primary_filter_data(snapshot_rel_path, snapshot_fs_root_path)
+    filter_relationships = _load_filter_graph_data(snapshot_rel_path, snapshot_fs_root_path)
+    cell_type_ancestors = _load_cell_type_ancestors(snapshot_rel_path, snapshot_fs_root_path)
+    dataset_metadata = _load_dataset_metadata(snapshot_rel_path, snapshot_fs_root_path)
 
-    snapshot_uri = _get_wmg_snapshot_fullpath(snapshot_rel_path, snapshot_local_disk_path)
+    snapshot_uri = _get_wmg_snapshot_fullpath(snapshot_rel_path, snapshot_fs_root_path)
     logger.info(f"Loading WMG snapshot from absolute path: {snapshot_uri}")
 
     # TODO: Okay to keep TileDB arrays open indefinitely? Is it faster than re-opening each request?
@@ -212,24 +301,32 @@ def _load_snapshot(
 
 def _local_disk_snapshot_is_valid(
     *,
-    snapshot_local_disk_path: str,
+    snapshot_fs_root_path: str,
     snapshot_schema_version: str,
     explicit_snapshot_id_to_load: Optional[str] = None,
 ) -> bool:
     """
     Checks that the path on local disk contains valid WMG snapshot.
+
+    Args:
+        snapshot_fs_root_path (str): The root path of the snapshot on the local filesystem.
+        snapshot_schema_version (str): The version of the snapshot schema.
+        explicit_snapshot_id_to_load (Optional[str]): The explicit snapshot id to load. Defaults to None.
+
+    Returns:
+        bool: True if the path on local disk contains valid WMG snapshot, False otherwise.
     """
-    if not os.path.exists(snapshot_local_disk_path):
-        logger.warning(f"{snapshot_local_disk_path} does not exist. Falling back to S3 to load WMG snapshot...")
+    if not os.path.exists(snapshot_fs_root_path):
+        logger.warning(f"{snapshot_fs_root_path} does not exist. Falling back to S3 to load WMG snapshot...")
         return False
     else:
         if explicit_snapshot_id_to_load:
             snapshot_id = explicit_snapshot_id_to_load
         else:
-            snapshot_id = _get_latest_snapshot_id(snapshot_schema_version, snapshot_local_disk_path)
+            snapshot_id = _get_latest_snapshot_id(snapshot_schema_version, snapshot_fs_root_path)
 
         snapshot_rel_path = _get_wmg_snapshot_rel_path(snapshot_schema_version, snapshot_id)
-        snapshot_full_path = _get_wmg_snapshot_fullpath(snapshot_rel_path, snapshot_local_disk_path)
+        snapshot_full_path = _get_wmg_snapshot_fullpath(snapshot_rel_path, snapshot_fs_root_path)
 
         if not os.path.exists(snapshot_full_path):
             logger.warning(f"{snapshot_full_path} does not exist. Falling back to S3 to load WMG snapshot...")
@@ -242,30 +339,30 @@ def _open_cube(cube_uri) -> Array:
     return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
 
 
-def _load_cell_type_order(snapshot_rel_path: str, snapshot_local_disk_path: Optional[str] = None) -> DataFrame:
+def _load_cell_type_order(snapshot_rel_path: str, snapshot_fs_root_path: Optional[str] = None) -> DataFrame:
     rel_path = f"{snapshot_rel_path}/{CELL_TYPE_ORDERINGS_FILENAME}"
-    return pd.read_json(_read_wmg_data_file(rel_path, snapshot_local_disk_path))
+    return pd.read_json(_read_wmg_data_file(rel_path, snapshot_fs_root_path))
 
 
-def _load_primary_filter_data(snapshot_rel_path: str, snapshot_local_disk_path: Optional[str] = None) -> Dict:
+def _load_primary_filter_data(snapshot_rel_path: str, snapshot_fs_root_path: Optional[str] = None) -> Dict:
     rel_path = f"{snapshot_rel_path}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}"
-    return json.loads(_read_wmg_data_file(rel_path, snapshot_local_disk_path))
+    return json.loads(_read_wmg_data_file(rel_path, snapshot_fs_root_path))
 
 
-def _load_dataset_metadata(snapshot_rel_path: str, snapshot_local_disk_path: Optional[str] = None) -> Dict:
+def _load_dataset_metadata(snapshot_rel_path: str, snapshot_fs_root_path: Optional[str] = None) -> Dict:
     rel_path = f"{snapshot_rel_path}/{DATASET_METADATA_FILENAME}"
-    return json.loads(_read_wmg_data_file(rel_path, snapshot_local_disk_path))
+    return json.loads(_read_wmg_data_file(rel_path, snapshot_fs_root_path))
 
 
-def _load_cell_type_ancestors(snapshot_rel_path: str, snapshot_local_disk_path: Optional[str] = None) -> Dict:
+def _load_cell_type_ancestors(snapshot_rel_path: str, snapshot_fs_root_path: Optional[str] = None) -> Dict:
     rel_path = f"{snapshot_rel_path}/{CELL_TYPE_ANCESTORS_FILENAME}"
-    return json.loads(_read_wmg_data_file(rel_path, snapshot_local_disk_path))
+    return json.loads(_read_wmg_data_file(rel_path, snapshot_fs_root_path))
 
 
-def _load_filter_graph_data(snapshot_rel_path: str, snapshot_local_disk_path: Optional[str] = None) -> str:
+def _load_filter_graph_data(snapshot_rel_path: str, snapshot_fs_root_path: Optional[str] = None) -> str:
     try:
         rel_path = f"{snapshot_rel_path}/{FILTER_RELATIONSHIPS_FILENAME}"
-        return json.loads(_read_wmg_data_file(rel_path, snapshot_local_disk_path))
+        return json.loads(_read_wmg_data_file(rel_path, snapshot_fs_root_path))
     except Exception:
         logger.warning(
             f"{_get_wmg_snapshot_fullpath(snapshot_rel_path)}/{FILTER_RELATIONSHIPS_FILENAME} could not be loaded"
@@ -273,12 +370,23 @@ def _load_filter_graph_data(snapshot_rel_path: str, snapshot_local_disk_path: Op
         return None
 
 
-def _read_wmg_data_file(rel_path: str, snapshot_local_disk_path: Optional[str] = None) -> str:
+def _read_wmg_data_file(rel_path: str, snapshot_fs_root_path: Optional[str] = None) -> str:
     """
-    Read file from local disk if snapshot_local_disk_path is provided. Otherwise, read from S3.
+    Read file from local disk if snapshot_fs_root_path is provided. Otherwise, read from S3.
+
+    When reading from S3, the 'rel_path' argument is the S3 key of the object to read.
+    When reading from the local filesystem, 'rel_path' is suffixed to the 'snapshot_fs_root_path'
+    to derive a fullpath of the file to read.
+
+    Args:
+        rel_path (str): The relative path of the file to read.
+        snapshot_fs_root_path (Optional[str]): The root path of the snapshot in the filesystem. Defaults to None.
+
+    Returns:
+        str: The content of the file as a string.
     """
-    if snapshot_local_disk_path:
-        full_path = os.path.join(snapshot_local_disk_path, rel_path)
+    if snapshot_fs_root_path:
+        full_path = os.path.join(snapshot_fs_root_path, rel_path)
         with open(full_path, encoding="utf-8") as f:
             data = f.read().strip()
         return data
@@ -289,6 +397,12 @@ def _read_wmg_data_file(rel_path: str, snapshot_local_disk_path: Optional[str] =
 def _read_value_at_s3_key(key_path: str) -> str:
     """
     Read value at an s3 key
+
+    Args:
+        key_path (str): The S3 key path to read the value from.
+
+    Returns:
+        str: The value read from the specified S3 key path.
     """
     s3 = buckets.portal_resource
 
@@ -303,31 +417,55 @@ def _should_reload_snapshot(
     *,
     snapshot_schema_version: str,
     explicit_snapshot_id_to_load: Optional[str] = None,
-    snapshot_local_disk_path: Optional[str] = None,
+    snapshot_fs_root_path: Optional[str] = None,
 ) -> tuple[bool, str]:
     """
-    Returns a pair: (<should_reload>, <snapshot_id>) where <should_reload> is a boolean indicating
-    whether then in-memory snapshot should be reloaded and <snapshot_id> is the id of the snapshot that
-    the in-memory data structure represents.
+    Determine whether the in-memory snapshot should be reloaded and provide the id of the snapshot.
+
+    Args:
+        snapshot_schema_version (str): The version of the snapshot schema.
+        explicit_snapshot_id_to_load (Optional[str]): The explicit snapshot id to load. Defaults to None.
+        snapshot_fs_root_path (Optional[str]): The root path of the snapshot in the filesystem. Defaults to None.
+
+    Returns:
+        tuple[bool, str]: A pair of values. The first is a boolean indicating whether the in-memory snapshot should be reloaded. The second is the id of the snapshot that the in-memory data structure represents.
     """
+
     snapshot_id = explicit_snapshot_id_to_load or _get_latest_snapshot_id(
-        snapshot_schema_version, snapshot_local_disk_path
+        snapshot_schema_version, snapshot_fs_root_path
     )
 
     if cached_snapshot is None:
         logger.info(f"Loading snapshot id: {snapshot_id}")
         return (True, snapshot_id)
-    # IMPORTANT NOTE: Updating cached_snapshot when snapshot_identifer value of
-    # cached_snapshot is different from snapshot_id on S3 or filesystem means that
-    # the cached_snapshot could be updated with an older snapshot if the snapshot_id
-    # on S3 or filesystem is updated to be an older snapshot_id.
+    ######################### AN IMPORTANT NOTE #################################
+    # 1. As of this writing on 01/12/2024, when the app is configured to read
+    # the WMG snapshot from the local filesystem, the latest snapshot id will always
+    # equal the snapshot id of the `cached_snapshot` object.
+    #
+    # This is because the scheme of downloading all the snapshots to the local filesystem
+    # is done ONLY ONCE ON APP CONTAINER INITIALIZATION. That is, the code in the below
+    # `elif` block will only execute if the app is configred to read from S3. If the app
+    # is changed such that the local filesytem cache is updated by a another thread, then
+    # the filesystem cache will behave like S3 in that updates to 'latest_snapshot_identifier'
+    # file will eventually be reflected in the local disk while the app is still running. But
+    # as of this writing, the WMG snapshot on local filesystem remains static throughout the
+    # lifetime of a running application server process.
+    #
+    # 2. In the case of the application being configured to read from S3, note well that the
+    # below `elif` condition will be come True if the value in 'latest_snapshot_identifier' file
+    # is updated to be different from 'cached_snapshot.snapshot_identifer'. That is, it is possible
+    # 'latest_snapshot_identifier' file could be modified to contain a snapshot_id that is older
+    # than what is in 'cached_snapshot.snapshot_identifier'.
+    #
     # This might be useful if we want to remove a corrupt wmg snapshot by simply
     # updating the latest_snapshot_identifer file to be an older snapshot_id without
     # requiring updating the explicit_snapshot_id_to_load in code and deploying.
     # Such an approach to rollback (updating the latest_snapshot_identifier on S3/filesystem)
-    # should only be used in emergencies. The normal rollback of updating the code's
+    # should only be used in EXTREME emergencies. The normal rollback of updating the code's
     # config file and redeploying should be used in all other scenarios as this form of
     # rollback provides an audit log via git commit history.
+
     elif snapshot_id != cached_snapshot.snapshot_identifier:
         logger.info(
             f"Reloading snapshot. Detected snapshot id update from cached "

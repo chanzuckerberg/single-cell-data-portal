@@ -36,7 +36,7 @@ from backend.wmg.data.utils import (
 )
 
 DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
-SNAPSHOT_LOCAL_DISK_PATH = (
+SNAPSHOT_FS_ROOT_PATH = (
     WMG_API_SNAPSHOT_FS_CACHE_ROOT_PATH if (WMG_API_READ_FS_CACHED_SNAPSHOT and DEPLOYMENT_STAGE != "test") else None
 )
 
@@ -54,7 +54,7 @@ def primary_filter_dimensions():
         snapshot: WmgSnapshot = load_snapshot(
             snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
-            snapshot_local_disk_path=SNAPSHOT_LOCAL_DISK_PATH,
+            snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
 
     return jsonify(snapshot.primary_filter_dimensions)
@@ -77,7 +77,7 @@ def query():
         snapshot: WmgSnapshot = load_snapshot(
             snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
-            snapshot_local_disk_path=SNAPSHOT_LOCAL_DISK_PATH,
+            snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
 
     with ServerTiming.time("query tiledb"):
@@ -163,7 +163,7 @@ def filters():
         snapshot: WmgSnapshot = load_snapshot(
             snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
-            snapshot_local_disk_path=SNAPSHOT_LOCAL_DISK_PATH,
+            snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
 
     with ServerTiming.time("calculate filters and build response"):
@@ -188,7 +188,7 @@ def markers():
     snapshot: WmgSnapshot = load_snapshot(
         snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
         explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
-        snapshot_local_disk_path=SNAPSHOT_LOCAL_DISK_PATH,
+        snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
     )
 
     criteria = MarkerGeneQueryCriteria(

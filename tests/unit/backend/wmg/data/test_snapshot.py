@@ -23,15 +23,15 @@ def test_get_wmg_snapshot_rel_path():
     assert _get_wmg_snapshot_rel_path(snapshot_schema_version, snapshot_id) == expected_path
 
 
-@pytest.mark.parametrize("snapshot_local_disk_path", [None, "/tmp"])
+@pytest.mark.parametrize("snapshot_fs_root_path", [None, "/tmp"])
 @patch("backend.wmg.data.snapshot.WmgConfig", autospec=True)
-def test_get_wmg_snapshot_fullpath(mock_wmg_config, snapshot_local_disk_path):
+def test_get_wmg_snapshot_fullpath(mock_wmg_config, snapshot_fs_root_path):
     mock_wmg_config.return_value.bucket = "test-bucket"
     snapshot_schema_version = "1.0.0"
     snapshot_id = "test_id"
     snapshot_rel_path = f"snapshots/{snapshot_schema_version}/{snapshot_id}"
-    full_path = _get_wmg_snapshot_fullpath(snapshot_rel_path, snapshot_local_disk_path)
-    if snapshot_local_disk_path:
-        assert full_path == os.path.join(snapshot_local_disk_path, snapshot_rel_path)
+    full_path = _get_wmg_snapshot_fullpath(snapshot_rel_path, snapshot_fs_root_path)
+    if snapshot_fs_root_path:
+        assert full_path == os.path.join(snapshot_fs_root_path, snapshot_rel_path)
     else:
         assert full_path == os.path.join("s3://test-bucket", snapshot_rel_path)
