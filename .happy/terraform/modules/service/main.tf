@@ -183,10 +183,6 @@ resource aws_ecs_task_definition task_definition {
         "value": "${var.datasets_bucket}"
       },
       {
-        "name": "WMG_DISK_CACHE_PATH",
-        "value": "${var.wmg_disk_cache_path}"
-      },
-      {
         "name": "DEPLOYMENT_STAGE",
         "value": "${var.deployment_stage}"
       },

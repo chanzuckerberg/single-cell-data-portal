@@ -35,12 +35,6 @@ variable happy_config_secret {
   description = "Happy Path configuration secret name"
 }
 
-variable "wmg_disk_cache_path" {
-  type        = string 
-  description = "Absolute path of directory on the local disk where WMG data snapshot is cached"
-  default     = "/tmp/wmg_disk_cache"
-}
-
 variable "task_storage_size_gb" {
   type        = number
   description = "ephemeral disk storage in GB available for the task"

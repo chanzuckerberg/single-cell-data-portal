@@ -151,7 +151,6 @@ module backend_service {
   cpu                        = var.backend_cpus * 1024
   cmd                        = local.backend_cmd
   deployment_stage           = local.deployment_stage
-  wmg_disk_cache_path        = "/tmp/wmg_disk_cache"
   step_function_arn          = module.upload_sfn.step_function_arn
   host_match                 = try(join(".", [module.backend_dns[0].dns_prefix, local.external_dns]), "")
   priority                   = local.priority
