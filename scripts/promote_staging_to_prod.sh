@@ -31,14 +31,14 @@ git checkout prod
 git reset --hard origin/prod
 echo "Confirming checked out branch receiving merge is: $(git branch --show-current)"
 
-prod_head_sha = $(git log -1 --format='%H' prod)
-staging_head_sha = $(git log -1 --format='%H' staging)
+prod_head_sha=$(git log -1 --format='%H' prod)
+staging_head_sha=$(git log -1 --format='%H' staging)
 
 echo "Latest commit on 'prod' branch is: $prod_head_sha"
 echo "Latest commit on 'staging' branch is: $staging_head_sha"
 
 if [ "$staging_head_sha" != "$gha_head_sha" ]; then
-  echo "Latest commit on 'staging' branch ($staging_head_sha) does not match commit for staging deployment GHA checks ($head_sha).
+  echo "Latest commit on 'staging' branch ($staging_head_sha) does not match commit for staging deployment GHA checks ($gha_head_sha).
   A new commit may have been introduced to staging, please check repo and try running again."
   exit 1
 fi
