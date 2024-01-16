@@ -27,6 +27,7 @@ interface Props {
   collection: Collection;
   hasRevision: boolean;
   isPublishable: boolean;
+  isReorderUX: boolean;
   isRevision: boolean;
   setIsUploadingLink: Dispatch<SetStateAction<boolean>>;
 }
@@ -35,6 +36,7 @@ const CollectionActions = ({
   collection,
   hasRevision,
   isPublishable,
+  isReorderUX,
   isRevision,
   setIsUploadingLink,
 }: Props): JSX.Element | null => {
@@ -131,6 +133,7 @@ const CollectionActions = ({
             collection={collection}
             handleDeleteCollection={handleDeleteCollection}
             isDeleting={deleteCollectionMutation.isLoading}
+            isReorderUX={isReorderUX}
             isRevision={isRevision}
           />
           <AddButton addNewFile={handleAddNewFile} />
