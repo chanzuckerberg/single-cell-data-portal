@@ -1,13 +1,13 @@
 #!/bin/bash
 
 if [ ! -z $1 ]; then
-  resp=$(curl -s -H "Authorization: Bearer $1" "https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/actions/runs?actor=czibuildbot" | jq -r '.workflow_runs[] | select(.display_title == "stage")')
+  most_recent_deploy_run=$(curl -s -H "Authorization: Bearer $1" "https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/actions/workflows/deploy-happy-stack.yml/runs" | jq -r '[.workflow_runs[] | select(.display_title == "stage")][0]')
 else
-  resp=$(curl -s  "https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/actions/runs?actor=czibuildbot" | jq -r '.workflow_runs[] | select(.display_title == "stage")')
+  most_recent_deploy_run=$(curl -s  "https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/actions/workflows/deploy-happy-stack.yml/runs" | jq -r '[.workflow_runs[] | select(.display_title == "stage")][0]')
 fi
 
-checks=$(echo "$resp" | jq -r '.conclusion' | head -n 1)
-gha_head_sha=$(echo "$resp" | jq -r '.head_sha' | head -n 1)
+checks=$(echo "$most_recent_deploy_run" | jq -r '.conclusion')
+gha_head_sha=$(echo "$most_recent_deploy_run" | jq -r '.head_sha')
 
 if [ "$checks" == "success" ]; then
   echo "All checks passed in most recent staging deployment!"
