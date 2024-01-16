@@ -138,6 +138,12 @@ variable "execution_role" {
   description = "Execution role to use for fargate tasks - required for fargate services!"
 }
 
+variable "task_storage_size_gb" {
+  type        = number
+  description = "ephemeral disk storage in GB available for the task"
+  default     = 30 
+}
+
 variable "health_check_interval" {
   type        = number
   description = "Interval for the health check pings"
