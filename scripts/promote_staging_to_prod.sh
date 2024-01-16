@@ -1,15 +1,18 @@
 #!/bin/bash
 
 if [ ! -z $1 ]; then
-  checks=$(curl -s -H "Authorization: Bearer $1" "https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/actions/runs?actor=czibuildbot" | jq -r '.workflow_runs[] | select(.display_title == "stage") | .conclusion' | head -n 1)
+  resp=$(curl -s -H "Authorization: Bearer $1" "https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/actions/runs?actor=czibuildbot" | jq -r '.workflow_runs[] | select(.display_title == "stage")')
 else
-  checks=$(curl -s  "https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/actions/runs?actor=czibuildbot" | jq -r '.workflow_runs[] | select(.display_title == "stage") | .conclusion' | head -n 1)
+  resp=$(curl -s  "https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/actions/runs?actor=czibuildbot" | jq -r '.workflow_runs[] | select(.display_title == "stage")')
 fi
+
+checks=$(echo "$resp" | jq -r '.conclusion' | head -n 1)
+gha_head_sha=$(echo "$resp" | jq -r '.head_sha' | head -n 1)
 
 if [ "$checks" == "success" ]; then
   echo "All checks passed in most recent staging deployment!"
 else
-  echo "Some checks failed in most recent staging deployment. Please check GHA runs."
+  echo "Not all checks have concluded successfully in most recent staging deployment. Please check GHA runs."
   exit 1
 fi
 
@@ -28,8 +31,17 @@ git checkout prod
 git reset --hard origin/prod
 echo "Confirming checked out branch receiving merge is: $(git branch --show-current)"
 
-echo "Latest commit on 'prod' branch is: $(git log -1 --format='%H' prod)"
-echo "Latest commit on 'staging' branch is: $(git log -1 --format='%H' staging)"
+prod_head_sha = $(git log -1 --format='%H' prod)
+staging_head_sha = $(git log -1 --format='%H' staging)
+
+echo "Latest commit on 'prod' branch is: $prod_head_sha"
+echo "Latest commit on 'staging' branch is: $staging_head_sha"
+
+if [ "$staging_head_sha" != "$gha_head_sha" ]; then
+  echo "Latest commit on 'staging' branch ($staging_head_sha) does not match commit for staging deployment GHA checks ($head_sha).
+  A new commit may have been introduced to staging, please check repo and try running again."
+  exit 1
+fi
 
 echo "About to merge 'staging' branch into 'prod' branch"
 if git merge --verbose staging -m "Merging staging branch into prod branch"; then
