@@ -31,9 +31,9 @@ git checkout prod
 git reset --hard origin/prod
 echo "Confirming checked out branch receiving merge is: $(git branch --show-current)"
 
-# Get most recent commit, excluding commits by 'actions-user' (author for merge commits that do not trigger deployments)
-prod_head_sha=$(git log -1 --format='%H' prod --perl-regexp --author='^(?!(.*(actions-user)))')
-staging_head_sha=$(git log -1 --format='%H' staging --perl-regexp --author='^(?!(.*(actions-user)))')
+# Get most recent commit, excluding commits by 'GitHub Actions' (author for merge commits that do not trigger deployments)
+prod_head_sha=$(git log -1 --format='%H' prod --perl-regexp --author='^(?!(.*(GitHub Actions)))')
+staging_head_sha=$(git log -1 --format='%H' staging --perl-regexp --author='^(?!(.*(GitHub Actions)))')
 
 echo "Latest commit on 'prod' branch is: $prod_head_sha"
 echo "Latest commit on 'staging' branch is: $staging_head_sha"
