@@ -42,7 +42,7 @@ jobs:
       - name: Get previous image digests for each repo
         id: get_digests
         run: |
-          echo "starting test djh sleep 5 min"
+          echo "starting test djh sleep 5 min la la la"
           sleep 300
           echo "finished sleep djh"
 
