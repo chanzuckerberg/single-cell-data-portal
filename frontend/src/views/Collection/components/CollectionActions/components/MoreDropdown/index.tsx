@@ -9,6 +9,7 @@ interface Props {
   collection: Collection;
   handleDeleteCollection: DeleteCollectionFn;
   isDeleting: boolean;
+  isReorderUX: boolean;
   isRevision: boolean;
 }
 
@@ -16,6 +17,7 @@ const MoreDropdown = ({
   collection,
   handleDeleteCollection,
   isDeleting,
+  isReorderUX,
   isRevision,
 }: Props) => {
   const popoverProps = useMemo(() => {
@@ -25,12 +27,13 @@ const MoreDropdown = ({
           collection={collection}
           handleDeleteCollection={handleDeleteCollection}
           isDeleting={isDeleting}
+          isReorderUX={isReorderUX}
           isRevision={isRevision}
         />
       ),
       position: Position.BOTTOM,
     };
-  }, [collection, handleDeleteCollection, isDeleting, isRevision]);
+  }, [collection, handleDeleteCollection, isDeleting, isReorderUX, isRevision]);
 
   return <RawMoreDropdown popoverProps={popoverProps} />;
 };
