@@ -1,0 +1,60 @@
+name: Create/Update rdev for PR
+
+on:
+  pull_request:
+    branches-ignore:
+      - prod
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+env:
+  # Force using BuildKit instead of normal Docker, required so that metadata
+  # is written/read to allow us to use layers of previous builds as cache.
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+  DOCKER_REPO: ${{ secrets.ECR_REPO }}/
+  STACK_NAME: pr-${{ github.event.number }}
+
+permissions:
+  id-token: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  get_previous_image_digests:
+    runs-on: ubuntu-22.04
+    concurrency:
+      group: pr-${{ github.event.number }}-dan-test
+      cancel-in-progress: true
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - name: Get previous image digests for each repo
+        id: get_digests
+        run: |
+          echo "starting test djh sleep 5 min"
+          sleep 300
+          echo "finished sleep djh"
+
+  deploy-rdev:
+    runs-on: ubuntu-22.04
+    concurrency:
+      group: pr-${{ github.event.number }}-happy
+      cancel-in-progress: false
+    steps:
+      - name: Configure AWS Credentials
+        id: test_rdev
+        run: |
+          echo "starting test rdev djh sleep 2.5 min"
+          sleep 150
+          echo "finishe dsleep djh"
