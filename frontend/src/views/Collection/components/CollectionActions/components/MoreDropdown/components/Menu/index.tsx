@@ -46,6 +46,7 @@ interface Props {
   collection: Collection;
   handleDeleteCollection: DeleteCollectionFn;
   isDeleting: boolean;
+  isReorderUX: boolean;
   isRevision: boolean;
 }
 
@@ -67,6 +68,7 @@ const Menu = ({
   return (
     <StyledMenu>
       <CreateCollection id={collection.id} Button={EditButton} />
+      {/* "Reorder Datasets" button */}
       <DeleteCollection
         Button={DeleteButton}
         handleDeleteCollection={handleDeleteCollection}
