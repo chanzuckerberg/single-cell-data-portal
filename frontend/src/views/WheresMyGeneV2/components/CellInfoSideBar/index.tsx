@@ -59,6 +59,7 @@ import {
   DivTableHead,
   DivTableRow,
 } from "../../common/styles";
+import Description from "src/views/CellGuide/components/CellGuideCard/components/Description";
 
 function CellInfoSideBar({
   cellInfoCellType,
@@ -103,6 +104,12 @@ function CellInfoSideBar({
       >
         {MARKER_SCORE_CELLGUIDE_LINK_TEXT}
       </Link>
+      <Description
+        cellTypeId={cellInfoCellType.cellType.id}
+        cellTypeName={cellInfoCellType.cellType.name}
+        skinnyMode={true}
+        inSideBar
+      />
       <ButtonContainer>
         <ButtonWrapper>
           <StyledMarkerGeneHeader>{MARKER_GENE_LABEL}</StyledMarkerGeneHeader>
