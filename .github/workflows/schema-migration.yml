@@ -19,7 +19,7 @@ on:
 
 jobs:
   rebuild-processing-images:
-    uses: ./.github/workflows/rebuild-processing-images.yml
+    uses: ./.github/workflows/rebuild-processing-image.yml
     secrets:
       ECR_REPO: ${{ secrets.ECR_REPO }}
       AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}

@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - prod
+  repository_dispatch:
+    types: [build-images-for-staging]
   workflow_call:
 env:
   # Force using BuildKit instead of normal Docker, required so that metadata
