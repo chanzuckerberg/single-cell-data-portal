@@ -198,7 +198,6 @@ jobs:
       run:
         working-directory: frontend
     needs:
-      - seed-wmg-cellguide-rdev
       - seed-database-e2e-tests
     steps:
       - uses: actions/setup-node@v2
