@@ -19,6 +19,7 @@ import Toast from "src/views/Collection/components/Toast";
 import { IconNames } from "@blueprintjs/icons";
 import { Intent } from "@blueprintjs/core";
 import { OnReorderFn } from "src/common/hooks/useReorderMode";
+import ReorderDatasets from "src/components/Collections/components/ReorderDatasets";
 
 export type CreateRevisionFn = () => void;
 export type DeleteCollectionFn = () => void;
@@ -28,6 +29,7 @@ interface Props {
   collection: Collection;
   hasRevision: boolean;
   isPublishable: boolean;
+  isReorder: boolean;
   isReorderUX: boolean;
   isRevision: boolean;
   onReorder: OnReorderFn;
@@ -38,6 +40,7 @@ const CollectionActions = ({
   collection,
   hasRevision,
   isPublishable,
+  isReorder,
   isReorderUX,
   isRevision,
   onReorder,
@@ -129,8 +132,10 @@ const CollectionActions = ({
 
   return collection.access_type === ACCESS_TYPE.WRITE ? (
     <Actions data-testid="collection-actions">
+      {/* Collection is in reorder mode */}
+      {isReorder && <ReorderDatasets onReorder={onReorder} />}
       {/* Collection is either private, or a private revision */}
-      {collection.visibility === VISIBILITY_TYPE.PRIVATE && (
+      {!isReorder && collection.visibility === VISIBILITY_TYPE.PRIVATE && (
         <>
           <MoreDropdown
             collection={collection}
