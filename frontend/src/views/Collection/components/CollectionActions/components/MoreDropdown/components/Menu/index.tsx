@@ -1,44 +1,53 @@
-import {
-  MenuItemProps,
-  Intent,
-  Menu as RawMenu,
-  MenuItem,
-} from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
-import styled from "@emotion/styled";
 import { Collection } from "src/common/entities";
 import DeleteCollection from "src/components/Collections/components/DeleteCollection";
 import CreateCollection from "src/components/CreateCollectionModal";
 import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
+import {
+  MenuItemProps as SDSMenuItemProps,
+  MenuProps as SDSMenuProps,
+} from "@czi-sds/components";
+import {
+  DeleteMenuItem,
+  EditMenuItem,
+  Menu as StyledMenu,
+  ReorderMenuItem,
+} from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/style";
+import { DEFAULT_MENU_PROPS } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/constants";
+import IconSort from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/components/IconSort";
+import { OnReorderFn, REORDER_MODE } from "src/common/hooks/useReorderMode";
+
+interface MenuProps extends Partial<Omit<SDSMenuProps, "onClose">> {
+  onClose: () => void;
+}
 
 const DeleteButton = ({
   isRevision,
   ...props
-}: Partial<MenuItemProps> & { isRevision: boolean }) => {
+}: Partial<SDSMenuItemProps<"trashCan">> & { isRevision: boolean }) => {
   return (
-    <MenuItem
+    <DeleteMenuItem
       {...props}
-      shouldDismissPopover={false}
-      icon={IconNames.TRASH}
-      intent={Intent.DANGER}
-      text={isRevision ? "Cancel Revision" : "Delete Collection"}
       data-testid={
         isRevision ? "dropdown-cancel-revision" : "dropdown-delete-collection"
       }
-    />
+      sdsIcon="trashCan"
+      sdsIconProps={{ color: "error" }}
+    >
+      {isRevision ? "Cancel Revision" : "Delete Collection"}
+    </DeleteMenuItem>
   );
 };
 
-const EditButton = (props: Partial<MenuItemProps>) => {
+const EditButton = (props: Partial<SDSMenuItemProps<"edit">>) => {
   return (
-    <MenuItem
+    <EditMenuItem
       {...props}
-      shouldDismissPopover={false}
-      icon={IconNames.EDIT}
-      intent={Intent.NONE}
-      text="Edit Details"
       data-testid="dropdown-edit-details"
-    />
+      sdsIcon="edit"
+      sdsIconProps={{ color: "gray" }}
+    >
+      Edit Details
+    </EditMenuItem>
   );
 };
 
@@ -48,27 +57,37 @@ interface Props {
   isDeleting: boolean;
   isReorderUX: boolean;
   isRevision: boolean;
+  menuProps: MenuProps;
+  onReorder: OnReorderFn;
 }
-
-const StyledMenu = styled(RawMenu)`
-  border-radius: 3px;
-  padding: 8px;
-
-  & > li:last-child {
-    margin-bottom: 0;
-  }
-`;
 
 const Menu = ({
   collection,
   handleDeleteCollection,
   isDeleting,
+  isReorderUX,
   isRevision,
+  menuProps,
+  onReorder,
 }: Props) => {
+  // Facilitates dataset reordering functionality.
+  const handleReorder = () => {
+    menuProps.onClose();
+    onReorder(REORDER_MODE.ACTIVE);
+  };
   return (
-    <StyledMenu>
+    <StyledMenu
+      {...DEFAULT_MENU_PROPS}
+      {...menuProps}
+      open={Boolean(menuProps.open)}
+    >
       <CreateCollection id={collection.id} Button={EditButton} />
-      {/* "Reorder Datasets" button */}
+      {isReorderUX && (
+        <ReorderMenuItem onClick={handleReorder}>
+          <IconSort />
+          Reorder Datasets
+        </ReorderMenuItem>
+      )}
       <DeleteCollection
         Button={DeleteButton}
         handleDeleteCollection={handleDeleteCollection}
