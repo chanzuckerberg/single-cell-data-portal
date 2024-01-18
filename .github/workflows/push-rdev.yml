@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: build_push_images
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
       - name: Create Summary With Happy Commands

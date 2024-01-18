@@ -36,7 +36,7 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - name: Checkout ${{ matrix.branch }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ matrix.branch }}
           fetch-depth: 1
