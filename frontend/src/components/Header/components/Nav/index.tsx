@@ -1,7 +1,6 @@
 import React from "react";
 import Link from "next/link";
 import { ROUTES } from "src/common/constants/routes";
-import { AnchorButton } from "@blueprintjs/core";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import NavDivider from "src/components/Header/components/Nav/components/NavDivider";
@@ -24,62 +23,42 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
         <NavSection>
           <NavSectionTitle>Application</NavSectionTitle>
           <NavItemContainer>
-            <LinkWrapper>
-              {/* (thuang): use `legacyBehavior` prop, since `<AnchorButton />` is `<a />` */}
-              <Link href={ROUTES.COLLECTIONS} passHref legacyBehavior>
-                <AnchorButton
-                  active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
-                  data-testid="collections-link"
-                  href="passHref"
-                  minimal
-                  onClick={() => {
-                    track(EVENTS.COLLECTIONS_CLICK_NAV);
-                  }}
-                  text="Collections"
-                />
+            <LinkWrapper
+              isActive={isRouteActive(pathname, ROUTES.COLLECTIONS)}
+              data-testid="collections-link"
+              onClick={() => {
+                track(EVENTS.COLLECTIONS_CLICK_NAV);
+              }}
+            >
+              <Link href={ROUTES.COLLECTIONS}>Collections</Link>
+            </LinkWrapper>
+            <LinkWrapper
+              isActive={isRouteActive(pathname, ROUTES.DATASETS)}
+              onClick={() => {
+                track(EVENTS.DATASETS_CLICK_NAV);
+              }}
+            >
+              <Link href={ROUTES.DATASETS}>Datasets</Link>
+            </LinkWrapper>
+            <LinkWrapper
+              isActive={isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)}
+            >
+              <Link
+                href={ROUTES.WHERE_IS_MY_GENE}
+                onClick={() => {
+                  track(EVENTS.WMG_CLICK_NAV);
+                }}
+              >
+                Gene Expression
               </Link>
             </LinkWrapper>
-            <LinkWrapper>
-              {/* (thuang): use `legacyBehavior` prop, since `<AnchorButton />` is `<a />` */}
-              <Link href={ROUTES.DATASETS} passHref legacyBehavior>
-                <AnchorButton
-                  active={isRouteActive(pathname, ROUTES.DATASETS)}
-                  href="passHref"
-                  minimal
-                  onClick={() => {
-                    track(EVENTS.DATASETS_CLICK_NAV);
-                  }}
-                  text="Datasets"
-                />
-              </Link>
-            </LinkWrapper>
-            <LinkWrapper>
-              {/* (thuang): use `legacyBehavior` prop, since `<AnchorButton />` is `<a />` */}
-              <Link href={ROUTES.WHERE_IS_MY_GENE} passHref legacyBehavior>
-                <AnchorButton
-                  active={isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)}
-                  href="passHref"
-                  minimal
-                  onClick={() => {
-                    track(EVENTS.WMG_CLICK_NAV);
-                  }}
-                  text="Gene Expression"
-                />
-              </Link>
-            </LinkWrapper>
-            <LinkWrapper>
-              {/* (thuang): use `legacyBehavior` prop, since `<AnchorButton />` is `<a />` */}
-              <Link href={ROUTES.CELL_GUIDE} passHref legacyBehavior>
-                <AnchorButton
-                  active={isRouteActive(pathname, ROUTES.CELL_GUIDE)}
-                  href="passHref"
-                  minimal
-                  onClick={() => {
-                    track(EVENTS.CELL_GUIDE_CLICK_NAV);
-                  }}
-                  text="Cell Guide"
-                />
-              </Link>
+            <LinkWrapper
+              isActive={isRouteActive(pathname, ROUTES.CELL_GUIDE)}
+              onClick={() => {
+                track(EVENTS.CELL_GUIDE_CLICK_NAV);
+              }}
+            >
+              <Link href={ROUTES.CELL_GUIDE}>Cell Guide</Link>
               <BetaChip label="Beta" size="small" />
             </LinkWrapper>
           </NavItemContainer>
@@ -88,31 +67,22 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
         <NavSection>
           <NavSectionTitle>Census</NavSectionTitle>
           <NavItemContainer>
-            <LinkWrapper>
-              <AnchorButton
+            <LinkWrapper isActive={false}>
+              <a
+                onClick={() => track(EVENTS.CENSUS_DOCUMENTATION_CLICK_NAV)}
                 href={CENSUS_LINK}
-                minimal
-                onClick={() => {
-                  track(EVENTS.CENSUS_DOCUMENTATION_CLICK_NAV);
-                }}
-                rel="noopener"
-                target="_self"
-                text="API"
-              />
+                rel="noopener noreferrer"
+              >
+                API
+              </a>
             </LinkWrapper>
-            <LinkWrapper>
-              {/* (thuang): use `legacyBehavior` prop, since `<AnchorButton />` is `<a />` */}
-              <Link href={ROUTES.CENSUS_DIRECTORY} passHref legacyBehavior>
-                <AnchorButton
-                  active={isRouteActive(pathname, ROUTES.CENSUS_DIRECTORY)}
-                  href="passHref"
-                  minimal
-                  onClick={() => {
-                    track(EVENTS.CENSUS_DIRECTORY_CLICK_NAV);
-                  }}
-                  text="Models"
-                />
-              </Link>
+            <LinkWrapper
+              isActive={isRouteActive(pathname, ROUTES.CENSUS_DIRECTORY)}
+              onClick={() => {
+                track(EVENTS.CENSUS_DIRECTORY_CLICK_NAV);
+              }}
+            >
+              <Link href={ROUTES.CENSUS_DIRECTORY}>Models</Link>
             </LinkWrapper>
           </NavItemContainer>
         </NavSection>
