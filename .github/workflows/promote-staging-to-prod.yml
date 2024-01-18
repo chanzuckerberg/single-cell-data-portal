@@ -29,5 +29,5 @@ jobs:
 
   build_images_and_create_deployment:
     needs: merge_staging_to_prod
-    uses: ./.github/workflows/build-images-and-create-deployment.yml@prod
+    uses: chanzuckerberg/single-cell-data-portal/.github/workflows/build-images-and-create-deployment.yml@prod
     secrets: inherit
