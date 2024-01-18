@@ -103,7 +103,7 @@ jobs:
 
       - name: Upload FE test results as an artifact
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
@@ -111,14 +111,14 @@ jobs:
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: all-blob-reports
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
           retention-days: 1
 
       # Upload Allure results as an artifact
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/allure-results
@@ -166,7 +166,7 @@ jobs:
         run: npx playwright merge-reports --reporter html ./blob-reports
 
       - name: Upload HTML report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: html-report--attempt-${{ github.run_attempt }}
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
@@ -221,7 +221,7 @@ jobs:
       - name: Run e2e Logged In tests
         run: |
           DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev-logged-in-ci
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: logged-in-test-results
