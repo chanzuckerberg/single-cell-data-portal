@@ -18,6 +18,7 @@ import { POLICY_BULLETS } from "src/components/Collections/components/PublishCol
 import Toast from "src/views/Collection/components/Toast";
 import { IconNames } from "@blueprintjs/icons";
 import { Intent } from "@blueprintjs/core";
+import { OnReorderFn } from "src/common/hooks/useReorderMode";
 
 export type CreateRevisionFn = () => void;
 export type DeleteCollectionFn = () => void;
@@ -29,6 +30,7 @@ interface Props {
   isPublishable: boolean;
   isReorderUX: boolean;
   isRevision: boolean;
+  onReorder: OnReorderFn;
   setIsUploadingLink: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -38,6 +40,7 @@ const CollectionActions = ({
   isPublishable,
   isReorderUX,
   isRevision,
+  onReorder,
   setIsUploadingLink,
 }: Props): JSX.Element | null => {
   const { id, revision_of } = collection;
@@ -135,6 +138,7 @@ const CollectionActions = ({
             isDeleting={deleteCollectionMutation.isLoading}
             isReorderUX={isReorderUX}
             isRevision={isRevision}
+            onReorder={onReorder}
           />
           <AddButton addNewFile={handleAddNewFile} />
           <PublishCollection
