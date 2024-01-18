@@ -58,7 +58,7 @@ interface DescriptionProps {
   cellTypeName: string;
   cellTypeId: string;
   skinnyMode: boolean;
-  setTooltipContent: Dispatch<
+  setTooltipContent?: Dispatch<
     SetStateAction<{
       title: string;
       element: JSX.Element;
@@ -209,6 +209,7 @@ export default function Description({
           }}
           onClick={() => {
             skinnyMode &&
+              setTooltipContent &&
               setTooltipContent({
                 title: "ChatGPT Descriptions",
                 element: tooltipContent,
@@ -216,10 +217,11 @@ export default function Description({
           }}
           // only setting mobile Tooltip View on touch and not click
           onTouchEnd={() => {
-            setTooltipContent({
-              title: "ChatGPT Descriptions",
-              element: tooltipContent,
-            });
+            setTooltipContent &&
+              setTooltipContent({
+                title: "ChatGPT Descriptions",
+                element: tooltipContent,
+              });
           }}
         >
           <StyledIconImage src={questionMarkIcon} />

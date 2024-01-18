@@ -53,6 +53,7 @@ import {
   SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF,
   SPECIFICITY_TOOLTIP_TEST_ID,
 } from "src/common/constants/markerGenes";
+import { CELL_GUIDE_CARD_GPT_DESCRIPTION } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 
 const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
@@ -333,6 +334,18 @@ describe("Where's My Gene", () => {
       const geneLabels = await getGeneNames(page);
       const numGenes = geneLabels.length;
       expect(numGenes).toBeGreaterThan(0);
+    });
+
+    test("Marker gene panel displays cell type description", async ({
+      page,
+    }) => {
+      await goToWMG(page);
+
+      await expandTissue(page, "lung");
+
+      await getCellTypeFmgButtonAndClick(page, "memory B cell");
+
+      await waitForElement(page, CELL_GUIDE_CARD_GPT_DESCRIPTION);
     });
 
     // need to find a tissue, cell type with no marker genes
