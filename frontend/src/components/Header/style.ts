@@ -1,14 +1,12 @@
 import { Classes, Colors } from "@blueprintjs/core";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import {
-  Chip,
-  CommonThemeProps,
-  getColors,
-  InputDropdown,
-} from "@czi-sds/components";
+import { Chip, getColors, InputDropdown } from "@czi-sds/components";
 import { PT_GRID_SIZE_PX, PT_TEXT_COLOR } from "../common/theme";
-import { button } from "src/components/Header/components/Nav/style";
+import {
+  button,
+  ButtonProps,
+} from "src/components/Header/components/Nav/style";
 import { spacesL, spacesXl } from "src/common/theme";
 
 export const HEADER_HEIGHT_PX = 56;
@@ -47,8 +45,9 @@ export const Right = styled.span`
   gap: ${spacesL}px;
 `;
 
-const iconButton = (props: CommonThemeProps) => css`
+const iconButton = (props: ButtonProps) => css`
   ${button(props)}
+
   .${Classes.ICON} {
     color: inherit; /* Overrides BP button icon color rule by inheriting color from parent. */
   }
@@ -56,6 +55,7 @@ const iconButton = (props: CommonThemeProps) => css`
 
 export const AuthButtonWrapper = styled.span`
   ${iconButton}
+
   .${Classes.BUTTON}.${Classes.MINIMAL} {
     color: ${Colors.WHITE}; /* Overrides locally defined button color rule. */
     font-weight: 400; /* Overrides locally defined button font weight rule. */

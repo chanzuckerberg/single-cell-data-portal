@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import { Classes } from "@blueprintjs/core";
 import { css } from "@emotion/react";
 import {
   fontWeightBold,
@@ -16,8 +15,8 @@ export const Nav = styled.span`
   gap: ${spacesL}px;
 `;
 
-interface ButtonProps extends CommonThemeProps {
-  isActive: boolean;
+export interface ButtonProps extends CommonThemeProps {
+  isActive?: boolean;
 }
 
 export const button = (props: ButtonProps) => css`
