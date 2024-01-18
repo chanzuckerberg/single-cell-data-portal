@@ -229,3 +229,7 @@ coverage/report-xml: coverage/combine
 .PHONY: coverage/report
 coverage/report-html: coverage/combine
 	docker-compose $(COMPOSE_OPTS) run --rm -T backend bash -c "cd /single-cell-data-portal && coverage html --data-file=$(COVERAGE_DATA_FILE) -i --skip-empty"
+
+.PHONY: promote-staging-to-prod
+promote-staging-to-prod:
+	./scripts/promote_staging_to_prod.sh
