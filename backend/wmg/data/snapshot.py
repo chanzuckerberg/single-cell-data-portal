@@ -139,6 +139,22 @@ def load_snapshot(
 
 
 ###################################### PRIVATE INTERFACE #################################
+def _get_latest_snapshot_identifier_file_rel_path(snapshot_schema_version: str) -> str:
+    """
+    Get the relative path to the latest snapshot identifier file for a given snapshot schema version.
+
+    Args:
+        snapshot_schema_version (str): The version of the snapshot schema.
+
+    Returns:
+        str: The relative path to the latest snapshot identifier file.
+    """
+    data_schema_dir_path = _get_wmg_snapshot_schema_dir_rel_path(snapshot_schema_version)
+    file_name = "latest_snapshot_identifier"
+
+    return f"{data_schema_dir_path}/{file_name}"
+
+
 def _get_latest_snapshot_id(snapshot_schema_version: str, snapshot_fs_root_path: Optional[str] = None) -> str:
     """
     Get latest snapshot id for a given snapshot schema version
@@ -150,10 +166,7 @@ def _get_latest_snapshot_id(snapshot_schema_version: str, snapshot_fs_root_path:
     Returns:
         str: The latest snapshot id for the given snapshot schema version.
     """
-    data_schema_dir_path = _get_wmg_snapshot_schema_dir_rel_path(snapshot_schema_version)
-    file_name = "latest_snapshot_identifier"
-
-    rel_path = f"{data_schema_dir_path}/{file_name}"
+    rel_path = _get_latest_snapshot_identifier_file_rel_path(snapshot_schema_version)
 
     latest_snapshot_id = _read_wmg_data_file(rel_path, snapshot_fs_root_path)
     return latest_snapshot_id
@@ -316,8 +329,15 @@ def _local_disk_snapshot_is_valid(
     Returns:
         bool: True if the path on local disk contains valid WMG snapshot, False otherwise.
     """
-    if not os.path.exists(snapshot_fs_root_path):
-        logger.warning(f"{snapshot_fs_root_path} does not exist. Falling back to S3 to load WMG snapshot...")
+    latest_snapshot_identifier_file_rel_path = _get_latest_snapshot_identifier_file_rel_path(snapshot_schema_version)
+    latest_snapshot_identifier_file_fullpath = os.path.join(
+        snapshot_fs_root_path, latest_snapshot_identifier_file_rel_path
+    )
+
+    if not os.path.exists(latest_snapshot_identifier_file_fullpath):
+        logger.warning(
+            f"{latest_snapshot_identifier_file_fullpath} does not exist. Falling back to S3 to load WMG snapshot..."
+        )
         return False
     else:
         if explicit_snapshot_id_to_load:
