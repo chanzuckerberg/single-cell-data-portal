@@ -30,14 +30,14 @@ import {
   revisionIsPublishable,
 } from "./utils";
 import CollectionActions from "src/views/Collection/components/CollectionActions";
-import { useReorderMode } from "src/common/hooks/useReorderMode";
+import { REORDER_MODE, useReorderMode } from "src/common/hooks/useReorderMode";
 
 const Collection: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
   const router = useRouter();
   const { params, tombstoned_dataset_id } = router.query;
 
-  const { isReorderUX, onReorder } = useReorderMode();
+  const { isReorderUX, mode: reorderMode, onReorder } = useReorderMode();
   const [hasShownWithdrawToast, setHasShownWithdrawToast] = useState(false);
   const [isUploadingLink, setIsUploadingLink] = useState(false);
 
@@ -88,6 +88,7 @@ const Collection: FC = () => {
 
   const hasRevision = isCollectionHasPrivateRevision(collection);
   const isRevision = isCollectionPrivateRevision(collection);
+  const isReorder = reorderMode === REORDER_MODE.ACTIVE;
 
   let datasets = Array.from(collection.datasets.values());
 
@@ -129,6 +130,7 @@ const Collection: FC = () => {
             isPublishable={isPublishable}
             isReorderUX={isReorderUX}
             isRevision={isRevision}
+            isReorder={isReorder}
             onReorder={onReorder}
             setIsUploadingLink={setIsUploadingLink}
           />
