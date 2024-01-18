@@ -15,7 +15,7 @@ import AnnotateImg from "src/components/common/staticPages/annotate.png";
 import CellGuideImg from "src/components/common/staticPages/cell-guide.png";
 import CensusImg from "src/components/common/staticPages/census.png";
 import CollectionsDatasetsImg from "src/components/common/staticPages/collections-datasets.png";
-import ExplorerImg from "src/components/common/staticPages/explorer.png";
+import ExplorerImg from "src/components/common/staticPages/cxg-explorer.png";
 import FreethinkThumbnailImg from "src/components/common/staticPages/freethink-video-thumbnail.png";
 import GeneExpressionImg from "src/components/common/staticPages/gene-expression.png";
 import CellxgeneIconSmall from "./icons/cellxgene-icon-small";

@@ -1,3 +1,4 @@
+import os
 from collections import defaultdict
 from typing import Any, Dict, Iterable, List
 
@@ -13,6 +14,8 @@ from backend.wmg.api.wmg_api_config import (
     READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
     READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
     WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+    WMG_API_READ_FS_CACHED_SNAPSHOT,
+    WMG_API_SNAPSHOT_FS_CACHE_ROOT_PATH,
     WMG_API_SNAPSHOT_SCHEMA_VERSION,
 )
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
@@ -26,7 +29,16 @@ from backend.wmg.data.query import (
 )
 from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
-from backend.wmg.data.utils import depluralize, find_all_dim_option_values, find_dim_option_values
+from backend.wmg.data.utils import (
+    depluralize,
+    find_all_dim_option_values,
+    find_dim_option_values,
+)
+
+DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
+SNAPSHOT_FS_ROOT_PATH = (
+    WMG_API_SNAPSHOT_FS_CACHE_ROOT_PATH if (WMG_API_READ_FS_CACHED_SNAPSHOT and DEPLOYMENT_STAGE != "test") else None
+)
 
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
@@ -42,6 +54,7 @@ def primary_filter_dimensions():
         snapshot: WmgSnapshot = load_snapshot(
             snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+            snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
 
     return jsonify(snapshot.primary_filter_dimensions)
@@ -64,6 +77,7 @@ def query():
         snapshot: WmgSnapshot = load_snapshot(
             snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+            snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
 
     with ServerTiming.time("query tiledb"):
@@ -149,6 +163,7 @@ def filters():
         snapshot: WmgSnapshot = load_snapshot(
             snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+            snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
 
     with ServerTiming.time("calculate filters and build response"):
@@ -173,6 +188,7 @@ def markers():
     snapshot: WmgSnapshot = load_snapshot(
         snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
         explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+        snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
     )
 
     criteria = MarkerGeneQueryCriteria(
