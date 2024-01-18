@@ -30,14 +30,14 @@ import {
   revisionIsPublishable,
 } from "./utils";
 import CollectionActions from "src/views/Collection/components/CollectionActions";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { useReorderMode } from "src/common/hooks/useReorderMode";
 
 const Collection: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
-  const isReorderUX = useFeatureFlag(FEATURES.REORDER); // Reorder datasets UX feature flag.
   const router = useRouter();
   const { params, tombstoned_dataset_id } = router.query;
 
+  const { isReorderUX, onReorder } = useReorderMode();
   const [hasShownWithdrawToast, setHasShownWithdrawToast] = useState(false);
   const [isUploadingLink, setIsUploadingLink] = useState(false);
 
@@ -129,6 +129,7 @@ const Collection: FC = () => {
             isPublishable={isPublishable}
             isReorderUX={isReorderUX}
             isRevision={isRevision}
+            onReorder={onReorder}
             setIsUploadingLink={setIsUploadingLink}
           />
         </CollectionHero>
