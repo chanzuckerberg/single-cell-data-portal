@@ -17,6 +17,8 @@ COPY /python_dependencies/backend/ .
 # see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
 RUN python3 -m pip install cmake
 RUN python3 -m pip install -r requirements.txt
+# Install awscli to download wmg snapshot to the local disk
+RUN python3 -m pip install awscli
 EXPOSE 5000
 
 # Install utilities to /single-cell-data-portal so we can run db migrations.
