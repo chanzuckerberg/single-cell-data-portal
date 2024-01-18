@@ -53,5 +53,5 @@ jobs:
 
   build_images_and_create_deployment:
     needs: deploy_to_stage_env_on_test_pass_on_main
-    uses: ./.github/workflows/build-images-and-create-deployment.yml
+    uses: chanzuckerberg/single-cell-data-portal/.github/workflows/build-images-and-create-deployment.yml@staging
     secrets: inherit
