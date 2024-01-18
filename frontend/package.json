@@ -10,7 +10,6 @@
     "@blueprintjs/select": "^5.0.23",
     "@czi-sds/components": "^18.1.2",
     "@czi-sds/data-viz": "^0.3.0",
-    "@datadog/browser-rum": "^5.1.0",
     "@emotion/css": "^11.11.2",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
