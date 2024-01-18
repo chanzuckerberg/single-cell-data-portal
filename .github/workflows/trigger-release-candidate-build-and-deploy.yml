@@ -50,8 +50,3 @@ jobs:
           mention: "here"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-
-  build_images_and_create_deployment:
-    needs: deploy_to_stage_env_on_test_pass_on_main
-    uses: ./.github/workflows/build-images-and-create-deployment.yml
-    secrets: inherit
