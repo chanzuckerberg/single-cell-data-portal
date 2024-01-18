@@ -157,7 +157,7 @@ jobs:
         run: npm ci
 
       - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: all-blob-reports
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-reports
