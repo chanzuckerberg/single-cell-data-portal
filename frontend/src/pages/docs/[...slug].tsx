@@ -394,7 +394,7 @@ const ImageContainer = styled.div`
 const DocsImage = ({ src }: ImageProps) => {
   return (
     <ImageContainer>
-      <StyledImage alt="image" src={src} layout={"fill"} />
+      <StyledImage alt="image" src={src} fill />
     </ImageContainer>
   );
 };

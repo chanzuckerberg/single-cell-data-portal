@@ -31,7 +31,7 @@ export const StyledBanner = styled(Banner)`
   color: black;
 
   /* Hide default svg icon in the Banner as it is not in figma */
-  :first-child > div:first-child > div:first-child {
+  :first-of-type > div:first-of-type > div:first-of-type {
     display: none;
   }
 
