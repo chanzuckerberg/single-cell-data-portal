@@ -34,18 +34,18 @@ export const Header = styled.h1`
   font-weight: ${fontWeightBold};
 `;
 
-export const Paragraph = styled.p`
+export const Paragraph = styled.div`
   ${fontBodyS}
   font-weight: ${fontWeightRegular};
   margin-bottom: 0;
 `;
 
 export const DirectoryDescription = styled(Paragraph)`
-  margin-bottom: 80px;
+  margin-bottom: 20px;
 `;
 
 export const TierContainer = styled.div`
-  margin-bottom: 120px;
+  margin-bottom: 60px;
 `;
 
 export const TierTitle = styled.h3`

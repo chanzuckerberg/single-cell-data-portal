@@ -55,7 +55,7 @@ export const ADD_TISSUE_ID = "tissue-filter";
 export const ADD_GENE_ID = "add-gene-btn";
 export const GENE_DELETE_BUTTON = "gene-delete-button";
 export const SOURCE_DATA_BUTTON_ID = "source-data-button";
-export const SOURCE_DATA_LIST_SELECTOR = `[data-testid="source-data-list"]`;
+export const SOURCE_DATA_LIST_ID = "source-data-list";
 export const DOWNLOAD_BUTTON_ID = "download-button";
 export const COMPARE_DROPDOWN_ID = "compare-dropdown";
 export const SEX_FILTER_TEST_ID = "sex-filter";

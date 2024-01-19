@@ -9,10 +9,8 @@ interface Props {
 
 export const HomepageLink: FC<Props> = ({ homeUrl }) => {
   return (
-    <Link href={homeUrl || ROUTES.HOMEPAGE} passHref>
-      <a href="passHref">
-        <Logo />
-      </a>
+    <Link href={homeUrl || ROUTES.HOMEPAGE}>
+      <Logo />
     </Link>
   );
 };
