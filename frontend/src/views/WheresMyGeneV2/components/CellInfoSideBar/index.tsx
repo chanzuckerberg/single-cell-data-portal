@@ -148,7 +148,7 @@ function CellInfoSideBar({
               sdsType="secondary"
               isAllCaps={false}
             >
-              <StyledIconImage src={questionMarkIcon} />
+              <StyledIconImage alt="question mark" src={questionMarkIcon} />
             </TooltipButton>
           </Tooltip>
           <BetaChip label="Beta" size="small" />
@@ -244,7 +244,7 @@ function CellInfoSideBar({
                   isAllCaps={false}
                   data-testid={MARKER_SCORE_TOOLTIP_TEST_ID}
                 >
-                  <StyledIconImage src={questionMarkIcon} />
+                  <StyledIconImage alt="question mark" src={questionMarkIcon} />
                 </TooltipButton>
               </Tooltip>
             </DivTableCell>
@@ -288,7 +288,7 @@ function CellInfoSideBar({
                   isAllCaps={false}
                   data-testid={SPECIFICITY_TOOLTIP_TEST_ID}
                 >
-                  <StyledIconImage src={questionMarkIcon} />
+                  <StyledIconImage alt="question mark" src={questionMarkIcon} />
                 </TooltipButton>
               </Tooltip>
             </DivTableCell>

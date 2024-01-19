@@ -16,7 +16,6 @@ export default function NTag({ label, values }: Props): JSX.Element {
     .map((begin) => values.slice(begin, begin + CHUNK_SIZE));
   return (
     <Popover
-      boundary="viewport"
       content={
         <ContentWrapper>
           {chunkedValues.map((chunk, index) => (
