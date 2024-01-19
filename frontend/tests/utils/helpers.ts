@@ -439,7 +439,7 @@ export async function clickUntilDownloadModalShowsUp({
       } else {
         throw Error(ERROR_NO_TESTID_OR_LOCATOR);
       }
-      await page.locator(".bp4-dialog").elementHandle();
+      await page.locator(".bp5-dialog").elementHandle();
     },
     { page }
   );
@@ -463,7 +463,7 @@ export async function clickUntilSidebarShowsUp({
       } else {
         throw Error(ERROR_NO_TESTID_OR_LOCATOR);
       }
-      await page.locator(".bp4-drawer-header").elementHandle();
+      await page.locator(".bp5-drawer-header").elementHandle();
     },
     { page }
   );
