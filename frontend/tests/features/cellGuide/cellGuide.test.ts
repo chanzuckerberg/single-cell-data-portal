@@ -1180,8 +1180,10 @@ describe("Cell Guide", () => {
       await tryUntil(
         async () => {
           // Switch to brain tissue
-          await waitForElementAndClick(dropdown);
-          await page.getByRole("option").getByText("brain").click();
+          if ((await dropdown.textContent())?.toLowerCase() !== "brain") {
+            await waitForElementAndClick(dropdown);
+            await page.getByRole("option").getByText("brain").click();
+          }
 
           // Check that tooltip content has changed
           await isElementVisible(page, SPECIFICITY_TOOLTIP_TEST_ID);
