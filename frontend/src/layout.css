@@ -10,7 +10,7 @@ h5,
 h6,
 a,
 div {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
 }
@@ -21,7 +21,7 @@ div[role="group"][tabindex] {
 
 html {
   min-height: 100vh;
-  font: "Inter", sans-serif;
+  font: var(--font-inter);
   box-sizing: border-box;
   overflow-y: auto;
 }
@@ -32,7 +32,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: black;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   font-weight: normal;
   word-wrap: break-word;
   font-kerning: normal;
@@ -104,7 +104,7 @@ h1 {
   padding-top: 0;
   margin-bottom: 1.45rem;
   color: inherit;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   font-weight: 700;
   text-rendering: optimizeLegibility;
   line-height: 1.1;
@@ -286,7 +286,7 @@ h2 {
   padding-top: 0;
   margin-bottom: 1.45rem;
   color: inherit;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   font-weight: bold;
   text-rendering: optimizeLegibility;
   font-size: 1.62671rem;
@@ -302,7 +302,7 @@ h3 {
   padding-top: 0;
   margin-bottom: 1.45rem;
   color: inherit;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   font-weight: bold;
   text-rendering: optimizeLegibility;
   font-size: 1.38316rem;
@@ -318,7 +318,7 @@ h4 {
   padding-top: 0;
   margin-bottom: 1.45rem;
   color: inherit;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   font-weight: bold;
   text-rendering: optimizeLegibility;
   font-size: 1rem;
@@ -334,7 +334,7 @@ h5 {
   padding-top: 0;
   margin-bottom: 1.45rem;
   color: inherit;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   font-weight: bold;
   text-rendering: optimizeLegibility;
   font-size: 0.85028rem;
@@ -350,7 +350,7 @@ h6 {
   padding-top: 0;
   margin-bottom: 1.45rem;
   color: inherit;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   font-weight: bold;
   text-rendering: optimizeLegibility;
   font-size: 0.78405rem;
