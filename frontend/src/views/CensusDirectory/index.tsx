@@ -33,6 +33,7 @@ function CensusDirectory() {
       (project) => project.tier === "community"
     )
   );
+
   const maintainedProjects = clobberAndDifferentiateProjectMetadata(
     Object.values(staticProjects).filter(
       (project) => project.tier === "maintained"
@@ -84,12 +85,14 @@ function CensusDirectory() {
             </Link>
             .
           </TierDescription>
-          {maintainedProjects.map((clobberedProjects) => (
-            <Project
-              key={clobberedProjects[0].id}
-              clobberedProjects={clobberedProjects}
-            />
-          ))}
+          {maintainedProjects.map((clobberedProjects, key) => {
+            return (
+              <Project
+                key={clobberedProjects[0].id || key}
+                clobberedProjects={clobberedProjects}
+              />
+            );
+          })}
         </TierContainer>
       )}
       {hostedProjects.length > 0 && (
@@ -108,9 +111,9 @@ function CensusDirectory() {
             . For feedback on the embeddings themselves, please contact the
             creators.
           </TierDescription>
-          {hostedProjects.map((clobberedProjects) => (
+          {hostedProjects.map((clobberedProjects, key) => (
             <Project
-              key={clobberedProjects[0].id}
+              key={clobberedProjects[0].id || key}
               clobberedProjects={clobberedProjects}
             />
           ))}
@@ -126,9 +129,9 @@ function CensusDirectory() {
             <br />
             Please contact their creators with questions or feedback.
           </TierDescription>
-          {communityProjects.map((clobberedProjects) => (
+          {communityProjects.map((clobberedProjects, key) => (
             <Project
-              key={clobberedProjects[0].id}
+              key={clobberedProjects[0].id || key}
               clobberedProjects={clobberedProjects}
             />
           ))}

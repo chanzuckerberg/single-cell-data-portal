@@ -400,8 +400,8 @@ const MarkerGeneTables = ({
               data-testid={MARKER_GENES_TREE_ICON_BUTTON_TEST_ID(row.symbol)}
               src={treeDendrogram}
               alt={`activate marker gene mode for ${row.symbol}`}
-              width="12px"
-              height="12px"
+              width={12}
+              height={12}
             />
           </StyledImageWrapper>
         )}

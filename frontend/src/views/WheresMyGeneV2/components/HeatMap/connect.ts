@@ -211,6 +211,10 @@ export function useConnect({
 
   const handleExpandCollapse = useCallback(
     (tissueId: string, tissueName: Tissue) => {
+      /**
+       * WARNING: Doesn't pass React StrictMode check
+       * We get double events in dev mode, will need further investigation
+       */
       dispatch?.(toggleExpandedTissueId({ tissueId, tissueName }));
     },
     [dispatch]
