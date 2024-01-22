@@ -40,10 +40,12 @@ import { useFetchDatasets } from "src/common/queries/filter";
 import {
   LANDING_PAGE_CELLS_HERO_NUM_ID,
   LANDING_PAGE_CELLTYPES_HERO_NUM_ID,
+  LANDING_PAGE_CONTENT_NAV_ID,
   LANDING_PAGE_DATASETS_HERO_NUM_ID,
   LANDING_PAGE_FALLBACK_CELLS_HERO_NUM,
   LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM,
   LANDING_PAGE_FALLBACK_DATASETS_HERO_NUM,
+  WMG_CTA_TEXT,
 } from "./constants";
 
 const ROOT_MARGIN = "-50% 0px -50% 0px";
@@ -364,7 +366,10 @@ const LandingPage = (): JSX.Element => {
         </div>
         <div className={styles.main}>
           <div>
-            <div className={styles.contentNav}>
+            <div
+              data-testid={LANDING_PAGE_CONTENT_NAV_ID}
+              className={styles.contentNav}
+            >
               <div className={styles.contentNavSubrow}>
                 <div
                   className={`${styles.contentLink} ${
@@ -641,7 +646,7 @@ const LandingPage = (): JSX.Element => {
                               })
                             }
                           >
-                            Explore the tool
+                            {WMG_CTA_TEXT}
                             <span className={styles.linkArrow}>
                               <LinkArrow />
                             </span>
