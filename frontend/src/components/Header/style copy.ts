@@ -1,8 +1,8 @@
-import { Classes, Colors } from "@blueprintjs/core";
+import { Classes } from "@blueprintjs/core";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { Popper } from "@mui/material";
-import { Chip, getColors, InputDropdown } from "@czi-sds/components";
+import { Chip, fontBodyS, getColors, InputDropdown } from "@czi-sds/components";
 import { PT_GRID_SIZE_PX, PT_TEXT_COLOR } from "../common/theme";
 import {
   button,
@@ -43,7 +43,6 @@ export const Left = styled.span`
 export const Right = styled.span`
   align-items: center;
   display: flex;
-  font-weight: 500;
   gap: ${spacesL}px;
 `;
 
@@ -59,9 +58,34 @@ export const AuthButtonWrapper = styled.span`
   ${iconButton}
 
   .${Classes.BUTTON}.${Classes.MINIMAL} {
-    color: ${Colors.WHITE}; /* Overrides locally defined button color rule. */
-    font-weight: 400; /* Overrides locally defined button font weight rule. */
+    ${(props) => {
+      const colors = getColors(props);
+      return `
+        span {
+          color: ${colors?.gray["300"]} !important;
+          ${fontBodyS}
+          font-weight: 500;
+        }
+        :hover {
+          background: none;
+          span {
+            color: ${colors?.gray["100"]} !important;
+          }
+        }
+    `;
+    }}
+    ${fontBodyS}
+    font-weight: 500; /* Overrides locally defined button font weight rule. */
   }
+  .bp5-button {
+    height: 20px;
+    padding: 0;
+  }
+  /*
+  svg {
+    height: 14px;
+    width: 14px;
+  } */
 `;
 
 export const BetaChip = styled(Chip)`
@@ -78,13 +102,16 @@ export const StyledInputDropdown = styled(InputDropdown)`
     const colors = getColors(props);
     return `
       span {
-        color: ${colors?.gray["500"]} !important;
+        color: ${colors?.gray["300"]} !important;
+        ${fontBodyS}
+        font-weight: 500;
       }
+
 
       :hover {
         background: none;
         span {
-          color: ${colors?.gray["600"]} !important;
+          color: ${colors?.gray["100"]} !important;
         }
       }
     `;
