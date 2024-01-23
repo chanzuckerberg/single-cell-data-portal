@@ -452,7 +452,7 @@ describe("Where's My Gene", () => {
       );
     });
 
-    test(`Should verify effect size and specificity column`, async ({
+    test.only(`Should verify effect size and specificity column`, async ({
       page,
     }) => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
