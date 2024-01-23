@@ -6,33 +6,19 @@ import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 
 export function useConnect() {
-  /**
-   * Retrieves the current pathname from the router.
-   * @returns The current pathname.
-   */
   const { pathname } = useRouter();
 
-  /**
-   * A reference to the dropdown element.
-   */
   const dropdownRef = useRef(null);
 
-  /**
-   * The anchor element for the dropdown menu.
-   */
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(
     dropdownRef.current
   );
 
-  /**
-   * Represents the state of the dropdown menu.
-   */
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   /**
-   * Handles the opening of the help dropdown menu.
-   *
-   * @param event - The mouse event that triggered the function.
+   * Handles the help dropdown open
+   * @param event
    */
   function handleHelpOpen(event: React.MouseEvent<HTMLElement>) {
     if (!anchorEl) {
@@ -47,9 +33,8 @@ export function useConnect() {
   }
 
   /**
-   * Handles the click event for the help dropdown menu.
-   * @param {React.ChangeEvent<unknown>} _ - The event object.
-   * @param {DefaultMenuSelectOption & { id: number; value: string } | null} newValue - The selected option from the dropdown menu.
+   * Handles the help dropdown click
+   * @param newValue
    */
   function handleHelpClick(
     _: React.ChangeEvent<unknown>,
