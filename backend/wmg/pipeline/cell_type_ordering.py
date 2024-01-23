@@ -121,11 +121,7 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
         if node in cells:
             cells.remove(node)
             yield cell_entity(node, depth)
-
-            # Make the root and other high level cell types stay at 0 level. Avoids creating
-            # a situation where only the root is at lowest level
-            if node not in ["CL:0000003", "CL:0000255", "CL:0000548"]:
-                depth += 1
+            depth += 1
 
         children = [
             (c, positions[c.id]) for c in onto[node].subclasses(with_self=False, distance=1) if c.id in ancestor_ids
