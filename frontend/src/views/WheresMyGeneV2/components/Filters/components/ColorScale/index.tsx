@@ -37,7 +37,7 @@ export default function ColorScale({ setIsScaled }: Props): JSX.Element {
             sdsType="secondary"
             isAllCaps={false}
           >
-            <StyledIconImage src={questionMarkIcon} />
+            <StyledIconImage alt="question mark" src={questionMarkIcon} />
           </TooltipButton>
         </Tooltip>
       </LabelWrapper>

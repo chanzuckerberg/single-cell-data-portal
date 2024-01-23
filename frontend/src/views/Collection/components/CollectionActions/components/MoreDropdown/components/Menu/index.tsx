@@ -1,5 +1,5 @@
 import {
-  IMenuItemProps,
+  MenuItemProps,
   Intent,
   Menu as RawMenu,
   MenuItem,
@@ -14,7 +14,7 @@ import { DeleteCollectionFn } from "src/views/Collection/components/CollectionAc
 const DeleteButton = ({
   isRevision,
   ...props
-}: Partial<IMenuItemProps> & { isRevision: boolean }) => {
+}: Partial<MenuItemProps> & { isRevision: boolean }) => {
   return (
     <MenuItem
       {...props}
@@ -29,7 +29,7 @@ const DeleteButton = ({
   );
 };
 
-const EditButton = (props: Partial<IMenuItemProps>) => {
+const EditButton = (props: Partial<MenuItemProps>) => {
   return (
     <MenuItem
       {...props}
