@@ -408,7 +408,7 @@ describe("Where's My Gene", () => {
       );
     });
 
-    // Note: This test could fail if we find more marker genes for embryo hematopoietic cells.
+    // Note: This test could fail if we find more marker genes for the targeted cell.
     // If this happens, just mark the test as skipped and ping @joyceyan
     test(`Should verify copy for cell types with no marker genes`, async ({
       page,
@@ -416,14 +416,12 @@ describe("Where's My Gene", () => {
       await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
       // Expand embryo tissue
-      await expandTissue(page, "embryo");
+      await expandTissue(page, "saliva");
 
-      // Click yolk sac somatic cell info icon
-      const hematopoieticCell = page.getByTestId(
-        "cell-type-info-button-embryo-hematopoietic cell"
-      );
-      await hematopoieticCell.scrollIntoViewIfNeeded();
-      await hematopoieticCell.click();
+      // Click the cell info icon
+      const cell = page.getByTestId("cell-type-info-button-saliva-leukocyte");
+      await cell.scrollIntoViewIfNeeded();
+      await cell.click();
 
       // Verify copy is what we expect
       const noMarkerGenesDescription = (await page
@@ -466,6 +464,10 @@ describe("Where's My Gene", () => {
       await page
         .getByTestId("cell-type-info-button-adipose tissue-contractile cell")
         .click();
+
+      // GPT description can take longer to generate, so we want to wait for this to load
+      // before doing anything else in the marker genes table
+      await isElementVisible(page, CELL_GUIDE_CARD_GPT_DESCRIPTION);
 
       // Verify effect size header and tooltip
       const effectSizeHeader = (await page
