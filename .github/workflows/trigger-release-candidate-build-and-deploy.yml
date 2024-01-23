@@ -40,12 +40,6 @@ jobs:
           git merge --verbose main -m "Merging main branch into staging branch"
 
           git push origin staging
-
-      # We need to use repository_dispatch because by default github actions
-      # prevents actions triggered by 'GITHUB_TOKEN' from triggering other
-      # workflows. Details are here:
-      # https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#triggering-a-workflow-from-a-workflow
-      #https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#repository_dispatch
       - name: Trigger repository_dispatch to build images for staging
         if: success()
         uses: peter-evans/repository-dispatch@v2
@@ -53,7 +47,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           event-type: build-images-for-staging
           client-payload: '{"ref": "refs/heads/staging"}'
-
       - name: Send slack notification if main not merged into staging
         if: failure()
         uses: 8398a7/action-slack@v3

@@ -1,11 +1,12 @@
 import { css } from "@emotion/react";
+import { inter } from "src/common/theme";
 
 export const PT_GRID_SIZE_PX = 8;
 
 export const PT_TEXT_COLOR = "#10161A";
 
 export const fontStyle = css`
-  font-family: "Inter", sans-serif;
+  font-family: ${inter.style.fontFamily};
   font-style: normal;
   font-size: 14px;
 `;

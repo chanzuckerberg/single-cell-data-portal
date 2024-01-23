@@ -63,7 +63,7 @@ describe("Collection", () => {
 
       await Promise.all([
         page.waitForNavigation({ waitUntil: "load" }),
-        page.click(".bp4-alert-footer >> text=Delete Collection"),
+        page.click(".bp5-alert-footer >> text=Delete Collection"),
       ]);
 
       await tryUntil(

@@ -10,6 +10,24 @@ import {
 import { createTheme } from "@mui/material/styles";
 import { defaultAppTheme, makeThemeOptions } from "@czi-sds/components";
 
+import { Inter } from "next/font/google";
+
+export const INTER_FONT_CSS_VARIABLE = "--font-inter";
+
+/**
+ * (thuang): We should only load the font once in the app.
+ * If loading a variable font, you don't need to specify the font weight
+ * `Inter` is a variable font
+ */
+export const inter = Inter({
+  subsets: ["latin"],
+  /**
+   * (thuang): We can't use the font-weight variable here, according to Next.js warning
+   * CSS variable here is used in CSS files
+   */
+  variable: "--font-inter",
+});
+
 const { fontWeights } = defaultAppTheme;
 
 const iconSizes = {
@@ -57,7 +75,7 @@ export const cornersS = (props: CommonThemeProps) => getCorners(props)?.s;
 export const cornersNone = (props: CommonThemeProps) => getCorners(props)?.none;
 
 const typography = {
-  fontFamily: "Inter",
+  fontFamily: inter.style.fontFamily,
   styles: {
     body: {
       button: {

@@ -28,46 +28,46 @@ $pt-font-size-small: $pt-grid-size * 1.5 !default;
   @include focus-outline();
 }
 
-.bp4-button {
+.bp5-button {
   box-shadow: inset 0px -1px 1px rgba(16, 22, 26, 0.1) !important;
   padding: 6px 12px;
   height: 30px;
 }
 
-.bp4-button.bp4-minimal {
+.bp5-button.bp5-minimal {
   box-shadow: none !important;
 }
 
-.bp4-input {
+.bp5-input {
   border: 1px solid $light-gray1 !important;
   box-shadow: none;
   height: 34px;
 }
 
-.bp4-input:focus {
+.bp5-input:focus {
   border: 2px solid $pt-intent-primary !important;
   box-shadow: none;
 }
 
-.bp4-input.bp4-intent-danger,
-.bp4-intent-danger .bp4-input {
+.bp5-input.bp5-intent-danger,
+.bp5-intent-danger .bp5-input {
   box-shadow: none;
   border: 2px solid $pt-intent-danger !important;
 }
 
-.bp4-input-group.bp4-intent-danger .bp4-input {
+.bp5-input-group.bp5-intent-danger .bp5-input {
   box-shadow: none;
 }
 
-.bp4-input-group .bp4-input-action,
-.bp4-input-group > .bp4-input-left-container,
-.bp4-input-group > .bp4-button,
-.bp4-input-group > .bp4-icon {
+.bp5-input-group .bp5-input-action,
+.bp5-input-group > .bp5-input-left-container,
+.bp5-input-group > .bp5-button,
+.bp5-input-group > .bp5-icon {
   position: absolute;
   top: $pt-grid-size;
 }
 
-.bp4-dialog {
+.bp5-dialog {
   max-width: unset;
   width: unset;
   background-color: white;
@@ -79,31 +79,31 @@ $pt-font-size-small: $pt-grid-size * 1.5 !default;
   border-radius: 6px;
 }
 
-.bp4-dialog-header {
+.bp5-dialog-header {
   box-shadow: none;
 }
 
-.bp4-dialog-header .bp4-heading {
+.bp5-dialog-header .bp5-heading {
   line-height: normal;
 }
 
-.bp4-tag {
+.bp5-tag {
   padding: 2px 6px;
   background: $gray1;
-  .bp4-minimal {
+  .bp5-minimal {
     background: $gray5;
     color: $black;
   }
-  .bp4-intent-success {
+  .bp5-intent-success {
     background: $green3;
-    .bp4-minimal {
+    .bp5-minimal {
       color: $blue2;
       background: $green6;
     }
   }
-  .bp4-intent-primary {
+  .bp5-intent-primary {
     background: $blue3;
-    .bp4-minimal {
+    .bp5-minimal {
       color: $blue2;
       background: $blue6;
     }
@@ -112,16 +112,16 @@ $pt-font-size-small: $pt-grid-size * 1.5 !default;
 
 // Temp fix for checkbox
 // https://github.com/palantir/blueprint/issues/2821#issuecomment-414645690
-.bp4-control.bp4-checkbox input:checked ~ .bp4-control-indicator:before {
+.bp5-control.bp5-checkbox input:checked ~ .bp5-control-indicator:before {
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 5c-.28 0-.53.11-.71.29L7 9.59l-2.29-2.3a1.003 1.003 0 0 0-1.42 1.42l3 3c.18.18.43.29.71.29s.53-.11.71-.29l5-5A1.003 1.003 0 0 0 12 5z' fill='rgba(255,255,255,1)'/%3E%3C/svg%3E");
 }
 
 // Remove box shadow and vertical separators on HTMLTable cells when bordered prop is present
-table.bp4-html-table.bp4-html-table-bordered {
+table.bp5-html-table.bp5-html-table-bordered {
   tbody tr td,
   th,
-  tbody tr td:not(:first-child),
-  th:not(:first-child) {
+  tbody tr td:not(:first-of-type),
+  th:not(:first-of-type) {
     box-shadow: none;
   }
 }
