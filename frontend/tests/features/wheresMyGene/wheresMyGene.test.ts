@@ -465,6 +465,10 @@ describe("Where's My Gene", () => {
         .getByTestId("cell-type-info-button-adipose tissue-contractile cell")
         .click();
 
+      // GPT description can take longer to generate, so we want to wait for this to load
+      // before doing anything else in the marker genes table
+      await isElementVisible(page, CELL_GUIDE_CARD_GPT_DESCRIPTION);
+
       // Verify effect size header and tooltip
       const effectSizeHeader = (await page
         .getByTestId(EFFECT_SIZE_HEADER_ID)
