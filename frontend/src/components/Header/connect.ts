@@ -16,10 +16,6 @@ export function useConnect() {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  /**
-   * Handles the help dropdown open
-   * @param event
-   */
   function handleHelpOpen(event: React.MouseEvent<HTMLElement>) {
     if (!anchorEl) {
       setAnchorEl(event.currentTarget);
@@ -32,10 +28,6 @@ export function useConnect() {
     }
   }
 
-  /**
-   * Handles the help dropdown click
-   * @param newValue
-   */
   function handleHelpClick(
     _: React.ChangeEvent<unknown>,
     newValue: (DefaultMenuSelectOption & { id: number; value: string }) | null
@@ -55,19 +47,10 @@ export function useConnect() {
     setDropdownOpen(false);
   }
 
-  /**
-   * Closes the help dropdown.
-   */
   function handleHelpClose() {
     setDropdownOpen(false);
   }
 
-  /**
-   * Returns true if current path is equal to the route.
-   * @param path
-   * @param route
-   * @returns true if the current path is the route
-   */
   function isRouteActive(path: string, route: ROUTES): boolean {
     return path === route;
   }
