@@ -1,3 +1,5 @@
+default_language_version:
+  python: python3.10
 repos:
   - repo: https://github.com/psf/black
     rev: 22.3.0 # Must be kept in sync with black version in requirements.txt
@@ -33,3 +35,12 @@ repos:
           - prettier@3.0.2
           - prettier-plugin-organize-imports@2.3.3
           - typescript@4.9.5
+
+  - repo: https://github.com/jazzband/pip-tools
+    rev: 7.3.0
+    hooks:
+      - id: pip-compile
+        stages: [commit]
+        name: pip-compile requirements.in
+        args: [python_dependencies/backend/requirements.in]
+        files: ^python_dependencies/backend/
