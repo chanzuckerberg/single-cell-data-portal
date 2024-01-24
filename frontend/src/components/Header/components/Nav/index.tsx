@@ -4,7 +4,7 @@ import { ROUTES } from "src/common/constants/routes";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import NavDivider from "src/components/Header/components/Nav/components/NavDivider";
-import { isRouteActive } from "src/components/Header";
+import { useConnect } from "src/components/Header/connect";
 import {
   LinkWrapper,
   NavItemContainer,
@@ -17,6 +17,7 @@ import { CENSUS_LINK } from "./constants";
 import { Props } from "./types";
 
 export default function Nav({ className, pathname }: Props): JSX.Element {
+  const { isRouteActive } = useConnect();
   return (
     <>
       <NavWrapper className={className}>
