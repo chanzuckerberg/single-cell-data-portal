@@ -1,7 +1,7 @@
 import { expect, Page } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "tests/common/constants";
-import { goToPage, tryUntil } from "tests/utils/helpers";
+import { goToPage, isStaging, tryUntil } from "tests/utils/helpers";
 import {
   LANDING_PAGE_FALLBACK_CELLS_HERO_NUM,
   LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM,
@@ -9,10 +9,11 @@ import {
   LANDING_PAGE_CELLS_HERO_NUM_ID,
   LANDING_PAGE_CELLTYPES_HERO_NUM_ID,
   LANDING_PAGE_DATASETS_HERO_NUM_ID,
+  WMG_CTA_TEXT,
 } from "src/views/Landing/constants";
 import { test } from "tests/common/test";
 
-const { describe } = test;
+const { describe, skip } = test;
 const COLLECTIONS_LINK_ID = "collections-link";
 const SCROLL_Y_PX = 999999;
 
@@ -130,6 +131,59 @@ describe("Homepage", () => {
     );
 
     await isGlobalLayoutWrapperScrollable(newPage);
+  });
+
+  test("Analytics event is fired and API called when content navigation option is clicked", async ({
+    page,
+    context,
+  }) => {
+    skip(!isStaging, "This test is only run on staging");
+
+    /**
+     * (thuang): Temporarily set navigator.webdriver to false, so that we can
+     * test that the analytics event is fired
+     * @see: https://github.com/microsoft/playwright-python/issues/527#issuecomment-1846318431
+     */
+    await context.addInitScript(
+      `const defaultGetter = Object.getOwnPropertyDescriptor(
+        Navigator.prototype,
+        "webdriver"
+      ).get;
+      defaultGetter.apply(navigator);
+      defaultGetter.toString();
+      Object.defineProperty(Navigator.prototype, "webdriver", {
+        set: undefined,
+        enumerable: true,
+        configurable: true,
+        get: new Proxy(defaultGetter, {
+          apply: (target, thisArg, args) => {
+            Reflect.apply(target, thisArg, args);
+            return false;
+          },
+        }),
+      });
+      const patchedGetter = Object.getOwnPropertyDescriptor(
+        Navigator.prototype,
+        "webdriver"
+      ).get;
+      patchedGetter.apply(navigator);
+      patchedGetter.toString();`
+    );
+
+    await goToPage(undefined, page);
+
+    await Promise.all([
+      page.waitForRequest((request) => {
+        request.url().includes("api/event") && request.method() === "POST";
+
+        const payload = JSON.parse(request?.postData() || "{}");
+
+        const { n, p } = payload;
+
+        return n === "WMG_CLICKED" && p.button === "See how it works";
+      }),
+      page.getByText(WMG_CTA_TEXT).click(),
+    ]);
   });
 });
 
