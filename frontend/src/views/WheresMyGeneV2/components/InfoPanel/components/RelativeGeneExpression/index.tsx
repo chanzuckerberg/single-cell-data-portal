@@ -60,7 +60,7 @@ export default function RelativeGeneExpression({
         }
       >
         <TooltipButton sdsStyle="minimal" sdsType="secondary" isAllCaps={false}>
-          <StyledIconImage src={questionMarkIcon} />
+          <StyledIconImage alt="question mark" src={questionMarkIcon} />
         </TooltipButton>
       </Tooltip>
       <ContentWrapper>

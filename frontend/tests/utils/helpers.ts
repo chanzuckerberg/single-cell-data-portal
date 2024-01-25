@@ -68,6 +68,8 @@ const TEST_ENVS_DEV_STAGING = ["dev", "staging", "rdev"];
 
 export const isDevStagingRdev = TEST_ENVS_DEV_STAGING.includes(TEST_ENV);
 
+export const isStaging = TEST_ENV === "staging";
+
 const GO_TO_PAGE_TIMEOUT_MS = 2 * 60 * 1000;
 
 export async function goToPage(
@@ -439,7 +441,7 @@ export async function clickUntilDownloadModalShowsUp({
       } else {
         throw Error(ERROR_NO_TESTID_OR_LOCATOR);
       }
-      await page.locator(".bp4-dialog").elementHandle();
+      await page.locator(".bp5-dialog").elementHandle();
     },
     { page }
   );
@@ -463,7 +465,7 @@ export async function clickUntilSidebarShowsUp({
       } else {
         throw Error(ERROR_NO_TESTID_OR_LOCATOR);
       }
-      await page.locator(".bp4-drawer-header").elementHandle();
+      await page.locator(".bp5-drawer-header").elementHandle();
     },
     { page }
   );

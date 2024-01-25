@@ -34,7 +34,7 @@ export const ContentWrapper = styled.div`
 `;
 
 export const ButtonWrapper = styled.span`
-  .bp4-button.bp4-small {
+  .bp5-button.bp5-small {
     padding: 0;
   }
 `;

@@ -16,8 +16,6 @@ jobs:
   functional-test:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
-    needs:
-      - seed-wmg-cellguide-rdev
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -36,29 +34,6 @@ jobs:
         run: |
           pip3 install -r tests/functional/requirements.txt
           DEPLOYMENT_STAGE=rdev STACK_NAME=${{ env.STACK_NAME }} make functional-test
-
-  seed-wmg-cellguide-rdev:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 1800
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      - name: Grant Execute Permission to Bash Script
-        run: |
-          chmod +x ./scripts/populate_rdev_with_cellguide_data.sh ./scripts/populate_rdev_with_wmg_data.sh
-
-      - name: Seed cell guide data
-        run: |
-          ./scripts/populate_rdev_with_cellguide_data.sh ${{ env.STACK_NAME }}
-      - name: Seed WMG data
-        run: |
-          ./scripts/populate_rdev_with_wmg_data.sh ${{ env.STACK_NAME }}
 
   seed-database-e2e-tests:
     runs-on: ubuntu-22.04
@@ -80,7 +55,6 @@ jobs:
 
   run-e2e-tests:
     needs:
-      - seed-wmg-cellguide-rdev
       - seed-database-e2e-tests
     timeout-minutes: 30
     name: e2e-tests ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
@@ -224,7 +198,6 @@ jobs:
       run:
         working-directory: frontend
     needs:
-      - seed-wmg-cellguide-rdev
       - seed-database-e2e-tests
     steps:
       - uses: actions/setup-node@v2

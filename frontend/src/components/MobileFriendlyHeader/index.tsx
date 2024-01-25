@@ -1,4 +1,3 @@
-import { AnchorButton } from "@blueprintjs/core";
 import { useRouter } from "next/router";
 import { FC, useRef, useState } from "react";
 import { track } from "src/common/analytics";
@@ -79,18 +78,17 @@ const LandingHeader: FC<Props> = ({ title = "", homeUrl, labelUrl }) => {
               <Nav pathname={pathname} />
             </Left>
             <Right>
-              <LinkWrapper>
-                <AnchorButton
+              <LinkWrapper isActive={isRouteActive(pathname, ROUTES.DOCS)}>
+                <a
                   onClick={() => {
                     track(EVENTS.DOCUMENTATION_CLICK_NAV);
                   }}
-                  active={isRouteActive(pathname, ROUTES.DOCS)}
                   href={ROUTES.DOCS}
                   rel="noopener"
                   target="_blank"
-                  minimal
-                  text="Help & Documentation"
-                />
+                >
+                  Help & Documentation
+                </a>
               </LinkWrapper>
               <AuthButtons />
             </Right>

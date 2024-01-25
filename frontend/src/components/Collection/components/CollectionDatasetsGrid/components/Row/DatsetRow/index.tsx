@@ -236,7 +236,6 @@ const DatasetRow: FC<Props> = ({
           />
           {hasCXGFile(dataset) && (
             <Tooltip
-              boundary="viewport"
               content={OVER_MAX_CELL_COUNT_TOOLTIP}
               disabled={!isOverMaxCellCount}
               intent={Intent.DANGER}
