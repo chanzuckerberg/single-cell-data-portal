@@ -31,7 +31,7 @@ export const StyledBanner = styled(Banner)`
   color: black;
 
   /* Hide default svg icon in the Banner as it is not in figma */
-  :first-child > div:first-child > div:first-child {
+  :first-of-type > div:first-of-type > div:first-of-type {
     display: none;
   }
 
@@ -85,7 +85,7 @@ export const StyledCloseButtonIcon = styled(ButtonIcon, {
 `;
 
 export const NewsletterModal = styled(Modal)`
-  .bp4-dialog-header {
+  .bp5-dialog-header {
     display: none !important;
   }
 

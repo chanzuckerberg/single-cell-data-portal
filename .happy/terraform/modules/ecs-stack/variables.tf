@@ -35,6 +35,12 @@ variable happy_config_secret {
   description = "Happy Path configuration secret name"
 }
 
+variable "task_storage_size_gb" {
+  type        = number
+  description = "ephemeral disk storage in GB available for the task"
+  default     = 30 
+}
+
 variable deployment_stage {
   type        = string
   description = "Deployment stage for the app"

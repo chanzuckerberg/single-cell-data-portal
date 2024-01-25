@@ -14,7 +14,7 @@ import {
 import { DivTable, DivTableHead } from "src/views/WheresMyGeneV2/common/styles";
 import { ROUTES } from "src/common/constants/routes";
 import { useConnect } from "./connect";
-import { SOURCE_DATA_INFO_TEXT } from "./constants";
+import { SOURCE_DATA_DISCLAIMER, SOURCE_DATA_INFO_TEXT } from "./constants";
 import {
   StyledTooltip,
   TooltipContent,
@@ -39,6 +39,7 @@ export default function SourceData(): JSX.Element {
           </a>
           .
         </InfoText>
+        <InfoText>{SOURCE_DATA_DISCLAIMER}</InfoText>
         <DivTable data-testid="source-data-list">
           <DivTableHead>
             <StyledDivTableCell>Collection</StyledDivTableCell>
