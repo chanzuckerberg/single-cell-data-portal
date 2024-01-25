@@ -293,6 +293,7 @@ export function useFetchDatasets(
   mode: VIEW_MODE = VIEW_MODE.DEFAULT,
   status: QueryStatus
 ): UseQueryResult<ProcessedDatasetResponse[]> {
+  console.log("test");
   return useQuery<ProcessedDatasetResponse[]>(
     [USE_DATASETS_INDEX],
     mode === VIEW_MODE.DEFAULT ? fetchDatasets : fetchUserDatasets,
