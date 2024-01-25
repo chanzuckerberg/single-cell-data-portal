@@ -57,8 +57,8 @@ repos:
       - id: pip-compile
         stages: [commit]
         name: pip-compile submission requirements.in
-        args: [python_dependencies/submission/requirements.in]
-        files: ^python_dependencies/submission/
+        args: [python_dependencies/submissions/requirements.in]
+        files: ^python_dependencies/submissions/
       - id: pip-compile
         stages: [commit]
         name: pip-compile upload_handler requirements.in
