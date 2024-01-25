@@ -77,6 +77,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             schema_version=None,
             canonical_collection=canonical,
             datasets=[],
+            datasets_custom_ordered=False,
         )
         self.collections_versions[version_id.id] = version
         # Don't set mappings here - those will be set when publishing the collection!
@@ -202,6 +203,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             created_at=datetime.utcnow(),
             schema_version=None,
             canonical_collection=cc,
+            datasets_custom_ordered=current_version.datasets_custom_ordered,
         )
         self.collections_versions[new_version_id.id] = collection_version
         return new_version_id
@@ -281,7 +283,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
     ) -> List[str]:
-
         published_at = published_at if published_at else datetime.utcnow()
 
         dataset_ids_for_new_collection_version = []
@@ -546,6 +547,27 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         idx = next(i for i, e in enumerate(collection_version.datasets) if e == old_dataset_version_id)
         collection_version.datasets[idx] = new_dataset_version_id
         return copy.deepcopy(new_dataset_version)
+
+    def set_collection_version_datasets_order(
+        self,
+        collection_version_id: CollectionVersionId,
+        dataset_version_ids: List[DatasetVersionId],
+    ) -> None:
+        collection_version = self.collections_versions[collection_version_id.id]
+
+        # Confirm collection version datasets length matches given dataset version IDs length
+        if len(collection_version.datasets) != len(dataset_version_ids):
+            raise ValueError(
+                f"Dataset version IDs length does not match collection version {collection_version_id} datasets length"
+            )
+
+        # Confirm all given dataset version IDs belong to collection version.
+        if {dv_id.id for dv_id in dataset_version_ids} != {d.id for d in collection_version.datasets}:
+            raise ValueError("Dataset version IDs do not match saved collection version dataset IDs")
+
+        # Replace collection version datasets with given, ordered dataset version IDs and update custom ordered flag.
+        collection_version.datasets = dataset_version_ids
+        collection_version.datasets_custom_ordered = True
 
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
         return copy.deepcopy(self.datasets_versions[version_id.id].status)

@@ -382,6 +382,42 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /v1/collections/{collection_id}/order-datasets:
+    put:
+      tags:
+        - collections
+      summary: Reorder datasets in a collection version
+      security:
+        - cxguserCookie: []
+      description: >-
+        Updates the order of datasets in a collection version and permanently converts the
+        collection version to have a custom datasets sort order instead of the default.
+      operationId: backend.portal.api.portal_api.set_collection_version_datasets_order
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datasets
+              properties:
+                datasets:
+                  type: array
+                  description: The ordered list of dataset IDs.
+                  items:
+                    $ref: "#/components/schemas/dataset_id"
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
   /v1/collections/index:
     get:
       tags:

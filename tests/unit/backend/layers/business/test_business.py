@@ -981,6 +981,50 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
 
         self.step_function_provider.start_step_function.assert_not_called()
 
+    def test_set_collection_version_datasets_order_ok(self):
+        """
+        The order of the datasets in a collection version is set using `set_collection_version_datasets_order`.
+        """
+        version = self.initialize_unpublished_collection()
+        dv_ids = [d.version_id for d in version.datasets]
+        dv_ids.reverse()
+
+        self.business_logic.set_collection_version_datasets_order(version.version_id, dv_ids)
+
+        version_from_db = self.business_logic.get_collection_version(version.version_id)
+        self.assertCountEqual([d.version_id for d in version_from_db.datasets], dv_ids)
+
+        #  Confirm the saved order of collection version datasets in the database is correct
+        self.assertEqual([dv.version_id.id for dv in version_from_db.datasets], [dv_id.id for dv_id in dv_ids])
+
+    def test_set_collection_version_datasets_order_length_fail(self):
+        """
+        Attempting to set the order of the datasets in a collection version with a list of different length should fail.
+        """
+        version = self.initialize_unpublished_collection()
+        dv_ids = [d.version_id for d in version.datasets]
+        dv_ids.pop()
+
+        with self.assertRaises(ValueError) as ex:
+            self.business_logic.set_collection_version_datasets_order(version.version_id, dv_ids)
+        self.assertEqual(
+            str(ex.exception),
+            f"Dataset version IDs length does not match collection version {version.version_id.id} datasets length",
+        )
+
+    def test_set_collection_version_datasets_order_invalid_dataset_fail(self):
+        """
+        Attempting to set the order of the datasets in a collection version with a list that contains an invalid
+        dataset should fail.
+        """
+        version = self.initialize_unpublished_collection()
+        dv_ids = [d.version_id for d in version.datasets]
+        dv_ids[0] = DatasetVersionId("fake_id")
+
+        with self.assertRaises(ValueError) as ex:
+            self.business_logic.set_collection_version_datasets_order(version.version_id, dv_ids)
+        self.assertEqual(str(ex.exception), "Dataset version IDs do not match saved collection version dataset IDs")
+
 
 class TestDeleteDataset(BaseBusinessLogicTestCase):
     def test_delete_dataset_in_private_collection__ok(self):
