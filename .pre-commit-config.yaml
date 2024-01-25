@@ -40,32 +40,26 @@ repos:
     rev: 7.3.0
     hooks:
       - id: pip-compile
-        stages: [push]
         name: pip-compile backend requirements.in
         args: [python_dependencies/backend/requirements.in]
         files: ^python_dependencies/backend/
       - id: pip-compile
-        stages: [push]
         name: pip-compile cellguide_pipeline requirements.in
         args: [python_dependencies/cellguide_pipeline/requirements.in]
         files: ^python_dependencies/cellguide_pipeline/
       - id: pip-compile
-        stages: [push]
         name: pip-compile processing requirements.in
         args: [python_dependencies/processing/requirements.in]
         files: ^python_dependencies/processing/
       - id: pip-compile
-        stages: [push]
         name: pip-compile submissions requirements.in
         args: [python_dependencies/submissions/requirements.in]
         files: ^python_dependencies/submissions/
       - id: pip-compile
-        stages: [push]
         name: pip-compile upload_handler requirements.in
         args: [python_dependencies/upload_handler/requirements.in]
         files: ^python_dependencies/upload_handler/
       - id: pip-compile
-        stages: [push]
         name: pip-compile wmg requirements.in
         args: [python_dependencies/wmg/requirements.in]
         files: ^python_dependencies/wmg/
