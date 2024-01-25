@@ -294,11 +294,7 @@ requests==2.31.0
 responses==0.24.1
     # via moto
 rsa==4.9
-    # via
-    #   -r python_dependencies/backend/requirements.in
-    #   python-jose
-ruff==0.0.239
-    # via -r python_dependencies/backend/requirements.in
+    # via python-jose
 s3fs==0.4.2
     # via -r python_dependencies/backend/requirements.in
 s3transfer==0.10.0
