@@ -103,13 +103,13 @@ variable wmg_desired_vcpus {
 variable cg_batch_container_memory_limit {
   type        = number
   description = "Memory hard limit for the cellguide pipeline batch container"
-  default     = 92000
+  default     = 248000
 }
 
 variable cg_desired_vcpus {
   type        = number
   description = "Number of desired vCPUs for cellguide pipeline"
-  default     = 48
+  default     = 128
 }
 
 variable frontend_instance_count {
