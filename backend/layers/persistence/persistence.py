@@ -120,6 +120,7 @@ class DatabaseProvider(DatabaseProviderInterface):
     def _row_to_collection_version_with_datasets(
         self, row: Any, canonical_collection: CanonicalCollection, datasets: List[DatasetVersion]
     ) -> CollectionVersionWithDatasets:
+        with_datasets = self._sort_datasets_by_custom_order(row, datasets) if row.datasets_custom_ordered else datasets
         return CollectionVersionWithDatasets(
             collection_id=CollectionId(str(row.collection_id)),
             version_id=CollectionVersionId(str(row.id)),
@@ -127,7 +128,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             curator_name=row.curator_name,
             metadata=CollectionMetadata.from_json(row.collection_metadata),
             publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
-            datasets=datasets,
+            datasets=with_datasets,
             published_at=row.published_at,
             created_at=row.created_at,
             schema_version=row.schema_version,
@@ -169,6 +170,13 @@ class DatabaseProvider(DatabaseProviderInterface):
             row.created_at,
             canonical_dataset,
         )
+
+    def _sort_datasets_by_custom_order(self, row: Any, datasets: List[DatasetVersion]) -> List[DatasetVersion]:
+        """
+        Sorts datasets by the order they appear in the collection version's datasets array.
+        """
+        datasets_order = [DatasetVersionId(str(id)) for id in row.datasets]
+        return sorted(datasets, key=lambda d: datasets_order.index(d.version_id))
 
     def _hydrate_dataset_version(self, dataset_version: DatasetVersionTable) -> DatasetVersion:
         """
@@ -973,7 +981,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 )
 
             # Confirm all given dataset version IDs belong to collection version.
-            if {dv_id.id for dv_id in dataset_version_ids} != {d.id for d in collection_version.datasets}:
+            if {dv_id.id for dv_id in dataset_version_ids} != {str(d) for d in collection_version.datasets}:
                 raise ValueError("Dataset version IDs do not match saved collection version dataset IDs")
 
             # Replace collection version datasets with given, ordered dataset version IDs and update custom ordered flag.
