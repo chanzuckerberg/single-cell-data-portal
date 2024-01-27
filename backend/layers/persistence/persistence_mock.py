@@ -104,6 +104,14 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                     datasets_to_include.append(dataset_version)
             # Replace 'datasets' array of Dataset version ids with 'datasets' array of actual Dataset versions
             copied_version.datasets = datasets_to_include
+            # Order by cell count if not custom ordered. Protect against None dataset values and None dataset metadata values
+            # here as they are possible values in the test data.
+            if (
+                not copied_version.datasets_custom_ordered
+                and None not in copied_version.datasets
+                and all(d.metadata for d in copied_version.datasets)
+            ):
+                copied_version.datasets.sort(key=lambda d: d.metadata.cell_count, reverse=True)
             # Hack for business logic that uses isinstance
             copied_version.__class__ = CollectionVersionWithDatasets
         cc = self.collections.get(version.collection_id.id)
@@ -555,8 +563,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     ) -> None:
         collection_version = self.collections_versions[collection_version_id.id]
 
-        # Confirm collection version datasets length matches given dataset version IDs length
-        if len(collection_version.datasets) != len(dataset_version_ids):
+        # Confirm the given dataset version IDs length matches the saved collection version datasets length.
+        if len(dataset_version_ids) != len(collection_version.datasets):
             raise ValueError(
                 f"Dataset version IDs length does not match collection version {collection_version_id} datasets length"
             )

@@ -120,7 +120,7 @@ class DatabaseProvider(DatabaseProviderInterface):
     def _row_to_collection_version_with_datasets(
         self, row: Any, canonical_collection: CanonicalCollection, datasets: List[DatasetVersion]
     ) -> CollectionVersionWithDatasets:
-        with_datasets = self._sort_datasets_by_custom_order(row, datasets) if row.datasets_custom_ordered else datasets
+        with_datasets = self._sort_datasets(row, datasets)
         return CollectionVersionWithDatasets(
             collection_id=CollectionId(str(row.collection_id)),
             version_id=CollectionVersionId(str(row.id)),
@@ -171,12 +171,15 @@ class DatabaseProvider(DatabaseProviderInterface):
             canonical_dataset,
         )
 
-    def _sort_datasets_by_custom_order(self, row: Any, datasets: List[DatasetVersion]) -> List[DatasetVersion]:
+    def _sort_datasets(self, row: Any, datasets: List[DatasetVersion]) -> List[DatasetVersion]:
         """
-        Sorts datasets by the order they appear in the collection version's datasets array.
+        Sorts datasets by the order they appear in the collection version's datasets array if custom
+        order is enabled, otherwise sorts datasets by cell count.
         """
-        datasets_order = [DatasetVersionId(str(id)) for id in row.datasets]
-        return sorted(datasets, key=lambda d: datasets_order.index(d.version_id))
+        if row.datasets_custom_ordered:
+            datasets_order = [DatasetVersionId(str(id)) for id in row.datasets]
+            return sorted(datasets, key=lambda d: datasets_order.index(d.version_id))
+        return sorted(datasets, key=lambda d: d.metadata.cell_count, reverse=True)
 
     def _hydrate_dataset_version(self, dataset_version: DatasetVersionTable) -> DatasetVersion:
         """

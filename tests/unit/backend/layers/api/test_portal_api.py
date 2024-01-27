@@ -1523,6 +1523,62 @@ class TestUpdateCollection(BaseAPIPortalTest):
 
         self.assertEqual(200, response.status_code)
 
+    def test__set_collection_version_datasets_order_get_default_sort__OK(self):
+        import copy
+
+        # Create a collection with two datasets with different cell counts.
+        collection = self.generate_unpublished_collection()
+        modified_metadata_1 = copy.deepcopy(self.sample_dataset_metadata)
+        modified_metadata_1.cell_count = 1
+        self.generate_dataset(collection_version=collection, metadata=modified_metadata_1)
+        modified_metadata_2 = copy.deepcopy(self.sample_dataset_metadata)
+        modified_metadata_2.cell_count = 2
+        self.generate_dataset(collection_version=collection, metadata=modified_metadata_2)
+
+        # Confirm datasets are served in cell count, descending order.
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.get(f"/dp/v1/collections/{collection.version_id.id}", headers=headers)
+        self.assertEqual(200, response.status_code)
+
+        body = json.loads(response.data)
+        datasets = body["datasets"]
+        datasets_sorted = sorted(datasets, key=lambda d: d["cell_count"], reverse=True)
+        self.assertListEqual(datasets, datasets_sorted)
+
+    def test__set_collection_version_datasets_get_order_custom_sort__OK(self):
+        import copy
+
+        # Create a collection with two datasets with different cell counts.
+        collection = self.generate_unpublished_collection()
+        modified_metadata_1 = copy.deepcopy(self.sample_dataset_metadata)
+        modified_metadata_1.cell_count = 1
+        dataset_1 = self.generate_dataset(collection_version=collection, metadata=modified_metadata_1)
+        modified_metadata_2 = copy.deepcopy(self.sample_dataset_metadata)
+        modified_metadata_2.cell_count = 2
+        dataset_2 = self.generate_dataset(collection_version=collection, metadata=modified_metadata_2)
+
+        # Reorder datasets (so they are not in cell count order).
+        dataset_ids = [dataset_2.dataset_version_id, dataset_1.dataset_version_id]
+
+        data = json.dumps(
+            {
+                "datasets": dataset_ids,
+            }
+        )
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}/order-datasets", data=data, headers=headers
+        )
+
+        # Confirm datasets are served in custom order.
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.get(f"/dp/v1/collections/{collection.version_id.id}", headers=headers)
+        self.assertEqual(200, response.status_code)
+
+        body = json.loads(response.data)
+        datasets = body["datasets"]
+        self.assertListEqual([d["id"] for d in datasets], dataset_ids)
+
     def test__set_collection_version_datasets_order_missing_datasets__400(self):
         collection = self.generate_unpublished_collection()
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
