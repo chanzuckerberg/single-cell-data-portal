@@ -104,14 +104,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                     datasets_to_include.append(dataset_version)
             # Replace 'datasets' array of Dataset version ids with 'datasets' array of actual Dataset versions
             copied_version.datasets = datasets_to_include
-            # Order by cell count if not custom ordered. Protect against None dataset values and None dataset metadata values
-            # here as they are possible values in the test data.
-            if (
-                not copied_version.datasets_custom_ordered
-                and None not in copied_version.datasets
-                and all(d.metadata for d in copied_version.datasets)
-            ):
-                copied_version.datasets.sort(key=lambda d: d.metadata.cell_count, reverse=True)
+            # Order by cell count if not custom ordered.
+            copied_version.datasets.sort(
+                key=lambda d: 0 if d is None or d.metadata is None else d.metadata.cell_count, reverse=True
+            )
             # Hack for business logic that uses isinstance
             copied_version.__class__ = CollectionVersionWithDatasets
         cc = self.collections.get(version.collection_id.id)

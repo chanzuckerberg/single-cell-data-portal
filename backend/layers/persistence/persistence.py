@@ -179,7 +179,9 @@ class DatabaseProvider(DatabaseProviderInterface):
         if row.datasets_custom_ordered:
             datasets_order = [DatasetVersionId(str(id)) for id in row.datasets]
             return sorted(datasets, key=lambda d: datasets_order.index(d.version_id))
-        return sorted(datasets, key=lambda d: d.metadata.cell_count, reverse=True)
+        return sorted(
+            datasets, key=lambda d: 0 if d is None or d.metadata is None else d.metadata.cell_count, reverse=True
+        )
 
     def _hydrate_dataset_version(self, dataset_version: DatasetVersionTable) -> DatasetVersion:
         """
