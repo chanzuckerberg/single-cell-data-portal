@@ -37,7 +37,7 @@ const Collection: FC = () => {
   const router = useRouter();
   const { params, tombstoned_dataset_id } = router.query;
 
-  const { isReorderUX, mode: reorderMode, onReorder } = useReorderMode();
+  const { isReorderUX, mode: reorderMode, onSetReorderMode } = useReorderMode();
   const [hasShownWithdrawToast, setHasShownWithdrawToast] = useState(false);
   const [isUploadingLink, setIsUploadingLink] = useState(false);
 
@@ -131,7 +131,7 @@ const Collection: FC = () => {
             isReorderUX={isReorderUX}
             isRevision={isRevision}
             isReorder={isReorder}
-            onReorder={onReorder}
+            onSetReorderMode={onSetReorderMode}
             setIsUploadingLink={setIsUploadingLink}
           />
         </CollectionHero>
