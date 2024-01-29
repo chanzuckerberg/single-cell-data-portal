@@ -18,7 +18,7 @@ import { POLICY_BULLETS } from "src/components/Collections/components/PublishCol
 import Toast from "src/views/Collection/components/Toast";
 import { IconNames } from "@blueprintjs/icons";
 import { Intent } from "@blueprintjs/core";
-import { OnReorderFn } from "src/common/hooks/useReorderMode";
+import { OnSetReorderModeFn } from "src/common/hooks/useReorderMode";
 import ReorderDatasets from "src/components/Collections/components/ReorderDatasets";
 
 export type CreateRevisionFn = () => void;
@@ -32,7 +32,7 @@ interface Props {
   isReorder: boolean;
   isReorderUX: boolean;
   isRevision: boolean;
-  onReorder: OnReorderFn;
+  onSetReorderMode: OnSetReorderModeFn;
   setIsUploadingLink: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -43,7 +43,7 @@ const CollectionActions = ({
   isReorder,
   isReorderUX,
   isRevision,
-  onReorder,
+  onSetReorderMode,
   setIsUploadingLink,
 }: Props): JSX.Element | null => {
   const { id, revision_of } = collection;
@@ -133,7 +133,7 @@ const CollectionActions = ({
   return collection.access_type === ACCESS_TYPE.WRITE ? (
     <Actions data-testid="collection-actions">
       {/* Collection is in reorder mode */}
-      {isReorder && <ReorderDatasets onReorder={onReorder} />}
+      {isReorder && <ReorderDatasets onSetReorderMode={onSetReorderMode} />}
       {/* Collection is either private, or a private revision */}
       {!isReorder && collection.visibility === VISIBILITY_TYPE.PRIVATE && (
         <>
@@ -143,7 +143,7 @@ const CollectionActions = ({
             isDeleting={deleteCollectionMutation.isLoading}
             isReorderUX={isReorderUX}
             isRevision={isRevision}
-            onReorder={onReorder}
+            onSetReorderMode={onSetReorderMode}
           />
           <AddButton addNewFile={handleAddNewFile} />
           <PublishCollection
