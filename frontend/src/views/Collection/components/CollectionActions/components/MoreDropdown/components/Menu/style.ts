@@ -9,7 +9,7 @@ export const Menu = styled(SDSMenu)`
 
   .MuiMenu-paper {
     box-shadow: ${shadowM};
-    min-width: 199px; // TODO(cc) confirm the min-width should be 199px.
+    min-width: 199px; /* matches mocks */
   }
 `;
 
@@ -45,7 +45,6 @@ export const EditMenuItem = styled(MenuItem)`
 export const ReorderMenuItem = styled(MenuItem)`
   &.MuiMenuItem-root {
     svg {
-      color: #959595; // TODO(cc) confirm this color is intentional; "text/tertiary" cannot be found on the app theme.
       margin: ${spacesXxs}px 0;
     }
   }
