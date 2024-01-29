@@ -1606,7 +1606,6 @@ class TestUpdateCollection(BaseAPIPortalTest):
         # Forbidden - collection is published.
         self.assertEqual(403, response.status_code)
 
-
     def test__set_collection_version_datasets_order_invalid_collection__403(self):
         collection = self.generate_published_collection()
 
@@ -1617,12 +1616,10 @@ class TestUpdateCollection(BaseAPIPortalTest):
             }
         )
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        response = self.app.put(
-            "/dp/v1/collections/fake_id/order-datasets", data=data, headers=headers
-        )
+        response = self.app.put("/dp/v1/collections/fake_id/order-datasets", data=data, headers=headers)
 
         # Forbidden - collection not found.
-        self.assertEqual(403, response.status_code)        
+        self.assertEqual(403, response.status_code)
 
     def test__set_collection_version_datasets_order_unauthenticated__401(self):
         collection = self.generate_unpublished_collection()
