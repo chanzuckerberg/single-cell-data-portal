@@ -120,7 +120,7 @@ class DatabaseProvider(DatabaseProviderInterface):
     def _row_to_collection_version_with_datasets(
         self, row: Any, canonical_collection: CanonicalCollection, datasets: List[DatasetVersion]
     ) -> CollectionVersionWithDatasets:
-        with_datasets = self._sort_datasets(row, datasets)
+        sorted_datasets = self._sort_datasets(row, datasets)
         return CollectionVersionWithDatasets(
             collection_id=CollectionId(str(row.collection_id)),
             version_id=CollectionVersionId(str(row.id)),
@@ -128,7 +128,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             curator_name=row.curator_name,
             metadata=CollectionMetadata.from_json(row.collection_metadata),
             publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
-            datasets=with_datasets,
+            datasets=sorted_datasets,
             published_at=row.published_at,
             created_at=row.created_at,
             schema_version=row.schema_version,
@@ -974,12 +974,12 @@ class DatabaseProvider(DatabaseProviderInterface):
         dataset_version_ids: List[DatasetVersionId],
     ) -> None:
         """
-        Update the datasets in a collection version to match the given order.
+        Updates the datasets in a collection version to match the given order.
         """
         with self._manage_session() as session:
             collection_version = session.query(CollectionVersionTable).filter_by(id=collection_version_id.id).one()
 
-            # Confirm collection version datasets length matches given dataset version IDs length
+            # Confirm collection version datasets length matches given dataset version IDs length.
             if len(collection_version.datasets) != len(dataset_version_ids):
                 raise ValueError(
                     f"Dataset version IDs length does not match collection version {collection_version_id} datasets length"

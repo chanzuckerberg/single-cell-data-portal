@@ -987,7 +987,15 @@ class TestSetCollectionVersionDatasetsOrder(BaseBusinessLogicTestCase):
         """
         The order of the datasets in a collection version is set using `set_collection_version_datasets_order`.
         """
-        version = self.initialize_unpublished_collection()
+        version = self.initialize_unpublished_collection(num_datasets=3)
+
+        # Update cell counts to confirm custom order is returned and not default order.
+        metadata_11 = deepcopy(self.sample_dataset_metadata)
+        metadata_11.cell_count = 11
+        self.database_provider.set_dataset_metadata(version.datasets[2].version_id, metadata_11)
+        metadata_12 = deepcopy(self.sample_dataset_metadata)
+        metadata_12.cell_count = 12
+        self.database_provider.set_dataset_metadata(version.datasets[1].version_id, metadata_12)
 
         # Reverse and save the order of the dataset version IDs.
         dv_ids = [d.version_id for d in version.datasets]
@@ -1040,12 +1048,12 @@ class TestSetCollectionVersionDatasetsOrder(BaseBusinessLogicTestCase):
         version = self.initialize_unpublished_collection(num_datasets=3)
 
         # Update cell counts to facilitate testing of order.
-        metadata_01 = deepcopy(self.sample_dataset_metadata)
-        metadata_01.cell_count = 11
-        self.database_provider.set_dataset_metadata(version.datasets[1].version_id, metadata_01)
-        metadata_02 = deepcopy(self.sample_dataset_metadata)
-        metadata_02.cell_count = 12
-        self.database_provider.set_dataset_metadata(version.datasets[2].version_id, metadata_02)
+        metadata_11 = deepcopy(self.sample_dataset_metadata)
+        metadata_11.cell_count = 11
+        self.database_provider.set_dataset_metadata(version.datasets[2].version_id, metadata_11)
+        metadata_12 = deepcopy(self.sample_dataset_metadata)
+        metadata_12.cell_count = 12
+        self.database_provider.set_dataset_metadata(version.datasets[1].version_id, metadata_12)
 
         # Confirm datasets on read collection version are ordered by cell count, descending.
         read_version = self.business_logic.get_collection_version(version.version_id)

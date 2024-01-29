@@ -1509,7 +1509,8 @@ class TestUpdateCollection(BaseAPIPortalTest):
         # Convert collections.datasets from a list of objects to a list of IDs
         # and then reverse the order. Use version_id here (this is masked in
         # the FE as dataset.version_id is mapped to dataset.id in _dataset_to_response).
-        dataset_ids = [dataset.version_id.id for dataset in collection.datasets]
+        dataset_ids = [d.version_id.id for d in collection.datasets]
+        dataset_ids.reverse()
 
         data = json.dumps(
             {
@@ -1557,7 +1558,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
         modified_metadata_2.cell_count = 2
         dataset_2 = self.generate_dataset(collection_version=collection, metadata=modified_metadata_2)
 
-        # Reorder datasets (so they are not in cell count order).
+        # Order datasets so they are not in cell count order.
         dataset_ids = [dataset_2.dataset_version_id, dataset_1.dataset_version_id]
 
         data = json.dumps(
@@ -1569,6 +1570,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
         response = self.app.put(
             f"/dp/v1/collections/{collection.version_id.id}/order-datasets", data=data, headers=headers
         )
+        self.assertEqual(200, response.status_code)
 
         # Confirm datasets are served in custom order.
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
@@ -1584,30 +1586,63 @@ class TestUpdateCollection(BaseAPIPortalTest):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}/order-datasets", headers=headers)
 
-        # Bad request - datasets not specified in request
+        # Bad request - datasets not specified in request.
         self.assertEqual(400, response.status_code)
+
+    def test__set_collection_version_datasets_order_published_collection__403(self):
+        collection = self.generate_published_collection()
+
+        dataset_ids = [d.version_id.id for d in collection.datasets]
+        data = json.dumps(
+            {
+                "datasets": dataset_ids,
+            }
+        )
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}/order-datasets", data=data, headers=headers
+        )
+
+        # Forbidden - collection is published.
+        self.assertEqual(403, response.status_code)
+
+
+    def test__set_collection_version_datasets_order_invalid_collection__403(self):
+        collection = self.generate_published_collection()
+
+        dataset_ids = [d.version_id.id for d in collection.datasets]
+        data = json.dumps(
+            {
+                "datasets": dataset_ids,
+            }
+        )
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.put(
+            "/dp/v1/collections/fake_id/order-datasets", data=data, headers=headers
+        )
+
+        # Forbidden - collection not found.
+        self.assertEqual(403, response.status_code)        
 
     def test__set_collection_version_datasets_order_unauthenticated__401(self):
         collection = self.generate_unpublished_collection()
         headers = {"host": "localhost", "Content-Type": "application/json"}
         response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}/order-datasets", headers=headers)
 
-        # Unauthorized - user not authenticated
+        # Unauthorized - user not authenticated.
         self.assertEqual(401, response.status_code)
 
     def test__set_collection_version_datasets_order_unauthorized__403(self):
         collection = self.generate_unpublished_collection()
 
-        # Convert collections.datasets from a list of objects to a list of IDs
-        # and then reverse the order. Use version_id here (this is masked in
-        # the FE as dataset.version_id is mapped to dataset.id in _dataset_to_response).
         dataset_ids = [dataset.version_id.id for dataset in collection.datasets]
-
         data = json.dumps(
             {
                 "datasets": dataset_ids,
             }
         )
+
+        # Create a fake user and attempt to update the collection version.
         headers = {
             "host": "localhost",
             "Content-Type": "application/json",
@@ -1617,7 +1652,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
             f"/dp/v1/collections/{collection.version_id.id}/order-datasets", data=data, headers=headers
         )
 
-        # Unauthorized - user not owner of collection
+        # Unauthorized - user not owner of collection.
         self.assertEqual(403, response.status_code)
 
 
