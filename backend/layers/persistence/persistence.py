@@ -36,7 +36,7 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
-from backend.layers.common.helpers import set_revised_at_field
+from backend.layers.common.helpers import set_revised_at_field, sort_datasets_by_cell_count
 from backend.layers.persistence.constants import SCHEMA_NAME
 from backend.layers.persistence.orm import (
     CollectionTable,
@@ -114,7 +114,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             created_at=row.created_at,
             schema_version=row.schema_version,
             canonical_collection=canonical_collection,
-            datasets_custom_ordered=row.datasets_custom_ordered,
+            custom_dataset_order=row.custom_dataset_order,
         )
 
     def _row_to_collection_version_with_datasets(
@@ -133,7 +133,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             created_at=row.created_at,
             schema_version=row.schema_version,
             canonical_collection=canonical_collection,
-            datasets_custom_ordered=row.datasets_custom_ordered,
+            custom_dataset_order=row.custom_dataset_order,
         )
 
     def _row_to_canonical_dataset(self, row: Any):
@@ -176,12 +176,10 @@ class DatabaseProvider(DatabaseProviderInterface):
         Sorts datasets by the order they appear in the collection version's datasets array if custom
         order is enabled, otherwise sorts datasets by cell count.
         """
-        if row.datasets_custom_ordered:
+        if row.custom_dataset_order:
             datasets_order = [DatasetVersionId(str(id)) for id in row.datasets]
             return sorted(datasets, key=lambda d: datasets_order.index(d.version_id))
-        return sorted(
-            datasets, key=lambda d: 0 if d is None or d.metadata is None else d.metadata.cell_count, reverse=True
-        )
+        return sort_datasets_by_cell_count(datasets)
 
     def _hydrate_dataset_version(self, dataset_version: DatasetVersionTable) -> DatasetVersion:
         """
@@ -241,7 +239,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             created_at=now,
             schema_version=None,
             datasets=list(),
-            datasets_custom_ordered=False,
+            custom_dataset_order=False,
         )
 
         with self._manage_session() as session:
@@ -535,7 +533,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 created_at=datetime.utcnow(),
                 schema_version=None,
                 datasets=current_version.datasets,
-                datasets_custom_ordered=current_version.datasets_custom_ordered,
+                custom_dataset_order=current_version.custom_dataset_order,
             )
             session.add(new_version)
             return CollectionVersionId(new_version_id)
@@ -982,17 +980,17 @@ class DatabaseProvider(DatabaseProviderInterface):
             # Confirm collection version datasets length matches given dataset version IDs length.
             if len(collection_version.datasets) != len(dataset_version_ids):
                 raise ValueError(
-                    f"Dataset version IDs length does not match collection version {collection_version_id} datasets length"
+                    f"Dataset Version IDs length does not match Collection Version {collection_version_id} Datasets length"
                 )
 
             # Confirm all given dataset version IDs belong to collection version.
             if {dv_id.id for dv_id in dataset_version_ids} != {str(d) for d in collection_version.datasets}:
-                raise ValueError("Dataset version IDs do not match saved collection version dataset IDs")
+                raise ValueError("Dataset Version IDs do not match saved Collection Version Dataset IDs")
 
             # Replace collection version datasets with given, ordered dataset version IDs and update custom ordered flag.
             updated_datasets = [uuid.UUID(dv_id.id) for dv_id in dataset_version_ids]
             collection_version.datasets = updated_datasets
-            collection_version.datasets_custom_ordered = True
+            collection_version.custom_dataset_order = True
 
     def get_dataset_mapped_version(
         self, dataset_id: DatasetId, get_tombstoned: bool = False

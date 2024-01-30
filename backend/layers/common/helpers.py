@@ -76,3 +76,10 @@ def get_dataset_versions_with_published_at_and_collection_version_id(
             )
         )
     return published_datasets_for_collection
+
+
+def sort_datasets_by_cell_count(datasets: List[DatasetVersion]):
+    """
+    Applies the default sort order (cell count, descending) to the given list of datasets.
+    """
+    return sorted(datasets, key=lambda d: 0 if d.metadata is None else d.metadata.cell_count, reverse=True)

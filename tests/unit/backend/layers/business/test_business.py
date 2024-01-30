@@ -1007,7 +1007,7 @@ class TestSetCollectionVersionDatasetsOrder(BaseBusinessLogicTestCase):
         self.assertListEqual([dv.version_id for dv in read_version.datasets], dv_ids)
 
         # Confirm the collection version datasets are marked as custom ordered.
-        self.assertTrue(read_version.datasets_custom_ordered)
+        self.assertTrue(read_version.custom_dataset_order)
 
     def test_set_collection_version_datasets_order_length_fail(self):
         """
@@ -1023,7 +1023,7 @@ class TestSetCollectionVersionDatasetsOrder(BaseBusinessLogicTestCase):
             self.business_logic.set_collection_version_datasets_order(version.version_id, dv_ids)
         self.assertEqual(
             str(ex.exception),
-            f"Dataset version IDs length does not match collection version {version.version_id.id} datasets length",
+            f"Dataset Version IDs length does not match Collection Version {version.version_id.id} Datasets length",
         )
 
     def test_set_collection_version_datasets_order_invalid_dataset_fail(self):
@@ -1039,7 +1039,7 @@ class TestSetCollectionVersionDatasetsOrder(BaseBusinessLogicTestCase):
 
         with self.assertRaises(ValueError) as ex:
             self.business_logic.set_collection_version_datasets_order(version.version_id, dv_ids)
-        self.assertEqual(str(ex.exception), "Dataset version IDs do not match saved collection version dataset IDs")
+        self.assertEqual(str(ex.exception), "Dataset Version IDs do not match saved Collection Version Dataset IDs")
 
     def test_set_collection_version_datasets_order_no_custom_order_ok(self):
         """

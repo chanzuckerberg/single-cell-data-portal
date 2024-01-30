@@ -1,4 +1,4 @@
-"""add datasets custom ordered to collection version
+"""add custom dataset order
 
 Revision ID: 05_67c4015bce73
 Revises: 04_2f30f3bcc9aa
@@ -18,10 +18,10 @@ depends_on = None
 def upgrade():
     op.add_column(
         "CollectionVersion",
-        sa.Column("datasets_custom_ordered", sa.Boolean(), nullable=False, server_default=sa.sql.expression.false()),
+        sa.Column("custom_dataset_order", sa.BOOLEAN(), nullable=False, server_default=sa.sql.expression.false()),
         schema="persistence_schema",
     )
 
 
 def downgrade():
-    op.drop_column("CollectionVersion", "datasets_custom_ordered", schema="persistence_schema")
+    op.drop_column("CollectionVersion", "custom_dataset_order", schema="persistence_schema")
