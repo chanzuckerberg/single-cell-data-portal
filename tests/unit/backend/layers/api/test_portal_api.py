@@ -1506,12 +1506,9 @@ class TestUpdateCollection(BaseAPIPortalTest):
     def test__set_collection_version_datasets_order__OK(self):
         collection = self.generate_unpublished_collection(add_datasets=2)
 
-        # Convert collections.datasets from a list of objects to a list of IDs
-        # and then reverse the order. Use version_id here (this is masked in
-        # the FE as dataset.version_id is mapped to dataset.id in _dataset_to_response).
+        # Reverse dataset order and save.
         dataset_ids = [d.version_id.id for d in collection.datasets]
         dataset_ids.reverse()
-
         data = json.dumps(
             {
                 "datasets": dataset_ids,
