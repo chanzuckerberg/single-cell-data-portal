@@ -1,5 +1,6 @@
 import { expect, Page, test } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
+import { Collection } from "src/common/entities";
 import { TEST_URL } from "tests/common/constants";
 import {
   getInnerText,
@@ -26,6 +27,49 @@ describe("Collection Revision @loggedIn", () => {
     !isDevStagingRdev,
     "We only seed published collections for revision test in dev, rdev, and staging"
   );
+
+  test("enables publish if datasets updated", async ({ page }) => {
+    // Fake unique datasets in get collection response. The GET method for
+    // this route will be called twice: once for the revision and once for
+    // the published counterpart.
+    await page.route("*/**/dp/v1/collections/**", async (route, request) => {
+      // Ignore POST (create revision) and DELETE (delete revision) requests.
+      if (request.method() === "GET") {
+        const response = await route.fetch();
+        const json: Collection = await response.json();
+
+        // Modify name of each dataset to fake diff between revision and
+        // published counterpart.
+        json.datasets?.forEach((d) => {
+          d.name = `${Math.random()}`;
+        });
+
+        await route.fulfill({ response, json });
+      } else {
+        await route.continue();
+      }
+    });
+
+    await startRevision(page);
+
+    // Reload page required to force re-fetch of collection and published
+    // counterpart (via the useCollection hook) rather than using the (React
+    // Query) cached values.
+    await page.reload();
+
+    // We have faked changes in datasets; publish button should be enabled.
+    await tryUntil(
+      async () => {
+        const publishButton = await page.$(
+          getTestID("publish-collection-button")
+        );
+        await expect(publishButton).toBeEnabled();
+      },
+      { page }
+    );
+
+    await deleteRevision(page);
+  });
 
   /**
    * TODO(#5666): Enable this test once #5666 is resolved
