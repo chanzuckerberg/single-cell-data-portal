@@ -295,7 +295,9 @@ export function sortCollectionDatasets(
   datasets: Dataset[],
   orderedIDs?: string[]
 ): Dataset[] {
+  // Early exit; return datasets - reordering mode is inactive.
   if (!orderedIDs) return datasets;
+  // Return datasets in order - reordering mode is active.
   return orderedIDs
     .map((datasetID) => datasets.find(({ id }) => id === datasetID))
     .filter(Boolean) as Dataset[];
