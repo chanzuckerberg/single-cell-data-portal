@@ -32,7 +32,6 @@ import {
 } from "./utils";
 import CollectionActions from "src/views/Collection/components/CollectionActions";
 import { REORDER_MODE, useReorderMode } from "src/common/hooks/useReorderMode";
-import { sortByDatasetIDOrder } from "src/components/Collection/components/CollectionDatasetsGrid/components/DatasetsGrid/common/util";
 
 const Collection: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -51,11 +50,10 @@ const Collection: FC = () => {
   }
 
   const { data: collection, isError, isFetching } = useCollection({ id });
-  const orderedIDs = useMemo(() => getDatasetIDs(collection), [collection]); // TODO(cc) remove when dataset order is available.
+  const orderedIDs = useMemo(() => getDatasetIDs(collection), [collection]);
   const {
     isReorderUX,
     mode: reorderMode,
-    orderedIDs: datasetIDs,
     reorderAction,
   } = useReorderMode(id, orderedIDs);
 
@@ -161,7 +159,7 @@ const Collection: FC = () => {
         {/* TODO Reusing DatasetTab as-is as functionality is too dense to refactor for this iteration of filter. Complete refactor (including update to React Table) can be done when filter is productionalized. */}
         <DatasetTab
           collectionId={id}
-          datasets={sortByDatasetIDOrder(datasets, datasetIDs)}
+          datasets={datasets}
           isReorder={isReorder}
           isRevision={isRevision}
           reorderAction={reorderAction}

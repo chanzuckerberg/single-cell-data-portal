@@ -39,7 +39,6 @@ export enum REORDER_MODE {
 interface UseReorderMode {
   isReorderUX: boolean;
   mode: REORDER_MODE;
-  orderedIDs: string[];
   reorderAction: ReorderAction;
 }
 
@@ -119,7 +118,6 @@ export function useReorderMode(
       onSaveReorder,
       onStartReorder,
     },
-    orderedIDs,
   };
 }
 
