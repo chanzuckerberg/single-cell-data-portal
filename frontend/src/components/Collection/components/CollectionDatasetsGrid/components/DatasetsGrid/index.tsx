@@ -6,8 +6,8 @@ import DatasetRow from "src/components/Collection/components/CollectionDatasetsG
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
 import { Grid as StyledGrid } from "src/components/common/Grid/style";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
-import { sortByCellCountDescending } from "./common/util";
 import { UploadedFiles } from "src/views/Collection/components/CollectionActions/components/AddButton";
+import { ReorderAction } from "src/common/hooks/useReorderMode";
 
 interface Props {
   className?: string;
@@ -17,6 +17,7 @@ interface Props {
   invalidateCollectionQuery: () => void;
   visibility: VISIBILITY_TYPE;
   accessType?: Collection["access_type"];
+  isReorder: boolean;
   isRevision: boolean;
   onUploadFile: (
     reuploadDataset?: UseMutateAsyncFunction<
@@ -27,6 +28,7 @@ interface Props {
     >,
     datasetId?: string
   ) => ChooserProps["onUploadFile"];
+  reorderAction: ReorderAction;
   reuploadDataset: UseMutateAsyncFunction<
     unknown,
     unknown,
@@ -44,13 +46,16 @@ const DatasetsGrid: FC<Props> = ({
   visibility,
   accessType,
   isRevision,
+  isReorder,
   onUploadFile,
+  reorderAction,
   reuploadDataset,
 }) => {
   return (
-    <StyledGrid className={className}>
+    <StyledGrid className={className} isReorder={isReorder}>
       <thead>
         <tr>
+          {isReorder && <th />}
           <th>Dataset</th>
           <th>Tissue</th>
           <th>Disease</th>
@@ -63,7 +68,7 @@ const DatasetsGrid: FC<Props> = ({
         </tr>
       </thead>
       <tbody>
-        {sortByCellCountDescending(datasets).map((dataset) => (
+        {datasets.map((dataset) => (
           <DatasetRow
             visibility={visibility}
             accessType={accessType}
@@ -72,8 +77,10 @@ const DatasetsGrid: FC<Props> = ({
             dataset={dataset}
             file={uploadedFiles[dataset.id]}
             invalidateCollectionQuery={invalidateCollectionQuery}
-            revisionsEnabled={isRevision}
+            isReorder={isReorder}
             onUploadFile={onUploadFile(reuploadDataset, dataset.id)}
+            reorderAction={reorderAction}
+            revisionsEnabled={isRevision}
           />
         ))}
       </tbody>

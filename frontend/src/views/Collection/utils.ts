@@ -11,6 +11,8 @@ import {
 } from "src/common/entities";
 import { getUrlHost } from "src/common/utils/getUrlHost";
 import { CATEGORY_VALUE_KEY } from "src/components/common/Filter/common/entities";
+import { TombstonedCollection } from "src/common/queries/collections";
+import { sortByCellCountDescending } from "src/components/Collection/components/CollectionDatasetsGrid/components/DatasetsGrid/common/util";
 
 /**
  * Copied from src/components/Collection/components/CollectionMetadata
@@ -122,6 +124,21 @@ function buildDoiMetadataLink(
 }
 
 /**
+ * Returns the datasets IDs, in order, associated with the given collection.
+ * TODO(cc) remove when dataset order is available.
+ * @param collection - Collection.
+ * @returns collection dataset IDs.
+ */
+export function getDatasetIDs(
+  collection: Collection | TombstonedCollection | null | undefined
+): string[] | undefined {
+  if (!collection || collection.tombstone) return;
+  return sortByCellCountDescending([...collection.datasets.values()]).map(
+    ({ id }) => id
+  );
+}
+
+/**
  * Return the path of the given DOI URL.
  * @param doiUrl - URL of DOI, e.g. https://doi.org/10.1101/2021.01.28.428598.
  * @returns Path of the given DOI URL, e.g. 10.1101/2021.01.28.428598.
@@ -227,6 +244,17 @@ function isPrivateRevision(collection: Collection) {
   return (
     collection.visibility === VISIBILITY_TYPE.PRIVATE && collection.revision_of
   );
+}
+
+/**
+ * Returns true if the collection datasets are reorder-able (i.e. there are more than one dataset).
+ * @param collection - Collection.
+ * @returns true if the collection datasets are reorder-able.
+ */
+export function isCollectionDatasetsReorderable(
+  collection: Collection
+): boolean {
+  return collection.datasets.size > 1;
 }
 
 /**

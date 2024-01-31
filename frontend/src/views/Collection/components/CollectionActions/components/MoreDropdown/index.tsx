@@ -3,7 +3,7 @@ import { Collection } from "src/common/entities";
 import Menu from "./components/Menu";
 import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
 import { ButtonIcon } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/style";
-import { OnSetReorderModeFn } from "src/common/hooks/useReorderMode";
+import { ReorderAction } from "src/common/hooks/useReorderMode";
 
 interface Props {
   collection: Collection;
@@ -11,7 +11,7 @@ interface Props {
   isDeleting: boolean;
   isReorderUX: boolean;
   isRevision: boolean;
-  onSetReorderMode: OnSetReorderModeFn;
+  reorderAction: ReorderAction;
 }
 
 const MoreDropdown = ({
@@ -20,7 +20,7 @@ const MoreDropdown = ({
   isDeleting,
   isReorderUX,
   isRevision,
-  onSetReorderMode,
+  reorderAction,
 }: Props) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLButtonElement>(null);
   const open = Boolean(anchorEl);
@@ -52,7 +52,7 @@ const MoreDropdown = ({
         isReorderUX={isReorderUX}
         isRevision={isRevision}
         menuProps={{ anchorEl, onClose, open }}
-        onSetReorderMode={onSetReorderMode}
+        reorderAction={reorderAction}
       />
     </Fragment>
   );
