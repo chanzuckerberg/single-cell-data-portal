@@ -29,33 +29,44 @@ describe("Collection Revision @loggedIn", () => {
   );
 
   test("enables publish if datasets updated", async ({ page }) => {
-    // Fake unique datasets in get collection response. The GET method for
-    // this route will be called twice: once for the revision and once for
-    // the published counterpart.
-    await page.route("*/**/dp/v1/collections/**", async (route, request) => {
-      // Ignore POST (create revision) and DELETE (delete revision) requests.
-      if (request.method() === "GET") {
-        const response = await route.fetch();
-        const json: Collection = await response.json();
-
-        // Modify name of each dataset to fake diff between revision and
-        // published counterpart.
-        json.datasets?.forEach((d) => {
-          d.name = `${Math.random()}`;
-        });
-
-        await route.fulfill({ response, json });
-      } else {
-        await route.continue();
-      }
-    });
-
     await startRevision(page);
+
+    const url = await page.url();
+    const collectionId = url.split("/").pop();
+
+    // Fake unique datasets in get collection response.
+    await page.route(
+      `*/**/dp/v1/collections/${collectionId}`,
+      async (route, request) => {
+        // Handle GET collection requests.
+        if (request.method() === "GET") {
+          const response = await route.fetch();
+          const json: Collection = await response.json();
+
+          // Modify name of each dataset to fake diff between revision and
+          // published counterpart.
+          json.datasets?.forEach((d) => {
+            d.name = `${Math.random()}`;
+          });
+
+          await route.fulfill({ response, json });
+        } else {
+          // We're not expecting POST (create revision) or DELETE (delete
+          // revision) requests at this point; handling these cases for
+          // completion but they will result in a failing test.
+          await route.continue();
+        }
+      },
+      // Limit to once to avoid flakiness in Playwright where it attempts to
+      // modify a request after teardown.
+      { times: 1 }
+    );
 
     // Reload page required to force re-fetch of collection and published
     // counterpart (via the useCollection hook) rather than using the (React
     // Query) cached values.
     await page.reload();
+    await page.waitForURL(url);
 
     // We have faked changes in datasets; publish button should be enabled.
     await tryUntil(
