@@ -16,19 +16,24 @@ import { StyledLink } from "src/views/Collection/common/style";
 import Toast from "src/views/Collection/components/Toast";
 import EmptyModal from "../EmptyModal";
 import { UploadedFiles } from "src/views/Collection/components/CollectionActions/components/AddButton";
+import { ReorderAction } from "src/common/hooks/useReorderMode";
 
 interface Props {
   collectionId: Collection["id"];
   visibility: Collection["visibility"];
   datasets: Array<Dataset>;
+  isReorder: boolean;
   isRevision: boolean;
+  reorderAction: ReorderAction;
 }
 
 const DatasetTab: FC<Props> = ({
   collectionId,
   visibility,
   datasets,
+  isReorder,
   isRevision,
+  reorderAction,
 }) => {
   const CLI_README_LINK =
     "https://github.com/chanzuckerberg/single-cell-curation/blob/main/readme.md";
@@ -82,8 +87,10 @@ const DatasetTab: FC<Props> = ({
           collectionId={collectionId}
           datasets={datasets}
           invalidateCollectionQuery={invalidateCollectionQuery}
+          isReorder={isReorder}
           isRevision={isRevision}
           onUploadFile={addNewFile}
+          reorderAction={reorderAction}
           reuploadDataset={reuploadDataset}
           uploadedFiles={uploadedFiles}
           visibility={visibility}

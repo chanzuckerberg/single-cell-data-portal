@@ -2,7 +2,7 @@ import { Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useMemo, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -24,6 +24,7 @@ import {
 } from "./style";
 import {
   buildCollectionMetadataLinks,
+  getDatasetIDs,
   getIsPublishable,
   isCollectionHasPrivateRevision,
   isCollectionPrivateRevision,
@@ -31,13 +32,13 @@ import {
 } from "./utils";
 import CollectionActions from "src/views/Collection/components/CollectionActions";
 import { REORDER_MODE, useReorderMode } from "src/common/hooks/useReorderMode";
+import { sortByDatasetIDOrder } from "src/components/Collection/components/CollectionDatasetsGrid/components/DatasetsGrid/common/util";
 
 const Collection: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
   const router = useRouter();
   const { params, tombstoned_dataset_id } = router.query;
 
-  const { isReorderUX, mode: reorderMode, onSetReorderMode } = useReorderMode();
   const [hasShownWithdrawToast, setHasShownWithdrawToast] = useState(false);
   const [isUploadingLink, setIsUploadingLink] = useState(false);
 
@@ -50,6 +51,13 @@ const Collection: FC = () => {
   }
 
   const { data: collection, isError, isFetching } = useCollection({ id });
+  const orderedIDs = useMemo(() => getDatasetIDs(collection), [collection]); // TODO(cc) remove when dataset order is available.
+  const {
+    isReorderUX,
+    mode: reorderMode,
+    orderedIDs: datasetIDs,
+    reorderAction,
+  } = useReorderMode(orderedIDs);
 
   useEffect(() => {
     if (
@@ -128,10 +136,10 @@ const Collection: FC = () => {
             collection={collection}
             hasRevision={hasRevision}
             isPublishable={isPublishable}
+            isReorder={isReorder}
             isReorderUX={isReorderUX}
             isRevision={isRevision}
-            isReorder={isReorder}
-            onSetReorderMode={onSetReorderMode}
+            reorderAction={reorderAction}
             setIsUploadingLink={setIsUploadingLink}
           />
         </CollectionHero>
@@ -153,8 +161,10 @@ const Collection: FC = () => {
         {/* TODO Reusing DatasetTab as-is as functionality is too dense to refactor for this iteration of filter. Complete refactor (including update to React Table) can be done when filter is productionalized. */}
         <DatasetTab
           collectionId={id}
-          datasets={datasets}
+          datasets={sortByDatasetIDOrder(datasets, datasetIDs)}
+          isReorder={isReorder}
           isRevision={isRevision}
+          reorderAction={reorderAction}
           visibility={collection.visibility}
         />
       </CollectionView>

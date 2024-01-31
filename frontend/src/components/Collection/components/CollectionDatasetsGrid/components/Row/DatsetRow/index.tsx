@@ -46,6 +46,10 @@ import { StyledPrimaryAnchorButton } from "src/components/common/Button/common/s
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import DownloadButton from "src/components/common/Grid/components/DownloadButton";
+import ReorderModeRow, {
+  ReorderModeRowProps,
+} from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow";
+import { ReorderAction } from "src/common/hooks/useReorderMode";
 
 const AsyncTooltip = loadable(
   () =>
@@ -83,8 +87,10 @@ interface Props {
   dataset: Dataset;
   file?: UploadingFile;
   invalidateCollectionQuery: () => void;
+  isReorder: boolean;
   visibility: Collection["visibility"];
   accessType?: Collection["access_type"];
+  reorderAction: ReorderAction;
   revisionsEnabled: boolean;
   onUploadFile: ChooserProps["onUploadFile"];
 }
@@ -94,8 +100,10 @@ const DatasetRow: FC<Props> = ({
   dataset,
   file,
   invalidateCollectionQuery,
+  isReorder,
   visibility,
   accessType,
+  reorderAction,
   revisionsEnabled,
   onUploadFile,
 }) => {
@@ -166,8 +174,11 @@ const DatasetRow: FC<Props> = ({
 
   const isOverMaxCellCount = checkIsOverMaxCellCount(cell_count);
 
+  const Row = isReorder ? ReorderModeRow : "tr";
+  const rowProps = isReorder ? { dataset, reorderAction } : {};
+
   return (
-    <tr>
+    <Row {...(rowProps as ReorderModeRowProps)}>
       <td>
         <DatasetNameCell name={name}>
           {!isLoading && (
@@ -186,9 +197,11 @@ const DatasetRow: FC<Props> = ({
               progress={datasetStatus.upload_progress}
             />
           )}
-          <StatusTags>
-            {revisionsEnabled && <RevisionStatusTag dataset={dataset} />}
-          </StatusTags>
+          {revisionsEnabled && (
+            <StatusTags>
+              <RevisionStatusTag dataset={dataset} />
+            </StatusTags>
+          )}
         </DatasetNameCell>
       </td>
       <td>
@@ -258,7 +271,7 @@ const DatasetRow: FC<Props> = ({
           )}
         </ActionsCell>
       </td>
-    </tr>
+    </Row>
   );
 };
 
