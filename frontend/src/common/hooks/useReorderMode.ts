@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { FEATURES } from "src/common/featureFlags/features";
+import { useOrderDatasets } from "src/common/queries/collections";
+import { Collection } from "../entities";
 
 export type OnCancelReorderFn = () => void;
 
@@ -45,13 +47,18 @@ interface UseReorderMode {
  * Reorder functionality for collection datasets.
  * The reorder mode can be either "inactive" or "active" and is used to enable or disable the datasets reorder feature
  * in the collection view.
+ * @param collectionId - ID of collection to reorder datasets for.
  * @param initialOrderedIDs - Initial dataset IDs, ordered.
  * @returns reorder mode.
  */
-export function useReorderMode(initialOrderedIDs?: string[]): UseReorderMode {
+export function useReorderMode(
+  collectionId: Collection["id"],
+  initialOrderedIDs?: string[]
+): UseReorderMode {
   const isReorderUX = useFeatureFlag(FEATURES.REORDER); // Reorder datasets UX feature flag (reordering is currently only available with the feature flag).
   const [mode, setMode] = useState<REORDER_MODE>(REORDER_MODE.INACTIVE);
   const [orderedIDs, setOrderedIDs] = useState<string[]>([]);
+  const orderDatasetsMutation = useOrderDatasets(collectionId);
 
   // Cancels reorder mode.
   const onCancelReorder = useCallback(() => {
@@ -79,10 +86,18 @@ export function useReorderMode(initialOrderedIDs?: string[]): UseReorderMode {
   );
 
   // Saves order.
-  const onSaveReorder = useCallback(() => {
+  const onSaveReorder = async (): Promise<void> => {
     setMode(REORDER_MODE.INACTIVE);
-    // TODO(cc) set up query to save order.
-  }, []);
+
+    // Send order to BE.
+    const payload = JSON.stringify({
+      datasets: orderedIDs,
+    });
+    await orderDatasetsMutation.mutateAsync({
+      collectionId,
+      payload,
+    });
+  };
 
   // Starts reorder mode.
   const onStartReorder = useCallback(() => {
