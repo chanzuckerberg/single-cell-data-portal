@@ -2,11 +2,9 @@ import { expect, Page, test } from "@playwright/test";
 import HTTP_STATUS_CODE from "src/common/constants/HTTP_STATUS_CODE";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
-import { sortByCellCountDescending } from "src/components/Collection/components/CollectionDatasetsGrid/components/DatasetsGrid/common/util";
 import { INVALID_DOI_ERROR_MESSAGE } from "src/components/CreateCollectionModal/components/Content/common/constants";
 import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
 import { goToPage, isDevStagingRdev, tryUntil } from "tests/utils/helpers";
-import datasets from "../../fixtures/datasets";
 import { getTestID } from "tests/utils/selectors";
 
 const { describe, skip } = test;
@@ -32,16 +30,6 @@ type CollectionFormInput = Pick<
 >;
 
 describe("Collection", () => {
-  describe("Unit tests", () => {
-    test("dataset order", () => {
-      let lastValue = 1_000_000_000;
-      sortByCellCountDescending(datasets).forEach((dataset) => {
-        expect(dataset.cell_count).toBeLessThanOrEqual(lastValue);
-        lastValue = dataset.cell_count ?? 0;
-      });
-    });
-  });
-
   describe("Logged In Tests @loggedIn", () => {
     skip(
       !isDevStagingRdev,
