@@ -57,8 +57,6 @@ describe("Collection Revision @loggedIn", () => {
           await route.continue();
         }
       },
-      // Limit to once to avoid flakiness in Playwright where it attempts to
-      // modify a request after teardown.
       { times: 1 }
     );
 
