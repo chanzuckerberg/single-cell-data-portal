@@ -131,25 +131,19 @@ function buildOrderedIDs(
   if (!orderedIDs) return;
   // Reordering to the same position.
   if (datasetID === targetDatasetID) return orderedIDs;
-  // Grab the index of the dataset to reorder and target dataset to reorder to.
-  const index = orderedIDs.indexOf(datasetID);
-  const targetIndex = orderedIDs.indexOf(targetDatasetID);
-  const nextOrder = [];
-  for (let i = 0; i < orderedIDs.length; i++) {
-    // Skip the dataset to reorder.
-    if (i === index) continue;
-    // Insert the dataset at the target index.
-    if (i === targetIndex) {
-      const newOrderedIDs = [datasetID, orderedIDs[i]];
-      if (orderPosition === ORDER_POSITION.AFTER) {
-        // Reverse order; the dataset should be inserted after the target dataset.
-        newOrderedIDs.reverse();
-      }
-      nextOrder.push(...newOrderedIDs);
-      continue;
-    }
-    // Add the rest of the datasets.
-    nextOrder.push(orderedIDs[i]);
+  const nextOrder = [...orderedIDs];
+  // Remove the dataset to reorder.
+  const index = nextOrder.indexOf(datasetID);
+  nextOrder.splice(index, 1);
+  // Remove the target dataset.
+  const targetIndex = nextOrder.indexOf(targetDatasetID);
+  nextOrder.splice(targetIndex, 1);
+  // Insert the dataset and target dataset at the target index, in the correct order.
+  const datasetIDs = [datasetID, targetDatasetID];
+  if (orderPosition === ORDER_POSITION.AFTER) {
+    // Reverse order; the dataset should be inserted after the target dataset.
+    datasetIDs.reverse();
   }
+  nextOrder.splice(targetIndex, 0, ...datasetIDs);
   return nextOrder;
 }
