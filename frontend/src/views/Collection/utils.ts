@@ -12,7 +12,6 @@ import {
 import { getUrlHost } from "src/common/utils/getUrlHost";
 import { CATEGORY_VALUE_KEY } from "src/components/common/Filter/common/entities";
 import { TombstonedCollection } from "src/common/queries/collections";
-import { sortByCellCountDescending } from "src/components/Collection/components/CollectionDatasetsGrid/components/DatasetsGrid/common/util";
 
 /**
  * Copied from src/components/Collection/components/CollectionMetadata
@@ -125,7 +124,6 @@ function buildDoiMetadataLink(
 
 /**
  * Returns the datasets IDs, in order, associated with the given collection.
- * TODO(cc) remove when dataset order is available.
  * @param collection - Collection.
  * @returns collection dataset IDs.
  */
@@ -133,9 +131,7 @@ export function getDatasetIDs(
   collection: Collection | TombstonedCollection | null | undefined
 ): string[] | undefined {
   if (!collection || collection.tombstone) return;
-  return sortByCellCountDescending([...collection.datasets.values()]).map(
-    ({ id }) => id
-  );
+  return [...collection.datasets.keys()];
 }
 
 /**
