@@ -20,5 +20,6 @@
 - [ ] Add product, design, and eng as reviewers for rdev review
 - [ ] For UI changes, add screenshots/videos, so the reviewers know what you expect them to see
 - [ ] For UI changes, add e2e tests to prevent regressions
+- [ ] For UI changes, verify impacted analytics events still work
 
 ## Notes for Reviewer
