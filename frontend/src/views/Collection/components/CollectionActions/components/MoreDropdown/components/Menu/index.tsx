@@ -8,16 +8,14 @@ import {
 } from "@czi-sds/components";
 import {
   DeleteMenuItem,
-  EditMenuItem,
   Menu as StyledMenu,
+  MenuItem,
   ReorderMenuItem,
 } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/style";
 import { DEFAULT_MENU_PROPS } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/constants";
 import IconSort from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/components/IconSort";
-import {
-  OnSetReorderModeFn,
-  REORDER_MODE,
-} from "src/common/hooks/useReorderMode";
+import { ReorderAction } from "src/common/hooks/useReorderMode";
+import { isCollectionDatasetsReorderable } from "src/views/Collection/utils";
 
 interface MenuProps extends Partial<Omit<SDSMenuProps, "onClose">> {
   onClose: () => void;
@@ -43,14 +41,14 @@ const DeleteButton = ({
 
 const EditButton = (props: Partial<SDSMenuItemProps<"edit">>) => {
   return (
-    <EditMenuItem
+    <MenuItem
       {...props}
       data-testid="dropdown-edit-details"
       sdsIcon="edit"
       sdsIconProps={{ color: "gray", shade: 400 }}
     >
       Edit Details
-    </EditMenuItem>
+    </MenuItem>
   );
 };
 
@@ -61,7 +59,7 @@ interface Props {
   isReorderUX: boolean;
   isRevision: boolean;
   menuProps: MenuProps;
-  onSetReorderMode: OnSetReorderModeFn;
+  reorderAction: ReorderAction;
 }
 
 const Menu = ({
@@ -71,12 +69,12 @@ const Menu = ({
   isReorderUX,
   isRevision,
   menuProps,
-  onSetReorderMode,
+  reorderAction,
 }: Props) => {
   // Facilitates dataset reordering functionality.
   const handleReorder = () => {
     menuProps.onClose();
-    onSetReorderMode(REORDER_MODE.ACTIVE);
+    reorderAction.onStartReorder();
   };
   return (
     <StyledMenu
@@ -85,7 +83,7 @@ const Menu = ({
       open={Boolean(menuProps.open)}
     >
       <CreateCollection id={collection.id} Button={EditButton} />
-      {isReorderUX && (
+      {isReorderUX && isCollectionDatasetsReorderable(collection) && (
         <ReorderMenuItem onClick={handleReorder}>
           <IconSort />
           Reorder Datasets
