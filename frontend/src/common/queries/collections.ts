@@ -422,6 +422,52 @@ export function usePublishCollection() {
   });
 }
 
+/**
+ * Execute PUT to update the datasets order for the given collection.
+ * @param param
+ * @param param.collectionId - Collection ID to update datasets order for.
+ * @param param.payload - Payload containing the new order of datasets.
+ * @returns API response.
+ */
+const orderDatasets = async function orderDatasets({
+  payload,
+  collectionId,
+}: {
+  collectionId: Collection["id"];
+  payload: string;
+}) {
+  idError(collectionId);
+  const url = apiTemplateToUrl(API_URL + API.COLLECTION_ORDER_DATASETS, {
+    id: collectionId,
+  });
+
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    body: payload,
+    method: "PUT",
+  });
+
+  if (!response.ok) {
+    throw await response.json();
+  }
+
+  return response.json();
+};
+
+/**
+ * Update the datasets order for the given collection version.
+ * @param collectionId - Collection (version) ID to update datasets order for.
+ */
+export function useOrderDatasets(collectionId?: Collection["id"]) {
+  const queryClient = useQueryClient();
+  return useMutation(orderDatasets, {
+    onSuccess: async (): Promise<void> => {
+      await queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
+    },
+  });
+}
+
 const editCollection = async function ({
   id,
   payload,

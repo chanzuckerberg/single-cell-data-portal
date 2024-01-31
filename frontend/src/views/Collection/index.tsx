@@ -57,7 +57,7 @@ const Collection: FC = () => {
     mode: reorderMode,
     orderedIDs: datasetIDs,
     reorderAction,
-  } = useReorderMode(orderedIDs);
+  } = useReorderMode(id, orderedIDs);
 
   useEffect(() => {
     if (

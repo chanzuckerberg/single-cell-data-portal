@@ -130,12 +130,12 @@ const CollectionActions = ({
     );
   };
 
-  return collection.access_type === ACCESS_TYPE.WRITE ? (
+  return collection.access_type === ACCESS_TYPE.READ ? (
     <Actions data-testid="collection-actions">
       {/* Collection is in reorder mode */}
       {isReorder && <ReorderDatasets reorderAction={reorderAction} />}
       {/* Collection is either private, or a private revision */}
-      {!isReorder && collection.visibility === VISIBILITY_TYPE.PRIVATE && (
+      {!isReorder && collection.visibility === VISIBILITY_TYPE.PUBLIC && (
         <>
           <MoreDropdown
             collection={collection}
