@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useOrderDatasets } from "src/common/queries/collections";
@@ -14,7 +14,7 @@ export type OnReorderFn = (
 
 export type OnSaveReorderFn = () => void;
 
-export type OnStartReorderFn = () => void;
+export type OnStartReorderFn = (datasetIDs: string[]) => void;
 
 export enum ORDER_POSITION {
   BEFORE = -1,
@@ -39,6 +39,7 @@ export enum REORDER_MODE {
 interface UseReorderMode {
   isReorderUX: boolean;
   mode: REORDER_MODE;
+  orderedIDs?: string[];
   reorderAction: ReorderAction;
 }
 
@@ -47,23 +48,19 @@ interface UseReorderMode {
  * The reorder mode can be either "inactive" or "active" and is used to enable or disable the datasets reorder feature
  * in the collection view.
  * @param collectionId - ID of collection to reorder datasets for.
- * @param initialOrderedIDs - Initial dataset IDs, ordered.
  * @returns reorder mode.
  */
-export function useReorderMode(
-  collectionId: Collection["id"],
-  initialOrderedIDs?: string[]
-): UseReorderMode {
+export function useReorderMode(collectionId: Collection["id"]): UseReorderMode {
   const isReorderUX = useFeatureFlag(FEATURES.REORDER); // Reorder datasets UX feature flag (reordering is currently only available with the feature flag).
   const [mode, setMode] = useState<REORDER_MODE>(REORDER_MODE.INACTIVE);
-  const [orderedIDs, setOrderedIDs] = useState<string[]>([]);
+  const [orderedIDs, setOrderedIDs] = useState<string[]>();
   const orderDatasetsMutation = useOrderDatasets(collectionId);
 
   // Cancels reorder mode.
   const onCancelReorder = useCallback(() => {
     setMode(REORDER_MODE.INACTIVE);
-    setOrderedIDs(initialOrderedIDs || []);
-  }, [initialOrderedIDs]);
+    setOrderedIDs(undefined);
+  }, []);
 
   // Updates order.
   const onReorder = useCallback(
@@ -99,15 +96,10 @@ export function useReorderMode(
   };
 
   // Starts reorder mode.
-  const onStartReorder = useCallback(() => {
+  const onStartReorder = useCallback((datasetIDs: string[]) => {
     setMode(REORDER_MODE.ACTIVE);
+    setOrderedIDs(datasetIDs);
   }, []);
-
-  // Sets initial order.
-  useEffect(() => {
-    if (!initialOrderedIDs) return;
-    setOrderedIDs(initialOrderedIDs);
-  }, [initialOrderedIDs]);
 
   return {
     isReorderUX,
@@ -118,6 +110,7 @@ export function useReorderMode(
       onSaveReorder,
       onStartReorder,
     },
+    orderedIDs,
   };
 }
 
@@ -130,12 +123,15 @@ export function useReorderMode(
  * @returns order of datasets.
  */
 function buildOrderedIDs(
-  orderedIDs: string[],
+  orderedIDs: string[] | undefined,
   datasetID: string,
   targetDatasetID: string,
   orderPosition: ORDER_POSITION
-): string[] {
+): string[] | undefined {
+  if (!orderedIDs) return;
+  // Reordering to the same position.
   if (datasetID === targetDatasetID) return orderedIDs;
+  // Grab the index of the dataset to reorder and target dataset to reorder to.
   const index = orderedIDs.indexOf(datasetID);
   const targetIndex = orderedIDs.indexOf(targetDatasetID);
   const nextOrder = [];
