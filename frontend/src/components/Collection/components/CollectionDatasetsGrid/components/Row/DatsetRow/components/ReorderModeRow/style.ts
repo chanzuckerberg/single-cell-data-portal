@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
 import { gray100, grayWhite } from "src/common/theme";
 import { CommonThemeProps } from "@czi-sds/components";
-import { css } from "@emotion/react";
 import { DRAG_EVENT_TYPE } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow/index";
 
 interface RowProps extends CommonThemeProps {
@@ -10,45 +9,42 @@ interface RowProps extends CommonThemeProps {
 
 export const Row = styled("tr")<RowProps>`
   cursor: grab;
-
-  &:active {
-    cursor: grabbing;
-  }
+  margin: ${rowMargin}px;
+  padding: ${rowPadding}px;
 
   &:hover {
-    background-color: ${gray100};
+    background-color: ${rowBackgroundColor};
   }
 
-  ${(props) => {
-    return (
-      props.dragEventType === DRAG_EVENT_TYPE.DRAG_START &&
-      css`
-        & {
-          margin: 0 -16px;
-          padding: 0 16px;
-
-          td {
-            opacity: 0.8;
-          }
-        }
-      `
-    );
-  }};
-
-  ${(props) => {
-    return (
-      props.dragEventType === DRAG_EVENT_TYPE.DRAG &&
-      css`
-        & {
-          &:hover {
-            background-color: ${grayWhite()};
-          }
-
-          td {
-            opacity: 0;
-          }
-        }
-      `
-    );
-  }};
+  td {
+    opacity: ${cellOpacity};
+  }
 `;
+
+function cellOpacity(props: RowProps): string | undefined {
+  if (props.dragEventType === DRAG_EVENT_TYPE.DRAG_START) {
+    return "0.8";
+  }
+  if (props.dragEventType === DRAG_EVENT_TYPE.DRAG) {
+    return "0";
+  }
+}
+
+function rowBackgroundColor(props: RowProps): string | undefined {
+  if (props.dragEventType === DRAG_EVENT_TYPE.DRAG) {
+    return grayWhite();
+  }
+  return gray100(props);
+}
+
+function rowMargin(props: RowProps): string | undefined {
+  if (props.dragEventType === DRAG_EVENT_TYPE.DRAG_START) {
+    return "0 -16";
+  }
+}
+
+function rowPadding(props: RowProps): string | undefined {
+  if (props.dragEventType === DRAG_EVENT_TYPE.DRAG_START) {
+    return "0 16";
+  }
+}
