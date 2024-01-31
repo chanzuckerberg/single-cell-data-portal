@@ -1,6 +1,12 @@
 import styled from "@emotion/styled";
 import { Menu as SDSMenu, MenuItem as SDSMenuItem } from "@czi-sds/components";
-import { error400, shadowM, spacesS, spacesXxs } from "src/common/theme";
+import {
+  error400,
+  grey400,
+  shadowM,
+  spacesS,
+  spacesXxs,
+} from "src/common/theme";
 
 export const Menu = styled(SDSMenu)`
   &.MuiPopover-root {
@@ -34,17 +40,10 @@ export const DeleteMenuItem = styled(MenuItem)`
   }
 `;
 
-export const EditMenuItem = styled(MenuItem)`
-  &.MuiMenuItem-root {
-    .MuiSvgIcon-root {
-      color: #959595; // TODO(cc) confirm this color is intentional; "text/tertiary" cannot be found on the app theme.
-    }
-  }
-`;
-
 export const ReorderMenuItem = styled(MenuItem)`
   &.MuiMenuItem-root {
     svg {
+      color: ${grey400};
       margin: ${spacesXxs}px 0;
     }
   }
