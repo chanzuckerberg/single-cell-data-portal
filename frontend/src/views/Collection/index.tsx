@@ -2,7 +2,7 @@ import { Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import React, { FC, useEffect, useMemo, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -24,11 +24,11 @@ import {
 } from "./style";
 import {
   buildCollectionMetadataLinks,
-  getDatasetIDs,
   getIsPublishable,
   isCollectionHasPrivateRevision,
   isCollectionPrivateRevision,
   revisionIsPublishable,
+  sortCollectionDatasets,
 } from "./utils";
 import CollectionActions from "src/views/Collection/components/CollectionActions";
 import { REORDER_MODE, useReorderMode } from "src/common/hooks/useReorderMode";
@@ -50,12 +50,12 @@ const Collection: FC = () => {
   }
 
   const { data: collection, isError, isFetching } = useCollection({ id });
-  const orderedIDs = useMemo(() => getDatasetIDs(collection), [collection]);
   const {
     isReorderUX,
     mode: reorderMode,
+    orderedIDs,
     reorderAction,
-  } = useReorderMode(id, orderedIDs);
+  } = useReorderMode(id);
 
   useEffect(() => {
     if (
@@ -159,7 +159,7 @@ const Collection: FC = () => {
         {/* TODO Reusing DatasetTab as-is as functionality is too dense to refactor for this iteration of filter. Complete refactor (including update to React Table) can be done when filter is productionalized. */}
         <DatasetTab
           collectionId={id}
-          datasets={datasets}
+          datasets={sortCollectionDatasets(datasets, orderedIDs)}
           isReorder={isReorder}
           isRevision={isRevision}
           reorderAction={reorderAction}

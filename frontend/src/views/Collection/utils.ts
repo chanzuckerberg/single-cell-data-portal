@@ -11,7 +11,6 @@ import {
 } from "src/common/entities";
 import { getUrlHost } from "src/common/utils/getUrlHost";
 import { CATEGORY_VALUE_KEY } from "src/components/common/Filter/common/entities";
-import { TombstonedCollection } from "src/common/queries/collections";
 
 /**
  * Copied from src/components/Collection/components/CollectionMetadata
@@ -127,10 +126,7 @@ function buildDoiMetadataLink(
  * @param collection - Collection.
  * @returns collection dataset IDs.
  */
-export function getDatasetIDs(
-  collection: Collection | TombstonedCollection | null | undefined
-): string[] | undefined {
-  if (!collection || collection.tombstone) return;
+export function getDatasetIDs(collection: Collection): string[] {
   return [...collection.datasets.keys()];
 }
 
@@ -287,6 +283,22 @@ export function isCollectionHasPrivateRevision(
     collection.visibility === VISIBILITY_TYPE.PUBLIC &&
     !!collection.revising_in
   );
+}
+
+/**
+ * Returns sorted datasets based on the given dataset order.
+ * @param datasets - Datasets.
+ * @param orderedIDs - Dataset IDs, ordered.
+ * @returns sorted datasets.
+ */
+export function sortCollectionDatasets(
+  datasets: Dataset[],
+  orderedIDs?: string[]
+): Dataset[] {
+  if (!orderedIDs) return datasets;
+  return orderedIDs
+    .map((datasetID) => datasets.find(({ id }) => id === datasetID))
+    .filter(Boolean) as Dataset[];
 }
 
 /**
