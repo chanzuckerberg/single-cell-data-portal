@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useOrderDatasets } from "src/common/queries/collections";
-import { Collection } from "../entities";
+import { Collection } from "src/common/entities";
 
 export type OnCancelReorderFn = () => void;
 

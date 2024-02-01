@@ -32,7 +32,10 @@ import {
   sortCollectionDatasets,
 } from "./utils";
 import CollectionActions from "src/views/Collection/components/CollectionActions";
-import { REORDER_MODE, useReorderMode } from "src/common/hooks/useReorderMode";
+import {
+  REORDER_MODE,
+  useReorderMode,
+} from "src/views/Collection/hooks/useReorderMode";
 
 const Collection: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;

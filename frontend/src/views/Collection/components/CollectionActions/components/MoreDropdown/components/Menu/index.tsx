@@ -14,7 +14,7 @@ import {
 } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/style";
 import { DEFAULT_MENU_PROPS } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/constants";
 import IconSort from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/components/IconSort";
-import { ReorderAction } from "src/common/hooks/useReorderMode";
+import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
 import { isCollectionDatasetsReorderable } from "src/views/Collection/utils";
 
 interface MenuProps extends Partial<Omit<SDSMenuProps, "onClose">> {
