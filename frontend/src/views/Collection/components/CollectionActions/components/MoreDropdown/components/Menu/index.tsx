@@ -15,10 +15,7 @@ import {
 import { DEFAULT_MENU_PROPS } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/constants";
 import IconSort from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/components/IconSort";
 import { ReorderAction } from "src/common/hooks/useReorderMode";
-import {
-  getDatasetIDs,
-  isCollectionDatasetsReorderable,
-} from "src/views/Collection/utils";
+import { isCollectionDatasetsReorderable } from "src/views/Collection/utils";
 
 interface MenuProps extends Partial<Omit<SDSMenuProps, "onClose">> {
   onClose: () => void;
@@ -57,6 +54,7 @@ const EditButton = (props: Partial<SDSMenuItemProps<"edit">>) => {
 
 interface Props {
   collection: Collection;
+  datasetIDs: string[];
   handleDeleteCollection: DeleteCollectionFn;
   isDeleting: boolean;
   isReorderUX: boolean;
@@ -67,6 +65,7 @@ interface Props {
 
 const Menu = ({
   collection,
+  datasetIDs,
   handleDeleteCollection,
   isDeleting,
   isReorderUX,
@@ -74,14 +73,11 @@ const Menu = ({
   menuProps,
   reorderAction,
 }: Props) => {
-  const datasetIDs = getDatasetIDs(collection);
-
   // Facilitates dataset reordering functionality.
   const handleReorder = (orderIDs: string[]) => {
     menuProps.onClose();
     reorderAction.onStartReorder(orderIDs);
   };
-
   return (
     <StyledMenu
       {...DEFAULT_MENU_PROPS}

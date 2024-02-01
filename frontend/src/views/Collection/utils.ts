@@ -122,12 +122,12 @@ function buildDoiMetadataLink(
 }
 
 /**
- * Returns the datasets IDs, in order, associated with the given collection.
- * @param collection - Collection.
+ * Returns the datasets IDs, associated with the given collection.
+ * @param datasets - Datasets.
  * @returns collection dataset IDs.
  */
-export function getDatasetIDs(collection: Collection): string[] {
-  return [...collection.datasets.keys()];
+export function getDatasetIDs(datasets: Dataset[]): string[] {
+  return datasets.map((dataset) => dataset.id);
 }
 
 /**
