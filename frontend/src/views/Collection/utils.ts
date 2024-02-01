@@ -252,12 +252,13 @@ export function isCollectionDatasetsReorderable(datasets: Dataset[]): boolean {
 }
 
 /**
- * Returns true if the dataset is uploaded and valid.
+ * Returns true if the dataset is uploaded and valid, with a processing status of success.
  * @param dataset - Dataset.
  * @returns true if the dataset is uploaded and valid.
  */
 function isCollectionDatasetUploadedAndValid(dataset: Dataset): boolean {
   return (
+    dataset.processing_status.processing_status === PROCESSING_STATUS.SUCCESS &&
     dataset.processing_status.upload_status === UPLOAD_STATUS.UPLOADED &&
     dataset.processing_status.validation_status === VALIDATION_STATUS.VALID
   );
