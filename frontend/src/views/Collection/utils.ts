@@ -7,6 +7,8 @@ import {
   DATASET_ASSET_FORMAT,
   Link,
   PROCESSING_STATUS,
+  UPLOAD_STATUS,
+  VALIDATION_STATUS,
   VISIBILITY_TYPE,
 } from "src/common/entities";
 import { getUrlHost } from "src/common/utils/getUrlHost";
@@ -239,14 +241,26 @@ function isPrivateRevision(collection: Collection) {
 }
 
 /**
- * Returns true if the collection datasets are reorder-able (i.e. there are more than one dataset).
- * @param collection - Collection.
+ * Returns true if the collection datasets are reorder-able (i.e. there are more than one dataset, and all datasets are uploaded and valid).
+ * @param datasets - Datasets.
  * @returns true if the collection datasets are reorder-able.
  */
-export function isCollectionDatasetsReorderable(
-  collection: Collection
-): boolean {
-  return collection.datasets.size > 1;
+export function isCollectionDatasetsReorderable(datasets: Dataset[]): boolean {
+  return (
+    datasets.length > 1 && datasets.every(isCollectionDatasetUploadedAndValid)
+  );
+}
+
+/**
+ * Returns true if the dataset is uploaded and valid.
+ * @param dataset - Dataset.
+ * @returns true if the dataset is uploaded and valid.
+ */
+function isCollectionDatasetUploadedAndValid(dataset: Dataset): boolean {
+  return (
+    dataset.processing_status.upload_status === UPLOAD_STATUS.UPLOADED &&
+    dataset.processing_status.validation_status === VALIDATION_STATUS.VALID
+  );
 }
 
 /**
