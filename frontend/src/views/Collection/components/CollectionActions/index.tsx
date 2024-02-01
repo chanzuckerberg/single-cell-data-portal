@@ -18,7 +18,7 @@ import { POLICY_BULLETS } from "src/components/Collections/components/PublishCol
 import Toast from "src/views/Collection/components/Toast";
 import { IconNames } from "@blueprintjs/icons";
 import { Intent } from "@blueprintjs/core";
-import { ReorderAction } from "src/common/hooks/useReorderMode";
+import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
 import ReorderDatasets from "src/components/Collections/components/ReorderDatasets";
 
 export type CreateRevisionFn = () => void;
