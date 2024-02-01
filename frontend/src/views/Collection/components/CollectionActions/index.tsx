@@ -27,6 +27,7 @@ export type PublishCollectionFn = () => void;
 
 interface Props {
   collection: Collection;
+  datasetIDs: string[];
   hasRevision: boolean;
   isPublishable: boolean;
   isReorder: boolean;
@@ -38,6 +39,7 @@ interface Props {
 
 const CollectionActions = ({
   collection,
+  datasetIDs,
   hasRevision,
   isPublishable,
   isReorder,
@@ -139,6 +141,7 @@ const CollectionActions = ({
         <>
           <MoreDropdown
             collection={collection}
+            datasetIDs={datasetIDs}
             handleDeleteCollection={handleDeleteCollection}
             isDeleting={deleteCollectionMutation.isLoading}
             isReorderUX={isReorderUX}
