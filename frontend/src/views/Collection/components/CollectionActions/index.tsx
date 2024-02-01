@@ -1,4 +1,9 @@
-import { ACCESS_TYPE, Collection, VISIBILITY_TYPE } from "src/common/entities";
+import {
+  ACCESS_TYPE,
+  Collection,
+  Dataset,
+  VISIBILITY_TYPE,
+} from "src/common/entities";
 import PublishCollection from "src/components/Collections/components/PublishCollection";
 import { UploadingFile } from "src/components/DropboxChooser";
 import AddButton from "./components/AddButton";
@@ -27,7 +32,7 @@ export type PublishCollectionFn = () => void;
 
 interface Props {
   collection: Collection;
-  datasetIDs: string[];
+  datasets: Dataset[];
   hasRevision: boolean;
   isPublishable: boolean;
   isReorder: boolean;
@@ -39,7 +44,7 @@ interface Props {
 
 const CollectionActions = ({
   collection,
-  datasetIDs,
+  datasets,
   hasRevision,
   isPublishable,
   isReorder,
@@ -141,7 +146,7 @@ const CollectionActions = ({
         <>
           <MoreDropdown
             collection={collection}
-            datasetIDs={datasetIDs}
+            datasets={datasets}
             handleDeleteCollection={handleDeleteCollection}
             isDeleting={deleteCollectionMutation.isLoading}
             isReorderUX={isReorderUX}

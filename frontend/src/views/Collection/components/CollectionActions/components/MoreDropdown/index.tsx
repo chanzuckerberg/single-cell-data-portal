@@ -1,5 +1,5 @@
 import { Fragment, MouseEvent, useState } from "react";
-import { Collection } from "src/common/entities";
+import { Collection, Dataset } from "src/common/entities";
 import Menu from "./components/Menu";
 import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
 import { ButtonIcon } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/style";
@@ -7,7 +7,7 @@ import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
 
 interface Props {
   collection: Collection;
-  datasetIDs: string[];
+  datasets: Dataset[];
   handleDeleteCollection: DeleteCollectionFn;
   isDeleting: boolean;
   isReorderUX: boolean;
@@ -17,7 +17,7 @@ interface Props {
 
 const MoreDropdown = ({
   collection,
-  datasetIDs,
+  datasets,
   handleDeleteCollection,
   isDeleting,
   isReorderUX,
@@ -49,7 +49,7 @@ const MoreDropdown = ({
       />
       <Menu
         collection={collection}
-        datasetIDs={datasetIDs}
+        datasets={datasets}
         handleDeleteCollection={handleDeleteCollection}
         isDeleting={isDeleting}
         isReorderUX={isReorderUX}
