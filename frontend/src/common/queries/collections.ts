@@ -452,7 +452,8 @@ const orderDatasets = async function orderDatasets({
     throw await response.json();
   }
 
-  return response.json();
+  // Endpoint response is empty on 200; return successful promise.
+  return Promise.resolve();
 };
 
 /**
