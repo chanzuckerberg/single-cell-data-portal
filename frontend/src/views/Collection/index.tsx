@@ -128,7 +128,10 @@ const Collection: FC = () => {
       </Head>
       <CollectionView>
         {/* Collection revision status callout */}
-        <CollectionRevisionStatusCallout collection={collection} />
+        <CollectionRevisionStatusCallout
+          collection={collection}
+          reorderAction={reorderAction}
+        />
         {/* Collection title and actions */}
         <CollectionHero>
           <h3 data-testid="collection-name">{collection.name}</h3>
