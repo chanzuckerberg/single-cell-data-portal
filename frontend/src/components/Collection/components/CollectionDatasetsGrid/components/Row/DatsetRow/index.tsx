@@ -49,7 +49,7 @@ import DownloadButton from "src/components/common/Grid/components/DownloadButton
 import ReorderModeRow, {
   ReorderModeRowProps,
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow";
-import { ReorderAction } from "src/common/hooks/useReorderMode";
+import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
 
 const AsyncTooltip = loadable(
   () =>
