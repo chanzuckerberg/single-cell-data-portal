@@ -1,16 +1,24 @@
 import React from "react";
-import { CollectionRevisionCallout } from "src/components/Collection/components/CollectionRevisionStatusCallout/style";
+import {
+  Button,
+  CollectionRevisionCallout,
+} from "src/components/Collection/components/CollectionRevisionStatusCallout/style";
 import Link from "next/link";
 import { TextLink } from "./style";
 import { ACCESS_TYPE, Collection } from "src/common/entities";
+import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
+import { useRouter } from "next/router";
 
 interface Props {
   collection: Collection;
+  reorderAction: ReorderAction;
 }
 
 export default function CollectionRevisionStatusCallout({
   collection,
+  reorderAction,
 }: Props): JSX.Element | null {
+  const router = useRouter();
   const { access_type, revision_of, revising_in } = collection;
   return access_type === ACCESS_TYPE.WRITE && (revision_of || revising_in) ? (
     <CollectionRevisionCallout dismissible={false} sdsType="primary">
@@ -27,10 +35,17 @@ export default function CollectionRevisionStatusCallout({
         {!!revision_of && (
           <span>
             This is a private revision of a published collection.{" "}
-            {/* (thuang): use `legacyBehavior` prop, since `<TextLink />` is `<a />` */}
-            <Link href={`/collections/${revision_of}`} legacyBehavior passHref>
-              <TextLink href="passHref">Open Published Collection</TextLink>
-            </Link>
+            <Button
+              isAllCaps={false}
+              onClick={() => {
+                reorderAction.onCancelReorder();
+                router.push(`/collections/${revision_of}`);
+              }}
+              sdsStyle="minimal"
+              sdsType="primary"
+            >
+              Open Published Collection
+            </Button>
           </span>
         )}
       </span>
