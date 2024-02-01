@@ -3,7 +3,7 @@ import { Collection } from "src/common/entities";
 import Menu from "./components/Menu";
 import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
 import { ButtonIcon } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/style";
-import { ReorderAction } from "src/common/hooks/useReorderMode";
+import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
 
 interface Props {
   collection: Collection;

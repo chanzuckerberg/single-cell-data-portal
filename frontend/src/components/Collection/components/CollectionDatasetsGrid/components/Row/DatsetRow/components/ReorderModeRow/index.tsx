@@ -2,7 +2,7 @@ import { DragEvent, ReactNode, useCallback, useState } from "react";
 import { Dataset } from "src/common/entities";
 import ReorderCell from "src/components/common/Grid/components/ReorderCell";
 import { Row } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow/style";
-import { ReorderAction } from "src/common/hooks/useReorderMode";
+import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
 
 export enum DRAG_EVENT_TYPE {
   DRAG = "DRAG",
