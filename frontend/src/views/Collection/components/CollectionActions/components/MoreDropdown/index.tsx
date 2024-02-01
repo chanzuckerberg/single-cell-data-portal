@@ -7,6 +7,7 @@ import { ReorderAction } from "src/common/hooks/useReorderMode";
 
 interface Props {
   collection: Collection;
+  datasetIDs: string[];
   handleDeleteCollection: DeleteCollectionFn;
   isDeleting: boolean;
   isReorderUX: boolean;
@@ -16,6 +17,7 @@ interface Props {
 
 const MoreDropdown = ({
   collection,
+  datasetIDs,
   handleDeleteCollection,
   isDeleting,
   isReorderUX,
@@ -47,6 +49,7 @@ const MoreDropdown = ({
       />
       <Menu
         collection={collection}
+        datasetIDs={datasetIDs}
         handleDeleteCollection={handleDeleteCollection}
         isDeleting={isDeleting}
         isReorderUX={isReorderUX}

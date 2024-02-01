@@ -24,6 +24,7 @@ import {
 } from "./style";
 import {
   buildCollectionMetadataLinks,
+  getDatasetIDs,
   getIsPublishable,
   isCollectionHasPrivateRevision,
   isCollectionPrivateRevision,
@@ -132,6 +133,7 @@ const Collection: FC = () => {
           {/* Collection actions */}
           <CollectionActions
             collection={collection}
+            datasetIDs={getDatasetIDs(datasets)} // Dataset IDs from the collection datasets.
             hasRevision={hasRevision}
             isPublishable={isPublishable}
             isReorder={isReorder}
