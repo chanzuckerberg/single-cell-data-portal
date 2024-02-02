@@ -1060,6 +1060,36 @@ class TestSetCollectionVersionDatasetsOrder(BaseBusinessLogicTestCase):
         sorted_datasets = sorted(read_version.datasets, key=lambda d: d.metadata.cell_count, reverse=True)
         self.assertListEqual(read_version.datasets, sorted_datasets)
 
+    def test_set_collection_version_datasets_order_replace_dataset_ok(self):
+        """
+        Replacing a dataset in a collection version does not alter the custom order of the datasets.
+        """
+        version = self.initialize_unpublished_collection(num_datasets=3)
+
+        # Set custom order of dataset version IDs.
+        dv_ids = [d.version_id for d in version.datasets]
+        dv_ids.reverse()
+        self.business_logic.set_collection_version_datasets_order(version.version_id, dv_ids)
+
+        # Replace the first dataset in the collection version.
+        dataset_id_to_replace = dv_ids[0].version_id
+
+        replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            version.version_id, "http://fake.url", None, dataset_id_to_replace
+        )
+        self.business_logic.set_dataset_metadata(replaced_dataset_version_id, self.sample_dataset_metadata)
+        self.complete_dataset_processing_with_success(replaced_dataset_version_id)
+
+        # Create a list  of dataset version IDs with the replaced dataset version ID in the first position.
+        updated_dv_ids = [replaced_dataset_version_id] + dv_ids[1:]
+
+        # Confirm collection version lists datasets in the custom order.
+        read_version = self.database_provider.get_collection_version(version.version_id)
+        self.assertListEqual([dv.version_id for dv in read_version.datasets], updated_dv_ids)
+
+        # Confirm the collection version datasets are marked as custom ordered.
+        self.assertTrue(read_version.custom_dataset_order)
+
 
 class TestDeleteDataset(BaseBusinessLogicTestCase):
     def test_delete_dataset_in_private_collection__ok(self):
