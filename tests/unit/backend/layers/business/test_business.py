@@ -1072,7 +1072,7 @@ class TestSetCollectionVersionDatasetsOrder(BaseBusinessLogicTestCase):
         self.business_logic.set_collection_version_datasets_order(version.version_id, dv_ids)
 
         # Replace the first dataset in the collection version.
-        dataset_id_to_replace = dv_ids[0].version_id
+        dataset_id_to_replace = dv_ids[0]
 
         replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
             version.version_id, "http://fake.url", None, dataset_id_to_replace
@@ -1084,7 +1084,7 @@ class TestSetCollectionVersionDatasetsOrder(BaseBusinessLogicTestCase):
         updated_dv_ids = [replaced_dataset_version_id] + dv_ids[1:]
 
         # Confirm collection version lists datasets in the custom order.
-        read_version = self.database_provider.get_collection_version(version.version_id)
+        read_version = self.business_logic.get_collection_version(version.version_id)
         self.assertListEqual([dv.version_id for dv in read_version.datasets], updated_dv_ids)
 
         # Confirm the collection version datasets are marked as custom ordered.
