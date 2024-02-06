@@ -1,6 +1,6 @@
 import json
 
-from moto import mock_s3
+from moto import mock_aws
 
 from backend.layers.thirdparty.s3_provider import S3Provider
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
@@ -35,7 +35,7 @@ class TestPostCellGuide(BaseAPIPortalTest):
         self.assertEqual("Bad Request", data["title"])
         self.assertEqual(400, response.status_code)
 
-    @mock_s3
+    @mock_aws
     def test__upload_description__OK(self):
         s3 = S3Provider()
         s3.create_bucket(bucket_name="cellguide-data-public-dev", location="us-west-2")

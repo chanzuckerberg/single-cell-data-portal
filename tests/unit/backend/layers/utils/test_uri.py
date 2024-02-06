@@ -4,7 +4,7 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase
 
 import boto3
-from moto import mock_s3
+from moto import mock_aws
 
 from backend.common.utils.dl_sources.uri import S3URI, S3URL, DropBoxURL, RegisteredSources, from_uri
 
@@ -49,7 +49,7 @@ class TestS3URI(TestCase):
         s3_uri = S3URI.validate("s3://bucket")
         self.assertIsNone(s3_uri)
 
-    @mock_s3
+    @mock_aws
     def test__file_info__returns_file_size(self):
         s3 = boto3.client("s3")
         bucket_name = "bucket"
@@ -67,7 +67,7 @@ class TestS3URI(TestCase):
         self.assertEqual(key, info["name"])
         self.assertEqual(len(content), info["size"])
 
-    @mock_s3
+    @mock_aws
     def test_download(self):
         s3 = boto3.client("s3")
         bucket_name = "bucket"
