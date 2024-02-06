@@ -5,6 +5,7 @@ Revises: 04_2f30f3bcc9aa
 Create Date: 2024-01-25 11:42:46.126701
 
 """
+
 import sqlalchemy as sa
 from alembic import op
 
@@ -18,7 +19,7 @@ depends_on = None
 def upgrade():
     op.add_column(
         "CollectionVersion",
-        sa.Column("custom_dataset_order", sa.BOOLEAN(), nullable=False, server_default=sa.sql.expression.false()),
+        sa.Column("custom_dataset_order", sa.BOOLEAN(), nullable=True, server_default=sa.sql.expression.false()),
         schema="persistence_schema",
     )
 
