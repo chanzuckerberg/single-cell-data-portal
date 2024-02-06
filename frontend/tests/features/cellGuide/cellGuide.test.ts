@@ -1120,7 +1120,7 @@ describe("Cell Guide", () => {
 
       await checkTooltipContent(
         page,
-        "Canonical marker genes and associated publications were derived from the Anatomical Structures, Cell Types and Biomarkers (ASCT+B) tables from the 5th Human Reference Atlas release (July 2023). The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
+        "Canonical marker genes and associated publications were derived from the Anatomical Structures, Cell Types and Biomarkers (ASCT+B) tables from the 6th Human Reference Atlas release (December 2023). The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
       );
     });
 
@@ -1180,8 +1180,10 @@ describe("Cell Guide", () => {
       await tryUntil(
         async () => {
           // Switch to brain tissue
-          await waitForElementAndClick(dropdown);
-          await page.getByRole("option").getByText("brain").click();
+          if ((await dropdown.textContent())?.toLowerCase() !== "brain") {
+            await waitForElementAndClick(dropdown);
+            await page.getByRole("option").getByText("brain").click();
+          }
 
           // Check that tooltip content has changed
           await isElementVisible(page, SPECIFICITY_TOOLTIP_TEST_ID);

@@ -1,14 +1,13 @@
-import { Classes, Colors } from "@blueprintjs/core";
+import { Classes } from "@blueprintjs/core";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import {
-  Chip,
-  CommonThemeProps,
-  getColors,
-  InputDropdown,
-} from "@czi-sds/components";
+import { Popper } from "@mui/material";
+import { Chip, fontBodyS, getColors, InputDropdown } from "@czi-sds/components";
 import { PT_GRID_SIZE_PX, PT_TEXT_COLOR } from "../common/theme";
-import { button } from "src/components/Header/components/Nav/style";
+import {
+  button,
+  ButtonProps,
+} from "src/components/Header/components/Nav/style";
 import { spacesL, spacesXl } from "src/common/theme";
 
 export const HEADER_HEIGHT_PX = 56;
@@ -44,11 +43,13 @@ export const Left = styled.span`
 export const Right = styled.span`
   align-items: center;
   display: flex;
+  font-weight: 500;
   gap: ${spacesL}px;
 `;
 
-const iconButton = (props: CommonThemeProps) => css`
+const iconButton = (props: ButtonProps) => css`
   ${button(props)}
+
   .${Classes.ICON} {
     color: inherit; /* Overrides BP button icon color rule by inheriting color from parent. */
   }
@@ -56,9 +57,20 @@ const iconButton = (props: CommonThemeProps) => css`
 
 export const AuthButtonWrapper = styled.span`
   ${iconButton}
+
   .${Classes.BUTTON}.${Classes.MINIMAL} {
-    color: ${Colors.WHITE}; /* Overrides locally defined button color rule. */
-    font-weight: 400; /* Overrides locally defined button font weight rule. */
+    ${(props) => {
+      const colors = getColors(props);
+      return `
+        color: ${colors?.gray["500"]} !important;
+      `;
+    }}
+    ${fontBodyS}
+    font-weight: 500;
+  }
+  .bp5-button {
+    height: 20px;
+    padding: 0 8px;
   }
 `;
 
@@ -71,12 +83,14 @@ export const BetaChip = styled(Chip)`
 
 export const StyledInputDropdown = styled(InputDropdown)`
   /* Overriding colors after SDS v14.5.0 upgrade */
+
   ${(props) => {
     const colors = getColors(props);
-
     return `
       span {
         color: ${colors?.gray["500"]} !important;
+        ${fontBodyS}
+        font-weight: 500;
       }
 
       :hover {
@@ -87,4 +101,10 @@ export const StyledInputDropdown = styled(InputDropdown)`
       }
     `;
   }}
+`;
+
+export const StyledPopper = styled(Popper)`
+  height: 300px;
+  z-index: 99;
+  margin-top: -26px !important;
 `;

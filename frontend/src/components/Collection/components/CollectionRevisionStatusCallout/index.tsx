@@ -18,7 +18,8 @@ export default function CollectionRevisionStatusCallout({
         {!!revising_in && (
           <span>
             This public collection has a pending revision.{" "}
-            <Link href={`/collections/${revising_in}`} passHref>
+            {/* (thuang): use `legacyBehavior` prop, since `<TextLink />` is `<a />` */}
+            <Link href={`/collections/${revising_in}`} legacyBehavior passHref>
               <TextLink href="passHref">Continue Revision</TextLink>
             </Link>
           </span>
@@ -26,7 +27,8 @@ export default function CollectionRevisionStatusCallout({
         {!!revision_of && (
           <span>
             This is a private revision of a published collection.{" "}
-            <Link href={`/collections/${revision_of}`} passHref>
+            {/* (thuang): use `legacyBehavior` prop, since `<TextLink />` is `<a />` */}
+            <Link href={`/collections/${revision_of}`} legacyBehavior passHref>
               <TextLink href="passHref">Open Published Collection</TextLink>
             </Link>
           </span>

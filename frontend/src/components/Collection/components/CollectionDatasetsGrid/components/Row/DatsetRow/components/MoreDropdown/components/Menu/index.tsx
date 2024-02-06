@@ -1,5 +1,5 @@
 import {
-  IMenuItemProps,
+  MenuItemProps,
   Intent,
   Menu as RawMenu,
   MenuItem,
@@ -12,7 +12,7 @@ import DropboxChooser, {
 import DeleteDataset from "../../../DeleteDataset";
 import { Collection } from "src/common/entities";
 
-const DeleteButton = (props: IMenuItemProps) => {
+const DeleteButton = (props: MenuItemProps) => {
   return (
     <MenuItem
       {...props}
@@ -24,7 +24,7 @@ const DeleteButton = (props: IMenuItemProps) => {
   );
 };
 
-const UpdateButton = (props: Partial<IMenuItemProps>) => {
+const UpdateButton = (props: Partial<MenuItemProps>) => {
   return (
     <MenuItem
       {...props}

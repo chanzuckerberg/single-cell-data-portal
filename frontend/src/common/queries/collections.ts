@@ -153,8 +153,8 @@ function fetchCollection() {
 
     const url = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
 
-    let response = await fetch(url, DEFAULT_FETCH_OPTIONS);
-    let json = await response.json();
+    const response = await fetch(url, DEFAULT_FETCH_OPTIONS);
+    const json = await response.json();
 
     if (response.status === HTTP_STATUS_CODE.GONE) {
       return { tombstone: true };
@@ -164,16 +164,7 @@ function fetchCollection() {
     }
 
     // Convert tissue ontology objects to core ontology objects.
-    const datasets: Dataset[] = json.datasets.map(
-      (dataset: DatasetResponse) => {
-        // It's possible for a dataset not to have tissues defined during
-        // upload; protect with [].
-        const tissue = (dataset.tissue ?? []).map((tissue) =>
-          createTaggedTissueOntology(tissue)
-        );
-        return { ...dataset, tissue };
-      }
-    );
+    const datasets: Dataset[] = createTaggedTissueOntologies(json.datasets);
 
     const collection: Collection = {
       ...json,
@@ -182,17 +173,27 @@ function fetchCollection() {
 
     let publishedCounterpart;
 
+    // If the collection is a revision, find the corresponding published
+    // collection for diff'ing purposes.
     if (collection.revision_of) {
       const publicCollectionURL = apiTemplateToUrl(API_URL + API.COLLECTION, {
         id: collection.revision_of,
       });
-      response = await fetch(publicCollectionURL, DEFAULT_FETCH_OPTIONS);
-      json = await response.json();
+      const publishedCounterpartResponse = await fetch(
+        publicCollectionURL,
+        DEFAULT_FETCH_OPTIONS
+      );
+      const publishedCounterpartJSON =
+        await publishedCounterpartResponse.json();
 
-      if (response.ok) {
+      // Convert tissue ontology objects to core ontology objects.
+      const publishedCounterpartDatasets: Dataset[] =
+        createTaggedTissueOntologies(publishedCounterpartJSON.datasets);
+
+      if (publishedCounterpartResponse.ok) {
         publishedCounterpart = {
-          ...json,
-          datasets: generateDatasetMap(datasets),
+          ...publishedCounterpartJSON,
+          datasets: generateDatasetMap(publishedCounterpartDatasets),
         };
       }
     }
@@ -732,5 +733,24 @@ function hasInvalidDatasetStatus(status: number, errors?: Error[]): boolean {
 function findErrorByKey(errors: Error[], key: ERROR_KEY): Error | undefined {
   return errors.find((error) => {
     return Object.keys(error).find((errorKey) => errorKey === key);
+  });
+}
+
+/**
+ * Convert tissue ontology objects to core ontology objects for the given
+ * dataset responses.
+ * @param datasetResponse - Array from datasets returned from the BE. Contains
+ * tissue in Schema 4.0.0+ format.
+ * @returns Array of datasets with tissue ontology objects converted to core
+ * ontology objects.
+ */
+function createTaggedTissueOntologies(datasets: DatasetResponse[]): Dataset[] {
+  return datasets.map((dataset: DatasetResponse) => {
+    // It's possible for a dataset not to have tissues defined during
+    // upload; protect with [].
+    const tissue = (dataset.tissue ?? []).map((tissue) =>
+      createTaggedTissueOntology(tissue)
+    );
+    return { ...dataset, tissue };
   });
 }
