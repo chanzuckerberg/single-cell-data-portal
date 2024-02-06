@@ -46,5 +46,11 @@ export const ReorderMenuItem = styled(MenuItem)`
       color: ${grey400};
       margin: ${spacesXxs}px 0;
     }
+
+    &.Mui-disabled {
+      svg {
+        color: inherit;
+      }
+    }
   }
 `;

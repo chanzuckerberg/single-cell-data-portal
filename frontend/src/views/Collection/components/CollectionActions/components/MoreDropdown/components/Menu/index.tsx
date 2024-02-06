@@ -83,8 +83,9 @@ const Menu = ({
       open={Boolean(menuProps.open)}
     >
       <CreateCollection id={collection.id} Button={EditButton} />
-      {isReorderUX && isCollectionDatasetsReorderable(datasets) && (
+      {isReorderUX && (
         <ReorderMenuItem
+          disabled={!isCollectionDatasetsReorderable(datasets)}
           onClick={() => {
             menuProps.onClose();
             reorderAction.onStartReorder(getDatasetIDs(datasets));
