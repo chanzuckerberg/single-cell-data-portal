@@ -4,7 +4,7 @@ FROM python:3.10
 RUN /usr/local/bin/python -m pip install --upgrade pip && \
     apt update && apt -y install graphviz graphviz-dev && \
     rm -rf /var/lib/apt/lists/* && \
-    pip3 install awscli
+    pip3 install awscli==1.32.24
 
 # For lighter weight Docker images
 ENV PIP_NO_CACHE_DIR=1
