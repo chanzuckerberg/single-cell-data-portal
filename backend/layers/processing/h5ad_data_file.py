@@ -51,7 +51,7 @@ class H5ADDataFile:
 
         self.extract_anndata_elements_from_file()
 
-        if skip_metadata_and_validation:
+        if not skip_metadata_and_validation:
             self.extract_metadata_about_dataset()
             self.validate_anndata()
             self.corpora_properties = None
