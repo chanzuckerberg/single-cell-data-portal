@@ -1,5 +1,5 @@
 alembic>=1.9, <2
-anndata==0.8.0
+anndata==0.10.5.post1
 allure-pytest<3
 black==22.3.0  # Must be kept in sync with black version in .pre-commit-config.yaml
 boto3>=1.11.17
