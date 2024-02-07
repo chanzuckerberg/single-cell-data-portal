@@ -63,6 +63,7 @@ const HelpTooltip = ({
         isAllCaps={false}
       >
         <StyledIconImage
+          alt="question mark"
           onClick={() => {
             if (skinnyMode) {
               setTooltipContent({

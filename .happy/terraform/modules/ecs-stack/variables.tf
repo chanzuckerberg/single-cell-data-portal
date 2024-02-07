@@ -35,6 +35,12 @@ variable happy_config_secret {
   description = "Happy Path configuration secret name"
 }
 
+variable "task_storage_size_gb" {
+  type        = number
+  description = "ephemeral disk storage in GB available for the task"
+  default     = 30 
+}
+
 variable deployment_stage {
   type        = string
   description = "Deployment stage for the app"
@@ -97,13 +103,13 @@ variable wmg_desired_vcpus {
 variable cg_batch_container_memory_limit {
   type        = number
   description = "Memory hard limit for the cellguide pipeline batch container"
-  default     = 92000
+  default     = 248000
 }
 
 variable cg_desired_vcpus {
   type        = number
   description = "Number of desired vCPUs for cellguide pipeline"
-  default     = 48
+  default     = 128
 }
 
 variable frontend_instance_count {

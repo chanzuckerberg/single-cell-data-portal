@@ -20,10 +20,6 @@ const HUBSPOT_FORMS_URL = "https://forms.hsforms.com";
 
 const CROSS_REF_URL = "https://api.crossref.org";
 
-const DATADOG_URL = "browser-intake-datadoghq.com";
-
-const GOOGLE_FONTS_URL = "https://fonts.gstatic.com";
-
 const SCRIPT_SRC = [
   "'self'",
   "'wasm-unsafe-eval'",
@@ -47,11 +43,9 @@ const defaultSecureHeaders = {
         configs.CELLGUIDE_DATA_URL,
         configs.CENSUS_MODELS_DATA_URL,
         CROSS_REF_URL,
-        DATADOG_URL,
-        GOOGLE_FONTS_URL,
       ],
       defaultSrc: ["'self'", HUBSPOT_FORMS_URL],
-      fontSrc: ["'self'", GOOGLE_FONTS_URL],
+      fontSrc: ["'self'"],
       formAction: ["'self'", HUBSPOT_FORMS_URL],
       frameAncestors: ["'none'"],
       // 4513(thuang): Comment out frameSrc for now until we figure out a compliant way to embed

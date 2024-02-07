@@ -40,7 +40,7 @@ export const Container = styled.div`
 
 export const CellTypeLabelStyle = styled.div`
   margin: auto;
-  font: normal 12px sans-serif;
+  font-size: 12px;
   white-space: pre;
   margin-left: 24px;
   border: none;
@@ -55,7 +55,7 @@ interface TissueHeaderLabelStyleProps extends CommonThemeProps {
 
 export const TissueHeaderLabelStyle = styled.div`
   margin: auto;
-  font: normal 12px sans-serif;
+  font-size: 12px;
   border: none;
   width: 100%;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};

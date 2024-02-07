@@ -100,3 +100,5 @@ src/views/CellGuide/common/fixtures/allTissues.json
 src/views/CellGuide/common/fixtures/ontologyTree.json
 src/views/CellGuide/common/fixtures/ontologyTreeStatePerCellType.json
 src/views/CellGuide/common/fixtures/ontologyTreeStatePerTissue.json
+
+certificates
