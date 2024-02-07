@@ -38,6 +38,7 @@ class H5ADDataFile:
         self,
         input_filename,
         var_index_column_name=None,
+        skip_metadata_and_validation=False,
     ):
         self.input_filename = input_filename
         # Set by self.extract_metadata_about_dataset
@@ -49,9 +50,11 @@ class H5ADDataFile:
         self.validate_input_file_type()
 
         self.extract_anndata_elements_from_file()
-        self.extract_metadata_about_dataset()
 
-        self.validate_anndata()
+        if skip_metadata_and_validation:
+            self.extract_metadata_about_dataset()
+            self.validate_anndata()
+            self.corpora_properties = None
 
     def to_cxg(self, output_cxg_directory, sparse_threshold, convert_anndata_colors_to_cxg_colors=True):
         """
