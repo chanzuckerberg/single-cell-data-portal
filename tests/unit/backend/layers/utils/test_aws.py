@@ -5,7 +5,7 @@ import tempfile
 from unittest import TestCase
 
 import boto3
-from moto import mock_s3
+from moto import mock_aws
 
 from backend.common.utils.aws import delete_many_from_s3
 
@@ -26,7 +26,7 @@ class TestDeleteManyFromS3(TestCase):
         if os.getenv("BOTO_ENDPOINT_URL"):
             s3_args = {"endpoint_url": os.getenv("BOTO_ENDPOINT_URL")}
         else:
-            self.mock = mock_s3()
+            self.mock = mock_aws()
             self.mock.start()
             s3_args = {}
         self.s3 = boto3.client("s3", config=boto3.session.Config(signature_version="s3v4"), **s3_args)
