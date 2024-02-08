@@ -1,10 +1,10 @@
 import dataclasses
 import itertools
 import json
+import uuid
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock, patch
-import uuid
 
 from furl import furl
 
