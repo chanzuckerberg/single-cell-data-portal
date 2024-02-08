@@ -4,6 +4,7 @@ import json
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock, patch
+import uuid
 
 from furl import furl
 
@@ -1613,7 +1614,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
             }
         )
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        response = self.app.put("/dp/v1/collections/fake_id/order-datasets", data=data, headers=headers)
+        response = self.app.put(f"/dp/v1/collections/{str(uuid.uuid4())}/order-datasets", data=data, headers=headers)
 
         # Forbidden - collection not found.
         self.assertEqual(403, response.status_code)
