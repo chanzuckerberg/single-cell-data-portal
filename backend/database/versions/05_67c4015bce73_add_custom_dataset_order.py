@@ -19,7 +19,7 @@ depends_on = None
 def upgrade():
     op.add_column(
         "CollectionVersion",
-        sa.Column("custom_dataset_order", sa.BOOLEAN(), nullable=True, server_default=sa.sql.expression.false()),
+        sa.Column("custom_dataset_order", sa.BOOLEAN(), nullable=True),
         schema="persistence_schema",
     )
 
