@@ -6,20 +6,11 @@ import { Collection } from "src/common/entities";
 
 export type OnCancelReorderFn = () => void;
 
-export type OnReorderFn = (
-  datasetID: string,
-  targetDatasetID: string,
-  position: ORDER_POSITION
-) => void;
+export type OnReorderFn = (datasetIndex: number, targetIndex: number) => void;
 
 export type OnSaveReorderFn = () => void;
 
 export type OnStartReorderFn = (datasetIDs: string[]) => void;
-
-export enum ORDER_POSITION {
-  BEFORE = -1,
-  AFTER = 1,
-}
 
 export interface ReorderAction {
   onCancelReorder: OnCancelReorderFn;
@@ -28,9 +19,6 @@ export interface ReorderAction {
   onStartReorder: OnStartReorderFn;
 }
 
-/**
- * Reorder mode.
- */
 export enum REORDER_MODE {
   ACTIVE = "ACTIVE",
   INACTIVE = "INACTIVE",
@@ -63,23 +51,11 @@ export function useReorderMode(collectionId: Collection["id"]): UseReorderMode {
   }, []);
 
   // Updates order.
-  const onReorder = useCallback(
-    (
-      datasetID: string,
-      targetDatasetID: string,
-      orderPosition: ORDER_POSITION
-    ) => {
-      setOrderedIDs((currentOrderedIDs) =>
-        buildOrderedIDs(
-          currentOrderedIDs,
-          datasetID,
-          targetDatasetID,
-          orderPosition
-        )
-      );
-    },
-    []
-  );
+  const onReorder = useCallback((datasetIndex: number, targetIndex: number) => {
+    setOrderedIDs((currentOrderedIDs) =>
+      buildOrderedIDs(currentOrderedIDs, datasetIndex, targetIndex)
+    );
+  }, []);
 
   // Saves order.
   const onSaveReorder = async (): Promise<void> => {
@@ -117,33 +93,24 @@ export function useReorderMode(collectionId: Collection["id"]): UseReorderMode {
 /**
  * Returns the updated order of datasets.
  * @param orderedIDs - Current dataset IDs, ordered.
- * @param datasetID - Dataset ID to reorder.
- * @param targetDatasetID - Target dataset ID to reorder to.
- * @param orderPosition - Indicates whether to insert before or after target dataset.
+ * @param datasetIndex - Index of dataset to reorder.
+ * @param targetIndex - Index of target position to reorder dataset to.
  * @returns order of datasets.
  */
 function buildOrderedIDs(
   orderedIDs: string[] | undefined,
-  datasetID: string,
-  targetDatasetID: string,
-  orderPosition: ORDER_POSITION
+  datasetIndex: number,
+  targetIndex: number
 ): string[] | undefined {
   if (!orderedIDs) return;
   // Reordering to the same position.
-  if (datasetID === targetDatasetID) return orderedIDs;
+  if (datasetIndex === targetIndex) return orderedIDs;
   const nextOrder = [...orderedIDs];
+  // Grab the datasetID.
+  const datasetID = nextOrder[datasetIndex];
   // Remove the dataset to reorder.
-  const index = nextOrder.indexOf(datasetID);
-  nextOrder.splice(index, 1);
-  // Remove the target dataset.
-  const targetIndex = nextOrder.indexOf(targetDatasetID);
-  nextOrder.splice(targetIndex, 1);
-  // Insert the dataset and target dataset at the target index, in the correct order.
-  const datasetIDs = [datasetID, targetDatasetID];
-  if (orderPosition === ORDER_POSITION.AFTER) {
-    // Reverse order; the dataset should be inserted after the target dataset.
-    datasetIDs.reverse();
-  }
-  nextOrder.splice(targetIndex, 0, ...datasetIDs);
+  nextOrder.splice(datasetIndex, 1);
+  // Insert the dataset at the target index.
+  nextOrder.splice(targetIndex, 0, datasetID);
   return nextOrder;
 }
