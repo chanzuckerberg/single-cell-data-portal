@@ -8,6 +8,7 @@ import { Grid as StyledGrid } from "src/components/common/Grid/style";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import { UploadedFiles } from "src/views/Collection/components/CollectionActions/components/AddButton";
 import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
+import { useDropAndDrag } from "src/views/Collection/hooks/useDropAndDrag/useDropAndDrag";
 
 interface Props {
   className?: string;
@@ -51,6 +52,7 @@ const DatasetsGrid: FC<Props> = ({
   reorderAction,
   reuploadDataset,
 }) => {
+  const { dragAndDropAction, draggingStyles } = useDropAndDrag();
   return (
     <StyledGrid className={className} isReorder={isReorder}>
       <thead>
@@ -68,19 +70,22 @@ const DatasetsGrid: FC<Props> = ({
         </tr>
       </thead>
       <tbody>
-        {datasets.map((dataset) => (
+        {datasets.map((dataset, index) => (
           <DatasetRow
-            visibility={visibility}
             accessType={accessType}
             key={dataset.id}
             collectionId={collectionId}
             dataset={dataset}
+            datasetIndex={index}
+            dragAndDropAction={dragAndDropAction}
+            draggingStyles={draggingStyles}
             file={uploadedFiles[dataset.id]}
             invalidateCollectionQuery={invalidateCollectionQuery}
             isReorder={isReorder}
             onUploadFile={onUploadFile(reuploadDataset, dataset.id)}
             reorderAction={reorderAction}
             revisionsEnabled={isRevision}
+            visibility={visibility}
           />
         ))}
       </tbody>

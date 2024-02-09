@@ -50,6 +50,8 @@ import ReorderModeRow, {
   ReorderModeRowProps,
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow";
 import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
+import { DragAndDropAction } from "src/views/Collection/hooks/useDropAndDrag/useDropAndDrag";
+import { SerializedStyles } from "@emotion/react";
 
 const AsyncTooltip = loadable(
   () =>
@@ -85,6 +87,9 @@ const handlePossibleError = (
 interface Props {
   collectionId: Collection["id"];
   dataset: Dataset;
+  datasetIndex: number;
+  dragAndDropAction: DragAndDropAction;
+  draggingStyles?: SerializedStyles;
   file?: UploadingFile;
   invalidateCollectionQuery: () => void;
   isReorder: boolean;
@@ -98,6 +103,9 @@ interface Props {
 const DatasetRow: FC<Props> = ({
   collectionId,
   dataset,
+  datasetIndex,
+  dragAndDropAction,
+  draggingStyles,
   file,
   invalidateCollectionQuery,
   isReorder,
@@ -175,7 +183,15 @@ const DatasetRow: FC<Props> = ({
   const isOverMaxCellCount = checkIsOverMaxCellCount(cell_count);
 
   const Row = isReorder ? ReorderModeRow : "tr";
-  const rowProps = isReorder ? { dataset, reorderAction } : {};
+  const rowProps = isReorder
+    ? {
+        dataset,
+        datasetIndex,
+        dragAndDropAction,
+        draggingStyles,
+        reorderAction,
+      }
+    : {};
 
   return (
     <Row {...(rowProps as ReorderModeRowProps)}>
