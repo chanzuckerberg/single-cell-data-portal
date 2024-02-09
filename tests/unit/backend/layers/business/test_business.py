@@ -1007,7 +1007,7 @@ class TestSetCollectionVersionDatasetsOrder(BaseBusinessLogicTestCase):
         self.assertListEqual([dv.version_id for dv in read_version.datasets], dv_ids)
 
         # Confirm the collection version datasets are marked as custom ordered.
-        self.assertTrue(read_version.custom_dataset_order)
+        self.assertTrue(read_version.has_custom_dataset_order)
 
     def test_set_collection_version_datasets_order_length_fail(self):
         """
@@ -1088,7 +1088,7 @@ class TestSetCollectionVersionDatasetsOrder(BaseBusinessLogicTestCase):
         self.assertListEqual([dv.version_id for dv in read_version.datasets], updated_dv_ids)
 
         # Confirm the collection version datasets are marked as custom ordered.
-        self.assertTrue(read_version.custom_dataset_order)
+        self.assertTrue(read_version.has_custom_dataset_order)
 
 
 class TestDeleteDataset(BaseBusinessLogicTestCase):

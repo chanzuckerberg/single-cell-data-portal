@@ -35,7 +35,7 @@ class CollectionVersionTable:
     created_at = Column(DateTime)
     schema_version = Column(String)
     datasets = Column(ARRAY(UUID(as_uuid=True)))
-    custom_dataset_order = Column(BOOLEAN)
+    has_custom_dataset_order = Column(BOOLEAN)
 
 
 @mapper_registry.mapped

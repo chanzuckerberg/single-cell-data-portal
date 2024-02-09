@@ -19,10 +19,10 @@ depends_on = None
 def upgrade():
     op.add_column(
         "CollectionVersion",
-        sa.Column("custom_dataset_order", sa.BOOLEAN(), nullable=True),
+        sa.Column("has_custom_dataset_order", sa.BOOLEAN(), nullable=True),
         schema="persistence_schema",
     )
 
 
 def downgrade():
-    op.drop_column("CollectionVersion", "custom_dataset_order", schema="persistence_schema")
+    op.drop_column("CollectionVersion", "has_custom_dataset_order", schema="persistence_schema")

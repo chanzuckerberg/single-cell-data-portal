@@ -78,7 +78,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             schema_version=None,
             canonical_collection=canonical,
             datasets=[],
-            custom_dataset_order=False,
+            has_custom_dataset_order=False,
         )
         self.collections_versions[version_id.id] = version
         # Don't set mappings here - those will be set when publishing the collection!
@@ -106,7 +106,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             # Replace 'datasets' array of Dataset version ids with 'datasets' array of actual Dataset versions
             copied_version.datasets = datasets_to_include
             # Order by cell count if not custom ordered.
-            if not copied_version.custom_dataset_order:
+            if not copied_version.has_custom_dataset_order:
                 copied_version.datasets = sort_datasets_by_cell_count(copied_version.datasets)
             # Hack for business logic that uses isinstance
             copied_version.__class__ = CollectionVersionWithDatasets
@@ -207,7 +207,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             created_at=datetime.utcnow(),
             schema_version=None,
             canonical_collection=cc,
-            custom_dataset_order=current_version.custom_dataset_order,
+            has_custom_dataset_order=current_version.has_custom_dataset_order,
         )
         self.collections_versions[new_version_id.id] = collection_version
         return new_version_id
@@ -571,7 +571,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
         # Replace collection version datasets with given, ordered dataset version IDs and update custom ordered flag.
         collection_version.datasets = dataset_version_ids
-        collection_version.custom_dataset_order = True
+        collection_version.has_custom_dataset_order = True
 
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
         return copy.deepcopy(self.datasets_versions[version_id.id].status)
