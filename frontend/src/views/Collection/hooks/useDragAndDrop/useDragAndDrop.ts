@@ -61,9 +61,9 @@ export function useDragAndDrop(): UseDragAndDrop {
   const onDropping = useCallback(
     (onReorder: OnReorderFn) => {
       setDraggingStyles(DEFAULT_DRAGGING_STYLES);
-      onReorder(draggingIndex, droppingIndex);
+      onReorder(draggingIndex, shadowIndex);
     },
-    [draggingIndex, droppingIndex]
+    [draggingIndex, shadowIndex]
   );
 
   // Callback fired when the drag operation ends.
