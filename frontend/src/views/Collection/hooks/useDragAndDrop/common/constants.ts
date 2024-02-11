@@ -2,7 +2,7 @@ import {
   Dragging,
   DRAGGING_DIRECTION,
   OffsetByIndex,
-} from "src/views/Collection/hooks/useDropAndDrag/common/entities";
+} from "src/views/Collection/hooks/useDragAndDrop/common/entities";
 import { css } from "@emotion/react";
 
 export const DEFAULT_CLIENT_Y = 0;
