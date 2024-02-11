@@ -11,9 +11,6 @@ import {
   DEFAULT_DIRECTION_TOLERANCE,
   DEFAULT_DRAGGING,
   DEFAULT_DRAGGING_STYLES,
-  DEFAULT_OFFSETS,
-  SELECTOR_TABLE_BODY,
-  SELECTOR_TABLE_ROW,
 } from "src/views/Collection/hooks/useDragAndDrop/common/constants";
 
 export interface DragAndDropAction {
@@ -22,8 +19,8 @@ export interface DragAndDropAction {
   onDropping: (onReorder: OnReorderFn) => void;
   onEndDragging: () => void;
   onStartDragging: (
-    dragEvent: DragEvent<HTMLElement>,
-    draggingIndex: number
+    draggingIndex: number,
+    offsetByIndex: OffsetByIndex
   ) => void;
 }
 
@@ -39,10 +36,9 @@ interface UseDragAndDrop {
  */
 export function useDragAndDrop(): UseDragAndDrop {
   const clientYRef = useRef<number>(DEFAULT_CLIENT_Y);
-  const offsetByIndexRef = useRef<OffsetByIndex>(DEFAULT_OFFSETS);
   const [dragging, setDragging] = useState<Dragging>(DEFAULT_DRAGGING);
   const [draggingStyles, setDraggingStyles] = useState<SerializedStyles>();
-  const { draggingIndex, droppingIndex, shadowIndex } = dragging;
+  const { draggingIndex, droppingIndex, offsetByIndex, shadowIndex } = dragging;
 
   // Callback fired every few milliseconds when the dragged element is being dragged.
   const onDragging = useCallback((dragEvent: DragEvent<HTMLElement>) => {
@@ -73,21 +69,15 @@ export function useDragAndDrop(): UseDragAndDrop {
   // Callback fired when the drag operation ends.
   const onEndDragging = useCallback(() => {
     clientYRef.current = DEFAULT_CLIENT_Y;
-    offsetByIndexRef.current = DEFAULT_OFFSETS;
     setDragging(DEFAULT_DRAGGING);
   }, []);
 
   // Callback fired when dragging starts.
   const onStartDragging = useCallback(
-    (dragEvent: DragEvent<HTMLElement>, draggingIndex: number) => {
-      offsetByIndexRef.current = getOffsets(dragEvent);
-      setDragging((dragging) => ({
-        ...dragging,
-        draggingIndex,
-        droppingIndex: draggingIndex,
-        shadowIndex: draggingIndex,
-        size: offsetByIndexRef.current.size,
-      }));
+    (draggingIndex: number, offsetByIndex: OffsetByIndex) => {
+      setDragging((dragging) =>
+        updateDraggingStart(dragging, draggingIndex, offsetByIndex)
+      );
     },
     []
   );
@@ -100,9 +90,9 @@ export function useDragAndDrop(): UseDragAndDrop {
   // Update the dragging styles with changes to the shadow index.
   useEffect(() => {
     setDraggingStyles(
-      updateDraggingStyles(draggingIndex, shadowIndex, offsetByIndexRef.current)
+      updateDraggingStyles(draggingIndex, shadowIndex, offsetByIndex)
     );
-  }, [draggingIndex, shadowIndex]);
+  }, [draggingIndex, offsetByIndex, shadowIndex]);
 
   return {
     dragAndDropAction: {
@@ -163,7 +153,8 @@ function calculateOffset(
  * @returns shadow index.
  */
 function calculateShadowIndex(draggingState: Dragging): number {
-  const { draggingDirection, droppingIndex, shadowIndex, size } = draggingState;
+  const { draggingDirection, droppingIndex, offsetByIndex, shadowIndex } =
+    draggingState;
   let nextShadowIndex = shadowIndex;
   if (draggingDirection === DRAGGING_DIRECTION.DOWN) {
     if (droppingIndex > shadowIndex) {
@@ -174,7 +165,7 @@ function calculateShadowIndex(draggingState: Dragging): number {
       nextShadowIndex = droppingIndex;
     }
   }
-  return normalizeShadowIndex(nextShadowIndex, size);
+  return normalizeShadowIndex(nextShadowIndex, offsetByIndex.size);
 }
 
 /**
@@ -194,24 +185,6 @@ function getDraggingIndexes(
     { length: maxIndex - minIndex + 1 },
     (_, index) => minIndex + index
   );
-}
-
-/**
- * Returns a map of element height by index.
- * Referenced by dragging styles state to calculate the y-axis translation of the dragging element and dropping elements
- * during drag operation.
- * @param dragEvent - Drag event.
- * @returns a map of offset by index.
- */
-function getOffsets(dragEvent: DragEvent<HTMLElement>): OffsetByIndex {
-  const tbodyEl = dragEvent.currentTarget.closest(SELECTOR_TABLE_BODY);
-  const rowsEl = tbodyEl?.querySelectorAll(SELECTOR_TABLE_ROW);
-  if (!rowsEl) return DEFAULT_OFFSETS;
-  const offsetByIndex = new Map();
-  rowsEl.forEach((rowEl, index) => {
-    offsetByIndex.set(index, rowEl.getBoundingClientRect().height);
-  });
-  return offsetByIndex;
 }
 
 /**
@@ -252,7 +225,7 @@ function normalizeShadowIndex(shadowIndex: number, size: number): number {
  * @returns updated dragging state.
  */
 function updateDragging(draggingState: Dragging): Dragging {
-  if (draggingState.size === 0) return draggingState; // Dragging is ended and dragging state is reset.
+  if (draggingState.offsetByIndex.size === 0) return draggingState; // Dragging is ended and dragging state is reset.
   const shadowIndex = calculateShadowIndex(draggingState);
   return { ...draggingState, shadowIndex };
 }
@@ -325,5 +298,26 @@ function updateDraggingDroppingIndex(
   return {
     ...draggingState,
     droppingIndex: droppingIndex,
+  };
+}
+
+/**
+ * Returns start dragging state.
+ * @param draggingState - Dragging state.
+ * @param draggingIndex - Dragging index.
+ * @param offsetByIndex - Offset by index.
+ * @returns dragging state.
+ */
+function updateDraggingStart(
+  draggingState: Dragging,
+  draggingIndex: number,
+  offsetByIndex: OffsetByIndex
+): Dragging {
+  return {
+    ...draggingState,
+    draggingIndex,
+    droppingIndex: draggingIndex,
+    offsetByIndex,
+    shadowIndex: draggingIndex,
   };
 }
