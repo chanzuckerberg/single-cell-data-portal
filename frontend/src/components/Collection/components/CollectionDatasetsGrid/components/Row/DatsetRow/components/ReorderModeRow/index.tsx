@@ -32,11 +32,11 @@ export default function ReorderModeRow({
 }: Props): JSX.Element {
   const { onReorder } = reorderAction;
   const {
+    onDragging,
     onDraggingOver,
     onDropping,
     onEndDragging,
     onStartDragging,
-    onUpdateDirection,
   } = dragAndDropAction;
   const [dragEventType, setDragEventTypeState] = useState<DRAG_EVENT_TYPE>();
 
@@ -49,9 +49,9 @@ export default function ReorderModeRow({
       // the original row styles are updated to indicate the row is being dragged.
       setDragEventTypeState(DRAG_EVENT_TYPE.DRAG);
       // While dragging, update the direction of the drag event.
-      onUpdateDirection(dragEvent);
+      onDragging(dragEvent);
     },
-    [onUpdateDirection]
+    [onDragging]
   );
 
   // Row dragging is successful or cancelled.
