@@ -3,7 +3,7 @@ import {
   Dragging,
   DRAGGING_DIRECTION,
   OffsetByIndex,
-} from "src/views/Collection/hooks/useDropAndDrag/common/entities";
+} from "src/views/Collection/hooks/useDragAndDrop/common/entities";
 import { css, SerializedStyles } from "@emotion/react";
 import { OnReorderFn } from "src/views/Collection/hooks/useReorderMode";
 import {
@@ -14,7 +14,7 @@ import {
   DEFAULT_OFFSETS,
   SELECTOR_TABLE_BODY,
   SELECTOR_TABLE_ROW,
-} from "src/views/Collection/hooks/useDropAndDrag/common/constants";
+} from "src/views/Collection/hooks/useDragAndDrop/common/constants";
 
 export interface DragAndDropAction {
   onDragging: (dragEvent: DragEvent<HTMLElement>) => void;
@@ -27,17 +27,17 @@ export interface DragAndDropAction {
   ) => void;
 }
 
-interface UseDropAndDrag {
+interface UseDragAndDrop {
   dragAndDropAction: DragAndDropAction;
   draggingStyles?: SerializedStyles;
 }
 
 /**
- * "Drop and Drag" feature for collection view dataset reordering.
+ * "Drag and Drop" feature for collection view dataset reordering.
  * Handles the drag and drop UI/UX for reordering datasets in the collection view.
- * @returns drop and drag actions and dragging styles.
+ * @returns drag and drop actions and dragging styles.
  */
-export function useDropAndDrag(): UseDropAndDrag {
+export function useDragAndDrop(): UseDragAndDrop {
   const clientYRef = useRef<number>(DEFAULT_CLIENT_Y);
   const offsetByIndexRef = useRef<OffsetByIndex>(DEFAULT_OFFSETS);
   const [dragging, setDragging] = useState<Dragging>(DEFAULT_DRAGGING);
