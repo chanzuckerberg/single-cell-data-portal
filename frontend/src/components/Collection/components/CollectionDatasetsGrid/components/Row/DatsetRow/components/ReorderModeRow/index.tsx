@@ -3,7 +3,7 @@ import { Dataset } from "src/common/entities";
 import ReorderCell from "src/components/common/Grid/components/ReorderCell";
 import { Row } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow/style";
 import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
-import { DragAndDropAction } from "src/views/Collection/hooks/useDropAndDrag/useDropAndDrag";
+import { DragAndDropAction } from "src/views/Collection/hooks/useDragAndDrop/useDragAndDrop";
 import { SerializedStyles } from "@emotion/react";
 
 export enum DRAG_EVENT_TYPE {
