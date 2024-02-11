@@ -31,7 +31,7 @@ s3transfer==0.6.1
 scipy==1.11.1
 six==1.16.0
 tiledb==0.24.0
-typing_extensions==4.7.1
+typing_extensions==4.9.0
 tzdata==2023.3
 urllib3==1.26.16
 coverage==7.2.7
