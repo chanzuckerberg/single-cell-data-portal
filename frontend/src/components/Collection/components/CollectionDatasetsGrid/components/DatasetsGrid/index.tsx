@@ -8,7 +8,7 @@ import { Grid as StyledGrid } from "src/components/common/Grid/style";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import { UploadedFiles } from "src/views/Collection/components/CollectionActions/components/AddButton";
 import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
-import { useDropAndDrag } from "src/views/Collection/hooks/useDropAndDrag/useDropAndDrag";
+import { useDragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/useDragAndDrop";
 
 interface Props {
   className?: string;
@@ -52,7 +52,7 @@ const DatasetsGrid: FC<Props> = ({
   reorderAction,
   reuploadDataset,
 }) => {
-  const { dragAndDropAction, draggingStyles } = useDropAndDrag();
+  const { dragAndDropAction, draggingStyles } = useDragAndDrop();
   return (
     <StyledGrid className={className} isReorder={isReorder}>
       <thead>

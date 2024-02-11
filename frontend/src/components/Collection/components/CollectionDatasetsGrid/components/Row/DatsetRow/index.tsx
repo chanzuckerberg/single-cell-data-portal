@@ -50,7 +50,7 @@ import ReorderModeRow, {
   ReorderModeRowProps,
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow";
 import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
-import { DragAndDropAction } from "src/views/Collection/hooks/useDropAndDrag/useDropAndDrag";
+import { DragAndDropAction } from "src/views/Collection/hooks/useDragAndDrop/useDragAndDrop";
 import { SerializedStyles } from "@emotion/react";
 
 const AsyncTooltip = loadable(
