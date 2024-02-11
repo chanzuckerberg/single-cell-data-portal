@@ -5,6 +5,11 @@ import { Row } from "src/components/Collection/components/CollectionDatasetsGrid
 import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
 import { DragAndDropAction } from "src/views/Collection/hooks/useDragAndDrop/useDragAndDrop";
 import { SerializedStyles } from "@emotion/react";
+import { OffsetByIndex } from "src/views/Collection/hooks/useDragAndDrop/common/entities";
+import {
+  SELECTOR_TABLE_BODY,
+  SELECTOR_TABLE_ROW,
+} from "src/views/Collection/hooks/useDragAndDrop/common/constants";
 
 export enum DRAG_EVENT_TYPE {
   DRAG = "DRAG",
@@ -90,7 +95,8 @@ export default function ReorderModeRow({
       // the image capture of the row being dragged. This image is generated from the drag target, and will represent
       // the draggable row as it is being dragged.
       setDragEventTypeState(DRAG_EVENT_TYPE.DRAG_START);
-      onStartDragging(dragEvent, draggingIndex);
+      // Initiate drag and drop process.
+      onStartDragging(draggingIndex, getOffsetByIndex(dragEvent));
     },
     [onStartDragging]
   );
@@ -126,4 +132,21 @@ export default function ReorderModeRow({
       {children}
     </Row>
   );
+}
+
+/**
+ * Returns a map of row height by index.
+ * Referenced by dragging styles state to calculate the y-axis translation of the dragging row and dropping rows
+ * during drag operation.
+ * @param dragEvent - Drag event.
+ * @returns row height by index.
+ */
+function getOffsetByIndex(dragEvent: DragEvent<HTMLElement>): OffsetByIndex {
+  const tbodyEl = dragEvent.currentTarget.closest(SELECTOR_TABLE_BODY);
+  const rowsEl = tbodyEl?.querySelectorAll(SELECTOR_TABLE_ROW);
+  const offsetByIndex = new Map();
+  rowsEl?.forEach((rowEl, index) => {
+    offsetByIndex.set(index, rowEl.getBoundingClientRect().height);
+  });
+  return offsetByIndex;
 }
