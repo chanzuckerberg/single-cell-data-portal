@@ -6,20 +6,18 @@ import {
 } from "src/views/Collection/hooks/useDropAndDrag/common/entities";
 import { css, SerializedStyles } from "@emotion/react";
 import { OnReorderFn } from "src/views/Collection/hooks/useReorderMode";
-
-const DEFAULT_CLIENT_Y = 0;
-const DEFAULT_DRAGGING: Dragging = {
-  draggingDirection: DRAGGING_DIRECTION.DOWN,
-  draggingIndex: 0,
-  droppingIndex: 0,
-  shadowIndex: 0,
-  size: 0,
-};
-const DEFAULT_OFFSETS: OffsetByIndex = new Map();
-const SELECTOR_TABLE_BODY = "table tbody";
-const SELECTOR_TABLE_ROW = "tr";
+import {
+  DEFAULT_CLIENT_Y,
+  DEFAULT_DIRECTION_TOLERANCE,
+  DEFAULT_DRAGGING,
+  DEFAULT_DRAGGING_STYLES,
+  DEFAULT_OFFSETS,
+  SELECTOR_TABLE_BODY,
+  SELECTOR_TABLE_ROW,
+} from "src/views/Collection/hooks/useDropAndDrag/common/constants";
 
 export interface DragAndDropAction {
+  onDragging: (dragEvent: DragEvent<HTMLElement>) => void;
   onDraggingOver: (droppingIndex: number) => void;
   onDropping: (onReorder: OnReorderFn) => void;
   onEndDragging: () => void;
@@ -27,7 +25,6 @@ export interface DragAndDropAction {
     dragEvent: DragEvent<HTMLElement>,
     draggingIndex: number
   ) => void;
-  onUpdateDirection: (dragEvent: DragEvent<HTMLElement>) => void;
 }
 
 interface UseDropAndDrag {
@@ -47,17 +44,27 @@ export function useDropAndDrag(): UseDropAndDrag {
   const [draggingStyles, setDraggingStyles] = useState<SerializedStyles>();
   const { draggingIndex, droppingIndex, shadowIndex } = dragging;
 
+  // Callback fired every few milliseconds when the dragged element is being dragged.
+  const onDragging = useCallback((dragEvent: DragEvent<HTMLElement>) => {
+    // Update dragging direction.
+    const clientY = dragEvent.clientY;
+    const direction = calculateDirection(clientY - clientYRef.current);
+    if (!direction) return;
+    clientYRef.current = clientY; // Update clientY reference only when direction has been detected.
+    setDragging((dragging) => updateDraggingDirection(dragging, direction));
+  }, []);
+
   // Callback fired when dragged element is being dragged over a valid drop target.
   const onDraggingOver = useCallback((droppingIndex: number) => {
     setDragging((dragging) =>
-      updateDraggingWithDroppingIndex(dragging, droppingIndex)
+      updateDraggingDroppingIndex(dragging, droppingIndex)
     );
   }, []);
 
   // Callback fired when dragged element is dropped on a valid drop target.
   const onDropping = useCallback(
     (onReorder: OnReorderFn) => {
-      setDraggingStyles(getDefaultDraggingStyles());
+      setDraggingStyles(DEFAULT_DRAGGING_STYLES);
       onReorder(draggingIndex, droppingIndex);
     },
     [draggingIndex, droppingIndex]
@@ -78,23 +85,14 @@ export function useDropAndDrag(): UseDropAndDrag {
         ...dragging,
         draggingIndex,
         droppingIndex: draggingIndex,
-        size: offsetByIndexRef.current.size,
         shadowIndex: draggingIndex,
+        size: offsetByIndexRef.current.size,
       }));
     },
     []
   );
 
-  // Updates the dragging direction.
-  const onUpdateDirection = useCallback((dragEvent: DragEvent<HTMLElement>) => {
-    const clientY = dragEvent.clientY;
-    const direction = calculateDirection(clientY - clientYRef.current);
-    if (!direction) return;
-    clientYRef.current = clientY; // Update clientY reference only when direction has been detected.
-    setDragging((dragging) => updateDraggingDirection(dragging, direction));
-  }, []);
-
-  // Update dragging state with changes in direction or dropping index. TODO.
+  // Update dragging state with changes in dropping index.
   useEffect(() => {
     setDragging(updateDragging);
   }, [droppingIndex]);
@@ -108,11 +106,11 @@ export function useDropAndDrag(): UseDropAndDrag {
 
   return {
     dragAndDropAction: {
+      onDragging,
       onDraggingOver,
       onDropping,
       onEndDragging,
       onStartDragging,
-      onUpdateDirection,
     },
     draggingStyles: draggingStyles,
   };
@@ -126,7 +124,7 @@ export function useDropAndDrag(): UseDropAndDrag {
  */
 function calculateDirection(
   dy: number,
-  tolerance = 8
+  tolerance = DEFAULT_DIRECTION_TOLERANCE
 ): DRAGGING_DIRECTION | undefined {
   if (dy === 0) return;
   const absY = Math.abs(dy);
@@ -177,17 +175,6 @@ function calculateShadowIndex(draggingState: Dragging): number {
     }
   }
   return normalizeShadowIndex(nextShadowIndex, size);
-}
-
-/**
- * Returns the default dragging styles.
- * @returns dragging styles.
- */
-function getDefaultDraggingStyles(): SerializedStyles {
-  return css`
-    transform: translateY(0);
-    transition: none;
-  `;
 }
 
 /**
@@ -309,20 +296,6 @@ function updateDraggingStyles(
 }
 
 /**
- * Updates the dragging state with changes to the dropping index.
- * @param draggingState - Dragging state.
- * @param droppingIndex - Dropping index.
- * @returns updated dragging state.
- */
-function updateDraggingWithDroppingIndex(
-  draggingState: Dragging,
-  droppingIndex: number
-): Dragging {
-  if (draggingState.draggingIndex === droppingIndex) return draggingState;
-  return { ...draggingState, droppingIndex };
-}
-
-/**
  * Updates the dragging state with changes to the dragging direction.
  * @param draggingState - Dragging state.
  * @param direction - Direction.
@@ -334,4 +307,23 @@ function updateDraggingDirection(
 ): Dragging {
   if (draggingState.draggingDirection === direction) return draggingState;
   return { ...draggingState, draggingDirection: direction };
+}
+
+/**
+ * Updates the dragging state with changes to the dropping index.
+ * @param draggingState - Dragging state.
+ * @param droppingIndex - Dropping index.
+ * @returns updated dragging state.
+ */
+function updateDraggingDroppingIndex(
+  draggingState: Dragging,
+  droppingIndex: number
+): Dragging {
+  if (draggingState.draggingIndex === droppingIndex) {
+    return draggingState; // Dragging element is the drop target (usually onDragStart or after transition).
+  }
+  return {
+    ...draggingState,
+    droppingIndex: droppingIndex,
+  };
 }
