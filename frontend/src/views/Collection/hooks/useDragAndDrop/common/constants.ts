@@ -10,6 +10,7 @@ export const DEFAULT_DRAGGING: Dragging = {
   draggingDirection: DRAGGING_DIRECTION.DOWN,
   draggingIndex: 0,
   droppingIndex: 0,
+  indexes: [],
   offsetByIndex: new Map(),
   shadowIndex: 0,
 };
