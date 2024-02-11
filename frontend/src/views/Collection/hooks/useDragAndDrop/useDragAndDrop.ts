@@ -70,6 +70,7 @@ export function useDragAndDrop(): UseDragAndDrop {
   const onEndDragging = useCallback(() => {
     clientYRef.current = DEFAULT_CLIENT_Y;
     setDragging(DEFAULT_DRAGGING);
+    setDraggingStyles(DEFAULT_DRAGGING_STYLES);
   }, []);
 
   // Callback fired when dragging starts.
@@ -153,8 +154,7 @@ function calculateOffset(
  * @returns shadow index.
  */
 function calculateShadowIndex(draggingState: Dragging): number {
-  const { draggingDirection, droppingIndex, offsetByIndex, shadowIndex } =
-    draggingState;
+  const { draggingDirection, droppingIndex, shadowIndex } = draggingState;
   let nextShadowIndex = shadowIndex;
   if (draggingDirection === DRAGGING_DIRECTION.DOWN) {
     if (droppingIndex > shadowIndex) {
@@ -165,7 +165,7 @@ function calculateShadowIndex(draggingState: Dragging): number {
       nextShadowIndex = droppingIndex;
     }
   }
-  return normalizeShadowIndex(nextShadowIndex, offsetByIndex.size);
+  return nextShadowIndex;
 }
 
 /**
@@ -207,16 +207,17 @@ function getSelectorPositions(
 }
 
 /**
- * Normalizes shadow index to remain within the allowable range of the indexes.
- * @param shadowIndex - Shadow index.
- * @param size - Total number of elements.
- * @returns normalized shadow index.
+ * Reorders the dragging indexes, with new dropping index.
+ * @param draggingState - Dragging state.
+ * @return indexes.
  */
-function normalizeShadowIndex(shadowIndex: number, size: number): number {
-  if (shadowIndex < 0) return 0;
-  const maxIndex = size - 1;
-  if (shadowIndex > maxIndex) return maxIndex;
-  return shadowIndex;
+function reorderDraggingIndexes(draggingState: Dragging): number[] {
+  const { draggingIndex, droppingIndex, indexes } = draggingState;
+  const nextIndexes = [...indexes];
+  const shadowIndex = nextIndexes.indexOf(draggingIndex);
+  nextIndexes.splice(shadowIndex, 1);
+  nextIndexes.splice(droppingIndex, 0, draggingIndex);
+  return nextIndexes;
 }
 
 /**
@@ -226,8 +227,9 @@ function normalizeShadowIndex(shadowIndex: number, size: number): number {
  */
 function updateDragging(draggingState: Dragging): Dragging {
   if (draggingState.offsetByIndex.size === 0) return draggingState; // Dragging is ended and dragging state is reset.
+  const indexes = reorderDraggingIndexes(draggingState);
   const shadowIndex = calculateShadowIndex(draggingState);
-  return { ...draggingState, shadowIndex };
+  return { ...draggingState, indexes, shadowIndex };
 }
 
 /**
@@ -293,11 +295,13 @@ function updateDraggingDroppingIndex(
   droppingIndex: number
 ): Dragging {
   if (draggingState.draggingIndex === droppingIndex) {
-    return draggingState; // Dragging element is the drop target (usually onDragStart or after transition).
+    return draggingState; // Dragging element is the drop target.
   }
+  // Dragging over a new dropping index; grab the actual dropping index from the indexes.
+  const droppingIndexIndex = draggingState.indexes.indexOf(droppingIndex);
   return {
     ...draggingState,
-    droppingIndex: droppingIndex,
+    droppingIndex: droppingIndexIndex,
   };
 }
 
@@ -317,6 +321,7 @@ function updateDraggingStart(
     ...draggingState,
     draggingIndex,
     droppingIndex: draggingIndex,
+    indexes: [...offsetByIndex.keys()],
     offsetByIndex,
     shadowIndex: draggingIndex,
   };
