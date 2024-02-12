@@ -89,7 +89,7 @@ interface Props {
   dataset: Dataset;
   datasetIndex: number;
   dragAndDropAction: DragAndDropAction;
-  draggingStyles?: SerializedStyles;
+  dragAndDropStyles?: SerializedStyles;
   file?: UploadingFile;
   invalidateCollectionQuery: () => void;
   isReorder: boolean;
@@ -105,7 +105,7 @@ const DatasetRow: FC<Props> = ({
   dataset,
   datasetIndex,
   dragAndDropAction,
-  draggingStyles,
+  dragAndDropStyles,
   file,
   invalidateCollectionQuery,
   isReorder,
@@ -188,7 +188,7 @@ const DatasetRow: FC<Props> = ({
         dataset,
         datasetIndex,
         dragAndDropAction,
-        draggingStyles,
+        dragAndDropStyles,
         reorderAction,
       }
     : {};
