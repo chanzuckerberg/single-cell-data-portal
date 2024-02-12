@@ -270,7 +270,7 @@ function updateDragging(
 ): Dragging {
   if (draggingState.draggingIndex === droppingIndex) {
     // Dragging element is on the drop target; transitioning is complete.
-    return { ...draggingState, droppingIndex, isTransitioning: true };
+    return { ...draggingState, droppingIndex, isTransitioning: false };
   }
   if (draggingState.isTransitioning) {
     // During the transition of the dragging element, the synchronization between the shadow index and the dropping index
