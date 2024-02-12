@@ -52,7 +52,7 @@ const DatasetsGrid: FC<Props> = ({
   reorderAction,
   reuploadDataset,
 }) => {
-  const { dragAndDropAction, draggingStyles } = useDragAndDrop();
+  const { dragAndDropAction, dragAndDropStyles } = useDragAndDrop();
   return (
     <StyledGrid className={className} isReorder={isReorder}>
       <thead>
@@ -78,7 +78,7 @@ const DatasetsGrid: FC<Props> = ({
             dataset={dataset}
             datasetIndex={index}
             dragAndDropAction={dragAndDropAction}
-            draggingStyles={draggingStyles}
+            dragAndDropStyles={dragAndDropStyles}
             file={uploadedFiles[dataset.id]}
             invalidateCollectionQuery={invalidateCollectionQuery}
             isReorder={isReorder}
