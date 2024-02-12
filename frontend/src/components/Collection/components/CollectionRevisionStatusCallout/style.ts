@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Banner, Button as SDSButton, Link } from "@czi-sds/components";
+import { Banner, Link } from "@czi-sds/components";
 import { CollectionHero } from "src/views/Collection/style";
 
 export const CollectionRevisionCallout = styled(Banner)`
@@ -33,25 +33,6 @@ export const TextLink = styled(Link)`
   text-decoration: underline;
 
   &:hover {
-    color: inherit;
-  }
-`;
-
-export const Button = styled(SDSButton)`
-  color: inherit;
-  font: inherit;
-  font-weight: 500;
-  letter-spacing: inherit;
-  padding: 0;
-  text-decoration: underline;
-  vertical-align: unset;
-
-  &:hover {
-    color: inherit;
-    text-decoration: underline;
-  }
-
-  &:active {
     color: inherit;
   }
 `;
