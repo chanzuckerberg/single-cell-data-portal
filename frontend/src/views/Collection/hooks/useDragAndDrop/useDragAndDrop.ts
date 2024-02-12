@@ -143,12 +143,12 @@ function getDragAndDropStyles(
   if (draggingOffset === 0 && droppingOffset === 0) {
     return css`
       transform: translateY(0);
-      transition: transform 0.2s ease-in-out;
+      transition: transform 0.1s ease-in-out;
     `;
   }
   const [nthStart, nthEnd] = getSelectorPositions(draggingIndex, indexes);
   return css`
-    transition: transform 0.2s ease-in-out;
+    transition: transform 0.1s ease-in-out;
 
     &:nth-of-type(${draggingIndex + 1}) {
       transform: translateY(${draggingOffset * draggingOffsetDirection}px);
