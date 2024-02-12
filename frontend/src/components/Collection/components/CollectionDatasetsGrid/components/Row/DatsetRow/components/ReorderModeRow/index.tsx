@@ -23,7 +23,7 @@ interface Props {
   dataset: Dataset;
   datasetIndex: number;
   dragAndDropAction: DragAndDropAction;
-  draggingStyles: SerializedStyles;
+  dragAndDropStyles: SerializedStyles;
   reorderAction: ReorderAction;
 }
 
@@ -32,7 +32,7 @@ export default function ReorderModeRow({
   dataset,
   datasetIndex,
   dragAndDropAction,
-  draggingStyles,
+  dragAndDropStyles,
   reorderAction,
 }: Props): JSX.Element {
   const { onReorder } = reorderAction;
@@ -116,9 +116,9 @@ export default function ReorderModeRow({
 
   return (
     <Row
+      dragAndDropStyles={dragAndDropStyles}
       dragEventType={dragEventType}
       draggable
-      draggingStyles={draggingStyles}
       onDrag={onDrag}
       onDragEnd={onDragEnd}
       onDragOver={(event) => onDragOver(event, datasetIndex)}

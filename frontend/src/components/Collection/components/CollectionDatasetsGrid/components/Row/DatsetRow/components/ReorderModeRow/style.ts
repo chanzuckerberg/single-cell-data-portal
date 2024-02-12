@@ -6,7 +6,7 @@ import { css, SerializedStyles } from "@emotion/react";
 
 interface RowProps extends CommonThemeProps {
   dragEventType?: DRAG_EVENT_TYPE;
-  draggingStyles?: SerializedStyles;
+  dragAndDropStyles?: SerializedStyles;
 }
 
 export const Row = styled("tr")<RowProps>`
@@ -47,7 +47,7 @@ function draggedRow({ dragEventType }: RowProps): SerializedStyles | undefined {
 }
 
 function draggedRows({
-  draggingStyles,
+  dragAndDropStyles,
 }: RowProps): SerializedStyles | undefined {
-  return draggingStyles;
+  return dragAndDropStyles;
 }
