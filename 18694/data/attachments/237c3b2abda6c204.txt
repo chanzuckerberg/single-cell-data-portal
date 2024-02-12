@@ -1,1 +1,0 @@
-{"levelname": "DEBUG", "asctime": "2024-02-09T07:19:00.009Z", "name": "ddtrace.internal.remoteconfig._subscribers", "message": "[PID 1 | PPID 0] Subscriber ASM got data", "lineno": 47, "pathname": "/usr/local/lib/python3.10/dist-packages/ddtrace/internal/remoteconfig/_subscribers.py", "request_id": ""}
