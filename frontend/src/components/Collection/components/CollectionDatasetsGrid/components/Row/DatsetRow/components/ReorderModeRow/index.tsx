@@ -1,5 +1,4 @@
 import { DragEvent, ReactNode, useCallback, useState } from "react";
-import { Dataset } from "src/common/entities";
 import ReorderCell from "src/components/common/Grid/components/ReorderCell";
 import { Row } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow/style";
 import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
@@ -20,7 +19,6 @@ export type ReorderModeRowProps = Props;
 
 interface Props {
   children: ReactNode | ReactNode[];
-  dataset: Dataset;
   datasetIndex: number;
   dragAndDropAction: DragAndDropAction;
   dragAndDropStyles: SerializedStyles;
@@ -29,7 +27,6 @@ interface Props {
 
 export default function ReorderModeRow({
   children,
-  dataset,
   datasetIndex,
   dragAndDropAction,
   dragAndDropStyles,
@@ -84,12 +81,7 @@ export default function ReorderModeRow({
 
   // Row dragging has started; row element is referenced for dragging.
   const onDragStart = useCallback(
-    (
-      dragEvent: DragEvent<HTMLTableRowElement>,
-      datasetID: string,
-      draggingIndex: number
-    ) => {
-      dragEvent.dataTransfer.setData("text/plain", datasetID);
+    (dragEvent: DragEvent<HTMLTableRowElement>, draggingIndex: number) => {
       dragEvent.dataTransfer.effectAllowed = "move";
       // Set drag event type state to DRAG_START as dragging has started; row styles are updated to facilitate
       // the image capture of the row being dragged. This image is generated from the drag target, and will represent
@@ -105,9 +97,6 @@ export default function ReorderModeRow({
   const onDrop = useCallback(
     (dragEvent: DragEvent<HTMLTableRowElement>) => {
       dragEvent.preventDefault();
-      // Get the ID of the row being dragged.
-      const datasetID = dragEvent.dataTransfer.getData("text");
-      if (!datasetID) return; // Drop unsuccessful.
       // Update the order of the datasets.
       onDropping(onReorder);
     },
@@ -122,7 +111,7 @@ export default function ReorderModeRow({
       onDrag={onDrag}
       onDragEnd={onDragEnd}
       onDragOver={(event) => onDragOver(event, datasetIndex)}
-      onDragStart={(event) => onDragStart(event, dataset.id, datasetIndex)}
+      onDragStart={(event) => onDragStart(event, datasetIndex)}
       onDrop={onDrop}
     >
       {/* Reordering handle */}
