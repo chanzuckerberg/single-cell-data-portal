@@ -16,7 +16,6 @@ export const DEFAULT_DRAGGING: Dragging = {
   dragAndDropStyles: DEFAULT_DRAG_AND_DROP_STYLES,
   draggingIndex: 0,
   droppingIndex: 0,
-  isTransitioning: false,
   offsetByIndex: new Map(),
   shadowIndex: 0,
 };

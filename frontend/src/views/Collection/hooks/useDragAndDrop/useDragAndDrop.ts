@@ -201,26 +201,6 @@ function getDraggingIndexes(
 }
 
 /**
- * Returns the dropping index, adjusted, if required, by direction.
- * A downward direction should result in the dropping index being the maximum value between the dropping index, and
- * an upward direction should result in the dropping index being the minimum value.
- * @param draggingState - Dragging state.
- * @param droppingIndex - Dropping index.
- * @param draggingDirection - Dragging direction.
- * @returns droppingIndex.
- */
-function getDroppingIndex(
-  draggingState: Dragging,
-  droppingIndex: number,
-  draggingDirection: DRAGGING_DIRECTION
-): number {
-  if (draggingDirection === DRAGGING_DIRECTION.UP) {
-    return Math.min(droppingIndex, draggingState.droppingIndex);
-  }
-  return Math.max(droppingIndex, draggingState.droppingIndex);
-}
-
-/**
  * Returns the start and end position of the nth selectors for the dropping elements.
  * @param draggingIndex - Dragging index.
  * @param indexes - Drag indexes affected by the drag operation.
@@ -237,6 +217,37 @@ function getSelectorPositions(
   const start = firstIndex + 1;
   const end = lastIndex + 1;
   return [start, end];
+}
+
+/**
+ * Returns the new shadow index for a dragged element based on its intended drop position and dragging
+ * direction.
+ * The shadow index is adjusted to match the dropping index under specific conditions to maintain coherence between
+ * dragging action, dragging direction and the visual feedback:
+ * - Dragging downwards and the shadow index is not lower than the dropping index.
+ * - Dragging upwards and the shadow index is not higher than the dropping index.
+ * If neither condition is met, the shadow index remains unchanged.
+ * @param droppingIndex - Dropping index.
+ * @param shadowIndex - Shadow index.
+ * @param draggingDirection - Dragging direction.
+ * @returns shadow index.
+ */
+function getShadowIndex(
+  droppingIndex: number,
+  shadowIndex: number,
+  draggingDirection: DRAGGING_DIRECTION
+): number {
+  let nextShadowIndex = shadowIndex;
+  if (draggingDirection === DRAGGING_DIRECTION.DOWN) {
+    if (droppingIndex > shadowIndex) {
+      nextShadowIndex = droppingIndex;
+    }
+  } else {
+    if (droppingIndex < shadowIndex) {
+      nextShadowIndex = droppingIndex;
+    }
+  }
+  return nextShadowIndex;
 }
 
 /**
@@ -295,44 +306,28 @@ function updateDragging(
 ): Dragging {
   if (draggingState.draggingIndex === droppingIndex) {
     // Dragging element is on the drop target; transitioning is complete.
-    return { ...draggingState, droppingIndex, isTransitioning: false };
+    return { ...draggingState, droppingIndex };
   }
-  if (draggingState.isTransitioning) {
-    // During the transition of the dragging element, the synchronization between the shadow index and the dropping index
-    // should be maintained to ensure consistency in the visual representation of the drag operation.
-    // Aggressive dragging actions, during transitions, can cause discrepancies between the two indexes.
-    // By setting the isTransitioning flag to false, we signal the completion of this specific transition, prompting a
-    // recalibration of the shadow index.
-    if (draggingState.shadowIndex !== draggingState.droppingIndex) {
-      return { ...draggingState, isTransitioning: false };
-    }
-    // During the transition of the dragging element, specifically when the shadow index overlaps with the dropping index,
-    // the dropping index value must be maintained. As the shadow index moves over the dropping index, the dropping index
-    // will dynamically adjust its position to reflect the transitioning state. However, this adjustment leads to
-    // unwanted consequences; the dropping index's index position no longer represents the original given value, and
-    // dragging styles during this transition result in visual glitches as the transition oscillates
-    // between the original dropping index and the dynamically updated dropping index. To avoid these issues, while
-    // the transition is ongoing, we effectively "lock" the dropping index to its original value.
-    return {
-      ...draggingState,
-      droppingIndex: getDroppingIndex(
-        draggingState,
-        droppingIndex,
-        draggingDirection
-      ),
-    };
-  }
-  // Dragging over a new dropping index.
+  // Dragging over a new drop target; update the dropping index's index.
   const droppingIndexIndex =
     draggingState.dragAndDropIndexes.indexOf(droppingIndex);
-  // Reorder the drag and drop indexes with the updated dropping index.
+  // Reorder the drag and drop indexes with the updated dropping index's index.
   const dragAndDropIndexes = reorderDragAndDropIndexes(
     draggingState.draggingIndex,
     droppingIndexIndex,
     draggingState.dragAndDropIndexes
   );
-  // Shadow index to provide a visual cue for the dropping position.
-  const shadowIndex = droppingIndexIndex;
+  // During the transition of the dragging element, specifically when the shadow index overlaps with the dropping index,
+  // the dropping index dynamically adjusts its position to reflect the transitioning state. However, this adjustment leads to
+  // unwanted consequences; the dropping index's index position no longer represents the original given value, and
+  // dragging styles during this transition result in visual glitches as the transition oscillates
+  // between the original dropping index and the dynamically updated dropping index. To avoid these issues, while
+  // the transition is ongoing, we effectively "lock" the shadow index to its intended value.
+  const shadowIndex = getShadowIndex(
+    droppingIndexIndex,
+    draggingState.shadowIndex,
+    draggingDirection
+  );
   // Update the drag and drop styles.
   const dragAndDropStyles = getDragAndDropStyles(
     draggingState.draggingIndex,
@@ -345,7 +340,6 @@ function updateDragging(
     dragAndDropStyles,
     droppingIndex: droppingIndexIndex,
     shadowIndex,
-    isTransitioning: true,
   };
 }
 
