@@ -178,7 +178,6 @@ class H5ADDataFile:
         self.obs = self.transform_dataframe_index_into_column(self.anndata.obs, "obs", self.obs_index_column_name)
         self.var = self.transform_dataframe_index_into_column(self.anndata.var, "var", self.var_index_column_name)
 
-
     def extract_metadata_about_dataset(self):
         """
         Extract metadata information about the dataset that upon conversion will be saved as group metadata with the
