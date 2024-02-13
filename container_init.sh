@@ -9,8 +9,11 @@ echo
 # This is done as optimization because retrieving data from local disk is
 # significantly faster than retrieving data from S3
 WMG_SNAPSHOT_FS_CACHE_ROOT_PATH="/single-cell-data-portal/wmg_snapshot_cache"
+echo "| DOWNLOAD_WMG_DATA_to_DISK: ${DOWNLOAD_WMG_DATA_TO_DISK}"
 
-if [[ "${DEPLOYMENT_STAGE}" == "rdev" && -n "${REMOTE_DEV_PREFIX}" ]]; then
+if [[ "${DOWNLOAD_WMG_DATA_TO_DISK}" == "false"]]; then
+  echo "| Skipping downloading WMG data snapshot because DOWNLOAD_WMG_DATA_TO_DISK is set to false" 
+elif [[ "${DEPLOYMENT_STAGE}" == "rdev" && -n "${REMOTE_DEV_PREFIX}" ]]; then
   echo "| Downloading WMG data snapshot for RDEV stack: ${REMOTE_DEV_PREFIX} from S3 to filesystem path: ${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}"
   
   strip_slash_remote_dev_prefix="${REMOTE_DEV_PREFIX//\//}" # strips ALL "/"
