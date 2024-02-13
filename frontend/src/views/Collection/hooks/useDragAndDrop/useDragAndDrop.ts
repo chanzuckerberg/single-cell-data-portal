@@ -12,6 +12,7 @@ import {
   DEFAULT_DIRECTION_TOLERANCE,
   DEFAULT_DRAGGING,
 } from "src/views/Collection/hooks/useDragAndDrop/common/constants";
+import { HEADER_ID } from "src/components/Header/constants";
 
 export interface DragAndDropAction {
   onDragging: (dragEvent: DragEvent<HTMLElement>) => void;
@@ -63,6 +64,7 @@ export function useDragAndDrop(): UseDragAndDrop {
   // Callback fired when dragged element is dropped on a valid drop target.
   const onDropping = useCallback(
     (onReorder: OnReorderFn) => {
+      removeHeaderStyle();
       setDragging(DEFAULT_DRAGGING);
       onReorder(draggingIndex, shadowIndex);
     },
@@ -73,12 +75,14 @@ export function useDragAndDrop(): UseDragAndDrop {
   const onEndDragging = useCallback(() => {
     clientYRef.current = DEFAULT_CLIENT_Y;
     draggingDirectionRef.current = DEFAULT_DIRECTION;
+    removeHeaderStyle();
     setDragging(DEFAULT_DRAGGING);
   }, []);
 
   // Callback fired when dragging starts.
   const onStartDragging = useCallback(
     (draggingIndex: number, offsetByIndex: OffsetByIndex) => {
+      setHeaderStyle();
       setDragging((dragging) =>
         updateDraggingStart(dragging, draggingIndex, offsetByIndex)
       );
@@ -236,6 +240,16 @@ function getSelectorPositions(
 }
 
 /**
+ * Removes the header style to enable pointer events.
+ */
+function removeHeaderStyle() {
+  const headerEl = document.getElementById(HEADER_ID);
+  if (headerEl) {
+    headerEl.style.removeProperty("pointer-events");
+  }
+}
+
+/**
  * Reorders the drag and drop indexes with a revised dropping index.
  * @param draggingIndex - Dragging index.
  * @param droppingIndex - Dropping index.
@@ -254,6 +268,17 @@ function reorderDragAndDropIndexes(
   // Insert the dragging index to the dropping index.
   updatedDragAndDropIndexes.splice(droppingIndex, 0, draggingIndex);
   return updatedDragAndDropIndexes;
+}
+
+/**
+ * Sets the header style to disable pointer events.
+ * Facilitates the upward scroll action, while dragging.
+ */
+function setHeaderStyle() {
+  const headerEl = document.getElementById(HEADER_ID);
+  if (headerEl) {
+    headerEl.style.setProperty("pointer-events", "none");
+  }
 }
 
 /**
