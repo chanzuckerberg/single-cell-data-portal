@@ -79,6 +79,9 @@ class H5ADDataFile:
         convert_dataframe_to_cxg_array(output_cxg_directory, "var", self.var, self.var_index_column_name, ctx)
         logging.info("\t...dataset var dataframe saved")
 
+        convert_dictionary_to_cxg_group(output_cxg_directory, self.anndata.uns, "uns", ctx)
+        logging.info("\t...dataset uns dataframe saved")
+
         self.write_anndata_embeddings_to_cxg(output_cxg_directory, ctx)
         logging.info("\t...dataset embeddings saved")
 
@@ -174,6 +177,7 @@ class H5ADDataFile:
 
         self.obs = self.transform_dataframe_index_into_column(self.anndata.obs, "obs", self.obs_index_column_name)
         self.var = self.transform_dataframe_index_into_column(self.anndata.var, "var", self.var_index_column_name)
+
 
     def extract_metadata_about_dataset(self):
         """
