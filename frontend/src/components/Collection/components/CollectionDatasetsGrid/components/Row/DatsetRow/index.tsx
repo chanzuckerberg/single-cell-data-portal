@@ -185,7 +185,6 @@ const DatasetRow: FC<Props> = ({
   const Row = isReorder ? ReorderModeRow : "tr";
   const rowProps = isReorder
     ? {
-        dataset,
         datasetIndex,
         dragAndDropAction,
         dragAndDropStyles,
