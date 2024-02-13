@@ -68,6 +68,8 @@ const TEST_ENVS_DEV_STAGING = ["dev", "staging", "rdev"];
 
 export const isDevStagingRdev = TEST_ENVS_DEV_STAGING.includes(TEST_ENV);
 
+export const isStaging = TEST_ENV === "staging";
+
 const GO_TO_PAGE_TIMEOUT_MS = 2 * 60 * 1000;
 
 export async function goToPage(

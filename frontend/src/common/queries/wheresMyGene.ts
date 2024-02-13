@@ -511,14 +511,6 @@ export interface CellTypeByTissueName {
   [tissueName: string]: CellTypeRow[];
 }
 
-// Cell types that we want to exclude from each tissue
-
-const FILTERED_CELL_TYPE_ONTOLOGY_IDS = [
-  "CL:0000003", // Native cell
-  "CL:0000255", // Eukaryotic cell
-  "CL:0000548", // Animal cell
-];
-
 export function useCellTypesByTissueName(version: 1 | 2 = 2): {
   isLoading: boolean;
   data: CellTypeByTissueName;
@@ -559,9 +551,6 @@ export function useCellTypesByTissueName(version: 1 | 2 = 2): {
         // (thuang): Reverse the order, so the first cell type is at the top of
         // the heat map
         .reverse()
-        .filter(([_, cellTypeRow]) => {
-          return !FILTERED_CELL_TYPE_ONTOLOGY_IDS.includes(cellTypeRow.id);
-        })
         .map(([_, cellTypeName]) => {
           return cellTypeName;
         });
