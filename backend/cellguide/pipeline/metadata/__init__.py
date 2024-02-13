@@ -24,10 +24,10 @@ def run(*, output_directory: str):
 def get_cell_metadata(*, ontology_tree: OntologyTreeBuilder) -> dict[str, CellMetadata]:
     """
     For all cell type ids in the corpus, this pipeline will generate metadata about each cell, including:
-    - name, ex: "native cell"
-    - id, ex: "CL:0000003"
-    - clDescription, ex: "A cell that is found in a natural setting, which includes multicellular organism cells 'in vivo'
-      (i.e. part of an organism), and unicellular organisms 'in environment' (i.e. part of a natural environment)."
+    - name, ex: "cell"
+    - id, ex: "CL:0000000"
+    - clDescription, ex: "A material entity of anatomical origin (part of or deriving from an organism) that has as
+    its parts a maximally connected cell compartment surrounded by a plasma membrane."
     - synonyms, ex: ["cell in vivo"]
 
     Note that we will be filtering out obsolete cell types and invalid non-CL cell types.

@@ -69,7 +69,7 @@ export type CompareOptionId = string;
 /**
  * (thuang): This ID is used to uniquely identify a cell type and its compare option
  * cellTypeId$compareOptionId
- * E.g., "CL:0000003$PATO:0000383", "CL:0000003$aggregated"
+ * E.g., "CL:0000000$PATO:0000383", "CL:0000000$aggregated"
  **/
 export type ViewId = `${CellTypeId}$${CompareOptionId}`;
 

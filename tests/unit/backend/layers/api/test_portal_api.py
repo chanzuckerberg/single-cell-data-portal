@@ -1875,7 +1875,7 @@ class TestDataset(BaseAPIPortalTest):
                     "CL:0000738",
                     "CL:0000548",
                     "CL:0000219",
-                    "CL:0000003",
+                    "unknown",
                     "CL:0002242",
                 ],
             )

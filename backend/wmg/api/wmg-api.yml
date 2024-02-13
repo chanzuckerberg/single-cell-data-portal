@@ -444,7 +444,7 @@ paths:
                                   "aggregated":
                                     {
                                       "cell_type": "cell type 2",
-                                      "cell_type_ontology_term_id": "CL:0000002",
+                                      "cell_type_ontology_term_id": "CL:0017500",
                                       "order": 0,
                                       "total_count": 0,
                                     },
@@ -454,7 +454,7 @@ paths:
                                   "aggregated":
                                     {
                                       "cell_type": "cell type 3",
-                                      "cell_type_ontology_term_id": "CL:0000003",
+                                      "cell_type_ontology_term_id": "CL:0017503",
                                       "order": 2,
                                       "total_count": 2,
                                     },

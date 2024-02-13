@@ -35,7 +35,6 @@ HEMATOPOIETIC_CELL_TYPE_ID representing the immune cell type ancestor to be filt
 # {cell_type} is a descendant of animal cell.
 TRAVERSAL_PRIORITY_NODES = [
     "CL:0000000",  # cell
-    "CL:0000003",  # native cell,
     "CL:0000255",  # eukaryotic cell
     "CL:0000548",  # animal cell
 ]
