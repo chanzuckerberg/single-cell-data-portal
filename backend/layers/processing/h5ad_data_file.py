@@ -1,7 +1,7 @@
 import json
 import logging
 from os import path
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 import anndata
 import numpy as np
@@ -36,11 +36,10 @@ class H5ADDataFile:
 
     def __init__(
         self,
-        input_filename,
+        input_file_or_filename: Union[str, anndata.AnnData],
         var_index_column_name=None,
         skip_metadata_and_validation=False,
     ):
-        self.input_filename = input_filename
         # Set by self.extract_metadata_about_dataset
         self.dataset_title = None
         self.corpora_properties = None
@@ -49,9 +48,13 @@ class H5ADDataFile:
         self.var_index_column_name = var_index_column_name
         self.obs_index_column_name = None
 
-        self.validate_input_file_type()
-
-        self.extract_anndata_elements_from_file()
+        if isinstance(input_file_or_filename, str):
+            self.input_filename = input_file_or_filename
+            self.validate_input_file_type()
+            self.extract_anndata_elements_from_file()
+        elif isinstance(input_file_or_filename, anndata.AnnData):
+            self.anndata = input_file_or_filename
+            self.extract_anndata_elements_from_anndata()
 
         if not skip_metadata_and_validation:
             self.extract_metadata_about_dataset()
@@ -171,13 +174,15 @@ class H5ADDataFile:
         if not self.obs.index.is_unique:
             raise ValueError("Observation index in AnnData object is not unique.")
 
+    def extract_anndata_elements_from_anndata(self):
+        self.obs = self.transform_dataframe_index_into_column(self.anndata.obs, "obs", self.obs_index_column_name)
+        self.var = self.transform_dataframe_index_into_column(self.anndata.var, "var", self.var_index_column_name)
+
     def extract_anndata_elements_from_file(self):
         logging.info(f"Reading in AnnData dataset: {path.basename(self.input_filename)}")
         self.anndata = anndata.read_h5ad(self.input_filename)
         logging.info("Completed reading in AnnData dataset!")
-
-        self.obs = self.transform_dataframe_index_into_column(self.anndata.obs, "obs", self.obs_index_column_name)
-        self.var = self.transform_dataframe_index_into_column(self.anndata.var, "var", self.var_index_column_name)
+        self.extract_anndata_elements_from_anndata()
 
     def extract_metadata_about_dataset(self):
         """
