@@ -31,10 +31,8 @@ import {
   sortCollectionDatasets,
 } from "./utils";
 import CollectionActions from "src/views/Collection/components/CollectionActions";
-import {
-  REORDER_MODE,
-  useReorderMode,
-} from "src/views/Collection/hooks/useReorderMode/useReorderMode";
+import { useReorder } from "src/views/Collection/hooks/useReorder/useReorder";
+import { getReorder } from "src/views/Collection/hooks/useReorder/common/utils";
 
 const Collection: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -53,12 +51,7 @@ const Collection: FC = () => {
   }
 
   const { data: collection, isError, isFetching } = useCollection({ id });
-  const {
-    isReorderUX,
-    mode: reorderMode,
-    orderedIds,
-    reorderAction,
-  } = useReorderMode(id);
+  const reorder = useReorder(id);
 
   useEffect(() => {
     if (
@@ -97,7 +90,6 @@ const Collection: FC = () => {
 
   const hasRevision = isCollectionHasPrivateRevision(collection);
   const isRevision = isCollectionPrivateRevision(collection);
-  const isReorder = reorderMode === REORDER_MODE.ACTIVE;
 
   let datasets = Array.from(collection.datasets.values());
 
@@ -120,6 +112,8 @@ const Collection: FC = () => {
     collection.contact_name,
     collection.contact_email
   );
+  // Reorder datasets related values and actions.
+  const reorderProps = getReorder(reorder, datasets);
 
   return (
     <>
@@ -135,13 +129,10 @@ const Collection: FC = () => {
           {/* Collection actions */}
           <CollectionActions
             collection={collection}
-            datasets={datasets}
             hasRevision={hasRevision}
             isPublishable={isPublishable}
-            isReorder={isReorder}
-            isReorderUX={isReorderUX}
             isRevision={isRevision}
-            reorderAction={reorderAction}
+            reorder={reorderProps}
             setIsUploadingLink={setIsUploadingLink}
           />
         </CollectionHero>
@@ -163,10 +154,9 @@ const Collection: FC = () => {
         {/* TODO Reusing DatasetTab as-is as functionality is too dense to refactor for this iteration of filter. Complete refactor (including update to React Table) can be done when filter is productionalized. */}
         <DatasetTab
           collectionId={id}
-          datasets={sortCollectionDatasets(datasets, orderedIds)}
-          isReorder={isReorder}
+          datasets={sortCollectionDatasets(datasets, reorder.orderedIds)}
           isRevision={isRevision}
-          reorderAction={reorderAction}
+          reorder={reorderProps}
           visibility={collection.visibility}
         />
       </CollectionView>

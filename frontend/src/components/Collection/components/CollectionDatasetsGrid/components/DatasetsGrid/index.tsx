@@ -7,8 +7,9 @@ import { RightAlignCell } from "src/components/common/Grid/components/RightAlign
 import { Grid as StyledGrid } from "src/components/common/Grid/style";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import { UploadedFiles } from "src/views/Collection/components/CollectionActions/components/AddButton";
-import { ReorderAction } from "src/views/Collection/hooks/useReorderMode/useReorderMode";
 import { useDragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/useDragAndDrop";
+import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
+import { getDragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/common/utils";
 
 interface Props {
   className?: string;
@@ -18,7 +19,6 @@ interface Props {
   invalidateCollectionQuery: () => void;
   visibility: VISIBILITY_TYPE;
   accessType?: Collection["access_type"];
-  isReorder: boolean;
   isRevision: boolean;
   onUploadFile: (
     reuploadDataset?: UseMutateAsyncFunction<
@@ -29,7 +29,7 @@ interface Props {
     >,
     datasetId?: string
   ) => ChooserProps["onUploadFile"];
-  reorderAction: ReorderAction;
+  reorder: Reorder;
   reuploadDataset: UseMutateAsyncFunction<
     unknown,
     unknown,
@@ -47,17 +47,16 @@ const DatasetsGrid: FC<Props> = ({
   visibility,
   accessType,
   isRevision,
-  isReorder,
   onUploadFile,
-  reorderAction,
+  reorder,
   reuploadDataset,
 }) => {
-  const { dragAndDropAction, dragAndDropStyles } = useDragAndDrop();
+  const dragAndDrop = useDragAndDrop();
   return (
     <StyledGrid className={className}>
       <thead>
         <tr>
-          {isReorder && <th />}
+          {reorder.isReorder && <th />}
           <th>Dataset</th>
           <th>Tissue</th>
           <th>Disease</th>
@@ -76,14 +75,11 @@ const DatasetsGrid: FC<Props> = ({
             key={dataset.id}
             collectionId={collectionId}
             dataset={dataset}
-            datasetIndex={index}
-            dragAndDropAction={dragAndDropAction}
-            dragAndDropStyles={dragAndDropStyles}
+            dragAndDrop={getDragAndDrop(dragAndDrop, index)}
             file={uploadedFiles[dataset.id]}
             invalidateCollectionQuery={invalidateCollectionQuery}
-            isReorder={isReorder}
             onUploadFile={onUploadFile(reuploadDataset, dataset.id)}
-            reorderAction={reorderAction}
+            reorder={reorder}
             revisionsEnabled={isRevision}
             visibility={visibility}
           />
