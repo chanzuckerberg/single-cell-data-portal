@@ -64,18 +64,22 @@ async function fetchProjects(): Promise<ProjectResponse | undefined> {
 
           // include a mailto: query param to insure reliable service
           const url = apiTemplateToUrl(
-            "https://api.crossref.org/works/{DOI}?mailto=cellxgene@cziscience.com",
+            // (seve): URLS WITH MAILTO ARE FAILING
+            // "https://api.crossref.org/works/{DOI}?mailto=cellxgene@cziscience.com",
+            "https://api.crossref.org/works/{DOI}",
             {
               DOI: encodeURIComponent(project.DOI),
             }
           );
 
           const response = await fetch(url);
-
           const result = await response.json();
-          if (!response.ok) throw result;
-
-          const publication_info = parseCrossRefResponse(result);
+          let publication_info;
+          if (!response.ok) {
+            console.error(result);
+          } else {
+            publication_info = parseCrossRefResponse(result);
+          }
 
           data[id].publication_info = publication_info;
           data[id].publication_link = result.message.URL;

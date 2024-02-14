@@ -1,6 +1,7 @@
 import dataclasses
 import itertools
 import json
+import uuid
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock, patch
@@ -1502,6 +1503,152 @@ class TestUpdateCollection(BaseAPIPortalTest):
         self.assertIsNotNone(actual_body["publisher_metadata"])
         self.assertIsNotNone(actual_body["publisher_metadata"]["journal"])
         self.assertEqual("Old Journal", actual_body["publisher_metadata"]["journal"])
+
+    def test__set_collection_version_datasets_order__OK(self):
+        collection = self.generate_unpublished_collection(add_datasets=2)
+
+        # Reverse dataset order and save.
+        dataset_ids = [d.version_id.id for d in collection.datasets]
+        dataset_ids.reverse()
+        data = json.dumps(
+            {
+                "datasets": dataset_ids,
+            }
+        )
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}/order-datasets", data=data, headers=headers
+        )
+
+        self.assertEqual(200, response.status_code)
+
+    def test__set_collection_version_datasets_order_get_default_sort__OK(self):
+        import copy
+
+        # Create a collection with two datasets with different cell counts.
+        collection = self.generate_unpublished_collection()
+        modified_metadata_1 = copy.deepcopy(self.sample_dataset_metadata)
+        modified_metadata_1.cell_count = 1
+        self.generate_dataset(collection_version=collection, metadata=modified_metadata_1)
+        modified_metadata_2 = copy.deepcopy(self.sample_dataset_metadata)
+        modified_metadata_2.cell_count = 2
+        self.generate_dataset(collection_version=collection, metadata=modified_metadata_2)
+
+        # Confirm datasets are served in cell count, descending order.
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.get(f"/dp/v1/collections/{collection.version_id.id}", headers=headers)
+        self.assertEqual(200, response.status_code)
+
+        body = json.loads(response.data)
+        datasets = body["datasets"]
+        datasets_sorted = sorted(datasets, key=lambda d: d["cell_count"], reverse=True)
+        self.assertListEqual(datasets, datasets_sorted)
+
+    def test__set_collection_version_datasets_get_order_custom_sort__OK(self):
+        import copy
+
+        # Create a collection with two datasets with different cell counts.
+        collection = self.generate_unpublished_collection()
+        modified_metadata_1 = copy.deepcopy(self.sample_dataset_metadata)
+        modified_metadata_1.cell_count = 1
+        dataset_1 = self.generate_dataset(collection_version=collection, metadata=modified_metadata_1)
+        modified_metadata_2 = copy.deepcopy(self.sample_dataset_metadata)
+        modified_metadata_2.cell_count = 2
+        dataset_2 = self.generate_dataset(collection_version=collection, metadata=modified_metadata_2)
+
+        # Order datasets so they are not in cell count order.
+        dataset_ids = [dataset_2.dataset_version_id, dataset_1.dataset_version_id]
+
+        data = json.dumps(
+            {
+                "datasets": dataset_ids,
+            }
+        )
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}/order-datasets", data=data, headers=headers
+        )
+        self.assertEqual(200, response.status_code)
+
+        # Confirm datasets are served in custom order.
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.get(f"/dp/v1/collections/{collection.version_id.id}", headers=headers)
+        self.assertEqual(200, response.status_code)
+
+        body = json.loads(response.data)
+        datasets = body["datasets"]
+        self.assertListEqual([d["id"] for d in datasets], dataset_ids)
+
+    def test__set_collection_version_datasets_order_missing_datasets__400(self):
+        collection = self.generate_unpublished_collection()
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}/order-datasets", headers=headers)
+
+        # Bad request - datasets not specified in request.
+        self.assertEqual(400, response.status_code)
+
+    def test__set_collection_version_datasets_order_published_collection__403(self):
+        collection = self.generate_published_collection()
+
+        dataset_ids = [d.version_id.id for d in collection.datasets]
+        data = json.dumps(
+            {
+                "datasets": dataset_ids,
+            }
+        )
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}/order-datasets", data=data, headers=headers
+        )
+
+        # Forbidden - collection is published.
+        self.assertEqual(403, response.status_code)
+
+    def test__set_collection_version_datasets_order_invalid_collection__403(self):
+        collection = self.generate_published_collection()
+
+        dataset_ids = [d.version_id.id for d in collection.datasets]
+        data = json.dumps(
+            {
+                "datasets": dataset_ids,
+            }
+        )
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.put(f"/dp/v1/collections/{str(uuid.uuid4())}/order-datasets", data=data, headers=headers)
+
+        # Forbidden - collection not found.
+        self.assertEqual(403, response.status_code)
+
+    def test__set_collection_version_datasets_order_unauthenticated__401(self):
+        collection = self.generate_unpublished_collection()
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}/order-datasets", headers=headers)
+
+        # Unauthorized - user not authenticated.
+        self.assertEqual(401, response.status_code)
+
+    def test__set_collection_version_datasets_order_unauthorized__403(self):
+        collection = self.generate_unpublished_collection()
+
+        dataset_ids = [dataset.version_id.id for dataset in collection.datasets]
+        data = json.dumps(
+            {
+                "datasets": dataset_ids,
+            }
+        )
+
+        # Create a fake user and attempt to update the collection version.
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.get_cxguser_token(user="not_owner"),
+        }
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}/order-datasets", data=data, headers=headers
+        )
+
+        # Unauthorized - user not owner of collection.
+        self.assertEqual(403, response.status_code)
 
 
 class TestCollectionsCurators(BaseAPIPortalTest):
