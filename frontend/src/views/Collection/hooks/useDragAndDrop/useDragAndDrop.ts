@@ -220,13 +220,8 @@ function getSelectorPositions(
 }
 
 /**
- * Returns the new shadow index for a dragged element based on its intended drop position and dragging
- * direction.
- * The shadow index is adjusted to match the dropping index under specific conditions to maintain coherence between
- * dragging action, dragging direction and the visual feedback:
- * - Dragging downwards and the shadow index is above the dropping index.
- * - Dragging upwards and the shadow index is below the dropping index.
- * If neither condition is met, the shadow index remains unchanged.
+ * Returns the updated shadow index for a dragged element, ensuring visual consistency with its
+ * intended drop position and the direction of the drag.
  * @param droppingIndex - Dropping index.
  * @param shadowIndex - Shadow index.
  * @param draggingDirection - Dragging direction.
@@ -237,17 +232,10 @@ function getShadowIndex(
   shadowIndex: number,
   draggingDirection: DRAGGING_DIRECTION
 ): number {
-  let nextShadowIndex = shadowIndex;
   if (draggingDirection === DRAGGING_DIRECTION.DOWN) {
-    if (droppingIndex > shadowIndex) {
-      nextShadowIndex = droppingIndex;
-    }
-  } else {
-    if (droppingIndex < shadowIndex) {
-      nextShadowIndex = droppingIndex;
-    }
+    return Math.max(droppingIndex, shadowIndex); // Shadow index should not be above the dropping index.
   }
-  return nextShadowIndex;
+  return Math.min(droppingIndex, shadowIndex); // Shadow index should not be below the dropping index.
 }
 
 /**
