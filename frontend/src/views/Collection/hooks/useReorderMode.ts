@@ -10,7 +10,7 @@ export type OnReorderFn = (datasetIndex: number, targetIndex: number) => void;
 
 export type OnSaveReorderFn = () => void;
 
-export type OnStartReorderFn = (datasetIDs: string[]) => void;
+export type OnStartReorderFn = (datasetIds: string[]) => void;
 
 export interface ReorderAction {
   onCancelReorder: OnCancelReorderFn;
@@ -27,7 +27,7 @@ export enum REORDER_MODE {
 interface UseReorderMode {
   isReorderUX: boolean;
   mode: REORDER_MODE;
-  orderedIDs?: string[];
+  orderedIds?: string[];
   reorderAction: ReorderAction;
 }
 
@@ -35,25 +35,25 @@ interface UseReorderMode {
  * Reorder functionality for collection datasets.
  * The reorder mode can be either "inactive" or "active" and is used to enable or disable the datasets reorder feature
  * in the collection view.
- * @param collectionId - ID of collection to reorder datasets for.
+ * @param collectionId - Collection ID to reorder datasets for.
  * @returns reorder mode.
  */
 export function useReorderMode(collectionId: Collection["id"]): UseReorderMode {
   const isReorderUX = useFeatureFlag(FEATURES.REORDER); // Reorder datasets UX feature flag (reordering is currently only available with the feature flag).
   const [mode, setMode] = useState<REORDER_MODE>(REORDER_MODE.INACTIVE);
-  const [orderedIDs, setOrderedIDs] = useState<string[]>();
+  const [orderedIds, setOrderedIds] = useState<string[]>();
   const orderDatasetsMutation = useOrderDatasets(collectionId);
 
   // Cancels reorder mode.
   const onCancelReorder = useCallback(() => {
     setMode(REORDER_MODE.INACTIVE);
-    setOrderedIDs(undefined);
+    setOrderedIds(undefined);
   }, []);
 
   // Updates order.
   const onReorder = useCallback((datasetIndex: number, targetIndex: number) => {
-    setOrderedIDs((currentOrderedIDs) =>
-      buildOrderedIDs(currentOrderedIDs, datasetIndex, targetIndex)
+    setOrderedIds((currentOrderedIds) =>
+      buildOrderedIds(currentOrderedIds, datasetIndex, targetIndex)
     );
   }, []);
 
@@ -63,7 +63,7 @@ export function useReorderMode(collectionId: Collection["id"]): UseReorderMode {
 
     // Send order to BE.
     const payload = JSON.stringify({
-      datasets: orderedIDs,
+      datasets: orderedIds,
     });
     await orderDatasetsMutation.mutateAsync({
       collectionId,
@@ -72,9 +72,9 @@ export function useReorderMode(collectionId: Collection["id"]): UseReorderMode {
   };
 
   // Starts reorder mode.
-  const onStartReorder = useCallback((datasetIDs: string[]) => {
+  const onStartReorder = useCallback((datasetIds: string[]) => {
     setMode(REORDER_MODE.ACTIVE);
-    setOrderedIDs(datasetIDs);
+    setOrderedIds(datasetIds);
   }, []);
 
   return {
@@ -86,31 +86,31 @@ export function useReorderMode(collectionId: Collection["id"]): UseReorderMode {
       onSaveReorder,
       onStartReorder,
     },
-    orderedIDs,
+    orderedIds,
   };
 }
 
 /**
  * Returns the updated order of datasets.
- * @param orderedIDs - Current dataset IDs, ordered.
+ * @param orderedIds - Current dataset IDs, ordered.
  * @param datasetIndex - Index of dataset to reorder.
  * @param targetIndex - Index of target position to reorder dataset to.
  * @returns order of datasets.
  */
-function buildOrderedIDs(
-  orderedIDs: string[] | undefined,
+function buildOrderedIds(
+  orderedIds: string[] | undefined,
   datasetIndex: number,
   targetIndex: number
 ): string[] | undefined {
-  if (!orderedIDs) return;
+  if (!orderedIds) return;
   // Reordering to the same position.
-  if (datasetIndex === targetIndex) return orderedIDs;
-  const nextOrder = [...orderedIDs];
-  // Grab the datasetID.
-  const datasetID = nextOrder[datasetIndex];
+  if (datasetIndex === targetIndex) return orderedIds;
+  const nextOrder = [...orderedIds];
+  // Grab the dataset ID.
+  const datasetId = nextOrder[datasetIndex];
   // Remove the dataset to reorder.
   nextOrder.splice(datasetIndex, 1);
   // Insert the dataset at the target index.
-  nextOrder.splice(targetIndex, 0, datasetID);
+  nextOrder.splice(targetIndex, 0, datasetId);
   return nextOrder;
 }

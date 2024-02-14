@@ -128,7 +128,7 @@ function buildDoiMetadataLink(
  * @param datasets - Datasets.
  * @returns collection dataset IDs.
  */
-export function getDatasetIDs(datasets: Dataset[]): string[] {
+export function getDatasetIds(datasets: Dataset[]): string[] {
   return datasets.map((dataset) => dataset.id);
 }
 
@@ -303,18 +303,18 @@ export function isCollectionHasPrivateRevision(
 /**
  * Returns sorted datasets based on the given dataset order.
  * @param datasets - Datasets.
- * @param orderedIDs - Dataset IDs, ordered.
+ * @param orderedIds - Dataset IDs, ordered.
  * @returns sorted datasets.
  */
 export function sortCollectionDatasets(
   datasets: Dataset[],
-  orderedIDs?: string[]
+  orderedIds?: string[]
 ): Dataset[] {
   // Early exit; return datasets - reordering mode is inactive.
-  if (!orderedIDs) return datasets;
+  if (!orderedIds) return datasets;
   // Return datasets in order - reordering mode is active.
-  return orderedIDs
-    .map((datasetID) => datasets.find(({ id }) => id === datasetID))
+  return orderedIds
+    .map((datasetId) => datasets.find(({ id }) => id === datasetId))
     .filter(Boolean) as Dataset[];
 }
 

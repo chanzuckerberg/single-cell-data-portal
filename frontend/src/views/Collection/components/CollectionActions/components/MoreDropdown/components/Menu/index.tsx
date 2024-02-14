@@ -16,7 +16,7 @@ import { DEFAULT_MENU_PROPS } from "src/views/Collection/components/CollectionAc
 import IconSort from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/components/IconSort";
 import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
 import {
-  getDatasetIDs,
+  getDatasetIds,
   isCollectionDatasetsReorderable,
 } from "src/views/Collection/utils";
 
@@ -88,7 +88,7 @@ const Menu = ({
           disabled={!isCollectionDatasetsReorderable(datasets)}
           onClick={() => {
             menuProps.onClose();
-            reorderAction.onStartReorder(getDatasetIDs(datasets));
+            reorderAction.onStartReorder(getDatasetIds(datasets));
           }}
         >
           <IconSort />
