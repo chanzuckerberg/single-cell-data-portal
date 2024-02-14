@@ -1896,9 +1896,6 @@ class TestDataset(BaseAPIPortalTest):
         self.assertEqual(response.status_code, 401)
 
     def test__get_all_datasets_for_index_with_ontology_expansion(self):
-        # Schema 4.0.0 version of
-        # test__get_all_datasets_for_index_with_ontology_expansion_deprecated
-        # above. Remove this comment with #6266.
         import copy
 
         modified_metadata = copy.deepcopy(self.sample_dataset_metadata)
