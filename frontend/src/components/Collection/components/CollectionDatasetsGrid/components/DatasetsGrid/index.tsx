@@ -54,7 +54,7 @@ const DatasetsGrid: FC<Props> = ({
 }) => {
   const { dragAndDropAction, dragAndDropStyles } = useDragAndDrop();
   return (
-    <StyledGrid className={className} isReorder={isReorder}>
+    <StyledGrid className={className}>
       <thead>
         <tr>
           {isReorder && <th />}
