@@ -618,6 +618,31 @@ def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id:
         ) from None
 
 
+def set_collection_version_datasets_order(collection_id: str, body: dict, token_info: dict):
+    """
+    Sets the order of datasets in a collection and updates collection datasets cutom ordered
+    flag to true.
+    """
+    version = lookup_collection(collection_id)
+    if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
+        raise ForbiddenHTTPException()
+
+    datasets = body.get("datasets")
+    if datasets is None or len(datasets) == 0:
+        raise InvalidParametersHTTPException(detail="Missing datasets field")
+
+    try:
+        get_business_logic().set_collection_version_datasets_order(
+            version.version_id, [DatasetVersionId(dv_id) for dv_id in datasets]
+        )
+    except CollectionNotFoundException:
+        raise ForbiddenHTTPException() from None
+    except CollectionIsPublishedException:
+        raise ForbiddenHTTPException() from None
+
+    return make_response("", 200)
+
+
 # TODO: those two methods should probably be collapsed into one
 # TODO: not quite sure what's the difference between url and link - investigate
 def upload_link(collection_id: str, body: dict, token_info: dict):
