@@ -16,7 +16,7 @@ import { StyledLink } from "src/views/Collection/common/style";
 import Toast from "src/views/Collection/components/Toast";
 import EmptyModal from "../EmptyModal";
 import { UploadedFiles } from "src/views/Collection/components/CollectionActions/components/AddButton";
-import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
+import { ReorderAction } from "src/views/Collection/hooks/useReorderMode/useReorderMode";
 
 interface Props {
   collectionId: Collection["id"];

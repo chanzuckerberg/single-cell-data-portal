@@ -1,7 +1,7 @@
 import { DragEvent, ReactNode, useCallback, useState } from "react";
 import ReorderCell from "src/components/common/Grid/components/ReorderCell";
 import { Row } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow/style";
-import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
+import { ReorderAction } from "src/views/Collection/hooks/useReorderMode/useReorderMode";
 import { DragAndDropAction } from "src/views/Collection/hooks/useDragAndDrop/useDragAndDrop";
 import { SerializedStyles } from "@emotion/react";
 import { OffsetByIndex } from "src/views/Collection/hooks/useDragAndDrop/common/entities";
