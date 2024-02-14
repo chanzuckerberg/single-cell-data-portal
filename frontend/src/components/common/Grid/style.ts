@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
 import { fontBodyS } from "@czi-sds/components";
 import {
-  fontWeightSemibold,
   gray300,
   gray500,
+  fontWeightSemibold,
   spacesM,
   spacesS,
   spacesXxxs,
