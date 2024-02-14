@@ -7,7 +7,7 @@ import { RightAlignCell } from "src/components/common/Grid/components/RightAlign
 import { Grid as StyledGrid } from "src/components/common/Grid/style";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import { UploadedFiles } from "src/views/Collection/components/CollectionActions/components/AddButton";
-import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
+import { ReorderAction } from "src/views/Collection/hooks/useReorderMode/useReorderMode";
 import { useDragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/useDragAndDrop";
 
 interface Props {
