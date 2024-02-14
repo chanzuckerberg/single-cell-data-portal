@@ -1,14 +1,15 @@
 import { DragEvent, ReactNode, useCallback, useState } from "react";
 import ReorderCell from "src/components/common/Grid/components/ReorderCell";
 import { Row } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow/style";
-import { ReorderAction } from "src/views/Collection/hooks/useReorderMode/useReorderMode";
-import { DragAndDropAction } from "src/views/Collection/hooks/useDragAndDrop/useDragAndDrop";
-import { SerializedStyles } from "@emotion/react";
-import { OffsetByIndex } from "src/views/Collection/hooks/useDragAndDrop/common/entities";
+import {
+  DragAndDrop,
+  OffsetByIndex,
+} from "src/views/Collection/hooks/useDragAndDrop/common/entities";
 import {
   SELECTOR_TABLE_BODY,
   SELECTOR_TABLE_ROW,
 } from "src/views/Collection/hooks/useDragAndDrop/common/constants";
+import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
 
 export enum DRAG_EVENT_TYPE {
   DRAG = "DRAG",
@@ -19,20 +20,18 @@ export type ReorderModeRowProps = Props;
 
 interface Props {
   children: ReactNode | ReactNode[];
-  datasetIndex: number;
-  dragAndDropAction: DragAndDropAction;
-  dragAndDropStyles: SerializedStyles;
-  reorderAction: ReorderAction;
+  dragAndDrop: DragAndDrop;
+  reorder: Reorder;
 }
 
 export default function ReorderModeRow({
   children,
-  datasetIndex,
-  dragAndDropAction,
-  dragAndDropStyles,
-  reorderAction,
+  dragAndDrop,
+  reorder,
 }: Props): JSX.Element {
+  const { reorderAction } = reorder;
   const { onReorder } = reorderAction;
+  const { datasetIndex, dragAndDropStyles, dragAndDropAction } = dragAndDrop;
   const {
     onDragging,
     onDraggingOver,
@@ -60,7 +59,6 @@ export default function ReorderModeRow({
   const onDragEnd = useCallback(
     (dragEvent: DragEvent<HTMLTableRowElement>) => {
       dragEvent.preventDefault();
-      dragEvent.dataTransfer.clearData();
       // Set drag event type state to undefined as dragging is now complete; row styles revert to their default setting.
       setDragEventTypeState(undefined);
       onEndDragging();

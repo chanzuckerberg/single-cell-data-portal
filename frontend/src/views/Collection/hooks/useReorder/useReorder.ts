@@ -24,9 +24,9 @@ export enum REORDER_MODE {
   INACTIVE = "INACTIVE",
 }
 
-interface UseReorderMode {
+export interface UseReorder {
+  isReorder: boolean;
   isReorderUX: boolean;
-  mode: REORDER_MODE;
   orderedIds?: string[];
   reorderAction: ReorderAction;
 }
@@ -38,7 +38,7 @@ interface UseReorderMode {
  * @param collectionId - Collection ID to reorder datasets for.
  * @returns reorder mode.
  */
-export function useReorderMode(collectionId: Collection["id"]): UseReorderMode {
+export function useReorder(collectionId: Collection["id"]): UseReorder {
   const isReorderUX = useFeatureFlag(FEATURES.REORDER); // Reorder datasets UX feature flag (reordering is currently only available with the feature flag).
   const [mode, setMode] = useState<REORDER_MODE>(REORDER_MODE.INACTIVE);
   const [orderedIds, setOrderedIds] = useState<string[]>();
@@ -78,8 +78,8 @@ export function useReorderMode(collectionId: Collection["id"]): UseReorderMode {
   }, []);
 
   return {
+    isReorder: mode === REORDER_MODE.ACTIVE,
     isReorderUX,
-    mode,
     reorderAction: {
       onCancelReorder,
       onReorder,
