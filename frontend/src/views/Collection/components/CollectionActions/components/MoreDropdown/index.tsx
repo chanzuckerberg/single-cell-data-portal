@@ -1,28 +1,24 @@
 import { Fragment, MouseEvent, useState } from "react";
-import { Collection, Dataset } from "src/common/entities";
+import { Collection } from "src/common/entities";
 import Menu from "./components/Menu";
 import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
 import { ButtonIcon } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/style";
-import { ReorderAction } from "src/views/Collection/hooks/useReorderMode/useReorderMode";
+import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
 
 interface Props {
   collection: Collection;
-  datasets: Dataset[];
   handleDeleteCollection: DeleteCollectionFn;
   isDeleting: boolean;
-  isReorderUX: boolean;
   isRevision: boolean;
-  reorderAction: ReorderAction;
+  reorder: Reorder;
 }
 
 const MoreDropdown = ({
   collection,
-  datasets,
   handleDeleteCollection,
   isDeleting,
-  isReorderUX,
   isRevision,
-  reorderAction,
+  reorder,
 }: Props) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLButtonElement>(null);
   const open = Boolean(anchorEl);
@@ -49,13 +45,11 @@ const MoreDropdown = ({
       />
       <Menu
         collection={collection}
-        datasets={datasets}
         handleDeleteCollection={handleDeleteCollection}
         isDeleting={isDeleting}
-        isReorderUX={isReorderUX}
         isRevision={isRevision}
         menuProps={{ anchorEl, onClose, open }}
-        reorderAction={reorderAction}
+        reorder={reorder}
       />
     </Fragment>
   );

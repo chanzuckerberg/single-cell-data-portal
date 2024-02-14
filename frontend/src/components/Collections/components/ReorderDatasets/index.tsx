@@ -2,7 +2,7 @@ import {
   MinimalButton,
   SquareButton,
 } from "src/components/Collections/components/ReorderDatasets/style";
-import { ReorderAction } from "src/views/Collection/hooks/useReorderMode/useReorderMode";
+import { ReorderAction } from "src/views/Collection/hooks/useReorder/useReorder";
 
 interface Props {
   reorderAction: ReorderAction;

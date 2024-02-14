@@ -7,8 +7,6 @@ import {
   DATASET_ASSET_FORMAT,
   Link,
   PROCESSING_STATUS,
-  UPLOAD_STATUS,
-  VALIDATION_STATUS,
   VISIBILITY_TYPE,
 } from "src/common/entities";
 import { getUrlHost } from "src/common/utils/getUrlHost";
@@ -124,15 +122,6 @@ function buildDoiMetadataLink(
 }
 
 /**
- * Returns the datasets IDs, associated with the given collection.
- * @param datasets - Datasets.
- * @returns collection dataset IDs.
- */
-export function getDatasetIds(datasets: Dataset[]): string[] {
-  return datasets.map((dataset) => dataset.id);
-}
-
-/**
  * Return the path of the given DOI URL.
  * @param doiUrl - URL of DOI, e.g. https://doi.org/10.1101/2021.01.28.428598.
  * @returns Path of the given DOI URL, e.g. 10.1101/2021.01.28.428598.
@@ -237,30 +226,6 @@ function buildCollectionMetadataLink(
 function isPrivateRevision(collection: Collection) {
   return (
     collection.visibility === VISIBILITY_TYPE.PRIVATE && collection.revision_of
-  );
-}
-
-/**
- * Returns true if the collection datasets are reorder-able (i.e. there are more than one dataset, and all datasets are uploaded and valid).
- * @param datasets - Datasets.
- * @returns true if the collection datasets are reorder-able.
- */
-export function isCollectionDatasetsReorderable(datasets: Dataset[]): boolean {
-  return (
-    datasets.length > 1 && datasets.every(isCollectionDatasetUploadedAndValid)
-  );
-}
-
-/**
- * Returns true if the dataset is uploaded and valid, with a processing status of success.
- * @param dataset - Dataset.
- * @returns true if the dataset is uploaded and valid.
- */
-function isCollectionDatasetUploadedAndValid(dataset: Dataset): boolean {
-  return (
-    dataset.processing_status.processing_status === PROCESSING_STATUS.SUCCESS &&
-    dataset.processing_status.upload_status === UPLOAD_STATUS.UPLOADED &&
-    dataset.processing_status.validation_status === VALIDATION_STATUS.VALID
   );
 }
 

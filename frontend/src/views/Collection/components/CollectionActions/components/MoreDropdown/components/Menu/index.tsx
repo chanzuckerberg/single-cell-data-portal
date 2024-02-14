@@ -1,4 +1,4 @@
-import { Collection, Dataset } from "src/common/entities";
+import { Collection } from "src/common/entities";
 import DeleteCollection from "src/components/Collections/components/DeleteCollection";
 import CreateCollection from "src/components/CreateCollectionModal";
 import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
@@ -14,11 +14,7 @@ import {
 } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/style";
 import { DEFAULT_MENU_PROPS } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/constants";
 import IconSort from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/components/IconSort";
-import { ReorderAction } from "src/views/Collection/hooks/useReorderMode/useReorderMode";
-import {
-  getDatasetIds,
-  isCollectionDatasetsReorderable,
-} from "src/views/Collection/utils";
+import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
 
 interface MenuProps extends Partial<Omit<SDSMenuProps, "onClose">> {
   onClose: () => void;
@@ -57,24 +53,20 @@ const EditButton = (props: Partial<SDSMenuItemProps<"edit">>) => {
 
 interface Props {
   collection: Collection;
-  datasets: Dataset[];
   handleDeleteCollection: DeleteCollectionFn;
   isDeleting: boolean;
-  isReorderUX: boolean;
   isRevision: boolean;
   menuProps: MenuProps;
-  reorderAction: ReorderAction;
+  reorder: Reorder;
 }
 
 const Menu = ({
   collection,
-  datasets,
   handleDeleteCollection,
   isDeleting,
-  isReorderUX,
   isRevision,
   menuProps,
-  reorderAction,
+  reorder,
 }: Props) => {
   return (
     <StyledMenu
@@ -83,12 +75,12 @@ const Menu = ({
       open={Boolean(menuProps.open)}
     >
       <CreateCollection id={collection.id} Button={EditButton} />
-      {isReorderUX && (
+      {reorder.isReorderUX && (
         <ReorderMenuItem
-          disabled={!isCollectionDatasetsReorderable(datasets)}
+          disabled={reorder.disabled}
           onClick={() => {
             menuProps.onClose();
-            reorderAction.onStartReorder(getDatasetIds(datasets));
+            reorder.startReorder();
           }}
         >
           <IconSort />
