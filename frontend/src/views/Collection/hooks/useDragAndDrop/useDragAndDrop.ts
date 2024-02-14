@@ -224,8 +224,8 @@ function getSelectorPositions(
  * direction.
  * The shadow index is adjusted to match the dropping index under specific conditions to maintain coherence between
  * dragging action, dragging direction and the visual feedback:
- * - Dragging downwards and the shadow index is not lower than the dropping index.
- * - Dragging upwards and the shadow index is not higher than the dropping index.
+ * - Dragging downwards and the shadow index is above the dropping index.
+ * - Dragging upwards and the shadow index is below the dropping index.
  * If neither condition is met, the shadow index remains unchanged.
  * @param droppingIndex - Dropping index.
  * @param shadowIndex - Shadow index.
@@ -317,12 +317,13 @@ function updateDragging(
     droppingIndexIndex,
     draggingState.dragAndDropIndexes
   );
-  // During the transition of the dragging element, specifically when the shadow index overlaps with the dropping index,
-  // the dropping index dynamically adjusts its position to reflect the transitioning state. However, this adjustment leads to
-  // unwanted consequences; the dropping index's index position no longer represents the original given value, and
-  // dragging styles during this transition result in visual glitches as the transition oscillates
-  // between the original dropping index and the dynamically updated dropping index. To avoid these issues, while
-  // the transition is ongoing, we effectively "lock" the shadow index to its intended value.
+  //  Maintain the stability of the shadow element's position during drag-and-drop operations:
+  //  During transition, the dragAndDropIndexes array is updated to reflect the new, expected positions.
+  //  However, updates occur mid-transition, inadvertently altering the designated dropping position for the
+  //  shadow element. This can lead to discrepancies between the shadow element's current and intended positions,
+  //  potentially causing visual oscillations in the transition effect as the element moves.
+  //  To prevent such oscillations and ensure the shadow element accurately represents the intended drop location,
+  //  it's crucial to maintain the shadow index at its original, intended value throughout the transition.
   const shadowIndex = getShadowIndex(
     droppingIndexIndex,
     draggingState.shadowIndex,
