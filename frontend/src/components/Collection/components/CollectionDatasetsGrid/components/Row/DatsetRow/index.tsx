@@ -46,6 +46,11 @@ import { StyledPrimaryAnchorButton } from "src/components/common/Button/common/s
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import DownloadButton from "src/components/common/Grid/components/DownloadButton";
+import ReorderModeRow, {
+  ReorderModeRowProps,
+} from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow";
+import { DragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/common/entities";
+import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
 
 const AsyncTooltip = loadable(
   () =>
@@ -81,10 +86,12 @@ const handlePossibleError = (
 interface Props {
   collectionId: Collection["id"];
   dataset: Dataset;
+  dragAndDrop: DragAndDrop;
   file?: UploadingFile;
   invalidateCollectionQuery: () => void;
   visibility: Collection["visibility"];
   accessType?: Collection["access_type"];
+  reorder: Reorder;
   revisionsEnabled: boolean;
   onUploadFile: ChooserProps["onUploadFile"];
 }
@@ -92,10 +99,12 @@ interface Props {
 const DatasetRow: FC<Props> = ({
   collectionId,
   dataset,
+  dragAndDrop,
   file,
   invalidateCollectionQuery,
   visibility,
   accessType,
+  reorder,
   revisionsEnabled,
   onUploadFile,
 }) => {
@@ -166,8 +175,16 @@ const DatasetRow: FC<Props> = ({
 
   const isOverMaxCellCount = checkIsOverMaxCellCount(cell_count);
 
+  const Row = reorder.isReorder ? ReorderModeRow : "tr";
+  const rowProps = reorder.isReorder
+    ? {
+        dragAndDrop,
+        reorder,
+      }
+    : {};
+
   return (
-    <tr>
+    <Row {...(rowProps as ReorderModeRowProps)}>
       <td>
         <DatasetNameCell name={name}>
           {!isLoading && (
@@ -186,9 +203,11 @@ const DatasetRow: FC<Props> = ({
               progress={datasetStatus.upload_progress}
             />
           )}
-          <StatusTags>
-            {revisionsEnabled && <RevisionStatusTag dataset={dataset} />}
-          </StatusTags>
+          {revisionsEnabled && (
+            <StatusTags>
+              <RevisionStatusTag dataset={dataset} />
+            </StatusTags>
+          )}
         </DatasetNameCell>
       </td>
       <td>
@@ -258,7 +277,7 @@ const DatasetRow: FC<Props> = ({
           )}
         </ActionsCell>
       </td>
-    </tr>
+    </Row>
   );
 };
 
