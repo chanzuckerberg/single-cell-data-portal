@@ -49,7 +49,7 @@ import DownloadButton from "src/components/common/Grid/components/DownloadButton
 import ReorderModeRow, {
   ReorderModeRowProps,
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow";
-import { ReorderAction } from "src/views/Collection/hooks/useReorderMode";
+import { ReorderAction } from "src/views/Collection/hooks/useReorderMode/useReorderMode";
 import { DragAndDropAction } from "src/views/Collection/hooks/useDragAndDrop/useDragAndDrop";
 import { SerializedStyles } from "@emotion/react";
 
