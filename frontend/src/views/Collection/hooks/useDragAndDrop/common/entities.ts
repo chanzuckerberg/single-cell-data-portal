@@ -1,4 +1,9 @@
 import { SerializedStyles } from "@emotion/react";
+import { UseDragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/useDragAndDrop";
+
+export interface DragAndDrop extends UseDragAndDrop {
+  datasetIndex: number;
+}
 
 export interface Dragging {
   dragAndDropIndexes: number[];

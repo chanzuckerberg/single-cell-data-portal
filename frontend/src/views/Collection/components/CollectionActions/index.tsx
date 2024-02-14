@@ -1,9 +1,4 @@
-import {
-  ACCESS_TYPE,
-  Collection,
-  Dataset,
-  VISIBILITY_TYPE,
-} from "src/common/entities";
+import { ACCESS_TYPE, Collection, VISIBILITY_TYPE } from "src/common/entities";
 import PublishCollection from "src/components/Collections/components/PublishCollection";
 import { UploadingFile } from "src/components/DropboxChooser";
 import AddButton from "./components/AddButton";
@@ -23,8 +18,8 @@ import { POLICY_BULLETS } from "src/components/Collections/components/PublishCol
 import Toast from "src/views/Collection/components/Toast";
 import { IconNames } from "@blueprintjs/icons";
 import { Intent } from "@blueprintjs/core";
-import { ReorderAction } from "src/views/Collection/hooks/useReorderMode/useReorderMode";
 import ReorderDatasets from "src/components/Collections/components/ReorderDatasets";
+import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
 
 export type CreateRevisionFn = () => void;
 export type DeleteCollectionFn = () => void;
@@ -32,28 +27,23 @@ export type PublishCollectionFn = () => void;
 
 interface Props {
   collection: Collection;
-  datasets: Dataset[];
   hasRevision: boolean;
   isPublishable: boolean;
-  isReorder: boolean;
-  isReorderUX: boolean;
   isRevision: boolean;
-  reorderAction: ReorderAction;
+  reorder: Reorder;
   setIsUploadingLink: Dispatch<SetStateAction<boolean>>;
 }
 
 const CollectionActions = ({
   collection,
-  datasets,
   hasRevision,
   isPublishable,
-  isReorder,
-  isReorderUX,
   isRevision,
-  reorderAction,
+  reorder,
   setIsUploadingLink,
 }: Props): JSX.Element | null => {
   const { id, revision_of } = collection;
+  const { isReorder, reorderAction } = reorder;
   const createRevisionMutation = useCreateRevision();
   const uploadLinksMutation = useCollectionUploadLinks(id);
   const deleteCollectionMutation = useDeleteCollection();
@@ -146,12 +136,10 @@ const CollectionActions = ({
         <>
           <MoreDropdown
             collection={collection}
-            datasets={datasets}
             handleDeleteCollection={handleDeleteCollection}
             isDeleting={deleteCollectionMutation.isLoading}
-            isReorderUX={isReorderUX}
             isRevision={isRevision}
-            reorderAction={reorderAction}
+            reorder={reorder}
           />
           <AddButton addNewFile={handleAddNewFile} />
           <PublishCollection

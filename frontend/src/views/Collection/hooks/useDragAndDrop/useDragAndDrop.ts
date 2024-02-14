@@ -5,7 +5,7 @@ import {
   OffsetByIndex,
 } from "src/views/Collection/hooks/useDragAndDrop/common/entities";
 import { css, SerializedStyles } from "@emotion/react";
-import { OnReorderFn } from "src/views/Collection/hooks/useReorderMode/useReorderMode";
+import { OnReorderFn } from "src/views/Collection/hooks/useReorder/useReorder";
 import {
   DEFAULT_CLIENT_Y,
   DEFAULT_DIRECTION,
@@ -25,7 +25,7 @@ export interface DragAndDropAction {
   ) => void;
 }
 
-interface UseDragAndDrop {
+export interface UseDragAndDrop {
   dragAndDropAction: DragAndDropAction;
   dragAndDropStyles?: SerializedStyles;
 }

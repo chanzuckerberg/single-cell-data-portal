@@ -49,9 +49,8 @@ import DownloadButton from "src/components/common/Grid/components/DownloadButton
 import ReorderModeRow, {
   ReorderModeRowProps,
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow";
-import { ReorderAction } from "src/views/Collection/hooks/useReorderMode/useReorderMode";
-import { DragAndDropAction } from "src/views/Collection/hooks/useDragAndDrop/useDragAndDrop";
-import { SerializedStyles } from "@emotion/react";
+import { DragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/common/entities";
+import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
 
 const AsyncTooltip = loadable(
   () =>
@@ -87,15 +86,12 @@ const handlePossibleError = (
 interface Props {
   collectionId: Collection["id"];
   dataset: Dataset;
-  datasetIndex: number;
-  dragAndDropAction: DragAndDropAction;
-  dragAndDropStyles?: SerializedStyles;
+  dragAndDrop: DragAndDrop;
   file?: UploadingFile;
   invalidateCollectionQuery: () => void;
-  isReorder: boolean;
   visibility: Collection["visibility"];
   accessType?: Collection["access_type"];
-  reorderAction: ReorderAction;
+  reorder: Reorder;
   revisionsEnabled: boolean;
   onUploadFile: ChooserProps["onUploadFile"];
 }
@@ -103,15 +99,12 @@ interface Props {
 const DatasetRow: FC<Props> = ({
   collectionId,
   dataset,
-  datasetIndex,
-  dragAndDropAction,
-  dragAndDropStyles,
+  dragAndDrop,
   file,
   invalidateCollectionQuery,
-  isReorder,
   visibility,
   accessType,
-  reorderAction,
+  reorder,
   revisionsEnabled,
   onUploadFile,
 }) => {
@@ -182,13 +175,11 @@ const DatasetRow: FC<Props> = ({
 
   const isOverMaxCellCount = checkIsOverMaxCellCount(cell_count);
 
-  const Row = isReorder ? ReorderModeRow : "tr";
-  const rowProps = isReorder
+  const Row = reorder.isReorder ? ReorderModeRow : "tr";
+  const rowProps = reorder.isReorder
     ? {
-        datasetIndex,
-        dragAndDropAction,
-        dragAndDropStyles,
-        reorderAction,
+        dragAndDrop,
+        reorder,
       }
     : {};
 
