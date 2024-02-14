@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { gray100, grayWhite } from "src/common/theme";
+import { gray100, grayWhite, spacesS } from "src/common/theme";
 import { CommonThemeProps } from "@czi-sds/components";
 import { DRAG_EVENT_TYPE } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow/index";
 import { css, SerializedStyles } from "@emotion/react";
@@ -22,8 +22,8 @@ export const Row = styled("tr")<RowProps>`
   ${draggedRows}
 `;
 
-function draggedRow({ dragEventType }: RowProps): SerializedStyles | undefined {
-  if (dragEventType === DRAG_EVENT_TYPE.DRAG) {
+function draggedRow(props: RowProps): SerializedStyles | undefined {
+  if (props.dragEventType === DRAG_EVENT_TYPE.DRAG) {
     return css`
       &:hover {
         background-color: ${grayWhite()};
@@ -34,10 +34,10 @@ function draggedRow({ dragEventType }: RowProps): SerializedStyles | undefined {
       }
     `;
   }
-  if (dragEventType === DRAG_EVENT_TYPE.DRAG_START) {
+  if (props.dragEventType === DRAG_EVENT_TYPE.DRAG_START) {
     return css`
-      margin: 0 -16px;
-      padding: 0 16px;
+      margin: 0 -${spacesS(props)}px;
+      padding: 0 ${spacesS(props)}px;
 
       td {
         opacity: 0.8;
