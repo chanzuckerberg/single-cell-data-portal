@@ -56,7 +56,7 @@ const Collection: FC = () => {
   const {
     isReorderUX,
     mode: reorderMode,
-    orderedIDs,
+    orderedIds,
     reorderAction,
   } = useReorderMode(id);
 
@@ -163,7 +163,7 @@ const Collection: FC = () => {
         {/* TODO Reusing DatasetTab as-is as functionality is too dense to refactor for this iteration of filter. Complete refactor (including update to React Table) can be done when filter is productionalized. */}
         <DatasetTab
           collectionId={id}
-          datasets={sortCollectionDatasets(datasets, orderedIDs)}
+          datasets={sortCollectionDatasets(datasets, orderedIds)}
           isReorder={isReorder}
           isRevision={isRevision}
           reorderAction={reorderAction}
