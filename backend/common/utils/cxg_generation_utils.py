@@ -113,7 +113,7 @@ def convert_ndarray_to_cxg_dense_array(ndarray_name, ndarray, ctx):
         schema = tiledb.ArraySchema(
             domain=domain, sparse=False, attrs=attrs, capacity=1_000_000, cell_order="row-major", tile_order="row-major"
         )
-        tiledb.DenseArray.create(ndarray_name, schema)
+        tiledb.DenseArray.create(ndarray_name, schema, ctx=ctx)
 
     create_ndarray_array(ndarray_name, ndarray)
 
