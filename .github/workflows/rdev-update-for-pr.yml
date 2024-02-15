@@ -71,6 +71,8 @@ jobs:
 
   seed-wmg-cellguide-rdev:
     runs-on: ubuntu-22.04
+    needs:
+      - build_images
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
