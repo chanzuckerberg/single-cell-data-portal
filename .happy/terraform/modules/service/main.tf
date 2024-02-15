@@ -205,6 +205,10 @@ resource aws_ecs_task_definition task_definition {
       {
         "name": "AWS_DEFAULT_REGION",
         "value": "${data.aws_region.current.name}"
+      },
+      {
+        "name": "DOWNLOAD_WMG_DATA_TO_DISK",
+        "value": "true"
       }
     ],
     "portMappings": [
