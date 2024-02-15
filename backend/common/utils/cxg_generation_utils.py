@@ -77,7 +77,7 @@ def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, ind
         schema = tiledb.ArraySchema(
             domain=domain, sparse=False, attrs=attrs, cell_order="row-major", tile_order="row-major"
         )
-        tiledb.DenseArray.create(array_name, schema)
+        tiledb.DenseArray.create(array_name, schema, ctx=ctx)
 
     array_name = f"{cxg_container}/{dataframe_name}"
 
