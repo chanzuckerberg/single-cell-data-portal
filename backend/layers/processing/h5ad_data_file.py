@@ -113,7 +113,7 @@ class H5ADDataFile:
         for suffix in suffixes:
             tiledb.consolidate(matrix_container + suffix, ctx=ctx)
             if hasattr(tiledb, "vacuum"):
-                tiledb.vacuum(matrix_container + suffix)
+                tiledb.vacuum(matrix_container + suffix, ctx=ctx)
 
     def write_anndata_embeddings_to_cxg(self, output_cxg_directory, ctx):
         def is_valid_embedding(adata, embedding_name, embedding_array):
