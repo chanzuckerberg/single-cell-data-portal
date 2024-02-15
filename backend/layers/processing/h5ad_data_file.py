@@ -73,7 +73,6 @@ class H5ADDataFile:
 
         logging.info("Beginning writing to CXG.")
         ctx = tiledb_ctx if tiledb_ctx is not None else tiledb.Ctx(self.tile_db_ctx_config)
-
         tiledb.group_create(output_cxg_directory, ctx=ctx)
         logging.info(f"\t...group created, with name {output_cxg_directory}")
 
