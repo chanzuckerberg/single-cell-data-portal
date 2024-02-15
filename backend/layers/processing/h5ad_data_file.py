@@ -60,7 +60,9 @@ class H5ADDataFile:
             self.extract_metadata_about_dataset()
             self.validate_anndata()
 
-    def to_cxg(self, output_cxg_directory, sparse_threshold, convert_anndata_colors_to_cxg_colors=True):
+    def to_cxg(
+        self, output_cxg_directory, sparse_threshold, convert_anndata_colors_to_cxg_colors=True, tiledb_ctx=None
+    ):
         """
         Writes the following attributes of the anndata to CXG: 1) the metadata as metadata attached to an empty
         DenseArray, 2) the obs DataFrame as a DenseArray, 3) the var DataFrame as a DenseArray, 4) all valid
@@ -70,7 +72,7 @@ class H5ADDataFile:
         """
 
         logging.info("Beginning writing to CXG.")
-        ctx = tiledb.Ctx(self.tile_db_ctx_config)
+        ctx = tiledb_ctx if tiledb_ctx is not None else tiledb.Ctx(self.tile_db_ctx_config)
 
         tiledb.group_create(output_cxg_directory, ctx=ctx)
         logging.info(f"\t...group created, with name {output_cxg_directory}")
