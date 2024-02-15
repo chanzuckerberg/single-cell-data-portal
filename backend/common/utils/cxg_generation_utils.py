@@ -211,7 +211,7 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
                 tile_order="col-major",
                 capacity=0,
             )
-            tiledb.Array.create(matrix_name, schema)
+            tiledb.Array.create(matrix_name, schema, ctx=ctx)
         else:
             attrs = [tiledb.Attr(dtype=np.float32, filters=tiledb.FilterList([tiledb.ZstdFilter(level=compression)]))]
             if row:
@@ -246,7 +246,7 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
                 tile_order="row-major",
                 capacity=1024000,
             )
-            tiledb.Array.create(matrix_name, schema)
+            tiledb.Array.create(matrix_name, schema, ctx=ctx)
 
     number_of_rows = matrix.shape[0]
     number_of_columns = matrix.shape[1]
