@@ -21,8 +21,17 @@ permissions:
   id-token: write
   issues: write
   pull-requests: write
+  contents: write
 
 jobs:
+  push-tests:
+    name: "Push Tests"
+    uses: ./.github/workflows/push-tests.yml
+    secrets: inherit
+    concurrency:
+      group: pr-${{ github.event.number }}-push-tests
+      cancel-in-progress: true
+
   get_previous_image_digests:
     runs-on: ubuntu-22.04
     outputs:
@@ -62,6 +71,8 @@ jobs:
 
   seed-wmg-cellguide-rdev:
     runs-on: ubuntu-22.04
+    needs:
+      - build_images
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -171,4 +182,6 @@ jobs:
     concurrency:
       group: pr-${{ github.event.number }}-test
       cancel-in-progress: true
-    needs: deploy-rdev
+    needs:
+      - deploy-rdev
+      - push-tests
