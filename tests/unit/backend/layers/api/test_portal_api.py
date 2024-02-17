@@ -1936,7 +1936,6 @@ class TestDataset(BaseAPIPortalTest):
             )
 
             self.assertEqual(actual_dataset["cell_type"], convert_ontology(modified_metadata.cell_type))
-            print(actual_dataset["cell_type_ancestors"])
             self.assertCountEqual(
                 actual_dataset["cell_type_ancestors"],
                 [
