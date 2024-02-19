@@ -170,7 +170,7 @@ function getDragAndDropStyles(
  * @param tolerance - Tolerance for detecting the direction change.
  * @returns direction.
  */
-function getDraggingDirection(
+export function getDraggingDirection(
   dy: number,
   tolerance = DEFAULT_DIRECTION_TOLERANCE
 ): DRAGGING_DIRECTION | undefined {
@@ -287,7 +287,7 @@ function setHeaderStyle() {
  * @param draggingDirection - Dragging direction.
  * @returns updated dragging state.
  */
-function updateDragging(
+export function updateDragging(
   draggingState: Dragging,
   droppingIndex: number,
   draggingDirection: DRAGGING_DIRECTION
