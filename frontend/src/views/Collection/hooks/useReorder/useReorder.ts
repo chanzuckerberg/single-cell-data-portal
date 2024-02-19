@@ -97,7 +97,7 @@ export function useReorder(collectionId: Collection["id"]): UseReorder {
  * @param targetIndex - Index of target position to reorder dataset to.
  * @returns order of datasets.
  */
-function buildOrderedIds(
+export function buildOrderedIds(
   orderedIds: string[] | undefined,
   datasetIndex: number,
   targetIndex: number
