@@ -4,12 +4,12 @@ import { Collection, Dataset, VISIBILITY_TYPE } from "src/common/entities";
 import { ReuploadLink } from "src/common/queries/collections";
 import DatasetRow from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow";
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
-import { Grid as StyledGrid } from "src/components/common/Grid/style";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import { UploadedFiles } from "src/views/Collection/components/CollectionActions/components/AddButton";
 import { useDragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/useDragAndDrop";
 import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
 import { getDragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/common/utils";
+import { DatasetsGrid as Grid } from "src/components/Collection/components/CollectionDatasetsGrid/components/DatasetsGrid/style";
 
 interface Props {
   className?: string;
@@ -51,9 +51,9 @@ const DatasetsGrid: FC<Props> = ({
   reorder,
   reuploadDataset,
 }) => {
-  const dragAndDrop = useDragAndDrop();
+  const { dragAndDropStyles, ...dragAndDrop } = useDragAndDrop();
   return (
-    <StyledGrid className={className}>
+    <Grid className={className} dragAndDropStyles={dragAndDropStyles}>
       <thead>
         <tr>
           {reorder.isReorder && <th />}
@@ -85,7 +85,7 @@ const DatasetsGrid: FC<Props> = ({
           />
         ))}
       </tbody>
-    </StyledGrid>
+    </Grid>
   );
 };
 

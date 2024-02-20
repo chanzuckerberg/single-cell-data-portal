@@ -1,27 +1,26 @@
-import { DragEvent, useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Dragging,
   DRAGGING_DIRECTION,
-  OffsetByIndex,
+  ElementHeightByIndex,
 } from "src/views/Collection/hooks/useDragAndDrop/common/entities";
-import { css, SerializedStyles } from "@emotion/react";
 import { OnReorderFn } from "src/views/Collection/hooks/useReorder/useReorder";
 import {
-  DEFAULT_CLIENT_Y,
-  DEFAULT_DIRECTION,
   DEFAULT_DIRECTION_TOLERANCE,
   DEFAULT_DRAGGING,
 } from "src/views/Collection/hooks/useDragAndDrop/common/constants";
 import { HEADER_ID } from "src/components/Header/constants";
+import { SerializedStyles } from "@emotion/react";
+import { useDragAndDropStyles } from "src/views/Collection/hooks/useDragAndDropStyles";
 
 export interface DragAndDropAction {
-  onDragging: (dragEvent: DragEvent<HTMLElement>) => void;
-  onDraggingOver: (droppingIndex: number) => void;
+  onDraggingOver: (dropTargetIndex: number, clientY: number) => void;
   onDropping: (onReorder: OnReorderFn) => void;
   onEndDragging: () => void;
   onStartDragging: (
-    draggingIndex: number,
-    offsetByIndex: OffsetByIndex
+    dragTargetIndex: number,
+    clientY: number,
+    elementHeightByIndex: ElementHeightByIndex
   ) => void;
 }
 
@@ -33,58 +32,54 @@ export interface UseDragAndDrop {
 /**
  * "Drag and Drop" feature for collection view dataset reordering.
  * Handles the drag and drop UI/UX for reordering datasets in the collection view.
- * @returns drag and drop actions and dragging styles.
+ * @returns dragging actions and styles.
  */
 export function useDragAndDrop(): UseDragAndDrop {
-  const clientYRef = useRef<number>(DEFAULT_CLIENT_Y);
-  const draggingDirectionRef = useRef<DRAGGING_DIRECTION>(DEFAULT_DIRECTION);
   const [dragging, setDragging] = useState<Dragging>(DEFAULT_DRAGGING);
-  const { dragAndDropStyles, draggingIndex, shadowIndex } = dragging;
-
-  // Callback fired every few milliseconds when the dragged element is being dragged.
-  // Dragging direction is updated based on the change in the y-axis position.
-  // Direction is used to position the visual cue of the dragged element.
-  const onDragging = useCallback((dragEvent: DragEvent<HTMLElement>) => {
-    const clientY = dragEvent.clientY;
-    // Update dragging direction.
-    const direction = getDraggingDirection(clientY - clientYRef.current);
-    if (!direction) return;
-    // Update clientY position, only when direction has been detected.
-    clientYRef.current = clientY;
-    draggingDirectionRef.current = direction;
-  }, []);
+  const { dragTargetIndex, dropTargetIndex } = dragging;
+  const dragAndDropStyles = useDragAndDropStyles(dragging);
 
   // Callback fired when dragged element is being dragged over a valid drop target.
-  const onDraggingOver = useCallback((droppingIndex: number) => {
-    setDragging((dragging) =>
-      updateDragging(dragging, droppingIndex, draggingDirectionRef.current)
-    );
-  }, []);
+  const onDraggingOver = useCallback(
+    (dropTargetIndex: number, clientY: number) => {
+      setDragging((dragging) =>
+        calculateNextDraggingState(dragging, dropTargetIndex, clientY)
+      );
+    },
+    []
+  );
 
   // Callback fired when dragged element is dropped on a valid drop target.
   const onDropping = useCallback(
     (onReorder: OnReorderFn) => {
       removeHeaderStyle();
       setDragging(DEFAULT_DRAGGING);
-      onReorder(draggingIndex, shadowIndex);
+      onReorder(dragTargetIndex, dropTargetIndex);
     },
-    [draggingIndex, shadowIndex]
+    [dragTargetIndex, dropTargetIndex]
   );
 
   // Callback fired when the drag operation ends.
   const onEndDragging = useCallback(() => {
-    clientYRef.current = DEFAULT_CLIENT_Y;
-    draggingDirectionRef.current = DEFAULT_DIRECTION;
     removeHeaderStyle();
     setDragging(DEFAULT_DRAGGING);
   }, []);
 
   // Callback fired when dragging starts.
   const onStartDragging = useCallback(
-    (draggingIndex: number, offsetByIndex: OffsetByIndex) => {
+    (
+      dragTargetIndex: number,
+      clientY: number,
+      elementHeightByIndex: ElementHeightByIndex
+    ) => {
       setHeaderStyle();
       setDragging((dragging) =>
-        updateDraggingStart(dragging, draggingIndex, offsetByIndex)
+        calculateStartDraggingState(
+          dragging,
+          dragTargetIndex,
+          clientY,
+          elementHeightByIndex
+        )
       );
     },
     []
@@ -92,7 +87,6 @@ export function useDragAndDrop(): UseDragAndDrop {
 
   return {
     dragAndDropAction: {
-      onDragging,
       onDraggingOver,
       onDropping,
       onEndDragging,
@@ -103,139 +97,235 @@ export function useDragAndDrop(): UseDragAndDrop {
 }
 
 /**
- * Returns the dragging and dropping y-offset values.
- * @param draggingIndex - Dragging index.
- * @param indexes - Drag indexes affected by the drag operation.
- * @param offsetByIndex - Offset, keyed by index.
- * @returns dragging and dropping y-offset values.
+ * Updates the dragging mouse y-axis position, based on the change in the y-axis position between consecutive onDraggingOver
+ * events. If the change in the position is not significant enough, the last known position is retained.
+ * @param draggingState - Current state values relating to drag.
+ * @param clientY - Drag event y-axis position.
+ * @returns dragging mouse y-axis position.
  */
-function getDragAndDropOffset(
-  draggingIndex: number,
-  indexes: number[],
-  offsetByIndex: OffsetByIndex
-): [number, number] {
-  // Dragging element transforms on the y-axis by the displaced dropping elements.
-  let draggingOffset = 0;
-  for (const i of indexes) {
-    if (i === draggingIndex) continue;
-    draggingOffset += offsetByIndex.get(i) ?? 0;
+function calculateDragClientY(draggingState: Dragging, clientY: number) {
+  const dy = clientY - draggingState.dragClientY;
+  if (shouldCalculateDirection(dy)) {
+    return clientY;
   }
-  // Dropping targets transform on the y-axis by the displaced dragging element.
-  const droppingOffset =
-    draggingOffset === 0 ? 0 : offsetByIndex.get(draggingIndex) ?? 0;
-  return [draggingOffset, droppingOffset];
+  return draggingState.dragClientY;
 }
 
 /**
- * Updates the dragging and dropping styles for the dragged element and eligible drop elements.
- * @param draggingIndex - Dragging index.
- * @param shadowIndex - Shadow index.
- * @param offsetByIndex - Offset by index.
- * @returns drag and drop styles.
+ * Calculates the dragging direction, based on the change in the dragging mouse y-axis positions between consecutive
+ * onDraggingOver events. If the change in the position is not significant enough to determine a direction, the last known
+ * direction is returned.
+ * @param draggingState - Current state values relating to drag.
+ * @param clientY - Drag event y-axis position.
+ * @returns dragging direction.
  */
-function getDragAndDropStyles(
-  draggingIndex: number,
-  shadowIndex: number,
-  offsetByIndex: OffsetByIndex
-): SerializedStyles {
-  const draggingOffsetDirection = shadowIndex > draggingIndex ? 1 : -1;
-  const indexes = getDraggingIndexes(draggingIndex, shadowIndex);
-  const offset = getDragAndDropOffset(draggingIndex, indexes, offsetByIndex);
-  // Transform dragging and dropping elements on the y-axis.
-  const [draggingOffset, droppingOffset] = offset;
-  // No change in position - shadowIndex is within the bounds of the original dragging index.
-  if (draggingOffset === 0 && droppingOffset === 0) {
-    return css`
-      transform: translateY(0);
-      transition: transform 0.1s ease-in-out;
-    `;
-  }
-  const [nthStart, nthEnd] = getSelectorPositions(draggingIndex, indexes);
-  return css`
-    transition: transform 0.1s ease-in-out;
-
-    &:nth-of-type(${draggingIndex + 1}) {
-      transform: translateY(${draggingOffset * draggingOffsetDirection}px);
-    }
-
-    &:nth-of-type(n + ${nthStart}):nth-of-type(-n + ${nthEnd}) {
-      transform: translateY(${droppingOffset * -draggingOffsetDirection}px);
-    }
-  `;
-}
-
-/**
- * Returns the dragging direction.
- * @param dy - Delta clientY.
- * @param tolerance - Tolerance for detecting the direction change.
- * @returns direction.
- */
-export function getDraggingDirection(
-  dy: number,
-  tolerance = DEFAULT_DIRECTION_TOLERANCE
+export function calculateEffectiveDraggingDirection(
+  draggingState: Dragging,
+  clientY: number
 ): DRAGGING_DIRECTION | undefined {
-  if (dy === 0) return;
-  const absY = Math.abs(dy);
-  if (absY < tolerance) return; // Tolerance threshold for detecting direction change.
-  const sign = Math.sign(dy);
-  return sign > 0 ? DRAGGING_DIRECTION.DOWN : DRAGGING_DIRECTION.UP;
+  const dy = clientY - draggingState.dragClientY;
+  // Check if the movement is significant enough to calculate a new direction.
+  if (shouldCalculateDirection(dy)) {
+    // Determine the direction based on the sign of the change in y position.
+    return Math.sign(dy) > 0 ? DRAGGING_DIRECTION.DOWN : DRAGGING_DIRECTION.UP;
+  }
+  // Return the last known direction if the movement is not significant.
+  return draggingState.draggingDirection;
 }
 
 /**
- * Returns the indexes included in the drag operation.
- * @param draggingIndex - Dragging index.
- * @param shadowIndex - Shadow index.
- * @returns indexes included in the drag operation.
+ * Calculate the next dragging state with changes to the drop target index, and the dragging direction.
+ * @param draggingState - Current state values relating to drag.
+ * @param dropTargetIndex - Original index of the drop target in the list.
+ * @param clientY - Drag event y-axis position.
+ * @returns next dragging state.
  */
-function getDraggingIndexes(
-  draggingIndex: number,
-  shadowIndex: number
-): number[] {
-  const minIndex = Math.min(draggingIndex, shadowIndex);
-  const maxIndex = Math.max(draggingIndex, shadowIndex);
-  if (minIndex === maxIndex) return [minIndex];
-  return Array.from(
-    { length: maxIndex - minIndex + 1 },
-    (_, index) => minIndex + index
+export function calculateNextDraggingState(
+  draggingState: Dragging,
+  dropTargetIndex: number,
+  clientY: number
+): Dragging {
+  if (draggingState.dragTargetIndex === dropTargetIndex) {
+    // Dragging element is on the drop target; transitioning is complete.
+    return draggingState;
+  }
+  // Calculate the dragging direction.
+  const draggingDirection = calculateEffectiveDraggingDirection(
+    draggingState,
+    clientY
+  );
+  // Calculate the dragging mouse y-axis position.
+  const dragClientY = calculateDragClientY(draggingState, clientY);
+  // Adjust the drop target index, based on direction and position of drop target index, relative to the drag target index.
+  const adjustedDropTargetIndex = getDropTargetIndex(
+    draggingState,
+    dropTargetIndex,
+    draggingDirection
+  );
+  // Calculate the y-axis translation values for the drop target elements.
+  const dropTargetTranslateY = getDropTargetTranslateYValue(
+    draggingState,
+    adjustedDropTargetIndex
+  );
+  // Calculate the y-axis translation values for the drag target elements.
+  const dragTargetTranslateY = getDragTargetTranslateYValue(
+    draggingState,
+    adjustedDropTargetIndex
+  );
+  return {
+    ...draggingState,
+    dragClientY,
+    draggingDirection,
+    dragTargetTranslateY,
+    dropTargetIndex: adjustedDropTargetIndex,
+    dropTargetTranslateY,
+  };
+}
+
+/**
+ * Calculate the start dragging state.
+ * @param draggingState - Current state values relating to drag.
+ * @param dragTargetIndex - Original index of the dragged element in the list.
+ * @param clientY - Drag event y-axis position.
+ * @param elementHeightByIndex - Element height by index.
+ * @returns start dragging state.
+ */
+function calculateStartDraggingState(
+  draggingState: Dragging,
+  dragTargetIndex: number,
+  clientY: number,
+  elementHeightByIndex: ElementHeightByIndex
+): Dragging {
+  return {
+    ...draggingState,
+    dragClientY: clientY,
+    dragTargetIndex,
+    dragTargetTranslateY: 0, // Neutral position.
+    dropTargetIndex: dragTargetIndex, // Drop target is currently on the drag target.
+    dropTargetTranslateY: 0, // Neutral position.
+    elementHeightByIndex,
+  };
+}
+
+/**
+ * Returns the drag target y-axis translation value; facilitates the visual positioning of the drag target during dragging action.
+ * The drag target is transformed vertically by the sum of the heights of the elements crossed since drag start.
+ * @param draggingState - Current state values relating to drag.
+ * @param dropTargetIndex - Original index of the drop target in the list.
+ * @returns drag target y-axis translation values.
+ */
+function getDragTargetTranslateYValue(
+  draggingState: Dragging,
+  dropTargetIndex: number
+): number | undefined {
+  const { dragTargetIndex, elementHeightByIndex } = draggingState;
+  if (!elementHeightByIndex) return; // Drag operation has not started.
+  if (dragTargetIndex === dropTargetIndex) return 0; // Dragging element is on the drop target; no transformation needed.
+  const startIndex = Math.min(dragTargetIndex, dropTargetIndex);
+  const endIndex = Math.max(dragTargetIndex, dropTargetIndex);
+  let translateY = 0;
+  for (let i = startIndex; i <= endIndex; i++) {
+    if (i === dragTargetIndex) continue; // Exclude the dragging element's height.
+    translateY += elementHeightByIndex.get(i) ?? 0;
+  }
+  return translateY;
+}
+
+/**
+ * Returns the drop target index, adjusted, if required, when direction and position of drop target index relative to
+ * the drag target index are considered.
+ * Ensures visual consistency with the direction of the drag and intended drop position.
+ * @param draggingState - Current state values relating to drag.
+ * @param dropTargetIndex - Original index of the drop target in the list.
+ * @param draggingDirection - Dragging direction.
+ * @returns drop target index.
+ */
+function getDropTargetIndex(
+  draggingState: Dragging,
+  dropTargetIndex: number,
+  draggingDirection?: DRAGGING_DIRECTION
+): number {
+  if (
+    isDraggingUpwardsWithDropTargetBelow(
+      draggingState,
+      dropTargetIndex,
+      draggingDirection
+    )
+  ) {
+    // The direction is upwards and the drop target is currently positioned below the original drag target position.
+    // The drop target position should be adjusted to above the given drop target index.
+    return dropTargetIndex - 1;
+  }
+  if (
+    isDraggingDownwardsWithDropTargetAbove(
+      draggingState,
+      dropTargetIndex,
+      draggingDirection
+    )
+  ) {
+    // The direction is downwards and the drop target is currently positioned above the original drag target position.
+    // The drop target position should be adjusted to below the given drop target index.
+    return dropTargetIndex + 1;
+  }
+  // Drop target position is consistent with the direction of the drag and drop position and no adjustment is required.
+  // i.e. direction is downwards and the drop target is currently positioned below the original drag target position, or
+  // direction is upwards and the drop target is currently positioned above the original drag target position.
+  return dropTargetIndex;
+}
+
+/**
+ * Returns the drop target y-axis translation value; facilitates the visual positioning of the drop targets during dragging action.
+ * The drop targets are transformed vertically by the height of the dragged element.
+ * @param draggingState - Current state values relating to drag.
+ * @param dropTargetIndex - Original index of the drop target in the list.
+ * @returns drop target y-axis translation values.
+ */
+function getDropTargetTranslateYValue(
+  draggingState: Dragging,
+  dropTargetIndex: number
+): number | undefined {
+  const { dragTargetIndex, elementHeightByIndex } = draggingState;
+  if (!elementHeightByIndex) return; // Drag operation has not started.
+  if (dragTargetIndex === dropTargetIndex) return 0; // Dragging element is on the drop target; no transformation needed.
+  return elementHeightByIndex.get(dragTargetIndex) || 0;
+}
+
+/**
+ * Returns true if the dragging direction is downwards and the drop target is currently positioned above the original
+ * drag target.
+ * @param draggingState - Current state values relating to drag.
+ * @param dropTargetIndex - Original index of the drop target in the list.
+ * @param draggingDirection - Dragging direction.
+ * @returns true if the dragging direction is downwards and the drop target is currently positioned above the original drag target.
+ */
+function isDraggingDownwardsWithDropTargetAbove(
+  draggingState: Dragging,
+  dropTargetIndex: number,
+  draggingDirection?: DRAGGING_DIRECTION
+) {
+  return (
+    draggingDirection === DRAGGING_DIRECTION.DOWN &&
+    dropTargetIndex < draggingState.dragTargetIndex
   );
 }
 
 /**
- * Returns the start and end position of the nth selectors for the dropping elements.
- * @param draggingIndex - Dragging index.
- * @param indexes - Drag indexes affected by the drag operation.
- * @returns selector positions.
- */
-function getSelectorPositions(
-  draggingIndex: number,
-  indexes: number[]
-): [number, number] {
-  const nArray = [...indexes];
-  nArray.splice(indexes.indexOf(draggingIndex), 1);
-  const firstIndex = nArray.shift() || 0;
-  const lastIndex = nArray.pop() || firstIndex;
-  const start = firstIndex + 1;
-  const end = lastIndex + 1;
-  return [start, end];
-}
-
-/**
- * Returns the updated shadow index for a dragged element, ensuring visual consistency with its
- * intended drop position and the direction of the drag.
- * @param droppingIndex - Dropping index.
- * @param shadowIndex - Shadow index.
+ * Returns true if the dragging direction is upwards and the drop target is currently positioned below the original
+ * drag target.
+ * @param draggingState - Current state values relating to drag.
+ * @param dropTargetIndex - Original index of the drop target in the list.
  * @param draggingDirection - Dragging direction.
- * @returns shadow index.
+ * @returns true if the dragging direction is upwards and the drop target is currently positioned below the original drag target.
  */
-function getShadowIndex(
-  droppingIndex: number,
-  shadowIndex: number,
-  draggingDirection: DRAGGING_DIRECTION
-): number {
-  if (draggingDirection === DRAGGING_DIRECTION.DOWN) {
-    return Math.max(droppingIndex, shadowIndex); // Shadow index should not be above the dropping index.
-  }
-  return Math.min(droppingIndex, shadowIndex); // Shadow index should not be below the dropping index.
+function isDraggingUpwardsWithDropTargetBelow(
+  draggingState: Dragging,
+  dropTargetIndex: number,
+  draggingDirection?: DRAGGING_DIRECTION
+) {
+  return (
+    draggingDirection === DRAGGING_DIRECTION.UP &&
+    dropTargetIndex > draggingState.dragTargetIndex
+  );
 }
 
 /**
@@ -246,27 +336,6 @@ function removeHeaderStyle() {
   if (headerEl) {
     headerEl.style.removeProperty("pointer-events");
   }
-}
-
-/**
- * Reorders the drag and drop indexes with a revised dropping index.
- * @param draggingIndex - Dragging index.
- * @param droppingIndex - Dropping index.
- * @param dragAndDropIndexes - Drag and drop indexes.
- * @returns drag and drop indexes.
- */
-function reorderDragAndDropIndexes(
-  draggingIndex: number,
-  droppingIndex: number,
-  dragAndDropIndexes: number[]
-): number[] {
-  const updatedDragAndDropIndexes = [...dragAndDropIndexes];
-  const shadowIndex = dragAndDropIndexes.indexOf(draggingIndex);
-  // Remove the shadow index (i.e. dragging index) from its current position.
-  updatedDragAndDropIndexes.splice(shadowIndex, 1);
-  // Insert the dragging index to the dropping index.
-  updatedDragAndDropIndexes.splice(droppingIndex, 0, draggingIndex);
-  return updatedDragAndDropIndexes;
 }
 
 /**
@@ -281,75 +350,16 @@ function setHeaderStyle() {
 }
 
 /**
- * Updates the dragging state with changes to the dropping index, and the dragging direction.
- * @param draggingState - Dragging state.
- * @param droppingIndex - Dropping index.
- * @param draggingDirection - Dragging direction.
- * @returns updated dragging state.
+ * Determines whether the movement along the y-axis is sufficient to warrant a direction calculation.
+ * This decision is based on comparing the magnitude of the change in y-axis position (delta y) against a defined
+ * tolerance and ensures that minor movements do not trigger direction changes and / or calculations.
+ * @param dy - Delta dragging y-axis position.
+ * @param tolerance - Tolerance for detecting the direction change.
+ * @returns true if the change in the y-axis position is sufficient to detect a direction change.
  */
-export function updateDragging(
-  draggingState: Dragging,
-  droppingIndex: number,
-  draggingDirection: DRAGGING_DIRECTION
-): Dragging {
-  if (draggingState.draggingIndex === droppingIndex) {
-    // Dragging element is on the drop target; transitioning is complete.
-    return { ...draggingState, droppingIndex };
-  }
-  // Dragging over a new drop target; update the dropping index's index.
-  const droppingIndexIndex =
-    draggingState.dragAndDropIndexes.indexOf(droppingIndex);
-  // Reorder the drag and drop indexes with the updated dropping index's index.
-  const dragAndDropIndexes = reorderDragAndDropIndexes(
-    draggingState.draggingIndex,
-    droppingIndexIndex,
-    draggingState.dragAndDropIndexes
-  );
-  //  Maintain the stability of the shadow element's position during drag-and-drop operations:
-  //  During transition, the dragAndDropIndexes array is updated to reflect the new, expected positions.
-  //  However, updates occur mid-transition, inadvertently altering the designated dropping position for the
-  //  shadow element. This can lead to discrepancies between the shadow element's current and intended positions,
-  //  potentially causing visual oscillations in the transition effect as the element moves.
-  //  To prevent such oscillations and ensure the shadow element accurately represents the intended drop location,
-  //  it's crucial to maintain the shadow index at its original, intended value throughout the transition.
-  const shadowIndex = getShadowIndex(
-    droppingIndexIndex,
-    draggingState.shadowIndex,
-    draggingDirection
-  );
-  // Update the drag and drop styles.
-  const dragAndDropStyles = getDragAndDropStyles(
-    draggingState.draggingIndex,
-    shadowIndex,
-    draggingState.offsetByIndex
-  );
-  return {
-    ...draggingState,
-    dragAndDropIndexes,
-    dragAndDropStyles,
-    droppingIndex: droppingIndexIndex,
-    shadowIndex,
-  };
-}
-
-/**
- * Returns start dragging state.
- * @param draggingState - Dragging state.
- * @param draggingIndex - Dragging index.
- * @param offsetByIndex - Offset by index.
- * @returns dragging state.
- */
-function updateDraggingStart(
-  draggingState: Dragging,
-  draggingIndex: number,
-  offsetByIndex: OffsetByIndex
-): Dragging {
-  return {
-    ...draggingState,
-    dragAndDropIndexes: [...offsetByIndex.keys()],
-    draggingIndex,
-    droppingIndex: draggingIndex,
-    offsetByIndex,
-    shadowIndex: draggingIndex,
-  };
+function shouldCalculateDirection(
+  dy: number,
+  tolerance = DEFAULT_DIRECTION_TOLERANCE
+) {
+  return Math.abs(dy) > tolerance;
 }
