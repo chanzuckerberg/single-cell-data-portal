@@ -176,12 +176,16 @@ const DatasetRow: FC<Props> = ({
   const isOverMaxCellCount = checkIsOverMaxCellCount(cell_count);
 
   const Row = reorder.isReorder ? ReorderModeRow : "tr";
+  const rowPropsBase = {
+    testId: `dataset-row-${dataset.id}`,
+  };
   const rowProps = reorder.isReorder
     ? {
+        ...rowPropsBase,
         dragAndDrop,
         reorder,
       }
-    : {};
+    : rowPropsBase;
 
   return (
     <Row {...(rowProps as ReorderModeRowProps)}>

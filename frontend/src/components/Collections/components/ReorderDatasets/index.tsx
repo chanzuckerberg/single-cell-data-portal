@@ -13,6 +13,7 @@ export default function ReorderDatasets({ reorderAction }: Props): JSX.Element {
   return (
     <>
       <MinimalButton
+        data-testid="datasets-reorder-cancel"
         isAllCaps={false}
         onClick={onCancelReorder}
         sdsStyle="minimal"
@@ -21,6 +22,7 @@ export default function ReorderDatasets({ reorderAction }: Props): JSX.Element {
         Cancel
       </MinimalButton>
       <SquareButton
+        data-testid="datasets-reorder-save"
         color="success"
         onClick={onSaveReorder}
         sdsStyle="square"
