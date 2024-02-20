@@ -604,6 +604,15 @@ class BusinessLogic(BusinessLogicInterface):
             raise DatasetIsPrivateException from None
         self.database_provider.delete_dataset_from_collection_version(collection_version_id, dataset_version_id)
 
+    def set_collection_version_datasets_order(
+        self, collection_version_id: CollectionVersionId, dataset_version_ids: List[DatasetVersionId]
+    ) -> None:
+        """
+        Sets the order of datasets in a collection version.
+        """
+        self._assert_collection_version_unpublished(collection_version_id)
+        self.database_provider.set_collection_version_datasets_order(collection_version_id, dataset_version_ids)
+
     def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         """
         Sets the metadata for a dataset version
