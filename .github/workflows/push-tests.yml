@@ -80,7 +80,7 @@ jobs:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v41.0.0
+        uses: tj-actions/changed-files@v42.0.4
         with:
           files: |
             Dockerfile*
@@ -134,7 +134,7 @@ jobs:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v41.0.0
+        uses: tj-actions/changed-files@v42.0.4
         with:
           files: |
             Dockerfile*
@@ -188,7 +188,7 @@ jobs:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v41.0.0
+        uses: tj-actions/changed-files@v42.0.4
         with:
           files: |
             Dockerfile*
@@ -247,7 +247,7 @@ jobs:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v41.0.0
+        uses: tj-actions/changed-files@v42.0.4
         with:
           files: |
             Dockerfile*
@@ -302,7 +302,7 @@ jobs:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v41.0.0
+        uses: tj-actions/changed-files@v42.0.4
         with:
           files: |
             Dockerfile*
@@ -358,7 +358,7 @@ jobs:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v41.0.0
+        uses: tj-actions/changed-files@v42.0.4
         with:
           files: |
             Dockerfile*
@@ -412,7 +412,7 @@ jobs:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v41.0.0
+        uses: tj-actions/changed-files@v42.0.4
         with:
           files: |
             Dockerfile*
