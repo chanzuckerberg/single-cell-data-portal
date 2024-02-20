@@ -1,17 +1,17 @@
-import { SerializedStyles } from "@emotion/react";
 import { UseDragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/useDragAndDrop";
 
-export interface DragAndDrop extends UseDragAndDrop {
+export interface DragAndDrop extends Omit<UseDragAndDrop, "dragging"> {
   datasetIndex: number;
 }
 
 export interface Dragging {
-  dragAndDropIndexes: number[];
-  dragAndDropStyles: SerializedStyles;
-  draggingIndex: number; // The index of the dragged element.
-  droppingIndex: number; // The index of the droppable target element.
-  offsetByIndex: OffsetByIndex; // Offsets keyed by element index.
-  shadowIndex: number; // The index of the dragged element that provides a visual cue for the dropping position.
+  dragClientY: number; // Dragging mouse y-axis position.
+  draggingDirection?: DRAGGING_DIRECTION; // The direction of the dragged element.
+  dragTargetIndex: number; // Original index of the dragged element in the list.
+  dragTargetTranslateY?: number; // Vertical translation value of the dragged element; the sum of the heights of the elements crossed since drag start.
+  dropTargetIndex: number; // Original index of the drop target in the list.
+  dropTargetTranslateY?: number; // Vertical translation value of the dropped elements; the height of the dragged element.
+  elementHeightByIndex?: ElementHeightByIndex; // Element height keyed by element index.
 }
 
 export enum DRAGGING_DIRECTION {
@@ -19,4 +19,4 @@ export enum DRAGGING_DIRECTION {
   UP = "UP",
 }
 
-export type OffsetByIndex = Map<number, number>; // Element offset keyed by element index.
+export type ElementHeightByIndex = Map<number, number>;
