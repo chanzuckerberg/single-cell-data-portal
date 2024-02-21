@@ -60,6 +60,7 @@ export function useReorder(collectionId: Collection["id"]): UseReorder {
   // Saves order.
   const onSaveReorder = async (): Promise<void> => {
     setMode(REORDER_MODE.INACTIVE);
+    setOrderedIds(undefined);
 
     // Send order to BE.
     const payload = JSON.stringify({
