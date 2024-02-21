@@ -5,7 +5,7 @@ Authlib==0.14.3
 boto3>=1.11.17
 botocore>=1.14.17
 click==8.1.7
-connexion[swagger-ui]==2.13.0
+connexion[swagger-ui]==3.0.6
 coverage>=6.5.0
 dataclasses-json==0.6.4
 
