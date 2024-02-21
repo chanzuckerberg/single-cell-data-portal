@@ -21,8 +21,17 @@ permissions:
   id-token: write
   issues: write
   pull-requests: write
+  contents: write
 
 jobs:
+  push-tests:
+    name: "Push Tests"
+    uses: ./.github/workflows/push-tests.yml
+    secrets: inherit
+    concurrency:
+      group: pr-${{ github.event.number }}-push-tests
+      cancel-in-progress: true
+
   get_previous_image_digests:
     runs-on: ubuntu-22.04
     outputs:
@@ -56,6 +65,7 @@ jobs:
   build_images:
     uses: ./.github/workflows/build-images.yml
     secrets: inherit
+    needs: push-tests
     concurrency:
       group: pr-${{ github.event.number }}-build
       cancel-in-progress: true
@@ -171,4 +181,6 @@ jobs:
     concurrency:
       group: pr-${{ github.event.number }}-test
       cancel-in-progress: true
-    needs: deploy-rdev
+    needs:
+      - deploy-rdev
+      - push-tests

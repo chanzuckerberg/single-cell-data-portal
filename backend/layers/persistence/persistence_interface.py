@@ -132,6 +132,13 @@ class DatabaseProviderInterface:
         Deletes DatasetVersionTable rows.
         """
 
+    def set_collection_version_datasets_order(
+        self, version_id: CollectionVersionId, datasets: List[DatasetVersionId]
+    ) -> None:
+        """
+        Sets the datasets order of a collection version.
+        """
+
     def finalize_collection_version(
         self,
         collection_id: CollectionId,
