@@ -277,6 +277,7 @@ class CollectionVersionBase:
     created_at: datetime
     schema_version: str
     canonical_collection: CanonicalCollection
+    has_custom_dataset_order: bool
 
     def is_published(self) -> bool:
         """

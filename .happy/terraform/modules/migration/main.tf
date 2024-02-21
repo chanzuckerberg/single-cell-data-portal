@@ -37,6 +37,10 @@ resource aws_ecs_task_definition task_definition {
       {
         "name": "DEPLOYMENT_STAGE",
         "value": "${var.deployment_stage}"
+      },
+      {
+        "name": "DOWNLOAD_WMG_DATA_TO_DISK",
+        "value": "false"
       }
     ],
     "logConfiguration": {
