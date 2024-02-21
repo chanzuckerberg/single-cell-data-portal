@@ -66,10 +66,18 @@ export function useReorder(collectionId: Collection["id"]): UseReorder {
     const payload = JSON.stringify({
       datasets: orderedIds,
     });
-    await orderDatasetsMutation.mutateAsync({
-      collectionId,
-      payload,
-    });
+    await orderDatasetsMutation.mutateAsync(
+      {
+        collectionId,
+        payload,
+      },
+      {
+        onSuccess: () => {
+          // Reset ordered IDs, as the order has been saved.
+          setOrderedIds(undefined);
+        },
+      }
+    );
   };
 
   // Starts reorder mode.
