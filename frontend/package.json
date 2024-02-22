@@ -61,7 +61,7 @@
     "sass": "^1.63.6"
   },
   "devDependencies": {
-    "@aws-sdk/client-secrets-manager": "^3.369.0",
+    "@aws-sdk/client-secrets-manager": "^3.515.0",
     "@babel/core": "^7.22.9",
     "@babel/preset-react": "^7.22.5",
     "@babel/preset-typescript": "^7.22.5",
