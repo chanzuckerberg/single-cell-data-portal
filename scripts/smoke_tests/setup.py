@@ -6,6 +6,7 @@ import threading
 from tests.functional.backend.common import BaseFunctionalTestCase
 
 # Amount to reduce chance of collision where multiple test instances select the same collection to test against
+NUM_TEST_DATASETS = 3
 NUM_TEST_COLLECTIONS = 10
 TEST_ACCT_CONTACT_NAME = "Smoke Test User"
 
@@ -28,9 +29,21 @@ class SmokeTestsInitializer(BaseFunctionalTestCase):
                 return num_collections
         return num_collections
 
+    def multi_upload_and_wait(self, collection_id: str, dropbox_url: str, upload_count: int) -> None:
+        threads = []
+        for _ in range(upload_count):
+            thread = threading.Thread(
+                target=self.upload_and_wait, args=(collection_id, dropbox_url), kwargs={"cleanup": False}
+            )
+            threads.append(thread)
+            thread.start()
+
+        for thread in threads:
+            thread.join()
+
     def create_and_publish_collection(self, dropbox_url):
         collection_id = self.create_collection()
-        self.upload_and_wait(collection_id, dropbox_url, cleanup=False)
+        self.multi_upload_and_wait(collection_id, dropbox_url, NUM_TEST_DATASETS)
         self.publish_collection(collection_id)
         print(f"created and published collection {collection_id}")
 
