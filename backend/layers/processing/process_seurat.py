@@ -2,6 +2,8 @@ import logging
 import os
 import subprocess
 
+import anndata
+
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
     DatasetArtifactType,
@@ -61,12 +63,19 @@ class ProcessSeurat(ProcessingLogic):
             self.logger.info("Skipping Seurat conversion")
             return
 
+        # Download h5ad locally
         labeled_h5ad_filename = "local.h5ad"
-
         key_prefix = self.get_key_prefix(dataset_version_id.id)
         object_key = f"{key_prefix}/{labeled_h5ad_filename}"
         self.download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
+        # Convert the citation from h5ad to RDS
+        adata = anndata.read_h5ad(labeled_h5ad_filename)
+        if "citation" in adata.uns:
+            adata.uns["citation"] = adata.uns["citation"].replace(".h5ad", ".rds")
+        adata.write_h5ad(labeled_h5ad_filename)
+
+        # Use Seurat to convert to RDS
         seurat_filename = self.convert_file(
             self.make_seurat,
             labeled_h5ad_filename,
