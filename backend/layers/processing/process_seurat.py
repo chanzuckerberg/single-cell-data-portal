@@ -13,6 +13,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
+from backend.layers.processing.utils import rds_citation_from_h5ad
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
@@ -72,7 +73,7 @@ class ProcessSeurat(ProcessingLogic):
         # Convert the citation from h5ad to RDS
         adata = anndata.read_h5ad(labeled_h5ad_filename)
         if "citation" in adata.uns:
-            adata.uns["citation"] = adata.uns["citation"].replace(".h5ad", ".rds")
+            adata.uns["citation"] = rds_citation_from_h5ad(adata.uns["citation"])
         adata.write_h5ad(labeled_h5ad_filename)
 
         # Use Seurat to convert to RDS
