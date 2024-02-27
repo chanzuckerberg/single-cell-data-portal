@@ -79,7 +79,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_name": "john doe",
             "created_at": mock.ANY,
             "curator_name": "Jane Smith",
-            "data_submission_policy_version": "2.0",
+            "data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION,
             "datasets": [
                 {
                     "assay": [{"label": "test_assay_label", "ontology_term_id": "test_assay_term_id"}],
@@ -2652,6 +2652,19 @@ class TestPublishRevision(BaseAPIPortalTest):
 
         response_json = json.loads(response.data)
         self.assertEqual(response_json["data_submission_policy_version"], data_submission_policy_version)
+
+    def test__publish_revision_missing_data_submission_policy_version__400(self):
+        """
+        Checks data submission policy is correctly saved on publish of a revision.
+        """
+
+        unpublished_collection = self.generate_unpublished_collection(add_datasets=1)
+
+        path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.post(path, headers=headers)
+
+        self.assertEqual(400, response.status_code)
 
     # ✅
     def test__publish_revision_with_new_dataset__OK(self):
