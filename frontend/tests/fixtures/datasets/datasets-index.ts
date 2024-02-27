@@ -14816,8 +14816,8 @@ const datasetsIndex = [
         ontology_term_id: "CL:0000763",
       },
       {
-        label: "native cell",
-        ontology_term_id: "CL:0000003",
+        label: "unknown",
+        ontology_term_id: "unknown",
       },
       {
         label: "neuroendocrine cell",
