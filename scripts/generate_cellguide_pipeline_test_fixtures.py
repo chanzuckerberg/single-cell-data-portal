@@ -8,7 +8,11 @@ from backend.cellguide.pipeline.canonical_marker_genes import get_canonical_mark
 from backend.cellguide.pipeline.computational_marker_genes import get_computational_marker_genes
 from backend.cellguide.pipeline.constants import ASCTB_MASTER_SHEET_URL
 from backend.cellguide.pipeline.metadata import get_cell_metadata, get_tissue_metadata
-from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_data
+from backend.cellguide.pipeline.ontology_tree import (
+    get_celltype_to_tissue_mapping,
+    get_ontology_tree_builder,
+    get_ontology_tree_data,
+)
 from backend.cellguide.pipeline.source_collections import get_source_collections_data
 from backend.cellguide.pipeline.utils import output_json
 from backend.wmg.data.utils import setup_retry_session
@@ -26,8 +30,10 @@ from tests.unit.cellguide_pipeline.constants import (
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
     CELLTYPE_METADATA_FIXTURE_FILENAME,
     CELLTYPE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME,
+    CELLTYPE_TO_TISSUE_MAPPING_FILENAME,
     COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME,
     ONTOLOGY_GRAPH_FIXTURE_FILENAME,
+    ONTOLOGY_TREE_TOPLEVEL_FOLDERNAME,
     REFORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME,
     SOURCE_COLLECTIONS_FIXTURE_FILENAME,
     TISSUE_METADATA_FIXTURE_FILENAME,
@@ -80,21 +86,28 @@ class FixtureType(str, Enum):
 def run_cellguide_pipeline(fixture_type: FixtureType):
     with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
         # Get ontology tree data
-        ontology_tree, ontology_tree_data = get_ontology_tree_data(snapshot=snapshot)
+        ontology_tree_data = get_ontology_tree_data(snapshot=snapshot)
+        ontology_tree = get_ontology_tree_builder(snapshot=snapshot)
 
         if fixture_type in [FixtureType.ontology_graph, FixtureType.all]:
-            output_json(
-                ontology_tree_data.ontology_graph,
-                f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{ONTOLOGY_GRAPH_FIXTURE_FILENAME}",
-            )
-            output_json(
-                ontology_tree_data.all_states_per_cell_type,
-                f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{CELLTYPE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME}",
-            )
-            output_json(
-                ontology_tree_data.all_states_per_tissue,
-                f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME}",
-            )
+            for organism in ontology_tree_data:
+                organism_path_name = organism.replace(":", "_")
+                output_json(
+                    ontology_tree_data[organism].ontology_graph,
+                    f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{ONTOLOGY_TREE_TOPLEVEL_FOLDERNAME}/{organism_path_name}/{ONTOLOGY_GRAPH_FIXTURE_FILENAME}",
+                )
+                output_json(
+                    ontology_tree_data[organism].all_states_per_cell_type,
+                    f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{ONTOLOGY_TREE_TOPLEVEL_FOLDERNAME}/{organism_path_name}/{CELLTYPE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME}",
+                )
+                output_json(
+                    ontology_tree_data[organism].all_states_per_tissue,
+                    f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{ONTOLOGY_TREE_TOPLEVEL_FOLDERNAME}/{organism_path_name}/{TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME}",
+                )
+                output_json(
+                    get_celltype_to_tissue_mapping(ontology_tree_data[organism].all_states_per_tissue),
+                    f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{ONTOLOGY_TREE_TOPLEVEL_FOLDERNAME}/{organism_path_name}/{CELLTYPE_TO_TISSUE_MAPPING_FILENAME}",
+                )
 
         if fixture_type in [FixtureType.celltype_metadata, FixtureType.all]:
             # Get cell metadata
