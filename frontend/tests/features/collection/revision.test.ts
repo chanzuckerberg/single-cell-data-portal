@@ -258,7 +258,7 @@ describe("Collection Revision @loggedIn", () => {
       // Confirm publish button is visible.
       await expect(page.getByTestId(TEST_ID_PUBLISH_COLLECTION)).toBeVisible();
 
-      // Tear dfown.
+      // Tear down.
       await deleteRevision(page);
     });
 
