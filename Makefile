@@ -124,7 +124,7 @@ local-start: .env.ecr ## Start a local dev environment that's been stopped.
 
 .PHONY: local-stop
 local-stop: ## Stop the local dev environment.
-	docker-compose stop frontend backend frontend database oidc localstack
+	docker-compose stop frontend backend database oidc localstack
 
 .PHONY: local-clean
 local-clean: ## Remove everything related to the local dev environment (including db data!)
