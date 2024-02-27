@@ -1,0 +1,11 @@
+INFO     backend.layers.business.business:business.py:511 {'message': 'ingesting dataset', 'collection_version_id': 1310c0ea-0414-4f76-af09-7350b62f3845, 'url': 'http://fake.url', 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:511 {'message': 'ingesting dataset', 'collection_version_id': 1310c0ea-0414-4f76-af09-7350b62f3845, 'url': None, 'current_dataset_version_id': 65d94b1b-9a7d-4dad-a632-7785a2cb4c31}
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:91 Uploaded [974886d2-313c-4d6e-ab63-e41e42b47a64/local.h5ad] to s3://artifact_bucket/974886d2-313c-4d6e-ab63-e41e42b47a64/local.h5ad
+INFO     processing:process_logic.py:93 Updated database with h5ad.
+INFO     processing:process_logic.py:100 Uploaded 974886d2-313c-4d6e-ab63-e41e42b47a64.h5ad to s3://datasets_bucket/974886d2-313c-4d6e-ab63-e41e42b47a64/974886d2-313c-4d6e-ab63-e41e42b47a64.h5ad
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:45 Updating processing status
