@@ -48,6 +48,9 @@ class OntologyTreeBuilderTests(unittest.TestCase):
                 expected__celltype_to_tissue_mapping = json.load(f)
             with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
                 cell_counts_df = snapshot.cell_counts_cube.df[:]
+                cell_counts_df = cell_counts_df[
+                    cell_counts_df["organism_ontology_term_id"] == organism.replace("_", ":")
+                ]
                 tree_builder = OntologyTreeBuilder(cell_counts_df)
 
                 ontology_graph = convert_dataclass_to_dict_and_strip_nones(tree_builder.get_ontology_tree())
