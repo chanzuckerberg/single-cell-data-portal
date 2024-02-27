@@ -61,10 +61,13 @@ class OntologyTreeBuilderTests(unittest.TestCase):
                 )
                 self.assertTrue(compare_dicts(all_states_per_cell_type, expected__all_states_per_cell_type))
 
-                all_states_per_tissue = convert_dataclass_to_dict_and_strip_nones(
-                    tree_builder.get_ontology_tree_state_per_tissue()
+                all_states_per_tissue = tree_builder.get_ontology_tree_state_per_tissue()
+                self.assertTrue(
+                    compare_dicts(
+                        convert_dataclass_to_dict_and_strip_nones(all_states_per_tissue),
+                        expected__all_states_per_tissue,
+                    )
                 )
-                self.assertTrue(compare_dicts(all_states_per_tissue, expected__all_states_per_tissue))
 
                 celltype_to_tissue_mapping = get_celltype_to_tissue_mapping(all_states_per_tissue)
                 self.assertTrue(compare_dicts(celltype_to_tissue_mapping, expected__celltype_to_tissue_mapping))
