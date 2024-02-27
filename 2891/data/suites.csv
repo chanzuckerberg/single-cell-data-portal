@@ -1,0 +1,322 @@
+"Status","Start Time","Stop Time","Duration in ms","Parent Suite","Suite","Sub Suite","Test Class","Test Method","Name","Description"
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","16","tests.unit.backend.layers.api","test_portal_api","TestUpdateCollection","","","test__update_collection_links__OK",""
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","3","tests.unit.backend.layers.api","test_portal_api","TestUpdateCollection","","","test__set_collection_version_datasets_order_unauthenticated__401",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","0","tests.unit.backend.layers.common","test_validation","","","","test__link__OK[lab_website-https://www.google.com]",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","6","tests.unit.backend.layers.business","test_business","TestDeleteDataset","","","test_delete_dataset_in_private_collection__ok",""
+"passed","Tue Feb 27 22:03:28 GMT 2024","Tue Feb 27 22:03:28 GMT 2024","1","tests.unit.processing","test_handle_error","TestCleanupArtifacts","","","test_cleanup_artifacts__not_download_validate","Check that file in the artifact bucket are not delete if error_step is not download-validate."
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","0","tests.unit.backend.layers.common","test_validation","","","","test__link__INVALID[lab_website-google.com]",""
+"passed","Tue Feb 27 22:03:09 GMT 2024","Tue Feb 27 22:03:09 GMT 2024","0","tests.unit.scripts","test_zenhub_close","TestFilterIssues","","","test_filter_issues_with_blocking_issues",""
+"passed","Tue Feb 27 22:03:09 GMT 2024","Tue Feb 27 22:03:09 GMT 2024","3","tests.unit.scripts","test_zenhub_close","TestCloseReadyForProd","","","test_close_ready_for_prod_with_issues_to_close",""
+"passed","Tue Feb 27 22:03:26 GMT 2024","Tue Feb 27 22:03:26 GMT 2024","2","tests.unit.processing.schema_migration","test_error_wrapper","","","","test_error_wrapper",""
+"passed","Tue Feb 27 22:03:31 GMT 2024","Tue Feb 27 22:03:31 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters92]",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","3","tests.unit.backend.layers.business","test_business","TestUpdateDataset","","","test_set_dataset_metadata_ok","
+        The dataset metadata can be set using `set_dataset_metadata`
+        "
+"passed","Tue Feb 27 22:05:52 GMT 2024","Tue Feb 27 22:05:53 GMT 2024","571","tests.unit.wmg_processing","test_primary_filter_dimensions","PrimaryFilterDimensionsTests","","","test_primary_filter_dimensions",""
+"passed","Tue Feb 27 22:03:18 GMT 2024","Tue Feb 27 22:03:18 GMT 2024","8","tests.unit.backend.layers.api","test_curation_api","TestGetCollections","","","test__verify_expected_private_collection_fields",""
+"passed","Tue Feb 27 22:03:18 GMT 2024","Tue Feb 27 22:03:18 GMT 2024","11","tests.unit.backend.layers.api","test_curation_api","TestGetCollections","","","test__get_collections_with_auth__OK_1","The 'revising_in' attribute is None for unauthorized public collections"
+"passed","Tue Feb 27 22:03:18 GMT 2024","Tue Feb 27 22:03:18 GMT 2024","4","tests.unit.backend.layers.api","test_curation_api","TestPostCollection","","","test__create_collection__strip_string_fields",""
+"passed","Tue Feb 27 22:03:18 GMT 2024","Tue Feb 27 22:03:18 GMT 2024","8","tests.unit.backend.layers.api","test_curation_api","TestGetCollectionVersions","","","test__get_collection_versions_not_a_uuid__403",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","11","tests.unit.backend.layers.business","test_business","TestGetAllCollections","","","test_get_all_collections_with_owner_ok","
+        Only collection versions with the specified owner should be returned, including both published and unpublished
+        "
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","3","tests.unit.backend.layers.auth","test_auth_keys","TestKeys","","","test__get_key__200",""
+"passed","Tue Feb 27 22:03:31 GMT 2024","Tue Feb 27 22:03:31 GMT 2024","1","tests.unit.backend.layers.utils","test_uri","TestS3URI","","","test__validate_with_invalid_s3_uri__returns_none",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","1","tests.unit.backend.layers.business","test_business","TestCreateCollection","","","test_create_collection_with_valid_doi_ok","
+        A collection can be created with a valid DOI, and the publisher metadata will be added
+        to the collection
+        "
+"passed","Tue Feb 27 22:03:26 GMT 2024","Tue Feb 27 22:03:26 GMT 2024","2","tests.unit.processing","test_dataset_submissions","TestDatasetSubmissions","","","test__upload_update_by_dataset_id_owner__OK","
+        Processing starts when an update of a dataset is uploaded by its ID by the collection owner.
+        "
+"passed","Tue Feb 27 22:03:17 GMT 2024","Tue Feb 27 22:03:17 GMT 2024","12","tests.unit.backend.layers.api","test_curation_api","TestDeleteCollection","","","test__delete_private_collection",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","1","tests.unit.backend.layers.common","test_validation","","","","test__link__OK[doi-https://www.google.com]",""
+"passed","Tue Feb 27 22:03:28 GMT 2024","Tue Feb 27 22:03:28 GMT 2024","0","tests.unit.processing","test_process_download","","","","test_estimate_resource_requirements_positive[adata1-memory_settings1-expected1]",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","0","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters44]",""
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","5","tests.unit.backend.layers.api","test_portal_api","TestUpdateCollection","","","test__update_collection__OK",""
+"passed","Tue Feb 27 22:03:19 GMT 2024","Tue Feb 27 22:03:19 GMT 2024","6","tests.unit.backend.layers.api","test_curation_api","TestPutLink","","","test__from_link__no_auth","
+        Calling PUT /datasets/:dataset_id should fail with 401 Unauthorized if the user is not authenticated
+        "
+"passed","Tue Feb 27 22:03:18 GMT 2024","Tue Feb 27 22:03:18 GMT 2024","39","tests.unit.backend.layers.api","test_curation_api","TestGetCollectionVersions","","","test__get_collection_versions__200",""
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","4","tests.unit.backend.layers.api","test_portal_api","TestDataset","","","test__cancel_dataset_download__user_not_logged_in",""
+"passed","Tue Feb 27 22:03:19 GMT 2024","Tue Feb 27 22:03:19 GMT 2024","1","tests.unit.backend.layers.api","test_gene_info","GeneInfoAPIv1Tests","","","test_parse_xml_tree_missing_values","
+        Returns correct dictionary with missing values if given XML tree with missing values
+        "
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","15","tests.unit.backend.layers.api","test_portal_api","TestUpdateCollection","","","test__set_collection_version_datasets_get_order_custom_sort__OK",""
+"passed","Tue Feb 27 22:03:18 GMT 2024","Tue Feb 27 22:03:18 GMT 2024","4","tests.unit.backend.layers.api","test_curation_api","TestGetCollectionID","","","test__get_public_collection_verify_consortia_sorted__OK_2",""
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","10","tests.unit.backend.layers.api","test_portal_api","TestDataset","","","test__get_all_datasets_for_index_with_ontology_expansion",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","0","tests.unit.backend.layers.utils","test_matrix_utils","TestMatrixUtils","","","test__is_matrix_sparse__zero_and_one_hundred_percent_threshold",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","4","tests.unit.backend.layers.business","test_business","TestSetCollectionVersionDatasetsOrder","","","test_set_collection_version_datasets_order_length_fail","
+        Attempting to set the order of the datasets in a collection version with a list of different length should fail.
+        "
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","39","tests.unit.backend.layers.utils","test_secret_config","TestSecretConfig","","","test_when_item_is_not_in_config_but_is_in_env_and_use_env_is_not_set_we_raise",""
+"passed","Tue Feb 27 22:04:17 GMT 2024","Tue Feb 27 22:04:17 GMT 2024","56","tests.unit.backend.wmg.api","test_v2","WmgApiV2Tests","","","test__filter_request_with_filter_dims__returns_valid_filter_dims__base_case",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","8","tests.unit.backend.layers.business","test_business","TestCollectionOperations","","","test_resurrect_collection_ok","
+        A tombstoned Collection can be resurrected
+        "
+"passed","Tue Feb 27 22:04:41 GMT 2024","Tue Feb 27 22:04:41 GMT 2024","32","tests.unit.wmg_processing","test_filter_relationships","FilterRelationshipsTests","","","test_filter_relationships",""
+"passed","Tue Feb 27 22:03:31 GMT 2024","Tue Feb 27 22:03:31 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters95]",""
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","4","tests.unit.backend.layers.api","test_portal_api","TestCollection","","","test__post_collection_normalizes_doi",""
+"passed","Tue Feb 27 22:03:17 GMT 2024","Tue Feb 27 22:03:17 GMT 2024","2","tests.unit.backend.layers.api","test_cellguide_api","TestPostCellGuide","","","test__upload_description__wrong_auth",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","6","tests.unit.backend.layers.api","test_portal_api","TestPublishRevision","","","test__publish_revision_as_not_owner__403","
+        Publish a collection as a non-owner returns 403
+        "
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters37]",""
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","4","tests.unit.backend.layers.api","test_portal_api","TestDataset","","","test__dataset_meta__404",""
+"passed","Tue Feb 27 22:03:26 GMT 2024","Tue Feb 27 22:03:26 GMT 2024","5","tests.unit.processing","test_dataset_metadata_update","TestUpdateMetadataHandler","","","test_update_metadata__error_if_missing_raw_h5ad",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","0","tests.unit.backend.layers.common","test_validation","","","","test_invalid_email[email@.com]",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","13","tests.unit.backend.layers.business","test_business","TestCollectionOperations","","","test_publish_version_does_not_change_original_published_at_ok","
+        When publishing a collection version, the published_at for the canonical collection
+        should not change
+        "
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","38","tests.unit.backend.layers.api","test_portal_api","TestCollection","","","test__get_collection__ok",""
+"passed","Tue Feb 27 22:03:19 GMT 2024","Tue Feb 27 22:03:19 GMT 2024","6","tests.unit.backend.layers.api","test_curation_api","TestGetDatasets","","","test_get_dataset_no_assets",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","0","tests.unit.backend.layers.common","test_validation","","","","test__link__INVALID[lab_website-.com]",""
+"passed","Tue Feb 27 22:04:16 GMT 2024","Tue Feb 27 22:04:16 GMT 2024","307","tests.unit.backend.wmg.api.common","test_expression_dotplot","ExpressionDotPlotTest","","","test__query_non_indexed_dim_single_and_multi_valued__returns_correct_result",""
+"passed","Tue Feb 27 22:03:31 GMT 2024","Tue Feb 27 22:03:31 GMT 2024","0","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters116]",""
+"passed","Tue Feb 27 22:04:20 GMT 2024","Tue Feb 27 22:04:24 GMT 2024","3249","tests.unit.backend.wmg.api","test_v2","WmgApiV2Tests","","","test__markers_returns_200_and_empty_dictionary_for_bad_celltypes",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","29","tests.unit.backend.layers.business","test_business","TestDeleteDataset","","","test_cleanup_occurs_after_revision_is_canceled","
+        New Dataset assets and rows not deleted until after revision is canceled (for previously-published Collection)
+        "
+"passed","Tue Feb 27 22:03:28 GMT 2024","Tue Feb 27 22:03:28 GMT 2024","0","tests.unit.processing","test_logger","","","","test_log_suppressed__missed",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","6","tests.unit.backend.layers.api","test_portal_api","TestCollectionPutUploadLink","","","test__reupload_while_processing_dataset__405","cannot reupload a dataset that is pending"
+"passed","Tue Feb 27 22:03:19 GMT 2024","Tue Feb 27 22:03:19 GMT 2024","2","tests.unit.backend.layers.api","test_curation_api","TestPutLink","","","test__new_from_link__OK","
+        Calling PUT /datasets/:dataset_id should succeed if a valid link is uploaded by the owner of the collection or
+        a super curator
+        "
+"passed","Tue Feb 27 22:03:29 GMT 2024","Tue Feb 27 22:03:29 GMT 2024","0","tests.unit.backend.layers.utils","test_color_conversion_utils","TestColorConversionUtils","","","test_convert_color_to_hex_format",""
+"passed","Tue Feb 27 22:04:14 GMT 2024","Tue Feb 27 22:04:15 GMT 2024","269","tests.unit.backend.wmg.api.common","test_expression_dotplot","ExpressionDotPlotTest","","","test__query_agg_tissue_counts__returns_correct_result",""
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","11","tests.unit.backend.layers.api","test_portal_api","TestUpdateCollection","","","test__set_collection_version_datasets_order__OK",""
+"passed","Tue Feb 27 22:03:18 GMT 2024","Tue Feb 27 22:03:18 GMT 2024","43","tests.unit.backend.layers.api","test_curation_api","TestGetCollectionVersionID","","","test_get_collection_version_4xx",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","1","tests.unit.backend.layers.business","test_business","TestCollectionOperations","","","test_publish_collection_with_no_datasets_fail","
+        Publishing a collection version with no datasets should fail
+        "
+"passed","Tue Feb 27 22:03:27 GMT 2024","Tue Feb 27 22:03:28 GMT 2024","77","tests.unit.processing","test_h5ad_data_file","TestH5ADDataFile","","","test__to_cxg__simple_anndata_with_different_var_index_than_h5ad",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","1","tests.unit.backend.layers.business","test_business","TestCreateCollection","","","test_create_collection_ok","
+        A collection can be created using `create_collection`
+        "
+"passed","Tue Feb 27 22:03:31 GMT 2024","Tue Feb 27 22:03:31 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters94]",""
+"passed","Tue Feb 27 22:03:31 GMT 2024","Tue Feb 27 22:03:31 GMT 2024","251","tests.unit.backend.layers.utils","test_uri","TestS3URI","","","test__file_info__returns_file_size",""
+"passed","Tue Feb 27 22:03:26 GMT 2024","Tue Feb 27 22:03:26 GMT 2024","1","tests.unit.processing.schema_migration","test_publish_revisions","TestPublishRevisions","","","test_check_datasets_fail_status","Check datasets when one of the dataset has failed during the ingestion process."
+"passed","Tue Feb 27 22:04:24 GMT 2024","Tue Feb 27 22:04:24 GMT 2024","56","tests.unit.backend.wmg.api","test_v2","WmgApiV2Tests","","","test__primary_filter_dimensions__returns_200",""
+"passed","Tue Feb 27 22:04:25 GMT 2024","Tue Feb 27 22:04:25 GMT 2024","481","tests.unit.backend.wmg.api","test_v2","WmgApiV2Tests","","","test__query_request_multi_primary_dims_only__returns_200_and_correct_response",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","TestTypeConversionUtils","","","test__get_dtypes_and_schemas_of_dataframe__dtype_and_schema_returns_as_expected",""
+"passed","Tue Feb 27 22:03:31 GMT 2024","Tue Feb 27 22:03:31 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters101]",""
+"passed","Tue Feb 27 22:03:19 GMT 2024","Tue Feb 27 22:03:19 GMT 2024","16","tests.unit.backend.layers.api","test_portal_api","TestCollection","","","test__get_all_collections_for_index","
+        The `collections/index` endpoint should only return public collections
+        "
+"passed","Tue Feb 27 22:03:25 GMT 2024","Tue Feb 27 22:03:25 GMT 2024","30","tests.unit.backend.layers.utils","test_aws_secret","TestAwsSecret","","","test_init_of_existing_secret_retrieves_secret_metadata",""
+"passed","Tue Feb 27 22:02:54 GMT 2024","Tue Feb 27 22:02:54 GMT 2024","7","tests.unit.wmg_processing","test_cube_pipeline","TestCubePipe","","","test_exception_handle_catches_errors",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","0","tests.unit.backend.layers.common","test_validation","","","","test_blank_fields",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","15","tests.unit.backend.layers.business","test_business","TestCollectionOperations","","","test_publish_version_with_removed_dataset_ok","
+        Publishing a version with a dataset removed should succeed
+        "
+"passed","Tue Feb 27 22:03:09 GMT 2024","Tue Feb 27 22:03:09 GMT 2024","2","tests.unit.scripts","test_zenhub_close","TestCloseReadyForProd","","","test_close_ready_for_prod_with_blocked_issues",""
+"passed","Tue Feb 27 22:03:27 GMT 2024","Tue Feb 27 22:03:27 GMT 2024","21","tests.unit.processing","test_h5ad_data_file","TestH5ADDataFile","","","test__create_h5ad_data_file__var_index_name_specified_not_unique_raises_exception",""
+"passed","Tue Feb 27 22:03:26 GMT 2024","Tue Feb 27 22:03:26 GMT 2024","24","tests.unit.processing","test_dataset_metadata_update","TestDatasetMetadataUpdaterWorker","","","test_update_cxg",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","8","tests.unit.backend.layers.api","test_portal_api","TestCollectionUploadLinkCurators","","","test__can_reupload_dataset_as_super_curator","
+        A super curator can reupload a dataset to a non-owned collection
+        "
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters48]",""
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","14","tests.unit.backend.layers.api","test_portal_api","TestRevision","","","test__revision_not_owner__403","
+        Start a revision on a collection as a non-owner.
+        "
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","4","tests.unit.backend.layers.api","test_portal_api","TestCollectionUploadLinkCurators","","","test__can_upload_dataset_to_non_owned_collection_as_super_curator","
+        A super curator can upload a dataset to a non-owned collection
+        "
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","0","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters32]",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters41]",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","1","tests.unit.backend.layers.thirdparty","test_crossref_provider","TestCrossrefProvider","","","test__provider_throws_exception_if_request_fails_with_non_2xx_code","
+        Asserts a CrossrefFetchException if the GET request return a 500 error (any non 2xx will work)
+        "
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","7","tests.unit.backend.layers.api","test_portal_api","TestCollectionDeletion","","","test_delete_private_collection_version__ok",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters31]",""
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","5","tests.unit.backend.layers.api","test_portal_api","TestDatasetCurators","","","test__get_status__200_for_non_owned_dataset_as_super_curator",""
+"passed","Tue Feb 27 22:04:40 GMT 2024","Tue Feb 27 22:04:40 GMT 2024","219","tests.unit.backend.wmg","test_query","QueryPrimaryFilterDimensionsTest","","","test__multiple_dimensions__returns_all_dimensions_and_terms_as_tuples",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","0","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters66]",""
+"passed","Tue Feb 27 22:04:33 GMT 2024","Tue Feb 27 22:04:37 GMT 2024","3336","tests.unit.backend.wmg","test_query","QueryTest","","","test__query_marker_genes_cube__returns_correct_all_markers",""
+"passed","Tue Feb 27 22:03:26 GMT 2024","Tue Feb 27 22:03:26 GMT 2024","3","tests.unit.processing.schema_migration","test_report","","","","test_report",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","1","tests.unit.backend.layers.business","test_business","TestDeleteDataset","","","test_delete_artifacts_delete_no_artifacts",""
+"passed","Tue Feb 27 22:03:31 GMT 2024","Tue Feb 27 22:03:31 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters105]",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","12","tests.unit.backend.layers.utils","test_cxg_generation_utils","TestCxgGenerationUtils","","","test__convert_ndarray_to_cxg_dense_array__writes_successfully",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","1","tests.unit.backend.layers.business","test_business","TestDeleteDataset","","","test_delete_artifacts_with_rdev_prefix",""
+"passed","Tue Feb 27 22:04:17 GMT 2024","Tue Feb 27 22:04:17 GMT 2024","23","tests.unit.backend.wmg.api.common","test_rollup","","","","test__rollup[no_compare_dim_one_ancestor_cell_type_missing_in_one_tissue_but_exists_in_all_others-input_cell_counts_df1-expected_cell_counts_df1-input_gene_expr_df1-expected_gene_expr_df1]","
+    Test that the `rollup` function correctly accumulates (or rolls up) gene-expression
+    values FOR EACH expressed gene and cell count values up the cell type ANCESTOR paths
+    grouped by (tissue_ontology_term_id, cell_type_ontology_term_id, <compare_dimension>).
+
+    The input:
+
+    1. A cell type ontology subgraph consisting of 4 cell types.
+
+    CL:0000127
+    ├── CL:0000644
+    ├── CL:0002605
+    └── CL:0002627
+
+    2. A gene expression dataframe consisting of expression numeric values for each
+    (gene_ontology_term_id, tissue_ontology_term_id, cell_type_ontology_term_id, <compare_dimension>) tuple.
+    3. The gene expression dataframe also holds total cell counts per tissue_ontology_term_id.
+    This value is held in a column called `n_cells_tissue`.
+    6. A cell counts dataframe that consists of cell counts for each
+    (tissue_ontology_term_id, cell_type_ontology_term_id, <compare_dimension>) tuple.
+    7. We set the `n_cells_tissue` column values to 1000 for all rows
+    in the gene expression dataframe.
+    8. We set all other numeric column values to `1` in the gene expression dataframe.
+
+    The expected output:
+
+    1. A rolled up gene expression dataframe.
+    2. A rolled up cell counts dataframe.
+    3. Assert that `n_cells_tissue` column value in the rolled up gene expression dataframe
+    does not change for all rows because it should not be rolled up the cell type ontology
+    ancestor paths.
+    4. Assert that other numeric column values (i.e the columns that are not `n_cells_tissue`)
+    in the rolled up gene expression dataframe hold the correct rolled up values.
+    5. Assert that the cell counts in the rolled up cell counts dataframe hold the correct
+    rolled up values.
+    "
+"passed","Tue Feb 27 22:03:31 GMT 2024","Tue Feb 27 22:03:31 GMT 2024","121","tests.unit.backend.layers.utils","test_uri","TestS3URI","","","test_download",""
+"passed","Tue Feb 27 22:02:37 GMT 2024","Tue Feb 27 22:02:37 GMT 2024","0","tests.unit.cellguide_pipeline","test_canonical_marker_genes","CanonicalMarkerGeneCompilerUtilsTests","","","test__format_citation",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","3","tests.unit.backend.layers.auth","test_auth_keys","TestKeys","","","test__get_key__401",""
+"passed","Tue Feb 27 22:04:17 GMT 2024","Tue Feb 27 22:04:17 GMT 2024","27","tests.unit.backend.wmg.api.common","test_rollup","","","","test__rollup[with_ethnicity_compare_dim_on_single_tissue-input_cell_counts_df4-expected_cell_counts_df4-input_gene_expr_df4-expected_gene_expr_df4]","
+    Test that the `rollup` function correctly accumulates (or rolls up) gene-expression
+    values FOR EACH expressed gene and cell count values up the cell type ANCESTOR paths
+    grouped by (tissue_ontology_term_id, cell_type_ontology_term_id, <compare_dimension>).
+
+    The input:
+
+    1. A cell type ontology subgraph consisting of 4 cell types.
+
+    CL:0000127
+    ├── CL:0000644
+    ├── CL:0002605
+    └── CL:0002627
+
+    2. A gene expression dataframe consisting of expression numeric values for each
+    (gene_ontology_term_id, tissue_ontology_term_id, cell_type_ontology_term_id, <compare_dimension>) tuple.
+    3. The gene expression dataframe also holds total cell counts per tissue_ontology_term_id.
+    This value is held in a column called `n_cells_tissue`.
+    6. A cell counts dataframe that consists of cell counts for each
+    (tissue_ontology_term_id, cell_type_ontology_term_id, <compare_dimension>) tuple.
+    7. We set the `n_cells_tissue` column values to 1000 for all rows
+    in the gene expression dataframe.
+    8. We set all other numeric column values to `1` in the gene expression dataframe.
+
+    The expected output:
+
+    1. A rolled up gene expression dataframe.
+    2. A rolled up cell counts dataframe.
+    3. Assert that `n_cells_tissue` column value in the rolled up gene expression dataframe
+    does not change for all rows because it should not be rolled up the cell type ontology
+    ancestor paths.
+    4. Assert that other numeric column values (i.e the columns that are not `n_cells_tissue`)
+    in the rolled up gene expression dataframe hold the correct rolled up values.
+    5. Assert that the cell counts in the rolled up cell counts dataframe hold the correct
+    rolled up values.
+    "
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","7","tests.unit.backend.layers.business","test_business","TestGetCollectionVersion","","","test_get_collection_version_for_published_collection_ok","
+        A published collection version can be obtained using `get_collection_version`
+        "
+"passed","Tue Feb 27 22:03:18 GMT 2024","Tue Feb 27 22:03:18 GMT 2024","10","tests.unit.backend.layers.api","test_curation_api","TestGetCollectionID","","","test__get_collection_with_dataset_failing_validation",""
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","6","tests.unit.backend.layers.api","test_portal_api","TestDataset","","","test__get_dataset_asset__file_SERVER_ERROR","
+        `get_dataset_asset` should throw 500 if url or file_size aren't returned from the server
+        "
+"passed","Tue Feb 27 22:03:28 GMT 2024","Tue Feb 27 22:03:28 GMT 2024","2","tests.unit.processing","test_handle_error","TestCleanupArtifacts","","","test_cleanup_artifacts__no_buckets","Check that no files are deleted if buckets are not specified."
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","47","tests.unit.backend.layers.utils","test_secret_config","TestSecretConfig","","","test_custom_secret_name",""
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","4","tests.unit.backend.layers.api","test_portal_api","TestCollection","","","test__post_collection_sorts_consortia",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","1","tests.unit.backend.layers.thirdparty","test_crossref_provider","TestCrossrefProvider","","","test__provider_throws_exception_if_request_fails_with_404","
+        Asserts a CrossrefFetchException if the GET request fails for any reason
+        "
+"passed","Tue Feb 27 22:02:54 GMT 2024","Tue Feb 27 22:02:54 GMT 2024","0","tests.unit.wmg_processing","test_cube_pipeline","TestCubePipe","","","test_versioned_s3_paths","
+        Tests that the path we use for writing the snapshot is the versioned path.
+
+        NOTE: Ideally, we would want this to be a true test of the cube pipeline that actually runs the pipeline,
+        mocks the S3 upload, and then verifies that the API reads are pulling from the correct mocked S3 files.
+        This way, we're testing the high-level functionality of the cube pipeline and the API calls directly.
+        Since our testing infra doesn't currently support S3 mocks well, the past of least resistance is to test
+        the lower level functions that WMG uses to figure out where to write and read snapshots from.
+        "
+"passed","Tue Feb 27 22:03:26 GMT 2024","Tue Feb 27 22:03:26 GMT 2024","3","tests.unit.processing","test_dataset_metadata_update","TestValidArtifactStatuses","","","test_has_valid_artifact_statuses__invalid_h5ad_status_0",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters71]",""
+"passed","Tue Feb 27 22:03:26 GMT 2024","Tue Feb 27 22:03:26 GMT 2024","2","tests.unit.processing.schema_migration","test_publish_and_cleanup","TestPublishAndCleanup","","","test_can_not_publish",""
+"passed","Tue Feb 27 22:03:26 GMT 2024","Tue Feb 27 22:03:26 GMT 2024","2","tests.unit.processing.schema_migration","test_collection_migrate","TestCollectionMigrate","","","test_no_datasets",""
+"passed","Tue Feb 27 22:06:08 GMT 2024","Tue Feb 27 22:06:08 GMT 2024","1","tests.unit.wmg_processing","test_tissue_mapper","TissueMapperTest","","","test__high_level_tissue_retrieval_does_not_exist",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","0","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters26]",""
+"passed","Tue Feb 27 22:03:26 GMT 2024","Tue Feb 27 22:03:26 GMT 2024","3","tests.unit.processing","test_dataset_metadata_update","TestValidArtifactStatuses","","","test_has_valid_artifact_statuses__invalid_cxg_status_1",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","16","tests.unit.backend.layers.api","test_portal_api","TestPublishRevision","","","test__publish_revision_with_removed_datasets__OK","
+        Publish a revision with delete datasets.
+        "
+"passed","Tue Feb 27 22:03:19 GMT 2024","Tue Feb 27 22:03:19 GMT 2024","1","tests.unit.backend.layers.api","test_gene_info","GeneInfoAPIv1Tests","","","test_api_search_calls","
+        In combination with test_api_fetch_calls, checks external API call in search requests (_search_gene_uid)
+        "
+"passed","Tue Feb 27 22:03:27 GMT 2024","Tue Feb 27 22:03:27 GMT 2024","99","tests.unit.processing","test_h5ad_data_file","TestH5ADDataFile","","","test__to_cxg__simple_anndata_no_corpora_and_dense",""
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","5","tests.unit.backend.layers.api","test_portal_api","TestDataset","","","test__get_dataset_assets",""
+"passed","Tue Feb 27 22:03:31 GMT 2024","Tue Feb 27 22:03:31 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters100]",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","0","tests.unit.backend.layers.common","test_validation","","","","test__link__INVALID[protocol-google.com]",""
+"passed","Tue Feb 27 22:03:28 GMT 2024","Tue Feb 27 22:03:28 GMT 2024","2","tests.unit.processing","test_handle_error","","","","test_get_failure_slack_notification_message_with_dataset_and_collection",""
+"passed","Tue Feb 27 22:03:31 GMT 2024","Tue Feb 27 22:03:31 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters104]",""
+"passed","Tue Feb 27 22:03:26 GMT 2024","Tue Feb 27 22:03:26 GMT 2024","3","tests.unit.processing","test_dataset_metadata_update","TestValidArtifactStatuses","","","test_has_valid_artifact_statuses_1",""
+"passed","Tue Feb 27 22:03:25 GMT 2024","Tue Feb 27 22:03:25 GMT 2024","2","tests.unit.processing.schema_migration","test_collection_migrate","TestCollectionMigrate","","","test_can_publish_true",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","2","tests.unit.backend.layers.business","test_business","TestDatasetArtifactMetadataUpdates","","","test_generate_dataset_citation__no_doi",""
+"passed","Tue Feb 27 22:03:18 GMT 2024","Tue Feb 27 22:03:18 GMT 2024","6","tests.unit.backend.layers.api","test_curation_api","TestGetCollectionID","","","test_get_collection_with_no_datasets",""
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","4","tests.unit.backend.layers.api","test_portal_api","TestCollectionsCurators","","","test_delete_non_owned_private_collection_as_super_curator__ok",""
+"passed","Tue Feb 27 22:03:26 GMT 2024","Tue Feb 27 22:03:26 GMT 2024","9","tests.unit.processing","test_dataset_metadata_update","TestDatasetMetadataUpdaterWorker","","","test_update_h5ad",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","0","tests.unit.backend.layers.common","test_validation","","","","test_invalid_characters_in_field[\x7ftext]",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","6","tests.unit.backend.layers.business","test_business","TestGetDataset","","","test_get_dataset_artifact_download_data_ok","
+        Calling `get_dataset_artifact_download_data` should yield downloadable data
+        "
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","0","tests.unit.backend.layers.utils","test_json","TestCustomJSONEncoder","","","test_illegal_characters",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","5","tests.unit.backend.layers.api","test_portal_api","TestCollectionPutUploadLink","","","test__reupload_dataset_not_owner__403",""
+"passed","Tue Feb 27 22:02:33 GMT 2024","Tue Feb 27 22:02:37 GMT 2024","3915","tests.unit.cellguide_pipeline","test_canonical_marker_genes","CanonicalMarkerGeneCompilerTests","","","test__canonical_marker_genes",""
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","16","tests.unit.backend.layers.api","test_portal_api","TestDataset","","","test__get_all_datasets_for_user_index",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","7","tests.unit.backend.layers.api","test_portal_api","TestPublishRevision","","","test__can_publish_non_owned_collection_as_super_curator",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","15","tests.unit.backend.layers.business","test_business","TestCollectionOperations","","","test_dataset_published_at_with_replaced_dataset_ok","
+        When publishing a collection that contains a replaced dataset,
+        `published_at` for the replaced dataset should not be updated
+        "
+"passed","Tue Feb 27 22:03:27 GMT 2024","Tue Feb 27 22:03:27 GMT 2024","12","tests.unit.processing","test_h5ad_data_file","TestH5ADDataFile","","","test__create_h5ad_data_file__non_h5ad_raises_exception",""
+"passed","Tue Feb 27 22:03:18 GMT 2024","Tue Feb 27 22:03:18 GMT 2024","7","tests.unit.backend.layers.api","test_curation_api","TestPatchCollectionID","","","test__update_collection__doi__OK",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","9","tests.unit.backend.layers.business","test_business","TestUpdateCollectionDatasets","","","test_create_empty_dataset_version_for_current_dataset",""
+"passed","Tue Feb 27 22:03:17 GMT 2024","Tue Feb 27 22:03:18 GMT 2024","29","tests.unit.backend.layers.api","test_curation_api","TestDeleteCollection","","","test__delete_public_collection",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","5","tests.unit.backend.layers.business","test_business","TestUpdateCollectionDatasets","","","test_replace_dataset_on_non_existing_dataset_fail","
+        Calling `ingest_dataset` and specifying a non existant dataset_version_id should fail
+        "
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters13]",""
+"passed","Tue Feb 27 22:04:17 GMT 2024","Tue Feb 27 22:04:17 GMT 2024","4","tests.unit.backend.wmg.api","test_v2","WmgApiV2Tests","","","test__filter_request_with_query_key_not_specified_in_api_spec_returns_400",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters46]",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","0","tests.unit.backend.layers.common","test_validation","","","","test__link__OK[data_source-http://somewhere.org/path/?abcd=123]",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters30]",""
+"passed","Tue Feb 27 22:03:18 GMT 2024","Tue Feb 27 22:03:18 GMT 2024","19","tests.unit.backend.layers.api","test_curation_api","TestGetCollectionID","","","test__get_unbpublished_revision__OK",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","39","tests.unit.backend.layers.utils","test_secret_config","TestSecretConfig","","","test_when_item_is_in_config_but_not_in_env_and_use_env_is_not_set_we_use_config",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","39","tests.unit.backend.layers.utils","test_secret_config","TestSecretConfig","","","test_when_item_is_in_config_and_is_in_env_and_use_env_is_set_we_use_env",""
+"passed","Tue Feb 27 22:03:18 GMT 2024","Tue Feb 27 22:03:18 GMT 2024","6","tests.unit.backend.layers.api","test_curation_api","TestGetCollections","","","test__collection_level_processing_status__SUCCESS",""
+"passed","Tue Feb 27 22:03:19 GMT 2024","Tue Feb 27 22:03:19 GMT 2024","54","tests.unit.backend.layers.api","test_curation_api","TestGetDatasetIdVersions","","","test_get_dataset_id_version_4xx",""
+"passed","Tue Feb 27 22:03:19 GMT 2024","Tue Feb 27 22:03:19 GMT 2024","2","tests.unit.backend.layers.api","test_curation_api","TestPutLink","","","test__existing_from_link__OK","
+        Calling PUT /datasets/:dataset_id on an existing dataset_id should succeed if a valid link is uploaded by the
+        owner of the collection or a super curator
+        "
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","0","tests.unit.backend.layers.common","test_validation","","","","test__link__INVALID[data_source-https://]",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","3","tests.unit.backend.layers.api","test_version","TestVersion","","","test_get",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","40","tests.unit.backend.layers.utils","test_secret_config","TestSecretConfig","","","test_when_item_is_not_in_config_but_is_in_env_and_use_env_is_set_we_use_env",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","1","tests.unit.backend.layers.business","test_business","TestCreateCollection","","","test_create_collection_with_consortia_ok","
+        A collection with consortia can be created using `create_collection`
+        "
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","41","tests.unit.backend.layers.business","test_business","TestGetDataset","","","test_get_prior_published_dataset_version","
+        Given a dataset version id, return the DatasetVersion IF its been part of a published CollectionVersion
+        "
+"passed","Tue Feb 27 22:03:19 GMT 2024","Tue Feb 27 22:03:19 GMT 2024","47","tests.unit.backend.layers.api","test_curation_api","TestGetDatasets","","","test_get_dataset_shape",""
+"passed","Tue Feb 27 22:04:17 GMT 2024","Tue Feb 27 22:04:17 GMT 2024","0","tests.unit.backend.wmg.api.common","test_wmg_api_helpers","","","","test_sanitize_api_query_dict[input_query3-expected_sanitized_query3]",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","3","tests.unit.backend.layers.auth","test_auth_keys","TestKeys","","","test__create_key__401",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters7]",""
+"passed","Tue Feb 27 22:03:18 GMT 2024","Tue Feb 27 22:03:18 GMT 2024","3","tests.unit.backend.layers.api","test_curation_api","TestPatchCollectionID","","","test__update_collection__Not_Owner",""
+"passed","Tue Feb 27 22:03:22 GMT 2024","Tue Feb 27 22:03:22 GMT 2024","0","tests.unit.backend.layers.common","test_validation","","","","test__link__INVALID[data_source-google.com]",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters25]",""
+"passed","Tue Feb 27 22:04:24 GMT 2024","Tue Feb 27 22:04:25 GMT 2024","467","tests.unit.backend.wmg.api","test_v2","WmgApiV2Tests","","","test__query_no_genes__returns_200_and_correct_response",""
+"passed","Tue Feb 27 22:03:30 GMT 2024","Tue Feb 27 22:03:30 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters18]",""
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","9","tests.unit.backend.layers.api","test_portal_api","TestDataset","","","test__call_delete_dataset__twice",""
+"passed","Tue Feb 27 22:03:28 GMT 2024","Tue Feb 27 22:03:28 GMT 2024","1","tests.unit.processing","test_handle_error","TestCleanupArtifacts","","","test_cleanup_artifacts__elete_many_from_s3_error","Check that delete_many_from_s3 errors are logged but do not raise exceptions."
+"passed","Tue Feb 27 22:03:20 GMT 2024","Tue Feb 27 22:03:20 GMT 2024","3","tests.unit.backend.layers.api","test_portal_api","TestCollection","","","test__post_collection_fails_if_data_missing",""
+"passed","Tue Feb 27 22:03:21 GMT 2024","Tue Feb 27 22:03:21 GMT 2024","7","tests.unit.backend.layers.business","test_business","TestGetCollectionVersion","","","test_get_published_collection_version_for_published_collection_ok","
+        A published collection can be obtained using `get_collection`
+        "
