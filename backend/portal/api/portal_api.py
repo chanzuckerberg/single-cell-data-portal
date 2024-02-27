@@ -263,7 +263,7 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
             "contact_name": collection.metadata.contact_name,
             "created_at": collection.created_at,
             "curator_name": collection.curator_name,
-            "data_submission_policy_version": "1.0",  # TODO
+            "data_submission_policy_version": collection.data_submission_policy_version,
             "datasets": [
                 _dataset_to_response(
                     ds,
@@ -575,8 +575,12 @@ def publish_post(collection_id: str, body: object, token_info: dict):
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
 
+    data_submission_policy_version = body.get("data_submission_policy_version")
+    if data_submission_policy_version is None or data_submission_policy_version == "":
+        raise InvalidParametersHTTPException(detail="Missing or invalid data_submission_policy_version field")
+
     try:
-        get_business_logic().publish_collection_version(version.version_id)
+        get_business_logic().publish_collection_version(version.version_id, data_submission_policy_version)
     except CollectionPublishException:
         raise ConflictException(detail="The collection must have a least one dataset.") from None
 
