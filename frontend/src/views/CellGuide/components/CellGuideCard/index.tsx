@@ -54,7 +54,7 @@ import { useConnect } from "./connect";
 import { SDSOrgan } from "src/views/CellGuide/components/CellGuideCard/types";
 import { getCellTypeLink } from "src/views/CellGuide/common/utils";
 
-const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
+export const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
   sdsStyle: "square",
 } as InputDropdownProps;
 

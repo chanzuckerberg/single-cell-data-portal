@@ -64,7 +64,12 @@ import {
   ALL_TISSUES,
   TISSUE_AGNOSTIC,
 } from "../../CellGuideCard/components/MarkerGeneTables/constants";
-import { Icon } from "@czi-sds/components";
+import { Icon, Dropdown } from "@czi-sds/components";
+import Link from "../../CellGuideCard/components/common/Link";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
+import { SDS_INPUT_DROPDOWN_PROPS } from "../../CellGuideCard";
+import { useOrganAndOrganismFilterListForCellType } from "../../CellGuideCard/components/MarkerGeneTables/hooks/common";
 
 interface TreeProps {
   skinnyMode?: boolean;
@@ -102,6 +107,8 @@ export default function OntologyDagView({
 }: TreeProps) {
   const [width, setWidth] = useState(inputWidth);
   const [height, setHeight] = useState(inputHeight);
+  const [tissueCardSelectedOrganism, setTissueCardSelectedOrganism] =
+    useState("Homo sapiens");
 
   const [initialTransformMatrix, setInitialTransformMatrix] = useState<
     typeof initialTransformMatrixDefault
@@ -184,7 +191,7 @@ export default function OntologyDagView({
   // the "isExpanded" property that is used to track the expanded state of each node, along with
   // other properties like the positions of the nodes.
   const { data: rawTree } = useCellOntologyTree();
-
+  console.log(rawTree);
   const { data: initialTreeStateCell } = useCellOntologyTreeStateCellType(
     cellTypeId ?? ""
   );
@@ -398,14 +405,54 @@ export default function OntologyDagView({
   const yMax = height - defaultMargin.top - defaultMargin.bottom;
   const xMax = width - defaultMargin.left - defaultMargin.right;
 
+  // construct explorer URL
+  let organism = selectedOrganism;
+  if (!organism) {
+    organism = tissueCardSelectedOrganism;
+  }
+  const formattedSelectedOrganism = organism?.toLowerCase()?.replace(/ /g, "_");
+  const formattedTissueId = tissueId.replace(/:/g, "_");
+  const formattedCellTypeId = cellTypeId?.replace(/:/g, "_");
+  let explorerUrl = "";
+
+  if (formattedTissueId && formattedCellTypeId && formattedSelectedOrganism) {
+    explorerUrl = `https://cellxgene.cziscience.com/e/cellguide-cxgs/tissues/${formattedSelectedOrganism}/${formattedTissueId}__${formattedCellTypeId}.cxg/`;
+  } else if (formattedCellTypeId && formattedSelectedOrganism) {
+    explorerUrl = `https://cellxgene.cziscience.com/e/cellguide-cxgs/${formattedSelectedOrganism}/${formattedCellTypeId}.cxg/`;
+  } else if (formattedTissueId && formattedSelectedOrganism) {
+    explorerUrl = `https://cellxgene.cziscience.com/e/cellguide-cxgs/tissues/${formattedSelectedOrganism}/${formattedTissueId}__CL_0000000.cxg/`;
+  }
+  const { organismsList, isSuccess } =
+    useOrganAndOrganismFilterListForCellType();
+
+  console.log(organismsList);
   return (
     <div data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW}>
       <Global styles={TooltipInPortalStyle} />
-      {!!cellTypeId && (
-        <TableTitleWrapper>
-          <TableTitle>Cell Ontology</TableTitle>
-        </TableTitleWrapper>
-      )}
+
+      <TableTitleWrapper>
+        <TableTitle>Cell Ontology</TableTitle>
+        {explorerUrl !== "" && (
+          <div>
+            {/* <Dropdown
+              InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
+              search
+              label={tissueCardSelectedOrganism}
+              onChange={handleChangeOrganism}
+              options={sdsOrganismsList}
+              value={selectedOrganism}
+              data-testid={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
+            /> */}
+            <Link
+              url={explorerUrl}
+              label="Open Integrated Embedding"
+              onClick={() => {
+                track(EVENTS.CG_OPEN_IN_WMG_CLICKED);
+              }}
+            />
+          </div>
+        )}
+      </TableTitleWrapper>
 
       {data && initialTreeState ? (
         <Zoom<SVGSVGElement>

@@ -109,7 +109,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
               skinnyMode={skinnyMode}
               items={[
                 { elementRef: sectionRef0, title: "Intro" },
-                { elementRef: sectionRef1, title: "Ontology" },
+                { elementRef: sectionRef1, title: "Cell Ontology" },
               ]}
             />
           }
@@ -203,9 +203,6 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
 
             {/* Ontology section */}
             <div ref={sectionRef1} id="section-1" data-testid="section-1">
-              <TableTitleWrapper>
-                <TableTitle>Ontology</TableTitle>
-              </TableTitleWrapper>
               <FullScreenProvider>
                 <OntologyDagView
                   key={tissueId}

@@ -92,7 +92,7 @@ export function useConnect() {
   );
 
   const { organismsList, organsMap, isSuccess } =
-    useOrganAndOrganismFilterListForCellType(cellTypeId);
+    useOrganAndOrganismFilterListForCellType();
 
   const sdsOrganismsList = useMemo(
     () =>
