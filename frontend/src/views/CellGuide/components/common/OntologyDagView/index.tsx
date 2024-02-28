@@ -59,6 +59,7 @@ import {
   MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE,
   ANIMAL_CELL_ID,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CONTENT,
+  CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
 import {
   ALL_TISSUES,
@@ -428,10 +429,11 @@ export default function OntologyDagView({
         <TableTitle>Cell Ontology</TableTitle>
         {explorerUrl !== "" && (
           <Link
+            dataTestId={CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID}
             url={explorerUrl}
             label="Open Integrated Embedding"
             onClick={() => {
-              track(EVENTS.CG_OPEN_IN_WMG_CLICKED);
+              track(EVENTS.CG_OPEN_INTEGRATED_EMBEDDING_CLICKED);
             }}
           />
         )}

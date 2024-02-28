@@ -18,6 +18,7 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CONTENT,
+  CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
 import { CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID } from "src/views/CellGuide/components/common/OntologyDagView/components/Legend/constants";
 import { CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL } from "src/views/CellGuide/components/common/OntologyDagView/components/Node/constants";
@@ -31,6 +32,7 @@ import { CELL_GUIDE_CARD_NAVIGATION_SIDEBAR } from "src/views/CellGuide/componen
 import {
   TISSUE_CARD_HEADER_NAME,
   TISSUE_CARD_HEADER_TAG,
+  TISSUE_CARD_ORGANISM_SELECTOR_TEST_ID,
   TISSUE_CARD_UBERON_DESCRIPTION,
 } from "src/views/CellGuide/components/TissueCard/constants";
 
@@ -862,7 +864,102 @@ describe("Cell Guide", () => {
           `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000000__0-has-children-isTargetNode=false`
         );
       });
+      test("Explorer link's href updates based on organism and tissue filter selection", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_GUIDE}/CL_0000000`, page);
 
+        const linkHrefBeforeSelection = await page
+          .getByTestId(CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID)
+          .getAttribute("href");
+
+        expect(linkHrefBeforeSelection).not.toContain("mus_musculus");
+
+        // Ensure the organism selector is visible
+        await isElementVisible(
+          page,
+          CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN
+        );
+
+        await page
+          .getByTestId(CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN)
+          .click();
+        await page.getByRole("option").getByText("Mus musculus").click();
+
+        await page.waitForTimeout(WAIT_FOR_TIMEOUT_MS);
+
+        const linkHrefAfterSelection = await page
+          .getByTestId(CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID)
+          .getAttribute("href");
+
+        expect(linkHrefAfterSelection).toContain("mus_musculus");
+
+        // Ensure the tissue selector is visible
+        await isElementVisible(
+          page,
+          CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN
+        );
+
+        await page
+          .getByTestId(CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN)
+          .click();
+        await page.getByRole("option").getByText("brain").click();
+
+        await page.waitForTimeout(WAIT_FOR_TIMEOUT_MS);
+
+        const linkHrefAfterTissueSelection = await page
+          .getByTestId(CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID)
+          .getAttribute("href");
+
+        expect(linkHrefAfterTissueSelection).toContain(
+          "tissues/mus_musculus/UBERON_0000955__"
+        );
+      });
+      test("Selecting 'Mus musculus' from organism selector updates the cell counts in the ontology", async ({
+        page,
+      }) => {
+        await goToPage(`${TEST_URL}${ROUTES.CELL_GUIDE}/CL_0000000`, page);
+
+        await isElementVisible(
+          page,
+          CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN
+        );
+
+        await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+
+        const node = page.getByTestId(
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000000__0-has-children-isTargetNode=true`
+        );
+        await node.scrollIntoViewIfNeeded();
+        await node.hover();
+        await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+        const textContentBefore = await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP)
+          .textContent();
+
+        await page
+          .getByTestId(CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN)
+          .click();
+        await page.getByRole("option").getByText("Mus musculus").click();
+
+        await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+
+        const nodeAfter = page.getByTestId(
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000000__0-has-children-isTargetNode=true`
+        );
+        await nodeAfter.hover();
+        await nodeAfter.scrollIntoViewIfNeeded();
+        await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+        const textContentAfter = await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP)
+          .textContent();
+
+        expect(textContentBefore).not.toBe(textContentAfter);
+      });
       test("Clicking on a computational marker gene tree icon enters marker gene mode in a CellGuide Card", async ({
         page,
       }) => {
@@ -985,11 +1082,82 @@ describe("Cell Guide", () => {
         await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW);
         await isElementVisible(page, CELL_GUIDE_CARD_SEARCH_BAR);
         await isElementVisible(page, TISSUE_CARD_UBERON_DESCRIPTION);
+        await isElementVisible(page, TISSUE_CARD_ORGANISM_SELECTOR_TEST_ID);
         const headerName = page.getByTestId(TISSUE_CARD_HEADER_NAME);
         const headerNameText = await headerName.textContent();
         expect(headerNameText).toBe("Lung");
       });
+      test("Explorer link's href updates based on organism filter selection", async ({
+        page,
+      }) => {
+        await goToPage(
+          `${TEST_URL}${ROUTES.CELL_GUIDE}/tissues/${LUNG_TISSUE_ID}`,
+          page
+        );
 
+        const linkHrefBeforeSelection = await page
+          .getByTestId(CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID)
+          .getAttribute("href");
+
+        expect(linkHrefBeforeSelection).not.toContain("mus_musculus");
+
+        // Ensure the organism selector is visible
+        await isElementVisible(page, TISSUE_CARD_ORGANISM_SELECTOR_TEST_ID);
+
+        await page.getByTestId(TISSUE_CARD_ORGANISM_SELECTOR_TEST_ID).click();
+        await page.getByRole("option").getByText("Mus musculus").click();
+
+        await page.waitForTimeout(WAIT_FOR_TIMEOUT_MS);
+
+        const linkHrefAfterSelection = await page
+          .getByTestId(CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID)
+          .getAttribute("href");
+
+        expect(linkHrefAfterSelection).toContain("mus_musculus");
+      });
+      test("Selecting 'Mus musculus' from organism selector updates the cell counts in the ontology", async ({
+        page,
+      }) => {
+        await goToPage(
+          `${TEST_URL}${ROUTES.CELL_GUIDE}/tissues/${LUNG_TISSUE_ID}`,
+          page
+        );
+
+        await isElementVisible(page, TISSUE_CARD_ORGANISM_SELECTOR_TEST_ID);
+
+        await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+
+        const node = page.getByTestId(
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000000__0-has-children-isTargetNode=false`
+        );
+        await node.scrollIntoViewIfNeeded();
+        await node.hover();
+        await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+        const textContentBefore = await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP)
+          .textContent();
+
+        await page.getByTestId(TISSUE_CARD_ORGANISM_SELECTOR_TEST_ID).click();
+        await page.getByRole("option").getByText("Mus musculus").click();
+
+        await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+
+        const nodeAfter = page.getByTestId(
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000000__0-has-children-isTargetNode=false`
+        );
+        await nodeAfter.hover();
+        await nodeAfter.scrollIntoViewIfNeeded();
+        await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+        const textContentAfter = await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP)
+          .textContent();
+
+        expect(textContentBefore).not.toBe(textContentAfter);
+      });
       test("Clicking on a cell type label links to its CellGuide Card", async ({
         page,
       }) => {

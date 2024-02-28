@@ -27,6 +27,7 @@ import CellGuideBottomBanner from "../CellGuideBottomBanner";
 import {
   TISSUE_CARD_HEADER_NAME,
   TISSUE_CARD_HEADER_TAG,
+  TISSUE_CARD_ORGANISM_SELECTOR_TEST_ID,
   TISSUE_CARD_UBERON_DESCRIPTION,
 } from "src/views/CellGuide/components/TissueCard/constants";
 import { Global } from "@emotion/react";
@@ -37,10 +38,6 @@ import { throttle } from "lodash";
 import CellGuideCardSidebar from "../CellGuideCard/components/CellGuideCardSidebar";
 import React from "react";
 import { StyledOntologyId } from "../CellGuideCard/components/Description/style";
-import {
-  TableTitleWrapper,
-  TableTitle,
-} from "../CellGuideCard/components/common/style";
 import { useComponentWidth } from "../CellGuideCard/components/common/hooks/useIsComponentPastBreakpoint";
 import { CELLGUIDE_ORGANISMS_LIST } from "../CellGuideCard/connect";
 import { track } from "src/common/analytics";
@@ -160,7 +157,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
         {/* This prevents auto zooming on the input box on mobile */}
         <meta
           name="viewport"
-          content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1"
+          content="width=device-width, initial-scale=1, minimum-scale=1"
         />
       </Head>
       <TissueCardWrapper skinnyMode={skinnyMode}>
@@ -193,7 +190,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
                   onChange={handleChangeOrganism}
                   options={sdsOrganismsList}
                   value={{ name: tissueCardSelectedOrganism }}
-                  data-testid={"test-id"}
+                  data-testid={TISSUE_CARD_ORGANISM_SELECTOR_TEST_ID}
                 />
               </TissueCardHeader>
             )}
