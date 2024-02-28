@@ -1,0 +1,36 @@
+"Status","Start Time","Stop Time","Duration in ms","Parent Suite","Suite","Sub Suite","Test Class","Test Method","Name","Description"
+"passed","Wed Feb 28 20:25:59 GMT 2024","Wed Feb 28 20:25:59 GMT 2024","2","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters94]",""
+"passed","Wed Feb 28 20:25:47 GMT 2024","Wed Feb 28 20:25:47 GMT 2024","26","tests.unit.backend.layers.api","test_portal_api","TestCollection","","","test__get_collection_id_returns_revision_of_published_collection",""
+"passed","Wed Feb 28 20:25:11 GMT 2024","Wed Feb 28 20:25:11 GMT 2024","8","tests.unit.wmg_processing","test_cube_pipeline","TestCubePipe","","","test_exception_handle_catches_errors",""
+"passed","Wed Feb 28 20:25:33 GMT 2024","Wed Feb 28 20:25:33 GMT 2024","0","tests.unit.backend.wmg.api.common","test_wmg_api_helpers","","","","test_sanitize_api_query_dict[input_query4-expected_sanitized_query4]",""
+"passed","Wed Feb 28 20:25:50 GMT 2024","Wed Feb 28 20:25:50 GMT 2024","0","tests.unit.backend.layers.common","test_validation","","","","test_invalid_characters_in_field[\x00some data]",""
+"passed","Wed Feb 28 20:25:41 GMT 2024","Wed Feb 28 20:25:41 GMT 2024","2","tests.unit.processing.schema_migration","test_collection_migrate","TestCollectionMigrate","","","test_no_datasets",""
+"passed","Wed Feb 28 20:25:49 GMT 2024","Wed Feb 28 20:25:49 GMT 2024","8","tests.unit.backend.layers.business","test_business","TestUpdateCollectionDatasets","","","test_create_empty_dataset_version_for_current_dataset",""
+"passed","Wed Feb 28 20:25:50 GMT 2024","Wed Feb 28 20:25:50 GMT 2024","4","tests.unit.backend.layers.business","test_business","TestCollectionOperations","","","test_get_collection_version_from_canonical_unpublished_ok","
+        `get_collection_version_from_canonical` retrieves the unpublished version connected
+        to the canonical collection, if no published version is available
+        "
+"passed","Wed Feb 28 20:25:58 GMT 2024","Wed Feb 28 20:25:58 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters34]",""
+"passed","Wed Feb 28 20:25:50 GMT 2024","Wed Feb 28 20:25:50 GMT 2024","0","tests.unit.backend.layers.common","test_validation","","","","test_blank_fields",""
+"passed","Wed Feb 28 20:25:59 GMT 2024","Wed Feb 28 20:25:59 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters47]",""
+"passed","Wed Feb 28 20:25:46 GMT 2024","Wed Feb 28 20:25:46 GMT 2024","15","tests.unit.backend.layers.api","test_curation_api","TestDeleteDataset","","","test__delete_dataset_by_version_id","
+        Calling DELETE /collections/:collection_id/datasets/:dataset_id should return a 403 in all cases with auth
+        credentials, and a 401 without auth credentials
+        "
+"passed","Wed Feb 28 20:25:59 GMT 2024","Wed Feb 28 20:25:59 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters67]",""
+"passed","Wed Feb 28 20:25:49 GMT 2024","Wed Feb 28 20:25:49 GMT 2024","1","tests.unit.backend.layers.business","test_business","TestUpdateCollectionDatasets","","","test_add_dataset_to_unpublished_collection_ok","
+        A dataset can be added to a collection when `ingest_dataset` is called.
+        The resulting dataset should be empty and in a state ready for processing.
+        "
+"passed","Wed Feb 28 20:25:50 GMT 2024","Wed Feb 28 20:25:50 GMT 2024","0","tests.unit.backend.layers.common","test_validation","","","","test_invalid_email[email@.]",""
+"passed","Wed Feb 28 20:25:47 GMT 2024","Wed Feb 28 20:25:47 GMT 2024","24","tests.unit.backend.layers.api","test_portal_api","TestCollection","","","test__get_all_user_collections_for_index","
+        The `my-collections/index` endpoint should return all public collections and the private
+        collections the user has WRITE access to. Curators can see all public collectoins and private collections where
+        they are the owner. Super Curators can see all public and private collections.
+        "
+"passed","Wed Feb 28 20:25:43 GMT 2024","Wed Feb 28 20:25:43 GMT 2024","0","tests.unit.processing","test_process_download","","","","test_get_job_definion_name[environ0-dp-test-stack-ingest-process-fake_dataset_id]",""
+"passed","Wed Feb 28 20:25:59 GMT 2024","Wed Feb 28 20:25:59 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters50]",""
+"passed","Wed Feb 28 20:25:59 GMT 2024","Wed Feb 28 20:25:59 GMT 2024","1","tests.unit.backend.layers.utils","test_type_conversion_utils","","","","test_type_inference[parameters93]",""
+"passed","Wed Feb 28 20:25:50 GMT 2024","Wed Feb 28 20:25:50 GMT 2024","21","tests.unit.backend.layers.business","test_business","TestCollectionOperations","","","test_publish_version_with_added_dataset_ok","
+        Publishing a version with a dataset added should succeed
+        "
