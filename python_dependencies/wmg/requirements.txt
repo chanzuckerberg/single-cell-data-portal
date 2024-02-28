@@ -1,7 +1,7 @@
 alembic==1.11.1
 anndata==0.8.0
 allure-pytest==2.13.2
-black==22.3.0  # Must be kept in sync with black version in .pre-commit-config.yaml
+black==24.2.0  # Must be kept in sync with black version in .pre-commit-config.yaml
 boto3==1.28.7
 botocore>=1.31.7, <1.32.0
 click==8.1.3
