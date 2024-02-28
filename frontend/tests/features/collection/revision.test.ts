@@ -423,7 +423,7 @@ describe("Collection Revision @loggedIn", () => {
       await deleteRevision(page);
     });
 
-    test.skip("move last dataset to second position", async ({ page }) => {
+    test("move last dataset to second position", async ({ page }) => {
       // Navigate to revision with more than one dataset.
       await startReorderableRevision(page);
 
@@ -696,25 +696,6 @@ async function moveDatasetTo(
 ): Promise<void> {
   await datasets[fromIndex].hover();
   await page.mouse.down();
-
-  // Simulate drag over rows between from row and to row to trigger drag and drop calculations correctly.
-  // For example, if we're dragging from 0 to 3, we want to drag over 1 then 2. If we're dragging from 3 to
-  // 0, we want to drag over 2 then 1.
-  const dragOverIndices =
-    fromIndex > toIndex
-      ? Array.from(
-          { length: fromIndex - toIndex - 1 },
-          (_, i) => fromIndex - i - 1
-        )
-      : Array.from(
-          { length: toIndex - fromIndex - 1 },
-          (_, i) => i + fromIndex + 1
-        );
-  await Promise.all(
-    dragOverIndices.map(async (i) => {
-      return await datasets[i].hover();
-    })
-  );
 
   await datasets[toIndex].hover();
   await page.mouse.up();
