@@ -22,12 +22,14 @@ interface Props {
   children: ReactNode | ReactNode[];
   dragAndDrop: DragAndDrop;
   reorder: Reorder;
+  testId: string;
 }
 
 export default function ReorderModeRow({
   children,
   dragAndDrop,
   reorder,
+  testId,
 }: Props): JSX.Element {
   const { reorderAction } = reorder;
   const { onReorder } = reorderAction;
@@ -97,6 +99,7 @@ export default function ReorderModeRow({
 
   return (
     <Row
+      data-testid={testId}
       dragEventType={dragEventType}
       draggable
       onDrag={onDrag}

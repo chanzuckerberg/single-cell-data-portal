@@ -77,6 +77,7 @@ const Menu = ({
       <CreateCollection id={collection.id} Button={EditButton} />
       {reorder.isReorderUX && (
         <ReorderMenuItem
+          data-testid="dropdown-reorder-datasets"
           disabled={reorder.disabled}
           onClick={() => {
             menuProps.onClose();
