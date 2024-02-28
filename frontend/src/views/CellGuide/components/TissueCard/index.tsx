@@ -42,6 +42,11 @@ import {
   TableTitle,
 } from "../CellGuideCard/components/common/style";
 import { useComponentWidth } from "../CellGuideCard/components/common/hooks/useIsComponentPastBreakpoint";
+import { CELLGUIDE_ORGANISMS_LIST } from "../CellGuideCard/connect";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
+import { DefaultDropdownMenuOption, Dropdown } from "@czi-sds/components";
+import { SDS_INPUT_DROPDOWN_PROPS } from "../CellGuideCard";
 
 interface Props {
   // From getServerSideProps
@@ -58,6 +63,20 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
   const tissueId = (tissueIdRaw as string)?.replace("_", ":") ?? "";
   const tissueName = name || tissueId;
   const titleizedName = titleize(tissueName);
+
+  const [tissueCardSelectedOrganism, setTissueCardSelectedOrganism] = useState(
+    CELLGUIDE_ORGANISMS_LIST[0]
+  );
+
+  const handleChangeOrganism = (option: DefaultDropdownMenuOption | null) => {
+    if (!option || option.name === tissueCardSelectedOrganism) return;
+    setTissueCardSelectedOrganism(option.name);
+    track(EVENTS.CG_SELECT_ORGANISM, { organism: option.name });
+  };
+
+  const sdsOrganismsList = CELLGUIDE_ORGANISMS_LIST.map((organism) => ({
+    name: organism,
+  }));
 
   // get current height of viewport
   const [height, setHeight] = useState(1000);
@@ -167,6 +186,15 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
                     />
                   </a>
                 </TissueCardHeaderInnerWrapper>
+                <Dropdown
+                  InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
+                  search
+                  label={tissueCardSelectedOrganism}
+                  onChange={handleChangeOrganism}
+                  options={sdsOrganismsList}
+                  value={{ name: tissueCardSelectedOrganism }}
+                  data-testid={"test-id"}
+                />
               </TissueCardHeader>
             )}
 
@@ -210,6 +238,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
                   tissueName={tissueName}
                   inputWidth={width}
                   inputHeight={height}
+                  selectedOrganism={tissueCardSelectedOrganism}
                 />
               </FullScreenProvider>
             </div>

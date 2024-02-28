@@ -171,17 +171,20 @@ export default function CellGuideCard({
     synonyms?.join(", ") || "N/A"
   }). ${rawSeoDescription}`;
 
+  const OrganismSelectorDropdown = (
+    <Dropdown
+      InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
+      search
+      label={selectedOrganism?.name}
+      onChange={handleChangeOrganism}
+      options={sdsOrganismsList}
+      value={selectedOrganism}
+      data-testid={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
+    />
+  );
   const dropdownComponents = (
     <CellGuideCardHeaderInnerWrapper>
-      <Dropdown
-        InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
-        search
-        label={selectedOrganism?.name}
-        onChange={handleChangeOrganism}
-        options={sdsOrganismsList}
-        value={selectedOrganism}
-        data-testid={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
-      />
+      {OrganismSelectorDropdown}
       <Dropdown
         InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
         search

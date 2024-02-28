@@ -15,6 +15,9 @@ import { SDSOrgan } from "src/views/CellGuide/components/CellGuideCard/types";
 import { CellType } from "src/views/CellGuide/components/common/OntologyDagView/common/types";
 import { Gene } from "src/views/WheresMyGeneV2/common/types";
 
+// Hardcode this for now
+export const CELLGUIDE_ORGANISMS_LIST = ["Homo sapiens", "Mus musculus"];
+
 export function useConnect() {
   const router = useRouter();
 
@@ -90,16 +93,15 @@ export function useConnect() {
   const [cellInfoCellType, setCellInfoCellType] = useState<CellType | null>(
     null
   );
+  const sdsOrganismsList = CELLGUIDE_ORGANISMS_LIST.map((organism) => ({
+    name: organism,
+  }));
+  const [selectedOrganism, setSelectedOrganism] =
+    useState<DefaultDropdownMenuOption>(sdsOrganismsList[0]);
 
-  const { organismsList, organsMap, isSuccess } =
-    useOrganAndOrganismFilterListForCellType();
-
-  const sdsOrganismsList = useMemo(
-    () =>
-      organismsList.map((organism) => ({
-        name: organism,
-      })),
-    [organismsList]
+  const { organsMap, isSuccess } = useOrganAndOrganismFilterListForCellType(
+    cellTypeId,
+    selectedOrganism.name
   );
 
   const sdsOrgansList = useMemo<SDSOrgan[]>(
@@ -128,9 +130,6 @@ export function useConnect() {
     }
   }, [queryCellTypeId, router, selectedOrgan, tissueId, isSuccess]);
 
-  const [selectedOrganism, setSelectedOrganism] =
-    useState<DefaultDropdownMenuOption>(sdsOrganismsList[0]);
-
   useEffect(() => {
     setSelectedGene(undefined);
   }, [selectedOrgan, selectedOrganism, setSelectedGene]);
@@ -154,7 +153,7 @@ export function useConnect() {
     setGeneInfoGene,
     cellInfoCellType,
     setCellInfoCellType,
-    organismsList,
+    organismsList: CELLGUIDE_ORGANISMS_LIST,
     organsMap,
     sdsOrganismsList,
     sdsOrgansList,
