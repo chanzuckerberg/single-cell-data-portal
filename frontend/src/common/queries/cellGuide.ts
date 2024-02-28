@@ -408,7 +408,7 @@ export const useMarkerGenePresenceQuery =
   };
 
 export const USE_CELLTYPE_TISSUE_MAPPING_QUERY = {
-  entities: [ENTITIES.CELL_GUIDE_CELLTYPE_METADATA],
+  entities: [ENTITIES.CELL_GUIDE_CELLTYPE_TISSUE_MAPPING],
   id: "cell-guide-celltype-tissue-mapping-query",
 };
 
