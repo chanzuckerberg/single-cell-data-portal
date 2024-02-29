@@ -498,7 +498,9 @@ export default function OntologyDagView({
               url={explorerUrl}
               label="Open Integrated Embedding"
               onClick={() => {
-                track(EVENTS.CG_OPEN_INTEGRATED_EMBEDDING_CLICKED);
+                track(EVENTS.CG_OPEN_INTEGRATED_EMBEDDING_CLICKED, {
+                  explorerUrl: explorerUrl,
+                });
               }}
             />
             <BetaChip label="Beta" size="small" />
