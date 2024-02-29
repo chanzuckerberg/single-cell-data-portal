@@ -39,11 +39,11 @@ import CellGuideCardSidebar from "../CellGuideCard/components/CellGuideCardSideb
 import React from "react";
 import { StyledOntologyId } from "../CellGuideCard/components/Description/style";
 import { useComponentWidth } from "../CellGuideCard/components/common/hooks/useIsComponentPastBreakpoint";
-import { CELLGUIDE_ORGANISMS_LIST } from "../CellGuideCard/connect";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { DefaultDropdownMenuOption, Dropdown } from "@czi-sds/components";
 import { SDS_INPUT_DROPDOWN_PROPS } from "../CellGuideCard";
+import { ORGANISM_NAME_TO_TAXON_ID_MAPPING } from "src/common/queries/cellGuide";
 
 interface Props {
   // From getServerSideProps
@@ -62,7 +62,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
   const titleizedName = titleize(tissueName);
 
   const [tissueCardSelectedOrganism, setTissueCardSelectedOrganism] = useState(
-    CELLGUIDE_ORGANISMS_LIST[0]
+    Object.keys(ORGANISM_NAME_TO_TAXON_ID_MAPPING)[0]
   );
 
   const handleChangeOrganism = (option: DefaultDropdownMenuOption | null) => {
@@ -71,9 +71,11 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
     track(EVENTS.CG_SELECT_ORGANISM, { organism: option.name });
   };
 
-  const sdsOrganismsList = CELLGUIDE_ORGANISMS_LIST.map((organism) => ({
-    name: organism,
-  }));
+  const sdsOrganismsList = Object.keys(ORGANISM_NAME_TO_TAXON_ID_MAPPING).map(
+    (organism) => ({
+      name: organism,
+    })
+  );
 
   // get current height of viewport
   const [height, setHeight] = useState(1000);

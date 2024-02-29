@@ -87,7 +87,9 @@ async function fetchQuery({
 /**
  * Generic cell guide hook
  */
-const ORGANISM_NAME_TO_TAXON_ID_MAPPING = {
+// Mapping from organism name to taxon id. Hardcode this for now.
+// This will need to be updated if Census ever includes more organisms.
+export const ORGANISM_NAME_TO_TAXON_ID_MAPPING = {
   "Homo sapiens": "NCBITaxon_9606",
   "Mus musculus": "NCBITaxon_10090",
 };

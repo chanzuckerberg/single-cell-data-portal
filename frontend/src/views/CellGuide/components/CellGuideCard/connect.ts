@@ -3,6 +3,7 @@ import { throttle } from "lodash";
 import { useRouter } from "next/router";
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { ROUTES } from "src/common/constants/routes";
+import { ORGANISM_NAME_TO_TAXON_ID_MAPPING } from "src/common/queries/cellGuide";
 import {
   ALL_TISSUES,
   NO_ORGAN_ID,
@@ -16,7 +17,6 @@ import { CellType } from "src/views/CellGuide/components/common/OntologyDagView/
 import { Gene } from "src/views/WheresMyGeneV2/common/types";
 
 // Hardcode this for now
-export const CELLGUIDE_ORGANISMS_LIST = ["Homo sapiens", "Mus musculus"];
 
 export function useConnect() {
   const router = useRouter();
@@ -93,9 +93,11 @@ export function useConnect() {
   const [cellInfoCellType, setCellInfoCellType] = useState<CellType | null>(
     null
   );
-  const sdsOrganismsList = CELLGUIDE_ORGANISMS_LIST.map((organism) => ({
-    name: organism,
-  }));
+  const sdsOrganismsList = Object.keys(ORGANISM_NAME_TO_TAXON_ID_MAPPING).map(
+    (organism) => ({
+      name: organism,
+    })
+  );
   const [selectedOrganism, setSelectedOrganism] =
     useState<DefaultDropdownMenuOption>(sdsOrganismsList[0]);
 
@@ -153,7 +155,7 @@ export function useConnect() {
     setGeneInfoGene,
     cellInfoCellType,
     setCellInfoCellType,
-    organismsList: CELLGUIDE_ORGANISMS_LIST,
+    organismsList: Object.keys(ORGANISM_NAME_TO_TAXON_ID_MAPPING),
     organsMap,
     sdsOrganismsList,
     sdsOrgansList,
