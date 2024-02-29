@@ -499,7 +499,9 @@ export default function OntologyDagView({
               label="Open Integrated Embedding"
               onClick={() => {
                 track(EVENTS.CG_OPEN_INTEGRATED_EMBEDDING_CLICKED, {
-                  explorerUrl: explorerUrl,
+                  cellTypeId,
+                  tissueId,
+                  organismName: selectedOrganism,
                 });
               }}
             />
