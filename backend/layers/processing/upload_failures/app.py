@@ -104,6 +104,7 @@ def get_failure_slack_notification_message(
     batch_url = aws_batch_job_url_fmt_str.format(aws_region=aws_region, job_id=job_id)
     step_function_url = aws_sfn_url_fmt_str.format(aws_region=aws_region, execution_arn=execution_arn)
     collection_version_url = f"https://cellxgene.cziscience.com/collections/{collection_version_id}"
+    collection_url = ""
     data = {
         "blocks": [
             {
@@ -120,6 +121,7 @@ def get_failure_slack_notification_message(
                     "type": "mrkdwn",
                     "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     f"*Owner*: {collection_owner}\n"
+                    f"*Collection URL*: {collection_url}\n"
                     f"*Collection Version URL*: {collection_version_url}\n"
                     f"*Batch Job ID*: <{batch_url}|{job_id}>\n"
                     f"*Step Function ARN*: <{step_function_url}|{execution_arn}>\n"

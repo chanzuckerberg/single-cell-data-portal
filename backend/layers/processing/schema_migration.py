@@ -135,6 +135,10 @@ class SchemaMigrate(ProcessingLogic):
         # Get datasets from collection
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
         datasets = [dataset for dataset in version.datasets if not self.check_dataset_is_latest_schema_version(dataset)]
+
+        # Generate canonical collection url
+        collection_url = f"{CorporaConfig().collections_base_url}/collections/{version.collection_id.id}"
+
         # Filter out datasets that are already on the current schema version
         if not datasets:
             # Handles the case were the collection has no datasets or all datasets are already migrated.
@@ -148,6 +152,7 @@ class SchemaMigrate(ProcessingLogic):
                 "can_publish": str(False),  # skip publishing, because the collection is already published and no
                 # revision is created, or the collection is private or a revision.
                 "collection_version_id": collection_version_id,
+                "collection_url": collection_url,
                 "datasets": [],
                 "no_datasets": str(True),
             }
@@ -168,6 +173,7 @@ class SchemaMigrate(ProcessingLogic):
                     {
                         "can_publish": str(can_publish),
                         "collection_id": collection_id,
+                        "collection_url": collection_url,
                         "collection_version_id": private_collection_version_id,
                         "dataset_id": dataset.dataset_id.id,
                         "dataset_version_id": dataset.version_id.id,
