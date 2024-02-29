@@ -65,7 +65,6 @@ jobs:
   build_images:
     uses: ./.github/workflows/build-images.yml
     secrets: inherit
-    needs: push-tests
     concurrency:
       group: pr-${{ github.event.number }}-build
       cancel-in-progress: true
