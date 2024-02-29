@@ -40,7 +40,8 @@ const DISEASE_FILTER_SELECTION = "influenza";
 const EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER = ["blood", "brain"];
 const EXPECTED_EXPANDED_TISSUES = ["blood"];
 const EXPECTED_VISIBLE_CELL = ["B Cell"];
-const EXPECTED_FILTERED_TISSUES_WITH_DISEASE_FILTER = ["blood"];
+const EXPECTED_FILTERED_TISSUES_WITH_DISEASE_FILTER = ["blood", "brain"];
+const EXPECTED_FILTERED_TISSUES_WITH_B_CELL_FILTER = ["blood"];
 const EXPECTED_FILTERED_TISSUES_WITH_SHARE_LINK = ["lung"];
 
 const WAIT_FOR_REQUEST_TIMEOUT_MS = 30 * 1000; // 30 seconds
@@ -269,10 +270,9 @@ describe("WMG tissue auto-expand", () => {
 
   /**
    * Tissue auto expansion - cross filter with Disease filter
-   * Filter 3 Tissues. From the Disease filter select influenza.
-   * Blood should appear only and expanded. Add cell type filter for B Cell. Only B Cell should
-   * appear under Blood and expanded. Remove influenza. Blood should remain expanded and cell count
-   * increase.
+   * Filter 3 Tissues. From the Disease filter, select influenza.
+   * Blood and brain should stay expanded. Add cell type filter for B Cell. Only B Cell should
+   * appear under Blood and expanded. Remove influenza. Blood and brain should remain expanded
    */
   test("Tissue auto expansion - cross filter with Disease filter", async ({
     page,
@@ -288,7 +288,7 @@ describe("WMG tissue auto-expand", () => {
     await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DISEASE_FILTER);
     await filterCellTypes(page, CELL_TYPE_FILTERS.slice(0, 1));
     await checkElementVisible(page, EXPECTED_VISIBLE_CELL, CELL_TYPE_TEST_ID);
-    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DISEASE_FILTER);
+    await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_B_CELL_FILTER);
     await removeCellFilter(page);
     await checkTissues(page, EXPECTED_FILTERED_TISSUES_WITH_DISEASE_FILTER);
   });
