@@ -158,6 +158,10 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Value.$": "$.collection_version_id"
               },
               {
+                "Name": "COLLECTION_ID",
+                "Value.$": "$.collection_id"
+              }
+              {
                 "Name": "STEP_NAME",
                 "Value": "validate"
               }
@@ -291,7 +295,8 @@ resource "aws_sfn_state_machine" "state_machine" {
           "execution_id.$": "$$.Execution.Id",
           "error.$": "$.error",
           "dataset_version_id.$": "$.dataset_version_id",
-          "collection_version_id.$": "$.collection_version_id"
+          "collection_version_id.$": "$.collection_version_id",
+          "collection_id.$": "$.collection_id",
         },
         "Retry": [ {
             "ErrorEquals": ["Lambda.AWSLambdaException"],
