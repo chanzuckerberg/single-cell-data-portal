@@ -12,7 +12,11 @@ import { Tree, hierarchy } from "@visx/hierarchy";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
-import { CellOntologyTreeResponse as TreeNode } from "src/common/queries/cellGuide";
+import {
+  CellOntologyTreeResponse as TreeNode,
+  useValidExplorerCxgs,
+} from "src/common/queries/cellGuide";
+import { BetaChip } from "src/components/Header/style";
 import {
   TableTitleWrapper,
   TableTitle,
@@ -39,6 +43,7 @@ import {
   StyledSVG,
   RightAligned,
   StyledTagFilter,
+  OpenIntegratedEmbeddingWrapper,
 } from "./style";
 import { useFullScreen } from "../FullScreenProvider";
 import {
@@ -60,6 +65,7 @@ import {
   ANIMAL_CELL_ID,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CONTENT,
   CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID,
+  CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TOOLTIP_TEST_ID,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
 import {
   ALL_TISSUES,
@@ -69,6 +75,7 @@ import { Icon } from "@czi-sds/components";
 import Link from "../../CellGuideCard/components/common/Link";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import HelpTooltip from "../../CellGuideCard/components/common/HelpTooltip";
 
 interface TreeProps {
   skinnyMode?: boolean;
@@ -77,6 +84,7 @@ interface TreeProps {
   selectedGene?: string;
   selectedOrganism?: string;
   cellTypeId?: string;
+  cellTypeName?: string;
   tissueId: string;
   tissueName: string;
   selectGene?: (gene: string) => void;
@@ -95,6 +103,7 @@ const initialTransformMatrixDefault = {
 
 export default function OntologyDagView({
   cellTypeId,
+  cellTypeName,
   tissueId,
   tissueName,
   inputWidth,
@@ -201,6 +210,35 @@ export default function OntologyDagView({
   } else if (formattedTissueId && formattedSelectedOrganism) {
     explorerUrl = `https://cellxgene.cziscience.com/e/cellguide-cxgs/tissues/${formattedSelectedOrganism}/${formattedTissueId}__CL_0000000.cxg/`;
   }
+
+  const { data: validExplorerCxgs, isLoading: isLoadingValidExplorerCxgs } =
+    useValidExplorerCxgs();
+
+  const isExplorerCxgValid = useMemo(() => {
+    if (isLoadingValidExplorerCxgs || !validExplorerCxgs) return false;
+    const celltypeCxgs =
+      validExplorerCxgs.organism_celltype_cxgs[formattedSelectedOrganism];
+    const tissueCelltypeCxgs =
+      validExplorerCxgs.organism_tissue_celltype_cxgs[
+        formattedSelectedOrganism
+      ];
+    let valid = false;
+    if (tissueId && cellTypeId) {
+      valid = tissueCelltypeCxgs[tissueId]?.includes(cellTypeId);
+    } else if (cellTypeId) {
+      valid = celltypeCxgs?.includes(cellTypeId);
+    } else if (tissueId) {
+      valid = tissueCelltypeCxgs[tissueId]?.includes("CL:0000000");
+    }
+
+    return valid;
+  }, [
+    validExplorerCxgs,
+    isLoadingValidExplorerCxgs,
+    formattedSelectedOrganism,
+    tissueId,
+    cellTypeId,
+  ]);
 
   // The raw cell ontology tree data. This is called "rawTree" because it does not contain
   // the "isExpanded" property that is used to track the expanded state of each node, along with
@@ -421,21 +459,50 @@ export default function OntologyDagView({
   const yMax = height - defaultMargin.top - defaultMargin.bottom;
   const xMax = width - defaultMargin.left - defaultMargin.right;
 
+  const organismText =
+    formattedSelectedOrganism === "homo_sapiens" ? "human" : "mouse";
+  const tooltipTextFirstPart = cellTypeId
+    ? `View an integrated UMAP for all ${organismText} cells of type "${cellTypeName}" in ${
+        tissueId ? `${tissueName} tissue` : "all tissues"
+      }.`
+    : `View an integrated UMAP for all ${organismText} cells in ${tissueName} tissue.`;
+
+  const tooltipTextSecondPart =
+    "UMAP was run using Scanpy's default parameters on the SCVI embeddings provided by CELLxGENE Census";
   return (
     <div data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW}>
       <Global styles={TooltipInPortalStyle} />
 
       <TableTitleWrapper>
         <TableTitle>Cell Ontology</TableTitle>
-        {explorerUrl !== "" && (
-          <Link
-            dataTestId={CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID}
-            url={explorerUrl}
-            label="Open Integrated Embedding"
-            onClick={() => {
-              track(EVENTS.CG_OPEN_INTEGRATED_EMBEDDING_CLICKED);
-            }}
-          />
+        {explorerUrl !== "" && isExplorerCxgValid && (
+          <OpenIntegratedEmbeddingWrapper>
+            <HelpTooltip
+              title={"Open Integrated Embedding"}
+              dark
+              buttonDataTestId={
+                CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TOOLTIP_TEST_ID
+              }
+              placement="left"
+              text={
+                <>
+                  {tooltipTextFirstPart}
+                  <br />
+                  <br />
+                  <i>{tooltipTextSecondPart}</i>
+                </>
+              }
+            />
+            <Link
+              dataTestId={CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID}
+              url={explorerUrl}
+              label="Open Integrated Embedding"
+              onClick={() => {
+                track(EVENTS.CG_OPEN_INTEGRATED_EMBEDDING_CLICKED);
+              }}
+            />
+            <BetaChip label="Beta" size="small" />
+          </OpenIntegratedEmbeddingWrapper>
         )}
       </TableTitleWrapper>
 

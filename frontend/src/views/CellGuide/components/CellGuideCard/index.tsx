@@ -243,7 +243,7 @@ export default function CellGuideCard({
         {/* This prevents auto zooming on the input box on mobile */}
         <meta
           name="viewport"
-          content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1"
+          content="width=device-width, initial-scale=1, minimum-scale=1"
         />
       </Head>
 
@@ -327,6 +327,7 @@ export default function CellGuideCard({
                 <OntologyDagView
                   key={`${cellTypeId}-${selectedOrganId}`}
                   cellTypeId={cellTypeId}
+                  cellTypeName={cellTypeName}
                   tissueName={tissueName}
                   tissueId={selectedOrganId}
                   inputWidth={width}

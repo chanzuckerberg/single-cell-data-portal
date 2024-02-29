@@ -29,14 +29,14 @@ interface Props {
     | "top";
   dark?: boolean;
   buttonDataTestId?: string;
-  setTooltipContent: Dispatch<
+  setTooltipContent?: Dispatch<
     SetStateAction<{
       title: string;
       element: JSX.Element;
     } | null>
   >;
   title: string;
-  skinnyMode: boolean;
+  skinnyMode?: boolean;
 }
 const HelpTooltip = ({
   text,
@@ -65,7 +65,7 @@ const HelpTooltip = ({
         <StyledIconImage
           alt="question mark"
           onClick={() => {
-            if (skinnyMode) {
+            if (skinnyMode && setTooltipContent) {
               setTooltipContent({
                 title: title,
                 element: <StyledTooltip>{text}</StyledTooltip>,

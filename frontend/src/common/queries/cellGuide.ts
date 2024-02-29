@@ -20,6 +20,7 @@ export enum TYPES {
   GPT_SEO_DESCRIPTION = "GPT_SEO_DESCRIPTION",
   CELLTYPE_TISSUE_MAPPING = "CELLTYPE_TISSUE_MAPPING",
   LATEST_SNAPSHOT_IDENTIFIER = "LATEST_SNAPSHOT_IDENTIFIER",
+  VALID_EXPLORER_CXGS = "VALID_EXPLORER_CXGS",
 }
 
 // Suffix the cellguide data url with the remote dev prefix
@@ -160,6 +161,24 @@ export function useCellGuideQuery<T = CellGuideResponse>(
   );
 }
 
+/* ========== valid_explorer_cxgs ========== */
+export const USE_VALID_EXPLORER_CXGS_QUERY = {
+  entities: [ENTITIES.CELL_GUIDE_VALID_EXPLORER_CXGS],
+  id: "cell-guide-valid-explorer-cxgs-query",
+};
+
+export interface ValidExplorerCxgsQueryResponse {
+  organism_celltype_cxgs: { [organism: string]: string[] };
+  organism_tissue_celltype_cxgs: {
+    [organism: string]: { [tissue: string]: string[] };
+  };
+}
+
+export const useValidExplorerCxgs = () => {
+  return useCellGuideQuery<ValidExplorerCxgsQueryResponse>(
+    TYPES.VALID_EXPLORER_CXGS
+  );
+};
 /* ========== ontology_tree ========== */
 export const USE_CELL_ONTOLOGY_TREE_QUERY = {
   entities: [ENTITIES.CELL_GUIDE_CELL_ONTOLOGY_TREE],
@@ -548,6 +567,10 @@ export function useAllTissuesLookupTables(
 const QUERY_MAPPING: {
   [key in TYPES]: CellGuideQuery;
 } = {
+  VALID_EXPLORER_CXGS: {
+    queryKey: USE_VALID_EXPLORER_CXGS_QUERY,
+    urlSuffix: "valid_explorer_cxgs.json",
+  },
   CELL_ONTOLOGY_TREE: {
     queryKey: USE_CELL_ONTOLOGY_TREE_QUERY,
     urlSuffix: "ontology_tree/%o/ontology_graph.json",

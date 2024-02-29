@@ -21,3 +21,6 @@ export const ANIMAL_CELL_ID = "CL:0000548";
 
 export const CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID =
   "cellguide-open-integrated-embedding";
+
+export const CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TOOLTIP_TEST_ID =
+  "cellguide-open-integrated-embedding-tooltip";

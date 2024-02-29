@@ -16,27 +16,49 @@ def run(*, output_directory: str):
     output_json(valid_explorer_cxgs, f"{output_directory}/{CELL_GUIDE_VALID_EXPLORER_CXGS_FILENAME}")
 
 
-def get_valid_cxgs() -> ValidExplorerCxgs:
+def get_folders_from_s3(bucket, prefix):
     s3_client = boto3.client("s3")
+
+    continuation_token = None
+
+    all_objects = []
+    while True:
+        # Check if continuation token is present
+        if continuation_token:
+            response = s3_client.list_objects_v2(
+                Bucket=bucket, Prefix=prefix, Delimiter="/", ContinuationToken=continuation_token
+            )
+        else:
+            response = s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix, Delimiter="/")
+        # Extend the list of all objects with the current page of results
+        if "CommonPrefixes" in response:
+            all_objects.extend(response["CommonPrefixes"])
+
+        # Check if there are more pages of results
+        if response.get("IsTruncated"):
+            continuation_token = response.get("NextContinuationToken")
+        else:
+            break
+
+    return all_objects
+
+
+def get_valid_cxgs() -> ValidExplorerCxgs:
 
     organism_cxgs = {}
 
     for organism in CXG_ORGANISMS:
-        results = s3_client.list_objects_v2(
-            Bucket=CXG_BUCKET_NAME, Prefix=CXG_PATH_PREFIX + organism + "/", Delimiter="/"
-        )
-        cxgs = [i["Prefix"].split(".cxg")[0].split("/")[-1].replace("_", ":") for i in results["CommonPrefixes"]]
+        results = get_folders_from_s3(CXG_BUCKET_NAME, CXG_PATH_PREFIX + organism + "/")
+        cxgs = [i["Prefix"].split(".cxg")[0].split("/")[-1].replace("_", ":") for i in results if "CL_" in i["Prefix"]]
         organism_cxgs[organism] = cxgs
 
     organism_tissue_cxgs = {}
 
     for organism in CXG_ORGANISMS:
         organism_tissue_cxgs[organism] = {}
-        results = s3_client.list_objects_v2(
-            Bucket=CXG_BUCKET_NAME, Prefix=CXG_TISSUE_PATH_PREFIX + organism + "/", Delimiter="/"
-        )
-        cxgs = [i["Prefix"].split(".cxg")[0].split("/")[-1] for i in results["CommonPrefixes"]]
-        cxgs = [[j.replace("_", ":") for j in i.split("__")] for i in cxgs]
+        results = get_folders_from_s3(CXG_BUCKET_NAME, CXG_TISSUE_PATH_PREFIX + organism + "/")
+        cxgs = [i["Prefix"].split(".cxg")[0].split("/")[-1] for i in results]
+        cxgs = [[j.replace("_", ":") for j in i.split("__")] for i in cxgs if len(i.split("__")) == 2]
         for i in cxgs:
             t, c = i
             L = organism_tissue_cxgs[organism].get(t, set())
