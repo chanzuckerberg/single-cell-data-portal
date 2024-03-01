@@ -16,8 +16,6 @@ import { SDSOrgan } from "src/views/CellGuide/components/CellGuideCard/types";
 import { CellType } from "src/views/CellGuide/components/common/OntologyDagView/common/types";
 import { Gene } from "src/views/WheresMyGeneV2/common/types";
 
-// Hardcode this for now
-
 export function useConnect() {
   const router = useRouter();
 
@@ -136,6 +134,10 @@ export function useConnect() {
     setSelectedGene(undefined);
   }, [selectedOrgan, selectedOrganism, setSelectedGene]);
 
+  const organismsList = useMemo(
+    () => Object.keys(ORGANISM_NAME_TO_TAXON_ID_MAPPING),
+    []
+  );
   return {
     router,
     pageNavIsOpen,
@@ -155,7 +157,7 @@ export function useConnect() {
     setGeneInfoGene,
     cellInfoCellType,
     setCellInfoCellType,
-    organismsList: Object.keys(ORGANISM_NAME_TO_TAXON_ID_MAPPING),
+    organismsList,
     organsMap,
     sdsOrganismsList,
     sdsOrgansList,

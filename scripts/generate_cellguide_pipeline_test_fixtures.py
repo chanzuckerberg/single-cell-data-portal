@@ -22,6 +22,7 @@ from tests.test_utils.mocks import (
     mock_get_asctb_master_sheet,
     mock_get_collections_from_curation_endpoint,
     mock_get_datasets_from_curation_endpoint,
+    mock_get_folders_from_s3,
     mock_get_title_and_citation_from_doi,
 )
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot
@@ -94,7 +95,11 @@ def run_cellguide_pipeline(fixture_type: FixtureType):
 
         if fixture_type in [FixtureType.valid_explorer_cxgs, FixtureType.all]:
             # Get valid cxgs
-            valid_explorer_cxgs = get_valid_cxgs()
+            with patch(
+                "backend.cellguide.pipeline.explorer_cxgs.get_folders_from_s3",
+                new=mock_get_folders_from_s3,
+            ):
+                valid_explorer_cxgs = get_valid_cxgs()
             output_json(
                 valid_explorer_cxgs,
                 f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{VALID_EXPLORER_CXGS_FIXTURE_FILENAME}",

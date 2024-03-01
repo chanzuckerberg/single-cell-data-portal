@@ -93,12 +93,19 @@ export const ORGANISM_NAME_TO_TAXON_ID_MAPPING = {
   "Homo sapiens": "NCBITaxon_9606",
   "Mus musculus": "NCBITaxon_10090",
 };
-export function useCellGuideQuery<T = CellGuideResponse>(
-  dataType: TYPES,
-  queryId = "", // Empty string if cell type is not needed for fetch function
+
+interface CellGuideQueryProps {
+  dataType: TYPES;
+  queryId?: string;
+  organismName?: string;
+  queryLatestSnapshotIdentifier?: boolean;
+}
+export function useCellGuideQuery<T = CellGuideResponse>({
+  dataType,
+  queryId = "",
   organismName = "",
-  queryLatestSnapshotIdentifier = true
-): UseQueryResult<T> {
+  queryLatestSnapshotIdentifier = true,
+}: CellGuideQueryProps): UseQueryResult<T> {
   // if organismName is a key in ORGANISM_NAME_TO_TAXON_ID_MAPPING, set it to the value
   const organismId =
     ORGANISM_NAME_TO_TAXON_ID_MAPPING[
@@ -177,9 +184,9 @@ export interface ValidExplorerCxgsQueryResponse {
 }
 
 export const useValidExplorerCxgs = () => {
-  return useCellGuideQuery<ValidExplorerCxgsQueryResponse>(
-    TYPES.VALID_EXPLORER_CXGS
-  );
+  return useCellGuideQuery<ValidExplorerCxgsQueryResponse>({
+    dataType: TYPES.VALID_EXPLORER_CXGS,
+  });
 };
 /* ========== ontology_tree ========== */
 export const USE_CELL_ONTOLOGY_TREE_QUERY = {
@@ -198,11 +205,10 @@ export interface CellOntologyTreeResponse {
 export const useCellOntologyTree = (
   organismName: string
 ): UseQueryResult<CellOntologyTreeResponse> => {
-  return useCellGuideQuery<CellOntologyTreeResponse>(
-    TYPES.CELL_ONTOLOGY_TREE,
-    "",
-    organismName
-  );
+  return useCellGuideQuery<CellOntologyTreeResponse>({
+    dataType: TYPES.CELL_ONTOLOGY_TREE,
+    organismName,
+  });
 };
 
 /* ========== ontology_tree_state ========== */
@@ -229,11 +235,11 @@ export const useCellOntologyTreeStateCellType = (
   entityId: string,
   organismName: string
 ): UseQueryResult<CellOntologyTreeStateResponse> => {
-  return useCellGuideQuery<CellOntologyTreeStateResponse>(
-    TYPES.CELL_ONTOLOGY_TREE_STATE_CELLTYPE,
-    entityId,
-    organismName
-  );
+  return useCellGuideQuery<CellOntologyTreeStateResponse>({
+    dataType: TYPES.CELL_ONTOLOGY_TREE_STATE_CELLTYPE,
+    queryId: entityId,
+    organismName,
+  });
 };
 
 /* ========== ontology_tree_state_tissue ========== */
@@ -246,11 +252,11 @@ export const useCellOntologyTreeStateTissue = (
   entityId: string,
   organismName: string
 ): UseQueryResult<CellOntologyTreeStateResponse> => {
-  return useCellGuideQuery<CellOntologyTreeStateResponse>(
-    TYPES.CELL_ONTOLOGY_TREE_STATE_TISSUE,
-    entityId,
-    organismName
-  );
+  return useCellGuideQuery<CellOntologyTreeStateResponse>({
+    dataType: TYPES.CELL_ONTOLOGY_TREE_STATE_TISSUE,
+    queryId: entityId,
+    organismName,
+  });
 };
 
 /* ========== source_data ========== */
@@ -275,10 +281,10 @@ export type SourceCollectionsQueryResponse =
 export const useSourceData = (
   entityId: string
 ): UseQueryResult<SourceCollectionsQueryResponse> => {
-  return useCellGuideQuery<SourceCollectionsQueryResponse>(
-    TYPES.SOURCE_COLLECTIONS,
-    entityId
-  );
+  return useCellGuideQuery<SourceCollectionsQueryResponse>({
+    dataType: TYPES.SOURCE_COLLECTIONS,
+    queryId: entityId,
+  });
 };
 
 /* ========== enriched_genes ========== */
@@ -306,10 +312,10 @@ export type ComputationalMarkersQueryResponse =
 export const useComputationalMarkers = (
   entityId: string
 ): UseQueryResult<ComputationalMarkersQueryResponse> => {
-  return useCellGuideQuery<ComputationalMarkersQueryResponse>(
-    TYPES.COMPUTATIONAL_MARKERS,
-    entityId
-  );
+  return useCellGuideQuery<ComputationalMarkersQueryResponse>({
+    dataType: TYPES.COMPUTATIONAL_MARKERS,
+    queryId: entityId,
+  });
 };
 
 /* ========== canonical_markers ========== */
@@ -332,10 +338,10 @@ export type CanonicalMarkersQueryResponse =
 export const useCanonicalMarkers = (
   entityId: string
 ): UseQueryResult<CanonicalMarkersQueryResponse> => {
-  return useCellGuideQuery<CanonicalMarkersQueryResponse>(
-    TYPES.CANONICAL_MARKERS,
-    entityId
-  );
+  return useCellGuideQuery<CanonicalMarkersQueryResponse>({
+    dataType: TYPES.CANONICAL_MARKERS,
+    queryId: entityId,
+  });
 };
 
 /* ========== latest snapshot identifier ========== */
@@ -355,7 +361,11 @@ export const USE_GPT_DESCRIPTION_QUERY = {
 export type GptDescriptionQueryResponse = string;
 
 export const useGptDescription = (entityId: string): UseQueryResult<string> => {
-  return useCellGuideQuery<string>(TYPES.GPT_DESCRIPTION, entityId, "", false);
+  return useCellGuideQuery<string>({
+    dataType: TYPES.GPT_DESCRIPTION,
+    queryId: entityId,
+    queryLatestSnapshotIdentifier: false,
+  });
 };
 
 /* ========== description ========== */
@@ -372,12 +382,11 @@ interface ValidatedDescriptionQueryResponse {
 export const useValidatedDescription = (
   entityId: string
 ): UseQueryResult<ValidatedDescriptionQueryResponse> => {
-  return useCellGuideQuery<ValidatedDescriptionQueryResponse>(
-    TYPES.VALIDATED_DESCRIPTION,
-    entityId,
-    "",
-    false
-  );
+  return useCellGuideQuery<ValidatedDescriptionQueryResponse>({
+    dataType: TYPES.VALIDATED_DESCRIPTION,
+    queryId: entityId,
+    queryLatestSnapshotIdentifier: false,
+  });
 };
 
 /* ========== SEO description ========== */
@@ -423,9 +432,9 @@ interface MarkerGenePresenceQueryResponse {
 
 export const useMarkerGenePresenceQuery =
   (): UseQueryResult<MarkerGenePresenceQueryResponse> => {
-    return useCellGuideQuery<MarkerGenePresenceQueryResponse>(
-      TYPES.MARKER_GENE_PRESENCE
-    );
+    return useCellGuideQuery<MarkerGenePresenceQueryResponse>({
+      dataType: TYPES.MARKER_GENE_PRESENCE,
+    });
   };
 
 export const USE_CELLTYPE_TISSUE_MAPPING_QUERY = {
@@ -440,11 +449,10 @@ interface CellTypeTissueMappingResponse {
 export const useCellTypeTissueMapping = (
   organismName: string
 ): UseQueryResult<CellTypeTissueMappingResponse> => {
-  return useCellGuideQuery<CellTypeTissueMappingResponse>(
-    TYPES.CELLTYPE_TISSUE_MAPPING,
-    "",
-    organismName
-  );
+  return useCellGuideQuery<CellTypeTissueMappingResponse>({
+    dataType: TYPES.CELLTYPE_TISSUE_MAPPING,
+    organismName,
+  });
 };
 
 /* ========== cell_guide_cards ========== */
@@ -464,9 +472,9 @@ interface CellTypeMetadataQueryResponse {
 
 export const useCellTypeMetadata =
   (): UseQueryResult<CellTypeMetadataQueryResponse> => {
-    return useCellGuideQuery<CellTypeMetadataQueryResponse>(
-      TYPES.CELLTYPE_METADATA
-    );
+    return useCellGuideQuery<CellTypeMetadataQueryResponse>({
+      dataType: TYPES.CELLTYPE_METADATA,
+    });
   };
 
 // this naked fetch is used for SSR
@@ -508,9 +516,9 @@ export interface TissueMetadataQueryResponse {
 
 export const useTissueMetadata =
   (): UseQueryResult<TissueMetadataQueryResponse> => {
-    return useCellGuideQuery<TissueMetadataQueryResponse>(
-      TYPES.TISSUE_METADATA
-    );
+    return useCellGuideQuery<TissueMetadataQueryResponse>({
+      dataType: TYPES.TISSUE_METADATA,
+    });
   };
 
 export const fetchTissueMetadata =

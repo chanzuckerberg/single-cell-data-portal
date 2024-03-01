@@ -66,6 +66,7 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CONTENT,
   CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID,
   CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TOOLTIP_TEST_ID,
+  SELECTED_ORGANISM_TO_DISPLAY_TEXT,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
 import {
   ALL_TISSUES,
@@ -76,6 +77,7 @@ import Link from "../../CellGuideCard/components/common/Link";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import HelpTooltip from "../../CellGuideCard/components/common/HelpTooltip";
+import { getFormattedExplorerUrl } from "./utils";
 
 interface TreeProps {
   skinnyMode?: boolean;
@@ -195,25 +197,14 @@ export default function OntologyDagView({
   // Animation duration - initially zero so the animation doesn't play on load
   const [duration, setDuration] = useState(0);
 
-  // construct explorer URL
-  const formattedSelectedOrganism = selectedOrganism
-    ?.toLowerCase()
-    ?.replace(/ /g, "_");
-  const formattedTissueId = tissueId.replace(/:/g, "_");
-  const formattedCellTypeId = cellTypeId?.replace(/:/g, "_");
-  let explorerUrl = "";
-
-  if (formattedTissueId && formattedCellTypeId && formattedSelectedOrganism) {
-    explorerUrl = `https://cellxgene.cziscience.com/e/cellguide-cxgs/tissues/${formattedSelectedOrganism}/${formattedTissueId}__${formattedCellTypeId}.cxg/`;
-  } else if (formattedCellTypeId && formattedSelectedOrganism) {
-    explorerUrl = `https://cellxgene.cziscience.com/e/cellguide-cxgs/${formattedSelectedOrganism}/${formattedCellTypeId}.cxg/`;
-  } else if (formattedTissueId && formattedSelectedOrganism) {
-    explorerUrl = `https://cellxgene.cziscience.com/e/cellguide-cxgs/tissues/${formattedSelectedOrganism}/${formattedTissueId}__CL_0000000.cxg/`;
-  }
-
   const { data: validExplorerCxgs, isLoading: isLoadingValidExplorerCxgs } =
     useValidExplorerCxgs();
 
+  const { explorerUrl, formattedSelectedOrganism } = getFormattedExplorerUrl({
+    selectedOrganism,
+    tissueId,
+    cellTypeId,
+  });
   const isExplorerCxgValid = useMemo(() => {
     if (isLoadingValidExplorerCxgs || !validExplorerCxgs) return false;
     const celltypeCxgs =
@@ -460,7 +451,10 @@ export default function OntologyDagView({
   const xMax = width - defaultMargin.left - defaultMargin.right;
 
   const organismText =
-    formattedSelectedOrganism === "homo_sapiens" ? "human" : "mouse";
+    SELECTED_ORGANISM_TO_DISPLAY_TEXT[
+      formattedSelectedOrganism as keyof typeof SELECTED_ORGANISM_TO_DISPLAY_TEXT
+    ] || "unknown";
+
   const tooltipTextFirstPart = cellTypeId
     ? `View an integrated UMAP for all ${organismText} cells of type "${cellTypeName}" in ${
         tissueId ? `${tissueName} tissue` : "all tissues"

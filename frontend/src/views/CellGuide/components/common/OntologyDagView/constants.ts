@@ -24,3 +24,11 @@ export const CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID =
 
 export const CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TOOLTIP_TEST_ID =
   "cellguide-open-integrated-embedding-tooltip";
+
+/**
+ * The keys are expected to match the pattern created by `formattedSelectedOrganism` above
+ */
+export const SELECTED_ORGANISM_TO_DISPLAY_TEXT = {
+  homo_sapiens: "human",
+  mus_musculus: "mouse",
+};
