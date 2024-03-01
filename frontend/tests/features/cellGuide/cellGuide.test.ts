@@ -639,9 +639,10 @@ describe("Cell Guide", () => {
           );
         });
 
-        test("Clicks on a cell type node that does NOT have the same tissue in its dropdown in the ontology viewer navigates to the generic cell type page", async ({
+        test.skip("Clicks on a cell type node that does NOT have the same tissue in its dropdown in the ontology viewer navigates to the generic cell type page", async ({
           page,
         }) => {
+          // This test no longer makes sense because there are no cell types that don't have the same tissue in its dropdown anymore.
           await goToPage(
             `${TEST_URL}${ROUTES.CELL_GUIDE_TISSUE.replace(
               ":tissueId",
