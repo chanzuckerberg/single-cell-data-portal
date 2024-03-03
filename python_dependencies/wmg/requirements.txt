@@ -1,4 +1,4 @@
-alembic==1.11.1
+alembic==1.13.1
 anndata==0.8.0
 allure-pytest==2.13.2
 black==22.3.0  # Must be kept in sync with black version in .pre-commit-config.yaml
