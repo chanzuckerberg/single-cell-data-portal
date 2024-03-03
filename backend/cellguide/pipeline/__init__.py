@@ -9,6 +9,7 @@ from backend.cellguide.pipeline.canonical_marker_genes import run as run_canonic
 from backend.cellguide.pipeline.computational_marker_genes import run as run_computational_marker_gene_pipeline
 from backend.cellguide.pipeline.config import CellGuideConfig
 from backend.cellguide.pipeline.constants import GPT_OUTPUT_DIRECTORY_FOLDERNAME, GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME
+from backend.cellguide.pipeline.explorer_cxgs import run as run_valid_explorer_cxgs_pipeline
 from backend.cellguide.pipeline.gpt_descriptions import run as run_gpt_description_pipeline
 from backend.cellguide.pipeline.metadata import run as run_metadata_pipeline
 from backend.cellguide.pipeline.ontology_tree import run as run_ontology_tree_pipeline
@@ -25,6 +26,9 @@ def run_cellguide_pipeline():
 
     # delete any existing pipeline outputs
     cleanup(output_directory=output_directory)
+
+    # Run valid explorer cxg pipeline
+    run_valid_explorer_cxgs_pipeline(output_directory=output_directory)
 
     # Run ontology tree pipeline
     run_ontology_tree_pipeline(output_directory=output_directory)
