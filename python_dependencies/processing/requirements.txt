@@ -29,7 +29,7 @@ python-json-logger
 requests>=2.22.0
 rpy2==3.5.14
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
-ruff==0.0.239 # Must be kept in sync with ruff version in .pre-commit-config.yaml
+ruff==0.3.0 # Must be kept in sync with ruff version in .pre-commit-config.yaml
 s3fs==0.4.2
 scanpy==1.9.3
 SQLAlchemy>=1.4.0,<1.5
