@@ -26,15 +26,15 @@ def run(*, output_directory):
         )
         output_json_per_key(
             ontology_tree_data[organism].all_states_per_cell_type,
-            f"{output_directory}/{organism_path_name}/{ONTOLOGY_TREE_TOPLEVEL_FOLDERNAME}/{ONTOLOGY_TREE_STATE_PER_CELLTYPE_FOLDERNAME}",
+            f"{output_directory}/{ONTOLOGY_TREE_TOPLEVEL_FOLDERNAME}/{organism_path_name}/{ONTOLOGY_TREE_STATE_PER_CELLTYPE_FOLDERNAME}",
         )
         output_json_per_key(
             ontology_tree_data[organism].all_states_per_tissue,
-            f"{output_directory}/{organism_path_name}/{ONTOLOGY_TREE_TOPLEVEL_FOLDERNAME}/{ONTOLOGY_TREE_STATE_PER_TISSUE_FOLDERNAME}",
+            f"{output_directory}/{ONTOLOGY_TREE_TOPLEVEL_FOLDERNAME}/{organism_path_name}/{ONTOLOGY_TREE_STATE_PER_TISSUE_FOLDERNAME}",
         )
         output_json(
             celltype_to_tissue_mapping,
-            f"{output_directory}/{organism_path_name}/{ONTOLOGY_TREE_TOPLEVEL_FOLDERNAME}/{CELL_GUIDE_CELL_TYPE_MAPPING_FILENAME}",
+            f"{output_directory}/{ONTOLOGY_TREE_TOPLEVEL_FOLDERNAME}/{organism_path_name}/{CELL_GUIDE_CELL_TYPE_MAPPING_FILENAME}",
         )
 
 

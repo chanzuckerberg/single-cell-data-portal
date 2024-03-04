@@ -7,6 +7,7 @@ from unittest.mock import patch
 from backend.cellguide.pipeline.canonical_marker_genes import get_canonical_marker_genes
 from backend.cellguide.pipeline.computational_marker_genes import get_computational_marker_genes
 from backend.cellguide.pipeline.constants import ASCTB_MASTER_SHEET_URL
+from backend.cellguide.pipeline.explorer_cxgs import get_valid_cxgs
 from backend.cellguide.pipeline.metadata import get_cell_metadata, get_tissue_metadata
 from backend.cellguide.pipeline.ontology_tree import (
     get_celltype_to_tissue_mapping,
@@ -21,6 +22,7 @@ from tests.test_utils.mocks import (
     mock_get_asctb_master_sheet,
     mock_get_collections_from_curation_endpoint,
     mock_get_datasets_from_curation_endpoint,
+    mock_get_folders_from_s3,
     mock_get_title_and_citation_from_doi,
 )
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot
@@ -38,6 +40,7 @@ from tests.unit.cellguide_pipeline.constants import (
     SOURCE_COLLECTIONS_FIXTURE_FILENAME,
     TISSUE_METADATA_FIXTURE_FILENAME,
     TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME,
+    VALID_EXPLORER_CXGS_FIXTURE_FILENAME,
 )
 
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -80,16 +83,31 @@ class FixtureType(str, Enum):
     canonical_marker_genes = "canonical_marker_genes"
     computational_marker_genes = "computational_marker_genes"
     source_collections = "source_collections"
+    valid_explorer_cxgs = "valid_explorer_cxgs"
     all = "all"
 
 
 def run_cellguide_pipeline(fixture_type: FixtureType):
     with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
         # Get ontology tree data
-        ontology_tree_data = get_ontology_tree_data(snapshot=snapshot)
+
         ontology_tree = get_ontology_tree_builder(snapshot=snapshot)
 
+        if fixture_type in [FixtureType.valid_explorer_cxgs, FixtureType.all]:
+            # Get valid cxgs
+            with patch(
+                "backend.cellguide.pipeline.explorer_cxgs.get_folders_from_s3",
+                new=mock_get_folders_from_s3,
+            ):
+                valid_explorer_cxgs = get_valid_cxgs()
+            output_json(
+                valid_explorer_cxgs,
+                f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{VALID_EXPLORER_CXGS_FIXTURE_FILENAME}",
+            )
+
         if fixture_type in [FixtureType.ontology_graph, FixtureType.all]:
+            ontology_tree_data = get_ontology_tree_data(snapshot=snapshot)
+
             for organism in ontology_tree_data:
                 organism_path_name = organism.replace(":", "_")
                 output_json(
