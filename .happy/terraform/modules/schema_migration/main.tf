@@ -247,7 +247,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
       "Type": "Map",
       "ItemProcessor": {
         "ProcessorConfig": {
-          "Mode": "INLINE"
+          "Mode": "DISTRIBUTED"
         },
         "StartAt": "CollectionMigration",
         "States": {
@@ -370,7 +370,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "Type": "Map",
             "ItemProcessor": {
               "ProcessorConfig": {
-                "Mode": "INLINE"
+                "Mode": "DISTRIBUTED"
               },
               "StartAt": "DatasetMigration",
               "States": {
