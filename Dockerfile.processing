@@ -16,7 +16,9 @@ RUN pip3 install python-igraph==0.8.3 louvain==0.7.0 packaging==21.0 awscli
 
 
 COPY /python_dependencies/processing/ .
-RUN pip3 install -r requirements.txt
+
+# Install the dev requirements, which may contain a pinned cellxgene-schema version
+RUN if [ "$HAPPY_BRANCH" = "dev" ] ; then pip3 install -r requirements-dev.txt ; else pip3 install -r requirements.txt ; fi
 
 ADD backend/__init__.py backend/__init__.py
 ADD backend/layers backend/layers
