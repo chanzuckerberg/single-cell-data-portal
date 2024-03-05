@@ -248,7 +248,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
       "ItemProcessor": {
         "ProcessorConfig": {
           "Mode": "DISTRIBUTED",
-          "ExecutionType": "EXPRESS"
+          "ExecutionType": "STANDARD"
         },
         "StartAt": "CollectionMigration",
         "States": {
@@ -372,7 +372,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "ItemProcessor": {
               "ProcessorConfig": {
                 "Mode": "DISTRIBUTED",
-                "ExecutionType": "EXPRESS"
+                "ExecutionType": "STANDARD"
               },
               "StartAt": "DatasetMigration",
               "States": {
