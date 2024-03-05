@@ -27,6 +27,7 @@ import CellGuideBottomBanner from "../CellGuideBottomBanner";
 import {
   TISSUE_CARD_HEADER_NAME,
   TISSUE_CARD_HEADER_TAG,
+  TISSUE_CARD_ORGANISM_SELECTOR_TEST_ID,
   TISSUE_CARD_UBERON_DESCRIPTION,
 } from "src/views/CellGuide/components/TissueCard/constants";
 import { Global } from "@emotion/react";
@@ -37,11 +38,12 @@ import { throttle } from "lodash";
 import CellGuideCardSidebar from "../CellGuideCard/components/CellGuideCardSidebar";
 import React from "react";
 import { StyledOntologyId } from "../CellGuideCard/components/Description/style";
-import {
-  TableTitleWrapper,
-  TableTitle,
-} from "../CellGuideCard/components/common/style";
 import { useComponentWidth } from "../CellGuideCard/components/common/hooks/useIsComponentPastBreakpoint";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
+import { DefaultDropdownMenuOption, Dropdown } from "@czi-sds/components";
+import { SDS_INPUT_DROPDOWN_PROPS } from "../CellGuideCard";
+import { ORGANISM_NAME_TO_TAXON_ID_MAPPING } from "src/common/queries/cellGuide";
 
 interface Props {
   // From getServerSideProps
@@ -58,6 +60,22 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
   const tissueId = (tissueIdRaw as string)?.replace("_", ":") ?? "";
   const tissueName = name || tissueId;
   const titleizedName = titleize(tissueName);
+
+  const [tissueCardSelectedOrganism, setTissueCardSelectedOrganism] = useState(
+    Object.keys(ORGANISM_NAME_TO_TAXON_ID_MAPPING)[0]
+  );
+
+  const handleChangeOrganism = (option: DefaultDropdownMenuOption | null) => {
+    if (!option || option.name === tissueCardSelectedOrganism) return;
+    setTissueCardSelectedOrganism(option.name);
+    track(EVENTS.CG_SELECT_ORGANISM, { organism: option.name });
+  };
+
+  const sdsOrganismsList = Object.keys(ORGANISM_NAME_TO_TAXON_ID_MAPPING).map(
+    (organism) => ({
+      name: organism,
+    })
+  );
 
   // get current height of viewport
   const [height, setHeight] = useState(1000);
@@ -109,7 +127,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
               skinnyMode={skinnyMode}
               items={[
                 { elementRef: sectionRef0, title: "Intro" },
-                { elementRef: sectionRef1, title: "Ontology" },
+                { elementRef: sectionRef1, title: "Cell Ontology" },
               ]}
             />
           }
@@ -141,7 +159,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
         {/* This prevents auto zooming on the input box on mobile */}
         <meta
           name="viewport"
-          content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1"
+          content="width=device-width, initial-scale=1, minimum-scale=1"
         />
       </Head>
       <TissueCardWrapper skinnyMode={skinnyMode}>
@@ -167,6 +185,15 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
                     />
                   </a>
                 </TissueCardHeaderInnerWrapper>
+                <Dropdown
+                  InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
+                  search
+                  label={tissueCardSelectedOrganism}
+                  onChange={handleChangeOrganism}
+                  options={sdsOrganismsList}
+                  value={{ name: tissueCardSelectedOrganism }}
+                  data-testid={TISSUE_CARD_ORGANISM_SELECTOR_TEST_ID}
+                />
               </TissueCardHeader>
             )}
 
@@ -203,9 +230,6 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
 
             {/* Ontology section */}
             <div ref={sectionRef1} id="section-1" data-testid="section-1">
-              <TableTitleWrapper>
-                <TableTitle>Ontology</TableTitle>
-              </TableTitleWrapper>
               <FullScreenProvider>
                 <OntologyDagView
                   key={tissueId}
@@ -213,6 +237,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
                   tissueName={tissueName}
                   inputWidth={width}
                   inputHeight={height}
+                  selectedOrganism={tissueCardSelectedOrganism}
                 />
               </FullScreenProvider>
             </div>
