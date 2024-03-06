@@ -126,7 +126,7 @@ jobs:
           retention-days: 20
 
       - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.7.1
         with:
           happy_version: "0.110.1"
 
