@@ -5,6 +5,7 @@ import React, {
   Dispatch,
   SetStateAction,
 } from "react";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { Group } from "@visx/group";
 import { Global } from "@emotion/react";
 import { useTooltip, useTooltipInPortal } from "@visx/tooltip";
@@ -43,6 +44,7 @@ import {
   StyledSVG,
   RightAligned,
   StyledTagFilter,
+  WarningTooltipTextWrapper,
 } from "./style";
 import { useFullScreen } from "../FullScreenProvider";
 import {
@@ -486,25 +488,32 @@ export default function OntologyDagView({
                 <br />
                 <br />
                 <>
-                  Most of the following examples utilize UMAP to visualize
-                  embeddings in a 2D scatter plot, however as shown{" "}
-                  <a
-                    href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1011288"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    here
-                  </a>{" "}
-                  and{" "}
-                  <a
-                    href="https://www.cell.com/cell-systems/abstract/S2405-4712(23)00209-0"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    here
-                  </a>
-                  , biological interpretations from these visualizations{" "}
-                  <i>may</i> be inaccurate.
+                  <WarningTooltipTextWrapper>
+                    <WarningAmberIcon
+                      fontSize="small"
+                      style={{ marginRight: "4px" }}
+                    />
+                    <span>
+                      UMAP embeddings are helpful for exploration, but may be
+                      misleading for detailed biological analysis. See these
+                      papers for more details:{" "}
+                      <a
+                        href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1011288"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        [1]
+                      </a>{" "}
+                      <a
+                        href="https://www.cell.com/cell-systems/abstract/S2405-4712(23)00209-0"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        [2]
+                      </a>
+                      .
+                    </span>
+                  </WarningTooltipTextWrapper>
                 </>
               </>
             }
