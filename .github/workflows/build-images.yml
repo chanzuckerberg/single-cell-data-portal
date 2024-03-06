@@ -20,6 +20,7 @@ permissions:
 jobs:
   build_images:
     strategy:
+      max-parallel: 4 #TODO: Added to reduce parellelism. Remove when we have more workers.
       matrix:
         image:
           - frontend # pushed both the frontend and backend images
