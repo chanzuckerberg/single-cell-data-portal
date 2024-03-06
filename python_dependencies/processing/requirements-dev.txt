@@ -3,7 +3,7 @@
 #
 # RUN if [ "$HAPPY_BRANCH" = "dev" ] ; then \
 #         pip3 uninstall cellxgene-schema && \
-#         pip3 install -r requirements-dev.txt \
-#     ;
+#         pip3 install -r requirements-dev.txt ; \
+#     fi
 
 git+https://github.com/chanzuckerberg/single-cell-curation/@main#subdirectory=cellxgene_schema_cli
