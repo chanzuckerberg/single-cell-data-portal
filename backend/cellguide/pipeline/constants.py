@@ -2,6 +2,9 @@ import os
 
 ONTOLOGY_TREE_FILENAME = "ontology_graph.json"
 CELL_GUIDE_METADATA_FILENAME = "celltype_metadata.json"
+CELL_GUIDE_VALID_EXPLORER_CXGS_FILENAME = "valid_explorer_cxgs.json"
+CELL_GUIDE_CELL_TYPE_MAPPING_FILENAME = "celltype_to_tissue_mapping.json"
+ONTOLOGY_TREE_TOPLEVEL_FOLDERNAME = "ontology_tree"
 CELL_GUIDE_TISSUE_METADATA_FILENAME = "tissue_metadata.json"
 ONTOLOGY_TREE_STATE_PER_CELLTYPE_FOLDERNAME = "cell_type_ontology_tree_state"
 ONTOLOGY_TREE_STATE_PER_TISSUE_FOLDERNAME = "tissue_ontology_tree_state"

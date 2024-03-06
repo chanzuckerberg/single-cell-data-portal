@@ -126,7 +126,7 @@ else  # i.e., if DEST_ENV != 'rdev'
   set -x
   echo -e "\n\n*** The following parallel aws s3 sync commands may appear to hang, but they are working. Patience is a virtue. ***\n\n"
   $PARALLEL_CMD $S3_SYNC_CMD s3://corpora-data-${SRC_ENV}/ s3://corpora-data-${DEST_ENV}/ --exclude "'*'" --include "'{}*'" --exclude "'*loom'" ::: $hex_chars
-  $PARALLEL_CMD $S3_SYNC_CMD s3://hosted-cellxgene-${SRC_ENV}/ s3://hosted-cellxgene-${DEST_ENV}/ --exclude "'*'" --include "'{}*'" ::: $hex_chars
+  $PARALLEL_CMD $S3_SYNC_CMD s3://hosted-cellxgene-${SRC_ENV}/ s3://hosted-cellxgene-${DEST_ENV}/ --exclude "'*'" --include "'{}*'" --exclude "'cellguide-cxgs*'" ::: $hex_chars
   # We need to assume the sync-datasets-{dev|staging} role, which has the necessary permissions to perform a s3 sync from
   # {dev|staging|prod} to {dev|staging} **for the public-access datasets bucket**.
   ACCOUNT_ID=`aws sts get-caller-identity | jq -r '.Arn' | grep -o '[0-9]*'`  # First get AWS account id for dev account
