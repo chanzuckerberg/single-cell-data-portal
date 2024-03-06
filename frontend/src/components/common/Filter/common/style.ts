@@ -23,4 +23,6 @@ export const FilterPopover = styled(Popover)`
 export const InfoButtonWrapper = styled.span`
   cursor: pointer;
   margin-left: ${spacesXxs}px;
+  /* width: 100% is needed to ensure its next/Image child has enough space to render the width and height specified */
+  width: 100%;
 `;
