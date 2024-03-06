@@ -19,10 +19,10 @@ COPY /python_dependencies/processing/ .
 
 RUN pip3 install -r requirements.txt
 
-# Uninstall cellxgene-schema and install a pinned version of cellxgene-schema if we're running a dev migration
+# TODO: Comment this out after schema 5.0 dev migration is completed
 RUN if [ "$HAPPY_BRANCH" = "dev" ] ; then \
         pip3 uninstall cellxgene-schema && \
-        pip3 install git+https://github.com/chanzuckerberg/single-cell-curation/@main#subdirectory=cellxgene_schema_cli \
+        pip3 install -r requirements-dev.txt \
     ;
 
 ADD backend/__init__.py backend/__init__.py

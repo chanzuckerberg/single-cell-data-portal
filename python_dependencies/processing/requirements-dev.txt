@@ -1,0 +1,9 @@
+# If we're running a dev schema migration, then we'll want to append this to Dockerfile.processing
+# after the pip install -r requirements.txt line:
+#
+# RUN if [ "$HAPPY_BRANCH" = "dev" ] ; then \
+#         pip3 uninstall cellxgene-schema && \
+#         pip3 install -r requirements-dev.txt \
+#     ;
+
+git+https://github.com/chanzuckerberg/single-cell-curation/@main#subdirectory=cellxgene_schema_cli
