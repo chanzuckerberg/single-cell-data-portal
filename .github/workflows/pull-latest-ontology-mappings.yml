@@ -38,7 +38,7 @@ jobs:
           aws s3 sync s3://cellxgene-schema-ref-files-prod/ontology-mappings/backend backend/common/utils/ontology_mappings/fixtures
           aws s3 sync s3://cellxgene-schema-ref-files-prod/ontology-mappings/frontend frontend/src/components/common/Filter/descendant_mappings
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "chore(AUTO): pull latest ontology files after schema migration"
           title: "chore(AUTO): pull latest ontology files after schema migration"
