@@ -48,7 +48,7 @@ resource aws_batch_job_definition schema_migrations_swap {
       },
       {
         Type="MEMORY",
-        Value = "320000"
+        Value = "360000"
       }
     ]
     linuxParameters= {

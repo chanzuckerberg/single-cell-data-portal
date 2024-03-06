@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import random
+from datetime import datetime
 from typing import Any, Dict, Iterable, List
 
 from backend.common.corpora_config import CorporaConfig
@@ -174,6 +175,7 @@ class SchemaMigrate(ProcessingLogic):
                     }
                     for dataset in datasets
                     if dataset.status.processing_status == DatasetProcessingStatus.SUCCESS
+                    or (dataset.created_at >= datetime(2024, 2, 26))
                     # Filter out datasets that are not successfully processed
                 ]
                 # The repeated fields in datasets is required for the AWS SFN job that uses it.
