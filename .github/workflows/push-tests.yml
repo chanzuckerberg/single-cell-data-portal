@@ -43,7 +43,7 @@ jobs:
       - uses: actions/setup-python@v5
 
       - name: check backend
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
       - uses: actions/setup-node@v4
         with:
           node-version-file: "frontend/.nvmrc"
