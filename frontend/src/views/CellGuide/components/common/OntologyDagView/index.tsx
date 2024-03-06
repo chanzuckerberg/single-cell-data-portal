@@ -12,7 +12,11 @@ import { Tree, hierarchy } from "@visx/hierarchy";
 import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
-import { CellOntologyTreeResponse as TreeNode } from "src/common/queries/cellGuide";
+import {
+  CellOntologyTreeResponse as TreeNode,
+  useValidExplorerCxgs,
+} from "src/common/queries/cellGuide";
+import { BetaChip } from "src/components/Header/style";
 import {
   TableTitleWrapper,
   TableTitle,
@@ -39,6 +43,7 @@ import {
   StyledSVG,
   RightAligned,
   StyledTagFilter,
+  OpenIntegratedEmbeddingWrapper,
 } from "./style";
 import { useFullScreen } from "../FullScreenProvider";
 import {
@@ -59,12 +64,20 @@ import {
   MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE,
   ANIMAL_CELL_ID,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CONTENT,
+  CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID,
+  CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TOOLTIP_TEST_ID,
+  SELECTED_ORGANISM_TO_DISPLAY_TEXT,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
 import {
   ALL_TISSUES,
   TISSUE_AGNOSTIC,
 } from "../../CellGuideCard/components/MarkerGeneTables/constants";
 import { Icon } from "@czi-sds/components";
+import Link from "../../CellGuideCard/components/common/Link";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
+import HelpTooltip from "../../CellGuideCard/components/common/HelpTooltip";
+import { getFormattedExplorerUrl } from "./utils";
 
 interface TreeProps {
   skinnyMode?: boolean;
@@ -73,6 +86,7 @@ interface TreeProps {
   selectedGene?: string;
   selectedOrganism?: string;
   cellTypeId?: string;
+  cellTypeName?: string;
   tissueId: string;
   tissueName: string;
   selectGene?: (gene: string) => void;
@@ -91,6 +105,7 @@ const initialTransformMatrixDefault = {
 
 export default function OntologyDagView({
   cellTypeId,
+  cellTypeName,
   tissueId,
   tissueName,
   inputWidth,
@@ -100,6 +115,8 @@ export default function OntologyDagView({
   selectedOrganism,
   setCellInfoCellType,
 }: TreeProps) {
+  selectedOrganism = selectedOrganism ?? "";
+
   const [width, setWidth] = useState(inputWidth);
   const [height, setHeight] = useState(inputHeight);
 
@@ -180,16 +197,51 @@ export default function OntologyDagView({
   // Animation duration - initially zero so the animation doesn't play on load
   const [duration, setDuration] = useState(0);
 
+  const { data: validExplorerCxgs, isLoading: isLoadingValidExplorerCxgs } =
+    useValidExplorerCxgs();
+
+  const { explorerUrl, formattedSelectedOrganism } = getFormattedExplorerUrl({
+    selectedOrganism,
+    tissueId,
+    cellTypeId,
+  });
+  const isExplorerCxgValid = useMemo(() => {
+    if (isLoadingValidExplorerCxgs || !validExplorerCxgs) return false;
+    const celltypeCxgs =
+      validExplorerCxgs.organism_celltype_cxgs[formattedSelectedOrganism];
+    const tissueCelltypeCxgs =
+      validExplorerCxgs.organism_tissue_celltype_cxgs[
+        formattedSelectedOrganism
+      ];
+    let valid = false;
+    if (tissueId && cellTypeId) {
+      valid = tissueCelltypeCxgs[tissueId]?.includes(cellTypeId);
+    } else if (cellTypeId) {
+      valid = celltypeCxgs?.includes(cellTypeId);
+    } else if (tissueId) {
+      valid = tissueCelltypeCxgs[tissueId]?.includes("CL:0000000");
+    }
+
+    return valid;
+  }, [
+    validExplorerCxgs,
+    isLoadingValidExplorerCxgs,
+    formattedSelectedOrganism,
+    tissueId,
+    cellTypeId,
+  ]);
+
   // The raw cell ontology tree data. This is called "rawTree" because it does not contain
   // the "isExpanded" property that is used to track the expanded state of each node, along with
   // other properties like the positions of the nodes.
-  const { data: rawTree } = useCellOntologyTree();
-
+  const { data: rawTree } = useCellOntologyTree(selectedOrganism);
   const { data: initialTreeStateCell } = useCellOntologyTreeStateCellType(
-    cellTypeId ?? ""
+    cellTypeId ?? "",
+    selectedOrganism
   );
   const { data: initialTreeStateTissue } = useCellOntologyTreeStateTissue(
-    tissueId ?? ""
+    tissueId ?? "",
+    selectedOrganism
   );
 
   const parentMap = useMemo(() => {
@@ -398,14 +450,60 @@ export default function OntologyDagView({
   const yMax = height - defaultMargin.top - defaultMargin.bottom;
   const xMax = width - defaultMargin.left - defaultMargin.right;
 
+  const organismText =
+    SELECTED_ORGANISM_TO_DISPLAY_TEXT[
+      formattedSelectedOrganism as keyof typeof SELECTED_ORGANISM_TO_DISPLAY_TEXT
+    ] || "unknown";
+
+  const tooltipTextFirstPart = cellTypeId
+    ? `View an integrated UMAP for all ${organismText} cells of type "${cellTypeName}" in ${
+        tissueId ? `${tissueName} tissue` : "all tissues"
+      }.`
+    : `View an integrated UMAP for all ${organismText} cells in ${tissueName} tissue.`;
+
+  const tooltipTextSecondPart =
+    "UMAP was run using Scanpy's default parameters on the SCVI embeddings provided by CELLxGENE Census";
   return (
     <div data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW}>
       <Global styles={TooltipInPortalStyle} />
-      {!!cellTypeId && (
-        <TableTitleWrapper>
-          <TableTitle>Cell Ontology</TableTitle>
-        </TableTitleWrapper>
-      )}
+
+      <TableTitleWrapper>
+        <TableTitle>Cell Ontology</TableTitle>
+        {explorerUrl !== "" && isExplorerCxgValid && (
+          <OpenIntegratedEmbeddingWrapper>
+            <HelpTooltip
+              title={"Open Integrated Embedding"}
+              dark
+              buttonDataTestId={
+                CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TOOLTIP_TEST_ID
+              }
+              placement="left"
+              text={
+                <>
+                  {tooltipTextFirstPart}
+                  <br />
+                  <br />
+                  <i>{tooltipTextSecondPart}</i>
+                </>
+              }
+            />
+            <Link
+              dataTestId={CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID}
+              url={explorerUrl}
+              label="Open Integrated Embedding"
+              onClick={() => {
+                track(EVENTS.CG_OPEN_INTEGRATED_EMBEDDING_CLICKED, {
+                  explorerUrl,
+                  cellTypeName,
+                  tissueName,
+                  organismName: selectedOrganism,
+                });
+              }}
+            />
+            <BetaChip label="Beta" size="small" />
+          </OpenIntegratedEmbeddingWrapper>
+        )}
+      </TableTitleWrapper>
 
       {data && initialTreeState ? (
         <Zoom<SVGSVGElement>
