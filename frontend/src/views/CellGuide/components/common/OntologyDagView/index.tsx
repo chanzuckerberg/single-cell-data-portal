@@ -462,9 +462,6 @@ export default function OntologyDagView({
       }.`
     : `View an integrated UMAP for all ${organismText} cells in ${tissueName} tissue.`;
 
-  const tooltipTextSecondPart =
-    "UMAP was run using Scanpy's default parameters on the SCVI embeddings provided by CELLxGENE Census";
-
   return (
     <div data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW}>
       <Global styles={TooltipInPortalStyle} />
