@@ -484,7 +484,23 @@ export default function OntologyDagView({
                 {tooltipTextFirstPart}
                 <br />
                 <br />
-                <i>{tooltipTextSecondPart}</i>
+                UMAP was run using Scanpy's default parameters on the{" "}
+                <a
+                  href="https://docs.scvi-tools.org/en/stable/index.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  SCVI
+                </a>{" "}
+                embeddings provided by{" "}
+                <a
+                  href="https://cellxgene.cziscience.com/census-models"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  CELLxGENE Census
+                </a>
+                .
                 <br />
                 <br />
                 <>
