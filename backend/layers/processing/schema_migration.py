@@ -175,7 +175,7 @@ class SchemaMigrate(ProcessingLogic):
                     }
                     for dataset in datasets
                     if dataset.status.processing_status == DatasetProcessingStatus.SUCCESS
-                    or (dataset.created_at >= datetime(2024, 2, 26))
+                    or dataset.created_at >= datetime(2024, 2, 26)
                     # Filter out datasets that are not successfully processed
                 ]
                 # The repeated fields in datasets is required for the AWS SFN job that uses it.
@@ -252,6 +252,8 @@ class SchemaMigrate(ProcessingLogic):
             self._store_sfn_response("report/errors", collection_version_id, errors)
         elif can_publish:
             self.business_logic.publish_collection_version(collection_version.version_id)
+        for e in errors:
+            del e["message"]  # Bulk of validation_message is causing the SFN to error out when returning
         return errors
 
     def _store_sfn_response(self, directory: str, file_name: str, response: Dict[str, str]):
