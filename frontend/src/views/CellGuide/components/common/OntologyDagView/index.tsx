@@ -481,7 +481,7 @@ export default function OntologyDagView({
                 {tooltipTextFirstPart}
                 <br />
                 <br />
-                UMAP was run using Scanpy's default parameters on the{" "}
+                UMAP was run using Scanpy&apos;s default parameters on the{" "}
                 <a
                   href="https://docs.scvi-tools.org/en/stable/index.html"
                   target="_blank"
