@@ -188,7 +188,7 @@ export default function CellGuideCardSearchBar({
               return (
                 entity.label &&
                 (entity.label.toLowerCase().includes(searchTerm) ||
-                  entity.id.toLowerCase().startsWith(searchTerm) ||
+                  entity.id.toLowerCase().includes(searchTerm) ||
                   synonymStartsWithSearch)
               );
             })
