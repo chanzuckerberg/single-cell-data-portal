@@ -34,6 +34,7 @@ export default function CellGuideCardSearchBar({
 }): JSX.Element {
   const router = useRouter();
   const { data: cellTypes } = useCellTypeMetadata();
+  console.log(cellTypes);
   const { data: tissueData } = useTissueMetadata();
 
   const options: Entity[] = useMemo(() => {
@@ -187,6 +188,7 @@ export default function CellGuideCardSearchBar({
               return (
                 entity.label &&
                 (entity.label.toLowerCase().includes(searchTerm) ||
+                  entity.id.toLowerCase().startsWith(searchTerm) ||
                   synonymStartsWithSearch)
               );
             })
