@@ -477,14 +477,10 @@ async function startRevision(
       try {
         await expect(page.getByTestId(collectionRowTestId)).toBeTruthy();
 
-        await tryUntil(
-          async () => {
-            const collectionRows = await page.getByTestId(collectionRowTestId);
-            expect(await collectionRows.count()).toBeGreaterThan(
-              MIN_USABLE_COLLECTION_COUNT - 1
-            );
-          },
-          { page }
+        const collectionRows = await page.getByTestId(collectionRowTestId);
+
+        expect(await collectionRows.count()).toBeGreaterThan(
+          MIN_USABLE_COLLECTION_COUNT - 1
         );
       } catch {
         const revisionRowTestId = buildCollectionRowLocator(
