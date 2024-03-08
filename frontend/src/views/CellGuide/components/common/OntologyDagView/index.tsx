@@ -5,6 +5,7 @@ import React, {
   Dispatch,
   SetStateAction,
 } from "react";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { Group } from "@visx/group";
 import { Global } from "@emotion/react";
 import { useTooltip, useTooltipInPortal } from "@visx/tooltip";
@@ -43,7 +44,7 @@ import {
   StyledSVG,
   RightAligned,
   StyledTagFilter,
-  OpenIntegratedEmbeddingWrapper,
+  WarningTooltipTextWrapper,
 } from "./style";
 import { useFullScreen } from "../FullScreenProvider";
 import {
@@ -461,8 +462,6 @@ export default function OntologyDagView({
       }.`
     : `View an integrated UMAP for all ${organismText} cells in ${tissueName} tissue.`;
 
-  const tooltipTextSecondPart =
-    "UMAP was run using Scanpy's default parameters on the SCVI embeddings provided by CELLxGENE Census";
   return (
     <div data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW}>
       <Global styles={TooltipInPortalStyle} />
@@ -470,38 +469,88 @@ export default function OntologyDagView({
       <TableTitleWrapper>
         <TableTitle>Cell Ontology</TableTitle>
         {explorerUrl !== "" && isExplorerCxgValid && (
-          <OpenIntegratedEmbeddingWrapper>
-            <HelpTooltip
-              title={"Open Integrated Embedding"}
-              dark
-              buttonDataTestId={
-                CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TOOLTIP_TEST_ID
-              }
-              placement="left"
-              text={
+          <HelpTooltip
+            title={"Open Integrated Embedding"}
+            dark
+            buttonDataTestId={
+              CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TOOLTIP_TEST_ID
+            }
+            placement="left"
+            text={
+              <>
+                {tooltipTextFirstPart}
+                <br />
+                <br />
+                UMAP was run using Scanpy&apos;s default parameters on the{" "}
+                <a
+                  href="https://docs.scvi-tools.org/en/stable/index.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  SCVI
+                </a>{" "}
+                embeddings provided by{" "}
+                <a
+                  href="https://cellxgene.cziscience.com/census-models"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  CELLxGENE Census
+                </a>
+                .
+                <br />
+                <br />
                 <>
-                  {tooltipTextFirstPart}
-                  <br />
-                  <br />
-                  <i>{tooltipTextSecondPart}</i>
+                  <WarningTooltipTextWrapper>
+                    <WarningAmberIcon
+                      fontSize="small"
+                      style={{ marginRight: "4px" }}
+                    />
+                    <span>
+                      UMAP embeddings are helpful for exploration, but may be
+                      misleading for detailed biological analysis. See these
+                      papers for more details:{" "}
+                      <a
+                        href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1011288"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        [1]
+                      </a>{" "}
+                      <a
+                        href="https://www.cell.com/cell-systems/abstract/S2405-4712(23)00209-0"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        [2]
+                      </a>
+                      .
+                    </span>
+                  </WarningTooltipTextWrapper>
                 </>
-              }
-            />
-            <Link
-              dataTestId={CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID}
-              url={explorerUrl}
-              label="Open Integrated Embedding"
-              onClick={() => {
-                track(EVENTS.CG_OPEN_INTEGRATED_EMBEDDING_CLICKED, {
-                  explorerUrl,
-                  cellTypeName,
-                  tissueName,
-                  organismName: selectedOrganism,
-                });
-              }}
-            />
-            <BetaChip label="Beta" size="small" />
-          </OpenIntegratedEmbeddingWrapper>
+              </>
+            }
+            // This is so that the tooltip can appear on hover over more content than just the
+            // question mark icon image.
+            extraContent={
+              <>
+                <Link
+                  dataTestId={CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID}
+                  url={explorerUrl}
+                  label="Open Integrated Embedding"
+                  onClick={() => {
+                    track(EVENTS.CG_OPEN_INTEGRATED_EMBEDDING_CLICKED, {
+                      explorerUrl,
+                      cellTypeName,
+                      tissueName,
+                      organismName: selectedOrganism,
+                    });
+                  }}
+                />
+                <BetaChip label="Beta" size="small" />
+              </>
+            }
+          />
         )}
       </TableTitleWrapper>
 
