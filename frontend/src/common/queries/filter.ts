@@ -432,7 +432,10 @@ function buildCollectionRows(
     const consortia = buildConsortia(collection);
 
     // Calculate test ID
-    const testId = createCollectionRowTestId(collection);
+    const testId = createCollectionRowTestId(
+      collection,
+      collectionDatasetRows.length
+    );
 
     // Create collection row from aggregated collection category values and core collection information.
     const collectionRow = sortCategoryValues({
@@ -629,15 +632,17 @@ export function calculateMonthsSincePublication(
  * specially tests that require finding rows that are available for revision.
  * @param collection - Collection response returned from endpoint that has been processed to include additional
  * FE-specific values.
+ * @param datasetCount - Number of datasets in the given collection.
  * @return Test ID containing access type and status indicators for the given collection row.
  */
 function createCollectionRowTestId(
-  collection: ProcessedCollectionResponse
+  collection: ProcessedCollectionResponse,
+  datasetCount: number
 ): string {
   const accessType =
     "access_type" in collection ? collection.access_type : ACCESS_TYPE.READ;
   const status = collection.status?.join("-") ?? COLLECTION_STATUS.PUBLISHED;
-  return `collection-row-${accessType}-${status}`.toLowerCase();
+  return `collection-row-${accessType}-${status}-${datasetCount}`.toLowerCase();
 }
 
 /**
