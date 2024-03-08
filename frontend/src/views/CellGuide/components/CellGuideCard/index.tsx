@@ -54,7 +54,7 @@ import { useConnect } from "./connect";
 import { SDSOrgan } from "src/views/CellGuide/components/CellGuideCard/types";
 import { getCellTypeLink } from "src/views/CellGuide/common/utils";
 
-const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
+export const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
   sdsStyle: "square",
 } as InputDropdownProps;
 
@@ -171,17 +171,20 @@ export default function CellGuideCard({
     synonyms?.join(", ") || "N/A"
   }). ${rawSeoDescription}`;
 
+  const OrganismSelectorDropdown = (
+    <Dropdown
+      InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
+      search
+      label={selectedOrganism?.name}
+      onChange={handleChangeOrganism}
+      options={sdsOrganismsList}
+      value={selectedOrganism}
+      data-testid={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
+    />
+  );
   const dropdownComponents = (
     <CellGuideCardHeaderInnerWrapper>
-      <Dropdown
-        InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
-        search
-        label={selectedOrganism?.name}
-        onChange={handleChangeOrganism}
-        options={sdsOrganismsList}
-        value={selectedOrganism}
-        data-testid={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
-      />
+      {OrganismSelectorDropdown}
       <Dropdown
         InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
         search
@@ -240,7 +243,7 @@ export default function CellGuideCard({
         {/* This prevents auto zooming on the input box on mobile */}
         <meta
           name="viewport"
-          content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1"
+          content="width=device-width, initial-scale=1, minimum-scale=1"
         />
       </Head>
 
@@ -324,6 +327,7 @@ export default function CellGuideCard({
                 <OntologyDagView
                   key={`${cellTypeId}-${selectedOrganId}`}
                   cellTypeId={cellTypeId}
+                  cellTypeName={cellTypeName}
                   tissueName={tissueName}
                   tissueId={selectedOrganId}
                   inputWidth={width}
