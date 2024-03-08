@@ -2,6 +2,7 @@ from typing import Iterable, List, Tuple
 
 
 class S3ProviderInterface:
+    @staticmethod
     def parse_s3_uri(s3_uri: str) -> Tuple[str, str]:
         pass
 

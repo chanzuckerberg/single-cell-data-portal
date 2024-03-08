@@ -6,6 +6,8 @@ import random
 from datetime import datetime
 from typing import Any, Dict, Iterable, List
 
+import botocore
+
 from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.json import CustomJSONEncoder
 from backend.common.utils.result_notification import upload_to_slack
@@ -16,6 +18,7 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     DatasetArtifactType,
+    DatasetId,
     DatasetProcessingStatus,
     DatasetVersionId,
 )
@@ -103,8 +106,30 @@ class SchemaMigrate(ProcessingLogic):
             for artifact in self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset_version_id))
             if artifact.type == DatasetArtifactType.RAW_H5AD
         ][0]
-        source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(raw_h5ad_uri)
-        self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
+        ### hack for dev migration testing; grab published version's raw file if none exists for revision
+        try:
+            source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(raw_h5ad_uri)
+            self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
+        except botocore.exceptions.ClientError:
+            # Get published version instead
+            prior_published_versions = self.business_logic.get_prior_published_versions_for_dataset(
+                DatasetId(dataset_id)
+            )
+            if prior_published_versions:
+                # use last entry in prior_published_versions because it is ordered oldest -> latest
+                raw_h5ad_uri = [
+                    artifact.uri
+                    for artifact in self.business_logic.get_dataset_artifacts(prior_published_versions[-1].version_id)
+                    if artifact.type == DatasetArtifactType.RAW_H5AD
+                ][0]
+                source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(raw_h5ad_uri)
+                self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
+
+            else:
+                self.logger.warning(
+                    f"No prior published version for dataset_id {dataset_id} dataset_version_id {dataset_version_id} in collection_id {collection_id}"
+                )
+                return {"collection_version_id": "none; no published version"}
         migrated_file = "migrated.h5ad"
         reported_changes = self.schema_validator.migrate(
             "previous_schema.h5ad", migrated_file, collection_id, dataset_id
