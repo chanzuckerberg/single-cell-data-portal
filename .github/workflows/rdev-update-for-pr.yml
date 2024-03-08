@@ -21,6 +21,7 @@ permissions:
   id-token: write
   issues: write
   pull-requests: write
+  contents: write
 
 jobs:
   get_previous_image_digests:
@@ -60,6 +61,29 @@ jobs:
       group: pr-${{ github.event.number }}-build
       cancel-in-progress: true
 
+  seed-wmg-cellguide-rdev:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Grant Execute Permission to Bash Script
+        run: |
+          chmod +x ./scripts/populate_rdev_with_cellguide_data.sh ./scripts/populate_rdev_with_wmg_data.sh
+
+      - name: Seed cell guide data
+        run: |
+          ./scripts/populate_rdev_with_cellguide_data.sh ${{ env.STACK_NAME }}
+      - name: Seed WMG data
+        run: |
+          ./scripts/populate_rdev_with_wmg_data.sh ${{ env.STACK_NAME }}
+
   deploy-rdev:
     runs-on: ubuntu-22.04
     concurrency:
@@ -68,6 +92,7 @@ jobs:
     needs:
       - build_images
       - get_previous_image_digests
+      - seed-wmg-cellguide-rdev
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -147,4 +172,5 @@ jobs:
     concurrency:
       group: pr-${{ github.event.number }}-test
       cancel-in-progress: true
-    needs: deploy-rdev
+    needs:
+      - deploy-rdev

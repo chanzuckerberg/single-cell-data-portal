@@ -1,4 +1,4 @@
-import { Dialog, IButtonProps } from "@blueprintjs/core";
+import { Dialog } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import * as React from "react";
 import { FC, useState } from "react";
@@ -11,6 +11,7 @@ import { useUserInfo } from "src/common/queries/auth";
 import { removeParams } from "src/common/utils/removeParams";
 import { StyledButton } from "./style";
 import { useRouter } from "next/router";
+import { ButtonProps } from "@czi-sds/components";
 
 const AsyncContent = loadable(
   () =>
@@ -24,7 +25,7 @@ const AsyncCTA = loadable(
     /*webpackChunkName: 'CreateCollectionModalCTA' */ import("./components/CTA")
 );
 
-const CreateCollectionButton = (props: Partial<IButtonProps>) => (
+const CreateCollectionButton = (props: Partial<ButtonProps>) => (
   <StyledButton sdsStyle="square" sdsType="primary" {...props}>
     Create Collection
   </StyledButton>

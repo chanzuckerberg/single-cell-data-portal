@@ -8,6 +8,8 @@ on:
     branches:
       - "main"
 
+  workflow_call:
+
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   DEPLOYMENT_STAGE: test

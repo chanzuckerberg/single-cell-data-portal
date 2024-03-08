@@ -60,6 +60,11 @@ export const TooltipInPortalStyle = css`
   }
 `;
 
+export const WarningTooltipTextWrapper = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
 interface StyledSVGProps {
   isDragging: boolean;
 }

@@ -275,10 +275,6 @@ export const PUBLICATION_DATE_VALUES: number[] = [1, 3, 6, 12, 24, 36];
 export const CELL_TYPE_CELL_CLASS_ONTOLOGY_TERM_SET: OntologyTermSet = {
   [ONTOLOGY_VIEW_KEY.UBERON]: [
     {
-      label: "cardiocyte",
-      ontology_term_id: "CL:0002494",
-    },
-    {
       label: "connective tissue cell",
       ontology_term_id: "CL:0002320",
     },
@@ -667,6 +663,10 @@ export const CELL_TYPE_LEVEL_2_ONTOLOGY_TERM_SET: OntologyTermSet = {
     {
       label: "interstitial cell",
       ontology_term_id: "CL:4030031",
+    },
+    {
+      label: "cardiocyte",
+      ontology_term_id: "CL:0002494",
     },
   ],
 };

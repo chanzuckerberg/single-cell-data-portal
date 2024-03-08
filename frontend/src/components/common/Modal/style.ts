@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 
 export const StyledDialog = styled(Dialog)`
   && {
-    .bp4-heading {
+    .bp5-heading {
       font-size: 16px;
       height: 57px;
       display: flex;

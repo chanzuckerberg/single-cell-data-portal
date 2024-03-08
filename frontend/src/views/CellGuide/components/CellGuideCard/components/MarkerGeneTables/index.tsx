@@ -162,7 +162,7 @@ const canonicalMarkerGenesTooltipComponent = (
         url={"https://humanatlas.io/asctb-tables"}
       />
       {
-        " tables from the 5th Human Reference Atlas release (July 2023). The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
+        " tables from the 6th Human Reference Atlas release (December 2023). The tables are authored and reviewed by an international team of anatomists, pathologists, physicians, and other experts."
       }
     </MarkerGeneTooltipText>
     <br />
@@ -400,8 +400,8 @@ const MarkerGeneTables = ({
               data-testid={MARKER_GENES_TREE_ICON_BUTTON_TEST_ID(row.symbol)}
               src={treeDendrogram}
               alt={`activate marker gene mode for ${row.symbol}`}
-              width="12px"
-              height="12px"
+              width={12}
+              height={12}
             />
           </StyledImageWrapper>
         )}

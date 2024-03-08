@@ -5,7 +5,6 @@ import os
 import numpy as np
 import pandas as pd
 import tiledb
-from cellxgene_census.experimental.util._csr_iter import X_sparse_iter
 from numba import njit
 from scipy import sparse
 from tiledbsoma import ExperimentAxisQuery
@@ -163,12 +162,8 @@ class ExpressionSummaryCubeBuilder:
         logger.info(f"Reducing X with {self.obs_df.shape[0]} total cells")
 
         iteration = 0
-        for (obs_soma_joinids_chunk, _), raw_array in X_sparse_iter(
-            self.query,
-            X_name="raw",
-            stride=row_stride,
-            fmt="csr",
-        ):
+        for raw_array, (obs_soma_joinids_chunk, _) in self.query.X("raw").blockwise(axis=0, size=row_stride).scipy():
+            assert isinstance(raw_array, sparse.csr_matrix)
             logger.info(f"Reducer iteration {iteration} out of {math.ceil(self.obs_df.shape[0] / row_stride)}")
             iteration += 1
 

@@ -18,6 +18,8 @@ import { POLICY_BULLETS } from "src/components/Collections/components/PublishCol
 import Toast from "src/views/Collection/components/Toast";
 import { IconNames } from "@blueprintjs/icons";
 import { Intent } from "@blueprintjs/core";
+import ReorderDatasets from "src/components/Collections/components/ReorderDatasets";
+import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
 
 export type CreateRevisionFn = () => void;
 export type DeleteCollectionFn = () => void;
@@ -28,6 +30,7 @@ interface Props {
   hasRevision: boolean;
   isPublishable: boolean;
   isRevision: boolean;
+  reorder: Reorder;
   setIsUploadingLink: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -36,9 +39,11 @@ const CollectionActions = ({
   hasRevision,
   isPublishable,
   isRevision,
+  reorder,
   setIsUploadingLink,
 }: Props): JSX.Element | null => {
   const { id, revision_of } = collection;
+  const { isReorder, reorderAction } = reorder;
   const createRevisionMutation = useCreateRevision();
   const uploadLinksMutation = useCollectionUploadLinks(id);
   const deleteCollectionMutation = useDeleteCollection();
@@ -124,14 +129,17 @@ const CollectionActions = ({
 
   return collection.access_type === ACCESS_TYPE.WRITE ? (
     <Actions data-testid="collection-actions">
+      {/* Collection is in reorder mode */}
+      {isReorder && <ReorderDatasets reorderAction={reorderAction} />}
       {/* Collection is either private, or a private revision */}
-      {collection.visibility === VISIBILITY_TYPE.PRIVATE && (
+      {!isReorder && collection.visibility === VISIBILITY_TYPE.PRIVATE && (
         <>
           <MoreDropdown
             collection={collection}
             handleDeleteCollection={handleDeleteCollection}
             isDeleting={deleteCollectionMutation.isLoading}
             isRevision={isRevision}
+            reorder={reorder}
           />
           <AddButton addNewFile={handleAddNewFile} />
           <PublishCollection
