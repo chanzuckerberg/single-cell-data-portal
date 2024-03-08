@@ -19,7 +19,7 @@ updates:
       interval: "weekly"
       day: "sunday"
     assignees:
-      - "joyceyan"
+      - "prathapsridharan"
   - package-ecosystem: pip
     directory: "/python_dependencies/upload_handler/"
     schedule:

@@ -6,3 +6,4 @@ export const FOOTER_OPTIONS = [
   { id: 3, name: "Terms of Service", value: ROUTES.TOS },
   { id: 4, name: "Privacy Policy", value: ROUTES.PRIVACY },
 ];
+export const HEADER_ID = "header";

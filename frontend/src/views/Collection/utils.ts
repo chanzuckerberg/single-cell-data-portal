@@ -266,6 +266,24 @@ export function isCollectionHasPrivateRevision(
 }
 
 /**
+ * Returns sorted datasets based on the given dataset order.
+ * @param datasets - Datasets.
+ * @param orderedIds - Dataset IDs, ordered.
+ * @returns sorted datasets.
+ */
+export function sortCollectionDatasets(
+  datasets: Dataset[],
+  orderedIds?: string[]
+): Dataset[] {
+  // Early exit; return datasets - reordering mode is inactive.
+  if (!orderedIds) return datasets;
+  // Return datasets in order - reordering mode is active.
+  return orderedIds
+    .map((datasetId) => datasets.find(({ id }) => id === datasetId))
+    .filter(Boolean) as Dataset[];
+}
+
+/**
  * Sort collection links in preferred order of display.
  * @param links - links associated with collection.
  * @returns Array of collection links in preferred order of display.
