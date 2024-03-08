@@ -18,3 +18,17 @@ export const CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE =
 export const MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE = 3;
 
 export const ANIMAL_CELL_ID = "CL:0000548";
+
+export const CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID =
+  "cellguide-open-integrated-embedding";
+
+export const CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TOOLTIP_TEST_ID =
+  "cellguide-open-integrated-embedding-tooltip";
+
+/**
+ * The keys are expected to match the pattern created by `formattedSelectedOrganism` above
+ */
+export const SELECTED_ORGANISM_TO_DISPLAY_TEXT = {
+  homo_sapiens: "human",
+  mus_musculus: "mouse",
+};

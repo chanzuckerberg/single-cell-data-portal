@@ -212,8 +212,14 @@ class SchemaMigrate(ProcessingLogic):
             key_prefix = self.get_key_prefix(previous_dataset_version_id)
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
             if not self.check_dataset_is_latest_schema_version(dataset):
+                error_message = "Did Not Migrate"
+                dataset_status = "n/a"
+                if dataset.status is not None:
+                    error_message = dataset.status.validation_message
+                    dataset_status = dataset.status.to_dict()
                 error = {
-                    "message": "Did Not Migrate.",
+                    "message": error_message,
+                    "dataset_status": dataset_status,
                     "collection_id": collection_version.collection_id.id,
                     "collection_version_id": collection_version_id,
                     "dataset_version_id": dataset_version_id,
