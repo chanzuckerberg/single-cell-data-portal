@@ -5,7 +5,6 @@ import React, {
   Dispatch,
   SetStateAction,
 } from "react";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { Group } from "@visx/group";
 import { Global } from "@emotion/react";
 import { useTooltip, useTooltipInPortal } from "@visx/tooltip";
@@ -45,6 +44,7 @@ import {
   RightAligned,
   StyledTagFilter,
   WarningTooltipTextWrapper,
+  WarningTooltipIcon,
 } from "./style";
 import { useFullScreen } from "../FullScreenProvider";
 import {
@@ -475,7 +475,7 @@ export default function OntologyDagView({
             buttonDataTestId={
               CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TOOLTIP_TEST_ID
             }
-            placement="left"
+            placement="top"
             text={
               <>
                 {tooltipTextFirstPart}
@@ -502,9 +502,11 @@ export default function OntologyDagView({
                 <br />
                 <>
                   <WarningTooltipTextWrapper>
-                    <WarningAmberIcon
-                      fontSize="small"
-                      style={{ marginRight: "4px" }}
+                    <WarningTooltipIcon
+                      sdsIcon="exclamationMarkCircle"
+                      color="warning"
+                      sdsSize="l"
+                      sdsType="static"
                     />
                     <span>
                       UMAP embeddings are helpful for exploration, but may be

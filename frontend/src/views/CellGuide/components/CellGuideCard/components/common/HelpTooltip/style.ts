@@ -31,4 +31,5 @@ export const ExtraContentWrapper = styled.span`
   flex-direction: row;
   align-items: center;
   gap: ${spacesXxxs}px;
+  white-space: nowrap;
 `;
