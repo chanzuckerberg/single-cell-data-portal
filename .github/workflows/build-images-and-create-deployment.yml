@@ -43,7 +43,7 @@ jobs:
           fi
       - uses: avakar/create-deployment@v1
         #  TODO remove if conidition after we're done with testing schema 5.0.0 in dev
-        if: ${{ env.GITHUB_BRANCH }} == 'refs/heads/prod' || ${{ env.GITHUB_BRANCH }} == 'refs/heads/staging'
+        if: ${{ env.GITHUB_BRANCH }} == 'refs/heads/prod' || ${{ env.GITHUB_BRANCH }} == 'refs/heads/staging' || ${{ env.GITHUB_BRANCH }} == 'refs/heads/dev'
         with:
           auto_merge: false
           environment: ${{ env.DEPLOYMENT_STAGE }}
