@@ -3,31 +3,25 @@ This method enriches the response of a Dataset object with ancestor mappings.
 These responses are specific to the current API layer
 """
 
-from collections import OrderedDict
+from cellxgene_ontology_guide.ontology_parser import OntologyParser
+
+ONTOLOGY_PARSER = OntologyParser(schema_version="v5.0.0")  # TODO: this should be a constant
 
 
-def enrich_dataset_with_ancestors(dataset, key, ontology_mapping):
+def enrich_dataset_with_ancestors(dataset, key):
     """
     Tag dataset with ancestors for all values of the given key, if any.
     """
     if key not in dataset:
         return
-
-    terms = [e["ontology_term_id"] for e in dataset[key]]
-
     is_tissue = key == "tissue"
-    if is_tissue:
-        # "tissue" must include "tissue_type" when generating ancestors; "cell_type" and "development_stage" do not.
-        terms = [generate_tagged_tissue_ontology_id(e) for e in dataset[key]]
-    else:
-        terms = [e["ontology_term_id"] for e in dataset[key]]
-
-    if not terms:
-        return
-
-    ancestors = [ontology_mapping.get(term) for term in terms]
-    flattened_ancestors = [item for sublist in ancestors if sublist for item in sublist]
-    unique_ancestors = list(OrderedDict.fromkeys(flattened_ancestors))
+    unique_ancestors = set()
+    for term in dataset[key]:
+        ancestors = ONTOLOGY_PARSER.get_term_ancestors(term["ontology_term_id"], include_self=False)
+        # If the term is a tissue, tag itself with the tissue type in the ancestor list
+        self_as_ancestor = generate_tagged_tissue_ontology_id(term) if is_tissue else term["ontology_term_id"]
+        ancestors.append(self_as_ancestor)
+        unique_ancestors.update(ancestors)
     if unique_ancestors:
         dataset[f"{key}_ancestors"] = unique_ancestors
 

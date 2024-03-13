@@ -16,7 +16,6 @@ from backend.common.utils.http_exceptions import (
     ServerErrorHTTPException,
     TooLargeHTTPException,
 )
-from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
 from backend.curation.api.v1.curation.collections.common import validate_uuid_else_forbidden
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
@@ -793,11 +792,9 @@ def enrich_dataset_response(datasets: Iterable[DatasetVersion]) -> List[dict]:
     response = []
     for dataset in datasets:
         payload = _dataset_to_response(dataset, is_tombstoned=False)
-        enrich_dataset_with_ancestors(
-            payload, "development_stage", ontology_mappings.development_stage_ontology_mapping
-        )
-        enrich_dataset_with_ancestors(payload, "tissue", ontology_mappings.tissue_ontology_mapping)
-        enrich_dataset_with_ancestors(payload, "cell_type", ontology_mappings.cell_type_ontology_mapping)
+        enrich_dataset_with_ancestors(payload, "development_stage")
+        enrich_dataset_with_ancestors(payload, "tissue")
+        enrich_dataset_with_ancestors(payload, "cell_type")
         payload["explorer_url"] = explorer_url.generate(dataset)
         response.append(payload)
     return response
