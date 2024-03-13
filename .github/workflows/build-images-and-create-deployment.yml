@@ -45,7 +45,7 @@ jobs:
             echo "DEPLOYMENT_STAGE=dev" >> $GITHUB_ENV
           fi
       - name: test
-        uses: avakar/create-deployment@v1
+        #        uses: avakar/create-deployment@v1
 
         # To stop deployment to a specific DEPLOYMENT_STAGE remove it from condition below.
         # The DEPLOYMENT_STAGE that should be present are dev, stage, prod.
