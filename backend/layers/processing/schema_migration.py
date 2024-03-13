@@ -93,18 +93,6 @@ class SchemaMigrate(ProcessingLogic):
         if limit > 0:
             response = random.sample(response, limit)
 
-        ### HACK TO REMOVE AFTER DEV MIGRATION
-        collections_to_migrate = [
-            "0cca8620-8dee-45d0-aef5-23f032a5cf09",
-            "3116d060-0a8e-4767-99bb-e866badea1ed",
-            "03f821b4-87be-4ff4-b65a-b5fc00061da7",
-            "6f6d381a-7701-4781-935c-db10d30de293",
-            "02b01703-bf1b-48de-b99a-23bef8cccc81",
-            "4c6eaf5c-6d57-4c76-b1e9-60df8c655f1e",
-            "a18474f4-ff1e-4864-af69-270b956cee5b",
-        ]
-        response = list(filter(lambda r: r.get("collection_id") in collections_to_migrate, response))
-
         return response
 
     def dataset_migrate(
