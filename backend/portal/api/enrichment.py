@@ -23,7 +23,7 @@ def enrich_dataset_with_ancestors(dataset, key):
         ancestors.append(self_as_ancestor)
         unique_ancestors.update(ancestors)
     if unique_ancestors:
-        dataset[f"{key}_ancestors"] = unique_ancestors
+        dataset[f"{key}_ancestors"] = list(unique_ancestors)
 
 
 def generate_tagged_tissue_ontology_id(tissue):
