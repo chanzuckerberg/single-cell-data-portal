@@ -7,6 +7,7 @@ export enum API {
   DATASETS_INDEX = "/dp/v1/datasets/index", // Filter-specific endpoint
   COLLECTIONS_INDEX = "/dp/v1/collections/index", // Filter-specific endpoint
   COLLECTION = "/dp/v1/collections/{id}",
+  COLLECTION_ORDER_DATASETS = "/dp/v1/collections/{id}/order-datasets",
   COLLECTION_UPLOAD_LINKS = "/dp/v1/collections/{id}/upload-links",
   COLLECTION_PUBLISH = "/dp/v1/collections/{id}/publish",
   CREATE_COLLECTION = "/dp/v1/collections",

@@ -1,14 +1,15 @@
 import {
   CommonThemeProps,
+  defaultAppTheme,
   getColors,
   getCorners,
   getFontWeights,
   getPalette,
   getShadows,
   getSpaces,
+  makeThemeOptions,
 } from "@czi-sds/components";
 import { createTheme } from "@mui/material/styles";
-import { defaultAppTheme, makeThemeOptions } from "@czi-sds/components";
 
 import { Inter } from "next/font/google";
 
@@ -255,8 +256,14 @@ themeOptions.colors.info = infoColors;
 export const success100 = (props: CommonThemeProps) =>
   getColors(props)?.success[100];
 
+export const success400 = (props: CommonThemeProps) =>
+  getColors(props)?.success[400];
+
 export const success500 = (props: CommonThemeProps) =>
   getColors(props)?.success[500];
+
+export const success600 = (props: CommonThemeProps) =>
+  getColors(props)?.success[600];
 
 export const warning100 = (props: CommonThemeProps) =>
   getColors(props)?.warning[100];
