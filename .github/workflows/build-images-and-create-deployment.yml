@@ -7,7 +7,7 @@ on:
   #      - prod
   pull_request:
     branches:
-      - tsmith/block-dev
+      - "*"
 #  repository_dispatch:
 #    types: [build-images-for-staging, build-images-for-prod]
 #  workflow_call:
