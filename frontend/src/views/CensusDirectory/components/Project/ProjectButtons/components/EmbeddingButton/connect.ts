@@ -33,7 +33,7 @@ adata = cellxgene_census.get_anndata(
     organism = "${organism}",
     measurement_name = "${measurement}",
     obs_value_filter = "tissue_general == 'central nervous system'",
-    obsm_layers = ["${project.obsm_layer}"]
+    obsm_layers = ["${project.embedding_name}"]
 )`
     : `import cellxgene_census
 from cellxgene_census.experimental import get_embedding
@@ -66,7 +66,7 @@ seurat_obj <- get_seurat(
   organism = "${organism}",
   obs_value_filter = "tissue_general == 'central nervous system'",
   obs_column_names = c("cell_type"),
-  obsm_layers = c("${project.obsm_layer}")
+  obsm_layers = c("${project.embedding_name}")
 )`
     : "";
 }

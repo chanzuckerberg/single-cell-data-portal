@@ -7,6 +7,7 @@ import { API } from "../API";
 
 export interface Project {
   id: string;
+  embedding_name: string;
   tier: string;
   census_version: string;
   experiment_name: string;
