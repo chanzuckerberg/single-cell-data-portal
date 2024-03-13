@@ -29,7 +29,9 @@ WORKDIR /corpora-frontend
 ADD ./src/configs/build.js src/configs/configs.js
 RUN mkdir -p node_modules
 RUN ln -sf /opt/node_app/node_modules/* /opt/node_app/node_modules/.bin ./node_modules/.
-RUN npm run build
+RUN curl -o src/components/common/Filter/descendant_mappings/tissue_descendants.json https://raw.githubusercontent.com/chanzuckerberg/cellxgene-ontology-guide/tsmith/decendent-mappings/ontology-assets/tissue_descendants.json
+RUN curl -o src/components/common/Filter/descendant_mappings/cell_type_descendants.json https://raw.githubusercontent.com/chanzuckerberg/cellxgene-ontology-guide/tsmith/decendent-mappings/ontology-assets/cell_type_descendants.json
+
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
