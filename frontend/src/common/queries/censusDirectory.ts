@@ -61,6 +61,12 @@ async function fetchProjects(): Promise<ProjectResponse | undefined> {
           keyof ProjectResponse,
           ProjectResponse[keyof ProjectResponse],
         ]) => {
+          if (data[id].id.startsWith("CxG-contrib-")) {
+            data[id].tier = "hosted";
+          } else if (data[id].id.startsWith("CxG-czi-")) {
+            data[id].tier = "maintained";
+          }
+
           if (!project.DOI) return;
 
           // include a mailto: query param to insure reliable service
@@ -84,11 +90,6 @@ async function fetchProjects(): Promise<ProjectResponse | undefined> {
 
           data[id].publication_info = publication_info;
           data[id].publication_link = result.message.URL;
-          if (data[id].id.startsWith("CxG-contrib-")) {
-            data[id].tier = "hosted";
-          } else if (data[id].id.startsWith("CxG-czi-")) {
-            data[id].tier = "maintained";
-          }
         }
       )
     );

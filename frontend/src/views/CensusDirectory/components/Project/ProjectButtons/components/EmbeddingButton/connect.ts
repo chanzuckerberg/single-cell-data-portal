@@ -24,6 +24,8 @@ function pythonCodeSnippet(project: UnionProject, uri: string): string {
   const organism = project.experiment_name;
   const measurement = project.measurement_name;
 
+  const axis = project.data_type === "obs_embedding" ? "obs" : "var";
+
   return project.tier === "maintained"
     ? `import cellxgene_census
 
@@ -33,7 +35,7 @@ adata = cellxgene_census.get_anndata(
     organism = "${organism}",
     measurement_name = "${measurement}",
     obs_value_filter = "tissue_general == 'central nervous system'",
-    obsm_layers = ["${project.embedding_name}"]
+    ${axis}m_layers = ["${project.embedding_name}"]
 )`
     : `import cellxgene_census
 from cellxgene_census.experimental import get_embedding
@@ -48,8 +50,8 @@ adata = cellxgene_census.get_anndata(
     measurement_name = "${measurement}",
     obs_value_filter = "tissue_general == 'central nervous system'",
 )
-embeddings = get_embedding("${censusVersion}", embedding_uri, adata.obs["soma_joinid"].to_numpy())
-adata.obsm["emb"] = embeddings`;
+embeddings = get_embedding("${censusVersion}", embedding_uri, adata.${axis}["soma_joinid"].to_numpy())
+adata.${axis}m["emb"] = embeddings`;
 }
 
 function rCodeSnippet(project: UnionProject): string {
