@@ -30,7 +30,7 @@ jobs:
   #    secrets: inherit
 
   create_deployment:
-    needs:
+    #    needs:
     #      - build_images
     runs-on: ubuntu-22.04
     steps:
