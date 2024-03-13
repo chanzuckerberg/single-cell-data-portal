@@ -1,16 +1,13 @@
 name: Build Images and Create Deployment
 
 on:
-  #  push:
-  #    branches:
-  #      - main
-  #      - prod
-  pull_request:
+  push:
     branches:
-      - "*"
-#  repository_dispatch:
-#    types: [build-images-for-staging, build-images-for-prod]
-#  workflow_call:
+      - main
+      - prod
+  repository_dispatch:
+    types: [build-images-for-staging, build-images-for-prod]
+  workflow_call:
 env:
   # Force using BuildKit instead of normal Docker, required so that metadata
   # is written/read to allow us to use layers of previous builds as cache.
@@ -25,13 +22,13 @@ permissions:
   deployments: write
 
 jobs:
-  #  build_images:
-  #    uses: ./.github/workflows/build-images.yml
-  #    secrets: inherit
+  build_images:
+    uses: ./.github/workflows/build-images.yml
+    secrets: inherit
 
   create_deployment:
-    #    needs:
-    #      - build_images
+    needs:
+      - build_images
     runs-on: ubuntu-22.04
     steps:
       - name: Generate payload
@@ -44,9 +41,8 @@ jobs:
           else
             echo "DEPLOYMENT_STAGE=dev" >> $GITHUB_ENV
           fi
-      - name: test
-        #        uses: avakar/create-deployment@v1
-
+      - name: Create deployment
+        uses: avakar/create-deployment@v1
         # To stop deployment to a specific DEPLOYMENT_STAGE remove it from condition below.
         # The DEPLOYMENT_STAGE that should be present are dev, stage, prod.
         if: env.DEPLOYMENT_STAGE == 'prod' || env.DEPLOYMENT_STAGE == 'stage'
@@ -54,17 +50,17 @@ jobs:
           echo "DEPLOYMENT_STAGE: ${{ env.DEPLOYMENT_STAGE }}"
           echo "payload: ${{ env.payload }}"
 
-#        with:
-#          auto_merge: false
-#          environment: ${{ env.DEPLOYMENT_STAGE }}
-#          payload: ${{ env.payload }}
-#          required_contexts: "" # Temporary hack to avoid checking Github Status for the commit
-#          # TODO: Avoid circular dependency on the deploy step; this step hasn't finished yet so
-#          # it's not considered ready for deploy normally by required_contexts, but we need to
-#          # deploy for this to be considered ready.
-#          # Unfortunately there is no blocklist for required_contexts, only an allowlist, so
-#          # we'd have to enumerate every other Github PR status here, which can be constantly changing.
-#          # For now, we just ignore required_contexts to deploy on every success.
-#          # See https://github.community/t/can-i-avoid-creating-a-check-run-from-a-job-needed-for-deployments-api/16426
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}
+        with:
+          auto_merge: false
+          environment: ${{ env.DEPLOYMENT_STAGE }}
+          payload: ${{ env.payload }}
+          required_contexts: "" # Temporary hack to avoid checking Github Status for the commit
+          # TODO: Avoid circular dependency on the deploy step; this step hasn't finished yet so
+          # it's not considered ready for deploy normally by required_contexts, but we need to
+          # deploy for this to be considered ready.
+          # Unfortunately there is no blocklist for required_contexts, only an allowlist, so
+          # we'd have to enumerate every other Github PR status here, which can be constantly changing.
+          # For now, we just ignore required_contexts to deploy on every success.
+          # See https://github.community/t/can-i-avoid-creating-a-check-run-from-a-job-needed-for-deployments-api/16426
+        env:
+          GITHUB_TOKEN: ${{ secrets.CZIBUILDBOT_GITHUB_TOKEN }}
