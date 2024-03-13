@@ -7,7 +7,7 @@ import { API } from "../API";
 
 export interface Project {
   id: string;
-  tier: "hosted";
+  tier: string;
   census_version: string;
   experiment_name: string;
   measurement_name: string;
@@ -83,7 +83,11 @@ async function fetchProjects(): Promise<ProjectResponse | undefined> {
 
           data[id].publication_info = publication_info;
           data[id].publication_link = result.message.URL;
-          data[id].tier = "hosted";
+          if (data[id].id.startsWith("CxG-contrib-")) {
+            data[id].tier = "hosted";
+          } else if (data[id].id.startsWith("CxG-czi-")) {
+            data[id].tier = "maintained";
+          }
         }
       )
     );
