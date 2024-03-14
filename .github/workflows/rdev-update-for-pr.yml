@@ -25,7 +25,7 @@ permissions:
 
 jobs:
   get_previous_image_digests:
-    runs-on: ubuntu-22.04
+    runs-on: [self-hosted, ARM64, linux]
     outputs:
       ecr_repos: ${{ steps.get_digests.outputs.ecr_repos }}
       image_digests: ${{ steps.get_digests.outputs.image_digests }}
@@ -62,7 +62,7 @@ jobs:
       cancel-in-progress: true
 
   seed-wmg-cellguide-rdev:
-    runs-on: ubuntu-22.04
+    runs-on: [self-hosted, ARM64, linux]
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -85,7 +85,7 @@ jobs:
           ./scripts/populate_rdev_with_wmg_data.sh ${{ env.STACK_NAME }}
 
   deploy-rdev:
-    runs-on: ubuntu-22.04
+    runs-on: [self-hosted, ARM64, linux]
     concurrency:
       group: pr-${{ github.event.number }}-happy
       cancel-in-progress: false
@@ -116,7 +116,7 @@ jobs:
           happy_version: "0.110.1"
 
   delete-previous-images:
-    runs-on: ubuntu-22.04
+    runs-on: [self-hosted, ARM64, linux]
     needs:
       - get_previous_image_digests
       - deploy-rdev
@@ -143,7 +143,7 @@ jobs:
           done
 
   summarize:
-    runs-on: ubuntu-22.04
+    runs-on: [self-hosted, ARM64, linux]
     if: github.event.action == 'opened'
     steps:
       - name: Summerize deployment
