@@ -92,6 +92,7 @@ const GLIOBLAST_CELL_TYPE_ID = "CL_0000030";
 const T_CELL_CELL_TYPE_ID = "CL_0000084";
 const BRAIN_TISSUE_ID = "UBERON_0000955";
 const LUNG_TISSUE_ID = "UBERON_0002048";
+const SALIVARY_ACINAR_GLAND_CELL_TYPE_ID = "CL_0002623";
 const ABNORMAL_CELL_TYPE_ID = "CL_0001061";
 const PROGENITOR_CELL_CELL_TYPE_ID = "CL_0011026";
 const CELL_CELL_TYPE_ID = "CL_0000000";
@@ -968,6 +969,35 @@ describe("Cell Guide", () => {
 
         expect(linkHrefAfterTissueSelection).toContain(
           "tissues/mus_musculus/UBERON_0000955__"
+        );
+      });
+      test("Selecting 'Mus musculus' from organism selector on a cell type with no mouse cells removes ontology", async ({
+        page,
+      }) => {
+        await goToPage(
+          `${TEST_URL}${ROUTES.CELL_GUIDE}/${SALIVARY_ACINAR_GLAND_CELL_TYPE_ID}`,
+          page
+        );
+
+        await isElementVisible(
+          page,
+          CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN
+        );
+
+        await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+
+        await page
+          .getByTestId(CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN)
+          .click();
+        await page.getByRole("option").getByText("Mus musculus").click();
+
+        const dagViewTextContent = await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
+          .textContent();
+        expect(dagViewTextContent).toContain(
+          "Cell ontology visualization unavailable"
         );
       });
       test("Selecting 'Mus musculus' from organism selector updates the cell counts in the ontology", async ({
