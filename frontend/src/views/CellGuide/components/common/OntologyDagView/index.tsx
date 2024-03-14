@@ -5,7 +5,6 @@ import React, {
   Dispatch,
   SetStateAction,
 } from "react";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { Group } from "@visx/group";
 import { Global } from "@emotion/react";
 import { useTooltip, useTooltipInPortal } from "@visx/tooltip";
@@ -45,6 +44,7 @@ import {
   RightAligned,
   StyledTagFilter,
   WarningTooltipTextWrapper,
+  WarningTooltipIcon,
 } from "./style";
 import { useFullScreen } from "../FullScreenProvider";
 import {
@@ -475,10 +475,10 @@ export default function OntologyDagView({
             buttonDataTestId={
               CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TOOLTIP_TEST_ID
             }
-            placement="left"
+            placement="top"
             text={
               <>
-                {tooltipTextFirstPart}
+                <b>{tooltipTextFirstPart}</b>
                 <br />
                 <br />
                 UMAP was run using Scanpy&apos;s default parameters on the{" "}
@@ -500,11 +500,19 @@ export default function OntologyDagView({
                 .
                 <br />
                 <br />
+                The cell counts in the Explorer view may not match the cell
+                counts in the ontology view because the integrated embeddings
+                were generated from the long-term supported (LTS) Census data
+                (12-15-2023).
+                <br />
+                <br />
                 <>
                   <WarningTooltipTextWrapper>
-                    <WarningAmberIcon
-                      fontSize="small"
-                      style={{ marginRight: "4px" }}
+                    <WarningTooltipIcon
+                      sdsIcon="exclamationMarkCircle"
+                      color="warning"
+                      sdsSize="l"
+                      sdsType="static"
                     />
                     <span>
                       UMAP embeddings are helpful for exploration, but may be

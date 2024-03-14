@@ -36,7 +36,7 @@ export function useOrganAndOrganismFilterListForCellType(
     }
     const tissues = data[cellTypeId];
     const organsMap = new Map<string, string>();
-    for (let i = 0; i < tissues.length; i++) {
+    for (let i = 0; i < tissues?.length; i++) {
       const id = tissues[i];
       const label = tissueMetadata[id].name;
       organsMap.set(label, id);
