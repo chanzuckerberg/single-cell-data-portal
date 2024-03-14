@@ -8,7 +8,7 @@ click==8.1.7
 connexion[swagger-ui]==2.13.0
 coverage>=6.5.0
 dataclasses-json==0.6.4
-git+https://github.com/chanzuckerberg/cellxgene-ontology-guide/@nayib/demo#subdirectory=api/python
+git+https://github.com/chanzuckerberg/cellxgene-ontology-guide/@nayib/misc-api-fixes#subdirectory=api/python
 # TODO: Check if this is really essential for APM tracing
 # see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
 datadog==0.47.0
