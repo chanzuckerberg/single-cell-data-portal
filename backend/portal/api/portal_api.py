@@ -5,7 +5,9 @@ from typing import Iterable, List, Optional, Tuple
 from urllib.parse import urlparse
 
 from flask import Response, jsonify, make_response
+from packaging import version
 
+from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.utils.http_exceptions import (
     ConflictException,
     ForbiddenHTTPException,
@@ -68,18 +70,18 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
     user_private_collections = get_user_private_collections(token_info)
 
     collections = []
-    for version in itertools.chain(all_published_collections, user_private_collections):
+    for collection_version in itertools.chain(all_published_collections, user_private_collections):
         collection = {
-            "visibility": "PRIVATE" if version.published_at is None else "PUBLIC",
-            "owner": version.owner,
-            "created_at": version.created_at,
+            "visibility": "PRIVATE" if collection_version.published_at is None else "PUBLIC",
+            "owner": collection_version.owner,
+            "created_at": collection_version.created_at,
         }
-        if version.is_unpublished_version():
-            collection["id"] = version.version_id.id
+        if collection_version.is_unpublished_version():
+            collection["id"] = collection_version.version_id.id
         else:
-            collection["id"] = version.collection_id.id
-        if not version.is_published():
-            collection["revision_of"] = version.collection_id.id
+            collection["id"] = collection_version.collection_id.id
+        if not collection_version.is_published():
+            collection["revision_of"] = collection_version.collection_id.id
         collections.append(collection)
 
     result = {"collections": collections}
@@ -133,6 +135,19 @@ def _dataset_asset_to_response(dataset_artifact: DatasetArtifact, dataset_id: st
         "updated_at": 0,
         "user_submitted": True,
     }
+
+
+def _is_data_submission_policy_version_valid(data_submission_policy_version: str) -> bool:
+    """
+    Returns True if the given policy version is equal to the latest policy version.
+    """
+    if not data_submission_policy_version:
+        return False
+
+    try:
+        return version.parse(data_submission_policy_version) == version.parse(DATA_SUBMISSION_POLICY_VERSION)
+    except version.InvalidVersion:
+        return False
 
 
 def _ontology_term_ids_to_response(ontology_term_ids: List[OntologyTermId]):
@@ -576,7 +591,7 @@ def publish_post(collection_id: str, body: object, token_info: dict):
         raise ForbiddenHTTPException()
 
     data_submission_policy_version = body.get("data_submission_policy_version")
-    if data_submission_policy_version is None or data_submission_policy_version == "":
+    if not _is_data_submission_policy_version_valid(data_submission_policy_version):
         raise InvalidParametersHTTPException(detail="Missing or invalid data_submission_policy_version field")
 
     try:
