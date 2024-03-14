@@ -63,6 +63,7 @@ def sample_slack_status_block_empty():
 def test_parse_event_with_empty_event():
     (
         dataset_version_id,
+        collection_id,
         collection_version_id,
         error_step_name,
         error_job_id,
@@ -72,6 +73,7 @@ def test_parse_event_with_empty_event():
     ) = parse_event({})
 
     assert dataset_version_id is None
+    assert collection_id is None
     assert collection_version_id is None
     assert error_step_name is None
     assert error_job_id is None
@@ -88,11 +90,13 @@ def test_parse_event_with_error_cause():
     event = {
         "execution_id": "arn",
         "dataset_version_id": "123",
+        "collection_id": "789",
         "collection_version_id": "456",
         "error": {"Cause": expected_error_cause},
     }
     (
         dataset_version_id,
+        collection_id,
         collection_version_id,
         error_step_name,
         error_job_id,
@@ -102,6 +106,7 @@ def test_parse_event_with_error_cause():
     ) = parse_event(event)
 
     assert dataset_version_id == "123"
+    assert collection_id == "789"
     assert collection_version_id == "456"
     assert error_step_name == "Step1"
     assert error_job_id == "789"
@@ -111,10 +116,11 @@ def test_parse_event_with_error_cause():
 
 
 def test_parse_event_without_error_cause():
-    event = {"dataset_version_id": "123", "collection_version_id": "456", "error": {}}
+    event = {"dataset_version_id": "123", "collection_id": "789", "collection_version_id": "456", "error": {}}
 
     (
         dataset_version_id,
+        collection_id,
         collection_version_id,
         error_step_name,
         error_job_id,
@@ -124,6 +130,7 @@ def test_parse_event_without_error_cause():
     ) = parse_event(event)
 
     assert dataset_version_id == "123"
+    assert collection_id == "789"
     assert collection_version_id == "456"
     assert error_step_name is None
     assert error_job_id is None
@@ -133,10 +140,16 @@ def test_parse_event_without_error_cause():
 
 
 def test_parse_event_with_invalid_error_cause():
-    event = {"dataset_version_id": "123", "collection_version_id": "456", "error": {"Cause": "invalid JSON"}}
+    event = {
+        "dataset_version_id": "123",
+        "collection_id": "789",
+        "collection_version_id": "456",
+        "error": {"Cause": "invalid JSON"},
+    }
 
     (
         dataset_version_id,
+        collection_id,
         collection_version_id,
         error_step_name,
         error_job_id,
@@ -146,6 +159,7 @@ def test_parse_event_with_invalid_error_cause():
     ) = parse_event(event)
 
     assert dataset_version_id == "123"
+    assert collection_id == "789"
     assert collection_version_id == "456"
     assert error_step_name is None
     assert error_job_id is None
@@ -169,6 +183,7 @@ def test_get_failure_slack_notification_message_with_dataset_version_id_none(
     job_id = "123456"
     aws_regions = "us-west-2"
     execution_arn = "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine"
+    collection_id = "collection_id"
     collection_version_id = "collection_version_id123"
 
     with caplog.at_level(logging.ERROR):
@@ -184,6 +199,7 @@ def test_get_failure_slack_notification_message_with_dataset_version_id_none(
                     "type": "mrkdwn",
                     "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     "*Owner*: \n"
+                    f"*Collection URL*: https://cellxgene.cziscience.com/collections/{collection_id}\n"
                     f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
                     "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"
                     "#jobs/detail/123456|123456>\n"
@@ -210,6 +226,7 @@ def test_get_failure_slack_notification_message_with_dataset_not_found(
     job_id = "123456"
     aws_regions = "us-west-2"
     execution_arn = "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine"
+    collection_id = "collection_id"
     collection_version_id = "collection_version_id123"
 
     get_dataset_version_mock = Mock(return_value=None)
@@ -235,6 +252,7 @@ def test_get_failure_slack_notification_message_with_dataset_not_found(
                     "type": "mrkdwn",
                     "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     "*Owner*: \n"
+                    f"*Collection URL*: https://cellxgene.cziscience.com/collections/{collection_id}\n"
                     f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
                     "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"
                     "#jobs/detail/123456|123456>\n"
@@ -288,7 +306,7 @@ def test_get_failure_slack_notification_message_with_missing_collection(
         logging.ERROR
     ):
         result = get_failure_slack_notification_message(
-            dataset_version_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
+            dataset_version_id, collection_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
         )
 
     assert result == {
@@ -300,6 +318,7 @@ def test_get_failure_slack_notification_message_with_missing_collection(
                     "type": "mrkdwn",
                     "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     f"*Owner*: \n"
+                    f"*Collection URL*: https://cellxgene.cziscience.com/collections/{collection_id}\n"
                     f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
                     "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"
                     "#jobs/detail/123456|123456>\n"
@@ -346,7 +365,7 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection(
 
     with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock):
         result = get_failure_slack_notification_message(
-            dataset_version_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
+            dataset_version_id, collection_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
         )
 
     assert result == {
@@ -358,6 +377,7 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection(
                     "type": "mrkdwn",
                     "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     f"*Owner*: {owner}\n"
+                    f"*Collection URL*: https://cellxgene.cziscience.com/collections/{collection_id}\n"
                     f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
                     "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"
                     "#jobs/detail/123456|123456>\n"

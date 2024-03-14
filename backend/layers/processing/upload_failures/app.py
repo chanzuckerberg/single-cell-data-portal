@@ -17,6 +17,7 @@ def handle_failure(event: dict, context, delete_artifacts=True) -> None:
     logging.info(event)
     (
         dataset_version_id,
+        collection_id,
         collection_version_id,
         error_step_name,
         error_job_id,
@@ -25,7 +26,13 @@ def handle_failure(event: dict, context, delete_artifacts=True) -> None:
         execution_arn,
     ) = parse_event(event)
     trigger_slack_notification(
-        dataset_version_id, collection_version_id, error_step_name, error_job_id, error_aws_regions, execution_arn
+        dataset_version_id,
+        collection_id,
+        collection_version_id,
+        error_step_name,
+        error_job_id,
+        error_aws_regions,
+        execution_arn,
     )
     update_dataset_processing_status_to_failed(dataset_version_id)
     if delete_artifacts:
@@ -34,6 +41,7 @@ def handle_failure(event: dict, context, delete_artifacts=True) -> None:
 
 def parse_event(event: dict):
     dataset_version_id = event.get("dataset_version_id")
+    collection_id = event.get("collection_id")
     collection_version_id = event.get("collection_version_id")
     error_cause = event.get("error", {}).get("Cause", "")
     execution_arn = event.get("execution_id")
@@ -54,6 +62,7 @@ def parse_event(event: dict):
             error_aws_regions = None
     return (
         dataset_version_id,
+        collection_id,
         collection_version_id,
         error_step_name,
         error_job_id,
@@ -76,6 +85,7 @@ def update_dataset_processing_status_to_failed(dataset_version_id: str) -> None:
 
 def get_failure_slack_notification_message(
     dataset_version_id: Optional[str],
+    collection_id: Optional[str],
     collection_version_id: str,
     step_name: Optional[str],
     job_id: Optional[str],
@@ -104,7 +114,7 @@ def get_failure_slack_notification_message(
     batch_url = aws_batch_job_url_fmt_str.format(aws_region=aws_region, job_id=job_id)
     step_function_url = aws_sfn_url_fmt_str.format(aws_region=aws_region, execution_arn=execution_arn)
     collection_version_url = f"https://cellxgene.cziscience.com/collections/{collection_version_id}"
-    collection_url = ""
+    collection_url = f"https://cellxgene.cziscience.com/collections/{collection_id}"
     data = {
         "blocks": [
             {
@@ -144,6 +154,7 @@ def get_failure_slack_notification_message(
 
 def trigger_slack_notification(
     dataset_version_id: Optional[str],
+    collection_id: Optional[str],
     collection_version_id: Optional[str],
     step_name: Optional[str],
     job_id: Optional[str],
@@ -152,7 +163,7 @@ def trigger_slack_notification(
 ) -> None:
     with logger.LogSuppressed(Exception, message="Failed to send slack notification"):
         data = get_failure_slack_notification_message(
-            dataset_version_id, collection_version_id, step_name, job_id, aws_region, execution_arn
+            dataset_version_id, collection_id, collection_version_id, step_name, job_id, aws_region, execution_arn
         )
         # For these notifications, we should alert #single-cell-wrangling
         webhook = CorporaConfig().wrangling_slack_webhook
