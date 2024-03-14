@@ -24,7 +24,7 @@ function CensusDirectory() {
 
   const hostedProjects = clobberAndDifferentiateProjectMetadata(
     Object.values(projects ?? ({} as ProjectType[])).filter(
-      (project) => !project.revised_by
+      (project) => project.tier === "hosted"
     )
   );
 
@@ -35,7 +35,7 @@ function CensusDirectory() {
   );
 
   const maintainedProjects = clobberAndDifferentiateProjectMetadata(
-    Object.values(staticProjects).filter(
+    Object.values(projects ?? ({} as ProjectType[])).filter(
       (project) => project.tier === "maintained"
     )
   );
