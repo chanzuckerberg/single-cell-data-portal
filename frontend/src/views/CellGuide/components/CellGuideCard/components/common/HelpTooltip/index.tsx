@@ -1,7 +1,12 @@
 import { Tooltip } from "@czi-sds/components";
 
 import questionMarkIcon from "src/common/images/question-mark-icon.svg";
-import { TooltipButton, StyledTooltip, StyledIconImage } from "./style";
+import {
+  TooltipButton,
+  StyledTooltip,
+  StyledIconImage,
+  ExtraContentWrapper,
+} from "./style";
 import { Dispatch, ReactElement, SetStateAction } from "react";
 
 const getSlotProps = (dark?: boolean) => {
@@ -37,6 +42,7 @@ interface Props {
   >;
   title: string;
   skinnyMode?: boolean;
+  extraContent?: JSX.Element;
 }
 const HelpTooltip = ({
   text,
@@ -46,6 +52,7 @@ const HelpTooltip = ({
   setTooltipContent,
   title,
   skinnyMode = false,
+  extraContent,
 }: Props) => {
   return (
     <Tooltip
@@ -62,18 +69,21 @@ const HelpTooltip = ({
         sdsType="secondary"
         isAllCaps={false}
       >
-        <StyledIconImage
-          alt="question mark"
-          onClick={() => {
-            if (skinnyMode && setTooltipContent) {
-              setTooltipContent({
-                title: title,
-                element: <StyledTooltip>{text}</StyledTooltip>,
-              });
-            }
-          }}
-          src={questionMarkIcon}
-        />
+        <ExtraContentWrapper>
+          <StyledIconImage
+            alt="question mark"
+            onClick={() => {
+              if (skinnyMode && setTooltipContent) {
+                setTooltipContent({
+                  title: title,
+                  element: <StyledTooltip>{text}</StyledTooltip>,
+                });
+              }
+            }}
+            src={questionMarkIcon}
+          />
+          {extraContent}
+        </ExtraContentWrapper>
       </TooltipButton>
     </Tooltip>
   );

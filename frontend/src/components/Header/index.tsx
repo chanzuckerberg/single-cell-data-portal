@@ -12,7 +12,7 @@ import {
   StyledPopper,
   Wrapper,
 } from "./style";
-import { FOOTER_OPTIONS } from "./constants";
+import { FOOTER_OPTIONS, HEADER_ID } from "./constants";
 
 const Header: FC = () => {
   const {
@@ -26,7 +26,7 @@ const Header: FC = () => {
   } = useConnect();
 
   return (
-    <Wrapper>
+    <Wrapper id={HEADER_ID}>
       <MainWrapper>
         <Left>
           <HomepageLink />

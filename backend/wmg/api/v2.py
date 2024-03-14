@@ -123,18 +123,6 @@ def query():
                 )
                 rolled_cell_counts_grouped_df = rollup(cell_counts_grouped_df, snapshot.cell_type_ancestors)
 
-                # filter out rows that do not have a corresponding cell type in the cell counts dataframe
-                # as these will not be displayed in the UI anyway
-
-                with ServerTiming.time("filter out rows"):
-                    rolled_gene_expression_df = rolled_gene_expression_df[
-                        rolled_gene_expression_df["cell_type_ontology_term_id"].isin(
-                            cell_counts_grouped_df.index.levels[
-                                cell_counts_grouped_df.index.names.index("cell_type_ontology_term_id")
-                            ]
-                        )
-                    ]
-
             response = jsonify(
                 dict(
                     snapshot_id=snapshot.snapshot_identifier,

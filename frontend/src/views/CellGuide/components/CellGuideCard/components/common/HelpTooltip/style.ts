@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import Image from "next/image";
 import { Button } from "@czi-sds/components";
+import { spacesXxxs } from "src/common/theme";
 
 export const StyledTooltip = styled.div`
   text-align: left;
@@ -23,4 +24,12 @@ export const StyledIconImage = styled(Image)`
   :hover {
     filter: brightness(0);
   }
+`;
+
+export const ExtraContentWrapper = styled.span`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: ${spacesXxxs}px;
+  white-space: nowrap;
 `;
