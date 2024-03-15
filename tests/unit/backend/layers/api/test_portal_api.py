@@ -85,14 +85,12 @@ class TestCollection(BaseAPIPortalTest):
                     "batch_condition": ["test_batch_1", "test_batch_2"],
                     "cell_count": 10,
                     "primary_cell_count": 5,
-                    "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
+                    "cell_type": [{"label": "unknown", "ontology_term_id": "unknown"}],
                     "collection_id": collection.collection_id.id,
                     "created_at": mock.ANY,
                     "dataset_assets": mock.ANY,
                     "dataset_deployments": [{"url": mock.ANY}],
-                    "development_stage": [
-                        {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}
-                    ],
+                    "development_stage": [{"label": "unknown", "ontology_term_id": "unknown"}],
                     "disease": [{"label": "test_disease_label", "ontology_term_id": "test_disease_term_id"}],
                     "donor_id": ["test_donor_1"],
                     "id": mock.ANY,
@@ -128,8 +126,8 @@ class TestCollection(BaseAPIPortalTest):
                     "suspension_type": ["test_suspension_type"],
                     "tissue": [
                         {
-                            "label": "test_tissue_label",
-                            "ontology_term_id": "test_tissue_term_id",
+                            "label": "unknown",
+                            "ontology_term_id": "unknown",
                             "tissue_type": "tissue",
                         }
                     ],
@@ -142,14 +140,12 @@ class TestCollection(BaseAPIPortalTest):
                     "batch_condition": ["test_batch_1", "test_batch_2"],
                     "cell_count": 10,
                     "primary_cell_count": 5,
-                    "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
+                    "cell_type": [{"label": "unknown", "ontology_term_id": "unknown"}],
                     "collection_id": collection.collection_id.id,
                     "created_at": mock.ANY,
                     "dataset_assets": mock.ANY,
                     "dataset_deployments": [{"url": mock.ANY}],
-                    "development_stage": [
-                        {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}
-                    ],
+                    "development_stage": [{"label": "unknown", "ontology_term_id": "unknown"}],
                     "disease": [{"label": "test_disease_label", "ontology_term_id": "test_disease_term_id"}],
                     "donor_id": ["test_donor_1"],
                     "id": mock.ANY,
@@ -185,8 +181,8 @@ class TestCollection(BaseAPIPortalTest):
                     "suspension_type": ["test_suspension_type"],
                     "tissue": [
                         {
-                            "label": "test_tissue_label",
-                            "ontology_term_id": "test_tissue_term_id",
+                            "label": "unknown",
+                            "ontology_term_id": "unknown",
                             "tissue_type": "tissue",
                         }
                     ],
@@ -1929,28 +1925,54 @@ class TestDataset(BaseAPIPortalTest):
             self.assertEqual(actual_dataset["development_stage"], convert_ontology(modified_metadata.development_stage))
             self.assertEqual(
                 actual_dataset["development_stage_ancestors"],
-                ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"],
+                [
+                    "HsapDv:0000008",
+                    "HsapDv:0000006",
+                    "HsapDv:0000002",
+                    "HsapDv:0000045",
+                    "HsapDv:0000001",
+                    "HsapDv:0000000",
+                ],
             )
 
             self.assertEqual(actual_dataset["tissue"], convert_ontology(modified_metadata.tissue))
             self.assertCountEqual(
                 actual_dataset["tissue_ancestors"],
                 [
-                    "UBERON:0005178",
-                    "UBERON:0000072",
-                    "UBERON:0001558",
-                    "UBERON:0000915",
-                    "UBERON:0001005",
-                    "UBERON:0005181",
-                    "UBERON:0002075",
-                    "UBERON:0000170",
-                    "UBERON:0002048",
-                    "UBERON:0002100",
                     "UBERON:0000171",
-                    "UBERON:0009569",
-                    "UBERON:0000065",
-                    "UBERON:0005177",
+                    "UBERON:0004119",
+                    "UBERON:0005178",
+                    "UBERON:0015212",
+                    "UBERON:0000170",
+                    "UBERON:0000062",
                     "UBERON:0001004",
+                    "UBERON:0000061",
+                    "UBERON:0002075",
+                    "UBERON:0005181",
+                    "UBERON:0000915",
+                    "UBERON:0034925",
+                    "UBERON:0001558",
+                    "UBERON:0010000",
+                    "UBERON:0000467",
+                    "UBERON:0000465",
+                    "UBERON:0005177",
+                    "UBERON:0002100",
+                    "UBERON:0009569",
+                    "UBERON:0011676",
+                    "UBERON:0000072",
+                    "UBERON:0000468",
+                    "UBERON:0001062",
+                    "UBERON:0013702",
+                    "UBERON:0000475",
+                    "UBERON:0013701",
+                    "UBERON:0013522",
+                    "UBERON:0000065",
+                    "UBERON:0000064",
+                    "UBERON:0000025",
+                    "UBERON:0001005",
+                    "UBERON:0004111",
+                    "UBERON:0003103",
+                    "UBERON:0002048",
                 ],
             )
 
@@ -1962,9 +1984,8 @@ class TestDataset(BaseAPIPortalTest):
                     "CL:0002371",
                     "CL:0000988",
                     "CL:0000738",
-                    "CL:0000548",
                     "CL:0000219",
-                    "CL:0000003",
+                    "CL:0000000",
                     "CL:0002242",
                 ],
             )
@@ -2002,14 +2023,62 @@ class TestDataset(BaseAPIPortalTest):
             self.assertEqual(actual_dataset["development_stage"], convert_ontology(modified_metadata.development_stage))
             self.assertEqual(
                 actual_dataset["development_stage_ancestors"],
-                ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"],
+                [
+                    "HsapDv:0000008",
+                    "HsapDv:0000006",
+                    "HsapDv:0000002",
+                    "HsapDv:0000045",
+                    "HsapDv:0000001",
+                    "HsapDv:0000000",
+                ],
             )
 
             self.assertEqual(actual_dataset["tissue"], convert_ontology(modified_metadata.tissue))
             # TODO update with fix for #6192.
             self.assertCountEqual(
                 actual_dataset["tissue_ancestors"],
-                ["UBERON:0000966 (organoid)"],
+                [
+                    "UBERON:0000966 (organoid)",
+                    "UBERON:0004121",
+                    "UBERON:0005388",
+                    "UBERON:0001802",
+                    "UBERON:0019207",
+                    "UBERON:0000061",
+                    "UBERON:0004923",
+                    "UBERON:0000970",
+                    "UBERON:0001016",
+                    "UBERON:0000063",
+                    "UBERON:0010230",
+                    "UBERON:0000481",
+                    "UBERON:0010314",
+                    "UBERON:0000465",
+                    "UBERON:0000064",
+                    "UBERON:0000060",
+                    "UBERON:0000020",
+                    "UBERON:0002104",
+                    "UBERON:0000467",
+                    "UBERON:0000019",
+                    "UBERON:0010000",
+                    "UBERON:0001062",
+                    "UBERON:0000062",
+                    "UBERON:0001032",
+                    "UBERON:0000468",
+                    "UBERON:0000047",
+                    "UBERON:0015212",
+                    "UBERON:0004088",
+                    "UBERON:0015203",
+                    "UBERON:0004456",
+                    "UBERON:0001444",
+                    "UBERON:0001456",
+                    "UBERON:0034923",
+                    "UBERON:0000475",
+                    "UBERON:0000033",
+                    "UBERON:0011676",
+                    "UBERON:0000153",
+                    "UBERON:0007811",
+                    "UBERON:0013701",
+                    "UBERON:0013702",
+                ],
             )
 
             self.assertEqual(actual_dataset["cell_type"], convert_ontology(modified_metadata.cell_type))
@@ -2020,9 +2089,8 @@ class TestDataset(BaseAPIPortalTest):
                     "CL:0002371",
                     "CL:0000988",
                     "CL:0000738",
-                    "CL:0000548",
                     "CL:0000219",
-                    "CL:0000003",
+                    "CL:0000000",
                     "CL:0002242",
                 ],
             )
