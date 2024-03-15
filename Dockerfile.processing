@@ -4,9 +4,11 @@ FROM ghcr.io/chanzuckerberg/corpora-upload-base:$BASE_TAG
 
 # Install cellxgene so we get the remote server that has the converter in it
 # The cellxgene install script expects executables named python and pip, not python3 and pip3
-sudo add-apt-repository ppa:deadsnakes/ppa && \
-  sudo apt-get update && \
-  sudo apt-get install -y python3.10 python3-pip
+RUN apt-get update
+RUN apt-get upgrade -y
+RUN apt install software-properties-common -y
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt-get install -y python3.10 python3-pip
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1 \
   && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
