@@ -29,7 +29,7 @@ from backend.portal.api.providers import get_business_logic
 allowed_dataset_asset_types = (DatasetArtifactType.H5AD, DatasetArtifactType.RDS)
 
 
-def get_collections_base_url():
+def get_collections_base_url() -> str:
     return CorporaConfig().collections_base_url
 
 
