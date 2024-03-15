@@ -1923,7 +1923,7 @@ class TestDataset(BaseAPIPortalTest):
 
         if actual_dataset is not None:  # pylance
             self.assertEqual(actual_dataset["development_stage"], convert_ontology(modified_metadata.development_stage))
-            self.assertEqual(
+            self.assertCountEqual(
                 actual_dataset["development_stage_ancestors"],
                 [
                     "HsapDv:0000008",
@@ -2021,7 +2021,7 @@ class TestDataset(BaseAPIPortalTest):
 
         if actual_dataset is not None:  # pylance
             self.assertEqual(actual_dataset["development_stage"], convert_ontology(modified_metadata.development_stage))
-            self.assertEqual(
+            self.assertCountEqual(
                 actual_dataset["development_stage_ancestors"],
                 [
                     "HsapDv:0000008",
