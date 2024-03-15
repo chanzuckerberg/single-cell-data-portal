@@ -4,10 +4,6 @@ from backend.layers.common.entities import CollectionVersionId
 
 
 class TestCollectionMigrate:
-    @mock.patch(
-        "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
-        return_value="https://collections_domain",
-    )
     def test_can_publish_true(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = mock.Mock(wraps=schema_migrate._store_sfn_response)
@@ -21,7 +17,10 @@ class TestCollectionMigrate:
             {"can_publish": "True", "dataset_id": dataset.dataset_id.id, "dataset_version_id": dataset.version_id.id}
             for dataset in published.datasets
         ]
-        response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, True)
+        with mock.patch(
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url", "https://collections_domain"
+        ):
+            response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, True)
         assert response["collection_version_id"] == collection_version_id.id
         assert "no_datasets" not in response
         actual_datasets = response["datasets"]
@@ -33,10 +32,6 @@ class TestCollectionMigrate:
             "publish_and_cleanup", published.collection_id.id, response
         )
 
-    @mock.patch(
-        "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
-        return_value="https://collections_domain",
-    )
     def test_can_publish_false(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = mock.Mock(wraps=schema_migrate._store_sfn_response)
@@ -46,7 +41,10 @@ class TestCollectionMigrate:
             {"can_publish": "False", "dataset_id": dataset.dataset_id.id, "dataset_version_id": dataset.version_id.id}
             for dataset in private.datasets
         ]
-        response = schema_migrate.collection_migrate(private.collection_id.id, private.version_id.id, False)
+        with mock.patch(
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url", "https://collections_domain"
+        ):
+            response = schema_migrate.collection_migrate(private.collection_id.id, private.version_id.id, False)
         assert response["collection_version_id"] == private.version_id.id
         assert "no_datasets" not in response
         actual_datasets = response["datasets"]
@@ -58,10 +56,6 @@ class TestCollectionMigrate:
             "publish_and_cleanup", private.collection_id.id, response
         )
 
-    @mock.patch(
-        "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
-        return_value="https://collections_domain",
-    )
     def test_can_publish_false_and_no_datasets(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = mock.Mock(wraps=schema_migrate._store_sfn_response)
@@ -71,7 +65,10 @@ class TestCollectionMigrate:
         schema_migrate.business_logic.create_collection_version.return_value = mock.Mock(
             version_id=CollectionVersionId()
         )
-        response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, False)
+        with mock.patch(
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url", "https://collections_domain"
+        ):
+            response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, False)
         assert response["collection_version_id"] == published.version_id.id
         assert not response["datasets"]
         assert response["no_datasets"] == "True"
@@ -79,10 +76,6 @@ class TestCollectionMigrate:
             "publish_and_cleanup", published.collection_id.id, response
         )
 
-    @mock.patch(
-        "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
-        return_value="https://collections_domain",
-    )
     def test_can_publish_true_and_filtered_schema_version(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = mock.Mock(wraps=schema_migrate._store_sfn_response)
@@ -90,7 +83,10 @@ class TestCollectionMigrate:
         schema_migrate.business_logic.create_collection_version.return_value = mock.Mock(
             version_id=CollectionVersionId()
         )
-        response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, False)
+        with mock.patch(
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url", "https://collections_domain"
+        ):
+            response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, False)
         assert response["collection_version_id"] == published.version_id.id
         assert not response["datasets"]
         assert response["no_datasets"] == "True"
@@ -98,10 +94,6 @@ class TestCollectionMigrate:
             "publish_and_cleanup", published.collection_id.id, response
         )
 
-    @mock.patch(
-        "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
-        return_value="https://collections_domain",
-    )
     def test_no_datasets(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = mock.Mock(wraps=schema_migrate._store_sfn_response)
@@ -110,7 +102,10 @@ class TestCollectionMigrate:
         schema_migrate.business_logic.create_collection_version.return_value = mock.Mock(
             version_id=CollectionVersionId()
         )
-        response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, False)
+        with mock.patch(
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url", "https://collections_domain"
+        ):
+            response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, False)
         assert response["collection_version_id"] == published.version_id.id
         assert not response["datasets"]
         assert response["no_datasets"] == "True"
