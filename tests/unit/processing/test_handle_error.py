@@ -188,7 +188,7 @@ def test_get_failure_slack_notification_message_with_dataset_version_id_none(
 
     with caplog.at_level(logging.ERROR):
         result = get_failure_slack_notification_message(
-            dataset_version_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
+            dataset_version_id, collection_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
         )
     assert result == {
         "blocks": [
@@ -240,7 +240,7 @@ def test_get_failure_slack_notification_message_with_dataset_not_found(
         logging.ERROR
     ):
         result = get_failure_slack_notification_message(
-            dataset_version_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
+            dataset_version_id, collection_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
         )
 
     assert result == {
