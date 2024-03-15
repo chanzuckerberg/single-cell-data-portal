@@ -6,12 +6,13 @@ from backend.layers.common.entities import CollectionVersionId
 
 class TestCollectionMigrate(unittest.TestCase):
     @patch("backend.curation.api.v1.curation.collections.common.get_collections_base_url")
-    def setUp(self, mock_get_collections_base_url):
+    def setUp(self, mock_get_collections_base_url, schema_migrate_and_collections):
         self.mock_get_collections_base_url = mock_get_collections_base_url
         self.mock_get_collections_base_url.return_value = "https://collections_domain"
+        self.schema_migrate_and_collections = schema_migrate_and_collections
 
-    def test_can_publish_true(self, schema_migrate_and_collections):
-        schema_migrate, collections = schema_migrate_and_collections
+    def test_can_publish_true(self):
+        schema_migrate, collections = self.schema_migrate_and_collections
         schema_migrate._store_sfn_response = Mock(wraps=schema_migrate._store_sfn_response)
         schema_migrate.schema_version = "0.0.0"
         published = collections["published"][0]
@@ -34,8 +35,8 @@ class TestCollectionMigrate(unittest.TestCase):
             "publish_and_cleanup", published.collection_id.id, response
         )
 
-    def test_can_publish_false(self, schema_migrate_and_collections):
-        schema_migrate, collections = schema_migrate_and_collections
+    def test_can_publish_false(self):
+        schema_migrate, collections = self.schema_migrate_and_collections
         schema_migrate._store_sfn_response = Mock(wraps=schema_migrate._store_sfn_response)
         schema_migrate.schema_version = "0.0.0"
         private = collections["private"][0]
@@ -56,8 +57,8 @@ class TestCollectionMigrate(unittest.TestCase):
             "publish_and_cleanup", private.collection_id.id, response
         )
 
-    def test_can_publish_false_and_no_datasets(self, schema_migrate_and_collections):
-        schema_migrate, collections = schema_migrate_and_collections
+    def test_can_publish_false_and_no_datasets(self):
+        schema_migrate, collections = self.schema_migrate_and_collections
         schema_migrate._store_sfn_response = Mock(wraps=schema_migrate._store_sfn_response)
         schema_migrate.schema_version = "0.0.0"
         published = collections["published"][0]
@@ -72,8 +73,8 @@ class TestCollectionMigrate(unittest.TestCase):
             "publish_and_cleanup", published.collection_id.id, response
         )
 
-    def test_can_publish_true_and_filtered_schema_version(self, schema_migrate_and_collections):
-        schema_migrate, collections = schema_migrate_and_collections
+    def test_can_publish_true_and_filtered_schema_version(self):
+        schema_migrate, collections = self.schema_migrate_and_collections
         schema_migrate._store_sfn_response = Mock(wraps=schema_migrate._store_sfn_response)
         published = collections["published"][0]
         schema_migrate.business_logic.create_collection_version.return_value = Mock(version_id=CollectionVersionId())
@@ -86,8 +87,8 @@ class TestCollectionMigrate(unittest.TestCase):
             "publish_and_cleanup", published.collection_id.id, response
         )
 
-    def test_no_datasets(self, schema_migrate_and_collections):
-        schema_migrate, collections = schema_migrate_and_collections
+    def test_no_datasets(self):
+        schema_migrate, collections = self.schema_migrate_and_collections
         schema_migrate._store_sfn_response = Mock(wraps=schema_migrate._store_sfn_response)
         published = collections["published"][0]
         published.datasets = []
