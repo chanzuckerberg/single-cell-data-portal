@@ -23,6 +23,7 @@ from backend.layers.processing.upload_failures.app import (
     get_failure_slack_notification_message,
     parse_event,
 )
+from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 
 module_path = "backend.layers.processing.upload_failures.app"
 
@@ -217,7 +218,16 @@ def test_get_failure_slack_notification_message_with_dataset_version_id_none(
     execution_arn = "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine"
     collection_version_id = "collection_version_id123"
 
-    with caplog.at_level(logging.ERROR):
+    get_dataset_version_mock = Mock(return_value=None)
+    get_business_logic_mock = Mock()
+    get_business_logic_mock.get_dataset_version = get_dataset_version_mock
+    get_business_logic_mock.get_collection_version = get_collection_version_mock
+    get_business_logic_mock.s3_provider = MockS3Provider()
+    get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
+
+    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), caplog.at_level(
+        logging.ERROR
+    ):
         result = get_failure_slack_notification_message(
             dataset_version_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
         )
@@ -263,9 +273,8 @@ def test_get_failure_slack_notification_message_with_dataset_not_found(
     get_business_logic_mock = Mock()
     get_business_logic_mock.get_dataset_version = get_dataset_version_mock
     get_business_logic_mock.get_collection_version = get_collection_version_mock
+    get_business_logic_mock.s3_provider = MockS3Provider()
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
-
-    Mock()
 
     with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), caplog.at_level(
         logging.ERROR
@@ -330,9 +339,8 @@ def test_get_failure_slack_notification_message_with_missing_collection(
         get_unpublished_collection_version_from_canonical_mock
     )
     get_business_logic_mock.get_collection_version = get_collection_version_mock
+    get_business_logic_mock.s3_provider = MockS3Provider()
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
-
-    Mock()
 
     with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), caplog.at_level(
         logging.ERROR
@@ -394,6 +402,7 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection(
         get_unpublished_collection_version_from_canonical_mock
     )
     get_business_logic_mock.get_collection_version = get_collection_version_mock
+    get_business_logic_mock.s3_provider = MockS3Provider()
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
     with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock):
