@@ -9,7 +9,11 @@ from backend.layers.common.entities import CollectionVersionId
 @pytest.fixture
 def mock_corpora_config():
     mock_config = CorporaConfig()
-    mock_config.collections_base_url = "https://cellxgene.cziscience.com/"
+    mock_config.set(
+        {
+            "collections_base_url": "https://collections_domain",
+        }
+    )
     return mock_config
 
 
