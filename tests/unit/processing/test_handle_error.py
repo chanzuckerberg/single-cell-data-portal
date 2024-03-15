@@ -208,7 +208,7 @@ def mock_get_dataset_version(collection_id):
 
 
 def test_get_failure_slack_notification_message_with_dataset_version_id_none(
-    sample_slack_header_block, sample_slack_status_block_empty, caplog
+    get_collection_version_mock, sample_slack_header_block, sample_slack_status_block_empty, caplog
 ):
     dataset_version_id = None
     step_name = "Step 1"
