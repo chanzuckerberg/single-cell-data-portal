@@ -1,10 +1,20 @@
 from unittest import mock
 
+import pytest
+
+from backend.common.corpora_config import CorporaConfig
 from backend.layers.common.entities import CollectionVersionId
-from tests.unit.backend.layers.common.base_test import BaseTest
 
 
-class TestCollectionMigrate(BaseTest):
+@pytest.fixture
+def mock_corpora_config():
+    mock_config = CorporaConfig()
+    mock_config.collections_base_url = "https://cellxgene.cziscience.com/"
+    return mock_config
+
+
+class TestCollectionMigrate:
+    @mock.patch("backend.common.corpora_config.CorporaConfig", new=mock_corpora_config)
     def test_can_publish_true(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = mock.Mock(wraps=schema_migrate._store_sfn_response)
@@ -30,6 +40,7 @@ class TestCollectionMigrate(BaseTest):
             "publish_and_cleanup", published.collection_id.id, response
         )
 
+    @mock.patch("backend.common.corpora_config.CorporaConfig", new=mock_corpora_config)
     def test_can_publish_false(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = mock.Mock(wraps=schema_migrate._store_sfn_response)
@@ -51,6 +62,7 @@ class TestCollectionMigrate(BaseTest):
             "publish_and_cleanup", private.collection_id.id, response
         )
 
+    @mock.patch("backend.common.corpora_config.CorporaConfig", new=mock_corpora_config)
     def test_can_publish_false_and_no_datasets(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = mock.Mock(wraps=schema_migrate._store_sfn_response)
@@ -68,6 +80,7 @@ class TestCollectionMigrate(BaseTest):
             "publish_and_cleanup", published.collection_id.id, response
         )
 
+    @mock.patch("backend.common.corpora_config.CorporaConfig", new=mock_corpora_config)
     def test_can_publish_true_and_filtered_schema_version(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = mock.Mock(wraps=schema_migrate._store_sfn_response)
@@ -83,6 +96,7 @@ class TestCollectionMigrate(BaseTest):
             "publish_and_cleanup", published.collection_id.id, response
         )
 
+    @mock.patch("backend.common.corpora_config.CorporaConfig", new=mock_corpora_config)
     def test_no_datasets(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = mock.Mock(wraps=schema_migrate._store_sfn_response)
