@@ -11,6 +11,9 @@ def mock_corpora_config():
     mock_config = CorporaConfig()
     mock_config.set(
         {
+            "upload_max_file_size_gb": 30,
+            "citation_update_feature_flag": "True",
+            "dataset_assets_base_url": "https://dataset_assets_domain",
             "collections_base_url": "https://collections_domain",
         }
     )
