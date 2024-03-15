@@ -18,7 +18,8 @@ class TestCollectionMigrate:
             for dataset in published.datasets
         ]
         with mock.patch(
-            "backend.curation.api.v1.curation.collections.common.get_collections_base_url", "https://collections_domain"
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
+            mock.Mock(return_value="https://collections_domain"),
         ):
             response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, True)
         assert response["collection_version_id"] == collection_version_id.id
@@ -42,7 +43,8 @@ class TestCollectionMigrate:
             for dataset in private.datasets
         ]
         with mock.patch(
-            "backend.curation.api.v1.curation.collections.common.get_collections_base_url", "https://collections_domain"
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
+            mock.Mock(return_value="https://collections_domain"),
         ):
             response = schema_migrate.collection_migrate(private.collection_id.id, private.version_id.id, False)
         assert response["collection_version_id"] == private.version_id.id
@@ -66,7 +68,8 @@ class TestCollectionMigrate:
             version_id=CollectionVersionId()
         )
         with mock.patch(
-            "backend.curation.api.v1.curation.collections.common.get_collections_base_url", "https://collections_domain"
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
+            mock.Mock(return_value="https://collections_domain"),
         ):
             response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, False)
         assert response["collection_version_id"] == published.version_id.id
@@ -84,7 +87,8 @@ class TestCollectionMigrate:
             version_id=CollectionVersionId()
         )
         with mock.patch(
-            "backend.curation.api.v1.curation.collections.common.get_collections_base_url", "https://collections_domain"
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
+            mock.Mock(return_value="https://collections_domain"),
         ):
             response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, False)
         assert response["collection_version_id"] == published.version_id.id
@@ -103,7 +107,8 @@ class TestCollectionMigrate:
             version_id=CollectionVersionId()
         )
         with mock.patch(
-            "backend.curation.api.v1.curation.collections.common.get_collections_base_url", "https://collections_domain"
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
+            mock.Mock(return_value="https://collections_domain"),
         ):
             response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, False)
         assert response["collection_version_id"] == published.version_id.id
