@@ -8,6 +8,7 @@ from typing import Any, Dict, Iterable, List
 from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.json import CustomJSONEncoder
 from backend.common.utils.result_notification import upload_to_slack
+from backend.curation.api.v1.curation.collections.common import get_collections_base_url
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.entities import CollectionQueryFilter
 from backend.layers.common.entities import (
@@ -137,7 +138,7 @@ class SchemaMigrate(ProcessingLogic):
         datasets = [dataset for dataset in version.datasets if not self.check_dataset_is_latest_schema_version(dataset)]
 
         # Generate canonical collection url
-        collection_url = f"{CorporaConfig().collections_base_url}/collections/{version.collection_id.id}"
+        collection_url = f"{get_collections_base_url()}/collections/{version.collection_id.id}"
 
         # Filter out datasets that are already on the current schema version
         if not datasets:
