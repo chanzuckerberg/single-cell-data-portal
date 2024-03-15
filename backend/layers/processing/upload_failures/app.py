@@ -117,7 +117,7 @@ def get_failure_slack_notification_message(
 
     # Generate canonical collection URL
     version = get_business_logic().get_collection_version(CollectionVersionId(collection_version_id))
-    collection_url = f"{CorporaConfig().collections_base_url}/collections/{version.collection_id.id}"
+    collection_url = f"https://cellxgene.cziscience.com/collections/{version.collection_id.id}"
 
     data = {
         "blocks": [

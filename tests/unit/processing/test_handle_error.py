@@ -23,7 +23,6 @@ from backend.layers.processing.upload_failures.app import (
     get_failure_slack_notification_message,
     parse_event,
 )
-from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 
 module_path = "backend.layers.processing.upload_failures.app"
 
@@ -222,7 +221,6 @@ def test_get_failure_slack_notification_message_with_dataset_version_id_none(
     get_business_logic_mock = Mock()
     get_business_logic_mock.get_dataset_version = get_dataset_version_mock
     get_business_logic_mock.get_collection_version = get_collection_version_mock
-    get_business_logic_mock.s3_provider = MockS3Provider()
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
     with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), caplog.at_level(
@@ -273,7 +271,6 @@ def test_get_failure_slack_notification_message_with_dataset_not_found(
     get_business_logic_mock = Mock()
     get_business_logic_mock.get_dataset_version = get_dataset_version_mock
     get_business_logic_mock.get_collection_version = get_collection_version_mock
-    get_business_logic_mock.s3_provider = MockS3Provider()
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
     with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), caplog.at_level(
@@ -339,7 +336,6 @@ def test_get_failure_slack_notification_message_with_missing_collection(
         get_unpublished_collection_version_from_canonical_mock
     )
     get_business_logic_mock.get_collection_version = get_collection_version_mock
-    get_business_logic_mock.s3_provider = MockS3Provider()
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
     with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), caplog.at_level(
@@ -402,7 +398,6 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection(
         get_unpublished_collection_version_from_canonical_mock
     )
     get_business_logic_mock.get_collection_version = get_collection_version_mock
-    get_business_logic_mock.s3_provider = MockS3Provider()
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
     with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock):
