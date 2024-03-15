@@ -158,13 +158,16 @@ def get_failure_slack_notification_message(
 
 def trigger_slack_notification(
     dataset_version_id: Optional[str],
+    collection_version_id: Optional[str],
     step_name: Optional[str],
     job_id: Optional[str],
     aws_region: str,
     execution_arn: str,
 ) -> None:
     with logger.LogSuppressed(Exception, message="Failed to send slack notification"):
-        data = get_failure_slack_notification_message(dataset_version_id, step_name, job_id, aws_region, execution_arn)
+        data = get_failure_slack_notification_message(
+            dataset_version_id, collection_version_id, step_name, job_id, aws_region, execution_arn
+        )
         # For these notifications, we should alert #single-cell-wrangling
         webhook = CorporaConfig().wrangling_slack_webhook
         notify_slack(data, webhook)
