@@ -73,6 +73,7 @@ def sample_slack_status_block_empty():
 def get_collection_version_mock():
     return Mock(
         return_value=CollectionVersionWithDatasets(
+            datasets=[],
             collection_id=CollectionId("collection123"),
             version_id=CollectionVersionId("collection_version_id123"),
             owner="mock owner",
