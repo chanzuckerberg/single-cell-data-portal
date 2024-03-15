@@ -1981,7 +1981,6 @@ class TestDataset(BaseAPIPortalTest):
                 actual_dataset["cell_type_ancestors"],
                 [
                     "CL:0000255",
-                    "CL:0002371",
                     "CL:0000988",
                     "CL:0000738",
                     "CL:0000219",
@@ -2086,7 +2085,6 @@ class TestDataset(BaseAPIPortalTest):
                 actual_dataset["cell_type_ancestors"],
                 [
                     "CL:0000255",
-                    "CL:0002371",
                     "CL:0000988",
                     "CL:0000738",
                     "CL:0000219",
