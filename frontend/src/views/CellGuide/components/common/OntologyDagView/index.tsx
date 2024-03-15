@@ -478,7 +478,7 @@ export default function OntologyDagView({
             placement="top"
             text={
               <>
-                {tooltipTextFirstPart}
+                <b>{tooltipTextFirstPart}</b>
                 <br />
                 <br />
                 UMAP was run using Scanpy&apos;s default parameters on the{" "}
@@ -498,6 +498,12 @@ export default function OntologyDagView({
                   CELLxGENE Census
                 </a>
                 .
+                <br />
+                <br />
+                The cell counts in the Explorer view may not match the cell
+                counts in the ontology view because the integrated embeddings
+                were generated from the long-term supported (LTS) Census data
+                (12-15-2023).
                 <br />
                 <br />
                 <>
