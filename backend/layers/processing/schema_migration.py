@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import random
-from datetime import datetime
 from typing import Any, Dict, Iterable, List
 
 from backend.common.corpora_config import CorporaConfig
@@ -61,48 +60,32 @@ class SchemaMigrate(ProcessingLogic):
         """
         response = []
 
+        has_revision = set()
         # iterates over unpublished collections first, so published versions are skipped if there is an active revision
-        # for collection in self.fetch_collections():
-        #     _resp = {}
-        #     if collection.is_published() and collection.collection_id.id in has_revision:
-        #         continue
-        #
-        #     if collection.is_published():
-        #         # published collection without an active revision
-        #         _resp["can_publish"] = str(True)
-        #     elif collection.is_unpublished_version():
-        #         # active revision of a published collection.
-        #         has_revision.add(collection.collection_id.id)  # revision found, skip published version
-        #         _resp["can_publish"] = str(False)
-        #     elif collection.is_initial_unpublished_version():
-        #         # unpublished collection
-        #         _resp["can_publish"] = str(False)
-        #
-        #     if not auto_publish:
-        #         # auto_publish is off for this migration, overwrite "can_publish" as false in all cases.
-        #         _resp["can_publish"] = str(False)
-        #     _resp.update(
-        #         collection_id=collection.collection_id.id,
-        #         collection_version_id=collection.version_id.id,
-        #     )
-        #     response.append(_resp)
+        for collection in self.fetch_collections():
+            _resp = {}
+            if collection.is_published() and collection.collection_id.id in has_revision:
+                continue
 
-        self.s3_provider.download_file(
-            "corpora-data-dev", "private_collections_to_reprocess.json", "private_collections_to_reprocess.json"
-        )
-        with open("private_collections_to_reprocess.json") as fp:
-            c_to_reprocess = json.load(fp)
+            if collection.is_published():
+                # published collection without an active revision
+                _resp["can_publish"] = str(True)
+            elif collection.is_unpublished_version():
+                # active revision of a published collection.
+                has_revision.add(collection.collection_id.id)  # revision found, skip published version
+                _resp["can_publish"] = str(False)
+            elif collection.is_initial_unpublished_version():
+                # unpublished collection
+                _resp["can_publish"] = str(False)
 
-        assert len(c_to_reprocess) == 65
-
-        response = [
-            {
-                "collection_id": c["collection_id"],
-                "collection_version_id": c["collection_version_id"],
-                "can_publish": str(False),
-            }
-            for c in c_to_reprocess
-        ]
+            if not auto_publish:
+                # auto_publish is off for this migration, overwrite "can_publish" as false in all cases.
+                _resp["can_publish"] = str(False)
+            _resp.update(
+                collection_id=collection.collection_id.id,
+                collection_version_id=collection.version_id.id,
+            )
+            response.append(_resp)
 
         # For testing purposes, only migrate a randomly sampled subset of the collections gathered
         limit = int(self.limit_migration) if isinstance(self.limit_migration, str) else self.limit_migration
@@ -120,14 +103,7 @@ class SchemaMigrate(ProcessingLogic):
             if artifact.type == DatasetArtifactType.RAW_H5AD
         ][0]
         source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(raw_h5ad_uri)
-        self.s3_provider.download_file(source_bucket_name, "d_to_dv.json", "d_to_dv.json")
-        with open("d_to_dv.json") as fp:
-            d_to_dv = json.load(fp)
-        d_v = d_to_dv[dataset_id]
-        source_object_key = f"{d_v}/raw.h5ad"
-        self.s3_provider.download_file(
-            source_bucket_name.replace("dev", "prod"), source_object_key, "previous_schema.h5ad"
-        )
+        self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
         migrated_file = "migrated.h5ad"
         reported_changes = self.schema_validator.migrate(
             "previous_schema.h5ad", migrated_file, collection_id, dataset_id
@@ -198,7 +174,6 @@ class SchemaMigrate(ProcessingLogic):
                     }
                     for dataset in datasets
                     if dataset.status.processing_status == DatasetProcessingStatus.SUCCESS
-                    or dataset.created_at >= datetime(2024, 2, 26)
                     # Filter out datasets that are not successfully processed
                 ]
                 # The repeated fields in datasets is required for the AWS SFN job that uses it.
