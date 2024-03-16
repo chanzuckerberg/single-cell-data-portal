@@ -1,10 +1,13 @@
 import unittest
 from unittest.mock import Mock, patch
 
+import pytest
+
 from backend.layers.common.entities import CollectionVersionId
 
 
 class TestCollectionMigrate(unittest.TestCase):
+    @pytest.fixture
     @patch("backend.curation.api.v1.curation.collections.common.get_collections_base_url")
     def setUp(self, mock_get_collections_base_url, schema_migrate_and_collections):
         self.mock_get_collections_base_url = mock_get_collections_base_url
