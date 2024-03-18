@@ -48,7 +48,7 @@ resource aws_batch_job_definition schema_migrations_swap {
       },
       {
         Type="MEMORY",
-        Value = "256000"
+        Value = "512000"
       }
     ]
     linuxParameters= {
@@ -479,7 +479,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "ResultPath": "$.error"
               }
             ],
-            "OutputPath": "$[0]"
+            "OutputPath": "$[0]",
+            "ToleratedFailurePercentage": 100
           },
           "CollectionError": {
             "Type": "Pass",
@@ -498,7 +499,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
           "Next": "report",
           "ResultPath": null
         }
-      ]
+      ],
+      "ToleratedFailurePercentage": 20
     },
     "report": {
       "Type": "Task",
