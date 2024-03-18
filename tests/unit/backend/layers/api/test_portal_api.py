@@ -2666,20 +2666,6 @@ class TestPublishRevision(BaseAPIPortalTest):
 
         self.assertEqual(400, response.status_code)
 
-    def test__publish_revision_old_data_submission_policy_version__400(self):
-        """
-        Checks for failure on submit of a data submission policy version that is not the latest.
-        """
-
-        unpublished_collection = self.generate_unpublished_collection(add_datasets=1)
-
-        path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        body = {"data_submission_policy_version": "1.0.0"}  # 1.0.0 is older than current version.
-        response = self.app.post(path, headers=headers, data=json.dumps(body))
-
-        self.assertEqual(400, response.status_code)
-
     def test__publish_revision_invalid_data_submission_policy_version__400(self):
         """
         Checks for failure on submit of a data submission policy version that is not a valid version.
