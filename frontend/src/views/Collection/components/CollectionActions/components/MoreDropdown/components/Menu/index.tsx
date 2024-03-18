@@ -75,19 +75,17 @@ const Menu = ({
       open={Boolean(menuProps.open)}
     >
       <CreateCollection id={collection.id} Button={EditButton} />
-      {reorder.isReorderUX && (
-        <ReorderMenuItem
-          data-testid="dropdown-reorder-datasets"
-          disabled={reorder.disabled}
-          onClick={() => {
-            menuProps.onClose();
-            reorder.startReorder();
-          }}
-        >
-          <IconSort />
-          Reorder Datasets
-        </ReorderMenuItem>
-      )}
+      <ReorderMenuItem
+        data-testid="dropdown-reorder-datasets"
+        disabled={reorder.disabled}
+        onClick={() => {
+          menuProps.onClose();
+          reorder.startReorder();
+        }}
+      >
+        <IconSort />
+        Reorder Datasets
+      </ReorderMenuItem>
       <DeleteCollection
         Button={DeleteButton}
         handleDeleteCollection={handleDeleteCollection}

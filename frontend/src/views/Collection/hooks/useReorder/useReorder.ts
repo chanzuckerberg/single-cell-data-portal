@@ -1,6 +1,4 @@
 import { useCallback, useState } from "react";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
-import { FEATURES } from "src/common/featureFlags/features";
 import { useOrderDatasets } from "src/common/queries/collections";
 import { Collection } from "src/common/entities";
 
@@ -26,7 +24,6 @@ export enum REORDER_MODE {
 
 export interface UseReorder {
   isReorder: boolean;
-  isReorderUX: boolean;
   orderedIds?: string[];
   reorderAction: ReorderAction;
 }
@@ -39,7 +36,6 @@ export interface UseReorder {
  * @returns reorder mode.
  */
 export function useReorder(collectionId: Collection["id"]): UseReorder {
-  const isReorderUX = useFeatureFlag(FEATURES.REORDER); // Reorder datasets UX feature flag (reordering is currently only available with the feature flag).
   const [mode, setMode] = useState<REORDER_MODE>(REORDER_MODE.INACTIVE);
   const [orderedIds, setOrderedIds] = useState<string[]>();
   const orderDatasetsMutation = useOrderDatasets(collectionId);
@@ -87,7 +83,6 @@ export function useReorder(collectionId: Collection["id"]): UseReorder {
 
   return {
     isReorder: mode === REORDER_MODE.ACTIVE,
-    isReorderUX,
     reorderAction: {
       onCancelReorder,
       onReorder,
