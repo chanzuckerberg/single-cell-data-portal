@@ -82,6 +82,9 @@ class H5ADDataFile:
         self.write_anndata_embeddings_to_cxg(output_cxg_directory, ctx)
         logging.info("\t...dataset embeddings saved")
 
+        convert_dictionary_to_cxg_group(output_cxg_directory, self.anndata.uns, "uns", ctx)
+        logging.info("\t...dataset uns dataframe saved")
+
         self.write_anndata_x_matrices_to_cxg(output_cxg_directory, ctx, sparse_threshold)
         logging.info("\t...dataset X matrix saved")
 
