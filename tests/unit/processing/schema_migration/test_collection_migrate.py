@@ -1,10 +1,9 @@
-import unittest
 from unittest.mock import Mock
 
 from backend.layers.common.entities import CollectionVersionId
 
 
-class TestCollectionMigrate(unittest.TestCase):
+class TestCollectionMigrate:
     def test_can_publish_true(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = Mock(wraps=schema_migrate._store_sfn_response)
