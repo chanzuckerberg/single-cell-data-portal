@@ -4,6 +4,7 @@ DIMENSION_NAME_MAP_CENSUS_TO_WMG = {
 }
 
 EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG = "expression_summary_and_cell_counts_cube_created"
+EXPRESSION_SUMMARY_DIFFEXP_CUBES_CREATED_FLAG = "expression_summary_diffexp_cubes_created"
 EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG = "expression_summary_default_cube_created"
 MARKER_GENES_CUBE_CREATED_FLAG = "marker_genes_cube_created"
 FILTER_RELATIONSHIPS_CREATED_FLAG = "filter_relationships_created"

@@ -18,6 +18,7 @@ from backend.wmg.data.tiledb import create_ctx
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
 PRIMARY_FILTER_DIMENSIONS_FILENAME = "primary_filter_dimensions.json"
 EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
+EXPRESSION_SUMMARY_DIFFEXP_CUBE_PREFIX = "expression_summary_diffexp"
 EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME = "expression_summary_default"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
 MARKER_GENES_CUBE_NAME = "marker_genes"
