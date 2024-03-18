@@ -4,7 +4,11 @@ from backend.layers.common.entities import CollectionVersionId
 
 
 class TestCollectionMigrate:
-    def test_can_publish_true(self, schema_migrate_and_collections):
+    def test_can_publish_true(self, schema_migrate_and_collections, mocker):
+        mocker.patch(
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
+            return_value="https://collections_domain",
+        )
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = Mock(wraps=schema_migrate._store_sfn_response)
         schema_migrate.schema_version = "0.0.0"
@@ -28,7 +32,11 @@ class TestCollectionMigrate:
             "publish_and_cleanup", published.collection_id.id, response
         )
 
-    def test_can_publish_false(self, schema_migrate_and_collections):
+    def test_can_publish_false(self, schema_migrate_and_collections, mocker):
+        mocker.patch(
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
+            return_value="https://collections_domain",
+        )
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = Mock(wraps=schema_migrate._store_sfn_response)
         schema_migrate.schema_version = "0.0.0"
@@ -50,7 +58,11 @@ class TestCollectionMigrate:
             "publish_and_cleanup", private.collection_id.id, response
         )
 
-    def test_can_publish_false_and_no_datasets(self, schema_migrate_and_collections):
+    def test_can_publish_false_and_no_datasets(self, schema_migrate_and_collections, mocker):
+        mocker.patch(
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
+            return_value="https://collections_domain",
+        )
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = Mock(wraps=schema_migrate._store_sfn_response)
         schema_migrate.schema_version = "0.0.0"
@@ -66,7 +78,11 @@ class TestCollectionMigrate:
             "publish_and_cleanup", published.collection_id.id, response
         )
 
-    def test_can_publish_true_and_filtered_schema_version(self, schema_migrate_and_collections):
+    def test_can_publish_true_and_filtered_schema_version(self, schema_migrate_and_collections, mocker):
+        mocker.patch(
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
+            return_value="https://collections_domain",
+        )
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = Mock(wraps=schema_migrate._store_sfn_response)
         published = collections["published"][0]
@@ -80,7 +96,11 @@ class TestCollectionMigrate:
             "publish_and_cleanup", published.collection_id.id, response
         )
 
-    def test_no_datasets(self, schema_migrate_and_collections):
+    def test_no_datasets(self, schema_migrate_and_collections, mocker):
+        mocker.patch(
+            "backend.curation.api.v1.curation.collections.common.get_collections_base_url",
+            return_value="https://collections_domain",
+        )
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = Mock(wraps=schema_migrate._store_sfn_response)
         published = collections["published"][0]
