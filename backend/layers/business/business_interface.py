@@ -38,6 +38,9 @@ class BusinessLogicInterface:
     ) -> Optional[CollectionVersionWithDatasets]:
         pass
 
+    def get_collections_base_url(self) -> str:
+        pass
+
     def get_collection_version(
         self, version_id: CollectionVersionId, get_tombstoned: bool
     ) -> CollectionVersionWithDatasets:
