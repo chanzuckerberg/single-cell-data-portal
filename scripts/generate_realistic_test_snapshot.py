@@ -15,11 +15,12 @@ from backend.wmg.data.snapshot import (
     DATASET_METADATA_FILENAME,
     EXPRESSION_SUMMARY_CUBE_NAME,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
+    EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES,
     FILTER_RELATIONSHIPS_FILENAME,
     MARKER_GENES_CUBE_NAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
 )
-from backend.wmg.pipeline import run_pipeline
+from backend.wmg.pipeline.pipeline import run_pipeline
 from tests.test_utils.mocks import (
     MockCensusParameters,
     mock_bootstrap_rows_percentiles,
@@ -106,7 +107,7 @@ if __name__ == "__main__":
             MARKER_GENES_CUBE_NAME,
             EXPRESSION_SUMMARY_CUBE_NAME,
             EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
-        ]:
+        ] + EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES:
             if cube_name == fixture_type or fixture_type == FixtureType.all.value:
                 with tiledb.open(os.path.join(corpus_path, cube_name)) as cube:
                     df = cube.df[:]
