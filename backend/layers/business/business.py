@@ -266,8 +266,8 @@ class BusinessLogic(BusinessLogicInterface):
                 unpublished_collection = collection
         return unpublished_collection
 
-    def get_collections_base_url() -> str:
-        return CorporaConfig().collections_base_url
+    def get_collections_url(self, collection_id: str) -> str:
+        return f"{CorporaConfig().collections_base_url}/collections/{collection_id}"
 
     def get_collection_version(
         self, version_id: CollectionVersionId, get_tombstoned: bool = False

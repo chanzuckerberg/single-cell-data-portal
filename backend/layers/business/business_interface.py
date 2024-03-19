@@ -38,7 +38,7 @@ class BusinessLogicInterface:
     ) -> Optional[CollectionVersionWithDatasets]:
         pass
 
-    def get_collections_base_url(self) -> str:
+    def get_collections_url(self, collection_id: str) -> str:
         pass
 
     def get_collection_version(
