@@ -44,28 +44,51 @@ def create_expression_summary_diffexp_cubes(corpus_path: str):
         for secondary_dim in expression_summary_schemas
     }
 
+    default_groupby_dims = base_expression_summary_indexed_dims + expression_summary_attrs
     ctx = create_ctx()
     with tiledb.scope_ctx(ctx):
-        dfs = {secondary_dim: [] for secondary_dim in cube_uris}
-        with tiledb.open(expression_summary_uri, "r") as cube:
-            for row in cube.query(return_incomplete=True).df[:]:
-                # we are generating aggregated dataframes online to avoid reading through the original cube
-                # multiple times. This is a tradeoff between memory and time.
-                # Note: if memory becomes an issue, we can switch to performing the aggregation one secondary
-                # dimension at a time.
-                for secondary_dim in cube_uris:
-                    groupby_dims = base_expression_summary_indexed_dims + expression_summary_attrs + [secondary_dim]
-                    dfs[secondary_dim].append(row.groupby(groupby_dims).sum(numeric_only=True).reset_index())
 
         for secondary_dim, uri in cube_uris.items():
             create_empty_cube_if_needed(uri, expression_summary_schemas[secondary_dim])
-            groupby_dims = base_expression_summary_indexed_dims + expression_summary_attrs + [secondary_dim]
-            expression_summary_df = (
-                pd.concat(dfs[secondary_dim], axis=0).groupby(groupby_dims).sum(numeric_only=True).reset_index()
-            )
 
-            logger.info(f"Writing cube to {uri}")
-            tiledb.from_pandas(uri, pd.concat(expression_summary_df, axis=0), mode="append")
+        expression_summary_default_df_chunks = []
+        with tiledb.open(expression_summary_uri, "r") as cube:
+            for row in cube.query(return_incomplete=True).df[:]:
+                # write the row chunk into the new cube with its specific ArraySchema
+                for secondary_dim, uri in cube_uris.items():
+                    if secondary_dim == "default":
+                        continue
+
+                    tiledb.from_pandas(
+                        uri,
+                        row[_get_columns_from_array_schema(expression_summary_schemas[secondary_dim])],
+                        mode="append",
+                    )
+
+                # generate the default cube chunk by chunk
+                expression_summary_default_df_chunks.append(
+                    row.groupby(default_groupby_dims).sum(numeric_only=True).reset_index()
+                )
+
+            # perform a final groupby and write the default cube
+            expression_summary_default_df = (
+                pd.concat(expression_summary_default_df_chunks, axis=0)
+                .groupby(default_groupby_dims)
+                .sum(numeric_only=True)
+                .reset_index()
+            )
+            logger.info(f"Writing cube to {cube_uris['default']}")
+            tiledb.from_pandas(
+                cube_uris["default"],
+                expression_summary_default_df[_get_columns_from_array_schema(expression_summary_schemas["default"])],
+                mode="append",
+            )
 
     pipeline_state[EXPRESSION_SUMMARY_DIFFEXP_CUBES_CREATED_FLAG] = True
     write_pipeline_state(pipeline_state, corpus_path)
+
+
+def _get_columns_from_array_schema(array_schema: tiledb.ArraySchema):
+    dimension_names = [dim.name for dim in array_schema.domain]
+    attribute_names = [attr.name for attr in array_schema]
+    return dimension_names + attribute_names

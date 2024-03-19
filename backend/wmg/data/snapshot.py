@@ -12,6 +12,7 @@ from tiledb import Array
 
 from backend.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
+from backend.wmg.data.schemas.expression_summary_cube_schemas_diffexp import expression_summary_secondary_dims
 from backend.wmg.data.tiledb import create_ctx
 
 # Snapshot data artifact file/dir names
@@ -25,6 +26,9 @@ MARKER_GENES_CUBE_NAME = "marker_genes"
 FILTER_RELATIONSHIPS_FILENAME = "filter_relationships.json"
 DATASET_METADATA_FILENAME = "dataset_metadata.json"
 CELL_TYPE_ANCESTORS_FILENAME = "cell_type_ancestors.json"
+EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES = [
+    f"{EXPRESSION_SUMMARY_DIFFEXP_CUBE_PREFIX}_{dim}" for dim in expression_summary_secondary_dims
+]
 
 STACK_NAME = os.environ.get("REMOTE_DEV_PREFIX")
 
