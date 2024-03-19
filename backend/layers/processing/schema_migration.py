@@ -137,7 +137,7 @@ class SchemaMigrate(ProcessingLogic):
         datasets = [dataset for dataset in version.datasets if not self.check_dataset_is_latest_schema_version(dataset)]
 
         # Generate canonical collection url
-        collection_url = self.business_logic.get_collections_url(version.collection_id.id)
+        collection_url = self.business_logic.get_collection_url(version.collection_id.id)
 
         # Filter out datasets that are already on the current schema version
         if not datasets:

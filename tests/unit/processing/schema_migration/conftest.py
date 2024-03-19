@@ -121,6 +121,9 @@ def schema_migrate_and_collections(
     def _get_collection_version(collection_version_id):
         return db.get(collection_version_id.id)
 
+    def _get_collection_url(collection_id):
+        return f"https://collections_domain/collections/{collection_id}"
+
     schema_migrate.business_logic.get_collection_version = _get_collection_version
-    schema_migrate.business_logic.get_collections_base_url = "https://collections_domain"
+    schema_migrate.business_logic.get_collection_url = _get_collection_url
     return schema_migrate, {"published": [published_collection], "revision": revision, "private": [private]}
