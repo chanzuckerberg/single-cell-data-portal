@@ -12,7 +12,12 @@ class TestCollectionMigrate:
         collection_version_id = CollectionVersionId()
         schema_migrate.business_logic.create_collection_version.return_value = Mock(version_id=collection_version_id)
         datasets = [
-            {"can_publish": "True", "dataset_id": dataset.dataset_id.id, "dataset_version_id": dataset.version_id.id}
+            {
+                "can_publish": "True",
+                "dataset_id": dataset.dataset_id.id,
+                "dataset_version_id": dataset.version_id.id,
+                "collection_url": f"https://collections_domain/collections/{published.collection_id.id}",
+            }
             for dataset in published.datasets
         ]
         response = schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, True)
@@ -34,7 +39,12 @@ class TestCollectionMigrate:
         schema_migrate.schema_version = "0.0.0"
         private = collections["private"][0]
         datasets = [
-            {"can_publish": "False", "dataset_id": dataset.dataset_id.id, "dataset_version_id": dataset.version_id.id}
+            {
+                "can_publish": "False",
+                "dataset_id": dataset.dataset_id.id,
+                "dataset_version_id": dataset.version_id.id,
+                "collection_url": f"https://collections_domain/collections/{private.collection_id.id}",
+            }
             for dataset in private.datasets
         ]
         response = schema_migrate.collection_migrate(private.collection_id.id, private.version_id.id, False)
