@@ -124,10 +124,3 @@ def schema_migrate_and_collections(
     schema_migrate.business_logic.get_collection_version = _get_collection_version
     schema_migrate.business_logic.get_collections_base_url = "https://collections_domain"
     return schema_migrate, {"published": [published_collection], "revision": revision, "private": [private]}
-
-
-@pytest.fixture(scope="session", autouse=True)
-def patch_get_collections_base_url():
-    with mock.patch("backend.curation.api.v1.curation.collections.common.get_collections_base_url") as mock_patch:
-        mock_patch.return_value = "https://collections_domain"
-        yield
