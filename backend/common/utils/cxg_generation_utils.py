@@ -29,10 +29,17 @@ def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata
     def iterate_over_dict(metadata_dict):
         with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
             for key, value in metadata_dict.items():
+                logging.info(f"Adding metadata to array: {key}")
                 if isinstance(value, dict):
                     iterate_over_dict(value)
                 else:
-                    metadata_array.meta[key] = value
+                    try:
+                        # this fails on lists
+                        metadata_array.meta[key] = value
+                    except Exception as e:
+                        logging.error(f"Error adding metadata to array: {e}")
+                        logging.error(f"Metadata key: {key}")
+                        logging.error(f"Metadata value: {value}")
 
     iterate_over_dict(metadata_dict)
 
