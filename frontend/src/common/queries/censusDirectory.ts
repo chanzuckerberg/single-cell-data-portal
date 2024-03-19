@@ -7,7 +7,8 @@ import { API } from "../API";
 
 export interface Project {
   id: string;
-  tier: "hosted";
+  embedding_name: string;
+  tier: string;
   census_version: string;
   experiment_name: string;
   measurement_name: string;
@@ -60,6 +61,12 @@ async function fetchProjects(): Promise<ProjectResponse | undefined> {
           keyof ProjectResponse,
           ProjectResponse[keyof ProjectResponse],
         ]) => {
+          if (data[id].id.startsWith("CxG-contrib-")) {
+            data[id].tier = "hosted";
+          } else if (data[id].id.startsWith("CxG-czi-")) {
+            data[id].tier = "maintained";
+          }
+
           if (!project.DOI) return;
 
           // include a mailto: query param to insure reliable service
@@ -83,7 +90,6 @@ async function fetchProjects(): Promise<ProjectResponse | undefined> {
 
           data[id].publication_info = publication_info;
           data[id].publication_link = result.message.URL;
-          data[id].tier = "hosted";
         }
       )
     );
