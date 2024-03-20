@@ -118,6 +118,23 @@ class TestPublishRevisions:
         assert "Unable to publish collection version." in caplog.messages
         publish_revisions.business_logic.publish_collection_version.assert_not_called()
 
+    def test_run_pos__do_not_publish_list(self, published_revisions_and_collections, caplog):
+        """Run method when revision is skipped via do_not_publish_list."""
+        # Mock necessary objects and methods
+        caplog.set_level(logging.INFO)
+        publish_revisions, collections = published_revisions_and_collections
+        _, revision = collections["revision"]
+        publish_revisions.business_logic.get_collections.return_value = [collections]
+        publish_revisions.do_not_publish_list = [revision.version_id.id]
+
+        # Call the method
+        publish_revisions.run()
+
+        # Assert the calls and behavior
+        publish_revisions.check_datasets.assert_not_called()
+        assert "Skipping collection version, it is in the do not publish list" in caplog.messages
+        publish_revisions.business_logic.publish_collection_version.assert_not_called()
+
 
 if __name__ == "__main__":
     pytest.main()
