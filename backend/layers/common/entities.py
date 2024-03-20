@@ -278,6 +278,7 @@ class CollectionVersionBase:
     schema_version: str
     canonical_collection: CanonicalCollection
     has_custom_dataset_order: bool
+    data_submission_policy_version: str
 
     def is_published(self) -> bool:
         """
