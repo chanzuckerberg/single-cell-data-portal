@@ -6,7 +6,12 @@ from typing import Optional
 from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.aws import delete_many_from_s3
 from backend.common.utils.result_notification import aws_batch_job_url_fmt_str, aws_sfn_url_fmt_str, notify_slack
-from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatusKey, DatasetVersionId
+from backend.layers.common.entities import (
+    CollectionVersionId,
+    DatasetProcessingStatus,
+    DatasetStatusKey,
+    DatasetVersionId,
+)
 from backend.layers.processing import logger
 from backend.portal.api.providers import get_business_logic
 
@@ -25,7 +30,12 @@ def handle_failure(event: dict, context, delete_artifacts=True) -> None:
         execution_arn,
     ) = parse_event(event)
     trigger_slack_notification(
-        dataset_version_id, collection_version_id, error_step_name, error_job_id, error_aws_regions, execution_arn
+        dataset_version_id,
+        collection_version_id,
+        error_step_name,
+        error_job_id,
+        error_aws_regions,
+        execution_arn,
     )
     update_dataset_processing_status_to_failed(dataset_version_id)
     if delete_artifacts:
@@ -104,6 +114,11 @@ def get_failure_slack_notification_message(
     batch_url = aws_batch_job_url_fmt_str.format(aws_region=aws_region, job_id=job_id)
     step_function_url = aws_sfn_url_fmt_str.format(aws_region=aws_region, execution_arn=execution_arn)
     collection_version_url = f"https://cellxgene.cziscience.com/collections/{collection_version_id}"
+
+    # Generate canonical collection URL
+    version = get_business_logic().get_collection_version(CollectionVersionId(collection_version_id))
+    collection_url = f"https://cellxgene.cziscience.com/collections/{version.collection_id.id}"
+
     data = {
         "blocks": [
             {
@@ -120,6 +135,7 @@ def get_failure_slack_notification_message(
                     "type": "mrkdwn",
                     "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     f"*Owner*: {collection_owner}\n"
+                    f"*Collection URL*: {collection_url}\n"
                     f"*Collection Version URL*: {collection_version_url}\n"
                     f"*Batch Job ID*: <{batch_url}|{job_id}>\n"
                     f"*Step Function ARN*: <{step_function_url}|{execution_arn}>\n"
