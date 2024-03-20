@@ -1093,7 +1093,6 @@ components:
         - consortia
         - created_at
         - updated_at
-        - data_submission_policy_version
       properties:
         access_type:
           $ref: "#/components/schemas/access_type"

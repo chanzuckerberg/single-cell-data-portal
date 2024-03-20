@@ -3,6 +3,7 @@ import json
 import sys
 import threading
 
+from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from tests.functional.backend.common import BaseFunctionalTestCase
 
 # Amount to reduce chance of collision where multiple test instances select the same collection to test against
@@ -52,7 +53,7 @@ class SmokeTestsInitializer(BaseFunctionalTestCase):
         return data["collection_id"]
 
     def publish_collection(self, collection_id):
-        body = {"data_submission_policy_version": "1.0"}
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         res = self.session.post(
             f"{self.api}/dp/v1/collections/{collection_id}/publish", headers=self.headers, data=json.dumps(body)
         )

@@ -6,6 +6,7 @@ from datetime import datetime
 from functools import reduce
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
+from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.corpora_config import CorporaConfig
 from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 from backend.layers.business.business_interface import BusinessLogicInterface
@@ -877,7 +878,9 @@ class BusinessLogic(BusinessLogicInterface):
         # Reset tombstone values in database
         self.database_provider.resurrect_collection(collection_id, datasets_to_resurrect)
 
-    def publish_collection_version(self, version_id: CollectionVersionId) -> None:
+    def publish_collection_version(
+        self, version_id: CollectionVersionId, data_submission_policy_version: str = DATA_SUBMISSION_POLICY_VERSION
+    ) -> None:
         """
         Publishes a collection version.
         """
@@ -910,7 +913,11 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Finalize Collection publication and delete any tombstoned assets
         dataset_version_ids_to_delete_from_s3 = self.database_provider.finalize_collection_version(
-            version.collection_id, version_id, schema_version, update_revised_at=has_dataset_revisions
+            version.collection_id,
+            version_id,
+            schema_version,
+            data_submission_policy_version,
+            update_revised_at=has_dataset_revisions,
         )
         self.delete_dataset_versions_from_public_bucket(dataset_version_ids_to_delete_from_s3)
 
