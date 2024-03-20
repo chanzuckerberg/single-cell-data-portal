@@ -1828,6 +1828,12 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         if version:  # pylance
             self.assertEqual(version.version_id, published_version.version_id)
 
+    def test_collection_url(self):
+        self.assertEqual(
+            self.business_logic.get_collection_url(collection_id="test-collection-id"),
+            "https://collections_domain/collections/test-collection-id",
+        )
+
     def test_publish_collection_with_no_datasets_fail(self):
         """
         Publishing a collection version with no datasets should fail
