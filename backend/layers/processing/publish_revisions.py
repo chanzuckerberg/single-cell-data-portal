@@ -2,11 +2,11 @@
 After a migration has run, this can be used to publish all open revision for migrated collections.
 
 $ aws batch submit-job --job-name publish-revisions \
-  \ --job-queue <your_job_queue_ARN>
-  \ --job-definition <your_job_definition_ARN>
-  \ --container-overrides {
+  --job-queue <your_job_queue_ARN> \
+  --job-definition <your_job_definition_ARN> \
+  --container-overrides '{
     "environment": [{"name": "DO_NOT_PUBLISH_LIST", "value": "collection_version_id1,collection_version_id2"}]
-  }
+  }'
 
 """
 import logging
