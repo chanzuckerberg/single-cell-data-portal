@@ -29,7 +29,7 @@ jobs:
           - processing
           - wmg_processing
           - cellguide_pipeline
-    runs-on: [self-hosted, AMD64, linux]
+    runs-on: ubuntu-22.04
     outputs:
       image_tag: ${{ steps.push_images.outputs.image_tag }}
     steps:
