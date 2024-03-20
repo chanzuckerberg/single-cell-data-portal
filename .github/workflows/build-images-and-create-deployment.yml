@@ -45,7 +45,7 @@ jobs:
         uses: avakar/create-deployment@v1
         # To stop deployment to a specific DEPLOYMENT_STAGE remove it from condition below.
         # The DEPLOYMENT_STAGE that should be present are dev, stage, prod.
-        if: env.DEPLOYMENT_STAGE == 'prod' || env.DEPLOYMENT_STAGE == 'stage'
+        if: env.DEPLOYMENT_STAGE == 'prod' || env.DEPLOYMENT_STAGE == 'stage' || env.DEPLOYMENT_STAGE == 'dev'
         with:
           auto_merge: false
           environment: ${{ env.DEPLOYMENT_STAGE }}
