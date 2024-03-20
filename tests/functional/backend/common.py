@@ -39,8 +39,8 @@ class BaseFunctionalTestCase(unittest.TestCase):
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
         cls.config = CorporaAuthConfig()
         cls.test_dataset_uri = (
-            "https://www.dropbox.com/scl/fi/d99hpw3p2cxtmi7v4kyv5/"
-            "4_0_0_test_dataset.h5ad?rlkey=i5ownt8g1mropbu41r7fa0i06&dl=0"
+            "https://www.dropbox.com/scl/fi/y50umqlcrbz21a6jgu99z/"
+            "5_0_0_example_valid.h5ad?rlkey=s7p6ybyx082hswix26hbl11pm&dl=0"
         )
         cls.session = requests.Session()
         # apply retry config to idempotent http methods we use + POST requests, which are currently all either

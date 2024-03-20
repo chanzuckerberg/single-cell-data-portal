@@ -2,8 +2,11 @@
 After a migration has run, this can be used to publish all open revision for migrated collections.
 
 $ aws batch submit-job --job-name publish-revisions \
-  \ --job-queue <your_job_queue_ARN>
-  \ --job-definition <your_job_definition_ARN>
+  --job-queue <your_job_queue_ARN> \
+  --job-definition <your_job_definition_ARN> \
+  --container-overrides '{
+    "environment": [{"name": "DO_NOT_PUBLISH_LIST", "value": "collection_version_id1,collection_version_id2"}]
+  }'
 
 """
 import logging
@@ -27,13 +30,14 @@ configure_logging(level=logging.INFO)
 
 
 class PublishRevisions(ProcessingLogic):
-    def __init__(self, business_logic: BusinessLogic) -> None:
+    def __init__(self, business_logic: BusinessLogic, do_not_publish_list: List[str] = None) -> None:
         super().__init__()
         self.business_logic = business_logic
         self.s3_provider = business_logic.s3_provider
         self.schema_validator = SchemaValidatorProvider()
         self.artifact_bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
         self.schema_version = self.schema_validator.get_current_schema_version()
+        self.do_not_publish_list = do_not_publish_list if do_not_publish_list else []
 
     def check_datasets(self, collection_version: CollectionVersionWithDatasets) -> List[Dict]:
         """Check that all datasets have been migrated and are in a success state"""
@@ -63,6 +67,12 @@ class PublishRevisions(ProcessingLogic):
     def run(self):
         for collection_version in self.business_logic.get_collections(CollectionQueryFilter(is_published=False)):
             if collection_version.is_unpublished_version():
+                if collection_version.version_id.id in self.do_not_publish_list:
+                    self.logger.info(
+                        "Skipping collection version, it is in the do not publish list",
+                        extra={"collection_version_id": collection_version.version_id.id},
+                    )
+                    continue
                 _collection_version = self.business_logic.get_collection_version(collection_version.version_id)
                 errors = self.check_datasets(_collection_version)
                 if errors:
@@ -94,5 +104,5 @@ if __name__ == "__main__":
         S3Provider(),
         UriProvider(),
     )
-
-    PublishRevisions(business_logic).run()
+    do_not_publish_list = os.environ.get("DO_NOT_PUBLISH_LIST", None).split(",")
+    PublishRevisions(business_logic, do_not_publish_list).run()
