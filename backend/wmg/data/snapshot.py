@@ -18,6 +18,7 @@ from backend.wmg.data.tiledb import create_ctx
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
 PRIMARY_FILTER_DIMENSIONS_FILENAME = "primary_filter_dimensions.json"
+CARDINALITY_PER_DIMENSION_FILENAME = "cardinality_per_dimension.json"
 EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
 EXPRESSION_SUMMARY_DIFFEXP_CUBE_PREFIX = "expression_summary_diffexp"
 EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME = "expression_summary_default"
@@ -27,8 +28,9 @@ FILTER_RELATIONSHIPS_FILENAME = "filter_relationships.json"
 DATASET_METADATA_FILENAME = "dataset_metadata.json"
 CELL_TYPE_ANCESTORS_FILENAME = "cell_type_ancestors.json"
 EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES = [
-    f"{EXPRESSION_SUMMARY_DIFFEXP_CUBE_PREFIX}_{dim}" for dim in expression_summary_secondary_dims
+    f"{EXPRESSION_SUMMARY_DIFFEXP_CUBE_PREFIX}__{dim}" for dim in expression_summary_secondary_dims
 ]
+EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES.append(f"{EXPRESSION_SUMMARY_DIFFEXP_CUBE_PREFIX}__default")
 
 STACK_NAME = os.environ.get("REMOTE_DEV_PREFIX")
 
@@ -60,6 +62,8 @@ class WmgSnapshot:
     # See the full schema at backend/wmg/data/schemas/cube_schema_default.py.
     expression_summary_default_cube: Optional[Array] = field(default=None)
 
+    diffexp_expression_summary_cubes: Optional[Dict[str, Array]] = field(default=None)
+
     # TileDB array containing the precomputed marker genes.
     # See the full schema at backend/wmg/data/schemas/marker_gene_cube_schema.py.
     marker_genes_cube: Optional[Array] = field(default=None)
@@ -83,6 +87,9 @@ class WmgSnapshot:
 
     # cell type ancestors pandas Series
     cell_type_ancestors: Optional[pd.Series] = field(default=None)
+
+    # cardinality per dimension dictionary
+    cardinality_per_dimension: Optional[Dict] = field(default=None)
 
 
 # Cached data
@@ -314,6 +321,9 @@ def _load_snapshot(
         filter_relationships=filter_relationships,
         dataset_metadata=dataset_metadata,
         cell_type_ancestors=pd.Series(cell_type_ancestors),
+        diffexp_expression_summary_cubes={
+            name.split("__")[-1]: _open_cube(f"{snapshot_uri}/{name}") for name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
+        },
     )
 
 
@@ -371,6 +381,11 @@ def _load_cell_type_order(snapshot_rel_path: str, snapshot_fs_root_path: Optiona
 
 def _load_primary_filter_data(snapshot_rel_path: str, snapshot_fs_root_path: Optional[str] = None) -> Dict:
     rel_path = f"{snapshot_rel_path}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}"
+    return json.loads(_read_wmg_data_file(rel_path, snapshot_fs_root_path))
+
+
+def _load_cardinality_per_dimension_data(snapshot_rel_path: str, snapshot_fs_root_path: Optional[str] = None) -> Dict:
+    rel_path = f"{snapshot_rel_path}/{CARDINALITY_PER_DIMENSION_FILENAME}"
     return json.loads(_read_wmg_data_file(rel_path, snapshot_fs_root_path))
 
 
