@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 from flask import Response, jsonify, make_response
 
+from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.utils.http_exceptions import (
     ConflictException,
     ForbiddenHTTPException,
@@ -133,6 +134,15 @@ def _dataset_asset_to_response(dataset_artifact: DatasetArtifact, dataset_id: st
         "updated_at": 0,
         "user_submitted": True,
     }
+
+
+def _is_data_submission_policy_version_valid(data_submission_policy_version: str) -> bool:
+    """
+    Returns True if the given policy version is equal to the latest policy version.
+    """
+    if not data_submission_policy_version:
+        return False
+    return data_submission_policy_version == DATA_SUBMISSION_POLICY_VERSION
 
 
 def _ontology_term_ids_to_response(ontology_term_ids: List[OntologyTermId]):
@@ -263,7 +273,7 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
             "contact_name": collection.metadata.contact_name,
             "created_at": collection.created_at,
             "curator_name": collection.curator_name,
-            "data_submission_policy_version": "1.0",  # TODO
+            "data_submission_policy_version": collection.data_submission_policy_version,
             "datasets": [
                 _dataset_to_response(
                     ds,
@@ -575,8 +585,12 @@ def publish_post(collection_id: str, body: object, token_info: dict):
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
 
+    data_submission_policy_version = body.get("data_submission_policy_version")
+    if not _is_data_submission_policy_version_valid(data_submission_policy_version):
+        raise InvalidParametersHTTPException(detail="Missing or invalid data_submission_policy_version field")
+
     try:
-        get_business_logic().publish_collection_version(version.version_id)
+        get_business_logic().publish_collection_version(version.version_id, data_submission_policy_version)
     except CollectionPublishException:
         raise ConflictException(detail="The collection must have a least one dataset.") from None
 
