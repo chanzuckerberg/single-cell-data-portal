@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   functional-test:
-    runs-on: [self-hosted, ARM64, linux]
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -36,7 +36,7 @@ jobs:
           DEPLOYMENT_STAGE=rdev STACK_NAME=${{ env.STACK_NAME }} make functional-test
 
   seed-database-e2e-tests:
-    runs-on: [self-hosted, ARM64, linux]
+    runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -59,7 +59,7 @@ jobs:
       - functional-test #TODO: Added to reduce parellelism. Remove when we have more workers.
     timeout-minutes: 30
     name: e2e-tests ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
-    runs-on: [self-hosted, ARM64, linux]
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -143,7 +143,7 @@ jobs:
     # Merge reports after playwright-tests, even if some shards have failed
     if: always()
     needs: run-e2e-tests
-    runs-on: [self-hosted, ARM64, linux]
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: frontend
@@ -177,7 +177,7 @@ jobs:
   e2e-test:
     if: always()
     name: e2e-test
-    runs-on: [self-hosted, ARM64, linux]
+    runs-on: ubuntu-latest
     needs:
       - run-e2e-tests
     steps:
@@ -194,7 +194,7 @@ jobs:
 
   e2e-logged-in-test:
     timeout-minutes: 30
-    runs-on: [self-hosted, ARM64, linux]
+    runs-on: ubuntu-22.04
     defaults:
       run:
         working-directory: frontend
