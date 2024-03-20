@@ -58,7 +58,7 @@ jobs:
     uses: ./.github/workflows/build-images.yml
     secrets: inherit
     concurrency:
-      group: ${{ env.STACK_NAME }}-build
+      group: pr-${{ github.event.number }}-build
       cancel-in-progress: true
 
   seed-wmg-cellguide-rdev:
@@ -87,7 +87,7 @@ jobs:
   deploy-rdev:
     runs-on: ubuntu-22.04
     concurrency:
-      group: ${{ env.STACK_NAME }}-happy
+      group: pr-${{ github.event.number }}-happy
       cancel-in-progress: false
     needs:
       - build_images
@@ -170,7 +170,7 @@ jobs:
     uses: ./.github/workflows/rdev-tests.yml
     secrets: inherit
     concurrency:
-      group: ${{ env.STACK_NAME }}-test
+      group: pr-${{ github.event.number }}-test
       cancel-in-progress: true
     needs:
       - deploy-rdev
