@@ -126,6 +126,7 @@ class TestPublishRevisions:
         _, revision = collections["revision"]
         publish_revisions.business_logic.get_collections.return_value = [collections]
         publish_revisions.do_not_publish_list = [revision.version_id.id]
+        publish_revisions.check_datasets = Mock(return_value=[])
 
         # Call the method
         publish_revisions.run()
