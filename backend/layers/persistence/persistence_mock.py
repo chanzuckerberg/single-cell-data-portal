@@ -79,6 +79,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             canonical_collection=canonical,
             datasets=[],
             has_custom_dataset_order=False,
+            data_submission_policy_version=None,
         )
         self.collections_versions[version_id.id] = version
         # Don't set mappings here - those will be set when publishing the collection!
@@ -208,6 +209,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             schema_version=None,
             canonical_collection=cc,
             has_custom_dataset_order=current_version.has_custom_dataset_order,
+            data_submission_policy_version=None,
         )
         self.collections_versions[new_version_id.id] = collection_version
         return new_version_id
@@ -284,6 +286,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         collection_id: CollectionId,
         version_id: CollectionVersionId,
         schema_version: str,
+        data_submission_policy_version: str,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
     ) -> List[str]:
@@ -332,6 +335,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             self.collections[collection_id.id] = new_collection
         self.collections_versions[version_id.id].published_at = published_at
         self.collections_versions[version_id.id].schema_version = schema_version
+        self.collections_versions[version_id.id].data_submission_policy_version = data_submission_policy_version
 
         return dataset_version_ids_to_delete_from_s3
 
