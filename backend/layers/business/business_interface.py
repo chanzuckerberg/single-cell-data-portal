@@ -101,7 +101,7 @@ class BusinessLogicInterface:
     def delete_collection_version(self, collection_version: CollectionVersionWithDatasets) -> None:
         pass
 
-    def publish_collection_version(self, version_id: CollectionVersionId) -> None:
+    def publish_collection_version(self, version_id: CollectionVersionId, data_submission_policy_version: str) -> None:
         pass
 
     def ingest_dataset(

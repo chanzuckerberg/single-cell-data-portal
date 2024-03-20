@@ -6,6 +6,7 @@ import unittest
 import requests
 from requests import HTTPError
 
+from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from tests.functional.backend.common import BaseFunctionalTestCase
 
 
@@ -98,7 +99,7 @@ class TestApi(BaseFunctionalTestCase):
 
         # make collection public
         with self.subTest("Test make collection public"):
-            body = {"data_submission_policy_version": "1.0"}
+            body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
             res = self.session.post(
                 f"{self.api}/dp/v1/collections/{collection_id}/publish", headers=headers, data=json.dumps(body)
             )
