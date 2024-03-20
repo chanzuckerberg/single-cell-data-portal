@@ -7,10 +7,10 @@ from unittest import mock
 from unittest.mock import Mock, patch
 
 from backend.wmg.data.snapshot import _get_wmg_snapshot_schema_dir_rel_path
-from backend.wmg.pipeline import logger, main
 from backend.wmg.pipeline.constants import MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION
 from backend.wmg.pipeline.expression_summary_and_cell_counts import create_expression_summary_and_cell_counts_cubes
 from backend.wmg.pipeline.load_cube import _get_wmg_snapshot_s3_fullpath
+from backend.wmg.pipeline.pipeline import logger, main
 
 
 def mock_census_schema_version_unsupported(_census):
