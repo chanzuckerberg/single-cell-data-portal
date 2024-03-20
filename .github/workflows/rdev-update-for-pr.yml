@@ -54,11 +54,24 @@ jobs:
           echo "ECR_REPOS=${ECR_REPOS[@]}" >> $GITHUB_OUTPUT
           echo "IMAGE_DIGESTS=${IMAGE_DIGESTS[@]}" >> $GITHUB_OUTPUT
 
+  # This is a workaround because concurrency can't use the `env` context to get STACK_NAME
+  stack_name:
+    runs-on: ubuntu-22.04
+    outputs:
+      stack_name: ${{ steps.get_stack_name.outputs.stack_name }}
+    steps:
+      - name: Get stack name
+        id: get_stack_name
+        run: |
+          echo "stack_name=pr-${{ github.event.number }}" >> $GITHUB_OUTPUT
+
   build_images:
     uses: ./.github/workflows/build-images.yml
     secrets: inherit
+    needs:
+      - stack_name
     concurrency:
-      group: pr-${{ github.event.number }}-build
+      group: ${{ needs.stack_name.outputs.stack_name }}-build
       cancel-in-progress: true
 
   seed-wmg-cellguide-rdev:
@@ -87,12 +100,13 @@ jobs:
   deploy-rdev:
     runs-on: ubuntu-22.04
     concurrency:
-      group: pr-${{ github.event.number }}-happy
+      group: ${{ needs.stack_name.outputs.stack_name }}-happy
       cancel-in-progress: false
     needs:
       - build_images
       - get_previous_image_digests
       - seed-wmg-cellguide-rdev
+      - stack_name
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -170,7 +184,8 @@ jobs:
     uses: ./.github/workflows/rdev-tests.yml
     secrets: inherit
     concurrency:
-      group: pr-${{ github.event.number }}-test
+      group: ${{ needs.stack_name.outputs.stack_name }}-test
       cancel-in-progress: true
     needs:
       - deploy-rdev
+      - stack_name
