@@ -7,6 +7,7 @@ from typing import List, Tuple
 from unittest.mock import ANY, Mock, call
 from uuid import uuid4
 
+from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.corpora_config import CorporaConfig
 from backend.layers.business.business import (
     BusinessLogic,
@@ -245,7 +246,11 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         else:
             published_at = datetime.utcnow()
         self.database_provider.finalize_collection_version(
-            version.collection_id, version.version_id, "3.0.0", published_at=published_at
+            version.collection_id,
+            version.version_id,
+            "3.0.0",
+            DATA_SUBMISSION_POLICY_VERSION,
+            published_at=published_at,
         )
         return self.database_provider.get_collection_version_with_datasets(version.version_id)
 
@@ -415,6 +420,7 @@ class TestGetCollectionVersion(BaseBusinessLogicTestCase):
         self.assertIsNotNone(fetched_version)
         self.assertIsNotNone(fetched_version.published_at)
         self.assertEqual(fetched_version.metadata, version.metadata)
+        self.assertIsNotNone(fetched_version.data_submission_policy_version)
 
     def test_get_published_collection_version_for_published_collection_is_none(self):
         """
@@ -435,6 +441,7 @@ class TestGetCollectionVersion(BaseBusinessLogicTestCase):
 
         self.assertIsNone(fetched_version.published_at)
         self.assertEqual(fetched_version.metadata, version.metadata)
+        self.assertIsNone(fetched_version.data_submission_policy_version)
 
     def test_get_collection_version_for_published_collection_ok(self):
         """
@@ -1810,6 +1817,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         )  # TODO: ideally, do a date assertion here (requires mocking)
         self.assertIsNotNone(published_version.canonical_collection.originally_published_at)
         self.assertEqual(published_version.published_at, published_version.canonical_collection.originally_published_at)
+        self.assertEqual(published_version.data_submission_policy_version, DATA_SUBMISSION_POLICY_VERSION)
 
         # The published and unpublished collection have the same collection_id and version_id
         self.assertEqual(published_version.collection_id, unpublished_collection.collection_id)
@@ -1819,6 +1827,12 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         version = self.business_logic.get_published_collection_version(unpublished_collection.collection_id)
         if version:  # pylance
             self.assertEqual(version.version_id, published_version.version_id)
+
+    def test_collection_url(self):
+        self.assertEqual(
+            self.business_logic.get_collection_url(collection_id="test-collection-id"),
+            "https://collections_domain/collections/test-collection-id",
+        )
 
     def test_publish_collection_with_no_datasets_fail(self):
         """
