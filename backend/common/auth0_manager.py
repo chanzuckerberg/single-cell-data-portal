@@ -13,7 +13,8 @@ class Auth0ManagementSession:
     """
     A wrapper around the Auth0 Management API. https://auth0.com/docs/api/management/v2
 
-     Don't skip these tests https://github.com/chanzuckerberg/single-cell-data-portal/blob/82ddc2a019bb8e057bc5783e659231d4e2dc9867/tests/functional/backend/corpora/test_api_key.py#L10
+     Don't skip these tests https://github.com/chanzuckerberg/single-cell-data-portal/blob
+     /82ddc2a019bb8e057bc5783e659231d4e2dc9867/tests/functional/backend/corpora/test_api_key.py#L10
      if modifying this code.
     """
 
@@ -135,6 +136,10 @@ class Auth0ManagementSession:
                 audience=self.config.curation_audience,
             ),
         )
+        if response.status_code != 200:
+            logger.error(
+                "Failed to generate access token.", extra={"response": response.json(), "headers": response.headers}
+            )
         response.raise_for_status()
         return response.json()
 
