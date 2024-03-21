@@ -20,6 +20,9 @@ from backend.wmg.data.schemas.cube_schema import expression_summary_schema as ex
 from backend.wmg.data.schemas.cube_schema_default import (
     expression_summary_schema as expression_summary_default_schema_actual,
 )
+from backend.wmg.data.schemas.expression_summary_cube_schemas_diffexp import (
+    expression_summary_schemas as expression_summary_diffexp_schemas,
+)
 from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema as marker_genes_schema_actual
 from backend.wmg.data.snapshot import (
     CARDINALITY_PER_DIMENSION_FILENAME,
@@ -315,7 +318,7 @@ def load_realistic_test_snapshot_tmpdir(snapshot_name: str) -> WmgSnapshot:
     for cube_name in expression_summary_diffexp:
         tiledb.Array.create(
             f"{cube_dir}/{cube_name}",
-            expression_summary_schema_actual,
+            expression_summary_diffexp_schemas[cube_name.split("__")[-1]],
             overwrite=True,
         )
         tiledb.from_pandas(f"{cube_dir}/{cube_name}", expression_summary_diffexp[cube_name], mode="append")
