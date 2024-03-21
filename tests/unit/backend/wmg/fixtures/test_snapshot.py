@@ -318,12 +318,10 @@ def load_realistic_test_snapshot_tmpdir(snapshot_name: str) -> WmgSnapshot:
     for cube_name in expression_summary_diffexp:
         tiledb.Array.create(
             f"{cube_dir}/{cube_name}",
-            expression_summary_schema_actual,
+            expression_summary_diffexp_schemas[cube_name.split("__")[-1]],
             overwrite=True,
         )
-        tiledb.from_pandas(
-            f"{cube_dir}/{cube_name}", expression_summary_diffexp_schemas[cube_name.split("__")[-1]], mode="append"
-        )
+        tiledb.from_pandas(f"{cube_dir}/{cube_name}", expression_summary_diffexp[cube_name], mode="append")
 
     with gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}.gz", "rt") as fr, gzip.open(
         f"{FIXTURES_ROOT}/{snapshot_name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}.gz", "rt"
