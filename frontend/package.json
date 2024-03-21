@@ -64,7 +64,7 @@
     "@aws-sdk/client-secrets-manager": "^3.369.0",
     "@babel/core": "^7.22.9",
     "@babel/preset-react": "^7.22.5",
-    "@babel/preset-typescript": "^7.22.5",
+    "@babel/preset-typescript": "^7.24.1",
     "@blueprintjs/eslint-plugin": "^6.1.0",
     "@next/eslint-plugin-next": "^14.1.0",
     "@types/adm-zip": "^0.5.5",
