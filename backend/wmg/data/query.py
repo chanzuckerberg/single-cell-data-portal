@@ -24,6 +24,16 @@ class WmgQueryCriteria(BaseModel):
     sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
 
 
+class DeQueryCriteria(BaseModel):
+    organism_ontology_term_id: str
+    tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    self_reported_ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+
+
 class WmgQueryCriteriaV2(BaseModel):
     gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)  # required!
     organism_ontology_term_id: str  # required!
@@ -84,6 +94,28 @@ class WmgQuery:
         self._snapshot = snapshot
         self._cube_query_params = cube_query_params
 
+    @tracer.wrap(name="expression_summary_diffexp", service="de-api", resource="_query", span_type="de-api")
+    def expression_summary_diffexp(self, criteria: DeQueryCriteria) -> DataFrame:
+        cardinality_per_dimension = self._snapshot.cardinality_per_dimension
+        criteria_dict = criteria.dict()
+        base_indexed_dims = [
+            dim.name for dim in self._snapshot.diffexp_expression_summary_cubes["default"].schema.domain
+        ]
+        discriminatory_power = {
+            depluralize(dim): len(criteria_dict[dim]) / cardinality_per_dimension[depluralize(dim)]
+            for dim in criteria_dict
+            if len(criteria_dict[dim]) > 0 and depluralize(dim) not in base_indexed_dims
+        }
+        use_default = len(discriminatory_power) == 0
+
+        cube_key = "default" if use_default else min(discriminatory_power, key=discriminatory_power.get)
+        cube = self._snapshot.diffexp_expression_summary_cubes[cube_key]
+
+        return self._query(
+            cube=cube,
+            criteria=criteria,
+        )
+
     @tracer.wrap(name="expression_summary", service="wmg-api", resource="_query", span_type="wmg-api")
     def expression_summary(self, criteria: WmgQueryCriteria, compare_dimension=None) -> DataFrame:
         return self._query(
@@ -121,7 +153,7 @@ class WmgQuery:
     def _query(
         self,
         cube: Array,
-        criteria: Union[WmgQueryCriteria, WmgQueryCriteriaV2, MarkerGeneQueryCriteria],
+        criteria: Union[DeQueryCriteria, WmgQueryCriteria, WmgQueryCriteriaV2, MarkerGeneQueryCriteria],
         compare_dimension=None,
     ) -> DataFrame:
         indexed_dims = self._cube_query_params.get_indexed_dims_to_lookup_query_criteria(

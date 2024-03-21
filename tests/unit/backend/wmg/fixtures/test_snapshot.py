@@ -200,10 +200,10 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
         )
         marker_genes = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/{MARKER_GENES_CUBE_NAME}.csv.gz", index_col=0)
 
-        # expression_summary_diffexp = {
-        #     cube_name: pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/{cube_name}.csv.gz", index_col=0)
-        #     for cube_name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
-        # }
+        expression_summary_diffexp = {
+            cube_name: pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/{cube_name}.csv.gz", index_col=0)
+            for cube_name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
+        }
 
         tiledb.Array.create(
             f"{cube_dir}/{EXPRESSION_SUMMARY_CUBE_NAME}", expression_summary_schema_actual, overwrite=True
@@ -223,13 +223,13 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
         tiledb.from_pandas(f"{cube_dir}/{CELL_COUNTS_CUBE_NAME}", cell_counts, mode="append")
         tiledb.from_pandas(f"{cube_dir}/{MARKER_GENES_CUBE_NAME}", marker_genes, mode="append")
 
-        # for cube_name in expression_summary_diffexp:
-        #     tiledb.Array.create(
-        #         f"{cube_dir}/{cube_name}",
-        #         expression_summary_diffexp_schemas[cube_name.split("__")[-1]],
-        #         overwrite=True,
-        #     )
-        #     tiledb.from_pandas(f"{cube_dir}/{cube_name}", expression_summary_diffexp[cube_name], mode="append")
+        for cube_name in expression_summary_diffexp:
+            tiledb.Array.create(
+                f"{cube_dir}/{cube_name}",
+                expression_summary_diffexp_schemas[cube_name.split("__")[-1]],
+                overwrite=True,
+            )
+            tiledb.from_pandas(f"{cube_dir}/{cube_name}", expression_summary_diffexp[cube_name], mode="append")
 
         cube_paths = [
             f"{cube_dir}/{EXPRESSION_SUMMARY_CUBE_NAME}",
@@ -237,18 +237,18 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
             f"{cube_dir}/{CELL_COUNTS_CUBE_NAME}",
             f"{cube_dir}/{MARKER_GENES_CUBE_NAME}",
         ]
-        # diffexp_cube_paths = {
-        #     cube_name.split("__")[-1]: f"{cube_dir}/{cube_name}" for cube_name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
-        # }
+        diffexp_cube_paths = {
+            cube_name.split("__")[-1]: f"{cube_dir}/{cube_name}" for cube_name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
+        }
 
         with contextlib.ExitStack() as stack:
             expression_summary_cube, expression_summary_default_cube, cell_counts_cube, marker_genes_cube = [
                 stack.enter_context(tiledb.open(path, ctx=create_ctx())) for path in cube_paths
             ]
-            # diffexp_cubes = {
-            #     key: stack.enter_context(tiledb.open(diffexp_cube_paths[key], ctx=create_ctx()))
-            #     for key in diffexp_cube_paths
-            # }
+            diffexp_cubes = {
+                key: stack.enter_context(tiledb.open(diffexp_cube_paths[key], ctx=create_ctx()))
+                for key in diffexp_cube_paths
+            }
             fr = stack.enter_context(
                 gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}.gz", "rt")
             )
@@ -259,15 +259,15 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
             fca = stack.enter_context(
                 gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_TYPE_ANCESTORS_FILENAME}.gz", "rt")
             )
-            # cpd = stack.enter_context(
-            #     gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{CARDINALITY_PER_DIMENSION_FILENAME}.gz", "rt")
-            # )
+            cpd = stack.enter_context(
+                gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{CARDINALITY_PER_DIMENSION_FILENAME}.gz", "rt")
+            )
 
             filter_relationships = json.load(fr)
             primary_filter_dimensions = json.load(fp)
             dataset_metadata = json.load(fd)
             cell_type_ancestors = json.load(fca)
-            # cardinality_per_dimension = json.load(cpd)
+            cardinality_per_dimension = json.load(cpd)
             yield WmgSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
@@ -278,8 +278,8 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
                 filter_relationships=filter_relationships,
                 dataset_metadata=dataset_metadata,
                 cell_type_ancestors=cell_type_ancestors,
-                # diffexp_expression_summary_cubes=diffexp_cubes,
-                # cardinality_per_dimension=cardinality_per_dimension,
+                diffexp_expression_summary_cubes=diffexp_cubes,
+                cardinality_per_dimension=cardinality_per_dimension,
             )
 
 
