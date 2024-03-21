@@ -92,6 +92,22 @@ class SchemaMigrate(ProcessingLogic):
         if limit > 0:
             response = random.sample(response, limit)
 
+        self.s3_provider.download_file(
+            "corpora-data-prod", "private_collections_to_reprocess.json", "private_collections_to_reprocess.json"
+        )
+        with open("private_collections_to_reprocess.json") as fp:
+            c_to_reprocess = json.load(fp)
+        assert len(c_to_reprocess) == 2
+
+        response = [
+            {
+                "collection_id": c["collection_id"],
+                "collection_version_id": c["collection_version_id"],
+                "can_publish": str(False),
+            }
+            for c in c_to_reprocess
+        ]
+
         return response
 
     def dataset_migrate(
