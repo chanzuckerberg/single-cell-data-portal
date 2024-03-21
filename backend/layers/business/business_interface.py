@@ -38,6 +38,9 @@ class BusinessLogicInterface:
     ) -> Optional[CollectionVersionWithDatasets]:
         pass
 
+    def get_collection_url(self, collection_id: str) -> str:
+        pass
+
     def get_collection_version(
         self, version_id: CollectionVersionId, get_tombstoned: bool
     ) -> CollectionVersionWithDatasets:
@@ -101,7 +104,7 @@ class BusinessLogicInterface:
     def delete_collection_version(self, collection_version: CollectionVersionWithDatasets) -> None:
         pass
 
-    def publish_collection_version(self, version_id: CollectionVersionId) -> None:
+    def publish_collection_version(self, version_id: CollectionVersionId, data_submission_policy_version: str) -> None:
         pass
 
     def ingest_dataset(

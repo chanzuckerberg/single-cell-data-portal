@@ -144,6 +144,7 @@ class DatabaseProviderInterface:
         collection_id: CollectionId,
         version_id: CollectionVersionId,
         schema_version: str,
+        data_submission_policy_version: str,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
     ) -> List[str]:
