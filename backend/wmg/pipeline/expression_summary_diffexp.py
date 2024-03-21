@@ -98,6 +98,10 @@ def create_expression_summary_diffexp_cubes(corpus_path: str):
                 mode="append",
             )
 
+            for uri in cube_uris.values():
+                tiledb.consolidate(uri, ctx=ctx)
+                tiledb.vacuum(uri, ctx=ctx)
+
             with open(os.path.join(corpus_path, CARDINALITY_PER_DIMENSION_FILENAME), "w") as f:
                 json.dump(cardinality_per_dimension, f)
 
