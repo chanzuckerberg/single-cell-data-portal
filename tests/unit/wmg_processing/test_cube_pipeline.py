@@ -30,7 +30,7 @@ def change_directory(path):
 class TestCubePipe(unittest.TestCase):
     @mock.patch("backend.wmg.pipeline.notify_slack")
     @mock.patch(
-        "backend.wmg.pipeline.run_pipeline",
+        "backend.wmg.pipeline.pipeline.run_pipeline",
         new=Mock(side_effect=Exception("testing")),
     )
     def test_exception_handle_catches_errors(self, mock_notify_slack: Mock):
