@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -28,7 +28,7 @@ class DeQueryCriteria(BaseModel):
     organism_ontology_term_id: str
     tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    publication_citations: List[str] = Field(default=[], unique_items=True, min_items=0)
     disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     self_reported_ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
@@ -90,7 +90,7 @@ class WmgCubeQueryParams:
 
 
 class WmgQuery:
-    def __init__(self, snapshot: WmgSnapshot, cube_query_params: WmgCubeQueryParams) -> None:
+    def __init__(self, snapshot: WmgSnapshot, cube_query_params: Optional[WmgCubeQueryParams] = None) -> None:
         self._snapshot = snapshot
         self._cube_query_params = cube_query_params
 
@@ -156,9 +156,7 @@ class WmgQuery:
         criteria: Union[DeQueryCriteria, WmgQueryCriteria, WmgQueryCriteriaV2, MarkerGeneQueryCriteria],
         compare_dimension=None,
     ) -> DataFrame:
-        indexed_dims = self._cube_query_params.get_indexed_dims_to_lookup_query_criteria(
-            cube, pluralize=not isinstance(criteria, MarkerGeneQueryCriteria)
-        )
+        indexed_dims = [dim.name for dim in cube.schema.domain]
 
         query_cond = ""
         attrs = {}
@@ -175,6 +173,7 @@ class WmgQuery:
 
         tiledb_dims_query = []
         for dim_name in indexed_dims:
+            dim_name = pluralize(dim_name)
             if criteria.dict()[dim_name]:
                 tiledb_dims_query.append(criteria.dict()[dim_name])
             # If an "indexed" dimension is not included in the criteria,
@@ -187,14 +186,15 @@ class WmgQuery:
 
         # get valid attributes from schema
         # valid means it is a required column for downstream processing
-        attrs = self._cube_query_params.get_attrs_for_cube_query(cube)
-        if compare_dimension is not None:
-            attrs.append(compare_dimension)
+        attrs = self._cube_query_params.get_attrs_for_cube_query(cube) if self._cube_query_params else None
+        if attrs is not None:
+            if compare_dimension is not None:
+                attrs.append(compare_dimension)
 
-        attrs += numeric_attrs
+            attrs += numeric_attrs
 
         # get valid dimensions from schema
-        dims = self._cube_query_params.get_dims_for_cube_query(cube)
+        dims = self._cube_query_params.get_dims_for_cube_query(cube) if self._cube_query_params else None
 
         query_result_df = pd.concat(
             cube.query(
@@ -231,7 +231,11 @@ class WmgQuery:
 
 
 def depluralize(attr_name):
-    return attr_name[:-1]
+    return attr_name[:-1] if attr_name[-1] == "s" else attr_name
+
+
+def pluralize(attr_name):
+    return attr_name + "s" if attr_name[-1] != "s" and attr_name != "organism_ontology_term_id" else attr_name
 
 
 def retrieve_top_n_markers(query_result, test, n_markers):

@@ -94,10 +94,6 @@ def depluralize(x):
     return x[:-1] if x[-1] == "s" else x
 
 
-def pluralize(x):
-    return x + "s" if x[-1] != "s" else x
-
-
 def setup_retry_session(retries=3, backoff_factor=2, status_forcelist=(500, 502, 503, 504), method_whitelist=None):
     session = requests.Session()
 
