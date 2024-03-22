@@ -210,9 +210,9 @@ def mock_get_dataset_version(collection_id):
 
 
 def test_migration_event_does_not_trigger_slack():
-    mock_notify_slack = Mock()
+    mock_trigger_slack = Mock()
     mock_context = Mock()
-    with patch("backend.common.utils.result_notification.notify_slack", mock_notify_slack):
+    with patch("backend.layers.processing.upload_failures.app.trigger_slack_notification", mock_trigger_slack):
         event = {
             "dataset_version_id": "123",
             "collection_version_id": "456",
@@ -220,13 +220,13 @@ def test_migration_event_does_not_trigger_slack():
             "execution_id": "arn:aws:states:us-west-2:migrate_123456789012:execution:MyStateMachine",
         }
         handle_failure(event, mock_context)
-        mock_notify_slack.assert_not_called()
+        mock_trigger_slack.assert_not_called()
 
 
 def test_non_migration_event_triggers_slack():
-    mock_notify_slack = Mock()
+    mock_trigger_slack = Mock()
     mock_context = Mock()
-    with patch("backend.common.utils.result_notification.notify_slack", mock_notify_slack):
+    with patch("backend.layers.processing.upload_failures.app.trigger_slack_notification", mock_trigger_slack):
         event = {
             "dataset_version_id": "123",
             "collection_version_id": "456",
@@ -234,7 +234,7 @@ def test_non_migration_event_triggers_slack():
             "execution_id": "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine",
         }
         handle_failure(event, mock_context)
-        mock_notify_slack.assert_called_once()
+        mock_trigger_slack.assert_called_once()
 
 
 def test_get_failure_slack_notification_message_with_dataset_version_id_none(
