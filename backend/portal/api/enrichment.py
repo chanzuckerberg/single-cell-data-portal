@@ -47,7 +47,7 @@ def enrich_dataset_with_ancestors(dataset, key):
             ancestors = list(set(ancestors) & ACCEPTED_TISSUE_ANCESTORS)
         elif key == "cell_type":
             ancestors = list(set(ancestors) & ACCEPTED_CELL_TYPE_ANCESTORS)
-        elif key == "development_stage" and term["ontology_term_id"].contains("UBERON"):
+        elif key == "development_stage" and "UBERON" in term["ontology_term_id"]:
             ancestors = list(set(ancestors) & ACCEPTED_UBERON_DEVELOPMENT_STAGE_ANCESTORS)
         # If the term is a tissue, tag itself with the tissue type in the ancestor list
         self_as_ancestor = generate_tagged_tissue_ontology_id(term) if is_tissue else term["ontology_term_id"]
