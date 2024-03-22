@@ -9,21 +9,27 @@ from cellxgene_ontology_guide.ontology_parser import OntologyParser
 
 ONTOLOGY_PARSER = OntologyParser(schema_version="v5.0.0")  # TODO: this should be a constant
 # TODO: clean-up where to set these constants
-ACCEPTED_TISSUE_ANCESTORS = set(
-    ONTOLOGY_PARSER.map_term_descendants(
+ACCEPTED_TISSUE_ANCESTORS = {
+    term
+    for term_list in ONTOLOGY_PARSER.map_term_descendants(
         get_curated_ontology_term_list(CuratedOntologyTermList.SYSTEM), include_self=True
     ).values()
-)
-ACCEPTED_CELL_TYPE_ANCESTORS = set(
-    ONTOLOGY_PARSER.map_term_descendants(
+    for term in term_list
+}
+ACCEPTED_CELL_TYPE_ANCESTORS = {
+    term
+    for term_list in ONTOLOGY_PARSER.map_term_descendants(
         get_curated_ontology_term_list(CuratedOntologyTermList.CELL_CLASS), include_self=True
     ).values()
-)
-ACCEPTED_UBERON_DEVELOPMENT_STAGE_ANCESTORS = set(
-    ONTOLOGY_PARSER.map_term_descendants(
+    for term in term_list
+}
+ACCEPTED_UBERON_DEVELOPMENT_STAGE_ANCESTORS = {
+    term
+    for term_list in ONTOLOGY_PARSER.map_term_descendants(
         get_curated_ontology_term_list(CuratedOntologyTermList.UBERON_DEVELOPMENT_STAGE), include_self=True
     ).values()
-)
+    for term in term_list
+}
 
 
 def enrich_dataset_with_ancestors(dataset, key):
