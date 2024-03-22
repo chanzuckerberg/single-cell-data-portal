@@ -107,11 +107,10 @@ paths:
                       type: string
                     tissue_ontology_term_ids:
                       $ref: "#/components/schemas/de_ontology_term_id_list"
-                    dataset_ids:
+                    publication_citations:
                       type: array
                       items:
                         type: string
-                        format: uuid
                     disease_ontology_term_ids:
                       $ref: "#/components/schemas/de_ontology_term_id_list"
                     sex_ontology_term_ids:
@@ -131,11 +130,10 @@ paths:
                       type: string
                     tissue_ontology_term_ids:
                       $ref: "#/components/schemas/de_ontology_term_id_list"
-                    dataset_ids:
+                    publication_citations:
                       type: array
                       items:
                         type: string
-                        format: uuid
                     disease_ontology_term_ids:
                       $ref: "#/components/schemas/de_ontology_term_id_list"
                     sex_ontology_term_ids:
