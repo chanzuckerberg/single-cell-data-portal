@@ -212,7 +212,7 @@ def mock_get_dataset_version(collection_id):
 def test_migration_event_does_not_trigger_slack():
     mock_notify_slack = Mock()
     mock_context = Mock()
-    with patch("backend.common.utils.result_notification", mock_notify_slack):
+    with patch("backend.common.utils.result_notification.notify_slack", mock_notify_slack):
         event = {
             "dataset_version_id": "123",
             "collection_version_id": "456",
@@ -226,7 +226,7 @@ def test_migration_event_does_not_trigger_slack():
 def test_non_migration_event_triggers_slack():
     mock_notify_slack = Mock()
     mock_context = Mock()
-    with patch("backend.common.utils.result_notification", mock_notify_slack):
+    with patch("backend.common.utils.result_notification.notify_slack", mock_notify_slack):
         event = {
             "dataset_version_id": "123",
             "collection_version_id": "456",
