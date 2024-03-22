@@ -23,7 +23,7 @@ psycopg2-binary>=2.8.5
 pyarrow>=1.0
 pydantic>=1.9.0
 PyMySQL==0.9.3
-pytest
+pytest==8.0.2
 pytest-subtests
 python-json-logger
 requests>=2.22.0

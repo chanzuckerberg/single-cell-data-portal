@@ -115,6 +115,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             schema_version=row.schema_version,
             canonical_collection=canonical_collection,
             has_custom_dataset_order=row.has_custom_dataset_order,
+            data_submission_policy_version=row.data_submission_policy_version,
         )
 
     def _row_to_collection_version_with_datasets(
@@ -134,6 +135,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             schema_version=row.schema_version,
             canonical_collection=canonical_collection,
             has_custom_dataset_order=row.has_custom_dataset_order,
+            data_submission_policy_version=row.data_submission_policy_version,
         )
 
     def _row_to_canonical_dataset(self, row: Any):
@@ -240,6 +242,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             schema_version=None,
             datasets=list(),
             has_custom_dataset_order=False,
+            data_submission_policy_version=None,
         )
 
         with self._manage_session() as session:
@@ -514,8 +517,8 @@ class DatabaseProvider(DatabaseProviderInterface):
     def add_collection_version(self, collection_id: CollectionId) -> CollectionVersionId:
         """
         Adds a collection version to an existing canonical collection. The new version copies all data from
-        the previous version except version_id, schema_version, and datetime-based fields (i.e. created_at,
-        published_at)
+        the previous version except version_id, schema_version, data_submission_policy_version and datetime-based
+        fields (i.e. created_at, published_at)
         Returns the new version id.
         """
         with self._manage_session() as session:
@@ -534,6 +537,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 schema_version=None,
                 datasets=current_version.datasets,
                 has_custom_dataset_order=current_version.has_custom_dataset_order,
+                data_submission_policy_version=None,
             )
             session.add(new_version)
             return CollectionVersionId(new_version_id)
@@ -603,6 +607,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         collection_id: CollectionId,
         version_id: CollectionVersionId,
         schema_version: str,
+        data_submission_policy_version: str,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
     ) -> List[str]:
@@ -627,6 +632,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection_version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one()
             collection_version.published_at = published_at
             collection_version.schema_version = schema_version
+            collection_version.data_submission_policy_version = data_submission_policy_version
 
             dataset_ids_for_new_collection_version = [
                 d.dataset_id.id for d in self.get_collection_version_with_datasets(version_id).datasets

@@ -5,11 +5,13 @@ import ModelButton from "./components/ModelButton";
 import EmbeddingButton from "./components/EmbeddingButton";
 import { ButtonsColumn, ButtonsRow, StyledButton } from "./style";
 import DetailItem from "../../DetailItem";
+import { DATA_TYPE_TO_EMBEDDING } from "..";
 
 const IGNORE_DIFFERENT_METADATA_KEYS = ["model_link", "id"];
 const ATTRIBUTE_TO_LABEL: Record<string, string> = {
   experiment_name: "Organism",
   n_cells: "Cells",
+  data_type: "Embedding",
 };
 
 const ProjectButtons = ({
@@ -64,7 +66,9 @@ const ProjectButtons = ({
               .map(([key, value]) => {
                 return (
                   <DetailItem key={key} label={ATTRIBUTE_TO_LABEL[key]}>
-                    {value}
+                    {key === "data_type"
+                      ? DATA_TYPE_TO_EMBEDDING[value]
+                      : value}
                   </DetailItem>
                 );
               })}
