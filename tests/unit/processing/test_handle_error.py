@@ -2,7 +2,6 @@ import datetime
 import logging
 import os
 from typing import Dict
-from unittest import mock
 from unittest.mock import Mock, patch
 
 import pytest
@@ -210,28 +209,30 @@ def mock_get_dataset_version(collection_id):
     return MockDatasetVersionId
 
 
-@mock.patch("backend.common.utils.result_notification")
-def test_migration_event_does_not_trigger_slack(self, mock_notify_slack: Mock):
-    event = {
-        "dataset_version_id": "123",
-        "collection_version_id": "456",
-        "error": {},
-        "execution_arn": "arn:aws:states:us-west-2:migrate_123456789012:execution:MyStateMachine",
-    }
-    handle_failure(event)
-    mock_notify_slack.assert_not_called()
+def test_migration_event_does_not_trigger_slack():
+    mock_notify_slack = Mock()
+    with patch("backend.common.utils.result_notification", mock_notify_slack):
+        event = {
+            "dataset_version_id": "123",
+            "collection_version_id": "456",
+            "error": {},
+            "execution_arn": "arn:aws:states:us-west-2:migrate_123456789012:execution:MyStateMachine",
+        }
+        handle_failure(event)
+        mock_notify_slack.assert_not_called()
 
 
-@mock.patch("backend.common.utils.result_notification")
-def test_non_migration_event_triggers_slack(self, mock_notify_slack: Mock):
-    event = {
-        "dataset_version_id": "123",
-        "collection_version_id": "456",
-        "error": {},
-        "execution_arn": "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine",
-    }
-    handle_failure(event)
-    mock_notify_slack.assert_called_once()
+def test_non_migration_event_triggers_slack():
+    mock_notify_slack = Mock()
+    with patch("backend.common.utils.result_notification", mock_notify_slack):
+        event = {
+            "dataset_version_id": "123",
+            "collection_version_id": "456",
+            "error": {},
+            "execution_arn": "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine",
+        }
+        handle_failure(event)
+        mock_notify_slack.assert_called_once()
 
 
 def test_get_failure_slack_notification_message_with_dataset_version_id_none(
