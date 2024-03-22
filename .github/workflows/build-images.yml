@@ -17,6 +17,10 @@ env:
 permissions:
   id-token: write
 
+concurrency:
+  group: ${{ github.event.number || github.event.ref }}-build
+  cancel-in-progress: true
+
 jobs:
   build_images:
     strategy:

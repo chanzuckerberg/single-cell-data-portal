@@ -12,6 +12,10 @@ permissions:
   issues: write
   pull-requests: write
 
+concurrency:
+  group: ${{ github.event.number || github.event.ref }}-tests
+  cancel-in-progress: true
+
 jobs:
   functional-test:
     runs-on: ubuntu-22.04
