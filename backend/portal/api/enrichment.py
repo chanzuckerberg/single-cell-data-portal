@@ -32,26 +32,32 @@ ACCEPTED_UBERON_DEVELOPMENT_STAGE_ANCESTORS = {
 }
 
 
-def enrich_dataset_with_ancestors(dataset, key):
+def enrich_dataset_with_ancestors(dataset, key, accepted_ancestors=None):
     """
     Tag dataset with ancestors for all values of the given key, if any.
     """
     if key not in dataset:
         return
     is_tissue = key == "tissue"
+    is_cell_type = key == "cell_type"
+    is_development_stage = key == "development_stage"
     unique_ancestors = set()
+    # TODO: clean-up this logic
+    accepted_ancestors = accepted_ancestors or set()
+    if is_tissue:
+        accepted_ancestors.update(ACCEPTED_TISSUE_ANCESTORS)
+    elif is_cell_type:
+        accepted_ancestors.update(ACCEPTED_CELL_TYPE_ANCESTORS)
+    elif is_development_stage:
+        accepted_ancestors.update(ACCEPTED_UBERON_DEVELOPMENT_STAGE_ANCESTORS)
     for term in dataset[key]:
         ancestors = ONTOLOGY_PARSER.get_term_ancestors(term["ontology_term_id"], include_self=False)
-        # TODO: clean-up this logic
-        if is_tissue:
-            ancestors = list(set(ancestors) & ACCEPTED_TISSUE_ANCESTORS)
-        elif key == "cell_type":
-            ancestors = list(set(ancestors) & ACCEPTED_CELL_TYPE_ANCESTORS)
-        elif key == "development_stage" and "UBERON" in term["ontology_term_id"]:
-            ancestors = list(set(ancestors) & ACCEPTED_UBERON_DEVELOPMENT_STAGE_ANCESTORS)
+        # TODO: clean-up this logic or explain it better
+        if is_tissue or is_cell_type or (is_development_stage and "UBERON" in term["ontology_term_id"]):
+            ancestors = set(ancestors) & accepted_ancestors
         # If the term is a tissue, tag itself with the tissue type in the ancestor list
         self_as_ancestor = generate_tagged_tissue_ontology_id(term) if is_tissue else term["ontology_term_id"]
-        ancestors.append(self_as_ancestor)
+        ancestors.add(self_as_ancestor)
         unique_ancestors.update(ancestors)
     if unique_ancestors:
         dataset[f"{key}_ancestors"] = list(unique_ancestors)

@@ -1898,108 +1898,7 @@ class TestDataset(BaseAPIPortalTest):
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 401)
 
-    # ✅
-    def test__get_all_datasets_for_index_with_ontology_expansion_deprecated(self):
-        # TODO deprecated - remove with #6266. Keeping temporarily to ensure
-        # backwards compatibility while running both 3.0.0 and 4.0.0 (behind
-        # a feature flag) versions of the code.
-        import copy
-
-        modified_metadata = copy.deepcopy(self.sample_dataset_metadata)
-        modified_metadata.development_stage = [OntologyTermId("Test", "HsapDv:0000008")]
-        modified_metadata.tissue = [TissueOntologyTermId("Test", "UBERON:0002048")]
-        modified_metadata.cell_type = [OntologyTermId("Test", "CL:0000738")]
-
-        dataset = self.generate_dataset(metadata=modified_metadata, publish=True)
-
-        test_url = furl(path="/dp/v1/datasets/index")
-
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        response = self.app.get(test_url.url, headers=headers)
-        self.assertEqual(200, response.status_code)
-        body = json.loads(response.data)
-
-        actual_dataset = None
-        for d in body:
-            if d["id"] == dataset.dataset_version_id:
-                actual_dataset = d
-        self.assertIsNotNone(actual_dataset)
-
-        def convert_ontology(ontologies):
-            return [dataclasses.asdict(o) for o in ontologies]
-
-        if actual_dataset is not None:  # pylance
-            self.assertEqual(actual_dataset["development_stage"], convert_ontology(modified_metadata.development_stage))
-            self.assertCountEqual(
-                actual_dataset["development_stage_ancestors"],
-                [
-                    "HsapDv:0000008",
-                    "HsapDv:0000006",
-                    "HsapDv:0000002",
-                    "HsapDv:0000045",
-                    "HsapDv:0000001",
-                    "HsapDv:0000000",
-                ],
-            )
-
-            self.assertEqual(actual_dataset["tissue"], convert_ontology(modified_metadata.tissue))
-            self.assertCountEqual(
-                actual_dataset["tissue_ancestors"],
-                [
-                    "UBERON:0000171",
-                    "UBERON:0004119",
-                    "UBERON:0005178",
-                    "UBERON:0015212",
-                    "UBERON:0000170",
-                    "UBERON:0000062",
-                    "UBERON:0001004",
-                    "UBERON:0000061",
-                    "UBERON:0002075",
-                    "UBERON:0005181",
-                    "UBERON:0000915",
-                    "UBERON:0034925",
-                    "UBERON:0001558",
-                    "UBERON:0010000",
-                    "UBERON:0000467",
-                    "UBERON:0000465",
-                    "UBERON:0005177",
-                    "UBERON:0002100",
-                    "UBERON:0009569",
-                    "UBERON:0011676",
-                    "UBERON:0000072",
-                    "UBERON:0000468",
-                    "UBERON:0001062",
-                    "UBERON:0013702",
-                    "UBERON:0000475",
-                    "UBERON:0013701",
-                    "UBERON:0013522",
-                    "UBERON:0000065",
-                    "UBERON:0000064",
-                    "UBERON:0000025",
-                    "UBERON:0001005",
-                    "UBERON:0004111",
-                    "UBERON:0003103",
-                    "UBERON:0002048",
-                ],
-            )
-
-            self.assertEqual(actual_dataset["cell_type"], convert_ontology(modified_metadata.cell_type))
-            self.assertCountEqual(
-                actual_dataset["cell_type_ancestors"],
-                [
-                    "CL:0000255",
-                    "CL:0000988",
-                    "CL:0000738",
-                    "CL:0000219",
-                    "CL:0000000",
-                    "CL:0002242",
-                ],
-            )
-
     def test__get_all_datasets_for_index_with_ontology_expansion(self):
-        # Schema 4.0.0 version of
-        # test__get_all_datasets_for_index_with_ontology_expansion_deprecated
-        # above. Remove this comment with #6266.
         import copy
 
         modified_metadata = copy.deepcopy(self.sample_dataset_metadata)
@@ -2045,45 +1944,17 @@ class TestDataset(BaseAPIPortalTest):
                 actual_dataset["tissue_ancestors"],
                 [
                     "UBERON:0000966 (organoid)",
-                    "UBERON:0004121",
-                    "UBERON:0005388",
+                    "UBERON:0000020",
+                    "UBERON:0001032",
                     "UBERON:0001802",
-                    "UBERON:0019207",
-                    "UBERON:0000061",
-                    "UBERON:0004923",
+                    "UBERON:0010230",
+                    "UBERON:0005388",
                     "UBERON:0000970",
                     "UBERON:0001016",
-                    "UBERON:0000063",
-                    "UBERON:0010230",
-                    "UBERON:0000481",
-                    "UBERON:0010314",
-                    "UBERON:0000465",
-                    "UBERON:0000064",
-                    "UBERON:0000060",
-                    "UBERON:0000020",
                     "UBERON:0002104",
-                    "UBERON:0000467",
+                    "UBERON:0019207",
                     "UBERON:0000019",
-                    "UBERON:0010000",
-                    "UBERON:0001062",
-                    "UBERON:0000062",
-                    "UBERON:0001032",
-                    "UBERON:0000468",
                     "UBERON:0000047",
-                    "UBERON:0015212",
-                    "UBERON:0004088",
-                    "UBERON:0015203",
-                    "UBERON:0004456",
-                    "UBERON:0001444",
-                    "UBERON:0001456",
-                    "UBERON:0034923",
-                    "UBERON:0000475",
-                    "UBERON:0000033",
-                    "UBERON:0011676",
-                    "UBERON:0000153",
-                    "UBERON:0007811",
-                    "UBERON:0013701",
-                    "UBERON:0013702",
                 ],
             )
 
