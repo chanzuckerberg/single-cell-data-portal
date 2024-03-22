@@ -13,7 +13,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: ${{ github.event.number || github.event.ref }}-tests
+  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
