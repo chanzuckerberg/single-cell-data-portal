@@ -53,7 +53,7 @@ jobs:
           done
           echo "ECR_REPOS=${ECR_REPOS[@]}" >> $GITHUB_OUTPUT
           echo "IMAGE_DIGESTS=${IMAGE_DIGESTS[@]}" >> $GITHUB_OUTPUT
-
+  # random comment
   build_images:
     uses: ./.github/workflows/build-images.yml
     secrets: inherit
