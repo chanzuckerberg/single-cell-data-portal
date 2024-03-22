@@ -172,10 +172,12 @@ class WmgQuery:
                 query_cond += f"{attr} in {vals}"
 
         tiledb_dims_query = []
+        criteria_dict = criteria.dict()
         for dim_name in indexed_dims:
-            dim_name = pluralize(dim_name)
-            if criteria.dict()[dim_name]:
-                tiledb_dims_query.append(criteria.dict()[dim_name])
+            if dim_name not in criteria_dict:
+                dim_name = pluralize(dim_name)
+            if criteria_dict.get(dim_name, []):
+                tiledb_dims_query.append(criteria_dict[dim_name])
             # If an "indexed" dimension is not included in the criteria,
             # then all values will be selected.
             else:
