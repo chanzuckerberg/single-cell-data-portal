@@ -30,7 +30,9 @@ def handle_failure(event: dict, context, delete_artifacts=True) -> None:
         execution_arn,
     ) = parse_event(event)
     if "migrate" in execution_arn:
-        logger.info(f"Skipping slack notification for {execution_arn} because failure is related to a schema migration")
+        logging.info(
+            f"Skipping slack notification for {execution_arn} because failure is related to a schema migration"
+        )
     else:
         trigger_slack_notification(
             dataset_version_id,

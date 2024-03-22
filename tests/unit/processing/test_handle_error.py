@@ -217,7 +217,7 @@ def test_migration_event_does_not_trigger_slack():
             "dataset_version_id": "123",
             "collection_version_id": "456",
             "error": {},
-            "execution_arn": "arn:aws:states:us-west-2:migrate_123456789012:execution:MyStateMachine",
+            "execution_id": "arn:aws:states:us-west-2:migrate_123456789012:execution:MyStateMachine",
         }
         handle_failure(event, mock_context)
         mock_notify_slack.assert_not_called()
@@ -231,7 +231,7 @@ def test_non_migration_event_triggers_slack():
             "dataset_version_id": "123",
             "collection_version_id": "456",
             "error": {},
-            "execution_arn": "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine",
+            "execution_id": "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine",
         }
         handle_failure(event, mock_context)
         mock_notify_slack.assert_called_once()
