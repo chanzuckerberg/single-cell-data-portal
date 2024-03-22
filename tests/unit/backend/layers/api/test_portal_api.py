@@ -8,6 +8,7 @@ from unittest.mock import Mock, patch
 
 from furl import furl
 
+from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.layers.business.entities import DatasetArtifactDownloadData
 from backend.layers.common.entities import (
     CollectionId,
@@ -78,7 +79,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_name": "john doe",
             "created_at": mock.ANY,
             "curator_name": "Jane Smith",
-            "data_submission_policy_version": "1.0",
+            "data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION,
             "datasets": [
                 {
                     "assay": [{"label": "test_assay_label", "ontology_term_id": "test_assay_term_id"}],
@@ -254,6 +255,11 @@ class TestCollection(BaseAPIPortalTest):
                 if expected_response_code == 200:
                     actual_body = json.loads(response.data)
                     self.assertEqual(expected_access_type, actual_body["access_type"])
+                    # Confirm only published collections have a data_submission_policy_version.
+                    if visi == "public":
+                        self.assertEqual(DATA_SUBMISSION_POLICY_VERSION, actual_body["data_submission_policy_version"])
+                    else:
+                        self.assertNotIn("data_submission_policy_version", actual_body)
 
     def test__get_collection_id_returns_revision_of_published_collection(self):
         version = self.generate_published_collection()
@@ -737,7 +743,6 @@ class TestCollection(BaseAPIPortalTest):
         self.assertEqual(body["name"], data["name"].strip())
         self.assertEqual(body["contact_name"], data["contact_name"].strip())
         self.assertEqual(body["contact_email"], body["contact_email"].strip())
-        self.assertEqual(body["data_submission_policy_version"], body["data_submission_policy_version"].strip())
         self.assertEqual(body["consortia"], ["Consortia 1"])
 
         for link in body["links"]:
@@ -1191,6 +1196,9 @@ class TestUpdateCollection(BaseAPIPortalTest):
         for field in test_fields:
             self.assertEqual(expected_body[field], actual_body[field])
 
+        # data_submission_policy_version should not be returned for unpublished collections.
+        self.assertNotIn("data_submission_policy_version", data)
+
     def test__update_collection_strip_string_fields__OK(self):
         collection = self.generate_unpublished_collection()
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
@@ -1207,7 +1215,6 @@ class TestUpdateCollection(BaseAPIPortalTest):
         }
         data = json.dumps(new_body)
         response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}", data=data, headers=headers)
-
         self.assertEqual(200, response.status_code)
         actual_body = json.loads(response.data)
         self.assertEqual(new_body["name"].strip(), actual_body["name"])
@@ -2531,6 +2538,7 @@ class TestRevision(BaseAPIPortalTest):
         # Ensures that getting the version has:
         # - PRIVATE visibility (since it's unpublished)
         # - WRITE access_type if the header is from the owner
+        # - Data submission policy version is "cleared"
         # - The response matches the one from the POST request
         path = f"/dp/v1/collections/{revision_id}"
         response = self.app.get(path, headers=headers)
@@ -2538,6 +2546,7 @@ class TestRevision(BaseAPIPortalTest):
         response_json = json.loads(response.data)
         self.assertEqual("PRIVATE", response_json["visibility"])
         self.assertEqual("WRITE", response_json["access_type"])
+        self.assertNotIn("data_submission_policy_version", response_json)
         self.assertEqual(response_post_json, response_json)
 
         # If no auth is passed, the collection should be returned with access_type=READ
@@ -2687,6 +2696,56 @@ class TestPublishRevision(BaseAPIPortalTest):
             "Cookie": self.get_cxguser_token(),
         }
 
+    def test__publish_revision_data_submission_policy_version__OK(self):
+        """
+        Checks data submission policy is correctly saved on publish of a revision.
+        """
+
+        unpublished_collection = self.generate_unpublished_collection(add_datasets=1)
+
+        path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        data_submission_policy_version = DATA_SUBMISSION_POLICY_VERSION
+        body = {"data_submission_policy_version": data_submission_policy_version}
+        response = self.app.post(path, headers=headers, data=json.dumps(body))
+
+        self.assertEqual(202, response.status_code)
+
+        # Check GET collection/<collection_id>
+        path = f"{self.base_path}/{unpublished_collection.collection_id.id}"
+        response = self.app.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+
+        response_json = json.loads(response.data)
+        self.assertEqual(response_json["data_submission_policy_version"], data_submission_policy_version)
+
+    def test__publish_revision_missing_data_submission_policy_version__400(self):
+        """
+        Checks for failure on missing data submission policy version.
+        """
+
+        unpublished_collection = self.generate_unpublished_collection(add_datasets=1)
+
+        path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.post(path, headers=headers)
+
+        self.assertEqual(400, response.status_code)
+
+    def test__publish_revision_invalid_data_submission_policy_version__400(self):
+        """
+        Checks for failure on submit of a data submission policy version that is not a valid version.
+        """
+
+        unpublished_collection = self.generate_unpublished_collection(add_datasets=1)
+
+        path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        body = {"data_submission_policy_version": "x"}  # Invalid version
+        response = self.app.post(path, headers=headers, data=json.dumps(body))
+
+        self.assertEqual(400, response.status_code)
+
     # ✅
     def test__publish_revision_with_new_dataset__OK(self):
         """
@@ -2697,7 +2756,7 @@ class TestPublishRevision(BaseAPIPortalTest):
 
         path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        body = {"data_submission_policy_version": "1.0"}  # TODO: still in use?
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         response = self.app.post(path, headers=headers, data=json.dumps(body))
 
         self.assertEqual(202, response.status_code)
@@ -2736,7 +2795,7 @@ class TestPublishRevision(BaseAPIPortalTest):
         # Publish the revision with the deleted dataset
         path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        body = {"data_submission_policy_version": "1.0"}  # TODO: still in use?
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
 
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
@@ -2765,7 +2824,7 @@ class TestPublishRevision(BaseAPIPortalTest):
         # Publish the revision with the deleted dataset
         path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        body = {"data_submission_policy_version": "1.0"}  # TODO: still in use?
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(409, response.status_code)
 
@@ -2775,7 +2834,7 @@ class TestPublishRevision(BaseAPIPortalTest):
         """
         collection = self.generate_unpublished_collection(add_datasets=1)
         path = f"{self.base_path}/{collection.version_id.id}/publish"
-        body = {"data_submission_policy_version": "1.0"}
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         headers = {"host": "localhost", "Content-Type": "application/json"}
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(401, response.status_code)
@@ -2787,7 +2846,7 @@ class TestPublishRevision(BaseAPIPortalTest):
         """
         collection = self.generate_unpublished_collection(add_datasets=1, owner="someone_else")
         path = f"{self.base_path}/{collection.version_id.id}/publish"
-        body = {"data_submission_policy_version": "1.0"}
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         response = self.app.post(path, headers=self.headers, data=json.dumps(body))
         self.assertEqual(403, response.status_code)
 
@@ -2797,7 +2856,7 @@ class TestPublishRevision(BaseAPIPortalTest):
         Publish a collection with a bad uuid (non existant) returns 403
         """
         collection_id = CollectionId()
-        body = {"data_submission_policy_version": "1.0"}
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         path = f"{self.base_path}/{collection_id}/publish"
         response = self.app.post(path, headers=self.headers, data=json.dumps(body))
         self.assertEqual(403, response.status_code)
@@ -2806,7 +2865,7 @@ class TestPublishRevision(BaseAPIPortalTest):
     def test__can_publish_owned_collection(self):
         collection = self.generate_unpublished_collection(add_datasets=1)
         path = f"{self.base_path}/{collection.version_id.id}/publish"
-        body = {"data_submission_policy_version": "1.0"}
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         headers = {
             "host": "localhost",
             "Content-Type": "application/json",
@@ -2819,7 +2878,7 @@ class TestPublishRevision(BaseAPIPortalTest):
     def test__can_publish_non_owned_collection_as_super_curator(self):
         collection = self.generate_unpublished_collection(add_datasets=1, owner="someone else")
         path = f"{self.base_path}/{collection.version_id.id}/publish"
-        body = {"data_submission_policy_version": "1.0"}
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         headers = {
             "host": "localhost",
             "Content-Type": "application/json",
@@ -2832,7 +2891,7 @@ class TestPublishRevision(BaseAPIPortalTest):
         self.cloudfront_provider.create_invalidation_for_index_paths = Mock()
         collection = self.generate_unpublished_collection(add_datasets=1)
         path = f"{self.base_path}/{collection.version_id.id}/publish"
-        body = {"data_submission_policy_version": "1.0"}
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         headers = {
             "host": "localhost",
             "Content-Type": "application/json",
