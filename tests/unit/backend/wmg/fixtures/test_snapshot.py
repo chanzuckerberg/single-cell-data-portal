@@ -249,6 +249,7 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
                 key: stack.enter_context(tiledb.open(diffexp_cube_paths[key], ctx=create_ctx()))
                 for key in diffexp_cube_paths
             }
+
             fr = stack.enter_context(
                 gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}.gz", "rt")
             )
@@ -268,6 +269,7 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
             dataset_metadata = json.load(fd)
             cell_type_ancestors = json.load(fca)
             cardinality_per_dimension = json.load(cpd)
+
             yield WmgSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
