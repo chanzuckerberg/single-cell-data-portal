@@ -28,7 +28,7 @@ def change_directory(path):
 
 
 class TestCubePipe(unittest.TestCase):
-    @mock.patch("backend.wmg.pipeline.notify_slack")
+    @mock.patch("backend.wmg.pipeline.pipeline.notify_slack")
     @mock.patch(
         "backend.wmg.pipeline.pipeline.run_pipeline",
         new=Mock(side_effect=Exception("testing")),
