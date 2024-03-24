@@ -117,7 +117,7 @@ def reshape_for_curation_api(
         else:
             # Unpublished - need to determine if it's a revision or first time collection
             # For that, we look at whether the canonical collection is published
-            is_revision = is_collection_version_revision(collection_version)
+            is_revision = collection_version.canonical_collection.originally_published_at is not None
             if is_revision:
                 # If it's a revision, both collection_id and collection_url need to point to the version_id,
                 # and datasets should expose the private url (based on version_id)
