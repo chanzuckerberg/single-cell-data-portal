@@ -1199,6 +1199,7 @@ class BusinessLogic(BusinessLogicInterface):
             canonical_collection=collection_version.canonical_collection,
             has_custom_dataset_order=collection_version.has_custom_dataset_order,
             datasets=private_dataset_versions,
+            data_submission_policy_version=collection_version.data_submission_policy_version,
         )
 
     def _get_collection_and_dataset(
