@@ -12,19 +12,19 @@ WMG_SNAPSHOT_FS_CACHE_ROOT_PATH="/single-cell-data-portal/wmg_snapshot_cache"
 echo "| ENV VAR DOWNLOAD_WMG_DATA_TO_DISK: ${DOWNLOAD_WMG_DATA_TO_DISK}"
 
 if [[ "${DOWNLOAD_WMG_DATA_TO_DISK}" == "false" ]]; then
-  echo "| Skipping downloading WMG data snapshot because DOWNLOAD_WMG_DATA_TO_DISK is set to false" 
+  echo "| Skipping downloading WMG data snapshot because DOWNLOAD_WMG_DATA_TO_DISK is set to false"
 elif [[ "${DEPLOYMENT_STAGE}" == "rdev" && -n "${REMOTE_DEV_PREFIX}" ]]; then
   echo "| Downloading WMG data snapshot for RDEV stack: ${REMOTE_DEV_PREFIX} from S3 to filesystem path: ${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}"
-  
+
   strip_slash_remote_dev_prefix="${REMOTE_DEV_PREFIX//\//}" # strips ALL "/"
 
   echo aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots" "${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}/${strip_slash_remote_dev_prefix}/snapshots"
-  
+
   aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots" "${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}/${strip_slash_remote_dev_prefix}/snapshots"
 elif [[ "${DEPLOYMENT_STAGE}" == "dev" || "${DEPLOYMENT_STAGE}" == "staging" || "${DEPLOYMENT_STAGE}" == "prod" ]]; then
   echo "| Downloading WMG data snapshot for deployment env: ${DEPLOYMENT_STAGE} from S3 to filesystem path: ${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}"
   echo aws s3 sync "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots" "${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}/snapshots"
-  
+
   aws s3 sync "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots" "${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}/snapshots"
 else
   echo "| Skipping downloading WMG data snapshot for deployment env: ${DEPLOYMENT_STAGE}..."
@@ -52,5 +52,4 @@ export DD_GEVENT_PATCH_ALL=true
 
 echo "starting gunicorn server"
 exec gunicorn ${HTTPS_CERT_AND_KEY} --worker-class gevent --workers 1 --bind 0.0.0.0:5000 backend.api_server.app:app \
-  --max-requests 10000 --timeout 180 --keep-alive 61 --log-level info
-
+  --max-requests 10000 --timeout 540 --keep-alive 61 --log-level info
