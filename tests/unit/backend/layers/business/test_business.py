@@ -2380,14 +2380,17 @@ class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
     Test methods related to updating metadata fields on dataset artifacts
     """
 
+    citation_dataset_assets_base_url = "https://datasets.cellxgene.cziscience.com"
+    citation_collections_base_url = "https://cellxgene.cziscience.com"
+
     def test_generate_dataset_citation(self):
         collection = self.initialize_unpublished_collection(num_datasets=1)
         dataset_version_id = collection.datasets[0].version_id
         doi = "https://doi.org/12.2345/science.abc1234"
         expected = (
-            f"Publication: {doi} Dataset Version: {self.mock_config.dataset_assets_base_url}/{dataset_version_id}.h5ad "
+            f"Publication: {doi} Dataset Version: {self.citation_dataset_assets_base_url}/{dataset_version_id}.h5ad "
             "curated and distributed by CZ CELLxGENE Discover in Collection: "
-            f"{self.mock_config.collections_base_url}/collections/{collection.collection_id}"
+            f"{self.citation_collections_base_url}/collections/{collection.collection_id}"
         )
 
         self.assertEqual(
@@ -2399,9 +2402,9 @@ class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
         collection = self.initialize_unpublished_collection(num_datasets=1)
         dataset_version_id = collection.datasets[0].version_id
         expected = (
-            f"Dataset Version: {self.mock_config.dataset_assets_base_url}/{dataset_version_id}.h5ad "
+            f"Dataset Version: {self.citation_dataset_assets_base_url}/{dataset_version_id}.h5ad "
             "curated and distributed by CZ CELLxGENE Discover in Collection: "
-            f"{self.mock_config.collections_base_url}/collections/{collection.collection_id}"
+            f"{self.citation_collections_base_url}/collections/{collection.collection_id}"
         )
 
         self.assertEqual(

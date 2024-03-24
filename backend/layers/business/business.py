@@ -123,16 +123,16 @@ class BusinessLogic(BusinessLogicInterface):
         collection_id: CollectionId, dataset_version_id: DatasetVersionId, doi: str = None
     ) -> str:
         """
-        Builds 'citation' string to populate on dataset artifacts
+        Builds 'citation' string to populate on dataset artifacts. **Builds prod citation in all environments**
         """
-        dataset_assets_base_url = CorporaConfig().dataset_assets_base_url
-        collections_url = f"{CorporaConfig().collections_base_url}/collections"
+        citation_dataset_assets_base_url = "https://datasets.cellxgene.cziscience.com"
+        citation_collections_url = "https://cellxgene.cziscience.com/collections"
         citation = ""
 
         if doi:
             citation += f"Publication: {doi} "
-        citation += f"Dataset Version: {dataset_assets_base_url}/{dataset_version_id}.h5ad "
-        citation += f"curated and distributed by CZ CELLxGENE Discover in Collection: {collections_url}/{collection_id}"
+        citation += f"Dataset Version: {citation_dataset_assets_base_url}/{dataset_version_id}.h5ad "
+        citation += f"curated and distributed by CZ CELLxGENE Discover in Collection: {citation_collections_url}/{collection_id}"
 
         return citation
 
