@@ -96,23 +96,8 @@ class WmgQuery:
 
     @tracer.wrap(name="expression_summary_diffexp", service="de-api", resource="_query", span_type="de-api")
     def expression_summary_diffexp(self, criteria: DeQueryCriteria) -> DataFrame:
-        cardinality_per_dimension = self._snapshot.cardinality_per_dimension
-        criteria_dict = criteria.dict()
-        base_indexed_dims = [
-            dim.name for dim in self._snapshot.diffexp_expression_summary_cubes["default"].schema.domain
-        ]
-        discriminatory_power = {
-            depluralize(dim): len(criteria_dict[dim]) / cardinality_per_dimension[depluralize(dim)]
-            for dim in criteria_dict
-            if len(criteria_dict[dim]) > 0 and depluralize(dim) not in base_indexed_dims
-        }
-        use_default = len(discriminatory_power) == 0
-
-        cube_key = "default" if use_default else min(discriminatory_power, key=discriminatory_power.get)
-        cube = self._snapshot.diffexp_expression_summary_cubes[cube_key]
-
         return self._query(
-            cube=cube,
+            cube=_select_cube_with_best_discriminatory_power(self._snapshot, criteria),
             criteria=criteria,
         )
 
@@ -269,3 +254,17 @@ def retrieve_top_n_markers(query_result, test, n_markers):
         markers = markers.sort_values("marker_score", ascending=False)
     records = markers[attrs].to_dict(orient="records")
     return records
+
+
+def _select_cube_with_best_discriminatory_power(snapshot: WmgSnapshot, criteria: DeQueryCriteria) -> Array:
+    cardinality_per_dimension = snapshot.cardinality_per_dimension
+    criteria_dict = criteria.dict()
+    base_indexed_dims = [dim.name for dim in snapshot.diffexp_expression_summary_cubes["default"].schema.domain]
+    discriminatory_power = {
+        depluralize(dim): len(criteria_dict[dim]) / cardinality_per_dimension[depluralize(dim)]
+        for dim in criteria_dict
+        if len(criteria_dict[dim]) > 0 and depluralize(dim) not in base_indexed_dims
+    }
+    use_default = len(discriminatory_power) == 0
+    cube_key = "default" if use_default else min(discriminatory_power, key=discriminatory_power.get)
+    return snapshot.diffexp_expression_summary_cubes[cube_key]

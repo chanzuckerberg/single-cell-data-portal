@@ -18,6 +18,10 @@ from backend.wmg.api.wmg_api_config import (
 )
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.query import DeQueryCriteria, WmgFiltersQueryCriteria, WmgQuery
+from backend.wmg.data.schemas.expression_summary_cube_schemas_diffexp import (
+    base_expression_summary_indexed_dims,
+    expression_summary_secondary_dims,
+)
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 from backend.wmg.data.utils import (
     find_all_dim_option_values,
@@ -170,13 +174,13 @@ def differentialExpression():
     q = WmgQuery(snapshot)
 
     with ServerTiming.time("run differential expression"):
-        results = run_differential_expression(q, criteria1, criteria2)
+        results, successCode = run_differential_expression(q, criteria1, criteria2)
 
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
             differentialExpressionResults=results,
-            successCode=0,
+            successCode=successCode,
         )
     )
 
@@ -197,8 +201,24 @@ def run_differential_expression(q: WmgQuery, criteria1, criteria2):
 
     n_cells1 = cell_counts1["n_total_cells"].sum()
     n_cells2 = cell_counts2["n_total_cells"].sum()
-    es_agg1 = q.expression_summary_diffexp(criteria1).groupby("gene_ontology_term_id").sum(numeric_only=True)
-    es_agg2 = q.expression_summary_diffexp(criteria2).groupby("gene_ontology_term_id").sum(numeric_only=True)
+    es1 = q.expression_summary_diffexp(criteria1)
+    es2 = q.expression_summary_diffexp(criteria2)
+
+    # filter out rows from es2 that are in es1
+    filter_columns = [
+        col
+        for col in (base_expression_summary_indexed_dims + expression_summary_secondary_dims)
+        if col in es1.columns and col in es2.columns
+    ]
+    index1 = es1.set_index(filter_columns).index
+    index2 = es2.set_index(filter_columns).index
+    es2 = es2[~index2.isin(index1)]
+    if es2.shape[0] == 0:
+        return [], 1
+
+    es_agg1 = es1.groupby("gene_ontology_term_id").sum(numeric_only=True)
+    es_agg2 = es2.groupby("gene_ontology_term_id").sum(numeric_only=True)
+
     genes = list(set(list(es_agg1.index) + list(es_agg2.index)))
 
     genes_indexer = pd.Series(index=genes, data=np.arange(len(genes)))
@@ -237,7 +257,7 @@ def run_differential_expression(q: WmgQuery, criteria1, criteria2):
                 }
             )
 
-    return statistics
+    return statistics, 0
 
 
 def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
