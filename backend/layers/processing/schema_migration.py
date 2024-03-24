@@ -104,9 +104,9 @@ class SchemaMigrate(ProcessingLogic):
         ][0]
         source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(raw_h5ad_uri)
         self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
-        migrated_file = "migrated.h5ad"
+        migrated_file_name = "migrated.h5ad"
         reported_changes = self.schema_validator.migrate(
-            "previous_schema.h5ad", migrated_file, collection_id, dataset_id
+            "previous_schema.h5ad", migrated_file_name, collection_id, dataset_id
         )
         if reported_changes:
             self._store_sfn_response(
@@ -115,13 +115,20 @@ class SchemaMigrate(ProcessingLogic):
                 {f"{collection_id}_{dataset_id}": reported_changes},
             )
         key_prefix = self.get_key_prefix(dataset_version_id)
-        uri = self.upload_artifact(migrated_file, key_prefix, self.artifact_bucket)
+        uri = self.upload_artifact(migrated_file_name, key_prefix, self.artifact_bucket)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             CollectionVersionId(collection_version_id),
             uri,
             file_size=0,  # TODO: this shouldn't be needed but it gets around a 404 for HeadObject
             current_dataset_version_id=DatasetVersionId(dataset_version_id),
             start_step_function=False,  # The schema_migration sfn will start the ingest sfn
+        )
+        key_suffix = f"dataset_{dataset_id}/old_version_{dataset_version_id}_new_version_{new_dataset_version_id.id}"
+        # Record successful upload of migrated raw file for dataset from old version to new version
+        self.s3_provider.put_object(
+            bucket_name=source_bucket_name,
+            object_key=f"{self._get_s3_schema_and_id_prefix()}/processed/{key_suffix}/{migrated_file_name}",
+            body="",
         )
         sfn_name = sfn_name_generator(new_dataset_version_id, prefix="migrate")
         return {
@@ -343,6 +350,9 @@ class SchemaMigrate(ProcessingLogic):
         except Exception as e:
             self.logger.exception("Failed to generate report")
             raise e
+
+    def _get_s3_schema_and_id_prefix(self) -> str:
+        return f"schema_migration/{self.schema_version}/{self.execution_id}"
 
     def _upload_to_slack(self, filename: str, contents, initial_comment: str) -> None:
         slack_token = CorporaConfig().slack_reporter_secret

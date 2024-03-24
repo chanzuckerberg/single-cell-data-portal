@@ -27,6 +27,12 @@ class TestDatasetMigrate:
         schema_migrate.schema_validator.migrate.assert_called_once_with(
             "previous_schema.h5ad", "migrated.h5ad", private.collection_id.id, private.datasets[0].dataset_id.id
         )
+        expected_key_suffix = f"dataset_{private.datasets[0].dataset_id.id}/old_version_{private.datasets[0].version_id.id}_new_version_{new_dataset_version_id.id}"
+        schema_migrate.business_logic.s3_provider.put_object.assert_called_once_with(
+            bucket_name="fake-bucket",
+            object_key=f"schema_migration/1.0.0/test-execution-arn/processed/{expected_key_suffix}/migrated.h5ad",
+            body="",
+        )
 
     def test_dataset_migrate_published(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
@@ -53,6 +59,12 @@ class TestDatasetMigrate:
         schema_migrate.schema_validator.migrate.assert_called_once_with(
             "previous_schema.h5ad", "migrated.h5ad", published.collection_id.id, published.datasets[0].dataset_id.id
         )
+        expected_key_suffix = f"dataset_{published.datasets[0].dataset_id.id}/old_version_{published.datasets[0].version_id.id}_new_version_{new_dataset_version_id.id}"
+        schema_migrate.business_logic.s3_provider.put_object.assert_called_once_with(
+            bucket_name="fake-bucket",
+            object_key=f"schema_migration/1.0.0/test-execution-arn/processed/{expected_key_suffix}/migrated.h5ad",
+            body="",
+        )
 
     def test_dataset_migrate_revision(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
@@ -78,4 +90,10 @@ class TestDatasetMigrate:
         assert new_dataset_version_id.id in response["sfn_name"]
         schema_migrate.schema_validator.migrate.assert_called_once_with(
             "previous_schema.h5ad", "migrated.h5ad", revision.collection_id.id, revision.datasets[0].dataset_id.id
+        )
+        expected_key_suffix = f"dataset_{revision.datasets[0].dataset_id.id}/old_version_{revision.datasets[0].version_id.id}_new_version_{new_dataset_version_id.id}"
+        schema_migrate.business_logic.s3_provider.put_object.assert_called_once_with(
+            bucket_name="fake-bucket",
+            object_key=f"schema_migration/1.0.0/test-execution-arn/processed/{expected_key_suffix}/migrated.h5ad",
+            body="",
         )
