@@ -267,7 +267,9 @@ class SchemaMigrate(ProcessingLogic):
         """
         file_name = f"{file_name}.json"
         local_file = os.path.join(self.local_path, file_name)
-        key_name = self.get_key_prefix(f"schema_migration/{self.execution_id}/{directory}/{file_name}")
+        key_name = self.get_key_prefix(
+            f"schema_migration/{self.schema_version}/{self.execution_id}/{directory}/{file_name}"
+        )
         with open(local_file, "w") as f:
             json.dump(response, f, cls=CustomJSONEncoder)
         self.s3_provider.upload_file(local_file, self.artifact_bucket, key_name, {})
@@ -284,7 +286,9 @@ class SchemaMigrate(ProcessingLogic):
         """
         file_name = f"{file_name}.json"
         local_file = os.path.join(self.local_path, "data.json")
-        key_name = self.get_key_prefix(f"schema_migration/{self.execution_id}/{directory}/{file_name}")
+        key_name = self.get_key_prefix(
+            f"schema_migration/{self.schema_version}/{self.execution_id}/{directory}/{file_name}"
+        )
         self.s3_provider.download_file(self.artifact_bucket, key_name, local_file)
         with open(local_file, "r") as f:
             data = json.load(f)
@@ -312,7 +316,9 @@ class SchemaMigrate(ProcessingLogic):
                 s3_keys = list(
                     self.s3_provider.list_directory(
                         self.artifact_bucket,
-                        self.get_key_prefix(f"schema_migration/{self.execution_id}/report/{message_type}"),
+                        self.get_key_prefix(
+                            f"schema_migration/{self.schema_version}/{self.execution_id}/report/{message_type}"
+                        ),
                     )
                 )
                 self.logger.info("Subdirectory Count", extra={"message_type": message_type, "count": len(s3_keys)})

@@ -63,7 +63,10 @@ class TestPublishAndCleanup:
             collection_version.version_id
         )
         local_schema_migrate.s3_provider.delete_files.assert_any_call(
-            "artifact-bucket", ["schema_migration/test-execution-arn/publish_and_cleanup/collection_id.json"]
+            "artifact-bucket",
+            [
+                f"schema_migration/{local_schema_migrate.schema_version}/test-execution-arn/publish_and_cleanup/collection_id.json"
+            ],
         )
         local_schema_migrate.s3_provider.delete_files.assert_any_call(
             "artifact-bucket",
@@ -111,7 +114,10 @@ class TestPublishAndCleanup:
         } in errors
         local_schema_migrate.business_logic.publish_collection_version.assert_not_called()
         local_schema_migrate.s3_provider.delete_files.assert_any_call(
-            "artifact-bucket", ["schema_migration/test-execution-arn/publish_and_cleanup/collection_id.json"]
+            "artifact-bucket",
+            [
+                f"schema_migration/{local_schema_migrate.schema_version}/test-execution-arn/publish_and_cleanup/collection_id.json"
+            ],
         )
         local_schema_migrate.s3_provider.delete_files.assert_any_call(
             "artifact-bucket",
@@ -139,7 +145,10 @@ class TestPublishAndCleanup:
         assert errors == []
         local_schema_migrate.business_logic.publish_collection_version.assert_not_called()
         local_schema_migrate.s3_provider.delete_files.assert_any_call(
-            "artifact-bucket", ["schema_migration/test-execution-arn/publish_and_cleanup/collection_id.json"]
+            "artifact-bucket",
+            [
+                f"schema_migration/{local_schema_migrate.schema_version}/test-execution-arn/publish_and_cleanup/collection_id.json"
+            ],
         )
         local_schema_migrate.s3_provider.delete_files.assert_any_call(
             "artifact-bucket", ["prev_successful_dataset_version_id/migrated.h5ad"]
@@ -156,6 +165,9 @@ class TestPublishAndCleanup:
         assert errors == []
         local_schema_migrate.check_dataset_is_latest_schema_version.assert_not_called()
         local_schema_migrate.s3_provider.delete_files.assert_any_call(
-            "artifact-bucket", ["schema_migration/test-execution-arn/publish_and_cleanup/collection_id.json"]
+            "artifact-bucket",
+            [
+                f"schema_migration/{local_schema_migrate.schema_version}/test-execution-arn/publish_and_cleanup/collection_id.json"
+            ],
         )
         local_schema_migrate.s3_provider.delete_files.assert_any_call("artifact-bucket", [])
