@@ -66,6 +66,18 @@ class DatasetConversionStatus(DatasetStatusGeneric, Enum):
     SKIPPED = "SKIPPED"
 
 
+class DatasetVisibility(Enum):
+    """
+    Describes a datasets's visibility.
+
+    PUBLIC - a published and publicly viewable Dataset.
+    PRIVATE - an open Submission, i.e an unpublished and non-public Dataset.
+    """
+
+    PUBLIC = "Public"
+    PRIVATE = "Private"
+
+
 class CollectionLinkType(str, Enum):
     DOI = "doi"
     RAW_DATA = "raw_data"
@@ -233,6 +245,13 @@ class PublishedDatasetVersion(DatasetVersion):
 
 
 @dataclass
+class PrivateDatasetVersion(
+    DatasetVersion
+):  # TODO(cc) revisit naming here, this can also be a unchanged (public) dataset of a revision
+    collection_version_id: CollectionVersionId
+
+
+@dataclass
 class Link:
     name: Optional[str]
     type: str
@@ -316,3 +335,8 @@ class CollectionVersionWithDatasets(CollectionVersionBase):
 @dataclass
 class CollectionVersionWithPublishedDatasets(CollectionVersionBase):
     datasets: List[PublishedDatasetVersion]
+
+
+@dataclass
+class CollectionVersionWithPrivateDatasets(CollectionVersionBase):
+    datasets: List[PrivateDatasetVersion]

@@ -19,6 +19,7 @@ from backend.layers.common.entities import (
     DatasetUploadStatus,
     DatasetValidationStatus,
     DatasetVersionId,
+    DatasetVisibility,
     Link,
     OntologyTermId,
 )
@@ -1891,6 +1892,355 @@ class TestGetDatasets(BaseAPIPortalTest):
                 },
             ]
             self.assertEqual(expected_assets, dataset["assets"])
+
+        with self.subTest("Response Dataset objects contain visibility"):
+            for dataset in response.json:
+                self.assertEqual(DatasetVisibility.PUBLIC.name, dataset["visibility"])
+
+        with self.subTest("Response Dataset objects contain revision_of_collection"):
+            for dataset in response.json:
+                self.assertIsNone(dataset["revision_of_collection"])
+
+        with self.subTest("Response Dataset objects contain revision_of_dataset"):
+            for dataset in response.json:
+                self.assertIsNone(dataset["revision_of_dataset"])
+
+    def test_get_private_datasets_200(self):
+        """
+        Tests /curation/v1/datasets endpoint with different credentials and visibility filters.
+
+        Test data setup:
+        - published_collection_1: 2 datasets
+        - published_collection_2: 1 dataset
+        - unpublished_collection_1: 3 datasets (one modified)
+        - unpublished_collection_2: 2 datasets
+        - published_collection_1_revision: 3 datasets (one new, one modified)
+        """
+        # Create two public collections with different owners.
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "12.3456/j.celrep")
+        )
+        published_collection_1 = self.generate_published_collection(
+            add_datasets=2,
+            metadata=CollectionMetadata(
+                "test_collection_1",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/12.3456/j.celrep")],
+                ["Consortia 1", "Consortia 2"],
+            ),
+        )
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "78.91011/j.celrep")
+        )
+        self.generate_published_collection(
+            owner="other owner",
+            curator_name="other curator",
+            add_datasets=1,
+            metadata=CollectionMetadata(
+                "test_collection_2",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/78.91011/j.celrep")],
+                ["Consortia 1", "Consortia 2"],
+            ),
+        )
+
+        # Create two private collections with different owners, updating one existing dataset for the first private collection.
+        unpublished_collection_1 = self.generate_unpublished_collection(
+            add_datasets=3,
+            dataset_schema_version="1.0.0",
+        )
+        unpublished_collection_1_dataset_replaced = unpublished_collection_1.datasets[0]
+        dataset_metadata = copy.deepcopy(self.sample_dataset_metadata)
+        dataset_metadata.schema_version = "1.0.0"
+        unpublished_collection_1_dataset_updated = self.generate_dataset(
+            collection_version=unpublished_collection_1,
+            replace_dataset_version_id=unpublished_collection_1_dataset_replaced.version_id,
+            metadata=dataset_metadata,
+        )
+        unpublished_collection_2 = self.generate_unpublished_collection(
+            owner="other owner",
+            add_datasets=1,
+        )
+
+        # Create revision of published_collection_1. Add one new dataset and update one existing dataset.
+        revision_1 = self.generate_revision(published_collection_1.collection_id)
+        revision_1_dataset_new = self.generate_dataset(
+            collection_version=revision_1,
+        )
+        revision_1_dataset_updated = self.generate_dataset(
+            collection_version=revision_1,
+            replace_dataset_version_id=revision_1.datasets[0].version_id,
+        )
+
+        # Check expected datasets are in the given response datasets.
+        def _validate_datasets(response_datasets, expected_dataset_ids: list[str]):
+            self.assertEqual(len(expected_dataset_ids), len(response_datasets))
+            self.assertCountEqual(expected_dataset_ids, [d["dataset_version_id"] for d in response_datasets])
+
+        # Super curator
+        with self.subTest("With super curator credentials"):
+            response_datasets = self._fetch_datasets(
+                visibility=DatasetVisibility.PRIVATE.name, headers=self.make_super_curator_header()
+            )
+
+            # Create the list of the 7 expected datasets: 4 (3 + 1) from unpublished collections and 3 from
+            # the revision of published_collection_1
+            expected_dataset_ids = [
+                unpublished_collection_1_dataset_updated.dataset_version_id,
+                unpublished_collection_1.datasets[1].version_id.id,
+                unpublished_collection_1.datasets[2].version_id.id,
+                unpublished_collection_2.datasets[0].version_id.id,
+                revision_1_dataset_updated.dataset_version_id,
+                revision_1.datasets[1].version_id.id,
+                revision_1_dataset_new.dataset_version_id,
+            ]
+            _validate_datasets(response_datasets, expected_dataset_ids)
+
+        # Super curator and schema version
+        with self.subTest("With super curator credentials and schema version"):
+            response_datasets = self._fetch_datasets(
+                visibility=DatasetVisibility.PRIVATE.name,
+                headers=self.make_super_curator_header(),
+                schema_version="3.0.0",
+            )
+
+            # Create the list of the 4 expected datasets: 1 from unpublished collections and 3 from
+            # the revision of published_collection_1
+            expected_dataset_ids = [
+                unpublished_collection_2.datasets[0].version_id.id,
+                revision_1_dataset_updated.dataset_version_id,
+                revision_1.datasets[1].version_id.id,
+                revision_1_dataset_new.dataset_version_id,
+            ]
+            _validate_datasets(response_datasets, expected_dataset_ids)
+
+        with self.subTest("With super curator credentials and patch wildcard schema version"):
+            response_datasets = self._fetch_datasets(
+                visibility=DatasetVisibility.PRIVATE.name,
+                headers=self.make_super_curator_header(),
+                schema_version="3.0",
+            )
+
+            # Create the list of the 4 expected datasets: 1 from unpublished collections and 3 from
+            # the revision of published_collection_1
+            expected_dataset_ids = [
+                unpublished_collection_2.datasets[0].version_id.id,
+                revision_1_dataset_updated.dataset_version_id,
+                revision_1.datasets[1].version_id.id,
+                revision_1_dataset_new.dataset_version_id,
+            ]
+            _validate_datasets(response_datasets, expected_dataset_ids)
+
+        with self.subTest("With super curator credentials and minor and patch wildcard schema version"):
+            response_datasets = self._fetch_datasets(
+                visibility=DatasetVisibility.PRIVATE.name,
+                headers=self.make_super_curator_header(),
+                schema_version="3",
+            )
+
+            # Create the list of the 4 expected datasets: 1 from unpublished collections and 3 from
+            # the revision of published_collection_1
+            expected_dataset_ids = [
+                unpublished_collection_2.datasets[0].version_id.id,
+                revision_1_dataset_updated.dataset_version_id,
+                revision_1.datasets[1].version_id.id,
+                revision_1_dataset_new.dataset_version_id,
+            ]
+            _validate_datasets(response_datasets, expected_dataset_ids)
+
+        # Owner and schema version
+        with self.subTest("With owner credentials and schema version"):
+            response_datasets = self._fetch_datasets(
+                visibility=DatasetVisibility.PRIVATE.name,
+                headers=self.make_owner_header(),
+                schema_version="3.0.0",
+            )
+
+            # Create the list of the 3 expected datasets: 3 from the revision of published_collection_1
+            expected_dataset_ids = [
+                revision_1_dataset_updated.dataset_version_id,
+                revision_1.datasets[1].version_id.id,
+                revision_1_dataset_new.dataset_version_id,
+            ]
+            _validate_datasets(response_datasets, expected_dataset_ids)
+
+        with self.subTest("With owner credentials and patch wildcard schema version"):
+            response_datasets = self._fetch_datasets(
+                visibility=DatasetVisibility.PRIVATE.name,
+                headers=self.make_owner_header(),
+                schema_version="3.0",
+            )
+
+            # Create the list of the 3 expected datasets: 3 from the revision of published_collection_1
+            expected_dataset_ids = [
+                revision_1_dataset_updated.dataset_version_id,
+                revision_1.datasets[1].version_id.id,
+                revision_1_dataset_new.dataset_version_id,
+            ]
+            _validate_datasets(response_datasets, expected_dataset_ids)
+
+        with self.subTest("With owner credentials and minor and patch wildcard schema version"):
+            response_datasets = self._fetch_datasets(
+                visibility=DatasetVisibility.PRIVATE.name,
+                headers=self.make_owner_header(),
+                schema_version="3",
+            )
+
+            # Create the list of the 3 expected datasets: 3 from the revision of published_collection_1
+            expected_dataset_ids = [
+                revision_1_dataset_updated.dataset_version_id,
+                revision_1.datasets[1].version_id.id,
+                revision_1_dataset_new.dataset_version_id,
+            ]
+            _validate_datasets(response_datasets, expected_dataset_ids)
+
+        # Hit datasets endpoint for owner and check response shape.
+        response_datasets = self._fetch_datasets(
+            visibility=DatasetVisibility.PRIVATE.name, headers=self.make_owner_header()
+        )
+
+        # Owner
+        with self.subTest("With owner credentials"):
+            # Create the list of the 6 expected datasets: 3 from unpublished collections and 3 from
+            # the revision of published_collection_1
+            expected_dataset_ids = [
+                unpublished_collection_1_dataset_updated.dataset_version_id,
+                unpublished_collection_1.datasets[1].version_id.id,
+                unpublished_collection_1.datasets[2].version_id.id,
+                revision_1_dataset_updated.dataset_version_id,
+                revision_1.datasets[1].version_id.id,
+                revision_1_dataset_new.dataset_version_id,
+            ]
+            _validate_datasets(response_datasets, expected_dataset_ids)
+
+        # Sort order
+        with self.subTest("Sorts datasets"):
+            expected_sorted_dataset_ids = sorted(
+                [
+                    unpublished_collection_1_dataset_updated.dataset_id,
+                    unpublished_collection_1.datasets[1].dataset_id.id,
+                    unpublished_collection_1.datasets[2].dataset_id.id,
+                    revision_1_dataset_updated.dataset_id,
+                    revision_1_dataset_new.dataset_id,
+                ],
+                reverse=True,
+            )
+            expected_sorted_dataset_ids.append(revision_1.datasets[1].dataset_id.id)
+
+            response_dataset_ids = []
+            for dataset in response_datasets:
+                response_dataset_ids.append(dataset["dataset_id"])
+            self.assertEqual(expected_sorted_dataset_ids, response_dataset_ids)
+
+        # Key datasets by their ID for easy lookup.
+        datasets_by_version_id = {dataset["dataset_version_id"]: dataset for dataset in response_datasets}
+
+        # Verify fields for a new dataset of a private collection
+        # visibility - PRIVATE
+        # collection_id - collection_id
+        # collection_version_id - collection_version_id
+        # revision_of_collection - null
+        # revision_of_dataset - null
+        with self.subTest("Verify expected fields for private collection, new dataset"):
+            expected_dataset = unpublished_collection_1.datasets[1]
+            response_dataset = datasets_by_version_id[expected_dataset.version_id.id]
+            self.assertEqual(DatasetVisibility.PRIVATE.name, response_dataset["visibility"])
+            self.assertEqual(unpublished_collection_1.collection_id.id, response_dataset["collection_id"])
+            self.assertEqual(unpublished_collection_1.version_id.id, response_dataset["collection_version_id"])
+            self.assertIsNone(response_dataset["revision_of_collection"])
+            self.assertIsNone(response_dataset["revision_of_dataset"])
+            self.assertIn(expected_dataset.version_id.id, response_dataset["explorer_url"])
+            self.assertIsNone(response_dataset["published_at"])
+            self.assertIsNone(response_dataset["revised_at"])
+
+        # Verify fields for an updated dataset of a private collection
+        # visibility - PRIVATE
+        # collection_id - collection_id
+        # collection_version_id - collection_version_id
+        # revision_of_collection - null
+        # revision_of_dataset - null
+        with self.subTest("Verify expected fields for private collection, updated dataset"):
+            response_dataset = datasets_by_version_id[unpublished_collection_1_dataset_updated.dataset_version_id]
+            self.assertEqual(DatasetVisibility.PRIVATE.name, response_dataset["visibility"])
+            self.assertEqual(unpublished_collection_1.collection_id.id, response_dataset["collection_id"])
+            self.assertEqual(unpublished_collection_1.version_id.id, response_dataset["collection_version_id"])
+            self.assertIsNone(response_dataset["revision_of_collection"])
+            self.assertIsNone(response_dataset["revision_of_dataset"])
+            self.assertIn(unpublished_collection_1_dataset_updated.dataset_version_id, response_dataset["explorer_url"])
+            self.assertIsNone(response_dataset["published_at"])
+            self.assertIsNone(response_dataset["revised_at"])
+
+        # Verify fields for a new dataset of a revision
+        # visibility - PRIVATE
+        # collection_id - collection_version_id
+        # collection_version_id - collection_version_id
+        # revision_of_collection - collection_id
+        # revision_of_dataset - null
+        with self.subTest("Verify expected fields for revision, new dataset"):
+            response_dataset = datasets_by_version_id[revision_1_dataset_new.dataset_version_id]
+            self.assertEqual(DatasetVisibility.PRIVATE.name, response_dataset["visibility"])
+            self.assertEqual(revision_1.version_id.id, response_dataset["collection_id"])
+            self.assertEqual(revision_1.version_id.id, response_dataset["collection_version_id"])
+            self.assertEqual(revision_1.collection_id.id, response_dataset["revision_of_collection"])
+            self.assertIsNone(response_dataset["revision_of_dataset"])
+            self.assertIn(revision_1_dataset_new.dataset_version_id, response_dataset["explorer_url"])
+            self.assertIsNone(response_dataset["published_at"])
+            self.assertIsNone(response_dataset["revised_at"])
+
+        # Verify fields for a updated dataset of a revision
+        # visibility - PRIVATE
+        # collection_id - collection_version_id
+        # collection_version_id - collection_version_id
+        # revision_of_collection - collection_id
+        # revision_of_dataset - canonical_dataset_id
+        with self.subTest("Verify expected fields for revision, updated dataset"):
+            response_dataset = datasets_by_version_id[revision_1_dataset_updated.dataset_version_id]
+            self.assertEqual(DatasetVisibility.PRIVATE.name, response_dataset["visibility"])
+            self.assertEqual(revision_1.version_id.id, response_dataset["collection_id"])
+            self.assertEqual(revision_1.version_id.id, response_dataset["collection_version_id"])
+            self.assertEqual(revision_1.collection_id.id, response_dataset["revision_of_collection"])
+            self.assertEqual(revision_1.datasets[0].version_id.id, response_dataset["revision_of_dataset"])
+            self.assertIn(revision_1_dataset_updated.dataset_version_id, response_dataset["explorer_url"])
+            self.assertIsNone(response_dataset["published_at"])
+            self.assertIsNone(response_dataset["revised_at"])
+
+        # Verify fields for a unchanged dataset of a revision
+        # visibility - PUBLIC
+        # collection_id - collection_version_id
+        # collection_version_id - collection_version_id
+        # revision_of_collection - collection_id
+        # revision_of_dataset - null
+        with self.subTest("Verify expected fields for revision, unchanged dataset"):
+            expected_dataset = revision_1.datasets[1]
+            response_dataset = datasets_by_version_id[expected_dataset.version_id.id]
+            self.assertEqual(DatasetVisibility.PUBLIC.name, response_dataset["visibility"])
+            self.assertEqual(revision_1.version_id.id, response_dataset["collection_id"])
+            self.assertEqual(revision_1.version_id.id, response_dataset["collection_version_id"])
+            self.assertEqual(revision_1.collection_id.id, response_dataset["revision_of_collection"])
+            self.assertIsNone(response_dataset["revision_of_dataset"])
+            self.assertIn(expected_dataset.dataset_id.id, response_dataset["explorer_url"])
+            self.assertIsNotNone(response_dataset["published_at"])
+            self.assertIsNone(response_dataset["revised_at"])  # Not revised
+
+    def test_get_private_datasets_403(self):
+        # 403 if no credentials and requesting private datasets.
+        self._fetch_datasets(visibility=DatasetVisibility.PRIVATE.name, status_code=403)
+
+    # Fetch datasets with given visibility and auth.
+    def _fetch_datasets(self, visibility=None, headers=None, schema_version=None, status_code=200):
+        kwargs = {}
+        if headers:
+            kwargs["headers"] = headers
+        if visibility:
+            kwargs["query_string"] = {"visibility": visibility, "schema_version": schema_version}
+
+        response = self.app.get("/curation/v1/datasets", **kwargs)
+        self.assertEqual(status_code, response.status_code)
+        return response.json
 
     def test_get_datasets_by_schema_200(self):
         self.crossref_provider.fetch_metadata = Mock(

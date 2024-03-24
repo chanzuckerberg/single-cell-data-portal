@@ -617,10 +617,35 @@ paths:
       tags:
         - Dataset
       description: |
-        List all public Datasets with full metadata as well as Collection name and Collection doi.
+        List all Datasets with full metadata as well as Collection name and Collection doi.
+
+        The default `visibility` is PUBLIC. When visibility is PUBLIC, then a list of all public Datasets is returned.
+
+        When the visibility parameter is set to PRIVATE, a list of all private Datasets that the user is authorized to
+        access is returned. An access token MUST be set in the request header as: `Authorization
+        Bearer <access_token>`.
+
+        Datasets returned include a `visibility` field that indicates whether the Dataset is public or private.
+
+        * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.datasets.actions.get
+      security:
+        - curatorAccessLenient: []
+        - {}      
       parameters:
         - $ref: "#/components/parameters/schema_version"
+        - description: |
+            The visibility of the Datasets to query for.
+
+            | visibility | description | Authorization Required |
+            | ---------- | ----------- | -------------- |
+            | PUBLIC   | All public Datasets are returned. | No |
+            | PRIVATE  | All private Datasets that the user is authorized to access are returned.  | Yes |
+          in: query
+          name: visibility
+          required: false
+          schema:
+            $ref: "#/components/schemas/dataset_visibility"        
       responses:
         "200":
           description: OK
@@ -632,6 +657,8 @@ paths:
                   $ref: "#/components/schemas/dataset_index"
         "400":
           $ref: "#/components/responses/400"
+        "403":
+          $ref: "#/components/responses/403"
 
   /v1/datasets/{dataset_id}/versions:
     get:
@@ -1342,6 +1369,19 @@ components:
         suspension_type:
           $ref: "#/components/schemas/suspension_type"
       type: object
+    dataset_visibility:
+      default: PUBLIC
+      description: |
+        The visibility of the Dataset.
+
+        | visibility | description |
+        | ---------- | ----------- | 
+        | PUBLIC   | The Dataset is published and accessible to all users of CELLxGENE Discover |
+        | PRIVATE  | The Dataset is in private review, either as a new Dataset that has not been published or a Revision of a previously published Dataset. |
+      enum:
+        - PUBLIC
+        - PRIVATE
+      type: string
     default_embedding:
       description: Key for the embedding that is displayed by default in CZ CELLxGENE Explorer
       type: string

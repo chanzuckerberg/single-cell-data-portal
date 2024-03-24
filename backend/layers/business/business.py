@@ -3,6 +3,7 @@ import logging
 import os
 from collections import defaultdict
 from datetime import datetime
+from fnmatch import fnmatchcase
 from functools import reduce
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
@@ -47,6 +48,7 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     CollectionVersionWithDatasets,
+    CollectionVersionWithPrivateDatasets,
     CollectionVersionWithPublishedDatasets,
     DatasetArtifact,
     DatasetArtifactId,
@@ -64,6 +66,7 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
     Link,
+    PrivateDatasetVersion,
     PublishedDatasetVersion,
 )
 from backend.layers.common.helpers import (
@@ -640,6 +643,56 @@ class BusinessLogic(BusinessLogicInterface):
             datasets.extend(collection_datasets)
         return datasets
 
+    def get_private_collection_versions_with_datasets(
+        self, owner: str = None, schema_version_pattern: str = None
+    ) -> List[CollectionVersionWithPrivateDatasets]:
+        """
+        Returns collection versions with their datasets for private collections. If `schema` is provided, collections
+        with that schema are returned. If `owner` is provided, collections owned by that user are returned.
+        :param owner: The owner of the collections to retrieve. None if user is super use.
+        :param schema: The schema of the collections to retrieve, possibly containing "_" wildcards. None if all schemas are to be retrieved.
+        :return: A list of CollectionVersionWithPrivateDatasets objects.
+        """
+
+        # Retrieve private collections for the given owner, if any.
+        filter = CollectionQueryFilter(owner=owner, is_published=False)
+        collection_versions = list(self.get_collections(filter))
+
+        # Retrieve datasets for the set of private collections.
+        dataset_versions = self.get_datasets_for_collections(collection_versions)
+
+        # Filter collection versions by schema version if specified.
+        if schema_version_pattern:
+            collection_versions = self._filter_private_collection_versions_by_schema_version(
+                schema_version_pattern, collection_versions, dataset_versions
+            )
+
+        # Key datasets by collection ID for easy lookup.
+        datasets_by_collection_id = defaultdict(list)
+        for dataset_version in dataset_versions:
+            datasets_by_collection_id[dataset_version.collection_id.id].append(dataset_version)
+
+        # Combine collections and their datasets into CollectionVersionWithPrivateDatasets objects.
+        collection_versions_with_datasets = []
+        for collection_version in collection_versions:
+            dataset_versions = datasets_by_collection_id.get(collection_version.collection_id.id, [])
+
+            private_dataset_versions: List[PrivateDatasetVersion] = []
+            for dataset_version in dataset_versions:
+
+                private_dataset_versions.append(
+                    PrivateDatasetVersion(
+                        collection_version_id=collection_version.version_id,
+                        **vars(dataset_version),
+                    )
+                )
+
+            collection_versions_with_datasets.append(
+                self._map_collection_version_to_private_dataset_version(collection_version, private_dataset_versions)
+            )
+
+        return collection_versions_with_datasets
+
     def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithPublishedDatasets]:
         """
         Retrieves all the datasets from the database that belong to a published collection
@@ -1028,6 +1081,125 @@ class BusinessLogic(BusinessLogicInterface):
                     self.s3_provider.delete_prefix(bucket, prefix)
             except S3DeleteException as e:
                 raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
+
+    def _filter_private_collection_versions_by_schema_version(
+        self,
+        schema_version_pattern: str,
+        collection_versions: List[CollectionVersion],
+        dataset_versions: List[DatasetVersion],
+    ) -> List[CollectionVersion]:
+        """
+        Returns a list of private collection versions that match the given schema_version; generating by checking the schema
+        version of datasets in each collection version.
+        :param schema_version_pattern: The schema version to filter by.
+        :param collection_versions: The list of collection versions to filter.
+        :param dataset_versions: The list of dataset versions to check the schema version against.
+        :return: A list of CollectionVersions.
+        """
+        # Get dataset versions by ID for easy lookup.
+        dataset_versions_by_id = {
+            dataset_version.version_id.id: dataset_version for dataset_version in dataset_versions
+        }
+
+        # Filter collection versions by dataset version schema version.
+        filtered_collection_versions = []
+        for collection_version in collection_versions:
+            dataset_versions = [dataset_versions_by_id[dv_id.id] for dv_id in collection_version.datasets]
+            filtered_dataset_versions = self._is_any_dataset_version_schema_version_matching(
+                dataset_versions, schema_version_pattern
+            )
+            if len(filtered_dataset_versions) > 0:
+                filtered_collection_versions.append(collection_version)
+
+        return filtered_collection_versions
+
+    def _is_any_dataset_version_schema_version_matching(
+        self,
+        dataset_versions: List[DatasetVersion],
+        schema_version_pattern: str,
+    ) -> List[DatasetVersion]:
+        """
+        Creates a list of dataset versions that have the given schema version pattern, accounting for wildcards.
+        :param dataset_versions: the dataset versions to check schema version of.
+        :param schema_version: the schema version to use in checks, possibly containining "_" wildcards.
+        :return: A list of dataset versions.
+        """
+        # Execute wildcard matching if the schema version contains a wildcard.
+        has_wildcards = "_" in schema_version_pattern
+        if has_wildcards:
+            schema_version_pattern = schema_version_pattern.replace("_", "?")
+            return [
+                dv
+                for dv in dataset_versions
+                if self._is_dataset_version_schema_version_wildcard_match(dv, schema_version_pattern)
+            ]
+
+        # Otherwise, return the dataset versions with the exact schema version.
+        return [
+            dv
+            for dv in dataset_versions
+            if self._is_dataset_version_schema_version_exact_match(dv, schema_version_pattern)
+        ]
+
+    def _is_dataset_version_schema_version_valid(self, dataset_version: DatasetVersion) -> bool:
+        """
+        Check if the dataset version's schema version is specified.
+        :param dataset_version: The dataset version to check.
+        :return: True if the dataset version's schema version is specified, False otherwise.
+        """
+        if dataset_version.metadata is None:
+            return False
+
+        if dataset_version.metadata.schema_version is None:
+            return False
+
+        return True
+
+    def _is_dataset_version_schema_version_wildcard_match(
+        self, dataset_version: DatasetVersion, schema_version_pattern: str
+    ) -> bool:
+        """
+        Determines if the dataset version's schema version is a wildcard match.
+        """
+        if not self._is_dataset_version_schema_version_valid(dataset_version):
+            return False
+
+        return fnmatchcase(dataset_version.metadata.schema_version, schema_version_pattern)
+
+    def _is_dataset_version_schema_version_exact_match(
+        self, dataset_version: DatasetVersion, schema_version_pattern: str
+    ) -> bool:
+        """
+        Determines if the schema version is a wildcard match.
+        """
+        if not self._is_dataset_version_schema_version_valid(dataset_version):
+            return False
+
+        return dataset_version.metadata.schema_version == schema_version_pattern
+
+    def _map_collection_version_to_private_dataset_version(
+        self, collection_version: CollectionVersion, private_dataset_versions: List[PrivateDatasetVersion]
+    ) -> CollectionVersionWithPrivateDatasets:
+        """
+        Creates a CollectionVersionWithPrivateDatasets object from a CollectionVersion and a list of PrivateDatasetVersions.
+        :param collection_version: The CollectionVersion to map.
+        :param private_dataset_version: The list of PrivateDatasetVersions to map.
+        :return: A CollectionVersionWithPrivateDatasets object.
+        """
+        return CollectionVersionWithPrivateDatasets(
+            collection_id=collection_version.collection_id,
+            version_id=collection_version.version_id,
+            owner=collection_version.owner,
+            curator_name=collection_version.curator_name,
+            metadata=collection_version.metadata,
+            publisher_metadata=collection_version.publisher_metadata,
+            published_at=collection_version.published_at,
+            created_at=collection_version.created_at,
+            schema_version=collection_version.schema_version,
+            canonical_collection=collection_version.canonical_collection,
+            has_custom_dataset_order=collection_version.has_custom_dataset_order,
+            datasets=private_dataset_versions,
+        )
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str

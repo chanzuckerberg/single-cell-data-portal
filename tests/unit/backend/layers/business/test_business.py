@@ -1546,6 +1546,129 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
 
 
+class TestGetAllDatasets(BaseBusinessLogicTestCase):
+    def test_get_all_private_datasets_ok(self):
+        """
+        Private datasets the user is authorized to view can be retrieved with `get_all_private_collection_versions_with_datasets`.
+        """
+        # test_user_1:
+        # - private collection (2 datasets)
+        # - public collection (2 datasets)
+        # - published revision (2 datasets)
+        # - unpublished revision (2 datasets)
+        # - private collection, schema 1.0.0 (1 dataset)
+        # - published revision, schema 1.0.0 (1 dataset)
+        test_user_1 = "test_user_1"
+        private_cv_1 = self.initialize_unpublished_collection(owner=test_user_1)
+        self.initialize_published_collection(owner=test_user_1)
+        self.initialize_collection_with_a_published_revision(owner=test_user_1)
+        _, revision_1 = self.initialize_collection_with_an_unpublished_revision(owner=test_user_1)
+
+        private_cv_schema_1 = self.initialize_unpublished_collection(num_datasets=1, owner=test_user_1)
+        schema_1_0_0 = "1.0.0"
+        metadata = deepcopy(self.sample_dataset_metadata)
+        metadata.schema_version = schema_1_0_0
+        self.database_provider.set_dataset_metadata(private_cv_schema_1.datasets[0].version_id, metadata)
+
+        public_cv_schema_1 = self.initialize_unpublished_collection(num_datasets=1, owner=test_user_1)
+        self.database_provider.set_dataset_metadata(public_cv_schema_1.datasets[0].version_id, metadata)
+        self.business_logic.publish_collection_version(public_cv_schema_1.version_id)
+
+        # test_user_2:
+        # - private collection
+        # - public collection
+        # - published revision
+        # - unpublished revision
+        # - private collection, schema 1.0.0 (1 dataset)
+        # - published revision, schema 1.0.0 (1 dataset)
+        test_user_2 = "test_user_2"
+        private_cv_2 = self.initialize_unpublished_collection(owner=test_user_2)
+        self.initialize_published_collection(owner=test_user_2)
+        self.initialize_collection_with_a_published_revision(owner=test_user_2)
+        _, revision_2 = self.initialize_collection_with_an_unpublished_revision(owner=test_user_2)
+
+        private_cv_schema_2 = self.initialize_unpublished_collection(num_datasets=1, owner=test_user_2)
+        self.database_provider.set_dataset_metadata(private_cv_schema_2.datasets[0].version_id, metadata)
+
+        public_cv_schema_2 = self.initialize_unpublished_collection(num_datasets=1, owner=test_user_2)
+        self.database_provider.set_dataset_metadata(public_cv_schema_2.datasets[0].version_id, metadata)
+        self.business_logic.publish_collection_version(public_cv_schema_2.version_id)
+
+        # Validate the expected datasets are returned.
+        def _validate(actual: List[CollectionVersionWithDatasets], expected: List[CollectionVersionWithDatasets]):
+            # Confirm the expected number of collection versions are returned.
+            self.assertEqual(len(expected), len(actual))
+
+            # Sort collection versions by ID, for comparison.
+            actual.sort(key=lambda cv: cv.version_id.id)
+            expected.sort(key=lambda cv: cv.version_id.id)
+
+            # Confirm datasets length and content are correct for each collection version.
+            for index, collection_version in enumerate(actual):
+                datasets = collection_version.datasets
+                expected_datasets = expected[index].datasets
+
+                self.assertEqual(len(expected_datasets), len(datasets))
+
+                # Check actual datasets match in expected.
+                self.assertCountEqual(
+                    [d.version_id for d in expected_datasets],
+                    [d.version_id for d in datasets],
+                )
+
+        with self.subTest("With super user"):
+            collection_versions = self.business_logic.get_private_collection_versions_with_datasets()
+            expected = [private_cv_1, private_cv_schema_1, revision_1, private_cv_2, private_cv_schema_2, revision_2]
+            _validate(collection_versions, expected)
+
+        with self.subTest("With super user and schema"):
+            collection_versions = self.business_logic.get_private_collection_versions_with_datasets(
+                schema_version_pattern=schema_1_0_0
+            )
+            expected = [private_cv_schema_1, private_cv_schema_2]
+            _validate(collection_versions, expected)
+
+        with self.subTest("With super user and schema missing patch"):
+            collection_versions = self.business_logic.get_private_collection_versions_with_datasets(
+                schema_version_pattern="1.0._"
+            )
+            expected = [private_cv_schema_1, private_cv_schema_2]
+            _validate(collection_versions, expected)
+
+        with self.subTest("With super user and schema missing minor and patch"):
+            collection_versions = self.business_logic.get_private_collection_versions_with_datasets(
+                schema_version_pattern="1._._"
+            )
+            expected = [private_cv_schema_1, private_cv_schema_2]
+            _validate(collection_versions, expected)
+
+        with self.subTest("With owner"):
+            collection_versions = self.business_logic.get_private_collection_versions_with_datasets(owner=test_user_1)
+            expected = [private_cv_1, private_cv_schema_1, revision_1]
+            _validate(collection_versions, expected)
+
+        with self.subTest("With owner and schema"):
+            collection_versions = self.business_logic.get_private_collection_versions_with_datasets(
+                owner=test_user_1, schema_version_pattern=schema_1_0_0
+            )
+            expected = [private_cv_schema_1]
+            _validate(collection_versions, expected)
+
+        with self.subTest("With owner and schema missing patch"):
+            collection_versions = self.business_logic.get_private_collection_versions_with_datasets(
+                owner=test_user_1, schema_version_pattern="1.0._"
+            )
+            expected = [private_cv_schema_1]
+            _validate(collection_versions, expected)
+
+        with self.subTest("With owner and schema missing minor and patch"):
+            collection_versions = self.business_logic.get_private_collection_versions_with_datasets(
+                owner=test_user_1, schema_version_pattern="1._._"
+            )
+            expected = [private_cv_schema_1]
+            _validate(collection_versions, expected)
+
+
 class TestUpdateDataset(BaseBusinessLogicTestCase):
     def test_update_dataset_status_ok(self):
         """
