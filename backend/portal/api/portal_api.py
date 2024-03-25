@@ -809,6 +809,8 @@ def enrich_dataset_response(datasets: Iterable[DatasetVersion]) -> List[dict]:
     prod_development_stage_corpus = set()
     # determine cell types and tissues in the prod corpus; these are considered valid ancestors to track
     for dataset in datasets:
+        if dataset.metadata is None:
+            continue
         prod_cell_type_corpus.update([t.ontology_term_id for t in dataset.metadata.cell_type])
         prod_tissue_corpus.update([t.ontology_term_id for t in dataset.metadata.tissue])
         prod_development_stage_corpus.update([t.ontology_term_id for t in dataset.metadata.development_stage])
