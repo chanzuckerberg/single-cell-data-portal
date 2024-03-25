@@ -56,10 +56,10 @@ def enrich_dataset_with_ancestors(dataset, key, corpus_term_set):
         # otherwise, filter ancestors to only include ancestors that are in the accepted_ancestors set or from the
         # corpus term set
         if is_tissue or is_cell_type or (is_development_stage and "UBERON" in term["ontology_term_id"]):
-            ancestors = set(ancestors) & accepted_ancestors
+            ancestors = list(set(ancestors) & accepted_ancestors)
         # If the term is a tissue, tag itself with the tissue type in the ancestor list
         self_as_ancestor = generate_tagged_tissue_ontology_id(term) if is_tissue else term["ontology_term_id"]
-        ancestors.add(self_as_ancestor)
+        ancestors.append(self_as_ancestor)
         unique_ancestors.update(ancestors)
     if unique_ancestors:
         dataset[f"{key}_ancestors"] = list(unique_ancestors)
