@@ -71,7 +71,7 @@ def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
     tiledb_config["vfs.s3.no_sign_request"] = "false"
     context = context.replace(tiledb_config=tiledb_config)
     with cellxgene_census.open_soma(
-        census_version="s3://bruce-tmp/census-schema-five-test-build-2/soma/", context=context
+        uri="s3://bruce-tmp/census-schema-five-test-build-2/soma/", context=context
     ) as census:
         census_schema_version, census_build_date = get_census_version_and_build_date(census)
 
