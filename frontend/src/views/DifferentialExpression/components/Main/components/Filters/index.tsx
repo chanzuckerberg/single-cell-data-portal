@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { createFilterOptions } from "@mui/material";
 import {
   ComplexFilterInputDropdown,
   DefaultMenuSelectOption,
@@ -10,7 +9,6 @@ import { memo, useCallback, useContext, useEffect, useMemo } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
   FilterDimensions,
-  RawDataset,
   useQueryGroupFilterDimensions,
 } from "src/common/queries/differentialExpression";
 import { DispatchContext } from "src/views/DifferentialExpression/common/store";
@@ -31,15 +29,6 @@ import {
   clearQueryGroup1Filters,
   clearQueryGroup2Filters,
 } from "src/views/DifferentialExpression/common/store/actions";
-const filterOptions = createFilterOptions({
-  stringify: (option: RawDataset) =>
-    `${option.label} ${option.collection_label}`,
-});
-
-const DropdownMenuProps = {
-  filterOptions,
-  getOptionSelected,
-};
 
 interface FilterOption {
   name: string;
@@ -81,23 +70,23 @@ export default memo(function Filters({
     useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
 
   const {
-    datasets: datasetIds,
     diseases,
     ethnicities,
     sexes,
     tissues,
     cellTypes,
+    publicationCitations,
   } = queryGroup;
 
   const {
     data: {
-      datasets: rawDatasets,
       development_stage_terms: rawDevelopmentStages,
       disease_terms: rawDiseases,
       self_reported_ethnicity_terms: rawEthnicities,
       sex_terms: rawSexes,
       tissue_terms: rawTissues,
       cell_type_terms: rawCellTypes,
+      publication_citations: rawPublicationCitations,
     },
     isLoading: rawIsLoading,
   } = useQueryGroupFilterDimensions(queryGroup);
@@ -111,12 +100,8 @@ export default memo(function Filters({
   // will temporarily be empty, and thus resetting the selected filter values
   useEffect(() => {
     if (rawIsLoading) return;
-    const newDatasets = rawDatasets.map((dataset) => ({
-      ...dataset,
-      details: dataset.collection_label,
-      name: dataset.label,
-    }));
-    newDatasets.sort((a, b) => a.name.localeCompare(b.name));
+    const newPublicationCitations = rawPublicationCitations;
+    newPublicationCitations.sort((a, b) => a.localeCompare(b));
 
     const newSexes = rawSexes.map(mapTermToFilterOption);
     newSexes.sort((a, b) => a.name.localeCompare(b.name));
@@ -142,20 +127,19 @@ export default memo(function Filters({
     const newDevelopmentStages = rawDevelopmentStages;
 
     const newAvailableFilters = {
-      datasets: newDatasets,
       development_stage_terms: newDevelopmentStages,
       disease_terms: newDiseases,
       self_reported_ethnicity_terms: newEthnicities,
       sex_terms: newSexes,
       tissue_terms: newTissues,
       cell_type_terms: newCellTypes,
+      publication_citations: newPublicationCitations,
     };
 
     if (isEqual(availableFilters, newAvailableFilters)) return;
 
     setAvailableFilters(newAvailableFilters);
   }, [
-    rawDatasets,
     rawDiseases,
     rawEthnicities,
     rawSexes,
@@ -163,22 +147,25 @@ export default memo(function Filters({
     rawIsLoading,
     rawDevelopmentStages,
     rawTissues,
+    rawPublicationCitations,
     availableFilters,
     setAvailableFilters,
   ]);
 
   const {
-    datasets = EMPTY_ARRAY,
     disease_terms = EMPTY_ARRAY,
     self_reported_ethnicity_terms = EMPTY_ARRAY,
     sex_terms = EMPTY_ARRAY,
     tissue_terms = EMPTY_ARRAY,
     cell_type_terms = EMPTY_ARRAY,
+    publication_citations = EMPTY_ARRAY,
   } = availableFilters;
 
-  const selectedDatasets = useMemo(() => {
-    return datasets.filter((dataset) => datasetIds?.includes(dataset.id));
-  }, [datasets, datasetIds]);
+  const selectedPublicationCitations = useMemo(() => {
+    return publication_citations.filter(
+      (publication) => publicationCitations?.includes(publication)
+    );
+  }, [publication_citations, publicationCitations]);
 
   const selectedDiseases = useMemo(() => {
     return disease_terms.filter((disease) => diseases?.includes(disease.id));
@@ -236,8 +223,8 @@ export default memo(function Filters({
     [dispatch, selectQueryGroupFilters, rawIsLoading]
   );
 
-  const handleDatasetsChange = useMemo(
-    () => handleFilterChange("datasets"),
+  const handlePublicationCitationsChange = useMemo(
+    () => handleFilterChange("publicationCitations"),
     [handleFilterChange]
   );
 
@@ -324,7 +311,6 @@ export default memo(function Filters({
         InputDropdownComponent={
           StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
         }
-        DropdownMenuProps={DropdownMenuProps}
         InputDropdownProps={InputDropdownProps}
         PopperComponent={StyledPopper}
       />
@@ -339,22 +325,22 @@ export default memo(function Filters({
         InputDropdownComponent={
           StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
         }
-        DropdownMenuProps={DropdownMenuProps}
         InputDropdownProps={InputDropdownProps}
         PopperComponent={StyledPopper}
       />
       <StyledComplexFilter
         multiple
-        data-testid="de-qg-dataset-filter"
+        data-testid="de-qg-publication-filter"
         search
-        label="Dataset"
-        options={datasets as unknown as DefaultMenuSelectOption[]}
-        onChange={handleDatasetsChange}
-        value={selectedDatasets as unknown as DefaultMenuSelectOption[]}
+        label="Publications"
+        options={publicationCitations as unknown as DefaultMenuSelectOption[]}
+        onChange={handlePublicationCitationsChange}
+        value={
+          selectedPublicationCitations as unknown as DefaultMenuSelectOption[]
+        }
         InputDropdownComponent={
           StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
         }
-        DropdownMenuProps={DropdownMenuProps}
         InputDropdownProps={InputDropdownProps}
         PopperComponent={StyledPopper}
       />
@@ -369,7 +355,6 @@ export default memo(function Filters({
         InputDropdownComponent={
           StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
         }
-        DropdownMenuProps={DropdownMenuProps}
         InputDropdownProps={InputDropdownProps}
         PopperComponent={StyledPopper}
       />
@@ -386,7 +371,6 @@ export default memo(function Filters({
         InputDropdownComponent={
           StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
         }
-        DropdownMenuProps={DropdownMenuProps}
         InputDropdownProps={InputDropdownProps}
         PopperComponent={StyledPopper}
       />
@@ -401,20 +385,12 @@ export default memo(function Filters({
         InputDropdownComponent={
           StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
         }
-        DropdownMenuProps={DropdownMenuProps}
         InputDropdownProps={InputDropdownProps}
         PopperComponent={StyledPopper}
       />
     </Wrapper>
   );
 });
-
-function getOptionSelected(
-  option: { id: string },
-  value: { id: string }
-): boolean {
-  return option.id === value.id;
-}
 
 function sortOptions(a: DefaultMenuSelectOption, b: DefaultMenuSelectOption) {
   if (a.name < b.name) {

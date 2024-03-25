@@ -1,13 +1,12 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
-import { API_URL } from "src/configs/dev";
+import { API_URL } from "src/configs/configs";
 import {
   DispatchContext,
   StateContext,
 } from "src/views/DifferentialExpression/common/store";
 import { setSnapshotId } from "src/views/DifferentialExpression/common/store/actions";
 import { API } from "../API";
-import { ROUTES } from "../constants/routes";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 import {
@@ -32,12 +31,12 @@ export interface RawPrimaryFilterDimensionsResponse {
 interface FilterSecondary {
   organism_ontology_term_id: string;
   tissue_ontology_term_ids: string[];
-  dataset_ids: string[];
   disease_ontology_term_ids: string[];
   sex_ontology_term_ids: string[];
   development_stage_ontology_term_ids: string[];
   self_reported_ethnicity_ontology_term_ids: string[];
   cell_type_ontology_term_ids: string[];
+  publication_citations: string[];
 }
 
 export interface FiltersQuery {
@@ -46,7 +45,6 @@ export interface FiltersQuery {
 
 export interface DifferentialExpressionQuery {
   queryGroup1Filters: {
-    dataset_ids: string[];
     development_stage_ontology_term_ids: string[];
     disease_ontology_term_ids: string[];
     organism_ontology_term_id: string;
@@ -54,9 +52,9 @@ export interface DifferentialExpressionQuery {
     sex_ontology_term_ids: string[];
     tissue_ontology_term_ids: string[];
     cell_type_ontology_term_ids: string[];
+    publication_citations: string[];
   };
   queryGroup2Filters: {
-    dataset_ids: string[];
     development_stage_ontology_term_ids: string[];
     disease_ontology_term_ids: string[];
     organism_ontology_term_id: string;
@@ -64,17 +62,12 @@ export interface DifferentialExpressionQuery {
     sex_ontology_term_ids: string[];
     tissue_ontology_term_ids: string[];
     cell_type_ontology_term_ids: string[];
+    publication_citations: string[];
   };
 }
 
 interface FiltersQueryResponse {
   filter_dims: {
-    datasets: {
-      collection_id: string;
-      collection_label: string;
-      id: string;
-      label: string;
-    }[];
     disease_terms: { [id: string]: string }[];
     sex_terms: { [id: string]: string }[];
     development_stage_terms: { [id: string]: string }[];
@@ -82,6 +75,7 @@ interface FiltersQueryResponse {
     tissue_terms: { [id: string]: string }[];
     cell_type_terms: { [id: string]: string }[];
     organism_terms: { [id: string]: string }[];
+    publication_citations: string[];
   };
   snapshot_id: string;
 }
@@ -238,7 +232,7 @@ export function useDEQuery(
 }
 
 const EMPTY_FILTER_DIMENSIONS = {
-  datasets: [],
+  publication_citations: [],
   development_stage_terms: [],
   disease_terms: [],
   self_reported_ethnicity_terms: [],
@@ -248,15 +242,7 @@ const EMPTY_FILTER_DIMENSIONS = {
   organism_terms: [],
 };
 
-export interface RawDataset {
-  collection_id: string;
-  collection_label: string;
-  id: string;
-  label: string;
-}
-
 export interface FilterDimensions {
-  datasets: RawDataset[];
   development_stage_terms: { id: string; name: string }[];
   disease_terms: { id: string; name: string }[];
   self_reported_ethnicity_terms: { id: string; name: string }[];
@@ -264,13 +250,16 @@ export interface FilterDimensions {
   tissue_terms: { id: string; name: string }[];
   cell_type_terms: { id: string; name: string }[];
   organism_terms: { id: string; name: string }[];
+  publication_citations: string[];
 }
 
-const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
+const CXG_CENSUS_ORGANISMS = [
+  { name: "Homo sapiens", id: "NCBITaxon:9606" },
+  { name: "Mus musculus", id: "NCBITaxon:10090" },
+];
 
 export function useAvailableOrganisms() {
   const { data, isLoading } = useQueryGroupFilterDimensions(EMPTY_FILTERS);
-
   return useMemo(() => {
     if (isLoading || !data) return { data: [], isLoading };
 
@@ -279,7 +268,7 @@ export function useAvailableOrganisms() {
     return {
       isLoading,
       data: organism_terms.filter((organism) =>
-        TEMP_ALLOW_NAME_LIST.includes(organism.name)
+        CXG_CENSUS_ORGANISMS.map((obj) => obj.name).includes(organism.name)
       ),
     };
   }, [data, isLoading]);
@@ -332,7 +321,6 @@ function useDEQueryRequestBody() {
 
     return {
       queryGroup1Filters: {
-        dataset_ids: queryGroup1.datasets,
         development_stage_ontology_term_ids: queryGroup1.developmentStages,
         disease_ontology_term_ids: queryGroup1.diseases,
         organism_ontology_term_id: organismId,
@@ -340,9 +328,9 @@ function useDEQueryRequestBody() {
         sex_ontology_term_ids: queryGroup1.sexes,
         tissue_ontology_term_ids: queryGroup1.tissues,
         cell_type_ontology_term_ids: queryGroup1.cellTypes,
+        publication_citations: queryGroup1.publicationCitations,
       },
       queryGroup2Filters: {
-        dataset_ids: queryGroup2.datasets,
         development_stage_ontology_term_ids: queryGroup2.developmentStages,
         disease_ontology_term_ids: queryGroup2.diseases,
         organism_ontology_term_id: organismId,
@@ -350,6 +338,7 @@ function useDEQueryRequestBody() {
         sex_ontology_term_ids: queryGroup2.sexes,
         tissue_ontology_term_ids: queryGroup2.tissues,
         cell_type_ontology_term_ids: queryGroup2.cellTypes,
+        publication_citations: queryGroup2.publicationCitations,
       },
     };
   }, [organismId, queryGroups]);
@@ -368,30 +357,24 @@ export function useQueryGroupFilterDimensions(queryGroup: QueryGroup): {
     const { filter_dims } = data;
 
     const {
-      datasets,
       development_stage_terms,
       disease_terms,
       self_reported_ethnicity_terms,
       sex_terms,
       tissue_terms,
+      publication_citations,
       cell_type_terms,
       organism_terms,
     } = filter_dims;
 
-    const sortedDatasets = Object.values(
-      aggregateCollectionsFromDatasets(datasets)
-    ).flatMap(({ datasets }) => datasets);
     return {
       data: {
-        datasets: sortedDatasets.map((dataset) => ({
-          ...dataset,
-          name: dataset.label,
-        })),
         development_stage_terms: development_stage_terms.map(toEntity),
         disease_terms: disease_terms.map(toEntity),
         self_reported_ethnicity_terms:
           self_reported_ethnicity_terms.map(toEntity),
         sex_terms: sex_terms.map(toEntity),
+        publication_citations,
         tissue_terms: tissue_terms.map(toEntity),
         cell_type_terms: cell_type_terms.map(toEntity),
         organism_terms: organism_terms.map(toEntity),
@@ -404,33 +387,32 @@ export function useQueryGroupFilterDimensions(queryGroup: QueryGroup): {
 function useWMGFiltersQueryRequestBodyForQueryGroups(queryGroup: QueryGroup) {
   const { organismId } = useContext(StateContext);
   const {
-    datasets,
     developmentStages,
     diseases,
     ethnicities,
     sexes,
     tissues,
     cellTypes,
+    publicationCitations,
   } = queryGroup;
 
   return useMemo(() => {
     if (!organismId) {
       return {
         filter: {
-          dataset_ids: [],
           development_stage_ontology_term_ids: [],
           disease_ontology_term_ids: [],
-          organism_ontology_term_id: TEMP_ALLOW_NAME_LIST[0],
+          organism_ontology_term_id: CXG_CENSUS_ORGANISMS[0].id,
           self_reported_ethnicity_ontology_term_ids: [],
           sex_ontology_term_ids: [],
           tissue_ontology_term_ids: [],
           cell_type_ontology_term_ids: [],
+          publication_citations: [],
         },
       };
     }
     return {
       filter: {
-        dataset_ids: datasets,
         development_stage_ontology_term_ids: developmentStages,
         disease_ontology_term_ids: diseases,
         organism_ontology_term_id: organismId,
@@ -438,17 +420,18 @@ function useWMGFiltersQueryRequestBodyForQueryGroups(queryGroup: QueryGroup) {
         sex_ontology_term_ids: sexes,
         tissue_ontology_term_ids: tissues,
         cell_type_ontology_term_ids: cellTypes,
+        publication_citations: publicationCitations,
       },
     };
   }, [
     organismId,
-    datasets,
     developmentStages,
     diseases,
     ethnicities,
     sexes,
     tissues,
     cellTypes,
+    publicationCitations,
   ]);
 }
 
@@ -464,47 +447,4 @@ function useSnapshotId(): string | null {
   const { snapshotId } = state;
 
   return snapshotId || null;
-}
-
-interface Dataset extends RawDataset {
-  id: string;
-  label: string;
-}
-
-export interface CollectionFromDatasets {
-  name: string;
-  url: string;
-  datasets: Dataset[];
-}
-
-export interface CollectionsFromDatasets {
-  [name: string]: CollectionFromDatasets;
-}
-
-export function aggregateCollectionsFromDatasets(
-  datasets: FilterDimensions["datasets"]
-): CollectionsFromDatasets {
-  const collections: CollectionsFromDatasets = {};
-
-  for (const dataset of datasets) {
-    const { collection_label, collection_id, id, label } = dataset;
-
-    if (!collections[collection_label]) {
-      collections[collection_label] = {
-        datasets: [],
-        name: collection_label,
-        url: ROUTES.COLLECTION.replace(":id", collection_id),
-      };
-    }
-
-    collections[collection_label].datasets.push({ ...dataset, id, label });
-  }
-
-  for (const collection of Object.values(collections)) {
-    collection.datasets.sort((a, b) => {
-      return a.label.localeCompare(b.label);
-    });
-  }
-
-  return collections;
 }

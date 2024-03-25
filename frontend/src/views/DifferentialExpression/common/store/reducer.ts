@@ -4,13 +4,13 @@ export interface PayloadAction<Payload> {
 }
 
 export interface Filters {
-  datasets: string[];
   developmentStages: string[];
   diseases: string[];
   ethnicities: string[];
   sexes: string[];
   tissues: string[];
   cellTypes: string[];
+  publicationCitations: string[];
 }
 
 export type QueryGroup = Filters;
@@ -31,13 +31,13 @@ export interface State {
 }
 
 export const EMPTY_FILTERS = {
-  datasets: [],
   developmentStages: [],
   diseases: [],
   ethnicities: [],
   sexes: [],
   tissues: [],
   cellTypes: [],
+  publicationCitations: [],
 };
 
 export const INITIAL_STATE: State = {
