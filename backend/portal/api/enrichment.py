@@ -32,7 +32,7 @@ ACCEPTED_UBERON_DEVELOPMENT_STAGE_ANCESTORS = {
 }
 
 
-def enrich_dataset_with_ancestors(dataset, key, accepted_ancestors=None):
+def enrich_dataset_with_ancestors(dataset, key, corpus_term_set):
     """
     Tag dataset with ancestors for all values of the given key, if any.
     """
@@ -42,8 +42,8 @@ def enrich_dataset_with_ancestors(dataset, key, accepted_ancestors=None):
     is_cell_type = key == "cell_type"
     is_development_stage = key == "development_stage"
     unique_ancestors = set()
-    # TODO: clean-up this logic
-    accepted_ancestors = accepted_ancestors or set()
+    accepted_ancestors = set()
+    accepted_ancestors.extend(corpus_term_set)
     if is_tissue:
         accepted_ancestors.update(ACCEPTED_TISSUE_ANCESTORS)
     elif is_cell_type:
@@ -52,7 +52,9 @@ def enrich_dataset_with_ancestors(dataset, key, accepted_ancestors=None):
         accepted_ancestors.update(ACCEPTED_UBERON_DEVELOPMENT_STAGE_ANCESTORS)
     for term in dataset[key]:
         ancestors = ONTOLOGY_PARSER.get_term_ancestors(term["ontology_term_id"], include_self=False)
-        # TODO: clean-up this logic or explain it better
+        # no filtering of ancestors for non-UBERON development stage terms
+        # otherwise, filter ancestors to only include ancestors that are in the accepted_ancestors set or from the
+        # corpus term set
         if is_tissue or is_cell_type or (is_development_stage and "UBERON" in term["ontology_term_id"]):
             ancestors = set(ancestors) & accepted_ancestors
         # If the term is a tissue, tag itself with the tissue type in the ancestor list

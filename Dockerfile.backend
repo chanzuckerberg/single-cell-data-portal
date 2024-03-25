@@ -5,7 +5,6 @@ ENV EXPORT_ENV_VARS_TO_LAMBDA="APP_NAME DEPLOYMENT_STAGE"
 ENV LC_ALL=C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
 
-# TODO remove git after we have a PyPI release for COG
 RUN apt-get update && \
     apt-get install -y python3 libhdf5-dev python3-h5py gettext moreutils build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests python3-aiohttp llvm jq && \
     rm -rf /var/lib/apt/lists/*
@@ -18,8 +17,7 @@ RUN python3 -m pip install --upgrade pip setuptools
 # TODO: Determine if cmake is really needed for ddtrace
 # see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
 RUN python3 -m pip install cmake
-# TODO: remove --extra-index-url after we have a PyPI release for COG
-RUN python3 -m pip install -r requirements.txt --extra-index-url https://test.pypi.org/simple/
+RUN python3 -m pip install -r requirements.txt
 # Install awscli to download wmg snapshot to the local disk
 RUN python3 -m pip install awscli
 EXPOSE 5000
