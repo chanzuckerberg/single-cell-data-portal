@@ -21,16 +21,16 @@ class TestDatasetMigrate:
         assert response["collection_version_id"] == private.version_id.id
         assert response["dataset_version_id"] == new_dataset_version_id.id
         assert dataset_version_id != new_dataset_version_id.id
-        assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
+        assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/raw.h5ad"
         assert response["sfn_name"].startswith("migrate_")
         assert new_dataset_version_id.id in response["sfn_name"]
         schema_migrate.schema_validator.migrate.assert_called_once_with(
-            "previous_schema.h5ad", "migrated.h5ad", private.collection_id.id, private.datasets[0].dataset_id.id
+            "previous_schema.h5ad", "raw.h5ad", private.collection_id.id, private.datasets[0].dataset_id.id
         )
         expected_key_suffix = f"dataset_{private.datasets[0].dataset_id.id}/old_version_{private.datasets[0].version_id.id}_new_version_{new_dataset_version_id.id}"
         schema_migrate.business_logic.s3_provider.put_object.assert_called_once_with(
             bucket_name="fake-bucket",
-            object_key=f"schema_migration/1.0.0/test-execution-arn/processed/{expected_key_suffix}/migrated.h5ad",
+            object_key=f"schema_migration/1.0.0/test-execution-arn/processed/{expected_key_suffix}/raw.h5ad",
             body="",
         )
 
@@ -53,16 +53,16 @@ class TestDatasetMigrate:
         assert response["collection_version_id"] == published.version_id.id
         assert response["dataset_version_id"] == new_dataset_version_id.id
         assert dataset_version_id != new_dataset_version_id.id
-        assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
+        assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/raw.h5ad"
         assert response["sfn_name"].startswith("migrate_")
         assert new_dataset_version_id.id in response["sfn_name"]
         schema_migrate.schema_validator.migrate.assert_called_once_with(
-            "previous_schema.h5ad", "migrated.h5ad", published.collection_id.id, published.datasets[0].dataset_id.id
+            "previous_schema.h5ad", "raw.h5ad", published.collection_id.id, published.datasets[0].dataset_id.id
         )
         expected_key_suffix = f"dataset_{published.datasets[0].dataset_id.id}/old_version_{published.datasets[0].version_id.id}_new_version_{new_dataset_version_id.id}"
         schema_migrate.business_logic.s3_provider.put_object.assert_called_once_with(
             bucket_name="fake-bucket",
-            object_key=f"schema_migration/1.0.0/test-execution-arn/processed/{expected_key_suffix}/migrated.h5ad",
+            object_key=f"schema_migration/1.0.0/test-execution-arn/processed/{expected_key_suffix}/raw.h5ad",
             body="",
         )
 
@@ -85,15 +85,15 @@ class TestDatasetMigrate:
         assert response["collection_version_id"] == revision.version_id.id
         assert response["dataset_version_id"] == new_dataset_version_id.id
         assert dataset_version_id != new_dataset_version_id.id
-        assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"
+        assert response["uri"] == f"s3://artifact-bucket/{dataset_version_id}/raw.h5ad"
         assert response["sfn_name"].startswith("migrate_")
         assert new_dataset_version_id.id in response["sfn_name"]
         schema_migrate.schema_validator.migrate.assert_called_once_with(
-            "previous_schema.h5ad", "migrated.h5ad", revision.collection_id.id, revision.datasets[0].dataset_id.id
+            "previous_schema.h5ad", "raw.h5ad", revision.collection_id.id, revision.datasets[0].dataset_id.id
         )
         expected_key_suffix = f"dataset_{revision.datasets[0].dataset_id.id}/old_version_{revision.datasets[0].version_id.id}_new_version_{new_dataset_version_id.id}"
         schema_migrate.business_logic.s3_provider.put_object.assert_called_once_with(
             bucket_name="fake-bucket",
-            object_key=f"schema_migration/1.0.0/test-execution-arn/processed/{expected_key_suffix}/migrated.h5ad",
+            object_key=f"schema_migration/1.0.0/test-execution-arn/processed/{expected_key_suffix}/raw.h5ad",
             body="",
         )

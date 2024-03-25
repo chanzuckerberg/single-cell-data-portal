@@ -20,6 +20,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing import logger
 from backend.layers.processing.process_logic import ProcessingLogic
+from backend.layers.processing.utils import get_s3_key_for_migration_record
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider, sfn_name_generator
 
@@ -104,7 +105,7 @@ class SchemaMigrate(ProcessingLogic):
         ][0]
         source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(raw_h5ad_uri)
         self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
-        migrated_file_name = "migrated.h5ad"
+        migrated_file_name = "raw.h5ad"
         reported_changes = self.schema_validator.migrate(
             "previous_schema.h5ad", migrated_file_name, collection_id, dataset_id
         )
@@ -123,17 +124,26 @@ class SchemaMigrate(ProcessingLogic):
             current_dataset_version_id=DatasetVersionId(dataset_version_id),
             start_step_function=False,  # The schema_migration sfn will start the ingest sfn
         )
-        key_suffix = f"dataset_{dataset_id}/old_version_{dataset_version_id}_new_version_{new_dataset_version_id.id}"
+        key = get_s3_key_for_migration_record(
+            self.schema_version,
+            self.execution_id,
+            dataset_id,
+            dataset_version_id,
+            new_dataset_version_id,
+            migrated_file_name,
+        )
         # Record successful upload of migrated raw file for dataset from old version to new version
         self.s3_provider.put_object(
             bucket_name=source_bucket_name,
-            object_key=f"{self._get_s3_schema_and_id_prefix()}/processed/{key_suffix}/{migrated_file_name}",
+            object_key=key,
             body="",
         )
         sfn_name = sfn_name_generator(new_dataset_version_id, prefix="migrate")
         return {
             "collection_version_id": collection_version_id,
+            "dataset_id": dataset_id,
             "dataset_version_id": new_dataset_version_id.id,
+            "old_dataset_version_id": dataset_version_id,
             "uri": uri,
             "sfn_name": sfn_name,
         }
@@ -350,9 +360,6 @@ class SchemaMigrate(ProcessingLogic):
         except Exception as e:
             self.logger.exception("Failed to generate report")
             raise e
-
-    def _get_s3_schema_and_id_prefix(self) -> str:
-        return f"schema_migration/{self.schema_version}/{self.execution_id}"
 
     def _upload_to_slack(self, filename: str, contents, initial_comment: str) -> None:
         slack_token = CorporaConfig().slack_reporter_secret

@@ -1,10 +1,12 @@
 import logging
+import os
 from datetime import datetime
 from os.path import basename, join
 from typing import Callable, List, Optional
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
+    DatasetArtifactType,
     DatasetConversionStatus,
     DatasetStatusGeneric,
     DatasetStatusKey,
@@ -13,6 +15,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing.exceptions import ConversionFailed
 from backend.layers.processing.logger import logit
+from backend.layers.processing.utils import get_s3_key_for_migration_record
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
@@ -87,8 +90,28 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
     ):
         self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADING)
         try:
-            s3_uri = self.upload_artifact(file_name, key_prefix, artifact_bucket)
-            self.logger.info(f"Uploaded [{dataset_version_id}/{file_name}] to {s3_uri}")
+            if os.getenv("MIGRATION") and artifact_type == DatasetArtifactType.RAW_H5AD:
+                # migration initial upload is already to '<dataset_version_id>/raw.h5ad'
+                self.logger.info("MIGRATION -- skipping upload of raw file")
+            else:
+                s3_uri = self.upload_artifact(file_name, key_prefix, artifact_bucket)
+                if os.getenv("MIGRATION"):
+                    dataset_version = self.business_logic.get_dataset_version(dataset_version_id)
+                    schema_version = dataset_version.metadata.schema_version
+                    execution_id = os.getenv("MIGRATION_EXECUTION_ID")
+                    old_dataset_version_id = os.getenv("OLD_DATASET_VERSION_ID")
+                    dataset_id = os.getenv("DATASET_ID")
+                    key = get_s3_key_for_migration_record(
+                        schema_version,
+                        execution_id,
+                        dataset_id,
+                        old_dataset_version_id,
+                        dataset_version_id,
+                        file_name,
+                    )
+                    # Record successful upload of file for dataset from old version to new version
+                    self.s3_provider.put_object(bucket_name=artifact_bucket, object_key=key, body="")
+                self.logger.info(f"Uploaded [{dataset_version_id}/{file_name}] to {s3_uri}")
             self.business_logic.add_dataset_artifact(dataset_version_id, artifact_type, s3_uri)
             self.logger.info(f"Updated database with {artifact_type}.")
             if datasets_bucket:

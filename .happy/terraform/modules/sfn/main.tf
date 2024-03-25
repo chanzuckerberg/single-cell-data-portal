@@ -59,8 +59,24 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Value.$": "$.url"
               },
               {
+                "Name": "DATASET_ID",
+                "Value.$": "$.dataset_id"
+              },
+              {
                 "Name": "DATASET_VERSION_ID",
                 "Value.$": "$.dataset_version_id"
+              },
+              {
+                "Name": "MIGRATION_EXECUTION_ID",
+                "Value.$": "$.migration_execution_id"
+              },
+              {
+                "Name": "MIGRATION",
+                "Value.$": "$.migration"
+              },
+              {
+                "Name": "OLD_DATASET_VERSION_ID",
+                "Value.$": "$.old_dataset_version_id"
               },
               {
                 "Name": "STEP_NAME",
@@ -150,8 +166,24 @@ resource "aws_sfn_state_machine" "state_machine" {
           "ContainerOverrides": {
             "Environment": [
               {
+                "Name": "DATASET_ID",
+                "Value.$": "$.dataset_id"
+              },
+              {
                 "Name": "DATASET_VERSION_ID",
                 "Value.$": "$.dataset_version_id"
+              },
+              {
+                "Name": "MIGRATION_EXECUTION_ID",
+                "Value.$": "$.migration_execution_id"
+              },
+              {
+                "Name": "MIGRATION",
+                "Value.$": "$.migration"
+              },
+              {
+                "Name": "OLD_DATASET_VERSION_ID",
+                "Value.$": "$.old_dataset_version_id"
               },
               {
                 "Name": "COLLECTION_VERSION_ID",
@@ -194,8 +226,24 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "ContainerOverrides": {
                     "Environment": [
                       {
+                        "Name": "DATASET_ID",
+                        "Value.$": "$.dataset_id"
+                      },
+                      {
                         "Name": "DATASET_VERSION_ID",
                         "Value.$": "$.dataset_version_id"
+                      },
+                      {
+                        "Name": "MIGRATION_EXECUTION_ID",
+                        "Value.$": "$.migration_execution_id"
+                      },
+                      {
+                        "Name": "MIGRATION",
+                        "Value.$": "$.migration"
+                      },
+                      {
+                        "Name": "OLD_DATASET_VERSION_ID",
+                        "Value.$": "$.old_dataset_version_id"
                       },
                       {
                         "Name": "STEP_NAME",
@@ -236,8 +284,24 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "ContainerOverrides": {
                     "Environment": [
                       {
+                        "Name": "DATASET_ID",
+                        "Value.$": "$.dataset_id"
+                      },
+                      {
                         "Name": "DATASET_VERSION_ID",
                         "Value.$": "$.dataset_version_id"
+                      },
+                      {
+                        "Name": "MIGRATION_EXECUTION_ID",
+                        "Value.$": "$.migration_execution_id"
+                      },
+                      {
+                        "Name": "MIGRATION",
+                        "Value.$": "$.migration"
+                      },
+                      {
+                        "Name": "OLD_DATASET_VERSION_ID",
+                        "Value.$": "$.old_dataset_version_id"
                       },
                       {
                         "Name": "STEP_NAME",

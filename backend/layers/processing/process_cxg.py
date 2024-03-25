@@ -1,3 +1,5 @@
+import os
+
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
     DatasetArtifactType,
@@ -8,6 +10,7 @@ from backend.layers.common.entities import (
 from backend.layers.processing.h5ad_data_file import H5ADDataFile
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
+from backend.layers.processing.utils import get_s3_key_for_migration_record
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
@@ -64,7 +67,9 @@ class ProcessCxg(ProcessingLogic):
         self.download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
         # Convert the labeled dataset to CXG and upload it to the cellxgene bucket
-        self.process_cxg(labeled_h5ad_filename, dataset_version_id, cellxgene_bucket, current_artifacts)
+        self.process_cxg(
+            labeled_h5ad_filename, dataset_version_id, cellxgene_bucket, artifact_bucket, current_artifacts
+        )
 
     @logit
     def make_cxg(self, local_filename):
@@ -90,7 +95,9 @@ class ProcessCxg(ProcessingLogic):
         """
         self.s3_provider.upload_directory(cxg_dir, s3_uri)
 
-    def process_cxg(self, local_filename, dataset_version_id, cellxgene_bucket, current_artifacts=None):
+    def process_cxg(
+        self, local_filename, dataset_version_id, cellxgene_bucket, artifact_bucket, current_artifacts=None
+    ):
         cxg_dir = self.convert_file(
             self.make_cxg, local_filename, "Issue creating cxg.", dataset_version_id, DatasetStatusKey.CXG
         )
@@ -106,6 +113,19 @@ class ProcessCxg(ProcessingLogic):
 
         self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.UPLOADING)
         self.copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri)
+        if os.getenv("MIGRATION"):
+            dataset_version = self.business_logic.get_dataset_version(dataset_version_id)
+            schema_version = dataset_version.metadata.schema_version
+            key = get_s3_key_for_migration_record(
+                schema_version,
+                os.getenv("MIGRATION_EXECUTION_ID"),
+                os.getenv("DATASET_ID"),
+                os.getenv("OLD_DATASET_VERSION_ID"),
+                os.getenv("DATASET_VERSION_ID"),
+                "cxg",
+            )
+            # Record successful upload of file for dataset from old version to new version
+            self.s3_provider.put_object(bucket_name=artifact_bucket, object_key=key, body="")
         self.logger.info(f"Updating database with cxg artifact for dataset {dataset_version_id}. s3_uri is {s3_uri}")
 
         if not current_artifacts:

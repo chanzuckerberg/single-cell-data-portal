@@ -1,4 +1,4 @@
-from typing import Iterable, List, Tuple, Union
+from typing import Iterable, List, Tuple
 
 
 class S3ProviderInterface:
@@ -11,7 +11,7 @@ class S3ProviderInterface:
     def generate_presigned_url(self, path: str) -> str:
         pass
 
-    def put_object(self, bucket_name: str, object_key: str, object: Union[bytes, str]):
+    def put_object(self, bucket_name: str, object_key: str, body: str):
         pass
 
     def upload_file(self, src_file: str, bucket_name: str, dst_file: str, extra_args: dict):
