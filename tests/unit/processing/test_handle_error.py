@@ -21,6 +21,7 @@ from backend.layers.processing.upload_failures.app import (
     FAILED_DATASET_CLEANUP_MESSAGE,
     cleanup_artifacts,
     get_failure_slack_notification_message,
+    handle_failure,
     parse_event,
 )
 
@@ -206,6 +207,34 @@ def mock_get_dataset_version(collection_id):
     MockDatasetVersionId.collection_id = collection_id
     MockDatasetVersionId.status = DatasetStatus(None, None, None, None, None, None)
     return MockDatasetVersionId
+
+
+def test_migration_event_does_not_trigger_slack():
+    mock_trigger_slack = Mock()
+    mock_context = Mock()
+    with patch("backend.layers.processing.upload_failures.app.trigger_slack_notification", mock_trigger_slack):
+        event = {
+            "dataset_version_id": "123",
+            "collection_version_id": "456",
+            "error": {},
+            "execution_id": "arn:aws:states:us-west-2:migrate_123456789012:execution:MyStateMachine",
+        }
+        handle_failure(event, mock_context)
+        mock_trigger_slack.assert_not_called()
+
+
+def test_non_migration_event_triggers_slack():
+    mock_trigger_slack = Mock()
+    mock_context = Mock()
+    with patch("backend.layers.processing.upload_failures.app.trigger_slack_notification", mock_trigger_slack):
+        event = {
+            "dataset_version_id": "123",
+            "collection_version_id": "456",
+            "error": {},
+            "execution_id": "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine",
+        }
+        handle_failure(event, mock_context)
+        mock_trigger_slack.assert_called_once()
 
 
 def test_get_failure_slack_notification_message_with_dataset_version_id_none(
