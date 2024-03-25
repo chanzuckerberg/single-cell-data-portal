@@ -43,7 +43,7 @@ def enrich_dataset_with_ancestors(dataset, key, corpus_term_set):
     is_development_stage = key == "development_stage"
     unique_ancestors = set()
     accepted_ancestors = set()
-    accepted_ancestors.extend(corpus_term_set)
+    accepted_ancestors.update(corpus_term_set)
     if is_tissue:
         accepted_ancestors.update(ACCEPTED_TISSUE_ANCESTORS)
     elif is_cell_type:

@@ -804,14 +804,14 @@ def enrich_dataset_response(datasets: Iterable[DatasetVersion]) -> List[dict]:
     Enriches a list of datasets with ancestors of ontologized fields
     """
     response = []
-    prod_tissue_corpus = set()
     prod_cell_type_corpus = set()
+    prod_tissue_corpus = set()
     prod_development_stage_corpus = set()
     # determine cell types and tissues in the prod corpus; these are considered valid ancestors to track
     for dataset in datasets:
-        prod_cell_type_corpus.extend([t.ontology_term_id for t in dataset.metadata.cell_type])
-        prod_tissue_corpus.extend([t.ontology_term_id for t in dataset.metadata.tissue])
-        prod_development_stage_corpus.extend([t.ontology_term_id for t in dataset.metadata.development_stage])
+        prod_cell_type_corpus.update([t.ontology_term_id for t in dataset.metadata.cell_type])
+        prod_tissue_corpus.update([t.ontology_term_id for t in dataset.metadata.tissue])
+        prod_development_stage_corpus.update([t.ontology_term_id for t in dataset.metadata.development_stage])
     for dataset in datasets:
         payload = _dataset_to_response(dataset, is_tombstoned=False)
         enrich_dataset_with_ancestors(payload, "development_stage", prod_development_stage_corpus)
