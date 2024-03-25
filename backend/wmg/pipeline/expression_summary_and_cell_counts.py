@@ -66,7 +66,7 @@ def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
     pipeline_state = load_pipeline_state(corpus_path)
 
     with cellxgene_census.open_soma(
-        census_version=CensusParameters.census_version,
+        uri="s3://bruce-tmp/census-schema-five-test-build-2/soma/",
     ) as census:
         census_schema_version, census_build_date = get_census_version_and_build_date(census)
 
