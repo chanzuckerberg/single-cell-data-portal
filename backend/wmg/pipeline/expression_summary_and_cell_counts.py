@@ -64,9 +64,14 @@ def get_census_version_and_build_date(census: soma.Collection):
 
 def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
     pipeline_state = load_pipeline_state(corpus_path)
-
+    context = soma.options.SOMATileDBContext()
+    tiledb_config = {}
+    tiledb_config["vfs.s3.region"] = "us-west-2"
+    # S3 requests should not be signed, since we want to allow anonymous access
+    tiledb_config["vfs.s3.no_sign_request"] = "false"
+    context = context.replace(tiledb_config=tiledb_config)
     with cellxgene_census.open_soma(
-        uri="s3://bruce-tmp/census-schema-five-test-build-2/soma/",
+        census_version="s3://bruce-tmp/census-schema-five-test-build-2/soma/", context=context
     ) as census:
         census_schema_version, census_build_date = get_census_version_and_build_date(census)
 
