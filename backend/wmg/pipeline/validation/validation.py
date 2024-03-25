@@ -415,7 +415,11 @@ class Validation:
         CCL5_ont_id = fixtures.validation_gene_ontologies["CCL5"]
         with tiledb.open(self.expression_summary_path) as cube:
             MALAT1_human_lung_cube = cube.df[MALAT1_ont_id, human_lung_int, human_ont_id]
+            MALAT1_human_lung_cube = MALAT1_human_lung_cube[
+                MALAT1_human_lung_cube["cell_type_ontology_term_id"] != "unknown"
+            ]
             CCL5_human_lung_cube = cube.df[CCL5_ont_id, human_lung_int, human_ont_id]
+            CCL5_human_lung_cube = CCL5_human_lung_cube[CCL5_human_lung_cube["cell_type_ontology_term_id"] != "unknown"]
 
             MALAT1_expression = MALAT1_human_lung_cube.query(f"dataset_id == '{self.validation_dataset_id}'")
             CCL5_expression = CCL5_human_lung_cube.query(f"dataset_id == '{self.validation_dataset_id}'")
