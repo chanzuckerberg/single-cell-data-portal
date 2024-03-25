@@ -634,18 +634,7 @@ paths:
         - {}
       parameters:
         - $ref: "#/components/parameters/schema_version"
-        - description: |
-            The visibility of the Datasets to query for.
-
-            | visibility | description | Authorization Required |
-            | ---------- | ----------- | -------------- |
-            | PUBLIC   | All public Datasets are returned. | No |
-            | PRIVATE  | All private Datasets that the user is authorized to access are returned.  | Yes |
-          in: query
-          name: visibility
-          required: false
-          schema:
-            $ref: "#/components/schemas/dataset_visibility"
+        - $ref: "#/components/parameters/dataset_visibility"
       responses:
         "200":
           description: OK
@@ -1203,6 +1192,10 @@ components:
           $ref: "#/components/schemas/suspension_type"
         tissue:
           $ref: "#/components/schemas/dataset_tissue"
+        visibility:
+          description: |
+            The visibility of the Dataset.
+          type: string
         x_approximate_distribution:
           $ref: "#/components/schemas/distribution"
       type: object
@@ -1369,19 +1362,6 @@ components:
         suspension_type:
           $ref: "#/components/schemas/suspension_type"
       type: object
-    dataset_visibility:
-      default: PUBLIC
-      description: |
-        The visibility of the Dataset.
-
-        | visibility | description |
-        | ---------- | ----------- | 
-        | PUBLIC   | The Dataset is published and accessible to all users of CELLxGENE Discover |
-        | PRIVATE  | The Dataset is in private review, either as a new Dataset that has not been published or a Revision of a previously published Dataset. |
-      enum:
-        - PUBLIC
-        - PRIVATE
-      type: string
     default_embedding:
       description: Key for the embedding that is displayed by default in CZ CELLxGENE Explorer
       type: string
@@ -1587,6 +1567,22 @@ components:
         - PRIVATE
       type: string
   parameters:
+    dataset_visibility:
+      description: |
+        Optional--Filter results by the visibility of the Dataset.
+
+        | visibility | description |
+        | ---------- | ----------- | 
+        | PUBLIC   | The Dataset is published and accessible to all users of CELLxGENE Discover |
+        | PRIVATE  | The Dataset is in private review, either as a new Dataset that has not been published or a Revision of a previously published Dataset. |
+      in: query
+      name: visibility
+      required: false
+      enum:
+        - PUBLIC
+        - PRIVATE
+      schema:
+        type: string
     path_collection_id:
       description: The uuid of a Collection.
       in: path
