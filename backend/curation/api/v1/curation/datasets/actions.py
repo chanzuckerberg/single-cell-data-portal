@@ -10,9 +10,9 @@ from backend.portal.api.providers import get_business_logic
 def get(token_info: dict, schema_version: str = None, visibility: str = None):
     """
     Datasets index endpoint to retrieve full metadata. Only return Dataset data for which the curator is authorized.
-    :param visibility: the DatasetVisibility in string form.
-    :param schema_version: the schema version to filter the datasets by.
     :param token_info: access token info.
+    :param schema_version: the schema version to filter the datasets by.
+    :param visibility: the DatasetVisibility in string form.
     """
 
     # Handle retrieval of private datasets.

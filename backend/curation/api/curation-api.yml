@@ -631,7 +631,7 @@ paths:
       operationId: backend.curation.api.v1.curation.datasets.actions.get
       security:
         - curatorAccessLenient: []
-        - {}      
+        - {}
       parameters:
         - $ref: "#/components/parameters/schema_version"
         - description: |
@@ -645,7 +645,7 @@ paths:
           name: visibility
           required: false
           schema:
-            $ref: "#/components/schemas/dataset_visibility"        
+            $ref: "#/components/schemas/dataset_visibility"
       responses:
         "200":
           description: OK
