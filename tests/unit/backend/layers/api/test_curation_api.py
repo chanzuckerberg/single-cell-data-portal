@@ -2334,9 +2334,6 @@ class TestGetDatasets(BaseAPIPortalTest):
 
         with self.subTest("Query against patch schema version"):
             response = self.app.get("/curation/v1/datasets?schema_version=3.1.0")
-            print("**************")
-            print(response.json)
-            print("**************")
             received_dataset_ids = []
             for dataset in response.json:
                 received_dataset_ids.append(dataset["dataset_id"])
