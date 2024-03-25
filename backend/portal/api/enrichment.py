@@ -51,6 +51,8 @@ def enrich_dataset_with_ancestors(dataset, key, corpus_term_set):
     elif is_development_stage:
         accepted_ancestors.update(ACCEPTED_UBERON_DEVELOPMENT_STAGE_ANCESTORS)
     for term in dataset[key]:
+        if term == "unknown":
+            continue
         ancestors = ONTOLOGY_PARSER.get_term_ancestors(term["ontology_term_id"], include_self=False)
         # no filtering of ancestors for non-UBERON development stage terms
         # otherwise, filter ancestors to only include ancestors that are in the accepted_ancestors set or from the
