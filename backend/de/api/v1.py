@@ -138,6 +138,7 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
         publication_citations=dims["publication_citation"],
         cell_type_terms=build_ontology_term_id_label_mapping(dims["cell_type_ontology_term_id"]),
         tissue_terms=build_ontology_term_id_label_mapping(dims["tissue_ontology_term_id"]),
+        organism_terms=build_ontology_term_id_label_mapping(dims["organism_ontology_term_id"]),
     )
 
     return response_filter_dims_values
