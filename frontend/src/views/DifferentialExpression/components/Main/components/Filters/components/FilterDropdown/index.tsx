@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { Autocomplete, FilterOptionsState, TextField } from "@mui/material";
 import { FilterOption } from "../../types";
+import { CloseIcon, Tag } from "./style";
 
 const MAXIMUM_NUMBER_OF_SELECTED_OPTIONS = 2;
 interface Props {
@@ -20,6 +21,11 @@ function FilterDropdown({ options, label, handleChange }: Props): JSX.Element {
   const handleBlur = () => {
     setOpen(false);
   };
+
+  useEffect(() => {
+    handleChange(selectedOptions);
+  }, [selectedOptions, handleChange]);
+
   return (
     <div>
       <Autocomplete
@@ -29,7 +35,6 @@ function FilterDropdown({ options, label, handleChange }: Props): JSX.Element {
         multiple
         onChange={(_: React.SyntheticEvent, newValue: FilterOption[]) => {
           setSelectedOptions(newValue);
-          handleChange(newValue);
         }}
         getOptionLabel={(option) => option.name}
         value={selectedOptions}
@@ -52,6 +57,7 @@ function FilterDropdown({ options, label, handleChange }: Props): JSX.Element {
               InputProps={{
                 ...params.InputProps,
                 endAdornment: customEndAdornment,
+                style: { backgroundColor: "white" },
               }}
               placeholder="Search"
               label={label}
@@ -62,9 +68,22 @@ function FilterDropdown({ options, label, handleChange }: Props): JSX.Element {
           ...value
             .slice(0, MAXIMUM_NUMBER_OF_SELECTED_OPTIONS)
             .map((option, index) => (
-              <div {...getTagProps({ index })} key={option.id}>
+              <Tag
+                onClick={(event) => event.stopPropagation()}
+                {...getTagProps({ index })}
+                key={option.id}
+              >
                 {option.name}
-              </div>
+                <CloseIcon
+                  onClick={() =>
+                    setSelectedOptions(
+                      selectedOptions.filter(
+                        (selectedOption) => selectedOption.id !== option.id
+                      )
+                    )
+                  }
+                />
+              </Tag>
             )),
           ...(value.length > MAXIMUM_NUMBER_OF_SELECTED_OPTIONS
             ? [
