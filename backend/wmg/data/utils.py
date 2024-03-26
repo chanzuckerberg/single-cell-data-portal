@@ -4,12 +4,12 @@ from typing import Dict
 import numpy as np
 import pandas as pd
 import requests
-import yaml
+from cellxgene_ontology_guide import Ontology, OntologyParser
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
 from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
-from backend.wmg.data.constants import CL_PINNED_CONFIG_URL, WMG_PINNED_SCHEMA_VERSION
+from backend.wmg.data.constants import WMG_PINNED_SCHEMA_VERSION
 
 
 def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:
@@ -157,12 +157,8 @@ def get_pinned_ontology_url(name: str):
     Returns:
     str: The URL of the pinned ontology.
     """
-    session = setup_retry_session()
-    response = session.get(CL_PINNED_CONFIG_URL)
-    response.raise_for_status()
-    decoded_yaml = yaml.safe_load(response.content.decode())
-    key = decoded_yaml["CL"]["latest"]
-    cl_url = decoded_yaml["CL"]["urls"][key]
+    ontology_parser = OntologyParser(WMG_PINNED_SCHEMA_VERSION)
+    cl_url = ontology_parser.get_ontology_download_url(Ontology.CL)
     cl_url = cl_url.split("cl.owl")[0] + name
     return cl_url
 
