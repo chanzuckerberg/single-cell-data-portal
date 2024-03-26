@@ -43,14 +43,11 @@ export const StyledComplexFilterInputDropdown = styled(
 
 export const Wrapper = styled.div<CommonThemeProps>`
   display: flex;
-  flex-direction: row;
-  width: 100%;
+  flex-direction: column;
+  width: 341px;
   flex-wrap: wrap;
-  column-gap: 16px;
-  padding-top: 12px;
-  padding-left: 12px;
-  padding-right: 12px;
-  margin-bottom: 8px;
+  row-gap: 12px;
+  padding: 12px;
   background-color: #f8f8f8;
 
   // (atarashansky): remove the blue chips from the filters

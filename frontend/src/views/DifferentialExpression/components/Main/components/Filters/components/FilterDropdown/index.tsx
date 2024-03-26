@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 
-import { Autocomplete, TextField } from "@mui/material";
+import { Autocomplete, FilterOptionsState, TextField } from "@mui/material";
 import { FilterOption } from "../../types";
 
+const MAXIMUM_NUMBER_OF_SELECTED_OPTIONS = 2;
 interface Props {
   label: string;
   options: FilterOption[];
@@ -22,7 +23,7 @@ function FilterDropdown({ options, label, handleChange }: Props): JSX.Element {
   return (
     <div>
       <Autocomplete
-        sx={{ width: 300, height: 300 }}
+        sx={{ width: 300 }}
         open={open}
         options={options}
         multiple
@@ -43,11 +44,9 @@ function FilterDropdown({ options, label, handleChange }: Props): JSX.Element {
               {params.InputProps.endAdornment}
             </div>
           );
-          const customLabel = label;
           return (
             <TextField
               {...params}
-              sx={{ width: 300, height: 300 }}
               onFocus={handleFocus}
               onBlur={handleBlur}
               InputProps={{
@@ -55,20 +54,85 @@ function FilterDropdown({ options, label, handleChange }: Props): JSX.Element {
                 endAdornment: customEndAdornment,
               }}
               placeholder="Search"
-              label={customLabel}
+              label={label}
             />
           );
         }}
-        renderTags={(value, getTagProps) =>
-          value.map((option, index) => (
-            <div {...getTagProps({ index })} key={option.id}>
-              {option.name}
-            </div>
-          ))
-        }
+        renderTags={(value, getTagProps) => [
+          ...value
+            .slice(0, MAXIMUM_NUMBER_OF_SELECTED_OPTIONS)
+            .map((option, index) => (
+              <div {...getTagProps({ index })} key={option.id}>
+                {option.name}
+              </div>
+            )),
+          ...(value.length > MAXIMUM_NUMBER_OF_SELECTED_OPTIONS
+            ? [
+                <div key="adornment">
+                  +{value.length - MAXIMUM_NUMBER_OF_SELECTED_OPTIONS}
+                </div>,
+              ]
+            : []),
+        ]}
+        filterOptions={(options, state) => {
+          return options
+            .filter((entity: FilterOption) => {
+              const searchTerm = state.inputValue.toLowerCase();
+
+              return (
+                entity.name &&
+                (entity.name.toLowerCase().includes(searchTerm) ||
+                  entity.id.toLowerCase().includes(searchTerm))
+              );
+            })
+            .sort((entityA: FilterOption, entityB: FilterOption) =>
+              _sortOptions(entityA, entityB, state, selectedOptions)
+            );
+        }}
       />
     </div>
   );
 }
 
+function _sortOptions(
+  entityA: FilterOption,
+  entityB: FilterOption,
+  state: FilterOptionsState<FilterOption>,
+  selectedOptions: FilterOption[]
+): number {
+  const aRaw = entityA.name;
+  const bRaw = entityB.name;
+  const a = aRaw.toLowerCase();
+  const b = bRaw.toLowerCase();
+  const searchTerm = state.inputValue.toLowerCase();
+  if (searchTerm === "") {
+    // move selectedValues to top
+    const includesA = selectedOptions
+      .map((option) => option.name)
+      .includes(aRaw);
+    const includesB = selectedOptions
+      .map((option) => option.name)
+      .includes(bRaw);
+    if (includesA && includesB) {
+      return a.localeCompare(b);
+    }
+    if (includesA) {
+      return -1;
+    }
+    if (includesB) {
+      return 1;
+    }
+  }
+  // Determine if each item starts with the search term
+  const aStartsWithSearch = a.startsWith(searchTerm);
+  const bStartsWithSearch = b.startsWith(searchTerm);
+
+  if (aStartsWithSearch && !bStartsWithSearch) {
+    return -1;
+  }
+  if (!aStartsWithSearch && bStartsWithSearch) {
+    return 1;
+  }
+  return a.localeCompare(b);
+}
 export default FilterDropdown;
