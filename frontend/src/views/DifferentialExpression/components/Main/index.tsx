@@ -9,14 +9,14 @@ import {
   WordPop,
   StepSubHeader,
   CellGroupTitle,
-  CopyButtonWrapper,
+  // CopyButtonWrapper,
   RunButton,
   RunButtonWrapper,
 } from "./style";
 import QueryGroupFilters from "./components/Filters";
 import Organism from "./components/Organism";
 import {
-  copyCellGroup1,
+  // copyCellGroup1,
   submitQueryGroups,
 } from "src/views/DifferentialExpression/common/store/actions";
 import DeResults from "./components/DeResults";
@@ -31,17 +31,17 @@ export default function DifferentialExpression(): JSX.Element {
     setIsLoadingGetDeQuery(isLoadingGetDeQuery);
   }, [isLoadingGetDeQuery]);
   const dispatch = useContext(DispatchContext);
-  const { queryGroups, queryGroupsWithNames } = useContext(StateContext);
+  const { queryGroups } = useContext(StateContext);
   const { queryGroup1, queryGroup2 } = queryGroups;
-  const {
-    queryGroup1: queryGroupWithNames1,
-    queryGroup2: queryGroupWithNames2,
-  } = queryGroupsWithNames;
+  // const {
+  //   queryGroup1: queryGroupWithNames1,
+  //   queryGroup2: queryGroupWithNames2,
+  // } = queryGroupsWithNames;
 
-  const handleCopyCellGroup1 = () => {
-    if (!dispatch) return;
-    dispatch(copyCellGroup1());
-  };
+  // const handleCopyCellGroup1 = () => {
+  //   if (!dispatch) return;
+  //   dispatch(copyCellGroup1());
+  // };
   // check if any values in queryGroup1 are not empty
   const isQueryGroup1NotEmpty = Object.values(queryGroup1).some(
     (value) => value.length > 0
@@ -82,23 +82,30 @@ export default function DifferentialExpression(): JSX.Element {
           </StepSubHeader>
 
           <Organism />
-          <CellGroupTitle>Cell Group 1</CellGroupTitle>
-          <QueryGroupFilters
-            key={`query-group-1`}
-            queryGroup={queryGroup1}
-            isQueryGroup1={true}
-          />
-          <CellGroupTitle>
-            Cell Group 2
-            <CopyButtonWrapper onClick={handleCopyCellGroup1}>
-              Copy Cell Group 1
-            </CopyButtonWrapper>
-          </CellGroupTitle>
-          <QueryGroupFilters
-            key={`query-group-2`}
-            queryGroup={queryGroup2}
-            isQueryGroup1={false}
-          />
+          <div style={{ flexDirection: "row", display: "flex" }}>
+            <div>
+              <CellGroupTitle>Cell Group 1</CellGroupTitle>
+              <QueryGroupFilters
+                key={`query-group-1`}
+                queryGroup={queryGroup1}
+                isQueryGroup1={true}
+              />
+            </div>
+            <div>COPY AND INVERT BUTTONS</div>
+            <div>
+              <CellGroupTitle>
+                Cell Group 2
+                {/* <CopyButtonWrapper onClick={handleCopyCellGroup1}>
+                  Copy Cell Group 1
+                </CopyButtonWrapper> */}
+              </CellGroupTitle>
+              <QueryGroupFilters
+                key={`query-group-2`}
+                queryGroup={queryGroup2}
+                isQueryGroup1={false}
+              />
+            </div>
+          </div>
           <RunButtonWrapper>
             <RunButton
               color="primary"
