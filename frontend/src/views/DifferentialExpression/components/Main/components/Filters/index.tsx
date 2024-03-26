@@ -47,6 +47,13 @@ const mapTermToFilterOption = (term: {
   };
 };
 
+type ModifiedFilterDimensions = Omit<
+  FilterDimensions,
+  "development_stage_terms" | "publication_citations"
+> & {
+  publication_citations: { name: string; id: string }[];
+};
+
 const EMPTY_OBJECT = {};
 
 interface Props {
@@ -67,7 +74,7 @@ export default memo(function Filters({
     ? clearQueryGroup1Filters
     : clearQueryGroup2Filters;
   const [availableFilters, setAvailableFilters] =
-    useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
+    useState<Partial<ModifiedFilterDimensions>>(EMPTY_OBJECT);
 
   const {
     diseases,
@@ -100,8 +107,11 @@ export default memo(function Filters({
   // will temporarily be empty, and thus resetting the selected filter values
   useEffect(() => {
     if (rawIsLoading) return;
-    const newPublicationCitations = rawPublicationCitations;
-    newPublicationCitations.sort((a, b) => a.localeCompare(b));
+    const newPublicationCitations = rawPublicationCitations.map((citation) => ({
+      name: citation,
+      id: citation,
+    }));
+    newPublicationCitations.sort((a, b) => a.name.localeCompare(b.name));
 
     const newSexes = rawSexes.map(mapTermToFilterOption);
     newSexes.sort((a, b) => a.name.localeCompare(b.name));
@@ -163,7 +173,7 @@ export default memo(function Filters({
 
   const selectedPublicationCitations = useMemo(() => {
     return publication_citations.filter(
-      (publication) => publicationCitations?.includes(publication)
+      (publication) => publicationCitations?.includes(publication.name)
     );
   }, [publication_citations, publicationCitations]);
 
@@ -201,7 +211,6 @@ export default memo(function Filters({
         if (
           !dispatch ||
           !options ||
-          !rawIsLoading ||
           // If the options are the same
           JSON.stringify(options.sort(sortOptions)) ===
             JSON.stringify(currentOptions?.sort(sortOptions)) ||
@@ -220,7 +229,7 @@ export default memo(function Filters({
         dispatch(selectQueryGroupFilters(key, optionsWithNames));
       };
     },
-    [dispatch, selectQueryGroupFilters, rawIsLoading]
+    [dispatch, selectQueryGroupFilters]
   );
 
   const handlePublicationCitationsChange = useMemo(
@@ -275,7 +284,7 @@ export default memo(function Filters({
       });
     }
   }
-
+  console.log(selectedPublicationCitations);
   const handleClearQueryGroup = () => {
     if (!dispatch) return;
     dispatch(clearQueryGroupFilters());
@@ -333,7 +342,7 @@ export default memo(function Filters({
         data-testid="de-qg-publication-filter"
         search
         label="Publications"
-        options={publicationCitations as unknown as DefaultMenuSelectOption[]}
+        options={publication_citations as unknown as DefaultMenuSelectOption[]}
         onChange={handlePublicationCitationsChange}
         value={
           selectedPublicationCitations as unknown as DefaultMenuSelectOption[]
