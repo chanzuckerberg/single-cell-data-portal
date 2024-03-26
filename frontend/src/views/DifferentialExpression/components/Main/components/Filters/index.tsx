@@ -284,7 +284,7 @@ export default memo(function Filters({
       });
     }
   }
-  console.log(selectedPublicationCitations);
+
   const handleClearQueryGroup = () => {
     if (!dispatch) return;
     dispatch(clearQueryGroupFilters());
