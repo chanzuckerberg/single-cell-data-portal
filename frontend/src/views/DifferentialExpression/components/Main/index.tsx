@@ -86,7 +86,6 @@ export default function DifferentialExpression(): JSX.Element {
           <QueryGroupFilters
             key={`query-group-1`}
             queryGroup={queryGroup1}
-            queryGroupWithNames={queryGroupWithNames1}
             isQueryGroup1={true}
           />
           <CellGroupTitle>
@@ -98,7 +97,6 @@ export default function DifferentialExpression(): JSX.Element {
           <QueryGroupFilters
             key={`query-group-2`}
             queryGroup={queryGroup2}
-            queryGroupWithNames={queryGroupWithNames2}
             isQueryGroup1={false}
           />
           <RunButtonWrapper>
