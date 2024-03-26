@@ -9,6 +9,9 @@ echo
 # This is done as optimization because retrieving data from local disk is
 # significantly faster than retrieving data from S3
 WMG_SNAPSHOT_FS_CACHE_ROOT_PATH="/single-cell-data-portal/wmg_snapshot_cache"
+
+# Important: when the reader schema version updates in the application code,
+# this value must be updated to the new schema version.
 LATEST_READER_SNAPSHOT_SCHEMA_VERSION="v3"
 
 echo "| ENV VAR DOWNLOAD_WMG_DATA_TO_DISK: ${DOWNLOAD_WMG_DATA_TO_DISK}"
