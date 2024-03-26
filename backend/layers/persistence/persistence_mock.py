@@ -590,20 +590,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             version = None if cd.dataset_version_id is None else self.datasets_versions[cd.dataset_version_id.id]
             return None if version is None else self._update_dataset_version_with_canonical(version)
 
-    def get_collection_versions_by_schema(self, schema_version: str, has_wildcards: bool) -> List[CollectionVersion]:
-        if has_wildcards:
-            schema_version = schema_version.replace("_", "?")
-            collection_versions = [
-                cv
-                for cv in self.collections_versions.values()
-                if cv.schema_version is not None and fnmatchcase(cv.schema_version, schema_version)
-            ]
-        else:
-            collection_versions = [
-                cv for cv in self.collections_versions.values() if cv.schema_version == schema_version
-            ]
-        return copy.deepcopy(collection_versions)
-
     def get_previous_dataset_version_id(self, dataset_id: DatasetId) -> Optional[DatasetVersionId]:
         """
         Returns the previously created dataset version for a dataset.

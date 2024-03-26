@@ -1019,20 +1019,6 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version.canonical_dataset = canonical_dataset
             return self._hydrate_dataset_version(dataset_version)
 
-    def get_collection_versions_by_schema(self, schema_version: str, has_wildcards: bool) -> List[CollectionVersion]:
-        """
-        Returns a list with all collection versions that match the given schema_version. schema_version may contain
-         wildcards.
-        """
-        with self._manage_session() as session:
-            if has_wildcards:
-                collection_versions = session.query(CollectionVersionTable).filter(
-                    CollectionVersionTable.schema_version.like(schema_version)
-                )
-            else:
-                collection_versions = session.query(CollectionVersionTable).filter_by(schema_version=schema_version)
-            return [self._row_to_collection_version(row, None) for row in collection_versions.all()]
-
     def get_previous_dataset_version_id(self, dataset_id: DatasetId) -> Optional[DatasetVersionId]:
         """
         Returns the previously created dataset version for a dataset.

@@ -9,6 +9,7 @@ class CollectionQueryFilter:
     is_published: Optional[bool] = None
     owner: Optional[str] = None
     curator_name: Optional[str] = None
+    schema_version: Optional[str] = None  # Possibly contains SCHEMA_VERSION_WILDCARD e.g. "1.?.?"
     # TODO: add list of fields to be returned (if needed)
 
 

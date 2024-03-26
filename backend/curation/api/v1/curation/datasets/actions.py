@@ -65,7 +65,7 @@ def get(token_info: dict, schema_version: str = None, visibility: str = None):
 
 def sanitize_schema_version(schema_version: str) -> str:
     """
-    Convert a schema version to a valid semver string, replacing undefined minor or patch values with _
+    Convert a schema version to a valid semver string, replacing undefined minor or patch values with ?
     for database wildcard matching.
     :param schema_version: the schema version to sanitize.
     :return: The valid semver schema version with possible wildcard replacements.
@@ -75,5 +75,5 @@ def sanitize_schema_version(schema_version: str) -> str:
         raise InvalidParametersHTTPException(detail="Invalid Schema Version Input")
     while len(version_parts) < 3:
         # wildcard match for exactly 1 character
-        version_parts.append("_")
+        version_parts.append("?")
     return ".".join(version_parts)
