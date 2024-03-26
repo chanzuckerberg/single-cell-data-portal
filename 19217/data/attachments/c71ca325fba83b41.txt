@@ -1,2 +1,0 @@
-INFO     processing:schema_migration.py:163 Collection has no datasets
-INFO     processing:schema_migration.py:293 Uploaded to S3
