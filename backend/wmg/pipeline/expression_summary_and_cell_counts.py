@@ -31,8 +31,8 @@ class CensusParameters:
 
     def value_filter(organism: str) -> str:
         organism_mapping = {
-            "homo_sapiens": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD}",
-            "mus_musculus": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD}",
+            "homo_sapiens": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD} and cell_type_ontology_term_id != 'unknown'",
+            "mus_musculus": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD} and cell_type_ontology_term_id != 'unknown'",
         }
         value_filter = organism_mapping[organism]
         # Filter out system-level tissues. Census filters out organoids + cell cultures
@@ -71,7 +71,7 @@ def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
     tiledb_config["vfs.s3.no_sign_request"] = "false"
     context = context.replace(tiledb_config=tiledb_config)
     with cellxgene_census.open_soma(
-        uri="s3://bruce-tmp/census-schema-five-test-build-2/soma/", context=context
+        uri="s3://bruce-tmp/census-schema-five-prod-QC-build/soma/", context=context
     ) as census:
         census_schema_version, census_build_date = get_census_version_and_build_date(census)
 
