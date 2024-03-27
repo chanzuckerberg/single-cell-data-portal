@@ -87,3 +87,21 @@ export const StyledSidebarDrawer = styled(Drawer)`
     box-shadow: none;
   }
 `;
+
+export const FlexRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 16px;
+`;
+
+export const InnerWrapper = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  column-gap: 120px;
+`;
+
+export const QuerySelectorWrapper = styled.div`
+  width: 698px;
+`;

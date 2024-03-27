@@ -11,6 +11,9 @@ import {
   CellGroupTitle,
   RunButton,
   RunButtonWrapper,
+  FlexRow,
+  InnerWrapper,
+  QuerySelectorWrapper,
 } from "./style";
 import QueryGroupFilters from "./components/Filters";
 import Organism from "./components/Organism";
@@ -47,16 +50,9 @@ export default function DifferentialExpression(): JSX.Element {
 
   return (
     <Wrapper>
-      <div
-        style={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "row",
-          columnGap: "120px",
-        }}
-      >
+      <InnerWrapper>
         {isLoading && <Loader />}
-        <div style={{ width: "655px" }}>
+        <QuerySelectorWrapper>
           <StepHeader>
             <WordPop>Differential</WordPop> Expression
           </StepHeader>
@@ -70,7 +66,7 @@ export default function DifferentialExpression(): JSX.Element {
           </StepSubHeader>
 
           <Organism />
-          <div style={{ flexDirection: "row", display: "flex", columnGap: 16 }}>
+          <FlexRow>
             <div>
               <CellGroupTitle>Cell Group 1</CellGroupTitle>
               <QueryGroupFilters
@@ -88,7 +84,7 @@ export default function DifferentialExpression(): JSX.Element {
                 isQueryGroup1={false}
               />
             </div>
-          </div>
+          </FlexRow>
           <RunButtonWrapper>
             <RunButton
               color="primary"
@@ -97,12 +93,12 @@ export default function DifferentialExpression(): JSX.Element {
               onClick={handleRunDifferentialExpression}
               disabled={!canRunDifferentialExpression}
             >
-              Run differential expression
+              Find genes
             </RunButton>
           </RunButtonWrapper>
-        </div>
+        </QuerySelectorWrapper>
         <DeResults setIsLoading={setIsLoading} />
-      </div>
+      </InnerWrapper>
     </Wrapper>
   );
 }

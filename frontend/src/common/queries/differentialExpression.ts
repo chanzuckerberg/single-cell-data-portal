@@ -95,20 +95,14 @@ export interface PathwayEnrichmentAnalysisResult {
 }
 
 interface DifferentialExpressionQueryResponse {
-  differentialExpressionResults1: DifferentialExpressionResult[];
-  differentialExpressionResults2: DifferentialExpressionResult[];
-  pathwayEnrichmentAnalysisResults1: PathwayEnrichmentAnalysisResult[];
-  pathwayEnrichmentAnalysisResults2: PathwayEnrichmentAnalysisResult[];
+  differentialExpressionResults: DifferentialExpressionResult[];
   successCode: number;
   snapshot_id: string;
 }
 
 interface DifferentialExpressionQueryResult {
-  differentialExpressionResults1: DifferentialExpressionResult[];
-  differentialExpressionResults2: DifferentialExpressionResult[];
-  pathwayEnrichmentAnalysisResults1: PathwayEnrichmentAnalysisResult[];
-  pathwayEnrichmentAnalysisResults2: PathwayEnrichmentAnalysisResult[];
-  successCode?: number;
+  differentialExpressionResults: DifferentialExpressionResult[];
+  successCode: number;
 }
 
 async function fetchFiltersQuery({
@@ -280,28 +274,20 @@ export function useDifferentialExpression(): {
 } {
   const requestBody = useDEQueryRequestBody();
   const { data, isLoading } = useDEQuery(requestBody);
-
+  console.log(data);
   return useMemo(() => {
     if (isLoading || !data || (data?.successCode ?? 0) > 0)
       return {
         data: {
-          differentialExpressionResults1: [],
-          differentialExpressionResults2: [],
-          pathwayEnrichmentAnalysisResults1: [],
-          pathwayEnrichmentAnalysisResults2: [],
+          differentialExpressionResults: [],
           successCode: data?.successCode ?? 0,
         },
         isLoading,
       };
     return {
       data: {
-        differentialExpressionResults1: data.differentialExpressionResults1,
-        differentialExpressionResults2: data.differentialExpressionResults2,
-        pathwayEnrichmentAnalysisResults1:
-          data.pathwayEnrichmentAnalysisResults1,
-        pathwayEnrichmentAnalysisResults2:
-          data.pathwayEnrichmentAnalysisResults2,
-        successCode: 0,
+        differentialExpressionResults: data.differentialExpressionResults,
+        successCode: data.successCode,
       },
       isLoading: false,
     };
