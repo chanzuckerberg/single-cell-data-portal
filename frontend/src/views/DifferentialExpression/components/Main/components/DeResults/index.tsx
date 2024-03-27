@@ -4,15 +4,10 @@ import {
   DispatchContext,
   StateContext,
 } from "src/views/DifferentialExpression/common/store";
-import {
-  StyledHTMLTable,
-  TableWrapper,
-  NoDeGenesContainer,
-  NoDeGenesDescription,
-  NoDeGenesHeader,
-} from "./style";
+import { StyledHTMLTable, TableWrapper } from "./style";
 import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
 import { clearSubmittedQueryGroups } from "src/views/DifferentialExpression/common/store/actions";
+import { Pagination } from "@mui/material";
 
 interface DifferentialExpressionRow {
   name: string;
@@ -95,25 +90,37 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
   );
 }
 
+const ROWS_PER_PAGE = 25;
+
 interface DifferentialExpressionResultsTableProps {
   results: DifferentialExpressionRow[];
 }
 const DifferentialExpressionResultsTable = ({
   results,
 }: DifferentialExpressionResultsTableProps) => {
+  const [page, setPage] = useState(1);
+  const pageCount = Math.ceil(results.length / ROWS_PER_PAGE);
+  const handlePageChange = (
+    _event: React.ChangeEvent<unknown>,
+    page: number
+  ) => {
+    setPage(page);
+  };
+
   return (
     <TableWrapper>
-      {results.length > 0 ? (
-        <StyledHTMLTable bordered={false}>
-          <thead>
-            <tr>
-              <td>Gene </td>
-              <td>P-value</td>
-              <td>Effect size</td>
-            </tr>
-          </thead>
-          <tbody>
-            {results.slice(0, 100).map((result) => {
+      <StyledHTMLTable bordered={false}>
+        <thead>
+          <tr>
+            <td>Gene </td>
+            <td>P-value</td>
+            <td>Effect size</td>
+          </tr>
+        </thead>
+        <tbody>
+          {results
+            .slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE)
+            .map((result) => {
               const { name: symbol, pValue, effectSize } = result;
               return (
                 <tr key={symbol}>
@@ -123,16 +130,9 @@ const DifferentialExpressionResultsTable = ({
                 </tr>
               );
             })}
-          </tbody>
-        </StyledHTMLTable>
-      ) : (
-        <NoDeGenesContainer>
-          <NoDeGenesHeader>No Differentially Expressed Genes</NoDeGenesHeader>
-          <NoDeGenesDescription>
-            No differentially expressed genes for this query group.
-          </NoDeGenesDescription>
-        </NoDeGenesContainer>
-      )}
+        </tbody>
+      </StyledHTMLTable>
+      <Pagination count={pageCount} page={page} onChange={handlePageChange} />
     </TableWrapper>
   );
 };
