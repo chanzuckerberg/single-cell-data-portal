@@ -9,13 +9,30 @@ import {
   fontCapsXxs,
 } from "@czi-sds/components";
 
+const LEFT_PANEL_WIDTH = "60vw";
+const RIGHT_PANEL_WIDTH = "40vw";
+
+export const TwoPanelLayout = styled.div`
+  display: flex;
+  flex-direction: row;
+
+  .leftPanel {
+    border-right: 1px solid #ccc; // Gray vertical line
+    width: ${LEFT_PANEL_WIDTH};
+    min-width: fit-content;
+  }
+
+  .rightPanel {
+    width: ${RIGHT_PANEL_WIDTH};
+    min-width: fit-content;
+  }
+`;
+
 export const Wrapper = styled.div`
-  height: 200vh;
-  width: 100%;
   display: flex;
   flex-direction: column;
   margin-left: 120px;
-  margin-top: 44px;
+  margin-top: 24px;
 `;
 
 export const StepHeader = styled.div`
@@ -93,13 +110,6 @@ export const FlexRow = styled.div`
   flex-direction: row;
   align-items: center;
   column-gap: 16px;
-`;
-
-export const InnerWrapper = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  column-gap: 120px;
 `;
 
 export const QuerySelectorWrapper = styled.div`

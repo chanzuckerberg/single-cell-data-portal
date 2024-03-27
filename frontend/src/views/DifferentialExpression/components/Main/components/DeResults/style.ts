@@ -2,13 +2,15 @@ import { HTMLTable } from "@blueprintjs/core";
 import styled from "@emotion/styled";
 import {
   Button,
-  CommonThemeProps,
   fontBodyL,
   fontBodyS,
   fontBodyXs,
+  fontHeaderL,
+  fontHeaderXl,
   getColors,
 } from "@czi-sds/components";
 import { fontBodyXxs } from "@czi-sds/components";
+import { gray500 } from "src/common/theme";
 
 export const CopyGenesButton = styled(Button)`
   ${fontBodyXxs}
@@ -17,17 +19,12 @@ export const CopyGenesButton = styled(Button)`
 `;
 
 export const TableWrapper = styled.div`
-  width: 450px;
-  max-height: 500px;
-  min-height: 300px;
-  overflow-y: scroll;
-  margin-bottom: 40px;
+  width: 386px;
 `;
 
 export const StyledHTMLTable = styled(HTMLTable)`
   & thead td {
     ${fontBodyS}
-    // change this to czif font weight?
     font-weight: 600;
   }
   & td:nth-of-type(3) {
@@ -36,6 +33,7 @@ export const StyledHTMLTable = styled(HTMLTable)`
 
   & tr:not(thead tr) {
     border-bottom: 1px solid #cccccc;
+    height: 10px;
   }
 `;
 
@@ -69,47 +67,6 @@ export const BackButton = styled(Button)`
   margin-bottom: 30px;
 `;
 
-interface Props extends CommonThemeProps {
-  isError?: boolean;
-}
-
-export const NoDeGenesContainer = styled("div")`
-  margin-top: 16px;
-  background: #f8f8f8;
-
-  width: 100%;
-  height: 120px;
-
-  display: flex;
-  flex-direction: column;
-
-  justify-content: center;
-  text-align: center;
-`;
-
-export const NoDeGenesHeader = styled("span")`
-  ${fontBodyS}
-  font-weight: 500;
-`;
-
-export const NoDeGenesDescription = styled("span")<Props>`
-  ${fontBodyXxs}
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-    color: ${props.isError ? colors?.error[400] : colors?.gray[500]};
-    font-weight: ${props.isError ? 600 : "unset"};
-    `;
-  }}
-`;
-
-export const DeGenesInGeneSetTooltipWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  column-gap: 4px;
-  flex-wrap: wrap;
-`;
-
 export const StyledLink = styled.a`
   color: black;
 
@@ -122,4 +79,29 @@ export const StyledLink = styled.a`
 export const ButtonWrapper = styled.div`
   display: flex;
   justify-content: flex-end;
+`;
+
+export const InstructionsWrapper = styled.div`
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  max-width: 368px;
+  margin-left: 16px;
+  margin-top: 16px;
+`;
+export const InstructionsHeader = styled.div`
+  ${fontHeaderL}
+`;
+export const InstructionsBody = styled.div`
+  ${fontBodyS}
+  margin-top: 24px;
+  color: ${gray500};
+`;
+
+export const ResultsWrapper = styled.div`
+  margin-left: 40px;
+  margin-top: 24px;
+`;
+export const ResultsHeader = styled.div`
+  ${fontHeaderXl}
+  margin-bottom: 16px;
 `;

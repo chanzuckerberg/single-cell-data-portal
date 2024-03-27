@@ -4,15 +4,23 @@ import {
   DispatchContext,
   StateContext,
 } from "src/views/DifferentialExpression/common/store";
-import { StyledHTMLTable, TableWrapper } from "./style";
+import {
+  InstructionsBody,
+  InstructionsHeader,
+  InstructionsWrapper,
+  ResultsHeader,
+  ResultsWrapper,
+  TableWrapper,
+} from "./style";
 import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
 import { clearSubmittedQueryGroups } from "src/views/DifferentialExpression/common/store/actions";
 import { Pagination } from "@mui/material";
+import Table from "src/views/CellGuide/components/CellGuideCard/components/common/Table";
 
 interface DifferentialExpressionRow {
   name: string;
-  pValue: number;
-  effectSize: number;
+  pValue: string;
+  effectSize: string;
 }
 
 interface Props {
@@ -42,8 +50,8 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
       (diffExpResult) => {
         return {
           name: diffExpResult.gene_symbol,
-          pValue: diffExpResult.p_value,
-          effectSize: diffExpResult.effect_size,
+          pValue: diffExpResult.p_value.toExponential(3),
+          effectSize: diffExpResult.effect_size.toFixed(3),
         };
       }
     );
@@ -71,26 +79,56 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
       dispatch(clearSubmittedQueryGroups());
   }, [dispatch, queryGroups, submittedQueryGroups]);
 
-  const showEmpty = !submittedQueryGroups;
+  const showEmpty = !submittedQueryGroups || isLoading;
 
   useEffect(() => {
     setIsLoading(isLoading);
   }, [isLoading, setIsLoading]);
 
-  if (showEmpty || isLoading) {
-    return <div />;
-  }
-
+  console.log(differentialExpressionResults);
   return (
     <div>
-      <DifferentialExpressionResultsTable
-        results={differentialExpressionResults}
-      />
+      {!showEmpty ? (
+        <DifferentialExpressionResultsTable
+          results={differentialExpressionResults}
+        />
+      ) : (
+        <InstructionsWrapper>
+          <InstructionsHeader>Instructions</InstructionsHeader>
+          <InstructionsBody>
+            <ol>
+              <li>
+                Select a cell group of interest within the Cell Group 1 box by
+                using the dropdown selectors.
+                <br />
+                <br />
+                To copy the same selection over to Cell Group 2, click the copy
+                button to the right of each dropdown in Cell Group 1.
+              </li>
+              <li>
+                Within Cell Group 2, select a group that the cell group of
+                interest will be compared to.
+                <br />
+                <br />
+                To easily select the inverse of Cell Group 1, click the
+                overlapping circle icon to the left of each dropdown in Cell
+                Group 2.
+              </li>
+            </ol>
+          </InstructionsBody>
+        </InstructionsWrapper>
+      )}
     </div>
   );
 }
 
-const ROWS_PER_PAGE = 25;
+const ROWS_PER_PAGE = 15;
+
+const columnIdToName: Record<keyof DifferentialExpressionRow, string> = {
+  name: "Gene",
+  pValue: "P-value",
+  effectSize: "Effect Size",
+};
 
 interface DifferentialExpressionResultsTableProps {
   results: DifferentialExpressionRow[];
@@ -108,31 +146,17 @@ const DifferentialExpressionResultsTable = ({
   };
 
   return (
-    <TableWrapper>
-      <StyledHTMLTable bordered={false}>
-        <thead>
-          <tr>
-            <td>Gene </td>
-            <td>P-value</td>
-            <td>Effect size</td>
-          </tr>
-        </thead>
-        <tbody>
-          {results
-            .slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE)
-            .map((result) => {
-              const { name: symbol, pValue, effectSize } = result;
-              return (
-                <tr key={symbol}>
-                  <td>{symbol}</td>
-                  <td>{pValue.toPrecision(4)}</td>
-                  <td>{effectSize.toPrecision(4)}</td>
-                </tr>
-              );
-            })}
-        </tbody>
-      </StyledHTMLTable>
-      <Pagination count={pageCount} page={page} onChange={handlePageChange} />
-    </TableWrapper>
+    <ResultsWrapper>
+      <ResultsHeader>Results</ResultsHeader>
+      <TableWrapper>
+        <Table<DifferentialExpressionRow>
+          columns={["name", "pValue", "effectSize"]}
+          rows={results.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE)}
+          columnIdToName={columnIdToName}
+        />
+
+        <Pagination count={pageCount} page={page} onChange={handlePageChange} />
+      </TableWrapper>
+    </ResultsWrapper>
   );
 };

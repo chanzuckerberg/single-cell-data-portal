@@ -12,8 +12,8 @@ import {
   RunButton,
   RunButtonWrapper,
   FlexRow,
-  InnerWrapper,
   QuerySelectorWrapper,
+  TwoPanelLayout,
 } from "./style";
 import QueryGroupFilters from "./components/Filters";
 import Organism from "./components/Organism";
@@ -49,56 +49,61 @@ export default function DifferentialExpression(): JSX.Element {
   };
 
   return (
-    <Wrapper>
-      <InnerWrapper>
-        {isLoading && <Loader />}
-        <QuerySelectorWrapper>
-          <StepHeader>
-            <WordPop>Differential</WordPop> Expression
-          </StepHeader>
-          <StepSubHeader>
-            Find differentially expressed genes between custom group of cells
-            across the CELLxGENE data corpus. For additional help and
-            information, read our documentation.
-            <br />
-            <br />
-            [Method Information]
-          </StepSubHeader>
+    <TwoPanelLayout>
+      <div className="leftPanel">
+        <Wrapper>
+          {isLoading && <Loader />}
 
-          <Organism />
-          <FlexRow>
-            <div>
-              <CellGroupTitle>Cell Group 1</CellGroupTitle>
-              <QueryGroupFilters
-                key={`query-group-1`}
-                queryGroup={queryGroup1}
-                isQueryGroup1={true}
-              />
-            </div>
+          <QuerySelectorWrapper>
+            <StepHeader>
+              <WordPop>Differential</WordPop> Expression
+            </StepHeader>
+            <StepSubHeader>
+              Find differentially expressed genes between custom group of cells
+              across the CELLxGENE data corpus. For additional help and
+              information, read our documentation.
+              <br />
+              <br />
+              [Method Information]
+            </StepSubHeader>
 
-            <div>
-              <CellGroupTitle>Cell Group 2</CellGroupTitle>
-              <QueryGroupFilters
-                key={`query-group-2`}
-                queryGroup={queryGroup2}
-                isQueryGroup1={false}
-              />
-            </div>
-          </FlexRow>
-          <RunButtonWrapper>
-            <RunButton
-              color="primary"
-              size="large"
-              variant="contained"
-              onClick={handleRunDifferentialExpression}
-              disabled={!canRunDifferentialExpression}
-            >
-              Find genes
-            </RunButton>
-          </RunButtonWrapper>
-        </QuerySelectorWrapper>
+            <Organism />
+            <FlexRow>
+              <div>
+                <CellGroupTitle>Cell Group 1</CellGroupTitle>
+                <QueryGroupFilters
+                  key={`query-group-1`}
+                  queryGroup={queryGroup1}
+                  isQueryGroup1={true}
+                />
+              </div>
+
+              <div>
+                <CellGroupTitle>Cell Group 2</CellGroupTitle>
+                <QueryGroupFilters
+                  key={`query-group-2`}
+                  queryGroup={queryGroup2}
+                  isQueryGroup1={false}
+                />
+              </div>
+            </FlexRow>
+            <RunButtonWrapper>
+              <RunButton
+                color="primary"
+                size="large"
+                variant="contained"
+                onClick={handleRunDifferentialExpression}
+                disabled={!canRunDifferentialExpression}
+              >
+                Find genes
+              </RunButton>
+            </RunButtonWrapper>
+          </QuerySelectorWrapper>
+        </Wrapper>
+      </div>
+      <div className="rightPanel">
         <DeResults setIsLoading={setIsLoading} />
-      </InnerWrapper>
-    </Wrapper>
+      </div>
+    </TwoPanelLayout>
   );
 }
