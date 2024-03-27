@@ -1,7 +1,7 @@
-import { memo, useCallback, useContext, useMemo } from "react";
+import { memo, useCallback, useContext } from "react";
 
 import { DispatchContext } from "src/views/DifferentialExpression/common/store";
-import { Wrapper } from "./style";
+import { FlexRow, Wrapper } from "./style";
 import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
 import {
   selectQueryGroup1Filters,
@@ -9,7 +9,28 @@ import {
 } from "src/views/DifferentialExpression/common/store/actions";
 import FilterDropdown from "./components/FilterDropdown";
 import { FilterOption } from "./types";
-import useProcessedQueryGroupFilterDimensions from "../common/query_group_filter_dimensions";
+import useProcessedQueryGroupFilterDimensions, {
+  FilterOptionDimensions,
+} from "../common/query_group_filter_dimensions";
+import { QUERY_GROUP_KEY_TO_FILTER_DIMENSION_MAP } from "../common/constants";
+import CopyInvertButton from "./components/CopyInvertButton";
+
+const QUERY_GROUP_KEYS = [
+  "tissues",
+  "cellTypes",
+  "publicationCitations",
+  "diseases",
+  "ethnicities",
+  "sexes",
+];
+const QUERY_GROUP_LABELS = [
+  "Tissue",
+  "Cell Type",
+  "Publications",
+  "Disease",
+  "Ethnicity",
+  "Sex",
+];
 
 interface Props {
   queryGroup: QueryGroup;
@@ -24,120 +45,68 @@ export default memo(function Filters({
     ? selectQueryGroup1Filters
     : selectQueryGroup2Filters;
 
-  const {
-    disease_terms,
-    self_reported_ethnicity_terms,
-    sex_terms,
-    tissue_terms,
-    cell_type_terms,
-    publication_citations,
-  } = useProcessedQueryGroupFilterDimensions(queryGroup);
+  const availableFilters = useProcessedQueryGroupFilterDimensions(queryGroup);
 
   const handleFilterChange = useCallback(
     function handleFilterChange_(
       key: keyof QueryGroup
     ): (options: FilterOption[] | undefined) => void {
-      let currentOptions: FilterOption[] | undefined;
-
       return (options: FilterOption[] | undefined): void => {
-        if (
-          !dispatch ||
-          !options ||
-          // If the options are the same
-          JSON.stringify(options.sort(sortOptions)) ===
-            JSON.stringify(currentOptions?.sort(sortOptions)) ||
-          // If the options change from null to [], which is the default value
-          (!currentOptions && JSON.stringify(options) === "[]")
-        ) {
+        if (!dispatch || !options) {
           return;
         }
 
-        currentOptions = options;
-
-        dispatch(selectQueryGroupFilters(key, currentOptions));
+        dispatch(selectQueryGroupFilters(key, options));
       };
     },
     [dispatch, selectQueryGroupFilters]
   );
 
-  const handlePublicationCitationsChange = useMemo(
-    () => handleFilterChange("publicationCitations"),
-    [handleFilterChange]
-  );
+  const components = QUERY_GROUP_KEYS.map((key, index) => {
+    const queryGroupKey = key as keyof QueryGroup;
+    const filterDimensionKey = QUERY_GROUP_KEY_TO_FILTER_DIMENSION_MAP[
+      queryGroupKey
+    ] as keyof FilterOptionDimensions;
 
-  const handleDiseasesChange = useMemo(
-    () => handleFilterChange("diseases"),
-    [handleFilterChange]
-  );
-
-  const handleEthnicitiesChange = useMemo(
-    () => handleFilterChange("ethnicities"),
-    [handleFilterChange]
-  );
-
-  const handleSexesChange = useMemo(
-    () => handleFilterChange("sexes"),
-    [handleFilterChange]
-  );
-
-  const handleTissuesChange = useMemo(
-    () => handleFilterChange("tissues"),
-    [handleFilterChange]
-  );
-
-  const handleCellTypesChange = useMemo(
-    () => handleFilterChange("cellTypes"),
-    [handleFilterChange]
-  );
+    return {
+      filterDropdownComponent: (
+        <FilterDropdown
+          key={`${queryGroupKey}-filter-dropdown`}
+          label={QUERY_GROUP_LABELS[index]}
+          options={availableFilters[filterDimensionKey]}
+          selectedOptionIds={queryGroup[queryGroupKey]}
+          handleChange={handleFilterChange(queryGroupKey)}
+        />
+      ),
+      copyInvertButtonComponent: (
+        <CopyInvertButton
+          key={`${queryGroupKey}-copy-invert-button`}
+          queryGroupKey={queryGroupKey}
+          isCopy={isQueryGroup1}
+        />
+      ),
+    };
+  });
 
   return (
     <Wrapper>
-      <FilterDropdown
-        label="Tissue"
-        options={tissue_terms}
-        selectedOptionIds={queryGroup.tissues}
-        handleChange={handleTissuesChange}
-      />
-      <FilterDropdown
-        label="Cell Type"
-        options={cell_type_terms}
-        selectedOptionIds={queryGroup.cellTypes}
-        handleChange={handleCellTypesChange}
-      />
-      <FilterDropdown
-        label="Publications"
-        options={publication_citations}
-        selectedOptionIds={queryGroup.publicationCitations}
-        handleChange={handlePublicationCitationsChange}
-      />
-      <FilterDropdown
-        label="Disease"
-        options={disease_terms}
-        selectedOptionIds={queryGroup.diseases}
-        handleChange={handleDiseasesChange}
-      />
-      <FilterDropdown
-        label="Ethnicity"
-        options={self_reported_ethnicity_terms}
-        selectedOptionIds={queryGroup.ethnicities}
-        handleChange={handleEthnicitiesChange}
-      />
-      <FilterDropdown
-        label="Sex"
-        options={sex_terms}
-        selectedOptionIds={queryGroup.sexes}
-        handleChange={handleSexesChange}
-      />
+      {components.map(
+        ({ filterDropdownComponent, copyInvertButtonComponent }) => (
+          <FlexRow key={filterDropdownComponent.key}>
+            {isQueryGroup1 ? (
+              <>
+                {filterDropdownComponent}
+                {copyInvertButtonComponent}
+              </>
+            ) : (
+              <>
+                {copyInvertButtonComponent}
+                {filterDropdownComponent}
+              </>
+            )}
+          </FlexRow>
+        )
+      )}
     </Wrapper>
   );
 });
-
-function sortOptions(a: FilterOption, b: FilterOption) {
-  if (a.name < b.name) {
-    return -1;
-  }
-  if (a.name > b.name) {
-    return 1;
-  }
-  return 0;
-}

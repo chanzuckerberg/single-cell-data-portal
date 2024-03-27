@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 
-import { Autocomplete, FilterOptionsState, TextField } from "@mui/material";
+import { FilterOptionsState } from "@mui/material";
 import { FilterOption } from "../../types";
-import { CloseIcon, Tag } from "./style";
+import { CloseIcon, Tag, StyledTextField, StyledAutocomplete } from "./style";
 
 const MAXIMUM_NUMBER_OF_SELECTED_OPTIONS = 2;
 interface Props {
@@ -23,8 +23,7 @@ function FilterDropdown({
 
   return (
     <div>
-      <Autocomplete
-        sx={{ width: 300 }}
+      <StyledAutocomplete
         options={options}
         multiple
         onChange={(_: React.SyntheticEvent, newValue: FilterOption[]) => {
@@ -35,15 +34,7 @@ function FilterDropdown({
         isOptionEqualToValue={(option, value) => option.id === value.id}
         renderInput={(params) => {
           return (
-            <TextField
-              {...params}
-              InputProps={{
-                ...params.InputProps,
-                style: { backgroundColor: "white" },
-              }}
-              placeholder="Search"
-              label={label}
-            />
+            <StyledTextField {...params} placeholder="Search" label={label} />
           );
         }}
         renderTags={(value, getTagProps) => [
@@ -57,13 +48,13 @@ function FilterDropdown({
               >
                 {option.name}
                 <CloseIcon
-                  onClick={() =>
+                  onClick={() => {
                     handleChange(
                       selectedOptions.filter(
                         (selectedOption) => selectedOption.id !== option.id
                       )
-                    )
-                  }
+                    );
+                  }}
                 />
               </Tag>
             )),

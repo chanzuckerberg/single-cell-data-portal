@@ -9,19 +9,14 @@ import {
   WordPop,
   StepSubHeader,
   CellGroupTitle,
-  // CopyButtonWrapper,
   RunButton,
   RunButtonWrapper,
 } from "./style";
 import QueryGroupFilters from "./components/Filters";
 import Organism from "./components/Organism";
-import {
-  // copyCellGroup1,
-  submitQueryGroups,
-} from "src/views/DifferentialExpression/common/store/actions";
+import { submitQueryGroups } from "src/views/DifferentialExpression/common/store/actions";
 import DeResults from "./components/DeResults";
 import Loader from "./components/Loader";
-import CopyInvertButtons from "./components/CopyInvertButtons";
 
 export default function DifferentialExpression(): JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -75,7 +70,7 @@ export default function DifferentialExpression(): JSX.Element {
           </StepSubHeader>
 
           <Organism />
-          <div style={{ flexDirection: "row", display: "flex" }}>
+          <div style={{ flexDirection: "row", display: "flex", columnGap: 16 }}>
             <div>
               <CellGroupTitle>Cell Group 1</CellGroupTitle>
               <QueryGroupFilters
@@ -84,14 +79,9 @@ export default function DifferentialExpression(): JSX.Element {
                 isQueryGroup1={true}
               />
             </div>
-            <CopyInvertButtons />
+
             <div>
-              <CellGroupTitle>
-                Cell Group 2
-                {/* <CopyButtonWrapper onClick={handleCopyCellGroup1}>
-                  Copy Cell Group 1
-                </CopyButtonWrapper> */}
-              </CellGroupTitle>
+              <CellGroupTitle>Cell Group 2</CellGroupTitle>
               <QueryGroupFilters
                 key={`query-group-2`}
                 queryGroup={queryGroup2}
