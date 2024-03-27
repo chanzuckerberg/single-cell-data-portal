@@ -14,7 +14,7 @@ import {
 } from "./style";
 import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
 import { clearSubmittedQueryGroups } from "src/views/DifferentialExpression/common/store/actions";
-import { Pagination } from "@mui/material";
+import { Pagination, TextField } from "@mui/material";
 import Table from "src/views/CellGuide/components/CellGuideCard/components/common/Table";
 
 interface DifferentialExpressionRow {
@@ -85,11 +85,10 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
     setIsLoading(isLoading);
   }, [isLoading, setIsLoading]);
 
-  console.log(differentialExpressionResults);
   return (
     <div>
       {!showEmpty ? (
-        <DifferentialExpressionResultsTable
+        <DifferentialExpressionResults
           results={differentialExpressionResults}
         />
       ) : (
@@ -130,14 +129,15 @@ const columnIdToName: Record<keyof DifferentialExpressionRow, string> = {
   effectSize: "Effect Size",
 };
 
-interface DifferentialExpressionResultsTableProps {
+interface DifferentialExpressionResultsProps {
   results: DifferentialExpressionRow[];
 }
-const DifferentialExpressionResultsTable = ({
+const DifferentialExpressionResults = ({
   results,
-}: DifferentialExpressionResultsTableProps) => {
+}: DifferentialExpressionResultsProps) => {
   const [page, setPage] = useState(1);
-  const pageCount = Math.ceil(results.length / ROWS_PER_PAGE);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
     page: number
@@ -145,13 +145,28 @@ const DifferentialExpressionResultsTable = ({
     setPage(page);
   };
 
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+  const filteredResults = results.filter((result) =>
+    result.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const pageCount = Math.ceil(filteredResults.length / ROWS_PER_PAGE);
   return (
     <ResultsWrapper>
       <ResultsHeader>Results</ResultsHeader>
       <TableWrapper>
+        <TextField
+          label="Search genes"
+          variant="outlined"
+          onChange={handleSearch}
+        />
         <Table<DifferentialExpressionRow>
           columns={["name", "pValue", "effectSize"]}
-          rows={results.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE)}
+          rows={filteredResults.slice(
+            (page - 1) * ROWS_PER_PAGE,
+            page * ROWS_PER_PAGE
+          )}
           columnIdToName={columnIdToName}
         />
 

@@ -274,7 +274,6 @@ export function useDifferentialExpression(): {
 } {
   const requestBody = useDEQueryRequestBody();
   const { data, isLoading } = useDEQuery(requestBody);
-  console.log(data);
   return useMemo(() => {
     if (isLoading || !data || (data?.successCode ?? 0) > 0)
       return {
