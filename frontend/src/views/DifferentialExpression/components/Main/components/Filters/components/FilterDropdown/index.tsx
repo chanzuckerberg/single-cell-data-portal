@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
 
 import { Autocomplete, FilterOptionsState, TextField } from "@mui/material";
 import { FilterOption } from "../../types";
@@ -8,55 +8,37 @@ const MAXIMUM_NUMBER_OF_SELECTED_OPTIONS = 2;
 interface Props {
   label: string;
   options: FilterOption[];
+  selectedOptionIds: string[];
   handleChange: (options: FilterOption[]) => void;
 }
-function FilterDropdown({ options, label, handleChange }: Props): JSX.Element {
-  const [open, setOpen] = useState(false);
-  const [selectedOptions, setSelectedOptions] = useState<FilterOption[]>([]);
-
-  const handleFocus = () => {
-    setOpen(true);
-  };
-
-  const handleBlur = () => {
-    setOpen(false);
-  };
-
-  useEffect(() => {
-    handleChange(selectedOptions);
-  }, [selectedOptions, handleChange]);
+function FilterDropdown({
+  options,
+  label,
+  selectedOptionIds,
+  handleChange,
+}: Props): JSX.Element {
+  const selectedOptions = useMemo(() => {
+    return options.filter((option) => selectedOptionIds.includes(option.id));
+  }, [options, selectedOptionIds]);
 
   return (
     <div>
       <Autocomplete
         sx={{ width: 300 }}
-        open={open}
         options={options}
         multiple
         onChange={(_: React.SyntheticEvent, newValue: FilterOption[]) => {
-          setSelectedOptions(newValue);
+          handleChange(newValue);
         }}
         getOptionLabel={(option) => option.name}
         value={selectedOptions}
         isOptionEqualToValue={(option, value) => option.id === value.id}
         renderInput={(params) => {
-          const customEndAdornment = (
-            <div
-              onClick={() => {
-                setOpen(!open);
-              }}
-            >
-              {params.InputProps.endAdornment}
-            </div>
-          );
           return (
             <TextField
               {...params}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
               InputProps={{
                 ...params.InputProps,
-                endAdornment: customEndAdornment,
                 style: { backgroundColor: "white" },
               }}
               placeholder="Search"
@@ -76,7 +58,7 @@ function FilterDropdown({ options, label, handleChange }: Props): JSX.Element {
                 {option.name}
                 <CloseIcon
                   onClick={() =>
-                    setSelectedOptions(
+                    handleChange(
                       selectedOptions.filter(
                         (selectedOption) => selectedOption.id !== option.id
                       )
@@ -108,6 +90,7 @@ function FilterDropdown({ options, label, handleChange }: Props): JSX.Element {
               _sortOptions(entityA, entityB, state, selectedOptions)
             );
         }}
+        disableCloseOnSelect
       />
     </div>
   );

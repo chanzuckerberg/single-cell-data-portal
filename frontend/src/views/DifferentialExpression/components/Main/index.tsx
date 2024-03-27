@@ -21,6 +21,7 @@ import {
 } from "src/views/DifferentialExpression/common/store/actions";
 import DeResults from "./components/DeResults";
 import Loader from "./components/Loader";
+import CopyInvertButtons from "./components/CopyInvertButtons";
 
 export default function DifferentialExpression(): JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -33,15 +34,7 @@ export default function DifferentialExpression(): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { queryGroups } = useContext(StateContext);
   const { queryGroup1, queryGroup2 } = queryGroups;
-  // const {
-  //   queryGroup1: queryGroupWithNames1,
-  //   queryGroup2: queryGroupWithNames2,
-  // } = queryGroupsWithNames;
 
-  // const handleCopyCellGroup1 = () => {
-  //   if (!dispatch) return;
-  //   dispatch(copyCellGroup1());
-  // };
   // check if any values in queryGroup1 are not empty
   const isQueryGroup1NotEmpty = Object.values(queryGroup1).some(
     (value) => value.length > 0
@@ -91,7 +84,7 @@ export default function DifferentialExpression(): JSX.Element {
                 isQueryGroup1={true}
               />
             </div>
-            <div>COPY AND INVERT BUTTONS</div>
+            <CopyInvertButtons />
             <div>
               <CellGroupTitle>
                 Cell Group 2
