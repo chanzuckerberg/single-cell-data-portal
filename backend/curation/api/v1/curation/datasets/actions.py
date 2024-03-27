@@ -1,5 +1,6 @@
 from flask import jsonify, make_response
 
+from backend.common.constants import SCHEMA_VERSION_WILDCARD
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from backend.curation.api.v1.curation.collections.common import reshape_dataset_for_curation_datasets_index_api
 from backend.layers.auth.user_info import UserInfo
@@ -75,5 +76,5 @@ def sanitize_schema_version(schema_version: str) -> str:
         raise InvalidParametersHTTPException(detail="Invalid Schema Version Input")
     while len(version_parts) < 3:
         # wildcard match for exactly 1 character
-        version_parts.append("?")
+        version_parts.append(SCHEMA_VERSION_WILDCARD)
     return ".".join(version_parts)

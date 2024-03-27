@@ -230,11 +230,23 @@ class BusinessLogic(BusinessLogicInterface):
         Returns a list with the latest published collection version that matches the given schema_version, for each
         canonical collection
         """
-        latest_collection_versions = list(
-            self.get_collections(CollectionQueryFilter(schema_version=schema_version, is_published=True))
-        )
+        has_wildcards = "_" in schema_version
+        collection_versions = self.database_provider.get_collection_versions_by_schema(schema_version, has_wildcards)
+
+        # for each published canonical collection, map its most recently published collection version
+        collections = dict()
+        for collection_version in collection_versions:
+            if collection_version.published_at is None:
+                continue
+            canonical_collection_id = collection_version.collection_id.id
+            if canonical_collection_id not in collections:
+                collections[canonical_collection_id] = collection_version
+            else:
+                if collection_version.published_at > collections[canonical_collection_id].published_at:
+                    collections[canonical_collection_id] = collection_version
 
         # for each mapped collection version, populate its dataset versions' details
+        latest_collection_versions = list(collections.values())
         dataset_version_ids = [
             dataset_version_id
             for collection in latest_collection_versions
@@ -1121,7 +1133,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         has_wildcards = SCHEMA_VERSION_WILDCARD in schema_version_pattern
         if has_wildcards:
-            return fnmatchcase(schema_version, schema_version_pattern)
+            return fnmatchcase(schema_version, schema_version_pattern.replace(SCHEMA_VERSION_WILDCARD, "?"))
         return schema_version == schema_version_pattern
 
     def _map_collection_version_to_private_dataset_version(

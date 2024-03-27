@@ -2405,7 +2405,7 @@ class TestGetEntitiesBySchema(BaseBusinessLogicTestCase):
             collection_versions = self.business_logic.get_latest_published_collection_versions_by_schema(
                 f"3.0.{SCHEMA_VERSION_WILDCARD}"
             )
-            self.assertEqual(len(collection_versions), 0)
+            self.assertCountEqual([cv.schema_version for cv in collection_versions], ["3.0.0"])
         with self.subTest("Querying against minor schema version 3.1"):
             collection_versions = self.business_logic.get_latest_published_collection_versions_by_schema(
                 f"3.1.{SCHEMA_VERSION_WILDCARD}"
