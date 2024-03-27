@@ -1831,16 +1831,27 @@ class TestGetDatasets(BaseAPIPortalTest):
         with self.subTest("With no credentials"):
             self.assertEqual(3, len(response.json))
 
-        with self.subTest("Contains collection_name and collection_doi"):
+        with self.subTest("Contains collection_id, collection_version_id, collection_name and collection_doi"):
+            collection_ids = {published_collection_1.collection_id.id, published_collection_2.collection_id.id}
+            collection__version_ids = {
+                published_collection_1.version_id.id,
+                published_collection_2.version_id.id,
+            }
             collection_names = {published_collection_1.metadata.name, published_collection_2.metadata.name}
             expected_collection_dois = {"12.3456/j.celrep", "78.91011/j.celrep"}
 
+            received_collection_ids = set()
+            received_collection_version_ids = set()
             received_collection_names = set()
             received_collection_dois = set()
             for dataset in response.json:
+                received_collection_ids.add(dataset["collection_id"])
+                received_collection_version_ids.add(dataset["collection_version_id"])
                 received_collection_names.add(dataset["collection_name"])
                 received_collection_dois.add(dataset["collection_doi"])
 
+            self.assertEqual(collection_ids, received_collection_ids)
+            self.assertEqual(collection__version_ids, received_collection_version_ids)
             self.assertEqual(collection_names, received_collection_names)
             self.assertEqual(expected_collection_dois, received_collection_dois)
 
@@ -1872,7 +1883,7 @@ class TestGetDatasets(BaseAPIPortalTest):
                     self.assertIsNone(dataset["revised_at"])
 
         with self.subTest("Response Dataset objects contain index-specific attributes"):
-            index_specific_attributes = ("collection_doi", "collection_id", "collection_name")
+            index_specific_attributes = ("collection_doi", "collection_id", "collection_version_id", "collection_name")
             dataset = response.json[0]
             for attribute in index_specific_attributes:
                 self.assertIn(attribute, dataset)
@@ -1905,18 +1916,6 @@ class TestGetDatasets(BaseAPIPortalTest):
             for dataset in response.json:
                 self.assertIsNone(dataset["revision_of_dataset"])
 
-    # ********************************
-    # ********************************
-    # ********************************
-    # ********************************
-    # ********************************
-    # ********************************
-    # ********************************
-    # ********************************
-    # ********************************
-    # ********************************
-    # ********************************
-    # ********************************
     def test_get_private_datasets_200(self):
         """
         Tests /curation/v1/datasets endpoint with different credentials and visibility filters.

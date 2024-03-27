@@ -245,9 +245,7 @@ class PublishedDatasetVersion(DatasetVersion):
 
 
 @dataclass
-class PrivateDatasetVersion(
-    DatasetVersion
-):  # TODO(cc) revisit naming here, this can also be a unchanged (public) dataset of a revision
+class PrivateDatasetVersion(DatasetVersion):
     collection_version_id: CollectionVersionId
 
 

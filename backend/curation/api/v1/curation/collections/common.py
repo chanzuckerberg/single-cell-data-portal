@@ -471,7 +471,7 @@ def calculate_dataset_collection_id(collection_version: CollectionVersion) -> st
     :param collection_version: the collection version to get the collection ID for.
     :return: The collection ID of the collection version, or the collection version ID if revision.
     """
-    if is_collection_version_revision(collection_version):
+    if collection_version.is_unpublished_version():
         return collection_version.version_id.id
     return collection_version.collection_id.id
 
@@ -492,7 +492,7 @@ def calculate_dataset_visibility(
     # Return public for unchanged datasets of revisions.
     if (
         visibility == DatasetVisibility.PRIVATE.name
-        and is_collection_version_revision(collection_version)
+        and collection_version.is_unpublished_version()  # Collection is a revision
         and not is_dataset_version_new(dataset_version)  # New dataset of revision
         and not is_dataset_version_revision(dataset_version)  # Changed dataset of revision
     ):
@@ -513,7 +513,7 @@ def calculate_private_dataset_published_at_and_revised_at(
     :return: The published_at and revised_at dates of the dataset.
     """
     # published_at and revised_at are None if collection version is not a revision.
-    if not is_collection_version_revision(collection_version):
+    if not collection_version.is_unpublished_version():
         return None, None
 
     # published_at and revised_at are None if dataset version is new or a is a revision
@@ -537,7 +537,7 @@ def calculate_revision_of_collection(visibility: str, collection_version: Collec
         return None
 
     # Return collection ID if collection version is a revision, otherwise return None.
-    if is_collection_version_revision(collection_version):
+    if collection_version.is_unpublished_version():
         return collection_version.collection_id.id
     return None
 
@@ -558,16 +558,6 @@ def calculate_revision_of_dataset(visibility: str, dataset_version: DatasetVersi
     if is_dataset_version_revision(dataset_version):
         return dataset_version.canonical_dataset.dataset_version_id.id
     return None
-
-
-def is_collection_version_revision(collection_version: CollectionVersion) -> bool:
-    """
-    Determine if the given collection version is a revision by checking if the canonical collection has
-    been published.
-    :param collection_version: the collection version to check if it is a revision.
-    :return: A flag indicating if the collection version is a revision.
-    """
-    return collection_version.canonical_collection.originally_published_at is not None
 
 
 def is_dataset_version_new(dataset_version: DatasetVersion) -> bool:
