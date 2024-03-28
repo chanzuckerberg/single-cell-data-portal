@@ -2042,104 +2042,6 @@ class TestGetDatasets(BaseAPIPortalTest):
             ]
             _validate_datasets(response_datasets, expected_dataset_ids)
 
-        # Super curator and schema version.
-        with self.subTest("With super curator credentials and schema version"):
-            response_datasets = self._fetch_datasets(
-                visibility=DatasetVisibility.PRIVATE.name,
-                headers=self.make_super_curator_header(),
-                schema_version="3.0.0",
-            )
-
-            # Create the list of the 4 expected datasets: 1 from unpublished collections and 3 from
-            # the revision of published_collection_1.
-            expected_dataset_ids = [
-                unpublished_collection_2.datasets[0].version_id.id,
-                revision_1_dataset_updated.dataset_version_id,
-                revision_1.datasets[1].version_id.id,
-                revision_1_dataset_new.dataset_version_id,
-            ]
-            _validate_datasets(response_datasets, expected_dataset_ids)
-
-        with self.subTest("With super curator credentials and patch wildcard schema version"):
-            response_datasets = self._fetch_datasets(
-                visibility=DatasetVisibility.PRIVATE.name,
-                headers=self.make_super_curator_header(),
-                schema_version="3.0",
-            )
-
-            # Create the list of the 4 expected datasets: 1 from unpublished collections and 3 from
-            # the revision of published_collection_1.
-            expected_dataset_ids = [
-                unpublished_collection_2.datasets[0].version_id.id,
-                revision_1_dataset_updated.dataset_version_id,
-                revision_1.datasets[1].version_id.id,
-                revision_1_dataset_new.dataset_version_id,
-            ]
-            _validate_datasets(response_datasets, expected_dataset_ids)
-
-        with self.subTest("With super curator credentials and minor and patch wildcard schema version"):
-            response_datasets = self._fetch_datasets(
-                visibility=DatasetVisibility.PRIVATE.name,
-                headers=self.make_super_curator_header(),
-                schema_version="3",
-            )
-
-            # Create the list of the 4 expected datasets: 1 from unpublished collections and 3 from
-            # the revision of published_collection_1.
-            expected_dataset_ids = [
-                unpublished_collection_2.datasets[0].version_id.id,
-                revision_1_dataset_updated.dataset_version_id,
-                revision_1.datasets[1].version_id.id,
-                revision_1_dataset_new.dataset_version_id,
-            ]
-            _validate_datasets(response_datasets, expected_dataset_ids)
-
-        # Owner and schema version.
-        with self.subTest("With owner credentials and schema version"):
-            response_datasets = self._fetch_datasets(
-                visibility=DatasetVisibility.PRIVATE.name,
-                headers=self.make_owner_header(),
-                schema_version="3.0.0",
-            )
-
-            # Create the list of the 3 expected datasets: 3 from the revision of published_collection_1.
-            expected_dataset_ids = [
-                revision_1_dataset_updated.dataset_version_id,
-                revision_1.datasets[1].version_id.id,
-                revision_1_dataset_new.dataset_version_id,
-            ]
-            _validate_datasets(response_datasets, expected_dataset_ids)
-
-        with self.subTest("With owner credentials and patch wildcard schema version"):
-            response_datasets = self._fetch_datasets(
-                visibility=DatasetVisibility.PRIVATE.name,
-                headers=self.make_owner_header(),
-                schema_version="3.0",
-            )
-
-            # Create the list of the 3 expected datasets: 3 from the revision of published_collection_1.
-            expected_dataset_ids = [
-                revision_1_dataset_updated.dataset_version_id,
-                revision_1.datasets[1].version_id.id,
-                revision_1_dataset_new.dataset_version_id,
-            ]
-            _validate_datasets(response_datasets, expected_dataset_ids)
-
-        with self.subTest("With owner credentials and minor and patch wildcard schema version"):
-            response_datasets = self._fetch_datasets(
-                visibility=DatasetVisibility.PRIVATE.name,
-                headers=self.make_owner_header(),
-                schema_version="3",
-            )
-
-            # Create the list of the 3 expected datasets: 3 from the revision of published_collection_1.
-            expected_dataset_ids = [
-                revision_1_dataset_updated.dataset_version_id,
-                revision_1.datasets[1].version_id.id,
-                revision_1_dataset_new.dataset_version_id,
-            ]
-            _validate_datasets(response_datasets, expected_dataset_ids)
-
         # Hit datasets endpoint for owner and check response shape.
         response_datasets = self._fetch_datasets(
             visibility=DatasetVisibility.PRIVATE.name, headers=self.make_owner_header()
@@ -2249,6 +2151,15 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertIn(expected_dataset.dataset_id.id, response_dataset["explorer_url"])
             self.assertIsNotNone(response_dataset["published_at"])
             self.assertIsNone(response_dataset["revised_at"])  # Not revised
+
+    def test_get_private_datasets_400(self):
+        # 400 if PRIVATE and schema version.
+        self._fetch_datasets(
+            visibility=DatasetVisibility.PRIVATE.name,
+            headers=self.make_super_curator_header(),
+            schema_version="3",
+            status_code=400,
+        )
 
     def test_get_private_datasets_403(self):
         # 403 if no credentials and requesting private datasets.

@@ -11,19 +11,21 @@ def get(token_info: dict, schema_version: str = None, visibility: str = None):
     """
     Datasets index endpoint to retrieve full metadata. Only return Dataset data for which the curator is authorized.
     :param token_info: access token info.
-    :param schema_version: the schema version to filter the datasets by.
+    :param schema_version: the schema version to filter the datasets by, PUBLIC Datasets only.
     :param visibility: the DatasetVisibility in string form.
     """
 
     # Handle retrieval of private datasets.
     if visibility == DatasetVisibility.PRIVATE.name:
-        user_info = UserInfo(token_info)
+        if schema_version:
+            raise InvalidParametersHTTPException(detail="schema_version is not allowed for PRIVATE Datasets.")
 
+        user_info = UserInfo(token_info)
         if user_info.is_none():
             raise ForbiddenHTTPException(detail="Not authorized to query for PRIVATE Dataset.")
 
         owner = None
-        if not user_info.is_super_curator():  # Don't need to filter by owner if user is super curator.
+        if not user_info.is_super_curator():  # No owner if user is super curator.
             owner = user_info.user_id
 
         collections_with_datasets = get_business_logic().get_private_collection_versions_with_datasets(owner)
