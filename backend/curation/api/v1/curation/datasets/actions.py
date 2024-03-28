@@ -1,6 +1,5 @@
 from flask import jsonify, make_response
 
-from backend.common.constants import SCHEMA_VERSION_WILDCARD
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from backend.curation.api.v1.curation.collections.common import reshape_dataset_for_curation_datasets_index_api
 from backend.layers.auth.user_info import UserInfo
@@ -27,18 +26,21 @@ def get(token_info: dict, schema_version: str = None, visibility: str = None):
         if not user_info.is_super_curator():  # Don't need to filter by owner if user is super curator.
             owner = user_info.user_id
 
-        sanitized_schema_version = sanitize_schema_version(schema_version) if schema_version else None
-        collections_with_datasets = get_business_logic().get_private_collection_versions_with_datasets(
-            owner, sanitized_schema_version
-        )
+        collections_with_datasets = get_business_logic().get_private_collection_versions_with_datasets(owner)
     # Handle retrieval of public datasets.
     else:
         if not schema_version:
             collections_with_datasets = get_business_logic().get_all_mapped_collection_versions_with_datasets()
         else:
-            sanitized_schema_version = sanitize_schema_version(schema_version)
+            version_parts = schema_version.split(".")
+            if len(version_parts) > 3 or not all(part.isdigit() for part in version_parts):
+                raise InvalidParametersHTTPException(detail="Invalid Schema Version Input")
+            while len(version_parts) < 3:
+                # wildcard match for exactly 1 character
+                version_parts.append("_")
+            schema_version = ".".join(version_parts)
             collections_with_datasets = get_business_logic().get_latest_published_collection_versions_by_schema(
-                sanitized_schema_version
+                schema_version
             )
 
     # Shape datasets for response.
@@ -62,19 +64,3 @@ def get(token_info: dict, schema_version: str = None, visibility: str = None):
         ),
         200,
     )
-
-
-def sanitize_schema_version(schema_version: str) -> str:
-    """
-    Convert a schema version to a valid semver string, replacing undefined minor or patch values with ?
-    for database wildcard matching.
-    :param schema_version: the schema version to sanitize.
-    :return: The valid semver schema version with possible wildcard replacements.
-    """
-    version_parts = schema_version.split(".")
-    if len(version_parts) > 3 or not all(part.isdigit() for part in version_parts):
-        raise InvalidParametersHTTPException(detail="Invalid Schema Version Input")
-    while len(version_parts) < 3:
-        # wildcard match for exactly 1 character
-        version_parts.append(SCHEMA_VERSION_WILDCARD)
-    return ".".join(version_parts)

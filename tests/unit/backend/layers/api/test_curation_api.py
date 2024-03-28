@@ -1934,9 +1934,6 @@ class TestGetDatasets(BaseAPIPortalTest):
         #
 
         # Public collection, 2 datasets.
-        self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata(), "12.3456/j.celrep")
-        )
         published_collection_1 = self.generate_published_collection(
             add_datasets=2,
             metadata=CollectionMetadata(
@@ -1944,15 +1941,12 @@ class TestGetDatasets(BaseAPIPortalTest):
                 "described",
                 "john doe",
                 "john.doe@email.com",
-                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/12.3456/j.celrep")],
+                [],
                 ["Consortia 1", "Consortia 2"],
             ),
         )
 
         # Public collection, 2 datasets, other owner.
-        self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata(), "78.91011/j.celrep")
-        )
         self.generate_published_collection(
             owner="other owner",
             curator_name="other curator",
@@ -1962,13 +1956,12 @@ class TestGetDatasets(BaseAPIPortalTest):
                 "described",
                 "john doe",
                 "john.doe@email.com",
-                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/78.91011/j.celrep")],
+                [],
                 ["Consortia 1", "Consortia 2"],
             ),
         )
 
         # Public collection, 1 dataset.
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "123/123"))
         published_collection_3 = self.generate_published_collection(
             add_datasets=1,
             metadata=CollectionMetadata(
@@ -1976,7 +1969,7 @@ class TestGetDatasets(BaseAPIPortalTest):
                 "described",
                 "john doe",
                 "john.doe@email.com",
-                [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/123/123")],
+                [],
                 ["Consortia 1", "Consortia 2"],
             ),
         )

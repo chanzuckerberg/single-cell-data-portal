@@ -3,7 +3,6 @@ from datetime import datetime
 from fnmatch import fnmatchcase
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
-from backend.common.constants import SCHEMA_VERSION_WILDCARD
 from backend.layers.business.exceptions import CollectionIsPublishedException, DatasetIsPublishedException
 from backend.layers.common.entities import (
     CanonicalCollection,
@@ -593,7 +592,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def get_collection_versions_by_schema(self, schema_version: str, has_wildcards: bool) -> List[CollectionVersion]:
         if has_wildcards:
-            schema_version = schema_version.replace(SCHEMA_VERSION_WILDCARD, "?")
+            schema_version = schema_version.replace("_", "?")
             collection_versions = [
                 cv
                 for cv in self.collections_versions.values()
