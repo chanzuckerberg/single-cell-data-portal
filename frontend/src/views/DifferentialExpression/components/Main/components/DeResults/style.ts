@@ -2,6 +2,7 @@ import { HTMLTable } from "@blueprintjs/core";
 import styled from "@emotion/styled";
 import {
   Button,
+  Tag,
   fontBodyL,
   fontBodyS,
   fontBodyXs,
@@ -10,7 +11,8 @@ import {
   getColors,
 } from "@czi-sds/components";
 import { fontBodyXxs } from "@czi-sds/components";
-import { gray500 } from "src/common/theme";
+import { gray100, gray500 } from "src/common/theme";
+import { TextField } from "@mui/material";
 
 export const CopyGenesButton = styled(Button)`
   ${fontBodyXxs}
@@ -18,8 +20,9 @@ export const CopyGenesButton = styled(Button)`
   margin-left: -5px;
 `;
 
+const TABLE_WIDTH = "386px";
 export const TableWrapper = styled.div`
-  width: 386px;
+  width: ${TABLE_WIDTH};
 `;
 
 export const StyledHTMLTable = styled(HTMLTable)`
@@ -104,4 +107,72 @@ export const ResultsWrapper = styled.div`
 export const ResultsHeader = styled.div`
   ${fontHeaderXl}
   margin-bottom: 16px;
+`;
+
+export const StyledTextField = styled(TextField)`
+  height: 32px;
+  max-width: 140px;
+  margin-top: 4px;
+  & .MuiInputBase-root {
+    padding: 0;
+    height: 32px;
+  }
+  & .MuiInputLabel-root {
+    margin-top: -8px;
+    z-index: 0;
+  }
+`;
+
+export const TableHeaderWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const EffectSizeHeaderWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  column-gap: 8px;
+  align-items: center;
+`;
+
+export const CellGroupWrapper = styled.div`
+  height: 92px;
+  width: ${TABLE_WIDTH};
+  margin-bottom: 8px;
+
+  padding: 12px;
+  background-color: ${gray100};
+`;
+
+export const CellGroupTitleWrapper = styled.span`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+export const CellGroupTitle = styled.span`
+  ${fontBodyS}
+  font-weight: 600;
+`;
+
+export const EffectSizeIndicator = styled.span`
+  ${fontBodyXxs}
+  color: #959595;
+`;
+
+export const FilterTagsWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  column-gap: 8px;
+`;
+
+export const StyledTag = styled(Tag)`
+  font-weight: 400;
+  padding: 2px 8px;
+  background-color: rgba(0, 0, 0, 0.05);
+  & .MuiChip-label {
+    color: #000000;
+    ${fontBodyXs}
+  }
 `;

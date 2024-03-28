@@ -33,6 +33,7 @@ export const Wrapper = styled.div`
   flex-direction: column;
   margin-left: 120px;
   margin-top: 24px;
+  margin-right: 24px;
 `;
 
 export const StepHeader = styled.div`
@@ -108,7 +109,7 @@ export const StyledSidebarDrawer = styled(Drawer)`
 export const FlexRow = styled.div`
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   column-gap: 16px;
 `;
 
