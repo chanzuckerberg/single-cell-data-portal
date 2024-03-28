@@ -32,14 +32,14 @@ export const useConnect = ({ clobberedProjects }: ProjectProps) => {
   const projectNotebookLinks: [string, string][] =
     ("notebook_links" in sharedProject
       ? sharedProject.notebook_links
-      : notebookLinks[sharedProject.id ?? ""]) ?? [];
+      : notebookLinks[sharedProject.embedding_name ?? ""]) ?? [];
 
   if (projectNotebookLinks.length === 0) {
     clobberedProjects[1].forEach((project) => {
       projectNotebookLinks?.push(
         ...(("notebook_links" in project
           ? project.notebook_links
-          : notebookLinks[project.id ?? ""]) ?? [])
+          : notebookLinks[project.embedding_name ?? ""]) ?? [])
       );
     });
   }
