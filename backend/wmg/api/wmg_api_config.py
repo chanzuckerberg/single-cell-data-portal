@@ -14,6 +14,8 @@ WMG_API_SNAPSHOT_FS_CACHE_ROOT_PATH = "/single-cell-data-portal/wmg_snapshot_cac
 #
 # In the case a specfic snapshot must be loaded
 # WMG_API_FORCE_LOAD_SNAPSHOT_ID should be set.
+# LATEST_READER_SNAPSHOT_SCHEMA_VERSION in container_init.sh and WMG_API_SNAPSHOT_SCHEMA_VERSION
+# below should have the same value.
 WMG_API_SNAPSHOT_SCHEMA_VERSION = "v4"
 
 # In the case we need to rollback or rollforward
