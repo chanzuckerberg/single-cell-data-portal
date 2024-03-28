@@ -634,18 +634,7 @@ paths:
         - {}
       parameters:
         - $ref: "#/components/parameters/schema_version"
-        - description: |
-            The visibility of the Datasets to query for.
-
-            | visibility | description | Authorization Required |
-            | ---------- | ----------- | -------------- |
-            | PUBLIC   | All public Datasets are returned. | No |
-            | PRIVATE  | All private Datasets that the user is authorized to access are returned.  | Yes |
-          in: query
-          name: visibility
-          required: false
-          schema:
-            $ref: "#/components/schemas/dataset_visibility"
+        - $ref: "#/components/parameters/dataset_visibility"
       responses:
         "200":
           description: OK
@@ -1589,6 +1578,19 @@ components:
         - PRIVATE
       type: string
   parameters:
+    dataset_visibility:
+      description: |
+        The visibility of the Datasets to query for.
+
+        | visibility | description | Authorization Required |
+        | ---------- | ----------- | -------------- |
+        | PUBLIC   | All public Datasets are returned. | No |
+        | PRIVATE  | All private Datasets that the user is authorized to access are returned.  | Yes |
+      in: query
+      name: visibility
+      required: false
+      schema:
+        $ref: "#/components/schemas/dataset_visibility"
     path_collection_id:
       description: The uuid of a Collection.
       in: path
