@@ -53,7 +53,7 @@ def mock_bootstrap_rows_percentiles(
 
 
 class MockCensusParameters:
-    census_version = "latest"
+    census_version = "stable"
 
     def value_filter(organism: str) -> str:
         organism_mapping = {
