@@ -16,6 +16,7 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     CollectionVersionWithDatasets,
+    CollectionVersionWithPrivateDatasets,
     CollectionVersionWithPublishedDatasets,
     DatasetArtifactType,
     DatasetId,
@@ -265,7 +266,9 @@ def reshape_dataset_for_curation_api(
 
 
 def reshape_dataset_for_curation_datasets_index_api(
-    visibility: str, collection_version: CollectionVersion, dataset_version: DatasetVersion
+    visibility: str,
+    collection_version: Union[CollectionVersionWithPublishedDatasets, CollectionVersionWithPrivateDatasets],
+    dataset_version: DatasetVersion,
 ) -> dict:
     """
     Create the response shape for the curation datasets index API response. Handles shape for both public and private
@@ -464,7 +467,9 @@ def is_owner_or_allowed_else_forbidden(collection_version, user_info):
         raise ForbiddenHTTPException()
 
 
-def calculate_dataset_collection_id(collection_version: CollectionVersion) -> str:
+def calculate_dataset_collection_id(
+    collection_version: Union[CollectionVersionWithPublishedDatasets, CollectionVersionWithPrivateDatasets]
+) -> str:
     """
     Determine the collection ID for the collection version: if the collection version is a revision,
     use the collection version ID.
@@ -477,7 +482,9 @@ def calculate_dataset_collection_id(collection_version: CollectionVersion) -> st
 
 
 def calculate_dataset_visibility(
-    visibility: str, collection_version: CollectionVersion, dataset_version: DatasetVersion
+    visibility: str,
+    collection_version: Union[CollectionVersionWithPublishedDatasets, CollectionVersionWithPrivateDatasets],
+    dataset_version: DatasetVersion,
 ) -> DatasetVisibility:
     """
     Calculate the visibility of a dataset:
@@ -503,7 +510,7 @@ def calculate_dataset_visibility(
 
 
 def calculate_private_dataset_published_at_and_revised_at(
-    collection_version: CollectionVersion, dataset_version: DatasetVersion
+    collection_version: CollectionVersionWithPrivateDatasets, dataset_version: DatasetVersion
 ) -> Tuple[Optional[str], Optional[str]]:
     """
     Determine the published_at and revised_at dates for the private dataset. published_at and revised_at
@@ -525,7 +532,10 @@ def calculate_private_dataset_published_at_and_revised_at(
     return dataset_version.canonical_dataset.published_at, dataset_version.canonical_dataset.revised_at
 
 
-def calculate_revision_of_collection(visibility: str, collection_version: CollectionVersion) -> str | None:
+def calculate_revision_of_collection(
+    visibility: str,
+    collection_version: Union[CollectionVersionWithPublishedDatasets, CollectionVersionWithPrivateDatasets],
+) -> str | None:
     """
     Get the collection ID if the collection is a revision. Collection ID is never returned for public requests.
     :param visibility: the requested visibility of the datasets.

@@ -674,14 +674,13 @@ class BusinessLogic(BusinessLogicInterface):
             for dataset_version in dataset_versions:
 
                 private_dataset_versions.append(
-                    PrivateDatasetVersion(
-                        collection_version_id=collection_version.version_id,
-                        **vars(dataset_version),
-                    )
+                    PrivateDatasetVersion(**vars(dataset_version), collection_version_id=collection_version.version_id)
                 )
 
+            collection_version_dict = vars(collection_version)
+            collection_version_dict["datasets"] = private_dataset_versions
             collection_versions_with_datasets.append(
-                self._map_collection_version_to_private_dataset_version(collection_version, private_dataset_versions)
+                CollectionVersionWithPrivateDatasets(**collection_version_dict)
             )
 
         return collection_versions_with_datasets
@@ -1074,31 +1073,6 @@ class BusinessLogic(BusinessLogicInterface):
                     self.s3_provider.delete_prefix(bucket, prefix)
             except S3DeleteException as e:
                 raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
-
-    def _map_collection_version_to_private_dataset_version(
-        self, collection_version: CollectionVersion, private_dataset_versions: List[PrivateDatasetVersion]
-    ) -> CollectionVersionWithPrivateDatasets:
-        """
-        Creates a CollectionVersionWithPrivateDatasets object from a CollectionVersion and a list of PrivateDatasetVersions.
-        :param collection_version: The CollectionVersion to map.
-        :param private_dataset_version: The list of PrivateDatasetVersions to map.
-        :return: A CollectionVersionWithPrivateDatasets object.
-        """
-        return CollectionVersionWithPrivateDatasets(
-            collection_id=collection_version.collection_id,
-            version_id=collection_version.version_id,
-            owner=collection_version.owner,
-            curator_name=collection_version.curator_name,
-            metadata=collection_version.metadata,
-            publisher_metadata=collection_version.publisher_metadata,
-            published_at=collection_version.published_at,
-            created_at=collection_version.created_at,
-            schema_version=collection_version.schema_version,
-            canonical_collection=collection_version.canonical_collection,
-            has_custom_dataset_order=collection_version.has_custom_dataset_order,
-            datasets=private_dataset_versions,
-            data_submission_policy_version=collection_version.data_submission_policy_version,
-        )
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str

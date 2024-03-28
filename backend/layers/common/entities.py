@@ -246,6 +246,11 @@ class PublishedDatasetVersion(DatasetVersion):
 
 @dataclass
 class PrivateDatasetVersion(DatasetVersion):
+    """
+    Dataset associated with a private (new) collection or an unchanged dataset associated
+    with an unpublished revision.
+    """
+
     collection_version_id: CollectionVersionId
 
 
