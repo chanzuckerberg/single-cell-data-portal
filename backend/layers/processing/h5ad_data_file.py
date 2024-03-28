@@ -18,6 +18,7 @@ from backend.common.utils.cxg_generation_utils import (
     convert_dictionary_to_cxg_group,
     convert_matrices_to_cxg_arrays,
     convert_ndarray_to_cxg_dense_array,
+    convert_uns_to_cxg_group,
 )
 from backend.common.utils.matrix_utils import is_matrix_sparse
 from backend.common.utils.tiledb import consolidation_buffer_size
@@ -79,7 +80,7 @@ class H5ADDataFile:
         convert_dataframe_to_cxg_array(output_cxg_directory, "var", self.var, self.var_index_column_name, ctx)
         logging.info("\t...dataset var dataframe saved")
 
-        convert_dictionary_to_cxg_group(output_cxg_directory, self.anndata.uns, "uns", ctx)
+        convert_uns_to_cxg_group(output_cxg_directory, self.anndata.uns, "uns", ctx)
         logging.info("\t...dataset uns dataframe saved")
 
         self.write_anndata_embeddings_to_cxg(output_cxg_directory, ctx)
