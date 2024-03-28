@@ -9,6 +9,11 @@ echo
 # This is done as optimization because retrieving data from local disk is
 # significantly faster than retrieving data from S3
 WMG_SNAPSHOT_FS_CACHE_ROOT_PATH="/single-cell-data-portal/wmg_snapshot_cache"
+
+# LATEST_READER_SNAPSHOT_SCHEMA_VERSION here and WMG_API_SNAPSHOT_SCHEMA_VERSION
+# in backend/wmg/api/wmg_api_config.py should have the same value
+LATEST_READER_SNAPSHOT_SCHEMA_VERSION="v3"
+
 echo "| ENV VAR DOWNLOAD_WMG_DATA_TO_DISK: ${DOWNLOAD_WMG_DATA_TO_DISK}"
 
 if [[ "${DOWNLOAD_WMG_DATA_TO_DISK}" == "false" ]]; then
@@ -18,14 +23,25 @@ elif [[ "${DEPLOYMENT_STAGE}" == "rdev" && -n "${REMOTE_DEV_PREFIX}" ]]; then
 
   strip_slash_remote_dev_prefix="${REMOTE_DEV_PREFIX//\//}" # strips ALL "/"
 
-  echo aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots" "${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}/${strip_slash_remote_dev_prefix}/snapshots"
+  latest_snapshot_identifier=$(aws s3 cp "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/latest_snapshot_identifier" -)
 
-  aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots" "${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}/${strip_slash_remote_dev_prefix}/snapshots"
+  echo aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/${latest_snapshot_identifier}" "${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}/${strip_slash_remote_dev_prefix}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/${latest_snapshot_identifier}"
+  aws s3 sync "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/${latest_snapshot_identifier}" "${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}/${strip_slash_remote_dev_prefix}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/${latest_snapshot_identifier}"
+
+  echo aws s3 cp "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/latest_snapshot_identifier" "${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}/${strip_slash_remote_dev_prefix}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/latest_snapshot_identifier"
+  aws s3 cp "s3://env-rdev-wmg/${strip_slash_remote_dev_prefix}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/latest_snapshot_identifier" "${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}/${strip_slash_remote_dev_prefix}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/latest_snapshot_identifier"
+
 elif [[ "${DEPLOYMENT_STAGE}" == "dev" || "${DEPLOYMENT_STAGE}" == "staging" || "${DEPLOYMENT_STAGE}" == "prod" ]]; then
   echo "| Downloading WMG data snapshot for deployment env: ${DEPLOYMENT_STAGE} from S3 to filesystem path: ${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}"
-  echo aws s3 sync "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots" "${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}/snapshots"
 
-  aws s3 sync "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots" "${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}/snapshots"
+  latest_snapshot_identifier=$(aws s3 cp "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/latest_snapshot_identifier" -)
+
+  echo aws s3 sync "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/${latest_snapshot_identifier}" "${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/${latest_snapshot_identifier}"
+  aws s3 sync "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/${latest_snapshot_identifier}" "${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/${latest_snapshot_identifier}"
+
+  echo aws s3 cp "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/latest_snapshot_identifier" "${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/latest_snapshot_identifier"
+  aws s3 cp "s3://cellxgene-wmg-${DEPLOYMENT_STAGE}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/latest_snapshot_identifier" "${WMG_SNAPSHOT_FS_CACHE_ROOT_PATH}/snapshots/${LATEST_READER_SNAPSHOT_SCHEMA_VERSION}/latest_snapshot_identifier"
+
 else
   echo "| Skipping downloading WMG data snapshot for deployment env: ${DEPLOYMENT_STAGE}..."
 fi
