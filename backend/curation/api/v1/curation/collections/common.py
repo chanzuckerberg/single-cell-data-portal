@@ -466,9 +466,9 @@ def is_owner_or_allowed_else_forbidden(collection_version, user_info):
 
 def calculate_dataset_collection_id(collection_version: CollectionVersion) -> str:
     """
-    Determine the collection ID for the given collection version: if the collection version is a revision,
-    use the version ID.
-    :param collection_version: the collection version to get the collection ID for.
+    Determine the collection ID for the collection version: if the collection version is a revision,
+    use the collection version ID.
+    :param collection_version: the collection version to determine the collection ID for.
     :return: The collection ID of the collection version, or the collection version ID if revision.
     """
     if collection_version.is_unpublished_version():
@@ -480,14 +480,14 @@ def calculate_dataset_visibility(
     visibility: str, collection_version: CollectionVersion, dataset_version: DatasetVersion
 ) -> DatasetVisibility:
     """
-    Calculate the visibility of the given dataset:
-    - PUBLIC if a dataset is public
-    - PUBLIC if a dataset is an unchanged dataset associated with a revision
-    - Otherwise PRIVATE
+    Calculate the visibility of a dataset:
+    - public if a dataset is public
+    - public if a dataset is an unchanged dataset associated with a revision
+    - Otherwise private
     :param visibility: the requested visibility of the datasets.
     :param collection_version: the collection version of the dataset.
     :param dataset_version: the dataset version to determine the visibility of.
-    :return: The calculated visibility of the dataset to be included in the datasets response.
+    :return: The calculated visibility of the dataset version.
     """
     # Return public for unchanged datasets of revisions.
     if (
@@ -508,9 +508,9 @@ def calculate_private_dataset_published_at_and_revised_at(
     """
     Determine the published_at and revised_at dates for the private dataset. published_at and revised_at
     are None for all private datasets except for unchanged datasets of revisions.
-    :param collection_version: the collection bersion of the dataset.
+    :param collection_version: the collection version of the dataset.
     :param dataset_version: the dataset version to get the published_at and revised_at for.
-    :return: The published_at and revised_at dates of the dataset.
+    :return: The published_at and revised_at dates of the dataset, or None.
     """
     # published_at and revised_at are None if collection version is not a revision.
     if not collection_version.is_unpublished_version():
@@ -547,7 +547,7 @@ def calculate_revision_of_dataset(visibility: str, dataset_version: DatasetVersi
     Get the canonical dataset version ID of the dataset version, if applicable. Dataset version ID is never returned
     for public requests, for unpublished datasets, or for datasets that are new or unchanged datasets of a revision.
     :param visibility: the requested visibility of the datasets.
-    :param data_version: the dataset version to return the revision_of_dataset for.
+    :param dataset_version: the dataset version to return the revision_of_dataset for.
     :return: The dataset version ID, or None.
     """
     # revision_of_dataset is always None if request is for public datasets.
@@ -563,7 +563,7 @@ def calculate_revision_of_dataset(visibility: str, dataset_version: DatasetVersi
 def is_dataset_version_new(dataset_version: DatasetVersion) -> bool:
     """
     Determine if a dataset is new (i.e. has never been published).
-    :param dataset_version: the DatasetVersion to check if it is new.
+    :param dataset_version: the dataset version to check if it is new.
     :return: A flag indicating if a dataset is new.
     """
     return dataset_version.canonical_dataset.published_at is None
@@ -571,11 +571,11 @@ def is_dataset_version_new(dataset_version: DatasetVersion) -> bool:
 
 def is_dataset_version_revision(dataset_version: DatasetVersion) -> bool:
     """
-    Determine if the given dataset version is a dataset that has been updated as part of a revision. Datasets that are
-    associated with a collection revision but are unchanged or new are not considered dataset revisions. A dataset
-    associated with a collection revision that has been updated is considered a dataset revision.
+    Determine if a dataset version is a dataset that has been updated as part of a revision. Dataset versions
+    that areassociated with a collection revision but are unchanged or new are not considered dataset revisions.
+    A dataset associated with a collection revision that has been updated is considered a dataset revision.
     :param dataset_version: the dataset version to check if it is a revision.
-    :return: A flag indicating the revision status of a dataset.
+    :return: A flag indicating the revision status of a dataset version.
     """
     # New dataset associated with a collection revision - not a revision.
     if is_dataset_version_new(dataset_version):
