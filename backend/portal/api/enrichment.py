@@ -2,13 +2,16 @@
 This method enriches the response of a Dataset object with ancestor mappings.
 These responses are specific to the current API layer
 """
+from typing import Dict, Set
 
 from cellxgene_ontology_guide.curated_ontology_term_lists import get_curated_ontology_term_list
 from cellxgene_ontology_guide.entities import CuratedOntologyTermList
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
 
-ONTOLOGY_PARSER = OntologyParser(schema_version="v5.0.0")  # TODO: this should be a constant
-# TODO: clean-up where to set these constants
+from backend.layers.common.entities import DatasetVersion
+
+ONTOLOGY_PARSER = OntologyParser()
+
 ACCEPTED_TISSUE_ANCESTORS = {
     term
     for term_list in ONTOLOGY_PARSER.map_term_descendants(
@@ -32,7 +35,7 @@ ACCEPTED_UBERON_DEVELOPMENT_STAGE_ANCESTORS = {
 }
 
 
-def enrich_dataset_with_ancestors(dataset, key, corpus_term_set):
+def enrich_dataset_with_ancestors(dataset: DatasetVersion, key: str, corpus_term_set: Set[str]) -> None:
     """
     Tag dataset with ancestors for all values of the given key, if any.
     """
@@ -67,7 +70,7 @@ def enrich_dataset_with_ancestors(dataset, key, corpus_term_set):
         dataset[f"{key}_ancestors"] = list(unique_ancestors)
 
 
-def generate_tagged_tissue_ontology_id(tissue):
+def generate_tagged_tissue_ontology_id(tissue: Dict[str, str]) -> str:
     """
     Generate ontology ID tagged with tissue_type for the given tissue. For
     example, UBERON:1234567 (organoid).

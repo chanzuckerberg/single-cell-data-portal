@@ -39,8 +39,8 @@ upload-vars:
 
 .PHONY: retrieve-descendants
 retrieve-descendants:
-	curl -o src/components/common/Filter/descendant_mappings/tissue_descendants.json https://raw.githubusercontent.com/chanzuckerberg/cellxgene-ontology-guide/main/ontology-assets/tissue_descendants.json
-	curl -o src/components/common/Filter/descendant_mappings/cell_type_descendants.json https://raw.githubusercontent.com/chanzuckerberg/cellxgene-ontology-guide/main/ontology-assets/cell_type_descendants.json
+	curl -o src/components/common/Filter/descendant_mappings/tissue_descendants.json https://raw.githubusercontent.com/chanzuckerberg/cellxgene-ontology-guide/latest/ontology-assets/tissue_descendants.json
+	curl -o src/components/common/Filter/descendant_mappings/cell_type_descendants.json https://raw.githubusercontent.com/chanzuckerberg/cellxgene-ontology-guide/latest/ontology-assets/cell_type_descendants.json
 
 .PHONY: e2e
 e2e: ## only used by make local-e2e

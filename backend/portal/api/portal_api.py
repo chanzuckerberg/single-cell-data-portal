@@ -795,7 +795,7 @@ def get_user_datasets_index(token_info: dict):
     non_revisions = [c for c in private_collections if not c.is_unpublished_version()]
     private_datasets = get_business_logic().get_datasets_for_collections(non_revisions)
 
-    response = enrich_dataset_response(list(itertools.chain(public_datasets, private_datasets)))
+    response = enrich_dataset_response(public_datasets + private_datasets)
     return make_response(jsonify(response), 200)
 
 
