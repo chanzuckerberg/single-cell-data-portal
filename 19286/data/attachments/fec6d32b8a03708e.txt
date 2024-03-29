@@ -1,0 +1,1 @@
+{"levelname": "ERROR", "asctime": "2024-03-29T05:32:24.029Z", "name": "root", "message": "Collection collection123 not found", "lineno": 114, "pathname": "/single-cell-data-portal/backend/layers/processing/upload_failures/app.py"}
