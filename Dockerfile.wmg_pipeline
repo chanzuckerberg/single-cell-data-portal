@@ -35,4 +35,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD ["python3", "-m", "backend.wmg.pipeline"]
+CMD ["python3", "-m", "backend.wmg.pipeline.pipeline"]
