@@ -127,8 +127,8 @@ class CrossrefProvider(CrossrefProviderInterface):
             for author in authors:
                 if "given" in author and "family" in author:
                     parsed_author = {"given": author["given"], "family": author["family"]}
-                    if parsed_author not in authors:
-                        authors.append(parsed_author)
+                    if parsed_author not in parsed_authors:
+                        parsed_authors.append(parsed_author)
                 elif "family" in author:
                     # Assume family is consortium
                     parsed_authors.append({"name": author["family"]})
