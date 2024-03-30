@@ -25,6 +25,7 @@ from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundExcep
 from tests.unit.backend.layers.api.test_portal_api import generate_mock_publisher_metadata
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
+import time
 
 
 class TestDeleteCollection(BaseAPIPortalTest):
@@ -2117,6 +2118,9 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
         dataset_id = collection.datasets[0].dataset_id
         dataset_version_id = collection.datasets[0].version_id
         published_revision = self.generate_revision(collection_id)
+        # Add delay here to ensure published_at timestamps are different (as millis are
+        # no longer returned in API response).
+        time.sleep(1)
         published_dataset_revision = self.generate_dataset(
             collection_version=published_revision, replace_dataset_version_id=dataset_version_id, publish=True
         )
