@@ -1,5 +1,6 @@
 import copy
 import json
+import time
 import uuid
 from collections import defaultdict
 from dataclasses import asdict
@@ -25,7 +26,6 @@ from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundExcep
 from tests.unit.backend.layers.api.test_portal_api import generate_mock_publisher_metadata
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
-import time
 
 
 class TestDeleteCollection(BaseAPIPortalTest):
