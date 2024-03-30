@@ -20,7 +20,7 @@ class CustomJSONEncoder(JSONEncoder):
 
 
 class CurationJSONEncoder(CustomJSONEncoder):
-    "Add support for serializing DateTime into isoformat, dropping milliseconds"
+    "Add support for serializing DateTime into isoformat, to second precision"
 
     def default(self, obj):
         if isinstance(obj, datetime):
