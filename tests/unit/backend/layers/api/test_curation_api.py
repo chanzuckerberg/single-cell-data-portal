@@ -1023,7 +1023,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     "collection_version_id": f"{first_version.version_id.id}",
                     "cell_count": 10,
                     "primary_cell_count": 5,
-                    "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
+                    "cell_type": [{"label": "unknown", "ontology_term_id": "unknown"}],
                     "citation": "Publication: https://doi.org/12.2345/science.abc1234 Dataset Version: "
                     "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
                     "CZ CELLxGENE Discover in Collection: "
@@ -1031,9 +1031,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     "dataset_id": f"{first_version.datasets[0].dataset_id.id}",
                     "dataset_version_id": f"{first_version.datasets[0].version_id.id}",
                     "default_embedding": "X_embedding_1",
-                    "development_stage": [
-                        {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}
-                    ],
+                    "development_stage": [{"label": "unknown", "ontology_term_id": "unknown"}],
                     "disease": [{"label": "test_disease_label", "ontology_term_id": "test_disease_term_id"}],
                     "donor_id": ["test_donor_1"],
                     "embeddings": ["X_embedding_1", "X_embedding_2"],
@@ -1055,8 +1053,8 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     "suspension_type": ["test_suspension_type"],
                     "tissue": [
                         {
-                            "label": "test_tissue_label",
-                            "ontology_term_id": "test_tissue_term_id",
+                            "label": "unknown",
+                            "ontology_term_id": "unknown",
                             "tissue_type": "tissue",
                         }
                     ],
