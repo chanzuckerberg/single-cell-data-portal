@@ -1,5 +1,5 @@
 import os
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, Iterable, List, Tuple
 
 import connexion
 import numpy as np
@@ -172,7 +172,8 @@ def differentialExpression():
         snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
     )
 
-    q = WmgQuery(snapshot)
+    # cube_query_params are not required to instantiate WmgQuery for differential expression
+    q = WmgQuery(snapshot, cube_query_params=None)
 
     with ServerTiming.time("run differential expression"):
         results, successCode = run_differential_expression(q, criteria1, criteria2)
@@ -186,8 +187,29 @@ def differentialExpression():
     )
 
 
-def run_differential_expression(q: WmgQuery, criteria1, criteria2):
+def run_differential_expression(q: WmgQuery, criteria1, criteria2) -> Tuple[List[Dict], int]:
+    """
+    Runs differential expression analysis between two sets of criteria.
+
+    This function takes two criteria objects, representing two different groups for comparison
+    in a differential expression analysis. It first augments these criteria with their descendant
+    cell types if cell_type_ontology_term_ids are specified. Then, it calculates cell counts for each
+    group, filters out overlapping populations, aggregates expression summaries by gene ontology term IDs,
+    and finally runs the statistical test (t-test).
+
+    Parameters:
+    - q: WmgQuery object
+    - criteria1: The first set of criteria for differential expression analysis.
+    - criteria2: The second set of criteria for differential expression analysis.
+
+    Returns:
+    A tuple containing two elements:
+    - A list of dictionaries, each representing a gene and its differential expression metrics.
+    - An integer success code, where 1 indicates an issue (e.g., no data after filtering overlapping populations).
+    """
+
     # augment criteria1 and criteria2 with descendants if cell_type_ontology_term_ids is specified
+    # this is effectively rollup
     if criteria1.cell_type_ontology_term_ids:
         criteria1.cell_type_ontology_term_ids = list(
             set(sum([descendants(i) for i in criteria1.cell_type_ontology_term_ids], []))
@@ -206,6 +228,7 @@ def run_differential_expression(q: WmgQuery, criteria1, criteria2):
     es2 = q.expression_summary_diffexp(criteria2)
 
     # filter out rows from es2 that are in es1
+    # this prevents overlapping populations from being compared
     filter_columns = [
         col
         for col in (base_expression_summary_indexed_dims + expression_summary_secondary_dims)

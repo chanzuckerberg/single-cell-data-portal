@@ -173,6 +173,7 @@ class WmgQuery:
 
         # get valid attributes from schema
         # valid means it is a required column for downstream processing
+        # if self._cube_query_params is None, then all attributes are valid
         attrs = self._cube_query_params.get_attrs_for_cube_query(cube) if self._cube_query_params else None
         if attrs is not None:
             if compare_dimension is not None:
@@ -181,6 +182,7 @@ class WmgQuery:
             attrs += numeric_attrs
 
         # get valid dimensions from schema
+        # if self._cube_query_params is None, then all dimensions are valid
         dims = self._cube_query_params.get_dims_for_cube_query(cube) if self._cube_query_params else None
 
         query_result_df = pd.concat(
@@ -257,6 +259,26 @@ def retrieve_top_n_markers(query_result, test, n_markers):
 
 
 def _select_cube_with_best_discriminatory_power(snapshot: WmgSnapshot, criteria: DeQueryCriteria) -> Array:
+    """
+    Selects the cube with the best discriminatory power based on the given criteria.
+
+    This function evaluates each dimension's discriminatory power by comparing the number
+    of criteria specified for that dimension against its total cardinality within the snapshot.
+    It then selects the cube that maximizes this discriminatory power. If no dimension meets the
+    criteria or if the discriminatory power cannot be determined, the default cube is selected.
+
+    Parameters
+    ----------
+    snapshot : WmgSnapshot
+        The snapshot object containing all cubes and their metadata.
+    criteria : DeQueryCriteria
+        The criteria object containing dimensions and their corresponding values to filter on.
+
+    Returns
+    -------
+    Array
+        The cube with the best discriminatory power based on the given criteria.
+    """
     cardinality_per_dimension = snapshot.cardinality_per_dimension
     criteria_dict = criteria.dict()
     base_indexed_dims = [dim.name for dim in snapshot.diffexp_expression_summary_cubes["default"].schema.domain]
