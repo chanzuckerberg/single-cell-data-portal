@@ -65,7 +65,7 @@ def get_census_version_and_build_date(census: soma.Collection):
 def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
     pipeline_state = load_pipeline_state(corpus_path)
 
-    with cellxgene_census.open_soma(uri=CensusParameters.census_version) as census:
+    with cellxgene_census.open_soma(census_version=CensusParameters.census_version) as census:
         census_schema_version, census_build_date = get_census_version_and_build_date(census)
 
         major_census_schema_version = version.parse(census_schema_version).major

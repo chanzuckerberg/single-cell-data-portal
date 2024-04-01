@@ -55,7 +55,7 @@ def mock_bootstrap_rows_percentiles(
 class MockCensusParameters:
     # NOTE: THIS SHOULD BE REVERTED BACK TO 'latest' ONCE THE PIPELINE HAS BEEN UPDATED
     # TO BE COMPATIBLE WITH THE LATEST CENSUS VERSION (2.0 schema).
-    census_version = "stable"
+    census_version = "latest"
 
     def value_filter(organism: str) -> str:
         organism_mapping = {
