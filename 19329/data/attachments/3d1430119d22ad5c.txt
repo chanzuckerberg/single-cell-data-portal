@@ -1,0 +1,2 @@
+[PID 1 | PPID 0] Subscriber ASM got data
+{"levelname": "DEBUG", "asctime": "2024-04-01T20:01:53.001Z", "name": "ddtrace.internal.remoteconfig._subscribers", "message": "[PID 1 | PPID 0] Subscriber ASM got data", "lineno": 47, "pathname": "/usr/local/lib/python3.10/dist-packages/ddtrace/internal/remoteconfig/_subscribers.py", "request_id": ""}
