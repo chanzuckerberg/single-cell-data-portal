@@ -65,7 +65,7 @@
     "@babel/core": "^7.22.9",
     "@babel/preset-react": "^7.22.5",
     "@babel/preset-typescript": "^7.22.5",
-    "@blueprintjs/eslint-plugin": "^6.1.0",
+    "@blueprintjs/eslint-plugin": "^6.1.2",
     "@next/eslint-plugin-next": "^14.1.0",
     "@types/adm-zip": "^0.5.5",
     "@types/downloadjs": "^1.4.3",
