@@ -44,4 +44,4 @@ SQLAlchemy-Utils>=0.36.8
 SQLAlchemy>=1.4.0,<1.5
 tenacity
 tiledb
-Werkzeug==2.2.3
+Werkzeug==3.0.2
