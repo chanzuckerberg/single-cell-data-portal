@@ -1,5 +1,6 @@
 import copy
 import json
+import time
 import uuid
 from collections import defaultdict
 from dataclasses import asdict
@@ -2117,6 +2118,9 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
         dataset_id = collection.datasets[0].dataset_id
         dataset_version_id = collection.datasets[0].version_id
         published_revision = self.generate_revision(collection_id)
+        # Add delay here to ensure published_at timestamps are different (as millis are
+        # no longer returned in API response).
+        time.sleep(1)
         published_dataset_revision = self.generate_dataset(
             collection_version=published_revision, replace_dataset_version_id=dataset_version_id, publish=True
         )
