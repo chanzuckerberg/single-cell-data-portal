@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Dialog, InputRadio, DialogTitle } from "@czi-sds/components";
+import { Dialog, InputRadio, DialogTitle, Callout } from "@czi-sds/components";
 import { useConnect } from "./connect";
 import { EmbeddingButtonProps } from "./types";
 import CopyButton from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/DownloadLink/components/CopyButton";
@@ -18,7 +18,6 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
     language,
     codeSnippet,
     projectTier,
-    uri,
     notebookLink,
     codeSnippetRef,
     uriTopPosition,
@@ -40,6 +39,10 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
       </StyledButton>
       <Dialog open={isOpen} onClose={handleButtonClick}>
         <DialogTitle title="Embedding" onClose={handleButtonClick} />
+        <Callout intent="warning">
+          Code example requires the latest version (1.13.0) of the Census API
+          package.
+        </Callout>
         <StyledDialogContent>
           <div>
             <Label>Language</Label>
@@ -49,11 +52,7 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
               row
             >
               <InputRadio label="Python" value="python" />
-              <InputRadio
-                disabled={projectTier !== "maintained"}
-                label={projectTier === "maintained" ? "R" : "R (coming soon)"}
-                value="r"
-              />
+              <InputRadio disabled={true} label={"R (coming soon)"} value="r" />
             </RadioGroup>
           </div>
           <div>
@@ -76,22 +75,6 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
                   })
                 }
               />
-              {projectTier === "hosted" && (
-                <div>
-                  <CopyButton
-                    downloadLink={uri}
-                    label="Copy URI"
-                    handleAnalytics={() =>
-                      track(EVENTS.CENSUS_EMBEDDING_COPIED, {
-                        project: project.title,
-                        category: projectTier,
-                        version: "URI",
-                        ...uniqueMetadata,
-                      })
-                    }
-                  />
-                </div>
-              )}
             </CodeSnippet>
           </div>
           <Break />
