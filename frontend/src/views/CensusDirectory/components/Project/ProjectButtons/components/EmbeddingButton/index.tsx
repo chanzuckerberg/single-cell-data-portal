@@ -8,7 +8,13 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import Highlight from "react-highlight";
 import { RadioGroup } from "@mui/material";
-import { StyledDialogContent, Label, CodeSnippet, Break, StyledCallout } from "./style";
+import {
+  StyledDialogContent,
+  Label,
+  CodeSnippet,
+  Break,
+  StyledCallout,
+} from "./style";
 import { StyledButton } from "../../style";
 
 function EmbeddingButton(props: EmbeddingButtonProps) {
