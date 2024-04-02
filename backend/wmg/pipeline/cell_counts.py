@@ -39,6 +39,7 @@ def create_cell_counts_cube(*, query: ExperimentAxisQuery, corpus_path: str, org
         obs_df.groupby(
             by=[dim for dim in cell_counts_logical_dims if dim != "publication_citation"],
             as_index=False,
+            observed=True,
         ).size()
     ).rename(columns={"size": "n_cells"})
 
