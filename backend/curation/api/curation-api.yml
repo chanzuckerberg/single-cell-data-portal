@@ -809,7 +809,7 @@ components:
       description: The name of the primary contact for the Collection
       type: string
     created_at:
-      description: A timestamp of when the resource was created.
+      description: A timestamp of when the resource was created. The timestamp conforms to the ISO 8601 format to second precision. For example, 2023-05-10T17:22:42+00:00.
       type: string
     curator_name:
       description: The name of the curator for the Collection.
@@ -820,26 +820,26 @@ components:
       nullable: true
       type: string
     published_at:
-      description: A timestamp of when the Collection was first published.
+      description: A timestamp of when the Collection was first published. The timestamp conforms to the ISO 8601 format to second precision. For example, 2023-05-10T17:22:42+00:00.
       nullable: true
       type: string
     dataset_published_at:
-      description: A timestamp of when the Dataset was first published.
+      description: A timestamp of when the Dataset was first published. The timestamp conforms to the ISO 8601 format to second precision. For example, 2023-05-10T17:22:42+00:00.
       nullable: true
       type: string
     dataset_version_published_at:
-      description: A timestamp of when this Dataset Version was published.
+      description: A timestamp of when this Dataset Version was published. The timestamp conforms to the ISO 8601 format to second precision. For example, 2023-05-10T17:22:42+00:00.
       type: string
     collection_revised_at:
       description: A timestamp indicating the last time a Revision for this Collection was published.
       nullable: true
       type: string
     dataset_revised_at:
-      description: A timestamp indicating the last time a Revision for this Dataset was published.
+      description: A timestamp indicating the last time a Revision for this Dataset was published. The timestamp conforms to the ISO 8601 format to second precision. For example, 2023-05-10T17:22:42+00:00.
       nullable: true
       type: string
     collection_version_published_at:
-      description: A timestamp of when this Collection Version was published.
+      description: A timestamp of when this Collection Version was published. The timestamp conforms to the ISO 8601 format to second precision. For example, 2023-05-10T17:22:42+00:00.
       type: string
     collection_revising_in:
       type: string
