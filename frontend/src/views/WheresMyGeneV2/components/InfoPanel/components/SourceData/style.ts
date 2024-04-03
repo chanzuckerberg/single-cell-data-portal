@@ -4,7 +4,7 @@ import {
   Content as CommonContent,
   Header as CommonHeader,
 } from "../../common/style";
-import { gray600 } from "src/common/theme";
+import { gray600, warning500 } from "src/common/theme";
 import {
   DivTableCell,
   DivTableRow,
@@ -36,6 +36,12 @@ export const StyledLink = styled.a`
   color: #0073ff;
   font-size: 14px;
   font-weight: 400;
+`;
+
+export const StyledSpan = styled.span`
+  font-size: 14px;
+  font-weight: 400;
+  color: ${() => warning500};
 `;
 
 export const StyledDivTableRow = styled(DivTableRow)`
