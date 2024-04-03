@@ -3,6 +3,7 @@ import {
   CommonThemeProps,
   fontCapsXxxs,
   fontCapsXxs,
+  Callout,
 } from "@czi-sds/components";
 import styled from "@emotion/styled";
 import {
@@ -87,4 +88,7 @@ export const Break = styled.hr`
     position: relative;
     top: -10px;
   }
+`;
+export const StyledCallout = styled(Callout)`
+  width: 100%;
 `;
