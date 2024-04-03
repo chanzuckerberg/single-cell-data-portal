@@ -1633,8 +1633,8 @@ components:
         $ref: "#/components/schemas/dataset_version_id"
     schema_version:
       description: |
-        Optional--Filter results by dataset versions with matching CELLxGENE schema version. Can match against major,
-        minor, or patch schema version. Returns empty list if no match is found. Input should be in
+        Optional--Filter results by most recently published dataset versions with matching CELLxGENE schema version. Can
+        match against major, minor, or patch schema version. Returns empty list if no match is found. Input should be in
         semver format (X, X.Y, or X.Y.Z where X, Y, and Z are positive integers).
       in: query
       name: schema_version

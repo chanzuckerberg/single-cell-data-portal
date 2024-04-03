@@ -652,8 +652,7 @@ class BusinessLogic(BusinessLogicInterface):
         :return: A list of CollectionVersionWithPrivateDatasets objects.
         """
 
-        # Retrieve private collections for the given owner, if any. Can not use schema_version on the collectin query filter
-        # as private collection versions do not have schema version.
+        # Retrieve private collections for the given owner, if any.
         filter = CollectionQueryFilter(owner=owner, is_published=False)
         collection_versions = list(self.get_collections(filter))
 
@@ -679,9 +678,7 @@ class BusinessLogic(BusinessLogicInterface):
 
             collection_version_dict = vars(collection_version)
             collection_version_dict["datasets"] = private_dataset_versions
-            collection_versions_with_datasets.append(
-                CollectionVersionWithPrivateDatasets(**collection_version_dict)
-            )
+            collection_versions_with_datasets.append(CollectionVersionWithPrivateDatasets(**collection_version_dict))
 
         return collection_versions_with_datasets
 
