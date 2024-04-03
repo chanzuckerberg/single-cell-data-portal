@@ -5,13 +5,13 @@ Authlib==0.14.3
 boto3>=1.11.17
 botocore>=1.14.17
 click==8.1.7
-connexion[swagger-ui]==2.13.0
+connexion[swagger-ui]==2.14.2
 coverage>=6.5.0
 dataclasses-json==0.6.4
-
+cellxgene-ontology-guide==0.4.0
 # TODO: Check if this is really essential for APM tracing
 # see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
-datadog==0.47.0
+datadog==0.49.1
 ddtrace>=2.1.4, <3
 Flask>=2.2.3, <3
 Flask-Cors>=3.0.6
