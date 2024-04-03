@@ -41,7 +41,7 @@ export const StyledLink = styled.a`
 export const StyledSpan = styled.span`
   font-size: 14px;
   font-weight: 400;
-  color: ${() => warning500};
+  color: ${warning500};
 `;
 
 export const StyledDivTableRow = styled(DivTableRow)`
