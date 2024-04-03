@@ -50,7 +50,7 @@ def create_cell_type_ordering(corpus_path: str) -> None:
 
     # Generates ordering for ALL cell types
     all_cells = {cell for cell_df in cell_type_by_tissue.values() for cell in cell_df}
-    ordered_cells = _cell_type_ordering_compute(all_cells, root="CL:0000003")
+    ordered_cells = _cell_type_ordering_compute(all_cells, root="CL:0000000")
 
     # Create individual data frames per tissue
     ordered_cells_by_tissue = []
@@ -81,12 +81,12 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     Any orphan cell types are added at the end of table with depth 0.
 
     :param Set[str] cells: Set of cell type ontology term ids
-    :param str root: Root of the tree, usually CL:0000003
+    :param str root: Root of the tree, usually CL:0000000
 
     :return pd.DataFrame: With the following columns:
                              1. cell_type_ontology_term_id: str
                              2. depth: int  -- 0-based level down in the cell type hierarchy.
-                                The following nodes are always at depth 0: "CL:0000003", "CL:0000255", "CL:0000548"
+                                The following nodes are always at depth 0: "CL:0000000", "CL:0000255", "CL:0000548"
     """
 
     # Note: those dependencies are only needed by the WMG pipeline, so we should keep them local
@@ -134,7 +134,7 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     ordered_list = list(recurse(root))
 
     # If there are any cells left in set "cells", it means that either those cell types
-    # don't exist in the ontology or they are above the root ("CL:0000003")
+    # don't exist in the ontology or they are above the root ("CL:0000000")
     # Add these "orphan" cells at end of list
     ordered_list.extend([cell_entity(cell, depth=0) for cell in cells])
 
