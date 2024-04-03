@@ -41,6 +41,10 @@ class ExpressionSummaryCubeBuilder:
         self.obs_df = query.obs().concat().to_pandas()
         self.obs_df = self.obs_df.rename(columns=DIMENSION_NAME_MAP_CENSUS_TO_WMG)
         self.obs_df["organism_ontology_term_id"] = organismId
+        # TODO: eventually, we should keep categorical data types and modify downstream
+        # code to handle them properly. For now, we convert them to strings.
+        categorical_columns = self.obs_df.select_dtypes(include=["category"]).columns
+        self.obs_df[categorical_columns] = self.obs_df[categorical_columns].astype(str)
 
         self.var_df = query.var().concat().to_pandas()
         self.query = query
@@ -133,7 +137,7 @@ class ExpressionSummaryCubeBuilder:
         )
 
         # number of cells with specific tuple of dims
-        cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["n"])
+        cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["count"]).rename(columns={"count": "n"})
 
         # add cube_idx column
         cube_index["cube_idx"] = range(len(cube_index))
