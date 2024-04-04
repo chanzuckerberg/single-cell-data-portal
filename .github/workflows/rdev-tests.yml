@@ -96,6 +96,7 @@ jobs:
           npm ci
           npx playwright install --with-deps
           cp src/configs/local.js src/configs/configs.js
+          make retrieve-descendants
 
       # Run e2e tests
       - name: Run e2e tests

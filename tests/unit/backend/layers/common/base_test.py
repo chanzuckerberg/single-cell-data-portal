@@ -116,11 +116,7 @@ class BaseTest(unittest.TestCase):
         self.sample_dataset_metadata = DatasetMetadata(
             name="test_dataset_name",
             organism=[OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
-            tissue=[
-                TissueOntologyTermId(
-                    label="test_tissue_label", ontology_term_id="test_tissue_term_id", tissue_type="tissue"
-                )
-            ],
+            tissue=[TissueOntologyTermId(label="unknown", ontology_term_id="unknown", tissue_type="tissue")],
             assay=[OntologyTermId(label="test_assay_label", ontology_term_id="test_assay_term_id")],
             disease=[OntologyTermId(label="test_disease_label", ontology_term_id="test_disease_term_id")],
             sex=[OntologyTermId(label="test_sex_label", ontology_term_id="test_sex_term_id")],
@@ -129,10 +125,8 @@ class BaseTest(unittest.TestCase):
                     label="test_self_reported_ethnicity_label", ontology_term_id="test_self_reported_ethnicity_term_id"
                 )
             ],
-            development_stage=[
-                OntologyTermId(label="test_development_stage_label", ontology_term_id="test_development_stage_term_id")
-            ],
-            cell_type=[OntologyTermId(label="test_cell_type_label", ontology_term_id="test_cell_type_term_id")],
+            development_stage=[OntologyTermId(label="unknown", ontology_term_id="unknown")],
+            cell_type=[OntologyTermId(label="unknown", ontology_term_id="unknown")],
             cell_count=10,
             primary_cell_count=5,
             schema_version="3.0.0",
