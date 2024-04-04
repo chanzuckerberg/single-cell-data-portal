@@ -1,74 +1,138 @@
 """
 This script closes issues in the Ready for Prod pipeline that are not blocked by open issues or PRs.
+
+Use zenhubs explorer to test https://developers.zenhub.com/explorer
 """
 import json
 import logging
 import os
 import sys
-from typing import Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import requests
 
-logging.basicConfig(level=logging.INFO, format="%(message)s", handlers=[logging.StreamHandler(sys.stdout)])
 logger = logging.getLogger(__name__)
 
-pipeline_id = "Z2lkOi8vcmFwdG9yL1BpcGVsaW5lLzIyMDg1MDE"  # "Ready for Prod" pipeline in "single-cell" workspace
-repo_id = "Z2lkOi8vcmFwdG9yL1JlcG9zaXRvcnkvNTM5NzQwOTg"  # "single-cell-data-portal" repo
+WORKSPACE_NAME = "single-cell"  # workspace name
+REPO_NAMES = ["single-cell-data-portal"]  # list the repos you want to close issues in
+SOURCE_PIPELINE_NAME = "Ready for Prod"  # the pipelines you want to close issues in
 
 
-def get_issues(pipeline_id: str, repo_id: str) -> List[dict]:
-    query_list_issues = """query {
-    searchIssuesByPipeline(
-        pipelineId: "$PIPELINE_ID",
-        filters: {
-          repositoryIds: "$REPO_ID"
-        }
-    ) {
-      nodes {
-          id
-          number
-          title
-          blockingIssues{
-            nodes{
-              id
-              number
-              title 
-              state
+class ZenHubProvider:
+    def __init__(self, endpoint: str = "https://api.zenhub.com/graphql", access_token: Optional[str] = None):
+        self.access_token = access_token or os.environ.get("ZENHUB_TOKEN", "")
+        self.headers = {"Authorization": f"Bearer {access_token}"}
+        self.endpoint = endpoint
+        self.session = requests.Session()
+        self.session.headers.update(self.headers)
+
+    def get_workspace(self, workspace: str) -> Dict[str, Any]:
+        query_get_id = """query {
+      viewer {
+        id
+        searchWorkspaces(query: "$WORKSPACE") {
+          nodes {
+            id
+            name
+            repositoriesConnection {
+              nodes {
+                id
+                name
+              }
+            }
+            pipelinesConnection{
+              nodes{
+                id
+                name
+              }
             }
           }
-          connectedPrs{
-            nodes{
+        }
+      }
+    }""".replace(
+            "$WORKSPACE", workspace
+        )
+        return self._query(query_get_id)["data"]["viewer"]["searchWorkspaces"]["nodes"]
+
+    def get_issues(self, pipeline_id: str, repo_ids: List[str]) -> List[dict]:
+        query_list_issues = """query {
+        searchIssuesByPipeline(
+            pipelineId: "$PIPELINE_ID",
+            filters: {
+              repositoryIds: $REPO_IDS
+            }
+        ) {
+          nodes {
               id
               number
               title
-              state
-            }
+              blockingIssues{
+                nodes{
+                  id
+                  number
+                  title 
+                  state
+                }
+              }
+              connectedPrs{
+                nodes{
+                  id
+                  number
+                  title
+                  state
+                }
+              }
           }
-      }
-    }
-    }""".replace(
-        "$PIPELINE_ID", pipeline_id
-    ).replace(
-        "$REPO_ID", repo_id
-    )
-    resp = requests.post(endpoint, json={"query": query_list_issues}, headers=headers)
-    resp.raise_for_status()
-    return resp.json()["data"]["searchIssuesByPipeline"]["nodes"]
+        }
+        }""".replace(
+            "$PIPELINE_ID", pipeline_id
+        ).replace(
+            "$REPO_ID", json.dumps(repo_ids)
+        )
+        return self._query(query_list_issues)["data"]["searchIssuesByPipeline"]["nodes"]
+
+    def close_issues(self, issue_ids: Iterable[str]) -> dict:
+        mutate_close_isses = """mutation closeIssues {
+          closeIssues(input: {
+              issueIds: $CLOSING_ISSUES
+          }) {
+              successCount
+          }
+        }""".replace(
+            "$CLOSING_ISSUES", json.dumps(issue_ids)
+        )
+        return self._query(mutate_close_isses)
+
+    def _query(self, query: str) -> dict:
+        resp = self.session.post(self.endpoint, json={"query": query})
+        resp.raise_for_status()
+        return resp.json()
 
 
-def close_issues(issue_ids: Iterable[str]) -> dict:
-    mutate_close_isses = """mutation closeIssues {
-      closeIssues(input: {
-          issueIds: $CLOSING_ISSUES
-      }) {
-          successCount
-      }
-    }""".replace(
-        "$CLOSING_ISSUES", json.dumps(issue_ids)
-    )
-    resp = requests.post(endpoint, json={"query": mutate_close_isses}, headers=headers)
-    resp.raise_for_status()
-    return resp.json()
+def parse_workspace(nodes: List[Any], workspace: str) -> Dict[str, Any]:
+    for node in nodes:
+        if node["name"] == workspace:
+            return node
+    else:
+        raise ValueError(f"Workspace {workspace} not found.")
+
+
+def parse_repo_ids(workspace: Dict[str, Any], repo_names: List[str]) -> List[str]:
+    repo_ids = []
+    for repo in workspace["repositoriesConnection"]["nodes"]:
+        if repo["name"] in repo_names:
+            repo_ids.append(repo["id"])
+    if len(repo_ids) != len(repo_names):
+        raise ValueError(f"Only found {len(repo_ids)} out of {len(repo_names)} repos.")
+    return repo_ids
+
+
+def parse_pipeline(workspace: Dict[str, Any], source_pipeline: str) -> str:
+    for pipeline in workspace["pipelinesConnection"]["nodes"]:
+        if pipeline["name"] == source_pipeline:
+            return pipeline["id"]
+    else:
+        raise ValueError(f"Pipeline {source_pipeline} not found.")
 
 
 def format_issue(issue: dict) -> str:
@@ -101,9 +165,18 @@ def filter_issues(issues: List[dict]) -> Tuple[List[Tuple[str, str]], List[dict]
     return issues_to_close, blocked_issues
 
 
-def close_ready_for_prod() -> None:
+def close_ready_for_prod(
+    workspace_name: str, repo_names: List[str], source_pipeline_name: str, provider: Optional[ZenHubProvider] = None
+) -> None:
+    provider = provider or ZenHubProvider()
+
+    # translate names into zenhub ids
+    workspace_resp = provider.get_workspace(workspace_name)
+    repo_ids = parse_repo_ids(workspace_resp, repo_names)
+    pipeline_id = parse_pipeline(workspace_resp, source_pipeline_name)
+
     # Get all issues in the Ready for Prod pipeline.
-    issues = get_issues(pipeline_id, repo_id)
+    issues = provider.get_issues(pipeline_id, repo_ids)
 
     # Filter out issues that are blocked by open issues or PRs.
     issues_to_close, blocked_issues = filter_issues(issues)
@@ -124,14 +197,16 @@ def close_ready_for_prod() -> None:
         logger.info("No issues to close.")
     else:
         issue_ids, issue_strings = zip(*issues_to_close)
-        logger.info("Closing issues:\n\t" + "\n\t".join(issue_strings))
-        data = close_issues(issue_ids)
+        logger.info("Closing issues:\n\t" + "- ".join(issue_strings))
+        data = provider.close_issues(issue_ids)
         logger.info(data)
         assert data["data"]["closeIssues"]["successCount"] == len(issues_to_close)
 
 
 if __name__ == "__main__":
-    access_token = os.environ["ZENHUB_TOKEN"]
-    endpoint = "https://api.zenhub.com/public/graphql"
-    headers = {"Authorization": f"Bearer {access_token}"}
-    close_ready_for_prod()
+    logging.basicConfig(level=logging.INFO, format="%(message)s", handlers=[logging.StreamHandler(sys.stdout)])
+    try:
+        close_ready_for_prod(WORKSPACE_NAME, REPO_NAMES, SOURCE_PIPELINE_NAME)
+    except Exception as e:
+        logger.exception(e)
+        sys.exit(1)
