@@ -13,6 +13,7 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+ACCESS_TOKEN = "zh_6dfcfccc7b6668a5463b74661e31f3dcc100a30f97e51801528bf2ca162ab26f"
 WORKSPACE_NAME = "single-cell"  # workspace name
 REPO_NAMES = ["single-cell-data-portal"]  # list the repos you want to close issues in
 SOURCE_PIPELINE_NAME = "Ready for Prod"  # the pipelines you want to close issues in
@@ -26,11 +27,16 @@ class ZenHubProvider:
         self.session = requests.Session()
         self.session.headers.update(self.headers)
 
-    def get_workspace(self, workspace: str) -> Dict[str, Any]:
+    def get_workspaces(self, workspace_name: str) -> List[Any]:
+        """
+        Get all workspaces and their repositories and pipelines.
+        :param workspace_name: This is required to get all of the workspaces. It should match an existing workspace name.
+        :return: a list of workspaces with their repositories and pipelines.
+        """
         query_get_id = """query {
       viewer {
         id
-        searchWorkspaces(query: "$WORKSPACE") {
+        searchWorkspaces(query: "$WORKSPACE_NAME") {
           nodes {
             id
             name
@@ -50,11 +56,17 @@ class ZenHubProvider:
         }
       }
     }""".replace(
-            "$WORKSPACE", workspace
+            "$WORKSPACE_NAME", workspace_name
         )
         return self._query(query_get_id)["data"]["viewer"]["searchWorkspaces"]["nodes"]
 
     def get_issues(self, pipeline_id: str, repo_ids: List[str]) -> List[dict]:
+        """
+        Get all issues in the Ready for Prod pipeline from the repositories listed
+        :param pipeline_id: the pipeline id to search for issues in
+        :param repo_ids: the repository ids to search for issues in
+        :return: issues in the Ready for Prod pipeline from the repositories listed
+        """
         query_list_issues = """query {
         searchIssuesByPipeline(
             pipelineId: "$PIPELINE_ID",
@@ -92,6 +104,11 @@ class ZenHubProvider:
         return self._query(query_list_issues)["data"]["searchIssuesByPipeline"]["nodes"]
 
     def close_issues(self, issue_ids: Iterable[str]) -> dict:
+        """
+        Close issues by their ids.
+        :param issue_ids: the ids of the issues to close
+        :return: the response from the server
+        """
         mutate_close_isses = """mutation closeIssues {
           closeIssues(input: {
               issueIds: $CLOSING_ISSUES
@@ -109,15 +126,27 @@ class ZenHubProvider:
         return resp.json()
 
 
-def parse_workspace(nodes: List[Any], workspace: str) -> Dict[str, Any]:
-    for node in nodes:
-        if node["name"] == workspace:
+def parse_workspace(workspaces: List[Any], workspace_name: str) -> Dict[str, Any]:
+    """
+    Parse the workspace from the list of nodes.
+    :param workspaces: nodes from the response
+    :param workspace_name: the workspace name to search for
+    :return: the workspace
+    """
+    for node in workspaces:
+        if node["name"] == workspace_name:
             return node
     else:
-        raise ValueError(f"Workspace {workspace} not found.")
+        raise ValueError(f"Workspace {workspace_name} not found.")
 
 
 def parse_repo_ids(workspace: Dict[str, Any], repo_names: List[str]) -> List[str]:
+    """
+    Parse the repository ids from the workspace.
+    :param workspace: the workspace_name
+    :param repo_names:
+    :return:
+    """
     repo_ids = []
     for repo in workspace["repositoriesConnection"]["nodes"]:
         if repo["name"] in repo_names:
@@ -171,9 +200,10 @@ def close_ready_for_prod(
     provider = provider or ZenHubProvider()
 
     # translate names into zenhub ids
-    workspace_resp = provider.get_workspace(workspace_name)
-    repo_ids = parse_repo_ids(workspace_resp, repo_names)
-    pipeline_id = parse_pipeline(workspace_resp, source_pipeline_name)
+    workspace_resp = provider.get_workspaces(workspace_name)
+    workspace = parse_workspace(workspace_resp, workspace_name)
+    repo_ids = parse_repo_ids(workspace, repo_names)
+    pipeline_id = parse_pipeline(workspace, source_pipeline_name)
 
     # Get all issues in the Ready for Prod pipeline.
     issues = provider.get_issues(pipeline_id, repo_ids)

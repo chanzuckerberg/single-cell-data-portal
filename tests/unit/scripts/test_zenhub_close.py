@@ -1,3 +1,4 @@
+from typing import Tuple
 from unittest.mock import Mock, patch
 
 import pytest
@@ -16,7 +17,7 @@ from scripts.zenhub_close import (
 
 
 @pytest.fixture
-def sample_issues():
+def sample_issues() -> list:
     return [
         {
             "id": 1,
@@ -30,60 +31,65 @@ def sample_issues():
 
 
 @pytest.fixture
-def blocking_issue():
+def blocking_issue() -> dict:
     return {"id": 3, "state": "OPEN", "number": 301, "title": "Blocked Issue"}
 
 
 @pytest.fixture
-def mock_zenhub_provider():
+def mock_zenhub_provider_query() -> Tuple[ZenHubProvider, Mock]:
     # Create a mock ZenHubProvider instance with a mocked _query method
     with patch.object(ZenHubProvider, "_query") as mock_query:
         zenhub_provider = ZenHubProvider()
         yield zenhub_provider, mock_query
 
 
+@pytest.fixture
+def mock_workspace_node() -> dict:
+    return {
+        "id": "workspace_id",
+        "name": "example_workspace",
+        "repositoriesConnection": {"nodes": [{"id": "repo_id", "name": "repo_name"}]},
+        "pipelinesConnection": {"nodes": [{"id": "pipeline_id", "name": "pipeline_name"}]},
+    }
+
+
+@pytest.fixture
+def mock_zenhub_provider(mock_workspace_node) -> Mock:
+    # Create a mock ZenHubProvider instance with a mocked _query method
+    mock = Mock()
+    mock.get_workspaces.return_value = [mock_workspace_node]
+    mock.get_issues = Mock(return_value=[])
+    mock.close_issues = Mock(return_value={"data": {"closeIssues": {"successCount": 0}}})
+    return mock
+
+
 class TestZenHubProvider:
-    def test_get_workspace(self, mock_zenhub_provider):
+    def test_get_workspace(self, mock_zenhub_provider_query, mock_workspace_node):
         # Prepare mock data and expected response
         workspace_name = "example_workspace"
-        mock_response = {
-            "data": {
-                "viewer": {
-                    "searchWorkspaces": {
-                        "nodes": [
-                            {
-                                "id": "workspace_id",
-                                "name": workspace_name,
-                                "repositoriesConnection": {"nodes": [{"id": "repo_id", "name": "repo_name"}]},
-                                "pipelinesConnection": {"nodes": [{"id": "pipeline_id", "name": "pipeline_name"}]},
-                            }
-                        ]
-                    }
-                }
-            }
-        }
-        mock_zenhub_provider[1].return_value = mock_response
+        _, mock_query = mock_zenhub_provider_query
+        mock_query.return_value = {"data": {"viewer": {"searchWorkspaces": {"nodes": [mock_workspace_node]}}}}
 
         # Call the method
-        zenhub_provider, mock_query = mock_zenhub_provider
-        result = zenhub_provider.get_workspace(workspace_name)
+        zenhub_provider, mock_query = mock_zenhub_provider_query
+        result = zenhub_provider.get_workspaces(workspace_name)
 
         # Assert the expected response
-        assert result == mock_response["data"]["viewer"]["searchWorkspaces"]["nodes"]
+        assert result == [mock_workspace_node]
         assert '"example_workspace"' in mock_query.call_args_list[0][0][0]
 
-    def test_get_issues(self, mock_zenhub_provider):
+    def test_get_issues(self, mock_zenhub_provider_query):
         # Prepare mock data and expected response
         pipeline_id = "pipeline_id"
         repo_ids = ["repo_id"]
         mock_response = {
             "data": {"searchIssuesByPipeline": {"nodes": [{"id": "issue_id", "number": 1, "title": "Issue Title"}]}}
         }
-
-        mock_zenhub_provider[1].return_value = mock_response
+        _, mock_query = mock_zenhub_provider_query
+        mock_query.return_value = mock_response
 
         # Call the method
-        zenhub_provider, mock_query = mock_zenhub_provider
+        zenhub_provider, mock_query = mock_zenhub_provider_query
         result = zenhub_provider.get_issues(pipeline_id, repo_ids)
 
         # Assert the expected response
@@ -91,14 +97,15 @@ class TestZenHubProvider:
         assert '"pipeline_id"' in mock_query.call_args_list[0][0][0]
         assert '["repo_id"]' in mock_query.call_args_list[0][0][0]
 
-    def test_close_issues(self, mock_zenhub_provider):
+    def test_close_issues(self, mock_zenhub_provider_query):
         # Prepare mock data and expected response
         issue_ids = ["issue_id"]
         mock_response = {"successCount": 1}
-        mock_zenhub_provider[1].return_value = mock_response
+        _, mock_query = mock_zenhub_provider_query
+        mock_query.return_value = mock_response
 
         # Call the method
-        zenhub_provider, mock_query = mock_zenhub_provider
+        zenhub_provider, mock_query = mock_zenhub_provider_query
         result = zenhub_provider.close_issues(issue_ids)
 
         # Assert the expected response
@@ -136,7 +143,7 @@ class TestParseWorkspace:
             parse_workspace(workspace, "missing")
 
     def test_duplicate_workspace(self):
-        """The first workspace found should be returned if there are duplicates."""
+        """The first workspace_name found should be returned if there are duplicates."""
         first_node = {"name": "test", "id": "123"}
         workspace = [first_node, {"name": "test", "id": "456"}]
         assert parse_workspace(workspace, "test") == first_node
@@ -220,19 +227,15 @@ class TestFilterIssues:
 
 
 class TestCloseReadyForProd:
-    def test_close_ready_for_prod_no_issues(self, caplog):
+    def test_close_ready_for_prod_no_issues(self, caplog, mock_zenhub_provider):
         caplog.set_level("INFO")
-        with patch("scripts.zenhub_close.get_issues") as mock_get_issues, patch(
-            "scripts.zenhub_close.filter_issues"
-        ) as mock_filter_issues, patch("scripts.zenhub_close.close_issues"):
-            mock_get_issues.return_value = []
-            mock_filter_issues.return_value = ([], [])
+        mock_zenhub_provider.close_issues = Mock(return_value={"data": {"closeIssues": {"successCount": 0}}})
 
-            close_ready_for_prod()
+        close_ready_for_prod("example_workspace", ["repo_name"], "pipeline_name", mock_zenhub_provider)
 
-            assert "No issues to close." in caplog.text
+        assert "No issues to close." in caplog.text
 
-    def test_close_ready_for_prod_with_blocked_issues(self, caplog):
+    def test_close_ready_for_prod_with_blocked_issues(self, caplog, mock_zenhub_provider):
         caplog.set_level("INFO")
         blocked_issues_data = [
             {
@@ -241,33 +244,28 @@ class TestCloseReadyForProd:
                 "blocking_issues": ["#301 (Blocked Issue)"],
             }
         ]
-
-        with patch("scripts.zenhub_close.get_issues") as mock_get_issues, patch(
-            "scripts.zenhub_close.filter_issues"
-        ) as mock_filter_issues, patch("scripts.zenhub_close.close_issues"):
-            mock_get_issues.return_value = [{"id": 1, "title": "Sample Issue"}]
+        mock_zenhub_provider.get_issues.return_value = [{"id": 1, "title": "Sample Issue"}]
+        with patch("scripts.zenhub_close.filter_issues") as mock_filter_issues:
             mock_filter_issues.return_value = ([], blocked_issues_data)
 
-            close_ready_for_prod()
+            close_ready_for_prod("example_workspace", ["repo_name"], "pipeline_name", mock_zenhub_provider)
 
-            assert "Not closed: #102 (Sample Issue 2)" in caplog.text
-            assert "\tBlocked by:" in caplog.text
-            assert "\t\t#301 (Blocked Issue)" in caplog.text
-            assert "\tOpen PRs:" in caplog.text
-            assert "\t\t#202 (PR Title 2)" in caplog.text
+        assert "Not closed: #102 (Sample Issue 2)" in caplog.text
+        assert "\tBlocked by:" in caplog.text
+        assert "\t\t#301 (Blocked Issue)" in caplog.text
+        assert "\tOpen PRs:" in caplog.text
+        assert "\t\t#202 (PR Title 2)" in caplog.text
 
-    def test_close_ready_for_prod_with_issues_to_close(self, caplog):
+    def test_close_ready_for_prod_with_issues_to_close(self, caplog, mock_zenhub_provider):
         caplog.set_level("INFO")
         issues_to_close_data = [(1, "#101 (Sample Issue 1)")]
 
-        with patch("scripts.zenhub_close.get_issues") as mock_get_issues, patch(
-            "scripts.zenhub_close.filter_issues"
-        ) as mock_filter_issues, patch("scripts.zenhub_close.close_issues") as mock_close_issues:
-            mock_get_issues.return_value = [{"id": 1, "title": "Sample Issue"}]
+        mock_zenhub_provider.get_issues.return_value = [{"id": 1, "title": "Sample Issue"}]
+        mock_zenhub_provider.close_issues.return_value = {"data": {"closeIssues": {"successCount": 1}}}
+        with patch("scripts.zenhub_close.filter_issues") as mock_filter_issues:
             mock_filter_issues.return_value = (issues_to_close_data, [])
-            mock_close_issues.return_value = {"data": {"closeIssues": {"successCount": 1}}}
 
-            close_ready_for_prod()
+            close_ready_for_prod("example_workspace", ["repo_name"], "pipeline_name", mock_zenhub_provider)
 
-            assert "Closing issues:" in caplog.text
-            assert "\t#101 (Sample Issue 1)" in caplog.text
+        assert "Closing issues:" in caplog.text
+        assert "\t#101 (Sample Issue 1)" in caplog.text
