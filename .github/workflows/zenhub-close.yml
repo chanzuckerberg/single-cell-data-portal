@@ -16,9 +16,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
-      - name: Close Issue
+      - name: Install dependencies
         run: |
           pip install requests
+      - name: Close Issue
+        run: |
           python3 ./scripts/zenhub_close.py >> $GITHUB_STEP_SUMMARY
         env:
           ZENHUB_TOKEN: ${{ secrets.ZENHUB_TOKEN }}
