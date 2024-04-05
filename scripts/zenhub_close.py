@@ -17,6 +17,7 @@ ACCESS_TOKEN = "zh_6dfcfccc7b6668a5463b74661e31f3dcc100a30f97e51801528bf2ca162ab
 WORKSPACE_NAME = "single-cell"  # workspace name
 REPO_NAMES = ["single-cell-data-portal"]  # list the repos you want to close issues in
 SOURCE_PIPELINE_NAME = "Ready for Prod"  # the pipelines you want to close issues in
+DRY_RUN = False  # set to True to not close issues
 
 
 class ZenHubProvider:
@@ -30,7 +31,8 @@ class ZenHubProvider:
     def get_workspaces(self, workspace_name: str) -> List[Any]:
         """
         Get all workspaces and their repositories and pipelines.
-        :param workspace_name: This is required to get all of the workspaces. It should match an existing workspace name.
+        :param workspace_name: This is required to get all of the workspaces. It should match an existing workspace
+        name.
         :return: a list of workspaces with their repositories and pipelines.
         """
         query_get_id = """query {
@@ -99,7 +101,7 @@ class ZenHubProvider:
         }""".replace(
             "$PIPELINE_ID", pipeline_id
         ).replace(
-            "$REPO_ID", json.dumps(repo_ids)
+            "$REPO_IDS", json.dumps(repo_ids)
         )
         return self._query(query_list_issues)["data"]["searchIssuesByPipeline"]["nodes"]
 
@@ -228,9 +230,12 @@ def close_ready_for_prod(
     else:
         issue_ids, issue_strings = zip(*issues_to_close)
         logger.info("Closing issues:\n\t" + "- ".join(issue_strings))
-        data = provider.close_issues(issue_ids)
-        logger.info(data)
-        assert data["data"]["closeIssues"]["successCount"] == len(issues_to_close)
+        if DRY_RUN:
+            logger.info("Dry run, not closing issues.")
+        else:
+            data = provider.close_issues(issue_ids)
+            logger.info(data)
+            assert data["data"]["closeIssues"]["successCount"] == len(issues_to_close)
 
 
 if __name__ == "__main__":
