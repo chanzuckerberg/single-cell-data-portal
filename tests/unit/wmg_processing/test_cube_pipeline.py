@@ -6,11 +6,11 @@ import unittest
 from unittest import mock
 from unittest.mock import Mock, patch
 
-from backend.wmg.data.snapshot import _get_wmg_snapshot_schema_dir_path
-from backend.wmg.pipeline import logger, main
+from backend.wmg.data.snapshot import _get_wmg_snapshot_schema_dir_rel_path
 from backend.wmg.pipeline.constants import MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION
 from backend.wmg.pipeline.expression_summary_and_cell_counts import create_expression_summary_and_cell_counts_cubes
 from backend.wmg.pipeline.load_cube import _get_wmg_snapshot_s3_fullpath
+from backend.wmg.pipeline.pipeline import logger, main
 
 
 def mock_census_schema_version_unsupported(_census):
@@ -28,9 +28,9 @@ def change_directory(path):
 
 
 class TestCubePipe(unittest.TestCase):
-    @mock.patch("backend.wmg.pipeline.notify_slack")
+    @mock.patch("backend.wmg.pipeline.pipeline.notify_slack")
     @mock.patch(
-        "backend.wmg.pipeline.run_pipeline",
+        "backend.wmg.pipeline.pipeline.run_pipeline",
         new=Mock(side_effect=Exception("testing")),
     )
     def test_exception_handle_catches_errors(self, mock_notify_slack: Mock):
@@ -55,8 +55,7 @@ class TestCubePipe(unittest.TestCase):
 
     def test_versioned_s3_paths(self):
         """
-        Tests that the path we use for writing the snapshot is the versioned path, and verifies that the
-        path we read from for API usage respects the read_versioned_snapshot param.
+        Tests that the path we use for writing the snapshot is the versioned path.
 
         NOTE: Ideally, we would want this to be a true test of the cube pipeline that actually runs the pipeline,
         mocks the S3 upload, and then verifies that the API reads are pulling from the correct mocked S3 files.
@@ -71,19 +70,9 @@ class TestCubePipe(unittest.TestCase):
         dest_path = _get_wmg_snapshot_s3_fullpath("v1", "snapshot-id", True)
         self.assertEqual(dest_path, f"s3://{wmg_bucket_name}/snapshots/v1/snapshot-id")
 
-        # Verify that we're reading from the versioned path if we pass in read_versioned_snapshot=True
-        verioned_read_path = _get_wmg_snapshot_schema_dir_path(
-            snapshot_schema_version="v1",
-            read_versioned_snapshot=True,
-        )
+        # Verify that we're reading from the versioned path
+        verioned_read_path = _get_wmg_snapshot_schema_dir_rel_path(snapshot_schema_version="v1")
         self.assertEqual(verioned_read_path, "snapshots/v1")
-
-        # Verify that we're reading from the non-versioned path if we pass in read_versioned_snapshot=False
-        root_read_path = _get_wmg_snapshot_schema_dir_path(
-            snapshot_schema_version="v1",
-            read_versioned_snapshot=False,
-        )
-        self.assertEqual(root_read_path, "")
 
     def test__pipeline_fails_if_census_schema_version_unsupported(self):
         # test that the pipeline fails if the census schema version is unsupported

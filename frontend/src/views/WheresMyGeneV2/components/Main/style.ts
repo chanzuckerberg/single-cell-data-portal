@@ -11,7 +11,7 @@ export const StyledRightSideBar = styled(RightSideBar)`
 `;
 
 export const StyledSidebarDrawer = styled(Drawer)`
-  .bp4-drawer-header {
+  .bp5-drawer-header {
     box-shadow: none;
   }
 `;

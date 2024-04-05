@@ -18,13 +18,18 @@ function DetailItem(props: {
   children?: string | number;
   link?: string;
   onClick?: () => void;
+  suppressHydrationWarning?: boolean;
 }) {
   return props.children ? (
     <ItemContainer>
       <ItemLabel>{props.label}</ItemLabel>
       {props.link ? (
-        <Link href={props.link} passHref>
-          <a onClick={props.onClick}> {formatValueIfNumber(props.children)}</a>
+        <Link
+          href={props.link}
+          onClick={props.onClick}
+          suppressHydrationWarning={props.suppressHydrationWarning}
+        >
+          {formatValueIfNumber(props.children)}
         </Link>
       ) : (
         formatValueIfNumber(props.children)

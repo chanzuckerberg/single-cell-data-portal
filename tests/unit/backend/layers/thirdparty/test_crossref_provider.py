@@ -199,6 +199,12 @@ class TestCrossrefProvider(unittest.TestCase):
                                 "family": "Doe",
                                 "sequence": "first",
                             },
+                            # Test case for dupe removal
+                            {
+                                "given": "John",
+                                "family": "Doe",
+                                "sequence": "first",
+                            },
                             {
                                 "given": "Jane",
                                 "family": "Doe",

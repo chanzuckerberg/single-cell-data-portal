@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import { IconButton } from "@mui/material";
-import { ButtonIcon, TagFilter } from "@czi-sds/components";
+import { ButtonIcon, Icon, TagFilter } from "@czi-sds/components";
 import { primary400, spacesL } from "src/common/theme";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
@@ -58,6 +58,15 @@ export const TooltipInPortalStyle = css`
   .visx-tooltip {
     z-index: 99999;
   }
+`;
+
+export const WarningTooltipTextWrapper = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+export const WarningTooltipIcon = styled(Icon)`
+  margin-right: 4px;
 `;
 
 interface StyledSVGProps {

@@ -48,7 +48,7 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
               sdsType="secondary"
               isAllCaps={false}
             >
-              <StyledIconImage src={questionMarkIcon} />
+              <StyledIconImage alt="question mark" src={questionMarkIcon} />
             </TooltipButton>
           </Tooltip>
         </Label>

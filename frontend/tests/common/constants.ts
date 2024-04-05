@@ -39,7 +39,7 @@ export const SIMPLE_SHARED_LINK = `${TEST_URL}/gene-expression?tissues=UBERON%3A
 export const SHARED_LINK_NO_FILTER = `${TEST_URL}/gene-expression?tissues=UBERON%3A0000178%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2`;
 
 export const SHARED_LINK_FILTER = `${TEST_URL}/gene-expression?compare=disease&sexes=PATO%3A0000383&tissues=UBERON%3A0000178%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2`;
-export const SHARED_LINK_NO_GROUP = `${TEST_URL}/gene-expression?compare=disease&diseases=PATO%3A0000461&tissues=UBERON%3A0000178%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2`;
+export const SHARED_LINK_NO_GROUP = `${TEST_URL}/gene-expression?diseases=PATO%3A0000461&tissues=UBERON%3A0000178%2CUBERON%3A0002048&genes=DPM1%2CTNMD%2CTSPAN6&ver=2`;
 
 export const ADD_GENE_BTN = "add-gene-btn";
 
@@ -55,7 +55,7 @@ export const ADD_TISSUE_ID = "tissue-filter";
 export const ADD_GENE_ID = "add-gene-btn";
 export const GENE_DELETE_BUTTON = "gene-delete-button";
 export const SOURCE_DATA_BUTTON_ID = "source-data-button";
-export const SOURCE_DATA_LIST_SELECTOR = `[data-testid="source-data-list"]`;
+export const SOURCE_DATA_LIST_ID = "source-data-list";
 export const DOWNLOAD_BUTTON_ID = "download-button";
 export const COMPARE_DROPDOWN_ID = "compare-dropdown";
 export const SEX_FILTER_TEST_ID = "sex-filter";

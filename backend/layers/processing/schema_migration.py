@@ -135,6 +135,10 @@ class SchemaMigrate(ProcessingLogic):
         # Get datasets from collection
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
         datasets = [dataset for dataset in version.datasets if not self.check_dataset_is_latest_schema_version(dataset)]
+
+        # Generate canonical collection url
+        collection_url = self.business_logic.get_collection_url(version.collection_id.id)
+
         # Filter out datasets that are already on the current schema version
         if not datasets:
             # Handles the case were the collection has no datasets or all datasets are already migrated.
@@ -148,6 +152,7 @@ class SchemaMigrate(ProcessingLogic):
                 "can_publish": str(False),  # skip publishing, because the collection is already published and no
                 # revision is created, or the collection is private or a revision.
                 "collection_version_id": collection_version_id,
+                "collection_url": collection_url,
                 "datasets": [],
                 "no_datasets": str(True),
             }
@@ -163,11 +168,13 @@ class SchemaMigrate(ProcessingLogic):
             response = {
                 "can_publish": str(can_publish),
                 "collection_version_id": private_collection_version_id,
+                "collection_url": collection_url,
                 # ^^^ The top level fields are used for handling error cases in the AWS SFN.
                 "datasets": [
                     {
                         "can_publish": str(can_publish),
                         "collection_id": collection_id,
+                        "collection_url": collection_url,
                         "collection_version_id": private_collection_version_id,
                         "dataset_id": dataset.dataset_id.id,
                         "dataset_version_id": dataset.version_id.id,
@@ -212,8 +219,14 @@ class SchemaMigrate(ProcessingLogic):
             key_prefix = self.get_key_prefix(previous_dataset_version_id)
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
             if not self.check_dataset_is_latest_schema_version(dataset):
+                error_message = "Did Not Migrate"
+                dataset_status = "n/a"
+                if dataset.status is not None:
+                    error_message = dataset.status.validation_message
+                    dataset_status = dataset.status.to_dict()
                 error = {
-                    "message": "Did Not Migrate.",
+                    "message": error_message,
+                    "dataset_status": dataset_status,
                     "collection_id": collection_version.collection_id.id,
                     "collection_version_id": collection_version_id,
                     "dataset_version_id": dataset_version_id,

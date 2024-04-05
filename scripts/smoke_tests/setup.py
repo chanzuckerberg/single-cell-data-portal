@@ -3,9 +3,11 @@ import json
 import sys
 import threading
 
+from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from tests.functional.backend.common import BaseFunctionalTestCase
 
 # Amount to reduce chance of collision where multiple test instances select the same collection to test against
+NUM_TEST_DATASETS = 3
 NUM_TEST_COLLECTIONS = 10
 TEST_ACCT_CONTACT_NAME = "Smoke Test User"
 
@@ -30,7 +32,8 @@ class SmokeTestsInitializer(BaseFunctionalTestCase):
 
     def create_and_publish_collection(self, dropbox_url):
         collection_id = self.create_collection()
-        self.upload_and_wait(collection_id, dropbox_url, cleanup=False)
+        for _ in range(NUM_TEST_DATASETS):
+            self.upload_and_wait(collection_id, dropbox_url, cleanup=False)
         self.publish_collection(collection_id)
         print(f"created and published collection {collection_id}")
 
@@ -50,7 +53,7 @@ class SmokeTestsInitializer(BaseFunctionalTestCase):
         return data["collection_id"]
 
     def publish_collection(self, collection_id):
-        body = {"data_submission_policy_version": "1.0"}
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         res = self.session.post(
             f"{self.api}/dp/v1/collections/{collection_id}/publish", headers=self.headers, data=json.dumps(body)
         )
@@ -64,8 +67,8 @@ if __name__ == "__main__":
     if collection_count >= NUM_TEST_COLLECTIONS:
         sys.exit(0)
     dataset_dropbox_url = (
-        "https://www.dropbox.com/scl/fi/d99hpw3p2cxtmi7v4kyv5/"
-        "4_0_0_test_dataset.h5ad?rlkey=i5ownt8g1mropbu41r7fa0i06&dl=0"
+        "https://www.dropbox.com/scl/fi/y50umqlcrbz21a6jgu99z/"
+        "5_0_0_example_valid.h5ad?rlkey=s7p6ybyx082hswix26hbl11pm&dl=0"
     )
     num_to_create = NUM_TEST_COLLECTIONS - collection_count
     threads = []

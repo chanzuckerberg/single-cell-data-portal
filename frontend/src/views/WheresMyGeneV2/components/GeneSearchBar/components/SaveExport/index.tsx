@@ -332,14 +332,14 @@ function generateSvg({
   heatmapWidth,
   tissueNames,
   tissuesByName,
-  selectedCellTypes,
+  allChartProps,
   expandedTissueIds,
 }: {
   svg: string;
   heatmapWidth: number;
   tissueNames: string[];
   tissuesByName: { [name: string]: OntologyTerm };
-  selectedCellTypes: Props["selectedCellTypes"];
+  allChartProps: { [tissue: string]: ChartProps };
   expandedTissueIds: string[];
 }) {
   const heatmapNode = new DOMParser().parseFromString(svg, "image/svg+xml");
@@ -370,15 +370,17 @@ function generateSvg({
     yOffset,
   });
 
-  // Build heatmaps for all tissues for wmg v2
+  // Build heat maps for all tissues for wmg v2
   const tissueSVGs = tissueNames.map((tissueName) => {
     // If tissue is expanded, then use the heatmap height + padding
     // If tissue is NOT expanded, then just add padding
 
+    const tissueChartProps = allChartProps[tissueName];
+
     const heatmapHeight = expandedTissueIds.includes(
       tissuesByName[tissueName].id
     )
-      ? getHeatmapHeight(selectedCellTypes[tissueName]) +
+      ? getHeatmapHeight(tissueChartProps.cellTypeMetadata) +
         X_AXIS_CHART_HEIGHT_PX_SVG
       : X_AXIS_CHART_HEIGHT_PX_SVG;
 
@@ -388,6 +390,7 @@ function generateSvg({
       tissueName,
       yOffset,
     });
+
     const dotsSvg = renderDots({
       tissueName,
       yOffset,
@@ -404,6 +407,7 @@ function generateSvg({
     CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2;
 
   const finalSvg = document.createElementNS(NAME_SPACE_URI, "svg");
+
   applyAttributes(finalSvg, {
     width: svgWidth < paddedBannerWidth ? paddedBannerWidth : svgWidth, // Use the banner width as the minimum final svg width
     height:
@@ -506,15 +510,16 @@ function generateCsv({
 }
 
 async function generateImage({
+  allChartProps,
   fileType,
   heatmapNode,
   heatmapWidth,
   isMultipleFormatDownload,
   tissueNames,
   tissuesByName,
-  selectedCellTypes,
   expandedTissueIds,
 }: {
+  allChartProps: { [tissue: string]: ChartProps };
   fileType: string;
   heatmapNode: HTMLDivElement;
   heatmapWidth: number;
@@ -542,7 +547,7 @@ async function generateImage({
       svg: decodeURIComponent(imageURL.split(",")[1]),
       tissueNames,
       tissuesByName,
-      selectedCellTypes,
+      allChartProps,
       expandedTissueIds,
     });
   } else if (fileType === "png" && isMultipleFormatDownload) {
@@ -691,6 +696,7 @@ function download_({
                 });
               } else {
                 input = await generateImage({
+                  allChartProps,
                   fileType,
                   heatmapNode,
                   heatmapWidth,

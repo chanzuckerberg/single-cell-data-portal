@@ -1,5 +1,6 @@
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
+  CellTypeRow,
   getOntologyTermIdFromCellTypeViewId,
   getOptionIdFromCellTypeViewId,
   OptionId,
@@ -139,7 +140,7 @@ export function getFixedWidth(
 export const HEAT_MAP_BASE_HEIGHT_PX = 300;
 export const HEAT_MAP_BASE_CELL_PX = 16;
 export const HEAT_MAP_BASE_CELL_WIDTH_PX = 20;
-const HEAT_MAP_TOTAL_CELL_HEIGHT_PX = 19;
+export const HEAT_MAP_TOTAL_CELL_HEIGHT_PX = 19;
 
 /**
  * Approximating the heatmap width by the number of genes.
@@ -155,7 +156,9 @@ export function getHeatmapWidth(
 /**
  * Approximating the heatmap height by the number of cells.
  */
-export function getHeatmapHeight(cellTypes: CellType[] = EMPTY_ARRAY): number {
+export function getHeatmapHeight(
+  cellTypes: CellTypeMetadata[] | CellTypeRow[] = EMPTY_ARRAY
+): number {
   return HEAT_MAP_TOTAL_CELL_HEIGHT_PX * cellTypes.length;
 }
 
