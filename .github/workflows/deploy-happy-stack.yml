@@ -125,7 +125,7 @@ jobs:
         with:
           fromTag: ${{ steps.fetch_tag.outputs.PREVIOUS_TAG }}
       - name: Produce Github Release for Prod Deployments
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         if: steps.tag_create.outputs.tag_exists == 'false'
         with:
           tag_name: ${{ github.event.deployment.payload.tag }}
