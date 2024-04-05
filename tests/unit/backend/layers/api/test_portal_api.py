@@ -1,12 +1,14 @@
 import dataclasses
 import itertools
 import json
+import uuid
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock, patch
 
 from furl import furl
 
+from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.layers.business.entities import DatasetArtifactDownloadData
 from backend.layers.common.entities import (
     CollectionId,
@@ -77,21 +79,19 @@ class TestCollection(BaseAPIPortalTest):
             "contact_name": "john doe",
             "created_at": mock.ANY,
             "curator_name": "Jane Smith",
-            "data_submission_policy_version": "1.0",
+            "data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION,
             "datasets": [
                 {
                     "assay": [{"label": "test_assay_label", "ontology_term_id": "test_assay_term_id"}],
                     "batch_condition": ["test_batch_1", "test_batch_2"],
                     "cell_count": 10,
                     "primary_cell_count": 5,
-                    "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
+                    "cell_type": [{"label": "unknown", "ontology_term_id": "unknown"}],
                     "collection_id": collection.collection_id.id,
                     "created_at": mock.ANY,
                     "dataset_assets": mock.ANY,
                     "dataset_deployments": [{"url": mock.ANY}],
-                    "development_stage": [
-                        {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}
-                    ],
+                    "development_stage": [{"label": "unknown", "ontology_term_id": "unknown"}],
                     "disease": [{"label": "test_disease_label", "ontology_term_id": "test_disease_term_id"}],
                     "donor_id": ["test_donor_1"],
                     "id": mock.ANY,
@@ -127,8 +127,8 @@ class TestCollection(BaseAPIPortalTest):
                     "suspension_type": ["test_suspension_type"],
                     "tissue": [
                         {
-                            "label": "test_tissue_label",
-                            "ontology_term_id": "test_tissue_term_id",
+                            "label": "unknown",
+                            "ontology_term_id": "unknown",
                             "tissue_type": "tissue",
                         }
                     ],
@@ -141,14 +141,12 @@ class TestCollection(BaseAPIPortalTest):
                     "batch_condition": ["test_batch_1", "test_batch_2"],
                     "cell_count": 10,
                     "primary_cell_count": 5,
-                    "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
+                    "cell_type": [{"label": "unknown", "ontology_term_id": "unknown"}],
                     "collection_id": collection.collection_id.id,
                     "created_at": mock.ANY,
                     "dataset_assets": mock.ANY,
                     "dataset_deployments": [{"url": mock.ANY}],
-                    "development_stage": [
-                        {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}
-                    ],
+                    "development_stage": [{"label": "unknown", "ontology_term_id": "unknown"}],
                     "disease": [{"label": "test_disease_label", "ontology_term_id": "test_disease_term_id"}],
                     "donor_id": ["test_donor_1"],
                     "id": mock.ANY,
@@ -184,8 +182,8 @@ class TestCollection(BaseAPIPortalTest):
                     "suspension_type": ["test_suspension_type"],
                     "tissue": [
                         {
-                            "label": "test_tissue_label",
-                            "ontology_term_id": "test_tissue_term_id",
+                            "label": "unknown",
+                            "ontology_term_id": "unknown",
                             "tissue_type": "tissue",
                         }
                     ],
@@ -257,6 +255,11 @@ class TestCollection(BaseAPIPortalTest):
                 if expected_response_code == 200:
                     actual_body = json.loads(response.data)
                     self.assertEqual(expected_access_type, actual_body["access_type"])
+                    # Confirm only published collections have a data_submission_policy_version.
+                    if visi == "public":
+                        self.assertEqual(DATA_SUBMISSION_POLICY_VERSION, actual_body["data_submission_policy_version"])
+                    else:
+                        self.assertNotIn("data_submission_policy_version", actual_body)
 
     def test__get_collection_id_returns_revision_of_published_collection(self):
         version = self.generate_published_collection()
@@ -740,7 +743,6 @@ class TestCollection(BaseAPIPortalTest):
         self.assertEqual(body["name"], data["name"].strip())
         self.assertEqual(body["contact_name"], data["contact_name"].strip())
         self.assertEqual(body["contact_email"], body["contact_email"].strip())
-        self.assertEqual(body["data_submission_policy_version"], body["data_submission_policy_version"].strip())
         self.assertEqual(body["consortia"], ["Consortia 1"])
 
         for link in body["links"]:
@@ -1194,6 +1196,9 @@ class TestUpdateCollection(BaseAPIPortalTest):
         for field in test_fields:
             self.assertEqual(expected_body[field], actual_body[field])
 
+        # data_submission_policy_version should not be returned for unpublished collections.
+        self.assertNotIn("data_submission_policy_version", data)
+
     def test__update_collection_strip_string_fields__OK(self):
         collection = self.generate_unpublished_collection()
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
@@ -1210,7 +1215,6 @@ class TestUpdateCollection(BaseAPIPortalTest):
         }
         data = json.dumps(new_body)
         response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}", data=data, headers=headers)
-
         self.assertEqual(200, response.status_code)
         actual_body = json.loads(response.data)
         self.assertEqual(new_body["name"].strip(), actual_body["name"])
@@ -1503,6 +1507,152 @@ class TestUpdateCollection(BaseAPIPortalTest):
         self.assertIsNotNone(actual_body["publisher_metadata"]["journal"])
         self.assertEqual("Old Journal", actual_body["publisher_metadata"]["journal"])
 
+    def test__set_collection_version_datasets_order__OK(self):
+        collection = self.generate_unpublished_collection(add_datasets=2)
+
+        # Reverse dataset order and save.
+        dataset_ids = [d.version_id.id for d in collection.datasets]
+        dataset_ids.reverse()
+        data = json.dumps(
+            {
+                "datasets": dataset_ids,
+            }
+        )
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}/order-datasets", data=data, headers=headers
+        )
+
+        self.assertEqual(200, response.status_code)
+
+    def test__set_collection_version_datasets_order_get_default_sort__OK(self):
+        import copy
+
+        # Create a collection with two datasets with different cell counts.
+        collection = self.generate_unpublished_collection()
+        modified_metadata_1 = copy.deepcopy(self.sample_dataset_metadata)
+        modified_metadata_1.cell_count = 1
+        self.generate_dataset(collection_version=collection, metadata=modified_metadata_1)
+        modified_metadata_2 = copy.deepcopy(self.sample_dataset_metadata)
+        modified_metadata_2.cell_count = 2
+        self.generate_dataset(collection_version=collection, metadata=modified_metadata_2)
+
+        # Confirm datasets are served in cell count, descending order.
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.get(f"/dp/v1/collections/{collection.version_id.id}", headers=headers)
+        self.assertEqual(200, response.status_code)
+
+        body = json.loads(response.data)
+        datasets = body["datasets"]
+        datasets_sorted = sorted(datasets, key=lambda d: d["cell_count"], reverse=True)
+        self.assertListEqual(datasets, datasets_sorted)
+
+    def test__set_collection_version_datasets_get_order_custom_sort__OK(self):
+        import copy
+
+        # Create a collection with two datasets with different cell counts.
+        collection = self.generate_unpublished_collection()
+        modified_metadata_1 = copy.deepcopy(self.sample_dataset_metadata)
+        modified_metadata_1.cell_count = 1
+        dataset_1 = self.generate_dataset(collection_version=collection, metadata=modified_metadata_1)
+        modified_metadata_2 = copy.deepcopy(self.sample_dataset_metadata)
+        modified_metadata_2.cell_count = 2
+        dataset_2 = self.generate_dataset(collection_version=collection, metadata=modified_metadata_2)
+
+        # Order datasets so they are not in cell count order.
+        dataset_ids = [dataset_2.dataset_version_id, dataset_1.dataset_version_id]
+
+        data = json.dumps(
+            {
+                "datasets": dataset_ids,
+            }
+        )
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}/order-datasets", data=data, headers=headers
+        )
+        self.assertEqual(200, response.status_code)
+
+        # Confirm datasets are served in custom order.
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.get(f"/dp/v1/collections/{collection.version_id.id}", headers=headers)
+        self.assertEqual(200, response.status_code)
+
+        body = json.loads(response.data)
+        datasets = body["datasets"]
+        self.assertListEqual([d["id"] for d in datasets], dataset_ids)
+
+    def test__set_collection_version_datasets_order_missing_datasets__400(self):
+        collection = self.generate_unpublished_collection()
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}/order-datasets", headers=headers)
+
+        # Bad request - datasets not specified in request.
+        self.assertEqual(400, response.status_code)
+
+    def test__set_collection_version_datasets_order_published_collection__403(self):
+        collection = self.generate_published_collection()
+
+        dataset_ids = [d.version_id.id for d in collection.datasets]
+        data = json.dumps(
+            {
+                "datasets": dataset_ids,
+            }
+        )
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}/order-datasets", data=data, headers=headers
+        )
+
+        # Forbidden - collection is published.
+        self.assertEqual(403, response.status_code)
+
+    def test__set_collection_version_datasets_order_invalid_collection__403(self):
+        collection = self.generate_published_collection()
+
+        dataset_ids = [d.version_id.id for d in collection.datasets]
+        data = json.dumps(
+            {
+                "datasets": dataset_ids,
+            }
+        )
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.put(f"/dp/v1/collections/{str(uuid.uuid4())}/order-datasets", data=data, headers=headers)
+
+        # Forbidden - collection not found.
+        self.assertEqual(403, response.status_code)
+
+    def test__set_collection_version_datasets_order_unauthenticated__401(self):
+        collection = self.generate_unpublished_collection()
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}/order-datasets", headers=headers)
+
+        # Unauthorized - user not authenticated.
+        self.assertEqual(401, response.status_code)
+
+    def test__set_collection_version_datasets_order_unauthorized__403(self):
+        collection = self.generate_unpublished_collection()
+
+        dataset_ids = [dataset.version_id.id for dataset in collection.datasets]
+        data = json.dumps(
+            {
+                "datasets": dataset_ids,
+            }
+        )
+
+        # Create a fake user and attempt to update the collection version.
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.get_cxguser_token(user="not_owner"),
+        }
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}/order-datasets", data=data, headers=headers
+        )
+
+        # Unauthorized - user not owner of collection.
+        self.assertEqual(403, response.status_code)
+
 
 class TestCollectionsCurators(BaseAPIPortalTest):
     def test_view_non_owned_private_collection__ok(self):
@@ -1748,84 +1898,7 @@ class TestDataset(BaseAPIPortalTest):
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 401)
 
-    # ✅
-    def test__get_all_datasets_for_index_with_ontology_expansion_deprecated(self):
-        # TODO deprecated - remove with #6266. Keeping temporarily to ensure
-        # backwards compatibility while running both 3.0.0 and 4.0.0 (behind
-        # a feature flag) versions of the code.
-        import copy
-
-        modified_metadata = copy.deepcopy(self.sample_dataset_metadata)
-        modified_metadata.development_stage = [OntologyTermId("Test", "HsapDv:0000008")]
-        modified_metadata.tissue = [TissueOntologyTermId("Test", "UBERON:0002048")]
-        modified_metadata.cell_type = [OntologyTermId("Test", "CL:0000738")]
-
-        dataset = self.generate_dataset(metadata=modified_metadata, publish=True)
-
-        test_url = furl(path="/dp/v1/datasets/index")
-
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        response = self.app.get(test_url.url, headers=headers)
-        self.assertEqual(200, response.status_code)
-        body = json.loads(response.data)
-
-        actual_dataset = None
-        for d in body:
-            if d["id"] == dataset.dataset_version_id:
-                actual_dataset = d
-        self.assertIsNotNone(actual_dataset)
-
-        def convert_ontology(ontologies):
-            return [dataclasses.asdict(o) for o in ontologies]
-
-        if actual_dataset is not None:  # pylance
-            self.assertEqual(actual_dataset["development_stage"], convert_ontology(modified_metadata.development_stage))
-            self.assertEqual(
-                actual_dataset["development_stage_ancestors"],
-                ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"],
-            )
-
-            self.assertEqual(actual_dataset["tissue"], convert_ontology(modified_metadata.tissue))
-            self.assertCountEqual(
-                actual_dataset["tissue_ancestors"],
-                [
-                    "UBERON:0005178",
-                    "UBERON:0000072",
-                    "UBERON:0001558",
-                    "UBERON:0000915",
-                    "UBERON:0001005",
-                    "UBERON:0005181",
-                    "UBERON:0002075",
-                    "UBERON:0000170",
-                    "UBERON:0002048",
-                    "UBERON:0002100",
-                    "UBERON:0000171",
-                    "UBERON:0009569",
-                    "UBERON:0000065",
-                    "UBERON:0005177",
-                    "UBERON:0001004",
-                ],
-            )
-
-            self.assertEqual(actual_dataset["cell_type"], convert_ontology(modified_metadata.cell_type))
-            self.assertCountEqual(
-                actual_dataset["cell_type_ancestors"],
-                [
-                    "CL:0000255",
-                    "CL:0002371",
-                    "CL:0000988",
-                    "CL:0000738",
-                    "CL:0000548",
-                    "CL:0000219",
-                    "CL:0000003",
-                    "CL:0002242",
-                ],
-            )
-
     def test__get_all_datasets_for_index_with_ontology_expansion(self):
-        # Schema 4.0.0 version of
-        # test__get_all_datasets_for_index_with_ontology_expansion_deprecated
-        # above. Remove this comment with #6266.
         import copy
 
         modified_metadata = copy.deepcopy(self.sample_dataset_metadata)
@@ -1853,30 +1926,45 @@ class TestDataset(BaseAPIPortalTest):
 
         if actual_dataset is not None:  # pylance
             self.assertEqual(actual_dataset["development_stage"], convert_ontology(modified_metadata.development_stage))
-            self.assertEqual(
+            self.assertCountEqual(
                 actual_dataset["development_stage_ancestors"],
-                ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"],
+                [
+                    "HsapDv:0000008",
+                    "HsapDv:0000006",
+                    "HsapDv:0000002",
+                    "HsapDv:0000045",
+                    "HsapDv:0000001",
+                    "HsapDv:0000000",
+                ],
             )
 
             self.assertEqual(actual_dataset["tissue"], convert_ontology(modified_metadata.tissue))
             # TODO update with fix for #6192.
             self.assertCountEqual(
                 actual_dataset["tissue_ancestors"],
-                ["UBERON:0000966 (organoid)"],
+                [
+                    "UBERON:0000966 (organoid)",
+                    "UBERON:0000020",
+                    "UBERON:0001032",
+                    "UBERON:0001802",
+                    "UBERON:0010230",
+                    "UBERON:0005388",
+                    "UBERON:0000970",
+                    "UBERON:0001016",
+                    "UBERON:0002104",
+                    "UBERON:0019207",
+                    "UBERON:0000019",
+                    "UBERON:0000047",
+                ],
             )
 
             self.assertEqual(actual_dataset["cell_type"], convert_ontology(modified_metadata.cell_type))
             self.assertCountEqual(
                 actual_dataset["cell_type_ancestors"],
                 [
-                    "CL:0000255",
-                    "CL:0002371",
                     "CL:0000988",
                     "CL:0000738",
-                    "CL:0000548",
                     "CL:0000219",
-                    "CL:0000003",
-                    "CL:0002242",
                 ],
             )
 
@@ -2318,6 +2406,7 @@ class TestRevision(BaseAPIPortalTest):
         # Ensures that getting the version has:
         # - PRIVATE visibility (since it's unpublished)
         # - WRITE access_type if the header is from the owner
+        # - Data submission policy version is "cleared"
         # - The response matches the one from the POST request
         path = f"/dp/v1/collections/{revision_id}"
         response = self.app.get(path, headers=headers)
@@ -2325,6 +2414,7 @@ class TestRevision(BaseAPIPortalTest):
         response_json = json.loads(response.data)
         self.assertEqual("PRIVATE", response_json["visibility"])
         self.assertEqual("WRITE", response_json["access_type"])
+        self.assertNotIn("data_submission_policy_version", response_json)
         self.assertEqual(response_post_json, response_json)
 
         # If no auth is passed, the collection should be returned with access_type=READ
@@ -2474,6 +2564,56 @@ class TestPublishRevision(BaseAPIPortalTest):
             "Cookie": self.get_cxguser_token(),
         }
 
+    def test__publish_revision_data_submission_policy_version__OK(self):
+        """
+        Checks data submission policy is correctly saved on publish of a revision.
+        """
+
+        unpublished_collection = self.generate_unpublished_collection(add_datasets=1)
+
+        path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        data_submission_policy_version = DATA_SUBMISSION_POLICY_VERSION
+        body = {"data_submission_policy_version": data_submission_policy_version}
+        response = self.app.post(path, headers=headers, data=json.dumps(body))
+
+        self.assertEqual(202, response.status_code)
+
+        # Check GET collection/<collection_id>
+        path = f"{self.base_path}/{unpublished_collection.collection_id.id}"
+        response = self.app.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+
+        response_json = json.loads(response.data)
+        self.assertEqual(response_json["data_submission_policy_version"], data_submission_policy_version)
+
+    def test__publish_revision_missing_data_submission_policy_version__400(self):
+        """
+        Checks for failure on missing data submission policy version.
+        """
+
+        unpublished_collection = self.generate_unpublished_collection(add_datasets=1)
+
+        path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.post(path, headers=headers)
+
+        self.assertEqual(400, response.status_code)
+
+    def test__publish_revision_invalid_data_submission_policy_version__400(self):
+        """
+        Checks for failure on submit of a data submission policy version that is not a valid version.
+        """
+
+        unpublished_collection = self.generate_unpublished_collection(add_datasets=1)
+
+        path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        body = {"data_submission_policy_version": "x"}  # Invalid version
+        response = self.app.post(path, headers=headers, data=json.dumps(body))
+
+        self.assertEqual(400, response.status_code)
+
     # ✅
     def test__publish_revision_with_new_dataset__OK(self):
         """
@@ -2484,7 +2624,7 @@ class TestPublishRevision(BaseAPIPortalTest):
 
         path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        body = {"data_submission_policy_version": "1.0"}  # TODO: still in use?
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         response = self.app.post(path, headers=headers, data=json.dumps(body))
 
         self.assertEqual(202, response.status_code)
@@ -2523,7 +2663,7 @@ class TestPublishRevision(BaseAPIPortalTest):
         # Publish the revision with the deleted dataset
         path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        body = {"data_submission_policy_version": "1.0"}  # TODO: still in use?
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
 
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
@@ -2552,7 +2692,7 @@ class TestPublishRevision(BaseAPIPortalTest):
         # Publish the revision with the deleted dataset
         path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        body = {"data_submission_policy_version": "1.0"}  # TODO: still in use?
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(409, response.status_code)
 
@@ -2562,7 +2702,7 @@ class TestPublishRevision(BaseAPIPortalTest):
         """
         collection = self.generate_unpublished_collection(add_datasets=1)
         path = f"{self.base_path}/{collection.version_id.id}/publish"
-        body = {"data_submission_policy_version": "1.0"}
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         headers = {"host": "localhost", "Content-Type": "application/json"}
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(401, response.status_code)
@@ -2574,7 +2714,7 @@ class TestPublishRevision(BaseAPIPortalTest):
         """
         collection = self.generate_unpublished_collection(add_datasets=1, owner="someone_else")
         path = f"{self.base_path}/{collection.version_id.id}/publish"
-        body = {"data_submission_policy_version": "1.0"}
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         response = self.app.post(path, headers=self.headers, data=json.dumps(body))
         self.assertEqual(403, response.status_code)
 
@@ -2584,7 +2724,7 @@ class TestPublishRevision(BaseAPIPortalTest):
         Publish a collection with a bad uuid (non existant) returns 403
         """
         collection_id = CollectionId()
-        body = {"data_submission_policy_version": "1.0"}
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         path = f"{self.base_path}/{collection_id}/publish"
         response = self.app.post(path, headers=self.headers, data=json.dumps(body))
         self.assertEqual(403, response.status_code)
@@ -2593,7 +2733,7 @@ class TestPublishRevision(BaseAPIPortalTest):
     def test__can_publish_owned_collection(self):
         collection = self.generate_unpublished_collection(add_datasets=1)
         path = f"{self.base_path}/{collection.version_id.id}/publish"
-        body = {"data_submission_policy_version": "1.0"}
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         headers = {
             "host": "localhost",
             "Content-Type": "application/json",
@@ -2606,7 +2746,7 @@ class TestPublishRevision(BaseAPIPortalTest):
     def test__can_publish_non_owned_collection_as_super_curator(self):
         collection = self.generate_unpublished_collection(add_datasets=1, owner="someone else")
         path = f"{self.base_path}/{collection.version_id.id}/publish"
-        body = {"data_submission_policy_version": "1.0"}
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         headers = {
             "host": "localhost",
             "Content-Type": "application/json",
@@ -2619,7 +2759,7 @@ class TestPublishRevision(BaseAPIPortalTest):
         self.cloudfront_provider.create_invalidation_for_index_paths = Mock()
         collection = self.generate_unpublished_collection(add_datasets=1)
         path = f"{self.base_path}/{collection.version_id.id}/publish"
-        body = {"data_submission_policy_version": "1.0"}
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         headers = {
             "host": "localhost",
             "Content-Type": "application/json",

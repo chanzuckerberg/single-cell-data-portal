@@ -7,6 +7,7 @@ from typing import List, Tuple
 from unittest.mock import ANY, Mock, call
 from uuid import uuid4
 
+from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.corpora_config import CorporaConfig
 from backend.layers.business.business import (
     BusinessLogic,
@@ -245,7 +246,11 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         else:
             published_at = datetime.utcnow()
         self.database_provider.finalize_collection_version(
-            version.collection_id, version.version_id, "3.0.0", published_at=published_at
+            version.collection_id,
+            version.version_id,
+            "3.0.0",
+            DATA_SUBMISSION_POLICY_VERSION,
+            published_at=published_at,
         )
         return self.database_provider.get_collection_version_with_datasets(version.version_id)
 
@@ -415,6 +420,7 @@ class TestGetCollectionVersion(BaseBusinessLogicTestCase):
         self.assertIsNotNone(fetched_version)
         self.assertIsNotNone(fetched_version.published_at)
         self.assertEqual(fetched_version.metadata, version.metadata)
+        self.assertIsNotNone(fetched_version.data_submission_policy_version)
 
     def test_get_published_collection_version_for_published_collection_is_none(self):
         """
@@ -435,6 +441,7 @@ class TestGetCollectionVersion(BaseBusinessLogicTestCase):
 
         self.assertIsNone(fetched_version.published_at)
         self.assertEqual(fetched_version.metadata, version.metadata)
+        self.assertIsNone(fetched_version.data_submission_policy_version)
 
     def test_get_collection_version_for_published_collection_ok(self):
         """
@@ -980,6 +987,115 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         )
 
         self.step_function_provider.start_step_function.assert_not_called()
+
+
+class TestSetCollectionVersionDatasetsOrder(BaseBusinessLogicTestCase):
+    def test_set_collection_version_datasets_order_ok(self):
+        """
+        The order of the datasets in a collection version is set using `set_collection_version_datasets_order`.
+        """
+        version = self.initialize_unpublished_collection(num_datasets=3)
+
+        # Update cell counts to confirm custom order is returned and not default order.
+        metadata_11 = deepcopy(self.sample_dataset_metadata)
+        metadata_11.cell_count = 11
+        self.database_provider.set_dataset_metadata(version.datasets[2].version_id, metadata_11)
+        metadata_12 = deepcopy(self.sample_dataset_metadata)
+        metadata_12.cell_count = 12
+        self.database_provider.set_dataset_metadata(version.datasets[1].version_id, metadata_12)
+
+        # Reverse and save the order of the dataset version IDs.
+        dv_ids = [d.version_id for d in version.datasets]
+        dv_ids.reverse()
+        self.business_logic.set_collection_version_datasets_order(version.version_id, dv_ids)
+
+        #  Confirm the saved order of collection version datasets in the database is correct.
+        read_version = self.business_logic.get_collection_version(version.version_id)
+        self.assertListEqual([dv.version_id for dv in read_version.datasets], dv_ids)
+
+        # Confirm the collection version datasets are marked as custom ordered.
+        self.assertTrue(read_version.has_custom_dataset_order)
+
+    def test_set_collection_version_datasets_order_length_fail(self):
+        """
+        Attempting to set the order of the datasets in a collection version with a list of different length should fail.
+        """
+        version = self.initialize_unpublished_collection()
+
+        # Remove a dataset version ID from the list to force length mismatch on save.
+        dv_ids = [d.version_id for d in version.datasets]
+        dv_ids.pop()
+
+        with self.assertRaises(ValueError) as ex:
+            self.business_logic.set_collection_version_datasets_order(version.version_id, dv_ids)
+        self.assertEqual(
+            str(ex.exception),
+            f"Dataset Version IDs length does not match Collection Version {version.version_id.id} Datasets length",
+        )
+
+    def test_set_collection_version_datasets_order_invalid_dataset_fail(self):
+        """
+        Attempting to set the order of the datasets in a collection version with a list that contains an invalid
+        dataset should fail.
+        """
+        version = self.initialize_unpublished_collection()
+
+        # Update a dataset version ID in the list to force an invalid dataset on save.
+        dv_ids = [d.version_id for d in version.datasets]
+        dv_ids[0] = DatasetVersionId("fake_id")
+
+        with self.assertRaises(ValueError) as ex:
+            self.business_logic.set_collection_version_datasets_order(version.version_id, dv_ids)
+        self.assertEqual(str(ex.exception), "Dataset Version IDs do not match saved Collection Version Dataset IDs")
+
+    def test_set_collection_version_datasets_order_no_custom_order_ok(self):
+        """
+        The order of the datasets in a collection version is the default cell count, descending.
+        """
+        version = self.initialize_unpublished_collection(num_datasets=3)
+
+        # Update cell counts to facilitate testing of order.
+        metadata_11 = deepcopy(self.sample_dataset_metadata)
+        metadata_11.cell_count = 11
+        self.database_provider.set_dataset_metadata(version.datasets[2].version_id, metadata_11)
+        metadata_12 = deepcopy(self.sample_dataset_metadata)
+        metadata_12.cell_count = 12
+        self.database_provider.set_dataset_metadata(version.datasets[1].version_id, metadata_12)
+
+        # Confirm datasets on read collection version are ordered by cell count, descending.
+        read_version = self.business_logic.get_collection_version(version.version_id)
+        sorted_datasets = sorted(read_version.datasets, key=lambda d: d.metadata.cell_count, reverse=True)
+        self.assertListEqual(read_version.datasets, sorted_datasets)
+
+    def test_set_collection_version_datasets_order_replace_dataset_ok(self):
+        """
+        Replacing a dataset in a collection version does not alter the custom order of the datasets.
+        """
+        version = self.initialize_unpublished_collection(num_datasets=3)
+
+        # Set custom order of dataset version IDs.
+        dv_ids = [d.version_id for d in version.datasets]
+        dv_ids.reverse()
+        self.business_logic.set_collection_version_datasets_order(version.version_id, dv_ids)
+
+        # Replace the first dataset in the collection version.
+        dataset_id_to_replace = dv_ids[0]
+
+        replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            version.version_id, "http://fake.url", None, dataset_id_to_replace
+        )
+        self.business_logic.set_dataset_metadata(replaced_dataset_version_id, self.sample_dataset_metadata)
+        self.complete_dataset_processing_with_success(replaced_dataset_version_id)
+
+        # Create a list  of dataset version IDs with the replaced dataset version ID in the first position.
+        updated_dv_ids = [replaced_dataset_version_id] + dv_ids[1:]
+
+        # Confirm collection version lists datasets in the custom order.
+        read_version = self.business_logic.get_collection_version(version.version_id)
+        self.assertListEqual([dv.version_id for dv in read_version.datasets], updated_dv_ids)
+
+        # Confirm the collection version datasets are marked as custom ordered.
+        self.assertTrue(read_version.has_custom_dataset_order)
 
 
 class TestDeleteDataset(BaseBusinessLogicTestCase):
@@ -1701,6 +1817,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         )  # TODO: ideally, do a date assertion here (requires mocking)
         self.assertIsNotNone(published_version.canonical_collection.originally_published_at)
         self.assertEqual(published_version.published_at, published_version.canonical_collection.originally_published_at)
+        self.assertEqual(published_version.data_submission_policy_version, DATA_SUBMISSION_POLICY_VERSION)
 
         # The published and unpublished collection have the same collection_id and version_id
         self.assertEqual(published_version.collection_id, unpublished_collection.collection_id)
@@ -1710,6 +1827,12 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         version = self.business_logic.get_published_collection_version(unpublished_collection.collection_id)
         if version:  # pylance
             self.assertEqual(version.version_id, published_version.version_id)
+
+    def test_collection_url(self):
+        self.assertEqual(
+            self.business_logic.get_collection_url(collection_id="test-collection-id"),
+            "https://collections_domain/collections/test-collection-id",
+        )
 
     def test_publish_collection_with_no_datasets_fail(self):
         """

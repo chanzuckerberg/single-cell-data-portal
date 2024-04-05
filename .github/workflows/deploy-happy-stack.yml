@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v2
         with:
-          node-version: "16.14.2"
+          node-version: "20.10.0"
       - name: Configure AWS Prod Credentials
         uses: aws-actions/configure-aws-credentials@v4
         if: github.event.deployment.environment == 'prod'
@@ -35,12 +35,12 @@ jobs:
           role-duration-seconds: 2700
       # Login to ECR needed solely to be able to retrieve cached layers
       - name: Login to Prod ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         if: github.event.deployment.environment == 'prod'
         with:
           registry: ${{ secrets.ECR_REPO_PROD }}
       - name: Login to ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
@@ -102,15 +102,17 @@ jobs:
     needs:
       - upgrade
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.deployment.sha }}
+          fetch-tags: true
       - name: Get most recent tag
         id: "fetch_tag"
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
           echo "PREVIOUS_TAG=$(git describe --tags $(git rev-list --tags=sha\* --max-count=1))" >> $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT
       - name: Push Tag with latest prod commit SHA
         uses: rickstaa/action-create-tag@v1
         id: "tag_create"
@@ -137,8 +139,8 @@ jobs:
     steps:
       - uses: actions/setup-node@v2
         with:
-          node-version: "16.14.2"
-      - uses: actions/setup-python@v4
+          node-version: "20.10.0"
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - uses: actions/checkout@v2
@@ -209,8 +211,8 @@ jobs:
       matrix:
         # Only run Chrome for now, since GHA only has 250 workers and will cancel jobs if it runs out
         project: [chromium]
-        shardCurrent: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        shardTotal: [10]
+        shardCurrent: [1, 2, 3, 4, 5]
+        shardTotal: [5]
 
     defaults:
       run:
@@ -218,7 +220,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v3
         with:
-          node-version: "16.14.2"
+          node-version: "20.10.0"
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -226,7 +228,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1800
       - name: Login to ECR
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v3
@@ -237,6 +239,7 @@ jobs:
           npm ci
           npx playwright install --with-deps
           cp src/configs/local.js src/configs/configs.js
+          make retrieve-descendants
 
       # Run e2e tests
       - name: Run e2e tests
@@ -323,7 +326,7 @@ jobs:
         with:
           ref: ${{ github.event.deployment.sha }}
           fetch-depth: 1
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.10"
       - name: Run functional test
@@ -376,12 +379,12 @@ jobs:
           role-duration-seconds: 2700
       # Login to ECR needed solely to be able to retrieve cached layers
       - name: Login to Prod ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         if: github.event.deployment.environment == 'prod'
         with:
           registry: ${{ secrets.ECR_REPO_PROD }}
       - name: Login to ECR
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2

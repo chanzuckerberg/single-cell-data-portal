@@ -247,7 +247,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
       "Type": "Map",
       "ItemProcessor": {
         "ProcessorConfig": {
-          "Mode": "INLINE"
+          "Mode": "DISTRIBUTED",
+          "ExecutionType": "STANDARD"
         },
         "StartAt": "CollectionMigration",
         "States": {
@@ -370,7 +371,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "Type": "Map",
             "ItemProcessor": {
               "ProcessorConfig": {
-                "Mode": "INLINE"
+                "Mode": "DISTRIBUTED",
+                "ExecutionType": "STANDARD"
               },
               "StartAt": "DatasetMigration",
               "States": {
@@ -378,7 +380,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "Type": "Task",
                   "Resource": "arn:aws:states:::batch:submitJob.sync",
                   "Parameters": {
-                    "JobDefinition": "${local.swap_job_definition_arn}",
+                    "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations_swap.arn}",
                     "JobName": "dataset_migration",
                     "JobQueue": "${var.job_queue_arn}",
                     "Timeout": {
@@ -477,7 +479,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "ResultPath": "$.error"
               }
             ],
-            "OutputPath": "$[0]"
+            "OutputPath": "$[0]",
+            "ToleratedFailurePercentage": 100
           },
           "CollectionError": {
             "Type": "Pass",
@@ -496,7 +499,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
           "Next": "report",
           "ResultPath": null
         }
-      ]
+      ],
+      "ToleratedFailurePercentage": 20
     },
     "report": {
       "Type": "Task",

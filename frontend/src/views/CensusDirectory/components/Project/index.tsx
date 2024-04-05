@@ -15,7 +15,7 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import ProjectButtons from "./ProjectButtons";
 
-const DATA_TYPE_TO_EMBEDDING: { [key: string]: string } = {
+export const DATA_TYPE_TO_EMBEDDING: { [key: string]: string } = {
   obs_embedding: "obs",
   var_embedding: "var",
 };
@@ -62,7 +62,9 @@ const Project = ({ clobberedProjects }: ProjectProps) => {
           >
             {sharedProject.publication_info}
           </DetailItem>
-          <DetailItem label="Last Updated">{date}</DetailItem>
+          <DetailItem label="Last Updated" suppressHydrationWarning>
+            {date}
+          </DetailItem>
         </DetailsContainer>
         <DetailsContainer>
           <DetailItem label="Census Version">

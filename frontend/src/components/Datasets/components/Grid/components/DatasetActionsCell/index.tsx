@@ -34,7 +34,6 @@ export default function DatasetsActionsCell({
         name={name}
       />
       <Tooltip
-        boundary="viewport"
         content={OVER_MAX_CELL_COUNT_TOOLTIP}
         disabled={!isOverMaxCellCount}
         intent={Intent.DANGER}

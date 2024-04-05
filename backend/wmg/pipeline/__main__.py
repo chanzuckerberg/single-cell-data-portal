@@ -1,6 +1,6 @@
 import logging
 
-from backend.wmg.pipeline import run_pipeline
+from backend.wmg.pipeline.pipeline import run_pipeline
 
 logging.basicConfig(level=logging.INFO)
 

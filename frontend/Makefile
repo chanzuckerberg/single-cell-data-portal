@@ -5,7 +5,7 @@ S3_ENVIRONMENT_FILE=s3://$(BROWSER_S3)/env.production
 
 check-var-defined = $(if $(strip $($1)),,$(error "$1" is not defined))
 
-deploy: init retrieve-vars
+deploy: init retrieve-vars retrieve-descendants
 
 	npm run build
 	aws s3 sync ./public s3://$(BROWSER_S3)/
@@ -36,6 +36,11 @@ retrieve-vars:
 .PHONY: upload-vars
 upload-vars:
 	aws s3 cp .env.production $(S3_ENVIRONMENT_FILE)
+
+.PHONY: retrieve-descendants
+retrieve-descendants:
+	curl -o src/components/common/Filter/descendant_mappings/tissue_descendants.json https://raw.githubusercontent.com/chanzuckerberg/cellxgene-ontology-guide/latest/ontology-assets/tissue_descendants.json
+	curl -o src/components/common/Filter/descendant_mappings/cell_type_descendants.json https://raw.githubusercontent.com/chanzuckerberg/cellxgene-ontology-guide/latest/ontology-assets/cell_type_descendants.json
 
 .PHONY: e2e
 e2e: ## only used by make local-e2e

@@ -19,13 +19,13 @@ const MAINTAINED_R_NOTEBOOK_LINK =
 const HOSTED_PYTHON_NOTEBOOK_LINK =
   "https://chanzuckerberg.github.io/cellxgene-census/notebooks/api_demo/census_embedding.html";
 
-function pythonCodeSnippet(project: UnionProject, uri: string): string {
-  const censusVersion = project.census_version;
+function pythonCodeSnippet(project: UnionProject): string {
   const organism = project.experiment_name;
   const measurement = project.measurement_name;
 
-  return project.tier === "maintained"
-    ? `import cellxgene_census
+  const axis = project.data_type === "obs_embedding" ? "obs" : "var";
+
+  return `import cellxgene_census
 
 census = cellxgene_census.open_soma(census_version="${project.census_version}")
 adata = cellxgene_census.get_anndata(
@@ -33,25 +33,11 @@ adata = cellxgene_census.get_anndata(
     organism = "${organism}",
     measurement_name = "${measurement}",
     obs_value_filter = "tissue_general == 'central nervous system'",
-    obsm_layers = ["${project.obsm_layer}"]
-)`
-    : `import cellxgene_census
-from cellxgene_census.experimental import get_embedding
-
-embedding_uri = \\
-    "${uri}"
-census = cellxgene_census.open_soma(census_version="${censusVersion}")
-
-adata = cellxgene_census.get_anndata(
-    census,
-    organism = "${organism}",
-    measurement_name = "${measurement}",
-    obs_value_filter = "tissue_general == 'central nervous system'",
-)
-embeddings = get_embedding("${censusVersion}", embedding_uri, adata.obs["soma_joinid"].to_numpy())
-adata.obsm["emb"] = embeddings`;
+    ${axis}_embeddings = ["${project.embedding_name}"]
+)`;
 }
 
+// Currently unused. Will be used when R support will be added back.
 function rCodeSnippet(project: UnionProject): string {
   const censusVersion = project.census_version;
   const organism = project.experiment_name;
@@ -66,7 +52,7 @@ seurat_obj <- get_seurat(
   organism = "${organism}",
   obs_value_filter = "tissue_general == 'central nervous system'",
   obs_column_names = c("cell_type"),
-  obsm_layers = c("${project.obsm_layer}")
+  obsm_layers = c("${project.embedding_name}")
 )`
     : "";
 }
@@ -92,9 +78,7 @@ export const useConnect = ({ project }: EmbeddingButtonProps) => {
   const uri = `s3://cellxgene-contrib-public/contrib/cell-census/soma/${project.census_version}/${project.id}`;
 
   const codeSnippet =
-    language === "python"
-      ? pythonCodeSnippet(project, uri)
-      : rCodeSnippet(project);
+    language === "python" ? pythonCodeSnippet(project) : rCodeSnippet(project);
 
   const codeSnippetRef = useCallback(
     (node: HTMLDivElement) => {

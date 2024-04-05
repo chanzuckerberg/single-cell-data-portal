@@ -35,6 +35,22 @@ function checkListForChanges(
   return !isEmpty(xorWith(revisedList, publishedList, isEqual));
 }
 
+/**
+ * Returns true if the revision datasets and published datasets are not in the same order.
+ * @param revisedDatasets - Map of datasets in revision keyed by ID.
+ * @param publishedDatasets - Map of datasets in published collection keyed by ID.
+ * @returns True if list orders do not match.
+ */
+function checkListOrderForChanges(
+  revisedDatasets: Map<Dataset["id"], Dataset>,
+  publishedDatasets: Map<Dataset["id"], Dataset>
+): boolean {
+  const publishedDatasetIds = Array.from(publishedDatasets.keys());
+  return Array.from(revisedDatasets.keys()).some(
+    (revisedDatasetId, index) => revisedDatasetId !== publishedDatasetIds[index]
+  );
+}
+
 function checkCollectionKeyForDifference(
   collectionKey: keyof Collection,
   revisedCollection: Collection,
@@ -107,6 +123,8 @@ function checkDatasetsForChanges(
   publishedDatasets: Map<Dataset["id"], Dataset>
 ): boolean {
   if (publishedDatasets.size !== revisedDatasets.size) return true;
+  // Confirm datasets are in the same order.
+  if (checkListOrderForChanges(revisedDatasets, publishedDatasets)) return true;
   // Check dataset fields for differences
   return Array.from(publishedDatasets.values()).some((publishedDataset) => {
     const revisedDataset = revisedDatasets.get(publishedDataset.id) as Dataset;

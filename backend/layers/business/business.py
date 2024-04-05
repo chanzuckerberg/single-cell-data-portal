@@ -6,6 +6,7 @@ from datetime import datetime
 from functools import reduce
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
+from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.corpora_config import CorporaConfig
 from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 from backend.layers.business.business_interface import BusinessLogicInterface
@@ -264,6 +265,9 @@ class BusinessLogic(BusinessLogicInterface):
                 latest = collection.created_at
                 unpublished_collection = collection
         return unpublished_collection
+
+    def get_collection_url(self, collection_id: str) -> str:
+        return f"{CorporaConfig().collections_base_url}/collections/{collection_id}"
 
     def get_collection_version(
         self, version_id: CollectionVersionId, get_tombstoned: bool = False
@@ -604,6 +608,15 @@ class BusinessLogic(BusinessLogicInterface):
             raise DatasetIsPrivateException from None
         self.database_provider.delete_dataset_from_collection_version(collection_version_id, dataset_version_id)
 
+    def set_collection_version_datasets_order(
+        self, collection_version_id: CollectionVersionId, dataset_version_ids: List[DatasetVersionId]
+    ) -> None:
+        """
+        Sets the order of datasets in a collection version.
+        """
+        self._assert_collection_version_unpublished(collection_version_id)
+        self.database_provider.set_collection_version_datasets_order(collection_version_id, dataset_version_ids)
+
     def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         """
         Sets the metadata for a dataset version
@@ -868,7 +881,9 @@ class BusinessLogic(BusinessLogicInterface):
         # Reset tombstone values in database
         self.database_provider.resurrect_collection(collection_id, datasets_to_resurrect)
 
-    def publish_collection_version(self, version_id: CollectionVersionId) -> None:
+    def publish_collection_version(
+        self, version_id: CollectionVersionId, data_submission_policy_version: str = DATA_SUBMISSION_POLICY_VERSION
+    ) -> None:
         """
         Publishes a collection version.
         """
@@ -901,7 +916,11 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Finalize Collection publication and delete any tombstoned assets
         dataset_version_ids_to_delete_from_s3 = self.database_provider.finalize_collection_version(
-            version.collection_id, version_id, schema_version, update_revised_at=has_dataset_revisions
+            version.collection_id,
+            version_id,
+            schema_version,
+            data_submission_policy_version,
+            update_revised_at=has_dataset_revisions,
         )
         self.delete_dataset_versions_from_public_bucket(dataset_version_ids_to_delete_from_s3)
 

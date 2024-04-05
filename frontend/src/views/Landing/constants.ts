@@ -7,3 +7,5 @@ export const LANDING_PAGE_DATASETS_HERO_NUM_ID =
   "landing-page-datasets-hero-num";
 export const LANDING_PAGE_CELLTYPES_HERO_NUM_ID =
   "landing-page-celltypes-hero-num";
+export const LANDING_PAGE_CONTENT_NAV_ID = "landing-page-content-nav";
+export const WMG_CTA_TEXT = "Explore the tool";
