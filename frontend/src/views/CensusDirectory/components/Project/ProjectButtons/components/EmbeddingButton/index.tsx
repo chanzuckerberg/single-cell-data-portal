@@ -8,7 +8,13 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import Highlight from "react-highlight";
 import { RadioGroup } from "@mui/material";
-import { StyledDialogContent, Label, CodeSnippet, Break } from "./style";
+import {
+  StyledDialogContent,
+  Label,
+  CodeSnippet,
+  Break,
+  StyledCallout,
+} from "./style";
 import { StyledButton } from "../../style";
 
 function EmbeddingButton(props: EmbeddingButtonProps) {
@@ -18,7 +24,6 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
     language,
     codeSnippet,
     projectTier,
-    uri,
     notebookLink,
     codeSnippetRef,
     uriTopPosition,
@@ -40,6 +45,10 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
       </StyledButton>
       <Dialog open={isOpen} onClose={handleButtonClick}>
         <DialogTitle title="Embedding" onClose={handleButtonClick} />
+        <StyledCallout intent="warning">
+          Code example requires the latest version (1.13.0) of the Census API
+          package.
+        </StyledCallout>
         <StyledDialogContent>
           <div>
             <Label>Language</Label>
@@ -49,11 +58,7 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
               row
             >
               <InputRadio label="Python" value="python" />
-              <InputRadio
-                disabled={projectTier !== "maintained"}
-                label={projectTier === "maintained" ? "R" : "R (coming soon)"}
-                value="r"
-              />
+              <InputRadio disabled={true} label={"R (coming soon)"} value="r" />
             </RadioGroup>
           </div>
           <div>
@@ -76,22 +81,6 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
                   })
                 }
               />
-              {projectTier === "hosted" && (
-                <div>
-                  <CopyButton
-                    downloadLink={uri}
-                    label="Copy URI"
-                    handleAnalytics={() =>
-                      track(EVENTS.CENSUS_EMBEDDING_COPIED, {
-                        project: project.title,
-                        category: projectTier,
-                        version: "URI",
-                        ...uniqueMetadata,
-                      })
-                    }
-                  />
-                </div>
-              )}
             </CodeSnippet>
           </div>
           <Break />
