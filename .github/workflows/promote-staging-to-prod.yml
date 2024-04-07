@@ -18,7 +18,7 @@ jobs:
           ./scripts/promote_staging_to_prod.sh ${{ secrets.GITHUB_TOKEN }}
       - name: Trigger repository_dispatch to build images for staging
         if: success()
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           event-type: build-images-for-prod
