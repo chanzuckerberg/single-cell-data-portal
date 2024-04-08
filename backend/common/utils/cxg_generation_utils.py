@@ -44,7 +44,7 @@ def convert_uns_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="
         ctx (tiledb.Ctx, optional): The TileDB context.
         https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#uns-dataset-metadata
     """
- 
+
     def filter_spatial_data(content, library_id):
         """
         This filters data associated with the "spatial" key in a dictionary, specifically retaining
@@ -52,17 +52,16 @@ def convert_uns_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="
         """
         spatial_filtered = {}
         spatial_filtered[library_id] = {
-            'images': {
-                'hires': content['images']['hires'], # Omit hires data once deep zooming feature is implemented
-                'fullres': []  # Currently not including fullsres data, due to deep zooming feature coming soon
+            "images": {
+                "hires": content["images"]["hires"],  # Omit hires data once deep zooming feature is implemented
+                "fullres": [],  # Currently not including fullsres data, due to deep zooming feature coming soon
             },
-            'scalefactors': {
-                'spot_diameter_fullres': content['scalefactors']['spot_diameter_fullres'],
-                'tissue_hires_scalef': content['scalefactors']['tissue_hires_scalef']
-            }
+            "scalefactors": {
+                "spot_diameter_fullres": content["scalefactors"]["spot_diameter_fullres"],
+                "tissue_hires_scalef": content["scalefactors"]["tissue_hires_scalef"],
+            },
         }
         return spatial_filtered
-
 
     array_name = f"{cxg_container}/{group_metadata_name}"
     object_filtered = {}
@@ -74,7 +73,7 @@ def convert_uns_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="
             if key not in UNS_META_KEYS:
                 continue
             for object_id, content in value.items():
-                if key == 'spatial':
+                if key == "spatial":
                     object_filtered = filter_spatial_data(content, object_id)
                 else:
                     object_filtered[object_id] = content
