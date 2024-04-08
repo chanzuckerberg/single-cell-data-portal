@@ -10,9 +10,10 @@ from dask import compute, delayed
 from dask.diagnostics import ProgressBar
 from pronto import Ontology, Term
 
-from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
+from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS, CELL_GUIDE_PINNED_SCHEMA_VERSION
 from backend.cellguide.pipeline.ontology_tree.types import OntologyTree, OntologyTreeState
 from backend.common.utils.rollup import rollup_across_cell_type_descendants
+from cellxgene_ontology_guide.ontology_parser import OntologyParser
 
 logger = logging.getLogger(__name__)
 
@@ -75,14 +76,8 @@ class OntologyTreeBuilder:
             The root node of the ontology tree. This is the node from which the ontology tree is traversed.
         """
 
-        logger.info(f"Loading CL ontology from root node {root_node}...")
-        self.ontology = Ontology(get_pinned_ontology_url(CL_BASIC_OBO_NAME))
-
-        logger.info("Loading UBERON ontology...")
-        with warnings.catch_warnings():
-            # loading uberon ontology has some warnings that we don't care about
-            warnings.simplefilter("ignore")
-            self.uberon_ontology = Ontology(UBERON_BASIC_PERMANENT_URL_PRONTO)
+        logger.info(f"Loading COG ontologies...")
+        self.ontology = OntologyParser(schema_version=f"v{CELL_GUIDE_PINNED_SCHEMA_VERSION}")
 
         logger.info("Initializing tissue data structures from the input cell counts dataframe...")
         self.tissue_counts_df = cell_counts_df.groupby("tissue_ontology_term_id").sum(numeric_only=True)["n_cells"]
