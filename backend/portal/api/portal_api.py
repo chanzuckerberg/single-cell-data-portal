@@ -17,7 +17,6 @@ from backend.common.utils.http_exceptions import (
     ServerErrorHTTPException,
     TooLargeHTTPException,
 )
-from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
 from backend.curation.api.v1.curation.collections.common import validate_uuid_else_forbidden
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
@@ -796,7 +795,7 @@ def get_user_datasets_index(token_info: dict):
     non_revisions = [c for c in private_collections if not c.is_unpublished_version()]
     private_datasets = get_business_logic().get_datasets_for_collections(non_revisions)
 
-    response = enrich_dataset_response(itertools.chain(public_datasets, private_datasets))
+    response = enrich_dataset_response(public_datasets + private_datasets)
     return make_response(jsonify(response), 200)
 
 
@@ -805,13 +804,21 @@ def enrich_dataset_response(datasets: Iterable[DatasetVersion]) -> List[dict]:
     Enriches a list of datasets with ancestors of ontologized fields
     """
     response = []
+    prod_cell_type_corpus = set()
+    prod_tissue_corpus = set()
+    prod_development_stage_corpus = set()
+    # determine cell types and tissues in the prod corpus; these are considered valid ancestors to track
+    for dataset in datasets:
+        if dataset.metadata is None:
+            continue
+        prod_cell_type_corpus.update([t.ontology_term_id for t in dataset.metadata.cell_type])
+        prod_tissue_corpus.update([t.ontology_term_id for t in dataset.metadata.tissue])
+        prod_development_stage_corpus.update([t.ontology_term_id for t in dataset.metadata.development_stage])
     for dataset in datasets:
         payload = _dataset_to_response(dataset, is_tombstoned=False)
-        enrich_dataset_with_ancestors(
-            payload, "development_stage", ontology_mappings.development_stage_ontology_mapping
-        )
-        enrich_dataset_with_ancestors(payload, "tissue", ontology_mappings.tissue_ontology_mapping)
-        enrich_dataset_with_ancestors(payload, "cell_type", ontology_mappings.cell_type_ontology_mapping)
+        enrich_dataset_with_ancestors(payload, "development_stage", prod_development_stage_corpus)
+        enrich_dataset_with_ancestors(payload, "tissue", prod_tissue_corpus)
+        enrich_dataset_with_ancestors(payload, "cell_type", prod_cell_type_corpus)
         payload["explorer_url"] = explorer_url.generate(dataset)
         response.append(payload)
     return response
