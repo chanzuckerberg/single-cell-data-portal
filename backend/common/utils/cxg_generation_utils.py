@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import tiledb
 
+from backend.common.constants import UNS_META_KEYS
 from backend.common.utils.type_conversion_utils import get_dtype_and_schema_of_array
 
 
@@ -33,29 +34,52 @@ def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata
 
 
 def convert_uns_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="cxg_group_metadata", ctx=None):
+    """
+    Convert uns (unstructured) metadata to CXG  output directory
+
+    Args:
+        cxg_container (str): The name of the cxg container.
+        metadata_dict (dict): The dictionary containing the metadata.
+        group_metadata_name (str, optional): The name of the group metadata. Defaults to "cxg_group_metadata".
+        ctx (tiledb.Ctx, optional): The TileDB context.
+        https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#uns-dataset-metadata
+    """
  
+    def filter_spatial_data(content, library_id):
+        """
+        This filters data associated with the "spatial" key in a dictionary, specifically retaining
+        certain sub-items from "images" and "scalefactors" sub-dictionaries.
+        """
+        spatial_filtered = {}
+        spatial_filtered[library_id] = {
+            'images': {
+                'hires': content['images']['hires'], # Omit hires data once deep zooming feature is implemented
+                'fullres': []  # Currently not including fullsres data, due to deep zooming feature coming soon
+            },
+            'scalefactors': {
+                'spot_diameter_fullres': content['scalefactors']['spot_diameter_fullres'],
+                'tissue_hires_scalef': content['scalefactors']['tissue_hires_scalef']
+            }
+        }
+        return spatial_filtered
+
+
     array_name = f"{cxg_container}/{group_metadata_name}"
+    object_filtered = {}
 
     tiledb.from_numpy(array_name, np.zeros((1,)))
 
-    def iterate_over_dict(metadata_dict):
-        with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
-            for key, value in metadata_dict.items():
-                if not key.startswith("spatial"):
-                    continue
-                print(f"key: {key}, type:{type(value)}, value: {value}")
-                if isinstance(value, dict):
-                    try:
-                        metadata_array.meta[key] = pickle.dumps(value)
-                    except Exception as e:
-                        logging.error(f"Error adding metadata {key} to {array_name}: {e}")
+    with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
+        for key, value in metadata_dict.items():
+            if key not in UNS_META_KEYS:
+                continue
+            for object_id, content in value.items():
+                if key == 'spatial':
+                    object_filtered = filter_spatial_data(content, object_id)
                 else:
-                    try:
-                        metadata_array.meta[key] = value
-                    except Exception as e:
-                        logging.error(f"Error adding metadata {key} to {array_name}: {e}")
+                    object_filtered[object_id] = content
 
-    iterate_over_dict(metadata_dict)
+            metadata_array.meta[key] = pickle.dumps(object_filtered)
 
 
 def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, index_column_name, ctx):
