@@ -40,8 +40,8 @@ def convert_uns_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="
 
     def filter_spatial_data(content, library_id):
         """
-        This filters data associated with the "spatial" key in a dictionary, specifically retaining
-        certain sub-items from "images" and "scalefactors" sub-dictionaries.
+        This filters data associated with the "spatial" key in a dictionary, specifically 
+        retaining certain sub-items from "images" and "scalefactors" sub-dictionaries.
         https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#uns-dataset-metadata
         """
         spatial_filtered = {}
