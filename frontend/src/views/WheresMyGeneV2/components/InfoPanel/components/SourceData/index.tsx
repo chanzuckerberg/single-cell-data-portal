@@ -8,6 +8,7 @@ import {
   StyledDivTableRow,
   StyledLabel,
   StyledLink,
+  StyledSpan,
   StyledValue,
   Wrapper,
 } from "./style";
@@ -48,18 +49,22 @@ export default function SourceData(): JSX.Element {
           {Object.values(collections).map(({ name, url, datasets }) => (
             <StyledDivTableRow key={name}>
               <StyledDivTableCell>
-                <StyledLink
-                  href={url}
-                  target="_blank"
-                  rel="noopener"
-                  onClick={() => {
-                    track(EVENTS.VIEW_COLLECTION_PAGE_CLICKED, {
-                      collection_name: name,
-                    });
-                  }}
-                >
-                  {name}
-                </StyledLink>
+                {name ? (
+                  <StyledLink
+                    href={url}
+                    target="_blank"
+                    rel="noopener"
+                    onClick={() => {
+                      track(EVENTS.VIEW_COLLECTION_PAGE_CLICKED, {
+                        collection_name: name,
+                      });
+                    }}
+                  >
+                    {name}
+                  </StyledLink>
+                ) : (
+                  <StyledSpan>Failed to load collection information</StyledSpan>
+                )}
               </StyledDivTableCell>
               <StyledDivTableCell align>
                 <Tooltip
