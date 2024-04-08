@@ -35,20 +35,14 @@ def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata
 
 def convert_uns_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="cxg_group_metadata", ctx=None):
     """
-    Convert uns (unstructured) metadata to CXG  output directory
-
-    Args:
-        cxg_container (str): The name of the cxg container.
-        metadata_dict (dict): The dictionary containing the metadata.
-        group_metadata_name (str, optional): The name of the group metadata. Defaults to "cxg_group_metadata".
-        ctx (tiledb.Ctx, optional): The TileDB context.
-        https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#uns-dataset-metadata
+    Convert uns (unstructured) metadata to CXG output directory specified
     """
 
     def filter_spatial_data(content, library_id):
         """
         This filters data associated with the "spatial" key in a dictionary, specifically retaining
         certain sub-items from "images" and "scalefactors" sub-dictionaries.
+        https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#uns-dataset-metadata
         """
         spatial_filtered = {}
         spatial_filtered[library_id] = {
