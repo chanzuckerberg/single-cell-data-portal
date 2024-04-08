@@ -101,7 +101,8 @@ class TestPublishAndCleanup:
             "rollback": True,
         } in errors
         assert {
-            "message": "Did Not Migrate.",
+            "message": non_migrated_dataset.status.validation_message,
+            "dataset_status": non_migrated_dataset.status.to_dict(),
             "collection_id": collection_version.collection_id.id,
             "collection_version_id": collection_version.version_id.id,
             "dataset_version_id": non_migrated_dataset.version_id.id,

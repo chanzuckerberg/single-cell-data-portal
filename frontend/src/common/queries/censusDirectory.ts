@@ -7,7 +7,8 @@ import { API } from "../API";
 
 export interface Project {
   id: string;
-  tier: "hosted";
+  embedding_name: string;
+  tier: string;
   census_version: string;
   experiment_name: string;
   measurement_name: string;
@@ -60,26 +61,35 @@ async function fetchProjects(): Promise<ProjectResponse | undefined> {
           keyof ProjectResponse,
           ProjectResponse[keyof ProjectResponse],
         ]) => {
+          if (data[id].id.startsWith("CxG-contrib-")) {
+            data[id].tier = "hosted";
+          } else if (data[id].id.startsWith("CxG-czi-")) {
+            data[id].tier = "maintained";
+          }
+
           if (!project.DOI) return;
 
           // include a mailto: query param to insure reliable service
           const url = apiTemplateToUrl(
-            "https://api.crossref.org/works/{DOI}?mailto=cellxgene@cziscience.com",
+            // (seve): URLS WITH MAILTO ARE FAILING
+            // "https://api.crossref.org/works/{DOI}?mailto=cellxgene@cziscience.com",
+            "https://api.crossref.org/works/{DOI}",
             {
               DOI: encodeURIComponent(project.DOI),
             }
           );
 
           const response = await fetch(url);
-
           const result = await response.json();
-          if (!response.ok) throw result;
-
-          const publication_info = parseCrossRefResponse(result);
+          let publication_info;
+          if (!response.ok) {
+            console.error(result);
+          } else {
+            publication_info = parseCrossRefResponse(result);
+          }
 
           data[id].publication_info = publication_info;
           data[id].publication_link = result.message.URL;
-          data[id].tier = "hosted";
         }
       )
     );

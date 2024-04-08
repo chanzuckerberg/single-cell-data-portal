@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 from flask import Response, jsonify, make_response
 
+from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.utils.http_exceptions import (
     ConflictException,
     ForbiddenHTTPException,
@@ -16,7 +17,6 @@ from backend.common.utils.http_exceptions import (
     ServerErrorHTTPException,
     TooLargeHTTPException,
 )
-from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
 from backend.curation.api.v1.curation.collections.common import validate_uuid_else_forbidden
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
@@ -133,6 +133,15 @@ def _dataset_asset_to_response(dataset_artifact: DatasetArtifact, dataset_id: st
         "updated_at": 0,
         "user_submitted": True,
     }
+
+
+def _is_data_submission_policy_version_valid(data_submission_policy_version: str) -> bool:
+    """
+    Returns True if the given policy version is equal to the latest policy version.
+    """
+    if not data_submission_policy_version:
+        return False
+    return data_submission_policy_version == DATA_SUBMISSION_POLICY_VERSION
 
 
 def _ontology_term_ids_to_response(ontology_term_ids: List[OntologyTermId]):
@@ -263,7 +272,7 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
             "contact_name": collection.metadata.contact_name,
             "created_at": collection.created_at,
             "curator_name": collection.curator_name,
-            "data_submission_policy_version": "1.0",  # TODO
+            "data_submission_policy_version": collection.data_submission_policy_version,
             "datasets": [
                 _dataset_to_response(
                     ds,
@@ -575,8 +584,12 @@ def publish_post(collection_id: str, body: object, token_info: dict):
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
 
+    data_submission_policy_version = body.get("data_submission_policy_version")
+    if not _is_data_submission_policy_version_valid(data_submission_policy_version):
+        raise InvalidParametersHTTPException(detail="Missing or invalid data_submission_policy_version field")
+
     try:
-        get_business_logic().publish_collection_version(version.version_id)
+        get_business_logic().publish_collection_version(version.version_id, data_submission_policy_version)
     except CollectionPublishException:
         raise ConflictException(detail="The collection must have a least one dataset.") from None
 
@@ -782,7 +795,7 @@ def get_user_datasets_index(token_info: dict):
     non_revisions = [c for c in private_collections if not c.is_unpublished_version()]
     private_datasets = get_business_logic().get_datasets_for_collections(non_revisions)
 
-    response = enrich_dataset_response(itertools.chain(public_datasets, private_datasets))
+    response = enrich_dataset_response(public_datasets + private_datasets)
     return make_response(jsonify(response), 200)
 
 
@@ -791,13 +804,21 @@ def enrich_dataset_response(datasets: Iterable[DatasetVersion]) -> List[dict]:
     Enriches a list of datasets with ancestors of ontologized fields
     """
     response = []
+    prod_cell_type_corpus = set()
+    prod_tissue_corpus = set()
+    prod_development_stage_corpus = set()
+    # determine cell types and tissues in the prod corpus; these are considered valid ancestors to track
+    for dataset in datasets:
+        if dataset.metadata is None:
+            continue
+        prod_cell_type_corpus.update([t.ontology_term_id for t in dataset.metadata.cell_type])
+        prod_tissue_corpus.update([t.ontology_term_id for t in dataset.metadata.tissue])
+        prod_development_stage_corpus.update([t.ontology_term_id for t in dataset.metadata.development_stage])
     for dataset in datasets:
         payload = _dataset_to_response(dataset, is_tombstoned=False)
-        enrich_dataset_with_ancestors(
-            payload, "development_stage", ontology_mappings.development_stage_ontology_mapping
-        )
-        enrich_dataset_with_ancestors(payload, "tissue", ontology_mappings.tissue_ontology_mapping)
-        enrich_dataset_with_ancestors(payload, "cell_type", ontology_mappings.cell_type_ontology_mapping)
+        enrich_dataset_with_ancestors(payload, "development_stage", prod_development_stage_corpus)
+        enrich_dataset_with_ancestors(payload, "tissue", prod_tissue_corpus)
+        enrich_dataset_with_ancestors(payload, "cell_type", prod_cell_type_corpus)
         payload["explorer_url"] = explorer_url.generate(dataset)
         response.append(payload)
     return response
