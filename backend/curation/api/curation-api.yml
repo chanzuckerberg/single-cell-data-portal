@@ -622,7 +622,7 @@ paths:
         The default `visibility` is PUBLIC. When visibility is PUBLIC, then a list of all public Datasets is returned.
 
         When the visibility parameter is set to PRIVATE, a list of all private Datasets that the user is authorized to
-        access is returned. An access token MUST be set in the request header as: `Authorization
+        access is returned. An access token MUST be set in the request header as: `Authorization:
         Bearer <access_token>`.
 
         Datasets returned include a `visibility` field that indicates whether the Dataset is public or private.
