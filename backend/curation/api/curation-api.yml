@@ -1328,7 +1328,7 @@ components:
     dataset_revision_of:
       description: |
         If this Dataset is a Revision of another Dataset, then this field contains the Dataset id of the Dataset that
-        this Dataset is a Revision of.  The value is `None` if this Dataset is not a Revision.
+        this Dataset is revising.  The value is `None` if this Dataset is not a Revision.
       nullable: true
       type: string
     dataset_tissue:
