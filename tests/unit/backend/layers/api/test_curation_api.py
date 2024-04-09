@@ -13,15 +13,14 @@ from backend.layers.common.entities import (
     CollectionLinkType,
     CollectionMetadata,
     CollectionVersion,
-    CollectionVisibility,
     DatasetProcessingStatus,
     DatasetStatusKey,
     DatasetUploadStatus,
     DatasetValidationStatus,
     DatasetVersionId,
-    DatasetVisibility,
     Link,
     OntologyTermId,
+    Visibility,
 )
 from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException
 from tests.unit.backend.layers.api.test_portal_api import generate_mock_publisher_metadata
@@ -471,7 +470,7 @@ class TestGetCollections(BaseAPIPortalTest):
 
     def test__verify_expected_public_collection_fields(self):
         public_collection = self.generate_collection(
-            visibility=CollectionVisibility.PUBLIC.name,
+            visibility=Visibility.PUBLIC.name,
             links=[
                 {
                     "link_name": "test_raw_data_link_name",
@@ -491,7 +490,7 @@ class TestGetCollections(BaseAPIPortalTest):
 
     def test__verify_expected_private_collection_fields(self):
         private_collection = self.generate_collection(
-            visibility=CollectionVisibility.PRIVATE.name,
+            visibility=Visibility.PRIVATE.name,
             links=[
                 {
                     "link_name": "test_raw_data_link_name",
@@ -513,7 +512,7 @@ class TestGetCollections(BaseAPIPortalTest):
 
     def test__verify_expected_revision_collection_fields(self):
         published_version = self.generate_collection(
-            visibility=CollectionVisibility.PUBLIC.name,
+            visibility=Visibility.PUBLIC.name,
             links=[
                 {
                     "link_name": "test_raw_data_link_name",
@@ -888,7 +887,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
 
     def test__get_collection_with_dataset_failing_validation(self):
         collection_version = self.generate_collection(
-            visibility=CollectionVisibility.PRIVATE.name,
+            visibility=Visibility.PRIVATE.name,
         )
         dataset = self.generate_dataset(
             collection_version=collection_version,
@@ -907,7 +906,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
 
     def test__get_collection_with_dataset_failing_pipeline(self):
         collection = self.generate_collection(
-            visibility=CollectionVisibility.PRIVATE.name,
+            visibility=Visibility.PRIVATE.name,
         )
         dataset = self.generate_dataset(
             collection_version=collection,
@@ -1906,7 +1905,7 @@ class TestGetDatasets(BaseAPIPortalTest):
 
         with self.subTest("Response Dataset objects contain visibility"):
             for dataset in response.json:
-                self.assertEqual(DatasetVisibility.PUBLIC.name, dataset["visibility"])
+                self.assertEqual(Visibility.PUBLIC.name, dataset["visibility"])
 
         with self.subTest("Response Dataset objects contain revision_of_collection"):
             for dataset in response.json:
@@ -2026,7 +2025,7 @@ class TestGetDatasets(BaseAPIPortalTest):
         # Super curator.
         with self.subTest("With super curator credentials"):
             response_datasets = self._fetch_datasets(
-                visibility=DatasetVisibility.PRIVATE.name, headers=self.make_super_curator_header()
+                visibility=Visibility.PRIVATE.name, headers=self.make_super_curator_header()
             )
 
             # Create the list of the 7 expected datasets: 4 (3 + 1) from unpublished collections and 3 from
@@ -2043,9 +2042,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             _validate_datasets(response_datasets, expected_dataset_ids)
 
         # Hit datasets endpoint for owner and check response shape.
-        response_datasets = self._fetch_datasets(
-            visibility=DatasetVisibility.PRIVATE.name, headers=self.make_owner_header()
-        )
+        response_datasets = self._fetch_datasets(visibility=Visibility.PRIVATE.name, headers=self.make_owner_header())
 
         # Owner
         with self.subTest("With owner credentials"):
@@ -2091,7 +2088,7 @@ class TestGetDatasets(BaseAPIPortalTest):
         # revision_of_dataset - null
         with self.subTest("Verify expected fields for private collection, updated dataset"):
             response_dataset = datasets_by_version_id[unpublished_collection_1_dataset_added.dataset_version_id]
-            self.assertEqual(DatasetVisibility.PRIVATE.name, response_dataset["visibility"])
+            self.assertEqual(Visibility.PRIVATE.name, response_dataset["visibility"])
             self.assertEqual(unpublished_collection_1.collection_id.id, response_dataset["collection_id"])
             self.assertEqual(unpublished_collection_1.version_id.id, response_dataset["collection_version_id"])
             self.assertIsNone(response_dataset["revision_of_collection"])
@@ -2108,7 +2105,7 @@ class TestGetDatasets(BaseAPIPortalTest):
         # revision_of_dataset - null
         with self.subTest("Verify expected fields for revision, new dataset"):
             response_dataset = datasets_by_version_id[revision_1_dataset_new.dataset_version_id]
-            self.assertEqual(DatasetVisibility.PRIVATE.name, response_dataset["visibility"])
+            self.assertEqual(Visibility.PRIVATE.name, response_dataset["visibility"])
             self.assertEqual(revision_1.version_id.id, response_dataset["collection_id"])
             self.assertEqual(revision_1.version_id.id, response_dataset["collection_version_id"])
             self.assertEqual(revision_1.collection_id.id, response_dataset["revision_of_collection"])
@@ -2125,7 +2122,7 @@ class TestGetDatasets(BaseAPIPortalTest):
         # revision_of_dataset - canonical_dataset_id
         with self.subTest("Verify expected fields for revision, updated dataset"):
             response_dataset = datasets_by_version_id[revision_1_dataset_updated.dataset_version_id]
-            self.assertEqual(DatasetVisibility.PRIVATE.name, response_dataset["visibility"])
+            self.assertEqual(Visibility.PRIVATE.name, response_dataset["visibility"])
             self.assertEqual(revision_1.version_id.id, response_dataset["collection_id"])
             self.assertEqual(revision_1.version_id.id, response_dataset["collection_version_id"])
             self.assertEqual(revision_1.collection_id.id, response_dataset["revision_of_collection"])
@@ -2143,7 +2140,7 @@ class TestGetDatasets(BaseAPIPortalTest):
         with self.subTest("Verify expected fields for revision, unchanged dataset"):
             expected_dataset = revision_1.datasets[1]
             response_dataset = datasets_by_version_id[expected_dataset.version_id.id]
-            self.assertEqual(DatasetVisibility.PUBLIC.name, response_dataset["visibility"])
+            self.assertEqual(Visibility.PUBLIC.name, response_dataset["visibility"])
             self.assertEqual(revision_1.version_id.id, response_dataset["collection_id"])
             self.assertEqual(revision_1.version_id.id, response_dataset["collection_version_id"])
             self.assertEqual(revision_1.collection_id.id, response_dataset["revision_of_collection"])
@@ -2155,7 +2152,7 @@ class TestGetDatasets(BaseAPIPortalTest):
     def test_get_private_datasets_400(self):
         # 400 if PRIVATE and schema version.
         self._fetch_datasets(
-            visibility=DatasetVisibility.PRIVATE.name,
+            visibility=Visibility.PRIVATE.name,
             headers=self.make_super_curator_header(),
             schema_version="3",
             status_code=400,
@@ -2163,7 +2160,7 @@ class TestGetDatasets(BaseAPIPortalTest):
 
     def test_get_private_datasets_403(self):
         # 403 if no credentials and requesting private datasets.
-        self._fetch_datasets(visibility=DatasetVisibility.PRIVATE.name, status_code=403)
+        self._fetch_datasets(visibility=Visibility.PRIVATE.name, status_code=403)
 
     # Fetch datasets with given visibility and auth.
     def _fetch_datasets(self, visibility=None, headers=None, schema_version=None, status_code=200):
@@ -2562,7 +2559,7 @@ class TestPostDataset(BaseAPIPortalTest):
 
 class TestPostRevision(BaseAPIPortalTest):
     def test__post_revision__no_auth(self):
-        collection_id = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name).collection_id
+        collection_id = self.generate_collection(visibility=Visibility.PUBLIC.name).collection_id
         response = self.app.post(f"/curation/v1/collections/{collection_id}/revision")
         self.assertEqual(401, response.status_code)
 
@@ -2573,9 +2570,7 @@ class TestPostRevision(BaseAPIPortalTest):
         self.assertEqual(403, response.status_code)
 
     def test__post_revision__Not_Owner(self):
-        collection_id = self.generate_collection(
-            visibility=CollectionVisibility.PUBLIC.name, owner="someone else"
-        ).collection_id
+        collection_id = self.generate_collection(visibility=Visibility.PUBLIC.name, owner="someone else").collection_id
         response = self.app.post(
             f"/curation/v1/collections/{collection_id}/revision",
             headers=self.make_owner_header(),
@@ -2583,7 +2578,7 @@ class TestPostRevision(BaseAPIPortalTest):
         self.assertEqual(403, response.status_code)
 
     def test__post_revision__OK(self):
-        collection_id = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name).collection_id
+        collection_id = self.generate_collection(visibility=Visibility.PUBLIC.name).collection_id
         response = self.app.post(
             f"/curation/v1/collections/{collection_id}/revision",
             headers=self.make_owner_header(),
@@ -2592,7 +2587,7 @@ class TestPostRevision(BaseAPIPortalTest):
         self.assertNotEqual(collection_id, response.json["collection_id"])
 
     def test__post_revision_by_collection_version_id_403(self):
-        version_id = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name).version_id
+        version_id = self.generate_collection(visibility=Visibility.PUBLIC.name).version_id
         response = self.app.post(
             f"/curation/v1/collections/{version_id}/revision",
             headers=self.make_owner_header(),
@@ -2600,7 +2595,7 @@ class TestPostRevision(BaseAPIPortalTest):
         self.assertEqual(403, response.status_code)
 
     def test__post_revision__Super_Curator(self):
-        collection_id = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name).collection_id
+        collection_id = self.generate_collection(visibility=Visibility.PUBLIC.name).collection_id
         headers = self.make_super_curator_header()
         response = self.app.post(f"/curation/v1/collections/{collection_id}/revision", headers=headers)
         self.assertEqual(201, response.status_code)

@@ -3,7 +3,7 @@ from flask import jsonify, make_response
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from backend.curation.api.v1.curation.collections.common import reshape_dataset_for_curation_datasets_index_api
 from backend.layers.auth.user_info import UserInfo
-from backend.layers.common.entities import DatasetVisibility
+from backend.layers.common.entities import Visibility
 from backend.portal.api.providers import get_business_logic
 
 
@@ -12,11 +12,11 @@ def get(token_info: dict, schema_version: str = None, visibility: str = None):
     Datasets index endpoint to retrieve full metadata. Only return Dataset data for which the curator is authorized.
     :param token_info: access token info.
     :param schema_version: the schema version to filter the datasets by, PUBLIC Datasets only.
-    :param visibility: the DatasetVisibility in string form.
+    :param visibility: the Visibility in string form.
     """
 
     # Handle retrieval of private datasets.
-    if visibility == DatasetVisibility.PRIVATE.name:
+    if visibility == Visibility.PRIVATE.name:
         if schema_version:
             raise InvalidParametersHTTPException(detail="schema_version is not allowed for PRIVATE Datasets.")
 

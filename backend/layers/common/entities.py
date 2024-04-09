@@ -66,18 +66,6 @@ class DatasetConversionStatus(DatasetStatusGeneric, Enum):
     SKIPPED = "SKIPPED"
 
 
-class DatasetVisibility(Enum):
-    """
-    Describes a datasets's visibility.
-
-    PUBLIC - a published and publicly viewable Dataset.
-    PRIVATE - an open Submission, i.e an unpublished and non-public Dataset.
-    """
-
-    PUBLIC = "Public"
-    PRIVATE = "Private"
-
-
 class CollectionLinkType(str, Enum):
     DOI = "doi"
     RAW_DATA = "raw_data"
@@ -94,13 +82,14 @@ class DatasetArtifactType(str, Enum):
     CXG = "cxg"
 
 
-class CollectionVisibility(Enum):
+class Visibility(Enum):
     """
-    Describes a DbCollection's visibility.
-    At most, one LIVE and one EDIT entry of a Collection may exist at a time.
+    Describes a DbCollection's or a Dataset's visibility.
 
-    PUBLIC - a published and publicly viewable Collection.
-    PRIVATE - an open Submission, i.e an unpublished and non-public Collection.
+    At most, one LIVE and one EDIT entry of a Collection or Dataset may exist at a time.
+
+    PUBLIC - a published and publicly viewable Collection or Dataset.
+    PRIVATE - an open Submission, i.e an unpublished and non-public Collection or Dataset.
     """
 
     PUBLIC = "Public"

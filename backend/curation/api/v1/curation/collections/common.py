@@ -24,10 +24,10 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
-    DatasetVisibility,
     Link,
     OntologyTermId,
     PublishedDatasetVersion,
+    Visibility,
 )
 from backend.portal.api.explorer_url import generate as generate_explorer_url
 from backend.portal.api.providers import get_business_logic
@@ -283,7 +283,7 @@ def reshape_dataset_for_curation_datasets_index_api(
 
     # Create base dataset response shape. use_canonical is true only for datasets with a calculated visibility of
     # public; for datasets with a calculated visibility of private, corresponding fields are calculated below.
-    is_dataset_visibility_public = dataset_visibility == DatasetVisibility.PUBLIC.name
+    is_dataset_visibility_public = dataset_visibility == Visibility.PUBLIC.name
     ds = reshape_dataset_for_curation_api(dataset_version, index=True, use_canonical_url=is_dataset_visibility_public)
 
     # Add visibility and revision-specific fields.
@@ -298,7 +298,7 @@ def reshape_dataset_for_curation_datasets_index_api(
     ds["collection_doi"] = doi
 
     # At this point, dataset shape for public requests are complete.
-    if visibility == DatasetVisibility.PUBLIC.name:
+    if visibility == Visibility.PUBLIC.name:
         return ds
 
     # Dataset shape for private requests require additional processing:
@@ -485,7 +485,7 @@ def calculate_dataset_visibility(
     visibility: str,
     collection_version: Union[CollectionVersionWithPublishedDatasets, CollectionVersionWithPrivateDatasets],
     dataset_version: DatasetVersion,
-) -> DatasetVisibility:
+) -> Visibility:
     """
     Calculate the visibility of a dataset:
     - public if a dataset is public
@@ -498,12 +498,12 @@ def calculate_dataset_visibility(
     """
     # Return public for unchanged datasets of revisions.
     if (
-        visibility == DatasetVisibility.PRIVATE.name
+        visibility == Visibility.PRIVATE.name
         and collection_version.is_unpublished_version()  # Collection is a revision
         and not is_dataset_version_new(dataset_version)  # New dataset of revision
         and not is_dataset_version_revision(dataset_version)  # Changed dataset of revision
     ):
-        return DatasetVisibility.PUBLIC.name
+        return Visibility.PUBLIC.name
 
     # All other cases match the requested visibility.
     return visibility
@@ -543,7 +543,7 @@ def calculate_revision_of_collection(
     :return: The collection ID of a revision's canonical collection, or None.
     """
     # revision_of_collection is always None if request is for public datasets.
-    if visibility == DatasetVisibility.PUBLIC.name:
+    if visibility == Visibility.PUBLIC.name:
         return None
 
     # Return collection ID if collection version is a revision, otherwise return None.
@@ -561,7 +561,7 @@ def calculate_revision_of_dataset(visibility: str, dataset_version: DatasetVersi
     :return: The dataset version ID, or None.
     """
     # revision_of_dataset is always None if request is for public datasets.
-    if visibility == DatasetVisibility.PUBLIC.name:
+    if visibility == Visibility.PUBLIC.name:
         return None
 
     # Return dataset ID if dataset version is a revision, otherwise return None.
