@@ -64,7 +64,7 @@ class WmgSnapshot:
 
     # TileDB arrays containing the precomputed expression summary statistics needed for
     # differential expression.
-    # diffexp_expression_summary_cubes: Optional[Dict[str, Array]] = field(default=None)
+    diffexp_expression_summary_cubes: Optional[Dict[str, Array]] = field(default=None)
 
     # TileDB array containing the precomputed marker genes.
     # See the full schema at backend/wmg/data/schemas/marker_gene_cube_schema.py.
@@ -91,7 +91,7 @@ class WmgSnapshot:
     cell_type_ancestors: Optional[pd.Series] = field(default=None)
 
     # cardinality per dimension dictionary
-    # cardinality_per_dimension: Optional[Dict] = field(default=None)
+    cardinality_per_dimension: Optional[Dict] = field(default=None)
 
 
 # Cached data
@@ -303,7 +303,7 @@ def _load_snapshot(
     filter_relationships = _load_filter_graph_data(snapshot_rel_path, snapshot_fs_root_path)
     cell_type_ancestors = _load_cell_type_ancestors(snapshot_rel_path, snapshot_fs_root_path)
     dataset_metadata = _load_dataset_metadata(snapshot_rel_path, snapshot_fs_root_path)
-    # cardinality_per_dimension = _load_cardinality_per_dimension_data(snapshot_rel_path, snapshot_fs_root_path)
+    cardinality_per_dimension = _load_cardinality_per_dimension_data(snapshot_rel_path, snapshot_fs_root_path)
 
     snapshot_uri = _get_wmg_snapshot_fullpath(snapshot_rel_path, snapshot_fs_root_path)
     logger.info(f"Loading WMG snapshot from absolute path: {snapshot_uri}")
@@ -324,10 +324,10 @@ def _load_snapshot(
         filter_relationships=filter_relationships,
         dataset_metadata=dataset_metadata,
         cell_type_ancestors=pd.Series(cell_type_ancestors),
-        # diffexp_expression_summary_cubes={
-        #     name.split("__")[-1]: _open_cube(f"{snapshot_uri}/{name}") for name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
-        # },
-        # cardinality_per_dimension=cardinality_per_dimension,
+        diffexp_expression_summary_cubes={
+            name.split("__")[-1]: _open_cube(f"{snapshot_uri}/{name}") for name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
+        },
+        cardinality_per_dimension=cardinality_per_dimension,
     )
 
 
