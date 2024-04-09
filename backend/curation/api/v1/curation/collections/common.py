@@ -583,7 +583,7 @@ def is_dataset_version_revision(dataset_version: DatasetVersion) -> bool:
     """
     Determine if a dataset version is a dataset that has been updated as part of a revision. Dataset versions
     that areassociated with a collection revision but are unchanged or new are not considered dataset revisions.
-    A dataset associated with a collection revision that has been updated is considered a dataset revision.
+    A dataset that has been updated as part of an ongoing collection revision is considered a dataset revision.
     :param dataset_version: the dataset version to check if it is a revision.
     :return: A flag indicating the revision status of a dataset version.
     """
