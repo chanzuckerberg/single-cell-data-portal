@@ -566,7 +566,7 @@ def calculate_revision_of_dataset(visibility: str, dataset_version: DatasetVersi
 
     # Return dataset ID if dataset version is a revision, otherwise return None.
     if is_dataset_version_revision(dataset_version):
-        return dataset_version.canonical_dataset.dataset_version_id.id
+        return dataset_version.canonical_dataset.dataset_id.id
     return None
 
 

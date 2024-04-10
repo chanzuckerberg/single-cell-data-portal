@@ -2126,7 +2126,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertEqual(revision_1.version_id.id, response_dataset["collection_id"])
             self.assertEqual(revision_1.version_id.id, response_dataset["collection_version_id"])
             self.assertEqual(revision_1.collection_id.id, response_dataset["revision_of_collection"])
-            self.assertEqual(revision_1.datasets[0].version_id.id, response_dataset["revision_of_dataset"])
+            self.assertEqual(revision_1.datasets[0].dataset_id.id, response_dataset["revision_of_dataset"])
             self.assertIn(revision_1_dataset_updated.dataset_version_id, response_dataset["explorer_url"])
             self.assertIsNone(response_dataset["published_at"])
             self.assertIsNone(response_dataset["revised_at"])
