@@ -96,7 +96,10 @@ def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, ind
     tdb_attrs = []
 
     for column_name, column_values in dataframe.items():
-        dtype, hints = get_dtype_and_schema_of_array(column_values)
+        if column_name == "in_tissue":  # Cast 'in_tissue' column values as boolean to make it categorical
+            dtype, hints = get_dtype_and_schema_of_array(column_values.astype(bool))
+        else:
+            dtype, hints = get_dtype_and_schema_of_array(column_values)
         if "categories" in hints and len(hints.get("categories", [])) > 0.75 * dataframe.shape[0]:
             hints["type"] = "string"
             del hints["categories"]
