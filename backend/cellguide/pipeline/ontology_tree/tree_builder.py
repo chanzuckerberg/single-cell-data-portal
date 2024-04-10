@@ -1,14 +1,12 @@
 import copy
 import logging
-import warnings
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Tuple
 
 import numpy as np
 import pandas as pd
 from dask import compute, delayed
 from dask.diagnostics import ProgressBar
-from pronto import Ontology, Term
 
 from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS, CELL_GUIDE_PINNED_SCHEMA_VERSION
 from backend.cellguide.pipeline.ontology_tree.types import OntologyTree, OntologyTreeState
@@ -17,7 +15,7 @@ from cellxgene_ontology_guide.ontology_parser import OntologyParser
 
 logger = logging.getLogger(__name__)
 
-
+# TODO(COG)
 """
 This module contains the OntologyTreeBuilder class which is used to build a nested dictionary representation of the cell ontology tree.
 The tree is populated with cell type counts from an input dataframe. The class also provides functions to get the ontology tree state
@@ -91,21 +89,26 @@ class OntologyTreeBuilder:
         )
 
         logger.info("Initializing cell type data structures from the input cell counts dataframe...")
-        self.id_to_name, self.all_cell_type_ids = self._initialize_id_to_name()
+
+        self.all_cell_type_ids = self.ontology.get_term_descendants(root_node, include_self=True)
+
         self.cell_counts_df, self.cell_counts_df_rollup = self._initialize_cell_counts_df_rollup(cell_counts_df)
         self.all_cell_type_ids_in_corpus = self.cell_counts_df_rollup.index.values[
             self.cell_counts_df_rollup.values > 0
         ]
 
         # used for gpt pipeline
-        # TODO: refactor this module to use the below mapping instead of self.id_to_name
         self.all_cell_type_ids_to_labels_in_corpus = dict(
-            zip(self.all_cell_type_ids_in_corpus, [self.id_to_name.get(c, c) for c in self.all_cell_type_ids_in_corpus])
+            zip(
+                self.all_cell_type_ids_in_corpus,
+                [self.ontology.get_term_label(c) for c in self.all_cell_type_ids_in_corpus],
+            )
         )
 
         self.all_tissue_ids_in_corpus = list(self.uberon_by_celltype.keys())
         logger.info("Initializing ontology tree data structures by traversing CL ontology...")
-        traverse_ontology_result = self._traverse_ontology_with_counting(self.ontology[root_node])
+
+        traverse_ontology_result = self.build_ontology_tree_with_counting(self.ontology.get_term_graph(root_node))
         self.ontology_graph = traverse_ontology_result.subtree
         self.traverse_node_counter = traverse_ontology_result.traverse_node_counter
         self.all_unique_nodes = traverse_ontology_result.all_unique_nodes
@@ -176,94 +179,57 @@ class OntologyTreeBuilder:
         for child in children:
             self._delete_unknown_terms_from_ontology_graph(child)
 
-    def _initialize_id_to_name(self):
+    def build_ontology_tree_with_counting(self, ontology_graph_dict, traverse_node_counter=None, all_unique_nodes=None):
         """
-        Initializes a dictionary that maps cell type ontology term ids to their names.
-
-        Returns
-        -------
-        id_to_name: dict
-            A dictionary that maps cell type ontology term ids to their names.
-        all_cell_type_ids: list
-            A list of all cell type ontology term ids.
-        """
-        id_to_name = {}
-        for term in self.ontology.terms():
-            if term.id.startswith("CL:"):
-                id_to_name[term.id] = term.name
-        all_cell_type_ids = list(id_to_name.keys())
-        return id_to_name, all_cell_type_ids
-
-    def _traverse_ontology_with_counting(
-        self,
-        node: Term,
-        traverse_node_counter: Optional[Dict[str, int]] = None,
-        all_unique_nodes: Optional[set[str]] = None,
-    ) -> TraverseOntologyResult:
-        """
-        This function traverses the cell ontology and builds a nested dictionary representation of the tree.
-        It also counts the number of times a node has been visited and adds a suffix to the node id to make it unique.
-        The suffix is the number of times the node had been visited prior.
+        This function builds an ontology tree from a given ontology graph dictionary and counts the occurrences of each node.
+        It assigns a unique identifier to each node by appending a suffix that represents the number of times the node has been visited before.
 
         Arguments
         ---------
-        node: pronto.Term
-            A node of the cell ontology. This should be the root node of the ontology at the top-level.
+        ontology_graph_dict: dict
+            A dictionary representation of the ontology graph. This should contain the root node of the ontology at the top-level.
         traverse_node_counter: dict, optional, default=None
             A dictionary that maps cell type ontology term ids to the number of times they have been visited.
         all_unique_nodes: set, optional, default=None
-            A set of all unique cell type ontology term ids that have been visited.
+            A set of all unique cell type ontology term ids that have been visited, each appended with a count suffix to ensure uniqueness.
 
         Returns
         -------
-        ontology_graph: dict
-            A nested dictionary representation of the cell ontology tree.
+        TraverseOntologyResult
+            An object containing the built ontology tree, updated traverse_node_counter, and all_unique_nodes set.
         """
+        if not ontology_graph_dict:
+            return None
+
         if traverse_node_counter is None:
             traverse_node_counter = {}
         if all_unique_nodes is None:
             all_unique_nodes = set()
 
-        node_count = traverse_node_counter.get(node.id, 0)
-        traverse_node_counter[node.id] = node_count + 1
-        all_unique_nodes.add(node.id + "__" + str(node_count))
+        node_id = ontology_graph_dict.get("id", "")
+        node_count = traverse_node_counter.get(node_id, 0)
+        traverse_node_counter[node_id] = node_count + 1
+        unique_node_id = f"{node_id}__{node_count}"
+        all_unique_nodes.add(unique_node_id)
 
-        subclasses = list(node.subclasses(with_self=False, distance=1))
+        root = OntologyTree(
+            id=unique_node_id,
+            name=ontology_graph_dict.get("name", ""),
+            n_cells_rollup=int(self.cell_counts_df_rollup[node_id] if node_id in self.cell_counts_df_rollup else 0),
+            n_cells=int(self.cell_counts_df[node_id] if node_id in self.cell_counts_df else 0),
+            children=[],
+            invalid_children_ids=ontology_graph_dict.get("invalid_children_ids", []),
+            parent=ontology_graph_dict.get("parent", None),
+        )
 
-        if len(subclasses) == 0:
-            return TraverseOntologyResult(
-                subtree=OntologyTree(
-                    id=node.id + "__" + str(node_count),
-                    name=self.id_to_name[node.id] if node.id in self.id_to_name else node.id,
-                    n_cells_rollup=int(
-                        self.cell_counts_df_rollup[node.id] if node.id in self.cell_counts_df_rollup else 0
-                    ),
-                    n_cells=int(self.cell_counts_df[node.id] if node.id in self.cell_counts_df else 0),
-                ),
-                traverse_node_counter=None,
-                all_unique_nodes=None,
-            )
-
-        children = []
-        # sort subclasses such that if a node is in TRAVERSAL_PRIORITY_NODES, it is placed first
-        subclasses.sort(key=lambda x: x.id not in TRAVERSAL_PRIORITY_NODES)
-
-        for child in subclasses:
-            traverse_ontology_result = self._traverse_ontology_with_counting(
-                child, traverse_node_counter, all_unique_nodes
-            )
-            children.append(traverse_ontology_result.subtree)
+        if "children" in ontology_graph_dict and ontology_graph_dict["children"]:
+            for child_dict in ontology_graph_dict["children"]:
+                child_tree = self.build_ontology_tree_with_counting(child_dict, traverse_node_counter, all_unique_nodes)
+                if child_tree:
+                    root.children.append(child_tree)
 
         return TraverseOntologyResult(
-            subtree=OntologyTree(
-                id=node.id + "__" + str(node_count),
-                name=self.id_to_name[node.id] if node.id in self.id_to_name else node.id,
-                n_cells_rollup=int(self.cell_counts_df_rollup[node.id] if node.id in self.cell_counts_df_rollup else 0),
-                n_cells=int(self.cell_counts_df[node.id] if node.id in self.cell_counts_df else 0),
-                children=children,
-            ),
-            traverse_node_counter=traverse_node_counter,
-            all_unique_nodes=all_unique_nodes,
+            subtree=root, traverse_node_counter=traverse_node_counter, all_unique_nodes=all_unique_nodes
         )
 
     def get_ontology_tree(self) -> OntologyTree:
@@ -421,12 +387,9 @@ class OntologyTreeBuilder:
                 - "tissueCounts": A dictionary that maps cell type ontology term ids to the number of cells in the tissue.
                     The number of cells is a dictionary with keys "n_cells" and "n_cells_rollup".
         """
-
-        tissue_term = self.uberon_ontology[tissueId]
-        tissue_label = tissue_term.name
-
         end_nodes = self.uberon_by_celltype[tissueId]
-        uberon_ancestors = [i.id for i in tissue_term.superclasses()]
+        tissue_label = self.ontology.get_term_label(tissueId)
+        uberon_ancestors = [i["id"] for i in self.ontology.get_term_ancestors(tissueId, include_self=True)]
 
         # filter out hemaotoietic cell types from non-whitelisted tissues
         uberon_ancestors_in_whitelist = list(set(TISSUES_IMMUNE_CELL_WHITELIST).intersection(uberon_ancestors))
@@ -434,7 +397,8 @@ class OntologyTreeBuilder:
             end_nodes_that_are_not_hematopoietic = [
                 e
                 for e in end_nodes
-                if HEMATOPOIETIC_CELL_TYPE_ID not in [i.id for i in self.ontology[e].superclasses()]
+                if HEMATOPOIETIC_CELL_TYPE_ID
+                not in [i["id"] for i in self.ontology.get_term_ancestors(e, include_self=True)]
             ]
             if len(end_nodes_that_are_not_hematopoietic) == 0:
                 logger.info(f"Not filtering out immune cell for {tissue_label}")

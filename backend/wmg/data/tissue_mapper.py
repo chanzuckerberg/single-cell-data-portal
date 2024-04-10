@@ -2,6 +2,8 @@ from typing import List, Optional
 
 import owlready2
 
+# TODO(COG)
+
 
 class TissueMapper:
 

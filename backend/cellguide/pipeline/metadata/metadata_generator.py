@@ -3,10 +3,9 @@ import warnings
 
 from pronto import Ontology
 
-from backend.cellguide.pipeline.constants import UBERON_BASIC_PERMANENT_URL_PRONTO
 from backend.cellguide.pipeline.metadata.types import CellMetadata, TissueMetadata
-from backend.wmg.data.constants import CL_BASIC_OBO_NAME
-from backend.wmg.data.utils import get_pinned_ontology_url
+from backend.cellguide.pipeline.constants import CELL_GUIDE_PINNED_SCHEMA_VERSION
+from cellxgene_ontology_guide.ontology_parser import OntologyParser
 
 logger = logging.getLogger(__name__)
 
@@ -23,19 +22,17 @@ def generate_cellguide_card_metadata(all_cell_type_ids_in_corpus: list[str]) -> 
     Note that we will be filtering out obsolete cell types and invalid non-CL cell types.
     """
     logger.info(f"Generating cellguide card metadata for {len(all_cell_type_ids_in_corpus)} cell types...")
-    ontology = Ontology(get_pinned_ontology_url(CL_BASIC_OBO_NAME))
+    ontology = OntologyParser(schema_version=f"v{CELL_GUIDE_PINNED_SCHEMA_VERSION}")
 
     cellguide_card_metadata: dict[str, CellMetadata] = {}
 
     obsolete_cell_ids: list[str] = []
-    invalid_non_cl_cell_ids: list[str] = []
     cell_ids_with_cl_description = 0
     cell_ids_without_cl_description = 0
 
     for id in all_cell_type_ids_in_corpus:
         cell = ontology[id]
-        if not cell.id.startswith("CL:"):
-            invalid_non_cl_cell_ids.append(cell.id)
+
         elif cell.obsolete:
             obsolete_cell_ids.append(cell.id)
         else:
