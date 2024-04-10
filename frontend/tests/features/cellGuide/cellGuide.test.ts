@@ -1084,7 +1084,7 @@ describe("Cell Guide", () => {
 
         // hover over the node
         const node = page.getByTestId(
-          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0002319__0-has-children-isTargetNode=false`
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000540__0-has-children-isTargetNode=true`
         );
         await node.hover();
         await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
@@ -1099,7 +1099,7 @@ describe("Cell Guide", () => {
         const legendText = await page
           .getByTestId(CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID)
           .textContent();
-        expect(legendText).toContain("Marker Score");
+        expect(legendText).toContain("Effect Size");
         expect(legendText).toContain("Expressed in Cells(%)");
 
         // deactivate marker gene mode and check that the legend and tooltips reverted
