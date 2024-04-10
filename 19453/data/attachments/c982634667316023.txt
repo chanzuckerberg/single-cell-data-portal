@@ -1,0 +1,18 @@
+INFO     root:h5ad_data_file.py:175 Reading in AnnData dataset: 75ccfad8-f29e-42d6-b4a6-3faa078a4f1d.h5ad
+INFO     root:h5ad_data_file.py:177 Completed reading in AnnData dataset!
+INFO     root:h5ad_data_file.py:66 Beginning writing to CXG.
+INFO     root:h5ad_data_file.py:70 	...group created, with name /single-cell-data-portal/tests/unit/backend/fixtures/75ccfad8-f29e-42d6-b4a6-3faa078a4f1d.cxg
+INFO     root:h5ad_data_file.py:75 	...dataset metadata saved
+INFO     root:h5ad_data_file.py:78 	...dataset obs dataframe saved
+INFO     root:h5ad_data_file.py:81 	...dataset var dataframe saved
+INFO     root:h5ad_data_file.py:84 	...dataset uns dataframe saved
+INFO     root:h5ad_data_file.py:132 		.../single-cell-data-portal/tests/unit/backend/fixtures/75ccfad8-f29e-42d6-b4a6-3faa078a4f1d.cxg/emb/awesome_embedding embedding created
+INFO     root:h5ad_data_file.py:87 	...dataset embeddings saved
+INFO     root:h5ad_data_file.py:99 is_sparse: True
+INFO     root:cxg_generation_utils.py:216 create /single-cell-data-portal/tests/unit/backend/fixtures/75ccfad8-f29e-42d6-b4a6-3faa078a4f1d.cxg/Xr
+INFO     root:cxg_generation_utils.py:216 create /single-cell-data-portal/tests/unit/backend/fixtures/75ccfad8-f29e-42d6-b4a6-3faa078a4f1d.cxg/Xc
+INFO     root:cxg_generation_utils.py:302 Store rows: 3
+INFO     root:cxg_generation_utils.py:316 Store columns: 4
+INFO     root:h5ad_data_file.py:104 start consolidating
+INFO     root:h5ad_data_file.py:90 	...dataset X matrix saved
+INFO     root:h5ad_data_file.py:92 Completed writing to CXG.
