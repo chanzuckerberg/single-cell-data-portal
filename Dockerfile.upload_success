@@ -1,10 +1,12 @@
 FROM public.ecr.aws/lambda/python:3.8
 
+COPY backend/layers/processing/upload_failures backend/layers/processing/upload_failures
 COPY backend/layers/processing/upload_success .
 COPY backend/layers ./backend/layers
+COPY backend/portal ./backend/portal
 
-ADD requirements-upload-success.txt requirements-upload-success.txt
-RUN pip3 install -r requirements-upload-success.txt
+COPY /python_dependencies/upload_handler/ .
+RUN pip3 install -r requirements.txt
 
 COPY backend/__init__.py ./backend/__init__.py
 COPY backend/common ./backend/common

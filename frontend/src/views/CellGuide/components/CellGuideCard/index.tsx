@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/router";
+import React, { useMemo } from "react";
 import { Global } from "@emotion/react";
 import {
   Wrapper,
@@ -8,7 +7,6 @@ import {
   StyledTag,
   CellGuideView,
   CellGuideCardHeaderInnerWrapper,
-  LEFT_RIGHT_PADDING_PX_XXL,
   StyledRightSideBar,
   MobileTooltipTitle,
   MobileTooltipWrapper,
@@ -26,15 +24,12 @@ import FullScreenProvider from "../common/FullScreenProvider";
 import SourceDataTable from "./components/SourceDataTable";
 import CellGuideCardSidebar from "./components/CellGuideCardSidebar";
 import CellGuideMobileHeader from "../CellGuideMobileHeader";
-import { Gene } from "src/views/WheresMyGene/common/types";
-import { throttle } from "lodash";
 import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 import { titleize } from "src/common/utils/string";
 import Head from "next/head";
 import CellGuideBottomBanner from "../CellGuideBottomBanner";
 import { StickySidebarStyle } from "./components/CellGuideCardSidebar/style";
 import {
-  SKINNY_MODE_BREAKPOINT_WIDTH,
   CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN,
@@ -43,10 +38,8 @@ import {
   RIGHT_SIDEBAR_WIDTH_PX,
   NO_GENE,
 } from "src/views/CellGuide/components/CellGuideCard/constants";
-import { useOrganAndOrganismFilterListForCellType } from "./components/MarkerGeneTables/hooks/common";
 import {
   ALL_TISSUES,
-  NO_ORGAN_ID,
   TISSUE_AGNOSTIC,
 } from "./components/MarkerGeneTables/constants";
 import {
@@ -60,13 +53,15 @@ import { DEFAULT_ONTOLOGY_HEIGHT } from "../common/OntologyDagView/common/consta
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import CellGuideInfoSideBar from "../CellGuideInfoSideBar";
-import { CellType } from "../common/OntologyDagView/common/types";
 import { useComputationalMarkerGenesTableRowsAndFilters } from "./components/MarkerGeneTables/hooks/computational_markers";
+import { useConnect } from "./connect";
+import { SDSOrgan } from "src/views/CellGuide/components/CellGuideCard/types";
+import { getCellTypeLink } from "src/views/CellGuide/common/utils";
 
 const SELECT_A_GENE = "Color by Gene";
 const NO_GENE_OPTIONS = { name: NO_GENE };
 
-const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
+export const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
   sdsStyle: "square",
 } as InputDropdownProps;
 
@@ -84,36 +79,35 @@ export default function CellGuideCard({
   // From getServerSideProps
   synonyms,
 }: Props): JSX.Element {
-  const router = useRouter();
+  const {
+    router,
+    pageNavIsOpen,
+    setPageNavIsOpen,
+    selectedGene,
+    sectionRef0,
+    sectionRef1,
+    sectionRef2,
+    sectionRef3,
+    selectGene,
+    setSelectedGene,
+    skinnyMode,
+    tooltipContent,
+    setTooltipContent,
+    queryCellTypeId,
+    cellTypeId,
+    geneInfoGene,
+    setGeneInfoGene,
+    cellInfoCellType,
+    setCellInfoCellType,
+    sdsOrganismsList,
+    sdsOrgansList,
+    selectedOrgan,
+    selectedOrganId,
+    selectedOrganism,
+    setSelectedOrganism,
+  } = useConnect();
 
-  const [pageNavIsOpen, setPageNavIsOpen] = useState(false);
-  const [selectedGene, setSelectedGene] = useState<string | undefined>(
-    undefined
-  );
-
-  // Navigation
-  const sectionRef0 = React.useRef<HTMLDivElement>(null);
-  const sectionRef1 = React.useRef<HTMLDivElement>(null);
-  const sectionRef2 = React.useRef<HTMLDivElement>(null);
-  const sectionRef3 = React.useRef<HTMLDivElement>(null);
-
-  const selectGene = (gene: string) => {
-    if (gene === selectedGene) {
-      setSelectedGene(undefined);
-    } else {
-      setSelectedGene(gene);
-      if (sectionRef1.current) {
-        window.scrollTo({
-          top:
-            sectionRef1.current.getBoundingClientRect().top +
-            window.scrollY -
-            50,
-          behavior: "smooth",
-        });
-      }
-    }
-  };
-  const [skinnyMode, setSkinnyMode] = useState<boolean>(false);
+  const tissueName = selectedOrgan?.name || "";
 
   const cellGuideSideBar = useMemo(() => {
     return (
@@ -128,82 +122,37 @@ export default function CellGuideCard({
         ]}
       />
     );
-  }, [skinnyMode]);
+  }, [
+    skinnyMode,
+    sectionRef0,
+    sectionRef1,
+    sectionRef2,
+    sectionRef3,
+    setPageNavIsOpen,
+  ]);
 
-  // Set the mobile tooltip view content
-  const [tooltipContent, setTooltipContent] = useState<{
-    title: string;
-    element: JSX.Element;
-  } | null>(null);
-
-  // cell type id
-  const { cellTypeId: cellTypeIdRaw } = router.query;
-  const cellTypeId = (cellTypeIdRaw as string)?.replace("_", ":") ?? "";
   const cellTypeName = name || "";
   const titleizedCellTypeName = titleize(cellTypeName);
 
-  const handleResize = useCallback(() => {
-    setSkinnyMode(
-      window.innerWidth <
-        SKINNY_MODE_BREAKPOINT_WIDTH + 2 * LEFT_RIGHT_PADDING_PX_XXL
-    );
-  }, []);
+  const handleChangeOrgan = (
+    option: DefaultDropdownMenuOption | null = null
+  ) => {
+    const { name, id } = (option || {}) as SDSOrgan;
 
-  const throttledHandleResize = useMemo(() => {
-    return throttle(handleResize, 100);
-  }, [handleResize]);
+    if (!option || !name || name === tissueName) return;
 
-  useEffect(() => {
-    throttledHandleResize();
-    window.addEventListener("resize", throttledHandleResize);
+    const optionName = name === TISSUE_AGNOSTIC ? ALL_TISSUES : name;
 
-    return () => window.removeEventListener("resize", throttledHandleResize);
-  }, [throttledHandleResize]);
-
-  const [geneInfoGene, setGeneInfoGene] = useState<Gene["name"] | null>(null);
-  const [cellInfoCellType, setCellInfoCellType] = useState<CellType | null>(
-    null
-  );
-
-  const { organismsList, organsMap } =
-    useOrganAndOrganismFilterListForCellType(cellTypeId);
-
-  const sdsOrganismsList = useMemo(
-    () =>
-      organismsList.map((organism) => ({
-        name: organism,
-      })),
-    [organismsList]
-  );
-
-  const sdsOrgansList = useMemo(
-    () =>
-      Array.from(organsMap.keys()).map((organ) => ({
-        name: organ === ALL_TISSUES ? TISSUE_AGNOSTIC : organ,
-      })),
-    [organsMap]
-  );
-
-  const [selectedOrgan, setSelectedOrgan] = useState<DefaultDropdownMenuOption>(
-    sdsOrgansList.find(
-      (organ) => organ.name === TISSUE_AGNOSTIC
-    ) as DefaultDropdownMenuOption
-  );
-
-  const [selectedOrganId, setSelectedOrganId] = useState(NO_ORGAN_ID);
-
-  const handleChangeOrgan = (option: DefaultDropdownMenuOption | null) => {
-    if (!option || option.name === selectedOrgan.name) return;
-    setSelectedOrgan(option);
-    const optionName =
-      option.name === TISSUE_AGNOSTIC ? ALL_TISSUES : option.name;
-    setSelectedOrganId(organsMap.get(optionName) ?? "");
     // Continue tracking the analytics event as All Tissues
     track(EVENTS.CG_SELECT_TISSUE, { tissue: optionName });
-  };
 
-  const [selectedOrganism, setSelectedOrganism] =
-    useState<DefaultDropdownMenuOption>(sdsOrganismsList[0]);
+    const url = getCellTypeLink({ tissueId: id, cellTypeId });
+
+    /**
+     * (thuang): Product requirement to keep the scroll position
+     */
+    router.push(url, url, { scroll: false });
+  };
 
   const handleChangeOrganism = (option: DefaultDropdownMenuOption | null) => {
     if (!option || option.name === selectedOrganism.name) return;
@@ -219,9 +168,8 @@ export default function CellGuideCard({
     setCellInfoCellType(null);
   }
 
-  useEffect(() => {
-    setSelectedGene(undefined);
-  }, [selectedOrgan, selectedOrganism, setSelectedGene]);
+  const cellTypePrefix =
+    tissueName === TISSUE_AGNOSTIC ? "" : `${tissueName} specific `;
 
   const { computationalMarkerGeneTableData } =
     useComputationalMarkerGenesTableRowsAndFilters({
@@ -263,26 +211,32 @@ export default function CellGuideCard({
       data-testid={CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN}
     />
   );
-  const title = `${titleizedCellTypeName} Cell Types - CZ CELLxGENE CellGuide`;
-  const seoDescription = `Find comprehensive information about "${cellTypeName}" cell types (synonyms: ${
+  const title = `${titleize(
+    cellTypePrefix
+  )}${titleizedCellTypeName} Cell Types - CZ CELLxGENE CellGuide`;
+
+  const seoDescription = `Find comprehensive information about ${cellTypePrefix}"${cellTypeName}" cell types (synonyms: ${
     synonyms?.join(", ") || "N/A"
   }). ${rawSeoDescription}`;
 
+  const OrganismSelectorDropdown = (
+    <Dropdown
+      InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
+      search
+      label={selectedOrganism?.name}
+      onChange={handleChangeOrganism}
+      options={sdsOrganismsList}
+      value={selectedOrganism}
+      data-testid={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
+    />
+  );
   const dropdownComponents = (
     <CellGuideCardHeaderInnerWrapper>
+      {OrganismSelectorDropdown}
       <Dropdown
         InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
         search
-        label={selectedOrganism?.name}
-        onChange={handleChangeOrganism}
-        options={sdsOrganismsList}
-        value={selectedOrganism}
-        data-testid={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
-      />
-      <Dropdown
-        InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
-        search
-        label={selectedOrgan?.name}
+        label={tissueName}
         onChange={handleChangeOrgan}
         options={sdsOrgansList}
         value={selectedOrgan}
@@ -310,6 +264,7 @@ export default function CellGuideCard({
       />
     </span>
   );
+
   return (
     <>
       {/* This is a fix that overrides a global overflow css prop to get sticky elements to work */}
@@ -336,7 +291,7 @@ export default function CellGuideCard({
         {/* This prevents auto zooming on the input box on mobile */}
         <meta
           name="viewport"
-          content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1"
+          content="width=device-width, initial-scale=1, minimum-scale=1"
         />
       </Head>
 
@@ -377,7 +332,7 @@ export default function CellGuideCard({
                 {titleizedCellTypeName}
               </CellGuideCardName>
               <a
-                href={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${cellTypeIdRaw}`}
+                href={`https://www.ebi.ac.uk/ols4/ontologies/cl/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252F${queryCellTypeId}`}
                 target="_blank"
                 rel="noreferrer noopener"
               >
@@ -420,7 +375,8 @@ export default function CellGuideCard({
                 <OntologyDagView
                   key={`${cellTypeId}-${selectedOrganId}-${selectedGene}`}
                   cellTypeId={cellTypeId}
-                  tissueName={selectedOrgan.name}
+                  cellTypeName={cellTypeName}
+                  tissueName={tissueName}
                   tissueId={selectedOrganId}
                   inputWidth={width}
                   setCellInfoCellType={setCellInfoCellType}
@@ -442,7 +398,7 @@ export default function CellGuideCard({
               setGeneInfoGene={setGeneInfoGene}
               cellTypeName={cellTypeName}
               skinnyMode={skinnyMode}
-              organName={selectedOrgan.name}
+              organName={tissueName}
               organId={selectedOrganId}
               organismName={selectedOrganism.name}
               selectedGene={selectedGene}
@@ -486,7 +442,7 @@ export default function CellGuideCard({
               </span>
             }
             setGeneInfoGene={setGeneInfoGene}
-            selectedOrganName={selectedOrgan.name}
+            selectedOrganName={tissueName}
             selectedOrganId={selectedOrganId}
             organismName={selectedOrganism.name}
             selectedGene={selectedGene}
@@ -497,7 +453,7 @@ export default function CellGuideCard({
 
           {
             // Split right sidebar view if fmg AND gene info is populated
-            geneInfoGene && (
+            !!geneInfoGene && (
               <GeneInfoSideBar
                 geneInfoGene={geneInfoGene}
                 handleClose={handleCloseGeneInfoSideBar}

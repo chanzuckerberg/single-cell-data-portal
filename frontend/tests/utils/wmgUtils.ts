@@ -1,5 +1,9 @@
 import { ROUTES } from "src/common/constants/routes";
-import { TEST_URL } from "../common/constants";
+import {
+  SOURCE_DATA_BUTTON_ID,
+  SOURCE_DATA_LIST_ID,
+  TEST_URL,
+} from "../common/constants";
 import { expect, Page } from "@playwright/test";
 import { getTestID, getText } from "tests/utils/selectors";
 import {
@@ -27,6 +31,37 @@ export const WMG_WITH_SEEDED_GENES = {
     `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}?` +
     `genes=${encodeURIComponent(WMG_SEED_GENES.join(","))}&ver=2`,
   genes: WMG_SEED_GENES,
+};
+
+const WMG_SEED_CELL_TYPES = ["B-1a B cell"];
+/**
+ * B-1a B cell's ontology id is: CL:0000820
+ */
+const WMG_SEED_CELL_TYPE_IDS = ["CL:0000820"];
+
+export const WMG_WITH_SEEDED_GENES_AND_CELL_TYPES = {
+  URL:
+    `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}?` +
+    `genes=${encodeURIComponent(WMG_SEED_GENES.join(","))}&` +
+    `cellTypes=${encodeURIComponent(WMG_SEED_CELL_TYPES.join(","))}&` +
+    "ver=2",
+  genes: WMG_SEED_GENES,
+  cellTypes: WMG_SEED_CELL_TYPES,
+  cellTypeIds: WMG_SEED_CELL_TYPE_IDS,
+};
+
+const WMG_SEED_TISSUES = ["blood", "lung"];
+const WMG_SEED_TISSUE_IDS = ["UBERON:0000178", "UBERON:0002048"];
+
+export const WMG_WITH_SEEDED_GENES_AND_TISSUES = {
+  URL:
+    `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}?` +
+    `genes=${encodeURIComponent(WMG_SEED_GENES.join(","))}&` +
+    `tissues=${encodeURIComponent(WMG_SEED_TISSUE_IDS.join(","))}&` +
+    "ver=2",
+  genes: WMG_SEED_GENES,
+  tissues: WMG_SEED_TISSUES,
+  tissueIds: WMG_SEED_TISSUE_IDS,
 };
 
 const WAIT_FOR_RESPONSE_TIMEOUT_MS = 10 * 1000;
@@ -226,38 +261,38 @@ export const selectTissueAndGeneOption = async (page: Page) => {
 };
 
 export const checkSourceData = async (page: Page) => {
-  //click on source data icon
-  await page.locator('[data-testid="source-data-button"]').click();
+  const sourceDataButton = page.getByTestId(SOURCE_DATA_BUTTON_ID);
+  const sourceDataList = page.getByTestId(SOURCE_DATA_LIST_ID);
+
+  // click on source data icon
+  await sourceDataButton.click();
 
   // number of element displayed on source data
-  const n = await page.locator('[data-testid="source-data-list"] a').count();
+  const n = await sourceDataList.locator("a").count();
 
   // close the pop-up
   /**
-   * (thuang): Sometimes pressing escape once wasn't closing the side panel, so
+   * (thuang): Sometimes closing the panel just once doesn't work, so
    * wrapping this to retry and assert the panel is indeed closed
    */
   await tryUntil(
     async () => {
-      await page.keyboard.press("Escape");
-
-      await tryUntil(
-        async () => {
-          expect(
-            await page.locator('[data-testid="source-data-list"]').isVisible()
-          ).toBeFalsy();
-        },
-        {
-          page,
-          /**
-           * (thuang): we don't need to wait for too long to retry pressing escape
-           * button, since the source data panel should close within 2s
-           */
-          maxRetry: 10,
-        }
-      );
+      try {
+        expect(await sourceDataList.isVisible()).toBeFalsy();
+      } catch {
+        await sourceDataButton.click({ force: true });
+        await sourceDataList.waitFor({ state: "hidden" });
+        throw Error("Source data panel is still visible");
+      }
     },
-    { page }
+    {
+      page,
+      /**
+       * (thuang): we don't need to retry too many times, since the source data
+       * panel should close within 2s
+       */
+      timeoutMs: 2 * 1000,
+    }
   );
 
   return n;

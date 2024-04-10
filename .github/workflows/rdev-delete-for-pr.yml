@@ -8,10 +8,6 @@ on:
       - closed
 
 env:
-  # Force using BuildKit instead of normal Docker, required so that metadata
-  # is written/read to allow us to use layers of previous builds as cache.
-  DOCKER_BUILDKIT: 1
-  COMPOSE_DOCKER_CLI_BUILD: 1
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
   STACK_NAME: pr-${{ github.event.number }}
 
@@ -21,7 +17,7 @@ permissions:
 
 # prevent the rdev from being updated in concurrent GHA
 concurrency:
-  group: pr-${{ github.event.number }}
+  group: pr-${{ github.event.number }}-happy
   cancel-in-progress: false
 
 jobs:
@@ -29,7 +25,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}

@@ -16,8 +16,8 @@ import {
   HEATMAP_CONTAINER_ID,
   X_AXIS_CHART_HEIGHT_PX,
   X_AXIS_CHART_HEIGHT_PX_SVG,
-} from "src/views/WheresMyGene/common/constants";
-import { CellType, ChartProps } from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/constants";
+import { CellType, ChartProps } from "src/views/WheresMyGeneV2/common/types";
 
 import { Label } from "../../style";
 import {
@@ -46,7 +46,7 @@ import {
   OntologyTerm,
   useAvailableOrganisms,
 } from "src/common/queries/wheresMyGene";
-import { State, StateContext } from "src/views/WheresMyGene/common/store";
+import { State, StateContext } from "src/views/WheresMyGeneV2/common/store";
 import {
   buildCellTypeIdToMetadataMapping,
   csvGeneExpressionRow,
@@ -67,9 +67,10 @@ import {
   Y_AXIS_CHART_WIDTH_PX,
   getHeatmapHeight,
   getHeatmapWidth,
-} from "src/views/WheresMyGene/components/HeatMap/utils";
-import { CHART_PADDING_PX } from "src/views/WheresMyGene/components/HeatMap/style";
+} from "src/views/WheresMyGeneV2/components/HeatMap/utils";
+import { CHART_PADDING_PX } from "src/views/WheresMyGeneV2/components/HeatMap/style";
 import { StyledButtonIcon } from "../ShareButton/style";
+import { getCurrentDate } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport/utils";
 
 let heatmapContainerScrollTop: number | undefined;
 
@@ -331,14 +332,14 @@ function generateSvg({
   heatmapWidth,
   tissueNames,
   tissuesByName,
-  selectedCellTypes,
+  allChartProps,
   expandedTissueIds,
 }: {
   svg: string;
   heatmapWidth: number;
   tissueNames: string[];
   tissuesByName: { [name: string]: OntologyTerm };
-  selectedCellTypes: Props["selectedCellTypes"];
+  allChartProps: { [tissue: string]: ChartProps };
   expandedTissueIds: string[];
 }) {
   const heatmapNode = new DOMParser().parseFromString(svg, "image/svg+xml");
@@ -369,15 +370,17 @@ function generateSvg({
     yOffset,
   });
 
-  // Build heatmaps for all tissues for wmg v2
+  // Build heat maps for all tissues for wmg v2
   const tissueSVGs = tissueNames.map((tissueName) => {
     // If tissue is expanded, then use the heatmap height + padding
     // If tissue is NOT expanded, then just add padding
 
+    const tissueChartProps = allChartProps[tissueName];
+
     const heatmapHeight = expandedTissueIds.includes(
       tissuesByName[tissueName].id
     )
-      ? getHeatmapHeight(selectedCellTypes[tissueName]) +
+      ? getHeatmapHeight(tissueChartProps.cellTypeMetadata) +
         X_AXIS_CHART_HEIGHT_PX_SVG
       : X_AXIS_CHART_HEIGHT_PX_SVG;
 
@@ -387,6 +390,7 @@ function generateSvg({
       tissueName,
       yOffset,
     });
+
     const dotsSvg = renderDots({
       tissueName,
       yOffset,
@@ -403,6 +407,7 @@ function generateSvg({
     CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX * 2;
 
   const finalSvg = document.createElementNS(NAME_SPACE_URI, "svg");
+
   applyAttributes(finalSvg, {
     width: svgWidth < paddedBannerWidth ? paddedBannerWidth : svgWidth, // Use the banner width as the minimum final svg width
     height:
@@ -505,15 +510,16 @@ function generateCsv({
 }
 
 async function generateImage({
+  allChartProps,
   fileType,
   heatmapNode,
   heatmapWidth,
   isMultipleFormatDownload,
   tissueNames,
   tissuesByName,
-  selectedCellTypes,
   expandedTissueIds,
 }: {
+  allChartProps: { [tissue: string]: ChartProps };
   fileType: string;
   heatmapNode: HTMLDivElement;
   heatmapWidth: number;
@@ -541,7 +547,7 @@ async function generateImage({
       svg: decodeURIComponent(imageURL.split(",")[1]),
       tissueNames,
       tissuesByName,
-      selectedCellTypes,
+      allChartProps,
       expandedTissueIds,
     });
   } else if (fileType === "png" && isMultipleFormatDownload) {
@@ -690,6 +696,7 @@ function download_({
                 });
               } else {
                 input = await generateImage({
+                  allChartProps,
                   fileType,
                   heatmapNode,
                   heatmapWidth,
@@ -749,14 +756,4 @@ function download_({
     setEchartsRendererMode("canvas");
     setDownloadStatus({ isLoading: false });
   };
-}
-
-// Gets the date in mmddyy format
-export function getCurrentDate() {
-  const today = new Date();
-  const month = (today.getMonth() + 1).toString().padStart(2, "0");
-  const day = today.getDate().toString().padStart(2, "0");
-  const year = today.getFullYear().toString().slice(-2);
-
-  return month + day + year;
 }

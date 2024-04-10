@@ -1,6 +1,6 @@
 import {
   Intent,
-  ITextAreaProps,
+  TextAreaProps,
   TextArea as RawTextArea,
 } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
@@ -17,7 +17,7 @@ const ErrorIcon = () => {
   return <StyledDangerIcon icon={IconNames.ISSUE} intent={Intent.DANGER} />;
 };
 
-interface Props extends ITextAreaProps {
+interface Props extends TextAreaProps {
   isValid?: boolean;
   syncValidation?: Array<(value: string) => boolean>;
   handleChange?: ({ isValid, value, name }: Value) => void;

@@ -33,9 +33,9 @@ class StepFunctionProvider(StepFunctionProviderInterface):
         located at `url`
         """
         input_parameters = {
-            "collection_id": version_id.id,
+            "collection_version_id": version_id.id,
             "url": url,
-            "dataset_id": dataset_version_id.id,
+            "dataset_version_id": dataset_version_id.id,
         }
         sfn_name = sfn_name_generator(dataset_version_id)
         response = self.client.start_execution(

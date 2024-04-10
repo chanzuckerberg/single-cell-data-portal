@@ -1,10 +1,10 @@
 import { Wrapper, Label, StyledDropdown } from "../common/style";
-import { LabelWrapper, NewChip } from "./style";
+import { CompareWrapper, LabelWrapper } from "./style";
 import {
   COMPARE_OPTIONS,
   GROUP_BY_TOOLTIP_TEXT,
   SELECT_TISSUE_GENE_TEXT,
-} from "src/views/WheresMyGene/common/constants";
+} from "src/views/WheresMyGeneV2/common/constants";
 import { Tooltip } from "@czi-sds/components";
 import {
   StyledIconImage,
@@ -21,7 +21,7 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
   });
 
   return (
-    <div>
+    <CompareWrapper>
       <LabelWrapper>
         <Label>
           Group By
@@ -48,11 +48,10 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
               sdsType="secondary"
               isAllCaps={false}
             >
-              <StyledIconImage src={questionMarkIcon} />
+              <StyledIconImage alt="question mark" src={questionMarkIcon} />
             </TooltipButton>
           </Tooltip>
         </Label>
-        <NewChip label="NEW" />
       </LabelWrapper>
       <Wrapper>
         <StyledDropdown
@@ -64,6 +63,6 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
           value={optionLabel}
         />
       </Wrapper>
-    </div>
+    </CompareWrapper>
   );
 }

@@ -21,3 +21,4 @@ class CorporaConstants:
 
     ORIGINAL_H5AD_ARTIFACT_FILENAME = "raw.h5ad"
     LABELED_H5AD_ARTIFACT_FILENAME = "local.h5ad"
+    LABELED_RDS_ARTIFACT_FILENAME = "local.rds"

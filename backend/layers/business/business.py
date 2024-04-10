@@ -6,12 +6,14 @@ from datetime import datetime
 from functools import reduce
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
+from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
+from backend.common.corpora_config import CorporaConfig
+from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
     CollectionMetadataUpdate,
     CollectionQueryFilter,
     DatasetArtifactDownloadData,
-    DeprecatedDatasetArtifactDownloadData,
 )
 from backend.layers.business.exceptions import (
     ArtifactNotFoundException,
@@ -36,6 +38,7 @@ from backend.layers.business.exceptions import (
 )
 from backend.layers.common import validation
 from backend.layers.common.cleanup import sanitize
+from backend.layers.common.doi import doi_curie_from_link
 from backend.layers.common.entities import (
     CanonicalCollection,
     CollectionId,
@@ -47,6 +50,7 @@ from backend.layers.common.entities import (
     CollectionVersionWithPublishedDatasets,
     DatasetArtifact,
     DatasetArtifactId,
+    DatasetArtifactMetadataUpdate,
     DatasetArtifactType,
     DatasetConversionStatus,
     DatasetId,
@@ -67,6 +71,7 @@ from backend.layers.common.helpers import (
 )
 from backend.layers.common.regex import S3_URI_REGEX
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
+from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
 from backend.layers.thirdparty.crossref_provider import (
     CrossrefDOINotFoundException,
     CrossrefException,
@@ -82,6 +87,7 @@ logger = logging.getLogger(__name__)
 
 class BusinessLogic(BusinessLogicInterface):
     database_provider: DatabaseProviderInterface
+    batch_job_provider: BatchJobProviderInterface
     crossref_provider: CrossrefProviderInterface
     step_function_provider: StepFunctionProviderInterface
     s3_provider: S3ProviderInterface
@@ -90,11 +96,13 @@ class BusinessLogic(BusinessLogicInterface):
     def __init__(
         self,
         database_provider: DatabaseProviderInterface,
+        batch_job_provider: BatchJobProviderInterface,
         crossref_provider: CrossrefProviderInterface,
         step_function_provider: StepFunctionProviderInterface,
         s3_provider: S3ProviderInterface,
         uri_provider: UriProviderInterface,
     ) -> None:
+        self.batch_job_provider = batch_job_provider
         self.crossref_provider = crossref_provider
         self.database_provider = database_provider
         self.step_function_provider = step_function_provider
@@ -107,12 +115,56 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Return the permanent URL for the given asset.
         """
-        from backend.common.corpora_config import CorporaConfig
-
         base_url = CorporaConfig().dataset_assets_base_url
         return f"{base_url}/{dataset_version_id.id}.{asset_type}"
 
-    def _get_publisher_metadata(self, doi: str, errors: list) -> Optional[dict]:
+    @staticmethod
+    def generate_dataset_citation(
+        collection_id: CollectionId, dataset_version_id: DatasetVersionId, doi: str = None
+    ) -> str:
+        """
+        Builds 'citation' string to populate on dataset artifacts
+        """
+        dataset_assets_base_url = CorporaConfig().dataset_assets_base_url
+        collections_url = f"{CorporaConfig().collections_base_url}/collections"
+        citation = ""
+
+        if doi:
+            citation += f"Publication: {doi} "
+        citation += f"Dataset Version: {dataset_assets_base_url}/{dataset_version_id}.h5ad "
+        citation += f"curated and distributed by CZ CELLxGENE Discover in Collection: {collections_url}/{collection_id}"
+
+        return citation
+
+    def trigger_dataset_artifact_update(
+        self,
+        collection_version: CollectionVersion,
+        metadata_update: DatasetArtifactMetadataUpdate,
+        current_dataset_version_id: DatasetVersionId,
+        new_dataset_version_id: DatasetVersionId = None,
+    ):
+        """
+        Sets up and triggers batch job to copy a previous dataset version into a new dataset version, then
+        update the dataset artifacts and metadata of the new dataset version with a given map of changes,
+        as a lightweight alternative to a full re-ingestion of an existing dataset.
+        """
+        if collection_version.is_published():
+            raise CollectionIsPublishedException(
+                [
+                    f"Collection version {collection_version.version_id.id} is published,"
+                    f" cannot trigger artifact reprocessing for its datasets"
+                ]
+            )
+        if new_dataset_version_id is None:
+            new_dataset_version_id = self.create_empty_dataset_version_for_current_dataset(
+                collection_version.version_id, current_dataset_version_id
+            ).version_id
+
+        self.batch_job_provider.start_metadata_update_batch_job(
+            current_dataset_version_id, new_dataset_version_id, metadata_update
+        )
+
+    def _get_publisher_metadata(self, doi: str, errors: list) -> Tuple[Optional[dict], Optional[str]]:
         """
         Retrieves publisher metadata from Crossref.
         """
@@ -122,7 +174,7 @@ class BusinessLogic(BusinessLogicInterface):
             errors.append({"link_type": CollectionLinkType.DOI, "reason": "DOI cannot be found on Crossref"})
         except CrossrefException as e:
             logging.warning(f"CrossrefException on create_collection: {e}. Will ignore metadata.")
-            return None
+        return None, None
 
     def create_collection(
         self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
@@ -139,9 +191,14 @@ class BusinessLogic(BusinessLogicInterface):
         validation.verify_collection_metadata(collection_metadata, errors)
 
         # TODO: Maybe switch link.type to be an enum
-        doi = next((link.uri for link in collection_metadata.links if link.type == "DOI"), None)
+        doi_link = next((link for link in collection_metadata.links if link.type == "DOI"), None)
 
-        publisher_metadata = self._get_publisher_metadata(doi, errors) if doi is not None else None
+        publisher_metadata = None
+        if doi_link:
+            publisher_metadata, doi_curie_from_crossref = self._get_publisher_metadata(doi_link.uri, errors)
+            # Ensure DOI link has correct hyperlink formation a la https://doi.org/{curie_identifier}
+            # DOI returned from Crossref may be a different (published) DOI altogether if submitted DOI is preprint
+            doi_link.uri = f"https://doi.org/{doi_curie_from_crossref}"
 
         if errors:
             raise CollectionCreationException(errors)
@@ -208,6 +265,9 @@ class BusinessLogic(BusinessLogicInterface):
                 latest = collection.created_at
                 unpublished_collection = collection
         return unpublished_collection
+
+    def get_collection_url(self, collection_id: str) -> str:
+        return f"{CorporaConfig().collections_base_url}/collections/{collection_id}"
 
     def get_collection_version(
         self, version_id: CollectionVersionId, get_tombstoned: bool = False
@@ -280,13 +340,12 @@ class BusinessLogic(BusinessLogicInterface):
                 yield collection_version
 
     def update_collection_version(
-        self, version_id: CollectionVersionId, body: CollectionMetadataUpdate, ignore_doi_update: bool = False
+        self, version_id: CollectionVersionId, body: CollectionMetadataUpdate, apply_doi_update: bool = True
     ) -> None:
         """
         Updates a collection version by replacing parts of its metadata.
         If the DOI in the links changed, it should also update its publisher metadata.
-        If `ignore_doi_update` is set to True, no DOI updates should be issued
-
+        If `apply_doi_update` is set to False, no DOI updates should be issued
         """
 
         # TODO: CollectionMetadataUpdate should probably be used for collection creation as well
@@ -297,8 +356,8 @@ class BusinessLogic(BusinessLogicInterface):
         # Check metadata
         validation.verify_collection_metadata_update(body, errors)
 
-        current_version = self.get_collection_version(version_id)
-        if current_version.published_at is not None:
+        current_collection_version = self.get_collection_version(version_id)
+        if current_collection_version.published_at is not None:
             raise CollectionUpdateException(["Cannot update a published collection"])
 
         # Determine if publisher metadata should be unset, ignored or set at the end of the method.
@@ -306,25 +365,52 @@ class BusinessLogic(BusinessLogicInterface):
         unset_publisher_metadata = False
         publisher_metadata_to_set = None
 
-        if not ignore_doi_update:
+        new_doi = None
+        current_doi = None
+        if apply_doi_update and body.links is not None:  # empty list is used to reset DOI
             # Determine if the DOI has changed
-            old_doi = next((link.uri for link in current_version.metadata.links if link.type == "DOI"), None)
-            new_doi = (
-                None if body.links is None else next((link.uri for link in body.links if link.type == "DOI"), None)
+            current_doi = next(
+                (link.uri for link in current_collection_version.metadata.links if link.type == "DOI"), None
             )
-
-            if old_doi and new_doi is None:
+            # Format new doi link correctly; current link will have format https://doi.org/{curie_identifier}
+            if new_doi_curie := doi_curie_from_link(
+                next((link.uri for link in body.links if link.type == "DOI"), None)
+            ):
+                new_doi = f"https://doi.org/{new_doi_curie}"
+            else:
+                next((link.uri for link in body.links if link.type == "DOI"), None)
+            if current_doi != new_doi:
+                for dataset in current_collection_version.datasets:
+                    # Avoid reprocessing a dataset while it is already processing to avoid race conditions
+                    # We only support all-or-nothing dataset DOI updates in a collection to avoid mismatching citations
+                    # in a collection.
+                    if dataset.status.processing_status not in [
+                        DatasetProcessingStatus.SUCCESS,
+                        DatasetProcessingStatus.FAILURE,
+                    ]:
+                        errors.append(
+                            {
+                                "link_type": CollectionLinkType.DOI,
+                                "reason": "Cannot update DOI while a dataset is processing or awaiting upload.",
+                            }
+                        )
+                        break
+            elif doi_link := next((link for link in body.links if link.type == "DOI"), None):
+                doi_link.uri = new_doi  # Ensures we submit DOI link in correct format
+            if current_doi and new_doi is None:
                 # If the DOI was deleted, remove the publisher_metadata field
                 unset_publisher_metadata = True
-            elif (new_doi is not None) and new_doi != old_doi:
+            elif new_doi and new_doi != current_doi:
                 # If the DOI has changed, fetch and update the metadata
-                publisher_metadata_to_set = self._get_publisher_metadata(new_doi, errors)
+                publisher_metadata_to_set, doi_curie_from_crossref = self._get_publisher_metadata(new_doi, errors)
+                new_doi = f"https://doi.org/{doi_curie_from_crossref}"
+                next((link for link in body.links if link.type == "DOI")).uri = new_doi  # noqa - DOI link exists
 
         if errors:
             raise CollectionUpdateException(errors)
 
         # Merge the updated fields in the existing metadata object. Use a copy to ensure immutability.
-        new_metadata = copy.deepcopy(current_version.metadata)
+        new_metadata = copy.deepcopy(current_collection_version.metadata)
         for field in vars(body):
             if hasattr(body, field) and (value := getattr(body, field)) is not None:
                 if isinstance(value, str):
@@ -339,6 +425,26 @@ class BusinessLogic(BusinessLogicInterface):
         elif publisher_metadata_to_set is not None:
             self.database_provider.save_collection_publisher_metadata(version_id, publisher_metadata_to_set)
         self.database_provider.save_collection_metadata(version_id, new_metadata)
+        if all(
+            [apply_doi_update, new_doi != current_doi, FeatureFlagService.is_enabled(FeatureFlagValues.CITATION_UPDATE)]
+        ):
+            for dataset in current_collection_version.datasets:
+                if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
+                    self.logger.info(
+                        f"Dataset {dataset.version_id.id} is not successfully processed. Skipping metadata update."
+                    )
+                    continue
+
+                new_dataset_version_id = self.create_empty_dataset_version_for_current_dataset(
+                    current_collection_version.version_id, dataset.version_id
+                ).version_id
+                citation = self.generate_dataset_citation(
+                    current_collection_version.collection_id, new_dataset_version_id, new_doi
+                )
+                metadata_update = DatasetArtifactMetadataUpdate(citation=citation)
+                self.trigger_dataset_artifact_update(
+                    current_collection_version, metadata_update, dataset.version_id, new_dataset_version_id
+                )
 
     def _assert_collection_version_unpublished(
         self, collection_version_id: CollectionVersionId
@@ -355,7 +461,7 @@ class BusinessLogic(BusinessLogicInterface):
             raise CollectionIsPublishedException([f"Collection version {collection_version_id.id} is published"])
         return collection_version
 
-    def create_empty_dataset(self, collection_version_id: CollectionVersionId) -> Tuple[DatasetVersionId, DatasetId]:
+    def create_empty_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         """
         Creates an empty dataset that can be later used for ingestion
         """
@@ -372,7 +478,26 @@ class BusinessLogic(BusinessLogicInterface):
             new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
         )
 
-        return (new_dataset_version.version_id, new_dataset_version.dataset_id)
+        return new_dataset_version
+
+    def create_empty_dataset_version_for_current_dataset(
+        self, collection_version_id: CollectionVersionId, current_dataset_version_id: DatasetVersionId
+    ) -> DatasetVersion:
+        """
+        Creates an empty dataset version that can be later used for ingestion, for existing datasets
+        """
+        self._assert_collection_version_unpublished(collection_version_id)
+
+        new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
+            collection_version_id, current_dataset_version_id
+        )
+
+        self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.WAITING)
+        self.database_provider.update_dataset_processing_status(
+            new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
+        )
+
+        return new_dataset_version
 
     # TODO: Alternatives: 1) return DatasetVersion 2) Return a new class
     def ingest_dataset(
@@ -380,7 +505,7 @@ class BusinessLogic(BusinessLogicInterface):
         collection_version_id: CollectionVersionId,
         url: str,
         file_size: Optional[int],
-        existing_dataset_version_id: Optional[DatasetVersionId],
+        current_dataset_version_id: Optional[DatasetVersionId],
         start_step_function: bool = True,
     ) -> Tuple[DatasetVersionId, DatasetId]:
         """
@@ -392,7 +517,7 @@ class BusinessLogic(BusinessLogicInterface):
                 "message": "ingesting dataset",
                 "collection_version_id": collection_version_id,
                 "url": url,
-                "existing_dataset_version_id": existing_dataset_version_id,
+                "current_dataset_version_id": current_dataset_version_id,
             }
         )
         if not self.uri_provider.validate(url):
@@ -401,8 +526,6 @@ class BusinessLogic(BusinessLogicInterface):
         if file_size is None:
             file_info = self.uri_provider.get_file_info(url)
             file_size = file_info.size
-
-        from backend.common.corpora_config import CorporaConfig
 
         max_file_size_gb = CorporaConfig().upload_max_file_size_gb * 2**30
 
@@ -414,17 +537,17 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Creates a dataset version that the processing pipeline will point to
         new_dataset_version: DatasetVersion
-        if existing_dataset_version_id is not None:
+        if current_dataset_version_id is not None:
             # Ensure that the dataset belongs to the collection
-            if existing_dataset_version_id not in [d.version_id for d in collection.datasets]:
+            if current_dataset_version_id not in [d.version_id for d in collection.datasets]:
                 raise DatasetNotFoundException(
-                    f"Dataset {existing_dataset_version_id.id} does not belong to the desired collection"
+                    f"Dataset {current_dataset_version_id.id} does not belong to the desired collection"
                 )
 
-            dataset_version = self.database_provider.get_dataset_version(existing_dataset_version_id)
+            dataset_version = self.database_provider.get_dataset_version(current_dataset_version_id)
             if dataset_version is None:
                 raise DatasetNotFoundException(
-                    f"Trying to replace non existent dataset {existing_dataset_version_id.id}"
+                    f"Trying to replace non existent dataset {current_dataset_version_id.id}"
                 )
 
             if dataset_version.status.processing_status not in [
@@ -433,7 +556,7 @@ class BusinessLogic(BusinessLogicInterface):
                 DatasetProcessingStatus.INITIALIZED,
             ]:
                 raise DatasetInWrongStatusException(
-                    f"Unable to reprocess dataset {existing_dataset_version_id.id}: processing status is "
+                    f"Unable to reprocess dataset {current_dataset_version_id.id}: processing status is "
                     f"{dataset_version.status.processing_status.name}"
                 )
 
@@ -447,7 +570,7 @@ class BusinessLogic(BusinessLogicInterface):
                 new_dataset_version = dataset_version
             else:
                 new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
-                    collection_version_id, existing_dataset_version_id
+                    collection_version_id, current_dataset_version_id
                 )
         else:
             new_dataset_version = self.database_provider.create_canonical_dataset(collection_version_id)
@@ -484,6 +607,15 @@ class BusinessLogic(BusinessLogicInterface):
         if delete_published and not dataset_version.canonical_dataset.published_at:
             raise DatasetIsPrivateException from None
         self.database_provider.delete_dataset_from_collection_version(collection_version_id, dataset_version_id)
+
+    def set_collection_version_datasets_order(
+        self, collection_version_id: CollectionVersionId, dataset_version_ids: List[DatasetVersionId]
+    ) -> None:
+        """
+        Sets the order of datasets in a collection version.
+        """
+        self._assert_collection_version_unpublished(collection_version_id)
+        self.database_provider.set_collection_version_datasets_order(collection_version_id, dataset_version_ids)
 
     def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         """
@@ -543,26 +675,6 @@ class BusinessLogic(BusinessLogicInterface):
         url = self.generate_permanent_url(dataset_version_id, artifact.type)
 
         return DatasetArtifactDownloadData(file_size, url)
-
-    # TODO: Superseded by get_dataset_artifact_download_data. Remove with #5697.
-    def get_dataset_artifact_download_data_deprecated(
-        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
-    ) -> DeprecatedDatasetArtifactDownloadData:
-        """
-        Returns download data for an artifact, including a presigned URL
-        """
-        artifacts = self.get_dataset_artifacts(dataset_version_id)
-        artifact = next((a for a in artifacts if a.id == artifact_id), None)
-
-        if not artifact:
-            raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")
-
-        file_name = artifact.uri.split("/")[-1]
-        file_type = artifact.type
-        file_size = self.s3_provider.get_file_size(artifact.uri)
-        presigned_url = self.s3_provider.generate_presigned_url(artifact.uri)
-
-        return DeprecatedDatasetArtifactDownloadData(file_name, file_type, file_size, presigned_url)
 
     def get_dataset_status(self, dataset_version_id: DatasetVersionId) -> DatasetStatus:
         """
@@ -683,7 +795,10 @@ class BusinessLogic(BusinessLogicInterface):
                 if rdev_prefix:
                     dataset_version_s3_object_key = f"{rdev_prefix}/{dataset_version_s3_object_key}"
                 object_keys.add(dataset_version_s3_object_key)
-        self._delete_from_bucket(os.getenv("DATASETS_BUCKET"), list(object_keys))
+        try:
+            self.s3_provider.delete_files(os.getenv("DATASETS_BUCKET"), list(object_keys))
+        except S3DeleteException as e:
+            raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
         return list(object_keys)
 
     def delete_all_dataset_versions_from_public_bucket_for_collection(self, collection_id: CollectionId) -> List[str]:
@@ -766,7 +881,9 @@ class BusinessLogic(BusinessLogicInterface):
         # Reset tombstone values in database
         self.database_provider.resurrect_collection(collection_id, datasets_to_resurrect)
 
-    def publish_collection_version(self, version_id: CollectionVersionId) -> None:
+    def publish_collection_version(
+        self, version_id: CollectionVersionId, data_submission_policy_version: str = DATA_SUBMISSION_POLICY_VERSION
+    ) -> None:
         """
         Publishes a collection version.
         """
@@ -799,7 +916,11 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Finalize Collection publication and delete any tombstoned assets
         dataset_version_ids_to_delete_from_s3 = self.database_provider.finalize_collection_version(
-            version.collection_id, version_id, schema_version, update_revised_at=has_dataset_revisions
+            version.collection_id,
+            version_id,
+            schema_version,
+            data_submission_policy_version,
+            update_revised_at=has_dataset_revisions,
         )
         self.delete_dataset_versions_from_public_bucket(dataset_version_ids_to_delete_from_s3)
 
@@ -893,20 +1014,20 @@ class BusinessLogic(BusinessLogicInterface):
         except DatasetVersionNotFoundException:
             return None
 
-    def _delete_from_bucket(self, bucket: str, keys: List[str] = None, prefix: str = None) -> None:
-        try:
-            if keys:
-                self.s3_provider.delete_files(bucket, keys)
-            if prefix:
-                self.s3_provider.delete_prefix(bucket, prefix)
-        except S3DeleteException as e:
-            raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
-
     def delete_artifacts(self, artifacts: List[DatasetArtifact]) -> None:
         for artifact in artifacts:
-            matches_dict = S3_URI_REGEX.match(artifact.uri).groupdict()
-            bucket, key, prefix = matches_dict["bucket"], matches_dict["key"], matches_dict["prefix"]
-            self._delete_from_bucket(bucket, keys=[key] if key else None, prefix=prefix)
+            matches = S3_URI_REGEX.match(artifact.uri)
+            if not matches:
+                raise InvalidURIException(f"Trying to delete invalid URI: {artifact.uri}")
+            bucket, key, prefix = matches.group("bucket", "key", "prefix")
+            try:
+                if key and artifact.type != DatasetArtifactType.CXG:
+                    # Ignore prefix if keys is provided.
+                    self.s3_provider.delete_files(bucket, [key])
+                elif prefix and artifact.type == DatasetArtifactType.CXG:
+                    self.s3_provider.delete_prefix(bucket, prefix)
+            except S3DeleteException as e:
+                raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str

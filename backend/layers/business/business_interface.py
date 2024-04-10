@@ -4,7 +4,6 @@ from backend.layers.business.entities import (
     CollectionMetadataUpdate,
     CollectionQueryFilter,
     DatasetArtifactDownloadData,
-    DeprecatedDatasetArtifactDownloadData,
 )
 from backend.layers.common.entities import (
     CanonicalCollection,
@@ -39,6 +38,9 @@ class BusinessLogicInterface:
     ) -> Optional[CollectionVersionWithDatasets]:
         pass
 
+    def get_collection_url(self, collection_id: str) -> str:
+        pass
+
     def get_collection_version(
         self, version_id: CollectionVersionId, get_tombstoned: bool
     ) -> CollectionVersionWithDatasets:
@@ -58,6 +60,9 @@ class BusinessLogicInterface:
     def get_collection_version_from_canonical(
         self, collection_id: CollectionId
     ) -> Optional[CollectionVersionWithDatasets]:
+        pass
+
+    def _get_publisher_metadata(self, doi: str, errors: list) -> Tuple[Optional[dict], Optional[str]]:
         pass
 
     def create_collection(
@@ -99,7 +104,7 @@ class BusinessLogicInterface:
     def delete_collection_version(self, collection_version: CollectionVersionWithDatasets) -> None:
         pass
 
-    def publish_collection_version(self, version_id: CollectionVersionId) -> None:
+    def publish_collection_version(self, version_id: CollectionVersionId, data_submission_policy_version: str) -> None:
         pass
 
     def ingest_dataset(
@@ -107,7 +112,8 @@ class BusinessLogicInterface:
         collection_version_id: CollectionVersionId,
         url: str,
         file_size: Optional[int],
-        existing_dataset_version_id: Optional[DatasetVersionId],
+        current_dataset_version_id: Optional[DatasetVersionId],
+        start_step_function: bool = False,
     ) -> Tuple[DatasetVersionId, DatasetId]:
         pass
 
@@ -134,12 +140,6 @@ class BusinessLogicInterface:
     def get_dataset_artifact_download_data(
         self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
     ) -> DatasetArtifactDownloadData:
-        pass
-
-    # TODO: Superseded by get_dataset_artifact_download_data. Remove with #5697.
-    def get_dataset_artifact_download_data_deprecated(
-        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
-    ) -> DeprecatedDatasetArtifactDownloadData:
         pass
 
     def update_dataset_version_status(

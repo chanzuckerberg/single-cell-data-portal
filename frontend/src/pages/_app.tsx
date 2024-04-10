@@ -106,16 +106,14 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
             <ThemeProvider theme={theme}>
               <Layout>
                 <Component {...pageProps} />
+                <div id="bp-toaster"></div>
               </Layout>
               <ReactQueryDevtools />
             </ThemeProvider>
           </EmotionThemeProvider>
         </StyledEngineProvider>
       </QueryClientProvider>
-      <Script
-        data-domain={configs.PLAUSIBLE_DATA_DOMAIN}
-        src="https://plausible.io/js/script.js"
-      />
+      <Script data-domain={configs.PLAUSIBLE_DATA_DOMAIN} src="/js/script.js" />
     </>
   );
 }

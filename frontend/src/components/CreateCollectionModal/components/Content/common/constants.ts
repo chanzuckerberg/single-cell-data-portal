@@ -8,6 +8,7 @@ export enum CONSORTIA {
   GUDMAP = "GenitoUrinary Development Molecular Anatomy Project (GUDMAP)",
   GUT_CELL_ATLAS = "Gut Cell Atlas",
   HUBMAP = "Human BioMolecular Atlas Program (HuBMAP)",
+  HCA = "Human Cell Atlas (HCA)",
   HPAP = "Human Pancreas Analysis Program (HPAP)",
   HTAN = "Human Tumor Atlas Network (HTAN)",
   KPMP = "Kidney Precision Medicine Project (KPMP)",
@@ -23,3 +24,6 @@ export const DEBOUNCE_TIME_MS = 100;
  */
 export const INVALID_DOI_ERROR_MESSAGE =
   "This DOI could not be found. Please correct or remove it.";
+
+export const INVALID_DATASET_STATUS_FOR_DOI_UPDATE =
+  "Cannot update DOI while a dataset is processing or awaiting upload.";

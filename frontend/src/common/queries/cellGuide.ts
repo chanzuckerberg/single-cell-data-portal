@@ -19,7 +19,9 @@ export enum TYPES {
   CELLTYPE_METADATA = "CELLTYPE_METADATA",
   MARKER_GENE_PRESENCE = "MARKER_GENE_PRESENCE",
   GPT_SEO_DESCRIPTION = "GPT_SEO_DESCRIPTION",
+  CELLTYPE_TISSUE_MAPPING = "CELLTYPE_TISSUE_MAPPING",
   LATEST_SNAPSHOT_IDENTIFIER = "LATEST_SNAPSHOT_IDENTIFIER",
+  VALID_EXPLORER_CXGS = "VALID_EXPLORER_CXGS",
 }
 
 // Suffix the cellguide data url with the remote dev prefix
@@ -86,12 +88,31 @@ async function fetchQuery({
 /**
  * Generic cell guide hook
  */
+// Mapping from organism name to taxon id. Hardcode this for now.
+// This will need to be updated if Census ever includes more organisms.
+export const ORGANISM_NAME_TO_TAXON_ID_MAPPING = {
+  "Homo sapiens": "NCBITaxon_9606",
+  "Mus musculus": "NCBITaxon_10090",
+};
 
-export function useCellGuideQuery<T = CellGuideResponse>(
-  dataType: TYPES,
-  queryId = "", // Empty string if cell type is not needed for fetch function
-  queryLatestSnapshotIdentifier = true
-): UseQueryResult<T> {
+interface CellGuideQueryProps {
+  dataType: TYPES;
+  queryId?: string;
+  organismName?: string;
+  queryLatestSnapshotIdentifier?: boolean;
+}
+export function useCellGuideQuery<T = CellGuideResponse>({
+  dataType,
+  queryId = "",
+  organismName = "",
+  queryLatestSnapshotIdentifier = true,
+}: CellGuideQueryProps): UseQueryResult<T> {
+  // if organismName is a key in ORGANISM_NAME_TO_TAXON_ID_MAPPING, set it to the value
+  const organismId =
+    ORGANISM_NAME_TO_TAXON_ID_MAPPING[
+      organismName as keyof typeof ORGANISM_NAME_TO_TAXON_ID_MAPPING
+    ] || organismName;
+
   const { queryKey, urlSuffix } = QUERY_MAPPING[dataType];
 
   // if the query is "CL:0000000" make it "CL_0000000"
@@ -108,10 +129,9 @@ export function useCellGuideQuery<T = CellGuideResponse>(
     [queryKeyLatestSnapshotIdentifier],
     ({ signal }) =>
       fetchQuery({
-        url: `${CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX}/${urlSuffixLatestSnapshotIdentifier.replace(
-          "%s",
-          queryId
-        )}`,
+        url: `${CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX}/${urlSuffixLatestSnapshotIdentifier
+          .replace("%s", queryId)
+          .replace("%o", organismId)}`,
         signal,
       }),
     {
@@ -128,12 +148,17 @@ export function useCellGuideQuery<T = CellGuideResponse>(
     }
   }, [rawLatestSnapshotIdentifier]);
 
-  const queryUrlSuffix = urlSuffix.replace("%s", queryId);
+  const queryUrlSuffix = urlSuffix
+    .replace("%s", queryId)
+    .replace("%o", organismId);
   const queryUrl = queryLatestSnapshotIdentifier
     ? `${CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX}/${latestSnapshotIdentifier}/${queryUrlSuffix}`
     : `${CELLGUIDE_DATA_URL_WITH_RDEV_SUFFIX}/${queryUrlSuffix}`;
+
   return useQuery(
-    queryId ? [queryKey, queryId, latestSnapshotIdentifier] : [queryKey],
+    queryId || organismId
+      ? [queryKey, queryId, organismId, latestSnapshotIdentifier]
+      : [queryKey],
     ({ signal }) =>
       fetchQuery({
         url: queryUrl,
@@ -146,6 +171,24 @@ export function useCellGuideQuery<T = CellGuideResponse>(
   );
 }
 
+/* ========== valid_explorer_cxgs ========== */
+export const USE_VALID_EXPLORER_CXGS_QUERY = {
+  entities: [ENTITIES.CELL_GUIDE_VALID_EXPLORER_CXGS],
+  id: "cell-guide-valid-explorer-cxgs-query",
+};
+
+export interface ValidExplorerCxgsQueryResponse {
+  organism_celltype_cxgs: { [organism: string]: string[] };
+  organism_tissue_celltype_cxgs: {
+    [organism: string]: { [tissue: string]: string[] };
+  };
+}
+
+export const useValidExplorerCxgs = () => {
+  return useCellGuideQuery<ValidExplorerCxgsQueryResponse>({
+    dataType: TYPES.VALID_EXPLORER_CXGS,
+  });
+};
 /* ========== ontology_tree ========== */
 export const USE_CELL_ONTOLOGY_TREE_QUERY = {
   entities: [ENTITIES.CELL_GUIDE_CELL_ONTOLOGY_TREE],
@@ -160,12 +203,14 @@ export interface CellOntologyTreeResponse {
   children?: this[];
 }
 
-export const useCellOntologyTree =
-  (): UseQueryResult<CellOntologyTreeResponse> => {
-    return useCellGuideQuery<CellOntologyTreeResponse>(
-      TYPES.CELL_ONTOLOGY_TREE
-    );
-  };
+export const useCellOntologyTree = (
+  organismName: string
+): UseQueryResult<CellOntologyTreeResponse> => {
+  return useCellGuideQuery<CellOntologyTreeResponse>({
+    dataType: TYPES.CELL_ONTOLOGY_TREE,
+    organismName,
+  });
+};
 
 /* ========== ontology_tree_state ========== */
 export const USE_CELL_ONTOLOGY_TREE_STATE_CELLTYPE_QUERY = {
@@ -188,12 +233,14 @@ export interface CellOntologyTreeStateResponse {
 }
 
 export const useCellOntologyTreeStateCellType = (
-  entityId: string
+  entityId: string,
+  organismName: string
 ): UseQueryResult<CellOntologyTreeStateResponse> => {
-  return useCellGuideQuery<CellOntologyTreeStateResponse>(
-    TYPES.CELL_ONTOLOGY_TREE_STATE_CELLTYPE,
-    entityId
-  );
+  return useCellGuideQuery<CellOntologyTreeStateResponse>({
+    dataType: TYPES.CELL_ONTOLOGY_TREE_STATE_CELLTYPE,
+    queryId: entityId,
+    organismName,
+  });
 };
 
 /* ========== ontology_tree_state_tissue ========== */
@@ -203,12 +250,14 @@ export const USE_CELL_ONTOLOGY_TREE_STATE_TISSUE_QUERY = {
 };
 
 export const useCellOntologyTreeStateTissue = (
-  entityId: string
+  entityId: string,
+  organismName: string
 ): UseQueryResult<CellOntologyTreeStateResponse> => {
-  return useCellGuideQuery<CellOntologyTreeStateResponse>(
-    TYPES.CELL_ONTOLOGY_TREE_STATE_TISSUE,
-    entityId
-  );
+  return useCellGuideQuery<CellOntologyTreeStateResponse>({
+    dataType: TYPES.CELL_ONTOLOGY_TREE_STATE_TISSUE,
+    queryId: entityId,
+    organismName,
+  });
 };
 
 /* ========== source_data ========== */
@@ -233,10 +282,10 @@ export type SourceCollectionsQueryResponse =
 export const useSourceData = (
   entityId: string
 ): UseQueryResult<SourceCollectionsQueryResponse> => {
-  return useCellGuideQuery<SourceCollectionsQueryResponse>(
-    TYPES.SOURCE_COLLECTIONS,
-    entityId
-  );
+  return useCellGuideQuery<SourceCollectionsQueryResponse>({
+    dataType: TYPES.SOURCE_COLLECTIONS,
+    queryId: entityId,
+  });
 };
 
 /* ========== enriched_genes ========== */
@@ -249,6 +298,7 @@ export interface ComputationalMarkersQueryResponseEntry {
   me: number;
   pc: number;
   marker_score: number;
+  specificity: number;
   symbol: string;
   name: string;
   groupby_dims: {
@@ -263,10 +313,10 @@ export type ComputationalMarkersQueryResponse =
 export const useComputationalMarkers = (
   entityId: string
 ): UseQueryResult<ComputationalMarkersQueryResponse> => {
-  return useCellGuideQuery<ComputationalMarkersQueryResponse>(
-    TYPES.COMPUTATIONAL_MARKERS,
-    entityId
-  );
+  return useCellGuideQuery<ComputationalMarkersQueryResponse>({
+    dataType: TYPES.COMPUTATIONAL_MARKERS,
+    queryId: entityId,
+  });
 };
 
 /* ========== canonical_markers ========== */
@@ -289,10 +339,10 @@ export type CanonicalMarkersQueryResponse =
 export const useCanonicalMarkers = (
   entityId: string
 ): UseQueryResult<CanonicalMarkersQueryResponse> => {
-  return useCellGuideQuery<CanonicalMarkersQueryResponse>(
-    TYPES.CANONICAL_MARKERS,
-    entityId
-  );
+  return useCellGuideQuery<CanonicalMarkersQueryResponse>({
+    dataType: TYPES.CANONICAL_MARKERS,
+    queryId: entityId,
+  });
 };
 
 /* ========== latest snapshot identifier ========== */
@@ -312,7 +362,11 @@ export const USE_GPT_DESCRIPTION_QUERY = {
 export type GptDescriptionQueryResponse = string;
 
 export const useGptDescription = (entityId: string): UseQueryResult<string> => {
-  return useCellGuideQuery<string>(TYPES.GPT_DESCRIPTION, entityId, false);
+  return useCellGuideQuery<string>({
+    dataType: TYPES.GPT_DESCRIPTION,
+    queryId: entityId,
+    queryLatestSnapshotIdentifier: false,
+  });
 };
 
 /* ========== description ========== */
@@ -329,11 +383,11 @@ interface ValidatedDescriptionQueryResponse {
 export const useValidatedDescription = (
   entityId: string
 ): UseQueryResult<ValidatedDescriptionQueryResponse> => {
-  return useCellGuideQuery<ValidatedDescriptionQueryResponse>(
-    TYPES.VALIDATED_DESCRIPTION,
-    entityId,
-    false
-  );
+  return useCellGuideQuery<ValidatedDescriptionQueryResponse>({
+    dataType: TYPES.VALIDATED_DESCRIPTION,
+    queryId: entityId,
+    queryLatestSnapshotIdentifier: false,
+  });
 };
 
 /* ========== SEO description ========== */
@@ -370,6 +424,7 @@ interface MarkerGenePresenceQueryResponse {
         me: number;
         pc: number;
         marker_score: number;
+        specificity: number;
         cell_type_id: string;
       }[];
     };
@@ -378,10 +433,28 @@ interface MarkerGenePresenceQueryResponse {
 
 export const useMarkerGenePresenceQuery =
   (): UseQueryResult<MarkerGenePresenceQueryResponse> => {
-    return useCellGuideQuery<MarkerGenePresenceQueryResponse>(
-      TYPES.MARKER_GENE_PRESENCE
-    );
+    return useCellGuideQuery<MarkerGenePresenceQueryResponse>({
+      dataType: TYPES.MARKER_GENE_PRESENCE,
+    });
   };
+
+export const USE_CELLTYPE_TISSUE_MAPPING_QUERY = {
+  entities: [ENTITIES.CELL_GUIDE_CELLTYPE_TISSUE_MAPPING],
+  id: "cell-guide-celltype-tissue-mapping-query",
+};
+
+interface CellTypeTissueMappingResponse {
+  [cellTypeId: string]: string[];
+}
+
+export const useCellTypeTissueMapping = (
+  organismName: string
+): UseQueryResult<CellTypeTissueMappingResponse> => {
+  return useCellGuideQuery<CellTypeTissueMappingResponse>({
+    dataType: TYPES.CELLTYPE_TISSUE_MAPPING,
+    organismName,
+  });
+};
 
 /* ========== cell_guide_cards ========== */
 export const USE_CELLTYPE_METADATA_QUERY = {
@@ -400,9 +473,9 @@ interface CellTypeMetadataQueryResponse {
 
 export const useCellTypeMetadata =
   (): UseQueryResult<CellTypeMetadataQueryResponse> => {
-    return useCellGuideQuery<CellTypeMetadataQueryResponse>(
-      TYPES.CELLTYPE_METADATA
-    );
+    return useCellGuideQuery<CellTypeMetadataQueryResponse>({
+      dataType: TYPES.CELLTYPE_METADATA,
+    });
   };
 
 // this naked fetch is used for SSR
@@ -444,9 +517,9 @@ export interface TissueMetadataQueryResponse {
 
 export const useTissueMetadata =
   (): UseQueryResult<TissueMetadataQueryResponse> => {
-    return useCellGuideQuery<TissueMetadataQueryResponse>(
-      TYPES.TISSUE_METADATA
-    );
+    return useCellGuideQuery<TissueMetadataQueryResponse>({
+      dataType: TYPES.TISSUE_METADATA,
+    });
   };
 
 export const fetchTissueMetadata =
@@ -469,23 +542,6 @@ export const fetchTissueMetadata =
     }
     return await response.json();
   };
-
-/* ========== Lookup tables for organs ========== */
-export function useAllOrgansLookupTables(): Map<string, string> {
-  const { data: allOrgansData } = useTissueMetadata();
-  return useMemo(() => {
-    if (!allOrgansData) {
-      return new Map<string, string>();
-    }
-
-    const allOrgansLabelToIdMap = new Map<string, string>();
-    for (const organId in allOrgansData) {
-      const organData = allOrgansData[organId];
-      allOrgansLabelToIdMap.set(organData.name, organData.id);
-    }
-    return allOrgansLabelToIdMap;
-  }, [allOrgansData]);
-}
 
 /* ========== Lookup tables for tissues ========== */
 export function useAllTissuesLookupTables(cellTypeId: string): {
@@ -526,17 +582,21 @@ export function useAllTissuesLookupTables(cellTypeId: string): {
 const QUERY_MAPPING: {
   [key in TYPES]: CellGuideQuery;
 } = {
+  VALID_EXPLORER_CXGS: {
+    queryKey: USE_VALID_EXPLORER_CXGS_QUERY,
+    urlSuffix: "valid_explorer_cxgs.json",
+  },
   CELL_ONTOLOGY_TREE: {
     queryKey: USE_CELL_ONTOLOGY_TREE_QUERY,
-    urlSuffix: "ontology_graph.json",
+    urlSuffix: "ontology_tree/%o/ontology_graph.json",
   },
   CELL_ONTOLOGY_TREE_STATE_CELLTYPE: {
     queryKey: USE_CELL_ONTOLOGY_TREE_STATE_CELLTYPE_QUERY,
-    urlSuffix: `cell_type_ontology_tree_state/%s.json`,
+    urlSuffix: `ontology_tree/%o/cell_type_ontology_tree_state/%s.json`,
   },
   CELL_ONTOLOGY_TREE_STATE_TISSUE: {
     queryKey: USE_CELL_ONTOLOGY_TREE_STATE_TISSUE_QUERY,
-    urlSuffix: `tissue_ontology_tree_state/%s.json`,
+    urlSuffix: `ontology_tree/%o/tissue_ontology_tree_state/%s.json`,
   },
   SOURCE_COLLECTIONS: {
     queryKey: USE_SOURCE_COLLECTIONS_QUERY,
@@ -569,6 +629,10 @@ const QUERY_MAPPING: {
   CELLTYPE_METADATA: {
     queryKey: USE_CELLTYPE_METADATA_QUERY,
     urlSuffix: "celltype_metadata.json",
+  },
+  CELLTYPE_TISSUE_MAPPING: {
+    queryKey: USE_CELLTYPE_TISSUE_MAPPING_QUERY,
+    urlSuffix: "ontology_tree/%o/celltype_to_tissue_mapping.json",
   },
   TISSUE_METADATA: {
     queryKey: USE_TISSUE_METADATA_QUERY,

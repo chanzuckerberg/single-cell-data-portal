@@ -5,26 +5,14 @@ import numpy as np
 import pandas
 
 from backend.layers.common.entities import OntologyTermId, TissueOntologyTermId
-from backend.layers.processing.process_download_validate import ProcessDownloadValidate
+from backend.layers.processing.process_validate import ProcessValidate
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 
-class TestProcessingDownloadValidate(BaseProcessingTest):
+class TestProcessingValidate(BaseProcessingTest):
     def setUp(self):
         super().setUp()
-        self.pdv = ProcessDownloadValidate(
-            self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
-        )
-
-        def mock_config_fn(name):
-            if name == "schema_4_feature_flag":
-                return "True"
-
-        self.mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
-        self.mock_config.start()
-
-    def tearDown(self):
-        self.mock_config.stop()
+        self.pdv = ProcessValidate(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
 
     @patch("scanpy.read_h5ad")
     def test_extract_metadata(self, mock_read_h5ad):

@@ -1,16 +1,27 @@
+import datetime
+import logging
 import os
 from typing import Dict
 from unittest.mock import Mock, patch
 
 import pytest
 
-from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetStatus, DatasetVersionId
+from backend.layers.common.entities import (
+    CanonicalCollection,
+    CollectionId,
+    CollectionMetadata,
+    CollectionVersionId,
+    CollectionVersionWithDatasets,
+    DatasetStatus,
+    DatasetVersionId,
+)
 from backend.layers.processing.upload_failures.app import (
     FAILED_ARTIFACT_CLEANUP_MESSAGE,
     FAILED_CXG_CLEANUP_MESSAGE,
     FAILED_DATASET_CLEANUP_MESSAGE,
     cleanup_artifacts,
     get_failure_slack_notification_message,
+    handle_failure,
     parse_event,
 )
 
@@ -59,9 +70,42 @@ def sample_slack_status_block_empty():
     }
 
 
+@pytest.fixture
+def get_collection_version_mock():
+    return Mock(
+        return_value=CollectionVersionWithDatasets(
+            datasets=[],
+            collection_id=CollectionId("collection123"),
+            version_id=CollectionVersionId("collection_version_id123"),
+            owner="mock owner",
+            curator_name="mock curator",
+            metadata=CollectionMetadata(
+                name="mock name",
+                description="mock description",
+                contact_name="mock contact name",
+                contact_email="mock contact email",
+                links=[],
+            ),
+            publisher_metadata={},
+            published_at=None,
+            created_at=datetime.datetime.now(),
+            schema_version="5.0.0",
+            canonical_collection=CanonicalCollection(
+                id=CollectionId("collection123"),
+                version_id=None,
+                originally_published_at=None,
+                revised_at=None,
+                tombstoned=False,
+            ),
+            has_custom_dataset_order=False,
+            data_submission_policy_version="2.0",
+        )
+    )
+
+
 def test_parse_event_with_empty_event():
     (
-        dataset_id,
+        dataset_version_id,
         collection_version_id,
         error_step_name,
         error_job_id,
@@ -70,7 +114,7 @@ def test_parse_event_with_empty_event():
         execution_arn,
     ) = parse_event({})
 
-    assert dataset_id is None
+    assert dataset_version_id is None
     assert collection_version_id is None
     assert error_step_name is None
     assert error_job_id is None
@@ -86,12 +130,13 @@ def test_parse_event_with_error_cause():
     )
     event = {
         "execution_id": "arn",
-        "dataset_id": "123",
-        "collection_id": "456",
+        "dataset_version_id": "123",
+        "collection_id": "789",
+        "collection_version_id": "456",
         "error": {"Cause": expected_error_cause},
     }
     (
-        dataset_id,
+        dataset_version_id,
         collection_version_id,
         error_step_name,
         error_job_id,
@@ -100,7 +145,7 @@ def test_parse_event_with_error_cause():
         execution_arn,
     ) = parse_event(event)
 
-    assert dataset_id == "123"
+    assert dataset_version_id == "123"
     assert collection_version_id == "456"
     assert error_step_name == "Step1"
     assert error_job_id == "789"
@@ -110,10 +155,10 @@ def test_parse_event_with_error_cause():
 
 
 def test_parse_event_without_error_cause():
-    event = {"dataset_id": "123", "collection_id": "456", "error": {}}
+    event = {"dataset_version_id": "123", "collection_version_id": "456", "error": {}}
 
     (
-        dataset_id,
+        dataset_version_id,
         collection_version_id,
         error_step_name,
         error_job_id,
@@ -122,7 +167,7 @@ def test_parse_event_without_error_cause():
         execution_arn,
     ) = parse_event(event)
 
-    assert dataset_id == "123"
+    assert dataset_version_id == "123"
     assert collection_version_id == "456"
     assert error_step_name is None
     assert error_job_id is None
@@ -132,10 +177,14 @@ def test_parse_event_without_error_cause():
 
 
 def test_parse_event_with_invalid_error_cause():
-    event = {"dataset_id": "123", "collection_id": "456", "error": {"Cause": "invalid JSON"}}
+    event = {
+        "dataset_version_id": "123",
+        "collection_version_id": "456",
+        "error": {"Cause": "invalid JSON"},
+    }
 
     (
-        dataset_id,
+        dataset_version_id,
         collection_version_id,
         error_step_name,
         error_job_id,
@@ -144,7 +193,7 @@ def test_parse_event_with_invalid_error_cause():
         execution_arn,
     ) = parse_event(event)
 
-    assert dataset_id == "123"
+    assert dataset_version_id == "123"
     assert collection_version_id == "456"
     assert error_step_name is None
     assert error_job_id is None
@@ -160,51 +209,38 @@ def mock_get_dataset_version(collection_id):
     return MockDatasetVersionId
 
 
-def test_get_failure_slack_notification_message_with_dataset_id_none(
-    sample_slack_header_block, sample_slack_status_block_empty
+def test_migration_event_does_not_trigger_slack():
+    mock_trigger_slack = Mock()
+    mock_context = Mock()
+    with patch("backend.layers.processing.upload_failures.app.trigger_slack_notification", mock_trigger_slack):
+        event = {
+            "dataset_version_id": "123",
+            "collection_version_id": "456",
+            "error": {},
+            "execution_id": "arn:aws:states:us-west-2:migrate_123456789012:execution:MyStateMachine",
+        }
+        handle_failure(event, mock_context)
+        mock_trigger_slack.assert_not_called()
+
+
+def test_non_migration_event_triggers_slack():
+    mock_trigger_slack = Mock()
+    mock_context = Mock()
+    with patch("backend.layers.processing.upload_failures.app.trigger_slack_notification", mock_trigger_slack):
+        event = {
+            "dataset_version_id": "123",
+            "collection_version_id": "456",
+            "error": {},
+            "execution_id": "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine",
+        }
+        handle_failure(event, mock_context)
+        mock_trigger_slack.assert_called_once()
+
+
+def test_get_failure_slack_notification_message_with_dataset_version_id_none(
+    get_collection_version_mock, sample_slack_header_block, sample_slack_status_block_empty, caplog
 ):
-    dataset_id = None
-    step_name = "Step 1"
-    job_id = "123456"
-    aws_regions = "us-west-2"
-    execution_arn = "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine"
-    collection_version_id = "collection_version_id123"
-
-    with patch(f"{module_path}.logger") as logger_mock:
-        result = get_failure_slack_notification_message(
-            dataset_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
-        )
-    assert result == {
-        "blocks": [
-            sample_slack_header_block,
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
-                    "*Owner*: \n"
-                    f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
-                    "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"
-                    "#jobs/detail/123456|123456>\n"
-                    "*Step Function ARN*: "
-                    "<https://us-west-2.console.aws.amazon.com/states/home?region=us-west-2#/v2/executions"
-                    "/details/arn:aws:states:us-west-2:123456789012:execution:MyStateMachine|arn:aws:states"
-                    ":us-west-2:123456789012:execution:MyStateMachine>\n"
-                    f"*Error Step*: {step_name}\n"
-                    f"*Dataset ID*: None(not found)\n"
-                    f"*Processing Status*:\n",
-                },
-            },
-            sample_slack_status_block_empty,
-        ]
-    }
-    logger_mock.error.assert_called_with("Dataset None not found")
-
-
-def test_get_failure_slack_notification_message_with_dataset_not_found(
-    sample_slack_header_block, sample_slack_status_block_empty
-):
-    dataset_id = "dataset123"
+    dataset_version_id = None
     step_name = "Step 1"
     job_id = "123456"
     aws_regions = "us-west-2"
@@ -214,15 +250,64 @@ def test_get_failure_slack_notification_message_with_dataset_not_found(
     get_dataset_version_mock = Mock(return_value=None)
     get_business_logic_mock = Mock()
     get_business_logic_mock.get_dataset_version = get_dataset_version_mock
+    get_business_logic_mock.get_collection_version = get_collection_version_mock
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
-    logger_mock = Mock()
-
-    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), patch(
-        f"{module_path}.logger", logger_mock
+    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), caplog.at_level(
+        logging.ERROR
     ):
         result = get_failure_slack_notification_message(
-            dataset_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
+            dataset_version_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
+        )
+    assert result == {
+        "blocks": [
+            sample_slack_header_block,
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
+                    "*Owner*: \n"
+                    f"*Collection URL*: https://cellxgene.cziscience.com/collections/collection123\n"
+                    f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
+                    "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"
+                    "#jobs/detail/123456|123456>\n"
+                    "*Step Function ARN*: "
+                    "<https://us-west-2.console.aws.amazon.com/states/home?region=us-west-2#/v2/executions"
+                    "/details/arn:aws:states:us-west-2:123456789012:execution:MyStateMachine|arn:aws:states"
+                    ":us-west-2:123456789012:execution:MyStateMachine>\n"
+                    f"*Error Step*: {step_name}\n"
+                    f"*Dataset Version ID*: None(not found)\n"
+                    f"*Processing Status*:\n",
+                },
+            },
+            sample_slack_status_block_empty,
+        ]
+    }
+    assert "Dataset Version ID not found" in caplog.text
+
+
+def test_get_failure_slack_notification_message_with_dataset_not_found(
+    get_collection_version_mock, sample_slack_header_block, sample_slack_status_block_empty, caplog
+):
+    dataset_version_id = "dataset123"
+    step_name = "Step 1"
+    job_id = "123456"
+    aws_regions = "us-west-2"
+    execution_arn = "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine"
+    collection_version_id = "collection_version_id123"
+
+    get_dataset_version_mock = Mock(return_value=None)
+    get_business_logic_mock = Mock()
+    get_business_logic_mock.get_dataset_version = get_dataset_version_mock
+    get_business_logic_mock.get_collection_version = get_collection_version_mock
+    get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
+
+    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), caplog.at_level(
+        logging.ERROR
+    ):
+        result = get_failure_slack_notification_message(
+            dataset_version_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
         )
 
     assert result == {
@@ -234,6 +319,7 @@ def test_get_failure_slack_notification_message_with_dataset_not_found(
                     "type": "mrkdwn",
                     "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     "*Owner*: \n"
+                    f"*Collection URL*: https://cellxgene.cziscience.com/collections/collection123\n"
                     f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
                     "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"
                     "#jobs/detail/123456|123456>\n"
@@ -242,15 +328,15 @@ def test_get_failure_slack_notification_message_with_dataset_not_found(
                     "/details/arn:aws:states:us-west-2:123456789012:execution:MyStateMachine|arn:aws:states"
                     ":us-west-2:123456789012:execution:MyStateMachine>\n"
                     f"*Error Step*: {step_name}\n"
-                    f"*Dataset ID*: {dataset_id}(not found)\n"
+                    f"*Dataset Version ID*: {dataset_version_id}(not found)\n"
                     f"*Processing Status*:\n",
                 },
             },
             sample_slack_status_block_empty,
         ]
     }
-    logger_mock.error.assert_called_with("Dataset dataset123 not found")
-    get_dataset_version_mock.assert_called_with(DatasetVersionId(dataset_id))
+    assert "Dataset version ID dataset123 not found" in caplog.text
+    get_dataset_version_mock.assert_called_with(DatasetVersionId(dataset_version_id))
 
 
 def mock_collection_version(owner, version_id):
@@ -261,9 +347,9 @@ def mock_collection_version(owner, version_id):
 
 
 def test_get_failure_slack_notification_message_with_missing_collection(
-    sample_slack_header_block, sample_slack_status_block
+    get_collection_version_mock, sample_slack_header_block, sample_slack_status_block, caplog
 ):
-    dataset_id = "dataset123"
+    dataset_version_id = "dataset123"
     collection_id = "collection123"
     collection_version_id = "collection_version_id123"
     step_name = "Step 1"
@@ -279,15 +365,14 @@ def test_get_failure_slack_notification_message_with_missing_collection(
     get_business_logic_mock.get_unpublished_collection_version_from_canonical = (
         get_unpublished_collection_version_from_canonical_mock
     )
+    get_business_logic_mock.get_collection_version = get_collection_version_mock
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
-    logger_mock = Mock()
-
-    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), patch(
-        f"{module_path}.logger", logger_mock
+    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), caplog.at_level(
+        logging.ERROR
     ):
         result = get_failure_slack_notification_message(
-            dataset_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
+            dataset_version_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
         )
 
     assert result == {
@@ -299,6 +384,7 @@ def test_get_failure_slack_notification_message_with_missing_collection(
                     "type": "mrkdwn",
                     "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     f"*Owner*: \n"
+                    f"*Collection URL*: https://cellxgene.cziscience.com/collections/{collection_id}\n"
                     f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
                     "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"
                     "#jobs/detail/123456|123456>\n"
@@ -307,22 +393,22 @@ def test_get_failure_slack_notification_message_with_missing_collection(
                     "/details/arn:aws:states:us-west-2:123456789012:execution:MyStateMachine|arn:aws:states"
                     ":us-west-2:123456789012:execution:MyStateMachine>\n"
                     f"*Error Step*: {step_name}\n"
-                    f"*Dataset ID*: {dataset_id}\n"
+                    f"*Dataset Version ID*: {dataset_version_id}\n"
                     f"*Processing Status*:\n",
                 },
             },
             sample_slack_status_block,
         ]
     }
-    logger_mock.error.assert_called_with(f"Collection {collection_id} not found")
-    get_dataset_version_mock.assert_called_with(DatasetVersionId(dataset_id))
+    assert f"Collection {collection_id} not found" in caplog.text
+    get_dataset_version_mock.assert_called_with(DatasetVersionId(dataset_version_id))
     get_unpublished_collection_version_from_canonical_mock.assert_called_with(CollectionId(collection_id))
 
 
 def test_get_failure_slack_notification_message_with_dataset_and_collection(
-    sample_slack_header_block, sample_slack_status_block
+    get_collection_version_mock, sample_slack_header_block, sample_slack_status_block
 ):
-    dataset_id = "dataset123"
+    dataset_version_id = "dataset123"
     collection_id = "collection123"
     step_name = "Step 1"
     job_id = "123456"
@@ -341,11 +427,12 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection(
     get_business_logic_mock.get_unpublished_collection_version_from_canonical = (
         get_unpublished_collection_version_from_canonical_mock
     )
+    get_business_logic_mock.get_collection_version = get_collection_version_mock
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
     with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock):
         result = get_failure_slack_notification_message(
-            dataset_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
+            dataset_version_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
         )
 
     assert result == {
@@ -357,6 +444,7 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection(
                     "type": "mrkdwn",
                     "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     f"*Owner*: {owner}\n"
+                    f"*Collection URL*: https://cellxgene.cziscience.com/collections/{collection_id}\n"
                     f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
                     "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"
                     "#jobs/detail/123456|123456>\n"
@@ -365,14 +453,14 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection(
                     "/details/arn:aws:states:us-west-2:123456789012:execution:MyStateMachine|arn:aws:states"
                     ":us-west-2:123456789012:execution:MyStateMachine>\n"
                     f"*Error Step*: {step_name}\n"
-                    f"*Dataset ID*: {dataset_id}\n"
+                    f"*Dataset Version ID*: {dataset_version_id}\n"
                     f"*Processing Status*:\n",
                 },
             },
             sample_slack_status_block,
         ]
     }
-    get_dataset_version_mock.assert_called_with(DatasetVersionId(dataset_id))
+    get_dataset_version_mock.assert_called_with(DatasetVersionId(dataset_version_id))
     get_unpublished_collection_version_from_canonical_mock.assert_called_with(CollectionId(collection_id))
 
 
@@ -394,35 +482,37 @@ def mock_delete_many_from_s3() -> Mock:
 
 
 @pytest.fixture
-def dataset_id() -> str:
+def dataset_version_id() -> str:
     return "example_dataset"
 
 
 class TestCleanupArtifacts:
-    @pytest.mark.parametrize("error_step", ["download-validate", "", None])
-    def test_cleanup_artifacts__OK(self, mock_env_vars, mock_delete_many_from_s3, dataset_id, error_step):
+    @pytest.mark.parametrize("error_step", ["validate", "", None])
+    def test_cleanup_artifacts__OK(self, mock_env_vars, mock_delete_many_from_s3, dataset_version_id, error_step):
         """Check that all artifacts are deleted for the given cases."""
-        cleanup_artifacts(dataset_id, error_step)
+        cleanup_artifacts(dataset_version_id, error_step)
 
         # Assertions
-        mock_delete_many_from_s3.assert_any_call(mock_env_vars["ARTIFACT_BUCKET"], dataset_id + "/")
-        mock_delete_many_from_s3.assert_any_call(mock_env_vars["DATASETS_BUCKET"], dataset_id + ".")
-        mock_delete_many_from_s3.assert_any_call(mock_env_vars["CELLXGENE_BUCKET"], dataset_id + ".cxg/")
+        mock_delete_many_from_s3.assert_any_call(mock_env_vars["ARTIFACT_BUCKET"], dataset_version_id + "/")
+        mock_delete_many_from_s3.assert_any_call(mock_env_vars["DATASETS_BUCKET"], dataset_version_id + ".")
+        mock_delete_many_from_s3.assert_any_call(mock_env_vars["CELLXGENE_BUCKET"], dataset_version_id + ".cxg/")
         assert mock_delete_many_from_s3.call_count == 3
 
-    def test_cleanup_artifacts__not_download_validate(self, mock_env_vars, mock_delete_many_from_s3, dataset_id):
+    def test_cleanup_artifacts__not_download_validate(
+        self, mock_env_vars, mock_delete_many_from_s3, dataset_version_id
+    ):
         """Check that file in the artifact bucket are not delete if error_step is not download-validate."""
-        cleanup_artifacts(dataset_id, "not_download_validate")
+        cleanup_artifacts(dataset_version_id, "not_download_validate")
 
         # Assertions
-        mock_delete_many_from_s3.assert_any_call(mock_env_vars["DATASETS_BUCKET"], dataset_id + ".")
-        mock_delete_many_from_s3.assert_any_call(mock_env_vars["CELLXGENE_BUCKET"], dataset_id + ".cxg/")
+        mock_delete_many_from_s3.assert_any_call(mock_env_vars["DATASETS_BUCKET"], dataset_version_id + ".")
+        mock_delete_many_from_s3.assert_any_call(mock_env_vars["CELLXGENE_BUCKET"], dataset_version_id + ".cxg/")
         assert mock_delete_many_from_s3.call_count == 2
 
     @patch.dict(os.environ, clear=True)
-    def test_cleanup_artifacts__no_buckets(self, caplog, mock_delete_many_from_s3, dataset_id):
+    def test_cleanup_artifacts__no_buckets(self, caplog, mock_delete_many_from_s3, dataset_version_id):
         """Check that no files are deleted if buckets are not specified."""
-        cleanup_artifacts(dataset_id)
+        cleanup_artifacts(dataset_version_id)
 
         # Assertions
         mock_delete_many_from_s3.assert_not_called()
@@ -431,16 +521,16 @@ class TestCleanupArtifacts:
         assert FAILED_DATASET_CLEANUP_MESSAGE in caplog.text
 
     def test_cleanup_artifacts__elete_many_from_s3_error(
-        self, caplog, mock_env_vars, mock_delete_many_from_s3, dataset_id
+        self, caplog, mock_env_vars, mock_delete_many_from_s3, dataset_version_id
     ):
         """Check that delete_many_from_s3 errors are logged but do not raise exceptions."""
         mock_delete_many_from_s3.side_effect = Exception("Boom!")
-        cleanup_artifacts(dataset_id)
+        cleanup_artifacts(dataset_version_id)
 
         # Assertions
-        mock_delete_many_from_s3.assert_any_call(mock_env_vars["ARTIFACT_BUCKET"], dataset_id + "/")
-        mock_delete_many_from_s3.assert_any_call(mock_env_vars["DATASETS_BUCKET"], dataset_id + ".")
-        mock_delete_many_from_s3.assert_any_call(mock_env_vars["CELLXGENE_BUCKET"], dataset_id + ".cxg/")
+        mock_delete_many_from_s3.assert_any_call(mock_env_vars["ARTIFACT_BUCKET"], dataset_version_id + "/")
+        mock_delete_many_from_s3.assert_any_call(mock_env_vars["DATASETS_BUCKET"], dataset_version_id + ".")
+        mock_delete_many_from_s3.assert_any_call(mock_env_vars["CELLXGENE_BUCKET"], dataset_version_id + ".cxg/")
         assert mock_delete_many_from_s3.call_count == 3
         assert FAILED_ARTIFACT_CLEANUP_MESSAGE in caplog.text
         assert FAILED_CXG_CLEANUP_MESSAGE in caplog.text

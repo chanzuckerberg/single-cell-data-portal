@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from backend.layers.common.entities import DatasetArtifactType, Link
+from backend.layers.common.entities import Link
 
 
 @dataclass
@@ -16,15 +16,6 @@ class CollectionQueryFilter:
 class DatasetArtifactDownloadData:
     file_size: int
     url: str
-
-
-# TODO: Superseded by DatasetArtifactDownloadData. Remove with #5697.
-@dataclass
-class DeprecatedDatasetArtifactDownloadData:
-    file_name: str
-    file_type: DatasetArtifactType
-    file_size: int
-    presigned_url: str
 
 
 @dataclass

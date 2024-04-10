@@ -13,6 +13,7 @@ export const StyledComplexFilterInputDropdown = styled(
   .MuiButton-label {
     margin-left: 0;
     margin-right: 10px;
+    font-weight: 500;
   }
 
   &.Mui-disabled {
@@ -22,6 +23,7 @@ export const StyledComplexFilterInputDropdown = styled(
   .styled-label {
     /* (thuang): Override the default color black to be gray until SDS fixes it */
     color: ${gray500} !important;
+    font-weight: 500;
   }
 `;
 
@@ -40,4 +42,5 @@ export const StyledComplexFilter = styled(ComplexFilter)`
 
 export const ViewOptionsLabel = styled(Label)`
   margin-bottom: 8px;
+  font-weight: 500;
 `;

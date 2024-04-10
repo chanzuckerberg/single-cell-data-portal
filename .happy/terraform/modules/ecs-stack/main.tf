@@ -112,6 +112,9 @@ module frontend_service {
   task_role_arn              = local.ecs_role_arn
   service_port               = 9000
   memory                     = var.frontend_memory
+  
+  # 30gb of disk storage allocated for the task running the frontend container
+  task_storage_size_gb       = 30 
   cpu                        = 2048
   deployment_stage           = local.deployment_stage
   step_function_arn          = module.upload_sfn.step_function_arn
@@ -141,6 +144,9 @@ module backend_service {
   security_groups            = local.security_groups
   task_role_arn              = local.ecs_role_arn
   service_port               = 5000
+
+  # 100gb of disk storage allocated for the task running backend container 
+  task_storage_size_gb       = 100
   memory                     = var.backend_memory
   cpu                        = var.backend_cpus * 1024
   cmd                        = local.backend_cmd
@@ -154,6 +160,10 @@ module backend_service {
   dataset_submissions_bucket = local.dataset_submissions_bucket
   datasets_bucket            = local.datasets_bucket
   execution_role             = local.ecs_execution_role
+
+  # Bump health_check_interval from 30 seconds to 60 seconds so that WMG snapshot download,
+  # which at the time of this writing is around 54GB, has time to complete.
+  health_check_interval      = 60 
   dd_key_secret_arn          = var.dd_key_secret_arn
 
   wait_for_steady_state = local.wait_for_steady_state
@@ -268,6 +278,16 @@ module upload_sfn {
   lambda_success_handler = module.upload_success_lambda.arn
   lambda_error_handler   = module.upload_error_lambda.arn
   deployment_stage       = local.deployment_stage
+
+  # use for defining the batch job definition
+  image             = "${local.upload_image_repo}:${local.image_tag}"
+  batch_role_arn    = local.batch_role_arn
+  remote_dev_prefix = local.remote_dev_prefix
+  artifact_bucket   = local.artifact_bucket
+  cellxgene_bucket  = local.cellxgene_bucket
+  datasets_bucket   = local.datasets_bucket
+  frontend_url      = local.frontend_url
+  batch_job_log_group = module.upload_batch.batch_job_log_group
 }
 
 module dataset_submissions_lambda {

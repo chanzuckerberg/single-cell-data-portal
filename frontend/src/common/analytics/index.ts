@@ -28,6 +28,6 @@ export function track(event: EVENTS, props?: Record<string, unknown>): void {
   }
 
   if (API_URL !== "https://api.cellxgene.cziscience.com") {
-    console.info(`Tracking event: ${event}`, options);
+    console.info(`Tracking event: ${event}`, options?.props);
   }
 }

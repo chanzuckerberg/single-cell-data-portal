@@ -1,4 +1,4 @@
-from typing import Protocol, Tuple
+from typing import List, Protocol, Tuple
 
 from cellxgene_schema import validate
 from cellxgene_schema.migrate import migrate
@@ -9,7 +9,7 @@ class SchemaValidatorProviderInterface(Protocol):
     def validate_and_save_labels(self, input_file: str, output_file: str) -> Tuple[bool, list, bool]:
         pass
 
-    def migrate(self, input_file: str, output_file: str, collection_id: str, dataset_id: str) -> None:
+    def migrate(self, input_file: str, output_file: str, collection_id: str, dataset_id: str) -> List[str]:
         """
         Runs `cellxgene-schema migrate` on the provided `input_file`.
         """
@@ -35,11 +35,11 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
 
         return validate.validate(input_file, output_file)
 
-    def migrate(self, input_file, output_file, collection_id, dataset_id) -> None:
+    def migrate(self, input_file, output_file, collection_id, dataset_id) -> List[str]:
         """
         Runs `cellxgene-schema migrate` on the provided `input_file`.
         """
-        migrate(input_file, output_file, collection_id, dataset_id)
+        return migrate(input_file, output_file, collection_id, dataset_id)
 
     def get_current_schema_version(self) -> str:
         return get_current_schema_version()

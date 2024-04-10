@@ -1,15 +1,17 @@
+import html
 import logging
 from datetime import datetime
-from urllib.parse import urlparse
+from typing import Optional, Tuple
 
 import requests
 
 from backend.common.corpora_config import CorporaConfig
+from backend.layers.common.doi import doi_curie_from_link
 
 
 class CrossrefProviderInterface:
-    def fetch_metadata(self, doi: str) -> dict:
-        pass
+    def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str]]:
+        return None, None
 
     def fetch_preprint_published_doi(self, doi):
         pass
@@ -53,10 +55,6 @@ class CrossrefProvider(CrossrefProviderInterface):
         return (year, month, day)
 
     def _fetch_crossref_payload(self, doi):
-        # Remove the https://doi.org part
-        parsed = urlparse(doi)
-        if parsed.scheme and parsed.netloc:
-            doi = parsed.path
 
         if self.crossref_api_key is None:
             logging.info("No Crossref API key found, skipping metadata fetching.")
@@ -68,22 +66,27 @@ class CrossrefProvider(CrossrefProviderInterface):
                 headers={"Crossref-Plus-API-Token": f"Bearer {self.crossref_api_key}"},
             )
             res.raise_for_status()
-        except Exception as e:
-            if res.status_code == 404:
+        except requests.RequestException as e:
+            if e.response is not None and e.response.status_code == 404:
                 raise CrossrefDOINotFoundException from e
             else:
                 raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
 
         return res
 
-    def fetch_metadata(self, doi: str) -> dict:
+    def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str]]:
         """
         Fetches and extracts publisher metadata from Crossref for a specified DOI.
         If the Crossref API URI isn't in the configuration, we will just return an empty object.
         This is to avoid calling Crossref in non-production environments.
+        :param doi: str - DOI uri link or curie identifier
+        return: tuple - publisher metadata dict and DOI curie identifier
         """
+        doi_curie = doi_curie_from_link(doi)
 
-        res = self._fetch_crossref_payload(doi)
+        res = self._fetch_crossref_payload(doi_curie)
+        if not res:
+            return None, None
 
         try:
             message = res.json()["message"]
@@ -107,13 +110,15 @@ class CrossrefProvider(CrossrefProviderInterface):
             # Journal
             try:
                 if "short-container-title" in message and message["short-container-title"]:
-                    journal = message["short-container-title"][0]
+                    raw_journal = message["short-container-title"][0]
                 elif "container-title" in message and message["container-title"]:
-                    journal = message["container-title"][0]
+                    raw_journal = message["container-title"][0]
                 elif "institution" in message:
-                    journal = message["institution"][0]["name"]
+                    raw_journal = message["institution"][0]["name"]
             except Exception:
                 raise CrossrefParseException("Journal node missing") from None
+
+            journal = html.unescape(raw_journal)
 
             # Authors
             # Note: make sure that the order is preserved, as it is a relevant information
@@ -121,7 +126,9 @@ class CrossrefProvider(CrossrefProviderInterface):
             parsed_authors = []
             for author in authors:
                 if "given" in author and "family" in author:
-                    parsed_authors.append({"given": author["given"], "family": author["family"]})
+                    parsed_author = {"given": author["given"], "family": author["family"]}
+                    if parsed_author not in parsed_authors:
+                        parsed_authors.append(parsed_author)
                 elif "family" in author:
                     # Assume family is consortium
                     parsed_authors.append({"name": author["family"]})
@@ -130,32 +137,32 @@ class CrossrefProvider(CrossrefProviderInterface):
 
             # Preprint
             is_preprint = message.get("subtype") == "preprint"
+            if is_preprint:
+                published_metadata, published_doi_curie = self.fetch_published_metadata(message)
+                if published_metadata and published_doi_curie:  # if not, use preprint doi curie
+                    return published_metadata, published_doi_curie
 
-            return {
-                "authors": parsed_authors,
-                "published_year": published_year,
-                "published_month": published_month,
-                "published_day": published_day,
-                "published_at": datetime.timestamp(datetime(published_year, published_month, published_day)),
-                "journal": journal,
-                "is_preprint": is_preprint,
-            }
+            return (
+                {
+                    "authors": parsed_authors,
+                    "published_year": published_year,
+                    "published_month": published_month,
+                    "published_day": published_day,
+                    "published_at": datetime.timestamp(datetime(published_year, published_month, published_day)),
+                    "journal": journal,
+                    "is_preprint": is_preprint,
+                },
+                doi_curie,
+            )
         except Exception as e:
             raise CrossrefParseException("Cannot parse metadata from Crossref") from e
 
-    def fetch_preprint_published_doi(self, doi):
-        """
-        Given a preprint DOI, returns the DOI of the published paper, if available.
-        """
-
-        res = self._fetch_crossref_payload(doi)
-        message = res.json()["message"]
-        is_preprint = message.get("subtype") == "preprint"
-
-        if is_preprint:
-            try:
-                published_doi = message["relation"]["is-preprint-of"]
-                if published_doi[0]["id-type"] == "doi":
-                    return published_doi[0]["id"]
-            except Exception:
-                pass
+    def fetch_published_metadata(self, doi_response_message: dict) -> Tuple[Optional[dict], Optional[str]]:
+        try:
+            published_doi = doi_response_message["relation"]["is-preprint-of"]
+            # the new DOI to query for ...
+            for entity in published_doi:
+                if entity["id-type"] == "doi":
+                    return self.fetch_metadata(entity["id"])
+        except Exception:  # if fetch of published doi errors out, just use preprint doi
+            return None, None

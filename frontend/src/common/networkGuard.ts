@@ -4,12 +4,18 @@ export const TOO_MANY_REQUESTS_ERROR_MESSAGE_PREFIX =
   "Too many requests detected. Canceling the current and all future requests. Request count: ";
 
 let requestCount = 0;
-const TIMEOUT_MS = 5 * 1000; // 5 seconds in milliseconds
-const maxRequests = 20;
+/**
+ * (thuang): Use 5 seconds to take into account temporary spikes in requests
+ */
+const TIMEOUT_MS = 5 * 1000;
+/**
+ * (thuang): Assuming 1 request per 10ms, this will allow consecutive requests
+ * for 5 seconds, which should be enough for most cases. Anything beyond that
+ * is likely abnormal and needs to be investigated.
+ */
+const maxRequests = 500;
 let timeoutExpiration = 0;
 let hasReachedMaxRequests = false;
-
-type FetchArgs = [input: RequestInfo | URL, init?: RequestInit | undefined];
 
 export function networkGuard() {
   if (isSSR()) return;
@@ -17,9 +23,9 @@ export function networkGuard() {
   // Intercept network requests
   const originalFetch = window.fetch;
 
-  window.fetch = newFetch;
+  window.fetch = newFetch as typeof window.fetch;
 
-  function newFetch(...args: FetchArgs) {
+  function newFetch(...args: Parameters<typeof window.fetch>) {
     requestCount++;
 
     if (!timeoutExpiration) {

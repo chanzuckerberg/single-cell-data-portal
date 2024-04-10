@@ -382,6 +382,42 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /v1/collections/{collection_id}/order-datasets:
+    put:
+      tags:
+        - collections
+      summary: Reorder datasets in a collection version
+      security:
+        - cxguserCookie: []
+      description: >-
+        Updates the order of datasets in a collection version and permanently converts the
+        collection version to have a custom datasets sort order instead of the default.
+      operationId: backend.portal.api.portal_api.set_collection_version_datasets_order
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - datasets
+              properties:
+                datasets:
+                  type: array
+                  description: The ordered list of dataset IDs.
+                  items:
+                    $ref: "#/components/schemas/dataset_id"
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+
   /v1/collections/index:
     get:
       tags:
@@ -575,42 +611,6 @@ paths:
                     type: number
                   url:
                     type: string
-        "401":
-          $ref: "#/components/responses/401"
-        "403":
-          $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
-    post:
-      tags:
-        - datasets
-      summary: Request to download a dataset
-      description: >-
-        Request to download a file which on success will generate a pre-signed URL to download the dataset.
-      operationId: backend.portal.api.portal_api.post_dataset_asset
-      parameters:
-        - $ref: "#/components/parameters/path_dataset_id"
-        - name: asset_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  dataset_id:
-                    $ref: "#/components/schemas/dataset_id"
-                  presigned_url:
-                    type: string
-                  file_name:
-                    type: string
-                  file_size:
-                    type: number
         "401":
           $ref: "#/components/responses/401"
         "403":
@@ -1074,6 +1074,7 @@ components:
           | GenitoUrinary Development Molecular Anatomy Project (GUDMAP)  |
           | Gut Cell Atlas  |
           | Human BioMolecular Atlas Program (HuBMAP)  |
+          | Human Cell Atlas (HCA)  |
           | Human Pancreas Analysis Program (HPAP) |
           | Human Tumor Atlas Network (HTAN)  |
           | Kidney Precision Medicine Project (KPMP)  |
@@ -1092,7 +1093,6 @@ components:
         - consortia
         - created_at
         - updated_at
-        - data_submission_policy_version
       properties:
         access_type:
           $ref: "#/components/schemas/access_type"

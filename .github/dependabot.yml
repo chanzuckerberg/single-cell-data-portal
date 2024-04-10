@@ -1,0 +1,65 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    open-pull-requests-limit: 3
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    assignees:
+      - "seve"
+  - package-ecosystem: pip
+    directory: "/python_dependencies/backend/"
+    open-pull-requests-limit: 3
+    schedule:
+      interval: "daily"
+    assignees:
+      - "Bento007"
+  - package-ecosystem: pip
+    directory: "/python_dependencies/wmg/"
+    open-pull-requests-limit: 3
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    assignees:
+      - "prathapsridharan"
+  - package-ecosystem: pip
+    directory: "/python_dependencies/upload_handler/"
+    open-pull-requests-limit: 3
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    assignees:
+      - "ebezzi"
+  - package-ecosystem: pip
+    directory: "/python_dependencies/submissions/"
+    open-pull-requests-limit: 3
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    assignees:
+      - "nayib-jose-gloria"
+  - package-ecosystem: pip
+    directory: "/python_dependencies/cellguide_pipeline/"
+    open-pull-requests-limit: 3
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    assignees:
+      - "atarashansky"
+  - package-ecosystem: pip
+    directory: "/python_dependencies/processing/"
+    open-pull-requests-limit: 3
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    assignees:
+      - "danieljhegeman"
+  - package-ecosystem: npm
+    directory: "/frontend/"
+    open-pull-requests-limit: 3
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    assignees:
+      - "tihuan"

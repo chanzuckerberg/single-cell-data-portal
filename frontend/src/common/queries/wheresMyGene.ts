@@ -1,12 +1,12 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API_URL } from "src/configs/configs";
-import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGene/common/constants";
+import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/constants";
 import {
   DispatchContext,
   StateContext,
-} from "src/views/WheresMyGene/common/store";
-import { setSnapshotId } from "src/views/WheresMyGene/common/store/actions";
+} from "src/views/WheresMyGeneV2/common/store";
+import { setSnapshotId } from "src/views/WheresMyGeneV2/common/store/actions";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
@@ -18,7 +18,7 @@ import {
   RawCellTypeGeneExpressionSummaryData,
   ViewId,
   Organism as IOrganism,
-} from "src/views/WheresMyGene/common/types";
+} from "src/views/WheresMyGeneV2/common/types";
 import { API } from "../API";
 import { APIV2 } from "src/common/tempAPIV2";
 
@@ -511,14 +511,6 @@ export interface CellTypeByTissueName {
   [tissueName: string]: CellTypeRow[];
 }
 
-// Cell types that we want to exclude from each tissue
-
-const FILTERED_CELL_TYPE_ONTOLOGY_IDS = [
-  "CL:0000003", // Native cell
-  "CL:0000255", // Eukaryotic cell
-  "CL:0000548", // Animal cell
-];
-
 export function useCellTypesByTissueName(version: 1 | 2 = 2): {
   isLoading: boolean;
   data: CellTypeByTissueName;
@@ -559,9 +551,6 @@ export function useCellTypesByTissueName(version: 1 | 2 = 2): {
         // (thuang): Reverse the order, so the first cell type is at the top of
         // the heat map
         .reverse()
-        .filter(([_, cellTypeRow]) => {
-          return !FILTERED_CELL_TYPE_ONTOLOGY_IDS.includes(cellTypeRow.id);
-        })
         .map(([_, cellTypeName]) => {
           return cellTypeName;
         });
@@ -1031,9 +1020,11 @@ function useWMGQueryRequestBody(version: 1 | 2) {
       return null;
     }
     const gene_ontology_term_ids = selectedGenes.map((geneName) => {
-      return organismGenesByName[geneName].id;
+      return organismGenesByName[geneName]?.id;
     });
+
     if (!gene_ontology_term_ids.length) gene_ontology_term_ids.push(".");
+
     const tissue_ontology_term_ids = selectedTissues?.map((tissueName) => {
       return tissuesByName[tissueName].id;
     });
@@ -1319,8 +1310,8 @@ export interface MarkerGenesByCellType {
 
 export interface MarkerGene {
   gene_ontology_term_id: string;
-  effect_size: number;
-  p_value: number;
+  marker_score: number;
+  specificity: number;
 }
 
 export interface MarkerGeneResponse<T = MarkerGene[]> {
@@ -1349,7 +1340,7 @@ export function useMarkerGenes({
 
   function filterMarkerGenes(markerGenes: MarkerGene[]): MarkerGene[] {
     return markerGenes.filter(
-      (markerGene) => markerGene.effect_size >= FMG_GENE_STRENGTH_THRESHOLD
+      (markerGene) => markerGene.marker_score >= FMG_GENE_STRENGTH_THRESHOLD
     );
   }
 

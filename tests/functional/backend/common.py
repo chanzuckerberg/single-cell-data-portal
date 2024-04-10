@@ -27,10 +27,6 @@ AUDIENCE = {
     "rdev": "api.cellxgene.dev.single-cell.czi.technology",
 }
 
-TEST_DATASET_URI = (
-    "https://www.dropbox.com/scl/fi/phrt3ru8ulep7ttnwttu2/example_valid.h5ad?rlkey=mmcm2qd9xrnbqle3l3vyii0gx&dl=0"
-)
-
 
 class BaseFunctionalTestCase(unittest.TestCase):
     session: requests.Session
@@ -42,6 +38,10 @@ class BaseFunctionalTestCase(unittest.TestCase):
         super().setUpClass()
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
         cls.config = CorporaAuthConfig()
+        cls.test_dataset_uri = (
+            "https://www.dropbox.com/scl/fi/y50umqlcrbz21a6jgu99z/"
+            "5_0_0_example_valid.h5ad?rlkey=s7p6ybyx082hswix26hbl11pm&dl=0"
+        )
         cls.session = requests.Session()
         # apply retry config to idempotent http methods we use + POST requests, which are currently all either
         # idempotent (wmg queries) or low risk to rerun in dev/staging. Update if this changes in functional tests.

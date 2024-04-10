@@ -10,16 +10,13 @@ import {
 } from "src/common/queries/wheresMyGene";
 import { Props } from "./types";
 import { useCallback, useContext, useEffect, useMemo } from "react";
-import {
-  DispatchContext,
-  StateContext,
-} from "../../../WheresMyGene/common/store";
+import { DispatchContext, StateContext } from "../../common/store";
 import { isEqual } from "lodash";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { track } from "src/common/analytics";
-import { Filters as IFilters } from "src/views/WheresMyGene/common/types";
+import { Filters as IFilters } from "src/views/WheresMyGeneV2/common/types";
 import { ANALYTICS_MAPPING } from "./constants";
-import { selectFilters } from "src/views/WheresMyGene/common/store/actions";
+import { selectFilters } from "src/views/WheresMyGeneV2/common/store/actions";
 import {
   getOptionSelected,
   isOptionEqualToValue,
@@ -263,6 +260,18 @@ export const useConnect = ({
     sdsStyle: "minimal",
   } as Partial<InputDropdownProps>;
 
+  const sortedPublicationCitations = useMemo(() => {
+    const sortedCitations = [...publication_citations];
+    sortedCitations.sort((a, b) =>
+      a.name === "No Publication"
+        ? 1
+        : b.name === "No Publication"
+        ? -1
+        : a.name.localeCompare(b.name)
+    );
+    return sortedCitations;
+  }, [publication_citations]);
+
   return {
     handle: {
       tissuesChange: handleTissuesChange,
@@ -283,13 +292,12 @@ export const useConnect = ({
     terms: {
       tissue: tissue_terms,
       sex: sex_terms,
-      publication: publication_citations,
+      publication: sortedPublicationCitations,
       self_reported_ethnicity: self_reported_ethnicity_terms,
       disease: disease_terms,
     },
     DropdownMenuProps,
     isHeatmapShown,
     InputDropdownProps,
-    datasets,
   };
 };

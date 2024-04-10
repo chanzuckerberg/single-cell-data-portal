@@ -1,0 +1,10 @@
+{
+  "scvi": [[
+    "Using trained model",
+    "https://chanzuckerberg.github.io/cellxgene-census/notebooks/analysis_demo/comp_bio_scvi_model_use.html"
+  ]],
+  "geneformer": [[
+    "Using trained model",
+    "https://chanzuckerberg.github.io/cellxgene-census/notebooks/analysis_demo/comp_bio_geneformer_prediction.html"
+  ]]
+}

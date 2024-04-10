@@ -5,7 +5,7 @@ db/migrate:
 .PHONY: db/remote_migration_init
 db/remote_migration_init:
 	# Run utility installation before invoking these commands.
-	pip install awscli -r ../requirements-backend.txt
+	pip install awscli -r ../requirements.txt
 	apt-get update && apt-get install -y postgresql-client jq
 
 .PHONY: db/init_remote_dev
@@ -90,7 +90,7 @@ db/local/load-schema:
 
 db/dump_schema:
 ifeq ($(DEPLOYMENT_STAGE),test)
-	docker-compose exec database pg_dump --schema-only --dbname=corpora --username corpora
+	docker compose exec database pg_dump --schema-only --dbname=corpora --username corpora
 else
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
 	$(MAKE) db/tunnel/up

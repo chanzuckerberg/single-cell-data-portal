@@ -2,16 +2,16 @@ import { CONTENT_WRAPPER_LEFT_RIGHT_PADDING_PX } from "src/components/Layout/sty
 import {
   ECHART_AXIS_LABEL_COLOR_HEX,
   ECHART_AXIS_LABEL_FONT_SIZE_PX,
-} from "src/views/WheresMyGene/components/HeatMap/components/XAxisChart/style";
+} from "src/views/WheresMyGeneV2/components/HeatMap/components/XAxisChart/style";
 import { PLASMA_SVG_STRING } from "src/views/WheresMyGeneV2/components/Filters/components/ColorScale/constants";
 import {
-  HEAT_MAP_BASE_CELL_PX,
+  HEAT_MAP_TOTAL_CELL_HEIGHT_PX,
   hyphenize,
   Y_AXIS_CHART_WIDTH_PX,
-} from "src/views/WheresMyGene/components/HeatMap/utils";
-import { CHART_PADDING_PX } from "src/views/WheresMyGene/components/HeatMap/style";
-import { Tissue } from "src/views/WheresMyGene/common/types";
-import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGene/common/constants";
+} from "src/views/WheresMyGeneV2/components/HeatMap/utils";
+import { CHART_PADDING_PX } from "src/views/WheresMyGeneV2/components/HeatMap/style";
+import { Tissue } from "src/views/WheresMyGeneV2/common/types";
+import { X_AXIS_CHART_HEIGHT_PX } from "src/views/WheresMyGeneV2/common/constants";
 import {
   CELL_COUNT_LABEL_CLASS_NAME,
   CELL_TYPE_ROW_CLASS_NAME,
@@ -269,9 +269,9 @@ export function renderXAxis({
         x: -(X_AXIS_CHART_HEIGHT_PX + yOffset + 10),
         y:
           xOffset +
-          HEAT_MAP_BASE_CELL_PX +
+          HEAT_MAP_TOTAL_CELL_HEIGHT_PX +
           CHART_PADDING_PX / 2 +
-          index * HEAT_MAP_BASE_CELL_PX,
+          index * HEAT_MAP_TOTAL_CELL_HEIGHT_PX,
       };
 
       applyAttributes(geneLabelText, labelAttributes);
@@ -356,10 +356,10 @@ export function renderYAxis({
         "font-weight": FONT_WEIGHT,
         x: 0,
         /**
-         * (thuang): Add `HEAT_MAP_BASE_CELL_PX / 2` top margin, so we render the
+         * (thuang): Add `HEAT_MAP_TOTAL_CELL_HEIGHT_PX / 2` top margin, so we render the
          * first label in the middle of the first cell
          */
-        y: index * HEAT_MAP_BASE_CELL_PX,
+        y: index * HEAT_MAP_TOTAL_CELL_HEIGHT_PX,
       };
 
       applyAttributes(group, groupAttributes);
@@ -376,7 +376,7 @@ export function renderYAxis({
 
       const labelAttributes = {
         x: 0,
-        y: HEAT_MAP_BASE_CELL_PX / 2,
+        y: HEAT_MAP_TOTAL_CELL_HEIGHT_PX / 2,
       };
 
       applyAttributes(cellTypeLabel, labelAttributes);
@@ -388,7 +388,7 @@ export function renderYAxis({
       const countAttributes = {
         "text-anchor": "end",
         x: Y_AXIS_CHART_WIDTH_PX,
-        y: HEAT_MAP_BASE_CELL_PX / 2,
+        y: HEAT_MAP_TOTAL_CELL_HEIGHT_PX / 2,
       };
 
       applyAttributes(cellCount, countAttributes);

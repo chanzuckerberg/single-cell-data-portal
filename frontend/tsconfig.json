@@ -30,7 +30,12 @@
     ],
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "incremental": true
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "exclude": [
     "node_modules",
@@ -41,6 +46,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "src/common/constants/nodeEnv.js"
+    "**/*.js",
+    ".next/types/**/*.ts"
   ]
 }

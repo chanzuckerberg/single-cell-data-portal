@@ -1,6 +1,8 @@
 import unittest
 from typing import NamedTuple
 
+import pandas as pd
+
 from backend.wmg.api.wmg_api_config import (
     READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
     READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
@@ -12,6 +14,7 @@ from backend.wmg.data.query import (
     WmgQueryCriteria,
     retrieve_top_n_markers,
 )
+from tests.test_utils import sort_dataframe
 from tests.unit.backend.wmg.fixtures.test_snapshot import create_temp_wmg_snapshot, load_realistic_test_snapshot
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
@@ -101,7 +104,6 @@ class QueryTest(unittest.TestCase):
             cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
         )
 
-    @unittest.skip("Skip until WMG reader is bumped to v3")
     def test__query_marker_genes_cube__returns_correct_top_10_markers(self):
         criteria = MarkerGeneQueryCriteria(
             tissue_ontology_term_id="UBERON:0002097",
@@ -115,7 +117,6 @@ class QueryTest(unittest.TestCase):
             expected = generate_expected_marker_gene_data_with_pandas(snapshot, criteria, "ttest", 10)
             self.assertEqual(marker_genes, expected)
 
-    @unittest.skip("Skip until WMG reader is bumped to v3")
     def test__query_marker_genes_cube__returns_correct_all_markers(self):
         criteria = MarkerGeneQueryCriteria(
             tissue_ontology_term_id="UBERON:0002097",
@@ -129,7 +130,6 @@ class QueryTest(unittest.TestCase):
             expected = generate_expected_marker_gene_data_with_pandas(snapshot, criteria, "ttest", 0)
             self.assertEqual(marker_genes, expected)
 
-    @unittest.skip("Skip until WMG reader is bumped to v3")
     def test__query_expression_summary_default_cube__returns_correct_results(self):
         criteria = WmgQueryCriteria(
             gene_ontology_term_ids=["ENSG00000286269", "ENSG00000286270"],
@@ -138,10 +138,12 @@ class QueryTest(unittest.TestCase):
         )
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             q = WmgQuery(snapshot, self.cube_query_params)
-            query_result = q.expression_summary_default(criteria)
-            query_sum = list(query_result[["sum", "nnz", "sqsum"]].sum())
-            expected = [7, 5, 9]
-            [self.assertEqual(round(query_sum[i]), round(expected[i])) for i in range(len(query_sum))]
+            query_result = sort_dataframe(q.expression_summary_default(criteria))
+            expected_query_result = _filter_dataframe(snapshot.expression_summary_default_cube.df[:], criteria.dict())
+            del expected_query_result["organism_ontology_term_id"]
+            expected_query_result = sort_dataframe(expected_query_result)
+
+            pd.testing.assert_frame_equal(query_result, expected_query_result)
 
 
 class QueryPrimaryFilterDimensionsTest(unittest.TestCase):

@@ -1,7 +1,8 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 import pandas as pd
+from ddtrace import tracer
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
@@ -18,6 +19,16 @@ class WmgQueryCriteria(BaseModel):
     # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
     # assay_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     development_stage_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    self_reported_ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+
+
+class DeQueryCriteria(BaseModel):
+    organism_ontology_term_id: str
+    tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    publication_citations: List[str] = Field(default=[], unique_items=True, min_items=0)
     disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     self_reported_ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
@@ -79,10 +90,18 @@ class WmgCubeQueryParams:
 
 
 class WmgQuery:
-    def __init__(self, snapshot: WmgSnapshot, cube_query_params: WmgCubeQueryParams) -> None:
+    def __init__(self, snapshot: WmgSnapshot, cube_query_params: Optional[WmgCubeQueryParams] = None) -> None:
         self._snapshot = snapshot
         self._cube_query_params = cube_query_params
 
+    @tracer.wrap(name="expression_summary_diffexp", service="de-api", resource="_query", span_type="de-api")
+    def expression_summary_diffexp(self, criteria: DeQueryCriteria) -> DataFrame:
+        return self._query(
+            cube=_select_cube_with_best_discriminatory_power(self._snapshot, criteria),
+            criteria=criteria,
+        )
+
+    @tracer.wrap(name="expression_summary", service="wmg-api", resource="_query", span_type="wmg-api")
     def expression_summary(self, criteria: WmgQueryCriteria, compare_dimension=None) -> DataFrame:
         return self._query(
             cube=self._snapshot.expression_summary_cube,
@@ -90,18 +109,21 @@ class WmgQuery:
             compare_dimension=compare_dimension,
         )
 
+    @tracer.wrap(name="expression_summary_default", service="wmg-api", resource="_query", span_type="wmg-api")
     def expression_summary_default(self, criteria: WmgQueryCriteria) -> DataFrame:
         return self._query(
             cube=self._snapshot.expression_summary_default_cube,
             criteria=criteria,
         )
 
+    @tracer.wrap(name="marker_genes", service="wmg-api", resource="_query", span_type="wmg-api")
     def marker_genes(self, criteria: MarkerGeneQueryCriteria) -> DataFrame:
         return self._query(
             cube=self._snapshot.marker_genes_cube,
             criteria=criteria,
         )
 
+    @tracer.wrap(name="cell_counts", service="wmg-api", resource="_query", span_type="wmg-api")
     def cell_counts(self, criteria: WmgQueryCriteria, compare_dimension=None) -> DataFrame:
         cell_counts = self._query(
             cube=self._snapshot.cell_counts_cube,
@@ -116,12 +138,10 @@ class WmgQuery:
     def _query(
         self,
         cube: Array,
-        criteria: Union[WmgQueryCriteria, WmgQueryCriteriaV2, MarkerGeneQueryCriteria],
+        criteria: Union[DeQueryCriteria, WmgQueryCriteria, WmgQueryCriteriaV2, MarkerGeneQueryCriteria],
         compare_dimension=None,
     ) -> DataFrame:
-        indexed_dims = self._cube_query_params.get_indexed_dims_to_lookup_query_criteria(
-            cube, pluralize=not isinstance(criteria, MarkerGeneQueryCriteria)
-        )
+        indexed_dims = [dim.name for dim in cube.schema.domain]
 
         query_cond = ""
         attrs = {}
@@ -137,9 +157,12 @@ class WmgQuery:
                 query_cond += f"{attr} in {vals}"
 
         tiledb_dims_query = []
+        criteria_dict = criteria.dict()
         for dim_name in indexed_dims:
-            if criteria.dict()[dim_name]:
-                tiledb_dims_query.append(criteria.dict()[dim_name])
+            if dim_name not in criteria_dict:
+                dim_name = pluralize(dim_name)
+            if criteria_dict.get(dim_name, []):
+                tiledb_dims_query.append(criteria_dict[dim_name])
             # If an "indexed" dimension is not included in the criteria,
             # then all values will be selected.
             else:
@@ -150,14 +173,17 @@ class WmgQuery:
 
         # get valid attributes from schema
         # valid means it is a required column for downstream processing
-        attrs = self._cube_query_params.get_attrs_for_cube_query(cube)
-        if compare_dimension is not None:
-            attrs.append(compare_dimension)
+        # if self._cube_query_params is None, then all attributes are valid
+        attrs = self._cube_query_params.get_attrs_for_cube_query(cube) if self._cube_query_params else None
+        if attrs is not None:
+            if compare_dimension is not None:
+                attrs.append(compare_dimension)
 
-        attrs += numeric_attrs
+            attrs += numeric_attrs
 
         # get valid dimensions from schema
-        dims = self._cube_query_params.get_dims_for_cube_query(cube)
+        # if self._cube_query_params is None, then all dimensions are valid
+        dims = self._cube_query_params.get_dims_for_cube_query(cube) if self._cube_query_params else None
 
         query_result_df = pd.concat(
             cube.query(
@@ -194,7 +220,11 @@ class WmgQuery:
 
 
 def depluralize(attr_name):
-    return attr_name[:-1]
+    return attr_name[:-1] if attr_name[-1] == "s" else attr_name
+
+
+def pluralize(attr_name):
+    return attr_name + "s" if attr_name[-1] != "s" and attr_name != "organism_ontology_term_id" else attr_name
 
 
 def retrieve_top_n_markers(query_result, test, n_markers):
@@ -217,13 +247,46 @@ def retrieve_top_n_markers(query_result, test, n_markers):
     if test == "binomtest":
         raise ValueError("binomtest is not supported anymore")
 
-    attrs = [f"p_value_{test}", f"effect_size_{test}"]
-    col_names = ["p_value", "effect_size"]
-    markers = query_result[["gene_ontology_term_id"] + attrs].rename(columns=dict(zip(attrs, col_names)))
-    markers = markers[markers["effect_size"].notna()]
+    attrs = ["gene_ontology_term_id", "specificity", "marker_score"]
+    markers = query_result[attrs]
+    markers = markers[markers["marker_score"].notna()]
     if n_markers > 0:
-        markers = markers.nlargest(n_markers, "effect_size")
+        markers = markers.nlargest(n_markers, "marker_score")
     else:
-        markers = markers.sort_values("effect_size", ascending=False)
-    records = markers[["gene_ontology_term_id"] + col_names].to_dict(orient="records")
+        markers = markers.sort_values("marker_score", ascending=False)
+    records = markers[attrs].to_dict(orient="records")
     return records
+
+
+def _select_cube_with_best_discriminatory_power(snapshot: WmgSnapshot, criteria: DeQueryCriteria) -> Array:
+    """
+    Selects the cube with the best discriminatory power based on the given criteria.
+
+    This function evaluates each dimension's discriminatory power by comparing the number
+    of criteria specified for that dimension against its total cardinality within the snapshot.
+    It then selects the cube that maximizes this discriminatory power. If no dimension meets the
+    criteria or if the discriminatory power cannot be determined, the default cube is selected.
+
+    Parameters
+    ----------
+    snapshot : WmgSnapshot
+        The snapshot object containing all cubes and their metadata.
+    criteria : DeQueryCriteria
+        The criteria object containing dimensions and their corresponding values to filter on.
+
+    Returns
+    -------
+    Array
+        The cube with the best discriminatory power based on the given criteria.
+    """
+    cardinality_per_dimension = snapshot.cardinality_per_dimension
+    criteria_dict = criteria.dict()
+    base_indexed_dims = [dim.name for dim in snapshot.diffexp_expression_summary_cubes["default"].schema.domain]
+    discriminatory_power = {
+        depluralize(dim): len(criteria_dict[dim]) / cardinality_per_dimension[depluralize(dim)]
+        for dim in criteria_dict
+        if len(criteria_dict[dim]) > 0 and depluralize(dim) not in base_indexed_dims
+    }
+    use_default = len(discriminatory_power) == 0
+    cube_key = "default" if use_default else min(discriminatory_power, key=discriminatory_power.get)
+    return snapshot.diffexp_expression_summary_cubes[cube_key]

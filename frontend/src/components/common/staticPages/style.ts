@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { inter } from "src/common/theme";
 
 export const Layout = styled.div`
   width: 100%;
@@ -10,7 +11,7 @@ export const CommonStyle = styled.div`
   margin: 0px auto;
   padding: 50px;
   line-height: 1.5;
-  font-family: "Inter", sans-serif;
+  font-family: ${inter.style.fontFamily};
 
   h4,
   h5 {

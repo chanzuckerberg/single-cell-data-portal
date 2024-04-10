@@ -39,6 +39,9 @@ resource aws_ecs_task_definition task_definition {
   task_role_arn            = var.task_role_arn
   execution_role_arn       = var.execution_role
   requires_compatibilities = ["FARGATE"]
+  ephemeral_storage {
+    size_in_gib = var.task_storage_size_gb
+  }
   container_definitions = <<EOF
 [
   {
@@ -202,6 +205,10 @@ resource aws_ecs_task_definition task_definition {
       {
         "name": "AWS_DEFAULT_REGION",
         "value": "${data.aws_region.current.name}"
+      },
+      {
+        "name": "DOWNLOAD_WMG_DATA_TO_DISK",
+        "value": "true"
       }
     ],
     "portMappings": [

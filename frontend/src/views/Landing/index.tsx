@@ -9,32 +9,43 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import wordmark from "src/common/images/cellxgene-discover-wordmark.svg";
-import AnalyzeDatasetsImg from "src/components/common/staticPages/analyze-datasets.jpg";
 import LaptopImg from "src/components/common/staticPages/cellxgene-laptop-updated.png";
 import HeroBg from "src/components/common/staticPages/cellxgene_hero_bg.png";
-import DownloadDataImg from "src/components/common/staticPages/download-data.png";
-import ExpediteCollaborationImg from "src/components/common/staticPages/expedite-collaborative-analysis.png";
+import AnnotateImg from "src/components/common/staticPages/annotate.png";
+import CellGuideImg from "src/components/common/staticPages/cell-guide.png";
+import CensusImg from "src/components/common/staticPages/census.png";
+import CollectionsDatasetsImg from "src/components/common/staticPages/collections-datasets.png";
+import ExplorerImg from "src/components/common/staticPages/cxg-explorer.png";
 import FreethinkThumbnailImg from "src/components/common/staticPages/freethink-video-thumbnail.png";
-import GeneExpressionImg from "src/components/common/staticPages/explore-gene-expression.png";
-import SingleCellDataImg from "src/components/common/staticPages/single-cell-data.png";
-import AnalyzeDatasetsIcon from "./icons/analyze-datasets";
+import GeneExpressionImg from "src/components/common/staticPages/gene-expression.png";
 import CellxgeneIconSmall from "./icons/cellxgene-icon-small";
-import DownloadDataIcon from "./icons/download-data";
-import ExpediteCollaborationIcon from "./icons/expedite-collaboration";
 import LinkArrow from "./icons/external-link-arrow";
-import GeneExpressionIcon from "./icons/gene-expression";
-import SingleCellDataIconActive from "./icons/single-cell-data-active";
-import SingleCellDataIconInactive from "./icons/single-cell-data-inactive";
+
+import CensusActiveIcon from "./icons/census-active";
+import CensusInactiveIcon from "./icons/census-inactive";
+import CellGuideActiveIcon from "./icons/cellguide-active";
+import CellGuideInactiveIcon from "./icons/cellguide-inactive";
+import CollectionsDatasetsActiveIcon from "./icons/collections-datasets-active";
+import CollectionsDatasetsInactiveIcon from "./icons/collections-datasets-inactive";
+import GeneExpressionActiveIcon from "./icons/gene-expression-active";
+import GeneExpressionInactiveIcon from "./icons/gene-expression-inactive";
+import ExplorerActiveIcon from "./icons/explorer-active";
+import ExplorerInactiveIcon from "./icons/explorer-inactive";
+import AnnotateActiveIcon from "./icons/annotate-active";
+import AnnotateInactiveIcon from "./icons/annotate-inactive";
+
 import styles from "./index.module.scss";
 import { useViewMode } from "src/common/hooks/useViewMode";
 import { useFetchDatasets } from "src/common/queries/filter";
 import {
   LANDING_PAGE_CELLS_HERO_NUM_ID,
   LANDING_PAGE_CELLTYPES_HERO_NUM_ID,
+  LANDING_PAGE_CONTENT_NAV_ID,
   LANDING_PAGE_DATASETS_HERO_NUM_ID,
   LANDING_PAGE_FALLBACK_CELLS_HERO_NUM,
   LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM,
   LANDING_PAGE_FALLBACK_DATASETS_HERO_NUM,
+  WMG_CTA_TEXT,
 } from "./constants";
 
 const ROOT_MARGIN = "-50% 0px -50% 0px";
@@ -64,6 +75,11 @@ const LandingPage = (): JSX.Element => {
     rootMargin: ROOT_MARGIN,
   });
   const scrollSection5 = useRef<HTMLDivElement>(null);
+
+  const { ref: observerSection6, inView: inView6 } = useInView({
+    rootMargin: ROOT_MARGIN,
+  });
+  const scrollSection6 = useRef<HTMLDivElement>(null);
 
   const { mode, status } = useViewMode();
   const { data, isLoading, isSuccess } = useFetchDatasets(mode, status);
@@ -121,6 +137,7 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "03.04.22 - bioRxiv",
+          citation: "DOI: https://doi.org/10.1101/2021.07.19.452956",
           ctaLink: "https://doi.org/10.1101/2021.07.19.452956",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -128,6 +145,7 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: "13.05.22 - Science",
+          citation: "DOI: 10.1126/science.abl4896",
           ctaLink: "https://www.science.org/doi/10.1126/science.abl4896",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -135,6 +153,7 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: SUB_HEADING,
+          citation: "The Tabula Sapiens Consortium et al. (2021) bioRxiv",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/e5f58829-1a66-40b5-a624-9046778e74f5",
           ctaText: CTA_TEXT_EXPLORE_DATASETS,
@@ -149,6 +168,7 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "13.05.22 - Science",
+          citation: "DOI: 10.1126/science.abl5197",
           ctaLink: "https://doi.org/10.1126/science.abl5197",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -156,6 +176,7 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: "20.07.21 - bioRxiv",
+          citation: "DOI: https://doi.org/10.1101/2021.04.28.441762",
           ctaLink: "https://doi.org/10.1101/2021.04.28.441762",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -163,6 +184,7 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: SUB_HEADING,
+          citation: "Domínguez Conde et al. (2022) Science",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/62ef75e4-cbea-454e-a0ce-998ec40223d3",
           ctaText: CTA_TEXT_EXPLORE_DATASETS,
@@ -176,6 +198,7 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "11.03.21 - bioRxiv",
+          citation: "DOI: https://doi.org/10.1101/2022.03.10.483747",
           ctaLink: "https://doi.org/10.1101/2022.03.10.483747",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -183,6 +206,7 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: SUB_HEADING,
+          citation: "Sikkema et al. (2022) bioRxiv",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/6f6d381a-7701-4781-935c-db10d30de293",
           ctaText: CTA_TEXT_EXPLORE_DATASETS,
@@ -197,6 +221,7 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "08.04.22 - Science",
+          citation: "DOI: 10.1126/science.abf3041",
           ctaLink: "https://doi.org/10.1126/science.abf3041",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -204,6 +229,7 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: SUB_HEADING,
+          citation: "Yazar et al. (2022) Science",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/dde06e0f-ab3b-46be-96a2-a8082383c4a1",
           ctaText: CTA_TEXT_EXPLORE_DATASETS,
@@ -218,6 +244,7 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "08.04.22 - Science",
+          citation: "DOI: 10.1126/science.abf1970",
           ctaLink: "https://doi.org/10.1126/science.abf1970",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -225,6 +252,7 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: SUB_HEADING,
+          citation: "Perez et al. (2022) Science",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/436154da-bcf1-4130-9c8b-120ff9a888f2",
           ctaText: CTA_TEXT_EXPLORE_DATASETS,
@@ -310,9 +338,9 @@ const LandingPage = (): JSX.Element => {
             </div>
             <h1>Discover the mechanisms of human health</h1>
             <p>
-              Download and visually explore reference-quality data to understand
-              the functionality of human tissues at the cellular level with Chan
-              Zuckerberg CELL by GENE Discover (CZ CELLxGENE Discover).
+              Download and visually explore data to understand the functionality
+              of human tissues at the cellular level with Chan Zuckerberg CELL
+              by GENE Discover (CZ CELLxGENE Discover).
             </p>
             <div className={styles.heroStatsContainer}>
               <div>
@@ -338,7 +366,10 @@ const LandingPage = (): JSX.Element => {
         </div>
         <div className={styles.main}>
           <div>
-            <div className={styles.contentNav}>
+            <div
+              data-testid={LANDING_PAGE_CONTENT_NAV_ID}
+              className={styles.contentNav}
+            >
               <div className={styles.contentNavSubrow}>
                 <div
                   className={`${styles.contentLink} ${
@@ -349,10 +380,10 @@ const LandingPage = (): JSX.Element => {
                       behavior: "smooth",
                     });
 
-                    track(EVENTS.HOMEPAGE_LEARN_FIND_SINGLE_CELL_DATA_CLICKED);
+                    track(EVENTS.HOMEPAGE_SEC_NAV_CENSUS);
                   }}
                 >
-                  Find single-cell data
+                  Census
                 </div>
                 <div
                   className={`${styles.contentLink} ${
@@ -363,12 +394,10 @@ const LandingPage = (): JSX.Element => {
                       behavior: "smooth",
                     });
 
-                    track(
-                      EVENTS.HOMEPAGE_LEARN_EXPLORE_GENE_EXPRESSION_CLICKED
-                    );
+                    track(EVENTS.HOMEPAGE_SEC_NAV_CELL_GUIDE);
                   }}
                 >
-                  Explore gene expression
+                  CellGuide
                 </div>
               </div>
               <div className={styles.contentNavSubrow}>
@@ -381,10 +410,10 @@ const LandingPage = (): JSX.Element => {
                       behavior: "smooth",
                     });
 
-                    track(EVENTS.HOMEPAGE_LEARN_ANALYZE_DATASETS_CLICKED);
+                    track(EVENTS.HOMEPAGE_SEC_NAV_COLLECTIONS_DATASETS);
                   }}
                 >
-                  Analyze datasets
+                  Collections & Datasets
                 </div>
                 <div
                   className={`${styles.contentLink} ${
@@ -395,10 +424,10 @@ const LandingPage = (): JSX.Element => {
                       behavior: "smooth",
                     });
 
-                    track(EVENTS.HOMEPAGE_LEARN_DOWNLOAD_DATA_CLICKED);
+                    track(EVENTS.HOMEPAGE_SEC_NAV_WMG);
                   }}
                 >
-                  Download data
+                  Gene Expression
                 </div>
                 <div
                   className={`${styles.contentLink} ${
@@ -409,10 +438,24 @@ const LandingPage = (): JSX.Element => {
                       behavior: "smooth",
                     });
 
-                    track(EVENTS.HOMEPAGE_LEARN_EXPEDITE_COLLABORATION_CLICKED);
+                    track(EVENTS.HOMEPAGE_SEC_NAV_EXPLORER);
                   }}
                 >
-                  Expedite collaboration
+                  Explorer
+                </div>
+                <div
+                  className={`${styles.contentLink} ${
+                    inView6 ? styles.active : ""
+                  }`}
+                  onClick={() => {
+                    scrollSection6.current?.scrollIntoView({
+                      behavior: "smooth",
+                    });
+
+                    track(EVENTS.HOMEPAGE_SEC_ANNOTATE);
+                  }}
+                >
+                  Annotate
                 </div>
               </div>
             </div>
@@ -431,37 +474,29 @@ const LandingPage = (): JSX.Element => {
                     >
                       <div className={styles.contentInfoFigureCol}>
                         <div className={styles.figureWrapper}>
-                          {inView1 ? (
-                            <SingleCellDataIconActive />
-                          ) : (
-                            <SingleCellDataIconInactive />
-                          )}
+                          <CensusActiveIcon />
+                          <CensusInactiveIcon />
                         </div>
                         <span className={styles.figureSeparator}></span>
                       </div>
                       <div className={styles.contentInfoTextCol}>
-                        <h2 className={styles.mt16}>
-                          Quickly find the single-cell data you need
-                        </h2>
+                        <h2 className={styles.mt16}>Census</h2>
                         <p>
-                          Browse hundreds of standardized data collections and
-                          millions of cells characterizing the functionality of
-                          healthy mouse and human tissues.
+                          Census provides access to any custom slice of
+                          standardized cell data available on CZ CELLxGENE
+                          Discover in R and Python.
                         </p>
                         <div className={styles.linkContainer}>
-                          <Link href={ROUTES.COLLECTIONS} passHref>
-                            <a
-                              onClick={() =>
-                                track(EVENTS.BROWSE_COLLECTIONS_CLICKED, {
-                                  button: "browse data collections",
-                                })
-                              }
-                            >
-                              Browse data collections
-                              <span className={styles.linkArrow}>
-                                <LinkArrow />
-                              </span>
-                            </a>
+                          <Link
+                            href={`https://chanzuckerberg.github.io/cellxgene-census/`}
+                            onClick={() =>
+                              track(EVENTS.CENSUS_DOCUMENTATION_CLICKED)
+                            }
+                          >
+                            See quick start tutorial
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
                           </Link>
                         </div>
                       </div>
@@ -469,8 +504,8 @@ const LandingPage = (): JSX.Element => {
                     <div className={styles.contentImageCol}>
                       <div className={styles.contentImage}>
                         <Image
-                          src={SingleCellDataImg}
-                          alt="CELLxGENE Discover collections page with sidebar for filtering through the table of data"
+                          src={CensusImg}
+                          alt="Code snippet showing cellxgene census import statement"
                         />
                       </div>
                     </div>
@@ -490,27 +525,27 @@ const LandingPage = (): JSX.Element => {
                     >
                       <div className={styles.contentInfoFigureCol}>
                         <div className={styles.figureWrapper}>
-                          <GeneExpressionIcon />
+                          <CellGuideActiveIcon />
+                          <CellGuideInactiveIcon />
                         </div>
                         <span className={styles.figureSeparator}></span>
                       </div>
                       <div className={styles.contentInfoTextCol}>
-                        <h2>
-                          Explore gene expression across tissues and cell types
-                        </h2>
+                        <h2>CellGuide</h2>
                         <p>
-                          Visualize the expression of genes and gene sets using
-                          the largest integrated resource of over 25 million
-                          cells.
+                          Explore an interactive encyclopedia of 700+ cell types
+                          that provides detailed definitions, marker genes,
+                          lineage, and relevant datasets in one place.
                         </p>
                         <div className={styles.linkContainer}>
-                          <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
-                            <a onClick={() => track(EVENTS.WMG_CLICKED, {})}>
-                              See how it works
-                              <span className={styles.linkArrow}>
-                                <LinkArrow />
-                              </span>
-                            </a>
+                          <Link
+                            href={ROUTES.CELL_GUIDE}
+                            onClick={() => track(EVENTS.CELL_GUIDE_CLICKED)}
+                          >
+                            Search for a cell type or tissue
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
                           </Link>
                         </div>
                       </div>
@@ -518,8 +553,8 @@ const LandingPage = (): JSX.Element => {
                     <div className={styles.contentImageCol}>
                       <div className={styles.contentImage}>
                         <Image
-                          src={GeneExpressionImg}
-                          alt="chart of gene expressions with genes plotted against types of tissues"
+                          src={CellGuideImg}
+                          alt="T cell page in cell guide showing description of t cells and map of cell ontology"
                         />
                       </div>
                     </div>
@@ -539,21 +574,124 @@ const LandingPage = (): JSX.Element => {
                     >
                       <div className={styles.contentInfoFigureCol}>
                         <div className={styles.figureWrapper}>
-                          <AnalyzeDatasetsIcon />
+                          <CollectionsDatasetsActiveIcon />
+                          <CollectionsDatasetsInactiveIcon />
                         </div>
                         <span className={styles.figureSeparator}></span>
                       </div>
                       <div className={styles.contentInfoTextCol}>
-                        <h2>
-                          Execute on-demand interactive analyses of single-cell
-                          datasets
-                        </h2>
+                        <h2>Collections & Datasets</h2>
                         <p>
-                          Visually explore how patterns of gene expression are
-                          determined by environmental and genetic factors using
-                          an interactive speed no-code UI. Understand published
-                          datasets or use them as a launchpad to identify new
-                          cell sub-types and states.
+                          Browse and download hundreds of standardized data
+                          collections and 1,000+ datasets characterizing the
+                          functionality of healthy mouse and human tissues.
+                        </p>
+                        <div className={styles.linkContainer}>
+                          <a
+                            href={`${ROUTES.DATASETS}`}
+                            onClick={() =>
+                              track(EVENTS.BROWSE_DATASETS_CLICKED)
+                            }
+                          >
+                            Browse datasets
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={styles.contentImageCol}>
+                      <div className={styles.contentImage}>
+                        <Image
+                          src={CollectionsDatasetsImg}
+                          alt="cellxgene datasets page showing list of datasets with sidebar that contains optional filters"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div ref={observerSection4}>
+                  <div
+                    className={styles.contentRow}
+                    id="download-data"
+                    ref={scrollSection4}
+                  >
+                    <div
+                      className={`${styles.contentInfoCol} ${
+                        inView4 ? styles.active : ""
+                      }`}
+                    >
+                      <div className={styles.contentInfoFigureCol}>
+                        <div className={styles.figureWrapper}>
+                          <GeneExpressionActiveIcon />
+                          <GeneExpressionInactiveIcon />
+                        </div>
+                        <span className={styles.figureSeparator}></span>
+                      </div>
+                      <div className={styles.contentInfoTextCol}>
+                        <h2 className={styles.mt16}>Gene Expression</h2>
+                        <p>
+                          Visualize the expression of genes and gene sets using
+                          a normalized view of our data corpus of over 35
+                          million cells.
+                        </p>
+                        <div className={styles.linkContainer}>
+                          <Link
+                            href={ROUTES.WHERE_IS_MY_GENE}
+                            onClick={() =>
+                              track(EVENTS.WMG_CLICKED, {
+                                button: "See how it works",
+                              })
+                            }
+                          >
+                            {WMG_CTA_TEXT}
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={styles.contentImageCol}>
+                      <div className={styles.contentImage}>
+                        <Image
+                          src={GeneExpressionImg}
+                          alt="cellxgene gene expression page showing table of genes and list of cell types and filters"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div ref={observerSection5}>
+                  <div
+                    className={styles.contentRow}
+                    id="expedite-collaboration"
+                    ref={scrollSection5}
+                  >
+                    <div
+                      className={`${styles.contentInfoCol} ${
+                        inView5 ? styles.active : ""
+                      }`}
+                    >
+                      <div className={styles.contentInfoFigureCol}>
+                        <div className={styles.figureWrapper}>
+                          <ExplorerActiveIcon />
+                          <ExplorerInactiveIcon />
+                        </div>
+                        <span className={styles.figureSeparator}></span>
+                      </div>
+                      <div className={styles.contentInfoTextCol}>
+                        <h2 className={styles.mt16}>Explorer</h2>
+                        <p>
+                          Execute interactive analyses on a dataset to explore
+                          how patterns of gene expression are determined by
+                          environmental and genetic factors using an interactive
+                          speed no-code UI. Understand published datasets or use
+                          them as a launchpad to identify new cell sub-types and
+                          states.
                         </p>
                         <div className={styles.linkContainer}>
                           <a
@@ -578,19 +716,18 @@ const LandingPage = (): JSX.Element => {
                               <LinkArrow />
                             </span>
                           </a>
-                          <Link href={ROUTES.COLLECTIONS} passHref>
-                            <a
-                              onClick={() =>
-                                track(EVENTS.BROWSE_COLLECTIONS_CLICKED, {
-                                  button: "explore the studies",
-                                })
-                              }
-                            >
-                              Explore the studies
-                              <span className={styles.linkArrow}>
-                                <LinkArrow />
-                              </span>
-                            </a>
+                          <Link
+                            href={ROUTES.DATASETS}
+                            onClick={() =>
+                              track(EVENTS.BROWSE_DATASETS_CLICKED, {
+                                button: "explore the studies",
+                              })
+                            }
+                          >
+                            Explore the studies
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
                           </Link>
                           {/* DOC PAGE LINKS NEED TO BE OPENED IN A NEW TAB IN ORDER TO LOAD UNIQUE CSP DIRECTIVE */}
                           <a
@@ -612,92 +749,36 @@ const LandingPage = (): JSX.Element => {
                     <div className={styles.contentImageCol}>
                       <div className={styles.contentImage}>
                         <Image
-                          src={AnalyzeDatasetsImg}
-                          alt="multi-tissue visualisation with a legend showing which colors correspond to specific cell types"
+                          src={ExplorerImg}
+                          alt="pop-up modal for user to create a data directory for storing gene sets and annotations"
                         />
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div ref={observerSection4}>
-                  <div
-                    className={styles.contentRow}
-                    id="download-data"
-                    ref={scrollSection4}
-                  >
-                    <div
-                      className={`${styles.contentInfoCol} ${
-                        inView4 ? styles.active : ""
-                      }`}
-                    >
-                      <div className={styles.contentInfoFigureCol}>
-                        <div className={styles.figureWrapper}>
-                          <DownloadDataIcon />
-                        </div>
-                        <span className={styles.figureSeparator}></span>
-                      </div>
-                      <div className={styles.contentInfoTextCol}>
-                        <h2 className={styles.mt16}>
-                          Download and integrate data with zero wrangling
-                        </h2>
-                        <p>
-                          Integrate datasets with zero data wrangling. Datasets
-                          with standard metadata annotations can be downloaded
-                          in AnnData and Seurat formats.
-                        </p>
-                        <div className={styles.linkContainer}>
-                          <Link href={ROUTES.COLLECTIONS} passHref>
-                            <a
-                              onClick={() =>
-                                track(EVENTS.BROWSE_COLLECTIONS_CLICKED, {
-                                  button: "browse datasets for download",
-                                })
-                              }
-                            >
-                              Browse datasets for download
-                              <span className={styles.linkArrow}>
-                                <LinkArrow />
-                              </span>
-                            </a>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                    <div className={styles.contentImageCol}>
-                      <div className={styles.contentImage}>
-                        <Image
-                          src={DownloadDataImg}
-                          alt="pop-up modal for downloading a dataset"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div ref={observerSection5}>
+                <div ref={observerSection6}>
                   <div
                     className={styles.contentRow}
                     id="expedite-collaboration"
-                    ref={scrollSection5}
+                    ref={scrollSection6}
                   >
                     <div
                       className={`${styles.contentInfoCol} ${
-                        inView5 ? styles.active : ""
+                        inView6 ? styles.active : ""
                       }`}
                     >
                       <div className={styles.contentInfoFigureCol}>
                         <div className={styles.figureWrapper}>
-                          <ExpediteCollaborationIcon />
+                          <AnnotateActiveIcon />
+                          <AnnotateInactiveIcon />
                         </div>
                       </div>
                       <div className={styles.contentInfoTextCol}>
-                        <h2 className={styles.mt16}>
-                          Expedite collaborative data analysis
-                        </h2>
+                        <h2 className={styles.mt16}>Annotate</h2>
                         <p>
-                          Eliminate communication overhead and expedite cell
-                          type characterization by empowering tissue experts to
+                          Expedite cell type characterization and eliminate
+                          communication overhead by empowering tissue experts to
                           directly explore and annotate datasets.
                         </p>
                         <div className={styles.linkContainer}>
@@ -720,7 +801,7 @@ const LandingPage = (): JSX.Element => {
                     <div className={styles.contentImageCol}>
                       <div className={styles.contentImage}>
                         <Image
-                          src={ExpediteCollaborationImg}
+                          src={AnnotateImg}
                           alt="pop-up modal for user to create a data directory for storing gene sets and annotations"
                         />
                       </div>
@@ -734,12 +815,16 @@ const LandingPage = (): JSX.Element => {
           <div className={styles.freethinkVideoSection}>
             <div className={styles.freethinkVideoSectionWrapper}>
               <div className={styles.freethinkVideoSectionTextContainer}>
-                <h2>Behind-the-scenes of Chan Zuckerberg CELLxGENE</h2>
+                <h2>
+                  Behind-the-scenes of{" "}
+                  <span className={styles.noWrap}>Chan Zuckerberg</span>{" "}
+                  CELLxGENE
+                </h2>
                 <p>
-                  Watch a behind-the-scenes look at Chan Zuckerberg CELLxGENE
-                  (CZ CELLxGENE) and explore how the platform can help
-                  scientists quickly surface important information that could
-                  lead to discoveries in treating disease.
+                  Watch a behind-the-scenes look at CZ CELLxGENE and explore how
+                  the platform can help scientists quickly surface important
+                  information that could lead to discoveries in treating
+                  disease.
                 </p>
               </div>
               <a
@@ -774,9 +859,14 @@ const LandingPage = (): JSX.Element => {
                       }`}
                       key={`article-${articleIndex}-link-${linkIndex}`}
                     >
-                      <span className={styles.pubArticleDate}>
-                        {link.subheading}
-                      </span>
+                      <div className={styles.pubArticleCitationContainer}>
+                        <span className={styles.pubArticleDate}>
+                          {link.subheading}
+                        </span>
+                        <span className={styles.pubArticleCitation}>
+                          {link.citation}
+                        </span>
+                      </div>
                       <div className={styles.pubArticleSubRowInner}>
                         <a
                           className={styles.pubArticleLink}

@@ -1,4 +1,12 @@
-export function removeParams(params: Array<string> | string): void {
+import { NextRouter } from "next/router";
+
+export function removeParams({
+  params,
+  router,
+}: {
+  params: Array<string> | string;
+  router: NextRouter;
+}): void {
   if (!params || !params.length) return;
 
   if (typeof params === "string") params = [params];
@@ -13,5 +21,5 @@ export function removeParams(params: Array<string> | string): void {
   const query = urlParams.toString();
   const newURL = pathname + (query ? "?" + query : "");
 
-  window.history.replaceState(null, "", newURL);
+  router.replace(newURL);
 }

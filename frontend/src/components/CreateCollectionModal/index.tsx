@@ -1,4 +1,4 @@
-import { Dialog, IButtonProps } from "@blueprintjs/core";
+import { Dialog } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import * as React from "react";
 import { FC, useState } from "react";
@@ -10,6 +10,8 @@ import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { removeParams } from "src/common/utils/removeParams";
 import { StyledButton } from "./style";
+import { useRouter } from "next/router";
+import { ButtonProps } from "@czi-sds/components";
 
 const AsyncContent = loadable(
   () =>
@@ -23,7 +25,7 @@ const AsyncCTA = loadable(
     /*webpackChunkName: 'CreateCollectionModalCTA' */ import("./components/CTA")
 );
 
-const CreateCollectionButton = (props: Partial<IButtonProps>) => (
+const CreateCollectionButton = (props: Partial<ButtonProps>) => (
   <StyledButton sdsStyle="square" sdsType="primary" {...props}>
     Create Collection
   </StyledButton>
@@ -34,6 +36,8 @@ const CreateCollection: FC<{
   id?: Collection["id"];
   Button?: React.ElementType;
 }> = ({ className, id, Button }) => {
+  const router = useRouter();
+
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
   const urlParams = new URLSearchParams(window.location.search);
   const param = urlParams.get(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
@@ -84,7 +88,9 @@ const CreateCollection: FC<{
 
   function toggleOpen() {
     setIsOpen(!isOpen);
-    if (shouldModuleOpen) removeParams(QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT);
+    if (shouldModuleOpen) {
+      removeParams({ params: QUERY_PARAMETERS.LOGIN_MODULE_REDIRECT, router });
+    }
   }
 };
 

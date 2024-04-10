@@ -6,7 +6,6 @@ import {
   CELL_TYPE_ROW_CLASS_NAME,
 } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/constants";
 
-const FMG_EXCLUDE_TISSUES = ["blood"];
 const CELL_COUNT_ID = CELL_COUNT_LABEL_CLASS_NAME;
 const CELL_TYPE_NAME_ID = CELL_TYPE_NAME_LABEL_CLASS_NAME;
 const MARKER_GENE_BUTTON_ID = "marker-gene-button";
@@ -44,15 +43,8 @@ export async function verifyAddedTissue(page: Page, tissue: string) {
       CELL_COUNTS.nth(i).getByTestId(CELL_TYPE_NAME_ID).textContent()
     ).not.toBeUndefined();
 
-    // info icon: if not blood and count is > 25
-    if (
-      !FMG_EXCLUDE_TISSUES.includes(tissue) &&
-      Number(COUNT?.replace(/\D/g, "")) > 25
-    ) {
-      expect(
-        CELL_COUNTS.nth(i).getByTestId(MARKER_GENE_BUTTON_ID)
-      ).toBeVisible();
-    }
+    // info icon should always be visible
+    expect(CELL_COUNTS.nth(i).getByTestId(MARKER_GENE_BUTTON_ID)).toBeVisible();
 
     // cell count
     expect(COUNT?.replace(/\D/g, "")).toMatch(REGEX);

@@ -76,10 +76,12 @@ def create_flask_app():
         return api
 
     add_api(base_path="/dp", spec_file="portal/api/portal-api.yml")
+    add_api(base_path="/cellguide", spec_file="cellguide/api/cellguide-api.yml")
     curation_api = add_api(base_path="/curation", spec_file="curation/api/curation-api.yml")
     curation_api.blueprint.json_encoder = CurationJSONEncoder
     add_api(base_path="/wmg", spec_file="wmg/api/wmg-api.yml")
     add_api(base_path="/wmg/v2", spec_file="wmg/api/wmg-api-v2.yml")
+    add_api(base_path="/de", spec_file="de/api/de-api.yml")
     add_api(base_path="/gene_info", spec_file="gene_info/api/gene-info-api.yml")
 
     # Initialize gene checker to go ahead and create a dictionary of all

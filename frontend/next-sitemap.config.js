@@ -1,7 +1,7 @@
 module.exports = {
   siteUrl: "https://cellxgene.cziscience.com/",
   generateRobotsTxt: true,
-  exclude: ["/collections-sitemap.xml", "/cellguide-sitemap.xml", "/wmg-v2"], // add additional directories or pages here if they should be excluded from the sitemap
+  exclude: ["/collections-sitemap.xml", "/cellguide-sitemap.xml"], // add additional directories or pages here if they should be excluded from the sitemap
   robotsTxtOptions: {
     policies: [
       // {userAgent: "*", disallow: "/folderToExclude/fileToExclude"} <-- use this option if you wish to exclude certain pages or folders from robots.txt

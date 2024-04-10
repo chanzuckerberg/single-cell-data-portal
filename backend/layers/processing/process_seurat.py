@@ -2,6 +2,8 @@ import logging
 import os
 import subprocess
 
+import anndata
+
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
     DatasetArtifactType,
@@ -11,6 +13,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
+from backend.layers.processing.utils import rds_citation_from_h5ad
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
@@ -40,19 +43,19 @@ class ProcessSeurat(ProcessingLogic):
         self.uri_provider = uri_provider
         self.s3_provider = s3_provider
 
-    def process(self, dataset_id: DatasetVersionId, artifact_bucket: str, datasets_bucket: str):
+    def process(self, dataset_version_id: DatasetVersionId, artifact_bucket: str, datasets_bucket: str):
         """
         1. Download the labeled dataset from the artifact bucket
         2. Convert it to Seurat format
         3. Upload the Seurat file to the artifact bucket
-        :param dataset_id:
+        :param dataset_version_id:
         :param artifact_bucket:
         :param datasets_bucket:
         :return:
         """
 
         # If the validator previously marked the dataset as rds_status.SKIPPED, do not start the Seurat processing
-        dataset = self.business_logic.get_dataset_version(dataset_id)
+        dataset = self.business_logic.get_dataset_version(dataset_version_id)
 
         if dataset is None:
             raise Exception("Dataset not found")  # TODO: maybe improve
@@ -61,17 +64,24 @@ class ProcessSeurat(ProcessingLogic):
             self.logger.info("Skipping Seurat conversion")
             return
 
+        # Download h5ad locally
         labeled_h5ad_filename = "local.h5ad"
-
-        key_prefix = self.get_key_prefix(dataset_id.id)
+        key_prefix = self.get_key_prefix(dataset_version_id.id)
         object_key = f"{key_prefix}/{labeled_h5ad_filename}"
         self.download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
+        # Convert the citation from h5ad to RDS
+        adata = anndata.read_h5ad(labeled_h5ad_filename)
+        if "citation" in adata.uns:
+            adata.uns["citation"] = rds_citation_from_h5ad(adata.uns["citation"])
+        adata.write_h5ad(labeled_h5ad_filename)
+
+        # Use Seurat to convert to RDS
         seurat_filename = self.convert_file(
             self.make_seurat,
             labeled_h5ad_filename,
             "Failed to convert dataset to Seurat format.",
-            dataset_id,
+            dataset_version_id,
             DatasetStatusKey.RDS,
         )
 
@@ -79,7 +89,7 @@ class ProcessSeurat(ProcessingLogic):
             seurat_filename,
             DatasetArtifactType.RDS,
             key_prefix,
-            dataset_id,
+            dataset_version_id,
             artifact_bucket,
             DatasetStatusKey.RDS,
             datasets_bucket=datasets_bucket,

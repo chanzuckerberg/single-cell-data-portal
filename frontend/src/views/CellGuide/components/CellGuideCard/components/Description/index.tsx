@@ -58,7 +58,7 @@ interface DescriptionProps {
   cellTypeName: string;
   cellTypeId: string;
   skinnyMode: boolean;
-  setTooltipContent: Dispatch<
+  setTooltipContent?: Dispatch<
     SetStateAction<{
       title: string;
       element: JSX.Element;
@@ -85,7 +85,7 @@ export default function Description({
     number | undefined
   >(DESCRIPTION_BREAKPOINT_HEIGHT_PX);
 
-  const [timerId, setTimerId] = useState<NodeJS.Timer | null>(null); // For chatgpt hover event
+  const [timerId, setTimerId] = useState<number | null>(null); // For chatgpt hover event
   const { isPastBreakpoint, containerRef } = useIsComponentPastBreakpointHeight(
     DESCRIPTION_BREAKPOINT_HEIGHT_PX
   );
@@ -192,7 +192,11 @@ export default function Description({
         <StyledLink
           data-testid={CELL_GUIDE_CARD_GPT_TOOLTIP_LINK}
           onMouseOver={() => {
-            const id = setTimeout(() => {
+            /**
+             * (thuang): Specify window.setTimeout, so Typescript doesn't use
+             * the Node.js setTimeout type, which is incorrect.
+             */
+            const id = window.setTimeout(() => {
               track(EVENTS.CG_CHAT_GPT_HOVER);
             }, 2 * 1000);
             setTimerId(id);
@@ -205,6 +209,7 @@ export default function Description({
           }}
           onClick={() => {
             skinnyMode &&
+              setTooltipContent &&
               setTooltipContent({
                 title: "ChatGPT Descriptions",
                 element: tooltipContent,
@@ -212,13 +217,14 @@ export default function Description({
           }}
           // only setting mobile Tooltip View on touch and not click
           onTouchEnd={() => {
-            setTooltipContent({
-              title: "ChatGPT Descriptions",
-              element: tooltipContent,
-            });
+            setTooltipContent &&
+              setTooltipContent({
+                title: "ChatGPT Descriptions",
+                element: tooltipContent,
+              });
           }}
         >
-          <StyledIconImage src={questionMarkIcon} />
+          <StyledIconImage alt="question mark" src={questionMarkIcon} />
         </StyledLink>
       </StyledTooltip>
     </SourceLink>
@@ -302,7 +308,7 @@ export default function Description({
         synonyms={synonyms}
         data-testid={CELL_GUIDE_CARD_SYNONYMS}
       />
-      {descriptionValidated && !inSideBar && (
+      {!!descriptionValidated && !inSideBar && (
         <ReferencesWrapper>
           <Label>Citations</Label>
           {descriptionValidatedReferences.map((ref, index) => {
@@ -364,7 +370,7 @@ export default function Description({
 
   const experimentalDescriptionComponent = (
     <>
-      {descriptionCl &&
+      {!!descriptionCl &&
         !inSideBar &&
         !descriptionValidated &&
         clDescriptionComponent}

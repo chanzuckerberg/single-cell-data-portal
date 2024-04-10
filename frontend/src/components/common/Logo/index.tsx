@@ -7,9 +7,9 @@ export const Logo: FC = () => {
     <Image
       alt="CELLxGENE logo"
       data-testid="logo"
-      height={23}
+      height={28}
       src={logo}
-      width={23}
+      width={28}
     />
   );
 };

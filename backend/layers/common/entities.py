@@ -1,5 +1,5 @@
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
@@ -194,6 +194,17 @@ class DatasetMetadata:
 
 
 @dataclass
+class DatasetArtifactMetadataUpdate:
+    title: Optional[str] = None
+    schema_version: Optional[str] = None
+    citation: Optional[str] = None
+    schema_reference: Optional[str] = None
+
+    def as_dict_without_none_values(self):
+        return {key: value for key, value in asdict(self).items() if value is not None}
+
+
+@dataclass
 class CanonicalDataset:
     dataset_id: DatasetId
     dataset_version_id: Optional[DatasetVersionId]
@@ -266,6 +277,8 @@ class CollectionVersionBase:
     created_at: datetime
     schema_version: str
     canonical_collection: CanonicalCollection
+    has_custom_dataset_order: bool
+    data_submission_policy_version: str
 
     def is_published(self) -> bool:
         """

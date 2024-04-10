@@ -44,15 +44,15 @@ resource aws_batch_job_definition schema_migrations_swap {
     resourceRequirements = [
       {
         type= "VCPU",
-        Value="6"
+        Value="32"
       },
       {
         Type="MEMORY",
-        Value = "47500"
+        Value = "256000"
       }
     ]
     linuxParameters= {
-     maxSwap= 200000,
+     maxSwap= 0,
      swappiness= 60
     },
     logConfiguration= {
@@ -180,7 +180,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
         "Next": "ApplyDefaults",
         "ResultPath": "$.inputDefaults",
         "Parameters": {
-          "auto_publish": "False"
+          "auto_publish": "False",
+          "limit_migration": "0"
         }
     },
     "ApplyDefaults": {
@@ -223,6 +224,10 @@ resource aws_sfn_state_machine sfn_schema_migration {
             {
               "Name": "AUTO_PUBLISH",
               "Value.$": "$.auto_publish"
+            },
+            {
+              "Name": "LIMIT_MIGRATION",
+              "Value.$": "$.limit_migration"
             }
           ]
         }
@@ -242,7 +247,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
       "Type": "Map",
       "ItemProcessor": {
         "ProcessorConfig": {
-          "Mode": "INLINE"
+          "Mode": "DISTRIBUTED",
+          "ExecutionType": "STANDARD"
         },
         "StartAt": "CollectionMigration",
         "States": {
@@ -365,7 +371,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "Type": "Map",
             "ItemProcessor": {
               "ProcessorConfig": {
-                "Mode": "INLINE"
+                "Mode": "DISTRIBUTED",
+                "ExecutionType": "STANDARD"
               },
               "StartAt": "DatasetMigration",
               "States": {
@@ -373,7 +380,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "Type": "Task",
                   "Resource": "arn:aws:states:::batch:submitJob.sync",
                   "Parameters": {
-                    "JobDefinition": "${local.swap_job_definition_arn}",
+                    "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations_swap.arn}",
                     "JobName": "dataset_migration",
                     "JobQueue": "${var.job_queue_arn}",
                     "Timeout": {
@@ -441,8 +448,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
                     "Input": {
                       "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id",
                       "url.$": "$.result.uri",
-                      "dataset_id.$": "$.result.dataset_version_id",
-                      "collection_id.$": "$.result.collection_version_id",
+                      "dataset_version_id.$": "$.result.dataset_version_id",
+                      "collection_version_id.$": "$.result.collection_version_id",
                       "job_queue": "${var.job_queue_arn}"
                     }
                   },
@@ -472,7 +479,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "ResultPath": "$.error"
               }
             ],
-            "OutputPath": "$[0]"
+            "OutputPath": "$[0]",
+            "ToleratedFailurePercentage": 100
           },
           "CollectionError": {
             "Type": "Pass",
@@ -491,7 +499,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
           "Next": "report",
           "ResultPath": null
         }
-      ]
+      ],
+      "ToleratedFailurePercentage": 20
     },
     "report": {
       "Type": "Task",

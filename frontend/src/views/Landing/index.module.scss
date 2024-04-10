@@ -307,7 +307,6 @@
 
     .figure {
       &Wrapper {
-        background-color: #f8f9fe;
         width: 100px;
         height: 100px;
         border-radius: 50%;
@@ -316,10 +315,20 @@
         align-items: center;
         flex-shrink: 0;
         transition: background-color 0.4s;
+        position: relative;
 
-        svg path {
-          fill: #0073ff;
-          transition: fill 0.4s;
+        svg {
+          &:first-of-type {
+            opacity: 0;
+            transition: opacity 0.4s;
+            position: absolute;
+            top: 0;
+            left: 0;
+          }
+
+          &:last-of-type {
+            opacity: 1;
+          }
         }
       }
 
@@ -337,14 +346,18 @@
     }
 
     &.active .figureWrapper {
-      background-color: #0073ff;
-
       @media (max-width: 999px) {
         margin-bottom: 15px;
       }
 
-      svg path {
-        fill: #ffffff;
+      svg {
+        &:first-of-type {
+          opacity: 1;
+        }
+
+        &:last-of-type {
+          opacity: 0;
+        }
       }
     }
 
@@ -375,7 +388,7 @@
         display: flex;
         flex-direction: column;
 
-        & > *:not(:first-child) {
+        & > *:not(:first-of-type) {
           margin-top: 17px;
         }
 
@@ -476,6 +489,10 @@
     h2 {
       font-size: 28px;
       line-height: 35.28px;
+
+      .noWrap {
+        white-space: nowrap;
+      }
     }
 
     p {
@@ -563,6 +580,17 @@
 
   & + .pubArticle {
     margin-top: 75px;
+  }
+
+  &CitationContainer {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &Citation {
+    font-size: 14px;
+    line-height: 24px;
+    color: #545454;
   }
 
   &Date {

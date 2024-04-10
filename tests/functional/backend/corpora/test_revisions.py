@@ -6,7 +6,8 @@ from urllib.parse import quote
 import requests
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from tests.functional.backend.common import TEST_DATASET_URI, BaseFunctionalTestCase
+from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
+from tests.functional.backend.common import BaseFunctionalTestCase
 
 
 class TestRevisions(BaseFunctionalTestCase):
@@ -52,15 +53,15 @@ class TestRevisions(BaseFunctionalTestCase):
 
         collection_id = self.create_collection(headers)
 
-        dataset_1_dropbox_url = TEST_DATASET_URI
-        dataset_2_dropbox_url = TEST_DATASET_URI
+        dataset_1_dropbox_url = self.test_dataset_uri
+        dataset_2_dropbox_url = self.test_dataset_uri
 
         # Uploads a dataset
         self.upload_and_wait(collection_id, dataset_1_dropbox_url)
 
         # make collection public
         with self.subTest("Test make collection public"):
-            body = {"data_submission_policy_version": "1.0"}
+            body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
             res = self.session.post(
                 f"{self.api}/dp/v1/collections/{collection_id}/publish", headers=headers, data=json.dumps(body)
             )
@@ -115,7 +116,7 @@ class TestRevisions(BaseFunctionalTestCase):
 
         with self.subTest("Publishing a revised dataset replaces the original dataset"):
             # Publish the revision
-            body = {"data_submission_policy_version": "1.0"}
+            body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
             res = self.session.post(
                 f"{self.api}/dp/v1/collections/{revision_id}/publish", headers=headers, data=json.dumps(body)
             )
@@ -156,7 +157,7 @@ class TestRevisions(BaseFunctionalTestCase):
             self.assertCountEqual(public_datasets_before, public_datasets_after)
 
         # Publish the revision
-        body = {"data_submission_policy_version": "1.0"}
+        body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
         res = self.session.post(
             f"{self.api}/dp/v1/collections/{revision_id}/publish", headers=headers, data=json.dumps(body)
         )
@@ -210,7 +211,7 @@ class TestRevisions(BaseFunctionalTestCase):
 
         with self.subTest("Publishing a revision that deletes a dataset removes it from the data portal"):
             # Publish the revision
-            body = {"data_submission_policy_version": "1.0"}
+            body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
             res = self.session.post(
                 f"{self.api}/dp/v1/collections/{revision_id}/publish", headers=headers, data=json.dumps(body)
             )

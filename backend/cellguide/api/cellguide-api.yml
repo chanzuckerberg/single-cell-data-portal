@@ -1,0 +1,172 @@
+openapi: 3.0.0
+info:
+  version: "1.0.0"
+  title: Chan Zuckerberg Initiative CELLxGENE Discover API
+  termsOfService: https://cellxgene.cziscience.com/tos
+  contact:
+    name: API Support
+    email: cellxgene@chanzuckerberg.com
+  description: |
+    ## Uploads for CellGuide Descriptions
+servers:
+  - description: Production environment
+    url: https://api.cellxgene.cziscience.com/
+  - description: Development environment
+    url: https://api.cellxgene.dev.single-cell.czi.technology
+  - description: Staging environment
+    url: https://api.cellxgene.staging.single-cell.czi.technology
+paths:
+  /v1/upload:
+    post:
+      summary: Post a new description object for CellGuide
+      description: |
+        * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
+      operationId: backend.cellguide.api.v1.upload.actions.post
+      tags:
+        - CellGuide
+      security:
+        - curatorAccess: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              $ref: "#/components/schemas/cellguide_description"
+              required:
+                - cell_ontology_term_id
+                - description
+                - references
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "201":
+          $ref: "#/components/responses/201"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+components:
+  schemas:
+    cellguide_description:
+      properties:
+        cell_ontology_term_id:
+          $ref: "#/components/schemas/cell_ontology_term_id"
+        description:
+          $ref: "#/components/schemas/cell_description"
+        references:
+          $ref: "#/components/schemas/references"
+      type: object
+    cell_ontology_term_id:
+      description: Cell Anthology ID
+      example: CL_0000030
+      type: string
+    cell_description:
+      description: A description of the cell type
+      type: string
+    references:
+      description: A list of reference urls for the cell type
+      items:
+        type: string
+      type: array
+    problem:
+      description: Error message container for HTTP APIs.
+      properties:
+        detail:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+      type: object
+  responses:
+    "200":
+      description: OK
+    "201":
+      description: Created
+    "202":
+      description: Accepted
+    "204":
+      description: No content
+    "400":
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+              invalid_parameters:
+                nullable: true
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      description: the errant parameter
+                      type: string
+                    reason:
+                      description: the specific problem with the parameter
+                      type: string
+                    value:
+                      description: the errant value
+                      type: string
+              title:
+                type: string
+              type:
+                type: string
+      description: Invalid or missing parameter
+    "401":
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+      description: Failed to authenticate
+    "403":
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+      description: Forbidden
+    "404":
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+      description: Resource not found
+    "405":
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+      description: Method not allowed
+    "409":
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+      description: File conflict
+    "410":
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+      description: Content has been removed
+    "413":
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+      description: Exceed File Size Limit
+  securitySchemes:
+    curatorAccess:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
+      x-bearerInfoFunc: backend.portal.api.app.v1.authentication.curation_access_token_func
+    curatorAccessLenient:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
+      x-bearerInfoFunc: backend.portal.api.app.v1.authentication.curation_access_token_func_lenient

@@ -1,5 +1,6 @@
 import copy
 import json
+import time
 import uuid
 from collections import defaultdict
 from dataclasses import asdict
@@ -1023,7 +1024,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     "collection_version_id": f"{first_version.version_id.id}",
                     "cell_count": 10,
                     "primary_cell_count": 5,
-                    "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
+                    "cell_type": [{"label": "unknown", "ontology_term_id": "unknown"}],
                     "citation": "Publication: https://doi.org/12.2345/science.abc1234 Dataset Version: "
                     "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
                     "CZ CELLxGENE Discover in Collection: "
@@ -1031,9 +1032,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     "dataset_id": f"{first_version.datasets[0].dataset_id.id}",
                     "dataset_version_id": f"{first_version.datasets[0].version_id.id}",
                     "default_embedding": "X_embedding_1",
-                    "development_stage": [
-                        {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}
-                    ],
+                    "development_stage": [{"label": "unknown", "ontology_term_id": "unknown"}],
                     "disease": [{"label": "test_disease_label", "ontology_term_id": "test_disease_term_id"}],
                     "donor_id": ["test_donor_1"],
                     "embeddings": ["X_embedding_1", "X_embedding_2"],
@@ -1055,8 +1054,8 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     "suspension_type": ["test_suspension_type"],
                     "tissue": [
                         {
-                            "label": "test_tissue_label",
-                            "ontology_term_id": "test_tissue_term_id",
+                            "label": "unknown",
+                            "ontology_term_id": "unknown",
                             "tissue_type": "tissue",
                         }
                     ],
@@ -1297,10 +1296,12 @@ class TestPatchCollectionID(BaseAPIPortalTest):
             {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
         ]
         new_doi = "10.1016"  # a real DOI (CURIE reference)
+        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.2020"))
         collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
         self.assertEqual(initial_doi, original_collection["doi"])
         metadata = {"doi": new_doi}
+        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.1016"))
         response = self.app.patch(
             f"/curation/v1/collections/{collection_id}",
             json=metadata,
@@ -1315,6 +1316,7 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         links = [
             {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
         ]
+        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.2020"))
         collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
         self.assertEqual(initial_consortia, original_collection["consortia"])
@@ -1333,6 +1335,7 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         links = [
             {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
         ]
+        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.2020"))
         collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
         self.assertEqual(initial_consortia, original_collection["consortia"])
@@ -1351,6 +1354,7 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         links = [
             {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
         ]
+        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.2020"))
         collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
         self.assertEqual(initial_consortia, original_collection["consortia"])
@@ -1367,6 +1371,9 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         links = [
             {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi/10.1011/something"},
         ]
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.1011/something")
+        )
         collection = self.generate_collection(links=links, visibility="PRIVATE")
         collection_id = collection.collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
@@ -1385,9 +1392,8 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         links = [
             {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi/10.1011/something"},
         ]
-
         mock_publisher_metadata = generate_mock_publisher_metadata()
-        self.crossref_provider.fetch_metadata = Mock(return_value=mock_publisher_metadata)
+        self.crossref_provider.fetch_metadata = Mock(return_value=(mock_publisher_metadata, "10.1011/something"))
 
         collection = self.generate_collection(links=links, visibility="PRIVATE")
         collection_id = collection.collection_id
@@ -1414,7 +1420,8 @@ class TestPatchCollectionID(BaseAPIPortalTest):
             {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
         ]
         mock_publisher_metadata = generate_mock_publisher_metadata()
-        self.crossref_provider.fetch_metadata = Mock(return_value=mock_publisher_metadata)
+        self.crossref_provider.fetch_metadata = Mock(return_value=(mock_publisher_metadata, "10.1011/something"))
+
         collection = self.generate_collection(links=links, visibility="PRIVATE")
         self.assertIsNotNone(collection.publisher_metadata)
         collection_id = collection.collection_id
@@ -1780,6 +1787,9 @@ class TestGetDatasets(BaseAPIPortalTest):
         self.assertEqual([], body["assets"])
 
     def test_get_all_datasets_200(self):
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "12.3456/j.celrep")
+        )
         published_collection_1 = self.generate_published_collection(
             add_datasets=2,
             metadata=CollectionMetadata(
@@ -1790,6 +1800,9 @@ class TestGetDatasets(BaseAPIPortalTest):
                 [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/12.3456/j.celrep")],
                 ["Consortia 1", "Consortia 2"],
             ),
+        )
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "78.91011/j.celrep")
         )
         published_collection_2 = self.generate_published_collection(
             owner="other owner",
@@ -1880,6 +1893,9 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertEqual(expected_assets, dataset["assets"])
 
     def test_get_datasets_by_schema_200(self):
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "12.3456/j.celrep")
+        )
         published_collection_1 = self.generate_published_collection(
             add_datasets=2,
             metadata=CollectionMetadata(
@@ -1890,6 +1906,9 @@ class TestGetDatasets(BaseAPIPortalTest):
                 [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/12.3456/j.celrep")],
                 ["Consortia 1", "Consortia 2"],
             ),
+        )
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "78.91011/j.celrep")
         )
         published_collection_2 = self.generate_published_collection(
             owner="other owner",
@@ -1904,6 +1923,9 @@ class TestGetDatasets(BaseAPIPortalTest):
                 ["Consortia 1", "Consortia 2"],
             ),
             dataset_schema_version="3.1.0",
+        )
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "78.91011/j.celrep")
         )
         published_collection_3 = self.generate_published_collection(
             owner="other owner",
@@ -2096,6 +2118,9 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
         dataset_id = collection.datasets[0].dataset_id
         dataset_version_id = collection.datasets[0].version_id
         published_revision = self.generate_revision(collection_id)
+        # Add delay here to ensure published_at timestamps are different (as millis are
+        # no longer returned in API response).
+        time.sleep(1)
         published_dataset_revision = self.generate_dataset(
             collection_version=published_revision, replace_dataset_version_id=dataset_version_id, publish=True
         )
@@ -2298,7 +2323,7 @@ class TestPostRevision(BaseAPIPortalTest):
 
 
 @patch(
-    "backend.common.utils.dl_sources.url.DropBoxURL.file_info",
+    "backend.common.utils.dl_sources.uri.DropBoxURL.file_info",
     return_value={"size": 1, "name": "file.h5ad"},
 )
 @patch("backend.layers.thirdparty.step_function_provider.StepFunctionProvider")

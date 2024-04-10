@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import { IconButton } from "@mui/material";
-import { ButtonIcon } from "@czi-sds/components";
-import { spacesL } from "src/common/theme";
+import { ButtonIcon, Icon, TagFilter } from "@czi-sds/components";
+import { primary400, spacesL } from "src/common/theme";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
 export const FullscreenButton = styled(IconButton)`
@@ -62,6 +62,15 @@ export const TooltipInPortalStyle = css`
   }
 `;
 
+export const WarningTooltipTextWrapper = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+export const WarningTooltipIcon = styled(Icon)`
+  margin-right: 4px;
+`;
+
 interface StyledSVGProps {
   isDragging: boolean;
 }
@@ -71,4 +80,23 @@ export const StyledSVG = styled.svg<StyledSVGProps>`
   position: absolute;
   top: 0;
   left: 0;
+`;
+
+export const StyledTagFilter = styled(TagFilter)`
+  z-index: 1;
+  .MuiChip-label {
+    color: ${primary400};
+  }
+  .MuiSvgIcon-root {
+    fill: ${primary400};
+  }
+  &:hover {
+    background-color: #e0f0ff;
+    .MuiChip-label {
+      color: ${primary400};
+    }
+    .MuiSvgIcon-root {
+      fill: ${primary400};
+    }
+  }
 `;

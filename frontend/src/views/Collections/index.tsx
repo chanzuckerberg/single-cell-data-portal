@@ -52,7 +52,7 @@ import StatusCell from "src/components/common/Grid/components/StatusCell";
 import RevisionButton from "src/components/common/Grid/components/RevisionButton";
 import CategoryFilters from "src/components/common/Filter/components/Filters";
 import { useViewMode, VIEW_MODE } from "src/common/hooks/useViewMode";
-import Loader from "src/components/common/Grid/components/Loader";
+import { GridLoader as Loader } from "src/components/common/Grid/components/Loader/style";
 
 export default function Collections(): JSX.Element {
   const { mode, status } = useViewMode();

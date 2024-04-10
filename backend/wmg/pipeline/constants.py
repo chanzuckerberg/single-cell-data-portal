@@ -4,11 +4,13 @@ DIMENSION_NAME_MAP_CENSUS_TO_WMG = {
 }
 
 EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG = "expression_summary_and_cell_counts_cube_created"
+EXPRESSION_SUMMARY_DIFFEXP_CUBES_CREATED_FLAG = "expression_summary_diffexp_cubes_created"
 EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG = "expression_summary_default_cube_created"
 MARKER_GENES_CUBE_CREATED_FLAG = "marker_genes_cube_created"
 FILTER_RELATIONSHIPS_CREATED_FLAG = "filter_relationships_created"
 PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG = "primary_filter_dimensions_created"
 DATASET_METADATA_CREATED_FLAG = "dataset_metadata_created"
+CELL_TYPE_ANCESTORS_CREATED_FLAG = "cell_type_ancestors_created"
 CELL_TYPE_ORDERING_CREATED_FLAG = "cell_type_ordering_created"
 
 PIPELINE_STATE_FILENAME = "pipeline_state.json"
@@ -30,4 +32,6 @@ ASSAYS_FOR_GENE_LENGTH_NORMALIZATION = [
 
 TARGET_LIBRARY_SIZE = 10_000
 
-WMG_DATA_SCHEMA_VERSION = "v3"
+WMG_DATA_SCHEMA_VERSION = "v4"
+
+MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION = 2

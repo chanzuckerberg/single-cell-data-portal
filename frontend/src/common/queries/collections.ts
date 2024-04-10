@@ -8,7 +8,9 @@ import {
 import { Collection, COLLECTION_STATUS, Dataset } from "src/common/entities";
 import {
   buildSummaryCitation,
+  createTaggedTissueOntology,
   ProcessedCollectionResponse,
+  TissueOntology,
   USE_COLLECTIONS_INDEX,
   USE_DATASETS_INDEX,
 } from "src/common/queries/filter";
@@ -42,6 +44,12 @@ const DEFAULT_BACKGROUND_REFETCH = {
 };
 
 /**
+ * Error text returned from BE when DOI is updated but there are datasets with a non-finalized state
+ */
+const INVALID_DATASET_STATUS_MESSAGE =
+  "Cannot update DOI while a dataset is processing or awaiting upload.";
+
+/**
  * Error text returned from BE when DOI format is identified as invalid.
  */
 const INVALID_DOI_FORMAT_MESSAGE = "Invalid DOI";
@@ -66,6 +74,7 @@ export interface CollectionCreateResponse {
 export interface CollectionEditResponse {
   collection?: Collection;
   isInvalidDOI?: boolean;
+  hasInvalidDatasetStatus?: boolean;
 }
 
 /**
@@ -98,6 +107,12 @@ enum ERROR_VALUE {
  */
 type Error = { [key in ERROR_KEY]?: ERROR_VALUE } & { reason: string };
 
+/**
+ * Model of response dataset object returned from collection endpoint; models
+ * tissue as an array of tissue ontology objects.
+ */
+type DatasetResponse = Omit<Dataset, "tissue"> & { tissue: TissueOntology[] };
+
 function idError(id: string | null) {
   if (!id) {
     throw Error("No collection id given");
@@ -116,9 +131,9 @@ export type CollectionError = {
   type: string;
 };
 
-function generateDatasetMap(json: { datasets: Dataset[] }) {
+function generateDatasetMap(datasets: Dataset[]) {
   const datasetMap = new Map() as Collection["datasets"];
-  for (const dataset of json.datasets) {
+  for (const dataset of datasets) {
     datasetMap.set(dataset.original_id || dataset.id, dataset);
   }
   return datasetMap;
@@ -138,8 +153,8 @@ function fetchCollection() {
 
     const url = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
 
-    let response = await fetch(url, DEFAULT_FETCH_OPTIONS);
-    let json = await response.json();
+    const response = await fetch(url, DEFAULT_FETCH_OPTIONS);
+    const json = await response.json();
 
     if (response.status === HTTP_STATUS_CODE.GONE) {
       return { tombstone: true };
@@ -148,24 +163,37 @@ function fetchCollection() {
       throw json;
     }
 
+    // Convert tissue ontology objects to core ontology objects.
+    const datasets: Dataset[] = createTaggedTissueOntologies(json.datasets);
+
     const collection: Collection = {
       ...json,
-      datasets: generateDatasetMap(json),
+      datasets: generateDatasetMap(datasets),
     };
 
     let publishedCounterpart;
 
+    // If the collection is a revision, find the corresponding published
+    // collection for diff'ing purposes.
     if (collection.revision_of) {
       const publicCollectionURL = apiTemplateToUrl(API_URL + API.COLLECTION, {
         id: collection.revision_of,
       });
-      response = await fetch(publicCollectionURL, DEFAULT_FETCH_OPTIONS);
-      json = await response.json();
+      const publishedCounterpartResponse = await fetch(
+        publicCollectionURL,
+        DEFAULT_FETCH_OPTIONS
+      );
+      const publishedCounterpartJSON =
+        await publishedCounterpartResponse.json();
 
-      if (response.ok) {
+      // Convert tissue ontology objects to core ontology objects.
+      const publishedCounterpartDatasets: Dataset[] =
+        createTaggedTissueOntologies(publishedCounterpartJSON.datasets);
+
+      if (publishedCounterpartResponse.ok) {
         publishedCounterpart = {
-          ...json,
-          datasets: generateDatasetMap(json),
+          ...publishedCounterpartJSON,
+          datasets: generateDatasetMap(publishedCounterpartDatasets),
         };
       }
     }
@@ -394,6 +422,53 @@ export function usePublishCollection() {
   });
 }
 
+/**
+ * Execute PUT to update the datasets order for the given collection.
+ * @param param
+ * @param param.collectionId - Collection ID to update datasets order for.
+ * @param param.payload - Payload containing the new order of datasets.
+ * @returns API response.
+ */
+const orderDatasets = async function orderDatasets({
+  payload,
+  collectionId,
+}: {
+  collectionId: Collection["id"];
+  payload: string;
+}) {
+  idError(collectionId);
+  const url = apiTemplateToUrl(API_URL + API.COLLECTION_ORDER_DATASETS, {
+    id: collectionId,
+  });
+
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    body: payload,
+    method: "PUT",
+  });
+
+  if (!response.ok) {
+    throw await response.json();
+  }
+
+  // Endpoint response is empty on 200; return successful promise.
+  return Promise.resolve();
+};
+
+/**
+ * Update the datasets order for the given collection version.
+ * @param collectionId - Collection (version) ID to update datasets order for.
+ */
+export function useOrderDatasets(collectionId?: Collection["id"]) {
+  const queryClient = useQueryClient();
+  return useMutation(orderDatasets, {
+    onSuccess: async (): Promise<void> => {
+      await queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
+    },
+  });
+}
+
 const editCollection = async function ({
   id,
   payload,
@@ -422,6 +497,9 @@ const editCollection = async function ({
   // are validated by the BE.
   if (isInvalidDOI(response.status, result.detail)) {
     return { isInvalidDOI: true };
+  }
+  if (hasInvalidDatasetStatus(response.status, result.detail)) {
+    return { hasInvalidDatasetStatus: true };
   }
 
   if (!response.ok) {
@@ -656,6 +734,44 @@ function isInvalidDOI(status: number, errors?: Error[]): boolean {
 }
 
 /**
+ * Determine if an otherwise valid DOI update has failed validation on the BE due to datasets existing in a non-final
+ * state (i.e. INITIALIZED or PENDING rather than SUCCESS or FAILURE)
+ *
+ * Expected response for valid DOI update for a collection with at least one dataset with a processing status other than
+ * SUCCESS or FAILURE
+ * {
+ *   "detail": [{
+ *       link_type: "DOI",
+ *       reason: "Cannot update DOI while a dataset is processing or awaiting upload."
+ *   }],
+ *   "status": 400,
+ *   "title": "Bad Request",
+ *   "type": "about:blank"
+ * }
+ *
+ * TODO generalize beyond DOI link type once all links are validated on the BE (#1916).
+ *
+ * @param status - Response status returned from server.
+ * @param errors - Array of errors returned from server, if any.
+ * @returns True if DOI update has been deemed invalid due to dataset processing statuses in the Collection
+ */
+function hasInvalidDatasetStatus(status: number, errors?: Error[]): boolean {
+  if (status !== HTTP_STATUS_CODE.BAD_REQUEST || !errors) {
+    return false;
+  }
+
+  // Check if the errors returned from the server contain a DOI error.
+  const doiError = findErrorByKey(errors, ERROR_KEY.DOI);
+  if (!doiError) {
+    return false;
+  }
+
+  // There's a DOI error; check if it's about invalid processing dataset status for a DOI update
+  const { reason } = doiError;
+  return reason === INVALID_DATASET_STATUS_MESSAGE;
+}
+
+/**
  * Find the error with the given key.
  * @param errors - Array of errors returned from server.
  * @param key - Key of error to find.
@@ -664,5 +780,24 @@ function isInvalidDOI(status: number, errors?: Error[]): boolean {
 function findErrorByKey(errors: Error[], key: ERROR_KEY): Error | undefined {
   return errors.find((error) => {
     return Object.keys(error).find((errorKey) => errorKey === key);
+  });
+}
+
+/**
+ * Convert tissue ontology objects to core ontology objects for the given
+ * dataset responses.
+ * @param datasetResponse - Array from datasets returned from the BE. Contains
+ * tissue in Schema 4.0.0+ format.
+ * @returns Array of datasets with tissue ontology objects converted to core
+ * ontology objects.
+ */
+function createTaggedTissueOntologies(datasets: DatasetResponse[]): Dataset[] {
+  return datasets.map((dataset: DatasetResponse) => {
+    // It's possible for a dataset not to have tissues defined during
+    // upload; protect with [].
+    const tissue = (dataset.tissue ?? []).map((tissue) =>
+      createTaggedTissueOntology(tissue)
+    );
+    return { ...dataset, tissue };
   });
 }

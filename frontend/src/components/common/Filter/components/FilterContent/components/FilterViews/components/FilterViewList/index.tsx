@@ -102,7 +102,7 @@ export default function FilterViewList({
                 </ListItemButton>
               </ListItem>
               {/* Nested list */}
-              {children && children.length && (
+              {children && !!children.length && (
                 <FilterViewList
                   categoryFilterId={categoryFilterId}
                   isZerosVisible={isZerosVisible}

@@ -1,5 +1,6 @@
 export enum ROUTES {
   HOMEPAGE = "/",
+  CENSUS_DIRECTORY = "/census-models",
   COLLECTION = "/collections/:id",
   COLLECTIONS = "/collections",
   DATASETS = "/datasets",
@@ -15,5 +16,8 @@ export enum ROUTES {
   WMG_DOCS_DATA_PROCESSING = "/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_3__Gene%20Expression%20Data%20Processing",
   SITEMAP = "/sitemap",
   CELL_GUIDE = "/cellguide",
+  CELL_GUIDE_CELL_TYPE = "/cellguide/:cellTypeId",
+  CELL_GUIDE_TISSUE = "/cellguide/tissues/:tissueId",
+  CELL_GUIDE_TISSUE_SPECIFIC_CELL_TYPE = "/cellguide/tissues/:tissueId/cell-types/:cellTypeId",
   DEPLOYED_VERSION = "/api/deployed_version",
 }

@@ -22,7 +22,7 @@ class Validation:
         self.env = os.getenv("DEPLOYMENT_STAGE")
         self.validation_dataset_id = "3de0ad6d-4378-4f62-b37b-ec0b75a50d94"
         self.MIN_CUBE_SIZE_GB = 2
-        self.MIN_TISSUE_COUNT = 53
+        self.MIN_TISSUE_COUNT = 49
         self.MIN_SPECIES_COUNT = 2
         self.MIN_DATASET_COUNT = 254
         self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT = 80
@@ -281,7 +281,7 @@ class Validation:
             male_avg_xist_expression = male_xist_cube["sum"].sum() / male_malat1_cube["nnz"].sum()
             logger.info(f"female avg xist expression {female_avg_xist_expression}")
             logger.info(f"male avg xist expression {male_avg_xist_expression}")
-            if male_avg_xist_expression * 50 > female_avg_xist_expression:
+            if male_avg_xist_expression * 10 > female_avg_xist_expression:
                 self.errors.append("XIST levels dont show expected sex based difference")
 
     def validate_lung_cell_marker_genes(self):

@@ -1,3 +1,5 @@
+@import "react-highlight/node_modules/highlight.js/styles/atom-one-dark.css";
+
 html,
 p,
 h1,
@@ -8,7 +10,7 @@ h5,
 h6,
 a,
 div {
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
 }
@@ -19,7 +21,7 @@ div[role="group"][tabindex] {
 
 html {
   min-height: 100vh;
-  font: "Inter", sans-serif;
+  font: var(--font-inter);
   box-sizing: border-box;
   overflow-y: auto;
 }
@@ -30,7 +32,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: black;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   font-weight: normal;
   word-wrap: break-word;
   font-kerning: normal;
@@ -102,7 +104,7 @@ h1 {
   padding-top: 0;
   margin-bottom: 1.45rem;
   color: inherit;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   font-weight: 700;
   text-rendering: optimizeLegibility;
   line-height: 1.1;
@@ -137,13 +139,17 @@ img {
   padding-left: 0;
   padding-right: 0;
   padding-top: 0;
+  /* (thuang): `height: auto;` is needed to ensure responsive aspect ratio is
+    correct when using `next/image`.
+    @see: https://nextjs.org/docs/pages/building-your-application/optimizing/images#responsive
+   */
+  height: auto;
 }
 svg:not(:root) {
   overflow: hidden;
 }
 code,
 kbd,
-pre,
 samp {
   font-family: monospace;
   font-size: 1em;
@@ -280,7 +286,7 @@ h2 {
   padding-top: 0;
   margin-bottom: 1.45rem;
   color: inherit;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   font-weight: bold;
   text-rendering: optimizeLegibility;
   font-size: 1.62671rem;
@@ -296,7 +302,7 @@ h3 {
   padding-top: 0;
   margin-bottom: 1.45rem;
   color: inherit;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   font-weight: bold;
   text-rendering: optimizeLegibility;
   font-size: 1.38316rem;
@@ -312,7 +318,7 @@ h4 {
   padding-top: 0;
   margin-bottom: 1.45rem;
   color: inherit;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   font-weight: bold;
   text-rendering: optimizeLegibility;
   font-size: 1rem;
@@ -328,7 +334,7 @@ h5 {
   padding-top: 0;
   margin-bottom: 1.45rem;
   color: inherit;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   font-weight: bold;
   text-rendering: optimizeLegibility;
   font-size: 0.85028rem;
@@ -344,7 +350,7 @@ h6 {
   padding-top: 0;
   margin-bottom: 1.45rem;
   color: inherit;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-inter);
   font-weight: bold;
   text-rendering: optimizeLegibility;
   font-size: 0.78405rem;
@@ -415,19 +421,6 @@ p {
   margin-bottom: 1.45rem;
 }
 
-pre {
-  margin-left: 0;
-  margin-right: 0;
-  margin-top: 0;
-  margin-bottom: 1.45rem;
-  font-size: 0.85rem;
-  line-height: 1.42;
-  background: hsla(0, 0%, 0%, 0.04);
-  border-radius: 3px;
-  overflow: auto;
-  word-wrap: normal;
-  padding: 1.45rem;
-}
 table {
   margin-left: 0;
   margin-right: 0;
@@ -572,12 +565,12 @@ th {
   padding-top: 0.725rem;
   padding-bottom: calc(0.725rem - 1px);
 }
-th:first-child,
-td:first-child {
+th:first-of-type,
+td:first-of-type {
   padding-left: 0;
 }
-th:last-child,
-td:last-child {
+th:last-of-type,
+td:last-of-type {
   padding-right: 0;
 }
 tt,
@@ -589,23 +582,6 @@ code {
   padding: 0;
   padding-top: 0.2em;
   padding-bottom: 0.2em;
-}
-pre code {
-  background: none;
-  line-height: 1.42;
-}
-code:before,
-code:after,
-tt:before,
-tt:after {
-  letter-spacing: -0.2em;
-  content: " ";
-}
-pre code:before,
-pre code:after,
-pre tt:before,
-pre tt:after {
-  content: "";
 }
 @media only screen and (max-width: 480px) {
   html {

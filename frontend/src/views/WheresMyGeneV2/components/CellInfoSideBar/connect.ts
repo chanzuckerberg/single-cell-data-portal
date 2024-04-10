@@ -2,9 +2,14 @@ import { useCallback, useContext, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
-import { DispatchContext, State } from "../../../WheresMyGene/common/store";
-import { addSelectedGenes } from "../../../WheresMyGene/common/store/actions";
-import { MARKER_GENE_LABEL, MARKER_SCORE_LABEL } from "./constants";
+import { DispatchContext, State } from "../../common/store";
+import { addSelectedGenes } from "../../common/store/actions";
+import { HOVER_START_TIME_MS } from "../../common/constants";
+import {
+  MARKER_GENE_LABEL,
+  MARKER_SCORE_LABEL,
+  SPECIFICITY_LABEL,
+} from "src/common/constants/markerGenes";
 
 export const useConnect = ({
   cellInfoCellType,
@@ -42,7 +47,7 @@ export const useConnect = ({
 
   const useHandleHoverEnd = (event: EVENTS, payload = {}) => {
     return useCallback(() => {
-      if (Date.now() - hoverStartTime > 2 * 1000) {
+      if (Date.now() - hoverStartTime > HOVER_START_TIME_MS) {
         track(event, payload);
       }
     }, [event, payload]);
@@ -56,6 +61,10 @@ export const useConnect = ({
     EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER,
     { label: MARKER_SCORE_LABEL }
   );
+  const handleSpecificityHoverEnd = useHandleHoverEnd(
+    EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER,
+    { label: SPECIFICITY_LABEL }
+  );
 
   return {
     handleCopyGenes,
@@ -64,6 +73,7 @@ export const useConnect = ({
     data,
     handleFmgHoverEnd,
     handleMarkerScoreHoverEnd,
+    handleSpecificityHoverEnd,
     setHoverStartTime,
   };
 };

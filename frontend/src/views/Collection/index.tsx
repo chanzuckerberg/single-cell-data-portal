@@ -28,8 +28,11 @@ import {
   isCollectionHasPrivateRevision,
   isCollectionPrivateRevision,
   revisionIsPublishable,
+  sortCollectionDatasets,
 } from "./utils";
 import CollectionActions from "src/views/Collection/components/CollectionActions";
+import { useReorder } from "src/views/Collection/hooks/useReorder/useReorder";
+import { getReorder } from "src/views/Collection/hooks/useReorder/common/utils";
 
 const Collection: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -48,6 +51,7 @@ const Collection: FC = () => {
   }
 
   const { data: collection, isError, isFetching } = useCollection({ id });
+  const reorder = useReorder(id);
 
   useEffect(() => {
     if (
@@ -64,9 +68,9 @@ const Collection: FC = () => {
       message:
         "A dataset was withdrawn. You've been redirected to the parent collection.",
     });
-    removeParams("tombstoned_dataset_id");
+    removeParams({ params: "tombstoned_dataset_id", router });
     setHasShownWithdrawToast(true);
-  }, [tombstoned_dataset_id, collection, hasShownWithdrawToast]);
+  }, [tombstoned_dataset_id, collection, hasShownWithdrawToast, router]);
 
   useEffect(() => {
     if (isTombstonedCollection(collection)) {
@@ -108,6 +112,8 @@ const Collection: FC = () => {
     collection.contact_name,
     collection.contact_email
   );
+  // Reorder datasets related values and actions.
+  const reorderProps = getReorder(reorder, datasets);
 
   return (
     <>
@@ -126,6 +132,7 @@ const Collection: FC = () => {
             hasRevision={hasRevision}
             isPublishable={isPublishable}
             isRevision={isRevision}
+            reorder={reorderProps}
             setIsUploadingLink={setIsUploadingLink}
           />
         </CollectionHero>
@@ -147,8 +154,9 @@ const Collection: FC = () => {
         {/* TODO Reusing DatasetTab as-is as functionality is too dense to refactor for this iteration of filter. Complete refactor (including update to React Table) can be done when filter is productionalized. */}
         <DatasetTab
           collectionId={id}
-          datasets={datasets}
+          datasets={sortCollectionDatasets(datasets, reorder.orderedIds)}
           isRevision={isRevision}
+          reorder={reorderProps}
           visibility={collection.visibility}
         />
       </CollectionView>
