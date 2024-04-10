@@ -5,6 +5,7 @@ import React, {
   ReactNode,
   SetStateAction,
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -334,12 +335,27 @@ const MarkerGeneTables = ({
       organName,
     });
 
+  useEffect(() => {
+    if (selectedGene) {
+      const gene = computationalMarkerGeneTableData.find(
+        (gene) => gene.symbol === selectedGene
+      );
+      if (gene) {
+        setPage(
+          Math.ceil(
+            (computationalMarkerGeneTableData.indexOf(gene) + 1) / ROWS_PER_PAGE
+          )
+        );
+      }
+    }
+  }, [computationalMarkerGeneTableData, selectedGene]);
+
   const getSymbol = useCallback(
     (
       row: ComputationalMarkerGeneTableData | CanonicalMarkerGeneTableData,
       showEye = false
     ) => (
-      <NoWrapWrapper isSelected={row.symbol === selectedGene}>
+      <NoWrapWrapper>
         {row.symbol}{" "}
         <ButtonIcon
           aria-label={`display gene info for ${row.symbol}`}

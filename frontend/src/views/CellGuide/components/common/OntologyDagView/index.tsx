@@ -556,7 +556,6 @@ export default function OntologyDagView({
             }
           />
         )}
-        {!!cellTypeId && !isFullScreen && geneDropdownComponent}
       </TableTitleWrapper>
 
       {data && initialTreeState ? (
@@ -589,7 +588,6 @@ export default function OntologyDagView({
                 <Legend isTissue={!cellTypeId} selectedGene={selectedGene} />
               )}
               <RightAligned>
-                {isFullScreen && geneDropdownComponent}
                 {!!selectedGene && (
                   <StyledTagFilter
                     data-testid={
@@ -613,6 +611,7 @@ export default function OntologyDagView({
                     onClick={() => selectGene && selectGene(selectedGene)}
                   />
                 )}
+                {geneDropdownComponent}
                 <FullscreenButton
                   data-testid={
                     CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON

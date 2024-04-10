@@ -58,7 +58,7 @@ import { useConnect } from "./connect";
 import { SDSOrgan } from "src/views/CellGuide/components/CellGuideCard/types";
 import { getCellTypeLink } from "src/views/CellGuide/common/utils";
 
-const SELECT_A_GENE = "Color by Gene";
+const SELECT_A_GENE = "Color by Marker";
 const NO_GENE_OPTIONS = { name: NO_GENE };
 
 export const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
