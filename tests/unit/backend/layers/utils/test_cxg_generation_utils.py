@@ -30,7 +30,7 @@ class TestCxgGenerationUtils(unittest.TestCase):
 
     def test__convert_dictionary_to_cxg_group__writes_successfully(self):
         random_dictionary = {"cookies": "chocolate_chip", "brownies": "chocolate", "cake": "double chocolate"}
-        dictionary_name = "spatial"
+        dictionary_name = "favorite_desserts"
         expected_array_directory = f"{self.testing_cxg_temp_directory}/{dictionary_name}"
 
         convert_dictionary_to_cxg_group(
