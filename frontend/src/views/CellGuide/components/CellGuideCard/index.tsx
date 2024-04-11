@@ -15,6 +15,7 @@ import {
   CellGuideWrapper,
   StyledCellTagSideBar,
   StyledGeneTagSideBar,
+  StyledAutocomplete,
 } from "./style";
 import Description from "./components/Description";
 import MarkerGeneTables from "./components/MarkerGeneTables";
@@ -31,9 +32,11 @@ import { StickySidebarStyle } from "./components/CellGuideCardSidebar/style";
 import {
   CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN,
+  CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN,
   CELL_GUIDE_CARD_HEADER_NAME,
   CELL_GUIDE_CARD_HEADER_TAG,
   RIGHT_SIDEBAR_WIDTH_PX,
+  SELECT_A_GENE,
 } from "src/views/CellGuide/components/CellGuideCard/constants";
 import {
   ALL_TISSUES,
@@ -50,9 +53,11 @@ import { DEFAULT_ONTOLOGY_HEIGHT } from "../common/OntologyDagView/common/consta
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import CellGuideInfoSideBar from "../CellGuideInfoSideBar";
+import { useComputationalMarkerGenesTableRowsAndFilters } from "./components/MarkerGeneTables/hooks/computational_markers";
 import { useConnect } from "./connect";
 import { SDSOrgan } from "src/views/CellGuide/components/CellGuideCard/types";
 import { getCellTypeLink } from "src/views/CellGuide/common/utils";
+import { TextField } from "@mui/material";
 
 export const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
   sdsStyle: "square",
@@ -77,11 +82,14 @@ export default function CellGuideCard({
     pageNavIsOpen,
     setPageNavIsOpen,
     selectedGene,
+    headerRef,
+    topPadding,
     sectionRef0,
     sectionRef1,
     sectionRef2,
     sectionRef3,
     selectGene,
+    setSelectedGene,
     skinnyMode,
     tooltipContent,
     setTooltipContent,
@@ -163,6 +171,38 @@ export default function CellGuideCard({
   const cellTypePrefix =
     tissueName === TISSUE_AGNOSTIC ? "" : `${tissueName} specific `;
 
+  const { computationalMarkerGeneTableData } =
+    useComputationalMarkerGenesTableRowsAndFilters({
+      cellTypeId,
+      organismName: selectedOrganism.name,
+      organId: selectedOrganId,
+    });
+
+  const genesList = useMemo(() => {
+    return computationalMarkerGeneTableData.map((gene) => gene.symbol);
+  }, [computationalMarkerGeneTableData]);
+
+  const handleChangeGene = (option: string) => {
+    if (!option) {
+      setSelectedGene(undefined);
+    } else if (option) {
+      setSelectedGene(option);
+    }
+  };
+
+  const geneDropdownComponent = (
+    <StyledAutocomplete
+      data-testid={CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN}
+      options={genesList}
+      renderInput={(params) => (
+        <TextField {...params} placeholder={SELECT_A_GENE} />
+      )}
+      onChange={(_, value) => {
+        handleChangeGene(value as string);
+      }}
+      value={selectedGene}
+    />
+  );
   const title = `${titleize(
     cellTypePrefix
   )}${titleizedCellTypeName} Cell Types - CZ CELLxGENE CellGuide`;
@@ -278,7 +318,7 @@ export default function CellGuideCard({
         <div ref={sectionRef0} id="section-0" data-testid="section-0" />
         {/* Don't show title of the cell card if we're on mobile, since the title is already in the header nav */}
         {!skinnyMode && (
-          <CellGuideCardHeader width={width}>
+          <CellGuideCardHeader ref={headerRef} width={width}>
             <CellGuideCardHeaderInnerWrapper>
               <CellGuideCardName data-testid={CELL_GUIDE_CARD_HEADER_NAME}>
                 {titleizedCellTypeName}
@@ -305,7 +345,11 @@ export default function CellGuideCard({
       <CellGuideWrapper skinnyMode={skinnyMode}>
         <CellGuideView skinnyMode={skinnyMode}>
           {/* Flex item left */}
-          <Wrapper skinnyMode={skinnyMode} ref={containerRef}>
+          <Wrapper
+            topMargin={topPadding}
+            skinnyMode={skinnyMode}
+            ref={containerRef}
+          >
             {/* (thuang): Somehow we need a parent to prevent error:
               NotFoundError: Failed to execute 'insertBefore' on 'Node'
             */}
@@ -325,7 +369,7 @@ export default function CellGuideCard({
             <div>
               <FullScreenProvider cellInfoSideBarDisplayed={!!cellInfoCellType}>
                 <OntologyDagView
-                  key={`${cellTypeId}-${selectedOrganId}`}
+                  key={`${cellTypeId}-${selectedOrganId}-${selectedGene}`}
                   cellTypeId={cellTypeId}
                   cellTypeName={cellTypeName}
                   tissueName={tissueName}
@@ -335,7 +379,7 @@ export default function CellGuideCard({
                   inputHeight={DEFAULT_ONTOLOGY_HEIGHT}
                   selectedOrganism={selectedOrganism.name}
                   selectedGene={selectedGene}
-                  selectGene={selectGene}
+                  geneDropdownComponent={geneDropdownComponent}
                 />
               </FullScreenProvider>
             </div>
