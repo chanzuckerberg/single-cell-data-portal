@@ -56,7 +56,6 @@ import {
   CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_HEADER_NAME,
   CELL_GUIDE_CARD_HEADER_TAG,
-  NO_GENE,
 } from "src/views/CellGuide/components/CellGuideCard/constants";
 
 import {
@@ -1106,7 +1105,7 @@ describe("Cell Guide", () => {
         await page
           .getByTestId(CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN)
           .click();
-        await page.getByRole("option", { name: NO_GENE }).click();
+        await page.getByRole("option", { name: "NRXN1" }).click();
 
         await node.hover();
         await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
@@ -1186,7 +1185,7 @@ describe("Cell Guide", () => {
           .getByTestId(CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN)
           .click();
 
-        await page.getByRole("option", { name: NO_GENE }).click();
+        await page.getByRole("option", { name: geneSymbol as string }).click();
 
         const node2 = page.getByTestId(
           `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000047__0-has-children-isTargetNode=false`

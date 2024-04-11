@@ -15,7 +15,7 @@ import {
   CellGuideWrapper,
   StyledCellTagSideBar,
   StyledGeneTagSideBar,
-  StyledDropdown,
+  StyledAutocomplete,
 } from "./style";
 import Description from "./components/Description";
 import MarkerGeneTables from "./components/MarkerGeneTables";
@@ -36,7 +36,7 @@ import {
   CELL_GUIDE_CARD_HEADER_NAME,
   CELL_GUIDE_CARD_HEADER_TAG,
   RIGHT_SIDEBAR_WIDTH_PX,
-  NO_GENE,
+  SELECT_A_GENE,
 } from "src/views/CellGuide/components/CellGuideCard/constants";
 import {
   ALL_TISSUES,
@@ -57,9 +57,7 @@ import { useComputationalMarkerGenesTableRowsAndFilters } from "./components/Mar
 import { useConnect } from "./connect";
 import { SDSOrgan } from "src/views/CellGuide/components/CellGuideCard/types";
 import { getCellTypeLink } from "src/views/CellGuide/common/utils";
-
-const SELECT_A_GENE = "Color by Marker";
-const NO_GENE_OPTIONS = { name: NO_GENE };
+import { TextField } from "@mui/material";
 
 export const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
   sdsStyle: "square",
@@ -178,37 +176,29 @@ export default function CellGuideCard({
       organId: selectedOrganId,
     });
 
-  const sdsGenesList = useMemo(() => {
-    const genes = computationalMarkerGeneTableData.map((gene) => ({
-      name: gene.symbol,
-    }));
-
-    return [NO_GENE_OPTIONS, ...genes];
+  const genesList = useMemo(() => {
+    return computationalMarkerGeneTableData.map((gene) => gene.symbol);
   }, [computationalMarkerGeneTableData]);
 
-  const handleChangeGene = (option: DefaultDropdownMenuOption | null) => {
-    if (option?.name === NO_GENE_OPTIONS.name) {
+  const handleChangeGene = (option: string) => {
+    if (!option || option === selectedGene) {
       setSelectedGene(undefined);
     } else if (option) {
-      setSelectedGene(option.name);
+      setSelectedGene(option);
     }
   };
 
   const geneDropdownComponent = (
-    <StyledDropdown
-      InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
-      search
-      label={selectedGene || SELECT_A_GENE}
-      onChange={
-        handleChangeGene as unknown as (
-          options:
-            | DefaultDropdownMenuOption
-            | DefaultDropdownMenuOption[]
-            | null
-        ) => void
-      }
-      options={sdsGenesList}
+    <StyledAutocomplete
       data-testid={CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN}
+      options={genesList}
+      renderInput={(params) => (
+        <TextField {...params} placeholder={SELECT_A_GENE} />
+      )}
+      onChange={(_, value) => {
+        handleChangeGene(value as string);
+      }}
+      value={selectedGene}
     />
   );
   const title = `${titleize(
@@ -383,7 +373,6 @@ export default function CellGuideCard({
                   inputHeight={DEFAULT_ONTOLOGY_HEIGHT}
                   selectedOrganism={selectedOrganism.name}
                   selectedGene={selectedGene}
-                  selectGene={selectGene}
                   geneDropdownComponent={geneDropdownComponent}
                 />
               </FullScreenProvider>

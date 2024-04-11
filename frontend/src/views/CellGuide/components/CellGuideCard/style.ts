@@ -5,7 +5,6 @@ import {
   fontHeaderXl,
   fontHeaderXxl,
   Tag,
-  Dropdown,
 } from "@czi-sds/components";
 
 import RightSideBar from "src/components/common/RightSideBar";
@@ -23,6 +22,7 @@ import { keyframes } from "@emotion/react";
 import { DEFAULT_ONTOLOGY_WIDTH } from "../common/OntologyDagView/common/constants";
 import { SKINNY_MODE_BREAKPOINT_WIDTH } from "./constants";
 import { TOP_PADDING_PX } from "./components/CellGuideCardSidebar/style";
+import { Autocomplete } from "@mui/material";
 
 export const SIDEBAR_COLUMN_GAP_PX = 120;
 export const CELLGUIDE_CARD_MAX_WIDTH = 1440;
@@ -36,11 +36,49 @@ interface CellGuideViewProps extends CommonThemeProps {
   skinnyMode: boolean;
 }
 
-export const StyledDropdown = styled(Dropdown)`
+const AUTOCOMPLETE_HEIGHT = 24;
+export const StyledAutocomplete = styled(Autocomplete)`
+  height: ${AUTOCOMPLETE_HEIGHT}px;
+  width: 150px;
   z-index: 1;
-  padding: 0;
-  height: 24px;
+  background-color: white;
+
+  & .MuiAutocomplete-inputRoot {
+    padding: 0px;
+    height: ${AUTOCOMPLETE_HEIGHT}px;
+    display: flex;
+    align-items: center;
+  }
+
+  & .MuiAutocomplete-inputRoot[class*="MuiOutlinedInput-root"] {
+    padding: 0px;
+  }
+
+  & .MuiAutocomplete-input {
+    padding: 0px;
+    height: ${AUTOCOMPLETE_HEIGHT}px;
+    line-height: ${AUTOCOMPLETE_HEIGHT - 4}px;
+  }
+
+  & .MuiInputLabel-root {
+    margin-top: -12px;
+    z-index: 0;
+  }
+
+  & .MuiInputLabel-root.MuiInputLabel-shrink {
+    margin-top: 0px;
+  }
+  .MuiOutlinedInput-input.MuiOutlinedInput-input {
+    padding: 0px 8px;
+  }
+  .MuiAutocomplete-popupIndicator,
+  .MuiAutocomplete-clearIndicator {
+    width: ${AUTOCOMPLETE_HEIGHT - 4}px;
+    height: ${AUTOCOMPLETE_HEIGHT - 4}px;
+    margin-top: 4px;
+  }
 `;
+
 export const CellGuideView = styled.div<CellGuideViewProps>`
   display: flex;
   flex-direction: row;

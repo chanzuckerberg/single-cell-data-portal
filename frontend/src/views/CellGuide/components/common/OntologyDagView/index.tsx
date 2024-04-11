@@ -36,7 +36,6 @@ import {
   TooltipInPortalStyle,
   StyledSVG,
   RightAligned,
-  StyledTagFilter,
   WarningTooltipTextWrapper,
   WarningTooltipIcon,
 } from "./style";
@@ -61,13 +60,11 @@ import {
   CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID,
   CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TOOLTIP_TEST_ID,
   SELECTED_ORGANISM_TO_DISPLAY_TEXT,
-  CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
 import {
   ALL_TISSUES,
   TISSUE_AGNOSTIC,
 } from "../../CellGuideCard/components/MarkerGeneTables/constants";
-import { Icon } from "@czi-sds/components";
 import Link from "../../CellGuideCard/components/common/Link";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -84,7 +81,6 @@ interface TreeProps {
   cellTypeName?: string;
   tissueId: string;
   tissueName: string;
-  selectGene?: (gene: string) => void;
   setCellInfoCellType?: (props: CellType | null) => void;
   geneDropdownComponent?: React.ReactNode;
 }
@@ -110,7 +106,6 @@ export default function OntologyDagView({
   selectedOrganism,
   setCellInfoCellType,
   geneDropdownComponent,
-  selectGene,
 }: TreeProps) {
   selectedOrganism = selectedOrganism ?? "";
 
@@ -588,29 +583,6 @@ export default function OntologyDagView({
                 <Legend isTissue={!cellTypeId} selectedGene={selectedGene} />
               )}
               <RightAligned>
-                {!!selectedGene && (
-                  <StyledTagFilter
-                    data-testid={
-                      CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
-                    }
-                    label={selectedGene}
-                    sx={{
-                      backgroundColor: "#E0F0FF",
-                      padding: 0,
-                      margin: 0,
-                    }}
-                    deleteIcon={
-                      <Icon
-                        sdsIcon="xMark"
-                        sdsSize="xs"
-                        sdsType="button"
-                        color="error"
-                      />
-                    }
-                    onDelete={() => selectGene && selectGene(selectedGene)}
-                    onClick={() => selectGene && selectGene(selectedGene)}
-                  />
-                )}
                 {geneDropdownComponent}
                 <FullscreenButton
                   data-testid={
