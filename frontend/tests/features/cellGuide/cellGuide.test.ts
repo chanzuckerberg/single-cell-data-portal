@@ -1104,8 +1104,8 @@ describe("Cell Guide", () => {
         // deactivate marker gene mode and check that the legend and tooltips reverted
         await page
           .getByTestId(CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN)
-          .click();
-        await page.getByRole("option", { name: "NRXN1" }).click();
+          .hover();
+        await page.locator(".MuiAutocomplete-clearIndicator").click();
 
         await node.hover();
         await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
@@ -1183,9 +1183,10 @@ describe("Cell Guide", () => {
         // deactivate marker gene mode and check that the legend and tooltips reverted
         await page
           .getByTestId(CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN)
-          .click();
+          .hover();
 
-        await page.getByRole("option", { name: geneSymbol as string }).click();
+        // get clear indicator by class MuiAutocomplete-clearIndicator
+        await page.locator(".MuiAutocomplete-clearIndicator").click();
 
         const node2 = page.getByTestId(
           `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000047__0-has-children-isTargetNode=false`

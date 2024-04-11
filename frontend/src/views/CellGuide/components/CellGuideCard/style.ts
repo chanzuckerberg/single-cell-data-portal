@@ -34,6 +34,7 @@ const CELLGUIDE_HEADER_LINE_HEIGHT_PX = 36;
 
 interface CellGuideViewProps extends CommonThemeProps {
   skinnyMode: boolean;
+  topMargin?: number;
 }
 
 const AUTOCOMPLETE_HEIGHT = 24;
@@ -108,16 +109,24 @@ export const Wrapper = styled.div<CellGuideViewProps>`
   flex-direction: column;
   align-self: stretch;
   overflow-x: hidden;
-  margin-top: ${CELLGUIDE_HEADER_LINE_HEIGHT_PX +
-  CELLGUIDE_HEADER_PADDING_BOTTOM_PX +
-  TOP_PADDING_PX}px;
+
   ${(props) => {
-    const { skinnyMode } = props;
+    const { skinnyMode, topMargin } = props;
     const maxWidth = skinnyMode
       ? `${DEFAULT_ONTOLOGY_WIDTH}px`
       : `${SKINNY_MODE_BREAKPOINT_WIDTH + SIDEBAR_COLUMN_GAP_PX}px`;
+
+    const marginTop =
+      topMargin && !skinnyMode
+        ? `${topMargin}px`
+        : `${
+            CELLGUIDE_HEADER_LINE_HEIGHT_PX +
+            CELLGUIDE_HEADER_PADDING_BOTTOM_PX +
+            TOP_PADDING_PX
+          }px`;
     return `
     max-width: ${maxWidth};
+    margin-top: ${marginTop};
     `;
   }}
 `;

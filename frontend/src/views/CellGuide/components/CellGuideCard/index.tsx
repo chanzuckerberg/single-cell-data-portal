@@ -82,6 +82,8 @@ export default function CellGuideCard({
     pageNavIsOpen,
     setPageNavIsOpen,
     selectedGene,
+    headerRef,
+    topPadding,
     sectionRef0,
     sectionRef1,
     sectionRef2,
@@ -181,7 +183,7 @@ export default function CellGuideCard({
   }, [computationalMarkerGeneTableData]);
 
   const handleChangeGene = (option: string) => {
-    if (!option || option === selectedGene) {
+    if (!option) {
       setSelectedGene(undefined);
     } else if (option) {
       setSelectedGene(option);
@@ -316,7 +318,7 @@ export default function CellGuideCard({
         <div ref={sectionRef0} id="section-0" data-testid="section-0" />
         {/* Don't show title of the cell card if we're on mobile, since the title is already in the header nav */}
         {!skinnyMode && (
-          <CellGuideCardHeader width={width}>
+          <CellGuideCardHeader ref={headerRef} width={width}>
             <CellGuideCardHeaderInnerWrapper>
               <CellGuideCardName data-testid={CELL_GUIDE_CARD_HEADER_NAME}>
                 {titleizedCellTypeName}
@@ -343,7 +345,11 @@ export default function CellGuideCard({
       <CellGuideWrapper skinnyMode={skinnyMode}>
         <CellGuideView skinnyMode={skinnyMode}>
           {/* Flex item left */}
-          <Wrapper skinnyMode={skinnyMode} ref={containerRef}>
+          <Wrapper
+            topMargin={topPadding}
+            skinnyMode={skinnyMode}
+            ref={containerRef}
+          >
             {/* (thuang): Somehow we need a parent to prevent error:
               NotFoundError: Failed to execute 'insertBefore' on 'Node'
             */}
