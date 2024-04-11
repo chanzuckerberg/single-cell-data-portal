@@ -39,7 +39,7 @@ interface CellGuideViewProps extends CommonThemeProps {
 const AUTOCOMPLETE_HEIGHT = 24;
 export const StyledAutocomplete = styled(Autocomplete)`
   height: ${AUTOCOMPLETE_HEIGHT}px;
-  width: 150px;
+  width: 135px;
   z-index: 1;
   background-color: white;
 
