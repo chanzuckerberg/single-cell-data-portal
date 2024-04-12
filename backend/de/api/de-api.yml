@@ -1,0 +1,280 @@
+openapi: 3.0.3
+info:
+  version: "1.0.0"
+  title: Chan Zuckerberg Initiative cellxgene Differential Expression (DE) API
+  description: >-
+    This API is for internal use only by DE web client.
+servers:
+  - description: Local
+    url: /
+  - description: Production environment
+    url: https://api.cellxgene.cziscience.com/
+  - description: Development environment
+    url: https://api.dev.single-cell.czi.technology/
+  - description: Staging environment
+    url: https://api.staging.single-cell.czi.technology/
+
+paths:
+  /v1/filters:
+    post:
+      summary: Given a set of query criteria, returns the valid secondary filter and tissue terms
+      tags:
+        - de
+      operationId: backend.de.api.v1.filters
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filter:
+                  type: object
+                  required:
+                    - organism_ontology_term_id
+                  properties:
+                    organism_ontology_term_id:
+                      type: string
+                    tissue_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    publication_citations:
+                      type: array
+                      items:
+                        type: string
+                    disease_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    sex_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    development_ontology_stage_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    self_reported_ethnicity_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    cell_type_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+              required:
+                - filter
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - filter_dims
+                properties:
+                  snapshot_id:
+                    $ref: "#/components/schemas/de_snapshot_id"
+                  filter_dims:
+                    type: object
+                    properties:
+                      publication_citations:
+                        type: array
+                        items:
+                          type: string
+                      disease_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      sex_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      development_stage_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      self_reported_ethnicity_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      tissue_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      cell_type_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                      organism_terms:
+                        $ref: "#/components/schemas/de_ontology_term_id_label_list"
+
+  /v1/differentialExpression:
+    post:
+      summary: Differential expression endpoint.
+      tags:
+        - de
+      operationId: backend.de.api.v1.differentialExpression
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                queryGroup1Filters:
+                  type: object
+                  properties:
+                    organism_ontology_term_id:
+                      type: string
+                    tissue_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    publication_citations:
+                      type: array
+                      items:
+                        type: string
+                    disease_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    sex_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    development_ontology_stage_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    self_reported_ethnicity_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    cell_type_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                  required:
+                    - organism_ontology_term_id
+                queryGroup2Filters:
+                  type: object
+                  properties:
+                    organism_ontology_term_id:
+                      type: string
+                    tissue_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    publication_citations:
+                      type: array
+                      items:
+                        type: string
+                    disease_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    sex_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    development_ontology_stage_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    self_reported_ethnicity_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    cell_type_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                  required:
+                    - organism_ontology_term_id
+              required:
+                - queryGroup1Filters
+                - queryGroup2Filters
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - differentialExpressionResults
+                properties:
+                  snapshot_id:
+                    $ref: "#/components/schemas/de_snapshot_id"
+                  successCode:
+                    description: ->
+                      Code indicating whether the query returned too many cells to compute differential expression.
+                    type: integer
+                  differentialExpressionResults:
+                    description: ->
+                      Differential expression results
+                    type: array
+                    items:
+                      description: ->
+                        Object with gene id, p-value, and effect size.
+                      type: object
+                      properties:
+                        gene_ontology_term_id:
+                          description: gene ontology term id
+                          type: string
+                        gene_symbol:
+                          description: gene symbol
+                          type: string
+                        p_value:
+                          description: adjusted p-value
+                          type: number
+                          format: float
+                          maxLength: 4
+                          minimum: 0.0
+                          maximum: 1.0
+                        effect_size:
+                          description: effect size
+                          type: number
+                          format: float
+                          maxLength: 4
+
+components:
+  schemas:
+    problem:
+      type: object
+      description: Error message container for HTTP APIs.
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+    de_ontology_term_id_label_list:
+      description: ->
+        An array of ontology term ids and labels, where array elements are single-element objects of the
+        form "<id>":"<label>"
+      type: array
+      items:
+        description: ->
+          A single-element object with the ontology term id as the element's property name and the ontology term label
+          as the element's property value.
+        type: object
+    de_ontology_term_id_list:
+      type: array
+      items:
+        type: string
+    de_snapshot_id:
+      type: string
+      format: uuid
+
+  parameters: {}
+
+  responses:
+    200:
+      description: OK.
+    201:
+      description: Created.
+    202:
+      description: Accepted
+    204:
+      description: No Content
+    400:
+      description: Invalid parameter.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    401:
+      description: Failed to authenticate.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    403:
+      description: Unauthorized.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    404:
+      description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    405:
+      description: Method not allowed.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    409:
+      description: File conflict.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    413:
+      description: Exceed File Size Limit
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+
+  securitySchemes: {}
