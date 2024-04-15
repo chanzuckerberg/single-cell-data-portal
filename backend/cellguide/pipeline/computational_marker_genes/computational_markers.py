@@ -161,7 +161,7 @@ class MarkerGenesCalculator:
         universe_cell_counts_df = pd.DataFrame(index=index)
         universe_cell_counts_df["n_cells"] = 0
         # populate the dataframe with the number of cells from the groups in the cell counts df
-        universe_cell_counts_df.loc["n_cells", cell_counts_df.index] = cell_counts_df["n_cells"]
+        universe_cell_counts_df["n_cells"][cell_counts_df.index] = cell_counts_df["n_cells"]
         # roll up the cell counts
         universe_cell_counts_df = rollup_across_cell_type_descendants(universe_cell_counts_df.reset_index())
         # remove groups that still have 0 cells after the rollup operation
