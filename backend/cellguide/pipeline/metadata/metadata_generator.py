@@ -1,11 +1,9 @@
 import logging
-import warnings
 
-from pronto import Ontology
-
-from backend.cellguide.pipeline.metadata.types import CellMetadata, TissueMetadata
-from backend.cellguide.pipeline.constants import CELL_GUIDE_PINNED_SCHEMA_VERSION
 from cellxgene_ontology_guide.ontology_parser import OntologyParser
+
+from backend.cellguide.pipeline.constants import CELL_GUIDE_PINNED_SCHEMA_VERSION
+from backend.cellguide.pipeline.metadata.types import CellMetadata, TissueMetadata
 
 logger = logging.getLogger(__name__)
 
@@ -31,28 +29,25 @@ def generate_cellguide_card_metadata(all_cell_type_ids_in_corpus: list[str]) -> 
     cell_ids_without_cl_description = 0
 
     for id in all_cell_type_ids_in_corpus:
-        cell = ontology[id]
 
-        elif cell.obsolete:
-            obsolete_cell_ids.append(cell.id)
+        if ontology.is_term_deprecated(id):
+            obsolete_cell_ids.append(id)
         else:
-            description = None
-            if cell.definition is not None:
-                description = str(cell.definition)
+            description = ontology.get_term_description(id)
+            if description is not None:
                 cell_ids_with_cl_description += 1
             else:
                 cell_ids_without_cl_description += 1
 
             metadata = CellMetadata(
-                name=cell.name,
-                id=cell.id,
+                name=ontology.get_term_label(id),
+                id=id,
                 clDescription=description,
-                synonyms=[s.description for s in cell.synonyms],
+                synonyms=[],  # TODO(COG)
             )
-            cellguide_card_metadata[cell.id] = metadata
+            cellguide_card_metadata[id] = metadata
 
     logger.info(f"Filtering out {len(obsolete_cell_ids)} obsolete cell types: {obsolete_cell_ids}")
-    logger.info(f"Filtering out {len(invalid_non_cl_cell_ids)} invalid non-CL cell types: {invalid_non_cl_cell_ids}")
     logger.info(
         f"Found {cell_ids_with_cl_description} cell types with CL descriptions and {cell_ids_without_cl_description} without CL descriptions"
     )
@@ -71,47 +66,33 @@ def generate_cellguide_tissue_card_metadata(all_tissue_ids_in_corpus: list[str])
     Note that we will be filtering out obsolete tissues.
     """
     logger.info(f"Generating cellguide tissue card metadata for {len(all_tissue_ids_in_corpus)} tissues...")
-    with warnings.catch_warnings():
-        # loading uberon ontology has some warnings that we don't care about
-        warnings.simplefilter("ignore")
-        ontology = Ontology(UBERON_BASIC_PERMANENT_URL_PRONTO)
+    ontology = OntologyParser(schema_version=f"v{CELL_GUIDE_PINNED_SCHEMA_VERSION}")
 
     cellguide_tissue_card_metadata: dict[str, TissueMetadata] = {}
 
     obsolete_uberon_ids: list[str] = []
-    invalid_non_uberon_ids: list[str] = []
     uberon_ids_with_description = 0
     uberon_ids_without_description = 0
 
     for id in all_tissue_ids_in_corpus:
-        try:
-            tissue = ontology[id]
-        except KeyError:
-            invalid_non_uberon_ids.append(id)
-            continue
-
-        if not tissue.id.startswith("UBERON:"):
-            invalid_non_uberon_ids.append(tissue.id)
-        elif tissue.obsolete:
-            obsolete_uberon_ids.append(tissue.id)
+        if ontology.is_term_deprecated(id):
+            obsolete_uberon_ids.append(id)
         else:
-            description = None
-            if tissue.definition is not None:
-                description = str(tissue.definition)
+            description = ontology.get_term_description(id)
+            if description is not None:
                 uberon_ids_with_description += 1
             else:
                 uberon_ids_without_description += 1
 
             metadata = TissueMetadata(
-                name=tissue.name,
-                id=tissue.id,
+                name=ontology.get_term_label(id),
+                id=id,
                 uberonDescription=description,
-                synonyms=[s.description for s in tissue.synonyms],
+                synonyms=[],  # TODO(COG)
             )
-            cellguide_tissue_card_metadata[tissue.id] = metadata
+            cellguide_tissue_card_metadata[id] = metadata
 
     logger.info(f"Filtering out {len(obsolete_uberon_ids)} obsolete tissues: {obsolete_uberon_ids}")
-    logger.info(f"Filtering out {len(invalid_non_uberon_ids)} invalid non-UBERON tissues: {invalid_non_uberon_ids}")
     logger.info(
         f"Found {uberon_ids_with_description} tissues with UBERON descriptions and {uberon_ids_without_description} without UBERON descriptions"
     )
