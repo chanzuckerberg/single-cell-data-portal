@@ -107,7 +107,9 @@ class OntologyTreeBuilder:
         self.all_tissue_ids_in_corpus = list(self.uberon_by_celltype.keys())
         logger.info("Initializing ontology tree data structures by traversing CL ontology...")
 
-        traverse_ontology_result = self.build_ontology_tree_with_counting(self.ontology.get_term_graph(root_node))
+        traverse_ontology_result = self.build_ontology_tree_with_counting(
+            self.ontology.get_term_graph(root_node).to_dict()
+        )
         self.ontology_graph = traverse_ontology_result.subtree
         self.traverse_node_counter = traverse_ontology_result.traverse_node_counter
         self.all_unique_nodes = traverse_ontology_result.all_unique_nodes
@@ -198,14 +200,16 @@ class OntologyTreeBuilder:
             An object containing the built ontology tree, updated traverse_node_counter, and all_unique_nodes set.
         """
         if not ontology_graph_dict:
-            return None
+            return TraverseOntologyResult(
+                subtree=None, traverse_node_counter=traverse_node_counter, all_unique_nodes=all_unique_nodes
+            )
 
         if traverse_node_counter is None:
             traverse_node_counter = {}
         if all_unique_nodes is None:
             all_unique_nodes = set()
 
-        node_id = ontology_graph_dict.get("id", "")
+        node_id = ontology_graph_dict.get("term_id", "")
         node_count = traverse_node_counter.get(node_id, 0)
         traverse_node_counter[node_id] = node_count + 1
         unique_node_id = f"{node_id}__{node_count}"
@@ -214,18 +218,20 @@ class OntologyTreeBuilder:
         root = OntologyTree(
             id=unique_node_id,
             name=ontology_graph_dict.get("name", ""),
-            n_cells_rollup=int(self.cell_counts_df_rollup[node_id] if node_id in self.cell_counts_df_rollup else 0),
-            n_cells=int(self.cell_counts_df[node_id] if node_id in self.cell_counts_df else 0),
+            n_cells_rollup=int(self.cell_counts_df_rollup.get(node_id, 0)),
+            n_cells=int(self.cell_counts_df.get(node_id, 0)),
             children=[],
             invalid_children_ids=ontology_graph_dict.get("invalid_children_ids", []),
             parent=ontology_graph_dict.get("parent", None),
         )
 
-        if "children" in ontology_graph_dict and ontology_graph_dict["children"]:
-            for child_dict in ontology_graph_dict["children"]:
-                child_tree = self.build_ontology_tree_with_counting(child_dict, traverse_node_counter, all_unique_nodes)
-                if child_tree:
-                    root.children.append(child_tree)
+        children_trees = []
+        for child_dict in ontology_graph_dict.get("children", []):
+            child_result = self.build_ontology_tree_with_counting(child_dict, traverse_node_counter, all_unique_nodes)
+            if child_result.subtree:
+                children_trees.append(child_result.subtree)
+
+        root.children = children_trees
 
         return TraverseOntologyResult(
             subtree=root, traverse_node_counter=traverse_node_counter, all_unique_nodes=all_unique_nodes
