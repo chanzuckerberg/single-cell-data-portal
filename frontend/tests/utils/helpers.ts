@@ -53,7 +53,7 @@ export const shouldUseRdevToken =
   process.env.RDEV_TOKEN === "true" || TEST_ENV === "rdev";
 
 export const TIMEOUT_MS = 3 * 1000;
-export const WAIT_FOR_TIMEOUT_MS = 3 * 1000;
+export const WAIT_FOR_TIMEOUT_MS = 5 * 1000;
 
 // (seve): We use TEST_ENV to describe the environment that playwright is running against. Sometimes the FE tests are run against a local instance of the app which points at a deployed instance of the backend.
 
