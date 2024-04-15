@@ -61,9 +61,7 @@ class TestCxgGenerationUtils(unittest.TestCase):
         }
         dictionary_name = "uns"
         expected_array_directory = f"{self.testing_cxg_temp_directory}/{dictionary_name}"
-        convert_uns_to_cxg_group(
-            self.testing_cxg_temp_directory, input_dictionary, group_metadata_name=dictionary_name
-        )
+        convert_uns_to_cxg_group(self.testing_cxg_temp_directory, input_dictionary, group_metadata_name=dictionary_name)
         array = tiledb.open(expected_array_directory)
         expected_metadata = dict(array.meta.items())
 
