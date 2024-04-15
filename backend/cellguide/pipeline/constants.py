@@ -15,7 +15,6 @@ GPT_OUTPUT_DIRECTORY_FOLDERNAME = "gpt_descriptions"
 GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME = "gpt_seo_descriptions"
 MARKER_GENE_PRESENCE_FILENAME = "marker_gene_presence.json.gz"
 
-UBERON_BASIC_PERMANENT_URL_PRONTO = "http://purl.obolibrary.org/obo/uberon.obo"
 
 ASCTB_MASTER_SHEET_URL = "https://ccf-ontology.hubmapconsortium.org/v2.3.0/ccf-asctb-all.json"
 

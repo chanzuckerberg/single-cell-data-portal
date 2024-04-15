@@ -3,6 +3,7 @@ import logging
 import os
 
 import tiledb
+from cellxgene_ontology_guide.curated_ontology_term_lists import CuratedOntologyTermList, get_curated_ontology_term_list
 
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.snapshot import (
@@ -13,7 +14,6 @@ from backend.wmg.data.snapshot import (
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,
-    HIGH_LEVEL_TISSUES,
     PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG,
 )
 from backend.wmg.pipeline.errors import PipelineStepMissing
@@ -115,7 +115,7 @@ def order_tissues(ontology_term_ids: list[str]) -> list[str]:
     """
     ontology_term_ids = set(ontology_term_ids)
     ordered_ontology_term_ids = []
-    for tissue in HIGH_LEVEL_TISSUES:
+    for tissue in get_curated_ontology_term_list(CuratedOntologyTermList.TISSUE_GENERAL):
         if tissue in ontology_term_ids:
             ontology_term_ids.remove(tissue)
             ordered_ontology_term_ids.append(tissue)
