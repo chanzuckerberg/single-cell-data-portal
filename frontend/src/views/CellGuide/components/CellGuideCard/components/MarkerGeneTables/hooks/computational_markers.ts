@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import {
-  ComputationalMarkersQueryResponse,
   ComputationalMarkersQueryResponseEntry,
+  useAllTissuesLookupTables,
 } from "src/common/queries/cellGuide";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/constants";
 import { isTissueIdDescendantOfAncestorTissueId } from "src/views/CellGuide/common/utils";
@@ -123,19 +123,22 @@ export function useSelectedOrganForTooltipCopy({
 }
 
 export function useComputationalMarkerGenesTableRowsAndFilters({
-  genes,
-  allTissuesLabelToIdMap,
-  selectedOrganismLabel,
-  selectedOrganId,
+  cellTypeId,
+  organId,
+  organismName,
 }: {
-  genes: ComputationalMarkersQueryResponse;
-  allTissuesLabelToIdMap: Map<string, string>;
-  selectedOrganismLabel: string;
-  selectedOrganId: string;
+  cellTypeId: string;
+  organismName: string;
+  organId: string;
 }): {
   computationalMarkerGeneTableData: ComputationalMarkerGeneTableData[];
   allFilteredByLowMarkerScore: boolean;
 } {
+  const {
+    allTissuesLabelToIdLookup: allTissuesLabelToIdMap,
+    computationalMarkers: genes,
+  } = useAllTissuesLookupTables(cellTypeId);
+
   return useMemo(() => {
     if (!genes)
       return {
@@ -150,8 +153,8 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
       const { pass, errorCode } = _applyOrderedSelectionCriteria({
         markerGene: markerGene,
         allTissuesLabelToIdMap: allTissuesLabelToIdMap,
-        selectedOrganismLabel: selectedOrganismLabel,
-        selectedOrganId: selectedOrganId,
+        selectedOrganismLabel: organismName,
+        selectedOrganId: organId,
       });
 
       if (!pass) {
@@ -188,5 +191,5 @@ export function useComputationalMarkerGenesTableRowsAndFilters({
       computationalMarkerGeneTableData: rows,
       allFilteredByLowMarkerScore: allFilteredByLowMarkerScore,
     };
-  }, [genes, allTissuesLabelToIdMap, selectedOrganismLabel, selectedOrganId]);
+  }, [genes, allTissuesLabelToIdMap, organismName, organId]);
 }
