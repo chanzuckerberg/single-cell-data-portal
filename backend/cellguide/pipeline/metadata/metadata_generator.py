@@ -43,7 +43,7 @@ def generate_cellguide_card_metadata(all_cell_type_ids_in_corpus: list[str]) -> 
                 name=ontology.get_term_label(id),
                 id=id,
                 clDescription=description,
-                synonyms=[],  # TODO(COG)
+                synonyms=ontology.get_term_synonyms(id),
             )
             cellguide_card_metadata[id] = metadata
 
@@ -88,7 +88,7 @@ def generate_cellguide_tissue_card_metadata(all_tissue_ids_in_corpus: list[str])
                 name=ontology.get_term_label(id),
                 id=id,
                 uberonDescription=description,
-                synonyms=[],  # TODO(COG)
+                synonyms=ontology.get_term_synonyms(id),
             )
             cellguide_tissue_card_metadata[id] = metadata
 
