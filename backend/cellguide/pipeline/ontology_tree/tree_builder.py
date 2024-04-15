@@ -224,7 +224,9 @@ class OntologyTreeBuilder:
         )
 
         children_trees = []
-        for child_dict in ontology_graph_dict.get("children", []):
+        children_dicts = ontology_graph_dict.get("children", [])
+        children_dicts.sort(key=lambda x: x["term_id"] not in TRAVERSAL_PRIORITY_NODES)
+        for child_dict in children_dicts:
             child_result = self.build_ontology_tree_with_counting(child_dict, traverse_node_counter, all_unique_nodes)
             if child_result.subtree:
                 children_trees.append(child_result.subtree)
