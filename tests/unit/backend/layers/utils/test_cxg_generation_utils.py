@@ -45,7 +45,7 @@ class TestCxgGenerationUtils(unittest.TestCase):
         self.assertEqual(random_dictionary, actual_stored_metadata)
 
     def test__convert_uns_to_cxg_group__writes_successfully(self):
-        random_dictionary = {
+        input_dictionary = {
             "spatial": {
                 "abcd": {
                     "images": {
@@ -62,14 +62,14 @@ class TestCxgGenerationUtils(unittest.TestCase):
         dictionary_name = "uns"
         expected_array_directory = f"{self.testing_cxg_temp_directory}/{dictionary_name}"
         convert_uns_to_cxg_group(
-            self.testing_cxg_temp_directory, random_dictionary, group_metadata_name=dictionary_name
+            self.testing_cxg_temp_directory, input_dictionary, group_metadata_name=dictionary_name
         )
         array = tiledb.open(expected_array_directory)
-        actual_stored_metadata = dict(array.meta.items())
+        expected_metadata = dict(array.meta.items())
 
         self.assertTrue(path.isdir(expected_array_directory))
         self.assertTrue(isinstance(array, tiledb.DenseArray))
-        self.assertEqual(random_dictionary["spatial"], pickle.loads(actual_stored_metadata["spatial"]))
+        self.assertEqual(input_dictionary["spatial"], pickle.loads(expected_metadata["spatial"]))
 
     def test__convert_dataframe_to_cxg_array__writes_successfully(self):
         random_int_category = Series(data=[3, 1, 2, 4], dtype=np.int64)
