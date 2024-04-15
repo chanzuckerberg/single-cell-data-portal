@@ -221,8 +221,6 @@ class OntologyTreeBuilder:
             n_cells_rollup=int(self.cell_counts_df_rollup.get(node_id, 0)),
             n_cells=int(self.cell_counts_df.get(node_id, 0)),
             children=[],
-            invalid_children_ids=ontology_graph_dict.get("invalid_children_ids", []),
-            parent=ontology_graph_dict.get("parent", None),
         )
 
         children_trees = []
