@@ -10,10 +10,10 @@ from backend.wmg.data.snapshot import (
     EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
 )
-from backend.wmg.data.tissue_mapper import TissueMapper
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,
+    HIGH_LEVEL_TISSUES,
     PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG,
 )
 from backend.wmg.pipeline.errors import PipelineStepMissing
@@ -109,14 +109,13 @@ def list_grouped_primary_filter_dimensions_term_ids(
 
 def order_tissues(ontology_term_ids: list[str]) -> list[str]:
     """
-    Order tissues based on appearance in TissueMapper.HIGH_LEVEL_TISSUES. This will maintain the priority set in
+    Order tissues based on appearance in HIGH_LEVEL_TISSUES. This will maintain the priority set in
     that class which is intended to keep most relevant tissues on top and tissues that are related to be placed
     sequentially
     """
     ontology_term_ids = set(ontology_term_ids)
     ordered_ontology_term_ids = []
-    for tissue in TissueMapper.HIGH_LEVEL_TISSUES:
-        tissue = TissueMapper.reformat_ontology_term_id(tissue, to_writable=True)
+    for tissue in HIGH_LEVEL_TISSUES:
         if tissue in ontology_term_ids:
             ontology_term_ids.remove(tissue)
             ordered_ontology_term_ids.append(tissue)

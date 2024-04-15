@@ -5,10 +5,7 @@ import numba as nb
 import numpy as np
 import pandas as pd
 
-from backend.wmg.data.constants import WMG_PINNED_SCHEMA_VERSION
-from cellxgene_ontology_guide.ontology_parser import OntologyParser
-
-ontology_parser = OntologyParser(schema_version=f"v{WMG_PINNED_SCHEMA_VERSION}")
+from backend.common.utils.ontology_parser import ontology_parser
 
 
 # cache finding descendants per cell type

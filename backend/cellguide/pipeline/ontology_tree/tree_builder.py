@@ -5,17 +5,16 @@ from typing import Any, Dict, Tuple
 
 import numpy as np
 import pandas as pd
+from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from dask import compute, delayed
 from dask.diagnostics import ProgressBar
 
-from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS, CELL_GUIDE_PINNED_SCHEMA_VERSION
+from backend.cellguide.pipeline.constants import CELL_GUIDE_PINNED_SCHEMA_VERSION, CELLGUIDE_PIPELINE_NUM_CPUS
 from backend.cellguide.pipeline.ontology_tree.types import OntologyTree, OntologyTreeState
 from backend.common.utils.rollup import rollup_across_cell_type_descendants
-from cellxgene_ontology_guide.ontology_parser import OntologyParser
 
 logger = logging.getLogger(__name__)
 
-# TODO(COG)
 """
 This module contains the OntologyTreeBuilder class which is used to build a nested dictionary representation of the cell ontology tree.
 The tree is populated with cell type counts from an input dataframe. The class also provides functions to get the ontology tree state
@@ -74,7 +73,7 @@ class OntologyTreeBuilder:
             The root node of the ontology tree. This is the node from which the ontology tree is traversed.
         """
 
-        logger.info(f"Loading COG ontologies...")
+        logger.info("Loading COG ontologies...")
         self.ontology = OntologyParser(schema_version=f"v{CELL_GUIDE_PINNED_SCHEMA_VERSION}")
 
         logger.info("Initializing tissue data structures from the input cell counts dataframe...")
