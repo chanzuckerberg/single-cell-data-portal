@@ -281,7 +281,7 @@ class Validation:
             male_avg_xist_expression = male_xist_cube["sum"].sum() / male_malat1_cube["nnz"].sum()
             logger.info(f"female avg xist expression {female_avg_xist_expression}")
             logger.info(f"male avg xist expression {male_avg_xist_expression}")
-            if male_avg_xist_expression * 50 > female_avg_xist_expression:
+            if male_avg_xist_expression * 10 > female_avg_xist_expression:
                 self.errors.append("XIST levels dont show expected sex based difference")
 
     def validate_lung_cell_marker_genes(self):

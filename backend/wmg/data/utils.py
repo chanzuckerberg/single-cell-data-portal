@@ -15,6 +15,8 @@ def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:
     all_filter_options = set()
     organism_key = "organism_ontology_term_id__" + organism
     all_filter_options = snapshot.filter_relationships[organism_key].get(dimension, [])
+    all_filter_options += [key for key in snapshot.filter_relationships if key.startswith(dimension)]
+    all_filter_options = list(set(all_filter_options))
     return [option.split("__")[1] for option in all_filter_options]
 
 
