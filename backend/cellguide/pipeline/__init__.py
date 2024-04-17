@@ -27,8 +27,12 @@ def run_cellguide_pipeline():
     # delete any existing pipeline outputs
     cleanup(output_directory=output_directory)
 
-    # Run valid explorer cxg pipeline
-    run_valid_explorer_cxgs_pipeline(output_directory=output_directory)
+    # TODO: remove try-except once permissions issues are fixed in staging
+    try:
+        # Run valid explorer cxg pipeline
+        run_valid_explorer_cxgs_pipeline(output_directory=output_directory)
+    except Exception as e:
+        logger.error(f"Error running valid explorer cxg pipeline: {e}")
 
     # Run ontology tree pipeline
     run_ontology_tree_pipeline(output_directory=output_directory)
