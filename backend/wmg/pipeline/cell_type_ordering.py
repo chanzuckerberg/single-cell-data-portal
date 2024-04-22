@@ -4,12 +4,12 @@ from typing import List, Set
 import pandas as pd
 import tiledb
 
-from backend.wmg.data.constants import CL_BASIC_OBO_NAME
+from backend.common.utils.ontology_parser import ontology_parser
 from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     CELL_TYPE_ORDERINGS_FILENAME,
 )
-from backend.wmg.data.utils import get_pinned_ontology_url, to_dict
+from backend.wmg.data.utils import to_dict
 from backend.wmg.pipeline.constants import (
     CELL_TYPE_ORDERING_CREATED_FLAG,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
@@ -50,7 +50,7 @@ def create_cell_type_ordering(corpus_path: str) -> None:
 
     # Generates ordering for ALL cell types
     all_cells = {cell for cell_df in cell_type_by_tissue.values() for cell in cell_df}
-    ordered_cells = _cell_type_ordering_compute(all_cells, root="CL:0000003")
+    ordered_cells = _cell_type_ordering_compute(all_cells, root="CL:0000000")
 
     # Create individual data frames per tissue
     ordered_cells_by_tissue = []
@@ -81,29 +81,27 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     Any orphan cell types are added at the end of table with depth 0.
 
     :param Set[str] cells: Set of cell type ontology term ids
-    :param str root: Root of the tree, usually CL:0000003
+    :param str root: Root of the tree, usually CL:0000000
 
     :return pd.DataFrame: With the following columns:
                              1. cell_type_ontology_term_id: str
                              2. depth: int  -- 0-based level down in the cell type hierarchy.
-                                The following nodes are always at depth 0: "CL:0000003", "CL:0000255", "CL:0000548"
+                                The following nodes are always at depth 0: "CL:0000000", "CL:0000255", "CL:0000548"
     """
 
     # Note: those dependencies are only needed by the WMG pipeline, so we should keep them local
     # so that this file can be imported by tests without breaking.
     import pygraphviz as pgv
-    from pronto import Ontology
 
-    onto = Ontology(get_pinned_ontology_url(CL_BASIC_OBO_NAME))
-    ancestors = [list(onto[t].superclasses()) for t in cells if t in onto]
+    ancestors = [ontology_parser.get_term_ancestors(t, include_self=True) for t in cells]
     ancestors = [i for s in ancestors for i in s]
     ancestors = sorted(set(ancestors))
 
     G = pgv.AGraph()
     for a in ancestors:
-        for s in a.subclasses(with_self=False, distance=1):
+        for s in ontology_parser.get_term_children(a):
             if s in ancestors:
-                G.add_edge(a.id, s.id)
+                G.add_edge(a, s)
 
     G.layout(prog="dot")
 
@@ -111,8 +109,6 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     for n in G.iternodes():
         pos = n.attr["pos"].split(",")
         positions[n] = (float(pos[0]), float(pos[1]))
-
-    ancestor_ids = [a.id for a in ancestors]
 
     def cell_entity(node, depth):
         return {"id": node, "depth": depth}
@@ -123,18 +119,16 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
             yield cell_entity(node, depth)
             depth += 1
 
-        children = [
-            (c, positions[c.id]) for c in onto[node].subclasses(with_self=False, distance=1) if c.id in ancestor_ids
-        ]
+        children = [(c_id, positions[c_id]) for c_id in ontology_parser.get_term_children(node) if c_id in ancestors]
         sorted_children = sorted(children, key=lambda x: x[1][0])
         for child in sorted_children:
-            yield from recurse(child[0].id, depth=depth)
+            yield from recurse(child[0], depth=depth)
 
     # Apply recursion to create an ordered list of cells present in set "cells"
     ordered_list = list(recurse(root))
 
     # If there are any cells left in set "cells", it means that either those cell types
-    # don't exist in the ontology or they are above the root ("CL:0000003")
+    # don't exist in the ontology or they are above the root ("CL:0000000")
     # Add these "orphan" cells at end of list
     ordered_list.extend([cell_entity(cell, depth=0) for cell in cells])
 

@@ -29,14 +29,19 @@ def handle_failure(event: dict, context, delete_artifacts=True) -> None:
         error_cause,
         execution_arn,
     ) = parse_event(event)
-    trigger_slack_notification(
-        dataset_version_id,
-        collection_version_id,
-        error_step_name,
-        error_job_id,
-        error_aws_regions,
-        execution_arn,
-    )
+    if "migrate" in execution_arn:
+        logging.info(
+            f"Skipping slack notification for {execution_arn} because failure is related to a schema migration"
+        )
+    else:
+        trigger_slack_notification(
+            dataset_version_id,
+            collection_version_id,
+            error_step_name,
+            error_job_id,
+            error_aws_regions,
+            execution_arn,
+        )
     update_dataset_processing_status_to_failed(dataset_version_id)
     if delete_artifacts:
         cleanup_artifacts(dataset_version_id, error_step_name)

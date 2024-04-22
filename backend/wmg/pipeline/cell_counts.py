@@ -32,6 +32,10 @@ def create_cell_counts_cube(*, query: ExperimentAxisQuery, corpus_path: str, org
     obs_df = query.obs().concat().to_pandas()
     obs_df = obs_df.rename(columns=DIMENSION_NAME_MAP_CENSUS_TO_WMG)
     obs_df["organism_ontology_term_id"] = organismId
+    # TODO: eventually, we should keep categorical data types and modify downstream
+    # code to handle them properly. For now, we convert them to strings.
+    categorical_columns = obs_df.select_dtypes(include=["category"]).columns
+    obs_df[categorical_columns] = obs_df[categorical_columns].astype(str)
 
     logger.info("Creating the cell counts cube.")
 

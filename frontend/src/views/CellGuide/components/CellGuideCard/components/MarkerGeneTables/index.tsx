@@ -41,13 +41,6 @@ import {
 import Table from "../common/Table";
 import { Pagination } from "@mui/material";
 import {
-  CanonicalMarkersQueryResponse,
-  ComputationalMarkersQueryResponse,
-  useAllTissuesLookupTables,
-  useCanonicalMarkers,
-  useComputationalMarkers,
-} from "src/common/queries/cellGuide";
-import {
   ComputationalMarkerGeneTableData,
   useComputationalMarkerGenesTableRowsAndFilters,
   useSelectedOrganForTooltipCopy,
@@ -217,20 +210,12 @@ const MarkerGeneTables = ({
 }: Props) => {
   // 0 is canonical marker genes, 1 is computational marker genes
   const [activeTable, setActiveTable] = useState(1);
-  const [computationalMarkerGenes, setComputationalMarkerGenes] =
-    useState<ComputationalMarkersQueryResponse>([]);
 
   const { isPastBreakpoint, containerRef } = useIsComponentPastBreakpointWidth(
     activeTable
       ? MARKER_GENES_COMPUTATIONAL_BREAKPOINT_PX
       : MARKER_GENES_CANONICAL_BREAKPOINT_PX
   );
-
-  const [canonicalMarkerGenes, setCanonicalMarkerGenes] =
-    useState<CanonicalMarkersQueryResponse>([]);
-
-  const { data: enrichedGenes } = useComputationalMarkers(cellTypeId);
-  const { data: canonicalMarkers } = useCanonicalMarkers(cellTypeId);
 
   const { specificityCopy } = useSelectedOrganForTooltipCopy({
     selectedOrganName: organName,
@@ -333,45 +318,44 @@ const MarkerGeneTables = ({
     [setTooltipContent, skinnyMode, isPastBreakpoint, specificityCopy]
   );
 
-  const allTissuesLabelToIdMap = useAllTissuesLookupTables(cellTypeId);
-
-  useEffect(() => {
-    if (enrichedGenes) {
-      setComputationalMarkerGenes(enrichedGenes);
-    }
-  }, [enrichedGenes]);
-
-  useEffect(() => {
-    if (canonicalMarkers) {
-      setCanonicalMarkerGenes(canonicalMarkers);
-    }
-  }, [canonicalMarkers]);
-
   const [page, setPage] = useState(1);
 
   const { computationalMarkerGeneTableData, allFilteredByLowMarkerScore } =
     useComputationalMarkerGenesTableRowsAndFilters({
-      genes: computationalMarkerGenes,
-      allTissuesLabelToIdMap: allTissuesLabelToIdMap,
-      selectedOrganId: organId,
-      selectedOrganismLabel: organismName,
+      cellTypeId,
+      organId,
+      organismName,
     });
 
   const { canonicalMarkerGeneTableData } =
     useCanonicalMarkerGenesTableRowsAndFilters({
-      genes: canonicalMarkerGenes,
-      allTissuesLabelToIdMap: allTissuesLabelToIdMap,
-      selectedOrganLabel: organName,
-      selectedOrganId: organId,
-      selectedOrganismLabel: organismName,
+      cellTypeId,
+      organId,
+      organismName,
+      organName,
     });
+
+  useEffect(() => {
+    if (selectedGene) {
+      const gene = computationalMarkerGeneTableData.find(
+        (gene) => gene.symbol === selectedGene
+      );
+      if (gene) {
+        setPage(
+          Math.ceil(
+            (computationalMarkerGeneTableData.indexOf(gene) + 1) / ROWS_PER_PAGE
+          )
+        );
+      }
+    }
+  }, [computationalMarkerGeneTableData, selectedGene]);
 
   const getSymbol = useCallback(
     (
       row: ComputationalMarkerGeneTableData | CanonicalMarkerGeneTableData,
       showEye = false
     ) => (
-      <NoWrapWrapper isSelected={row.symbol === selectedGene}>
+      <NoWrapWrapper>
         {row.symbol}{" "}
         <ButtonIcon
           aria-label={`display gene info for ${row.symbol}`}

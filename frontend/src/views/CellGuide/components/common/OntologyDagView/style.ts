@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import { IconButton } from "@mui/material";
-import { ButtonIcon, Icon, TagFilter } from "@czi-sds/components";
-import { primary400, spacesL } from "src/common/theme";
+import { ButtonIcon, Icon } from "@czi-sds/components";
+import { spacesL } from "src/common/theme";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
 export const FullscreenButton = styled(IconButton)`
@@ -22,6 +22,8 @@ export const RightAligned = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
+  align-items: center;
+  z-index: 1;
   padding-right: ${spacesL}px;
 `;
 
@@ -40,7 +42,7 @@ export const HoverContainer = styled.div<HoverContainerProps>`
           width: ${width}px;
           height: ${height}px;
           overflow: auto;
-          z-index: 9999;
+          z-index: 1000;
         `
       : css`
           height: ${height}px;
@@ -56,7 +58,7 @@ export const HoverContainer = styled.div<HoverContainerProps>`
 
 export const TooltipInPortalStyle = css`
   .visx-tooltip {
-    z-index: 99999;
+    z-index: 9999;
   }
 `;
 
@@ -78,23 +80,4 @@ export const StyledSVG = styled.svg<StyledSVGProps>`
   position: absolute;
   top: 0;
   left: 0;
-`;
-
-export const StyledTagFilter = styled(TagFilter)`
-  z-index: 1;
-  .MuiChip-label {
-    color: ${primary400};
-  }
-  .MuiSvgIcon-root {
-    fill: ${primary400};
-  }
-  &:hover {
-    background-color: #e0f0ff;
-    .MuiChip-label {
-      color: ${primary400};
-    }
-    .MuiSvgIcon-root {
-      fill: ${primary400};
-    }
-  }
 `;
