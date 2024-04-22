@@ -1945,7 +1945,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             ),
         )
 
-        # Public collection, 2 datasets, other owner.
+        # Public collection, 1 dataset, other owner.
         self.generate_published_collection(
             owner="other owner",
             curator_name="other curator",
