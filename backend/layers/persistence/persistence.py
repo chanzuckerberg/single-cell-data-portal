@@ -828,9 +828,12 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version_status = json.loads(dataset_version.status)
+            if isinstance(dataset_version.status, str):
+                dataset_version_status = json.loads(dataset_version.status)
+            else:
+                dataset_version_status = dataset_version.status
             dataset_version_status["processing_status"] = status.value
-            dataset_version.status = json.dumps(dataset_version_status)
+            dataset_version.status = dataset_version_status
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_validation_status(self, version_id: DatasetVersionId, status: DatasetValidationStatus) -> None:
@@ -839,9 +842,12 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version_status = json.loads(dataset_version.status)
+            if isinstance(dataset_version.status, str):
+                dataset_version_status = json.loads(dataset_version.status)
+            else:
+                dataset_version_status = dataset_version.status
             dataset_version_status["validation_status"] = status.value
-            dataset_version.status = json.dumps(dataset_version_status)
+            dataset_version.status = dataset_version_status
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_upload_status(self, version_id: DatasetVersionId, status: DatasetUploadStatus) -> None:
@@ -866,9 +872,12 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version_status = json.loads(dataset_version.status)
+            if isinstance(dataset_version.status, str):
+                dataset_version_status = json.loads(dataset_version.status)
+            else:
+                dataset_version_status = dataset_version.status
             dataset_version_status[status_type] = status.value
-            dataset_version.status = json.dumps(dataset_version_status)
+            dataset_version.status = dataset_version_status
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
