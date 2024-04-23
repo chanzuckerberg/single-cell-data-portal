@@ -55,6 +55,14 @@ updates:
       day: "sunday"
     assignees:
       - "danieljhegeman"
+  - package-ecosystem: pip
+    directory: "/python_dependencies/common/"
+    open-pull-requests-limit: 3
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    assignees:
+      - "nayib-jose-gloria"
   - package-ecosystem: npm
     directory: "/frontend/"
     open-pull-requests-limit: 3
