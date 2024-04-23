@@ -850,9 +850,12 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version_status = json.loads(dataset_version.status)
+            if isinstance(dataset_version.status, str):
+                dataset_version_status = json.loads(dataset_version.status)
+            else:
+                dataset_version_status = dataset_version.status
             dataset_version_status["upload_status"] = status.value
-            dataset_version.status = json.dumps(dataset_version_status)
+            dataset_version.status = dataset_version_status
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_conversion_status(
