@@ -20,7 +20,7 @@ RUN python3 -m pip install --upgrade pip setuptools
 # see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
 RUN python3 -m pip install cmake
 RUN python3 -m pip install -r requirements.txt
-RUN if [ "$INSTALL_DEV" = "true" ]; then python3 -m pip install -r requirements-dev.txt
+RUN if [ "$INSTALL_DEV" = "true" ]; then python3 -m pip install -r requirements-dev.txt; fi
 # Install awscli to download wmg snapshot to the local disk
 RUN python3 -m pip install awscli
 EXPOSE 5000
