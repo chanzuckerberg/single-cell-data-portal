@@ -4,12 +4,12 @@ from typing import List, Set
 import pandas as pd
 import tiledb
 
-from backend.wmg.data.constants import CL_BASIC_OBO_NAME
+from backend.common.utils.ontology_parser import ontology_parser
 from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     CELL_TYPE_ORDERINGS_FILENAME,
 )
-from backend.wmg.data.utils import get_pinned_ontology_url, to_dict
+from backend.wmg.data.utils import to_dict
 from backend.wmg.pipeline.constants import (
     CELL_TYPE_ORDERING_CREATED_FLAG,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
@@ -92,18 +92,16 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     # Note: those dependencies are only needed by the WMG pipeline, so we should keep them local
     # so that this file can be imported by tests without breaking.
     import pygraphviz as pgv
-    from pronto import Ontology
 
-    onto = Ontology(get_pinned_ontology_url(CL_BASIC_OBO_NAME))
-    ancestors = [list(onto[t].superclasses()) for t in cells if t in onto]
+    ancestors = [ontology_parser.get_term_ancestors(t, include_self=True) for t in cells]
     ancestors = [i for s in ancestors for i in s]
     ancestors = sorted(set(ancestors))
 
     G = pgv.AGraph()
     for a in ancestors:
-        for s in a.subclasses(with_self=False, distance=1):
+        for s in ontology_parser.get_term_children(a):
             if s in ancestors:
-                G.add_edge(a.id, s.id)
+                G.add_edge(a, s)
 
     G.layout(prog="dot")
 
@@ -111,8 +109,6 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     for n in G.iternodes():
         pos = n.attr["pos"].split(",")
         positions[n] = (float(pos[0]), float(pos[1]))
-
-    ancestor_ids = [a.id for a in ancestors]
 
     def cell_entity(node, depth):
         return {"id": node, "depth": depth}
@@ -123,12 +119,10 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
             yield cell_entity(node, depth)
             depth += 1
 
-        children = [
-            (c, positions[c.id]) for c in onto[node].subclasses(with_self=False, distance=1) if c.id in ancestor_ids
-        ]
+        children = [(c_id, positions[c_id]) for c_id in ontology_parser.get_term_children(node) if c_id in ancestors]
         sorted_children = sorted(children, key=lambda x: x[1][0])
         for child in sorted_children:
-            yield from recurse(child[0].id, depth=depth)
+            yield from recurse(child[0], depth=depth)
 
     # Apply recursion to create an ordered list of cells present in set "cells"
     ordered_list = list(recurse(root))

@@ -4,7 +4,11 @@ from urllib.parse import urlparse
 from uuid import UUID
 
 from backend.common.corpora_config import CorporaConfig
-from backend.common.utils.http_exceptions import ForbiddenHTTPException, GoneHTTPException, NotFoundHTTPException
+from backend.common.utils.http_exceptions import (
+    ForbiddenHTTPException,
+    GoneHTTPException,
+    NotFoundHTTPException,
+)
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import (
@@ -12,6 +16,7 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     CollectionVersionWithDatasets,
+    CollectionVersionWithPrivateDatasets,
     CollectionVersionWithPublishedDatasets,
     DatasetArtifactType,
     DatasetId,
@@ -22,6 +27,7 @@ from backend.layers.common.entities import (
     Link,
     OntologyTermId,
     PublishedDatasetVersion,
+    Visibility,
 )
 from backend.portal.api.explorer_url import generate as generate_explorer_url
 from backend.portal.api.providers import get_business_logic
@@ -259,6 +265,61 @@ def reshape_dataset_for_curation_api(
     return ds
 
 
+def reshape_dataset_for_curation_datasets_index_api(
+    visibility: str,
+    collection_version: Union[CollectionVersionWithPublishedDatasets, CollectionVersionWithPrivateDatasets],
+    dataset_version: DatasetVersion,
+) -> dict:
+    """
+    Create the response shape for the curation datasets index API response. Handles shape for both public and private
+    requests.
+    :param visibility: the requested visibility of the datasets to be included in the dataset index response; either PUBLIC or PRIVATE.
+    :param collection_version: the collection version of the dataset to be included in the API response.
+    :param dataset_version: a dataset version to be included in the API response.
+    :return: A dictionary shaped for inclusion in the datasets index API response.
+    """
+    # Determine visibility of dataset; used to calculate, and added to, dataset shape.
+    dataset_visibility = calculate_dataset_visibility(visibility, collection_version, dataset_version)
+
+    # Create base dataset response shape. use_canonical is true only for datasets with a calculated visibility of
+    # public; for datasets with a calculated visibility of private, corresponding fields are calculated below.
+    is_dataset_visibility_public = dataset_visibility == Visibility.PUBLIC.name
+    ds = reshape_dataset_for_curation_api(dataset_version, index=True, use_canonical_url=is_dataset_visibility_public)
+
+    # Add visibility and revision-specific fields.
+    ds["visibility"] = dataset_visibility
+    ds["revision_of_collection"] = calculate_revision_of_collection(visibility, collection_version)
+    ds["revision_of_dataset"] = calculate_revision_of_dataset(visibility, dataset_version)
+
+    # Add collection-level information.
+    ds["collection_id"] = calculate_dataset_collection_id(collection_version)
+    ds["collection_name"] = collection_version.metadata.name
+    doi, _ = extract_doi_from_links(collection_version.metadata.links)
+    ds["collection_doi"] = doi
+
+    # At this point, dataset shape for public requests are complete.
+    if visibility == Visibility.PUBLIC.name:
+        return ds
+
+    # Dataset shape for private requests require additional processing:
+
+    # Add collection version ID for symmetry with shape of public datasets.
+    ds["collection_version_id"] = collection_version.version_id.id
+
+    # Calculate explorer URL. Use the dataset version ID (i.e. use_canonical false) for private datasets except
+    # for unchanged datasets of revisions.
+    ds["explorer_url"] = generate_explorer_url(dataset_version, use_canonical=is_dataset_visibility_public)
+
+    # Fill out published_at and revisited_at for symmetry with shape of public datasets.
+    published_at, revised_at = calculate_private_dataset_published_at_and_revised_at(
+        collection_version, dataset_version
+    )
+    ds["published_at"] = published_at
+    ds["revised_at"] = revised_at
+
+    return ds
+
+
 is_primary_data_mapping = {
     "PRIMARY": [True],
     "SECONDARY": [False],
@@ -404,3 +465,132 @@ def get_dataset_version_from_canonical_id(dataset_id: str) -> Optional[DatasetVe
 def is_owner_or_allowed_else_forbidden(collection_version, user_info):
     if not user_info.is_user_owner_or_allowed(collection_version.owner):
         raise ForbiddenHTTPException()
+
+
+def calculate_dataset_collection_id(
+    collection_version: Union[CollectionVersionWithPublishedDatasets, CollectionVersionWithPrivateDatasets]
+) -> str:
+    """
+    Determine the collection ID for the collection version: if the collection version is a revision,
+    use the collection version ID.
+    :param collection_version: the collection version to determine the collection ID for.
+    :return: The collection ID of the collection version, or the collection version ID if revision.
+    """
+    if collection_version.is_unpublished_version():
+        return collection_version.version_id.id
+    return collection_version.collection_id.id
+
+
+def calculate_dataset_visibility(
+    visibility: str,
+    collection_version: Union[CollectionVersionWithPublishedDatasets, CollectionVersionWithPrivateDatasets],
+    dataset_version: DatasetVersion,
+) -> Visibility:
+    """
+    Calculate the visibility of a dataset:
+    - public if a dataset is public
+    - public if a dataset is an unchanged dataset associated with a revision
+    - Otherwise private
+    :param visibility: the requested visibility of the datasets.
+    :param collection_version: the collection version of the dataset.
+    :param dataset_version: the dataset version to determine the visibility of.
+    :return: The calculated visibility of the dataset version.
+    """
+    # Return public for unchanged datasets of revisions.
+    if (
+        visibility == Visibility.PRIVATE.name
+        and collection_version.is_unpublished_version()  # Collection is a revision
+        and not is_dataset_version_new(dataset_version)  # New dataset of revision
+        and not is_dataset_version_revision(dataset_version)  # Changed dataset of revision
+    ):
+        return Visibility.PUBLIC.name
+
+    # All other cases match the requested visibility.
+    return visibility
+
+
+def calculate_private_dataset_published_at_and_revised_at(
+    collection_version: CollectionVersionWithPrivateDatasets, dataset_version: DatasetVersion
+) -> Tuple[Optional[str], Optional[str]]:
+    """
+    Determine the published_at and revised_at dates for the private dataset. published_at and revised_at
+    are None for all private datasets except for unchanged datasets of revisions.
+    :param collection_version: the collection version of the dataset.
+    :param dataset_version: the dataset version to get the published_at and revised_at for.
+    :return: The published_at and revised_at dates of the dataset, or None.
+    """
+    # published_at and revised_at are None if collection version is not a revision.
+    if not collection_version.is_unpublished_version():
+        return None, None
+
+    # published_at and revised_at are None if dataset version is new or a is a revision
+    if is_dataset_version_new(dataset_version) or is_dataset_version_revision(dataset_version):
+        return None, None
+
+    # Otherwise dataset version is an unchanged dataset of a revision: return published_at and revised_at
+    # of the canonical dataset.
+    return dataset_version.canonical_dataset.published_at, dataset_version.canonical_dataset.revised_at
+
+
+def calculate_revision_of_collection(
+    visibility: str,
+    collection_version: Union[CollectionVersionWithPublishedDatasets, CollectionVersionWithPrivateDatasets],
+) -> str | None:
+    """
+    Get the collection ID if the collection is a revision. Collection ID is never returned for public requests.
+    :param visibility: the requested visibility of the datasets.
+    :param collection_version: the Collection Version to return the revision_of_collection for.
+    :return: The collection ID of a revision's canonical collection, or None.
+    """
+    # revision_of_collection is always None if request is for public datasets.
+    if visibility == Visibility.PUBLIC.name:
+        return None
+
+    # Return collection ID if collection version is a revision, otherwise return None.
+    if collection_version.is_unpublished_version():
+        return collection_version.collection_id.id
+    return None
+
+
+def calculate_revision_of_dataset(visibility: str, dataset_version: DatasetVersion) -> str | None:
+    """
+    Get the canonical dataset version ID of the dataset version, if applicable. Dataset version ID is never returned
+    for public requests, for unpublished datasets, or for datasets that are new or unchanged datasets of a revision.
+    :param visibility: the requested visibility of the datasets.
+    :param dataset_version: the dataset version to return the revision_of_dataset for.
+    :return: The dataset version ID, or None.
+    """
+    # revision_of_dataset is always None if request is for public datasets.
+    if visibility == Visibility.PUBLIC.name:
+        return None
+
+    # Return dataset ID if dataset version is a revision, otherwise return None.
+    if is_dataset_version_revision(dataset_version):
+        return dataset_version.canonical_dataset.dataset_id.id
+    return None
+
+
+def is_dataset_version_new(dataset_version: DatasetVersion) -> bool:
+    """
+    Determine if a dataset is new (i.e. has never been published).
+    :param dataset_version: the dataset version to check if it is new.
+    :return: A flag indicating if a dataset is new.
+    """
+    return dataset_version.canonical_dataset.published_at is None
+
+
+def is_dataset_version_revision(dataset_version: DatasetVersion) -> bool:
+    """
+    Determine if a dataset version is a dataset that has been updated as part of a revision. Dataset versions
+    that areassociated with a collection revision but are unchanged or new are not considered dataset revisions.
+    A dataset that has been updated as part of an ongoing collection revision is considered a dataset revision.
+    :param dataset_version: the dataset version to check if it is a revision.
+    :return: A flag indicating the revision status of a dataset version.
+    """
+    # New dataset associated with a collection revision - not a revision.
+    if is_dataset_version_new(dataset_version):
+        return False
+
+    # Only datasets that have been updated as part of a revision are considered dataset revisions.
+    canonical_dataset_version_id = dataset_version.canonical_dataset.dataset_version_id
+    return canonical_dataset_version_id != dataset_version.version_id
