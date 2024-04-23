@@ -16,7 +16,6 @@ matplotlib==3.7.3
 moto>=5.0.0
 numba==0.56.2
 numpy==1.23.2
-owlready2==0.40.0
 pandas==1.4.4
 parameterized
 psutil>=5.9.0
@@ -36,4 +35,4 @@ scanpy==1.9.3
 SQLAlchemy>=1.4.0,<1.5
 SQLAlchemy-Utils>=0.36.8
 tenacity
-tiledb==0.21.4  # Portal's tiledb version should always be the same or older than Explorer's
+tiledb==0.25.0  # Portal's tiledb version should always be the same or older than Explorer's
