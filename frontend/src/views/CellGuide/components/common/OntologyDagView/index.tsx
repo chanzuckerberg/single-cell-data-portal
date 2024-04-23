@@ -1,10 +1,4 @@
-import React, {
-  useMemo,
-  useEffect,
-  useState,
-  Dispatch,
-  SetStateAction,
-} from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { Group } from "@visx/group";
 import { Global } from "@emotion/react";
 import { useTooltip, useTooltipInPortal } from "@visx/tooltip";
@@ -42,7 +36,6 @@ import {
   TooltipInPortalStyle,
   StyledSVG,
   RightAligned,
-  StyledTagFilter,
   WarningTooltipTextWrapper,
   WarningTooltipIcon,
 } from "./style";
@@ -61,7 +54,6 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
-  CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE,
   MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE,
   ANIMAL_CELL_ID,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CONTENT,
@@ -73,7 +65,6 @@ import {
   ALL_TISSUES,
   TISSUE_AGNOSTIC,
 } from "../../CellGuideCard/components/MarkerGeneTables/constants";
-import { Icon } from "@czi-sds/components";
 import Link from "../../CellGuideCard/components/common/Link";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -90,8 +81,8 @@ interface TreeProps {
   cellTypeName?: string;
   tissueId: string;
   tissueName: string;
-  selectGene?: (gene: string) => void;
-  setCellInfoCellType?: Dispatch<SetStateAction<CellType | null>>;
+  setCellInfoCellType?: (props: CellType | null) => void;
+  geneDropdownComponent?: React.ReactNode;
 }
 
 // This determines the initial Zoom position and scale
@@ -112,9 +103,9 @@ export default function OntologyDagView({
   inputWidth,
   inputHeight,
   selectedGene,
-  selectGene,
   selectedOrganism,
   setCellInfoCellType,
+  geneDropdownComponent,
 }: TreeProps) {
   selectedOrganism = selectedOrganism ?? "";
 
@@ -592,29 +583,7 @@ export default function OntologyDagView({
                 <Legend isTissue={!cellTypeId} selectedGene={selectedGene} />
               )}
               <RightAligned>
-                {!!selectedGene && (
-                  <StyledTagFilter
-                    data-testid={
-                      CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
-                    }
-                    label={selectedGene}
-                    sx={{
-                      backgroundColor: "#E0F0FF",
-                      padding: 0,
-                      margin: 0,
-                    }}
-                    deleteIcon={
-                      <Icon
-                        sdsIcon="xMark"
-                        sdsSize="xs"
-                        sdsType="button"
-                        color="error"
-                      />
-                    }
-                    onDelete={() => selectGene && selectGene(selectedGene)}
-                    onClick={() => selectGene && selectGene(selectedGene)}
-                  />
-                )}
+                {geneDropdownComponent}
                 <FullscreenButton
                   data-testid={
                     CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON

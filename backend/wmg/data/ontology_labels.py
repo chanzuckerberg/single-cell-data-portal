@@ -1,8 +1,9 @@
 import csv
 import gzip
-import json
 import pathlib
 from typing import IO, Optional
+
+from backend.common.utils.ontology_parser import ontology_parser
 
 # TODO: Place this module into a common ontology util package with development_stage_ontology_mapping.py and
 #  extract_ontology_terms_from_owl.py. https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
@@ -23,9 +24,8 @@ def ontology_term_label(ontology_term_id: str) -> Optional[str]:
     Returns the label for an ontology term, given its id. This excludes gene ontology term, which are handled
     separately by gene_gene_term_label(). Return None if ontology term id is invalid.
     """
-    global ontology_term_id_labels
 
-    return ontology_term_id_labels.get(ontology_term_id)
+    return ontology_parser.get_term_label(ontology_term_id)
 
 
 def gene_term_label(gene_ontology_term_id: str) -> Optional[str]:
@@ -34,16 +34,6 @@ def gene_term_label(gene_ontology_term_id: str) -> Optional[str]:
     """
     global gene_term_id_labels
     return gene_term_id_labels.get(gene_ontology_term_id)
-
-
-def __load_ontologies() -> None:
-    global ontology_term_id_labels
-
-    ontology_term_id_labels = {}
-    all_ontologies = json.loads(__open_ontology_resource(all_ontologies_json_file).read().decode("utf-8"))
-    for _, ontology_dict in all_ontologies.items():
-        for term_id, term in ontology_dict.items():
-            ontology_term_id_labels[term_id] = term["label"]
 
 
 def __load_genes() -> None:
@@ -65,5 +55,4 @@ def __open_ontology_resource(file) -> IO:
     return gzip.open(file_path)
 
 
-__load_ontologies()
 __load_genes()
