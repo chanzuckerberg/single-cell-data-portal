@@ -37,10 +37,7 @@ export const ReferenceTooltipWrapper = styled.div`
   flex-direction: column;
 `;
 
-interface NoWrapWrapperProps extends CommonThemeProps {
-  isSelected: boolean;
-}
-export const NoWrapWrapper = styled.span<NoWrapWrapperProps>`
+export const NoWrapWrapper = styled.span`
   white-space: nowrap;
   display: flex;
   column-gap: ${spacesS}px;
