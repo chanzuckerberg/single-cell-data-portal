@@ -883,9 +883,12 @@ class DatabaseProvider(DatabaseProviderInterface):
     def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version_status = json.loads(dataset_version.status)
+            if isinstance(dataset_version.status, str):
+                dataset_version_status = json.loads(dataset_version.status)
+            else:
+                dataset_version_status = dataset_version.status
             dataset_version_status["validation_message"] = validation_message
-            dataset_version.status = json.dumps(dataset_version_status)
+            dataset_version.status = dataset_version_status
 
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
         """
