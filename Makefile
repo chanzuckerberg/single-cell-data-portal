@@ -100,20 +100,20 @@ local-status: ## Show the status of the containers in the dev environment.
 
 .PHONY: local-rebuild
 local-rebuild: .env.ecr local-ecr-login ## Rebuild local dev without re-importing data
-	docker compose $(COMPOSE_OPTS) build frontend backend processing wmg_processing database oidc localstack
+	docker compose $(COMPOSE_OPTS) build --build-arg INSTALL_DEV=true frontend backend processing wmg_processing database oidc localstack
 	docker compose $(COMPOSE_OPTS) up -d frontend backend processing database oidc localstack
 
 local-rebuild-backend: .env.ecr local-ecr-login
-	docker compose $(COMPOSE_OPTS) build backend
+	docker compose $(COMPOSE_OPTS) build --build-arg INSTALL_DEV=true backend
 
 local-rebuild-processing: .env.ecr local-ecr-login
-	docker compose $(COMPOSE_OPTS) build processing
+	docker compose $(COMPOSE_OPTS) build --build-arg INSTALL_DEV=true processing
 
 local-rebuild-wmg-processing: .env.ecr local-ecr-login
-	docker compose $(COMPOSE_OPTS) build wmg_processing
+	docker compose $(COMPOSE_OPTS) build --build-arg INSTALL_DEV=true wmg_processing
 
 local-rebuild-cellguide-pipeline: .env.ecr local-ecr-login
-	docker compose $(COMPOSE_OPTS) build cellguide_pipeline
+	docker compose $(COMPOSE_OPTS) build --build-arg INSTALL_DEV=true cellguide_pipeline
 
 .PHONY: local-sync
 local-sync: local-rebuild local-init  ## Re-sync the local-environment state after modifying library deps or docker configs

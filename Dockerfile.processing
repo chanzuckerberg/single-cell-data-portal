@@ -20,7 +20,10 @@ RUN python3.10 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 COPY /python_dependencies/processing/ .
+COPY /python_dependencies/common/ .
+ARG INSTALL_DEV=false
 RUN python3.10 -m pip install -r requirements.txt
+RUN if [ "$INSTALL_DEV" = "true" ]; then python3 -m pip install -r requirements-dev.txt
 
 ADD backend/__init__.py backend/__init__.py
 ADD backend/layers backend/layers

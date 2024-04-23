@@ -12,12 +12,15 @@ RUN apt-get update && \
 # Don't re-run pip install unless either requirements.txt has changed.
 WORKDIR /single-cell-data-portal
 COPY /python_dependencies/backend/ .
+COPY /python_dependencies/common/ .
+ARG INSTALL_DEV=false
 RUN python3 -m pip install --upgrade pip setuptools
 
 # TODO: Determine if cmake is really needed for ddtrace
 # see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
 RUN python3 -m pip install cmake
 RUN python3 -m pip install -r requirements.txt
+RUN if [ "$INSTALL_DEV" = "true" ]; then python3 -m pip install -r requirements-dev.txt
 # Install awscli to download wmg snapshot to the local disk
 RUN python3 -m pip install awscli
 EXPOSE 5000

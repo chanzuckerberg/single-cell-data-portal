@@ -33,9 +33,5 @@ tiledb
 typing_extensions==4.7.1
 tzdata==2023.3
 urllib3==1.26.16
-coverage==7.2.7
-pytest==7.4.0
-pytest-subtests==0.11.0
-allure-pytest==2.13.2
 pyarrow==12.0.0
 dask==2023.8.1
