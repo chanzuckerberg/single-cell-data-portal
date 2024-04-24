@@ -115,6 +115,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             schema_version=row.schema_version,
             canonical_collection=canonical_collection,
             has_custom_dataset_order=row.has_custom_dataset_order,
+            is_migration_revision=row.is_migration_revision,
             data_submission_policy_version=row.data_submission_policy_version,
         )
 
@@ -242,6 +243,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             schema_version=None,
             datasets=list(),
             has_custom_dataset_order=False,
+            is_migration_revision=False,
             data_submission_policy_version=None,
         )
 
@@ -514,7 +516,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one()
             version.publisher_metadata = json.dumps(publisher_metadata)
 
-    def add_collection_version(self, collection_id: CollectionId) -> CollectionVersionId:
+    def add_collection_version(self, collection_id: CollectionId, is_migration_revision: bool) -> CollectionVersionId:
         """
         Adds a collection version to an existing canonical collection. The new version copies all data from
         the previous version except version_id, schema_version, data_submission_policy_version and datetime-based
@@ -537,6 +539,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 schema_version=None,
                 datasets=current_version.datasets,
                 has_custom_dataset_order=current_version.has_custom_dataset_order,
+                is_migration_revision=is_migration_revision,
                 data_submission_policy_version=None,
             )
             session.add(new_version)

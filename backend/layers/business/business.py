@@ -741,20 +741,30 @@ class BusinessLogic(BusinessLogicInterface):
         """
         self.database_provider.update_dataset_artifact(artifact_id, artifact_uri)
 
-    def create_collection_version(self, collection_id: CollectionId) -> CollectionVersionWithDatasets:
+    def create_collection_version(
+        self, collection_id: CollectionId, is_migration_revision: bool = False
+    ) -> CollectionVersionWithDatasets:
         """
         Creates a collection version for an existing canonical collection.
-        Also ensures that the collection does not have any active, unpublished version
+        If is_migration_revision is False, ensures that the collection does not have any active, unpublished version.
+        If is_migration_revision is True, ensures that the collection does not have an active, unpublished migration
+        revision.
         """
 
         all_versions = self.database_provider.get_all_versions_for_collection(collection_id)
         if not all_versions:
             raise CollectionVersionException(f"Collection {collection_id} cannot be found")
 
-        if any(v for v in all_versions if v.published_at is None):
-            raise CollectionVersionException(f"Collection {collection_id} already has an unpublished version")
+        unpublished_versions = [v for v in all_versions if v.published_at is None]
+        if unpublished_versions:
+            if is_migration_revision and any(v.is_migration_revision for v in unpublished_versions):
+                raise CollectionVersionException(
+                    f"Collection {collection_id} already has an unpublished migration revision."
+                )
+            elif not is_migration_revision:
+                raise CollectionVersionException(f"Collection {collection_id} already has an unpublished version")
 
-        added_version_id = self.database_provider.add_collection_version(collection_id)
+        added_version_id = self.database_provider.add_collection_version(collection_id, is_migration_revision)
         return self.get_collection_version(added_version_id)
 
     def delete_collection_version(self, collection_version: CollectionVersionWithDatasets) -> None:

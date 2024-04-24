@@ -60,11 +60,11 @@ class SchemaMigrate(ProcessingLogic):
         """
         response = []
 
-        has_revision = set()
+        has_migration_revision = set()
         # iterates over unpublished collections first, so published versions are skipped if there is an active revision
         for collection in self.fetch_collections():
             _resp = {}
-            if collection.is_published() and collection.collection_id.id in has_revision:
+            if collection.is_published() and collection.collection_id.id in has_migration_revision:
                 continue
 
             if collection.is_published():
@@ -72,8 +72,10 @@ class SchemaMigrate(ProcessingLogic):
                 _resp["can_publish"] = str(True)
             elif collection.is_unpublished_version():
                 # active revision of a published collection.
-                has_revision.add(collection.collection_id.id)  # revision found, skip published version
                 _resp["can_publish"] = str(False)
+                if collection.is_migration_revision:
+                    has_migration_revision.add(collection.collection_id.id)  # migration revision found, skip published
+                    _resp["can_publish"] = str(True)
             elif collection.is_initial_unpublished_version():
                 # unpublished collection
                 _resp["can_publish"] = str(False)
@@ -160,13 +162,15 @@ class SchemaMigrate(ProcessingLogic):
             if version.is_published():
                 # Create a new collection version(revision) if the collection is already published
                 private_collection_version_id = self.business_logic.create_collection_version(
-                    CollectionId(collection_id)
+                    CollectionId(collection_id),
+                    is_migration_revision=True,
                 ).version_id.id
             else:
                 private_collection_version_id = collection_version_id
 
             response = {
                 "can_publish": str(can_publish),
+                "is_migration_revision": str(version.is_migration_revision),
                 "collection_version_id": private_collection_version_id,
                 "collection_url": collection_url,
                 # ^^^ The top level fields are used for handling error cases in the AWS SFN.
