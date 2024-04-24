@@ -194,7 +194,7 @@ services:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT=$HAPPY_COMMIT
         - HAPPY_BRANCH=$HAPPY_BRANCH
-        - INSTALL_DEV=${INSTALL_DEV:false}
+        - INSTALL_DEV=$INSTALL_DEV
         - HAPPY_TAG
     restart: "no"
     volumes:
@@ -232,7 +232,7 @@ services:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT=$HAPPY_COMMIT
         - HAPPY_BRANCH=$HAPPY_BRANCH
-        - INSTALL_DEV=${INSTALL_DEV:false}
+        - INSTALL_DEV=$INSTALL_DEV
         - HAPPY_TAG
     restart: "no"
     command: ["sleep", "infinity"]
@@ -268,7 +268,7 @@ services:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT=$HAPPY_COMMIT
         - HAPPY_BRANCH=$HAPPY_BRANCH
-        - INSTALL_DEV=${INSTALL_DEV:false}
+        - INSTALL_DEV=$INSTALL_DEV
         - HAPPY_TAG
     restart: "no"
     command: ["sleep", "infinity"]
@@ -305,7 +305,7 @@ services:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT=$HAPPY_COMMIT
         - HAPPY_BRANCH=$HAPPY_BRANCH
-        - INSTALL_DEV=${INSTALL_DEV:false}
+        - INSTALL_DEV=$INSTALL_DEV
         - HAPPY_TAG
     restart: always
     command: ["./container_init.sh"]
