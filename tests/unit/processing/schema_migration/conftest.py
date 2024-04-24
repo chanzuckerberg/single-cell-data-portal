@@ -52,6 +52,7 @@ def published_collection():
     collection.is_initial_unpublished_version.return_value = False
     collection.collection_id = CollectionId()
     collection.version_id = CollectionVersionId()
+    collection.is_migration_revision = False
     collection.datasets = []
     for _i in range(2):
         collection.datasets.append(make_mock_dataset_version())
@@ -66,6 +67,7 @@ def revision():
     published_collection_with_revision.is_initial_unpublished_version.return_value = False
     published_collection_with_revision.collection_id = CollectionId()
     published_collection_with_revision.version_id = CollectionVersionId()
+    published_collection_with_revision.is_migration_revision = False
     published_collection_with_revision.datasets = []
     for _i in range(2):
         published_collection_with_revision.datasets.append(make_mock_dataset_version())
@@ -92,6 +94,7 @@ def private():
     collection.collection_id = CollectionId()
     collection.version_id = CollectionVersionId()
     collection.datasets = []
+    collection.is_migration_revision = False
     for _i in range(2):
         collection.datasets.append(make_mock_dataset_version())
     return collection
