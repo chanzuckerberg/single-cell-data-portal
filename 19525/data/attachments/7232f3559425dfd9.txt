@@ -1,6 +1,0 @@
-RemoteConfigWorker created with polling interval 5
-{"levelname": "DEBUG", "asctime": "2024-04-23T16:20:58.023Z", "name": "ddtrace.internal.remoteconfig.worker", "message": "RemoteConfigWorker created with polling interval 5", "lineno": 37, "pathname": "/usr/local/lib/python3.10/dist-packages/ddtrace/internal/remoteconfig/worker.py", "request_id": ""}
-[1][P: 0] Register ASM Remote Config Callback
-{"levelname": "DEBUG", "asctime": "2024-04-23T16:20:58.023Z", "name": "ddtrace.appsec._remoteconfiguration", "message": "[1][P: 0] Register ASM Remote Config Callback", "lineno": 65, "pathname": "/usr/local/lib/python3.10/dist-packages/ddtrace/appsec/_remoteconfiguration.py", "request_id": ""}
-[PID 1] Subscriber ASM initialized
-{"levelname": "DEBUG", "asctime": "2024-04-23T16:20:58.023Z", "name": "ddtrace.internal.remoteconfig._subscribers", "message": "[PID 1] Subscriber ASM initialized", "lineno": 30, "pathname": "/usr/local/lib/python3.10/dist-packages/ddtrace/internal/remoteconfig/_subscribers.py", "request_id": ""}
