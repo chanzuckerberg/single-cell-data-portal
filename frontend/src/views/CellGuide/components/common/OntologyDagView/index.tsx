@@ -389,7 +389,6 @@ export default function OntologyDagView({
         targetNode.y !== undefined &&
         zoomRef.current
       ) {
-        console.log("TRIGGER", targetNode);
         zoomRef.current.setTransformMatrix({
           scaleX: 1,
           scaleY: 1,
@@ -641,7 +640,6 @@ export default function OntologyDagView({
                   height={height}
                   ref={zoom.containerRef}
                   isDragging={zoom.isDragging}
-                  transformMatrix={zoom.transformMatrix}
                   data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CONTENT}
                 >
                   <RectClipPath id="zoom-clip" width={width} height={height} />

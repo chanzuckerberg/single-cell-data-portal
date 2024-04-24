@@ -4,7 +4,6 @@ import { IconButton } from "@mui/material";
 import { ButtonIcon, Icon } from "@czi-sds/components";
 import { spacesL } from "src/common/theme";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
-import { TransformMatrix } from "@visx/zoom/lib/types";
 
 export const FullscreenButton = styled(IconButton)`
   visibility: hidden;
@@ -74,16 +73,10 @@ export const WarningTooltipIcon = styled(Icon)`
 
 interface StyledSVGProps {
   isDragging: boolean;
-  transformMatrix: TransformMatrix;
 }
 export const StyledSVG = styled.svg<StyledSVGProps>`
   cursor: ${({ isDragging }) => (isDragging ? "grabbing" : "grab")};
   touch-action: none;
-  g {
-    transform: ${({ transformMatrix }) => {
-      return `scale(${transformMatrix.scaleX}, ${transformMatrix.scaleY}) translate(${transformMatrix.translateX}, ${transformMatrix.translateY}) !important`;
-    }};
-  }
   position: absolute;
   top: 0;
   left: 0;
