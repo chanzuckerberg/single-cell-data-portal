@@ -76,6 +76,7 @@ def revision():
     collection.is_initial_unpublished_version.return_value = False
     collection.collection_id = published_collection_with_revision.collection_id
     collection.version_id = CollectionVersionId()
+    collection.is_migration_revision = True
     collection.datasets = []
     for _dataset in published_collection_with_revision.datasets:
         collection.datasets.append(make_mock_dataset_version(dataset_id=_dataset.dataset_id.id))

@@ -98,6 +98,7 @@ def get_collection_version_mock():
                 tombstoned=False,
             ),
             has_custom_dataset_order=False,
+            is_migration_revision=False,
             data_submission_policy_version="2.0",
         )
     )
