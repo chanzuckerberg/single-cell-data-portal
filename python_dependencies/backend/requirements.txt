@@ -26,7 +26,7 @@ numpy==1.23.5  # required for where's my gene
 pandas==1.5.3 # required for where's my gene
 psutil>=5.9.5, <6
 psycopg2-binary>=2.8.5
-pyarrow==15.0.2 # required for where's my gene
+pyarrow==16.0.0 # required for where's my gene
 PyMySQL==1.1.0
 pydantic>=1.10.7, <2
 pytest
