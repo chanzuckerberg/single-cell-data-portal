@@ -136,6 +136,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             schema_version=row.schema_version,
             canonical_collection=canonical_collection,
             has_custom_dataset_order=row.has_custom_dataset_order,
+            is_migration_revision=row.is_migration_revision,
             data_submission_policy_version=row.data_submission_policy_version,
         )
 

@@ -79,6 +79,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             canonical_collection=canonical,
             datasets=[],
             has_custom_dataset_order=False,
+            is_migration_revision=False,
             data_submission_policy_version=None,
         )
         self.collections_versions[version_id.id] = version
@@ -187,7 +188,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     ) -> None:
         self.collections_versions[version_id.id].publisher_metadata = copy.deepcopy(publisher_metadata)
 
-    def add_collection_version(self, collection_id: CollectionId) -> CollectionVersionId:
+    def add_collection_version(self, collection_id: CollectionId, is_migration_revision: bool) -> CollectionVersionId:
         cc = self.collections[collection_id.id]
         current_version_id = cc.version_id
         current_version = self.collections_versions[current_version_id.id]
@@ -209,6 +210,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             schema_version=None,
             canonical_collection=cc,
             has_custom_dataset_order=current_version.has_custom_dataset_order,
+            is_migration_revision=is_migration_revision,
             data_submission_policy_version=None,
         )
         self.collections_versions[new_version_id.id] = collection_version
