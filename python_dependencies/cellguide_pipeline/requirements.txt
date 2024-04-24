@@ -30,7 +30,7 @@ s3transfer==0.6.1
 scipy==1.11.1
 six==1.16.0
 tiledb
-typing_extensions==4.7.1
+typing_extensions==4.11.0
 tzdata==2023.3
 urllib3==1.26.16
 pyarrow==12.0.0
