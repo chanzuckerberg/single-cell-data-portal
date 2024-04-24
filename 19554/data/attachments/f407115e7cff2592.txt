@@ -1,0 +1,302 @@
+INFO     root:app.py:22 {'dataset_version_id': '123', 'collection_version_id': '456', 'error': {}, 'execution_id': 'arn:aws:states:us-west-2:migrate_123456789012:execution:MyStateMachine'}
+INFO     root:app.py:33 Skipping slack notification for arn:aws:states:us-west-2:migrate_123456789012:execution:MyStateMachine because failure is related to a schema migration
+ERROR    processing:logger.py:41 Failed to update dataset processing status
+Traceback (most recent call last):
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connection.py", line 198, in _new_conn
+    sock = connection.create_connection(
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/util/connection.py", line 60, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+  File "/usr/lib/python3.10/socket.py", line 955, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+socket.gaierror: [Errno -2] Name or service not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/venv/lib/python3.10/site-packages/botocore/httpsession.py", line 464, in send
+    urllib_response = conn.urlopen(
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connectionpool.py", line 847, in urlopen
+    retries = retries.increment(
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/util/retry.py", line 445, in increment
+    raise reraise(type(error), error, _stacktrace)
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/util/util.py", line 39, in reraise
+    raise value
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connectionpool.py", line 793, in urlopen
+    response = self._make_request(
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connectionpool.py", line 496, in _make_request
+    conn.request(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/awsrequest.py", line 96, in request
+    rval = super().request(method, url, body, headers, *args, **kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connection.py", line 400, in request
+    self.endheaders()
+  File "/usr/lib/python3.10/http/client.py", line 1278, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/awsrequest.py", line 123, in _send_output
+    self.send(msg)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/awsrequest.py", line 223, in send
+    return super().send(str)
+  File "/usr/lib/python3.10/http/client.py", line 976, in send
+    self.connect()
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connection.py", line 238, in connect
+    self.sock = self._new_conn()
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connection.py", line 205, in _new_conn
+    raise NameResolutionError(self.host, self, e) from e
+urllib3.exceptions.NameResolutionError: <botocore.awsrequest.AWSHTTPConnection object at 0x7f38c52a1b70>: Failed to resolve 'localstack' ([Errno -2] Name or service not known)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/single-cell-data-portal/backend/layers/processing/upload_failures/app.py", line 87, in update_dataset_processing_status_to_failed
+    get_business_logic().update_dataset_version_status(
+  File "/single-cell-data-portal/backend/portal/api/providers.py", line 18, in get_business_logic
+    DatabaseProvider(),
+  File "/single-cell-data-portal/backend/layers/persistence/persistence.py", line 56, in __init__
+    database_uri = CorporaDbConfig().database_uri
+  File "/single-cell-data-portal/backend/common/utils/secret_config.py", line 54, in __getattr__
+    self.load()
+  File "/single-cell-data-portal/backend/common/utils/secret_config.py", line 88, in load
+    self.load_from_aws()
+  File "/single-cell-data-portal/backend/common/utils/secret_config.py", line 99, in load_from_aws
+    secret = AwsSecret(secret_path)
+  File "/single-cell-data-portal/backend/common/utils/aws.py", line 31, in __init__
+    self._load()
+  File "/single-cell-data-portal/backend/common/utils/aws.py", line 76, in _load
+    response = self.secrets_mgr.describe_secret(SecretId=self.name)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/client.py", line 565, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/client.py", line 1001, in _make_api_call
+    http, parsed_response = self._make_request(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/client.py", line 1027, in _make_request
+    return self._endpoint.make_request(operation_model, request_dict)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/endpoint.py", line 119, in make_request
+    return self._send_request(request_dict, operation_model)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/endpoint.py", line 202, in _send_request
+    while self._needs_retry(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/endpoint.py", line 354, in _needs_retry
+    responses = self._event_emitter.emit(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/hooks.py", line 412, in emit
+    return self._emitter.emit(aliased_event_name, **kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/hooks.py", line 256, in emit
+    return self._emit(event_name, kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/hooks.py", line 239, in _emit
+    response = handler(**kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 207, in __call__
+    if self._checker(**checker_kwargs):
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 284, in __call__
+    should_retry = self._should_retry(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 320, in _should_retry
+    return self._checker(attempt_number, response, caught_exception)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 363, in __call__
+    checker_response = checker(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 247, in __call__
+    return self._check_caught_exception(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 416, in _check_caught_exception
+    raise caught_exception
+  File "/opt/venv/lib/python3.10/site-packages/botocore/endpoint.py", line 281, in _do_get_response
+    http_response = self._send(request)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/endpoint.py", line 377, in _send
+    return self.http_session.send(request)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/httpsession.py", line 493, in send
+    raise EndpointConnectionError(endpoint_url=request.url, error=e)
+botocore.exceptions.EndpointConnectionError: Could not connect to the endpoint URL: "http://localstack:4566/"
+ERROR    processing:logger.py:41 Failed to clean up artifacts.
+Traceback (most recent call last):
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connection.py", line 198, in _new_conn
+    sock = connection.create_connection(
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/util/connection.py", line 60, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+  File "/usr/lib/python3.10/socket.py", line 955, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+socket.gaierror: [Errno -2] Name or service not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/venv/lib/python3.10/site-packages/botocore/httpsession.py", line 464, in send
+    urllib_response = conn.urlopen(
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connectionpool.py", line 847, in urlopen
+    retries = retries.increment(
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/util/retry.py", line 445, in increment
+    raise reraise(type(error), error, _stacktrace)
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/util/util.py", line 39, in reraise
+    raise value
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connectionpool.py", line 793, in urlopen
+    response = self._make_request(
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connectionpool.py", line 496, in _make_request
+    conn.request(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/awsrequest.py", line 96, in request
+    rval = super().request(method, url, body, headers, *args, **kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connection.py", line 400, in request
+    self.endheaders()
+  File "/usr/lib/python3.10/http/client.py", line 1278, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/awsrequest.py", line 123, in _send_output
+    self.send(msg)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/awsrequest.py", line 223, in send
+    return super().send(str)
+  File "/usr/lib/python3.10/http/client.py", line 976, in send
+    self.connect()
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connection.py", line 238, in connect
+    self.sock = self._new_conn()
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connection.py", line 205, in _new_conn
+    raise NameResolutionError(self.host, self, e) from e
+urllib3.exceptions.NameResolutionError: <botocore.awsrequest.AWSHTTPConnection object at 0x7f38c52aaaa0>: Failed to resolve 'localstack' ([Errno -2] Name or service not known)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/single-cell-data-portal/backend/layers/processing/upload_failures/app.py", line 192, in cleanup_artifacts
+    delete_many_from_s3(artifact_bucket, object_key + "/")
+  File "/single-cell-data-portal/backend/common/utils/aws.py", line 107, in delete_many_from_s3
+    bucket.objects.filter(Prefix=f"{prefix}").delete()
+  File "/opt/venv/lib/python3.10/site-packages/boto3/resources/collection.py", line 561, in batch_action
+    return action(self, *args, **kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/boto3/resources/action.py", line 134, in __call__
+    for page in parent.pages():
+  File "/opt/venv/lib/python3.10/site-packages/boto3/resources/collection.py", line 171, in pages
+    for page in pages:
+  File "/opt/venv/lib/python3.10/site-packages/botocore/paginate.py", line 269, in __iter__
+    response = self._make_request(current_kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/paginate.py", line 357, in _make_request
+    return self._method(**current_kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/client.py", line 565, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/client.py", line 1001, in _make_api_call
+    http, parsed_response = self._make_request(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/client.py", line 1027, in _make_request
+    return self._endpoint.make_request(operation_model, request_dict)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/endpoint.py", line 119, in make_request
+    return self._send_request(request_dict, operation_model)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/endpoint.py", line 202, in _send_request
+    while self._needs_retry(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/endpoint.py", line 354, in _needs_retry
+    responses = self._event_emitter.emit(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/hooks.py", line 412, in emit
+    return self._emitter.emit(aliased_event_name, **kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/hooks.py", line 256, in emit
+    return self._emit(event_name, kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/hooks.py", line 239, in _emit
+    response = handler(**kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 207, in __call__
+    if self._checker(**checker_kwargs):
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 284, in __call__
+    should_retry = self._should_retry(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 320, in _should_retry
+    return self._checker(attempt_number, response, caught_exception)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 363, in __call__
+    checker_response = checker(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 247, in __call__
+    return self._check_caught_exception(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 416, in _check_caught_exception
+    raise caught_exception
+  File "/opt/venv/lib/python3.10/site-packages/botocore/endpoint.py", line 281, in _do_get_response
+    http_response = self._send(request)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/endpoint.py", line 377, in _send
+    return self.http_session.send(request)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/httpsession.py", line 493, in send
+    raise EndpointConnectionError(endpoint_url=request.url, error=e)
+botocore.exceptions.EndpointConnectionError: Could not connect to the endpoint URL: "http://localstack:4566/artifact-bucket?prefix=123%2F&encoding-type=url"
+ERROR    processing:logger.py:41 Failed to clean up datasets.
+Traceback (most recent call last):
+  File "/single-cell-data-portal/backend/layers/processing/upload_failures/app.py", line 194, in cleanup_artifacts
+    datasets_bucket = os.environ["DATASETS_BUCKET"]
+  File "/usr/lib/python3.10/os.py", line 680, in __getitem__
+    raise KeyError(key) from None
+KeyError: 'DATASETS_BUCKET'
+ERROR    processing:logger.py:41 Failed to clean up cxgs.
+Traceback (most recent call last):
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connection.py", line 198, in _new_conn
+    sock = connection.create_connection(
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/util/connection.py", line 60, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+  File "/usr/lib/python3.10/socket.py", line 955, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+socket.gaierror: [Errno -2] Name or service not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/venv/lib/python3.10/site-packages/botocore/httpsession.py", line 464, in send
+    urllib_response = conn.urlopen(
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connectionpool.py", line 847, in urlopen
+    retries = retries.increment(
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/util/retry.py", line 445, in increment
+    raise reraise(type(error), error, _stacktrace)
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/util/util.py", line 39, in reraise
+    raise value
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connectionpool.py", line 793, in urlopen
+    response = self._make_request(
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connectionpool.py", line 496, in _make_request
+    conn.request(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/awsrequest.py", line 96, in request
+    rval = super().request(method, url, body, headers, *args, **kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connection.py", line 400, in request
+    self.endheaders()
+  File "/usr/lib/python3.10/http/client.py", line 1278, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/awsrequest.py", line 123, in _send_output
+    self.send(msg)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/awsrequest.py", line 223, in send
+    return super().send(str)
+  File "/usr/lib/python3.10/http/client.py", line 976, in send
+    self.connect()
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connection.py", line 238, in connect
+    self.sock = self._new_conn()
+  File "/opt/venv/lib/python3.10/site-packages/urllib3/connection.py", line 205, in _new_conn
+    raise NameResolutionError(self.host, self, e) from e
+urllib3.exceptions.NameResolutionError: <botocore.awsrequest.AWSHTTPConnection object at 0x7f38c5278430>: Failed to resolve 'localstack' ([Errno -2] Name or service not known)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/single-cell-data-portal/backend/layers/processing/upload_failures/app.py", line 198, in cleanup_artifacts
+    delete_many_from_s3(cellxgene_bucket, object_key + ".cxg/")
+  File "/single-cell-data-portal/backend/common/utils/aws.py", line 107, in delete_many_from_s3
+    bucket.objects.filter(Prefix=f"{prefix}").delete()
+  File "/opt/venv/lib/python3.10/site-packages/boto3/resources/collection.py", line 561, in batch_action
+    return action(self, *args, **kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/boto3/resources/action.py", line 134, in __call__
+    for page in parent.pages():
+  File "/opt/venv/lib/python3.10/site-packages/boto3/resources/collection.py", line 171, in pages
+    for page in pages:
+  File "/opt/venv/lib/python3.10/site-packages/botocore/paginate.py", line 269, in __iter__
+    response = self._make_request(current_kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/paginate.py", line 357, in _make_request
+    return self._method(**current_kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/client.py", line 565, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/client.py", line 1001, in _make_api_call
+    http, parsed_response = self._make_request(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/client.py", line 1027, in _make_request
+    return self._endpoint.make_request(operation_model, request_dict)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/endpoint.py", line 119, in make_request
+    return self._send_request(request_dict, operation_model)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/endpoint.py", line 202, in _send_request
+    while self._needs_retry(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/endpoint.py", line 354, in _needs_retry
+    responses = self._event_emitter.emit(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/hooks.py", line 412, in emit
+    return self._emitter.emit(aliased_event_name, **kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/hooks.py", line 256, in emit
+    return self._emit(event_name, kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/hooks.py", line 239, in _emit
+    response = handler(**kwargs)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 207, in __call__
+    if self._checker(**checker_kwargs):
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 284, in __call__
+    should_retry = self._should_retry(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 320, in _should_retry
+    return self._checker(attempt_number, response, caught_exception)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 363, in __call__
+    checker_response = checker(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 247, in __call__
+    return self._check_caught_exception(
+  File "/opt/venv/lib/python3.10/site-packages/botocore/retryhandler.py", line 416, in _check_caught_exception
+    raise caught_exception
+  File "/opt/venv/lib/python3.10/site-packages/botocore/endpoint.py", line 281, in _do_get_response
+    http_response = self._send(request)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/endpoint.py", line 377, in _send
+    return self.http_session.send(request)
+  File "/opt/venv/lib/python3.10/site-packages/botocore/httpsession.py", line 493, in send
+    raise EndpointConnectionError(endpoint_url=request.url, error=e)
+botocore.exceptions.EndpointConnectionError: Could not connect to the endpoint URL: "http://localstack:4566/cellxgene-bucket?prefix=123.cxg%2F&encoding-type=url"
