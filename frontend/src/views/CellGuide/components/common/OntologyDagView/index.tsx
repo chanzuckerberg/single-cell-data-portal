@@ -3,7 +3,7 @@ import { Group } from "@visx/group";
 import { Global } from "@emotion/react";
 import { useTooltip, useTooltipInPortal } from "@visx/tooltip";
 import { Tree, hierarchy } from "@visx/hierarchy";
-import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
+import { HierarchyPointNode, HierarchyNode } from "@visx/hierarchy/lib/types";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import {
@@ -378,28 +378,9 @@ export default function OntologyDagView({
           node.data.y0 = pointNode.y;
         }
       });
-      // Now, we find the target node that has children visible.
-      // By construction, only one copy of the target node in the tree will have children visible.
-      // The target node is the node corresponding to the cell type id of the CellGuideCard.
-      let targetNode = data
-        .descendants()
-        .find(
-          (node) =>
-            (lastNodeClicked
-              ? node.data.id === lastNodeClicked
-              : node.data.id.split("__").at(0) === cellTypeId) &&
-            node.data.children
-        ) as HierarchyPointNode<TreeNodeWithState> | undefined;
-      // If no target nodes have children, just pick any target node.
-      if (!targetNode) {
-        targetNode = data
-          .descendants()
-          .find(
-            (node) =>
-              node.data.id.split("__").at(0) ===
-              (lastNodeClicked ? lastNodeClicked.split("__").at(0) : cellTypeId)
-          ) as HierarchyPointNode<TreeNodeWithState> | undefined;
-      }
+
+      const targetNode = getCenteringNode(data, lastNodeClicked, cellTypeId);
+
       // If the target node is found and its position is known, set the initial transform matrix.
       // This will always be false when in tissue mode.
       if (
@@ -408,6 +389,7 @@ export default function OntologyDagView({
         targetNode.y !== undefined &&
         zoomRef.current
       ) {
+        console.log("TRIGGER", targetNode);
         zoomRef.current.setTransformMatrix({
           scaleX: 1,
           scaleY: 1,
@@ -929,4 +911,35 @@ function isDescendant(
   }
 
   return false;
+}
+
+function getCenteringNode(
+  data: HierarchyNode<TreeNodeWithState>,
+  lastNodeClicked: string | null,
+  cellTypeId?: string
+) {
+  // We find the target node that has children visible.
+  // By construction, only one copy of the target node in the tree will have children visible.
+  // The target node is the node corresponding to the cell type id of the CellGuideCard.
+  // If lastNodeClicked is not null, the target node is the last node that was clicked.
+
+  let targetNode = data
+    .descendants()
+    .find(
+      (node) =>
+        (lastNodeClicked
+          ? node.data.id === lastNodeClicked
+          : node.data.id.split("__").at(0) === cellTypeId) && node.data.children
+    ) as HierarchyPointNode<TreeNodeWithState> | undefined;
+  // If no target nodes have children, just pick any target node.
+  if (!targetNode) {
+    targetNode = data
+      .descendants()
+      .find(
+        (node) =>
+          node.data.id.split("__").at(0) ===
+          (lastNodeClicked ? lastNodeClicked.split("__").at(0) : cellTypeId)
+      ) as HierarchyPointNode<TreeNodeWithState> | undefined;
+  }
+  return targetNode;
 }
