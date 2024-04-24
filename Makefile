@@ -75,6 +75,7 @@ oauth/pkcs12/certificate.pfx:
 .PHONY: .env.ecr
 .env.ecr:
 	echo DOCKER_REPO=$$(aws sts get-caller-identity --profile single-cell-dev | jq -r .Account).dkr.ecr.us-west-2.amazonaws.com/ > .env.ecr;
+	echo "INSTALL_DEV=true" >> .env.ecr
 	echo "HAPPY_COMMIT=$(shell git rev-parse --verify HEAD)" >> .env.ecr
 	echo "HAPPY_BRANCH=$(shell git branch --show-current)" >> .env.ecr
 
@@ -100,20 +101,20 @@ local-status: ## Show the status of the containers in the dev environment.
 
 .PHONY: local-rebuild
 local-rebuild: .env.ecr local-ecr-login ## Rebuild local dev without re-importing data
-	docker compose $(COMPOSE_OPTS) build --build-arg INSTALL_DEV=true frontend backend processing wmg_processing database oidc localstack
+	docker compose $(COMPOSE_OPTS) build frontend backend processing wmg_processing database oidc localstack
 	docker compose $(COMPOSE_OPTS) up -d frontend backend processing database oidc localstack
 
 local-rebuild-backend: .env.ecr local-ecr-login
-	docker compose $(COMPOSE_OPTS) build --build-arg INSTALL_DEV=true backend
+	docker compose $(COMPOSE_OPTS) build backend
 
 local-rebuild-processing: .env.ecr local-ecr-login
-	docker compose $(COMPOSE_OPTS) build --build-arg INSTALL_DEV=true processing
+	docker compose $(COMPOSE_OPTS) build processing
 
 local-rebuild-wmg-processing: .env.ecr local-ecr-login
-	docker compose $(COMPOSE_OPTS) build --build-arg INSTALL_DEV=true wmg_processing
+	docker compose $(COMPOSE_OPTS) build wmg_processing
 
 local-rebuild-cellguide-pipeline: .env.ecr local-ecr-login
-	docker compose $(COMPOSE_OPTS) build --build-arg INSTALL_DEV=true cellguide_pipeline
+	docker compose $(COMPOSE_OPTS) build cellguide_pipeline
 
 .PHONY: local-sync
 local-sync: local-rebuild local-init  ## Re-sync the local-environment state after modifying library deps or docker configs
