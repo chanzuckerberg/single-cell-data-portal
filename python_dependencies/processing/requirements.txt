@@ -1,5 +1,5 @@
 alembic>=1.9, <2
-anndata==0.8.0
+anndata==0.10.7
 awscli
 boto3>=1.11.17
 botocore>=1.14.17
