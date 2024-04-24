@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 22.3.0 # Must be kept in sync with black version in requirements.txt
+    rev: 24.3.0 # Must be kept in sync with black version in requirements.txt
     hooks:
       - id: black
         stages: [commit]
@@ -14,7 +14,7 @@ repos:
         exclude_types: ["json"]
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.239
+    rev: v0.4.1
     hooks:
       - id: ruff
         args: ["--config=pyproject.toml", "--fix"]
