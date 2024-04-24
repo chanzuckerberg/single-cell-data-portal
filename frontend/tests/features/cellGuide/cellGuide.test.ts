@@ -94,7 +94,6 @@ const BRAIN_TISSUE_ID = "UBERON_0000955";
 const LUNG_TISSUE_ID = "UBERON_0002048";
 const SALIVARY_ACINAR_GLAND_CELL_TYPE_ID = "CL_0002623";
 const ABNORMAL_CELL_TYPE_ID = "CL_0001061";
-const PROGENITOR_CELL_CELL_TYPE_ID = "CL_0011026";
 const CELL_CELL_TYPE_ID = "CL_0000000";
 const LUNG_CILIATED_CELL_CELL_TYPE_ID = "CL_1000271";
 
@@ -669,17 +668,9 @@ describe("Cell Guide", () => {
               `${TEST_URL}${ROUTES.CELL_GUIDE_TISSUE_SPECIFIC_CELL_TYPE.replace(
                 ":tissueId",
                 BRAIN_TISSUE_ID
-              ).replace(":cellTypeId", PROGENITOR_CELL_CELL_TYPE_ID)}`
+              ).replace(":cellTypeId", NEURON_CELL_TYPE_ID)}`
             ),
-            page
-              .getByText(
-                "progenitor cell",
-                /**
-                 * (thuang): There is "neural progenitor cell" that we don't want to match
-                 */
-                { exact: true }
-              )
-              .click(),
+            page.getByText("neuron", { exact: true }).click(),
           ]);
 
           await tryUntil(
