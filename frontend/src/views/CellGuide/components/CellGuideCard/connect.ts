@@ -23,6 +23,8 @@ export function useConnect() {
   const [selectedGene, setSelectedGene] = useState<string | undefined>(
     undefined
   );
+  const headerRef = useRef<HTMLDivElement>(null); // Step 1: Ref for the header
+  const [topPadding, setTopPadding] = useState(0); // Step 2: State for the top padding
 
   const [skinnyMode, setSkinnyMode] = useState<boolean>(false);
 
@@ -79,6 +81,22 @@ export function useConnect() {
   const throttledHandleResize = useMemo(() => {
     return throttle(handleResize, 100);
   }, [handleResize]);
+
+  useEffect(() => {
+    if (headerRef.current) {
+      const resizeObserver = new ResizeObserver(
+        () =>
+          !skinnyMode &&
+          headerRef.current &&
+          setTopPadding(headerRef.current.offsetHeight)
+      );
+
+      resizeObserver.observe(headerRef.current);
+      return () => {
+        resizeObserver.disconnect();
+      };
+    }
+  }, [headerRef, skinnyMode]);
 
   useEffect(() => {
     throttledHandleResize();
@@ -143,6 +161,9 @@ export function useConnect() {
     pageNavIsOpen,
     setPageNavIsOpen,
     selectedGene,
+    setSelectedGene,
+    headerRef,
+    topPadding,
     sectionRef0,
     sectionRef1,
     sectionRef2,

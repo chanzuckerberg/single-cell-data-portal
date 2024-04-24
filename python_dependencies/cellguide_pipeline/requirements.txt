@@ -3,6 +3,7 @@ annotated-types==0.5.0
 awscli==1.29.34
 boto3==1.28.25
 botocore==1.31.34
+cellxgene-ontology-guide==0.8.0
 certifi==2023.7.22
 chardet==5.2.0
 charset-normalizer==3.2.0
@@ -16,11 +17,9 @@ natsort==8.4.0
 networkx==3.1
 numba==0.59.1
 numpy==1.24.4
-owlready2==0.44
 openai==0.27.7
 packaging==23.1
 pandas==2.0.3
-pronto==2.5.4
 psutil==5.9.5
 pydantic==2.6.4
 pydantic_core==2.16.3
@@ -34,9 +33,5 @@ tiledb
 typing_extensions==4.7.1
 tzdata==2023.3
 urllib3==1.26.16
-coverage==7.2.7
-pytest==7.4.0
-pytest-subtests==0.11.0
-allure-pytest==2.13.2
 pyarrow==12.0.0
 dask==2023.8.1

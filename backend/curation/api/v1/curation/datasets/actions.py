@@ -1,16 +1,36 @@
 from flask import jsonify, make_response
 
-from backend.common.utils.http_exceptions import InvalidParametersHTTPException
-from backend.curation.api.v1.curation.collections.common import extract_doi_from_links, reshape_dataset_for_curation_api
+from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
+from backend.curation.api.v1.curation.collections.common import reshape_dataset_for_curation_datasets_index_api
+from backend.layers.auth.user_info import UserInfo
+from backend.layers.common.entities import Visibility
 from backend.portal.api.providers import get_business_logic
 
 
-def get(schema_version: str = None):
+def get(token_info: dict, schema_version: str = None, visibility: str = None):
     """
-    Datasets index endpoint to retrieve full metadata for all public Datasets.
+    Datasets index endpoint to retrieve full metadata. Only return Dataset data for which the curator is authorized.
+    :param token_info: access token info.
+    :param schema_version: the schema version to filter the datasets by, PUBLIC Datasets only.
+    :param visibility: the Visibility in string form.
     """
-    all_datasets_with_collection_name_and_doi = []
-    if not schema_version:
+
+    # Handle retrieval of private datasets.
+    if visibility == Visibility.PRIVATE.name:
+        if schema_version:
+            raise InvalidParametersHTTPException(detail="schema_version is not allowed for PRIVATE Datasets.")
+
+        user_info = UserInfo(token_info)
+        if user_info.is_none():
+            raise ForbiddenHTTPException(detail="Not authorized to query for PRIVATE Dataset.")
+
+        owner = None
+        if not user_info.is_super_curator():  # No owner if user is super curator.
+            owner = user_info.user_id
+
+        collections_with_datasets = get_business_logic().get_private_collection_versions_with_datasets(owner)
+    # Handle retrieval of public datasets.
+    elif not schema_version:
         collections_with_datasets = get_business_logic().get_all_mapped_collection_versions_with_datasets()
     else:
         version_parts = schema_version.split(".")
@@ -24,18 +44,11 @@ def get(schema_version: str = None):
             schema_version
         )
 
+    # Shape datasets for response.
+    all_datasets_with_collection_name_and_doi = []
     for collection in collections_with_datasets:
-        doi, _ = extract_doi_from_links(collection.metadata.links)
-
-        collection_info = {
-            "collection_id": collection.collection_id.id,
-            "collection_name": collection.metadata.name,
-            "collection_doi": doi,
-        }
-
         for dataset in collection.datasets:
-            dataset_response_obj = reshape_dataset_for_curation_api(dataset, index=True, use_canonical_url=True)
-            dataset_response_obj.update(collection_info)
+            dataset_response_obj = reshape_dataset_for_curation_datasets_index_api(visibility, collection, dataset)
             all_datasets_with_collection_name_and_doi.append(dataset_response_obj)
 
     return make_response(
@@ -43,6 +56,7 @@ def get(schema_version: str = None):
             sorted(
                 all_datasets_with_collection_name_and_doi,
                 key=lambda d: (
+                    d["published_at"] is None,
                     d["published_at"],
                     d["dataset_id"],
                 ),  # Secondary sort by dataset_id for consistency since some Datasets from the same Collection will have identical published_at dates

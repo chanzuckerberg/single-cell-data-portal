@@ -75,6 +75,7 @@ oauth/pkcs12/certificate.pfx:
 .PHONY: .env.ecr
 .env.ecr:
 	echo DOCKER_REPO=$$(aws sts get-caller-identity --profile single-cell-dev | jq -r .Account).dkr.ecr.us-west-2.amazonaws.com/ > .env.ecr;
+	echo "INSTALL_DEV=true" >> .env.ecr
 	echo "HAPPY_COMMIT=$(shell git rev-parse --verify HEAD)" >> .env.ecr
 	echo "HAPPY_BRANCH=$(shell git branch --show-current)" >> .env.ecr
 
@@ -219,7 +220,7 @@ local-cxguser-cookie: ## Get cxguser-cookie
 	docker compose $(COMPOSE_OPTS) run --rm backend bash -c "cd /single-cell-data-portal && python login.py"
 
 .PHONY: coverage/combine
-coverage/combine:
+coverage/combine: .env.ecr
 	- docker compose $(COMPOSE_OPTS) run --rm -T backend bash -c "cd /single-cell-data-portal && coverage combine --data-file=$(COVERAGE_DATA_FILE)"
 
 .PHONY: coverage/report

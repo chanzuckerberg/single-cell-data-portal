@@ -16,7 +16,6 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
-  CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CONTENT,
   CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
@@ -52,6 +51,7 @@ import {
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 
 import {
+  CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN,
   CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN,
   CELL_GUIDE_CARD_HEADER_NAME,
@@ -94,7 +94,6 @@ const BRAIN_TISSUE_ID = "UBERON_0000955";
 const LUNG_TISSUE_ID = "UBERON_0002048";
 const SALIVARY_ACINAR_GLAND_CELL_TYPE_ID = "CL_0002623";
 const ABNORMAL_CELL_TYPE_ID = "CL_0001061";
-const PROGENITOR_CELL_CELL_TYPE_ID = "CL_0011026";
 const CELL_CELL_TYPE_ID = "CL_0000000";
 const LUNG_CILIATED_CELL_CELL_TYPE_ID = "CL_1000271";
 
@@ -669,17 +668,9 @@ describe("Cell Guide", () => {
               `${TEST_URL}${ROUTES.CELL_GUIDE_TISSUE_SPECIFIC_CELL_TYPE.replace(
                 ":tissueId",
                 BRAIN_TISSUE_ID
-              ).replace(":cellTypeId", PROGENITOR_CELL_CELL_TYPE_ID)}`
+              ).replace(":cellTypeId", NEURON_CELL_TYPE_ID)}`
             ),
-            page
-              .getByText(
-                "progenitor cell",
-                /**
-                 * (thuang): There is "neural progenitor cell" that we don't want to match
-                 */
-                { exact: true }
-              )
-              .click(),
+            page.getByText("neuron", { exact: true }).click(),
           ]);
 
           await tryUntil(
@@ -1081,11 +1072,59 @@ describe("Cell Guide", () => {
         await markerGeneNRXN1.locator("td").nth(0).hover();
         await treeIcon.click();
 
-        // check that the eyeClosed button is visible
-        await isElementVisible(
-          page,
-          CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
+        // hover over the node
+        const node = page.getByTestId(
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000540__0-has-children-isTargetNode=true`
         );
+        await node.hover();
+        await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+
+        // assert that the tooltip text contains the marker gene information
+        const tooltipText = await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP)
+          .textContent();
+
+        expect(tooltipText).toContain(`${geneSymbol} stats`);
+
+        const legendText = await page
+          .getByTestId(CELL_GUIDE_ONTOLOGY_VIEW_LEGEND_TEST_ID)
+          .textContent();
+        expect(legendText).toContain("Effect Size");
+        expect(legendText).toContain("Expressed in Cells(%)");
+
+        // deactivate marker gene mode and check that the legend and tooltips reverted
+        await page
+          .getByTestId(CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN)
+          .hover();
+        await page.locator(".MuiAutocomplete-clearIndicator").click();
+
+        await node.hover();
+        await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+
+        const newTooltipText = await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP)
+          .textContent();
+
+        expect(newTooltipText).not.toContain(`${geneSymbol} stats`);
+      });
+      test("Clicking on the computational marker gene dropdown enters marker gene mode in a CellGuide Card", async ({
+        page,
+      }) => {
+        await goToPage(
+          `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`,
+          page
+        );
+        await page
+          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
+          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+
+        await page
+          .getByTestId(CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN)
+          .click();
+
+        const secondElement = page.getByRole("option").nth(1);
+        const geneSymbol = await secondElement.textContent();
+        await secondElement.click();
 
         const neuralNodeId = `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0002319__0-has-children-isTargetNode=false`;
 
@@ -1134,15 +1173,17 @@ describe("Cell Guide", () => {
 
         // deactivate marker gene mode and check that the legend and tooltips reverted
         await page
-          .getByTestId(
-            CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
-          )
-          .click();
+          .getByTestId(CELL_GUIDE_CARD_GLOBAL_MARKER_GENE_DROPDOWN)
+          .hover();
+
+        // get clear indicator by class MuiAutocomplete-clearIndicator
+        await page.locator(".MuiAutocomplete-clearIndicator").click();
 
         const node2 = page.getByTestId(
           `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000047__0-has-children-isTargetNode=false`
         );
         await node2.hover();
+
         await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
 
         const newTooltipText = await page
