@@ -88,6 +88,7 @@ import {
 const { describe } = test;
 
 const NEURON_CELL_TYPE_ID = "CL_0000540";
+const NEURAL_CELL_CELL_TYPE_ID = "CL_0002319";
 const GLIOBLAST_CELL_TYPE_ID = "CL_0000030";
 const T_CELL_CELL_TYPE_ID = "CL_0000084";
 const BRAIN_TISSUE_ID = "UBERON_0000955";
@@ -670,9 +671,9 @@ describe("Cell Guide", () => {
               `${TEST_URL}${ROUTES.CELL_GUIDE_TISSUE_SPECIFIC_CELL_TYPE.replace(
                 ":tissueId",
                 BRAIN_TISSUE_ID
-              ).replace(":cellTypeId", NEURON_CELL_TYPE_ID)}`
+              ).replace(":cellTypeId", NEURAL_CELL_CELL_TYPE_ID)}`
             ),
-            page.getByText("neuron", { exact: true }).click(),
+            page.getByText("neural cell", { exact: true }).click(),
           ]);
 
           await tryUntil(
