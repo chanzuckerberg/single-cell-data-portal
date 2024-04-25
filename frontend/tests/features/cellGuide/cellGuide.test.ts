@@ -88,6 +88,7 @@ import {
 const { describe } = test;
 
 const NEURON_CELL_TYPE_ID = "CL_0000540";
+const NEURAL_CELL_CELL_TYPE_ID = "CL_0002319";
 const GLIOBLAST_CELL_TYPE_ID = "CL_0000030";
 const T_CELL_CELL_TYPE_ID = "CL_0000084";
 const BRAIN_TISSUE_ID = "UBERON_0000955";
@@ -96,6 +97,8 @@ const SALIVARY_ACINAR_GLAND_CELL_TYPE_ID = "CL_0002623";
 const ABNORMAL_CELL_TYPE_ID = "CL_0001061";
 const CELL_CELL_TYPE_ID = "CL_0000000";
 const LUNG_CILIATED_CELL_CELL_TYPE_ID = "CL_1000271";
+
+const NODES_LOCATOR = `[data-testid^='${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}']`;
 
 describe("Cell Guide", () => {
   describe("Landing Page", () => {
@@ -668,9 +671,9 @@ describe("Cell Guide", () => {
               `${TEST_URL}${ROUTES.CELL_GUIDE_TISSUE_SPECIFIC_CELL_TYPE.replace(
                 ":tissueId",
                 BRAIN_TISSUE_ID
-              ).replace(":cellTypeId", NEURON_CELL_TYPE_ID)}`
+              ).replace(":cellTypeId", NEURAL_CELL_CELL_TYPE_ID)}`
             ),
-            page.getByText("neuron", { exact: true }).click(),
+            page.getByText("neural cell", { exact: true }).click(),
           ]);
 
           await tryUntil(
@@ -745,37 +748,39 @@ describe("Cell Guide", () => {
           .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
           .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
 
-        const nodesLocator = `[data-testid^='${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}']`;
+        const node = page.getByTestId(
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000540__0-has-children-isTargetNode=true`
+        );
+
+        let numNodesBefore = 0;
+        await tryUntil(
+          async () => {
+            const nodesBefore = await getVisibleNodes(page);
+            numNodesBefore = nodesBefore.length;
+            expect(numNodesBefore).toBeGreaterThan(0);
+          },
+          { page }
+        );
+
+        await waitForElementAndClick(node);
+
+        let numNodesAfter = 0;
+        await tryUntil(
+          async () => {
+            const nodesAfter = await getVisibleNodes(page);
+            numNodesAfter = nodesAfter.length;
+            expect(numNodesBefore).toBeGreaterThan(numNodesAfter);
+          },
+          { page }
+        );
+
+        await waitForElementAndClick(node);
 
         // Collapse node's children
         await tryUntil(
           async () => {
-            const nodesBefore = await page.locator(nodesLocator).all();
-            const numNodesBefore = nodesBefore.length;
-
-            /**
-             * (thuang): This is needed to ensure that we don't query the tree
-             * before it's rendered
-             */
-            expect(numNodesBefore).toBeGreaterThan(0);
-
-            const node = page.getByTestId(
-              `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000540__0-has-children-isTargetNode=true`
-            );
-
-            await waitForElementAndClick(node);
-
-            const nodesAfter = await page.locator(nodesLocator).all();
-            const numNodesAfter = nodesAfter.length;
-
-            expect(numNodesBefore).toBeGreaterThan(numNodesAfter);
-
-            // expand node's children
-            await waitForElementAndClick(node);
-
-            const nodesAfter2 = await page.locator(nodesLocator).all();
+            const nodesAfter2 = await getVisibleNodes(page);
             const numNodesAfter2 = nodesAfter2.length;
-
             expect(numNodesAfter2).toBeGreaterThan(numNodesAfter);
           },
           { page }
@@ -822,8 +827,7 @@ describe("Cell Guide", () => {
           .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
           .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
 
-        const nodesLocator = `[data-testid^='${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}']`;
-        const nodesBefore = await page.locator(nodesLocator).all();
+        const nodesBefore = await getVisibleNodes(page);
         const numNodesBefore = nodesBefore.length;
 
         // check that dummyChild is clickable
@@ -832,7 +836,7 @@ describe("Cell Guide", () => {
         );
         await dummyChildLocator.click();
 
-        const nodesAfter = await page.locator(nodesLocator).all();
+        const nodesAfter = await getVisibleNodes(page);
         const numNodesAfter = nodesAfter.length;
 
         expect(numNodesAfter).toBeGreaterThan(numNodesBefore);
@@ -1607,4 +1611,21 @@ async function assertAllCellCardComponentsArePresent(page: Page) {
   const headerName = page.getByTestId(CELL_GUIDE_CARD_HEADER_NAME);
   const headerNameText = await headerName.textContent();
   expect(headerNameText).toBe("Neuron");
+}
+
+async function getVisibleNodes(page: Page) {
+  const nodes = await page.locator(NODES_LOCATOR).all();
+  const visibilityStatuses = await Promise.all(
+    nodes.map(async (node) => {
+      const parent = await node.evaluateHandle((el) => el.parentElement);
+      const opacity = await page.evaluate(
+        (el) => el && getComputedStyle(el).opacity,
+        parent
+      );
+      return opacity !== "0"; // true if visible, false if not
+    })
+  );
+
+  // Filter the nodes array based on visibilityStatuses
+  return nodes.filter((_, index) => visibilityStatuses[index]);
 }
