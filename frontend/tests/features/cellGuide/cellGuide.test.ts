@@ -91,6 +91,7 @@ const NEURON_CELL_TYPE_ID = "CL_0000540";
 const NEURAL_CELL_CELL_TYPE_ID = "CL_0002319";
 const GLIOBLAST_CELL_TYPE_ID = "CL_0000030";
 const T_CELL_CELL_TYPE_ID = "CL_0000084";
+const NEURON_ASSOCIATED_CELL_CELL_TYPE_ID = "CL_0000095";
 const BRAIN_TISSUE_ID = "UBERON_0000955";
 const LUNG_TISSUE_ID = "UBERON_0002048";
 const SALIVARY_ACINAR_GLAND_CELL_TYPE_ID = "CL_0002623";
@@ -797,23 +798,22 @@ describe("Cell Guide", () => {
         await page
           .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
           .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
-        await page
-          .getByTestId(
-            `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL:0000878__4`
-          )
-          .click();
 
-        await isElementVisible(page, CELLGUIDE_INFO_SIDEBAR_TEST_ID);
+        await page.getByText("neuron associated cell", { exact: true }).click(),
+          await isElementVisible(page, CELLGUIDE_INFO_SIDEBAR_TEST_ID);
         await page
           .getByTestId(CELLGUIDE_VIEW_PAGE_SIDEBAR_BUTTON_TEST_ID)
           .click();
 
-        // Check that the new node is highlighted green (isTargetNode=true)
-        await page
-          .getByTestId(
-            `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000878__4-has-children-isTargetNode=true`
-          )
-          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+        await tryUntil(
+          async () => {
+            const currentUrl = await page.url();
+            expect(currentUrl).toContain(
+              `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_ASSOCIATED_CELL_CELL_TYPE_ID}`
+            );
+          },
+          { page }
+        );
       });
 
       test("Clicking on a collapsed node stub displays hidden cell types", async ({
