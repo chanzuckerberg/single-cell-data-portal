@@ -157,17 +157,17 @@ local-unit-test: local-unit-test-backend local-unit-test-wmg-backend local-unit-
 
 .PHONY: local-unit-test-backend
 local-unit-test-backend: .env.ecr
-	docker compose run --rm -T backend bash -c \
+	docker compose $(COMPOSE_OPTS) run --rm -T backend bash -c \
 	"cd /single-cell-data-portal && coverage run  $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/backend/layers/ tests/unit/backend/common/";
 
 .PHONY: local-unit-test-wmg-backend
 local-unit-test-wmg-backend: .env.ecr
-	docker compose run --rm -T backend bash -c \
+	docker compose $(COMPOSE_OPTS) run --rm -T backend bash -c \
 	"cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/backend/wmg/";
 
 .PHONY: local-integration-test-backend
 local-integration-test-backend: .env.ecr
-	docker compose run --rm -e INTEGRATION_TEST=true -e DB_URI=postgresql://corpora:test_pw@database -T backend \
+	docker compose $(COMPOSE_OPTS) run --rm -e INTEGRATION_TEST=true -e DB_URI=postgresql://corpora:test_pw@database -T backend \
 	bash -c "cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest tests/unit/backend/layers/ tests/unit/backend/common/";
 
 .PHONY: local-unit-test-processing
@@ -189,7 +189,7 @@ local-unit-test-cellguide-pipeline: .env.ecr # Run processing-unittest target in
 
 .PHONY: local-unit-test-cxg-admin
 local-unit-test-cxg-admin: .env.ecr
-	docker compose run --rm -T backend bash -c \
+	docker compose $(COMPOSE_OPTS) run --rm -T backend bash -c \
 	"cd /single-cell-data-portal && coverage run  $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/scripts/";
 
 .PHONY: local-smoke-test
