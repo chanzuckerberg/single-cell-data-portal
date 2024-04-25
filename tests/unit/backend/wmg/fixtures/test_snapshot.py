@@ -89,8 +89,6 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
     # must import lazily
     import backend.wmg.data.ontology_labels as ontology_labels
 
-    if ontology_labels.ontology_term_id_labels is None:
-        ontology_labels.__load_ontologies()
     if ontology_labels.gene_term_id_labels is None:
         ontology_labels.__load_genes()
 
