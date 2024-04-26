@@ -108,6 +108,7 @@ class TestCollectionMigrate:
     def test_create_migration_revision(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
         schema_migrate._store_sfn_response = Mock(wraps=schema_migrate._store_sfn_response)
+        schema_migrate.schema_version = "0.0.0"
         private = collections["private"][0]
         published, revision = collections["revision"]
         schema_migrate.business_logic.create_collection_version = Mock(
