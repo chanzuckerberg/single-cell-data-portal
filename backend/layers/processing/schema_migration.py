@@ -170,7 +170,6 @@ class SchemaMigrate(ProcessingLogic):
 
             response = {
                 "can_publish": str(can_publish),
-                "is_migration_revision": str(version.is_migration_revision),
                 "collection_version_id": private_collection_version_id,
                 "collection_url": collection_url,
                 # ^^^ The top level fields are used for handling error cases in the AWS SFN.

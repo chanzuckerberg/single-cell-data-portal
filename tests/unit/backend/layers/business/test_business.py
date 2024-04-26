@@ -1659,14 +1659,51 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
     def test_create_collection_version_fails_if_other_versions(self):
         """
-        A collection version can only be created if there are no other unpublished versions
-        for that specific canonical collection
+        If is_migration_revision is False, a collection version can only be created if there are no other
+        unpublished versions for that specific canonical collection
         """
         published_collection = self.initialize_published_collection()
         self.business_logic.create_collection_version(published_collection.collection_id)
 
         with self.assertRaises(CollectionVersionException):
             self.business_logic.create_collection_version(published_collection.collection_id)
+
+    def test_create_collection_version_with_migration_revision_flag_succeeds(self):
+        """
+        If is_migration_revision is True, a collection version can be created if there is another
+        unpublished version with is_migration_revision == False for that specific canonical collection
+        """
+        published_collection = self.initialize_published_collection()
+        self.business_logic.create_collection_version(published_collection.collection_id, is_migration_revision=True)
+
+        new_version = self.business_logic.create_collection_version(published_collection.collection_id)
+
+        # The new version has a different version_id
+        self.assertNotEqual(published_collection.version_id, new_version.version_id)
+
+        # The new version has the same collection_id, collection metadata, and datasets
+        self.assertEqual(published_collection.collection_id, new_version.collection_id)
+        self.assertEqual(published_collection.metadata, new_version.metadata)
+        self.assertEqual(published_collection.datasets, new_version.datasets)
+
+        # The new version should not be published (aka Private)
+        self.assertIsNone(new_version.published_at)
+
+        # The new version has is_migration_revision == True
+        self.assertTrue(new_version.is_migration_revision)
+
+    def test_create_collection_version_with_migration_revision_flag_fails(self):
+        """
+        If is_migration_revision is True, a collection version can NOT be created if there is another
+        unpublished version with is_migration_revision == True for that specific canonical collection
+        """
+        published_collection = self.initialize_published_collection()
+        self.business_logic.create_collection_version(published_collection.collection_id, is_migration_revision=True)
+
+        with self.assertRaises(CollectionVersionException):
+            self.business_logic.create_collection_version(
+                published_collection.collection_id, is_migration_revision=True
+            )
 
     def test_create_collection_version_fails_if_collection_not_exists(self):
         """

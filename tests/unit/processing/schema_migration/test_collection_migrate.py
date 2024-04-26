@@ -104,3 +104,22 @@ class TestCollectionMigrate:
         schema_migrate._store_sfn_response.assert_called_once_with(
             "publish_and_cleanup", published.collection_id.id, response
         )
+
+    def test_create_migration_revision(self, schema_migrate_and_collections):
+        schema_migrate, collections = schema_migrate_and_collections
+        schema_migrate._store_sfn_response = Mock(wraps=schema_migrate._store_sfn_response)
+        private = collections["private"][0]
+        published, revision = collections["revision"]
+        schema_migrate.business_logic.create_collection_version.return_value = Mock(version_id=CollectionVersionId())
+
+        # only call create_collection_version if the collection is published
+        schema_migrate.collection_migrate(private.collection_id.id, private.version_id.id, False)
+        assert not schema_migrate.business_logic.create_collection_version.called
+
+        schema_migrate.collection_migrate(revision.collection_id.id, revision.version_id.id, False)
+        assert not schema_migrate.business_logic.create_collection_version.called
+
+        schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, False)
+        schema_migrate.business_logic.create_collection_version.assert_called_once_with(
+            published.collection_id.id, True
+        )

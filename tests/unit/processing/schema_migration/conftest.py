@@ -78,6 +78,32 @@ def revision():
     collection.is_initial_unpublished_version.return_value = False
     collection.collection_id = published_collection_with_revision.collection_id
     collection.version_id = CollectionVersionId()
+    collection.is_migration_revision = False
+    collection.datasets = []
+    for _dataset in published_collection_with_revision.datasets:
+        collection.datasets.append(make_mock_dataset_version(dataset_id=_dataset.dataset_id.id))
+    return [published_collection_with_revision, collection]
+
+
+@pytest.fixture
+def migration_revision():
+    published_collection_with_revision = mock.Mock(spec=CollectionVersionWithDatasets, name="published_with_revision")
+    published_collection_with_revision.is_published.return_value = True
+    published_collection_with_revision.is_unpublished_version.return_value = False
+    published_collection_with_revision.is_initial_unpublished_version.return_value = False
+    published_collection_with_revision.collection_id = CollectionId()
+    published_collection_with_revision.version_id = CollectionVersionId()
+    published_collection_with_revision.is_migration_revision = False
+    published_collection_with_revision.datasets = []
+    for _i in range(2):
+        published_collection_with_revision.datasets.append(make_mock_dataset_version())
+
+    collection = mock.Mock(spec=CollectionVersionWithDatasets, name="revision")
+    collection.is_published.return_value = False
+    collection.is_unpublished_version.return_value = True
+    collection.is_initial_unpublished_version.return_value = False
+    collection.collection_id = published_collection_with_revision.collection_id
+    collection.version_id = CollectionVersionId()
     collection.is_migration_revision = True
     collection.datasets = []
     for _dataset in published_collection_with_revision.datasets:
@@ -113,12 +139,14 @@ def schema_migrate(tmpdir):
 
 @pytest.fixture
 def schema_migrate_and_collections(
-    tmpdir, schema_migrate, published_collection, revision, private
+    tmpdir, schema_migrate, published_collection, revision, migration_revision, private
 ) -> Tuple[SchemaMigrate, Dict[str, List]]:
     db = {
         published_collection.version_id.id: published_collection,
         revision[0].version_id.id: revision[0],
         revision[1].version_id.id: revision[1],
+        migration_revision[0].version_id.id: migration_revision[0],
+        migration_revision[1].version_id.id: migration_revision[1],
         private.version_id.id: private,
     }
 
@@ -130,4 +158,9 @@ def schema_migrate_and_collections(
 
     schema_migrate.business_logic.get_collection_version = _get_collection_version
     schema_migrate.business_logic.get_collection_url = _get_collection_url
-    return schema_migrate, {"published": [published_collection], "revision": revision, "private": [private]}
+    return schema_migrate, {
+        "published": [published_collection],
+        "revision": revision,
+        "migration_revision": migration_revision,
+        "private": [private],
+    }
