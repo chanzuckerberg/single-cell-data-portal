@@ -3,6 +3,7 @@ import os
 import pathlib
 import sys
 import time
+import tiledb
 from typing import Optional
 
 # import tiledb
@@ -12,6 +13,8 @@ from backend.common.utils.result_notification import (
     gen_wmg_pipeline_success_message,
     notify_slack,
 )
+from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME
+from backend.wmg.pipeline.errors import PipelineStepMissing
 from backend.wmg.pipeline.cell_type_ancestors import create_cell_type_ancestors
 from backend.wmg.pipeline.cell_type_ordering import create_cell_type_ordering
 from backend.wmg.pipeline.constants import (
@@ -85,8 +88,7 @@ def run_pipeline(corpus_path: Optional[str] = None, skip_validation: bool = Fals
             snapshot_id=snapshot_id,
             is_snapshot_validation_successful=is_valid,
         )
-        # stats = _get_stats(corpus_path)
-        stats = {"dataset_count": 0, "cell_count": 0}
+        stats = _get_stats(corpus_path)
 
         if is_valid:
             logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot location: {cube_data_s3_path}")
@@ -126,15 +128,15 @@ if __name__ == "__main__":
     sys.exit()
 
 
-# def _get_stats(corpus_path: str) -> dict[str, int]:
-#     pipeline_state = load_pipeline_state(corpus_path)
-#     if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
-#         raise PipelineStepMissing("cell_counts")
+def _get_stats(corpus_path: str) -> dict[str, int]:
+    pipeline_state = load_pipeline_state(corpus_path)
+    if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
+        raise PipelineStepMissing("cell_counts")
 
-#     # get dataset count
-#     with tiledb.open(os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)) as cc_cube:
-#         cell_counts_df = cc_cube.df[:]
-#     dataset_count = len(cell_counts_df["dataset_id"].unique())
-#     cell_count = int(cell_counts_df["n_cells"].sum())
+    # get dataset count
+    with tiledb.open(os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)) as cc_cube:
+        cell_counts_df = cc_cube.df[:]
+    dataset_count = len(cell_counts_df["dataset_id"].unique())
+    cell_count = int(cell_counts_df["n_cells"].sum())
 
-#     return {"dataset_count": dataset_count, "cell_count": cell_count}
+    return {"dataset_count": dataset_count, "cell_count": cell_count}
