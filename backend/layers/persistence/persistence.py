@@ -637,6 +637,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection_version.published_at = published_at
             collection_version.schema_version = schema_version
             collection_version.data_submission_policy_version = data_submission_policy_version
+            collection_version.is_migration_revision = False
 
             dataset_ids_for_new_collection_version = [
                 d.dataset_id.id for d in self.get_collection_version_with_datasets(version_id).datasets

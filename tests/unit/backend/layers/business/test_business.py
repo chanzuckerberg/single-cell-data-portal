@@ -1855,6 +1855,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertIsNotNone(published_version.canonical_collection.originally_published_at)
         self.assertEqual(published_version.published_at, published_version.canonical_collection.originally_published_at)
         self.assertEqual(published_version.data_submission_policy_version, DATA_SUBMISSION_POLICY_VERSION)
+        self.assertEqual(published_version.is_migration_revision, False)
 
         # The published and unpublished collection have the same collection_id and version_id
         self.assertEqual(published_version.collection_id, unpublished_collection.collection_id)
@@ -2076,6 +2077,20 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         canonical = self.business_logic.get_collection_version(second_version.version_id).canonical_collection
         self.assertEqual(canonical.originally_published_at, first_version.published_at)
+
+    def test_publish_version_sets_is_migration_revision_False(self):
+        """
+        When publishing a collection version, is_migration_revision should be set to False
+        """
+        published_collection = self.initialize_published_collection()
+        new_version = self.business_logic.create_collection_version(
+            published_collection.collection_id, is_migration_revision=True
+        )
+        self.assertTrue(new_version.is_migration_revision)
+        self.business_logic.publish_collection_version(new_version.version_id)
+
+        published_new_version = self.business_logic.get_collection_version(new_version.version_id)
+        self.assertFalse(published_new_version.is_migration_revision)
 
     def test_get_all_collections_published_does_not_retrieve_old_versions(self):
         """

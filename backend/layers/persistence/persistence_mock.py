@@ -338,6 +338,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.collections_versions[version_id.id].published_at = published_at
         self.collections_versions[version_id.id].schema_version = schema_version
         self.collections_versions[version_id.id].data_submission_policy_version = data_submission_policy_version
+        self.collections_versions[version_id.id].is_migration_revision = False
 
         return dataset_version_ids_to_delete_from_s3
 
