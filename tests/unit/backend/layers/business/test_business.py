@@ -1674,9 +1674,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         unpublished version with is_migration_revision == False for that specific canonical collection
         """
         published_collection = self.initialize_published_collection()
-        self.business_logic.create_collection_version(published_collection.collection_id, is_migration_revision=True)
-
-        new_version = self.business_logic.create_collection_version(published_collection.collection_id)
+        new_version = self.business_logic.create_collection_version(
+            published_collection.collection_id, is_migration_revision=True
+        )
 
         # The new version has a different version_id
         self.assertNotEqual(published_collection.version_id, new_version.version_id)

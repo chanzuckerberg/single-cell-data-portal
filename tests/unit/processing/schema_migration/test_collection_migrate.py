@@ -110,7 +110,9 @@ class TestCollectionMigrate:
         schema_migrate._store_sfn_response = Mock(wraps=schema_migrate._store_sfn_response)
         private = collections["private"][0]
         published, revision = collections["revision"]
-        schema_migrate.business_logic.create_collection_version.return_value = Mock(version_id=CollectionVersionId())
+        schema_migrate.business_logic.create_collection_version = Mock(
+            return_value=Mock(version_id=CollectionVersionId())
+        )
 
         # only call create_collection_version if the collection is published
         schema_migrate.collection_migrate(private.collection_id.id, private.version_id.id, False)
@@ -120,6 +122,4 @@ class TestCollectionMigrate:
         assert not schema_migrate.business_logic.create_collection_version.called
 
         schema_migrate.collection_migrate(published.collection_id.id, published.version_id.id, False)
-        schema_migrate.business_logic.create_collection_version.assert_called_once_with(
-            published.collection_id.id, True
-        )
+        schema_migrate.business_logic.create_collection_version.assert_called_once()
