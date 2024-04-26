@@ -3,10 +3,10 @@ import os
 import pathlib
 import sys
 import time
-import tiledb
 from typing import Optional
 
-# import tiledb
+import tiledb
+
 from backend.common.utils.result_notification import (
     format_failed_batch_issue_slack_alert,
     gen_wmg_pipeline_failure_message,
@@ -14,7 +14,6 @@ from backend.common.utils.result_notification import (
     notify_slack,
 )
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME
-from backend.wmg.pipeline.errors import PipelineStepMissing
 from backend.wmg.pipeline.cell_type_ancestors import create_cell_type_ancestors
 from backend.wmg.pipeline.cell_type_ordering import create_cell_type_ordering
 from backend.wmg.pipeline.constants import (
@@ -30,6 +29,7 @@ from backend.wmg.pipeline.constants import (
     WMG_DATA_SCHEMA_VERSION,
 )
 from backend.wmg.pipeline.dataset_metadata import create_dataset_metadata
+from backend.wmg.pipeline.errors import PipelineStepMissing
 from backend.wmg.pipeline.expression_summary_and_cell_counts import create_expression_summary_and_cell_counts_cubes
 from backend.wmg.pipeline.expression_summary_default import create_expression_summary_default_cube
 from backend.wmg.pipeline.expression_summary_diffexp import create_expression_summary_diffexp_cubes
