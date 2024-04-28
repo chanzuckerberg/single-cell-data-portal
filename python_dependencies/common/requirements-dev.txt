@@ -5,4 +5,4 @@ coverage
 parameterized
 pytest
 pytest-subtests
-ruff==0.0.239 # Must be kept in sync with ruff version in .pre-commit-config.yaml
+ruff==0.4.2 # Must be kept in sync with ruff version in .pre-commit-config.yaml
