@@ -67,6 +67,7 @@ jobs:
   backend-unit-test:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
+    if: contains(github.event.head_commit.modified, 'backend/')
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -126,6 +127,7 @@ jobs:
   backend-wmg-unit-test:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
+    if: contains(github.event.head_commit.modified, 'backend/wmg/')
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -185,6 +187,7 @@ jobs:
   processing-unit-test:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
+    if: contains(github.event.head_commit.modified, 'backend/')
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -244,6 +247,7 @@ jobs:
   wmg-processing-unit-test:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
+    if: contains(github.event.head_commit.modified, 'backend/')
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -300,6 +304,7 @@ jobs:
   cellguide-pipeline-unit-test:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
+    if: contains(github.event.head_commit.modified, 'backend/')
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -356,6 +361,9 @@ jobs:
   cxg-admin-unit-test:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
+    if: |
+      contains(github.event.head_commit.modified, 'backend/') ||
+      contains(github.event.head_commit.modified, 'scripts/')
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -415,6 +423,7 @@ jobs:
   backend-integration-test:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
+    if: contains(github.event.head_commit.modified, 'backend/')
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -478,6 +487,7 @@ jobs:
       - processing-unit-test
       - cellguide-pipeline-unit-test
     runs-on: ubuntu-22.04
+    if: contains(github.event.head_commit.modified, 'backend/')
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
