@@ -199,6 +199,7 @@ export default function CellGuideCard({
       )}
       onChange={(_, value) => {
         handleChangeGene(value as string);
+        track(EVENTS.CG_SELECT_MARKER_GENE, { marker_gene: value });
       }}
       value={selectedGene}
     />
