@@ -917,7 +917,7 @@ function getCenteringNode(
   cellTypeId?: string
 ) {
   // We find the target node that has children visible.
-  // By construction, only one copy of the target node in the tree will have children visible.
+  // By construction, only one copy of the target node in the tree will be expanded at first.
   // The target node is the node corresponding to the cell type id of the CellGuideCard.
   // If lastNodeClicked is not null, the target node is the last node that was clicked.
 
@@ -927,8 +927,10 @@ function getCenteringNode(
       (node) =>
         (lastNodeClicked
           ? node.data.id === lastNodeClicked
-          : node.data.id.split("__").at(0) === cellTypeId) && node.data.children
+          : node.data.id.split("__").at(0) === cellTypeId) &&
+        node.data.isExpanded
     ) as HierarchyPointNode<TreeNodeWithState> | undefined;
+
   // If no target nodes have children, just pick any target node.
   if (!targetNode) {
     targetNode = data
