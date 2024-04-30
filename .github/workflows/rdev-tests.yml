@@ -1,6 +1,9 @@
 name: rdev tests
 
 on:
+  paths:
+    - "backend/**/*"
+    - "frontend/**/*"
   workflow_call:
 
 env:

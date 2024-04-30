@@ -2,6 +2,9 @@ name: Delete rdev for PR
 
 on:
   pull_request:
+    paths:
+      - "backend/**/*"
+      - "frontend/**/*"
     branches-ignore:
       - prod
     types:
