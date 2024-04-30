@@ -73,6 +73,9 @@ jobs:
     defaults:
       run:
         working-directory: frontend
+    if: |
+      contains(github.event.head_commit.modified, 'backend/') ||
+      contains(github.event.head_commit.modified, 'frontend/')
     steps:
       - uses: actions/setup-node@v4
         with:
