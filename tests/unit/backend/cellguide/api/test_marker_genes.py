@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
-from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 from tests.test_utils.mocks import mock_get_marker_gene_data
+from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
 
 class TestMarkerGenesAPI(BaseAPIPortalTest):
