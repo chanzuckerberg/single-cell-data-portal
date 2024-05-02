@@ -200,7 +200,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
             {/* Don't show search on page for mobile view */}
             {!skinnyMode && (
               <SearchBarWrapper>
-                <CellGuideCardSearchBar />
+                <CellGuideCardSearchBar skinnyMode={skinnyMode} />
               </SearchBarWrapper>
             )}
 

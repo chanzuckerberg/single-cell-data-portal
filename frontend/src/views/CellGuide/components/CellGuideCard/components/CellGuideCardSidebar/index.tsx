@@ -47,7 +47,7 @@ export default function CellGuideCardSidebar({
       <StickyWrapper>
         {!skinnyMode && (
           <SearchBarWrapper>
-            <CellGuideCardSearchBar />
+            <CellGuideCardSearchBar skinnyMode={skinnyMode} />
           </SearchBarWrapper>
         )}
         {isClient && (
