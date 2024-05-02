@@ -90,15 +90,15 @@ components:
   schemas:
     organism_ontology_term_id_or_label:
       description: Organism ontology term ID or label
-      example: NCBITaxon:9606 or human
+      example: Homo sapiens
       type: string
     tissue_ontology_term_id_or_label:
       description: Tissue ontology term ID or label
-      example: UBERON:0000955 or brain
+      example: brain
       type: string
     cell_ontology_term_id:
       description: Cell ontology term ID
-      example: CL:0000030
+      example: CL:000540
       type: string
     cell_ontology_term_id_fs:
       description: File system-compatible cell ontology term ID (with underscores)
