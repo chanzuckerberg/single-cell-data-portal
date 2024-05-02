@@ -2,7 +2,7 @@ import json
 
 import numpy as np
 
-from tests.unit.cellguide_pipeline.constants import (
+from tests.unit.backend.cellguide.pipeline.constants import (
     ASCTB_MASTER_SHEET_FIXTURE_FILENAME,
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
     FAKE_COLLECTIONS_FIXTURE_FILENAME,
