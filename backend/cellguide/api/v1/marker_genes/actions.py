@@ -86,6 +86,9 @@ def get(organism: str, tissue: Optional[str] = None, cell_type: Optional[str] = 
     if tissue and cell_type and not is_id(cell_type):
         raise ValueError("cell_type must be an ID")
 
+    if not tissue and cell_type or tissue and tissue.lower() == "all tissues":
+        tissue = "All Tissues"
+
     if organism not in marker_gene_data:
         return make_response(jsonify({}), 404)
 

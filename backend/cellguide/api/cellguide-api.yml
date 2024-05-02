@@ -65,7 +65,7 @@ paths:
           required: false
           schema:
             $ref: "#/components/schemas/tissue_ontology_term_id_or_label"
-          description: The ontology ID or name of the tissue, optional.
+          description: The ontology ID or name of the tissue, optional. Use 'All Tissues' to get tissue-agnostic marker genes.
         - in: query
           name: cell_type
           required: false
@@ -94,7 +94,7 @@ components:
       type: string
     tissue_ontology_term_id_or_label:
       description: Tissue ontology term ID or label
-      example: brain
+      example: All Tissues
       type: string
     cell_ontology_term_id:
       description: Cell ontology term ID

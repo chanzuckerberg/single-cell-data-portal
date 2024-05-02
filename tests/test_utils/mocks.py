@@ -10,6 +10,25 @@ from tests.unit.backend.cellguide.pipeline.constants import (
 )
 
 
+def mock_get_marker_gene_data():
+    return {
+        "Homo sapiens": {
+            "brain": {
+                "CL:0000540": [
+                    {"marker_score": 0.95, "me": 0.5, "pc": 0.1, "gene": "Gene1"},
+                    {"marker_score": 0.90, "me": 0.4, "pc": 0.2, "gene": "Gene2"},
+                ]
+            },
+            "All Tissues": {
+                "CL:0000540": [
+                    {"marker_score": 0.95, "me": 0.5, "pc": 0.1, "gene": "Gene3"},
+                    {"marker_score": 0.90, "me": 0.4, "pc": 0.2, "gene": "Gene4"},
+                ]
+            },
+        }
+    }
+
+
 def mock_get_folders_from_s3(bucket, prefix):
     if "tissues" in prefix:
         return [{"Prefix": f"s3://{bucket}/{prefix}UBERON_{i}__CL_{j}.cxg/"} for i in range(20) for j in range(20)]
