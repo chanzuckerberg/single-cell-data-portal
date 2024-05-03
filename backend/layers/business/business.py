@@ -664,17 +664,29 @@ class BusinessLogic(BusinessLogicInterface):
         for dataset_version in dataset_versions:
             datasets_by_collection_id[dataset_version.collection_id.id].append(dataset_version)
 
-        # Combine collections and their datasets into CollectionVersionWithPrivateDatasets objects.
+        # Combine collections and their datasets into CollectionVersionWithPrivateDatasets objects, removing any
+        # unchanged datasets of revisions (as they are considered public).
         collection_versions_with_datasets = []
         for collection_version in collection_versions:
             dataset_versions = datasets_by_collection_id.get(collection_version.collection_id.id, [])
 
             private_dataset_versions: List[PrivateDatasetVersion] = []
             for dataset_version in dataset_versions:
+                # Only add dataset if it is new, or if it is a revision of a public dataset.
+                canonical_dataset_version_id = dataset_version.canonical_dataset.dataset_version_id
+                if (
+                    dataset_version.canonical_dataset.published_at is not None
+                    and canonical_dataset_version_id == dataset_version.version_id
+                ):
+                    continue
 
                 private_dataset_versions.append(
                     PrivateDatasetVersion(**vars(dataset_version), collection_version_id=collection_version.version_id)
                 )
+
+            # If there are no private dataset version for this collection version, skip adding it to the set.
+            if not private_dataset_versions:
+                continue
 
             collection_version_dict = vars(collection_version)
             collection_version_dict["datasets"] = private_dataset_versions
