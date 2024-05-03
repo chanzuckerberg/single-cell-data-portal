@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { StyledPopper, SectionItem } from "./style";
 import { ROUTES } from "src/common/constants/routes";
 import {
@@ -14,7 +14,6 @@ import {
   CELL_GUIDE_SEARCH_BAR_LABEL,
 } from "src/views/CellGuide/components/CellGuideCardSearchBar/constants";
 import { Autocomplete, SDSAutocompleteOptions } from "@czi-sds/components";
-import { Paper } from "@mui/material";
 
 export interface Entity {
   id: string;
@@ -30,7 +29,6 @@ export default function CellGuideCardSearchBar({
   skinnyMode: boolean;
 }): JSX.Element {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
   const { data: cellTypes } = useCellTypeMetadata();
   const { data: tissueData } = useTissueMetadata();
   const options: SDSAutocompleteOptions<Entity, false, false, false> =
@@ -70,21 +68,8 @@ export default function CellGuideCardSearchBar({
         data-testid={CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT}
         label={CELL_GUIDE_SEARCH_BAR_LABEL}
         search
-        InputBaseProps={{
-          onFocus: () => {
-            setOpen(true);
-          },
-          onBlur: () => {
-            setOpen(false);
-          },
-        }}
         PopperComponent={(popperProps) => (
-          <StyledPopper
-            {...popperProps}
-            disablePortal
-            open={open}
-            fullWidth={skinnyMode}
-          />
+          <StyledPopper {...popperProps} disablePortal fullWidth={skinnyMode} />
         )}
         id={CELL_GUIDE_CARD_SEARCH_BAR}
         options={options}
