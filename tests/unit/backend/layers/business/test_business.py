@@ -1604,7 +1604,7 @@ class TestGetAllDatasets(BaseBusinessLogicTestCase):
                     [d.version_id for d in datasets],
                 )
 
-        # Create the expected shape of revision_1_updated: datasets should only be the replacement dataset as well as the new dataset.
+        # Create the expected shape of revision_1_updated: datasets should only include the replacement dataset as well as the new dataset.
         revision_1_updated_expected = deepcopy(revision_1_updated)
         revision_1_updated_expected.datasets = [
             self.database_provider.get_dataset_version(updated_dataset_version_id),
@@ -1619,7 +1619,7 @@ class TestGetAllDatasets(BaseBusinessLogicTestCase):
 
         with self.subTest("With owner"):
             collection_versions = self.business_logic.get_private_collection_versions_with_datasets(owner=test_user_1)
-            # Owner should see their private collections, and their updated revision.
+            # Owner should see their private collection, and their revision that has been udpated.
             expected = [private_cv_1, revision_1_updated_expected]
             _validate(collection_versions, expected)
 
