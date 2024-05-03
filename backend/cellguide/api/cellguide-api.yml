@@ -98,7 +98,7 @@ components:
       type: string
     cell_ontology_term_id:
       description: Cell ontology term ID
-      example: CL:000540
+      example: CL:0000540
       type: string
     cell_ontology_term_id_fs:
       description: File system-compatible cell ontology term ID (with underscores)
