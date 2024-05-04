@@ -10,12 +10,12 @@ from tests.test_utils.mocks import (
     mock_get_collections_from_curation_endpoint,
     mock_get_datasets_from_curation_endpoint,
 )
-from tests.unit.backend.wmg.fixtures.test_snapshot import (
-    load_realistic_test_snapshot,
-)
-from tests.unit.cellguide_pipeline.constants import (
+from tests.unit.backend.cellguide.pipeline.constants import (
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
     SOURCE_COLLECTIONS_FIXTURE_FILENAME,
+)
+from tests.unit.backend.wmg.fixtures.test_snapshot import (
+    load_realistic_test_snapshot,
 )
 
 TEST_SNAPSHOT = "realistic-test-snapshot"

@@ -47,29 +47,96 @@ paths:
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
+  /v1/marker_genes:
+    get:
+      summary: Get marker genes for a given organism, tissue (optional), and cell type (optional)
+      operationId: backend.cellguide.api.v1.marker_genes.actions.get
+      tags:
+        - CellGuide
+      parameters:
+        - in: query
+          name: organism
+          required: true
+          schema:
+            $ref: "#/components/schemas/organism_ontology_term_id_or_label"
+          description: The ontology ID or name of the organism.
+        - in: query
+          name: tissue
+          required: false
+          schema:
+            $ref: "#/components/schemas/tissue_ontology_term_id_or_label"
+          description: The ontology ID or name of the tissue, optional. Use 'All Tissues' to get tissue-agnostic marker genes.
+        - in: query
+          name: cell_type
+          required: false
+          schema:
+            $ref: "#/components/schemas/cell_ontology_term_id"
+          description: The ontology ID or name of the cell type, optional.
+      responses:
+        "200":
+          description: "Successful retrieval of marker genes data."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/marker_gene_data"
+        "404":
+          description: "No data found for the specified parameters."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/problem"
+
 components:
   schemas:
-    cellguide_description:
-      properties:
-        cell_ontology_term_id:
-          $ref: "#/components/schemas/cell_ontology_term_id"
-        description:
-          $ref: "#/components/schemas/cell_description"
-        references:
-          $ref: "#/components/schemas/references"
-      type: object
+    organism_ontology_term_id_or_label:
+      description: Organism ontology term ID or label
+      example: Homo sapiens
+      type: string
+    tissue_ontology_term_id_or_label:
+      description: Tissue ontology term ID or label
+      example: All Tissues
+      type: string
     cell_ontology_term_id:
-      description: Cell Anthology ID
+      description: Cell ontology term ID
+      example: CL:0000540
+      type: string
+    cell_ontology_term_id_fs:
+      description: File system-compatible cell ontology term ID (with underscores)
       example: CL_0000030
       type: string
-    cell_description:
-      description: A description of the cell type
-      type: string
-    references:
-      description: A list of reference urls for the cell type
-      items:
-        type: string
-      type: array
+    marker_gene_data:
+      description: Details of a marker gene, which can vary in structure based on the specificity of the query (organism, tissue, cell type). Can be a nested structure or a direct list.
+      oneOf:
+        - type: object
+          additionalProperties: # This allows any property name for tissue
+            type: object
+            additionalProperties: # This allows any property name for cell type
+              type: array
+              items:
+                $ref: "#/components/schemas/marker_gene_entry"
+        - type: object
+          additionalProperties: # This allows any property name for cell type
+            type: array
+            items:
+              $ref: "#/components/schemas/marker_gene_entry"
+        - type: array
+          items:
+            $ref: "#/components/schemas/marker_gene_entry"
+    marker_gene_entry:
+      type: object
+      properties:
+        gene:
+          type: string
+          description: The identifier for the gene
+        marker_score:
+          type: number
+          description: Score indicating the strength of the marker
+        me:
+          type: number
+          description: Mean expression of the marker gene
+        pc:
+          type: number
+          description: Percent of cells in which the marker gene is expressed
     problem:
       description: Error message container for HTTP APIs.
       properties:
@@ -80,6 +147,23 @@ components:
         type:
           type: string
       type: object
+    cellguide_description:
+      properties:
+        cell_ontology_term_id:
+          $ref: "#/components/schemas/cell_ontology_term_id_fs"
+        description:
+          $ref: "#/components/schemas/cell_description"
+        references:
+          $ref: "#/components/schemas/references"
+      type: object
+    cell_description:
+      description: A description of the cell type
+      type: string
+    references:
+      description: A list of reference urls for the cell type
+      items:
+        type: string
+      type: array
   responses:
     "200":
       description: OK
