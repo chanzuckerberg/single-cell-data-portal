@@ -1,4 +1,0 @@
-INFO     root:cxg_generation_utils.py:185 create /single-cell-data-portal/tests/unit/backend/fixtures/f130051e-40cc-49b0-ab4c-30331bfbb2ca/awesome_sparse_matrix_86240c6f-d1c0-45c4-9adc-dfaa0dab9b88r
-INFO     root:cxg_generation_utils.py:185 create /single-cell-data-portal/tests/unit/backend/fixtures/f130051e-40cc-49b0-ab4c-30331bfbb2ca/awesome_sparse_matrix_86240c6f-d1c0-45c4-9adc-dfaa0dab9b88c
-INFO     root:cxg_generation_utils.py:271 Store rows: 3
-INFO     root:cxg_generation_utils.py:285 Store columns: 3
