@@ -6,7 +6,7 @@ from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionQueryFilter
 from backend.layers.business.exceptions import CollectionCreationException, InvalidMetadataException
 from backend.layers.common import doi
-from backend.layers.common.entities import CollectionLinkType, CollectionMetadata, CollectionVisibility, Link
+from backend.layers.common.entities import CollectionLinkType, CollectionMetadata, Link, Visibility
 from backend.portal.api.providers import get_business_logic
 
 
@@ -21,7 +21,7 @@ def get(visibility: str, token_info: dict, curator: str = None):
     """
     user_info = UserInfo(token_info)
     filters = {}
-    if visibility == CollectionVisibility.PRIVATE.name:
+    if visibility == Visibility.PRIVATE.name:
         filters["is_published"] = False
         if user_info.is_none():
             raise ForbiddenHTTPException(detail="Not authorized to query for PRIVATE collection.")

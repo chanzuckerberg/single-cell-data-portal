@@ -6,7 +6,7 @@ from backend.cellguide.pipeline.explorer_cxgs import get_valid_cxgs
 from backend.cellguide.pipeline.utils import convert_dataclass_to_dict_and_strip_nones
 from tests.test_utils import compare_dicts
 from tests.test_utils.mocks import mock_get_folders_from_s3
-from tests.unit.cellguide_pipeline.constants import (
+from tests.unit.backend.cellguide.pipeline.constants import (
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
     VALID_EXPLORER_CXGS_FIXTURE_FILENAME,
 )

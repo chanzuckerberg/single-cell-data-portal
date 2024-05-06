@@ -117,6 +117,11 @@ class BusinessLogicInterface:
     ) -> Tuple[DatasetVersionId, DatasetId]:
         pass
 
+    def get_private_collection_versions_with_datasets(
+        self, owner: str = None, schema: str = None
+    ) -> Iterable[CollectionVersionWithDatasets]:
+        pass
+
     def get_all_mapped_datasets(self) -> List[DatasetVersion]:
         pass
 
