@@ -1,1 +1,0 @@
-{"levelname": "INFO", "asctime": "2024-05-03T05:25:59.003Z", "name": "processing", "message": "Publishing collection version.", "lineno": 88, "pathname": "/single-cell-data-portal/backend/layers/processing/publish_revisions.py", "collection_version_id": "d60b956f-d5c0-4ffc-9d55-d05e58bfe570"}
