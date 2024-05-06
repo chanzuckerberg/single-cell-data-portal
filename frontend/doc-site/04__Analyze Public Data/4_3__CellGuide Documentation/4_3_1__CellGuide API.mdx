@@ -1,0 +1,63 @@
+# CellGuide API
+
+CellGuide currently has an experimental API that allows users to programmatically fetch the computational marker genes data underlying the marker gene tables in each CellGuide page.
+
+## API Endpoint
+The `marker_genes` endpoint can be accessed at:
+ - https://api.cellxgene.cziscience.com/cellguide/v1/marker_genes
+
+### Usage
+To interact with the `marker_genes` endpoint, you can use the following parameters to customize your query:
+
+1. **organism** (required): The ontology ID or name of the organism. This parameter is mandatory for every request.
+
+2. **tissue_general** (optional): The ontology ID or name of the tissue. This parameter is optional and can be used to narrow down the results to specific tissues. If you want to retrieve marker genes that are agnostic of tissue types, you can set this parameter to 'All Tissues'.
+
+3. **cell_type** (optional): The ontology ID of the cell type. This parameter is optional and can be used to further refine the results within the specified tissue.
+
+### Example Requests
+
+- **Fetch marker genes for a specific organism across all tissues and cell types:**
+  ```
+  GET https://api.cellxgene.cziscience.com/cellguide/v1/marker_genes?organism=NCBITaxon:9606
+  ```
+
+- **Fetch marker genes for a specific organism and tissue:**
+  ```
+  GET https://api.cellxgene.cziscience.com/cellguide/v1/marker_genes?organism=NCBITaxon:9606&tissue_general=UBERON:0000955
+  ```
+
+- **Fetch tissue-agnostic marker genes for a specific organism:**
+  ```
+  GET https://api.cellxgene.cziscience.com/cellguide/v1/marker_genes?organism=NCBITaxon:9606&tissue_general=All%20Tissues
+  ```  
+
+- **Fetch marker genes for a specific organism, tissue, and cell type:**
+  ```
+  GET https://api.cellxgene.cziscience.com/cellguide/v1/marker_genes?organism=NCBITaxon:9606&tissue_general=UBERON:0000955&cell_type=CL:0000540
+  ```
+
+### Response Structure
+
+The response will be in JSON format. Depending on the parameters provided, the structure of the response may vary:
+
+- **If no `tissue_general` and `cell_type` are provided:** The response will contain a nested dictionary keyed by `tissue_general`, where each key's value is a dictionary keyed by `cell_type`, with the corresponding marker genes.
+
+- **If `tissue_general` is provided and `cell_type` is not:** The response will be a dictionary with `cell_type` as keys, where each key's value is an array of corresponding marker genes.
+
+- **If `tissue_general` is not provided and `cell_type` is:** The response will be a cell type-specific and tissue-agnostic array of marker genes.
+
+- **If both are provided:** The response will be a tissue- and cell-type-specific array of marker genes.
+
+### Error Handling
+
+- **404 Not Found:** If no data is found for the specified parameters, the API will return a 404 error with a message indicating the missing data.
+
+### Note
+
+Please ensure that you use the correct ontology IDs or labels as specified in the CELLxGENE Census as well as the UBERON and CL ontologies for accurate results. 
+ 
+For example:
+ - The valid label for 'NCBITaxon:9606' (human) is 'Homo sapiens'.
+ - For 'UBERON:0000955' (brain), the valid label is 'brain'.
+ - For 'CL:0000540' (neurons), the valid label is 'neuron'.

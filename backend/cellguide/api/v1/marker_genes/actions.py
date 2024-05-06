@@ -90,13 +90,15 @@ def get(organism: str, tissue: Optional[str] = None, cell_type: Optional[str] = 
         tissue = "All Tissues"
 
     if organism not in marker_gene_data:
-        return make_response(jsonify({}), 404)
+        return make_response(jsonify({"message": f"Organism {organism} not found"}), 404)
 
     if tissue and tissue not in marker_gene_data[organism]:
-        return make_response(jsonify({}), 404)
+        return make_response(jsonify({"message": f"Tissue {tissue} not found for organism {organism}"}), 404)
 
     if tissue and cell_type and cell_type not in marker_gene_data[organism][tissue]:
-        return make_response(jsonify({}), 404)
+        return make_response(
+            jsonify({"message": f"Cell type {cell_type} not found for tissue {tissue} and organism {organism}"}), 404
+        )
 
     if tissue and cell_type:
         return make_response(jsonify(marker_gene_data[organism][tissue][cell_type]), 200)

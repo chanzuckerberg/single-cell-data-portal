@@ -49,7 +49,14 @@ paths:
           $ref: "#/components/responses/403"
   /v1/marker_genes:
     get:
-      summary: Get marker genes for a given organism, tissue (optional), and cell type (optional)
+      summary: |
+        Get marker genes for a given organism, tissue_general (optional), and cell_type (optional).
+        If neither tissue_general nor cell_type are provided, then the response will contain a nested dictionary keyed by tissue_general, where each key's value is a dictionary keyed by cell_type, with the corresponding marker genes.
+        If tissue_general is provided and cell_type is not, the response will be a dictionary with cell_type as keys, where each key's value is an array of corresponding marker genes.
+        If tissue_general is not provided and cell_type is, the response will be a cell type-specific and tissue-agnostic array of marker genes.
+        If both are provided, the response will be a tissue- and cell-type-specific array of marker genes. |
+        Note that the `tissue_general` parameter denotes tissues at the same level as granularity as `tissue_general` in CELLxGENE Census. |
+        `tissue_general` can be set to 'All Tissues' to get tissue-agnostic marker genes.
       operationId: backend.cellguide.api.v1.marker_genes.actions.get
       tags:
         - CellGuide
@@ -61,17 +68,17 @@ paths:
             $ref: "#/components/schemas/organism_ontology_term_id_or_label"
           description: The ontology ID or name of the organism.
         - in: query
-          name: tissue
+          name: tissue_general
           required: false
           schema:
             $ref: "#/components/schemas/tissue_ontology_term_id_or_label"
-          description: The ontology ID or name of the tissue, optional. Use 'All Tissues' to get tissue-agnostic marker genes.
+          description: The ontology ID or name of the tissue, optional. Use 'All Tissues' to get tissue-agnostic marker genes. `tissue_general` denotes tissues at the same level as granularity as `tissue_general` in CELLxGENE Census.
         - in: query
           name: cell_type
           required: false
           schema:
             $ref: "#/components/schemas/cell_ontology_term_id"
-          description: The ontology ID or name of the cell type, optional.
+          description: The ontology ID of the cell type, optional.
       responses:
         "200":
           description: "Successful retrieval of marker genes data."
