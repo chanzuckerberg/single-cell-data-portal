@@ -50,7 +50,7 @@ paths:
   /v1/marker_genes:
     get:
       summary: |
-        Get all CellGuide marker genes for each organism, tissue, cell type combination.
+        Get all CellGuide marker genes.
       operationId: backend.cellguide.api.v1.marker_genes.actions.get
       tags:
         - CellGuide
