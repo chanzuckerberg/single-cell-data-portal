@@ -1,4 +1,4 @@
-from backend.cellguide.pipeline.constants import (
+from backend.cellguide.common.constants import (
     CELL_GUIDE_CELL_TYPE_MAPPING_FILENAME,
     ONTOLOGY_TREE_FILENAME,
     ONTOLOGY_TREE_STATE_PER_CELLTYPE_FOLDERNAME,
