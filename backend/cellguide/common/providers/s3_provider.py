@@ -55,6 +55,17 @@ class S3Provider:
             check=True,
         )
 
+    def download_file(self, bucket_name: str, object_key: str) -> str:
+        """
+        Downloads the file specified by `object_key` from the `bucket_name` bucket and returns it as a string.
+        """
+        try:
+            response = self.client.get_object(Bucket=bucket_name, Key=object_key)
+            return response["Body"].read()
+        except botocore.exceptions.ClientError as e:
+            logger.error(f"Failed to download file {object_key} from bucket {bucket_name}: {str(e)}")
+            raise
+
     def does_object_exist(self, bucket_name: str, object_key: str) -> bool:
         """
         Returns True if the object exists in the bucket and is available to download
