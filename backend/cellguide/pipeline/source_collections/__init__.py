@@ -1,4 +1,4 @@
-from backend.cellguide.pipeline.constants import SOURCE_COLLECTIONS_FOLDERNAME
+from backend.cellguide.common.constants import SOURCE_COLLECTIONS_FOLDERNAME
 from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.source_collections.source_collections_generator import generate_source_collections_data
