@@ -278,8 +278,8 @@ def reshape_dataset_for_curation_datasets_index_api(
     :param dataset_version: a dataset version to be included in the API response.
     :return: A dictionary shaped for inclusion in the datasets index API response.
     """
-    # Create base dataset response shape. use_canonical is true only for datasets with a calculated visibility of
-    # public; for datasets with a calculated visibility of private, corresponding fields are calculated below.
+    # Create base dataset response shape. use_canonical is true only for datasets with a visibility of
+    # public; for datasets with a visibility of private, corresponding fields are calculated below.
     is_dataset_visibility_public = visibility == Visibility.PUBLIC.name
     ds = reshape_dataset_for_curation_api(dataset_version, index=True, use_canonical_url=is_dataset_visibility_public)
 

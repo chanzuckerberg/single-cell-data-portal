@@ -646,8 +646,12 @@ class BusinessLogic(BusinessLogicInterface):
         self, owner: str = None
     ) -> List[CollectionVersionWithPrivateDatasets]:
         """
-        Returns collection versions with their datasets for private collections. If `owner` is provided,
-        collections owned by that user are returned.
+        Returns collection versions with their datasets for private collections. Only private collections with datasets, or
+        unpublished revisions with new or updated datasets are returned; unpublished revisions with no new datasets, and
+        no changed datasets are not returned.
+
+        If `owner` is provided, collections owned by that user are returned.
+
         :param owner: The owner of the collections to retrieve. None if user is super use.
         :return: A list of CollectionVersionWithPrivateDatasets objects.
         """
