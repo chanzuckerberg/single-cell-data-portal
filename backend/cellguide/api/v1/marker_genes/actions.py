@@ -61,7 +61,7 @@ def is_id(term: str) -> bool:
     return term.startswith("CL:") or term.startswith("UBERON:") or term.startswith("NCBITaxon:")
 
 
-def get(organism: str, tissue: Optional[str] = None, cell_type: Optional[str] = None):
+def get(organism: str, tissue_general: Optional[str] = None, cell_type: Optional[str] = None):
     """
     Retrieve marker gene data for a specified organism, and optionally for a specific tissue and/or cell type.
 
@@ -71,7 +71,7 @@ def get(organism: str, tissue: Optional[str] = None, cell_type: Optional[str] = 
 
     Parameters:
         organism (str): The ontology ID or name of the organism.
-        tissue (Optional[str]): The ontology ID or name of the tissue. Default is None.
+        tissue_general (Optional[str]): The ontology ID or name of the tissue. Default is None.
         cell_type (Optional[str]): The ontology ID or name of the cell type. Default is None.
 
     Returns:
@@ -81,29 +81,32 @@ def get(organism: str, tissue: Optional[str] = None, cell_type: Optional[str] = 
 
     if is_id(organism):
         organism = ontology_parser.get_term_label(organism)
-    if tissue and is_id(tissue):
-        tissue = ontology_parser.get_term_label(tissue)
-    if tissue and cell_type and not is_id(cell_type):
+    if tissue_general and is_id(tissue_general):
+        tissue_general = ontology_parser.get_term_label(tissue_general)
+    if tissue_general and cell_type and not is_id(cell_type):
         raise ValueError("cell_type must be an ID")
 
-    if not tissue and cell_type or tissue and tissue.lower() == "all tissues":
-        tissue = "All Tissues"
+    if not tissue_general and cell_type or tissue_general and tissue_general.lower() == "all tissues":
+        tissue_general = "All Tissues"
 
     if organism not in marker_gene_data:
         return make_response(jsonify({"message": f"Organism {organism} not found"}), 404)
 
-    if tissue and tissue not in marker_gene_data[organism]:
-        return make_response(jsonify({"message": f"Tissue {tissue} not found for organism {organism}"}), 404)
+    if tissue_general and tissue_general not in marker_gene_data[organism]:
+        return make_response(jsonify({"message": f"Tissue {tissue_general} not found for organism {organism}"}), 404)
 
-    if tissue and cell_type and cell_type not in marker_gene_data[organism][tissue]:
+    if tissue_general and cell_type and cell_type not in marker_gene_data[organism][tissue_general]:
         return make_response(
-            jsonify({"message": f"Cell type {cell_type} not found for tissue {tissue} and organism {organism}"}), 404
+            jsonify(
+                {"message": f"Cell type {cell_type} not found for tissue {tissue_general} and organism {organism}"}
+            ),
+            404,
         )
 
-    if tissue and cell_type:
-        return make_response(jsonify(marker_gene_data[organism][tissue][cell_type]), 200)
-    elif tissue:
-        return make_response(jsonify(marker_gene_data[organism][tissue]), 200)
+    if tissue_general and cell_type:
+        return make_response(jsonify(marker_gene_data[organism][tissue_general][cell_type]), 200)
+    elif tissue_general:
+        return make_response(jsonify(marker_gene_data[organism][tissue_general]), 200)
     else:
         return make_response(jsonify(marker_gene_data[organism]), 200)
 
