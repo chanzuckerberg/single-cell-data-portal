@@ -3,7 +3,7 @@ import time
 
 import openai
 
-from backend.cellguide.pipeline.config import CellGuideConfig
+from backend.cellguide.common.config import CellGuideConfig
 
 logger = logging.getLogger(__name__)
 

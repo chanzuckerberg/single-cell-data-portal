@@ -1,6 +1,6 @@
 import boto3
 
-from backend.cellguide.pipeline.constants import CELL_GUIDE_VALID_EXPLORER_CXGS_FILENAME
+from backend.cellguide.common.constants import CELL_GUIDE_VALID_EXPLORER_CXGS_FILENAME
 from backend.cellguide.pipeline.explorer_cxgs.constants import (
     CXG_BUCKET_NAME,
     CXG_ORGANISMS,

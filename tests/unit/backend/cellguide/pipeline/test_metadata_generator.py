@@ -8,13 +8,13 @@ from backend.cellguide.pipeline.metadata.metadata_generator import (
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.utils import convert_dataclass_to_dict_and_strip_nones
 from tests.test_utils import compare_dicts
-from tests.unit.backend.wmg.fixtures.test_snapshot import (
-    load_realistic_test_snapshot,
-)
-from tests.unit.cellguide_pipeline.constants import (
+from tests.unit.backend.cellguide.pipeline.constants import (
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
     CELLTYPE_METADATA_FIXTURE_FILENAME,
     TISSUE_METADATA_FIXTURE_FILENAME,
+)
+from tests.unit.backend.wmg.fixtures.test_snapshot import (
+    load_realistic_test_snapshot,
 )
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
