@@ -3,10 +3,13 @@
 CellGuide currently has an experimental API that allows users to programmatically fetch the computational marker genes data underlying the marker gene tables in each CellGuide page.
 
 ## API Endpoint
+
 The `marker_genes` endpoint can be accessed at:
- - https://api.cellxgene.cziscience.com/cellguide/v1/marker_genes
+
+- https://api.cellxgene.cziscience.com/cellguide/v1/marker_genes
 
 ### Usage
+
 To interact with the `marker_genes` endpoint, you can use the following parameters to customize your query:
 
 1. **organism** (required): The ontology ID or name of the organism. This parameter is mandatory for every request.
@@ -18,19 +21,22 @@ To interact with the `marker_genes` endpoint, you can use the following paramete
 ### Example Requests
 
 - **Fetch marker genes for a specific organism across all tissues and cell types:**
+
   ```
   GET https://api.cellxgene.cziscience.com/cellguide/v1/marker_genes?organism=NCBITaxon:9606
   ```
 
 - **Fetch marker genes for a specific organism and tissue:**
+
   ```
   GET https://api.cellxgene.cziscience.com/cellguide/v1/marker_genes?organism=NCBITaxon:9606&tissue_general=UBERON:0000955
   ```
 
 - **Fetch tissue-agnostic marker genes for a specific organism:**
+
   ```
   GET https://api.cellxgene.cziscience.com/cellguide/v1/marker_genes?organism=NCBITaxon:9606&tissue_general=All%20Tissues
-  ```  
+  ```
 
 - **Fetch marker genes for a specific organism, tissue, and cell type:**
   ```
@@ -55,9 +61,10 @@ The response will be in JSON format. Depending on the parameters provided, the s
 
 ### Note
 
-Please ensure that you use the correct ontology IDs or labels as specified in the CELLxGENE Census as well as the UBERON and CL ontologies for accurate results. 
- 
+Please ensure that you use the correct ontology IDs or labels as specified in the CELLxGENE Census as well as the UBERON and CL ontologies for accurate results.
+
 For example:
- - The valid label for 'NCBITaxon:9606' (human) is 'Homo sapiens'.
- - For 'UBERON:0000955' (brain), the valid label is 'brain'.
- - For 'CL:0000540' (neurons), the valid label is 'neuron'.
+
+- The valid label for 'NCBITaxon:9606' (human) is 'Homo sapiens'.
+- For 'UBERON:0000955' (brain), the valid label is 'brain'.
+- For 'CL:0000540' (neurons), the valid label is 'neuron'.
