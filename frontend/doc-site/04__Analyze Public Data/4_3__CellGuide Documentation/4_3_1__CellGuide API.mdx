@@ -55,6 +55,14 @@ The response will be in JSON format. Depending on the parameters provided, the s
 
 - **If both are provided:** The response will be a tissue- and cell-type-specific array of marker genes.
 
+Each marker gene is represented in dictionary form with the following keys:
+- **`marker_score`**: The score indicating the strength of the marker gene for the cell type.
+- **`me`**: Mean expression of the gene across the cells of the specified type.
+- **`pc`**: Percentage of cells within the specified type that express the gene.
+- **`gene`**: The gene symbol associated with the marker gene data.
+
+Refer to the <NextLink href="/docs/04__Analyze Public Data/4_2__Gene Expression Documentation/4_2_5__Find Marker Genes#algorithm">Find Marker Genes algorithm</NextLink> for more information on what the marker score represents.
+
 ### Error Handling
 
 - **404 Not Found:** If no data is found for the specified parameters, the API will return a 404 error with a message indicating the missing data.
@@ -68,3 +76,4 @@ For example:
 - The valid label for 'NCBITaxon:9606' (human) is 'Homo sapiens'.
 - For 'UBERON:0000955' (brain), the valid label is 'brain'.
 - For 'CL:0000540' (neurons), the valid label is 'neuron'.
+
