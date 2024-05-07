@@ -164,6 +164,12 @@ class TissueOntologyTermId(OntologyTermId):
     tissue_type: Optional[str] = None
 
 
+@dataclass
+class SpatialMetadata:
+    is_single: bool
+    has_fullres: bool
+
+
 @dataclass_json
 @dataclass
 class DatasetMetadata:
@@ -192,6 +198,7 @@ class DatasetMetadata:
     feature_reference: Optional[List[str]] = None
     raw_data_location: Optional[str] = None
     primary_cell_count: Optional[int] = None
+    spatial_metadata: Optional[SpatialMetadata] = None
 
 
 @dataclass

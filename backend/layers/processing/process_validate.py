@@ -14,6 +14,7 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersionId,
     OntologyTermId,
+    SpatialMetadata,
     TissueOntologyTermId,
 )
 from backend.layers.processing.exceptions import ValidationFailed
@@ -167,6 +168,21 @@ class ProcessValidate(ProcessingLogic):
             else:
                 return None
 
+        def _get_spatial_metadata() -> Optional[SpatialMetadata]:
+            if "spatial" in adata.uns:
+                spatial_dict = adata.uns["spatial"]
+                is_single = spatial_dict.get("is_single")
+                has_fullres = False
+                # schema validation ensures nested 'fullres' key is only included when is_single is True
+                if is_single:
+                    # schema validation ensures there can only be one other key in uns["spatial"] if "is_single" is True
+                    library_id = [key for key in spatial_dict if key != "is_single"][0]
+                    if "fullres" in spatial_dict[library_id]["images"]:
+                        has_fullres = True
+                return SpatialMetadata(is_single=is_single, has_fullres=has_fullres)
+            else:
+                return None
+
         return DatasetMetadata(
             name=adata.uns["title"],
             organism=_get_term_pairs("organism"),
@@ -193,6 +209,7 @@ class ProcessValidate(ProcessingLogic):
             embeddings=adata.obsm_keys(),
             raw_data_location="raw.X" if adata.raw else "X",
             citation=adata.uns.get("citation"),
+            spatial=_get_spatial_metadata(),
         )
 
     def process(

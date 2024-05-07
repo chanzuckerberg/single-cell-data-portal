@@ -1089,6 +1089,8 @@ components:
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
+        spatial:
+          $ref: "#/components/schemas/spatial"
         suspension_type:
           $ref: "#/components/schemas/suspension_type"
         tissue:
@@ -1565,6 +1567,24 @@ components:
       enum:
         - X
         - raw.X
+    spatial:
+      description: Metadata associated with spatial datasets. If the dataset is not spatial, this field is null.
+      nullable: true
+      properties:
+        is_single:
+          description: |
+            [is_single](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#is_single)
+
+            Flag indicating if a spatial dataset represents one Space Ranger output for a single tissue section or the
+            output for a single array on a puck.
+          type: boolean
+        has_fullres:
+          description: |
+            [has_fullres](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#spatiallibrary_idimagesfullres)
+
+            Flag indicating if a spatial dataset's metadata includes a numpy.ndarray representing the full resolution 
+            image.
+          type: boolean
     suspension_type:
       description: |
         [suspension_type](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#suspension_type)
