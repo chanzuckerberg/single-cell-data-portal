@@ -1,0 +1,36 @@
+# CellGuide API
+
+CellGuide currently has an experimental API that allows users to programmatically fetch the computational marker genes data underlying the marker gene tables in each CellGuide page.
+
+Please note that the CellGuide API is currently in an experimental phase and is subject to change as we continue to expand its offerings. Future versions of the API may introduce new endpoints or modify existing ones to enhance functionality and user experience. However, to ensure a seamless integration for our users, all previous versions of the API will remain operational even after new versions are released. This means that no immediate updates will be required from your side. Nonetheless, we encourage users to stay informed about new releases and improvements.
+
+## API Endpoint
+
+The `marker_genes` endpoint can be accessed at:
+
+- https://api.cellxgene.cziscience.com/cellguide/v1/marker_genes
+
+### Usage
+
+This endpoint retrieves all marker genes data for specified organism, tissue, and cell type combinations. The data structure is nested, starting from organisms to tissues to cell types, each containing a list of marker genes.
+
+### Request
+
+`GET /cellguide/v1/marker_genes`
+
+### Parameters
+
+This endpoint does not require any parameters. It retrieves all available marker genes data.
+
+### Response
+
+The response is a JSON object structured as follows:
+
+- **Organisms**: A dictionary where each key is an organism name and its value is another dictionary.
+  - **Tissues**: Nested within the organism dictionary, where each key is a tissue name and its value is another dictionary.
+    - **Cell Types**: Nested within the tissue dictionary, where each key is a cell type ID and its value is a list of marker genes.
+      - **Marker Genes**: Each item in the list is a dictionary containing:
+        - `gene`: The gene symbol.
+        - `marker_score`: A score indicating the strength of the marker gene for the cell type.
+        - `me`: Mean expression of the gene across the cells of the specified type.
+        - `pc`: Percentage of cells within the specified type that express the gene.
