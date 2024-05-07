@@ -387,7 +387,7 @@ class EntityColumns:
         "feature_count",
         "feature_reference",
         "raw_data_location",
-        "spatial_metadata",
+        "spatial",
     ]
 
     dataset_asset_cols = [

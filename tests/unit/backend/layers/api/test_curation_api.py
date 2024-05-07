@@ -693,6 +693,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 ],
                 "is_primary_data": [True, False],
                 "x_approximate_distribution": "NORMAL",
+                "spatial": None,
             }
         )
         expected_body = asdict(collection_version.metadata)
@@ -1052,6 +1053,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     ],
                     "sex": [{"label": "test_sex_label", "ontology_term_id": "test_sex_term_id"}],
                     "suspension_type": ["test_suspension_type"],
+                    "spatial": None,
                     "tissue": [
                         {
                             "label": "unknown",
