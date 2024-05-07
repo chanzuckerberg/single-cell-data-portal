@@ -10,7 +10,7 @@ def get():
     This function handles the retrieval of all CellGuide marker gene data.
 
     Returns:
-        Flask Response: JSON data of the marker genes for the requested parameters.
+        Flask Response: JSON data of the marker genes.
         The response structure is a nested dictionary with the following structure:
         - organisms --> tissues --> cell types --> list(marker genes).
 
