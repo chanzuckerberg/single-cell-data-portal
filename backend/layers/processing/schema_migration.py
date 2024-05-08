@@ -180,6 +180,7 @@ class SchemaMigrate(ProcessingLogic):
                         "collection_version_id": private_collection_version_id,
                         "dataset_id": dataset.dataset_id.id,
                         "dataset_version_id": dataset.version_id.id,
+                        "execution_id": self.execution_id,
                     }
                     for dataset in datasets
                     if dataset.status.processing_status == DatasetProcessingStatus.SUCCESS
