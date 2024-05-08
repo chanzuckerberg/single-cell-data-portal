@@ -123,7 +123,7 @@ class ProcessValidate(ProcessingLogic):
             library_id = [key for key in spatial_dict if key != "is_single"][0]
             if "fullres" in spatial_dict[library_id]["images"]:
                 has_fullres = True
-        return SpatialMetadata(is_single=is_single, has_fullres=has_fullres)
+        return SpatialMetadata(is_single=bool(is_single), has_fullres=has_fullres)
 
     @logit
     def extract_metadata(self, filename) -> DatasetMetadata:
