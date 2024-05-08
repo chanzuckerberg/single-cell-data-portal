@@ -1,6 +1,6 @@
 alembic==1.11.1
 anndata==0.8.0
-boto3==1.28.7
+boto3==1.34.101
 botocore>=1.31.7, <1.32.0
 cellxgene-census>=1.10.0 # WMG pipeline always reads the latest version of Census so we need to use the latest package version
 cellxgene-ontology-guide==0.8.0
