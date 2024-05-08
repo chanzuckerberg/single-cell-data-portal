@@ -182,7 +182,7 @@ class SchemaMigrate(ProcessingLogic):
                     for dataset in datasets
                     if dataset.status.processing_status == DatasetProcessingStatus.SUCCESS
                     # Filter out datasets that are not successfully processed
-                ]
+                ],
                 # The repeated fields in datasets is required for the AWS SFN job that uses it.
             }
 
