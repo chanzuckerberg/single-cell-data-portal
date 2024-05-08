@@ -46,6 +46,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
     OntologyTermId,
+    SpatialMetadata,
     TissueOntologyTermId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
@@ -177,6 +178,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
             "CZ CELLxGENE Discover in Collection: "
             "https://cellxgene.cziscience.com/collections/collection_id",
+            spatial=SpatialMetadata(is_single=True, has_fullres=True),
         )
         self.s3_provider.mock_s3_fs = set()
 
@@ -1788,7 +1790,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         ]
 
         # Verify public Dataset asset files are in place in s3 store
-        assert all([self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris])
+        assert all(self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris)
 
         self.business_logic.tombstone_collection(published_collection.collection_id)
 
@@ -1796,7 +1798,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         collection = self.business_logic.get_canonical_collection(published_collection.collection_id)
         assert collection.tombstoned is True
         # Verify public Dataset asset files are gone
-        assert all([not self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris])
+        assert all(not self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris)
 
     def test_resurrect_collection_ok(self):
         """
@@ -1814,7 +1816,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         canonical_collection = self.business_logic.get_canonical_collection(published_collection.collection_id)
         assert canonical_collection.tombstoned is False
         # Verify public Dataset asset files are restored
-        assert all([self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris])
+        assert all(self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris)
 
     def test_resurrect_collection_with_tombstoned_dataset_ok(self):
         """
@@ -1855,9 +1857,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         assert dataset_is_tombstoned_exception_raised
 
         # Public-access Dataset asset files for kept Dataset are restored
-        assert all([self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris_kept])
+        assert all(self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris_kept)
         # Public-access Dataset asset files for tombstoned Dataset are not restored
-        assert all([not self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris_tombstoned])
+        assert all(not self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris_tombstoned)
 
     def test_publish_version_fails_on_published_collection(self):
         """

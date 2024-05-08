@@ -76,7 +76,9 @@ def get_computational_marker_genes(*, snapshot: WmgSnapshot, ontology_tree: Onto
             groupby_dims = marker_gene_stats.groupby_dims
             groupby_terms = list(groupby_dims.keys())
             groupby_term_labels = [term.rsplit("_", 1)[0] + "_label" for term in groupby_terms]
-            groupby_dims_new = dict(zip(groupby_term_labels, (groupby_dims[term] for term in groupby_terms)))
+            groupby_dims_new = dict(
+                zip(groupby_term_labels, (groupby_dims[term] for term in groupby_terms), strict=False)
+            )
 
             for key in groupby_dims_new:
                 if key == "tissue_ontology_term_label":

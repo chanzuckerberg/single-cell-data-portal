@@ -2,6 +2,7 @@
 
 In detail, this module tests the public and private functions defined in `backend.wmg.api.common.rollup` module.
 """
+
 import gzip
 import json
 from typing import List
