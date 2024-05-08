@@ -245,6 +245,7 @@ def reshape_dataset_for_curation_api(
             ds["x_approximate_distribution"] = (
                 None if ds.get("x_approximate_distribution") is None else ds["x_approximate_distribution"].upper()
             )
+            ds["spatial"] = None if ds.get("spatial") is None else asdict(ds["spatial"])
         if not is_published and (status := dataset_version.status):
             if status.processing_status == DatasetProcessingStatus.FAILURE:
                 if status.validation_status == DatasetValidationStatus.INVALID:

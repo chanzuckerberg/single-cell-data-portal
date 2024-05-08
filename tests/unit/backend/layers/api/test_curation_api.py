@@ -20,6 +20,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
     OntologyTermId,
+    SpatialMetadata,
     Visibility,
 )
 from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException
@@ -620,6 +621,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
         # test fixtures
         dataset_metadata = copy.deepcopy(self.sample_dataset_metadata)
         dataset_metadata.sex.append(OntologyTermId(label="test_sex2", ontology_term_id="test_obp"))
+        dataset_metadata.spatial = SpatialMetadata(is_single=True, has_fullres=False)
         links = [
             {
                 "link_name": "test_raw_data_link_name",
@@ -693,6 +695,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 ],
                 "is_primary_data": [True, False],
                 "x_approximate_distribution": "NORMAL",
+                "spatial": {"is_single": True, "has_fullres": False},
             }
         )
         expected_body = asdict(collection_version.metadata)

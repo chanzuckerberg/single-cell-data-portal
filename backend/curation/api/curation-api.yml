@@ -1299,6 +1299,8 @@ components:
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
+        spatial:
+          $ref: "#/components/schemas/spatial"
         suspension_type:
           $ref: "#/components/schemas/suspension_type"
         tissue:
