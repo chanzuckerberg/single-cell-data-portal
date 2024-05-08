@@ -164,6 +164,7 @@ class TissueOntologyTermId(OntologyTermId):
     tissue_type: Optional[str] = None
 
 
+@dataclass_json
 @dataclass
 class SpatialMetadata:
     is_single: bool
