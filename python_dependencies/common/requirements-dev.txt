@@ -1,5 +1,5 @@
 allure-pytest<3
-black==22.3.0  # Must be kept in sync with black version in .pre-commit-config.yaml
+black==24.3.0  # Must be kept in sync with black version in .pre-commit-config.yaml
 click
 coverage
 parameterized
