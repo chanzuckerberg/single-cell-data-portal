@@ -20,6 +20,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
     OntologyTermId,
+    SpatialMetadata,
     Visibility,
 )
 from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException
@@ -620,6 +621,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
         # test fixtures
         dataset_metadata = copy.deepcopy(self.sample_dataset_metadata)
         dataset_metadata.sex.append(OntologyTermId(label="test_sex2", ontology_term_id="test_obp"))
+        dataset_metadata.spatial = SpatialMetadata(is_single=True, has_fullres=False)
         links = [
             {
                 "link_name": "test_raw_data_link_name",
@@ -693,6 +695,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 ],
                 "is_primary_data": [True, False],
                 "x_approximate_distribution": "NORMAL",
+                "spatial": {"is_single": True, "has_fullres": False},
             }
         )
         expected_body = asdict(collection_version.metadata)
@@ -1051,6 +1054,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                         }
                     ],
                     "sex": [{"label": "test_sex_label", "ontology_term_id": "test_sex_term_id"}],
+                    "spatial": None,
                     "suspension_type": ["test_suspension_type"],
                     "tissue": [
                         {
@@ -2028,15 +2032,14 @@ class TestGetDatasets(BaseAPIPortalTest):
                 visibility=Visibility.PRIVATE.name, headers=self.make_super_curator_header()
             )
 
-            # Create the list of the 7 expected datasets: 4 (3 + 1) from unpublished collections and 3 from
-            # the revision of published_collection_1
+            # Create the list of the 6 expected datasets: 4 (3 + 1) from unpublished collections and 2 from
+            # the revision of published_collection_1 (one new, one updated).
             expected_dataset_ids = [
                 unpublished_collection_1_dataset_added.dataset_version_id,
                 unpublished_collection_1.datasets[0].version_id.id,
                 unpublished_collection_1.datasets[1].version_id.id,
                 unpublished_collection_2.datasets[0].version_id.id,
                 revision_1_dataset_updated.dataset_version_id,
-                revision_1.datasets[1].version_id.id,
                 revision_1_dataset_new.dataset_version_id,
             ]
             _validate_datasets(response_datasets, expected_dataset_ids)
@@ -2046,14 +2049,13 @@ class TestGetDatasets(BaseAPIPortalTest):
 
         # Owner
         with self.subTest("With owner credentials"):
-            # Create the list of the 6 expected datasets: 3 from unpublished collections and 3 from
-            # the revision of published_collection_1.
+            # Create the list of the 5 expected datasets: 3 from unpublished collections and 2 from
+            # the revision of published_collection_1 (one new, one updated).
             expected_dataset_ids = [
                 unpublished_collection_1_dataset_added.dataset_version_id,
                 unpublished_collection_1.datasets[0].version_id.id,
                 unpublished_collection_1.datasets[1].version_id.id,
                 revision_1_dataset_updated.dataset_version_id,
-                revision_1.datasets[1].version_id.id,
                 revision_1_dataset_new.dataset_version_id,
             ]
             _validate_datasets(response_datasets, expected_dataset_ids)
@@ -2070,7 +2072,6 @@ class TestGetDatasets(BaseAPIPortalTest):
                 ],
                 reverse=True,
             )
-            expected_sorted_dataset_ids.append(revision_1.datasets[1].dataset_id.id)
 
             response_dataset_ids = []
             for dataset in response_datasets:
@@ -2130,24 +2131,6 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertIn(revision_1_dataset_updated.dataset_version_id, response_dataset["explorer_url"])
             self.assertIsNone(response_dataset["published_at"])
             self.assertIsNone(response_dataset["revised_at"])
-
-        # Verify fields for a unchanged dataset of a revision
-        # visibility - PUBLIC
-        # collection_id - collection_version_id
-        # collection_version_id - collection_version_id
-        # revision_of_collection - collection_id
-        # revision_of_dataset - null
-        with self.subTest("Verify expected fields for revision, unchanged dataset"):
-            expected_dataset = revision_1.datasets[1]
-            response_dataset = datasets_by_version_id[expected_dataset.version_id.id]
-            self.assertEqual(Visibility.PUBLIC.name, response_dataset["visibility"])
-            self.assertEqual(revision_1.version_id.id, response_dataset["collection_id"])
-            self.assertEqual(revision_1.version_id.id, response_dataset["collection_version_id"])
-            self.assertEqual(revision_1.collection_id.id, response_dataset["revision_of_collection"])
-            self.assertIsNone(response_dataset["revision_of_dataset"])
-            self.assertIn(expected_dataset.dataset_id.id, response_dataset["explorer_url"])
-            self.assertIsNotNone(response_dataset["published_at"])
-            self.assertIsNone(response_dataset["revised_at"])  # Not revised
 
     def test_get_private_datasets_400(self):
         # 400 if PRIVATE and schema version.
