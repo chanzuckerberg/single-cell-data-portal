@@ -228,7 +228,7 @@ class TestH5ADDataFile(unittest.TestCase):
             for column_name in expected_columns:
                 if obs_array_schema.get(column_name, {}).get("type", "") == "categorical":
                     categories = obs_array_schema[column_name]["categories"]
-                    mapping = dict(zip(range(len(categories)), categories))
+                    mapping = dict(zip(range(len(categories)), categories, strict=False))
                     # Validate values
                     expected_data = anndata_object.obs[column_name].to_numpy()
                     actual_data = obs_array.query(attrs=[column_name])[:][column_name]

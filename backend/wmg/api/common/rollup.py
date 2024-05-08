@@ -3,7 +3,6 @@
 The API public methods call the public methods in this module to perform the rollup operations.
 """
 
-
 from typing import Union
 
 import numpy as np
@@ -105,6 +104,6 @@ def _filter_out_redundant_nodes(df):
     for i in index_names[1:]:
         cell_type_keys += df.index.get_level_values(i)
 
-    cell_counts_dict = dict(zip(cell_type_keys, df["n_cells_cell_type"]))
+    cell_counts_dict = dict(zip(cell_type_keys, df["n_cells_cell_type"], strict=False))
     df = df[are_cell_types_not_redundant_nodes(cell_type_keys, cell_counts_dict)]
     return df

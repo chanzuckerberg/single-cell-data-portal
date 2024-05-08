@@ -258,16 +258,12 @@ def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -
 
 
 def find_dimension_id_from_compare(compare: str) -> str:
-    if compare == "sex":
-        return "sex_ontology_term_id"
-    elif compare == "self_reported_ethnicity":
-        return "self_reported_ethnicity_ontology_term_id"
-    elif compare == "disease":
-        return "disease_ontology_term_id"
-    elif compare == "publication":
-        return "publication_citation"
-    else:
-        return None
+    return {
+        "sex": "sex_ontology_term_id",
+        "self_reported_ethnicity": "self_reported_ethnicity_ontology_term_id",
+        "disease": "disease_ontology_term_id",
+        "publication": "publication_citation",
+    }.get(compare)
 
 
 def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:

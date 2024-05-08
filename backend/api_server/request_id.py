@@ -1,6 +1,7 @@
 """
 Inspired by: http://blog.mcpolemic.com/2016/01/18/adding-request-ids-to-flask.html
 """
+
 import logging
 import uuid
 
