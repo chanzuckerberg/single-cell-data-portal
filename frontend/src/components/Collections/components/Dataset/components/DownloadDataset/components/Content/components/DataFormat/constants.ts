@@ -6,5 +6,4 @@ export const TOOLTIP_SLOT_PROPS = {
   },
 };
 
-export const TOOLTIP_TITLE =
-  ".rds (Seurat v5) is unavailable.";
+export const TOOLTIP_TITLE = ".rds (Seurat v5) is unavailable.";
