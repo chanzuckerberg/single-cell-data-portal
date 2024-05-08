@@ -1,4 +1,4 @@
-import { ButtonIcon } from "@czi-sds/components";
+import { Button } from "@czi-sds/components";
 import { Children, memo, ReactElement, ReactNode } from "react";
 import {
   Position,
@@ -56,8 +56,9 @@ export default memo(function RightSideBar({
             {child1.props.title}
           </StyledTitle>
           {child1.props.handleClose && (
-            <ButtonIcon
-              sdsIcon="xMark"
+            <Button
+              sdsStyle="icon"
+              icon="XMark"
               sdsSize="medium"
               onClick={() => child1.props.handleClose()}
               sdsType="tertiary"
@@ -75,8 +76,9 @@ export default memo(function RightSideBar({
               {child2.props.title}
             </StyledTitle>
             {child2.props.handleClose && (
-              <ButtonIcon
-                sdsIcon="xMark"
+              <Button
+                sdsStyle="icon"
+                icon="XMark"
                 sdsSize="medium"
                 onClick={() => child2.props.handleClose()}
                 sdsType="tertiary"

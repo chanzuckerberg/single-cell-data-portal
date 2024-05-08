@@ -26,6 +26,7 @@ const AsyncCTA = loadable(
 );
 
 const CreateCollectionButton = (props: Partial<ButtonProps>) => (
+  // TODO(SDSv20): `I was expecting a type matching "icon", but instead you passed "square".` - Huh?
   <StyledButton sdsStyle="square" sdsType="primary" {...props}>
     Create Collection
   </StyledButton>

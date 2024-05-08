@@ -45,7 +45,11 @@ export default memo(function Filters({
           search
           label="Disease"
           options={terms.disease as unknown as DefaultMenuSelectOption[]}
-          onChange={handle.diseasesChange}
+          onChange={
+            handle.diseasesChange as unknown as (
+              options: (string | DefaultMenuSelectOption)[]
+            ) => void
+          } // TODO(SDSv20): Fix this type by updating the handle
           value={selected.diseases as unknown as DefaultMenuSelectOption[]}
           InputDropdownComponent={
             StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
@@ -61,7 +65,11 @@ export default memo(function Filters({
           options={
             terms.self_reported_ethnicity as unknown as DefaultMenuSelectOption[]
           }
-          onChange={handle.ethnicitiesChange}
+          onChange={
+            handle.ethnicitiesChange as unknown as (
+              options: (string | DefaultMenuSelectOption)[]
+            ) => void
+          } // TODO(SDSv20): Fix this type by updating the handle
           value={selected.ethnicities as unknown as DefaultMenuSelectOption[]}
           InputDropdownComponent={
             StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
@@ -76,7 +84,11 @@ export default memo(function Filters({
           search
           label="Publication"
           options={terms.publication as unknown as DefaultMenuSelectOption[]}
-          onChange={handle.publicationsChange}
+          onChange={
+            handle.publicationsChange as unknown as (
+              options: (string | DefaultMenuSelectOption)[]
+            ) => void
+          } // TODO(SDSv20): Fix this type by updating the handle
           value={selected.publications as unknown as DefaultMenuSelectOption[]}
           InputDropdownComponent={
             StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
@@ -91,7 +103,11 @@ export default memo(function Filters({
           search
           label="Sex"
           options={terms.sex as unknown as DefaultMenuSelectOption[]}
-          onChange={handle.sexesChange}
+          onChange={
+            handle.sexesChange as unknown as (
+              options: (string | DefaultMenuSelectOption)[]
+            ) => void
+          } // TODO(SDSv20): Fix this type by updating the handle
           value={selected.sexes as unknown as DefaultMenuSelectOption[]}
           InputDropdownComponent={
             StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
@@ -105,7 +121,11 @@ export default memo(function Filters({
           search
           label="Tissue"
           options={terms.tissue as unknown as DefaultMenuSelectOption[]}
-          onChange={handle.tissuesChange}
+          onChange={
+            handle.tissuesChange as unknown as (
+              options: (string | DefaultMenuSelectOption)[]
+            ) => void
+          } // TODO(SDSv20): Fix this type by updating the handle
           value={selected.tissues as unknown as DefaultMenuSelectOption[]}
           InputDropdownComponent={
             StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown

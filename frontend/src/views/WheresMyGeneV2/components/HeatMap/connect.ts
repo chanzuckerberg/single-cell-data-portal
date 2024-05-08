@@ -27,7 +27,6 @@ import {
 } from "src/views/WheresMyGeneV2/components/HeatMap/hooks";
 
 import { Props } from "./types";
-import { DefaultAutocompleteOption } from "@czi-sds/components";
 import {
   CellType,
   GeneExpressionSummary,
@@ -232,14 +231,15 @@ export function useConnect({
   }, [sortedCellTypesByTissueName]);
 
   const handleFilteredCellTypesChange = useCallback(
-    (_: unknown, rawNewFilteredCellTypes: DefaultAutocompleteOption[]) => {
+    (_: unknown, rawNewFilteredCellTypes: (string | { name: string })[]) => {
       if (!Object.keys(cellTypesByName).length) return;
 
-      const newCellTypeNames = rawNewFilteredCellTypes.map(
-        (cellType) => cellType.name
+      // Map through rawNewFilteredCellTypes and extract the name property if it's an object, or use the string directly
+      const newCellTypeNames = rawNewFilteredCellTypes.map((cellType) =>
+        typeof cellType === "string" ? cellType : cellType.name
       );
       const cellTypeIds = newCellTypeNames.map(
-        (name) => cellTypesByName[name].id
+        (name) => cellTypesByName[name]?.id
       );
 
       /**

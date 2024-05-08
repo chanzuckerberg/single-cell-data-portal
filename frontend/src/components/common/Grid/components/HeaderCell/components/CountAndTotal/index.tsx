@@ -17,7 +17,7 @@ export default function CountAndTotal({
     <>
       {!!countAndTotal && (
         <Tag
-          color="gray"
+          color="info" // TOOD(SDSv20): This was gray
           hover={false}
           label={countAndTotal}
           sdsStyle="square"

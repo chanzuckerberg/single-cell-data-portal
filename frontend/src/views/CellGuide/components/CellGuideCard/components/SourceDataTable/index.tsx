@@ -199,7 +199,8 @@ function createTissueContent(
   return tissueNames.length <= (isPastBreakpoint ? 1 : 3) ? (
     tissueNames.map((tissue, index) => (
       <span key={`tissue-${tissue}-${index}`}>
-        <StyledTag color="gray" sdsType="secondary" label={tissue} />
+        {/* TODO(SDSv20): This should be gray */}
+        <StyledTag color="info" sdsType="secondary" label={tissue} />
       </span>
     ))
   ) : (
@@ -214,8 +215,9 @@ function createTissueContent(
       ))}
     >
       <span onClick={createTooltipClickHandler(tissueNames, "Tissues")}>
+        {/* TODO(SDSv20): This should be gray */}
         <StyledTag
-          color="gray"
+          color="info"
           sdsType="secondary"
           label={generateTagLabel(tissueNames, "tissue", "tissues")}
         />
@@ -235,7 +237,8 @@ function createDiseaseContent(
       .sort((a, b) => (a === "normal" ? -1 : b === "normal" ? 1 : 0))
       .map((disease, index) => (
         <span key={`disease-${disease}-${index}`}>
-          {<StyledTag color="gray" sdsType="secondary" label={disease} />}
+          {/* TODO(SDSv20): This should be gray */}
+          <StyledTag color="info" sdsType="secondary" label={disease} />
         </span>
       ))
   ) : (
@@ -243,7 +246,8 @@ function createDiseaseContent(
       {/* If 'normal' exists then have it outside of the overflow tag */}
       {diseaseNames.includes("normal") && !isPastBreakpoint && (
         <span>
-          <StyledTag color="gray" sdsType="secondary" label="normal" />
+          {/* TODO(SDSv20): This should be gray */}
+          <StyledTag color="info" sdsType="secondary" label="normal" />
         </span>
       )}
       <Tooltip
@@ -259,8 +263,9 @@ function createDiseaseContent(
           ))}
       >
         <span onClick={createTooltipClickHandler(diseaseNames, "Diseases")}>
+          {/* TODO(SDSv20): This should be gray */}
           <StyledTag
-            color="gray"
+            color="info"
             sdsType="secondary"
             label={generateTagLabel(diseaseNames, "disease", "diseases")}
           />
@@ -279,7 +284,8 @@ const createOrganismContent = (
   return organismNames.length <= (isPastBreakpoint ? 1 : 3) ? (
     organismNames.map((organism, index) => (
       <span key={`organism-${organism}-${index}`}>
-        {<StyledTag color="gray" sdsType="secondary" label={organism} />}
+        {/* TODO(SDSv20): This should be gray */}
+        <StyledTag color="info" sdsType="secondary" label={organism} />
       </span>
     ))
   ) : (
@@ -295,8 +301,9 @@ const createOrganismContent = (
         ))}
       >
         <span onClick={createTooltipClickHandler(organismNames, "Organisms")}>
+          {/* TODO(SDSv20): This should be gray */}
           <StyledTag
-            color="gray"
+            color="info"
             sdsType="secondary"
             label={generateTagLabel(organismNames, "organism", "organisms")}
           />

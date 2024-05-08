@@ -180,7 +180,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
                       label={tissueId}
                       sdsType="secondary"
                       sdsStyle="square"
-                      color="gray"
+                      color="info" // TODO(SDSv20): This should be gray
                       hover
                     />
                   </a>
@@ -189,7 +189,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
                   InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
                   search
                   label={tissueCardSelectedOrganism}
-                  onChange={handleChangeOrganism}
+                  onChange={handleChangeOrganism} // TODO(SDSv20): Come back to this
                   options={sdsOrganismsList}
                   value={{ name: tissueCardSelectedOrganism }}
                   data-testid={TISSUE_CARD_ORGANISM_SELECTOR_TEST_ID}

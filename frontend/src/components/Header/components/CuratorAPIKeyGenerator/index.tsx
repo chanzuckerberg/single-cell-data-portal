@@ -75,6 +75,7 @@ export default function CuratorAPIKeyGenerator(): JSX.Element {
           </APIDisclaimerP>
         </DialogContent>
         <DialogActions>
+          {/* TODO(SDSv20): Fix handler */}
           <SDSButton onClick={handleClose}>Close</SDSButton>
           <SDSButton sdsType="primary" sdsStyle="square" onClick={copyAPIKey}>
             Copy API Key

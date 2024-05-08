@@ -89,8 +89,8 @@ export default function SideBar({
               <Icon
                 sdsIcon={
                   (position === Position.LEFT ? isExpanded : !isExpanded)
-                    ? "chevronLeft"
-                    : "chevronRight"
+                    ? "ChevronLeft"
+                    : "ChevronRight"
                 }
                 sdsSize="l"
                 sdsType="button"
@@ -98,7 +98,7 @@ export default function SideBar({
             }
             onClick={() => handleExpandedClick(!isExpanded)}
             sdsStyle="minimal"
-            sdsType="minimal"
+            // sdsType="minimal" // TODO(SDSv20): what should this be?
             size="large"
           >
             <ToggleButtonText>

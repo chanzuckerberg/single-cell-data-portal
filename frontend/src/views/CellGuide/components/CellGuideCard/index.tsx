@@ -46,7 +46,7 @@ import {
   DefaultDropdownMenuOption,
   Dropdown,
   InputDropdownProps,
-  ButtonIcon,
+  Button,
 } from "@czi-sds/components";
 import { useComponentWidth } from "./components/common/hooks/useIsComponentPastBreakpoint";
 import { DEFAULT_ONTOLOGY_HEIGHT } from "../common/OntologyDagView/common/constants";
@@ -217,7 +217,7 @@ export default function CellGuideCard({
       InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
       search
       label={selectedOrganism?.name}
-      onChange={handleChangeOrganism}
+      onChange={handleChangeOrganism} // TODO(SDSv20): Come back to this
       options={sdsOrganismsList}
       value={selectedOrganism}
       data-testid={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
@@ -230,7 +230,7 @@ export default function CellGuideCard({
         InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
         search
         label={tissueName}
-        onChange={handleChangeOrgan}
+        onChange={handleChangeOrgan} // TODO(SDSv20): Come back to this
         options={sdsOrgansList}
         value={selectedOrgan}
         data-testid={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}
@@ -303,11 +303,12 @@ export default function CellGuideCard({
         <MobileTooltipWrapper>
           <MobileTooltipHeader>
             <MobileTooltipTitle>{tooltipContent.title}</MobileTooltipTitle>
-            <ButtonIcon
+            <Button
               onClick={() => {
                 setTooltipContent(null);
               }}
-              sdsIcon="xMark"
+              icon="XMark"
+              sdsStyle="icon"
               sdsSize="medium"
             />
           </MobileTooltipHeader>
@@ -334,7 +335,7 @@ export default function CellGuideCard({
                   label={cellTypeId}
                   sdsType="secondary"
                   sdsStyle="square"
-                  color="gray"
+                  color="info" // TODO(SDSv20): This was gray
                   hover
                 />
               </a>

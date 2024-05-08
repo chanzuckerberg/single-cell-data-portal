@@ -182,6 +182,7 @@ const Content: FC<Props> = (props) => {
          */}
         <Form ref={formEl} autoComplete="off">
           {/* Collection detail */}
+          {/* TODO(SDSv20): Another example where using a component as a CSS selector expects parent component to pass in the selector's props */}
           <CollectionDetail>
             {/* Title */}
             <Title>Collection Details</Title>

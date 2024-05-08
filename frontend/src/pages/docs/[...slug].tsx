@@ -221,7 +221,7 @@ const DirectoryListItem = ({
       >
         {directory.dirName.split("__")[1]}{" "}
         <Icon
-          sdsIcon={isExpanded % 2 == 1 ? "chevronDown" : "chevronRight"}
+          sdsIcon={isExpanded % 2 == 1 ? "ChevronDown" : "ChevronRight"}
           sdsSize="s"
           sdsType="interactive"
         />
@@ -393,6 +393,7 @@ const ImageContainer = styled.div`
 
 const DocsImage = ({ src }: ImageProps) => {
   return (
+    // TODO(SDSv20): ImageContainer is expecting StyledImage props to be passed... Possible bug?
     <ImageContainer>
       <StyledImage alt="image" src={src} fill />
     </ImageContainer>

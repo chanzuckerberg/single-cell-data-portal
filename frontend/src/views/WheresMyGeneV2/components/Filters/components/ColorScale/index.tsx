@@ -44,7 +44,7 @@ export default function ColorScale({ setIsScaled }: Props): JSX.Element {
 
       <StyledDropdown
         data-testid="color-scale-dropdown"
-        onChange={colorScaleOnChange}
+        onChange={colorScaleOnChange} // TODO(SDSv20): Come back to this
         label={colorScaledOption.name}
         options={COLOR_SCALE_OPTIONS}
         InputDropdownProps={DEFAULT_INPUT_DROPDOWN_PROPS}
