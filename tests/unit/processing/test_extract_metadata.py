@@ -4,7 +4,7 @@ import anndata
 import numpy as np
 import pandas
 
-from backend.layers.common.entities import OntologyTermId, TissueOntologyTermId
+from backend.layers.common.entities import OntologyTermId, SpatialMetadata, TissueOntologyTermId
 from backend.layers.processing.process_validate import ProcessValidate
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
@@ -175,6 +175,7 @@ class TestProcessingValidate(BaseProcessingTest):
         self.assertAlmostEqual(extracted_metadata.mean_genes_per_cell, np.count_nonzero(adata.X[:, filter]) / 50001)
 
         self.assertEqual(extracted_metadata.raw_data_location, "X")
+        self.assertEqual(extracted_metadata.spatial, None)
 
     @patch("scanpy.read_h5ad")
     def test_extract_metadata_find_raw_layer(self, mock_read_h5ad):
@@ -281,3 +282,25 @@ class TestProcessingValidate(BaseProcessingTest):
         self.assertEqual(extracted_metadata.mean_genes_per_cell, 0)
 
         self.assertEqual(extracted_metadata.raw_data_location, "raw.X")
+
+    def test_get_spatial_metadata__is_single_and_fullres_true(self):
+        spatial_dict = {
+            "is_single": np.bool_(True),
+            "dummy_library_id": {"images": {"fullres": "dummy_fullres"}},
+        }
+        self.assertEqual(self.pdv.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=True))
+
+    def test_get_spatial_metadata__is_single_true_fullres_false(self):
+        spatial_dict = {
+            "is_single": True,
+            "dummy_library_id": {"images": {}},
+        }
+        self.assertEqual(
+            self.pdv.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=False)
+        )
+
+    def test_get_spatial_metadata__is_single_false(self):
+        spatial_dict = {"is_single": np.bool_(False)}
+        self.assertEqual(
+            self.pdv.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=False, has_fullres=False)
+        )

@@ -46,6 +46,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
     OntologyTermId,
+    SpatialMetadata,
     TissueOntologyTermId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
@@ -177,6 +178,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
             "CZ CELLxGENE Discover in Collection: "
             "https://cellxgene.cziscience.com/collections/collection_id",
+            spatial=SpatialMetadata(is_single=True, has_fullres=True),
         )
         self.s3_provider.mock_s3_fs = set()
 
