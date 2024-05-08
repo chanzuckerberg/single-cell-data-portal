@@ -2,12 +2,31 @@ import json
 
 import numpy as np
 
-from tests.unit.cellguide_pipeline.constants import (
+from tests.unit.backend.cellguide.pipeline.constants import (
     ASCTB_MASTER_SHEET_FIXTURE_FILENAME,
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
     FAKE_COLLECTIONS_FIXTURE_FILENAME,
     FAKE_DATASETS_FIXTURE_FILENAME,
 )
+
+
+def mock_get_marker_gene_data():
+    return {
+        "Homo sapiens": {
+            "brain": {
+                "CL:0000540": [
+                    {"marker_score": 0.95, "me": 0.5, "pc": 0.1, "gene": "Gene1"},
+                    {"marker_score": 0.90, "me": 0.4, "pc": 0.2, "gene": "Gene2"},
+                ]
+            },
+            "All Tissues": {
+                "CL:0000540": [
+                    {"marker_score": 0.95, "me": 0.5, "pc": 0.1, "gene": "Gene3"},
+                    {"marker_score": 0.90, "me": 0.4, "pc": 0.2, "gene": "Gene4"},
+                ]
+            },
+        }
+    }
 
 
 def mock_get_folders_from_s3(bucket, prefix):

@@ -35,7 +35,7 @@ wmg-processing-unittest:
 cellguide-pipeline-unittest:
 	# This target is intended to be run INSIDE the cellguide pipeline container
 	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning coverage run $(COVERAGE_RUN_ARGS) -m pytest \
-	tests/unit/cellguide_pipeline/ --rootdir=. --alluredir=./allure-results --verbose;
+	tests/unit/backend/cellguide/pipeline/ --rootdir=. --alluredir=./allure-results --verbose;
 
 .PHONY: functional-test
 functional-test:
@@ -156,40 +156,40 @@ local-unit-test: local-unit-test-backend local-unit-test-wmg-backend local-unit-
 # Run all backend and processing unit tests in the dev environment, with code coverage
 
 .PHONY: local-unit-test-backend
-local-unit-test-backend: 
-	docker compose run --rm -T backend bash -c \
+local-unit-test-backend: .env.ecr
+	docker compose $(COMPOSE_OPTS) run --rm -T backend bash -c \
 	"cd /single-cell-data-portal && coverage run  $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/backend/layers/ tests/unit/backend/common/";
 
 .PHONY: local-unit-test-wmg-backend
-local-unit-test-wmg-backend: 
-	docker compose run --rm -T backend bash -c \
+local-unit-test-wmg-backend: .env.ecr
+	docker compose $(COMPOSE_OPTS) run --rm -T backend bash -c \
 	"cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/backend/wmg/";
 
 .PHONY: local-integration-test-backend
-local-integration-test-backend:
-	docker compose run --rm -e INTEGRATION_TEST=true -e DB_URI=postgresql://corpora:test_pw@database -T backend \
+local-integration-test-backend: .env.ecr
+	docker compose $(COMPOSE_OPTS) run --rm -e INTEGRATION_TEST=true -e DB_URI=postgresql://corpora:test_pw@database -T backend \
 	bash -c "cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest tests/unit/backend/layers/ tests/unit/backend/common/";
 
 .PHONY: local-unit-test-processing
-local-unit-test-processing: # Run processing-unittest target in `processing` Docker container
+local-unit-test-processing: .env.ecr # Run processing-unittest target in `processing` Docker container
 	docker compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
 	bash -c "cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/processing/";
 
 .PHONY: local-unit-test-wmg-processing
-local-unit-test-wmg-processing: # Run processing-unittest target in `wmg_processing` Docker container
+local-unit-test-wmg-processing: .env.ecr # Run processing-unittest target in `wmg_processing` Docker container
 	echo "Running all wmg processing unit tests"; \
 	docker compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T wmg_processing \
 	bash -c "cd /single-cell-data-portal && make wmg-processing-unittest;"
 
 .PHONY: local-unit-test-cellguide-pipeline
-local-unit-test-cellguide-pipeline: # Run processing-unittest target in `cellguide_pipeline` Docker container
+local-unit-test-cellguide-pipeline: .env.ecr # Run processing-unittest target in `cellguide_pipeline` Docker container
 	echo "Running all cellguide pipeline unit tests"; \
 	docker compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T cellguide_pipeline \
 	bash -c "cd /single-cell-data-portal && make cellguide-pipeline-unittest;"	
 
 .PHONY: local-unit-test-cxg-admin
-local-unit-test-cxg-admin:
-	docker compose run --rm -T backend bash -c \
+local-unit-test-cxg-admin: .env.ecr
+	docker compose $(COMPOSE_OPTS) run --rm -T backend bash -c \
 	"cd /single-cell-data-portal && coverage run  $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/scripts/";
 
 .PHONY: local-smoke-test

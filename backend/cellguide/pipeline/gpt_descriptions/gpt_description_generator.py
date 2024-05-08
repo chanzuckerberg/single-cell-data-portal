@@ -1,16 +1,16 @@
 import logging
 import time
 
-from backend.cellguide.pipeline.config import CellGuideConfig
-from backend.cellguide.pipeline.constants import GPT_OUTPUT_DIRECTORY_FOLDERNAME, GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME
+from backend.cellguide.common.config import CellGuideConfig
+from backend.cellguide.common.constants import GPT_OUTPUT_DIRECTORY_FOLDERNAME, GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME
+from backend.cellguide.common.providers.openai_provider import OpenAIProvider
+from backend.cellguide.common.providers.s3_provider import S3Provider
+from backend.cellguide.common.utils import get_object_key
 from backend.cellguide.pipeline.gpt_descriptions.constants import (
     GPT_CELLTYPE_DESCRIPTION_SYSTEM_ROLE,
     GPT_CELLTYPE_DESCRIPTION_USER_ROLE,
     GPT_CELLTYPE_SEO_DESCRIPTION_USER_ROLE,
 )
-from backend.cellguide.pipeline.providers.openai_provider import OpenAIProvider
-from backend.cellguide.pipeline.providers.s3_provider import S3Provider
-from backend.cellguide.pipeline.utils import get_object_key
 
 logger = logging.getLogger(__name__)
 
