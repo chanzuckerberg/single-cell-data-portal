@@ -5,7 +5,7 @@ import {
   GROUP_BY_TOOLTIP_TEXT,
   SELECT_TISSUE_GENE_TEXT,
 } from "src/views/WheresMyGeneV2/common/constants";
-import { Tooltip } from "@czi-sds/components";
+import { DefaultAutocompleteOption, Tooltip } from "@czi-sds/components";
 import {
   StyledIconImage,
   StyledTooltip,
@@ -54,7 +54,7 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
         </Label>
       </LabelWrapper>
       <Wrapper>
-        <StyledDropdown
+        <StyledDropdown<DefaultAutocompleteOption, false, false, false>
           data-testid="compare-dropdown"
           onChange={handleChange} // TODO(SDSv20): Come back tot his
           label={optionLabel?.name || "None"}

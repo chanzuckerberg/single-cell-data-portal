@@ -13,7 +13,7 @@ import {
   SORT_CELL_TYPES_TOOLTIP_TEXT,
   SORT_GENES_TOOLTIP_TEXT,
 } from "src/views/WheresMyGeneV2/common/constants";
-import { Props } from "./types";
+import { CellTypeOptionType, Props } from "./types";
 import { useConnect } from "./connect";
 import { CELL_TYPE_OPTIONS, GENE_OPTIONS } from "./constants";
 
@@ -67,7 +67,10 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
           </Tooltip>
         </FilterLabel>
 
-        <StyledDropdown
+        {/* Generic variables are
+            <T: Dropdown's option type, Multiple, DisableClearable, FreeSolo>
+        */}
+        <StyledDropdown<CellTypeOptionType, false, false, false>
           data-testid="cell-type-sort-dropdown"
           onChange={cellTypesOnChange} // TODO(SDSv20): Come back to this
           label={cellTypeSelectedOption.name}
@@ -113,7 +116,11 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
             </TooltipButton>
           </Tooltip>
         </FilterLabel>
-        <StyledDropdown
+
+        {/* Generic variables are
+            <T: Dropdown's option type, Multiple, DisableClearable, FreeSolo>
+        */}
+        <StyledDropdown<CellTypeOptionType, false, false, false>
           data-testid="gene-sort-dropdown"
           onChange={genesOnChange} // TODO(SDSv20): Come back to this
           label={geneSelectedOption.name}

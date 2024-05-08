@@ -7,7 +7,7 @@ import {
 import { css } from "@emotion/react";
 
 interface DropdownFormProps extends CommonThemeProps {
-  isSelected: boolean;
+  isSelected?: boolean;
 }
 
 const scrollbar = css`
