@@ -9,11 +9,13 @@ class TestGatherCollections:
             "can_publish": "True",
             "collection_id": published.collection_id.id,
             "collection_version_id": published.collection_id.id,
+            "execution_id": "test-execution-arn",
         } not in response
         assert {
             "can_publish": "False",
             "collection_id": revision.collection_id.id,
             "collection_version_id": revision.version_id.id,
+            "execution_id": "test-execution-arn",
         } in response
         assert len(response) == 1
 
@@ -27,6 +29,7 @@ class TestGatherCollections:
             "can_publish": "True",
             "collection_id": published[0].collection_id.id,
             "collection_version_id": published[0].version_id.id,
+            "execution_id": "test-execution-arn",
         } in response
         assert len(response) == 1
 
@@ -40,6 +43,7 @@ class TestGatherCollections:
             "can_publish": "False",
             "collection_id": private[0].collection_id.id,
             "collection_version_id": private[0].version_id.id,
+            "execution_id": "test-execution-arn",
         } in response
         assert len(response) == 1
 
@@ -59,16 +63,19 @@ class TestGatherCollections:
                 "can_publish": "False",
                 "collection_id": published_no_revision.collection_id.id,
                 "collection_version_id": published_no_revision.version_id.id,
+                "execution_id": "test-execution-arn",
             },
             {
                 "can_publish": "False",
                 "collection_id": private.collection_id.id,
                 "collection_version_id": private.version_id.id,
+                "execution_id": "test-execution-arn",
             },
             {
                 "can_publish": "False",
                 "collection_id": revision.collection_id.id,
                 "collection_version_id": revision.version_id.id,
+                "execution_id": "test-execution-arn",
             },
         ]:
             assert obj in response
