@@ -63,6 +63,16 @@ updates:
       day: "sunday"
     assignees:
       - "nayib-jose-gloria"
+    groups:
+      formatters:
+        patterns:
+          - "black"
+          - "ruff"
+      test-runners:
+        patterns:
+          - "pytest"
+          - "coverage"
+          - "allure"
   - package-ecosystem: npm
     directory: "/frontend/"
     open-pull-requests-limit: 3
