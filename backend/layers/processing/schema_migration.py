@@ -84,6 +84,7 @@ class SchemaMigrate(ProcessingLogic):
             _resp.update(
                 collection_id=collection.collection_id.id,
                 collection_version_id=collection.version_id.id,
+                execution_id=self.execution_id,
             )
             response.append(_resp)
 
@@ -129,6 +130,7 @@ class SchemaMigrate(ProcessingLogic):
             "dataset_version_id": new_dataset_version_id.id,
             "uri": uri,
             "sfn_name": sfn_name,
+            "execution_id": self.execution_id,
         }
 
     def collection_migrate(self, collection_id: str, collection_version_id: str, can_publish: bool) -> Dict[str, Any]:
@@ -178,6 +180,7 @@ class SchemaMigrate(ProcessingLogic):
                         "collection_version_id": private_collection_version_id,
                         "dataset_id": dataset.dataset_id.id,
                         "dataset_version_id": dataset.version_id.id,
+                        "execution_id": self.execution_id,
                     }
                     for dataset in datasets
                     if dataset.status.processing_status == DatasetProcessingStatus.SUCCESS
@@ -189,6 +192,7 @@ class SchemaMigrate(ProcessingLogic):
             if not response["datasets"]:
                 # Handles the case were the collection has no processed datasets
                 response["no_datasets"] = str(True)
+        response["execution_id"] = self.execution_id
         self._store_sfn_response("publish_and_cleanup", version.collection_id.id, response)
         return response
 
