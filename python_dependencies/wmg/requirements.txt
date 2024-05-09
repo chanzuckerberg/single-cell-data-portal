@@ -6,9 +6,7 @@ cellxgene-census>=1.10.0 # WMG pipeline always reads the latest version of Censu
 cellxgene-ontology-guide==0.8.0
 dataclasses-json==0.5.7
 ddtrace==2.1.4
-furl==2.1.3
 jsonschema==4.18.4
-moto>=5.0.0
 numba>=0.58.0
 numpy==1.23.5
 openai==0.27.7
