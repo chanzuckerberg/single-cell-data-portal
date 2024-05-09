@@ -40,6 +40,7 @@ import {
 } from "src/views/WheresMyGeneV2/common/store/actions";
 import { useSortedCellTypesByTissueName } from "src/views/WheresMyGeneV2/components/HeatMap/hooks/useSortedCellTypesByTissueName";
 import { cloneDeep } from "lodash";
+import { DefaultAutocompleteOption } from "@czi-sds/components";
 
 export function useConnect({
   cellTypes,
@@ -231,15 +232,14 @@ export function useConnect({
   }, [sortedCellTypesByTissueName]);
 
   const handleFilteredCellTypesChange = useCallback(
-    (_: unknown, rawNewFilteredCellTypes: (string | { name: string })[]) => {
+    (_: unknown, rawNewFilteredCellTypes: DefaultAutocompleteOption[]) => {
       if (!Object.keys(cellTypesByName).length) return;
 
-      // Map through rawNewFilteredCellTypes and extract the name property if it's an object, or use the string directly
-      const newCellTypeNames = rawNewFilteredCellTypes.map((cellType) =>
-        typeof cellType === "string" ? cellType : cellType.name
+      const newCellTypeNames = rawNewFilteredCellTypes.map(
+        (cellType) => cellType.name
       );
       const cellTypeIds = newCellTypeNames.map(
-        (name) => cellTypesByName[name]?.id
+        (name) => cellTypesByName[name].id
       );
 
       /**
@@ -247,7 +247,6 @@ export function useConnect({
        * Otherwise, it will cause infinite loop.
        */
       if (String(filteredCellTypes) === String(newCellTypeNames)) return;
-
       dispatch?.(
         setFilteredCellTypes({
           filteredCellTypes: newCellTypeNames,

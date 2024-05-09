@@ -373,7 +373,12 @@ const DocContent = styled.div`
   }
 `;
 
-const StyledImage = styled(Image)();
+const StyledImage = styled(Image)`
+  object-fit: contain;
+  width: 100% !important;
+  position: relative !important;
+  height: unset !important;
+`;
 
 const ImageContainer = styled.div`
   width: 100%;
@@ -382,18 +387,11 @@ const ImageContainer = styled.div`
   > span {
     position: unset !important;
   }
-
-  ${StyledImage} {
-    object-fit: contain;
-    width: 100% !important;
-    position: relative !important;
-    height: unset !important;
-  }
 `;
 
 const DocsImage = ({ src }: ImageProps) => {
   return (
-    // TODO(SDSv20): ImageContainer is expecting StyledImage props to be passed... Possible bug?
+    // TODO(SDSv20): Check if this works
     <ImageContainer>
       <StyledImage alt="image" src={src} fill />
     </ImageContainer>
