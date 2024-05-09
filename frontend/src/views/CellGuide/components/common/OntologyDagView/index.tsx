@@ -493,7 +493,7 @@ export default function OntologyDagView({
                   <WarningTooltipTextWrapper>
                     <WarningTooltipIcon
                       sdsIcon="ExclamationMarkCircle"
-                      color="yellow" // TODO(SDSv20): This was warning
+                      color="yellow"
                       sdsSize="l"
                       sdsType="static"
                     />

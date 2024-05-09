@@ -98,7 +98,6 @@ export default function SideBar({
             }
             onClick={() => handleExpandedClick(!isExpanded)}
             sdsStyle="minimal"
-            // sdsType="minimal" // TODO(SDSv20): what should this be?
             size="large"
           >
             <ToggleButtonText>

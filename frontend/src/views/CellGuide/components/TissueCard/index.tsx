@@ -184,7 +184,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
                       label={tissueId}
                       sdsType="secondary"
                       sdsStyle="square"
-                      color="info" // TODO(SDSv20): This should be gray
+                      color="neutral"
                       hover
                     />
                   </a>

@@ -339,7 +339,7 @@ export default function CellGuideCard({
                   label={cellTypeId}
                   sdsType="secondary"
                   sdsStyle="square"
-                  color="info" // TODO(SDSv20): This was gray
+                  color="neutral"
                   hover
                 />
               </a>

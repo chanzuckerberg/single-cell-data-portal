@@ -1,7 +1,4 @@
-import {
-  ComplexFilterInputDropdown,
-  DefaultMenuSelectOption,
-} from "@czi-sds/components";
+import { DefaultMenuSelectOption } from "@czi-sds/components";
 import { memo } from "react";
 import Organism from "./components/Organism";
 import Compare from "./components/Compare";
@@ -39,97 +36,65 @@ export default memo(function Filters({
   return (
     <Wrapper>
       <FilterContainer>
-        <StyledComplexFilter
+        <StyledComplexFilter<DefaultMenuSelectOption, true, false, false>
           multiple
           data-testid="disease-filter"
           search
           label="Disease"
-          options={terms.disease as unknown as DefaultMenuSelectOption[]}
-          onChange={
-            handle.diseasesChange as unknown as (
-              options: (string | DefaultMenuSelectOption)[]
-            ) => void
-          } // TODO(SDSv20): Fix this type by updating the handle
-          value={selected.diseases as unknown as DefaultMenuSelectOption[]}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
+          options={terms.disease}
+          onChange={handle.diseasesChange}
+          value={selected.diseases}
+          InputDropdownComponent={StyledComplexFilterInputDropdown}
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
         />
-        <StyledComplexFilter
+        <StyledComplexFilter<DefaultMenuSelectOption, true, false, false>
           multiple
           data-testid="self-reported-ethnicity-filter"
           search
           label="Self-Reported Ethnicity"
-          options={
-            terms.self_reported_ethnicity as unknown as DefaultMenuSelectOption[]
-          }
-          onChange={
-            handle.ethnicitiesChange as unknown as (
-              options: (string | DefaultMenuSelectOption)[]
-            ) => void
-          } // TODO(SDSv20): Fix this type by updating the handle
-          value={selected.ethnicities as unknown as DefaultMenuSelectOption[]}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
+          options={terms.self_reported_ethnicity}
+          onChange={handle.ethnicitiesChange}
+          value={selected.ethnicities}
+          InputDropdownComponent={StyledComplexFilterInputDropdown}
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
         />
 
-        <StyledComplexFilter
+        <StyledComplexFilter<DefaultMenuSelectOption, true, false, false>
           multiple
           data-testid="publication-filter"
           search
           label="Publication"
-          options={terms.publication as unknown as DefaultMenuSelectOption[]}
-          onChange={
-            handle.publicationsChange as unknown as (
-              options: (string | DefaultMenuSelectOption)[]
-            ) => void
-          } // TODO(SDSv20): Fix this type by updating the handle
-          value={selected.publications as unknown as DefaultMenuSelectOption[]}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
+          options={terms.publication}
+          onChange={handle.publicationsChange}
+          value={selected.publications}
+          InputDropdownComponent={StyledComplexFilterInputDropdown}
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
         />
 
-        <StyledComplexFilter
+        <StyledComplexFilter<DefaultMenuSelectOption, true, false, false>
           multiple
           data-testid="sex-filter"
           search
           label="Sex"
-          options={terms.sex as unknown as DefaultMenuSelectOption[]}
-          onChange={
-            handle.sexesChange as unknown as (
-              options: (string | DefaultMenuSelectOption)[]
-            ) => void
-          } // TODO(SDSv20): Fix this type by updating the handle
-          value={selected.sexes as unknown as DefaultMenuSelectOption[]}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
+          options={terms.sex}
+          onChange={handle.sexesChange}
+          value={selected.sexes}
+          InputDropdownComponent={StyledComplexFilterInputDropdown}
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
         />
-        <StyledComplexFilter
+        <StyledComplexFilter<DefaultMenuSelectOption, true, false, false>
           multiple
           data-testid="tissue-filter"
           search
           label="Tissue"
-          options={terms.tissue as unknown as DefaultMenuSelectOption[]}
-          onChange={
-            handle.tissuesChange as unknown as (
-              options: (string | DefaultMenuSelectOption)[]
-            ) => void
-          } // TODO(SDSv20): Fix this type by updating the handle
-          value={selected.tissues as unknown as DefaultMenuSelectOption[]}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
+          options={terms.tissue}
+          onChange={handle.tissuesChange}
+          value={selected.tissues}
+          InputDropdownComponent={StyledComplexFilterInputDropdown}
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
         />

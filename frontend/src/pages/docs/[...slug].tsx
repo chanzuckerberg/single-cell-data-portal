@@ -391,7 +391,6 @@ const ImageContainer = styled.div`
 
 const DocsImage = ({ src }: ImageProps) => {
   return (
-    // TODO(SDSv20): Check if this works
     <ImageContainer>
       <StyledImage alt="image" src={src} fill />
     </ImageContainer>

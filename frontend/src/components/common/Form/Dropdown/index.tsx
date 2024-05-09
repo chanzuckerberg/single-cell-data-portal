@@ -71,7 +71,7 @@ export default function Dropdown({
         isTriggerChangeOnOptionClick
         label={getDropdownLabel(label, value)}
         multiple={multiple}
-        onChange={onChange} // TODO(SDSv20): Come back to this
+        onChange={onChange}
         options={options}
         PopperComponent={(popperProps) => {
           const { anchorEl } = popperProps;
