@@ -228,7 +228,7 @@ def convert_anndata_category_colors_to_cxg_category_colors(adata):
 
         # check to see if we actually have observations for that category
         category_name = uns_key[: -len(color_key_suffix)]
-        if category_name not in adata.obs.keys():
+        if category_name not in adata.obs:
             continue
 
         # suppose we have sex_ontology_term_id_colors annotated. we want to use "female" instead of "PATO:0000383" in the
@@ -238,6 +238,10 @@ def convert_anndata_category_colors_to_cxg_category_colors(adata):
 
         # create the cellxgene color entry for this category
         cxg_colors[category_name] = dict(
-            zip(adata.obs[category_name].cat.categories, [convert_color_to_hex_format(c) for c in adata.uns[uns_key]])
+            zip(
+                adata.obs[category_name].cat.categories,
+                [convert_color_to_hex_format(c) for c in adata.uns[uns_key]],
+                strict=False,
+            )
         )
     return cxg_colors

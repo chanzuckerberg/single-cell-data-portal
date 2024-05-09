@@ -253,8 +253,9 @@ def test_get_failure_slack_notification_message_with_dataset_version_id_none(
     get_business_logic_mock.get_collection_version = get_collection_version_mock
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
-    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), caplog.at_level(
-        logging.ERROR
+    with (
+        patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock),
+        caplog.at_level(logging.ERROR),
     ):
         result = get_failure_slack_notification_message(
             dataset_version_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
@@ -303,8 +304,9 @@ def test_get_failure_slack_notification_message_with_dataset_not_found(
     get_business_logic_mock.get_collection_version = get_collection_version_mock
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
-    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), caplog.at_level(
-        logging.ERROR
+    with (
+        patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock),
+        caplog.at_level(logging.ERROR),
     ):
         result = get_failure_slack_notification_message(
             dataset_version_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
@@ -368,8 +370,9 @@ def test_get_failure_slack_notification_message_with_missing_collection(
     get_business_logic_mock.get_collection_version = get_collection_version_mock
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
-    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), caplog.at_level(
-        logging.ERROR
+    with (
+        patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock),
+        caplog.at_level(logging.ERROR),
     ):
         result = get_failure_slack_notification_message(
             dataset_version_id, collection_version_id, step_name, job_id, aws_regions, execution_arn

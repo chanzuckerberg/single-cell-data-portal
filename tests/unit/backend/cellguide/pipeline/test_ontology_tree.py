@@ -6,16 +6,16 @@ from backend.cellguide.pipeline.ontology_tree import get_celltype_to_tissue_mapp
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.utils import convert_dataclass_to_dict_and_strip_nones
 from tests.test_utils import compare_dicts
-from tests.unit.backend.wmg.fixtures.test_snapshot import (
-    load_realistic_test_snapshot,
-)
-from tests.unit.cellguide_pipeline.constants import (
+from tests.unit.backend.cellguide.pipeline.constants import (
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
     CELLTYPE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME,
     CELLTYPE_TO_TISSUE_MAPPING_FILENAME,
     ONTOLOGY_GRAPH_FIXTURE_FILENAME,
     ONTOLOGY_TREE_TOPLEVEL_FOLDERNAME,
     TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME,
+)
+from tests.unit.backend.wmg.fixtures.test_snapshot import (
+    load_realistic_test_snapshot,
 )
 
 TEST_SNAPSHOT = "realistic-test-snapshot"

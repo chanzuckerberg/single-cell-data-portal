@@ -14,8 +14,7 @@ export COVERAGE_RUN_ARGS:=--data-file=$(COVERAGE_DATA_FILE) --parallel-mode $(CO
 
 .PHONY: fmt
 fmt:
-	black --config=pyproject.toml backend scripts tests
-	ruff check --fix --config=pyproject.toml backend tests scripts
+	pre-commit run --all-files
 
 .PHONY: lint
 lint:
@@ -35,7 +34,7 @@ wmg-processing-unittest:
 cellguide-pipeline-unittest:
 	# This target is intended to be run INSIDE the cellguide pipeline container
 	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning coverage run $(COVERAGE_RUN_ARGS) -m pytest \
-	tests/unit/cellguide_pipeline/ --rootdir=. --alluredir=./allure-results --verbose;
+	tests/unit/backend/cellguide/pipeline/ --rootdir=. --alluredir=./allure-results --verbose;
 
 .PHONY: functional-test
 functional-test:

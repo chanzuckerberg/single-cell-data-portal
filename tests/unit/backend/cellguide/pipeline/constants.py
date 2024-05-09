@@ -1,4 +1,4 @@
-CELLGUIDE_PIPELINE_FIXTURES_BASEPATH = "tests/unit/cellguide_pipeline/fixtures/"
+CELLGUIDE_PIPELINE_FIXTURES_BASEPATH = "tests/unit/backend/cellguide/pipeline/fixtures/"
 
 CANONICAL_MARKER_GENES_FIXTURE_FILENAME = "canonical_marker_genes.json"
 COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME = "computational_marker_genes.json"

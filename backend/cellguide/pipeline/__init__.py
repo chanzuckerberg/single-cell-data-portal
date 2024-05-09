@@ -5,17 +5,17 @@ import sys
 import time
 from glob import glob
 
+from backend.cellguide.common.config import CellGuideConfig
+from backend.cellguide.common.constants import GPT_OUTPUT_DIRECTORY_FOLDERNAME, GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME
+from backend.cellguide.common.providers.s3_provider import S3Provider
+from backend.cellguide.common.utils import get_bucket_path, get_object_key
 from backend.cellguide.pipeline.canonical_marker_genes import run as run_canonical_marker_gene_pipeline
 from backend.cellguide.pipeline.computational_marker_genes import run as run_computational_marker_gene_pipeline
-from backend.cellguide.pipeline.config import CellGuideConfig
-from backend.cellguide.pipeline.constants import GPT_OUTPUT_DIRECTORY_FOLDERNAME, GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME
 from backend.cellguide.pipeline.explorer_cxgs import run as run_valid_explorer_cxgs_pipeline
 from backend.cellguide.pipeline.gpt_descriptions import run as run_gpt_description_pipeline
 from backend.cellguide.pipeline.metadata import run as run_metadata_pipeline
 from backend.cellguide.pipeline.ontology_tree import run as run_ontology_tree_pipeline
-from backend.cellguide.pipeline.providers.s3_provider import S3Provider
 from backend.cellguide.pipeline.source_collections import run as run_source_collections_pipeline
-from backend.cellguide.pipeline.utils import get_bucket_path, get_object_key
 from backend.common.utils.cloudfront import create_invalidation_for_cellguide_data
 
 logger = logging.getLogger(__name__)
@@ -105,6 +105,7 @@ def upload_gpt_descriptions_to_s3(*, gpt_output_directory: str, gpt_seo_output_d
     for src_directory, dst_directory in zip(
         [gpt_output_directory, gpt_seo_output_directory],
         [GPT_OUTPUT_DIRECTORY_FOLDERNAME, GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME],
+        strict=False,
     ):
         # upload to s3
         s3_provider.sync_directory(src_dir=src_directory, s3_uri=f"{bucket_path}{dst_directory}/")
