@@ -48,7 +48,7 @@ paths:
         "403":
           $ref: "#/components/responses/403"
   # This is commented out until product aligns on the CellGuide API
-  # Leaving this here for reference 
+  # Leaving this here for reference
   # /v1/marker_genes:
   #   get:
   #     summary: |
