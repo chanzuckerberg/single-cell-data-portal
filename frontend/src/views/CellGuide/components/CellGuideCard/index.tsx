@@ -221,7 +221,7 @@ export default function CellGuideCard({
       InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
       search
       label={selectedOrganism?.name}
-      onChange={handleChangeOrganism} // TODO(SDSv20): Come back to this
+      onChange={handleChangeOrganism}
       options={sdsOrganismsList}
       value={selectedOrganism}
       data-testid={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
@@ -234,7 +234,7 @@ export default function CellGuideCard({
         InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
         search
         label={tissueName}
-        onChange={handleChangeOrgan} // TODO(SDSv20): Come back to this
+        onChange={handleChangeOrgan}
         options={sdsOrgansList}
         value={selectedOrgan}
         data-testid={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}

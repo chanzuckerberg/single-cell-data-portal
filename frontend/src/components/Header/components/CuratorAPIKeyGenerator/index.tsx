@@ -79,9 +79,6 @@ export default function CuratorAPIKeyGenerator(): JSX.Element {
           </APIDisclaimerP>
         </DialogContent>
         <DialogActions>
-          {/* TODO(SDSv20): Fix handler */}
-          {/* (masoudmanson): The Button onClick handler does not include a reason parameter, 
-                    and it should be distinct from the Dialog close handler */}
           <SDSButton onClick={handleButtonClose}>Close</SDSButton>
           <SDSButton sdsType="primary" sdsStyle="square" onClick={copyAPIKey}>
             Copy API Key

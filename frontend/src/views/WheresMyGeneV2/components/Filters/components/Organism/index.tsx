@@ -22,7 +22,7 @@ export default function Organism({ isLoading }: Props): JSX.Element {
       <StyledDropdown<IOrganism, false, false, false>
         label={organism?.name || "Select"}
         options={organisms || EMPTY_ARRAY}
-        onChange={handleOnChange} // TODO(SDSv20): Come back to this
+        onChange={handleOnChange}
         InputDropdownProps={{ ...InputDropdownProps, disabled: isLoading }}
         data-testid="add-organism"
         DropdownMenuProps={DropdownMenuProps}

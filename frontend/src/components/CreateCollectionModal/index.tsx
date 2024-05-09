@@ -26,6 +26,7 @@ const AsyncCTA = loadable(
 );
 
 const CreateCollectionButton = (
+  // Omit is a temporary workaround until SDS fixes button typing
   props: Omit<ButtonProps, "sdsStyle" | "sdsType">
 ) => (
   <StyledButton sdsStyle="square" sdsType="primary" {...props}>

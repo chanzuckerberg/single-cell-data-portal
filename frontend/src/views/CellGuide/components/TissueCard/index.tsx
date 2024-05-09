@@ -193,7 +193,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
                   InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
                   search
                   label={tissueCardSelectedOrganism}
-                  onChange={handleChangeOrganism} // TODO(SDSv20): Come back to this
+                  onChange={handleChangeOrganism}
                   options={sdsOrganismsList}
                   value={{ name: tissueCardSelectedOrganism }}
                   data-testid={TISSUE_CARD_ORGANISM_SELECTOR_TEST_ID}

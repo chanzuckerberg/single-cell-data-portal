@@ -56,7 +56,7 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
       <Wrapper>
         <StyledDropdown<DefaultAutocompleteOption, false, false, false>
           data-testid="compare-dropdown"
-          onChange={handleChange} // TODO(SDSv20): Come back tot his
+          onChange={handleChange}
           label={optionLabel?.name || "None"}
           options={COMPARE_OPTIONS}
           InputDropdownProps={InputDropdownProps}
