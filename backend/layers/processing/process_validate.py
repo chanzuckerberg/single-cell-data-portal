@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional, Tuple
+from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import numpy
 import scanpy
@@ -14,6 +14,7 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersionId,
     OntologyTermId,
+    SpatialMetadata,
     TissueOntologyTermId,
 )
 from backend.layers.processing.exceptions import ValidationFailed
@@ -107,6 +108,23 @@ class ProcessValidate(ProcessingLogic):
         adata.uns["citation"] = citation
         adata.write(adata_path, compression="gzip")
 
+    def get_spatial_metadata(self, spatial_dict: Dict[str, Any]) -> Optional[SpatialMetadata]:
+        """
+        Extracts spatial dataset metadata from the uns dict of an AnnData object
+
+        :param spatial_dict: the value of the 'spatial' key from the uns dict of an AnnData object
+        :return: SpatialMetadata object
+        """
+        is_single = spatial_dict.get("is_single")
+        has_fullres = False
+        # schema validation ensures nested 'fullres' key is only included when is_single is True
+        if is_single:
+            # schema validation ensures there can only be one other key in uns["spatial"] if "is_single" is True
+            library_id = [key for key in spatial_dict if key != "is_single"][0]
+            if "fullres" in spatial_dict[library_id]["images"]:
+                has_fullres = True
+        return SpatialMetadata(is_single=bool(is_single), has_fullres=has_fullres)
+
     @logit
     def extract_metadata(self, filename) -> DatasetMetadata:
         """Pull metadata out of the AnnData file to insert into the dataset table."""
@@ -128,6 +146,7 @@ class ProcessValidate(ProcessingLogic):
         for bounds in zip(
             range(0, layer_for_mean_genes_per_cell.shape[0], stride),
             range(stride, layer_for_mean_genes_per_cell.shape[0] + stride, stride),
+            strict=False,
         ):
             chunk = layer_for_mean_genes_per_cell[bounds[0] : bounds[1], filter_gene_vars]
             numerator += chunk.nnz if hasattr(chunk, "nnz") else numpy.count_nonzero(chunk)
@@ -193,6 +212,7 @@ class ProcessValidate(ProcessingLogic):
             embeddings=adata.obsm_keys(),
             raw_data_location="raw.X" if adata.raw else "X",
             citation=adata.uns.get("citation"),
+            spatial=self.get_spatial_metadata(adata.uns["spatial"]) if "spatial" in adata.uns else None,
         )
 
     def process(

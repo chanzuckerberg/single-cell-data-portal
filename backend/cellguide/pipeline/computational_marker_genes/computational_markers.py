@@ -286,7 +286,7 @@ class MarkerGenesCalculator:
         cell_counts_df_orig = self.cell_counts_df_orig
 
         # the metadata groups (incl cell type) will be treated as row coordinates
-        groupby_coords = list(zip(*self.expressions_df[self.groupby_terms_with_celltype].values.T))
+        groupby_coords = list(zip(*self.expressions_df[self.groupby_terms_with_celltype].values.T, strict=False))
         groupby_coords_unique = sorted(set(groupby_coords))
         groupby_index = pd.Series(index=pd.Index(groupby_coords_unique), data=np.arange(len(groupby_coords_unique)))
 
@@ -464,7 +464,9 @@ class MarkerGenesCalculator:
         reverse_groupby_coords_new = reverse_groupby_index[groupby_i_coords_new].values
 
         # combine the metadata groups and genes into one MultiIndex
-        new_index = pd.Index([i + (j,) for i, j in zip(reverse_groupby_coords_new, reverse_gene_coords_new)])
+        new_index = pd.Index(
+            [i + (j,) for i, j in zip(reverse_groupby_coords_new, reverse_gene_coords_new, strict=False)]
+        )
         new_index = new_index.set_names(self.groupby_terms_with_celltype_and_gene)
 
         # instantiate the rolled up expression dataframe
@@ -498,7 +500,7 @@ class MarkerGenesCalculator:
             .reset_index(drop=True)
         )
         # get the marker gene groups
-        marker_gene_groups = list(zip(*top_per_group[self.groupby_terms_with_celltype_and_gene].values.T))
+        marker_gene_groups = list(zip(*top_per_group[self.groupby_terms_with_celltype_and_gene].values.T, strict=False))
 
         # convert columns to MultiIndex
         top_per_group.set_index(self.groupby_terms_with_celltype_and_gene, inplace=True)

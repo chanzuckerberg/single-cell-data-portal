@@ -14,8 +14,7 @@ export COVERAGE_RUN_ARGS:=--data-file=$(COVERAGE_DATA_FILE) --parallel-mode $(CO
 
 .PHONY: fmt
 fmt:
-	black --config=pyproject.toml backend scripts tests
-	ruff check --fix --config=pyproject.toml backend tests scripts
+	pre-commit run --all-files
 
 .PHONY: lint
 lint:

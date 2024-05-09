@@ -2,6 +2,7 @@
 This method enriches the response of a Dataset object with ancestor mappings.
 These responses are specific to the current API layer
 """
+
 from typing import Dict, Set
 
 from cellxgene_ontology_guide.curated_ontology_term_lists import get_curated_ontology_term_list

@@ -169,7 +169,7 @@ class ExpressionSummaryCubeBuilder:
         for raw_array, (obs_soma_joinids_chunk, _) in self.query.X("raw").blockwise(axis=0, size=row_stride).scipy():
             assert isinstance(raw_array, sparse.csr_matrix)
             logger.info(f"Reducer iteration {iteration} out of {math.ceil(self.obs_df.shape[0] / row_stride)}")
-            iteration += 1
+            iteration += 1  # noqa: SIM113
 
             # convert soma_joinids to row coords of filtered obs dataframe
             obs_soma_joinids_chunk = self.query.indexer.by_obs(obs_soma_joinids_chunk)
@@ -298,7 +298,7 @@ class ExpressionSummaryCubeBuilder:
                 cube_idx,
             ) = grp.tolist()
 
-            dim_or_attr_values = dict(zip(cube_index.index.names, dim_or_attr_values))
+            dim_or_attr_values = dict(zip(cube_index.index.names, dim_or_attr_values, strict=False))
 
             mask = cube_nnz[cube_idx] != 0
             n_vals = np.count_nonzero(mask)
