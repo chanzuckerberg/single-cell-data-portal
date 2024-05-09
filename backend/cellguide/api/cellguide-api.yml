@@ -47,26 +47,28 @@ paths:
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
-  /v1/marker_genes:
-    get:
-      summary: |
-        Get all CellGuide marker genes.
-      operationId: backend.cellguide.api.v1.marker_genes.actions.get
-      tags:
-        - CellGuide
-      responses:
-        "200":
-          description: "Successful retrieval of marker genes data."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/marker_gene_data"
-        "404":
-          description: "No data found for the specified parameters."
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/problem"
+  # This is commented out until product aligns on the CellGuide API
+  # Leaving this here for reference 
+  # /v1/marker_genes:
+  #   get:
+  #     summary: |
+  #       Get all CellGuide marker genes.
+  #     operationId: backend.cellguide.api.v1.marker_genes.actions.get
+  #     tags:
+  #       - CellGuide
+  #     responses:
+  #       "200":
+  #         description: "Successful retrieval of marker genes data."
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/marker_gene_data"
+  #       "404":
+  #         description: "No data found for the specified parameters."
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/problem"
 
 components:
   schemas:
