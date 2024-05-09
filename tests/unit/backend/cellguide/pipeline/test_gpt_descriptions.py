@@ -46,18 +46,23 @@ class TestGptDescriptionGenerator(unittest.TestCase):
     def test__gpt_description_generator(self):
         expected_outputs = {}
         for obj in WHICH_OBJECTS_DO_NOT_EXIST:
-            expected_outputs[
-                obj["id"]
-            ] = f"MOCK OUTPUT: {GPT_CELLTYPE_DESCRIPTION_SYSTEM_ROLE} {GPT_CELLTYPE_DESCRIPTION_USER_ROLE(obj['name'])}"
+            expected_outputs[obj["id"]] = (
+                f"MOCK OUTPUT: {GPT_CELLTYPE_DESCRIPTION_SYSTEM_ROLE} {GPT_CELLTYPE_DESCRIPTION_USER_ROLE(obj['name'])}"
+            )
 
-        with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot, patch(
-            "backend.cellguide.pipeline.gpt_descriptions.gpt_description_generator.S3Provider", new=MockS3Provider
-        ), patch(
-            "backend.cellguide.pipeline.gpt_descriptions.gpt_description_generator.OpenAIProvider",
-            new=MockOpenAIProvider,
-        ), patch(
-            "backend.cellguide.pipeline.gpt_descriptions.gpt_description_generator.CellGuideConfig",
-            new=MockCellGuideConfig,
+        with (
+            load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot,
+            patch(
+                "backend.cellguide.pipeline.gpt_descriptions.gpt_description_generator.S3Provider", new=MockS3Provider
+            ),
+            patch(
+                "backend.cellguide.pipeline.gpt_descriptions.gpt_description_generator.OpenAIProvider",
+                new=MockOpenAIProvider,
+            ),
+            patch(
+                "backend.cellguide.pipeline.gpt_descriptions.gpt_description_generator.CellGuideConfig",
+                new=MockCellGuideConfig,
+            ),
         ):
             cell_counts_df = snapshot.cell_counts_cube.df[:]
             tree_builder = OntologyTreeBuilder(cell_counts_df)
@@ -69,18 +74,22 @@ class TestGptDescriptionGenerator(unittest.TestCase):
     def test__gpt_seo_description_generator(self):
         expected_outputs = {}
         for obj in WHICH_OBJECTS_DO_NOT_EXIST:
-            expected_outputs[
-                obj["id"]
-            ] = f"MOCK OUTPUT: {GPT_CELLTYPE_DESCRIPTION_SYSTEM_ROLE} {GPT_CELLTYPE_SEO_DESCRIPTION_USER_ROLE(obj['fake_gpt_description'])}"
+            expected_outputs[obj["id"]] = (
+                f"MOCK OUTPUT: {GPT_CELLTYPE_DESCRIPTION_SYSTEM_ROLE} {GPT_CELLTYPE_SEO_DESCRIPTION_USER_ROLE(obj['fake_gpt_description'])}"
+            )
 
-        with patch(
-            "backend.cellguide.pipeline.gpt_descriptions.gpt_description_generator.S3Provider", new=MockS3Provider
-        ), patch(
-            "backend.cellguide.pipeline.gpt_descriptions.gpt_description_generator.OpenAIProvider",
-            new=MockOpenAIProvider,
-        ), patch(
-            "backend.cellguide.pipeline.gpt_descriptions.gpt_description_generator.CellGuideConfig",
-            new=MockCellGuideConfig,
+        with (
+            patch(
+                "backend.cellguide.pipeline.gpt_descriptions.gpt_description_generator.S3Provider", new=MockS3Provider
+            ),
+            patch(
+                "backend.cellguide.pipeline.gpt_descriptions.gpt_description_generator.OpenAIProvider",
+                new=MockOpenAIProvider,
+            ),
+            patch(
+                "backend.cellguide.pipeline.gpt_descriptions.gpt_description_generator.CellGuideConfig",
+                new=MockCellGuideConfig,
+            ),
         ):
             fake_new_gpt_descriptions = {i["id"]: i["fake_gpt_description"] for i in WHICH_OBJECTS_DO_NOT_EXIST}
             new_gpt_seo_descriptions = generate_new_seo_gpt_descriptions(fake_new_gpt_descriptions)

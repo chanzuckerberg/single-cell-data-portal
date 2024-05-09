@@ -143,9 +143,10 @@ class TestCrossrefProvider(unittest.TestCase):
 
             self.assertDictEqual(expected_response, res)
 
-        with self.subTest("Preprint DOI is used when published is referenced but cannot be retrieved") and patch.object(
-            provider, "fetch_published_metadata"
-        ) as fetch_published_metadata_mock:
+        with (
+            self.subTest("Preprint DOI is used when published is referenced but cannot be retrieved")
+            and patch.object(provider, "fetch_published_metadata") as fetch_published_metadata_mock
+        ):
             fetch_published_metadata_mock.return_value = (None, None)
 
             preprint_body = copy.deepcopy(body)
