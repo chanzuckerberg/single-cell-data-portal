@@ -2,9 +2,10 @@ import logging
 
 from backend.cellguide.common.constants import (
     COMPUTATIONAL_MARKER_GENES_FOLDERNAME,
-    MARKER_GENE_PRESENCE_FILENAME,
     MARKER_GENE_DATA_FILENAME,
+    MARKER_GENE_PRESENCE_FILENAME,
 )
+from backend.cellguide.common.data import format_marker_gene_data
 from backend.cellguide.pipeline.computational_marker_genes.computational_markers import (
     MARKER_SCORE_THRESHOLD,
     MarkerGenesCalculator,
@@ -12,7 +13,6 @@ from backend.cellguide.pipeline.computational_marker_genes.computational_markers
 from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.utils import output_json, output_json_per_key
-from backend.cellguide.common.data import format_marker_gene_data
 from backend.wmg.api.wmg_api_config import WMG_API_SNAPSHOT_SCHEMA_VERSION
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 
