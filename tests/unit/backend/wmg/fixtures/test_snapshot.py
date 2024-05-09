@@ -323,15 +323,14 @@ def load_realistic_test_snapshot_tmpdir(snapshot_name: str) -> WmgSnapshot:
         )
         tiledb.from_pandas(f"{cube_dir}/{cube_name}", expression_summary_diffexp[cube_name], mode="append")
 
-    with gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}.gz", "rt") as fr, gzip.open(
-        f"{FIXTURES_ROOT}/{snapshot_name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}.gz", "rt"
-    ) as fp, gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{DATASET_METADATA_FILENAME}.gz", "rt") as fd, gzip.open(
-        f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_TYPE_ORDERINGS_FILENAME}.gz", "rt"
-    ) as fc, gzip.open(
-        f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_TYPE_ANCESTORS_FILENAME}.gz", "rt"
-    ) as fca, gzip.open(
-        f"{FIXTURES_ROOT}/{snapshot_name}/{CARDINALITY_PER_DIMENSION_FILENAME}.gz", "rt"
-    ) as cpd:
+    with (
+        gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}.gz", "rt") as fr,
+        gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}.gz", "rt") as fp,
+        gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{DATASET_METADATA_FILENAME}.gz", "rt") as fd,
+        gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_TYPE_ORDERINGS_FILENAME}.gz", "rt") as fc,
+        gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_TYPE_ANCESTORS_FILENAME}.gz", "rt") as fca,
+        gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{CARDINALITY_PER_DIMENSION_FILENAME}.gz", "rt") as cpd,
+    ):
         filter_relationships = json.load(fr)
         primary_filter_dimensions = json.load(fp)
         dataset_metadata = json.load(fd)
@@ -383,9 +382,10 @@ def create_temp_wmg_snapshot(
         )
         primary_filter_dimensions = build_precomputed_primary_filters()
 
-        with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube, tiledb.open(
-            cell_counts_cube_dir, ctx=create_ctx()
-        ) as cell_counts_cube:
+        with (
+            tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube,
+            tiledb.open(cell_counts_cube_dir, ctx=create_ctx()) as cell_counts_cube,
+        ):
             cc = cell_counts_cube.df[:]
             filter_relationships = build_filter_relationships(cc)
             yield WmgSnapshot(
@@ -451,7 +451,7 @@ def create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn: Callab
         logical_attr_values: Dict[str, list] = {
             "n_cells": cell_counts_fn(coords),
         }
-        assert all([len(logical_attr_values[attr.name]) == len(coords) for attr in cell_counts_logical_attrs])
+        assert all(len(logical_attr_values[attr.name]) == len(coords) for attr in cell_counts_logical_attrs)
 
         physical_dim_values = dim_values[: len(cell_counts_indexed_dims)]
         physical_attr_values = {
@@ -476,7 +476,7 @@ def create_expression_summary_cube(
 
     with tiledb.open(cube_dir, mode="w") as cube:
         logical_attr_values = expression_summary_vals_fn(coords)
-        assert all([len(logical_attr_values[attr.name]) == len(coords) for attr in expression_summary_logical_attrs])
+        assert all(len(logical_attr_values[attr.name]) == len(coords) for attr in expression_summary_logical_attrs)
 
         physical_dim_values = dim_values[: len(expression_summary_indexed_dims)]
         physical_attr_values = {
@@ -510,12 +510,12 @@ def build_coords(
         [all_dims_domain_values[i_dim][(i_row // dim_size**i_dim) % dim_size] for i_row in range(n_coords)]
         for i_dim in range(n_dims)
     ]
-    coords = list(zip(*dim_values))
+    coords = list(zip(*dim_values, strict=False))
     if exclude_coord_fn:
         Coord = namedtuple("Coord", logical_dims)
         coords: List[Tuple] = list(filterfalse(exclude_coord_fn, (Coord(*c) for c in coords)))
         dim_values: List[List] = [[coord_tuple[i_dim] for coord_tuple in coords] for i_dim in range(n_dims)]
-    assert all([len(dim_values[i_dim]) == len(coords) for i_dim in range(n_dims)])
+    assert all(len(dim_values[i_dim]) == len(coords) for i_dim in range(n_dims))
     return coords, dim_values
 
 

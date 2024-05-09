@@ -33,7 +33,7 @@ def gene_term_label(gene_ontology_term_id: str) -> Optional[str]:
     Returns the label for a gene ontology term, given its id. Return None if ontology term id is invalid.
     """
     global gene_term_id_labels
-    return gene_term_id_labels.get(gene_ontology_term_id)
+    return gene_term_id_labels.get(gene_ontology_term_id, gene_ontology_term_id)
 
 
 def __load_genes() -> None:

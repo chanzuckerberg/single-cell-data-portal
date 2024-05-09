@@ -131,14 +131,11 @@ def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -
 
 
 def find_dimension_id_from_compare(compare: str) -> str:
-    if compare == "sex":
-        return "sex_ontology_term_id"
-    elif compare == "self_reported_ethnicity":
-        return "self_reported_ethnicity_ontology_term_id"
-    elif compare == "disease":
-        return "disease_ontology_term_id"
-    else:
-        return None
+    return {
+        "sex": "sex_ontology_term_id",
+        "self_reported_ethnicity": "self_reported_ethnicity_ontology_term_id",
+        "disease": "disease_ontology_term_id",
+    }.get(compare)
 
 
 def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
@@ -255,6 +252,7 @@ def build_ordered_cell_types_by_tissue(
         zip(
             distinct_tissues_cell_types["tissue_ontology_term_id"],
             distinct_tissues_cell_types["cell_type_ontology_term_id"],
+            strict=False,
         )
     )
     indexer_bool_filter = []

@@ -35,12 +35,15 @@ class CanonicalMarkerGeneCompilerTests(unittest.TestCase):
                 next(iter(i.values())) for i in snapshot.primary_filter_dimensions["gene_terms"]["NCBITaxon:9606"]
             ]
 
-            with patch(
-                "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_asctb_master_sheet",
-                new=mock_get_asctb_master_sheet,
-            ), patch(
-                "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_title_and_citation_from_doi",
-                new=mock_get_title_and_citation_from_doi,
+            with (
+                patch(
+                    "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_asctb_master_sheet",
+                    new=mock_get_asctb_master_sheet,
+                ),
+                patch(
+                    "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_title_and_citation_from_doi",
+                    new=mock_get_title_and_citation_from_doi,
+                ),
             ):
                 marker_gene_compiler = CanonicalMarkerGenesCompiler(
                     wmg_tissues=wmg_tissues, wmg_human_genes=wmg_human_genes
