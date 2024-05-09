@@ -201,5 +201,5 @@ def to_dict(a, b):
     bounds_left = bounds[:-1]
     bounds_right = bounds[1:]
     slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
-    d = dict(zip(np.unique(a), [list(set(x)) for x in slists]))
+    d = dict(zip(np.unique(a), [list(set(x)) for x in slists], strict=False))
     return d

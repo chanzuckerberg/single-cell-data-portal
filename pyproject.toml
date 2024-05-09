@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 120
-target_version = ['py38']
+target_version = ['py310']
 include = '\.pyi?$'
 exclude = '''
 (
@@ -25,7 +25,7 @@ exclude = '''
 '''
 
 [tool.ruff]
-select = ["E", "F", "B", "SIM", "C4", "I"]
-ignore = ["E501", "E402", "C408", ]
+lint.select = ["E", "F", "B", "SIM", "C4", "I"]
+lint.ignore = ["E501", "E402", "C408"]
 line-length = 120
-target-version = "py38"
+target-version = "py310"

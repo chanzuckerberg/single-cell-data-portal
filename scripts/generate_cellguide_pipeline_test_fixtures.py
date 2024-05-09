@@ -25,8 +25,7 @@ from tests.test_utils.mocks import (
     mock_get_folders_from_s3,
     mock_get_title_and_citation_from_doi,
 )
-from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot
-from tests.unit.cellguide_pipeline.constants import (
+from tests.unit.backend.cellguide.pipeline.constants import (
     ASCTB_MASTER_SHEET_FIXTURE_FILENAME,
     CANONICAL_MARKER_GENES_FIXTURE_FILENAME,
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
@@ -42,6 +41,7 @@ from tests.unit.cellguide_pipeline.constants import (
     TISSUE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME,
     VALID_EXPLORER_CXGS_FIXTURE_FILENAME,
 )
+from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot
 
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
@@ -155,12 +155,15 @@ def run_cellguide_pipeline(fixture_type: FixtureType):
             output_json(data, f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{ASCTB_MASTER_SHEET_FIXTURE_FILENAME}")
 
             # Get canonical marker genes
-            with patch(
-                "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_asctb_master_sheet",
-                new=mock_get_asctb_master_sheet,
-            ), patch(
-                "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_title_and_citation_from_doi",
-                new=mock_get_title_and_citation_from_doi,
+            with (
+                patch(
+                    "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_asctb_master_sheet",
+                    new=mock_get_asctb_master_sheet,
+                ),
+                patch(
+                    "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_title_and_citation_from_doi",
+                    new=mock_get_title_and_citation_from_doi,
+                ),
             ):
                 canonical_marker_genes = get_canonical_marker_genes(snapshot=snapshot, ontology_tree=ontology_tree)
                 output_json(
@@ -170,12 +173,15 @@ def run_cellguide_pipeline(fixture_type: FixtureType):
 
         if fixture_type in [FixtureType.source_collections, FixtureType.all]:
             # Get source data
-            with patch(
-                "backend.cellguide.pipeline.source_collections.source_collections_generator.get_datasets_from_discover_api",
-                new=mock_get_datasets_from_curation_endpoint,
-            ), patch(
-                "backend.cellguide.pipeline.source_collections.source_collections_generator.get_collections_from_discover_api",
-                new=mock_get_collections_from_curation_endpoint,
+            with (
+                patch(
+                    "backend.cellguide.pipeline.source_collections.source_collections_generator.get_datasets_from_discover_api",
+                    new=mock_get_datasets_from_curation_endpoint,
+                ),
+                patch(
+                    "backend.cellguide.pipeline.source_collections.source_collections_generator.get_collections_from_discover_api",
+                    new=mock_get_collections_from_curation_endpoint,
+                ),
             ):
                 source_collections = get_source_collections_data(ontology_tree=ontology_tree)
                 output_json(

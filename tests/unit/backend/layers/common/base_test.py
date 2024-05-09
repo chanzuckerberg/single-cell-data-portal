@@ -146,6 +146,7 @@ class BaseTest(unittest.TestCase):
             "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
             "CZ CELLxGENE Discover in Collection: "
             "https://cellxgene.cziscience.com/collections/collection_id",
+            spatial=None,
         )
 
         self.sample_collection_metadata = CollectionMetadata(
