@@ -1,4 +1,4 @@
-from backend.cellguide.pipeline.constants import CELL_GUIDE_METADATA_FILENAME, CELL_GUIDE_TISSUE_METADATA_FILENAME
+from backend.cellguide.common.constants import CELL_GUIDE_METADATA_FILENAME, CELL_GUIDE_TISSUE_METADATA_FILENAME
 from backend.cellguide.pipeline.metadata.metadata_generator import (
     generate_cellguide_card_metadata,
     generate_cellguide_tissue_card_metadata,

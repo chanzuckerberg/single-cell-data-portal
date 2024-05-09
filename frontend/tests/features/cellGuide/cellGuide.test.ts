@@ -937,14 +937,16 @@ describe("Cell Guide", () => {
           .click();
         await page.getByRole("option").getByText("Mus musculus").click();
 
-        await page.waitForTimeout(WAIT_FOR_TIMEOUT_MS);
+        await tryUntil(
+          async () => {
+            const linkHrefAfterSelection = await page
+              .getByTestId(CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID)
+              .getAttribute("href");
 
-        const linkHrefAfterSelection = await page
-          .getByTestId(CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID)
-          .getAttribute("href");
-
-        expect(linkHrefAfterSelection).toContain("mus_musculus");
-
+            expect(linkHrefAfterSelection).toContain("mus_musculus");
+          },
+          { page }
+        );
         // Ensure the tissue selector is visible
         await isElementVisible(
           page,
@@ -956,14 +958,17 @@ describe("Cell Guide", () => {
           .click();
         await page.getByRole("option").getByText("brain").click();
 
-        await page.waitForTimeout(WAIT_FOR_TIMEOUT_MS);
+        await tryUntil(
+          async () => {
+            const linkHrefAfterTissueSelection = await page
+              .getByTestId(CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID)
+              .getAttribute("href");
 
-        const linkHrefAfterTissueSelection = await page
-          .getByTestId(CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID)
-          .getAttribute("href");
-
-        expect(linkHrefAfterTissueSelection).toContain(
-          "tissues/mus_musculus/UBERON_0000955__"
+            expect(linkHrefAfterTissueSelection).toContain(
+              "tissues/mus_musculus/UBERON_0000955__"
+            );
+          },
+          { page }
         );
       });
       test("Selecting 'Mus musculus' from organism selector on a cell type with no mouse cells removes ontology", async ({
@@ -1237,13 +1242,16 @@ describe("Cell Guide", () => {
         await page.getByTestId(TISSUE_CARD_ORGANISM_SELECTOR_TEST_ID).click();
         await page.getByRole("option").getByText("Mus musculus").click();
 
-        await page.waitForTimeout(WAIT_FOR_TIMEOUT_MS);
+        await tryUntil(
+          async () => {
+            const linkHrefAfterSelection = await page
+              .getByTestId(CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID)
+              .getAttribute("href");
 
-        const linkHrefAfterSelection = await page
-          .getByTestId(CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID)
-          .getAttribute("href");
-
-        expect(linkHrefAfterSelection).toContain("mus_musculus");
+            expect(linkHrefAfterSelection).toContain("mus_musculus");
+          },
+          { page }
+        );
       });
       test("Selecting 'Mus musculus' from organism selector updates the cell counts in the ontology", async ({
         page,

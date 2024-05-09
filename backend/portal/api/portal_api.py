@@ -189,16 +189,16 @@ def _dataset_to_response(
             "batch_condition": None if dataset.metadata is None else dataset.metadata.batch_condition,
             "cell_count": None if dataset.metadata is None else dataset.metadata.cell_count,
             "primary_cell_count": None if dataset.metadata is None else dataset.metadata.primary_cell_count,
-            "cell_type": None
-            if dataset.metadata is None
-            else _ontology_term_ids_to_response(dataset.metadata.cell_type),
+            "cell_type": (
+                None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.cell_type)
+            ),
             "collection_id": dataset.collection_id.id,
             "created_at": dataset.created_at,
             "dataset_assets": [_dataset_asset_to_response(a, dataset.version_id.id) for a in dataset.artifacts],
             "dataset_deployments": dataset_deployments,
-            "development_stage": None
-            if dataset.metadata is None
-            else _ontology_term_ids_to_response(dataset.metadata.development_stage),
+            "development_stage": (
+                None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.development_stage)
+            ),
             "disease": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.disease),
             "donor_id": None if dataset.metadata is None else dataset.metadata.donor_id,
             "id": dataset_id,
@@ -212,20 +212,22 @@ def _dataset_to_response(
             "published_at": dataset.canonical_dataset.published_at,
             "revision": 0,  # TODO this is the progressive revision number. I don't think we'll need this
             "schema_version": None if dataset.metadata is None else dataset.metadata.schema_version,
-            "self_reported_ethnicity": None
-            if dataset.metadata is None
-            else _ontology_term_ids_to_response(dataset.metadata.self_reported_ethnicity),
+            "self_reported_ethnicity": (
+                None
+                if dataset.metadata is None
+                else _ontology_term_ids_to_response(dataset.metadata.self_reported_ethnicity)
+            ),
             "sex": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.sex),
             "suspension_type": None if dataset.metadata is None else dataset.metadata.suspension_type,
             "tissue": tissue,
             "tombstone": is_tombstoned,
-            "updated": True
-            if is_in_revision and dataset.canonical_dataset.published_at and published is False
-            else None,
+            "updated": (
+                True if is_in_revision and dataset.canonical_dataset.published_at and published is False else None
+            ),
             "updated_at": dataset.created_at,
-            "x_approximate_distribution": None
-            if dataset.metadata is None
-            else dataset.metadata.x_approximate_distribution,
+            "x_approximate_distribution": (
+                None if dataset.metadata is None else dataset.metadata.x_approximate_distribution
+            ),
         }
     )
 

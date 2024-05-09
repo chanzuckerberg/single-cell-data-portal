@@ -10,12 +10,12 @@ from tests.test_utils.mocks import (
     mock_get_collections_from_curation_endpoint,
     mock_get_datasets_from_curation_endpoint,
 )
-from tests.unit.backend.wmg.fixtures.test_snapshot import (
-    load_realistic_test_snapshot,
-)
-from tests.unit.cellguide_pipeline.constants import (
+from tests.unit.backend.cellguide.pipeline.constants import (
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
     SOURCE_COLLECTIONS_FIXTURE_FILENAME,
+)
+from tests.unit.backend.wmg.fixtures.test_snapshot import (
+    load_realistic_test_snapshot,
 )
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
@@ -28,12 +28,15 @@ class TestSourceCollectionsGenerator(unittest.TestCase):
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             cell_counts_df = snapshot.cell_counts_cube.df[:]
             tree_builder = OntologyTreeBuilder(cell_counts_df)
-            with patch(
-                "backend.cellguide.pipeline.source_collections.source_collections_generator.get_datasets_from_discover_api",
-                new=mock_get_datasets_from_curation_endpoint,
-            ), patch(
-                "backend.cellguide.pipeline.source_collections.source_collections_generator.get_collections_from_discover_api",
-                new=mock_get_collections_from_curation_endpoint,
+            with (
+                patch(
+                    "backend.cellguide.pipeline.source_collections.source_collections_generator.get_datasets_from_discover_api",
+                    new=mock_get_datasets_from_curation_endpoint,
+                ),
+                patch(
+                    "backend.cellguide.pipeline.source_collections.source_collections_generator.get_collections_from_discover_api",
+                    new=mock_get_collections_from_curation_endpoint,
+                ),
             ):
                 source_collections = generate_source_collections_data(
                     all_cell_type_ids_in_corpus=tree_builder.all_cell_type_ids_in_corpus
