@@ -165,9 +165,9 @@ class ProcessMain(ProcessingLogic):
             datasets_bucket = os.environ.get("DATASETS_BUCKET")
             cxg_bucket = os.environ.get("CELLXGENE_BUCKET")
             rv = self.process(
-                collection_version_id=None
-                if collection_version_id is None
-                else CollectionVersionId(collection_version_id),
+                collection_version_id=(
+                    None if collection_version_id is None else CollectionVersionId(collection_version_id)
+                ),
                 dataset_version_id=DatasetVersionId(dataset_version_id),
                 step_name=step_name,
                 dropbox_uri=dropbox_uri,

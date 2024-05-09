@@ -105,6 +105,7 @@ def upload_gpt_descriptions_to_s3(*, gpt_output_directory: str, gpt_seo_output_d
     for src_directory, dst_directory in zip(
         [gpt_output_directory, gpt_seo_output_directory],
         [GPT_OUTPUT_DIRECTORY_FOLDERNAME, GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME],
+        strict=False,
     ):
         # upload to s3
         s3_provider.sync_directory(src_dir=src_directory, s3_uri=f"{bucket_path}{dst_directory}/")

@@ -290,7 +290,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   },
                   {
                     "Name": "EXECUTION_ID",
-                    "Value.$": "$$.Execution.Name"
+                    "Value.$": "$.execution_id"
                   }
                 ]
               }
@@ -351,7 +351,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   },
                   {
                     "Name": "EXECUTION_ID",
-                    "Value.$": "$$.Execution.Name"
+                    "Value.$": "$.execution_id"
                   }
                 ]
               }
@@ -418,7 +418,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                         },
                         {
                           "Name": "EXECUTION_ID",
-                          "Value.$": "$$.Execution.Name"
+                          "Value.$": "$.execution_id"
                         }
                       ]
                     }

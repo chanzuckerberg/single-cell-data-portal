@@ -101,6 +101,7 @@ class OntologyTreeBuilder:
             zip(
                 self.all_cell_type_ids_in_corpus,
                 [self.ontology.get_term_label(c) for c in self.all_cell_type_ids_in_corpus],
+                strict=False,
             )
         )
 
@@ -275,9 +276,7 @@ class OntologyTreeBuilder:
         )
         with ProgressBar():
             computed_results = compute(*list(results.values()), num_workers=CELLGUIDE_PIPELINE_NUM_CPUS)
-            all_states_per_cell_type = {
-                cell_type_id: result for cell_type_id, result in zip(results.keys(), computed_results)
-            }
+            all_states_per_cell_type = dict(zip(results.keys(), computed_results, strict=False))
 
         return all_states_per_cell_type
 
@@ -369,7 +368,7 @@ class OntologyTreeBuilder:
         )
         with ProgressBar():
             computed_results = compute(*list(results.values()), num_workers=CELLGUIDE_PIPELINE_NUM_CPUS)
-            all_states_per_tissue = {tissue_id: result for tissue_id, result in zip(results.keys(), computed_results)}
+            all_states_per_tissue = dict(zip(results.keys(), computed_results, strict=False))
 
         return all_states_per_tissue
 
@@ -431,6 +430,7 @@ class OntologyTreeBuilder:
             zip(
                 df_rollup["cell_type_ontology_term_id"],
                 df_rollup[["n_cells", "n_cells_rollup"]].to_dict(orient="records"),
+                strict=False,
             )
         )
 
@@ -832,5 +832,5 @@ def _to_dict(a: list[Any], b: list[Any]) -> Dict[Any, list[Any]]:
     bounds_left = bounds[:-1]
     bounds_right = bounds[1:]
     slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
-    d = dict(zip(np.unique(a), [list(set(x)) for x in slists]))
+    d = dict(zip(np.unique(a), [list(set(x)) for x in slists], strict=False))
     return d
