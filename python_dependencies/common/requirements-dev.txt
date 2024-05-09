@@ -1,8 +1,6 @@
 allure-pytest<3
-black==24.4.2  # Must be kept in sync with black version in .pre-commit-config.yaml
 click
 coverage
 parameterized
 pytest
 pytest-subtests
-ruff==0.4.3 # Must be kept in sync with ruff version in .pre-commit-config.yaml
