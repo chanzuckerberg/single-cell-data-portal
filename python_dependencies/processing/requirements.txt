@@ -6,7 +6,6 @@ botocore>=1.14.17
 cellxgene-schema
 dataclasses-json
 ddtrace==2.1.4
-jsonschema
 matplotlib==3.7.3
 numba==0.56.2
 numpy==1.23.2
@@ -15,7 +14,6 @@ psutil>=5.9.0
 psycopg2-binary>=2.8.5
 pyarrow>=1.0
 pydantic>=1.9.0
-PyMySQL==0.9.3
 python-json-logger
 requests>=2.22.0
 rpy2==3.5.14

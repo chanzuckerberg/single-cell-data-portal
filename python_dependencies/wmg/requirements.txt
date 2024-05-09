@@ -6,7 +6,6 @@ cellxgene-census>=1.10.0 # WMG pipeline always reads the latest version of Censu
 cellxgene-ontology-guide==0.8.0
 dataclasses-json==0.5.7
 ddtrace==2.1.4
-jsonschema==4.18.4
 numba>=0.58.0
 numpy==1.23.5
 openai==0.27.7
@@ -15,7 +14,6 @@ psutil==5.9.5
 pyarrow==12.0.0
 pydantic==1.10.7
 pygraphviz==1.11
-PyMySQL==0.9.3
 python-json-logger==2.0.7
 requests>=2.22.0
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
