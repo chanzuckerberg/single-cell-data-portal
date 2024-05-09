@@ -48,6 +48,10 @@ export default function CuratorAPIKeyGenerator(): JSX.Element {
     []
   );
 
+  const handleButtonClose = useCallback((_: DialogOnCloseParams[0]) => {
+    setIsOpen(false);
+  }, []);
+
   const copyAPIKey = useCallback(() => {
     navigator.clipboard.writeText(apiKeyResponse.current.key || "");
     Toast.show({
@@ -76,7 +80,9 @@ export default function CuratorAPIKeyGenerator(): JSX.Element {
         </DialogContent>
         <DialogActions>
           {/* TODO(SDSv20): Fix handler */}
-          <SDSButton onClick={handleClose}>Close</SDSButton>
+          {/* (masoudmanson): The Button onClick handler does not include a reason parameter, 
+                    and it should be distinct from the Dialog close handler */}
+          <SDSButton onClick={handleButtonClose}>Close</SDSButton>
           <SDSButton sdsType="primary" sdsStyle="square" onClick={copyAPIKey}>
             Copy API Key
           </SDSButton>
