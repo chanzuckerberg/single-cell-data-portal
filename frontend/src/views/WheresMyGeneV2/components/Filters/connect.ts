@@ -253,6 +253,8 @@ export const useConnect = ({
     filterOptions,
     getOptionSelected,
     isOptionEqualToValue,
+    keepSearchOnSelect: true,
+    width: "fit-content",
   };
 
   const InputDropdownProps = {
