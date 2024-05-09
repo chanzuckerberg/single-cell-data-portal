@@ -145,7 +145,7 @@ class CanonicalMarkerGenesCompiler:
         if not filtered_results:
             return "", ""
 
-        refs, titles = zip(*filtered_results)
+        refs, titles = zip(*filtered_results, strict=False)
         return ";;".join(refs), ";;".join(titles)
 
     def get_processed_asctb_table_entries(self) -> dict[str, ParsedAsctbTableEntry]:

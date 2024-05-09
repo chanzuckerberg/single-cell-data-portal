@@ -70,7 +70,6 @@ def get_object_key(*, object: str) -> str:
 
     object_key = object
     if deployment_stage == "rdev" and remote_dev_prefix is not None:
-        CellGuideConfig().bucket
         object_key = f"env-rdev-cellguide{remote_dev_prefix}/{object}"
 
     return object_key
