@@ -1,6 +1,10 @@
 import logging
 
-from backend.cellguide.common.constants import COMPUTATIONAL_MARKER_GENES_FOLDERNAME, MARKER_GENE_PRESENCE_FILENAME
+from backend.cellguide.common.constants import (
+    COMPUTATIONAL_MARKER_GENES_FOLDERNAME,
+    MARKER_GENE_PRESENCE_FILENAME,
+    MARKER_GENE_DATA_FILENAME,
+)
 from backend.cellguide.pipeline.computational_marker_genes.computational_markers import (
     MARKER_SCORE_THRESHOLD,
     MarkerGenesCalculator,
@@ -8,6 +12,7 @@ from backend.cellguide.pipeline.computational_marker_genes.computational_markers
 from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.utils import output_json, output_json_per_key
+from backend.cellguide.common.data import format_marker_gene_data
 from backend.wmg.api.wmg_api_config import WMG_API_SNAPSHOT_SCHEMA_VERSION
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 
@@ -17,7 +22,7 @@ logger = logging.getLogger(__name__)
 def run(*, output_directory: str):
     snapshot = load_snapshot(snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION)
     ontology_tree = get_ontology_tree_builder(snapshot=snapshot)
-    marker_genes, reformatted_marker_genes = get_computational_marker_genes(
+    marker_genes, reformatted_marker_genes, formatted_marker_gene_data = get_computational_marker_genes(
         snapshot=snapshot,
         ontology_tree=ontology_tree,
     )
@@ -25,6 +30,10 @@ def run(*, output_directory: str):
     output_json(
         reformatted_marker_genes,
         f"{output_directory}/{COMPUTATIONAL_MARKER_GENES_FOLDERNAME}/{MARKER_GENE_PRESENCE_FILENAME}",
+    )
+    output_json(
+        formatted_marker_gene_data,
+        f"{output_directory}/{COMPUTATIONAL_MARKER_GENES_FOLDERNAME}/{MARKER_GENE_DATA_FILENAME}",
     )
 
 
@@ -114,11 +123,6 @@ def get_computational_marker_genes(*, snapshot: WmgSnapshot, ontology_tree: Onto
             )
             reformatted_marker_genes[symbol][organism][tissue].append(data)
 
-    # # assert that cell types do not appear multiple times in each gene, tissue, organism
-    # for symbol in reformatted_marker_genes:
-    #     for organism in reformatted_marker_genes[symbol]:
-    #         for tissue in reformatted_marker_genes[symbol][organism]:
-    #             cell_type_ids = [i["cell_type_id"] for i in reformatted_marker_genes[symbol][organism][tissue]]
-    #             assert len(cell_type_ids) == len(list(set(cell_type_ids)))
-
-    return marker_genes, reformatted_marker_genes
+    # reformat the data to be a nested dictionary with structure organism-->tissue-->celltype-->genes
+    organism_tissue_celltype_genes_data = format_marker_gene_data(reformatted_marker_genes)
+    return marker_genes, reformatted_marker_genes, organism_tissue_celltype_genes_data
