@@ -4,4 +4,6 @@ DEPLOYMENT_STAGE_TO_API_URL = {
     "dev": "https://api.cellxgene.dev.single-cell.czi.technology",
 }
 
+UNS_META_KEYS = ["spatial"]
+
 DATA_SUBMISSION_POLICY_VERSION = "2.0"
