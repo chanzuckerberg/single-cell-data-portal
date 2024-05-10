@@ -4,9 +4,9 @@ import { DATASET_ASSET_FORMAT } from "src/common/entities";
 
 const DISCOVER_API_URL = "https://api.cellxgene.cziscience.com/curation/ui/#/";
 const SCHEMA_URL =
-  "https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md";
+  "https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md";
 const SEURAT_SCHEMA_URL =
-  "https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/seurat_encoding.md";
+  "https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/seurat_encoding.md";
 
 interface Props {
   selectedFormat: DATASET_ASSET_FORMAT | "";
