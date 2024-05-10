@@ -118,8 +118,7 @@
   ],
   "license": "MIT",
   "scripts": {
-    "predev": "make retrieve-descendants",
-    "prebuild": "make retrieve-descendants",
+    "preinstall": "make retrieve-descendants",
     "dev": "next dev --experimental-https",
     "build": "NODE_OPTIONS=\"--max_old_space_size=2048\" next build",
     "start": "next start",
