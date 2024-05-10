@@ -217,30 +217,28 @@ export default function CellGuideCard({
   }). ${rawSeoDescription}`;
 
   const OrganismSelectorDropdown = (
-    <div data-testid={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}>
-      <Dropdown<DefaultAutocompleteOption, false, false, false>
-        InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
-        search
-        label={selectedOrganism?.name}
-        onChange={handleChangeOrganism}
-        options={sdsOrganismsList}
-        value={selectedOrganism}
-      />
-    </div>
+    <Dropdown<DefaultAutocompleteOption, false, false, false>
+      InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
+      search
+      label={selectedOrganism?.name}
+      onChange={handleChangeOrganism}
+      options={sdsOrganismsList}
+      value={selectedOrganism}
+      data-testid={CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN}
+    />
   );
   const dropdownComponents = (
     <CellGuideCardHeaderInnerWrapper>
       {OrganismSelectorDropdown}
-      <div data-testid={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}>
-        <Dropdown<DefaultAutocompleteOption, false, false, false>
-          InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
-          search
-          label={tissueName}
-          onChange={handleChangeOrgan}
-          options={sdsOrgansList}
-          value={selectedOrgan}
-        />
-      </div>
+      <Dropdown<DefaultAutocompleteOption, false, false, false>
+        InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
+        search
+        label={tissueName}
+        onChange={handleChangeOrgan}
+        options={sdsOrgansList}
+        value={selectedOrgan}
+        data-testid={CELL_GUIDE_CARD_GLOBAL_TISSUE_FILTER_DROPDOWN}
+      />
     </CellGuideCardHeaderInnerWrapper>
   );
   const pageNav = (
