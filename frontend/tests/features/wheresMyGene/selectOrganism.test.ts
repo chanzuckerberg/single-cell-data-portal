@@ -180,7 +180,22 @@ async function verifyConfirmModal({
   if (testId && text) {
     await tryUntil(
       async () => {
-        await expect(page.getByTestId(testId).getByText(text)).toBeVisible();
+        // This selector targets text content in various components (complex filters, autocomplete for cell type search, and a button)
+        const elements = await page
+          .locator(
+            `[data-testid="${testId}"] ~ * .MuiChip-label, [data-testid="${testId}"] .MuiChip-label, [data-testid="${testId}"]`
+          )
+          .all();
+        let found = false;
+        for await (const element of elements) {
+          const elementText = await element.textContent();
+          const cleanedElementText = elementText?.replace(/\s+/g, " ").trim();
+          if (cleanedElementText && cleanedElementText.includes(text)) {
+            found = true;
+            break;
+          }
+        }
+        expect(found).toBeTruthy();
       },
       { page }
     );
