@@ -118,7 +118,7 @@ class ProcessValidate(ProcessingLogic):
         is_single = spatial_dict.get("is_single")
         has_fullres = False
         spatial_library_ids = [key for key in spatial_dict if key != "is_single"]
-        # schema validation ensures there can only be max. one other key in uns["spatial"] if "is_single" is True
+        # schema validation ensures there can only be at max, one other key in uns["spatial"] if "is_single" is True
         library_id = spatial_library_ids.pop() if spatial_library_ids else None
         if library_id and "images" in spatial_dict[library_id] and "fullres" in spatial_dict[library_id]["images"]:
             has_fullres = True
