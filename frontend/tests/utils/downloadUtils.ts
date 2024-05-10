@@ -291,7 +291,7 @@ interface MetadataVerificationOptions {
 }
 
 export const getFilterText = async (page: Page, filterName: string) => {
-  const filterLabel = `${getTestID(filterName)} [role="button"]`;
+  const filterLabel = `${getTestID(filterName)} ~ * .MuiChip-label`;
   return await page.locator(filterLabel).textContent();
 };
 export async function compareSvg(
