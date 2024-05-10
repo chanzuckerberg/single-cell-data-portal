@@ -118,7 +118,7 @@
   ],
   "license": "MIT",
   "scripts": {
-    "preinstall": "make retrieve-descendants",
+    "preinstall": "cd frontend/ &&make retrieve-descendants",
     "dev": "next dev --experimental-https",
     "build": "NODE_OPTIONS=\"--max_old_space_size=2048\" next build",
     "start": "next start",
