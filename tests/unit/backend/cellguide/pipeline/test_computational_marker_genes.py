@@ -10,6 +10,7 @@ from tests.test_utils.mocks import mock_bootstrap_rows_percentiles
 from tests.unit.backend.cellguide.pipeline.constants import (
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
     COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME,
+    FORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME,
     REFORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME,
 )
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
@@ -28,6 +29,10 @@ class MarkerGeneCalculatorTests(unittest.TestCase):
             f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{REFORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}", "r"
         ) as f:
             expected__reformatted_marker_genes = json.load(f)
+        with open(
+            f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{FORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}", "r"
+        ) as f:
+            expected__formatted_marker_genes = json.load(f)
         with (
             load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot,
             patch(
@@ -37,11 +42,15 @@ class MarkerGeneCalculatorTests(unittest.TestCase):
         ):
             cell_counts_df = snapshot.cell_counts_cube.df[:]
             tree_builder = OntologyTreeBuilder(cell_counts_df)
-            computational_marker_genes, reformatted_marker_genes = get_computational_marker_genes(
-                snapshot=snapshot,
-                ontology_tree=tree_builder,
+            computational_marker_genes, reformatted_marker_genes, formatted_marker_genes = (
+                get_computational_marker_genes(
+                    snapshot=snapshot,
+                    ontology_tree=tree_builder,
+                )
             )
             computational_marker_genes = convert_dataclass_to_dict_and_strip_nones(computational_marker_genes)
             reformatted_marker_genes = convert_dataclass_to_dict_and_strip_nones(reformatted_marker_genes)
+            formatted_marker_genes = convert_dataclass_to_dict_and_strip_nones(formatted_marker_genes)
             self.assertTrue(compare_dicts(computational_marker_genes, expected__computational_marker_genes))
             self.assertTrue(compare_dicts(reformatted_marker_genes, expected__reformatted_marker_genes))
+            self.assertTrue(compare_dicts(formatted_marker_genes, expected__formatted_marker_genes))
