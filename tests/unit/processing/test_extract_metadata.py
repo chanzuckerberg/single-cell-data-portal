@@ -290,11 +290,17 @@ class TestProcessingValidate(BaseProcessingTest):
         }
         self.assertEqual(self.pdv.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=True))
 
-    def test_get_spatial_metadata__is_single_true_fullres_false(self):
+    def test_get_spatial_metadata__is_single_true_and_fullres_false(self):
         spatial_dict = {
             "is_single": True,
             "dummy_library_id": {"images": {}},
         }
+        self.assertEqual(
+            self.pdv.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=False)
+        )
+
+    def test_get_spatial_metadata__is_single_true_and_no_library_id(self):
+        spatial_dict = {"is_single": np.bool_(True)}
         self.assertEqual(
             self.pdv.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=False)
         )
