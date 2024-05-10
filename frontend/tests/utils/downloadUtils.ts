@@ -2,7 +2,7 @@ import { Page, expect } from "@playwright/test";
 import * as fs from "fs";
 import readline from "readline";
 import AdmZip from "adm-zip";
-import { getById, getTestID } from "./selectors";
+import { getById } from "./selectors";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL, downloadPath } from "tests/common/constants";
 import pixelmatch from "pixelmatch";
