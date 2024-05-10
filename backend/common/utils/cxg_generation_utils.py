@@ -8,7 +8,7 @@ import tiledb
 
 from backend.common.constants import UNS_META_KEYS
 from backend.common.utils.type_conversion_utils import get_dtype_and_schema_of_array
-from backend.common.utils.uns import filter_spatial_data
+from backend.common.utils.uns import SpatialDataProcessor
 
 
 def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="cxg_group_metadata", ctx=None):
@@ -34,7 +34,7 @@ def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata
             metadata_array.meta[key] = value
 
 
-def convert_uns_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="cxg_group_metadata", ctx=None):
+def convert_uns_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="uns", ctx=None):
     """
     Convert uns (unstructured) metadata to CXG output directory specified
     """
@@ -44,13 +44,17 @@ def convert_uns_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="
 
     tiledb.from_numpy(array_name, np.zeros((1,)))
 
+    spatial_processor = SpatialDataProcessor()
+
     with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
         for key, value in metadata_dict.items():
             if key not in UNS_META_KEYS:
                 continue
             for object_id, content in value.items():
                 if key == "spatial":
-                    object_filtered = filter_spatial_data(content, object_id)
+                    object_filtered = spatial_processor.filter_spatial_data(content, object_id)
+                    print(object_filtered[object_id]["scalefactors"])
+                    spatial_processor.create_deep_zoom_assets(cxg_container, content)
                 else:
                     object_filtered[object_id] = content
 
@@ -329,3 +333,4 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
 
         array_r.close()
         array_c.close()
+

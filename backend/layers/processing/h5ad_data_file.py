@@ -257,3 +257,4 @@ class H5ADDataFile:
                 corpora_props[key] = self.anndata.uns[key]
 
         return corpora_props
+
