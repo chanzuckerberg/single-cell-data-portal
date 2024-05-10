@@ -187,6 +187,7 @@ export interface ValidExplorerCxgsQueryResponse {
 export const useValidExplorerCxgs = () => {
   return useCellGuideQuery<ValidExplorerCxgsQueryResponse>({
     dataType: TYPES.VALID_EXPLORER_CXGS,
+    queryLatestSnapshotIdentifier: false,
   });
 };
 /* ========== ontology_tree ========== */
