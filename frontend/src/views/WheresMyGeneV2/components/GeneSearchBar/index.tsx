@@ -1,5 +1,5 @@
 import { Intent } from "@blueprintjs/core";
-import { Autocomplete, DefaultAutocompleteOption } from "@czi-sds/components";
+import { Autocomplete } from "@czi-sds/components";
 import React, {
   ReactChild,
   SyntheticEvent,
@@ -263,17 +263,21 @@ export default function GeneSearchBar({
 
   function handleSelectGenes(
     _: unknown,
-    genes: DefaultAutocompleteOption[] | null,
+    selectedOptions: (Gene | string)[] | null, // Adjusted to accept an array of Gene or string
     __: unknown,
     ___: unknown
   ) {
     if (!dispatch) return;
 
-    dispatch(selectGenes(genes?.map((gene) => gene.name) || EMPTY_ARRAY));
+    const geneNames =
+      selectedOptions?.map((option) =>
+        typeof option === "string" ? option : option.name
+      ) || EMPTY_ARRAY;
+    dispatch(selectGenes(geneNames));
 
-    if (genes && genes.length > 0) {
+    if (selectedOptions && selectedOptions.length > 0) {
       track(EVENTS.WMG_SELECT_GENE, {
-        genes: genes.map((gene) => gene.name),
+        genes: geneNames,
       });
     }
   }
