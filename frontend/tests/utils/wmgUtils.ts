@@ -210,9 +210,7 @@ export async function deleteChips({
   page: Page;
   filterName: string;
 }) {
-  const deleteChipLocator = page
-    .getByTestId(filterName)
-    .getByTestId("ClearIcon");
+  const deleteChipLocator = page.getByTestId(filterName).locator("svg");
 
   await tryUntil(
     async () => {
@@ -334,7 +332,7 @@ export async function searchAndAddFilterCellType(page: Page, cellType: string) {
 export async function removeFilteredCellType(page: Page, cellType: string) {
   const beforeCellTypeNames = await getCellTypeNames(page);
   const cellTypeTag = page.getByTestId(`cell-type-tag-${cellType}`);
-  const deleteIcon = cellTypeTag.getByTestId("ClearIcon");
+  const deleteIcon = cellTypeTag.locator("svg");
   await deleteIcon.click();
   const afterCellTypeNames = await getCellTypeNames(page);
   expect(afterCellTypeNames.length).toBeLessThan(beforeCellTypeNames.length);
