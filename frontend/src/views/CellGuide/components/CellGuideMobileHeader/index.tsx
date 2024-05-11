@@ -40,7 +40,7 @@ const CellGuideMobileHeader = ({
       }}
     >
       <SearchBarWrapper>
-        <CellGuideCardSearchBar autoFocus />
+        <CellGuideCardSearchBar skinnyMode />
       </SearchBarWrapper>
 
       <StyledCancelButton
