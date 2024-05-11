@@ -16,7 +16,6 @@ export default function ReorderDatasets({ reorderAction }: Props): JSX.Element {
         data-testid="datasets-reorder-cancel"
         isAllCaps={false}
         onClick={onCancelReorder}
-        sdsStyle="minimal"
         sdsType="secondary"
       >
         Cancel
@@ -25,7 +24,6 @@ export default function ReorderDatasets({ reorderAction }: Props): JSX.Element {
         data-testid="datasets-reorder-save"
         color="success"
         onClick={onSaveReorder}
-        sdsStyle="square"
         sdsType="primary"
       >
         Save Order

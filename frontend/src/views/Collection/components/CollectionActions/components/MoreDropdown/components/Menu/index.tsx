@@ -23,27 +23,27 @@ interface MenuProps extends Partial<Omit<SDSMenuProps, "onClose">> {
 const DeleteButton = ({
   isRevision,
   ...props
-}: Partial<SDSMenuItemProps<"trashCan">> & { isRevision: boolean }) => {
+}: Partial<SDSMenuItemProps<"TrashCan">> & { isRevision: boolean }) => {
   return (
     <DeleteMenuItem
       {...props}
       data-testid={
         isRevision ? "dropdown-cancel-revision" : "dropdown-delete-collection"
       }
-      sdsIcon="trashCan"
-      sdsIconProps={{ color: "error" }}
+      icon="TrashCan"
+      sdsIconProps={{ color: "red" }}
     >
       {isRevision ? "Cancel Revision" : "Delete Collection"}
     </DeleteMenuItem>
   );
 };
 
-const EditButton = (props: Partial<SDSMenuItemProps<"edit">>) => {
+const EditButton = (props: Partial<SDSMenuItemProps<"Edit">>) => {
   return (
     <MenuItem
       {...props}
       data-testid="dropdown-edit-details"
-      sdsIcon="edit"
+      icon="Edit"
       sdsIconProps={{ color: "gray", shade: 400 }}
     >
       Edit Details

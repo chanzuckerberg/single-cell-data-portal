@@ -4,7 +4,7 @@ import { MoreButton } from "src/components/common/MoreDropdown/style";
 
 interface Props {
   popoverProps?: PopoverProps;
-  buttonProps?: Partial<ButtonIconProps<"dotsHorizontal", "small">>;
+  buttonProps?: Partial<ButtonIconProps>;
 }
 
 const MoreDropdown = ({
@@ -16,7 +16,7 @@ const MoreDropdown = ({
       <MoreButton
         {...buttonProps}
         data-testid="collection-more-button"
-        sdsIcon="dotsHorizontal"
+        icon="DotsHorizontal"
         sdsSize="small"
         sdsType="tertiary"
       />

@@ -5,7 +5,7 @@ export default function ReorderCell(): JSX.Element {
   return (
     <Icon
       color="gray"
-      sdsIcon="linesHorizontal"
+      sdsIcon="LinesHorizontal3"
       sdsSize="s"
       sdsType="static"
       shade={400}
