@@ -210,7 +210,9 @@ export async function deleteChips({
   page: Page;
   filterName: string;
 }) {
-  const deleteChipLocator = page.getByTestId(filterName).locator("svg");
+  const deleteChipLocator = page
+    .getByTestId(filterName)
+    .getByTestId("ClearIcon");
 
   await tryUntil(
     async () => {
