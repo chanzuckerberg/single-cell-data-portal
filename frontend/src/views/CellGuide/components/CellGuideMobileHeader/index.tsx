@@ -59,6 +59,7 @@ const CellGuideMobileHeader = ({
       <div id="cellguide-search-icon">
         <Button
           icon="Search"
+          sdsStyle="icon"
           id="cellguide-search-icon"
           onClick={() => {
             setSearchIsOpen(true);

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Wrapper, SectionItem } from "./style";
 import { ROUTES } from "src/common/constants/routes";
 import {
@@ -29,6 +29,7 @@ export default function CellGuideCardSearchBar({
   skinnyMode?: boolean;
 }): JSX.Element {
   const router = useRouter();
+  const [open, setOpen] = useState(skinnyMode);
   const { data: cellTypes } = useCellTypeMetadata();
   const { data: tissueData } = useTissueMetadata();
   const options: SDSAutocompleteOptions<Entity, false, false, false> =
@@ -70,7 +71,17 @@ export default function CellGuideCardSearchBar({
         search
         id={CELL_GUIDE_CARD_SEARCH_BAR}
         options={options}
-        clearOnEscape
+        InputBaseProps={{
+          autoFocus: skinnyMode,
+          onFocus: () => {
+            setOpen(true);
+          },
+          onBlur: () => {
+            setOpen(false);
+          },
+        }}
+        open={open}
+        openOnFocus
         renderOption={(props, option) => {
           return (
             <SectionItem
