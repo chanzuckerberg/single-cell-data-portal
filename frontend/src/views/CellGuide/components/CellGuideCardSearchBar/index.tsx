@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { StyledPopper, SectionItem } from "./style";
+import { Wrapper, SectionItem } from "./style";
 import { ROUTES } from "src/common/constants/routes";
 import {
   useCellTypeMetadata,
@@ -63,14 +63,11 @@ export default function CellGuideCardSearchBar({
     }
   }
   return (
-    <div data-testid={CELL_GUIDE_CARD_SEARCH_BAR}>
+    <Wrapper data-testid={CELL_GUIDE_CARD_SEARCH_BAR} fullWidth={skinnyMode}>
       <Autocomplete<Entity, false, false, false>
         data-testid={CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT}
         label={CELL_GUIDE_SEARCH_BAR_LABEL}
         search
-        PopperComponent={(popperProps) => (
-          <StyledPopper {...popperProps} disablePortal fullWidth={skinnyMode} />
-        )}
         id={CELL_GUIDE_CARD_SEARCH_BAR}
         options={options}
         clearOnEscape
@@ -140,6 +137,6 @@ export default function CellGuideCardSearchBar({
             });
         }}
       />
-    </div>
+    </Wrapper>
   );
 }
