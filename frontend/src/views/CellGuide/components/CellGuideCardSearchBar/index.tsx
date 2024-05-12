@@ -10,7 +10,6 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import {
   CELL_GUIDE_CARD_SEARCH_BAR,
-  CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT,
   CELL_GUIDE_SEARCH_BAR_LABEL,
 } from "src/views/CellGuide/components/CellGuideCardSearchBar/constants";
 import { Autocomplete, SDSAutocompleteOptions } from "@czi-sds/components";
@@ -66,7 +65,6 @@ export default function CellGuideCardSearchBar({
   return (
     <Wrapper data-testid={CELL_GUIDE_CARD_SEARCH_BAR} fullWidth={skinnyMode}>
       <Autocomplete<Entity, false, false, false>
-        data-testid={CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT}
         label={CELL_GUIDE_SEARCH_BAR_LABEL}
         search
         id={CELL_GUIDE_CARD_SEARCH_BAR}
