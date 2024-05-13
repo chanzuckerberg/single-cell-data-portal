@@ -176,7 +176,7 @@ const TissueHeaderButton = ({
         }, [tissueID, tissueName, handleExpandCollapse])}
       >
         <Icon
-          sdsIcon={expanded ? "TriangleDown" : "TriangleRight"}
+          sdsIcon={expanded ? "triangleDown" : "triangleRight"}
           sdsSize="s"
           color="gray"
           sdsType="static"

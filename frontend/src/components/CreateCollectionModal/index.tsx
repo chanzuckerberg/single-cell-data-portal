@@ -25,10 +25,7 @@ const AsyncCTA = loadable(
     /*webpackChunkName: 'CreateCollectionModalCTA' */ import("./components/CTA")
 );
 
-const CreateCollectionButton = (
-  // Omit is a temporary workaround until SDS fixes button typing
-  props: Omit<ButtonProps, "sdsStyle" | "sdsType">
-) => (
+const CreateCollectionButton = (props: Partial<ButtonProps>) => (
   <StyledButton sdsStyle="square" sdsType="primary" {...props}>
     Create Collection
   </StyledButton>

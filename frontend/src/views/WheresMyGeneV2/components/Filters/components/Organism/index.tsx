@@ -1,9 +1,8 @@
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { StyledDropdown, Wrapper, Label } from "../common/style";
-import { InputDropdownProps, Props } from "./types";
+import { InputDropdownProps, Props, tempOnChange } from "./types";
 import { useConnect } from "./connect";
 import Dialog from "./components/Dialog";
-import { Organism as IOrganism } from "src/views/WheresMyGeneV2/common/types";
 
 export default function Organism({ isLoading }: Props): JSX.Element {
   const {
@@ -19,10 +18,10 @@ export default function Organism({ isLoading }: Props): JSX.Element {
   return (
     <Wrapper>
       <Label>Organism</Label>
-      <StyledDropdown<IOrganism, false, false, false>
+      <StyledDropdown
         label={organism?.name || "Select"}
         options={organisms || EMPTY_ARRAY}
-        onChange={handleOnChange}
+        onChange={handleOnChange as tempOnChange}
         InputDropdownProps={{ ...InputDropdownProps, disabled: isLoading }}
         data-testid="add-organism"
         DropdownMenuProps={DropdownMenuProps}

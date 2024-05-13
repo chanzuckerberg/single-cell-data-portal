@@ -32,7 +32,7 @@ export default function FilterMenuItems({
           {/* Icon */}
           <ListItemIcon>
             {selected && (
-              <Icon sdsIcon="Check" sdsSize="s" sdsType="iconButton" />
+              <Icon sdsIcon="check" sdsSize="s" sdsType="iconButton" />
             )}
           </ListItemIcon>
           {/* List item text and count */}

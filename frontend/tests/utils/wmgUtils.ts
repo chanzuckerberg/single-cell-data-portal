@@ -5,7 +5,7 @@ import {
   TEST_URL,
 } from "../common/constants";
 import { expect, Page } from "@playwright/test";
-import { getText } from "tests/utils/selectors";
+import { getTestID, getText } from "tests/utils/selectors";
 import {
   countLocator,
   expandTissue,
@@ -172,13 +172,10 @@ export const selectSecondaryFilterOption = async (
   // close the secondary filter pop-up
   await page.keyboard.press("Escape");
 
-  const filterLabel = await page
-    .getByTestId(filterName)
-    .locator(".MuiChip-label")
-    .first();
+  const filter_label = `${getTestID(filterName)} [role="button"]`;
 
   // expect the selected filter chip to be visible under the dropdown button
-  await expect(filterLabel).toBeVisible();
+  await expect(page.locator(filter_label).first()).toBeVisible();
 };
 
 export const pickOptions = async (page: Page, n: number) => {
@@ -334,7 +331,7 @@ export async function searchAndAddFilterCellType(page: Page, cellType: string) {
 export async function removeFilteredCellType(page: Page, cellType: string) {
   const beforeCellTypeNames = await getCellTypeNames(page);
   const cellTypeTag = page.getByTestId(`cell-type-tag-${cellType}`);
-  const deleteIcon = cellTypeTag.locator("svg");
+  const deleteIcon = cellTypeTag.getByTestId("ClearIcon");
   await deleteIcon.click();
   const afterCellTypeNames = await getCellTypeNames(page);
   expect(afterCellTypeNames.length).toBeLessThan(beforeCellTypeNames.length);

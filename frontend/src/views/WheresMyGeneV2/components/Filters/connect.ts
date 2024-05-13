@@ -1,4 +1,5 @@
 import {
+  ComplexFilterProps,
   DefaultMenuSelectOption,
   InputDropdownProps,
 } from "@czi-sds/components";
@@ -253,9 +254,7 @@ export const useConnect = ({
     filterOptions,
     getOptionSelected,
     isOptionEqualToValue,
-    keepSearchOnSelect: true,
-    width: "fit-content",
-  };
+  } as ComplexFilterProps<true>["DropdownMenuProps"];
 
   const InputDropdownProps = {
     sdsStyle: "minimal",
