@@ -43,6 +43,8 @@ def filters():
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
             snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
+        q = WmgQuery(snapshot, cube_query_params=None)
+        n_cells = _get_cell_counts_for_query(q, criteria)
 
     with ServerTiming.time("calculate filters and build response"):
         response_filter_dims_values = build_filter_dims_values(criteria, snapshot)
@@ -50,6 +52,7 @@ def filters():
             dict(
                 snapshot_id=snapshot.snapshot_identifier,
                 filter_dims=response_filter_dims_values,
+                n_cells=n_cells,
             )
         )
     return response
@@ -172,13 +175,12 @@ def differentialExpression():
     q = WmgQuery(snapshot, cube_query_params=None)
 
     with ServerTiming.time("run differential expression"):
-        de_results, query_group_cell_counts, successCode = run_differential_expression(q, criteria1, criteria2)
+        de_results, successCode = run_differential_expression(q, criteria1, criteria2)
 
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
             differentialExpressionResults=de_results,
-            queryGroupCellCounts=query_group_cell_counts,
             successCode=successCode,
         )
     )
@@ -278,12 +280,16 @@ def run_differential_expression(q: WmgQuery, criteria1, criteria2) -> Tuple[List
                     "t_score": ti,
                 }
             )
+    return statistics, 0
 
-    query_group_cell_counts = {
-        "queryGroup1CellCount": int(n_cells1),
-        "queryGroup2CellCount": int(n_cells2),
-    }
-    return statistics, query_group_cell_counts, 0
+
+def _get_cell_counts_for_query(q: WmgQuery, criteria: WmgFiltersQueryCriteria) -> pd.DataFrame:
+    if criteria.cell_type_ontology_term_ids:
+        criteria.cell_type_ontology_term_ids = list(
+            set(sum([descendants(i) for i in criteria.cell_type_ontology_term_ids], []))
+        )
+    cell_counts = q.cell_counts(criteria)
+    return int(cell_counts["n_total_cells"].sum())
 
 
 def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):

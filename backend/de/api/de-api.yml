@@ -86,6 +86,10 @@ paths:
                         $ref: "#/components/schemas/de_ontology_term_id_label_list"
                       organism_terms:
                         $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                  n_cells:
+                    description: ->
+                      Cell counts for each query group
+                    type: integer
 
   /v1/differentialExpression:
     post:
@@ -192,15 +196,6 @@ paths:
                           type: number
                           format: float
                           maxLength: 4
-                  queryGroupCellCounts:
-                    description: ->
-                      Cell counts for each query group
-                    type: object
-                    properties:
-                      queryGroup1CellCount:
-                        type: integer
-                      queryGroup2CellCount:
-                        type: integer
 
 components:
   schemas:
