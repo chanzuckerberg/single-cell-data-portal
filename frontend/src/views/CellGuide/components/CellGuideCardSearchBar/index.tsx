@@ -14,7 +14,7 @@ import {
 } from "src/views/CellGuide/components/CellGuideCardSearchBar/constants";
 import { Autocomplete, SDSAutocompleteOptions } from "@czi-sds/components";
 
-export interface Entity {
+interface Entity {
   id: string;
   name: string;
   synonyms?: string[]; // only cell types (optionally) have synonyms
