@@ -1,7 +1,6 @@
 import os
 import pathlib
 
-import anndata
 import anndata as ad
 import numpy as np
 import pandas as pd

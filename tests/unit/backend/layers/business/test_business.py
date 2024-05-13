@@ -46,6 +46,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
     OntologyTermId,
+    SpatialMetadata,
     TissueOntologyTermId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
@@ -177,6 +178,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
             "CZ CELLxGENE Discover in Collection: "
             "https://cellxgene.cziscience.com/collections/collection_id",
+            spatial=SpatialMetadata(is_single=True, has_fullres=True),
         )
         self.s3_provider.mock_s3_fs = set()
 
@@ -1555,12 +1557,21 @@ class TestGetAllDatasets(BaseBusinessLogicTestCase):
         # - private collection (2 datasets)
         # - public collection (2 datasets)
         # - published revision (2 datasets)
-        # - unpublished revision (2 datasets)
+        # - unpublished revision, unchanged datasets (2 datasets)
+        # - unpublished revision, new dataset, changed dataset, unchanged dataset (3 datasets)
         test_user_1 = "test_user_1"
         private_cv_1 = self.initialize_unpublished_collection(owner=test_user_1)
         self.initialize_published_collection(owner=test_user_1)
         self.initialize_collection_with_a_published_revision(owner=test_user_1)
-        _, revision_1 = self.initialize_collection_with_an_unpublished_revision(owner=test_user_1)
+        self.initialize_collection_with_an_unpublished_revision(owner=test_user_1)
+        # Create unpublished revision with a replaced dataset and a new dataset.
+        _, revision_1_updated = self.initialize_collection_with_an_unpublished_revision(owner=test_user_1)
+        updated_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            revision_1_updated.version_id, "http://fake.url", None, revision_1_updated.datasets[0].version_id
+        )
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            revision_1_updated.version_id, "http://fake.url", None, None
+        )
 
         # test_user_2:
         # - private collection
@@ -1595,14 +1606,23 @@ class TestGetAllDatasets(BaseBusinessLogicTestCase):
                     [d.version_id for d in datasets],
                 )
 
+        # Create the expected shape of revision_1_updated: datasets should only include the replacement dataset as well as the new dataset.
+        revision_1_updated_expected = deepcopy(revision_1_updated)
+        revision_1_updated_expected.datasets = [
+            self.database_provider.get_dataset_version(updated_dataset_version_id),
+            self.database_provider.get_dataset_version(new_dataset_version_id),
+        ]
+
         with self.subTest("With super user"):
             collection_versions = self.business_logic.get_private_collection_versions_with_datasets()
-            expected = [private_cv_1, revision_1, private_cv_2, revision_2]
+            # Super user should see private collections from both users, and the updated revision from test_user_1.
+            expected = [private_cv_1, private_cv_2, revision_1_updated_expected]
             _validate(collection_versions, expected)
 
         with self.subTest("With owner"):
             collection_versions = self.business_logic.get_private_collection_versions_with_datasets(owner=test_user_1)
-            expected = [private_cv_1, revision_1]
+            # Owner should see their private collection, and their revision that has been udpated.
+            expected = [private_cv_1, revision_1_updated_expected]
             _validate(collection_versions, expected)
 
 
@@ -1770,7 +1790,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         ]
 
         # Verify public Dataset asset files are in place in s3 store
-        assert all([self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris])
+        assert all(self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris)
 
         self.business_logic.tombstone_collection(published_collection.collection_id)
 
@@ -1778,7 +1798,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         collection = self.business_logic.get_canonical_collection(published_collection.collection_id)
         assert collection.tombstoned is True
         # Verify public Dataset asset files are gone
-        assert all([not self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris])
+        assert all(not self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris)
 
     def test_resurrect_collection_ok(self):
         """
@@ -1796,7 +1816,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         canonical_collection = self.business_logic.get_canonical_collection(published_collection.collection_id)
         assert canonical_collection.tombstoned is False
         # Verify public Dataset asset files are restored
-        assert all([self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris])
+        assert all(self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris)
 
     def test_resurrect_collection_with_tombstoned_dataset_ok(self):
         """
@@ -1837,9 +1857,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         assert dataset_is_tombstoned_exception_raised
 
         # Public-access Dataset asset files for kept Dataset are restored
-        assert all([self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris_kept])
+        assert all(self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris_kept)
         # Public-access Dataset asset files for tombstoned Dataset are not restored
-        assert all([not self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris_tombstoned])
+        assert all(not self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris_tombstoned)
 
     def test_publish_version_fails_on_published_collection(self):
         """

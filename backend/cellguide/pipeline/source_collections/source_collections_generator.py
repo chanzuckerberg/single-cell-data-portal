@@ -42,9 +42,11 @@ def generate_source_collections_data(all_cell_type_ids_in_corpus: list[str]) -> 
                     collection_name=collection["name"],
                     collection_url=collection["collection_url"],
                     publication_url=collection["doi"],
-                    publication_title=format_citation_dp(collection["publisher_metadata"])
-                    if collection["publisher_metadata"]
-                    else "No publication",
+                    publication_title=(
+                        format_citation_dp(collection["publisher_metadata"])
+                        if collection["publisher_metadata"]
+                        else "No publication"
+                    ),
                     tissue=[],
                     disease=[],
                     organism=[],

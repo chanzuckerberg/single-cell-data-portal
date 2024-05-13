@@ -38,6 +38,7 @@ interface AnimatedNodesProps {
   hideTooltip: () => void;
   cellTypesWithMarkerGeneStats: MarkerGeneStatsByCellType | null;
   setCellInfoCellType?: (props: CellType | null) => void;
+  setLastNodeClicked: (nodeId: string) => void;
 }
 
 interface AnimationState {
@@ -64,6 +65,7 @@ export default function AnimatedNodes({
   hideTooltip,
   cellTypesWithMarkerGeneStats,
   setCellInfoCellType,
+  setLastNodeClicked,
 }: AnimatedNodesProps) {
   const [timerId, setTimerId] = useState<number | null>(null); // For hover event
   const router = useRouter();
@@ -231,6 +233,7 @@ export default function AnimatedNodes({
         collapseAllDescendants(node);
       }
       toggleTriggerRender();
+      setLastNodeClicked(node.data.id);
     }
   }
 

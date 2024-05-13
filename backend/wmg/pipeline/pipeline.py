@@ -5,13 +5,15 @@ import sys
 import time
 from typing import Optional
 
-# import tiledb
+import tiledb
+
 from backend.common.utils.result_notification import (
     format_failed_batch_issue_slack_alert,
     gen_wmg_pipeline_failure_message,
     gen_wmg_pipeline_success_message,
     notify_slack,
 )
+from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME
 from backend.wmg.pipeline.cell_type_ancestors import create_cell_type_ancestors
 from backend.wmg.pipeline.cell_type_ordering import create_cell_type_ordering
 from backend.wmg.pipeline.constants import (
@@ -27,6 +29,7 @@ from backend.wmg.pipeline.constants import (
     WMG_DATA_SCHEMA_VERSION,
 )
 from backend.wmg.pipeline.dataset_metadata import create_dataset_metadata
+from backend.wmg.pipeline.errors import PipelineStepMissing
 from backend.wmg.pipeline.expression_summary_and_cell_counts import create_expression_summary_and_cell_counts_cubes
 from backend.wmg.pipeline.expression_summary_default import create_expression_summary_default_cube
 from backend.wmg.pipeline.expression_summary_diffexp import create_expression_summary_diffexp_cubes
@@ -85,8 +88,7 @@ def run_pipeline(corpus_path: Optional[str] = None, skip_validation: bool = Fals
             snapshot_id=snapshot_id,
             is_snapshot_validation_successful=is_valid,
         )
-        # stats = _get_stats(corpus_path)
-        stats = {"dataset_count": 0, "cell_count": 0}
+        stats = _get_stats(corpus_path)
 
         if is_valid:
             logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot location: {cube_data_s3_path}")
@@ -126,15 +128,15 @@ if __name__ == "__main__":
     sys.exit()
 
 
-# def _get_stats(corpus_path: str) -> dict[str, int]:
-#     pipeline_state = load_pipeline_state(corpus_path)
-#     if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
-#         raise PipelineStepMissing("cell_counts")
+def _get_stats(corpus_path: str) -> dict[str, int]:
+    pipeline_state = load_pipeline_state(corpus_path)
+    if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
+        raise PipelineStepMissing("cell_counts")
 
-#     # get dataset count
-#     with tiledb.open(os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)) as cc_cube:
-#         cell_counts_df = cc_cube.df[:]
-#     dataset_count = len(cell_counts_df["dataset_id"].unique())
-#     cell_count = int(cell_counts_df["n_cells"].sum())
+    # get dataset count
+    with tiledb.open(os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)) as cc_cube:
+        cell_counts_df = cc_cube.df[:]
+    dataset_count = len(cell_counts_df["dataset_id"].unique())
+    cell_count = int(cell_counts_df["n_cells"].sum())
 
-#     return {"dataset_count": dataset_count, "cell_count": cell_count}
+    return {"dataset_count": dataset_count, "cell_count": cell_count}

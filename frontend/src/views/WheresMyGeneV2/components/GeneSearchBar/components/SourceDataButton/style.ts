@@ -27,7 +27,7 @@ export const BadgeCounter = styled(Badge)<StyledBadgeProps>`
   top: 4px;
   left: 14px;
 
-  .MuiBadge-badge {
+  .base-Badge-badge {
     position: relative;
     top: -2px;
     margin: 0px;

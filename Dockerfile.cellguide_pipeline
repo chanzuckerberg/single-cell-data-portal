@@ -21,6 +21,7 @@ ADD backend/wmg/config.py backend/wmg/config.py
 ADD backend/wmg/data backend/wmg/data
 ADD backend/wmg/api backend/wmg/api
 ADD backend/cellguide/pipeline backend/cellguide/pipeline
+ADD backend/cellguide/common backend/cellguide/common
 ADD backend/common backend/common
 
 ARG HAPPY_BRANCH="unknown"

@@ -45,7 +45,7 @@ function EmbeddingButton(props: EmbeddingButtonProps) {
       </StyledButton>
       <Dialog open={isOpen} onClose={handleButtonClick}>
         <DialogTitle title="Embedding" onClose={handleButtonClick} />
-        <StyledCallout intent="warning">
+        <StyledCallout intent="notice">
           Code example requires the latest version (1.13.0) of the Census API
           package.
         </StyledCallout>

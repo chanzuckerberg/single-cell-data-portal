@@ -18,14 +18,25 @@ RUN apt-get update && apt-get install -y make wget \
     lsb-release xdg-utils nano vim procps moreutils ripgrep \
     && rm -rf /var/lib/apt/lists/*
 
+# Create the directory `make retrieve-descendants` expects before running npm ci, which runs `make retrieve-descendants`
+# as a preinstall script
+RUN mkdir -p src/components/common/Filter/descendant_mappings
+
+COPY Makefile ./
 COPY package*.json ./
 RUN npm ci --verbose --no-optional && npm cache clean --force
+
 ENV PATH /opt/node_app/node_modules/.bin:$PATH
 
 # -- TODO, we should try turning this back on later.
 # ADD --chown=node . /corpora-frontend
 ADD . /corpora-frontend
+
+# Explicitly copy the JSON files from the earlier steps
+RUN cp -r /opt/node_app/src/components/common/Filter/descendant_mappings/* /corpora-frontend/src/components/common/Filter/descendant_mappings/
+
 WORKDIR /corpora-frontend
+
 ADD ./src/configs/build.js src/configs/configs.js
 RUN mkdir -p node_modules
 RUN ln -sf /opt/node_app/node_modules/* /opt/node_app/node_modules/.bin ./node_modules/.

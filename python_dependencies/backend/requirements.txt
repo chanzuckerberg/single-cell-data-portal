@@ -4,7 +4,7 @@ Authlib==0.14.3
 boto3>=1.11.17
 botocore>=1.14.17
 connexion[swagger-ui]==2.14.2
-dataclasses-json==0.6.4
+dataclasses-json==0.6.5
 cellxgene-ontology-guide==0.8.0
 # TODO: Check if this is really essential for APM tracing
 # see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
@@ -23,7 +23,7 @@ numpy==1.23.5  # required for where's my gene
 pandas==1.5.3 # required for where's my gene
 psutil>=5.9.5, <6
 psycopg2-binary>=2.8.5
-pyarrow==15.0.2 # required for where's my gene
+pyarrow==16.0.0 # required for where's my gene
 PyMySQL==1.1.0
 pydantic>=1.10.7, <2
 python-jose[cryptography]>=3.1.0

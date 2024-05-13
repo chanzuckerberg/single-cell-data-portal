@@ -9,7 +9,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { ButtonIcon, Tooltip } from "@czi-sds/components";
+import { Button, Tooltip } from "@czi-sds/components";
 import {
   TableTitle,
   TableTitleWrapper,
@@ -357,12 +357,13 @@ const MarkerGeneTables = ({
     ) => (
       <NoWrapWrapper>
         {row.symbol}{" "}
-        <ButtonIcon
+        <Button
           aria-label={`display gene info for ${row.symbol}`}
           className="hover-button"
-          sdsIcon="infoCircle"
+          icon="InfoCircle"
           sdsSize="small"
           sdsType="secondary"
+          sdsStyle="icon"
           onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
         />
         {showEye && (
