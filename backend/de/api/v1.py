@@ -171,7 +171,6 @@ def differentialExpression():
         snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
     )
 
-
     # cube_query_params are not required to instantiate WmgQuery for differential expression
     q = WmgQuery(snapshot, cube_query_params=None)
 
@@ -185,7 +184,6 @@ def differentialExpression():
             successCode=successCode,
         )
     )
-
 
 
 def run_differential_expression(q: WmgQuery, criteria1, criteria2) -> Tuple[List[Dict], int]:
