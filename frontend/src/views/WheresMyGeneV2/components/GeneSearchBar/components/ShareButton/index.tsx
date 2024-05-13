@@ -13,7 +13,7 @@ export default function ShareButton(): JSX.Element {
         onClick={copyShareUrl}
         sdsSize="medium"
         sdsType="primary"
-        icon="Share"
+        sdsIcon="share"
         disabled={selectedGenes.length === 0 || isDisabled}
       />
     </StyledButtonDiv>

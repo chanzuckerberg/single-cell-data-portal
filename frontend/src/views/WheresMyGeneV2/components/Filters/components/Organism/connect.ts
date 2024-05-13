@@ -9,7 +9,6 @@ import { selectOrganism } from "src/views/WheresMyGeneV2/common/store/actions";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { selectHasCustomFiltersOrGenesSelected } from "src/views/WheresMyGeneV2/common/store/selectors";
-import { AutocompleteValue } from "@mui/base";
 
 export const useConnect = () => {
   const dispatch = useContext(DispatchContext);
@@ -52,10 +51,7 @@ export const useConnect = () => {
     return result;
   }, [organisms]);
 
-  function handleOnChange(
-    _: React.SyntheticEvent,
-    organism: AutocompleteValue<IOrganism, false, false, false>
-  ): void {
+  function handleOnChange(organism: IOrganism | null): void {
     if (!dispatch || !organism || selectedOrganismId === organism.id) return;
 
     setPendingOrganism(organism);

@@ -1,6 +1,6 @@
 import {
   CommonThemeProps,
-  SDSAppTheme,
+  defaultAppTheme,
   getColors,
   getCorners,
   getFontWeights,
@@ -11,7 +11,7 @@ import {
 } from "@czi-sds/components";
 import { createTheme } from "@mui/material/styles";
 
-import { Inter, IBM_Plex_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 
 export const INTER_FONT_CSS_VARIABLE = "--font-inter";
 
@@ -29,24 +29,15 @@ export const inter = Inter({
   variable: "--font-inter",
 });
 
-/**
- * (masoudmanson): IMB_Plex_Mono is needed for SDS code blocks.
- */
-export const ibm_plex_mono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  variable: "--font-ibm-plex-mono",
-  weight: ["400", "600"],
-});
-
-const { fontWeights } = SDSAppTheme;
+const { fontWeights } = defaultAppTheme;
 
 const iconSizes = {
   input: { height: 16, width: 16 }, // for use with input icons only (radio and checkbox)
   l: { height: 24, width: 24 },
-  m: { height: 16, width: 16 }, // (masoudmanson): SDS doesn't have a medium icon size!
-  s: { height: 16, width: 16 }, // (masoudmanson): Used to be 12px
+  m: { height: 16, width: 16 },
+  s: { height: 12, width: 12 },
   xl: { height: 32, width: 32 },
-  xs: { height: 12, width: 12 }, // (masoudmanson): Used to be 8px
+  xs: { height: 8, width: 8 },
 };
 
 const spacing = {
@@ -84,259 +75,125 @@ export const cornersM = (props: CommonThemeProps) => getCorners(props)?.m;
 export const cornersS = (props: CommonThemeProps) => getCorners(props)?.s;
 export const cornersNone = (props: CommonThemeProps) => getCorners(props)?.none;
 
-/**
- * (masoudmanson): SDS has introduced new font styles for tabular numbers.
- */
-const tabularNums = "tabular-nums";
-
 const typography = {
-  fontFamily: {
-    body: inter.style.fontFamily,
-    caps: inter.style.fontFamily,
-    code: ibm_plex_mono.style.fontFamily,
-    header: inter.style.fontFamily,
-    tabular: inter.style.fontFamily,
-  },
+  fontFamily: inter.style.fontFamily,
   styles: {
     body: {
-      regular: {
-        button: {
-          fontSize: 14,
-          fontWeight: fontWeights.medium,
-          letterSpacing: "0px",
-          lineHeight: "20px",
-          textTransform: "none" as const,
-        },
-        l: {
-          fontSize: 18,
-          fontWeight: fontWeights.regular,
-          letterSpacing: "0px",
-          lineHeight: "24px",
-        },
-        m: {
-          fontSize: 16,
-          fontWeight: fontWeights.regular,
-          letterSpacing: "0px",
-          lineHeight: "24px",
-        },
-        s: {
-          fontSize: 14,
-          fontWeight: fontWeights.regular,
-          letterSpacing: "-0.08px",
-          lineHeight: "20px",
-        },
-        xs: {
-          fontSize: 13,
-          fontWeight: fontWeights.regular,
-          letterSpacing: "-0.04px",
-          lineHeight: "20px",
-        },
-        xxs: {
-          fontSize: 12,
-          fontWeight: fontWeights.regular,
-          letterSpacing: "0px",
-          lineHeight: "16px",
-        },
-        xxxs: {
-          fontSize: 11,
-          fontWeight: fontWeights.regular,
-          letterSpacing: "-0.05px",
-          lineHeight: "16px",
-        },
+      button: {
+        fontSize: 14,
+        fontWeight: fontWeights.medium,
+        letterSpacing: "0px",
+        lineHeight: "20px",
+        textTransform: "none" as const,
       },
-      semibold: {
-        button: {
-          fontSize: 14,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "0px",
-          lineHeight: "20px",
-          textTransform: "none" as const,
-        },
-        l: {
-          fontSize: 18,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "0px",
-          lineHeight: "24px",
-        },
-        m: {
-          fontSize: 16,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "0px",
-          lineHeight: "24px",
-        },
-        s: {
-          fontSize: 14,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "-0.08px",
-          lineHeight: "20px",
-        },
-        xs: {
-          fontSize: 13,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "-0.04px",
-          lineHeight: "20px",
-        },
-        xxs: {
-          fontSize: 12,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "0px",
-          lineHeight: "16px",
-        },
-        xxxs: {
-          fontSize: 11,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "-0.05px",
-          lineHeight: "16px",
-        },
+      l: {
+        fontSize: 18,
+        fontWeight: fontWeights.regular,
+        letterSpacing: "0px",
+        lineHeight: "24px",
+      },
+      m: {
+        fontSize: 16,
+        fontWeight: fontWeights.regular,
+        letterSpacing: "0px",
+        lineHeight: "24px",
+      },
+      s: {
+        fontSize: 14,
+        fontWeight: fontWeights.regular,
+        letterSpacing: "-0.08px",
+        lineHeight: "20px",
+      },
+      xs: {
+        fontSize: 13,
+        fontWeight: fontWeights.regular,
+        letterSpacing: "-0.04px",
+        lineHeight: "20px",
+      },
+      xxs: {
+        fontSize: 12,
+        fontWeight: fontWeights.regular,
+        letterSpacing: "0px",
+        lineHeight: "16px",
+      },
+      xxxs: {
+        fontSize: 11,
+        fontWeight: fontWeights.regular,
+        letterSpacing: "-0.05px",
+        lineHeight: "16px",
       },
     },
     caps: {
-      semibold: {
-        xxs: {
-          fontSize: 12,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "0.36px",
-          lineHeight: "16px",
-          textTransform: "uppercase" as const,
-        },
-        xxxs: {
-          fontSize: 11,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "0.33px",
-          lineHeight: "16px",
-          textTransform: "uppercase" as const,
-        },
-        xxxxs: {
-          fontSize: 10,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "1.0px",
-          lineHeight: "12px",
-          textTransform: "uppercase" as const,
-        },
+      xxs: {
+        fontSize: 12,
+        fontWeight: fontWeights.semibold,
+        letterSpacing: "0.36px",
+        lineHeight: "16px",
+        textTransform: "uppercase" as const,
       },
-    },
-    code: {
-      regular: {
-        s: {
-          fontSize: 14,
-          fontWeight: fontWeights.regular,
-          letterSpacing: "0px",
-          lineHeight: "24px",
-          textTransform: "none" as const,
-        },
-        xs: {
-          fontSize: 13,
-          fontWeight: fontWeights.regular,
-          letterSpacing: "0px",
-          lineHeight: "20px",
-          textTransform: "none" as const,
-        },
+      xxxs: {
+        fontSize: 11,
+        fontWeight: fontWeights.semibold,
+        letterSpacing: "0.33px",
+        lineHeight: "16px",
+        textTransform: "uppercase" as const,
       },
-      semibold: {
-        s: {
-          fontSize: 14,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "0px",
-          lineHeight: "24px",
-          textTransform: "none" as const,
-        },
-        xs: {
-          fontSize: 13,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "0px",
-          lineHeight: "20px",
-          textTransform: "none" as const,
-        },
+      xxxxs: {
+        fontSize: 10,
+        fontWeight: fontWeights.semibold,
+        letterSpacing: "1.0px",
+        lineHeight: "12px",
+        textTransform: "uppercase" as const,
       },
     },
     header: {
-      semibold: {
-        l: {
-          fontSize: 18,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "-0.31px",
-          lineHeight: "24px",
-        },
-        m: {
-          fontSize: 16,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "-0.18px",
-          lineHeight: "20px",
-        },
-        s: {
-          fontSize: 14,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "-0.1px",
-          lineHeight: "20px",
-        },
-        xl: {
-          fontSize: 24,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "-0.37px",
-          lineHeight: "32px",
-        },
-        xs: {
-          fontSize: 13,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "0px",
-          lineHeight: "16px",
-        },
-        xxl: {
-          fontSize: 32,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "-0.56px",
-          lineHeight: "36px",
-        },
-        xxs: {
-          fontSize: 12,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "0px",
-          lineHeight: "16px",
-        },
-        xxxs: {
-          fontSize: 11,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "0px",
-          lineHeight: "16px",
-        },
+      l: {
+        fontSize: 18,
+        fontWeight: fontWeights.semibold,
+        letterSpacing: "-0.31px",
+        lineHeight: "24px",
       },
-    },
-    tabular: {
-      regular: {
-        s: {
-          fontSize: 14,
-          fontVariantNumeric: tabularNums,
-          fontWeight: fontWeights.regular,
-          letterSpacing: "0px",
-          lineHeight: "24px",
-          textTransform: "none" as const,
-        },
-        xs: {
-          fontSize: 13,
-          fontVariantNumeric: tabularNums,
-          fontWeight: fontWeights.regular,
-          letterSpacing: "0px",
-          lineHeight: "20px",
-          textTransform: "none" as const,
-        },
+      m: {
+        fontSize: 16,
+        fontWeight: fontWeights.semibold,
+        letterSpacing: "-0.18px",
+        lineHeight: "20px",
       },
-      semibold: {
-        s: {
-          fontSize: 14,
-          fontVariantNumeric: tabularNums,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "0px",
-          lineHeight: "24px",
-          textTransform: "none" as const,
-        },
-        xs: {
-          fontSize: 13,
-          fontVariantNumeric: tabularNums,
-          fontWeight: fontWeights.semibold,
-          letterSpacing: "0px",
-          lineHeight: "20px",
-          textTransform: "none" as const,
-        },
+      s: {
+        fontSize: 14,
+        fontWeight: fontWeights.semibold,
+        letterSpacing: "-0.1px",
+        lineHeight: "20px",
+      },
+      xl: {
+        fontSize: 24,
+        fontWeight: fontWeights.semibold,
+        letterSpacing: "-0.37px",
+        lineHeight: "32px",
+      },
+      xs: {
+        fontSize: 13,
+        fontWeight: fontWeights.semibold,
+        letterSpacing: "0px",
+        lineHeight: "16px",
+      },
+      xxl: {
+        fontSize: 32,
+        fontWeight: fontWeights.semibold,
+        letterSpacing: "-0.56px",
+        lineHeight: "36px",
+      },
+      xxs: {
+        fontSize: 12,
+        fontWeight: fontWeights.semibold,
+        letterSpacing: "0px",
+        lineHeight: "16px",
+      },
+      xxxs: {
+        fontSize: 11,
+        fontWeight: fontWeights.semibold,
+        letterSpacing: "0px",
+        lineHeight: "16px",
       },
     },
   },
@@ -349,7 +206,7 @@ const customTheme = {
   typography,
 };
 
-const themeOptions = { ...SDSAppTheme, ...customTheme };
+const themeOptions = { ...defaultAppTheme, ...customTheme };
 
 // Colors
 
@@ -369,69 +226,62 @@ export const textSecondary = (props: CommonThemeProps) =>
   getPalette(props)?.text?.secondary;
 
 export const primary100 = (props: CommonThemeProps) =>
-  getColors(props)?.blue[100];
+  getColors(props)?.primary[100];
 
 export const primary200 = (props: CommonThemeProps) =>
-  getColors(props)?.blue[200];
+  getColors(props)?.primary[200];
 
 export const primary300 = (props: CommonThemeProps) =>
-  getColors(props)?.blue[300];
+  getColors(props)?.primary[300];
 
 export const primary400 = (props: CommonThemeProps) =>
-  getColors(props)?.blue[400];
+  getColors(props)?.primary[400];
 
 export const primary500 = (props: CommonThemeProps) =>
-  getColors(props)?.blue[500];
+  getColors(props)?.primary[500];
 
 export const primary600 = (props: CommonThemeProps) =>
-  getColors(props)?.blue[600];
+  getColors(props)?.primary[600];
 
-themeOptions.colors.blue = primaryColors;
+const infoColors = {
+  "100": primaryColors["100"],
+  "200": primaryColors["200"],
+  "400": primaryColors["400"],
+  "600": primaryColors["600"],
+};
 
-/**
- * (masoudmanson): SDS Theme does not include info colors as part of the primitive colors.
- * Primitive colors are: blue, green, red, yellow, purple, and gray.
- * Additionally, there are Semantic Text and Semantic Component colors available.
- *
- * You can browse the full list of SDS theme colors here:
- * https://chanzuckerberg.github.io/sci-components/?path=/story/bases-colors--primitive-colors
- */
-
-// const infoColors = {
-//   "100": primaryColors["100"],
-//   "200": primaryColors["200"],
-//   "400": primaryColors["400"],
-//   "600": primaryColors["600"],
-// };
-
-// themeOptions.colors.info = infoColors;
+themeOptions.colors.primary = primaryColors;
+themeOptions.colors.info = infoColors;
 
 export const success100 = (props: CommonThemeProps) =>
-  getColors(props)?.green[100];
+  getColors(props)?.success[100];
 
 export const success400 = (props: CommonThemeProps) =>
-  getColors(props)?.green[400];
+  getColors(props)?.success[400];
 
 export const success500 = (props: CommonThemeProps) =>
-  getColors(props)?.green[500];
+  getColors(props)?.success[500];
 
 export const success600 = (props: CommonThemeProps) =>
-  getColors(props)?.green[600];
+  getColors(props)?.success[600];
 
 export const warning100 = (props: CommonThemeProps) =>
-  getColors(props)?.yellow[100];
+  getColors(props)?.warning[100];
 
 export const warning400 = (props: CommonThemeProps) =>
-  getColors(props)?.yellow[400];
+  getColors(props)?.warning[400];
 
 export const warning500 = (props: CommonThemeProps) =>
-  getColors(props)?.yellow[500];
+  getColors(props)?.warning[500];
 
-export const error100 = (props: CommonThemeProps) => getColors(props)?.red[100];
+export const error100 = (props: CommonThemeProps) =>
+  getColors(props)?.error[100];
 
-export const error400 = (props: CommonThemeProps) => getColors(props)?.red[400];
+export const error400 = (props: CommonThemeProps) =>
+  getColors(props)?.error[400];
 
-export const error500 = (props: CommonThemeProps) => getColors(props)?.red[500];
+export const error500 = (props: CommonThemeProps) =>
+  getColors(props)?.error[500];
 
 export const grey100 = (props: CommonThemeProps) => getColors(props)?.gray[100];
 export const gray100 = grey100;
@@ -456,14 +306,11 @@ export const grayWhite = greyWhite;
 
 themeOptions.colors.gray = { ...themeOptions.colors.gray, "400": "#999999" };
 
-export const beta100 = (props: CommonThemeProps) =>
-  getColors(props)?.purple[100];
+export const beta100 = (props: CommonThemeProps) => getColors(props)?.beta[100];
 
-export const beta400 = (props: CommonThemeProps) =>
-  getColors(props)?.purple[400];
+export const beta400 = (props: CommonThemeProps) => getColors(props)?.beta[400];
 
-export const beta600 = (props: CommonThemeProps) =>
-  getColors(props)?.purple[600];
+export const beta600 = (props: CommonThemeProps) => getColors(props)?.beta[600];
 
 export const OFF_WHITE = "#f8f8f8";
 

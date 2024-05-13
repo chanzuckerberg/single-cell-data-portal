@@ -12,7 +12,7 @@ export default function RevisionButton({ id }: Props): JSX.Element | null {
   return id ? (
     <IconButton
       data-testid="view-collection-revision"
-      icon="Open"
+      sdsIcon="open"
       sdsSize="small"
       sdsType="primary"
       onClick={() => router.push(ROUTES.COLLECTION.replace(":id", id))}

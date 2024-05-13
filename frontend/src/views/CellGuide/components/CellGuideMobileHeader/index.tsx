@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import CellGuideCardSearchBar from "../CellGuideCardSearchBar";
-import { Button } from "@czi-sds/components";
+import { ButtonIcon } from "@czi-sds/components";
 import {
   MobileHeader,
   MobileHeaderWrapper,
@@ -57,8 +57,8 @@ const CellGuideMobileHeader = ({
     <>
       {/* Flex Item Left */}
       <div id="cellguide-search-icon">
-        <Button
-          icon="Search"
+        <ButtonIcon
+          sdsIcon="search"
           id="cellguide-search-icon"
           onClick={() => {
             setSearchIsOpen(true);
@@ -71,8 +71,8 @@ const CellGuideMobileHeader = ({
 
       {/* Flex Item Right */}
       <div id="cellguide-nav-dropdown">
-        <Button
-          icon={pageNavIsOpen ? "ChevronUp" : "ChevronDown"}
+        <ButtonIcon
+          sdsIcon={pageNavIsOpen ? "chevronUp" : "chevronDown"}
           onClick={() => setPageNavIsOpen && setPageNavIsOpen(!pageNavIsOpen)}
         />
       </div>

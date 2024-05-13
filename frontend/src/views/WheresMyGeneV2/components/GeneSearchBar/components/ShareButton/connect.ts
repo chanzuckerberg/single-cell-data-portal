@@ -75,7 +75,7 @@ export function useConnect() {
     createNotification({
       message: SHARE_NOTIFICATION_TEXT,
       intent: "info",
-      sdsIcon: "Link",
+      sdsIcon: "link",
       sdsSize: "s",
       label: SHARE_NOTIFICATION_LABEL,
     });

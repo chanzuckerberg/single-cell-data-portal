@@ -32,8 +32,20 @@ export default function Dialog({ handleCancel, handleConfirm, isOpen }: Props) {
       </StyledDialogContent>
       <StyledDialogAction data-testid="dialog-actions" buttonPosition="right">
         <>
-          <Button onClick={handleCancel}>Cancel</Button>
-          <ActionButton color="error" onClick={handleConfirm}>
+          <Button
+            isAllCaps={false}
+            sdsStyle="minimal"
+            sdsType="secondary"
+            onClick={handleCancel}
+          >
+            Cancel
+          </Button>
+          <ActionButton
+            color="error"
+            sdsStyle="square"
+            sdsType="primary"
+            onClick={handleConfirm}
+          >
             Confirm
           </ActionButton>
         </>

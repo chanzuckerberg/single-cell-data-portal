@@ -396,10 +396,7 @@ const Content: FC<Props> = (props) => {
    * Handles change to selection of consortia.
    * @param selectedConsortia - Selected consortia.
    */
-  function handleConsortiaChange(
-    _: React.SyntheticEvent,
-    selectedConsortia: DropdownValue
-  ) {
+  function handleConsortiaChange(selectedConsortia: DropdownValue) {
     setConsortia(sortConsortia(selectedConsortia));
   }
 

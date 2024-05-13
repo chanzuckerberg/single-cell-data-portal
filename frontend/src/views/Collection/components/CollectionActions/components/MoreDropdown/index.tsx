@@ -39,7 +39,7 @@ const MoreDropdown = ({
         data-testid="collection-more-button"
         onClick={onOpen}
         open={open}
-        icon="DotsHorizontal"
+        sdsIcon="dotsHorizontal"
         sdsSize="small"
         sdsType="tertiary"
       />
