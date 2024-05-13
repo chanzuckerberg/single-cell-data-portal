@@ -77,6 +77,7 @@ interface FiltersQueryResponse {
     organism_terms: { [id: string]: string }[];
     publication_citations: string[];
   };
+  n_cells: number;
   snapshot_id: string;
 }
 
@@ -331,15 +332,18 @@ function useDEQueryRequestBody() {
 
 export function useQueryGroupFilterDimensions(queryGroup: QueryGroup): {
   data: FilterDimensions;
+  n_cells: number;
   isLoading: boolean;
 } {
   const requestBody = useWMGFiltersQueryRequestBodyForQueryGroups(queryGroup);
+
   const { data, isLoading } = useWMGFiltersQuery(requestBody);
 
   return useMemo(() => {
-    if (isLoading || !data) return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
+    if (isLoading || !data)
+      return { data: EMPTY_FILTER_DIMENSIONS, n_cells: 0, isLoading };
 
-    const { filter_dims } = data;
+    const { filter_dims, n_cells } = data;
 
     const {
       development_stage_terms,
@@ -364,6 +368,7 @@ export function useQueryGroupFilterDimensions(queryGroup: QueryGroup): {
         cell_type_terms: cell_type_terms.map(toEntity),
         organism_terms: organism_terms.map(toEntity),
       },
+      n_cells,
       isLoading: false,
     };
   }, [data, isLoading]);

@@ -7,6 +7,7 @@ import {
   CommonThemeProps,
   Button,
   fontCapsXxs,
+  fontBodyXxs,
 } from "@czi-sds/components";
 
 const LEFT_PANEL_WIDTH = "60vw";
@@ -51,6 +52,11 @@ export const CellGroupTitle = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+`;
+
+export const CellCountTitle = styled.div`
+  ${fontBodyXxs}
+  color: #767676;
 `;
 
 export const CopyButtonWrapper = styled.div`

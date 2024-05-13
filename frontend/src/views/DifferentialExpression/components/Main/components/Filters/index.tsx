@@ -45,7 +45,8 @@ export default memo(function Filters({
     ? selectQueryGroup1Filters
     : selectQueryGroup2Filters;
 
-  const availableFilters = useProcessedQueryGroupFilterDimensions(queryGroup);
+  const { availableFilters } =
+    useProcessedQueryGroupFilterDimensions(queryGroup);
 
   const handleFilterChange = useCallback(
     function handleFilterChange_(

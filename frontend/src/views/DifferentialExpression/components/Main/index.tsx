@@ -14,12 +14,14 @@ import {
   FlexRow,
   QuerySelectorWrapper,
   TwoPanelLayout,
+  CellCountTitle,
 } from "./style";
 import QueryGroupFilters from "./components/Filters";
 import Organism from "./components/Organism";
 import { submitQueryGroups } from "src/views/DifferentialExpression/common/store/actions";
 import DeResults from "./components/DeResults";
 import Loader from "./components/Loader";
+import useProcessedQueryGroupFilterDimensions from "./components/common/query_group_filter_dimensions";
 
 export default function DifferentialExpression(): JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -48,6 +50,11 @@ export default function DifferentialExpression(): JSX.Element {
     dispatch(submitQueryGroups());
   };
 
+  const { n_cells: nCellsGroup1 } =
+    useProcessedQueryGroupFilterDimensions(queryGroup1);
+  const { n_cells: nCellsGroup2 } =
+    useProcessedQueryGroupFilterDimensions(queryGroup2);
+
   return (
     <TwoPanelLayout>
       <div className="leftPanel">
@@ -70,7 +77,13 @@ export default function DifferentialExpression(): JSX.Element {
             <Organism />
             <FlexRow>
               <div>
-                <CellGroupTitle>Cell Group 1</CellGroupTitle>
+                <CellGroupTitle>
+                  Cell Group 1
+                  <CellCountTitle>
+                    {" "}
+                    {nCellsGroup1.toLocaleString()} cells
+                  </CellCountTitle>
+                </CellGroupTitle>
                 <QueryGroupFilters
                   key={`query-group-1`}
                   queryGroup={queryGroup1}
@@ -79,7 +92,13 @@ export default function DifferentialExpression(): JSX.Element {
               </div>
 
               <div>
-                <CellGroupTitle>Cell Group 2</CellGroupTitle>
+                <CellGroupTitle>
+                  Cell Group 2
+                  <CellCountTitle>
+                    {" "}
+                    {nCellsGroup2.toLocaleString()} cells
+                  </CellCountTitle>
+                </CellGroupTitle>
                 <QueryGroupFilters
                   key={`query-group-2`}
                   queryGroup={queryGroup2}

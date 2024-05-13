@@ -27,8 +27,9 @@ function CopyInvertButton({ queryGroupKey, isCopy }: Props): JSX.Element {
     queryGroupKey
   ] as keyof FilterOptionDimensions;
 
-  const { [filterDimensionKey]: availableOptionsGroup2 } =
-    useProcessedQueryGroupFilterDimensions(queryGroup2);
+  const {
+    availableFilters: { [filterDimensionKey]: availableOptionsGroup2 },
+  } = useProcessedQueryGroupFilterDimensions(queryGroup2);
 
   useEffect(() => {
     if (isCopy) {

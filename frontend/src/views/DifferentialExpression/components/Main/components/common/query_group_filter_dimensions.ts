@@ -32,9 +32,12 @@ const _mapTermToFilterOption = (term: {
   };
 };
 
-function useProcessedQueryGroupFilterDimensions(
-  queryGroup: QueryGroup
-): FilterOptionDimensions {
+function useProcessedQueryGroupFilterDimensions(queryGroup: QueryGroup): {
+  availableFilters: FilterOptionDimensions;
+  n_cells: number;
+} {
+  const [localNCells, setLocalNCells] = useState<number>(0);
+
   const [availableFilters, setAvailableFilters] =
     useState<FilterOptionDimensions>(EMPTY_FILTERS);
 
@@ -48,6 +51,7 @@ function useProcessedQueryGroupFilterDimensions(
       cell_type_terms: rawCellTypes,
       publication_citations: rawPublicationCitations,
     },
+    n_cells,
     isLoading: rawIsLoading,
   } = useQueryGroupFilterDimensions(queryGroup);
 
@@ -57,6 +61,8 @@ function useProcessedQueryGroupFilterDimensions(
       name: citation,
       id: citation,
     }));
+    setLocalNCells(n_cells);
+
     newPublicationCitations.sort((a, b) => a.name.localeCompare(b.name));
 
     const newSexes = rawSexes.map(_mapTermToFilterOption);
@@ -73,7 +79,7 @@ function useProcessedQueryGroupFilterDimensions(
 
     const newTissues = rawTissues.map(_mapTermToFilterOption);
     newTissues.sort((a, b) => a.name.localeCompare(b.name));
-
+    console.log(newTissues);
     const newCellTypes = rawCellTypes.map(_mapTermToFilterOption);
     newCellTypes.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -106,9 +112,10 @@ function useProcessedQueryGroupFilterDimensions(
     rawPublicationCitations,
     availableFilters,
     setAvailableFilters,
+    n_cells,
   ]);
 
-  return availableFilters;
+  return { availableFilters, n_cells: localNCells };
 }
 
 export default useProcessedQueryGroupFilterDimensions;
