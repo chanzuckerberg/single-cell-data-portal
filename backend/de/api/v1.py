@@ -18,10 +18,6 @@ from backend.wmg.api.wmg_api_config import (
 )
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.query import DeQueryCriteria, WmgFiltersQueryCriteria, WmgQuery
-from backend.wmg.data.schemas.expression_summary_cube_schemas_diffexp import (
-    base_expression_summary_indexed_dims,
-    expression_summary_secondary_dims,
-)
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 from backend.wmg.data.utils import (
     find_all_dim_option_values,
@@ -47,6 +43,8 @@ def filters():
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
             snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
+        q = WmgQuery(snapshot, cube_query_params=None)
+        n_cells = _get_cell_counts_for_query(q, criteria)
 
     with ServerTiming.time("calculate filters and build response"):
         response_filter_dims_values = build_filter_dims_values(criteria, snapshot)
@@ -54,6 +52,7 @@ def filters():
             dict(
                 snapshot_id=snapshot.snapshot_identifier,
                 filter_dims=response_filter_dims_values,
+                n_cells=n_cells,
             )
         )
     return response
@@ -177,12 +176,12 @@ def differentialExpression():
     q = WmgQuery(snapshot, cube_query_params=None)
 
     with ServerTiming.time("run differential expression"):
-        results, successCode = run_differential_expression(q, criteria1, criteria2)
+        de_results, successCode = run_differential_expression(q, criteria1, criteria2)
 
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
-            differentialExpressionResults=results,
+            differentialExpressionResults=de_results,
             successCode=successCode,
         )
     )
@@ -229,18 +228,19 @@ def run_differential_expression(q: WmgQuery, criteria1, criteria2) -> Tuple[List
     es1 = q.expression_summary_diffexp(criteria1)
     es2 = q.expression_summary_diffexp(criteria2)
 
-    # filter out rows from es2 that are in es1
-    # this prevents overlapping populations from being compared
-    filter_columns = [
-        col
-        for col in (base_expression_summary_indexed_dims + expression_summary_secondary_dims)
-        if col in es1.columns and col in es2.columns
-    ]
-    index1 = es1.set_index(filter_columns).index
-    index2 = es2.set_index(filter_columns).index
-    es2 = es2[~index2.isin(index1)]
-    if es2.shape[0] == 0:
-        return [], 1
+    # Skip this step for now, validation may identify that it is required
+    # # filter out rows from es2 that are in es1
+    # # this prevents overlapping populations from being compared
+    # filter_columns = [
+    #     col
+    #     for col in (base_expression_summary_indexed_dims + expression_summary_secondary_dims)
+    #     if col in es1.columns and col in es2.columns
+    # ]
+    # index1 = es1.set_index(filter_columns).index
+    # index2 = es2.set_index(filter_columns).index
+    # es2 = es2[~index2.isin(index1)]
+    # if es2.shape[0] == 0:
+    #     return [], 1
 
     es_agg1 = es1.groupby("gene_ontology_term_id").sum(numeric_only=True)
     es_agg2 = es2.groupby("gene_ontology_term_id").sum(numeric_only=True)
@@ -282,8 +282,16 @@ def run_differential_expression(q: WmgQuery, criteria1, criteria2) -> Tuple[List
                     "t_score": ti,
                 }
             )
-
     return statistics, 0
+
+
+def _get_cell_counts_for_query(q: WmgQuery, criteria: WmgFiltersQueryCriteria) -> pd.DataFrame:
+    if criteria.cell_type_ontology_term_ids:
+        criteria.cell_type_ontology_term_ids = list(
+            set(sum([descendants(i) for i in criteria.cell_type_ontology_term_ids], []))
+        )
+    cell_counts = q.cell_counts(criteria)
+    return int(cell_counts["n_total_cells"].sum())
 
 
 def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
