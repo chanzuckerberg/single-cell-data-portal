@@ -37,19 +37,41 @@ export const StyledAutocomplete = styled(
 )`
   width: 300px;
 
-  & .MuiAutocomplete-inputRoot[class*="MuiInput-root"] {
-    padding: 4px 0px;
+  & .MuiFormControl-root {
+    overflow-x: auto;
+    max-width: 300px;
+    padding-top: 8px;
+    background-color: transparent;
   }
-  &
-    .MuiAutocomplete-inputRoot[class*="MuiOutlinedInput-root"]
-    .MuiAutocomplete-input {
-    padding: 4px 0px;
+  & .MuiFormLabel-root {
+    margin-top: 8px;
   }
-  & .MuiInputLabel-root {
-    margin-top: -4px;
-    z-index: 0;
+  & .MuiInputBase-root {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    width: fit-content;
+    justify-content: space-between;
+    min-width: 300px;
+    padding: 8px !important;
+    background-color: white;
   }
-  & .MuiInputLabel-root.MuiInputLabel-shrink {
-    margin-top: 0px;
+  & .MuiAutocomplete-tag {
+    white-space: nowrap;
+    width: fit-content;
+  }
+  & + .MuiAutocomplete-popper {
+    max-width: 300px;
+  }
+  & .MuiAutocomplete-endAdornment {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    right: unset !important;
+  }
+  & .MuiInputBase-input {
+    width: 45px !important;
+    order: -2;
   }
 `;

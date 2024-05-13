@@ -4,7 +4,6 @@ import { FilterOptionsState } from "@mui/material";
 import { FilterOption } from "../../types";
 import { CloseIcon, Tag, StyledTextField, StyledAutocomplete } from "./style";
 
-const MAXIMUM_NUMBER_OF_SELECTED_OPTIONS = 2;
 interface Props {
   label: string;
   options: FilterOption[];
@@ -31,41 +30,33 @@ function FilterDropdown({
         }}
         getOptionLabel={(option) => option.name}
         value={selectedOptions}
+        disablePortal
         isOptionEqualToValue={(option, value) => option.id === value.id}
         renderInput={(params) => {
           return (
             <StyledTextField {...params} placeholder="Search" label={label} />
           );
         }}
-        renderTags={(value, getTagProps) => [
-          ...value
-            .slice(0, MAXIMUM_NUMBER_OF_SELECTED_OPTIONS)
-            .map((option, index) => (
-              <Tag
-                onClick={(event) => event.stopPropagation()}
-                {...getTagProps({ index })}
-                key={option.id}
-              >
-                {option.name}
-                <CloseIcon
-                  onClick={() => {
-                    handleChange(
-                      selectedOptions.filter(
-                        (selectedOption) => selectedOption.id !== option.id
-                      )
-                    );
-                  }}
-                />
-              </Tag>
-            )),
-          ...(value.length > MAXIMUM_NUMBER_OF_SELECTED_OPTIONS
-            ? [
-                <div key="adornment">
-                  +{value.length - MAXIMUM_NUMBER_OF_SELECTED_OPTIONS}
-                </div>,
-              ]
-            : []),
-        ]}
+        renderTags={(value, getTagProps) =>
+          value.map((option, index) => (
+            <Tag
+              onClick={(event) => event.stopPropagation()}
+              {...getTagProps({ index })}
+              key={option.id}
+            >
+              {option.name}
+              <CloseIcon
+                onClick={() => {
+                  handleChange(
+                    selectedOptions.filter(
+                      (selectedOption) => selectedOption.id !== option.id
+                    )
+                  );
+                }}
+              />
+            </Tag>
+          ))
+        }
         filterOptions={(options, state) => {
           return options
             .filter((entity: FilterOption) => {
