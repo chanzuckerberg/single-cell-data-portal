@@ -98,7 +98,7 @@ const LUNG_CILIATED_CELL_CELL_TYPE_ID = "CL_1000271";
 
 const NODES_LOCATOR = `[data-testid^='${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}']`;
 
-describe.only("Cell Guide", () => {
+describe("Cell Guide", () => {
   describe("Landing Page", () => {
     test("All LandingPage components are present", async ({ page }) => {
       await goToPage(`${TEST_URL}${ROUTES.CELL_GUIDE}`, page);
