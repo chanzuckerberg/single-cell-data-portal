@@ -192,6 +192,15 @@ paths:
                           type: number
                           format: float
                           maxLength: 4
+                  queryGroupCellCounts:
+                    description: ->
+                      Cell counts for each query group
+                    type: object
+                    properties:
+                      queryGroup1CellCount:
+                        type: integer
+                      queryGroup2CellCount:
+                        type: integer
 
 components:
   schemas:
