@@ -20,3 +20,13 @@ namespace HubSpotFormAPI {
 }
 
 declare const hbspt: HubSpotFormAPI.HubSpot;
+
+declare module "src/components/common/Filter/descendant_mappings/cell_type_descendants.json" {
+  const value: { [key: string]: string[] };
+  export default value;
+}
+
+declare module "src/components/common/Filter/descendant_mappings/tissue_descendants.json" {
+  const value: { [key: string]: string[] };
+  export default value;
+}

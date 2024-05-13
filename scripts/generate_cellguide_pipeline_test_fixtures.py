@@ -33,6 +33,7 @@ from tests.unit.backend.cellguide.pipeline.constants import (
     CELLTYPE_ONTOLOGY_TREE_STATE_FIXTURE_FILENAME,
     CELLTYPE_TO_TISSUE_MAPPING_FILENAME,
     COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME,
+    FORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME,
     ONTOLOGY_GRAPH_FIXTURE_FILENAME,
     ONTOLOGY_TREE_TOPLEVEL_FOLDERNAME,
     REFORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME,
@@ -195,8 +196,8 @@ def run_cellguide_pipeline(fixture_type: FixtureType):
                 "backend.cellguide.pipeline.computational_marker_genes.computational_markers.bootstrap_rows_percentiles",
                 new=mock_bootstrap_rows_percentiles,
             ):
-                computational_marker_genes, reformatted_marker_genes = get_computational_marker_genes(
-                    snapshot=snapshot, ontology_tree=ontology_tree
+                computational_marker_genes, reformatted_marker_genes, formatted_marker_genes = (
+                    get_computational_marker_genes(snapshot=snapshot, ontology_tree=ontology_tree)
                 )
                 output_json(
                     computational_marker_genes,
@@ -205,6 +206,10 @@ def run_cellguide_pipeline(fixture_type: FixtureType):
                 output_json(
                     reformatted_marker_genes,
                     f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{REFORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}",
+                )
+                output_json(
+                    formatted_marker_genes,
+                    f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{FORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}",
                 )
 
 

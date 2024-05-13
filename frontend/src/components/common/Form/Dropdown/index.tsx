@@ -1,7 +1,9 @@
 import {
-  DefaultDropdownMenuOption,
+  DefaultAutocompleteOption,
+  DropdownProps,
   Dropdown as SDSDropdown,
 } from "@czi-sds/components";
+import { AutocompleteValue } from "@mui/base";
 import {
   FormLabelText,
   Optional,
@@ -11,21 +13,24 @@ import {
   DropdownPopper,
 } from "src/components/common/Form/Dropdown/style";
 
-type onChangeFn = (options: Value) => void;
-export type Value =
-  | DefaultDropdownMenuOption
-  | DefaultDropdownMenuOption[]
-  | null;
+export type Value = AutocompleteValue<
+  DefaultAutocompleteOption,
+  boolean | undefined,
+  false,
+  false
+>;
 
-interface Props {
+interface Props
+  extends DropdownProps<
+    DefaultAutocompleteOption,
+    boolean | undefined,
+    false,
+    false
+  > {
   disablePortal?: boolean;
   label: string;
-  multiple?: boolean;
-  onChange: onChangeFn;
   optionalField?: boolean;
-  options: DefaultDropdownMenuOption[];
   text?: string;
-  value: Value;
 }
 
 const DropdownMenuProps = {
@@ -59,26 +64,26 @@ export default function Dropdown({
           {optionalField && <Optional>(optional)</Optional>}
         </FormLabelText>
       )}
-      <SDSDropdown
+      <SDSDropdown<DefaultAutocompleteOption, boolean | undefined, false, false>
         closeOnBlur
         DropdownMenuProps={DropdownMenuProps}
         InputDropdownProps={{ sdsStyle: "square" }}
         isTriggerChangeOnOptionClick
-        label={getDropdownLabel(value, label)}
+        label={getDropdownLabel(label, value)}
         multiple={multiple}
         onChange={onChange}
         options={options}
-        PopperComponent={({ ...props }) => (
-          <DropdownPopper
-            disablePortal={disablePortal}
-            open={props.open}
-            placement="bottom-start"
-            style={{
-              width: props.anchorEl?.offsetWidth, // Set Popper width to equal the dropdown button.
-            }}
-            {...props}
-          />
-        )}
+        PopperComponent={(popperProps) => {
+          const { anchorEl } = popperProps;
+
+          return (
+            <DropdownPopper
+              disablePortal={disablePortal}
+              {...popperProps}
+              style={{ width: (anchorEl as HTMLButtonElement)?.offsetWidth }}
+            />
+          );
+        }}
         value={value}
       />
     </DropdownForm>
@@ -92,7 +97,7 @@ export default function Dropdown({
  * @param label - Default "placeholder" label.
  * @returns dropdown label.
  */
-function getDropdownLabel(value: Value, label: string): string {
+function getDropdownLabel(label: string, value?: Value): string {
   if (!value || (Array.isArray(value) && value.length === 0)) {
     return label;
   }
@@ -106,7 +111,7 @@ function getDropdownLabel(value: Value, label: string): string {
  * @param value - Selected value.
  * @returns true is an option is selected.
  */
-function isOptionSelected(value: Value): boolean {
+function isOptionSelected(value?: Value): boolean {
   if (!value) {
     return false;
   }

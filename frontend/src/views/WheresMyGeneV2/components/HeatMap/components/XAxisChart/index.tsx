@@ -78,7 +78,7 @@ function GeneButton({
             }
           }}
         >
-          <Icon sdsIcon="trashCan" sdsSize="s" sdsType="interactive"></Icon>
+          <Icon sdsIcon="TrashCan" sdsSize="s" sdsType="interactive"></Icon>
         </DeleteButtonWrapper>
 
         <InfoButtonWrapper
