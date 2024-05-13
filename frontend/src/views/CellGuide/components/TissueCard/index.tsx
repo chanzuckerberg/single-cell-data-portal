@@ -41,10 +41,9 @@ import { StyledOntologyId } from "../CellGuideCard/components/Description/style"
 import { useComponentWidth } from "../CellGuideCard/components/common/hooks/useIsComponentPastBreakpoint";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { DefaultAutocompleteOption, Dropdown } from "@czi-sds/components";
+import { DefaultDropdownMenuOption, Dropdown } from "@czi-sds/components";
 import { SDS_INPUT_DROPDOWN_PROPS } from "../CellGuideCard";
 import { ORGANISM_NAME_TO_TAXON_ID_MAPPING } from "src/common/queries/cellGuide";
-import { AutocompleteValue } from "@mui/base";
 
 interface Props {
   // From getServerSideProps
@@ -66,10 +65,7 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
     Object.keys(ORGANISM_NAME_TO_TAXON_ID_MAPPING)[0]
   );
 
-  const handleChangeOrganism = (
-    _: React.SyntheticEvent,
-    option: AutocompleteValue<DefaultAutocompleteOption, false, false, false>
-  ) => {
+  const handleChangeOrganism = (option: DefaultDropdownMenuOption | null) => {
     if (!option || option.name === tissueCardSelectedOrganism) return;
     setTissueCardSelectedOrganism(option.name);
     track(EVENTS.CG_SELECT_ORGANISM, { organism: option.name });
@@ -184,12 +180,12 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
                       label={tissueId}
                       sdsType="secondary"
                       sdsStyle="square"
-                      color="neutral"
+                      color="gray"
                       hover
                     />
                   </a>
                 </TissueCardHeaderInnerWrapper>
-                <Dropdown<DefaultAutocompleteOption, false, false, false>
+                <Dropdown
                   InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
                   search
                   label={tissueCardSelectedOrganism}

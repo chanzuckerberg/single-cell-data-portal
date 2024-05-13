@@ -13,7 +13,7 @@ import XAxisChart from "src/views/WheresMyGeneV2/components/HeatMap/components/X
 import Chart from "src/views/WheresMyGeneV2/components/HeatMap/components/Chart";
 import { hyphenize } from "src/views/WheresMyGeneV2/components/HeatMap/utils";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveExport";
-import { Autocomplete, DefaultAutocompleteOption } from "@czi-sds/components";
+import { Autocomplete } from "@czi-sds/components";
 import {
   CellTypeFilterContainer,
   CellTypeTagContainer,
@@ -77,7 +77,7 @@ export default memo(function HeatMap(props: Props): JSX.Element {
             id="celltype-filter-container"
             data-testid="celltype-filter"
           >
-            <Autocomplete<DefaultAutocompleteOption, true, false, false>
+            <Autocomplete
               className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
               data-testid="cell-type-search"
               multiple

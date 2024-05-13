@@ -1,5 +1,5 @@
 import {
-  DefaultAutocompleteOption,
+  DefaultDropdownMenuOption,
   InputDropdownProps as IInputDropdownProps,
 } from "@czi-sds/components";
 import { useCallback, useContext, useMemo } from "react";
@@ -13,7 +13,6 @@ import {
 } from "src/views/WheresMyGeneV2/common/store";
 import { selectCompare } from "src/views/WheresMyGeneV2/common/store/actions";
 import { Props } from "./types";
-import { AutocompleteValue } from "@mui/base";
 
 const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {
   sdsStyle: "square",
@@ -31,15 +30,12 @@ export const useConnect = ({ areFiltersDisabled }: Props) => {
     [areFiltersDisabled]
   );
 
-  const optionLabel: DefaultAutocompleteOption | undefined = useMemo(() => {
+  const optionLabel: DefaultDropdownMenuOption | undefined = useMemo(() => {
     return COMPARE_OPTIONS.find((option) => option.id === compare);
   }, [compare]);
 
   const handleChange = useCallback(
-    (
-      _: React.SyntheticEvent,
-      value: AutocompleteValue<DefaultAutocompleteOption, false, false, false>
-    ) => {
+    (value: DefaultDropdownMenuOption | null) => {
       if (!dispatch || !value || optionLabel === value) return;
 
       track(EVENTS.WMG_OPTION_SELECT_GROUP_BY, {

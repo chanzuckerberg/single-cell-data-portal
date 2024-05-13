@@ -14,7 +14,7 @@ export default function CitationButton(): JSX.Element {
         onClick={copyCitation}
         sdsSize="medium"
         sdsType="primary"
-        icon="Quote"
+        sdsIcon="quote"
         disabled={isDisabled}
       />
     </StyledButtonDiv>

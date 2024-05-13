@@ -34,7 +34,7 @@ export default function SourceDataButton({
         }}
         sdsSize="medium"
         sdsType="primary"
-        icon="InfoCircle"
+        sdsIcon="infoCircle"
       />
     </StyledButtonDiv>
   );

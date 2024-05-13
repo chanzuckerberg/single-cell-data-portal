@@ -27,6 +27,7 @@ import {
 } from "src/views/WheresMyGeneV2/components/HeatMap/hooks";
 
 import { Props } from "./types";
+import { DefaultAutocompleteOption } from "@czi-sds/components";
 import {
   CellType,
   GeneExpressionSummary,
@@ -40,7 +41,6 @@ import {
 } from "src/views/WheresMyGeneV2/common/store/actions";
 import { useSortedCellTypesByTissueName } from "src/views/WheresMyGeneV2/components/HeatMap/hooks/useSortedCellTypesByTissueName";
 import { cloneDeep } from "lodash";
-import { DefaultAutocompleteOption } from "@czi-sds/components";
 
 export function useConnect({
   cellTypes,
@@ -247,6 +247,7 @@ export function useConnect({
        * Otherwise, it will cause infinite loop.
        */
       if (String(filteredCellTypes) === String(newCellTypeNames)) return;
+
       dispatch?.(
         setFilteredCellTypes({
           filteredCellTypes: newCellTypeNames,

@@ -134,7 +134,7 @@ export default memo(function BottomBanner({
                 <HeaderContainer>
                   <Image alt="CellxGene Logo" src={cellxgeneLogoSvg} />
                   <StyledCloseButtonIcon
-                    icon="XMark"
+                    sdsIcon="xMark"
                     sdsSize="small"
                     onClick={toggleNewsletterSignupModal}
                     hideCloseButton={isDirectLink}
