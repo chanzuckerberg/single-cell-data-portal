@@ -1,5 +1,4 @@
 import { useContext, useEffect, useState } from "react";
-import { ButtonIcon } from "@czi-sds/components";
 import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
 import useProcessedQueryGroupFilterDimensions, {
   FilterOptionDimensions,
@@ -11,6 +10,7 @@ import {
 import { selectQueryGroup2Filters } from "src/views/DifferentialExpression/common/store/actions";
 import { QUERY_GROUP_KEY_TO_FILTER_DIMENSION_MAP } from "../../../common/constants";
 import { FilterOption } from "../../types";
+import { StyledButtonIcon } from "./style";
 
 interface Props {
   queryGroupKey: keyof QueryGroup;
@@ -55,7 +55,7 @@ function CopyInvertButton({ queryGroupKey, isCopy }: Props): JSX.Element {
   };
 
   return (
-    <ButtonIcon
+    <StyledButtonIcon
       onClick={handleClick}
       sdsIcon={isCopy ? "copy" : "circlesOverlap"}
       sdsSize="small"

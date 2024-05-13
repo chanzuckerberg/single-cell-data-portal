@@ -2,23 +2,43 @@ import React, { useMemo } from "react";
 
 import { FilterOptionsState } from "@mui/material";
 import { FilterOption } from "../../types";
-import { CloseIcon, Tag, StyledTextField, StyledAutocomplete } from "./style";
+import {
+  CloseIcon,
+  PrimaryTag,
+  GrayTag,
+  StyledTextField,
+  StyledAutocomplete,
+} from "./style";
 
 interface Props {
   label: string;
   options: FilterOption[];
+  allAvailableOptions: FilterOption[];
   selectedOptionIds: string[];
   handleChange: (options: FilterOption[]) => void;
 }
 function FilterDropdown({
   options,
   label,
+  allAvailableOptions,
   selectedOptionIds,
   handleChange,
 }: Props): JSX.Element {
   const selectedOptions = useMemo(() => {
-    return options.filter((option) => selectedOptionIds.includes(option.id));
-  }, [options, selectedOptionIds]);
+    const optionsMap = new Map(options.map((option) => [option.id, option]));
+    return allAvailableOptions
+      .filter((option) => selectedOptionIds.includes(option.id))
+      .map((availableOption) => {
+        const foundOption = optionsMap.get(availableOption.id);
+        return (
+          foundOption || {
+            id: availableOption.id,
+            name: availableOption.name,
+            unavailable: true,
+          }
+        );
+      });
+  }, [options, allAvailableOptions, selectedOptionIds]);
 
   return (
     <div>
@@ -32,30 +52,36 @@ function FilterDropdown({
         value={selectedOptions}
         disablePortal
         isOptionEqualToValue={(option, value) => option.id === value.id}
+        popupIcon={null}
         renderInput={(params) => {
+          console.log(params);
           return (
             <StyledTextField {...params} placeholder="Search" label={label} />
           );
         }}
         renderTags={(value, getTagProps) =>
-          value.map((option, index) => (
-            <Tag
-              onClick={(event) => event.stopPropagation()}
-              {...getTagProps({ index })}
-              key={option.id}
-            >
-              {option.name}
-              <CloseIcon
-                onClick={() => {
-                  handleChange(
-                    selectedOptions.filter(
-                      (selectedOption) => selectedOption.id !== option.id
-                    )
-                  );
-                }}
-              />
-            </Tag>
-          ))
+          value.map((option, index) => {
+            const isUnavailable = option.unavailable;
+            const TagComponent = isUnavailable ? GrayTag : PrimaryTag;
+            return (
+              <TagComponent
+                onClick={(event) => event.stopPropagation()}
+                {...getTagProps({ index })}
+                key={option.id}
+              >
+                {option.name}
+                <CloseIcon
+                  onClick={() => {
+                    handleChange(
+                      selectedOptions.filter(
+                        (selectedOption) => selectedOption.id !== option.id
+                      )
+                    );
+                  }}
+                />
+              </TagComponent>
+            );
+          })
         }
         filterOptions={(options, state) => {
           return options

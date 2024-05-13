@@ -79,7 +79,7 @@ function useProcessedQueryGroupFilterDimensions(queryGroup: QueryGroup): {
 
     const newTissues = rawTissues.map(_mapTermToFilterOption);
     newTissues.sort((a, b) => a.name.localeCompare(b.name));
-    console.log(newTissues);
+
     const newCellTypes = rawCellTypes.map(_mapTermToFilterOption);
     newCellTypes.sort((a, b) => a.name.localeCompare(b.name));
 

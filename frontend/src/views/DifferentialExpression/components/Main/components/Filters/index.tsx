@@ -63,6 +63,9 @@ export default memo(function Filters({
     [dispatch, selectQueryGroupFilters]
   );
 
+  const { availableFilters: allAvailableFilters } =
+    useProcessedQueryGroupFilterDimensions({});
+
   const components = QUERY_GROUP_KEYS.map((key, index) => {
     const queryGroupKey = key as keyof QueryGroup;
     const filterDimensionKey = QUERY_GROUP_KEY_TO_FILTER_DIMENSION_MAP[
@@ -75,6 +78,7 @@ export default memo(function Filters({
           key={`${queryGroupKey}-filter-dropdown`}
           label={QUERY_GROUP_LABELS[index]}
           options={availableFilters[filterDimensionKey]}
+          allAvailableOptions={allAvailableFilters[filterDimensionKey]}
           selectedOptionIds={queryGroup[queryGroupKey]}
           handleChange={handleFilterChange(queryGroupKey)}
         />

@@ -1,20 +1,27 @@
 import { fontBodyXs } from "@czi-sds/components";
 import styled from "@emotion/styled";
 import { Autocomplete, TextField } from "@mui/material";
-import { primary400 } from "src/common/theme";
+import { gray400, primary400 } from "src/common/theme";
 import { FilterOption } from "../../types";
 
-export const Tag = styled.div`
+const Tag = styled.div`
   display: inline-flex;
   align-items: center;
   padding: 4px 8px;
-  background-color: ${primary400};
   color: white;
   border-radius: 4px;
   ${fontBodyXs}
   font-weight: 500;
   margin-right: 5px;
   cursor: default;
+`;
+
+export const PrimaryTag = styled(Tag)`
+  background-color: ${primary400};
+`;
+
+export const GrayTag = styled(Tag)`
+  background-color: ${gray400};
 `;
 
 export const CloseIcon = styled.span`
@@ -69,6 +76,7 @@ export const StyledAutocomplete = styled(
     display: flex;
     flex-direction: row;
     right: unset !important;
+    order: -1;
   }
   & .MuiInputBase-input {
     width: 45px !important;
