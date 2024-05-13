@@ -10,11 +10,7 @@ import {
 } from "src/views/WheresMyGeneV2/components/CellInfoSideBar/style";
 import { COLOR_SCALE_TOOLTIP_TEXT } from "src/views/WheresMyGeneV2/common/constants";
 import { COLOR_SCALE_OPTIONS } from "./constants";
-import {
-  ColorScaleOptionType,
-  DEFAULT_INPUT_DROPDOWN_PROPS,
-  Props,
-} from "./types";
+import { DEFAULT_INPUT_DROPDOWN_PROPS, Props } from "./types";
 import { useConnect } from "./connect";
 
 export default function ColorScale({ setIsScaled }: Props): JSX.Element {
@@ -46,10 +42,7 @@ export default function ColorScale({ setIsScaled }: Props): JSX.Element {
         </Tooltip>
       </LabelWrapper>
 
-      {/* Generic variables are
-          <T: Dropdown's option type, Multiple, DisableClearable, FreeSolo>
-      */}
-      <StyledDropdown<ColorScaleOptionType, false, false, false>
+      <StyledDropdown
         data-testid="color-scale-dropdown"
         onChange={colorScaleOnChange}
         label={colorScaledOption.name}

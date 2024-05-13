@@ -38,7 +38,7 @@ export default function NTag({ label, values }: Props): JSX.Element {
       placement={Position.RIGHT}
     >
       <Tag
-        color="neutral"
+        color="gray"
         hover={false}
         label={`${values.length} ${label}`}
         sdsStyle="square"

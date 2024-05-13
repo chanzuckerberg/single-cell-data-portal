@@ -1,5 +1,5 @@
 import { track } from "src/common/analytics";
-import { CellTypeOptionType, Props } from "./types";
+import { Props } from "./types";
 import { EVENTS } from "src/common/analytics/events";
 import { selectSortBy } from "src/views/WheresMyGeneV2/common/store/actions";
 import { SORT_BY } from "src/views/WheresMyGeneV2/common/types";
@@ -13,7 +13,6 @@ import {
   DEFAULT_INPUT_DROPDOWN_PROPS,
   GENE_OPTIONS,
 } from "./constants";
-import { AutocompleteValue } from "@mui/base";
 
 export const useConnect = ({ areFiltersDisabled }: Props) => {
   const dispatch = useContext(DispatchContext);
@@ -42,8 +41,7 @@ export const useConnect = ({ areFiltersDisabled }: Props) => {
   }, [sortBy]);
 
   function cellTypesOnChange(
-    _: React.SyntheticEvent, // event
-    value: AutocompleteValue<CellTypeOptionType, false, false, false>
+    value: { id?: SORT_BY; name: string } | null
   ): void {
     if (!dispatch || !value || cellTypeSelectedOption.name === value.name)
       return;
@@ -55,10 +53,7 @@ export const useConnect = ({ areFiltersDisabled }: Props) => {
     dispatch(selectSortBy({ cellTypes: value.id as SORT_BY }));
   }
 
-  function genesOnChange(
-    _: React.SyntheticEvent, // event
-    value: AutocompleteValue<CellTypeOptionType, false, false, false>
-  ): void {
+  function genesOnChange(value: { id?: SORT_BY; name: string } | null): void {
     if (!dispatch || !value || geneSelectedOption.name === value.name) return;
 
     track(EVENTS.WMG_OPTION_SELECT_SORT_GENES, {

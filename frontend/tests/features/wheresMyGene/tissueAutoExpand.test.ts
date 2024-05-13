@@ -535,7 +535,7 @@ async function checkElementVisible(
 async function removeCellFilter(page: Page) {
   await page
     .getByTestId(`cell-type-tag-${CELL_TYPE_FILTERS[0]}`)
-    .locator("svg")
+    .getByTestId("ClearIcon")
     .click();
 }
 

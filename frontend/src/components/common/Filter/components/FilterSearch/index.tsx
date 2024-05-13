@@ -38,7 +38,7 @@ export default function FilterSearch({
             onClick={onClearSearch}
             sdsSize="small"
             sdsType="secondary"
-            icon="XMarkCircle"
+            sdsIcon="xMarkCircle"
           />
         ) : undefined
       }

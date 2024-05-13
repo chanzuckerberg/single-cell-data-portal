@@ -155,7 +155,7 @@ function CellInfoSideBar({
         </ButtonWrapper>
         <Button
           data-testid="add-to-dotplot-fmg-button"
-          startIcon={<Icon sdsIcon="Plus" sdsSize="s" sdsType="button" />}
+          startIcon={<Icon sdsIcon="plus" sdsSize="s" sdsType="button" />}
           onClick={handleDisplayGenes}
           sdsStyle="minimal"
           sdsType="primary"
@@ -192,7 +192,7 @@ function CellInfoSideBar({
                 sdsType="primary"
                 sdsStyle="minimal"
                 isAllCaps={false}
-                startIcon={<Icon sdsIcon="Copy" sdsSize="s" sdsType="button" />}
+                startIcon={<Icon sdsIcon="copy" sdsSize="s" sdsType="button" />}
               >
                 Copy
               </CopyGenesButton>

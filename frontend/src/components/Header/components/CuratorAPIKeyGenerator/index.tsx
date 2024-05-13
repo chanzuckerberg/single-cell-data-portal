@@ -48,10 +48,6 @@ export default function CuratorAPIKeyGenerator(): JSX.Element {
     []
   );
 
-  const handleButtonClose = useCallback((_: DialogOnCloseParams[0]) => {
-    setIsOpen(false);
-  }, []);
-
   const copyAPIKey = useCallback(() => {
     navigator.clipboard.writeText(apiKeyResponse.current.key || "");
     Toast.show({
@@ -79,7 +75,7 @@ export default function CuratorAPIKeyGenerator(): JSX.Element {
           </APIDisclaimerP>
         </DialogContent>
         <DialogActions>
-          <SDSButton onClick={handleButtonClose}>Close</SDSButton>
+          <SDSButton onClick={handleClose}>Close</SDSButton>
           <SDSButton sdsType="primary" sdsStyle="square" onClick={copyAPIKey}>
             Copy API Key
           </SDSButton>
