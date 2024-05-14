@@ -18,7 +18,7 @@ RUN apt-get update && apt-get -yq install \
       libpng-dev \
       libtiff5-dev \
       libfreetype6-dev \
-      libvips \
+      libvips-dev \
       wget \
 
   && apt-get clean \
