@@ -126,9 +126,10 @@ class TestSpatialDataProcessor(unittest.TestCase):
         """
         assets_folder = "test_assets"
 
-        with patch.object(self.spatial_processor.s3_provider, "upload_directory") as mock_upload, patch(
-            "shutil.rmtree"
-        ) as mock_rmtree:
+        with (
+            patch.object(self.spatial_processor.s3_provider, "upload_directory") as mock_upload,
+            patch("shutil.rmtree") as mock_rmtree,
+        ):
 
             self.spatial_processor._upload_assets(assets_folder)
             expected_s3_uri = (
@@ -147,10 +148,10 @@ class TestSpatialDataProcessor(unittest.TestCase):
         """
         assets_folder = "test_assets"
 
-        with patch.object(self.spatial_processor.s3_provider, "upload_directory") as mock_upload, patch(
-            "shutil.rmtree"
-        ) as mock_rmtree:
-
+        with (
+            patch.object(self.spatial_processor.s3_provider, "upload_directory") as mock_upload,
+            patch("shutil.rmtree") as mock_rmtree,
+        ):
             mock_upload.side_effect = Exception("Failed to upload")
 
             with pytest.raises(Exception) as exc_info:
