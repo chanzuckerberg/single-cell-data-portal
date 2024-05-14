@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { keyframes } from "@emotion/react";
 import { Drawer } from "@blueprintjs/core";
 import {
   fontHeaderXl,
@@ -57,6 +58,10 @@ export const CellGroupTitle = styled.div`
 export const CellCountTitle = styled.div`
   ${fontBodyXxs}
   color: #767676;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
 `;
 
 export const CopyButtonWrapper = styled.div`
@@ -121,4 +126,22 @@ export const FlexRow = styled.div`
 
 export const QuerySelectorWrapper = styled.div`
   width: 698px;
+`;
+
+const spin = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
+export const Spinner = styled.div`
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border-left-color: #000;
+  animation: ${spin} 0.5s linear infinite;
 `;

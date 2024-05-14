@@ -35,6 +35,7 @@ const _mapTermToFilterOption = (term: {
 function useProcessedQueryGroupFilterDimensions(queryGroup: QueryGroup): {
   availableFilters: FilterOptionDimensions;
   n_cells: number;
+  isLoading: boolean;
 } {
   const [localNCells, setLocalNCells] = useState<number>(0);
 
@@ -115,7 +116,7 @@ function useProcessedQueryGroupFilterDimensions(queryGroup: QueryGroup): {
     n_cells,
   ]);
 
-  return { availableFilters, n_cells: localNCells };
+  return { availableFilters, n_cells: localNCells, isLoading: rawIsLoading };
 }
 
 export default useProcessedQueryGroupFilterDimensions;

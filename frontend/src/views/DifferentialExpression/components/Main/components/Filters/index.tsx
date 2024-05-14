@@ -16,7 +16,7 @@ import useProcessedQueryGroupFilterDimensions, {
   FilterOptionDimensions,
 } from "../common/query_group_filter_dimensions";
 import { QUERY_GROUP_KEY_TO_FILTER_DIMENSION_MAP } from "../common/constants";
-import CopyInvertButton from "./components/CopyInvertButton";
+import CopyButton from "./components/CopyButton";
 
 const QUERY_GROUP_KEYS = [
   "tissues",
@@ -86,35 +86,32 @@ export default memo(function Filters({
           handleChange={handleFilterChange(queryGroupKey)}
         />
       ),
-      copyInvertButtonComponent: (
-        <CopyInvertButton
-          key={`${queryGroupKey}-copy-invert-button`}
+      copyButtonComponent: isQueryGroup1 ? (
+        <CopyButton
+          key={`${queryGroupKey}-copy-button`}
           queryGroupKey={queryGroupKey}
-          isCopy={isQueryGroup1}
         />
-      ),
+      ) : null,
     };
   });
 
   return (
     <Wrapper>
-      {components.map(
-        ({ filterDropdownComponent, copyInvertButtonComponent }) => (
-          <FlexRow key={filterDropdownComponent.key}>
-            {isQueryGroup1 ? (
-              <>
-                {filterDropdownComponent}
-                {copyInvertButtonComponent}
-              </>
-            ) : (
-              <>
-                {copyInvertButtonComponent}
-                {filterDropdownComponent}
-              </>
-            )}
-          </FlexRow>
-        )
-      )}
+      {components.map(({ filterDropdownComponent, copyButtonComponent }) => (
+        <FlexRow key={filterDropdownComponent.key}>
+          {isQueryGroup1 ? (
+            <>
+              {filterDropdownComponent}
+              {copyButtonComponent}
+            </>
+          ) : (
+            <>
+              {copyButtonComponent}
+              {filterDropdownComponent}
+            </>
+          )}
+        </FlexRow>
+      ))}
     </Wrapper>
   );
 });

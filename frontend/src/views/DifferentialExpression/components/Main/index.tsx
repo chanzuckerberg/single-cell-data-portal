@@ -15,6 +15,7 @@ import {
   QuerySelectorWrapper,
   TwoPanelLayout,
   CellCountTitle,
+  Spinner,
 } from "./style";
 import QueryGroupFilters from "./components/Filters";
 import Organism from "./components/Organism";
@@ -51,9 +52,9 @@ export default function DifferentialExpression(): JSX.Element {
     dispatch(submitQueryGroups());
   };
 
-  const { n_cells: nCellsGroup1 } =
+  const { n_cells: nCellsGroup1, isLoading: isLoadingGroup1 } =
     useProcessedQueryGroupFilterDimensions(queryGroup1);
-  const { n_cells: nCellsGroup2 } =
+  const { n_cells: nCellsGroup2, isLoading: isLoadingGroup2 } =
     useProcessedQueryGroupFilterDimensions(queryGroup2);
 
   return (
@@ -83,7 +84,7 @@ export default function DifferentialExpression(): JSX.Element {
                 <CellGroupTitle>
                   Cell Group 1
                   <CellCountTitle>
-                    {" "}
+                    {isLoadingGroup1 && <Spinner />}
                     {nCellsGroup1.toLocaleString()} cells
                   </CellCountTitle>
                 </CellGroupTitle>
@@ -98,7 +99,7 @@ export default function DifferentialExpression(): JSX.Element {
                 <CellGroupTitle>
                   Cell Group 2
                   <CellCountTitle>
-                    {" "}
+                    {isLoadingGroup2 && <Spinner />}
                     {nCellsGroup2.toLocaleString()} cells
                   </CellCountTitle>
                 </CellGroupTitle>

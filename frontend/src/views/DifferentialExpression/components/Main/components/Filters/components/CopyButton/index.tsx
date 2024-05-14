@@ -14,9 +14,8 @@ import { StyledButtonIcon } from "./style";
 
 interface Props {
   queryGroupKey: keyof QueryGroup;
-  isCopy: boolean;
 }
-function CopyInvertButton({ queryGroupKey, isCopy }: Props): JSX.Element {
+function CopyButton({ queryGroupKey }: Props): JSX.Element {
   const {
     queryGroups: { queryGroup1, queryGroup2 },
   } = useContext(StateContext);
@@ -32,20 +31,12 @@ function CopyInvertButton({ queryGroupKey, isCopy }: Props): JSX.Element {
   } = useProcessedQueryGroupFilterDimensions(queryGroup2);
 
   useEffect(() => {
-    if (isCopy) {
-      const options = queryGroup1[queryGroupKey];
-      const optionsWithNames = availableOptionsGroup2.filter((option) =>
-        options.includes(option.id)
-      );
-      setOptions(optionsWithNames);
-    } else {
-      const options = queryGroup1[queryGroupKey];
-      const optionsWithNames = availableOptionsGroup2.filter(
-        (option) => !options.includes(option.id)
-      );
-      setOptions(optionsWithNames);
-    }
-  }, [availableOptionsGroup2, isCopy, queryGroup1, queryGroupKey]);
+    const options = queryGroup1[queryGroupKey];
+    const optionsWithNames = availableOptionsGroup2.filter((option) =>
+      options.includes(option.id)
+    );
+    setOptions(optionsWithNames);
+  }, [availableOptionsGroup2, queryGroup1, queryGroupKey]);
 
   useEffect(() => {
     setDisabled(options.length === 0);
@@ -57,10 +48,10 @@ function CopyInvertButton({ queryGroupKey, isCopy }: Props): JSX.Element {
   return (
     <StyledButtonIcon
       onClick={handleClick}
-      sdsIcon={isCopy ? "copy" : "circlesOverlap"}
+      sdsIcon="copy"
       sdsSize="small"
       disabled={disabled}
     />
   );
 }
-export default CopyInvertButton;
+export default CopyButton;
