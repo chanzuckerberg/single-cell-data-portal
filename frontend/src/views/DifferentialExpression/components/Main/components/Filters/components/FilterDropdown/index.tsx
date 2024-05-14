@@ -54,7 +54,6 @@ function FilterDropdown({
         isOptionEqualToValue={(option, value) => option.id === value.id}
         popupIcon={null}
         renderInput={(params) => {
-          console.log(params);
           return (
             <StyledTextField {...params} placeholder="Search" label={label} />
           );

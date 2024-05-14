@@ -11,7 +11,11 @@ import {
   DispatchContext,
   StateContext,
 } from "src/views/DifferentialExpression/common/store";
-import { selectOrganism } from "src/views/DifferentialExpression/common/store/actions";
+import {
+  clearQueryGroup1Filters,
+  clearQueryGroup2Filters,
+  selectOrganism,
+} from "src/views/DifferentialExpression/common/store/actions";
 import { StyledDropdown, Wrapper, Label } from "../common/style";
 import { Organism as IOrganism } from "src/views/DifferentialExpression/common/types";
 
@@ -68,7 +72,8 @@ export default function Organism(): JSX.Element {
     if (!dispatch || !organism || organismId === organism.id) return;
 
     track(EVENTS.WMG_SELECT_ORGANISM, { payload: organism?.name });
-
+    dispatch(clearQueryGroup1Filters());
+    dispatch(clearQueryGroup2Filters());
     dispatch(selectOrganism(organism?.id || null));
   }
 }

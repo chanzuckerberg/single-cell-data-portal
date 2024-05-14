@@ -258,7 +258,8 @@ export function useAvailableOrganisms() {
   return useMemo(() => {
     if (isLoading || !data) return { data: [], isLoading };
 
-    const { organism_terms } = data;
+    // const { organism_terms } = data;
+    const organism_terms = CXG_CENSUS_ORGANISMS;
 
     return {
       isLoading,

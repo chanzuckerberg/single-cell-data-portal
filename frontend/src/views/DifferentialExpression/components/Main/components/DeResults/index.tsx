@@ -26,6 +26,8 @@ import { clearSubmittedQueryGroups } from "src/views/DifferentialExpression/comm
 import { Pagination } from "@mui/material";
 import Table from "src/views/CellGuide/components/CellGuideCard/components/common/Table";
 import { ButtonIcon, Tooltip } from "@czi-sds/components";
+import { CellCountTitle } from "../../style";
+import useProcessedQueryGroupFilterDimensions from "../common/query_group_filter_dimensions";
 
 interface DifferentialExpressionRow {
   name: string;
@@ -95,11 +97,19 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
     setIsLoading(isLoading);
   }, [isLoading, setIsLoading]);
 
+  const { n_cells: nCellsGroup1 } = useProcessedQueryGroupFilterDimensions(
+    queryGroups.queryGroup1
+  );
+  const { n_cells: nCellsGroup2 } = useProcessedQueryGroupFilterDimensions(
+    queryGroups.queryGroup2
+  );
   return (
     <div>
       {!showEmpty ? (
         <DifferentialExpressionResults
           results={differentialExpressionResults}
+          nCellsGroup1={nCellsGroup1}
+          nCellsGroup2={nCellsGroup2}
         />
       ) : (
         <InstructionsWrapper>
@@ -147,9 +157,13 @@ const QUERY_GROUP_KEY_TO_TAG_SUFFIX_MAP = {
 
 interface DifferentialExpressionResultsProps {
   results: DifferentialExpressionRow[];
+  nCellsGroup1: number;
+  nCellsGroup2: number;
 }
 const DifferentialExpressionResults = ({
   results,
+  nCellsGroup1,
+  nCellsGroup2,
 }: DifferentialExpressionResultsProps) => {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -257,6 +271,7 @@ const DifferentialExpressionResults = ({
           <CellGroupTitle>Cell Group 1</CellGroupTitle>
           <EffectSizeIndicator>{"(+) Effect Size"}</EffectSizeIndicator>
         </CellGroupTitleWrapper>
+        <CellCountTitle>{nCellsGroup1.toLocaleString()} cells</CellCountTitle>
         <FilterTagsWrapper>
           <QueryGroupTags isQueryGroup1 />
         </FilterTagsWrapper>
@@ -266,6 +281,7 @@ const DifferentialExpressionResults = ({
           <CellGroupTitle>Cell Group 2</CellGroupTitle>
           <EffectSizeIndicator>{"(-) Effect Size"}</EffectSizeIndicator>
         </CellGroupTitleWrapper>
+        <CellCountTitle>{nCellsGroup2.toLocaleString()} cells</CellCountTitle>
         <FilterTagsWrapper>
           <QueryGroupTags />
         </FilterTagsWrapper>

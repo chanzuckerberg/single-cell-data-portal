@@ -165,6 +165,7 @@ export const FilterTagsWrapper = styled.div`
   display: flex;
   flex-direction: row;
   column-gap: 8px;
+  margin-top: 8px;
 `;
 
 export const StyledTag = styled(Tag)`
