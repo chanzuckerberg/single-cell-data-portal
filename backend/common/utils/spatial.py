@@ -10,13 +10,13 @@ from backend.layers.thirdparty.s3_provider import S3Provider
 
 
 class SpatialDataProcessor:
-    def __init__(self, s3_provider: S3Provider):
+    def __init__(self, s3_provider: S3Provider = None):
         self.s3_provider = s3_provider if s3_provider else S3Provider()
-        deployment_stage = os.getenv("DEPLOYMENT_STAGE", "staging")
-        self.env = "dev" if deployment_stage in ["rdev", "test"] else deployment_stage
+        self.deployment_stage = os.getenv("DEPLOYMENT_STAGE", "staging")
+        # relying on dev bucket for rdev and test
+        self.env = "dev" if self.deployment_stage in ["rdev", "test"] else self.deployment_stage
         self.bucket_name = f"spatial-deepzoom-{self.env}"
         self.asset_directory = "spatial-deep-zoom"
-        self.base_dir = "./z_spatial/"
 
     def _calculate_aspect_ratio_crop(self, image_size):
         width, height = image_size
@@ -25,7 +25,6 @@ class SpatialDataProcessor:
         upper = (height - new_dimension) / 2
         right = (width + new_dimension) / 2
         lower = (height + new_dimension) / 2
-        # return (left, upper, left + new_dimension, upper + new_dimension)
         return (left, upper, right, lower)
 
     def _prepare_image(self, content):
@@ -42,24 +41,23 @@ class SpatialDataProcessor:
             flipped_img = cropped_img.transpose(Image.FLIP_TOP_BOTTOM)  # Flip the image vertically
         return np.array(flipped_img)
 
-    def _generate_deep_zoom_assets(self, image_array, container_name):
+    def _generate_deep_zoom_assets(self, image_array, folder_name):
         h, w, bands = image_array.shape
         linear = image_array.reshape(w * h * bands)
         image = pyvips.Image.new_from_memory(linear.data, w, h, bands, "uchar")
-        output_path = f"{self.base_dir}/{container_name}/"
-        image.dzsave(output_path + "spatial", suffix=".jpeg")
-        return output_path
+        image.dzsave(folder_name + "spatial", suffix=".jpeg")
 
-    def _upload_assets(self, container_name, directory):
-        s3_uri = f"s3://{self.bucket_name}/{self.asset_directory}/{container_name}/"
-        self.s3_provider.upload_directory(directory, s3_uri)
-        shutil.rmtree(directory)  # Cleanup the local directory after upload
+    def _upload_assets(self, assets_folder):
+        s3_uri = f"s3://{self.bucket_name}/{self.asset_directory}/{assets_folder}"
+        self.s3_provider.upload_directory(assets_folder, s3_uri)
+        shutil.rmtree(assets_folder)
 
     def create_deep_zoom_assets(self, container_name, content):
+        assets_folder = container_name.replace(".cxg", "") + "/"
         image_array = self._prepare_image(content)
         processed_image = self._process_and_flip_image(image_array)
-        output_dir = self._generate_deep_zoom_assets(processed_image, container_name)
-        self._upload_assets(container_name, output_dir)
+        self._generate_deep_zoom_assets(processed_image, assets_folder)
+        self._upload_assets(assets_folder)
 
     def filter_spatial_data(self, content, library_id):
         return {

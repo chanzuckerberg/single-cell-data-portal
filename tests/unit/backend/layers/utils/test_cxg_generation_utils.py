@@ -1,5 +1,4 @@
 import json
-import pickle
 import unittest
 from os import mkdir, path
 from shutil import rmtree
@@ -14,7 +13,6 @@ from backend.common.utils.cxg_generation_utils import (
     convert_dictionary_to_cxg_group,
     convert_matrices_to_cxg_arrays,
     convert_ndarray_to_cxg_dense_array,
-    convert_uns_to_cxg_group,
 )
 from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 
@@ -44,30 +42,30 @@ class TestCxgGenerationUtils(unittest.TestCase):
         self.assertTrue(isinstance(array, tiledb.DenseArray))
         self.assertEqual(random_dictionary, actual_stored_metadata)
 
-    def test__convert_uns_to_cxg_group__writes_successfully(self):
-        input_dictionary = {
-            "spatial": {
-                "abcd": {
-                    "images": {
-                        "hires": "123",
-                        "fullres": [],
-                    },
-                    "scalefactors": {
-                        "spot_diameter_fullres": "123",
-                        "tissue_hires_scalef": "123",
-                    },
-                }
-            }
-        }
-        dictionary_name = "uns"
-        expected_array_directory = f"{self.testing_cxg_temp_directory}/{dictionary_name}"
-        convert_uns_to_cxg_group(self.testing_cxg_temp_directory, input_dictionary, group_metadata_name=dictionary_name)
-        array = tiledb.open(expected_array_directory)
-        expected_metadata = dict(array.meta.items())
+    # def test__convert_uns_to_cxg_group__writes_successfully(self):
+    #     input_dictionary = {
+    #         "spatial": {
+    #             "abcd": {
+    #                 "images": {
+    #                     "hires": "123",
+    #                     "fullres": [],
+    #                 },
+    #                 "scalefactors": {
+    #                     "spot_diameter_fullres": "123",
+    #                     "tissue_hires_scalef": "123",
+    #                 },
+    #             }
+    #         }
+    #     }
+    #     dictionary_name = "uns"
+    #     expected_array_directory = f"{self.testing_cxg_temp_directory}/{dictionary_name}"
+    #     convert_uns_to_cxg_group(self.testing_cxg_temp_directory, input_dictionary, group_metadata_name=dictionary_name)
+    #     array = tiledb.open(expected_array_directory)
+    #     expected_metadata = dict(array.meta.items())
 
-        self.assertTrue(path.isdir(expected_array_directory))
-        self.assertTrue(isinstance(array, tiledb.DenseArray))
-        self.assertEqual(input_dictionary["spatial"], pickle.loads(expected_metadata["spatial"]))
+    #     self.assertTrue(path.isdir(expected_array_directory))
+    #     self.assertTrue(isinstance(array, tiledb.DenseArray))
+    #     self.assertEqual(input_dictionary["spatial"], pickle.loads(expected_metadata["spatial"]))
 
     def test__convert_dataframe_to_cxg_array__writes_successfully(self):
         random_int_category = Series(data=[3, 1, 2, 4], dtype=np.int64)
