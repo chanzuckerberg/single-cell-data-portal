@@ -22,6 +22,7 @@ import { submitQueryGroups } from "src/views/DifferentialExpression/common/store
 import DeResults from "./components/DeResults";
 import Loader from "./components/Loader";
 import useProcessedQueryGroupFilterDimensions from "./components/common/query_group_filter_dimensions";
+import Method from "./components/Method";
 
 export default function DifferentialExpression(): JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -73,8 +74,10 @@ export default function DifferentialExpression(): JSX.Element {
               <br />
               [Method Information]
             </StepSubHeader>
-
-            <Organism />
+            <FlexRow>
+              <Organism />
+              <Method />
+            </FlexRow>
             <FlexRow>
               <div>
                 <CellGroupTitle>
