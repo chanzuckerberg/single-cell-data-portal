@@ -273,7 +273,7 @@ def _get_cell_counts_for_query(q: WmgQuery, criteria: WmgFiltersQueryCriteria) -
         criteria.cell_type_ontology_term_ids = list(
             set(sum([descendants(i) for i in criteria.cell_type_ontology_term_ids], []))
         )
-    cell_counts = q.cell_counts(criteria)
+    cell_counts = q.cell_counts_df(criteria)
     return int(cell_counts["n_total_cells"].sum())
 
 
