@@ -22,7 +22,7 @@ python-json-logger
 requests>=2.22.0
 rpy2==3.5.16
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
-s3fs==0.4.2
+s3fs==2024.3.1
 scanpy==1.9.3
 SQLAlchemy>=1.4.0,<1.5
 SQLAlchemy-Utils>=0.36.8
