@@ -2,7 +2,10 @@ import { memo, useCallback, useContext } from "react";
 
 import { DispatchContext } from "src/views/DifferentialExpression/common/store";
 import { FlexRow, Wrapper } from "./style";
-import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
+import {
+  EMPTY_FILTERS,
+  QueryGroup,
+} from "src/views/DifferentialExpression/common/store/reducer";
 import {
   selectQueryGroup1Filters,
   selectQueryGroup2Filters,
@@ -64,7 +67,7 @@ export default memo(function Filters({
   );
 
   const { availableFilters: allAvailableFilters } =
-    useProcessedQueryGroupFilterDimensions({});
+    useProcessedQueryGroupFilterDimensions(EMPTY_FILTERS);
 
   const components = QUERY_GROUP_KEYS.map((key, index) => {
     const queryGroupKey = key as keyof QueryGroup;
