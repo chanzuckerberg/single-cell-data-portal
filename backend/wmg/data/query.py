@@ -133,6 +133,16 @@ class WmgQuery:
         cell_counts.rename(columns={"n_cells": "n_total_cells"}, inplace=True)  # expressed & non-expressed cells
         return cell_counts
 
+    def cell_counts_df(self, criteria: WmgQueryCriteria) -> DataFrame:
+        df = self._snapshot.cell_counts_df
+        mask = np.array([True] * len(df))
+        for key, values in dict(criteria).items():
+            values = values if isinstance(values, list) else [values]
+            key = depluralize(key)
+            if key in df.columns and values:
+                mask &= df[key].isin(values)
+        return df[mask]
+
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
     #  /chanzuckerberg/single-cell-data-portal/2133
     def _query(

@@ -19,10 +19,6 @@ from backend.wmg.api.wmg_api_config import (
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.query import DeQueryCriteria, WmgFiltersQueryCriteria, WmgQuery
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
-from backend.wmg.data.utils import (
-    find_all_dim_option_values,
-    find_dim_option_values,
-)
 
 DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
 SNAPSHOT_FS_ROOT_PATH = (
@@ -43,11 +39,12 @@ def filters():
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
             snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
-        q = WmgQuery(snapshot, cube_query_params=None)
-        n_cells = _get_cell_counts_for_query(q, criteria)
 
     with ServerTiming.time("calculate filters and build response"):
-        response_filter_dims_values = build_filter_dims_values(criteria, snapshot)
+        q = WmgQuery(snapshot, cube_query_params=None)
+        response_filter_dims_values = build_filter_dims_values(criteria, snapshot, q)
+        n_cells = _get_cell_counts_for_query(q, criteria)
+
         response = jsonify(
             dict(
                 snapshot_id=snapshot.snapshot_identifier,
@@ -103,23 +100,11 @@ def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
 
 
 @tracer.wrap(name="build_filter_dims_values", service="wmg-api", resource="filters", span_type="wmg-api")
-def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot) -> Dict:
-    dims = {
-        "publication_citation": "",
-        "disease_ontology_term_id": "",
-        "sex_ontology_term_id": "",
-        "development_stage_ontology_term_id": "",
-        "self_reported_ethnicity_ontology_term_id": "",
-        "tissue_ontology_term_id": "",
-        "cell_type_ontology_term_id": "",
-        "organism_ontology_term_id": "",
-    }
-    for dim in dims:
-        dims[dim] = (
-            find_all_dim_option_values(snapshot, criteria.organism_ontology_term_id, dim)
-            if is_criteria_empty(criteria)
-            else find_dim_option_values(criteria, snapshot, dim)
-        )
+def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot, q: WmgQuery) -> Dict:
+
+    df = snapshot.cell_counts_df if is_criteria_empty(criteria) else q.cell_counts_df(criteria)
+
+    dims = {col: df[col].unique().tolist() for col in df.columns}
 
     # For schema-4 we filter out comma-delimited values for `self_reported_ethnicity_ontology_term_id`
     # from the options list per functional requirements:
@@ -130,7 +115,7 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
     response_filter_dims_values = dict(
         disease_terms=build_ontology_term_id_label_mapping(dims["disease_ontology_term_id"]),
         sex_terms=build_ontology_term_id_label_mapping(dims["sex_ontology_term_id"]),
-        development_stage_terms=build_ontology_term_id_label_mapping(dims["development_stage_ontology_term_id"]),
+        development_stage_terms=[],
         self_reported_ethnicity_terms=build_ontology_term_id_label_mapping(
             dims["self_reported_ethnicity_ontology_term_id"]
         ),
