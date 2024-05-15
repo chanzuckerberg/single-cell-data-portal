@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import tiledb
 
-from backend.common.constants import UNS_METADATA_KEYS, SPATIAL_KEY
+from backend.common.constants import SPATIAL_KEY, UNS_METADATA_KEYS
 from backend.common.utils.spatial import SpatialDataProcessor
 from backend.common.utils.type_conversion_utils import get_dtype_and_schema_of_array
 
