@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import tiledb
 
-from backend.common.constants import UNS_META_KEYS
+from backend.common.constants import UNS_METADATA_KEYS, SPATIAL_KEY
 from backend.common.utils.spatial import SpatialDataProcessor
 from backend.common.utils.type_conversion_utils import get_dtype_and_schema_of_array
 
@@ -37,21 +37,22 @@ def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata
 def convert_uns_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="uns", ctx=None):
     """
     Convert uns (unstructured) metadata to CXG output directory specified
+    Generate deep zoom assets for spatial data
     """
+
+    spatial_processor = SpatialDataProcessor()
 
     array_name = f"{cxg_container}/{group_metadata_name}"
     object_filtered = {}
 
     tiledb.from_numpy(array_name, np.zeros((1,)))
 
-    spatial_processor = SpatialDataProcessor()
-
     with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
         for key, value in metadata_dict.items():
-            if key not in UNS_META_KEYS:
+            if key not in UNS_METADATA_KEYS:
                 continue
             for object_id, content in value.items():
-                if key == "spatial":
+                if key == SPATIAL_KEY:
                     object_filtered = spatial_processor.filter_spatial_data(content, object_id)
                     spatial_processor.create_deep_zoom_assets(cxg_container, content)
                 else:
