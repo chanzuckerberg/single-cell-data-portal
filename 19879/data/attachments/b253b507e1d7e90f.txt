@@ -1,0 +1,12 @@
+[PID 1 | PPID 0] Subscriber ASM is getting data, 20 additional messages skipped
+{"levelname": "DEBUG", "asctime": "2024-05-15T01:49:01.015Z", "name": "ddtrace.internal.remoteconfig._subscribers", "message": "[PID 1 | PPID 0] Subscriber ASM is getting data, 20 additional messages skipped", "lineno": 45, "pathname": "/usr/local/lib/python3.10/dist-packages/ddtrace/internal/remoteconfig/_subscribers.py", "request_id": ""}
+[PID 1 | PPID 0] Subscriber ASM got data, 20 additional messages skipped
+{"levelname": "DEBUG", "asctime": "2024-05-15T01:49:01.015Z", "name": "ddtrace.internal.remoteconfig._subscribers", "message": "[PID 1 | PPID 0] Subscriber ASM got data, 20 additional messages skipped", "lineno": 47, "pathname": "/usr/local/lib/python3.10/dist-packages/ddtrace/internal/remoteconfig/_subscribers.py", "request_id": ""}
+Agent is down or Remote Config is not enabled in the Agent
+Check your Agent version, you need an Agent running on 7.39.1 version or above.
+Check Your Remote Config environment variables on your Agent:
+DD_REMOTE_CONFIGURATION_ENABLED=true
+See: https://docs.datadoghq.com/agent/guide/how_remote_config_works/, 9 additional messages skipped
+{"levelname": "DEBUG", "asctime": "2024-05-15T01:49:01.015Z", "name": "ddtrace.internal.remoteconfig.worker", "message": "Agent is down or Remote Config is not enabled in the Agent\nCheck your Agent version, you need an Agent running on 7.39.1 version or above.\nCheck Your Remote Config environment variables on your Agent:\nDD_REMOTE_CONFIGURATION_ENABLED=true\nSee: https://docs.datadoghq.com/agent/guide/how_remote_config_works/, 9 additional messages skipped", "lineno": 53, "pathname": "/usr/local/lib/python3.10/dist-packages/ddtrace/internal/remoteconfig/worker.py", "request_id": ""}
+{"levelname": "INFO", "asctime": "2024-05-15T01:49:01.015Z", "name": "corpora-api-test", "message": "", "lineno": 165, "pathname": "/single-cell-data-portal/backend/api_server/app.py", "request_id": "8e28956e-2ac2-4936-a78f-e6e9d03a2e51", "type": "REQUEST", "details": {"url": "/wmg/v2/markers", "method": "POST", "content_length": 118}}
+{"levelname": "INFO", "asctime": "2024-05-15T01:49:01.015Z", "name": "corpora-api-test", "message": "", "lineno": 179, "pathname": "/single-cell-data-portal/backend/api_server/app.py", "request_id": "8e28956e-2ac2-4936-a78f-e6e9d03a2e51", "type": "RESPONSE", "details": {"status_code": 200, "content_length": 69, "response_time": 0.009118318557739258}}
