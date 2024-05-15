@@ -73,7 +73,43 @@ export default function DifferentialExpression(): JSX.Element {
               information, read our documentation.
               <br />
               <br />
-              [Method Information]
+              This tool uses Welch's t-test to identify differentially expressed
+              genes between groups of cell in the CELLxGENE Census. While the
+              t-test performs reasonably well on individual datasets{" "}
+              <a
+                href="https://www.mdpi.com/2073-4425/12/12/1947"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                [1]
+              </a>
+              <a
+                href="https://www.nature.com/articles/s41467-019-12266-7"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                [2]
+              </a>
+              <a
+                href="https://www.nature.com/articles/nmeth.4612"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                [3]
+              </a>
+              , its performance on concatenated, non-integrated datasets has not
+              been extensively evaluated. We recommend using this tool for
+              preliminary investigations and following up with a more robust
+              method for formal analysis. Learn more about our data filtering
+              and normalization{" "}
+              <a
+                href="/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_3__Gene%20Expression%20Data%20Processing"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                here
+              </a>
+              .
             </StepSubHeader>
             <FlexRow>
               <Organism />
