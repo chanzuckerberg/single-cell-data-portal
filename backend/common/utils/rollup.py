@@ -257,7 +257,7 @@ def rollup_across_cell_type_descendants(
     # extract numeric data and write back into the dataframe
     summed = summed[tuple(dim_indices)]
     dtypes = numeric_df.dtypes
-    for col, array in zip(numeric_df.columns, summed.T):
+    for col, array in zip(numeric_df.columns, summed.T, strict=False):
         if ignore_cols and col not in ignore_cols or not ignore_cols:
             df[col] = array.astype(dtypes[col])
 

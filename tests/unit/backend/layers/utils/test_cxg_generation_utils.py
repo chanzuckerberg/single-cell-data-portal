@@ -152,7 +152,7 @@ class TestCxgGenerationUtils(unittest.TestCase):
             x, y = coord
             return array[x][""][array[x][attr] == y][0]
 
-        for suffix, attr_dim in zip(["r", "c"], ["var", "obs"]):
+        for suffix, attr_dim in zip(["r", "c"], ["var", "obs"], strict=False):
             actual_stored_array = tiledb.open(matrix_name + suffix)
             self.assertTrue(path.isdir(matrix_name + suffix))
             self.assertTrue(isinstance(actual_stored_array, tiledb.SparseArray))

@@ -1,6 +1,7 @@
 """
 This script closes issues in the Ready for Prod pipeline that are not blocked by open issues or PRs.
 """
+
 import json
 import logging
 import os
@@ -123,7 +124,7 @@ def close_ready_for_prod() -> None:
     if not issues_to_close:
         logger.info("No issues to close.")
     else:
-        issue_ids, issue_strings = zip(*issues_to_close)
+        issue_ids, issue_strings = zip(*issues_to_close, strict=False)
         logger.info("Closing issues:\n\t" + "\n\t".join(issue_strings))
         data = close_issues(issue_ids)
         logger.info(data)

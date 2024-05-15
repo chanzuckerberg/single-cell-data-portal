@@ -33,6 +33,7 @@ from tests.unit.backend.wmg.test_query import generate_expected_marker_gene_data
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
+
 # this should only be used for generating expected outputs when using the test snapshot (see test_snapshot.py)
 def generate_expected_term_id_labels_dictionary(
     *,
