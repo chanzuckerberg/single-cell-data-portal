@@ -3,8 +3,8 @@ import unittest
 
 import numpy as np
 import pandas as pd
+import pytest
 from pandas import DataFrame, Series
-from parameterized import parameterized_class
 from scipy import sparse
 
 from backend.common.utils.type_conversion_utils import (
@@ -292,33 +292,35 @@ test_cases = [
 ]
 
 
-@parameterized_class(test_cases)
-class TestTypeInference(unittest.TestCase, AssertNoLog):
-    def test_type_inference(self):
-        throws = getattr(self, "throws", None)
-        if throws:
-            with self.assertRaises(throws):
-                get_dtype_and_schema_of_array(self.data)
-            with self.assertRaises(throws):
-                get_encoding_dtype_of_array(self.data)
-            with self.assertRaises(throws):
-                get_schema_type_hint_of_array(self.data)
+@pytest.mark.parametrize("parameters", test_cases)
+def test_type_inference(parameters, caplog):
+    throws = parameters.get("throws", None)
+    if throws:
+        with pytest.raises(throws):
+            get_dtype_and_schema_of_array(parameters["data"])
+        with pytest.raises(throws):
+            get_dtype_and_schema_of_array(parameters["data"])
+        with pytest.raises(throws):
+            get_encoding_dtype_of_array(parameters["data"])
+        with pytest.raises(throws):
+            get_schema_type_hint_of_array(parameters["data"])
 
+    else:
+        logs = parameters.get("logs", None)
+        if logs is not None:
+            #
+            with caplog.at_level(logs["level"]):
+                encoding_dtype, schema_hint = get_dtype_and_schema_of_array(parameters["data"])
+                assert encoding_dtype == parameters["expected_encoding_dtype"]
+                assert schema_hint == parameters["expected_schema_hint"]
+                assert logs["output"] in caplog.messages[0]
         else:
-            logs = getattr(self, "logs", None)
-            if logs is not None:
-                with self.assertLogs(level=logs["level"]) as logger:
-                    encoding_dtype, schema_hint = get_dtype_and_schema_of_array(self.data)
-                    self.assertEqual(encoding_dtype, self.expected_encoding_dtype)
-                    self.assertEqual(schema_hint, self.expected_schema_hint)
-                    self.assertIn(logs["output"], logger.output[0])
+            with caplog.at_level(logging.WARNING):
+                encoding_dtype, schema_hint = get_dtype_and_schema_of_array(parameters["data"])
+                assert encoding_dtype == parameters["expected_encoding_dtype"]
+                assert schema_hint == parameters["expected_schema_hint"]
+                assert len(caplog.messages) == 0
 
-            else:
-                with self.assertNoLogs(logging.getLogger(), logging.WARNING):
-                    encoding_dtype, schema_hint = get_dtype_and_schema_of_array(self.data)
-                    self.assertEqual(encoding_dtype, self.expected_encoding_dtype)
-                    self.assertEqual(schema_hint, self.expected_schema_hint)
-
-            # also test the other public API
-            self.assertEqual(get_encoding_dtype_of_array(self.data), self.expected_encoding_dtype)
-            self.assertEqual(get_schema_type_hint_of_array(self.data), self.expected_schema_hint)
+        # also test the other public API
+        assert get_encoding_dtype_of_array(parameters["data"]) == parameters["expected_encoding_dtype"]
+        assert get_schema_type_hint_of_array(parameters["data"]) == parameters["expected_schema_hint"]

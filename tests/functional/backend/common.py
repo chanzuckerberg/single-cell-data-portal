@@ -10,7 +10,6 @@ from requests.adapters import HTTPAdapter, Response
 from requests.packages.urllib3.util import Retry
 
 from backend.common.corpora_config import CorporaAuthConfig
-from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 
 API_URL = {
     "prod": "https://api.cellxgene.cziscience.com",
@@ -39,17 +38,9 @@ class BaseFunctionalTestCase(unittest.TestCase):
         super().setUpClass()
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
         cls.config = CorporaAuthConfig()
-        cls.is_using_schema_4 = FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4)
         cls.test_dataset_uri = (
-            (
-                "https://www.dropbox.com/scl/fi/d99hpw3p2cxtmi7v4kyv5/"
-                "4_0_0_test_dataset.h5ad?rlkey=i5ownt8g1mropbu41r7fa0i06&dl=0"
-            )
-            if cls.is_using_schema_4
-            else (
-                "https://www.dropbox.com/scl/fi/phrt3ru8ulep7ttnwttu2/"
-                "example_valid.h5ad?rlkey=mmcm2qd9xrnbqle3l3vyii0gx&dl=0"
-            )
+            "https://www.dropbox.com/scl/fi/y50umqlcrbz21a6jgu99z/"
+            "5_0_0_example_valid.h5ad?rlkey=s7p6ybyx082hswix26hbl11pm&dl=0"
         )
         cls.session = requests.Session()
         # apply retry config to idempotent http methods we use + POST requests, which are currently all either

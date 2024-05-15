@@ -1,18 +1,16 @@
-import React, {
-  useMemo,
-  useEffect,
-  useState,
-  Dispatch,
-  SetStateAction,
-} from "react";
+import React, { useMemo, useEffect, useState, useRef } from "react";
 import { Group } from "@visx/group";
 import { Global } from "@emotion/react";
 import { useTooltip, useTooltipInPortal } from "@visx/tooltip";
 import { Tree, hierarchy } from "@visx/hierarchy";
-import { HierarchyPointNode } from "@visx/hierarchy/lib/types";
+import { HierarchyPointNode, HierarchyNode } from "@visx/hierarchy/lib/types";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
-import { CellOntologyTreeResponse as TreeNode } from "src/common/queries/cellGuide";
+import {
+  CellOntologyTreeResponse as TreeNode,
+  useValidExplorerCxgs,
+} from "src/common/queries/cellGuide";
+import { BetaChip } from "src/components/Header/style";
 import {
   TableTitleWrapper,
   TableTitle,
@@ -38,7 +36,8 @@ import {
   TooltipInPortalStyle,
   StyledSVG,
   RightAligned,
-  StyledTagFilter,
+  WarningTooltipTextWrapper,
+  WarningTooltipIcon,
 } from "./style";
 import { useFullScreen } from "../FullScreenProvider";
 import {
@@ -55,15 +54,29 @@ import {
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER,
   CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP,
-  CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE,
   MINIMUM_NUMBER_OF_HIDDEN_CHILDREN_FOR_DUMMY_NODE,
   ANIMAL_CELL_ID,
+  CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CONTENT,
+  CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID,
+  CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TOOLTIP_TEST_ID,
+  SELECTED_ORGANISM_TO_DISPLAY_TEXT,
 } from "src/views/CellGuide/components/common/OntologyDagView/constants";
 import {
   ALL_TISSUES,
   TISSUE_AGNOSTIC,
 } from "../../CellGuideCard/components/MarkerGeneTables/constants";
-import { Icon } from "@czi-sds/components";
+import Link from "../../CellGuideCard/components/common/Link";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
+import HelpTooltip from "../../CellGuideCard/components/common/HelpTooltip";
+import { getFormattedExplorerUrl } from "./utils";
+import { TransformMatrix, ProvidedZoom } from "@visx/zoom/lib/types";
+
+interface ZoomState {
+  initialTransformMatrix: TransformMatrix;
+  transformMatrix: TransformMatrix;
+  isDragging: boolean;
+}
 
 interface TreeProps {
   skinnyMode?: boolean;
@@ -72,43 +85,37 @@ interface TreeProps {
   selectedGene?: string;
   selectedOrganism?: string;
   cellTypeId?: string;
+  cellTypeName?: string;
   tissueId: string;
   tissueName: string;
-  selectGene?: (gene: string) => void;
-  setCellInfoCellType?: Dispatch<SetStateAction<CellType | null>>;
+  setCellInfoCellType?: (props: CellType | null) => void;
+  geneDropdownComponent?: React.ReactNode;
 }
-
-// This determines the initial Zoom position and scale
-const initialTransformMatrixDefault = {
-  scaleX: 1,
-  scaleY: 1,
-  translateX: 10,
-  translateY: 500 / 2,
-  skewX: 0,
-  skewY: 0,
-};
 
 export default function OntologyDagView({
   cellTypeId,
+  cellTypeName,
   tissueId,
   tissueName,
   inputWidth,
   inputHeight,
   selectedGene,
-  selectGene,
   selectedOrganism,
   setCellInfoCellType,
+  geneDropdownComponent,
 }: TreeProps) {
+  selectedOrganism = selectedOrganism ?? "";
+
   const [width, setWidth] = useState(inputWidth);
   const [height, setHeight] = useState(inputHeight);
 
-  const [initialTransformMatrix, setInitialTransformMatrix] = useState<
-    typeof initialTransformMatrixDefault
-  >(initialTransformMatrixDefault);
+  const zoomRef = useRef<(ProvidedZoom<SVGSVGElement> & ZoomState) | null>(
+    null
+  );
 
+  const [lastNodeClicked, setLastNodeClicked] = useState<string | null>(null);
   // This toggler is used for centering the Zoom component on the target cell type.
-  // It triggers a re-render of the Zoom component so that updates to the initialTransformMatrix
-  // take effect.
+  // It triggers a re-render of the Zoom component.
   const [centeredNodeCoords, setCenteredNodeCoords] = useState<boolean>(false);
 
   const {
@@ -179,16 +186,51 @@ export default function OntologyDagView({
   // Animation duration - initially zero so the animation doesn't play on load
   const [duration, setDuration] = useState(0);
 
+  const { data: validExplorerCxgs, isLoading: isLoadingValidExplorerCxgs } =
+    useValidExplorerCxgs();
+
+  const { explorerUrl, formattedSelectedOrganism } = getFormattedExplorerUrl({
+    selectedOrganism,
+    tissueId,
+    cellTypeId,
+  });
+  const isExplorerCxgValid = useMemo(() => {
+    if (isLoadingValidExplorerCxgs || !validExplorerCxgs) return false;
+    const celltypeCxgs =
+      validExplorerCxgs.organism_celltype_cxgs[formattedSelectedOrganism];
+    const tissueCelltypeCxgs =
+      validExplorerCxgs.organism_tissue_celltype_cxgs[
+        formattedSelectedOrganism
+      ];
+    let valid = false;
+    if (tissueId && cellTypeId) {
+      valid = tissueCelltypeCxgs[tissueId]?.includes(cellTypeId);
+    } else if (cellTypeId) {
+      valid = celltypeCxgs?.includes(cellTypeId);
+    } else if (tissueId) {
+      valid = tissueCelltypeCxgs[tissueId]?.includes("CL:0000000");
+    }
+
+    return valid;
+  }, [
+    validExplorerCxgs,
+    isLoadingValidExplorerCxgs,
+    formattedSelectedOrganism,
+    tissueId,
+    cellTypeId,
+  ]);
+
   // The raw cell ontology tree data. This is called "rawTree" because it does not contain
   // the "isExpanded" property that is used to track the expanded state of each node, along with
   // other properties like the positions of the nodes.
-  const { data: rawTree } = useCellOntologyTree();
-
+  const { data: rawTree } = useCellOntologyTree(selectedOrganism);
   const { data: initialTreeStateCell } = useCellOntologyTreeStateCellType(
-    cellTypeId ?? ""
+    cellTypeId ?? "",
+    selectedOrganism
   );
   const { data: initialTreeStateTissue } = useCellOntologyTreeStateTissue(
-    tissueId ?? ""
+    tissueId ?? "",
+    selectedOrganism
   );
 
   const parentMap = useMemo(() => {
@@ -336,31 +378,18 @@ export default function OntologyDagView({
           node.data.y0 = pointNode.y;
         }
       });
-      // Now, we find the target node that has children visible.
-      // By construction, only one copy of the target node in the tree will have children visible.
-      // The target node is the node corresponding to the cell type id of the CellGuideCard.
-      let targetNode = data
-        .descendants()
-        .find(
-          (node) =>
-            node.data.id.split("__").at(0) === cellTypeId && node.data.children
-        ) as HierarchyPointNode<TreeNodeWithState> | undefined;
-      // If no target nodes have children, just pick any target node.
-      if (!targetNode) {
-        targetNode = data
-          .descendants()
-          .find((node) => node.data.id.split("__").at(0) === cellTypeId) as
-          | HierarchyPointNode<TreeNodeWithState>
-          | undefined;
-      }
+
+      const targetNode = getCenteringNode(data, lastNodeClicked, cellTypeId);
+
       // If the target node is found and its position is known, set the initial transform matrix.
       // This will always be false when in tissue mode.
       if (
         targetNode &&
         targetNode.x !== undefined &&
-        targetNode.y !== undefined
+        targetNode.y !== undefined &&
+        zoomRef.current
       ) {
-        setInitialTransformMatrix({
+        zoomRef.current.setTransformMatrix({
           scaleX: 1,
           scaleY: 1,
           translateX: width / 2 - targetNode.y,
@@ -371,7 +400,15 @@ export default function OntologyDagView({
         setCenteredNodeCoords(true);
       }
     }
-  }, [data, cellTypeId, width, height]);
+  }, [
+    data,
+    cellTypeId,
+    zoomRef,
+    width,
+    height,
+    lastNodeClicked,
+    centeredNodeCoords,
+  ]);
 
   // Hover over node tooltip
   const {
@@ -397,14 +434,116 @@ export default function OntologyDagView({
   const yMax = height - defaultMargin.top - defaultMargin.bottom;
   const xMax = width - defaultMargin.left - defaultMargin.right;
 
+  const organismText =
+    SELECTED_ORGANISM_TO_DISPLAY_TEXT[
+      formattedSelectedOrganism as keyof typeof SELECTED_ORGANISM_TO_DISPLAY_TEXT
+    ] || "unknown";
+
+  const tooltipTextFirstPart = cellTypeId
+    ? `View an integrated UMAP for all ${organismText} cells of type "${cellTypeName}" in ${
+        tissueId ? `${tissueName} tissue` : "all tissues"
+      }.`
+    : `View an integrated UMAP for all ${organismText} cells in ${tissueName} tissue.`;
+
   return (
     <div data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW}>
       <Global styles={TooltipInPortalStyle} />
-      {!!cellTypeId && (
-        <TableTitleWrapper>
-          <TableTitle>Cell Ontology</TableTitle>
-        </TableTitleWrapper>
-      )}
+
+      <TableTitleWrapper>
+        <TableTitle>Cell Ontology</TableTitle>
+        {explorerUrl !== "" && isExplorerCxgValid && (
+          <HelpTooltip
+            title={"Open Integrated Embedding"}
+            dark
+            buttonDataTestId={
+              CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TOOLTIP_TEST_ID
+            }
+            placement="top"
+            text={
+              <>
+                <b>{tooltipTextFirstPart}</b>
+                <br />
+                <br />
+                UMAP was run using Scanpy&apos;s default parameters on the{" "}
+                <a
+                  href="https://docs.scvi-tools.org/en/stable/index.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  SCVI
+                </a>{" "}
+                embeddings provided by{" "}
+                <a
+                  href="https://cellxgene.cziscience.com/census-models"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  CELLxGENE Census
+                </a>
+                .
+                <br />
+                <br />
+                The cell counts in the Explorer view may not match the cell
+                counts in the ontology view because the integrated embeddings
+                were generated from the long-term supported (LTS) Census data
+                (12-15-2023).
+                <br />
+                <br />
+                <>
+                  <WarningTooltipTextWrapper>
+                    <WarningTooltipIcon
+                      sdsIcon="exclamationMarkCircle"
+                      color="warning"
+                      sdsSize="l"
+                      sdsType="static"
+                    />
+                    <span>
+                      UMAP embeddings are helpful for exploration, but may be
+                      misleading for detailed biological analysis. See these
+                      papers for more details:{" "}
+                      <a
+                        href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1011288"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        [1]
+                      </a>{" "}
+                      <a
+                        href="https://www.cell.com/cell-systems/abstract/S2405-4712(23)00209-0"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        [2]
+                      </a>
+                      .
+                    </span>
+                  </WarningTooltipTextWrapper>
+                </>
+              </>
+            }
+            // This is so that the tooltip can appear on hover over more content than just the
+            // question mark icon image.
+            extraContent={
+              <>
+                <Link
+                  dataTestId={CELLGUIDE_OPEN_INTEGRATED_EMBEDDING_TEST_ID}
+                  url={explorerUrl}
+                  label="Open Integrated Embedding"
+                  onClick={() => {
+                    track(EVENTS.CG_OPEN_INTEGRATED_EMBEDDING_CLICKED, {
+                      explorerUrl,
+                      cellTypeName,
+                      tissueName,
+                      organismName: selectedOrganism,
+                    });
+                  }}
+                />
+                <BetaChip label="Beta" size="small" />
+              </>
+            }
+          />
+        )}
+      </TableTitleWrapper>
 
       {data && initialTreeState ? (
         <Zoom<SVGSVGElement>
@@ -415,147 +554,136 @@ export default function OntologyDagView({
           scaleXMax={4}
           scaleYMin={0.25}
           scaleYMax={4}
-          initialTransformMatrix={initialTransformMatrix}
           wheelDelta={(event: WheelEvent | React.WheelEvent<Element>) => {
             const newScale = event.deltaY > 0 ? 0.95 : 1.05;
             return { scaleX: newScale, scaleY: newScale };
           }}
         >
-          {(zoom) => (
-            <HoverContainer
-              height={height}
-              width={width}
-              ref={containerRef}
-              onMouseDown={() => {
-                hideTooltip();
-              }}
-              isFullScreen={isFullScreen}
-              data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER}
-            >
-              {data && initialTreeState && (
-                <Legend isTissue={!cellTypeId} selectedGene={selectedGene} />
-              )}
-              <RightAligned>
-                {!!selectedGene && (
-                  <StyledTagFilter
-                    data-testid={
-                      CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_DEACTIVATE_MARKER_GENE_MODE
-                    }
-                    label={selectedGene}
-                    sx={{
-                      backgroundColor: "#E0F0FF",
-                      padding: 0,
-                      margin: 0,
-                    }}
-                    deleteIcon={
-                      <Icon
-                        sdsIcon="xMark"
-                        sdsSize="xs"
-                        sdsType="button"
-                        color="error"
-                      />
-                    }
-                    onDelete={() => selectGene && selectGene(selectedGene)}
-                    onClick={() => selectGene && selectGene(selectedGene)}
-                  />
+          {(zoom) => {
+            zoomRef.current = zoom;
+            return (
+              <HoverContainer
+                height={height}
+                width={width}
+                ref={containerRef}
+                onMouseDown={() => {
+                  hideTooltip();
+                }}
+                isFullScreen={isFullScreen}
+                data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_HOVER_CONTAINER}
+              >
+                {data && initialTreeState && (
+                  <Legend isTissue={!cellTypeId} selectedGene={selectedGene} />
                 )}
-                <FullscreenButton
-                  data-testid={
-                    CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON
-                  }
-                  onClick={isFullScreen ? disableFullScreen : enableFullScreen}
-                >
-                  {isFullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-                </FullscreenButton>
-              </RightAligned>
+                <RightAligned>
+                  {geneDropdownComponent}
+                  <FullscreenButton
+                    data-testid={
+                      CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_FULLSCREEN_BUTTON
+                    }
+                    onClick={
+                      isFullScreen ? disableFullScreen : enableFullScreen
+                    }
+                  >
+                    {isFullScreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+                  </FullscreenButton>
+                </RightAligned>
 
-              {tooltipOpen && (
-                <TooltipInPortal
-                  // set this to random so it correctly updates with parent bounds
-                  key={Math.random()}
-                  top={tooltipTop}
-                  left={tooltipLeft}
-                >
-                  <div data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP}>
-                    <b>{tooltipData?.n_cells}</b>
-                    {" cells"}
-                    {tissueName ? ` in ${selectedTissue.toLowerCase()}` : ""}
-                    {tooltipData?.n_cells !== tooltipData?.n_cells_rollup && (
-                      <>
-                        <br />
-                        <b>{tooltipData?.n_cells_rollup}</b>
-                        {" descendant cells"}
-                        {tissueName
-                          ? ` in ${selectedTissue.toLowerCase()}`
-                          : ""}
-                      </>
-                    )}
-                    {tooltipData &&
-                      !!tooltipData.marker_score &&
-                      !!tooltipData.me &&
-                      !!tooltipData.pc && (
+                {tooltipOpen && (
+                  <TooltipInPortal
+                    // set this to random so it correctly updates with parent bounds
+                    key={Math.random()}
+                    top={tooltipTop}
+                    left={tooltipLeft}
+                  >
+                    <div
+                      data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP}
+                    >
+                      <b>{tooltipData?.n_cells}</b>
+                      {" cells"}
+                      {tissueName ? ` in ${selectedTissue.toLowerCase()}` : ""}
+                      {tooltipData?.n_cells !== tooltipData?.n_cells_rollup && (
                         <>
                           <br />
-                          <br />
-                          <b>{selectedGene} stats</b>
-                          <br />
-                          {"Marker score: "}
-                          <b>{tooltipData.marker_score.toFixed(2)}</b>
-
-                          <br />
-                          {"Expression score: "}
-                          <b>{tooltipData.me.toFixed(2)}</b>
-                          <br />
-                          {"% of cells: "}
-                          <b>{(tooltipData.pc * 100).toFixed(2)}</b>
+                          <b>{tooltipData?.n_cells_rollup}</b>
+                          {" descendant cells"}
+                          {tissueName
+                            ? ` in ${selectedTissue.toLowerCase()}`
+                            : ""}
                         </>
                       )}
-                  </div>
-                </TooltipInPortal>
-              )}
-              <StyledSVG
-                width={width}
-                height={height}
-                ref={zoom.containerRef}
-                isDragging={zoom.isDragging}
-              >
-                <RectClipPath id="zoom-clip" width={width} height={height} />
-                <rect
+                      {tooltipData &&
+                        !!tooltipData.marker_score &&
+                        !!tooltipData.me &&
+                        !!tooltipData.pc && (
+                          <>
+                            <br />
+                            <br />
+                            <b>{selectedGene} stats</b>
+                            <br />
+                            {"Marker score: "}
+                            <b>{tooltipData.marker_score.toFixed(2)}</b>
+
+                            <br />
+                            {"Expression score: "}
+                            <b>{tooltipData.me.toFixed(2)}</b>
+                            <br />
+                            {"% of cells: "}
+                            <b>{(tooltipData.pc * 100).toFixed(2)}</b>
+                          </>
+                        )}
+                    </div>
+                  </TooltipInPortal>
+                )}
+                <StyledSVG
                   width={width}
                   height={height}
-                  rx={isFullScreen ? 0 : 14}
-                  fill={backgroundColor}
-                />
-                <g transform={zoom.toString()}>
-                  <Tree<TreeNodeWithState>
-                    root={data}
-                    size={[yMax, xMax]}
-                    nodeSize={NODE_SPACINGS as [number, number]}
-                  >
-                    {(tree) => (
-                      <Group top={defaultMargin.top} left={defaultMargin.left}>
-                        <AnimatedLinks tree={tree} duration={duration} />
-                        <AnimatedNodes
-                          tree={tree}
-                          tissueId={tissueId}
-                          cellTypeId={cellTypeId}
-                          duration={duration}
-                          setDuration={setDuration}
-                          toggleTriggerRender={toggleTriggerRender}
-                          showTooltip={showTooltip}
-                          hideTooltip={hideTooltip}
-                          setCellInfoCellType={setCellInfoCellType}
-                          cellTypesWithMarkerGeneStats={
-                            cellTypesWithMarkerGeneStats
-                          }
-                        />
-                      </Group>
-                    )}
-                  </Tree>
-                </g>
-              </StyledSVG>
-            </HoverContainer>
-          )}
+                  ref={zoom.containerRef}
+                  isDragging={zoom.isDragging}
+                  data-testid={CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CONTENT}
+                >
+                  <RectClipPath id="zoom-clip" width={width} height={height} />
+                  <rect
+                    width={width}
+                    height={height}
+                    rx={isFullScreen ? 0 : 14}
+                    fill={backgroundColor}
+                  />
+                  <g transform={zoom.toString()}>
+                    <Tree<TreeNodeWithState>
+                      root={data}
+                      size={[yMax, xMax]}
+                      nodeSize={NODE_SPACINGS as [number, number]}
+                    >
+                      {(tree) => (
+                        <Group
+                          top={defaultMargin.top}
+                          left={defaultMargin.left}
+                        >
+                          <AnimatedLinks tree={tree} duration={duration} />
+                          <AnimatedNodes
+                            tree={tree}
+                            tissueId={tissueId}
+                            cellTypeId={cellTypeId}
+                            duration={duration}
+                            setLastNodeClicked={setLastNodeClicked}
+                            setDuration={setDuration}
+                            toggleTriggerRender={toggleTriggerRender}
+                            showTooltip={showTooltip}
+                            hideTooltip={hideTooltip}
+                            setCellInfoCellType={setCellInfoCellType}
+                            cellTypesWithMarkerGeneStats={
+                              cellTypesWithMarkerGeneStats
+                            }
+                          />
+                        </Group>
+                      )}
+                    </Tree>
+                  </g>
+                </StyledSVG>
+              </HoverContainer>
+            );
+          }}
         </Zoom>
       ) : (
         <TableUnavailableContainer>
@@ -781,4 +909,37 @@ function isDescendant(
   }
 
   return false;
+}
+
+function getCenteringNode(
+  data: HierarchyNode<TreeNodeWithState>,
+  lastNodeClicked: string | null,
+  cellTypeId?: string
+) {
+  // We find the target node that has children visible.
+  // By construction, only one copy of the target node in the tree will be expanded at first.
+  // The target node is the node corresponding to the cell type id of the CellGuideCard.
+  // If lastNodeClicked is not null, the target node is the last node that was clicked.
+
+  let targetNode = data
+    .descendants()
+    .find(
+      (node) =>
+        (lastNodeClicked
+          ? node.data.id === lastNodeClicked
+          : node.data.id.split("__").at(0) === cellTypeId) &&
+        node.data.isExpanded
+    ) as HierarchyPointNode<TreeNodeWithState> | undefined;
+
+  // If no target nodes have children, just pick any target node.
+  if (!targetNode) {
+    targetNode = data
+      .descendants()
+      .find(
+        (node) =>
+          node.data.id.split("__").at(0) ===
+          (lastNodeClicked ? lastNodeClicked.split("__").at(0) : cellTypeId)
+      ) as HierarchyPointNode<TreeNodeWithState> | undefined;
+  }
+  return targetNode;
 }

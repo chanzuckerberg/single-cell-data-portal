@@ -21,7 +21,7 @@ export const DownloadButton = styled(Button)`
 
 export const StyledModal = styled(Modal)`
   /* Overriding some styles for the modal to match figma */
-  div:first-child {
+  div:first-of-type {
     padding: 0;
   }
   min-width: ${DOWNLOAD_MODAL_WIDTH_PX}px !important;
@@ -33,6 +33,8 @@ export const StyledModal = styled(Modal)`
     font-size: 24px !important;
     margin: 0px !important;
   }
+  z-index: 10;
+  position: relative;
 `;
 
 export const StyledTitle = styled.div`

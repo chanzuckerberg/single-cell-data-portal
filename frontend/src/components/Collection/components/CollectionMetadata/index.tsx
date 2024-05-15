@@ -1,4 +1,3 @@
-import Link from "next/link";
 import React from "react";
 import {
   CollectionMetadata as Metadata,
@@ -25,16 +24,14 @@ export default function CollectionMetadata({
       {collectionMetadataLinks.map(({ label, testId, url, value }, i) => (
         <React.Fragment key={`${value}${i}`}>
           <MetadataLabel>{label}</MetadataLabel>
-          <Link href={url} passHref>
-            <MetadataValue
-              data-testid={testId}
-              href="passHref"
-              rel="noopener"
-              target="_blank"
-            >
-              {value}
-            </MetadataValue>
-          </Link>
+          <MetadataValue
+            href={url}
+            data-testid={testId}
+            rel="noopener"
+            target="_blank"
+          >
+            {value}
+          </MetadataValue>
         </React.Fragment>
       ))}
     </Metadata>

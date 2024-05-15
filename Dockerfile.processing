@@ -4,19 +4,26 @@ FROM ghcr.io/chanzuckerberg/corpora-upload-base:$BASE_TAG
 
 # Install cellxgene so we get the remote server that has the converter in it
 # The cellxgene install script expects executables named python and pip, not python3 and pip3
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 \
-  && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+RUN apt-get update && \
+	apt-get upgrade -y && \
+	apt install software-properties-common -y && \
+	add-apt-repository ppa:deadsnakes/ppa && \
+	apt-get update && apt-get install -y python3.10 python3.10-dev python3.10-venv && \
+    wget https://bootstrap.pypa.io/get-pip.py && \
+    python3.10 get-pip.py
 
 # For lighter weight Docker images
 ENV PIP_NO_CACHE_DIR=1
 
-# Install python dependencies
-# Remove packaging dependency once pyparser>3 is supported.
-RUN pip3 install python-igraph==0.8.3 louvain==0.7.0 packaging==21.0 awscli
+# Activate virtual environment for subsequent commands
+RUN python3.10 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-
-ADD requirements-processing.txt requirements-processing.txt
-RUN pip3 install -r requirements-processing.txt
+COPY /python_dependencies/processing/ .
+COPY /python_dependencies/common/ .
+ARG INSTALL_DEV=false
+RUN python3.10 -m pip install -r requirements.txt
+RUN if [ "$INSTALL_DEV" = "true" ]; then python3 -m pip install -r requirements-dev.txt; fi
 
 ADD backend/__init__.py backend/__init__.py
 ADD backend/layers backend/layers
@@ -29,4 +36,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD ["python3", "-m", "backend.layers.processing.process"]
+CMD ["python3.10", "-m", "backend.layers.processing.process"]

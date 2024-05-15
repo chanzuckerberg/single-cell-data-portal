@@ -4,15 +4,22 @@ FROM python:3.10
 RUN /usr/local/bin/python -m pip install --upgrade pip && \
     apt update && apt -y install graphviz graphviz-dev && \
     rm -rf /var/lib/apt/lists/* && \
-    pip3 install awscli
+    apt-get install unzip && \
+    apt-get install curl && \
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    ./aws/install
 
 # For lighter weight Docker images
 ENV PIP_NO_CACHE_DIR=1
 
 WORKDIR /
 
-ADD requirements-wmg-pipeline.txt requirements-wmg-pipeline.txt
-RUN pip3 install -r requirements-wmg-pipeline.txt
+COPY /python_dependencies/wmg/ .
+COPY /python_dependencies/common/ .
+ARG INSTALL_DEV=false
+RUN pip3 install -r requirements.txt
+RUN if [ "$INSTALL_DEV" = "true" ]; then python3 -m pip install -r requirements-dev.txt; fi
 
 ADD backend/__init__.py backend/__init__.py
 ADD backend/wmg/__init__.py backend/wmg/__init__.py
@@ -31,4 +38,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD ["python3", "-m", "backend.wmg.pipeline"]
+CMD ["python3", "-m", "backend.wmg.pipeline.pipeline"]

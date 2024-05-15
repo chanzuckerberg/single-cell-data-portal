@@ -3,34 +3,26 @@ from typing import Optional
 
 import numba as nb
 import numpy as np
-import owlready2
 import pandas as pd
 
-from backend.wmg.data.constants import CL_BASIC_OWL_NAME
-from backend.wmg.data.utils import get_pinned_ontology_url
-
-# ontology object
-ontology = owlready2.get_ontology(get_pinned_ontology_url(CL_BASIC_OWL_NAME))
-ontology.load()
+from backend.common.utils.ontology_parser import ontology_parser
 
 
 # cache finding descendants per cell type
 @lru_cache(maxsize=None)
 def descendants(cell_type):
-    global ontology
-    cell_type_iri = cell_type.replace(":", "_")
-    entity = ontology.search_one(iri=f"http://purl.obolibrary.org/obo/{cell_type_iri}")
-    descendants = [i.name.replace("_", ":") for i in entity.descendants()] if entity else [cell_type]
-    return descendants
+    try:
+        return ontology_parser.get_term_descendants(cell_type, include_self=True)
+    except ValueError:
+        return [cell_type]
 
 
 @lru_cache(maxsize=None)
 def ancestors(cell_type):
-    global ontology
-    cell_type_iri = cell_type.replace(":", "_")
-    entity = ontology.search_one(iri=f"http://purl.obolibrary.org/obo/{cell_type_iri}")
-    ancestors = [i.name.replace("_", ":") for i in entity.ancestors()] if entity else [cell_type]
-    return ancestors
+    try:
+        return ontology_parser.get_term_ancestors(cell_type, include_self=True)
+    except ValueError:
+        return [cell_type]
 
 
 def get_valid_descendants(
@@ -155,7 +147,7 @@ def are_cell_types_not_redundant_nodes(cell_types, cell_counts):
 def are_cell_types_colinear(cell_type1, cell_type2):
     """
     Determine if two cell types are colinear in the ontology.
-    Colinearity means that cell type 1 is an aacestor of cell type 2
+    Colinearity means that cell type 1 is an ancestor of cell type 2
     or vice-versa.
     Arguments
     ---------
@@ -265,7 +257,7 @@ def rollup_across_cell_type_descendants(
     # extract numeric data and write back into the dataframe
     summed = summed[tuple(dim_indices)]
     dtypes = numeric_df.dtypes
-    for col, array in zip(numeric_df.columns, summed.T):
+    for col, array in zip(numeric_df.columns, summed.T, strict=False):
         if ignore_cols and col not in ignore_cols or not ignore_cols:
             df[col] = array.astype(dtypes[col])
 

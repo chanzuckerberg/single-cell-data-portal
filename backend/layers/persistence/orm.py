@@ -12,7 +12,6 @@ mapper_registry = registry(metadata=metadata)
 
 @mapper_registry.mapped
 class CollectionTable:
-
     __tablename__ = "Collection"
 
     id = Column(UUID(as_uuid=True), primary_key=True)
@@ -24,7 +23,6 @@ class CollectionTable:
 
 @mapper_registry.mapped
 class CollectionVersionTable:
-
     __tablename__ = "CollectionVersion"
 
     id = Column(UUID(as_uuid=True), primary_key=True)
@@ -37,11 +35,12 @@ class CollectionVersionTable:
     created_at = Column(DateTime)
     schema_version = Column(String)
     datasets = Column(ARRAY(UUID(as_uuid=True)))
+    has_custom_dataset_order = Column(BOOLEAN)
+    data_submission_policy_version = Column(String)
 
 
 @mapper_registry.mapped
 class DatasetTable:
-
     __tablename__ = "Dataset"
 
     id = Column(UUID(as_uuid=True), primary_key=True)
@@ -52,7 +51,6 @@ class DatasetTable:
 
 @mapper_registry.mapped
 class DatasetVersionTable:
-
     __tablename__ = "DatasetVersion"
 
     id = Column(UUID(as_uuid=True), primary_key=True)
@@ -66,7 +64,6 @@ class DatasetVersionTable:
 
 @mapper_registry.mapped
 class DatasetArtifactTable:
-
     __tablename__ = "DatasetArtifact"
 
     id = Column(UUID(as_uuid=True), primary_key=True)

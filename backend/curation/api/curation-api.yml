@@ -617,10 +617,24 @@ paths:
       tags:
         - Dataset
       description: |
-        List all public Datasets with full metadata as well as Collection name and Collection doi.
+        List all Datasets with full metadata as well as Collection name and Collection doi.
+
+        The default `visibility` is PUBLIC. When visibility is PUBLIC, then a list of all public Datasets is returned.
+
+        When the visibility parameter is set to PRIVATE, a list of all private Datasets that the user is authorized to
+        access is returned. An access token MUST be set in the request header as: `Authorization:
+        Bearer <access_token>`.
+
+        Datasets returned include a `visibility` field that indicates whether the Dataset is public or private.
+
+        * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.datasets.actions.get
+      security:
+        - curatorAccessLenient: []
+        - {}
       parameters:
         - $ref: "#/components/parameters/schema_version"
+        - $ref: "#/components/parameters/dataset_visibility"
       responses:
         "200":
           description: OK
@@ -632,6 +646,8 @@ paths:
                   $ref: "#/components/schemas/dataset_index"
         "400":
           $ref: "#/components/responses/400"
+        "403":
+          $ref: "#/components/responses/403"
 
   /v1/datasets/{dataset_id}/versions:
     get:
@@ -709,7 +725,7 @@ components:
     batch_condition:
       description: |
         These keys define the batches that a normalization or integration algorithm should be aware of.
-        [batch condition schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#batch_condition)
+        [batch condition schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#batch_condition)
 
       type: array
       items:
@@ -721,7 +737,7 @@ components:
         Citation that includes downloadable permalink to h5ad artifact for this dataset, a permalink to collection it 
         belongs to in CZ CELLxGENE Discover, and--if applicable--the Publication DOI associated with the dataset.
         See details about the exact format in the 
-        [schema definition](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/4.0.0/schema.md#citation)
+        [schema definition](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#citation)
       type: string
       nullable: true
     collection_list:
@@ -809,7 +825,7 @@ components:
       description: The name of the primary contact for the Collection
       type: string
     created_at:
-      description: A timestamp of when the resource was created.
+      description: A timestamp of when the resource was created. The timestamp conforms to the ISO 8601 format to second precision. For example, 2023-05-10T17:22:42+00:00.
       type: string
     curator_name:
       description: The name of the curator for the Collection.
@@ -820,26 +836,26 @@ components:
       nullable: true
       type: string
     published_at:
-      description: A timestamp of when the Collection was first published.
+      description: A timestamp of when the Collection was first published. The timestamp conforms to the ISO 8601 format to second precision. For example, 2023-05-10T17:22:42+00:00.
       nullable: true
       type: string
     dataset_published_at:
-      description: A timestamp of when the Dataset was first published.
+      description: A timestamp of when the Dataset was first published. The timestamp conforms to the ISO 8601 format to second precision. For example, 2023-05-10T17:22:42+00:00.
       nullable: true
       type: string
     dataset_version_published_at:
-      description: A timestamp of when this Dataset Version was published.
+      description: A timestamp of when this Dataset Version was published. The timestamp conforms to the ISO 8601 format to second precision. For example, 2023-05-10T17:22:42+00:00.
       type: string
     collection_revised_at:
       description: A timestamp indicating the last time a Revision for this Collection was published.
       nullable: true
       type: string
     dataset_revised_at:
-      description: A timestamp indicating the last time a Revision for this Dataset was published.
+      description: A timestamp indicating the last time a Revision for this Dataset was published. The timestamp conforms to the ISO 8601 format to second precision. For example, 2023-05-10T17:22:42+00:00.
       nullable: true
       type: string
     collection_version_published_at:
-      description: A timestamp of when this Collection Version was published.
+      description: A timestamp of when this Collection Version was published. The timestamp conforms to the ISO 8601 format to second precision. For example, 2023-05-10T17:22:42+00:00.
       type: string
     collection_revising_in:
       type: string
@@ -992,7 +1008,7 @@ components:
           type: integer
         cell_type:
           description: |
-            [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#cell_type)
+            [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#cell_type)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
@@ -1007,7 +1023,7 @@ components:
           $ref: "#/components/schemas/default_embedding"
         development_stage:
           description: |
-            [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#development_stage)
+            [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#development_stage)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
@@ -1034,7 +1050,7 @@ components:
           type: number
         title:
           description: |
-            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#title)
+            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#title)
           nullable: true
           type: string
         organism:
@@ -1061,18 +1077,20 @@ components:
           type: string
         self_reported_ethnicity:
           description: |
-            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#self_reported_ethnicity)
+            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#self_reported_ethnicity)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
         sex:
           description: |
-            [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#sex)
+            [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#sex)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
+        spatial:
+          $ref: "#/components/schemas/spatial"
         suspension_type:
           $ref: "#/components/schemas/suspension_type"
         tissue:
@@ -1098,7 +1116,7 @@ components:
           type: integer
         cell_type:
           description: |
-            [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#cell_type)
+            [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#cell_type)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
@@ -1111,13 +1129,15 @@ components:
           $ref: "#/components/schemas/collection_id"
         collection_name:
           $ref: "#/components/schemas/collection_name"
+        collection_version_id:
+          $ref: "#/components/schemas/collection_version_id"
         dataset_id:
           $ref: "#/components/schemas/dataset_id"
         dataset_version_id:
           $ref: "#/components/schemas/dataset_version_id"
         development_stage:
           description: |
-            [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#development_stage)
+            [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#development_stage)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
@@ -1136,7 +1156,7 @@ components:
           type: number
         title:
           description: |
-            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#title)
+            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#title)
           nullable: true
           type: string
         organism:
@@ -1153,6 +1173,10 @@ components:
           $ref: "#/components/schemas/dataset_published_at"
         revised_at:
           $ref: "#/components/schemas/dataset_revised_at"
+        revision_of_collection:
+          $ref: "#/components/schemas/collection_revision_of"
+        revision_of_dataset:
+          $ref: "#/components/schemas/dataset_revision_of"
         schema_version:
           description: |
             The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
@@ -1160,14 +1184,14 @@ components:
           type: string
         self_reported_ethnicity:
           description: |
-            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#self_reported_ethnicity)
+            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#self_reported_ethnicity)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
         sex:
           description: |
-            [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#sex)
+            [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#sex)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
@@ -1176,6 +1200,8 @@ components:
           $ref: "#/components/schemas/suspension_type"
         tissue:
           $ref: "#/components/schemas/dataset_tissue"
+        visibility:
+          $ref: "#/components/schemas/dataset_visibility"
         x_approximate_distribution:
           $ref: "#/components/schemas/distribution"
       type: object
@@ -1197,7 +1223,7 @@ components:
           type: integer
         cell_type:
           description: |
-            [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#cell_type)
+            [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#cell_type)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
@@ -1219,7 +1245,7 @@ components:
           $ref: "#/components/schemas/default_embedding"
         development_stage:
           description: |
-            [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#development_stage)
+            [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#development_stage)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
@@ -1244,7 +1270,7 @@ components:
           type: number
         title:
           description: |
-            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#title)
+            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#title)
           nullable: true
           type: string
         organism:
@@ -1261,18 +1287,20 @@ components:
           type: string
         self_reported_ethnicity:
           description: |
-            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#self_reported_ethnicity)
+            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#self_reported_ethnicity)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
         sex:
           description: |
-            [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#sex)
+            [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#sex)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
+        spatial:
+          $ref: "#/components/schemas/spatial"
         suspension_type:
           $ref: "#/components/schemas/suspension_type"
         tissue:
@@ -1282,28 +1310,34 @@ components:
       type: object
     dataset_assay:
       description: |
-        [assay label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#assay)
+        [assay label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#assay)
       default: []
       items:
         $ref: "#/components/schemas/ontology_element"
       type: array
     dataset_disease:
       description: |
-        [disease label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#disease)
+        [disease label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#disease)
       default: []
       items:
         $ref: "#/components/schemas/ontology_element"
       type: array
     dataset_organism:
       description: |
-        [organism label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#organism)
+        [organism label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#organism)
       default: []
       items:
         $ref: "#/components/schemas/ontology_element"
       type: array
+    dataset_revision_of:
+      description: |
+        If this Dataset is a Revision of another Dataset, then this field contains the Dataset id of the Dataset that
+        this Dataset is revising.  The value is `None` if this Dataset is not a Revision.
+      nullable: true
+      type: string
     dataset_tissue:
       description: |
-        [tissue label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#tissue)
+        [tissue label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#tissue)
       default: []
       items:
         allOf:
@@ -1342,6 +1376,19 @@ components:
         suspension_type:
           $ref: "#/components/schemas/suspension_type"
       type: object
+    dataset_visibility:
+      default: PUBLIC
+      description: |
+        The visibility of the Dataset.
+
+        | visibility | description |
+        | ---------- | ----------- | 
+        | PUBLIC   | The Dataset is published and accessible to all users of CELLxGENE Discover |
+        | PRIVATE  | The Dataset is in private review, either as a new Dataset that has not been published or a Revision of a previously published Dataset. |
+      enum:
+        - PUBLIC
+        - PRIVATE
+      type: string
     default_embedding:
       description: Key for the embedding that is displayed by default in CZ CELLxGENE Explorer
       type: string
@@ -1351,7 +1398,7 @@ components:
         CELLxGENE Discover runs a heuristic to detect the approximate distribution
         of the data in X so that it can accurately calculate statistical properties
         of the data. This field enables the curator to override this heuristic and
-        specify the data distribution explicitly. [x_approximate_distribution](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#x_approximate_distribution)
+        specify the data distribution explicitly. [x_approximate_distribution](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#x_approximate_distribution)
       enum:
         - COUNT
         - NORMAL
@@ -1407,7 +1454,7 @@ components:
       nullable: true
     is_primary_data:
       description: |
-        [is_primary_data](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#is_primary_data)
+        [is_primary_data](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#is_primary_data)
 
         Describes whether cellular observations for this Dataset are all
         canonical (True), all non-canonical (False), or contain a mixture (True, False).
@@ -1522,9 +1569,27 @@ components:
       enum:
         - X
         - raw.X
+    spatial:
+      description: Metadata associated with spatial datasets. If the dataset is not spatial, this field is null.
+      nullable: true
+      properties:
+        is_single:
+          description: |
+            [is_single](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#is_single)
+
+            Flag indicating if a spatial dataset represents one Space Ranger output for a single tissue section or the
+            output for a single array on a puck.
+          type: boolean
+        has_fullres:
+          description: |
+            [has_fullres](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#spatiallibrary_idimagesfullres)
+
+            Flag indicating if a spatial dataset's metadata includes a numpy.ndarray representing the full resolution 
+            image.
+          type: boolean
     suspension_type:
       description: |
-        [suspension_type](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.1.0/schema.md#suspension_type)
+        [suspension_type](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#suspension_type)
 
         List of unique suspension types represented in the dataset, corresponding to dataset's assay(s).
         Possible item values are 'nucleus', 'cell', and/or 'na'.
@@ -1547,6 +1612,19 @@ components:
         - PRIVATE
       type: string
   parameters:
+    dataset_visibility:
+      description: |
+        The visibility of the Datasets to query for.
+
+        | visibility | description | Authorization Required |
+        | ---------- | ----------- | -------------- |
+        | PUBLIC   | All public Datasets are returned. | No |
+        | PRIVATE  | All private Datasets that the user is authorized to access are returned.  | Yes |
+      in: query
+      name: visibility
+      required: false
+      schema:
+        $ref: "#/components/schemas/dataset_visibility"
     path_collection_id:
       description: The uuid of a Collection.
       in: path

@@ -15,7 +15,7 @@ import AnnotateImg from "src/components/common/staticPages/annotate.png";
 import CellGuideImg from "src/components/common/staticPages/cell-guide.png";
 import CensusImg from "src/components/common/staticPages/census.png";
 import CollectionsDatasetsImg from "src/components/common/staticPages/collections-datasets.png";
-import ExplorerImg from "src/components/common/staticPages/explorer.png";
+import ExplorerImg from "src/components/common/staticPages/cxg-explorer.png";
 import FreethinkThumbnailImg from "src/components/common/staticPages/freethink-video-thumbnail.png";
 import GeneExpressionImg from "src/components/common/staticPages/gene-expression.png";
 import CellxgeneIconSmall from "./icons/cellxgene-icon-small";
@@ -40,10 +40,12 @@ import { useFetchDatasets } from "src/common/queries/filter";
 import {
   LANDING_PAGE_CELLS_HERO_NUM_ID,
   LANDING_PAGE_CELLTYPES_HERO_NUM_ID,
+  LANDING_PAGE_CONTENT_NAV_ID,
   LANDING_PAGE_DATASETS_HERO_NUM_ID,
   LANDING_PAGE_FALLBACK_CELLS_HERO_NUM,
   LANDING_PAGE_FALLBACK_CELLTYPES_HERO_NUM,
   LANDING_PAGE_FALLBACK_DATASETS_HERO_NUM,
+  WMG_CTA_TEXT,
 } from "./constants";
 
 const ROOT_MARGIN = "-50% 0px -50% 0px";
@@ -364,7 +366,10 @@ const LandingPage = (): JSX.Element => {
         </div>
         <div className={styles.main}>
           <div>
-            <div className={styles.contentNav}>
+            <div
+              data-testid={LANDING_PAGE_CONTENT_NAV_ID}
+              className={styles.contentNav}
+            >
               <div className={styles.contentNavSubrow}>
                 <div
                   className={`${styles.contentLink} ${
@@ -484,18 +489,14 @@ const LandingPage = (): JSX.Element => {
                         <div className={styles.linkContainer}>
                           <Link
                             href={`https://chanzuckerberg.github.io/cellxgene-census/`}
-                            passHref
+                            onClick={() =>
+                              track(EVENTS.CENSUS_DOCUMENTATION_CLICKED)
+                            }
                           >
-                            <a
-                              onClick={() =>
-                                track(EVENTS.CENSUS_DOCUMENTATION_CLICKED)
-                              }
-                            >
-                              See quick start tutorial
-                              <span className={styles.linkArrow}>
-                                <LinkArrow />
-                              </span>
-                            </a>
+                            See quick start tutorial
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
                           </Link>
                         </div>
                       </div>
@@ -537,13 +538,14 @@ const LandingPage = (): JSX.Element => {
                           lineage, and relevant datasets in one place.
                         </p>
                         <div className={styles.linkContainer}>
-                          <Link href={ROUTES.CELL_GUIDE} passHref>
-                            <a onClick={() => track(EVENTS.CELL_GUIDE_CLICKED)}>
-                              Search for a cell type or tissue
-                              <span className={styles.linkArrow}>
-                                <LinkArrow />
-                              </span>
-                            </a>
+                          <Link
+                            href={ROUTES.CELL_GUIDE}
+                            onClick={() => track(EVENTS.CELL_GUIDE_CLICKED)}
+                          >
+                            Search for a cell type or tissue
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
                           </Link>
                         </div>
                       </div>
@@ -636,19 +638,18 @@ const LandingPage = (): JSX.Element => {
                           million cells.
                         </p>
                         <div className={styles.linkContainer}>
-                          <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
-                            <a
-                              onClick={() =>
-                                track(EVENTS.WMG_CLICKED, {
-                                  button: "See how it works",
-                                })
-                              }
-                            >
-                              Explore the tool
-                              <span className={styles.linkArrow}>
-                                <LinkArrow />
-                              </span>
-                            </a>
+                          <Link
+                            href={ROUTES.WHERE_IS_MY_GENE}
+                            onClick={() =>
+                              track(EVENTS.WMG_CLICKED, {
+                                button: "See how it works",
+                              })
+                            }
+                          >
+                            {WMG_CTA_TEXT}
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
                           </Link>
                         </div>
                       </div>
@@ -715,19 +716,18 @@ const LandingPage = (): JSX.Element => {
                               <LinkArrow />
                             </span>
                           </a>
-                          <Link href={ROUTES.DATASETS} passHref>
-                            <a
-                              onClick={() =>
-                                track(EVENTS.BROWSE_DATASETS_CLICKED, {
-                                  button: "explore the studies",
-                                })
-                              }
-                            >
-                              Explore the studies
-                              <span className={styles.linkArrow}>
-                                <LinkArrow />
-                              </span>
-                            </a>
+                          <Link
+                            href={ROUTES.DATASETS}
+                            onClick={() =>
+                              track(EVENTS.BROWSE_DATASETS_CLICKED, {
+                                button: "explore the studies",
+                              })
+                            }
+                          >
+                            Explore the studies
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
                           </Link>
                           {/* DOC PAGE LINKS NEED TO BE OPENED IN A NEW TAB IN ORDER TO LOAD UNIQUE CSP DIRECTIVE */}
                           <a

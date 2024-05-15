@@ -3,6 +3,7 @@ import { throttle } from "lodash";
 import { useRouter } from "next/router";
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import { ROUTES } from "src/common/constants/routes";
+import { ORGANISM_NAME_TO_TAXON_ID_MAPPING } from "src/common/queries/cellGuide";
 import {
   ALL_TISSUES,
   NO_ORGAN_ID,
@@ -22,6 +23,8 @@ export function useConnect() {
   const [selectedGene, setSelectedGene] = useState<string | undefined>(
     undefined
   );
+  const headerRef = useRef<HTMLDivElement>(null); // Step 1: Ref for the header
+  const [topPadding, setTopPadding] = useState(0); // Step 2: State for the top padding
 
   const [skinnyMode, setSkinnyMode] = useState<boolean>(false);
 
@@ -80,6 +83,22 @@ export function useConnect() {
   }, [handleResize]);
 
   useEffect(() => {
+    if (headerRef.current) {
+      const resizeObserver = new ResizeObserver(
+        () =>
+          !skinnyMode &&
+          headerRef.current &&
+          setTopPadding(headerRef.current.offsetHeight)
+      );
+
+      resizeObserver.observe(headerRef.current);
+      return () => {
+        resizeObserver.disconnect();
+      };
+    }
+  }, [headerRef, skinnyMode]);
+
+  useEffect(() => {
     throttledHandleResize();
     window.addEventListener("resize", throttledHandleResize);
 
@@ -90,16 +109,17 @@ export function useConnect() {
   const [cellInfoCellType, setCellInfoCellType] = useState<CellType | null>(
     null
   );
+  const sdsOrganismsList = Object.keys(ORGANISM_NAME_TO_TAXON_ID_MAPPING).map(
+    (organism) => ({
+      name: organism,
+    })
+  );
+  const [selectedOrganism, setSelectedOrganism] =
+    useState<DefaultDropdownMenuOption>(sdsOrganismsList[0]);
 
-  const { organismsList, organsMap, isSuccess } =
-    useOrganAndOrganismFilterListForCellType(cellTypeId);
-
-  const sdsOrganismsList = useMemo(
-    () =>
-      organismsList.map((organism) => ({
-        name: organism,
-      })),
-    [organismsList]
+  const { organsMap, isSuccess } = useOrganAndOrganismFilterListForCellType(
+    cellTypeId,
+    selectedOrganism.name
   );
 
   const sdsOrgansList = useMemo<SDSOrgan[]>(
@@ -128,18 +148,22 @@ export function useConnect() {
     }
   }, [queryCellTypeId, router, selectedOrgan, tissueId, isSuccess]);
 
-  const [selectedOrganism, setSelectedOrganism] =
-    useState<DefaultDropdownMenuOption>(sdsOrganismsList[0]);
-
   useEffect(() => {
     setSelectedGene(undefined);
   }, [selectedOrgan, selectedOrganism, setSelectedGene]);
 
+  const organismsList = useMemo(
+    () => Object.keys(ORGANISM_NAME_TO_TAXON_ID_MAPPING),
+    []
+  );
   return {
     router,
     pageNavIsOpen,
     setPageNavIsOpen,
     selectedGene,
+    setSelectedGene,
+    headerRef,
+    topPadding,
     sectionRef0,
     sectionRef1,
     sectionRef2,

@@ -318,7 +318,7 @@
         position: relative;
 
         svg {
-          &:first-child {
+          &:first-of-type {
             opacity: 0;
             transition: opacity 0.4s;
             position: absolute;
@@ -326,7 +326,7 @@
             left: 0;
           }
 
-          &:last-child {
+          &:last-of-type {
             opacity: 1;
           }
         }
@@ -351,11 +351,11 @@
       }
 
       svg {
-        &:first-child {
+        &:first-of-type {
           opacity: 1;
         }
 
-        &:last-child {
+        &:last-of-type {
           opacity: 0;
         }
       }
@@ -388,7 +388,7 @@
         display: flex;
         flex-direction: column;
 
-        & > *:not(:first-child) {
+        & > *:not(:first-of-type) {
           margin-top: 17px;
         }
 

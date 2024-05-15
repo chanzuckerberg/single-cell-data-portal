@@ -7,6 +7,7 @@ from typing import List, Tuple
 from unittest.mock import ANY, Mock, call
 from uuid import uuid4
 
+from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.corpora_config import CorporaConfig
 from backend.layers.business.business import (
     BusinessLogic,
@@ -45,6 +46,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
     OntologyTermId,
+    SpatialMetadata,
     TissueOntologyTermId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
@@ -93,7 +95,6 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self.mock_config.set(
             {
                 "upload_max_file_size_gb": 30,
-                "schema_4_feature_flag": "True",
                 "citation_update_feature_flag": "True",
                 "dataset_assets_base_url": "https://dataset_assets_domain",
                 "collections_base_url": "https://collections_domain",
@@ -177,6 +178,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
             "CZ CELLxGENE Discover in Collection: "
             "https://cellxgene.cziscience.com/collections/collection_id",
+            spatial=SpatialMetadata(is_single=True, has_fullres=True),
         )
         self.s3_provider.mock_s3_fs = set()
 
@@ -246,7 +248,11 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         else:
             published_at = datetime.utcnow()
         self.database_provider.finalize_collection_version(
-            version.collection_id, version.version_id, "3.0.0", published_at=published_at
+            version.collection_id,
+            version.version_id,
+            "3.0.0",
+            DATA_SUBMISSION_POLICY_VERSION,
+            published_at=published_at,
         )
         return self.database_provider.get_collection_version_with_datasets(version.version_id)
 
@@ -362,21 +368,21 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         A collection can be created with a valid DOI, and the publisher metadata will be added
         to the collection
         """
-        links_with_doi = [Link("test doi", "DOI", "http://good.doi")]
+        links_with_doi = [Link("test doi", "DOI", "https://doi.org/good/doi")]
         self.sample_collection_metadata.links = links_with_doi
 
         expected_publisher_metadata = {"authors": ["Test Author"]}
-        self.crossref_provider.fetch_metadata = Mock(return_value=expected_publisher_metadata)
+        self.crossref_provider.fetch_metadata = Mock(return_value=(expected_publisher_metadata, "good/doi"))
 
         collection = self.business_logic.create_collection(
             test_user_name, test_curator_name, self.sample_collection_metadata
         )
 
-        self.crossref_provider.fetch_metadata.assert_called_with("http://good.doi")
+        self.crossref_provider.fetch_metadata.assert_called_with("https://doi.org/good/doi")
 
         collection_from_database = self.database_provider.get_collection_version(collection.version_id)
         self.assertEqual(1, len(collection_from_database.metadata.links))
-        self.assertEqual(collection_from_database.metadata.links[0].uri, "http://good.doi")
+        self.assertEqual(collection_from_database.metadata.links[0].uri, "https://doi.org/good/doi")
         self.assertIsNotNone(collection_from_database.publisher_metadata)
         self.assertEqual(collection_from_database.publisher_metadata, expected_publisher_metadata)
 
@@ -416,6 +422,7 @@ class TestGetCollectionVersion(BaseBusinessLogicTestCase):
         self.assertIsNotNone(fetched_version)
         self.assertIsNotNone(fetched_version.published_at)
         self.assertEqual(fetched_version.metadata, version.metadata)
+        self.assertIsNotNone(fetched_version.data_submission_policy_version)
 
     def test_get_published_collection_version_for_published_collection_is_none(self):
         """
@@ -436,6 +443,7 @@ class TestGetCollectionVersion(BaseBusinessLogicTestCase):
 
         self.assertIsNone(fetched_version.published_at)
         self.assertEqual(fetched_version.metadata, version.metadata)
+        self.assertIsNone(fetched_version.data_submission_policy_version)
 
     def test_get_collection_version_for_published_collection_ok(self):
         """
@@ -635,11 +643,11 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         A collection updated with the same DOI should not trigger a Crossref call
         """
         metadata = self.sample_collection_metadata
-        links = [Link("test doi", "DOI", "http://test.doi")]
+        links = [Link("test doi", "DOI", "https://doi.org/test/doi")]
         metadata.links = links
 
         expected_publisher_metadata = {"authors": ["Test Author"]}
-        self.crossref_provider.fetch_metadata = Mock(return_value=expected_publisher_metadata)
+        self.crossref_provider.fetch_metadata = Mock(return_value=(expected_publisher_metadata, "test/doi"))
 
         # We need to call `business_logic.create_collection` so that the publisher metadata is populated
         version = self.business_logic.create_collection(test_user_name, test_curator_name, metadata)
@@ -666,10 +674,10 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         A collection updated with a new DOI should get new publisher metadata from Crossref
         """
         metadata = self.sample_collection_metadata
-        links = [Link("test doi", "DOI", "http://test.doi")]
+        links = [Link("test doi", "DOI", "http://doi.org/test.doi")]
         metadata.links = links
 
-        self.crossref_provider.fetch_metadata = Mock(return_value={"authors": ["Test Author"]})
+        self.crossref_provider.fetch_metadata = Mock(return_value=({"authors": ["Test Author"]}, "test.doi"))
 
         # We need to call `business_logic.create_collection` so that the publisher metadata is populated
         version = self.business_logic.create_collection(test_user_name, test_curator_name, metadata)
@@ -681,20 +689,19 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             description=None,
             contact_name=None,
             contact_email=None,
-            links=[Link("new test doi", "DOI", "http://new.test.doi")],
+            links=[Link("new test doi", "DOI", "http://doi.org/new.test.doi")],
             consortia=None,
         )
 
-        expected_updated_publisher_metadata = {"authors": ["New Test Author"]}
+        expected_updated_publisher_metadata = ({"authors": ["New Test Author"]}, "new.test.doi")
         self.crossref_provider.fetch_metadata = Mock(return_value=expected_updated_publisher_metadata)
         self.batch_job_provider.start_metadata_update_batch_job = Mock()
-
         self.business_logic.update_collection_version(version.version_id, body)
 
         self.crossref_provider.fetch_metadata.assert_called_once()
         self.batch_job_provider.start_metadata_update_batch_job.assert_not_called()  # no datasets to update
         updated_version = self.database_provider.get_collection_version(version.version_id)
-        self.assertEqual(updated_version.publisher_metadata, expected_updated_publisher_metadata)
+        self.assertEqual(updated_version.publisher_metadata, expected_updated_publisher_metadata[0])
 
     def test_update_collection_change_doi__trigger_dataset_artifact_updates(self):
         """
@@ -708,13 +715,14 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             description=None,
             contact_name=None,
             contact_email=None,
-            links=[Link("new test doi", "DOI", "http://new.test.doi")],
+            links=[Link("new test doi", "DOI", "http://doi.org/new.test.doi")],
             consortia=None,
         )
         self.batch_job_provider.start_metadata_update_batch_job = Mock()
         self.business_logic.generate_dataset_citation = Mock(return_value="test citation")
-        self.business_logic.update_collection_version(revision.version_id, body)
+        self.crossref_provider.fetch_metadata = Mock(return_value=({"authors": ["New Test Author"]}, "new.test.doi"))
 
+        self.business_logic.update_collection_version(revision.version_id, body)
         assert self.batch_job_provider.start_metadata_update_batch_job.call_count == 2
         self.batch_job_provider.start_metadata_update_batch_job.assert_has_calls(
             [
@@ -738,9 +746,10 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             description=None,
             contact_name=None,
             contact_email=None,
-            links=[Link("new test doi", "DOI", "http://new.test.doi")],
+            links=[Link("new test doi", "DOI", "http://doi.org/new.test.doi")],
             consortia=None,
         )
+        self.crossref_provider.fetch_metadata = Mock(return_value=({"authors": ["New Test Author"]}, "new.test.doi"))
 
         with self.assertRaises(CollectionUpdateException):
             self.business_logic.update_collection_version(revision.version_id, body)
@@ -980,6 +989,115 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         )
 
         self.step_function_provider.start_step_function.assert_not_called()
+
+
+class TestSetCollectionVersionDatasetsOrder(BaseBusinessLogicTestCase):
+    def test_set_collection_version_datasets_order_ok(self):
+        """
+        The order of the datasets in a collection version is set using `set_collection_version_datasets_order`.
+        """
+        version = self.initialize_unpublished_collection(num_datasets=3)
+
+        # Update cell counts to confirm custom order is returned and not default order.
+        metadata_11 = deepcopy(self.sample_dataset_metadata)
+        metadata_11.cell_count = 11
+        self.database_provider.set_dataset_metadata(version.datasets[2].version_id, metadata_11)
+        metadata_12 = deepcopy(self.sample_dataset_metadata)
+        metadata_12.cell_count = 12
+        self.database_provider.set_dataset_metadata(version.datasets[1].version_id, metadata_12)
+
+        # Reverse and save the order of the dataset version IDs.
+        dv_ids = [d.version_id for d in version.datasets]
+        dv_ids.reverse()
+        self.business_logic.set_collection_version_datasets_order(version.version_id, dv_ids)
+
+        #  Confirm the saved order of collection version datasets in the database is correct.
+        read_version = self.business_logic.get_collection_version(version.version_id)
+        self.assertListEqual([dv.version_id for dv in read_version.datasets], dv_ids)
+
+        # Confirm the collection version datasets are marked as custom ordered.
+        self.assertTrue(read_version.has_custom_dataset_order)
+
+    def test_set_collection_version_datasets_order_length_fail(self):
+        """
+        Attempting to set the order of the datasets in a collection version with a list of different length should fail.
+        """
+        version = self.initialize_unpublished_collection()
+
+        # Remove a dataset version ID from the list to force length mismatch on save.
+        dv_ids = [d.version_id for d in version.datasets]
+        dv_ids.pop()
+
+        with self.assertRaises(ValueError) as ex:
+            self.business_logic.set_collection_version_datasets_order(version.version_id, dv_ids)
+        self.assertEqual(
+            str(ex.exception),
+            f"Dataset Version IDs length does not match Collection Version {version.version_id.id} Datasets length",
+        )
+
+    def test_set_collection_version_datasets_order_invalid_dataset_fail(self):
+        """
+        Attempting to set the order of the datasets in a collection version with a list that contains an invalid
+        dataset should fail.
+        """
+        version = self.initialize_unpublished_collection()
+
+        # Update a dataset version ID in the list to force an invalid dataset on save.
+        dv_ids = [d.version_id for d in version.datasets]
+        dv_ids[0] = DatasetVersionId("fake_id")
+
+        with self.assertRaises(ValueError) as ex:
+            self.business_logic.set_collection_version_datasets_order(version.version_id, dv_ids)
+        self.assertEqual(str(ex.exception), "Dataset Version IDs do not match saved Collection Version Dataset IDs")
+
+    def test_set_collection_version_datasets_order_no_custom_order_ok(self):
+        """
+        The order of the datasets in a collection version is the default cell count, descending.
+        """
+        version = self.initialize_unpublished_collection(num_datasets=3)
+
+        # Update cell counts to facilitate testing of order.
+        metadata_11 = deepcopy(self.sample_dataset_metadata)
+        metadata_11.cell_count = 11
+        self.database_provider.set_dataset_metadata(version.datasets[2].version_id, metadata_11)
+        metadata_12 = deepcopy(self.sample_dataset_metadata)
+        metadata_12.cell_count = 12
+        self.database_provider.set_dataset_metadata(version.datasets[1].version_id, metadata_12)
+
+        # Confirm datasets on read collection version are ordered by cell count, descending.
+        read_version = self.business_logic.get_collection_version(version.version_id)
+        sorted_datasets = sorted(read_version.datasets, key=lambda d: d.metadata.cell_count, reverse=True)
+        self.assertListEqual(read_version.datasets, sorted_datasets)
+
+    def test_set_collection_version_datasets_order_replace_dataset_ok(self):
+        """
+        Replacing a dataset in a collection version does not alter the custom order of the datasets.
+        """
+        version = self.initialize_unpublished_collection(num_datasets=3)
+
+        # Set custom order of dataset version IDs.
+        dv_ids = [d.version_id for d in version.datasets]
+        dv_ids.reverse()
+        self.business_logic.set_collection_version_datasets_order(version.version_id, dv_ids)
+
+        # Replace the first dataset in the collection version.
+        dataset_id_to_replace = dv_ids[0]
+
+        replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            version.version_id, "http://fake.url", None, dataset_id_to_replace
+        )
+        self.business_logic.set_dataset_metadata(replaced_dataset_version_id, self.sample_dataset_metadata)
+        self.complete_dataset_processing_with_success(replaced_dataset_version_id)
+
+        # Create a list  of dataset version IDs with the replaced dataset version ID in the first position.
+        updated_dv_ids = [replaced_dataset_version_id] + dv_ids[1:]
+
+        # Confirm collection version lists datasets in the custom order.
+        read_version = self.business_logic.get_collection_version(version.version_id)
+        self.assertListEqual([dv.version_id for dv in read_version.datasets], updated_dv_ids)
+
+        # Confirm the collection version datasets are marked as custom ordered.
+        self.assertTrue(read_version.has_custom_dataset_order)
 
 
 class TestDeleteDataset(BaseBusinessLogicTestCase):
@@ -1430,6 +1548,84 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
 
 
+class TestGetAllDatasets(BaseBusinessLogicTestCase):
+    def test_get_all_private_datasets_ok(self):
+        """
+        Private datasets the user is authorized to view can be retrieved with `get_all_private_collection_versions_with_datasets`.
+        """
+        # test_user_1:
+        # - private collection (2 datasets)
+        # - public collection (2 datasets)
+        # - published revision (2 datasets)
+        # - unpublished revision, unchanged datasets (2 datasets)
+        # - unpublished revision, new dataset, changed dataset, unchanged dataset (3 datasets)
+        test_user_1 = "test_user_1"
+        private_cv_1 = self.initialize_unpublished_collection(owner=test_user_1)
+        self.initialize_published_collection(owner=test_user_1)
+        self.initialize_collection_with_a_published_revision(owner=test_user_1)
+        self.initialize_collection_with_an_unpublished_revision(owner=test_user_1)
+        # Create unpublished revision with a replaced dataset and a new dataset.
+        _, revision_1_updated = self.initialize_collection_with_an_unpublished_revision(owner=test_user_1)
+        updated_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            revision_1_updated.version_id, "http://fake.url", None, revision_1_updated.datasets[0].version_id
+        )
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            revision_1_updated.version_id, "http://fake.url", None, None
+        )
+
+        # test_user_2:
+        # - private collection
+        # - public collection
+        # - published revision
+        # - unpublished revision
+        test_user_2 = "test_user_2"
+        private_cv_2 = self.initialize_unpublished_collection(owner=test_user_2)
+        self.initialize_published_collection(owner=test_user_2)
+        self.initialize_collection_with_a_published_revision(owner=test_user_2)
+        _, revision_2 = self.initialize_collection_with_an_unpublished_revision(owner=test_user_2)
+
+        # Validate the expected datasets are returned.
+        def _validate(actual: List[CollectionVersionWithDatasets], expected: List[CollectionVersionWithDatasets]):
+            # Confirm the expected number of collection versions are returned.
+            self.assertEqual(len(expected), len(actual))
+
+            # Sort collection versions by ID, for comparison.
+            actual.sort(key=lambda cv: cv.version_id.id)
+            expected.sort(key=lambda cv: cv.version_id.id)
+
+            # Confirm datasets length and content are correct for each collection version.
+            for index, collection_version in enumerate(actual):
+                datasets = collection_version.datasets
+                expected_datasets = expected[index].datasets
+
+                self.assertEqual(len(expected_datasets), len(datasets))
+
+                # Check actual datasets match in expected.
+                self.assertCountEqual(
+                    [d.version_id for d in expected_datasets],
+                    [d.version_id for d in datasets],
+                )
+
+        # Create the expected shape of revision_1_updated: datasets should only include the replacement dataset as well as the new dataset.
+        revision_1_updated_expected = deepcopy(revision_1_updated)
+        revision_1_updated_expected.datasets = [
+            self.database_provider.get_dataset_version(updated_dataset_version_id),
+            self.database_provider.get_dataset_version(new_dataset_version_id),
+        ]
+
+        with self.subTest("With super user"):
+            collection_versions = self.business_logic.get_private_collection_versions_with_datasets()
+            # Super user should see private collections from both users, and the updated revision from test_user_1.
+            expected = [private_cv_1, private_cv_2, revision_1_updated_expected]
+            _validate(collection_versions, expected)
+
+        with self.subTest("With owner"):
+            collection_versions = self.business_logic.get_private_collection_versions_with_datasets(owner=test_user_1)
+            # Owner should see their private collection, and their revision that has been udpated.
+            expected = [private_cv_1, revision_1_updated_expected]
+            _validate(collection_versions, expected)
+
+
 class TestUpdateDataset(BaseBusinessLogicTestCase):
     def test_update_dataset_status_ok(self):
         """
@@ -1594,7 +1790,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         ]
 
         # Verify public Dataset asset files are in place in s3 store
-        assert all([self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris])
+        assert all(self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris)
 
         self.business_logic.tombstone_collection(published_collection.collection_id)
 
@@ -1602,7 +1798,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         collection = self.business_logic.get_canonical_collection(published_collection.collection_id)
         assert collection.tombstoned is True
         # Verify public Dataset asset files are gone
-        assert all([not self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris])
+        assert all(not self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris)
 
     def test_resurrect_collection_ok(self):
         """
@@ -1620,7 +1816,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         canonical_collection = self.business_logic.get_canonical_collection(published_collection.collection_id)
         assert canonical_collection.tombstoned is False
         # Verify public Dataset asset files are restored
-        assert all([self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris])
+        assert all(self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris)
 
     def test_resurrect_collection_with_tombstoned_dataset_ok(self):
         """
@@ -1661,9 +1857,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         assert dataset_is_tombstoned_exception_raised
 
         # Public-access Dataset asset files for kept Dataset are restored
-        assert all([self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris_kept])
+        assert all(self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris_kept)
         # Public-access Dataset asset files for tombstoned Dataset are not restored
-        assert all([not self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris_tombstoned])
+        assert all(not self.s3_provider.uri_exists(uri) for uri in public_dataset_asset_s3_uris_tombstoned)
 
     def test_publish_version_fails_on_published_collection(self):
         """
@@ -1701,6 +1897,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         )  # TODO: ideally, do a date assertion here (requires mocking)
         self.assertIsNotNone(published_version.canonical_collection.originally_published_at)
         self.assertEqual(published_version.published_at, published_version.canonical_collection.originally_published_at)
+        self.assertEqual(published_version.data_submission_policy_version, DATA_SUBMISSION_POLICY_VERSION)
 
         # The published and unpublished collection have the same collection_id and version_id
         self.assertEqual(published_version.collection_id, unpublished_collection.collection_id)
@@ -1710,6 +1907,12 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         version = self.business_logic.get_published_collection_version(unpublished_collection.collection_id)
         if version:  # pylance
             self.assertEqual(version.version_id, published_version.version_id)
+
+    def test_collection_url(self):
+        self.assertEqual(
+            self.business_logic.get_collection_url(collection_id="test-collection-id"),
+            "https://collections_domain/collections/test-collection-id",
+        )
 
     def test_publish_collection_with_no_datasets_fail(self):
         """
@@ -2264,7 +2467,7 @@ class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
         expected = (
             f"Publication: {doi} Dataset Version: {self.mock_config.dataset_assets_base_url}/{dataset_version_id}.h5ad "
             "curated and distributed by CZ CELLxGENE Discover in Collection: "
-            f"{self.mock_config.collections_base_url}/{collection.collection_id}"
+            f"{self.mock_config.collections_base_url}/collections/{collection.collection_id}"
         )
 
         self.assertEqual(
@@ -2278,7 +2481,7 @@ class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
         expected = (
             f"Dataset Version: {self.mock_config.dataset_assets_base_url}/{dataset_version_id}.h5ad "
             "curated and distributed by CZ CELLxGENE Discover in Collection: "
-            f"{self.mock_config.collections_base_url}/{collection.collection_id}"
+            f"{self.mock_config.collections_base_url}/collections/{collection.collection_id}"
         )
 
         self.assertEqual(

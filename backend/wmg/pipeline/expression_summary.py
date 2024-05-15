@@ -5,7 +5,6 @@ import os
 import numpy as np
 import pandas as pd
 import tiledb
-from cellxgene_census.experimental.util._csr_iter import X_sparse_iter
 from numba import njit
 from scipy import sparse
 from tiledbsoma import ExperimentAxisQuery
@@ -42,6 +41,10 @@ class ExpressionSummaryCubeBuilder:
         self.obs_df = query.obs().concat().to_pandas()
         self.obs_df = self.obs_df.rename(columns=DIMENSION_NAME_MAP_CENSUS_TO_WMG)
         self.obs_df["organism_ontology_term_id"] = organismId
+        # TODO: eventually, we should keep categorical data types and modify downstream
+        # code to handle them properly. For now, we convert them to strings.
+        categorical_columns = self.obs_df.select_dtypes(include=["category"]).columns
+        self.obs_df[categorical_columns] = self.obs_df[categorical_columns].astype(str)
 
         self.var_df = query.var().concat().to_pandas()
         self.query = query
@@ -134,7 +137,7 @@ class ExpressionSummaryCubeBuilder:
         )
 
         # number of cells with specific tuple of dims
-        cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["n"])
+        cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["count"]).rename(columns={"count": "n"})
 
         # add cube_idx column
         cube_index["cube_idx"] = range(len(cube_index))
@@ -163,14 +166,10 @@ class ExpressionSummaryCubeBuilder:
         logger.info(f"Reducing X with {self.obs_df.shape[0]} total cells")
 
         iteration = 0
-        for (obs_soma_joinids_chunk, _), raw_array in X_sparse_iter(
-            self.query,
-            X_name="raw",
-            stride=row_stride,
-            fmt="csr",
-        ):
+        for raw_array, (obs_soma_joinids_chunk, _) in self.query.X("raw").blockwise(axis=0, size=row_stride).scipy():
+            assert isinstance(raw_array, sparse.csr_matrix)
             logger.info(f"Reducer iteration {iteration} out of {math.ceil(self.obs_df.shape[0] / row_stride)}")
-            iteration += 1
+            iteration += 1  # noqa: SIM113
 
             # convert soma_joinids to row coords of filtered obs dataframe
             obs_soma_joinids_chunk = self.query.indexer.by_obs(obs_soma_joinids_chunk)
@@ -299,7 +298,7 @@ class ExpressionSummaryCubeBuilder:
                 cube_idx,
             ) = grp.tolist()
 
-            dim_or_attr_values = dict(zip(cube_index.index.names, dim_or_attr_values))
+            dim_or_attr_values = dict(zip(cube_index.index.names, dim_or_attr_values, strict=False))
 
             mask = cube_nnz[cube_idx] != 0
             n_vals = np.count_nonzero(mask)

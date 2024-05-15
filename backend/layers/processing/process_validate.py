@@ -1,9 +1,8 @@
-from typing import List, Literal, Optional, Tuple
+from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import numpy
 import scanpy
 
-from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
@@ -15,6 +14,7 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersionId,
     OntologyTermId,
+    SpatialMetadata,
     TissueOntologyTermId,
 )
 from backend.layers.processing.exceptions import ValidationFailed
@@ -82,8 +82,7 @@ class ProcessValidate(ProcessingLogic):
         if not is_valid:
             raise ValidationFailed(errors)
         else:
-            if FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4):
-                self.populate_dataset_citation(collection_version_id, dataset_version_id, output_filename)
+            self.populate_dataset_citation(collection_version_id, dataset_version_id, output_filename)
 
             # TODO: optionally, these could be batched into one
             self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
@@ -109,6 +108,22 @@ class ProcessValidate(ProcessingLogic):
         adata.uns["citation"] = citation
         adata.write(adata_path, compression="gzip")
 
+    def get_spatial_metadata(self, spatial_dict: Dict[str, Any]) -> Optional[SpatialMetadata]:
+        """
+        Extracts spatial dataset metadata from the uns dict of an AnnData object
+
+        :param spatial_dict: the value of the 'spatial' key from the uns dict of an AnnData object
+        :return: SpatialMetadata object
+        """
+        is_single = spatial_dict.get("is_single")
+        has_fullres = False
+        spatial_library_ids = [key for key in spatial_dict if key != "is_single"]
+        # schema validation ensures there can only be at max, one other key in uns["spatial"] if "is_single" is True
+        library_id = spatial_library_ids.pop() if spatial_library_ids else None
+        if library_id and "images" in spatial_dict[library_id] and "fullres" in spatial_dict[library_id]["images"]:
+            has_fullres = True
+        return SpatialMetadata(is_single=bool(is_single), has_fullres=has_fullres)
+
     @logit
     def extract_metadata(self, filename) -> DatasetMetadata:
         """Pull metadata out of the AnnData file to insert into the dataset table."""
@@ -130,6 +145,7 @@ class ProcessValidate(ProcessingLogic):
         for bounds in zip(
             range(0, layer_for_mean_genes_per_cell.shape[0], stride),
             range(stride, layer_for_mean_genes_per_cell.shape[0] + stride, stride),
+            strict=False,
         ):
             chunk = layer_for_mean_genes_per_cell[bounds[0] : bounds[1], filter_gene_vars]
             numerator += chunk.nnz if hasattr(chunk, "nnz") else numpy.count_nonzero(chunk)
@@ -172,9 +188,7 @@ class ProcessValidate(ProcessingLogic):
         return DatasetMetadata(
             name=adata.uns["title"],
             organism=_get_term_pairs("organism"),
-            tissue=_get_tissue_terms()
-            if FeatureFlagService.is_enabled(FeatureFlagValues.SCHEMA_4)
-            else _get_term_pairs("tissue"),
+            tissue=_get_tissue_terms(),
             assay=_get_term_pairs("assay"),
             disease=_get_term_pairs("disease"),
             sex=_get_term_pairs("sex"),
@@ -197,6 +211,7 @@ class ProcessValidate(ProcessingLogic):
             embeddings=adata.obsm_keys(),
             raw_data_location="raw.X" if adata.raw else "X",
             citation=adata.uns.get("citation"),
+            spatial=self.get_spatial_metadata(adata.uns["spatial"]) if "spatial" in adata.uns else None,
         )
 
     def process(

@@ -20,8 +20,6 @@ const HUBSPOT_FORMS_URL = "https://forms.hsforms.com";
 
 const CROSS_REF_URL = "https://api.crossref.org";
 
-const DATADOG_URL = "browser-intake-datadoghq.com";
-
 const SCRIPT_SRC = [
   "'self'",
   "'wasm-unsafe-eval'",
@@ -45,10 +43,9 @@ const defaultSecureHeaders = {
         configs.CELLGUIDE_DATA_URL,
         configs.CENSUS_MODELS_DATA_URL,
         CROSS_REF_URL,
-        DATADOG_URL,
       ],
       defaultSrc: ["'self'", HUBSPOT_FORMS_URL],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      fontSrc: ["'self'"],
       formAction: ["'self'", HUBSPOT_FORMS_URL],
       frameAncestors: ["'none'"],
       // 4513(thuang): Comment out frameSrc for now until we figure out a compliant way to embed
@@ -80,6 +77,12 @@ docSiteSecureHeaders.contentSecurityPolicy.directives.frameSrc =
   docSiteFrameSrc;
 
 module.exports = {
+  /**
+   * (thuang): Strict mode is highly recommended and is on by default in Next.js
+   * starting 13.4.0.
+   * https://nextjs.org/docs/pages/api-reference/next-config-js/reactStrictMode
+   */
+  reactStrictMode: true,
   compiler: { emotion: true },
   async generateBuildId() {
     // Return null to allow next.js to fallback to default behavior

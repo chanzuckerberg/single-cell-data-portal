@@ -2,6 +2,12 @@ export const GENE_SEARCH_BAR_HEIGHT_PX = 32;
 export const HEATMAP_CONTAINER_ID = "heatmap-container-id";
 export const FMG_GENE_STRENGTH_THRESHOLD = 0.5;
 export const FMG_SPECIFICITY_THRESHOLD = 0.0;
+export const GENE_LABEL_WIDTH_PX = 20;
+export const GENE_SEARCH_LEFT_OFFSET_PX = 24;
+export const LOADER_WITH_LABEL_THRESHOLD = 13;
+export const LOADER_WITH_LABEL_OFFSET_PX = 80;
+export const LOADER_NO_LABEL_OFFSET_PX = 85;
+export const LOADER_LABEL_TEXT = "Loading Data...";
 
 /**
  * (thuang): The `id` options here must match what the BE expects

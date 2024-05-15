@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { fontBodyS } from "@czi-sds/components";
 import { gray500, primary400, spacesS, spacesXl } from "src/common/theme";
+import Link from "next/link";
 
 export const CollectionMetadata = styled.div`
   display: grid;
@@ -16,7 +17,7 @@ export const MetadataLabel = styled.span`
   color: ${gray500};
 `;
 
-export const MetadataValue = styled.a`
+export const MetadataValue = styled(Link)`
   color: ${primary400};
   word-break: break-word;
 

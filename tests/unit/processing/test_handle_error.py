@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 from typing import Dict
@@ -5,13 +6,22 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetStatus, DatasetVersionId
+from backend.layers.common.entities import (
+    CanonicalCollection,
+    CollectionId,
+    CollectionMetadata,
+    CollectionVersionId,
+    CollectionVersionWithDatasets,
+    DatasetStatus,
+    DatasetVersionId,
+)
 from backend.layers.processing.upload_failures.app import (
     FAILED_ARTIFACT_CLEANUP_MESSAGE,
     FAILED_CXG_CLEANUP_MESSAGE,
     FAILED_DATASET_CLEANUP_MESSAGE,
     cleanup_artifacts,
     get_failure_slack_notification_message,
+    handle_failure,
     parse_event,
 )
 
@@ -60,6 +70,39 @@ def sample_slack_status_block_empty():
     }
 
 
+@pytest.fixture
+def get_collection_version_mock():
+    return Mock(
+        return_value=CollectionVersionWithDatasets(
+            datasets=[],
+            collection_id=CollectionId("collection123"),
+            version_id=CollectionVersionId("collection_version_id123"),
+            owner="mock owner",
+            curator_name="mock curator",
+            metadata=CollectionMetadata(
+                name="mock name",
+                description="mock description",
+                contact_name="mock contact name",
+                contact_email="mock contact email",
+                links=[],
+            ),
+            publisher_metadata={},
+            published_at=None,
+            created_at=datetime.datetime.now(),
+            schema_version="5.0.0",
+            canonical_collection=CanonicalCollection(
+                id=CollectionId("collection123"),
+                version_id=None,
+                originally_published_at=None,
+                revised_at=None,
+                tombstoned=False,
+            ),
+            has_custom_dataset_order=False,
+            data_submission_policy_version="2.0",
+        )
+    )
+
+
 def test_parse_event_with_empty_event():
     (
         dataset_version_id,
@@ -88,6 +131,7 @@ def test_parse_event_with_error_cause():
     event = {
         "execution_id": "arn",
         "dataset_version_id": "123",
+        "collection_id": "789",
         "collection_version_id": "456",
         "error": {"Cause": expected_error_cause},
     }
@@ -133,7 +177,11 @@ def test_parse_event_without_error_cause():
 
 
 def test_parse_event_with_invalid_error_cause():
-    event = {"dataset_version_id": "123", "collection_version_id": "456", "error": {"Cause": "invalid JSON"}}
+    event = {
+        "dataset_version_id": "123",
+        "collection_version_id": "456",
+        "error": {"Cause": "invalid JSON"},
+    }
 
     (
         dataset_version_id,
@@ -161,8 +209,36 @@ def mock_get_dataset_version(collection_id):
     return MockDatasetVersionId
 
 
+def test_migration_event_does_not_trigger_slack():
+    mock_trigger_slack = Mock()
+    mock_context = Mock()
+    with patch("backend.layers.processing.upload_failures.app.trigger_slack_notification", mock_trigger_slack):
+        event = {
+            "dataset_version_id": "123",
+            "collection_version_id": "456",
+            "error": {},
+            "execution_id": "arn:aws:states:us-west-2:migrate_123456789012:execution:MyStateMachine",
+        }
+        handle_failure(event, mock_context)
+        mock_trigger_slack.assert_not_called()
+
+
+def test_non_migration_event_triggers_slack():
+    mock_trigger_slack = Mock()
+    mock_context = Mock()
+    with patch("backend.layers.processing.upload_failures.app.trigger_slack_notification", mock_trigger_slack):
+        event = {
+            "dataset_version_id": "123",
+            "collection_version_id": "456",
+            "error": {},
+            "execution_id": "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine",
+        }
+        handle_failure(event, mock_context)
+        mock_trigger_slack.assert_called_once()
+
+
 def test_get_failure_slack_notification_message_with_dataset_version_id_none(
-    sample_slack_header_block, sample_slack_status_block_empty, caplog
+    get_collection_version_mock, sample_slack_header_block, sample_slack_status_block_empty, caplog
 ):
     dataset_version_id = None
     step_name = "Step 1"
@@ -171,7 +247,16 @@ def test_get_failure_slack_notification_message_with_dataset_version_id_none(
     execution_arn = "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine"
     collection_version_id = "collection_version_id123"
 
-    with caplog.at_level(logging.ERROR):
+    get_dataset_version_mock = Mock(return_value=None)
+    get_business_logic_mock = Mock()
+    get_business_logic_mock.get_dataset_version = get_dataset_version_mock
+    get_business_logic_mock.get_collection_version = get_collection_version_mock
+    get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
+
+    with (
+        patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock),
+        caplog.at_level(logging.ERROR),
+    ):
         result = get_failure_slack_notification_message(
             dataset_version_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
         )
@@ -184,6 +269,7 @@ def test_get_failure_slack_notification_message_with_dataset_version_id_none(
                     "type": "mrkdwn",
                     "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     "*Owner*: \n"
+                    f"*Collection URL*: https://cellxgene.cziscience.com/collections/collection123\n"
                     f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
                     "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"
                     "#jobs/detail/123456|123456>\n"
@@ -203,7 +289,7 @@ def test_get_failure_slack_notification_message_with_dataset_version_id_none(
 
 
 def test_get_failure_slack_notification_message_with_dataset_not_found(
-    sample_slack_header_block, sample_slack_status_block_empty, caplog
+    get_collection_version_mock, sample_slack_header_block, sample_slack_status_block_empty, caplog
 ):
     dataset_version_id = "dataset123"
     step_name = "Step 1"
@@ -215,12 +301,12 @@ def test_get_failure_slack_notification_message_with_dataset_not_found(
     get_dataset_version_mock = Mock(return_value=None)
     get_business_logic_mock = Mock()
     get_business_logic_mock.get_dataset_version = get_dataset_version_mock
+    get_business_logic_mock.get_collection_version = get_collection_version_mock
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
-    Mock()
-
-    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), caplog.at_level(
-        logging.ERROR
+    with (
+        patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock),
+        caplog.at_level(logging.ERROR),
     ):
         result = get_failure_slack_notification_message(
             dataset_version_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
@@ -235,6 +321,7 @@ def test_get_failure_slack_notification_message_with_dataset_not_found(
                     "type": "mrkdwn",
                     "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     "*Owner*: \n"
+                    f"*Collection URL*: https://cellxgene.cziscience.com/collections/collection123\n"
                     f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
                     "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"
                     "#jobs/detail/123456|123456>\n"
@@ -262,7 +349,7 @@ def mock_collection_version(owner, version_id):
 
 
 def test_get_failure_slack_notification_message_with_missing_collection(
-    sample_slack_header_block, sample_slack_status_block, caplog
+    get_collection_version_mock, sample_slack_header_block, sample_slack_status_block, caplog
 ):
     dataset_version_id = "dataset123"
     collection_id = "collection123"
@@ -280,12 +367,12 @@ def test_get_failure_slack_notification_message_with_missing_collection(
     get_business_logic_mock.get_unpublished_collection_version_from_canonical = (
         get_unpublished_collection_version_from_canonical_mock
     )
+    get_business_logic_mock.get_collection_version = get_collection_version_mock
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
-    Mock()
-
-    with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock), caplog.at_level(
-        logging.ERROR
+    with (
+        patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock),
+        caplog.at_level(logging.ERROR),
     ):
         result = get_failure_slack_notification_message(
             dataset_version_id, collection_version_id, step_name, job_id, aws_regions, execution_arn
@@ -300,6 +387,7 @@ def test_get_failure_slack_notification_message_with_missing_collection(
                     "type": "mrkdwn",
                     "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     f"*Owner*: \n"
+                    f"*Collection URL*: https://cellxgene.cziscience.com/collections/{collection_id}\n"
                     f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
                     "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"
                     "#jobs/detail/123456|123456>\n"
@@ -321,7 +409,7 @@ def test_get_failure_slack_notification_message_with_missing_collection(
 
 
 def test_get_failure_slack_notification_message_with_dataset_and_collection(
-    sample_slack_header_block, sample_slack_status_block
+    get_collection_version_mock, sample_slack_header_block, sample_slack_status_block
 ):
     dataset_version_id = "dataset123"
     collection_id = "collection123"
@@ -342,6 +430,7 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection(
     get_business_logic_mock.get_unpublished_collection_version_from_canonical = (
         get_unpublished_collection_version_from_canonical_mock
     )
+    get_business_logic_mock.get_collection_version = get_collection_version_mock
     get_business_logic_constructor_mock = Mock(return_value=get_business_logic_mock)
 
     with patch(f"{module_path}.get_business_logic", get_business_logic_constructor_mock):
@@ -358,6 +447,7 @@ def test_get_failure_slack_notification_message_with_dataset_and_collection(
                     "type": "mrkdwn",
                     "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
                     f"*Owner*: {owner}\n"
+                    f"*Collection URL*: https://cellxgene.cziscience.com/collections/{collection_id}\n"
                     f"*Collection Version URL*: https://cellxgene.cziscience.com/collections/{collection_version_id}\n"
                     "*Batch Job ID*: <https://us-west-2.console.aws.amazon.com/batch/v2/home?region=us-west-2"
                     "#jobs/detail/123456|123456>\n"

@@ -1,7 +1,7 @@
 # Frontend dockerfile
-# Pinning to 16.14.2 to avoid GH Action lint error exit code 243
+# Pinning to 20.10.0 to avoid GH Action lint error exit code 243
 # See: https://stackoverflow.com/a/71892226/3120863
-FROM node:16.14.2
+FROM node:20.10.0
 
 # install dependencies first, in a different location for easier app bind mounting for local development
 # due to default /opt permissions we have to create the dir with root and change perms
@@ -18,14 +18,25 @@ RUN apt-get update && apt-get install -y make wget \
     lsb-release xdg-utils nano vim procps moreutils ripgrep \
     && rm -rf /var/lib/apt/lists/*
 
+# Create the directory `make retrieve-descendants` expects before running npm ci, which runs `make retrieve-descendants`
+# as a preinstall script
+RUN mkdir -p src/components/common/Filter/descendant_mappings
+
+COPY Makefile ./
 COPY package*.json ./
 RUN npm ci --verbose --no-optional && npm cache clean --force
+
 ENV PATH /opt/node_app/node_modules/.bin:$PATH
 
 # -- TODO, we should try turning this back on later.
 # ADD --chown=node . /corpora-frontend
 ADD . /corpora-frontend
+
+# Explicitly copy the JSON files from the earlier steps
+RUN cp -r /opt/node_app/src/components/common/Filter/descendant_mappings/* /corpora-frontend/src/components/common/Filter/descendant_mappings/
+
 WORKDIR /corpora-frontend
+
 ADD ./src/configs/build.js src/configs/configs.js
 RUN mkdir -p node_modules
 RUN ln -sf /opt/node_app/node_modules/* /opt/node_app/node_modules/.bin ./node_modules/.

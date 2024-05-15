@@ -1,53 +1,111 @@
 [
   {
     "tier": "community",
-    "census_version": "LTS 1.0",
-    "experiment_name": "homo_sapiens",
-    "measurement_name": "RNA",
-    "submission_date": "10-22-23",
-    "last_updated": null,
-    "revised_by": null,
-    "model_link": null,
-    "n_features": 2,
-    "data_type": "obs",
-    "title": "scGPT",
-    "description": "Ligula imperdiet eget et enim id morbi. Pretium diam risus placerat felis vulputate adipiscing sed integer. Mauris commodo risus scelerisque tempus mi venenatis egestas. Sed at scelerisque vulputate egestas vulputate condimentum libero tempus convallis. Nulla id eget fringilla ultrices pellentesque nunc faucibus condimentum. Ornare porta eget porttitor cum arcu id ultricies id. Massa interdum orci risus arcu mattis massa. Amet metus nibh enim nam pellentesque sagittis diam id quam.",
+    "title": "PINNACLE: Contextual AI Model for Single-Cell Protein Biology",
+    "description": "PINNACLE is a flexible geometric deep learning model that is trained on protein interaction networks contextualized by 156 cell types from a human single-cell transcriptomic atlas in order to generate context-aware protein representations. It generates 394,760 protein representations (~18X more than existing methods) that reflect the organization of 156 cell types spanning 62 tissues. We demonstrate that PINNACLE’s contextualized protein representations 1) enable zero-shot retrieval of the tissue hierarchy, 2) improve 3D structure predictions of PD-1/PD-L1 and B7-1/CTLA-4 protein interactions, two critical immune checkpoint interactors targeted by cancer immunotherapies, and 3) outperform state-of-the-art, yet context-free, models in nominating therapeutic targets of RA and IBD while pinpointing their most predictive cell type contexts.",
     "primary_contact": {
-      "name": "Haotian Cui",
-      "email": "user@example.com",
-      "affiliation": "WangLab at University of Toronto"
+      "name": "Marinka Zitnik",
+      "email": "marinka@hms.harvard.edu",
+      "affiliation": "Zitnik Lab, Department of Biomedical Informatics, Harvard University"
     },
-    "DOI": null,
-    "publication_info": "Cul et al. (2023) bioRxiv",
+    "additional_contacts": [
+      {
+        "name": "Michelle M. Li",
+        "email": "michelleli@g.harvard.edu",
+        "affiliation": "Zitnik Lab, Department of Biomedical Informatics, Harvard University"
+      },
+      {
+        "name": "Yepeng Huang",
+        "email": "yepeng@fas.harvard.edu",
+        "affiliation": "Zitnik Lab, Department of Biomedical Informatics, Harvard University"
+      }
+    ],
+    "DOI": "10.1101/2023.07.18.549602",
+    "model_link": "https://huggingface.co/spaces/michellemli/PINNACLE",
+    "project_page": "https://zitniklab.hms.harvard.edu/projects/PINNACLE/",
+    "census_version": "",
+    "data_type": "",
+    "experiment_name": "",
+    "measurement_name": "",
+    "n_cells": null,
+    "n_columns": null,
+    "n_features": null,
+    "submission_date": "2023-12-13",
+    "publication_info": "",
     "publication_link": "",
-    "project_page": "https://example.com/",
-    "notebook_links": [["link A", "https://example.com/"]],
-    "n_cells": 6523,
-    "n_columns": 8721
+    "notebook_links": null,
+    "last_updated": null,
+    "revised_by": null
   },
   {
-    "tier": "maintained",
-    "census_version": "LTS 1.0",
-    "experiment_name": "homo_sapiens",
-    "measurement_name": "RNA",
-    "submission_date": "10-22-23",
-    "last_updated": null,
-    "revised_by": null,
-    "model_link": null,
-    "n_features": 2,
-    "data_type": "obs",
-    "title": "scGPT",
-    "description": "Ligula imperdiet eget et enim id morbi. Pretium diam risus placerat felis vulputate adipiscing sed integer. Mauris commodo risus scelerisque tempus mi venenatis egestas. Sed at scelerisque vulputate egestas vulputate condimentum libero tempus convallis. Nulla id eget fringilla ultrices pellentesque nunc faucibus condimentum. Ornare porta eget porttitor cum arcu id ultricies id. Massa interdum orci risus arcu mattis massa. Amet metus nibh enim nam pellentesque sagittis diam id quam.",
+    "tier": "community",
+    "title": "scCIPHER: Contextual Deep Learning on Single-Cell Knowledge Graphs for Precision Medicine in Neurological Disorders",
+    "description": "Neurological disorders are the leading driver of global disability and cause 16.8% of global mortality. Unfortunately, most lack disease-modifying treatments or cures. To address disease complexity and heterogeneity in neurological disease, we developed scCIPHER, an AI approach for Contextually Informed Precision HEalthcaRe using deep learning on single-cell knowledge graphs. We created the Neurological Disease Knowledge Graph (NeuroKG), a neurobiological knowledge graph with 132 thousand nodes and 3.98 million edges, by integrating 20 high-quality primary data sources with single-cell RNA-sequencing data from 3.37 million cells across 106 regions of the adult human brain. Next, we pre-trained a heterogeneous graph transformer on NeuroKG to create scCIPHER. We leverage scCIPHER to make precision medicine-based predictions in neurological disorders across patient phenotyping, therapeutic response prediction, and causal gene discovery tasks, with validation in large-scale patient cohorts.",
     "primary_contact": {
-      "name": "Haotian Cui",
-      "affiliation": "WangLab at University of Toronto",
-      "email": "user@example.com"
+      "name": "Marinka Zitnik",
+      "email": "marinka@hms.harvard.edu",
+      "affiliation": "Zitnik Lab, Department of Biomedical Informatics, Harvard University"
     },
-    "DOI": null,
-    "publication_info": "Cul et al. (2023) bioRxiv",
+    "additional_contacts": [
+      {
+        "name": "Ayush Noori",
+        "email": "anoori@college.harvard.edu ",
+        "affiliation": "Zitnik Lab, Department of Biomedical Informatics, Harvard University"
+      }
+    ],
+    "DOI": "",
+    "model_link": "https://github.com/mims-harvard/scCIPHER",
+    "project_page": "https://zitniklab.hms.harvard.edu/projects/scCIPHER",
+    "census_version": "",
+    "data_type": "",
+    "experiment_name": "",
+    "measurement_name": "",
+    "n_cells": null,
+    "n_columns": null,
+    "n_features": null,
+    "submission_date": "2023-12-13",
+    "publication_info": "",
     "publication_link": "",
-    "notebook_links": [["link A", "https://example.com/"]],
-    "n_genes": 1312,
-    "n_columns": 2312
+    "notebook_links": null,
+    "last_updated": null,
+    "revised_by": null
+  },
+  {
+    "tier": "community",
+    "title": "Identifying regulatory network changes between healthy and cancerous tissues with single-cell atlas",
+    "description": "A major question in cancer biology is how cancer cells rewire the regulatory network to support uncontrollable cell growth. We developed a computational framework, D-SPIN, that decodes regulatory network models of single-cell profiling from multiple samples and various conditions. With a collection of healthy and cancerous tissue profiling from Census data, we identified a hundred gene programs shared between healthy and cancer tissues, constructed regulatory network models of the cell population, and observed a series of regulatory shifts in key functions such as energy metabolism and cell adhesion in cancer tissues. Our study can help identify network-level signatures of cancer progression, and propose critical regulatory shifts as targets of therapeutics.",
+    "primary_contact": {
+      "name": "Matt Thomson",
+      "email": "mthomson@caltech.edu",
+      "affiliation": "Thomson Lab, Caltech"
+    },
+    "additional_contacts": [
+      {
+        "name": "Jialong Jiang",
+        "email": "jiangjl@caltech.edu",
+        "affiliation": "Thomson Lab, Caltech"
+      },
+      {
+        "name": "Yingying Gong",
+        "email": "ygong@caltech.edu",
+        "affiliation": "Thomson Lab, Caltech"
+      }
+    ],
+    "DOI": "",
+    "model_link": "https://github.com/JialongJiang/DSPIN",
+    "project_page": "",
+    "census_version": "",
+    "data_type": "",
+    "experiment_name": "",
+    "measurement_name": "",
+    "n_cells": null,
+    "n_columns": null,
+    "n_features": null,
+    "submission_date": "2023-12-12",
+    "publication_info": "",
+    "publication_link": "",
+    "notebook_links": null,
+    "last_updated": null,
+    "revised_by": null
   }
 ]

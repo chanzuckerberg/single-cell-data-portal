@@ -96,6 +96,19 @@ resource aws_batch_job_definition dataset_metadata_update {
      "maxSwap": 800000,
      "swappiness": 60
   },
+  "retryStrategy": {
+    "attempts": 3,
+    "evaluateOnExit": [
+      {
+          "action": "RETRY",
+          "onReason": "Task failed to start"
+      },
+      {
+          "action": "EXIT",
+          "onReason": "*"
+      }
+    ]
+  },
   "logConfiguration": {
     "logDriver": "awslogs",
     "options": {

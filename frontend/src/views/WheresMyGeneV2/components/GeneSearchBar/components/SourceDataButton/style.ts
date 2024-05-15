@@ -23,7 +23,7 @@ export const BadgeCounter = styled(Badge)<StyledBadgeProps>`
   height: 16px;
   text-align: center;
   position: relative;
-  z-index: 22;
+  z-index: 5;
   top: 4px;
   left: 14px;
 

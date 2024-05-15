@@ -53,7 +53,7 @@ export const shouldUseRdevToken =
   process.env.RDEV_TOKEN === "true" || TEST_ENV === "rdev";
 
 export const TIMEOUT_MS = 3 * 1000;
-export const WAIT_FOR_TIMEOUT_MS = 3 * 1000;
+export const WAIT_FOR_TIMEOUT_MS = 5 * 1000;
 
 // (seve): We use TEST_ENV to describe the environment that playwright is running against. Sometimes the FE tests are run against a local instance of the app which points at a deployed instance of the backend.
 
@@ -67,6 +67,8 @@ export const isDevStagingProd = TEST_ENVS_DEV_STAGING_PROD.includes(TEST_ENV);
 const TEST_ENVS_DEV_STAGING = ["dev", "staging", "rdev"];
 
 export const isDevStagingRdev = TEST_ENVS_DEV_STAGING.includes(TEST_ENV);
+
+export const isStaging = TEST_ENV === "staging";
 
 const GO_TO_PAGE_TIMEOUT_MS = 2 * 60 * 1000;
 
@@ -439,7 +441,7 @@ export async function clickUntilDownloadModalShowsUp({
       } else {
         throw Error(ERROR_NO_TESTID_OR_LOCATOR);
       }
-      await page.locator(".bp4-dialog").elementHandle();
+      await page.locator(".bp5-dialog").elementHandle();
     },
     { page }
   );
@@ -463,7 +465,7 @@ export async function clickUntilSidebarShowsUp({
       } else {
         throw Error(ERROR_NO_TESTID_OR_LOCATOR);
       }
-      await page.locator(".bp4-drawer-header").elementHandle();
+      await page.locator(".bp5-drawer-header").elementHandle();
     },
     { page }
   );

@@ -1,5 +1,6 @@
 import copy
 import json
+import time
 import uuid
 from collections import defaultdict
 from dataclasses import asdict
@@ -12,7 +13,6 @@ from backend.layers.common.entities import (
     CollectionLinkType,
     CollectionMetadata,
     CollectionVersion,
-    CollectionVisibility,
     DatasetProcessingStatus,
     DatasetStatusKey,
     DatasetUploadStatus,
@@ -20,6 +20,8 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
     OntologyTermId,
+    SpatialMetadata,
+    Visibility,
 )
 from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException
 from tests.unit.backend.layers.api.test_portal_api import generate_mock_publisher_metadata
@@ -469,7 +471,7 @@ class TestGetCollections(BaseAPIPortalTest):
 
     def test__verify_expected_public_collection_fields(self):
         public_collection = self.generate_collection(
-            visibility=CollectionVisibility.PUBLIC.name,
+            visibility=Visibility.PUBLIC.name,
             links=[
                 {
                     "link_name": "test_raw_data_link_name",
@@ -489,7 +491,7 @@ class TestGetCollections(BaseAPIPortalTest):
 
     def test__verify_expected_private_collection_fields(self):
         private_collection = self.generate_collection(
-            visibility=CollectionVisibility.PRIVATE.name,
+            visibility=Visibility.PRIVATE.name,
             links=[
                 {
                     "link_name": "test_raw_data_link_name",
@@ -511,7 +513,7 @@ class TestGetCollections(BaseAPIPortalTest):
 
     def test__verify_expected_revision_collection_fields(self):
         published_version = self.generate_collection(
-            visibility=CollectionVisibility.PUBLIC.name,
+            visibility=Visibility.PUBLIC.name,
             links=[
                 {
                     "link_name": "test_raw_data_link_name",
@@ -619,6 +621,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
         # test fixtures
         dataset_metadata = copy.deepcopy(self.sample_dataset_metadata)
         dataset_metadata.sex.append(OntologyTermId(label="test_sex2", ontology_term_id="test_obp"))
+        dataset_metadata.spatial = SpatialMetadata(is_single=True, has_fullres=False)
         links = [
             {
                 "link_name": "test_raw_data_link_name",
@@ -692,6 +695,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 ],
                 "is_primary_data": [True, False],
                 "x_approximate_distribution": "NORMAL",
+                "spatial": {"is_single": True, "has_fullres": False},
             }
         )
         expected_body = asdict(collection_version.metadata)
@@ -886,7 +890,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
 
     def test__get_collection_with_dataset_failing_validation(self):
         collection_version = self.generate_collection(
-            visibility=CollectionVisibility.PRIVATE.name,
+            visibility=Visibility.PRIVATE.name,
         )
         dataset = self.generate_dataset(
             collection_version=collection_version,
@@ -905,7 +909,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
 
     def test__get_collection_with_dataset_failing_pipeline(self):
         collection = self.generate_collection(
-            visibility=CollectionVisibility.PRIVATE.name,
+            visibility=Visibility.PRIVATE.name,
         )
         dataset = self.generate_dataset(
             collection_version=collection,
@@ -1023,7 +1027,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     "collection_version_id": f"{first_version.version_id.id}",
                     "cell_count": 10,
                     "primary_cell_count": 5,
-                    "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
+                    "cell_type": [{"label": "unknown", "ontology_term_id": "unknown"}],
                     "citation": "Publication: https://doi.org/12.2345/science.abc1234 Dataset Version: "
                     "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
                     "CZ CELLxGENE Discover in Collection: "
@@ -1031,9 +1035,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     "dataset_id": f"{first_version.datasets[0].dataset_id.id}",
                     "dataset_version_id": f"{first_version.datasets[0].version_id.id}",
                     "default_embedding": "X_embedding_1",
-                    "development_stage": [
-                        {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}
-                    ],
+                    "development_stage": [{"label": "unknown", "ontology_term_id": "unknown"}],
                     "disease": [{"label": "test_disease_label", "ontology_term_id": "test_disease_term_id"}],
                     "donor_id": ["test_donor_1"],
                     "embeddings": ["X_embedding_1", "X_embedding_2"],
@@ -1052,11 +1054,12 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                         }
                     ],
                     "sex": [{"label": "test_sex_label", "ontology_term_id": "test_sex_term_id"}],
+                    "spatial": None,
                     "suspension_type": ["test_suspension_type"],
                     "tissue": [
                         {
-                            "label": "test_tissue_label",
-                            "ontology_term_id": "test_tissue_term_id",
+                            "label": "unknown",
+                            "ontology_term_id": "unknown",
                             "tissue_type": "tissue",
                         }
                     ],
@@ -1297,10 +1300,12 @@ class TestPatchCollectionID(BaseAPIPortalTest):
             {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
         ]
         new_doi = "10.1016"  # a real DOI (CURIE reference)
+        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.2020"))
         collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
         self.assertEqual(initial_doi, original_collection["doi"])
         metadata = {"doi": new_doi}
+        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.1016"))
         response = self.app.patch(
             f"/curation/v1/collections/{collection_id}",
             json=metadata,
@@ -1315,6 +1320,7 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         links = [
             {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
         ]
+        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.2020"))
         collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
         self.assertEqual(initial_consortia, original_collection["consortia"])
@@ -1333,6 +1339,7 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         links = [
             {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
         ]
+        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.2020"))
         collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
         self.assertEqual(initial_consortia, original_collection["consortia"])
@@ -1351,6 +1358,7 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         links = [
             {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
         ]
+        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.2020"))
         collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
         self.assertEqual(initial_consortia, original_collection["consortia"])
@@ -1367,6 +1375,9 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         links = [
             {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi/10.1011/something"},
         ]
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.1011/something")
+        )
         collection = self.generate_collection(links=links, visibility="PRIVATE")
         collection_id = collection.collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
@@ -1385,9 +1396,8 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         links = [
             {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi/10.1011/something"},
         ]
-
         mock_publisher_metadata = generate_mock_publisher_metadata()
-        self.crossref_provider.fetch_metadata = Mock(return_value=mock_publisher_metadata)
+        self.crossref_provider.fetch_metadata = Mock(return_value=(mock_publisher_metadata, "10.1011/something"))
 
         collection = self.generate_collection(links=links, visibility="PRIVATE")
         collection_id = collection.collection_id
@@ -1414,7 +1424,8 @@ class TestPatchCollectionID(BaseAPIPortalTest):
             {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
         ]
         mock_publisher_metadata = generate_mock_publisher_metadata()
-        self.crossref_provider.fetch_metadata = Mock(return_value=mock_publisher_metadata)
+        self.crossref_provider.fetch_metadata = Mock(return_value=(mock_publisher_metadata, "10.1011/something"))
+
         collection = self.generate_collection(links=links, visibility="PRIVATE")
         self.assertIsNotNone(collection.publisher_metadata)
         collection_id = collection.collection_id
@@ -1780,6 +1791,9 @@ class TestGetDatasets(BaseAPIPortalTest):
         self.assertEqual([], body["assets"])
 
     def test_get_all_datasets_200(self):
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "12.3456/j.celrep")
+        )
         published_collection_1 = self.generate_published_collection(
             add_datasets=2,
             metadata=CollectionMetadata(
@@ -1790,6 +1804,9 @@ class TestGetDatasets(BaseAPIPortalTest):
                 [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/12.3456/j.celrep")],
                 ["Consortia 1", "Consortia 2"],
             ),
+        )
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "78.91011/j.celrep")
         )
         published_collection_2 = self.generate_published_collection(
             owner="other owner",
@@ -1817,16 +1834,27 @@ class TestGetDatasets(BaseAPIPortalTest):
         with self.subTest("With no credentials"):
             self.assertEqual(3, len(response.json))
 
-        with self.subTest("Contains collection_name and collection_doi"):
+        with self.subTest("Contains collection_id, collection_version_id, collection_name and collection_doi"):
+            collection_ids = {published_collection_1.collection_id.id, published_collection_2.collection_id.id}
+            collection__version_ids = {
+                published_collection_1.version_id.id,
+                published_collection_2.version_id.id,
+            }
             collection_names = {published_collection_1.metadata.name, published_collection_2.metadata.name}
             expected_collection_dois = {"12.3456/j.celrep", "78.91011/j.celrep"}
 
+            received_collection_ids = set()
+            received_collection_version_ids = set()
             received_collection_names = set()
             received_collection_dois = set()
             for dataset in response.json:
+                received_collection_ids.add(dataset["collection_id"])
+                received_collection_version_ids.add(dataset["collection_version_id"])
                 received_collection_names.add(dataset["collection_name"])
                 received_collection_dois.add(dataset["collection_doi"])
 
+            self.assertEqual(collection_ids, received_collection_ids)
+            self.assertEqual(collection__version_ids, received_collection_version_ids)
             self.assertEqual(collection_names, received_collection_names)
             self.assertEqual(expected_collection_dois, received_collection_dois)
 
@@ -1858,7 +1886,7 @@ class TestGetDatasets(BaseAPIPortalTest):
                     self.assertIsNone(dataset["revised_at"])
 
         with self.subTest("Response Dataset objects contain index-specific attributes"):
-            index_specific_attributes = ("collection_doi", "collection_id", "collection_name")
+            index_specific_attributes = ("collection_doi", "collection_id", "collection_version_id", "collection_name")
             dataset = response.json[0]
             for attribute in index_specific_attributes:
                 self.assertIn(attribute, dataset)
@@ -1879,7 +1907,260 @@ class TestGetDatasets(BaseAPIPortalTest):
             ]
             self.assertEqual(expected_assets, dataset["assets"])
 
+        with self.subTest("Response Dataset objects contain visibility"):
+            for dataset in response.json:
+                self.assertEqual(Visibility.PUBLIC.name, dataset["visibility"])
+
+        with self.subTest("Response Dataset objects contain revision_of_collection"):
+            for dataset in response.json:
+                self.assertIsNone(dataset["revision_of_collection"])
+
+        with self.subTest("Response Dataset objects contain revision_of_dataset"):
+            for dataset in response.json:
+                self.assertIsNone(dataset["revision_of_dataset"])
+
+    def test_get_private_datasets_200(self):
+        """
+        Tests /curation/v1/datasets endpoint with different credentials and visibility filters.
+
+        Test data setup:
+        - published_collection_1: 2 datasets
+        - published_collection_2: 1 dataset, other owner
+        - published_collection_3: 1 dataset, previously revised and published
+        - unpublished_collection_1: 3 datasets
+        - unpublished_collection_2: 2 datasets, other owner
+        - published_collection_1_revision: 3 datasets (one new, one modified)
+
+        """
+        #
+        # Setup
+        #
+
+        # Public collection, 2 datasets.
+        published_collection_1 = self.generate_published_collection(
+            add_datasets=2,
+            metadata=CollectionMetadata(
+                "test_collection_1",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [],
+                ["Consortia 1", "Consortia 2"],
+            ),
+        )
+
+        # Public collection, 1 dataset, other owner.
+        self.generate_published_collection(
+            owner="other owner",
+            curator_name="other curator",
+            add_datasets=1,
+            metadata=CollectionMetadata(
+                "test_collection_2",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [],
+                ["Consortia 1", "Consortia 2"],
+            ),
+        )
+
+        # Public collection, 1 dataset.
+        published_collection_3 = self.generate_published_collection(
+            add_datasets=1,
+            metadata=CollectionMetadata(
+                "test_collection_3",
+                "described",
+                "john doe",
+                "john.doe@email.com",
+                [],
+                ["Consortia 1", "Consortia 2"],
+            ),
+        )
+
+        # Private collection, 3 datasets.
+        unpublished_collection_1 = self.generate_unpublished_collection(
+            add_datasets=2,
+            dataset_schema_version="1.0.0",
+        )
+        dataset_metadata = copy.deepcopy(self.sample_dataset_metadata)
+        dataset_metadata.schema_version = "1.0.0"
+        unpublished_collection_1_dataset_added = self.generate_dataset(
+            collection_version=unpublished_collection_1,
+            metadata=dataset_metadata,
+        )
+
+        # Private collection, 2 datasets, other owner.
+        unpublished_collection_2 = self.generate_unpublished_collection(
+            owner="other owner",
+            add_datasets=1,
+        )
+
+        # Create revision of published_collection_1. Add one new dataset and update one existing dataset.
+        revision_1 = self.generate_revision(published_collection_1.collection_id)
+        revision_1_dataset_new = self.generate_dataset(
+            collection_version=revision_1,
+        )
+        revision_1_dataset_updated = self.generate_dataset(
+            collection_version=revision_1,
+            replace_dataset_version_id=revision_1.datasets[0].version_id,
+        )
+
+        # Create revision of published_collection_3, update dataset and publish.
+        revision_3 = self.generate_revision(published_collection_3.collection_id)
+        self.generate_dataset(
+            collection_version=revision_3,
+            replace_dataset_version_id=revision_3.datasets[0].version_id,
+        )
+        self.business_logic.publish_collection_version(revision_3.version_id)
+
+        #
+        # Utils
+        #
+
+        # Check expected datasets are in the given response datasets.
+        def _validate_datasets(response_datasets, expected_dataset_ids: list[str]):
+            self.assertEqual(len(expected_dataset_ids), len(response_datasets))
+            self.assertCountEqual(expected_dataset_ids, [d["dataset_version_id"] for d in response_datasets])
+
+        #
+        # Tests
+        #
+
+        # Super curator.
+        with self.subTest("With super curator credentials"):
+            response_datasets = self._fetch_datasets(
+                visibility=Visibility.PRIVATE.name, headers=self.make_super_curator_header()
+            )
+
+            # Create the list of the 6 expected datasets: 4 (3 + 1) from unpublished collections and 2 from
+            # the revision of published_collection_1 (one new, one updated).
+            expected_dataset_ids = [
+                unpublished_collection_1_dataset_added.dataset_version_id,
+                unpublished_collection_1.datasets[0].version_id.id,
+                unpublished_collection_1.datasets[1].version_id.id,
+                unpublished_collection_2.datasets[0].version_id.id,
+                revision_1_dataset_updated.dataset_version_id,
+                revision_1_dataset_new.dataset_version_id,
+            ]
+            _validate_datasets(response_datasets, expected_dataset_ids)
+
+        # Hit datasets endpoint for owner and check response shape.
+        response_datasets = self._fetch_datasets(visibility=Visibility.PRIVATE.name, headers=self.make_owner_header())
+
+        # Owner
+        with self.subTest("With owner credentials"):
+            # Create the list of the 5 expected datasets: 3 from unpublished collections and 2 from
+            # the revision of published_collection_1 (one new, one updated).
+            expected_dataset_ids = [
+                unpublished_collection_1_dataset_added.dataset_version_id,
+                unpublished_collection_1.datasets[0].version_id.id,
+                unpublished_collection_1.datasets[1].version_id.id,
+                revision_1_dataset_updated.dataset_version_id,
+                revision_1_dataset_new.dataset_version_id,
+            ]
+            _validate_datasets(response_datasets, expected_dataset_ids)
+
+        # Sort order.
+        with self.subTest("Sorts datasets"):
+            expected_sorted_dataset_ids = sorted(
+                [
+                    unpublished_collection_1_dataset_added.dataset_id,
+                    unpublished_collection_1.datasets[0].dataset_id.id,
+                    unpublished_collection_1.datasets[1].dataset_id.id,
+                    revision_1_dataset_updated.dataset_id,
+                    revision_1_dataset_new.dataset_id,
+                ],
+                reverse=True,
+            )
+
+            response_dataset_ids = []
+            for dataset in response_datasets:
+                response_dataset_ids.append(dataset["dataset_id"])
+            self.assertEqual(expected_sorted_dataset_ids, response_dataset_ids)
+
+        # Key datasets by their ID for easy lookup.
+        datasets_by_version_id = {dataset["dataset_version_id"]: dataset for dataset in response_datasets}
+
+        # Verify fields for a dataset of a private collection
+        # visibility - PRIVATE
+        # collection_id - collection_id
+        # collection_version_id - collection_version_id
+        # revision_of_collection - null
+        # revision_of_dataset - null
+        with self.subTest("Verify expected fields for private collection, updated dataset"):
+            response_dataset = datasets_by_version_id[unpublished_collection_1_dataset_added.dataset_version_id]
+            self.assertEqual(Visibility.PRIVATE.name, response_dataset["visibility"])
+            self.assertEqual(unpublished_collection_1.collection_id.id, response_dataset["collection_id"])
+            self.assertEqual(unpublished_collection_1.version_id.id, response_dataset["collection_version_id"])
+            self.assertIsNone(response_dataset["revision_of_collection"])
+            self.assertIsNone(response_dataset["revision_of_dataset"])
+            self.assertIn(unpublished_collection_1_dataset_added.dataset_version_id, response_dataset["explorer_url"])
+            self.assertIsNone(response_dataset["published_at"])
+            self.assertIsNone(response_dataset["revised_at"])
+
+        # Verify fields for a new dataset of a revision
+        # visibility - PRIVATE
+        # collection_id - collection_version_id
+        # collection_version_id - collection_version_id
+        # revision_of_collection - collection_id
+        # revision_of_dataset - null
+        with self.subTest("Verify expected fields for revision, new dataset"):
+            response_dataset = datasets_by_version_id[revision_1_dataset_new.dataset_version_id]
+            self.assertEqual(Visibility.PRIVATE.name, response_dataset["visibility"])
+            self.assertEqual(revision_1.version_id.id, response_dataset["collection_id"])
+            self.assertEqual(revision_1.version_id.id, response_dataset["collection_version_id"])
+            self.assertEqual(revision_1.collection_id.id, response_dataset["revision_of_collection"])
+            self.assertIsNone(response_dataset["revision_of_dataset"])
+            self.assertIn(revision_1_dataset_new.dataset_version_id, response_dataset["explorer_url"])
+            self.assertIsNone(response_dataset["published_at"])
+            self.assertIsNone(response_dataset["revised_at"])
+
+        # Verify fields for a updated dataset of a revision
+        # visibility - PRIVATE
+        # collection_id - collection_version_id
+        # collection_version_id - collection_version_id
+        # revision_of_collection - collection_id
+        # revision_of_dataset - canonical_dataset_id
+        with self.subTest("Verify expected fields for revision, updated dataset"):
+            response_dataset = datasets_by_version_id[revision_1_dataset_updated.dataset_version_id]
+            self.assertEqual(Visibility.PRIVATE.name, response_dataset["visibility"])
+            self.assertEqual(revision_1.version_id.id, response_dataset["collection_id"])
+            self.assertEqual(revision_1.version_id.id, response_dataset["collection_version_id"])
+            self.assertEqual(revision_1.collection_id.id, response_dataset["revision_of_collection"])
+            self.assertEqual(revision_1.datasets[0].dataset_id.id, response_dataset["revision_of_dataset"])
+            self.assertIn(revision_1_dataset_updated.dataset_version_id, response_dataset["explorer_url"])
+            self.assertIsNone(response_dataset["published_at"])
+            self.assertIsNone(response_dataset["revised_at"])
+
+    def test_get_private_datasets_400(self):
+        # 400 if PRIVATE and schema version.
+        self._fetch_datasets(
+            visibility=Visibility.PRIVATE.name,
+            headers=self.make_super_curator_header(),
+            schema_version="3",
+            status_code=400,
+        )
+
+    def test_get_private_datasets_403(self):
+        # 403 if no credentials and requesting private datasets.
+        self._fetch_datasets(visibility=Visibility.PRIVATE.name, status_code=403)
+
+    # Fetch datasets with given visibility and auth.
+    def _fetch_datasets(self, visibility=None, headers=None, schema_version=None, status_code=200):
+        kwargs = {}
+        if headers:
+            kwargs["headers"] = headers
+        if visibility:
+            kwargs["query_string"] = {"visibility": visibility, "schema_version": schema_version}
+
+        response = self.app.get("/curation/v1/datasets", **kwargs)
+        self.assertEqual(status_code, response.status_code)
+        return response.json
+
     def test_get_datasets_by_schema_200(self):
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "12.3456/j.celrep")
+        )
         published_collection_1 = self.generate_published_collection(
             add_datasets=2,
             metadata=CollectionMetadata(
@@ -1890,6 +2171,9 @@ class TestGetDatasets(BaseAPIPortalTest):
                 [Link(name="doi link", type=CollectionLinkType.DOI.name, uri="http://doi.org/12.3456/j.celrep")],
                 ["Consortia 1", "Consortia 2"],
             ),
+        )
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "78.91011/j.celrep")
         )
         published_collection_2 = self.generate_published_collection(
             owner="other owner",
@@ -1904,6 +2188,9 @@ class TestGetDatasets(BaseAPIPortalTest):
                 ["Consortia 1", "Consortia 2"],
             ),
             dataset_schema_version="3.1.0",
+        )
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "78.91011/j.celrep")
         )
         published_collection_3 = self.generate_published_collection(
             owner="other owner",
@@ -2096,6 +2383,9 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
         dataset_id = collection.datasets[0].dataset_id
         dataset_version_id = collection.datasets[0].version_id
         published_revision = self.generate_revision(collection_id)
+        # Add delay here to ensure published_at timestamps are different (as millis are
+        # no longer returned in API response).
+        time.sleep(1)
         published_dataset_revision = self.generate_dataset(
             collection_version=published_revision, replace_dataset_version_id=dataset_version_id, publish=True
         )
@@ -2252,7 +2542,7 @@ class TestPostDataset(BaseAPIPortalTest):
 
 class TestPostRevision(BaseAPIPortalTest):
     def test__post_revision__no_auth(self):
-        collection_id = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name).collection_id
+        collection_id = self.generate_collection(visibility=Visibility.PUBLIC.name).collection_id
         response = self.app.post(f"/curation/v1/collections/{collection_id}/revision")
         self.assertEqual(401, response.status_code)
 
@@ -2263,9 +2553,7 @@ class TestPostRevision(BaseAPIPortalTest):
         self.assertEqual(403, response.status_code)
 
     def test__post_revision__Not_Owner(self):
-        collection_id = self.generate_collection(
-            visibility=CollectionVisibility.PUBLIC.name, owner="someone else"
-        ).collection_id
+        collection_id = self.generate_collection(visibility=Visibility.PUBLIC.name, owner="someone else").collection_id
         response = self.app.post(
             f"/curation/v1/collections/{collection_id}/revision",
             headers=self.make_owner_header(),
@@ -2273,7 +2561,7 @@ class TestPostRevision(BaseAPIPortalTest):
         self.assertEqual(403, response.status_code)
 
     def test__post_revision__OK(self):
-        collection_id = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name).collection_id
+        collection_id = self.generate_collection(visibility=Visibility.PUBLIC.name).collection_id
         response = self.app.post(
             f"/curation/v1/collections/{collection_id}/revision",
             headers=self.make_owner_header(),
@@ -2282,7 +2570,7 @@ class TestPostRevision(BaseAPIPortalTest):
         self.assertNotEqual(collection_id, response.json["collection_id"])
 
     def test__post_revision_by_collection_version_id_403(self):
-        version_id = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name).version_id
+        version_id = self.generate_collection(visibility=Visibility.PUBLIC.name).version_id
         response = self.app.post(
             f"/curation/v1/collections/{version_id}/revision",
             headers=self.make_owner_header(),
@@ -2290,7 +2578,7 @@ class TestPostRevision(BaseAPIPortalTest):
         self.assertEqual(403, response.status_code)
 
     def test__post_revision__Super_Curator(self):
-        collection_id = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name).collection_id
+        collection_id = self.generate_collection(visibility=Visibility.PUBLIC.name).collection_id
         headers = self.make_super_curator_header()
         response = self.app.post(f"/curation/v1/collections/{collection_id}/revision", headers=headers)
         self.assertEqual(201, response.status_code)

@@ -38,6 +38,9 @@ class BusinessLogicInterface:
     ) -> Optional[CollectionVersionWithDatasets]:
         pass
 
+    def get_collection_url(self, collection_id: str) -> str:
+        pass
+
     def get_collection_version(
         self, version_id: CollectionVersionId, get_tombstoned: bool
     ) -> CollectionVersionWithDatasets:
@@ -57,6 +60,9 @@ class BusinessLogicInterface:
     def get_collection_version_from_canonical(
         self, collection_id: CollectionId
     ) -> Optional[CollectionVersionWithDatasets]:
+        pass
+
+    def _get_publisher_metadata(self, doi: str, errors: list) -> Tuple[Optional[dict], Optional[str]]:
         pass
 
     def create_collection(
@@ -98,7 +104,7 @@ class BusinessLogicInterface:
     def delete_collection_version(self, collection_version: CollectionVersionWithDatasets) -> None:
         pass
 
-    def publish_collection_version(self, version_id: CollectionVersionId) -> None:
+    def publish_collection_version(self, version_id: CollectionVersionId, data_submission_policy_version: str) -> None:
         pass
 
     def ingest_dataset(
@@ -109,6 +115,11 @@ class BusinessLogicInterface:
         current_dataset_version_id: Optional[DatasetVersionId],
         start_step_function: bool = False,
     ) -> Tuple[DatasetVersionId, DatasetId]:
+        pass
+
+    def get_private_collection_versions_with_datasets(
+        self, owner: str = None, schema: str = None
+    ) -> Iterable[CollectionVersionWithDatasets]:
         pass
 
     def get_all_mapped_datasets(self) -> List[DatasetVersion]:

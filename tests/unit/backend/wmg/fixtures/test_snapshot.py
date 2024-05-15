@@ -20,11 +20,21 @@ from backend.wmg.data.schemas.cube_schema import expression_summary_schema as ex
 from backend.wmg.data.schemas.cube_schema_default import (
     expression_summary_schema as expression_summary_default_schema_actual,
 )
+from backend.wmg.data.schemas.expression_summary_cube_schemas_diffexp import (
+    expression_summary_schemas as expression_summary_diffexp_schemas,
+)
 from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema as marker_genes_schema_actual
 from backend.wmg.data.snapshot import (
+    CARDINALITY_PER_DIMENSION_FILENAME,
+    CELL_COUNTS_CUBE_NAME,
+    CELL_TYPE_ANCESTORS_FILENAME,
     CELL_TYPE_ORDERINGS_FILENAME,
     DATASET_METADATA_FILENAME,
+    EXPRESSION_SUMMARY_CUBE_NAME,
+    EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
+    EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES,
     FILTER_RELATIONSHIPS_FILENAME,
+    MARKER_GENES_CUBE_NAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
     WmgSnapshot,
 )
@@ -79,8 +89,6 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
     # must import lazily
     import backend.wmg.data.ontology_labels as ontology_labels
 
-    if ontology_labels.ontology_term_id_labels is None:
-        ontology_labels.__load_ontologies()
     if ontology_labels.gene_term_id_labels is None:
         ontology_labels.__load_genes()
 
@@ -181,41 +189,85 @@ def reverse_cell_type_ordering(cell_type_ontology_ids: List[str]) -> List[int]:
 @contextlib.contextmanager
 def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
     with tempfile.TemporaryDirectory() as cube_dir:
-        cell_counts = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/cell_counts.csv.gz", index_col=0)
-        expression_summary = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary.csv.gz", index_col=0)
+        cell_counts = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_COUNTS_CUBE_NAME}.csv.gz", index_col=0)
+        expression_summary = pd.read_csv(
+            f"{FIXTURES_ROOT}/{snapshot_name}/{EXPRESSION_SUMMARY_CUBE_NAME}.csv.gz", index_col=0
+        )
         expression_summary_default = pd.read_csv(
-            f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_default.csv.gz", index_col=0
+            f"{FIXTURES_ROOT}/{snapshot_name}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}.csv.gz", index_col=0
         )
-        marker_genes = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/marker_genes.csv.gz", index_col=0)
+        marker_genes = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/{MARKER_GENES_CUBE_NAME}.csv.gz", index_col=0)
 
-        tiledb.Array.create(f"{cube_dir}/expression_summary", expression_summary_schema_actual, overwrite=True)
+        expression_summary_diffexp = {
+            cube_name: pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/{cube_name}.csv.gz", index_col=0)
+            for cube_name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
+        }
+
         tiledb.Array.create(
-            f"{cube_dir}/expression_summary_default", expression_summary_default_schema_actual, overwrite=True
+            f"{cube_dir}/{EXPRESSION_SUMMARY_CUBE_NAME}", expression_summary_schema_actual, overwrite=True
         )
-        tiledb.Array.create(f"{cube_dir}/cell_counts", cell_counts_schema_actual, overwrite=True)
-        tiledb.Array.create(f"{cube_dir}/marker_genes", marker_genes_schema_actual, overwrite=True)
+        tiledb.Array.create(
+            f"{cube_dir}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}",
+            expression_summary_default_schema_actual,
+            overwrite=True,
+        )
+        tiledb.Array.create(f"{cube_dir}/{CELL_COUNTS_CUBE_NAME}", cell_counts_schema_actual, overwrite=True)
+        tiledb.Array.create(f"{cube_dir}/{MARKER_GENES_CUBE_NAME}", marker_genes_schema_actual, overwrite=True)
 
-        tiledb.from_pandas(f"{cube_dir}/expression_summary", expression_summary, mode="append")
-        tiledb.from_pandas(f"{cube_dir}/expression_summary_default", expression_summary_default, mode="append")
-        tiledb.from_pandas(f"{cube_dir}/cell_counts", cell_counts, mode="append")
-        tiledb.from_pandas(f"{cube_dir}/marker_genes", marker_genes, mode="append")
+        tiledb.from_pandas(f"{cube_dir}/{EXPRESSION_SUMMARY_CUBE_NAME}", expression_summary, mode="append")
+        tiledb.from_pandas(
+            f"{cube_dir}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}", expression_summary_default, mode="append"
+        )
+        tiledb.from_pandas(f"{cube_dir}/{CELL_COUNTS_CUBE_NAME}", cell_counts, mode="append")
+        tiledb.from_pandas(f"{cube_dir}/{MARKER_GENES_CUBE_NAME}", marker_genes, mode="append")
 
-        with tiledb.open(f"{cube_dir}/expression_summary", ctx=create_ctx()) as expression_summary_cube, tiledb.open(
-            f"{cube_dir}/expression_summary_default", ctx=create_ctx()
-        ) as expression_summary_default_cube, tiledb.open(
-            f"{cube_dir}/cell_counts", ctx=create_ctx()
-        ) as cell_counts_cube, tiledb.open(
-            f"{cube_dir}/marker_genes", ctx=create_ctx()
-        ) as marker_genes_cube, gzip.open(
-            f"{FIXTURES_ROOT}/{snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}.gz", "rt"
-        ) as fr, gzip.open(
-            f"{FIXTURES_ROOT}/{snapshot_name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}.gz", "rt"
-        ) as fp, gzip.open(
-            f"{FIXTURES_ROOT}/{snapshot_name}/{DATASET_METADATA_FILENAME}.gz", "rt"
-        ) as fd:
+        for cube_name in expression_summary_diffexp:
+            tiledb.Array.create(
+                f"{cube_dir}/{cube_name}",
+                expression_summary_diffexp_schemas[cube_name.split("__")[-1]],
+                overwrite=True,
+            )
+            tiledb.from_pandas(f"{cube_dir}/{cube_name}", expression_summary_diffexp[cube_name], mode="append")
+
+        cube_paths = [
+            f"{cube_dir}/{EXPRESSION_SUMMARY_CUBE_NAME}",
+            f"{cube_dir}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}",
+            f"{cube_dir}/{CELL_COUNTS_CUBE_NAME}",
+            f"{cube_dir}/{MARKER_GENES_CUBE_NAME}",
+        ]
+        diffexp_cube_paths = {
+            cube_name.split("__")[-1]: f"{cube_dir}/{cube_name}" for cube_name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
+        }
+
+        with contextlib.ExitStack() as stack:
+            expression_summary_cube, expression_summary_default_cube, cell_counts_cube, marker_genes_cube = [
+                stack.enter_context(tiledb.open(path, ctx=create_ctx())) for path in cube_paths
+            ]
+            diffexp_cubes = {
+                key: stack.enter_context(tiledb.open(diffexp_cube_paths[key], ctx=create_ctx()))
+                for key in diffexp_cube_paths
+            }
+
+            fr = stack.enter_context(
+                gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}.gz", "rt")
+            )
+            fp = stack.enter_context(
+                gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}.gz", "rt")
+            )
+            fd = stack.enter_context(gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{DATASET_METADATA_FILENAME}.gz", "rt"))
+            fca = stack.enter_context(
+                gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_TYPE_ANCESTORS_FILENAME}.gz", "rt")
+            )
+            cpd = stack.enter_context(
+                gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{CARDINALITY_PER_DIMENSION_FILENAME}.gz", "rt")
+            )
+
             filter_relationships = json.load(fr)
             primary_filter_dimensions = json.load(fp)
             dataset_metadata = json.load(fd)
+            cell_type_ancestors = json.load(fca)
+            cardinality_per_dimension = json.load(cpd)
+
             yield WmgSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
@@ -225,6 +277,9 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
                 primary_filter_dimensions=primary_filter_dimensions,
                 filter_relationships=filter_relationships,
                 dataset_metadata=dataset_metadata,
+                cell_type_ancestors=cell_type_ancestors,
+                diffexp_expression_summary_cubes=diffexp_cubes,
+                cardinality_per_dimension=cardinality_per_dimension,
             )
 
 
@@ -232,33 +287,56 @@ def load_realistic_test_snapshot_tmpdir(snapshot_name: str) -> WmgSnapshot:
     cube_dir_temp = tempfile.TemporaryDirectory()
     cube_dir = cube_dir_temp.name
 
-    cell_counts = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/cell_counts.csv.gz", index_col=0)
-    expression_summary = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary.csv.gz", index_col=0)
+    cell_counts = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_COUNTS_CUBE_NAME}.csv.gz", index_col=0)
+    expression_summary = pd.read_csv(
+        f"{FIXTURES_ROOT}/{snapshot_name}/{EXPRESSION_SUMMARY_CUBE_NAME}.csv.gz", index_col=0
+    )
     expression_summary_default = pd.read_csv(
-        f"{FIXTURES_ROOT}/{snapshot_name}/expression_summary_default.csv.gz", index_col=0
+        f"{FIXTURES_ROOT}/{snapshot_name}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}.csv.gz", index_col=0
     )
-    marker_genes = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/marker_genes.csv.gz", index_col=0)
+    marker_genes = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/{MARKER_GENES_CUBE_NAME}.csv.gz", index_col=0)
 
-    tiledb.Array.create(f"{cube_dir}/expression_summary", expression_summary_schema_actual, overwrite=True)
+    expression_summary_diffexp = {
+        cube_name: pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/{cube_name}.csv.gz", index_col=0)
+        for cube_name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
+    }
+
+    tiledb.Array.create(f"{cube_dir}/{EXPRESSION_SUMMARY_CUBE_NAME}", expression_summary_schema_actual, overwrite=True)
     tiledb.Array.create(
-        f"{cube_dir}/expression_summary_default", expression_summary_default_schema_actual, overwrite=True
+        f"{cube_dir}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}",
+        expression_summary_default_schema_actual,
+        overwrite=True,
     )
-    tiledb.Array.create(f"{cube_dir}/cell_counts", cell_counts_schema_actual, overwrite=True)
-    tiledb.Array.create(f"{cube_dir}/marker_genes", marker_genes_schema_actual, overwrite=True)
+    tiledb.Array.create(f"{cube_dir}/{CELL_COUNTS_CUBE_NAME}", cell_counts_schema_actual, overwrite=True)
+    tiledb.Array.create(f"{cube_dir}/{MARKER_GENES_CUBE_NAME}", marker_genes_schema_actual, overwrite=True)
 
-    tiledb.from_pandas(f"{cube_dir}/expression_summary", expression_summary, mode="append")
-    tiledb.from_pandas(f"{cube_dir}/expression_summary_default", expression_summary_default, mode="append")
-    tiledb.from_pandas(f"{cube_dir}/cell_counts", cell_counts, mode="append")
-    tiledb.from_pandas(f"{cube_dir}/marker_genes", marker_genes, mode="append")
-    with gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}.gz", "rt") as fr, gzip.open(
-        f"{FIXTURES_ROOT}/{snapshot_name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}.gz", "rt"
-    ) as fp, gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{DATASET_METADATA_FILENAME}.gz", "rt") as fd, gzip.open(
-        f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_TYPE_ORDERINGS_FILENAME}.gz", "rt"
-    ) as fc:
+    tiledb.from_pandas(f"{cube_dir}/{EXPRESSION_SUMMARY_CUBE_NAME}", expression_summary, mode="append")
+    tiledb.from_pandas(f"{cube_dir}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}", expression_summary_default, mode="append")
+    tiledb.from_pandas(f"{cube_dir}/{CELL_COUNTS_CUBE_NAME}", cell_counts, mode="append")
+    tiledb.from_pandas(f"{cube_dir}/{MARKER_GENES_CUBE_NAME}", marker_genes, mode="append")
+
+    for cube_name in expression_summary_diffexp:
+        tiledb.Array.create(
+            f"{cube_dir}/{cube_name}",
+            expression_summary_diffexp_schemas[cube_name.split("__")[-1]],
+            overwrite=True,
+        )
+        tiledb.from_pandas(f"{cube_dir}/{cube_name}", expression_summary_diffexp[cube_name], mode="append")
+
+    with (
+        gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{FILTER_RELATIONSHIPS_FILENAME}.gz", "rt") as fr,
+        gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}.gz", "rt") as fp,
+        gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{DATASET_METADATA_FILENAME}.gz", "rt") as fd,
+        gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_TYPE_ORDERINGS_FILENAME}.gz", "rt") as fc,
+        gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_TYPE_ANCESTORS_FILENAME}.gz", "rt") as fca,
+        gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{CARDINALITY_PER_DIMENSION_FILENAME}.gz", "rt") as cpd,
+    ):
         filter_relationships = json.load(fr)
         primary_filter_dimensions = json.load(fp)
         dataset_metadata = json.load(fd)
         cell_type_orderings = json.load(fc)
+        cell_type_ancestors = json.load(fca)
+        cardinality_per_dimension = json.load(cpd)
 
     with open(f"{cube_dir}/{FILTER_RELATIONSHIPS_FILENAME}", "w") as fr_out:
         json.dump(filter_relationships, fr_out)
@@ -268,6 +346,10 @@ def load_realistic_test_snapshot_tmpdir(snapshot_name: str) -> WmgSnapshot:
         json.dump(dataset_metadata, fd_out)
     with open(f"{cube_dir}/{CELL_TYPE_ORDERINGS_FILENAME}", "w") as fc_out:
         json.dump(cell_type_orderings, fc_out)
+    with open(f"{cube_dir}/{CELL_TYPE_ANCESTORS_FILENAME}", "w") as fca_out:
+        json.dump(cell_type_ancestors, fca_out)
+    with open(f"{cube_dir}/{CARDINALITY_PER_DIMENSION_FILENAME}", "w") as cpd_out:
+        json.dump(cardinality_per_dimension, cpd_out)
 
     return cube_dir_temp
 
@@ -300,9 +382,10 @@ def create_temp_wmg_snapshot(
         )
         primary_filter_dimensions = build_precomputed_primary_filters()
 
-        with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube, tiledb.open(
-            cell_counts_cube_dir, ctx=create_ctx()
-        ) as cell_counts_cube:
+        with (
+            tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube,
+            tiledb.open(cell_counts_cube_dir, ctx=create_ctx()) as cell_counts_cube,
+        ):
             cc = cell_counts_cube.df[:]
             filter_relationships = build_filter_relationships(cc)
             yield WmgSnapshot(
@@ -368,7 +451,7 @@ def create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn: Callab
         logical_attr_values: Dict[str, list] = {
             "n_cells": cell_counts_fn(coords),
         }
-        assert all([len(logical_attr_values[attr.name]) == len(coords) for attr in cell_counts_logical_attrs])
+        assert all(len(logical_attr_values[attr.name]) == len(coords) for attr in cell_counts_logical_attrs)
 
         physical_dim_values = dim_values[: len(cell_counts_indexed_dims)]
         physical_attr_values = {
@@ -393,7 +476,7 @@ def create_expression_summary_cube(
 
     with tiledb.open(cube_dir, mode="w") as cube:
         logical_attr_values = expression_summary_vals_fn(coords)
-        assert all([len(logical_attr_values[attr.name]) == len(coords) for attr in expression_summary_logical_attrs])
+        assert all(len(logical_attr_values[attr.name]) == len(coords) for attr in expression_summary_logical_attrs)
 
         physical_dim_values = dim_values[: len(expression_summary_indexed_dims)]
         physical_attr_values = {
@@ -427,12 +510,12 @@ def build_coords(
         [all_dims_domain_values[i_dim][(i_row // dim_size**i_dim) % dim_size] for i_row in range(n_coords)]
         for i_dim in range(n_dims)
     ]
-    coords = list(zip(*dim_values))
+    coords = list(zip(*dim_values, strict=False))
     if exclude_coord_fn:
         Coord = namedtuple("Coord", logical_dims)
         coords: List[Tuple] = list(filterfalse(exclude_coord_fn, (Coord(*c) for c in coords)))
         dim_values: List[List] = [[coord_tuple[i_dim] for coord_tuple in coords] for i_dim in range(n_dims)]
-    assert all([len(dim_values[i_dim]) == len(coords) for i_dim in range(n_dims)])
+    assert all(len(dim_values[i_dim]) == len(coords) for i_dim in range(n_dims))
     return coords, dim_values
 
 

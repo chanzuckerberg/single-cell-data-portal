@@ -36,7 +36,7 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
-from backend.layers.common.helpers import set_revised_at_field
+from backend.layers.common.helpers import set_revised_at_field, sort_datasets_by_cell_count
 from backend.layers.persistence.constants import SCHEMA_NAME
 from backend.layers.persistence.orm import (
     CollectionTable,
@@ -114,11 +114,14 @@ class DatabaseProvider(DatabaseProviderInterface):
             created_at=row.created_at,
             schema_version=row.schema_version,
             canonical_collection=canonical_collection,
+            has_custom_dataset_order=row.has_custom_dataset_order,
+            data_submission_policy_version=row.data_submission_policy_version,
         )
 
     def _row_to_collection_version_with_datasets(
         self, row: Any, canonical_collection: CanonicalCollection, datasets: List[DatasetVersion]
     ) -> CollectionVersionWithDatasets:
+        sorted_datasets = self._sort_datasets(row, datasets)
         return CollectionVersionWithDatasets(
             collection_id=CollectionId(str(row.collection_id)),
             version_id=CollectionVersionId(str(row.id)),
@@ -126,11 +129,13 @@ class DatabaseProvider(DatabaseProviderInterface):
             curator_name=row.curator_name,
             metadata=CollectionMetadata.from_json(row.collection_metadata),
             publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
-            datasets=datasets,
+            datasets=sorted_datasets,
             published_at=row.published_at,
             created_at=row.created_at,
             schema_version=row.schema_version,
             canonical_collection=canonical_collection,
+            has_custom_dataset_order=row.has_custom_dataset_order,
+            data_submission_policy_version=row.data_submission_policy_version,
         )
 
     def _row_to_canonical_dataset(self, row: Any):
@@ -167,6 +172,16 @@ class DatabaseProvider(DatabaseProviderInterface):
             row.created_at,
             canonical_dataset,
         )
+
+    def _sort_datasets(self, row: Any, datasets: List[DatasetVersion]) -> List[DatasetVersion]:
+        """
+        Sorts datasets by the order they appear in the collection version's datasets array if custom
+        order is enabled, otherwise sorts datasets by cell count.
+        """
+        if row.has_custom_dataset_order:
+            datasets_order = [DatasetVersionId(str(id)) for id in row.datasets]
+            return sorted(datasets, key=lambda d: datasets_order.index(d.version_id))
+        return sort_datasets_by_cell_count(datasets)
 
     def _hydrate_dataset_version(self, dataset_version: DatasetVersionTable) -> DatasetVersion:
         """
@@ -226,6 +241,8 @@ class DatabaseProvider(DatabaseProviderInterface):
             created_at=now,
             schema_version=None,
             datasets=list(),
+            has_custom_dataset_order=False,
+            data_submission_policy_version=None,
         )
 
         with self._manage_session() as session:
@@ -500,8 +517,8 @@ class DatabaseProvider(DatabaseProviderInterface):
     def add_collection_version(self, collection_id: CollectionId) -> CollectionVersionId:
         """
         Adds a collection version to an existing canonical collection. The new version copies all data from
-        the previous version except version_id, schema_version, and datetime-based fields (i.e. created_at,
-        published_at)
+        the previous version except version_id, schema_version, data_submission_policy_version and datetime-based
+        fields (i.e. created_at, published_at)
         Returns the new version id.
         """
         with self._manage_session() as session:
@@ -519,6 +536,8 @@ class DatabaseProvider(DatabaseProviderInterface):
                 created_at=datetime.utcnow(),
                 schema_version=None,
                 datasets=current_version.datasets,
+                has_custom_dataset_order=current_version.has_custom_dataset_order,
+                data_submission_policy_version=None,
             )
             session.add(new_version)
             return CollectionVersionId(new_version_id)
@@ -588,6 +607,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         collection_id: CollectionId,
         version_id: CollectionVersionId,
         schema_version: str,
+        data_submission_policy_version: str,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
     ) -> List[str]:
@@ -612,6 +632,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection_version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one()
             collection_version.published_at = published_at
             collection_version.schema_version = schema_version
+            collection_version.data_submission_policy_version = data_submission_policy_version
 
             dataset_ids_for_new_collection_version = [
                 d.dataset_id.id for d in self.get_collection_version_with_datasets(version_id).datasets
@@ -950,6 +971,32 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection_version.datasets = datasets
 
             return new_dataset_version
+
+    def set_collection_version_datasets_order(
+        self,
+        collection_version_id: CollectionVersionId,
+        dataset_version_ids: List[DatasetVersionId],
+    ) -> None:
+        """
+        Updates the datasets in a collection version to match the given order.
+        """
+        with self._manage_session() as session:
+            collection_version = session.query(CollectionVersionTable).filter_by(id=collection_version_id.id).one()
+
+            # Confirm collection version datasets length matches given dataset version IDs length.
+            if len(collection_version.datasets) != len(dataset_version_ids):
+                raise ValueError(
+                    f"Dataset Version IDs length does not match Collection Version {collection_version_id} Datasets length"
+                )
+
+            # Confirm all given dataset version IDs belong to collection version.
+            if {dv_id.id for dv_id in dataset_version_ids} != {str(d) for d in collection_version.datasets}:
+                raise ValueError("Dataset Version IDs do not match saved Collection Version Dataset IDs")
+
+            # Replace collection version datasets with given, ordered dataset version IDs and update custom ordered flag.
+            updated_datasets = [uuid.UUID(dv_id.id) for dv_id in dataset_version_ids]
+            collection_version.datasets = updated_datasets
+            collection_version.has_custom_dataset_order = True
 
     def get_dataset_mapped_version(
         self, dataset_id: DatasetId, get_tombstoned: bool = False

@@ -82,13 +82,14 @@ class DatasetArtifactType(str, Enum):
     CXG = "cxg"
 
 
-class CollectionVisibility(Enum):
+class Visibility(Enum):
     """
-    Describes a DbCollection's visibility.
-    At most, one LIVE and one EDIT entry of a Collection may exist at a time.
+    Describes a DbCollection's or a Dataset's visibility.
 
-    PUBLIC - a published and publicly viewable Collection.
-    PRIVATE - an open Submission, i.e an unpublished and non-public Collection.
+    At most, one LIVE and one EDIT entry of a Collection or Dataset may exist at a time.
+
+    PUBLIC - a published and publicly viewable Collection or Dataset.
+    PRIVATE - an open Submission, i.e an unpublished and non-public Collection or Dataset.
     """
 
     PUBLIC = "Public"
@@ -165,6 +166,13 @@ class TissueOntologyTermId(OntologyTermId):
 
 @dataclass_json
 @dataclass
+class SpatialMetadata:
+    is_single: bool
+    has_fullres: bool
+
+
+@dataclass_json
+@dataclass
 class DatasetMetadata:
     name: str
     schema_version: str
@@ -191,6 +199,7 @@ class DatasetMetadata:
     feature_reference: Optional[List[str]] = None
     raw_data_location: Optional[str] = None
     primary_cell_count: Optional[int] = None
+    spatial: Optional[SpatialMetadata] = None
 
 
 @dataclass
@@ -198,6 +207,7 @@ class DatasetArtifactMetadataUpdate:
     title: Optional[str] = None
     schema_version: Optional[str] = None
     citation: Optional[str] = None
+    schema_reference: Optional[str] = None
 
     def as_dict_without_none_values(self):
         return {key: value for key, value in asdict(self).items() if value is not None}
@@ -229,6 +239,16 @@ class PublishedDatasetVersion(DatasetVersion):
     collection_version_id: CollectionVersionId  # Pointer to collection version it was originally published under
     published_at: datetime
     revised_at: datetime = None
+
+
+@dataclass
+class PrivateDatasetVersion(DatasetVersion):
+    """
+    Dataset associated with a private (new) collection or an unchanged dataset associated
+    with an unpublished revision.
+    """
+
+    collection_version_id: CollectionVersionId
 
 
 @dataclass
@@ -276,6 +296,8 @@ class CollectionVersionBase:
     created_at: datetime
     schema_version: str
     canonical_collection: CanonicalCollection
+    has_custom_dataset_order: bool
+    data_submission_policy_version: str
 
     def is_published(self) -> bool:
         """
@@ -313,3 +335,8 @@ class CollectionVersionWithDatasets(CollectionVersionBase):
 @dataclass
 class CollectionVersionWithPublishedDatasets(CollectionVersionBase):
     datasets: List[PublishedDatasetVersion]
+
+
+@dataclass
+class CollectionVersionWithPrivateDatasets(CollectionVersionBase):
+    datasets: List[PrivateDatasetVersion]

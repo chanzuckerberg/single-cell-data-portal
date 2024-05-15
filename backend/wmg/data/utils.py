@@ -4,18 +4,19 @@ from typing import Dict
 import numpy as np
 import pandas as pd
 import requests
-import yaml
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
 from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
-from backend.wmg.data.constants import CL_PINNED_CONFIG_URL, WMG_PINNED_SCHEMA_VERSION
+from backend.wmg.data.constants import WMG_PINNED_SCHEMA_VERSION
 
 
 def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:
     all_filter_options = set()
     organism_key = "organism_ontology_term_id__" + organism
     all_filter_options = snapshot.filter_relationships[organism_key].get(dimension, [])
+    all_filter_options += [key for key in snapshot.filter_relationships if key.startswith(dimension)]
+    all_filter_options = list(set(all_filter_options))
     return [option.split("__")[1] for option in all_filter_options]
 
 
@@ -147,26 +148,6 @@ def get_collections_from_discover_api():
     return collections
 
 
-def get_pinned_ontology_url(name: str):
-    """
-    This function retrieves the URL of the pinned ontology based on the provided name.
-
-    Parameters:
-    name (str): The name of the ontology (e.g. cl-basic.obo).
-
-    Returns:
-    str: The URL of the pinned ontology.
-    """
-    session = setup_retry_session()
-    response = session.get(CL_PINNED_CONFIG_URL)
-    response.raise_for_status()
-    decoded_yaml = yaml.safe_load(response.content.decode())
-    key = decoded_yaml["CL"]["latest"]
-    cl_url = decoded_yaml["CL"]["urls"][key]
-    cl_url = cl_url.split("cl.owl")[0] + name
-    return cl_url
-
-
 def build_filter_relationships(cell_counts_df: pd.DataFrame):
     # get a dataframe of the columns that are not numeric
     df_filters = cell_counts_df.select_dtypes(exclude="number")
@@ -220,5 +201,5 @@ def to_dict(a, b):
     bounds_left = bounds[:-1]
     bounds_right = bounds[1:]
     slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
-    d = dict(zip(np.unique(a), [list(set(x)) for x in slists]))
+    d = dict(zip(np.unique(a), [list(set(x)) for x in slists], strict=False))
     return d
