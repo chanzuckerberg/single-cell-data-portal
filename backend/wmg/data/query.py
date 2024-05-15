@@ -141,7 +141,9 @@ class WmgQuery:
             key = depluralize(key)
             if key in df.columns and values:
                 mask &= df[key].isin(values)
-        return df[mask]
+        df = df[mask]
+        df.rename(columns={"n_cells": "n_total_cells"}, inplace=True)
+        return df
 
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
     #  /chanzuckerberg/single-cell-data-portal/2133
