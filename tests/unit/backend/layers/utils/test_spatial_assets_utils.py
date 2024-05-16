@@ -72,7 +72,7 @@ class TestSpatialDataProcessor(unittest.TestCase):
         flipped_image_array = self.spatial_processor._process_and_flip_image(test_image_array)
         assert np.array_equal(flipped_image_array, expected_flipped_array)
 
-    def test_crop_to_aspect_ratio(self):
+    def test__crop_to_aspect_ratio(self):
         """
         Test the cropping method to ensure the image is cropped to a square
         """
@@ -98,7 +98,7 @@ class TestSpatialDataProcessor(unittest.TestCase):
             expected_upper + expected_height,
         ), "Crop is not centered correctly"
 
-    def test_generate_deep_zoom_assets(self):
+    def test__generate_deep_zoom_assets(self):
         """
         Test the method to generate deep zoom assets
         """
@@ -120,7 +120,7 @@ class TestSpatialDataProcessor(unittest.TestCase):
             expected_output_path = folder_name + "spatial"
             mock_image.dzsave.assert_called_once_with(expected_output_path, suffix=".jpeg")
 
-    def test_upload_assets(self):
+    def test__upload_assets(self):
         """
         Test the method to upload assets to S3
         """
@@ -142,7 +142,7 @@ class TestSpatialDataProcessor(unittest.TestCase):
             # verify that shutil.rmtree was called to remove the local directory
             mock_rmtree.assert_called_once_with(assets_folder)
 
-    def test_upload_assets_failure(self):
+    def test__upload_assets_failure(self):
         """
         Test the method to upload assets to S3 when the upload fails
         """
