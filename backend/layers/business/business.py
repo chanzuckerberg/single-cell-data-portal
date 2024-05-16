@@ -47,6 +47,7 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     CollectionVersionWithDatasets,
+    CollectionVersionWithPrivateDatasets,
     CollectionVersionWithPublishedDatasets,
     DatasetArtifact,
     DatasetArtifactId,
@@ -64,6 +65,7 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
     Link,
+    PrivateDatasetVersion,
     PublishedDatasetVersion,
 )
 from backend.layers.common.helpers import (
@@ -639,6 +641,62 @@ class BusinessLogic(BusinessLogicInterface):
             ]
             datasets.extend(collection_datasets)
         return datasets
+
+    def get_private_collection_versions_with_datasets(
+        self, owner: str = None
+    ) -> List[CollectionVersionWithPrivateDatasets]:
+        """
+        Returns collection versions with their datasets for private collections. Only private collections with datasets, or
+        unpublished revisions with new or updated datasets are returned; unpublished revisions with no new datasets, and
+        no changed datasets are not returned.
+
+        If `owner` is provided, collections owned by that user are returned.
+
+        :param owner: The owner of the collections to retrieve. None if user is super use.
+        :return: A list of CollectionVersionWithPrivateDatasets objects.
+        """
+
+        # Retrieve private collections for the given owner, if any.
+        filter = CollectionQueryFilter(owner=owner, is_published=False)
+        collection_versions = list(self.get_collections(filter))
+
+        # Retrieve datasets for the set of private collections.
+        dataset_versions = self.get_datasets_for_collections(collection_versions)
+
+        # Key datasets by collection ID for easy lookup.
+        datasets_by_collection_id = defaultdict(list)
+        for dataset_version in dataset_versions:
+            datasets_by_collection_id[dataset_version.collection_id.id].append(dataset_version)
+
+        # Combine collections and their datasets into CollectionVersionWithPrivateDatasets objects, removing any
+        # unchanged datasets of revisions (as they are considered public).
+        collection_versions_with_datasets = []
+        for collection_version in collection_versions:
+            dataset_versions = datasets_by_collection_id.get(collection_version.collection_id.id, [])
+
+            private_dataset_versions: List[PrivateDatasetVersion] = []
+            for dataset_version in dataset_versions:
+                # Only add dataset if it is new, or if it is a revision of a public dataset.
+                canonical_dataset_version_id = dataset_version.canonical_dataset.dataset_version_id
+                if (
+                    dataset_version.canonical_dataset.published_at is not None
+                    and canonical_dataset_version_id == dataset_version.version_id
+                ):
+                    continue
+
+                private_dataset_versions.append(
+                    PrivateDatasetVersion(**vars(dataset_version), collection_version_id=collection_version.version_id)
+                )
+
+            # If there are no private dataset version for this collection version, skip adding it to the set.
+            if not private_dataset_versions:
+                continue
+
+            collection_version_dict = vars(collection_version)
+            collection_version_dict["datasets"] = private_dataset_versions
+            collection_versions_with_datasets.append(CollectionVersionWithPrivateDatasets(**collection_version_dict))
+
+        return collection_versions_with_datasets
 
     def get_all_mapped_collection_versions_with_datasets(self) -> List[CollectionVersionWithPublishedDatasets]:
         """

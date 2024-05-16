@@ -1,10 +1,8 @@
 import logging
 
+from backend.cellguide.common.constants import CANONICAL_MARKER_GENES_FOLDERNAME
 from backend.cellguide.pipeline.canonical_marker_genes.canonical_markers import CanonicalMarkerGenesCompiler
-from backend.cellguide.pipeline.constants import (
-    CANONICAL_MARKER_GENES_FOLDERNAME,
-    HOMO_SAPIENS_ORGANISM_ONTOLOGY_TERM_ID,
-)
+from backend.cellguide.pipeline.constants import HOMO_SAPIENS_ORGANISM_ONTOLOGY_TERM_ID
 from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.utils import output_json_per_key

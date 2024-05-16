@@ -17,6 +17,7 @@ class TestCollectionMigrate:
                 "dataset_id": dataset.dataset_id.id,
                 "dataset_version_id": dataset.version_id.id,
                 "collection_url": f"https://collections_domain/collections/{published.collection_id.id}",
+                "execution_id": "test-execution-arn",
             }
             for dataset in published.datasets
         ]
@@ -44,6 +45,7 @@ class TestCollectionMigrate:
                 "dataset_id": dataset.dataset_id.id,
                 "dataset_version_id": dataset.version_id.id,
                 "collection_url": f"https://collections_domain/collections/{private.collection_id.id}",
+                "execution_id": "test-execution-arn",
             }
             for dataset in private.datasets
         ]

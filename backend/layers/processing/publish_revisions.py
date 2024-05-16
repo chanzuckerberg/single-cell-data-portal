@@ -9,6 +9,7 @@ $ aws batch submit-job --job-name publish-revisions \
   }'
 
 """
+
 import logging
 import os
 from typing import Dict, List

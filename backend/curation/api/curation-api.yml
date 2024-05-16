@@ -617,10 +617,24 @@ paths:
       tags:
         - Dataset
       description: |
-        List all public Datasets with full metadata as well as Collection name and Collection doi.
+        List all Datasets with full metadata as well as Collection name and Collection doi.
+
+        The default `visibility` is PUBLIC. When visibility is PUBLIC, then a list of all public Datasets is returned.
+
+        When the visibility parameter is set to PRIVATE, a list of all private Datasets that the user is authorized to
+        access is returned. An access token MUST be set in the request header as: `Authorization:
+        Bearer <access_token>`.
+
+        Datasets returned include a `visibility` field that indicates whether the Dataset is public or private.
+
+        * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       operationId: backend.curation.api.v1.curation.datasets.actions.get
+      security:
+        - curatorAccessLenient: []
+        - {}
       parameters:
         - $ref: "#/components/parameters/schema_version"
+        - $ref: "#/components/parameters/dataset_visibility"
       responses:
         "200":
           description: OK
@@ -632,6 +646,8 @@ paths:
                   $ref: "#/components/schemas/dataset_index"
         "400":
           $ref: "#/components/responses/400"
+        "403":
+          $ref: "#/components/responses/403"
 
   /v1/datasets/{dataset_id}/versions:
     get:
@@ -1073,6 +1089,8 @@ components:
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
+        spatial:
+          $ref: "#/components/schemas/spatial"
         suspension_type:
           $ref: "#/components/schemas/suspension_type"
         tissue:
@@ -1111,6 +1129,8 @@ components:
           $ref: "#/components/schemas/collection_id"
         collection_name:
           $ref: "#/components/schemas/collection_name"
+        collection_version_id:
+          $ref: "#/components/schemas/collection_version_id"
         dataset_id:
           $ref: "#/components/schemas/dataset_id"
         dataset_version_id:
@@ -1153,6 +1173,10 @@ components:
           $ref: "#/components/schemas/dataset_published_at"
         revised_at:
           $ref: "#/components/schemas/dataset_revised_at"
+        revision_of_collection:
+          $ref: "#/components/schemas/collection_revision_of"
+        revision_of_dataset:
+          $ref: "#/components/schemas/dataset_revision_of"
         schema_version:
           description: |
             The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
@@ -1176,6 +1200,8 @@ components:
           $ref: "#/components/schemas/suspension_type"
         tissue:
           $ref: "#/components/schemas/dataset_tissue"
+        visibility:
+          $ref: "#/components/schemas/dataset_visibility"
         x_approximate_distribution:
           $ref: "#/components/schemas/distribution"
       type: object
@@ -1273,6 +1299,8 @@ components:
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
+        spatial:
+          $ref: "#/components/schemas/spatial"
         suspension_type:
           $ref: "#/components/schemas/suspension_type"
         tissue:
@@ -1301,6 +1329,12 @@ components:
       items:
         $ref: "#/components/schemas/ontology_element"
       type: array
+    dataset_revision_of:
+      description: |
+        If this Dataset is a Revision of another Dataset, then this field contains the Dataset id of the Dataset that
+        this Dataset is revising.  The value is `None` if this Dataset is not a Revision.
+      nullable: true
+      type: string
     dataset_tissue:
       description: |
         [tissue label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#tissue)
@@ -1342,6 +1376,19 @@ components:
         suspension_type:
           $ref: "#/components/schemas/suspension_type"
       type: object
+    dataset_visibility:
+      default: PUBLIC
+      description: |
+        The visibility of the Dataset.
+
+        | visibility | description |
+        | ---------- | ----------- | 
+        | PUBLIC   | The Dataset is published and accessible to all users of CELLxGENE Discover |
+        | PRIVATE  | The Dataset is in private review, either as a new Dataset that has not been published or a Revision of a previously published Dataset. |
+      enum:
+        - PUBLIC
+        - PRIVATE
+      type: string
     default_embedding:
       description: Key for the embedding that is displayed by default in CZ CELLxGENE Explorer
       type: string
@@ -1522,6 +1569,24 @@ components:
       enum:
         - X
         - raw.X
+    spatial:
+      description: Metadata associated with spatial datasets. If the dataset is not spatial, this field is null.
+      nullable: true
+      properties:
+        is_single:
+          description: |
+            [is_single](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#is_single)
+
+            Flag indicating if a spatial dataset represents one Space Ranger output for a single tissue section or the
+            output for a single array on a puck.
+          type: boolean
+        has_fullres:
+          description: |
+            [has_fullres](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#spatiallibrary_idimagesfullres)
+
+            Flag indicating if a spatial dataset's metadata includes a numpy.ndarray representing the full resolution 
+            image.
+          type: boolean
     suspension_type:
       description: |
         [suspension_type](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.0.0/schema.md#suspension_type)
@@ -1547,6 +1612,19 @@ components:
         - PRIVATE
       type: string
   parameters:
+    dataset_visibility:
+      description: |
+        The visibility of the Datasets to query for.
+
+        | visibility | description | Authorization Required |
+        | ---------- | ----------- | -------------- |
+        | PUBLIC   | All public Datasets are returned. | No |
+        | PRIVATE  | All private Datasets that the user is authorized to access are returned.  | Yes |
+      in: query
+      name: visibility
+      required: false
+      schema:
+        $ref: "#/components/schemas/dataset_visibility"
     path_collection_id:
       description: The uuid of a Collection.
       in: path

@@ -76,9 +76,11 @@ class TestFilterIssues:
 class TestCloseReadyForProd:
     def test_close_ready_for_prod_no_issues(self, caplog):
         caplog.set_level("INFO")
-        with patch("scripts.zenhub_close.get_issues") as mock_get_issues, patch(
-            "scripts.zenhub_close.filter_issues"
-        ) as mock_filter_issues, patch("scripts.zenhub_close.close_issues"):
+        with (
+            patch("scripts.zenhub_close.get_issues") as mock_get_issues,
+            patch("scripts.zenhub_close.filter_issues") as mock_filter_issues,
+            patch("scripts.zenhub_close.close_issues"),
+        ):
             mock_get_issues.return_value = []
             mock_filter_issues.return_value = ([], [])
 
@@ -96,9 +98,11 @@ class TestCloseReadyForProd:
             }
         ]
 
-        with patch("scripts.zenhub_close.get_issues") as mock_get_issues, patch(
-            "scripts.zenhub_close.filter_issues"
-        ) as mock_filter_issues, patch("scripts.zenhub_close.close_issues"):
+        with (
+            patch("scripts.zenhub_close.get_issues") as mock_get_issues,
+            patch("scripts.zenhub_close.filter_issues") as mock_filter_issues,
+            patch("scripts.zenhub_close.close_issues"),
+        ):
             mock_get_issues.return_value = [{"id": 1, "title": "Sample Issue"}]
             mock_filter_issues.return_value = ([], blocked_issues_data)
 
@@ -114,9 +118,11 @@ class TestCloseReadyForProd:
         caplog.set_level("INFO")
         issues_to_close_data = [(1, "#101 (Sample Issue 1)")]
 
-        with patch("scripts.zenhub_close.get_issues") as mock_get_issues, patch(
-            "scripts.zenhub_close.filter_issues"
-        ) as mock_filter_issues, patch("scripts.zenhub_close.close_issues") as mock_close_issues:
+        with (
+            patch("scripts.zenhub_close.get_issues") as mock_get_issues,
+            patch("scripts.zenhub_close.filter_issues") as mock_filter_issues,
+            patch("scripts.zenhub_close.close_issues") as mock_close_issues,
+        ):
             mock_get_issues.return_value = [{"id": 1, "title": "Sample Issue"}]
             mock_filter_issues.return_value = (issues_to_close_data, [])
             mock_close_issues.return_value = {"data": {"closeIssues": {"successCount": 1}}}

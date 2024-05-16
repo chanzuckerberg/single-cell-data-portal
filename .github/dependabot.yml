@@ -54,7 +54,25 @@ updates:
       interval: "weekly"
       day: "sunday"
     assignees:
-      - "danieljhegeman"
+      - "Bento007"
+  - package-ecosystem: pip
+    directory: "/python_dependencies/common/"
+    open-pull-requests-limit: 3
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    assignees:
+      - "nayib-jose-gloria"
+    groups:
+      formatters:
+        patterns:
+          - "black"
+          - "ruff"
+      test-runners:
+        patterns:
+          - "pytest"
+          - "coverage"
+          - "allure"
   - package-ecosystem: npm
     directory: "/frontend/"
     open-pull-requests-limit: 3
