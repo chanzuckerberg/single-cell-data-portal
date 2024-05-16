@@ -105,7 +105,7 @@ class DatabaseProviderInterface:
         Saves publisher metadata for a collection version. Specify None to remove it
         """
 
-    def add_collection_version(self, collection_id: CollectionId, is_migration_revision: bool) -> CollectionVersionId:
+    def add_collection_version(self, collection_id: CollectionId, is_auto_version: bool) -> CollectionVersionId:
         """
         Adds a collection version to an existing canonical collection. The new version copies the following data from
          the previous version: owner, metadata, publisher_metadata, datasets (IDs).

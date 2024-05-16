@@ -1,10 +1,11 @@
-"""add is_migration_revision flag
+"""add is_auto_version flag
 
 Revision ID: 07_e31a29561f38
 Revises: 06_8bced1b1470b
 Create Date: 2024-04-23 10:32:09.778855
 
 """
+
 import sqlalchemy as sa
 from alembic import op
 
@@ -18,10 +19,10 @@ depends_on = None
 def upgrade():
     op.add_column(
         "CollectionVersion",
-        sa.Column("is_migration_revision", sa.BOOLEAN(), nullable=True),
+        sa.Column("is_auto_version", sa.BOOLEAN(), nullable=True),
         schema="persistence_schema",
     )
 
 
 def downgrade():
-    op.drop_column("CollectionVersion", "is_migration_revision", schema="persistence_schema")
+    op.drop_column("CollectionVersion", "is_auto_version", schema="persistence_schema")

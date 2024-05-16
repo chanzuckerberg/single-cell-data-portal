@@ -297,7 +297,7 @@ class CollectionVersionBase:
     schema_version: str
     canonical_collection: CanonicalCollection
     has_custom_dataset_order: bool
-    is_migration_revision: bool
+    is_auto_version: bool
     data_submission_policy_version: str
 
     def is_published(self) -> bool:

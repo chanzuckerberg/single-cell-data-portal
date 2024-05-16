@@ -73,7 +73,7 @@ class SchemaMigrate(ProcessingLogic):
             elif collection.is_unpublished_version():
                 # active revision of a published collection.
                 _resp["can_publish"] = str(False)
-                if collection.is_migration_revision:
+                if collection.is_auto_version:
                     has_migration_revision.add(collection.collection_id.id)  # migration revision found, skip published
                     _resp["can_publish"] = str(True)
             elif collection.is_initial_unpublished_version():
@@ -165,7 +165,7 @@ class SchemaMigrate(ProcessingLogic):
                 # Create a new collection version(revision) if the collection is already published
                 private_collection_version_id = self.business_logic.create_collection_version(
                     CollectionId(collection_id),
-                    is_migration_revision=True,
+                    is_auto_version=True,
                 ).version_id.id
             else:
                 private_collection_version_id = collection_version_id

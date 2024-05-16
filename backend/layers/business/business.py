@@ -800,12 +800,12 @@ class BusinessLogic(BusinessLogicInterface):
         self.database_provider.update_dataset_artifact(artifact_id, artifact_uri)
 
     def create_collection_version(
-        self, collection_id: CollectionId, is_migration_revision: bool = False
+        self, collection_id: CollectionId, is_auto_version: bool = False
     ) -> CollectionVersionWithDatasets:
         """
         Creates a collection version for an existing canonical collection.
-        If is_migration_revision is False, ensures that the collection does not have any active, unpublished version.
-        If is_migration_revision is True, ensures that the collection does not have an active, unpublished migration
+        If is_auto_version is False, ensures that the collection does not have any active, unpublished version.
+        If is_auto_version is True, ensures that the collection does not have an active, unpublished migration
         revision.
         """
 
@@ -815,14 +815,14 @@ class BusinessLogic(BusinessLogicInterface):
 
         unpublished_versions = [v for v in all_versions if v.published_at is None]
         if unpublished_versions:
-            if is_migration_revision and any(v.is_migration_revision for v in unpublished_versions):
+            if is_auto_version and any(v.is_auto_version for v in unpublished_versions):
                 raise CollectionVersionException(
                     f"Collection {collection_id} already has an unpublished migration revision."
                 )
-            elif not is_migration_revision:
+            elif not is_auto_version:
                 raise CollectionVersionException(f"Collection {collection_id} already has an unpublished version")
 
-        added_version_id = self.database_provider.add_collection_version(collection_id, is_migration_revision)
+        added_version_id = self.database_provider.add_collection_version(collection_id, is_auto_version)
         return self.get_collection_version(added_version_id)
 
     def delete_collection_version(self, collection_version: CollectionVersionWithDatasets) -> None:

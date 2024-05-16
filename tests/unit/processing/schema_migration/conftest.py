@@ -52,7 +52,7 @@ def published_collection():
     collection.is_initial_unpublished_version.return_value = False
     collection.collection_id = CollectionId()
     collection.version_id = CollectionVersionId()
-    collection.is_migration_revision = False
+    collection.is_auto_version = False
     collection.datasets = []
     for _i in range(2):
         collection.datasets.append(make_mock_dataset_version())
@@ -67,7 +67,7 @@ def revision():
     published_collection_with_revision.is_initial_unpublished_version.return_value = False
     published_collection_with_revision.collection_id = CollectionId()
     published_collection_with_revision.version_id = CollectionVersionId()
-    published_collection_with_revision.is_migration_revision = False
+    published_collection_with_revision.is_auto_version = False
     published_collection_with_revision.datasets = []
     for _i in range(2):
         published_collection_with_revision.datasets.append(make_mock_dataset_version())
@@ -78,7 +78,7 @@ def revision():
     collection.is_initial_unpublished_version.return_value = False
     collection.collection_id = published_collection_with_revision.collection_id
     collection.version_id = CollectionVersionId()
-    collection.is_migration_revision = False
+    collection.is_auto_version = False
     collection.datasets = []
     for _dataset in published_collection_with_revision.datasets:
         collection.datasets.append(make_mock_dataset_version(dataset_id=_dataset.dataset_id.id))
@@ -93,7 +93,7 @@ def migration_revision():
     published_collection_with_revision.is_initial_unpublished_version.return_value = False
     published_collection_with_revision.collection_id = CollectionId()
     published_collection_with_revision.version_id = CollectionVersionId()
-    published_collection_with_revision.is_migration_revision = False
+    published_collection_with_revision.is_auto_version = False
     published_collection_with_revision.datasets = []
     for _i in range(2):
         published_collection_with_revision.datasets.append(make_mock_dataset_version())
@@ -104,7 +104,7 @@ def migration_revision():
     collection.is_initial_unpublished_version.return_value = False
     collection.collection_id = published_collection_with_revision.collection_id
     collection.version_id = CollectionVersionId()
-    collection.is_migration_revision = True
+    collection.is_auto_version = True
     collection.datasets = []
     for _dataset in published_collection_with_revision.datasets:
         collection.datasets.append(make_mock_dataset_version(dataset_id=_dataset.dataset_id.id))
@@ -120,7 +120,7 @@ def private():
     collection.collection_id = CollectionId()
     collection.version_id = CollectionVersionId()
     collection.datasets = []
-    collection.is_migration_revision = False
+    collection.is_auto_version = False
     for _i in range(2):
         collection.datasets.append(make_mock_dataset_version())
     return collection
