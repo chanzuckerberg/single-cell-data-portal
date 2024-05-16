@@ -30,11 +30,13 @@ class TestGatherCollections:
             "can_publish": "True",
             "collection_id": published.collection_id.id,
             "collection_version_id": published.version_id.id,
+            "execution_id": "test-execution-arn",
         } not in response
         assert {
             "can_publish": "True",
             "collection_id": migration_revision.collection_id.id,
             "collection_version_id": migration_revision.version_id.id,
+            "execution_id": "test-execution-arn",
         } in response
 
     def test_with_published(self, schema_migrate_and_collections):
@@ -101,11 +103,13 @@ class TestGatherCollections:
                 "can_publish": "False",
                 "collection_id": published_with_non_migration_revision.collection_id.id,
                 "collection_version_id": published_with_non_migration_revision.version_id.id,
+                "execution_id": "test-execution-arn",
             },
             {
                 "can_publish": "False",
                 "collection_id": migration_revision.collection_id.id,
                 "collection_version_id": migration_revision.version_id.id,
+                "execution_id": "test-execution-arn",
             },
         ]:
             assert obj in response
