@@ -33,6 +33,7 @@ import {
   DIFFERENTIAL_EXPRESSION_SOURCE_DATA_SIDEBAR,
 } from "src/views/DifferentialExpression/common/constants";
 
+const CLICK_TIMEOUT_SECONDS = 10000;
 const { describe } = test;
 
 describe("Differential Expression", () => {
@@ -188,7 +189,7 @@ describe("Differential Expression", () => {
       await tissueFilterAutocompleteGroup1
         .getByTestId(DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY)
         .locator('[class*="CloseIcon"]')
-        .click(); // no need to wait for filters endpoint because it's cached
+        .click({ timeout: CLICK_TIMEOUT_SECONDS }); // no need to wait for filters endpoint because it's cached
 
       // Record cell count in group 1 after removing the filter
       const finalCellCountGroup1 = await page
@@ -230,7 +231,9 @@ describe("Differential Expression", () => {
 
       // Click the ClearIndicator to remove the filter
       // no need to wait for filters endpoint because it's cached
-      await tissueFilterAutocompleteGroup1.getByTestId("CloseIcon").click();
+      await tissueFilterAutocompleteGroup1
+        .getByTestId("CloseIcon")
+        .click({ timeout: CLICK_TIMEOUT_SECONDS });
 
       // Record cell count in group 1 after removing the filter
       const finalCellCountGroup1 = await page
@@ -268,7 +271,7 @@ describe("Differential Expression", () => {
       const copyButton = page.getByTestId(
         `${DIFFERENTIAL_EXPRESSION_COPY_FILTERS_BUTTON_PREFIX}tissues`
       );
-      await copyButton.click();
+      await copyButton.click({ timeout: CLICK_TIMEOUT_SECONDS });
 
       // Ensure the "lung" tag is present in Cell Group 2 tissue filter
       const tissueFilterGroup2 = page
@@ -351,7 +354,7 @@ describe("Differential Expression", () => {
       const organismDropdown = page.getByTestId(
         DIFFERENTIAL_EXPRESSION_ORGANISM_DROPDOWN
       );
-      await organismDropdown.click();
+      await organismDropdown.click({ timeout: CLICK_TIMEOUT_SECONDS });
       await page.keyboard.press("ArrowDown");
       await page.keyboard.press("Enter");
       await waitForFiltersEndpoint(page);
@@ -412,7 +415,7 @@ describe("Differential Expression", () => {
       await tissueFilterAutocompleteGroup1
         .getByTestId(DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY)
         .locator('[class*="CloseIcon"]')
-        .click();
+        .click({ timeout: CLICK_TIMEOUT_SECONDS });
       await waitForFiltersEndpoint(page);
       // Ensure "Find Genes" button is disabled again
       await expect(findGenesButton).toBeDisabled();
@@ -476,7 +479,9 @@ describe("Differential Expression", () => {
         // Click on GE button for cell group 1
         const [newPage1] = await Promise.all([
           page.waitForEvent("popup"),
-          page.getByTestId(DIFFERENTIAL_EXPRESSION_OPEN_IN_GE_1_BUTTON).click(),
+          page
+            .getByTestId(DIFFERENTIAL_EXPRESSION_OPEN_IN_GE_1_BUTTON)
+            .click({ timeout: CLICK_TIMEOUT_SECONDS }),
         ]);
 
         const newPageUrl1 = newPage1.url();
@@ -489,7 +494,9 @@ describe("Differential Expression", () => {
         // Click on GE button for cell group 2
         const [newPage2] = await Promise.all([
           page.waitForEvent("popup"),
-          page.getByTestId(DIFFERENTIAL_EXPRESSION_OPEN_IN_GE_2_BUTTON).click(),
+          page
+            .getByTestId(DIFFERENTIAL_EXPRESSION_OPEN_IN_GE_2_BUTTON)
+            .click({ timeout: CLICK_TIMEOUT_SECONDS }),
         ]);
 
         const newPageUrl2 = newPage2.url();
@@ -565,7 +572,7 @@ describe("Differential Expression", () => {
         expect(parseFloat(firstEffectSizeValue ?? "0")).toBeGreaterThan(0);
 
         // Click to sort by effect size
-        await effectSizeHeader.click();
+        await effectSizeHeader.click({ timeout: CLICK_TIMEOUT_SECONDS });
         await tryUntil(
           async () => {
             // Get the first value in the effect size column after sorting
@@ -580,7 +587,7 @@ describe("Differential Expression", () => {
         );
 
         // Click again to sort by effect size in the opposite direction
-        await effectSizeHeader.click();
+        await effectSizeHeader.click({ timeout: CLICK_TIMEOUT_SECONDS });
         await tryUntil(
           async () => {
             const firstEffectSizeValueAfterSecondClick = await effectSizeColumn
@@ -600,7 +607,7 @@ describe("Differential Expression", () => {
         const sourceDataButton = page.getByTestId(
           DIFFERENTIAL_EXPRESSION_SOURCE_DATA_BUTTON
         );
-        await sourceDataButton.click();
+        await sourceDataButton.click({ timeout: CLICK_TIMEOUT_SECONDS });
 
         // Assert that the sidebar is visible
         const sidebar = page.getByTestId(
@@ -641,7 +648,10 @@ describe("Differential Expression", () => {
         await expect(cellGroup2CollectionsTable).toBeVisible();
 
         // Close the sidebar
-        await page.getByText("Source Data").locator("+ button").click();
+        await page
+          .getByText("Source Data")
+          .locator("+ button")
+          .click({ timeout: CLICK_TIMEOUT_SECONDS });
       });
 
       await test.step("Download button downloads the currently filtered CSV and has the expected content", async () => {
@@ -657,7 +667,7 @@ describe("Differential Expression", () => {
         );
         const [download] = await Promise.all([
           page.waitForEvent("download"),
-          downloadButton.click(),
+          downloadButton.click({ timeout: CLICK_TIMEOUT_SECONDS }),
         ]);
 
         // Read the downloaded CSV file
@@ -713,7 +723,7 @@ const getAutocompleteDropdownItemsCount = async (autocomplete: Locator) => {
 const openAutocompleteDropdown = async (autocomplete: Locator) => {
   await tryUntil(
     async () => {
-      await autocomplete.click();
+      await autocomplete.click({ timeout: CLICK_TIMEOUT_SECONDS });
       expect(await autocomplete.locator("~ * li").count()).toBeGreaterThan(0);
     },
     { page: autocomplete.page() }
@@ -730,7 +740,10 @@ const clickOnAutocompleteDropdownItem = async (
   await openAutocompleteDropdown(autocomplete);
   for (const text of itemText) {
     await autocomplete.locator("input").fill(text);
-    await autocomplete.locator("~ * li", { hasText: text }).first().click();
+    await autocomplete
+      .locator("~ * li", { hasText: text })
+      .first()
+      .click({ timeout: CLICK_TIMEOUT_SECONDS });
   }
 
   await waitForFiltersEndpoint(autocomplete.page());
@@ -747,7 +760,7 @@ const runDEQuery = async (page: Page) => {
   const copyButtonGroup1 = page.getByTestId(
     `${DIFFERENTIAL_EXPRESSION_COPY_FILTERS_BUTTON_PREFIX}tissues`
   );
-  await copyButtonGroup1.click();
+  await copyButtonGroup1.click({ timeout: CLICK_TIMEOUT_SECONDS });
 
   // Type "plasma cell" in cell type filter for group 1
   const cellTypeFilterAutocompleteGroup1 = page
@@ -774,7 +787,7 @@ const runDEQuery = async (page: Page) => {
   const findGenesButton = page.getByTestId(
     DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON
   );
-  await findGenesButton.click();
+  await findGenesButton.click({ timeout: CLICK_TIMEOUT_SECONDS });
 
   // Ensure the results are all visible
   await isElementVisible(page, DIFFERENTIAL_EXPRESSION_RESULTS_DOWNLOAD_BUTTON);
