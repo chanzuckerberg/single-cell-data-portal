@@ -31,7 +31,6 @@ export const generateAndCopyShareUrl = ({
   cellTypes?: State["filteredCellTypes"];
   copyToClipboard?: boolean;
 }) => {
-  console.log(filters);
   // Create a URL that contains the selected filters, tissues, and genes as params in the URL
   // This URL can be shared with others to reproduce the same view
   const url = new URL(window.location.href);
