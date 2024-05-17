@@ -1,0 +1,1 @@
+ERROR    root:spatial.py:133 Failed to create and upload deep zoom assets: Test exception
