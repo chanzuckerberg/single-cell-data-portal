@@ -50,7 +50,11 @@ export default memo(function Filters({
           return;
         }
         const event = QUERY_GROUP_KEYS_TO_FILTER_EVENT_MAP[key];
-        event && track(event, { [key]: options.join(",") });
+        event &&
+          options.length > 0 &&
+          track(event, {
+            [key]: options.map((o) => o.id).join(","),
+          });
         dispatch(selectQueryGroupFilters(key, options));
       };
     },

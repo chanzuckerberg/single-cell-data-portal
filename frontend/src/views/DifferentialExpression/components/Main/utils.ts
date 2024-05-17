@@ -6,11 +6,11 @@ export const craftPayloadWithQueryGroups = (
   const payload: Record<string, string> = {};
 
   Object.keys(queryGroups.queryGroup1).forEach((key: string) => {
-    payload[key] = `CG1: ${queryGroups.queryGroup1[
-      key as keyof QueryGroup
-    ].join(",")}, CG2: ${queryGroups.queryGroup2[key as keyof QueryGroup].join(
-      ","
-    )}`;
+    const options1 = queryGroups.queryGroup1[key as keyof QueryGroup];
+    const options2 = queryGroups.queryGroup2[key as keyof QueryGroup];
+    if (options1.length > 0 || options2.length > 0) {
+      payload[key] = `CG1: ${options1.join(",")}, CG2: ${options2.join(",")}`;
+    }
   });
 
   return payload;

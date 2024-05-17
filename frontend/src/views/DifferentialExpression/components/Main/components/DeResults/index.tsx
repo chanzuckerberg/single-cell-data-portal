@@ -127,7 +127,7 @@ export default function DeResults({
   ]);
 
   const downloadCSV = useCallback(() => {
-    if (!queryGroupsWithNames || !queryGroups) return;
+    if (!queryGroupsWithNames || !queryGroups || isLoading) return;
 
     const { queryGroup1, queryGroup2 } = queryGroupsWithNames;
 
@@ -175,7 +175,7 @@ export default function DeResults({
     document.body.removeChild(link);
 
     track(EVENTS.DE_DOWNLOAD_CLICKED, craftPayloadWithQueryGroups(queryGroups));
-  }, [sortedAndFilteredResults, queryGroups, queryGroupsWithNames]);
+  }, [sortedAndFilteredResults, queryGroups, queryGroupsWithNames, isLoading]);
 
   return (
     <div>
@@ -187,13 +187,17 @@ export default function DeResults({
               <ButtonsWrapper
                 onClick={downloadCSV}
                 data-testid={DIFFERENTIAL_EXPRESSION_RESULTS_DOWNLOAD_BUTTON}
+                disabled={isLoading}
               >
                 <StyledIcon sdsIcon="download" sdsSize="l" sdsType="static" />
                 <ButtonLabel>Download</ButtonLabel>
               </ButtonsWrapper>
               <ButtonsWrapper
-                onClick={() => setIsSourceDatasetSidebarOpen(true)}
+                onClick={() =>
+                  !isLoading && setIsSourceDatasetSidebarOpen(true)
+                }
                 data-testid={DIFFERENTIAL_EXPRESSION_SOURCE_DATA_BUTTON}
+                disabled={isLoading}
               >
                 <StyledIcon sdsIcon="infoCircle" sdsSize="l" sdsType="static" />
                 <ButtonLabel>Source Data</ButtonLabel>

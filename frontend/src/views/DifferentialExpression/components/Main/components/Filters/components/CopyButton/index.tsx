@@ -48,7 +48,7 @@ function CopyButton({ queryGroupKey, testId }: Props): JSX.Element {
     dispatch && dispatch(selectQueryGroup2Filters(queryGroupKey, options));
     track(EVENTS.DE_CG_COPY_CLICKED, {
       category: queryGroupKey,
-      values: options.join(","),
+      values: options.map((o) => o.id).join(","),
     });
   };
 

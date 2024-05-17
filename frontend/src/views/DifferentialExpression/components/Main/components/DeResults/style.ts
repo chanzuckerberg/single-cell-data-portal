@@ -26,12 +26,23 @@ export const ResultsHeaderWrapper = styled.div`
   width: ${TABLE_WIDTH};
 `;
 
-export const ButtonsWrapper = styled.div`
+interface ButtonsWrapperProps {
+  disabled?: boolean;
+}
+export const ButtonsWrapper = styled.div<ButtonsWrapperProps>`
   display: flex;
   column-gap: 7px;
   align-items: center;
   flex-direction: row;
-  cursor: pointer;
+  ${({ disabled }) =>
+    disabled
+      ? `
+    opacity: 0.5;
+    cursor: default;
+  `
+      : `
+    cursor: pointer;
+  `}
 `;
 
 export const InstructionsWrapper = styled.div`

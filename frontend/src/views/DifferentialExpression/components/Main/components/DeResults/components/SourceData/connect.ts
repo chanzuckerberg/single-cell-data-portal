@@ -8,9 +8,14 @@ import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { HOVER_START_TIME_MS } from "src/views/WheresMyGeneV2/common/constants";
 import { StateContext } from "src/views/DifferentialExpression/common/store";
 import { useQueryGroupFilterDimensions } from "src/common/queries/differentialExpression";
+import { QueryGroups } from "src/views/DifferentialExpression/common/store/reducer";
 
 export const useConnect = () => {
-  const { queryGroups } = useContext(StateContext);
+  const { submittedQueryGroups: queryGroupsRaw } = useContext(StateContext);
+
+  // By construction, if SourceData is being rendered, then queryGroupsRaw is defined
+  const queryGroups = queryGroupsRaw as QueryGroups;
+
   const [hoverStartTime, setHoverStartTime] = useState(0);
   const useHandleHoverEnd = (event: EVENTS, payload = {}) => {
     return useCallback(() => {
