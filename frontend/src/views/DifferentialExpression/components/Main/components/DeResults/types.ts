@@ -4,3 +4,7 @@ export interface DifferentialExpressionRow {
   effectSize: string;
   adjustedPValue: string;
 }
+
+export interface Props {
+  setIsLoading: (isLoading: boolean) => void;
+}

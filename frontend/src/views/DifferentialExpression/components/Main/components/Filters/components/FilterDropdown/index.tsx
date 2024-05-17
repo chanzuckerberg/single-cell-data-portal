@@ -1,6 +1,5 @@
-import React, { useMemo } from "react";
+import React from "react";
 
-import { FilterOptionsState } from "@mui/material";
 import { FilterOption } from "../../types";
 import {
   CloseIcon,
@@ -14,14 +13,10 @@ import {
   DIFFERENTIAL_EXPRESSION_FILTER_TAG_GRAY,
   DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY,
 } from "src/views/DifferentialExpression/common/constants";
+import { sortOptions } from "./utils";
+import { useConnect } from "./connect";
+import { Props } from "./types";
 
-interface Props {
-  label: string;
-  options: FilterOption[];
-  allAvailableOptions: FilterOption[];
-  selectedOptionIds: string[];
-  handleChange: (options: FilterOption[]) => void;
-}
 function FilterDropdown({
   options,
   label,
@@ -29,21 +24,11 @@ function FilterDropdown({
   selectedOptionIds,
   handleChange,
 }: Props): JSX.Element {
-  const selectedOptions = useMemo(() => {
-    const optionsMap = new Map(options.map((option) => [option.id, option]));
-    return allAvailableOptions
-      .filter((option) => selectedOptionIds.includes(option.id))
-      .map((availableOption) => {
-        const foundOption = optionsMap.get(availableOption.id);
-        return (
-          foundOption || {
-            id: availableOption.id,
-            name: availableOption.name,
-            unavailable: true,
-          }
-        );
-      });
-  }, [options, allAvailableOptions, selectedOptionIds]);
+  const { selectedOptions } = useConnect({
+    options,
+    allAvailableOptions,
+    selectedOptionIds,
+  });
 
   return (
     <div>
@@ -105,7 +90,7 @@ function FilterDropdown({
               );
             })
             .sort((entityA: FilterOption, entityB: FilterOption) =>
-              _sortOptions(entityA, entityB, state, selectedOptions)
+              sortOptions(entityA, entityB, state, selectedOptions)
             );
         }}
         disableCloseOnSelect
@@ -114,45 +99,4 @@ function FilterDropdown({
   );
 }
 
-function _sortOptions(
-  entityA: FilterOption,
-  entityB: FilterOption,
-  state: FilterOptionsState<FilterOption>,
-  selectedOptions: FilterOption[]
-): number {
-  const aRaw = entityA.name;
-  const bRaw = entityB.name;
-  const a = aRaw.toLowerCase();
-  const b = bRaw.toLowerCase();
-  const searchTerm = state.inputValue.toLowerCase();
-  if (searchTerm === "") {
-    // move selectedValues to top
-    const includesA = selectedOptions
-      .map((option) => option.name)
-      .includes(aRaw);
-    const includesB = selectedOptions
-      .map((option) => option.name)
-      .includes(bRaw);
-    if (includesA && includesB) {
-      return a.localeCompare(b);
-    }
-    if (includesA) {
-      return -1;
-    }
-    if (includesB) {
-      return 1;
-    }
-  }
-  // Determine if each item starts with the search term
-  const aStartsWithSearch = a.startsWith(searchTerm);
-  const bStartsWithSearch = b.startsWith(searchTerm);
-
-  if (aStartsWithSearch && !bStartsWithSearch) {
-    return -1;
-  }
-  if (!aStartsWithSearch && bStartsWithSearch) {
-    return 1;
-  }
-  return a.localeCompare(b);
-}
 export default FilterDropdown;
