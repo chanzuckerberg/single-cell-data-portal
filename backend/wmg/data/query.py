@@ -133,6 +133,16 @@ class WmgQuery:
         cell_counts.rename(columns={"n_cells": "n_total_cells"}, inplace=True)  # expressed & non-expressed cells
         return cell_counts
 
+    def cell_counts_df(self, criteria: WmgQueryCriteria) -> DataFrame:
+        df = self._snapshot.cell_counts_df
+        mask = np.array([True] * len(df))
+        for key, values in dict(criteria).items():
+            values = values if isinstance(values, list) else [values]
+            key = depluralize(key)
+            if key in df.columns and values:
+                mask &= df[key].isin(values)
+        return df[mask].rename(columns={"n_cells": "n_total_cells"})
+
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
     #  /chanzuckerberg/single-cell-data-portal/2133
     def _query(
@@ -173,6 +183,7 @@ class WmgQuery:
 
         # get valid attributes from schema
         # valid means it is a required column for downstream processing
+
         # if self._cube_query_params is None, then all attributes are valid
         attrs = self._cube_query_params.get_attrs_for_cube_query(cube) if self._cube_query_params else None
         if attrs is not None:
@@ -182,6 +193,7 @@ class WmgQuery:
             attrs += numeric_attrs
 
         # get valid dimensions from schema
+
         # if self._cube_query_params is None, then all dimensions are valid
         dims = self._cube_query_params.get_dims_for_cube_query(cube) if self._cube_query_params else None
 

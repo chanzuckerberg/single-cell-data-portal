@@ -72,6 +72,11 @@ paths:
                         type: array
                         items:
                           type: string
+                      dataset_ids:
+                        type: array
+                        items:
+                          type: string
+                          format: uuid
                       disease_terms:
                         $ref: "#/components/schemas/de_ontology_term_id_label_list"
                       sex_terms:
@@ -86,6 +91,10 @@ paths:
                         $ref: "#/components/schemas/de_ontology_term_id_label_list"
                       organism_terms:
                         $ref: "#/components/schemas/de_ontology_term_id_label_list"
+                  n_cells:
+                    description: ->
+                      Cell counts for each query group
+                    type: integer
 
   /v1/differentialExpression:
     post:
@@ -161,9 +170,9 @@ paths:
                 properties:
                   snapshot_id:
                     $ref: "#/components/schemas/de_snapshot_id"
-                  successCode:
+                  n_overlap:
                     description: ->
-                      Code indicating whether the query returned too many cells to compute differential expression.
+                      Number of overlapping populations between the two groups.
                     type: integer
                   differentialExpressionResults:
                     description: ->
@@ -180,18 +189,23 @@ paths:
                         gene_symbol:
                           description: gene symbol
                           type: string
-                        p_value:
-                          description: adjusted p-value
+                        log_fold_change:
+                          description: log fold change
                           type: number
                           format: float
                           maxLength: 4
-                          minimum: 0.0
-                          maximum: 1.0
                         effect_size:
                           description: effect size
                           type: number
                           format: float
                           maxLength: 4
+                        adjusted_p_value:
+                          description: benjamini hochberg-adjusted p-value
+                          type: number
+                          format: float
+                          maxLength: 4
+                          minimum: 0.0
+                          maximum: 1.0
 
 components:
   schemas:
@@ -211,10 +225,12 @@ components:
         form "<id>":"<label>"
       type: array
       items:
-        description: ->
-          A single-element object with the ontology term id as the element's property name and the ontology term label
-          as the element's property value.
-        type: object
+        $ref: "#/components/schemas/de_ontology_term_id_label_obj"
+    de_ontology_term_id_label_obj:
+      description: ->
+        A single-element object with the ontology term id as the element's property name and the ontology term label
+        as the element's property value.
+      type: object
     de_ontology_term_id_list:
       type: array
       items:
