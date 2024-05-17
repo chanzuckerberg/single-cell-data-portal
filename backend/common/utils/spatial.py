@@ -89,9 +89,9 @@ class SpatialDataProcessor:
                 # Flip the image vertically due to explorer client rendering images upside down
                 flipped_img = cropped_img.transpose(Image.FLIP_TOP_BOTTOM)
                 return np.array(flipped_img)
-        except Exception as e:
-            logger.error(f"Error processing image: {e}")
-            raise Exception(f"Error processing image: {e}") from e
+        except Exception:
+            logger.exception("Error processing image")
+            raise
 
     def _generate_deep_zoom_assets(self, image_array, folder_name):
         """
@@ -133,8 +133,8 @@ class SpatialDataProcessor:
             self._generate_deep_zoom_assets(processed_image, assets_folder)
             self._upload_assets(assets_folder)
         except Exception as e:
-            logging.error(f"Failed to create and upload deep zoom assets: {e}")
-            raise Exception(f"An error occurred while creating and uploading deep zoom assets: {e}") from e
+            logger.exception(f"Failed to create and upload deep zoom assets: {e}")
+            raise
 
     def filter_spatial_data(self, content, library_id):
         """
