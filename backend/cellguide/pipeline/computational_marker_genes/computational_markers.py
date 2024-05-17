@@ -1,7 +1,6 @@
 import concurrent.futures
 import itertools
 import logging
-import os
 import warnings
 from typing import Tuple
 
@@ -20,6 +19,7 @@ from backend.cellguide.pipeline.computational_marker_genes.utils import (
 )
 from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
 from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
+from backend.common.marker_gene_files.blacklist import marker_gene_blacklist
 from backend.common.utils.rollup import (
     are_cell_types_colinear,
     get_overlapping_cell_type_descendants,
@@ -42,12 +42,6 @@ or any arbitrary combinations of metadata dimensions.
 """
 
 MARKER_SCORE_THRESHOLD = 0.5
-
-# This file contains blacklisted marker genes that match the following criteria:
-# Ensembl 104 gene IDs that are annotated with the GO terms: ['GO:0005840', 'GO:0005739']
-# These GO terms correspond to the cellular components "ribosome" and "mitochondrion".
-file_dir = os.path.dirname(os.path.realpath(__file__))
-MARKER_GENE_BLACKLIST_FILENAME = os.path.join(file_dir, "marker_gene_blacklist.txt")
 
 
 class MarkerGenesCalculator:
@@ -486,8 +480,6 @@ class MarkerGenesCalculator:
 
         # reset the index to convert MultiIndex back into columns
         markers_df = markers_df.reset_index()
-        with open(MARKER_GENE_BLACKLIST_FILENAME, "r") as f:
-            marker_gene_blacklist = f.read().split(",")
         blacklisted_genes = markers_df["gene_ontology_term_id"].isin(marker_gene_blacklist)
 
         logger.info(f"Removing {blacklisted_genes.sum()} blacklisted marker genes")
