@@ -49,6 +49,8 @@ jobs:
         shell: bash
         run: |
           export BRANCH_SHA=$(git rev-parse --short=8 HEAD)
+          # Cache busting to ensure the image is always rebuilt.
+          export CACHEBUST=$(date +%s)
           happy push "" --aws-profile "" --tag sha-${BRANCH_SHA} --slice processing
       - name: Alert in Slack
         uses: 8398a7/action-slack@v3

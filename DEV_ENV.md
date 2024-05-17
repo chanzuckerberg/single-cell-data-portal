@@ -59,6 +59,7 @@ The dev environment is initialized with AWS Secrets/S3 data in the [scripts/setu
 | `make local-integration-test-backend` | Run backend tests in the local dockerized environment, against dockerized database instance. |       |
 | `make local-unit-test-processing`     | Run dataset processing upload job unit tests in the 'processing' docker environment.         |       |
 | `make local-unit-test-wmg-backend`    | Run wmg backend unit tests in the local dockerized environment.                              |       |
+| `make local-unit-test-de-backend`     | Run DE backend unit tests in the local dockerized environment.                               |       |
 | `make local-functional-test`          | Run backend functional tests in local dockerized environment                                 |       |
 | `make local-smoke-test`               | Run frontend/e2e tests in the local dockerized environment                                   |       |
 

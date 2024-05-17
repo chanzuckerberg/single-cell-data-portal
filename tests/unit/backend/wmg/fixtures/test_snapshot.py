@@ -280,6 +280,7 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
                 cell_type_ancestors=cell_type_ancestors,
                 diffexp_expression_summary_cubes=diffexp_cubes,
                 cardinality_per_dimension=cardinality_per_dimension,
+                cell_counts_df=cell_counts,
             )
 
 

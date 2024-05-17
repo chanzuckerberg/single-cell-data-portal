@@ -22,7 +22,10 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY /python_dependencies/processing/ .
 COPY /python_dependencies/common/ .
 ARG INSTALL_DEV=false
+
+ARG CACHEBUST=1
 RUN python3.10 -m pip install -r requirements.txt
+
 RUN if [ "$INSTALL_DEV" = "true" ]; then python3 -m pip install -r requirements-dev.txt; fi
 
 ADD backend/__init__.py backend/__init__.py

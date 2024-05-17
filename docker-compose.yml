@@ -196,6 +196,7 @@ services:
         - HAPPY_BRANCH=$HAPPY_BRANCH
         - INSTALL_DEV=$INSTALL_DEV
         - HAPPY_TAG
+        - CACHEBUST=$CACHEBUST
     restart: "no"
     volumes:
       - ./backend/portal/pipeline/processing:/backend/portal/pipeline/processing
