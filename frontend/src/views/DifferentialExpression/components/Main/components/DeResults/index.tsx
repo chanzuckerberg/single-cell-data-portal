@@ -26,6 +26,9 @@ import {
   DIFFERENTIAL_EXPRESSION_RESULTS_DOWNLOAD_BUTTON,
   DIFFERENTIAL_EXPRESSION_SOURCE_DATA_BUTTON,
 } from "src/views/DifferentialExpression/common/constants";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
+import { craftPayloadWithQueryGroups } from "../../utils";
 
 interface DeResultsProps {
   setIsLoading: (isLoading: boolean) => void;
@@ -124,7 +127,8 @@ export default function DeResults({
   ]);
 
   const downloadCSV = useCallback(() => {
-    if (!queryGroupsWithNames) return;
+    if (!queryGroupsWithNames || !queryGroups) return;
+
     const { queryGroup1, queryGroup2 } = queryGroupsWithNames;
 
     const formatQueryGroupFilters = (queryGroup: QueryGroup): string => {
@@ -169,7 +173,9 @@ export default function DeResults({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }, [sortedAndFilteredResults, queryGroupsWithNames]);
+
+    track(EVENTS.DE_DOWNLOAD_CLICKED, craftPayloadWithQueryGroups(queryGroups));
+  }, [sortedAndFilteredResults, queryGroups, queryGroupsWithNames]);
 
   return (
     <div>

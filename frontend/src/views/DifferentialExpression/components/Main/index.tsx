@@ -32,6 +32,9 @@ import {
   DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON,
   DIFFERENTIAL_EXPRESSION_METHOD_INFO_TEXT,
 } from "../../common/constants";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
+import { craftPayloadWithQueryGroups } from "./utils";
 
 export default function DifferentialExpression(): JSX.Element {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -58,6 +61,11 @@ export default function DifferentialExpression(): JSX.Element {
   const handleRunDifferentialExpression = () => {
     if (!dispatch) return;
     dispatch(submitQueryGroups());
+
+    track(
+      EVENTS.DE_FIND_GENES_CLICKED,
+      craftPayloadWithQueryGroups(queryGroups)
+    );
   };
 
   const { n_cells: nCellsGroup1, isLoading: isLoadingGroup1 } =
@@ -116,6 +124,7 @@ export default function DifferentialExpression(): JSX.Element {
                 href="/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_3__Gene%20Expression%20Data%20Processing"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => track(EVENTS.DE_DOCUMENTATION_CLICKED)}
               >
                 here
               </a>

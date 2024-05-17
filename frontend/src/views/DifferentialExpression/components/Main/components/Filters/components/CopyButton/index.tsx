@@ -11,6 +11,8 @@ import { selectQueryGroup2Filters } from "src/views/DifferentialExpression/commo
 import { QUERY_GROUP_KEY_TO_FILTER_DIMENSION_MAP } from "../../../common/constants";
 import { FilterOption } from "../../types";
 import { StyledButtonIcon } from "./style";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 interface Props {
   queryGroupKey: keyof QueryGroup;
@@ -44,6 +46,10 @@ function CopyButton({ queryGroupKey, testId }: Props): JSX.Element {
   }, [options]);
   const handleClick = () => {
     dispatch && dispatch(selectQueryGroup2Filters(queryGroupKey, options));
+    track(EVENTS.DE_CG_COPY_CLICKED, {
+      category: queryGroupKey,
+      values: options.join(","),
+    });
   };
 
   return (

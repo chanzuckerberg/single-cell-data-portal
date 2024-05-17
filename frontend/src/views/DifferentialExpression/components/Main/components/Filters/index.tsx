@@ -18,7 +18,12 @@ import useProcessedQueryGroupFilterDimensions, {
 import { QUERY_GROUP_KEY_TO_FILTER_DIMENSION_MAP } from "../common/constants";
 import CopyButton from "./components/CopyButton";
 import { DIFFERENTIAL_EXPRESSION_COPY_FILTERS_BUTTON_PREFIX } from "src/views/DifferentialExpression/common/constants";
-import { QUERY_GROUP_KEYS, QUERY_GROUP_LABELS } from "./constants";
+import {
+  QUERY_GROUP_KEYS,
+  QUERY_GROUP_KEYS_TO_FILTER_EVENT_MAP,
+  QUERY_GROUP_LABELS,
+} from "./constants";
+import { track } from "src/common/analytics";
 
 interface Props {
   queryGroup: QueryGroup;
@@ -38,13 +43,14 @@ export default memo(function Filters({
 
   const handleFilterChange = useCallback(
     function handleFilterChange_(
-      key: keyof QueryGroup
+      key: Partial<keyof QueryGroup>
     ): (options: FilterOption[] | undefined) => void {
       return (options: FilterOption[] | undefined): void => {
         if (!dispatch || !options) {
           return;
         }
-
+        const event = QUERY_GROUP_KEYS_TO_FILTER_EVENT_MAP[key];
+        event && track(event, { [key]: options.join(",") });
         dispatch(selectQueryGroupFilters(key, options));
       };
     },

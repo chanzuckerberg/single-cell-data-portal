@@ -42,6 +42,8 @@ import {
   DIFFERENTIAL_EXPRESSION_SORT_DIRECTION,
 } from "src/views/DifferentialExpression/common/constants";
 import useProcessedQueryGroupFilterDimensions from "../../../common/query_group_filter_dimensions";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 interface DifferentialExpressionResultsProps {
   queryGroups: QueryGroups;
@@ -132,6 +134,7 @@ const DifferentialExpressionResults = ({
   > = useMemo(() => {
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery(event.target.value);
+      track(EVENTS.DE_SEARCH_GENE, { gene: event.target.value });
       setPage(1);
     };
     const handleLfcFilter = (event: React.ChangeEvent<HTMLInputElement>) => {

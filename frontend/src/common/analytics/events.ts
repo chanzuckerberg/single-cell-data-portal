@@ -122,4 +122,26 @@ export enum EVENTS {
   CG_VIEW_CELLGUIDE_PAGE_CLICKED = "CG_VIEW_CELLGUIDE_PAGE_CLICKED",
   CG_OPEN_INTEGRATED_EMBEDDING_CLICKED = "CG_OPEN_INTEGRATED_EMBEDDING_CLICKED",
   SUBMIT_CORRECTION_CLICKED = "SUBMIT_CORRECTION_CLICKED",
+  // DIFFERENTIAL EXPRESSION
+  DE_DOCUMENTATION_CLICKED = "DE_DOCUMENTATION_CLICKED",
+  // Event triggered when a visitor selects a cell type for Cell group 1 or Cell group 2
+  DE_SELECT_CELL_TYPE = "DE_SELECT_CELL_TYPE",
+  // Event triggered when a visitor selects a tissue for Cell group 1 or Cell group 2
+  DE_SELECT_TISSUE = "DE_SELECT_TISSUE",
+  // Event triggered when a visitor selects a disease for Cell group 1 or Cell group 2
+  DE_SELECT_DISEASE = "DE_SELECT_DISEASE",
+  // Event triggered when a visitor selects a sex for Cell group 1 or Cell group 2
+  DE_SELECT_SEX = "DE_SELECT_SEX",
+  // Event triggered when a visitor selects an ethnicity for Cell group 1 or Cell group 2
+  DE_SELECT_ETHNICITY = "DE_SELECT_ETHNICITY",
+  // Event triggered when a visitor selects a publication for Cell group 1 or Cell group 2
+  DE_SELECT_PUBLICATION = "DE_SELECT_PUBLICATION",
+  // Event triggered when a visitor clicks to copy their selections for a category in Cell Group 1 to Cell Group 2
+  DE_CG_COPY_CLICKED = "DE_CG_COPY_CLICKED",
+  // Event triggered when a visitor clicks to calculate the differential expression
+  DE_FIND_GENES_CLICKED = "DE_FIND_GENES_CLICKED",
+  // Event triggered when a visitor clicks to download the results
+  DE_DOWNLOAD_CLICKED = "DE_DOWNLOAD_CLICKED",
+  // Event triggered when a visitor searches for a gene
+  DE_SEARCH_GENE = "DE_SEARCH_GENE",
 }
