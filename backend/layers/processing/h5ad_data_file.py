@@ -116,7 +116,11 @@ class H5ADDataFile:
                 * with all values finite or NaN (no +Inf or -Inf)
             """
 
-            is_valid = isinstance(embedding_name, str) and embedding_name.startswith("X_") and len(embedding_name) > 2
+            is_valid = (
+                isinstance(embedding_name, str)
+                and (embedding_name.startswith("X_") or embedding_name == "spatial")
+                and len(embedding_name) > 2
+            )
             is_valid = is_valid and isinstance(embedding_array, np.ndarray) and embedding_array.dtype.kind in "fiu"
             is_valid = is_valid and embedding_array.shape[0] == adata.n_obs and embedding_array.shape[1] >= 2
             is_valid = is_valid and not np.any(np.isinf(embedding_array)) and not np.all(np.isnan(embedding_array))
@@ -127,7 +131,10 @@ class H5ADDataFile:
 
         for embedding_name, embedding_values in self.anndata.obsm.items():
             if is_valid_embedding(self.anndata, embedding_name, embedding_values):
-                embedding_name = f"{embedding_container}/{embedding_name[2:]}"
+                if embedding_name == "spatial":  # if spatial no need to strip X_ prefix
+                    embedding_name = f"{embedding_container}/{embedding_name}"
+                else:
+                    embedding_name = f"{embedding_container}/{embedding_name[2:]}"
                 convert_ndarray_to_cxg_dense_array(embedding_name, embedding_values, ctx)
                 logging.info(f"\t\t...{embedding_name} embedding created")
 

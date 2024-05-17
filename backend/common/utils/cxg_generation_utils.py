@@ -50,7 +50,10 @@ def convert_uns_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="
     with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
         for key, value in metadata_dict.items():
             if key == UNS_SPATIAL_KEY:
+                is_single = list(value.keys())[0]
+                value.pop(is_single)
                 for object_id, content in value.items():
+                    print(f"Processing spatial data for object {object_id}")
                     object_filtered = spatial_processor.filter_spatial_data(content, object_id)
                     spatial_processor.create_deep_zoom_assets(cxg_container, content)
             else:

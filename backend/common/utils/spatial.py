@@ -81,6 +81,9 @@ class SpatialDataProcessor:
         Image.MAX_IMAGE_PIXELS = None  # Disable the image size limit
         try:
             with Image.fromarray(image_array_uint8) as img:
+                # Convert image to RGB mode if it's not already
+                if img.mode != "RGB":
+                    img = img.convert("RGB")
                 cropped_img = img.crop(self._calculate_aspect_ratio_crop(img.size))  # Crop the image
                 cropped_img.save(io.BytesIO(), format="JPEG", quality=90)  # Save or manipulate as needed
                 # Flip the image vertically due to explorer client rendering images upside down
