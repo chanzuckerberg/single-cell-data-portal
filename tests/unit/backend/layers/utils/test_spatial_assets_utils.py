@@ -40,19 +40,7 @@ class TestSpatialDataProcessor(unittest.TestCase):
         self.ctx = None
 
         self.mock_spatial_processor = MagicMock(spec=SpatialDataProcessor)
-        self.mock_spatial_processor.filter_spatial_data.return_value = {
-            "library_id_1": {
-                "images": {"hires": self.valid_uns["spatial"]["library_id_1"]["images"]["hires"], "fullres": []},
-                "scalefactors": {
-                    "spot_diameter_fullres": self.valid_uns["spatial"]["library_id_1"]["scalefactors"][
-                        "spot_diameter_fullres"
-                    ],
-                    "tissue_hires_scalef": self.valid_uns["spatial"]["library_id_1"]["scalefactors"][
-                        "tissue_hires_scalef"
-                    ],
-                },
-            }
-        }
+        self.mock_spatial_processor.filter_spatial_data.return_value = self.valid_uns["spatial"]
 
     def test__valid_input_metadata_copy(self):
         """
