@@ -58,6 +58,7 @@ export const REDUCERS = {
   clearQueryGroup1Filters,
   clearQueryGroup2Filters,
   submitQueryGroups,
+  clearSubmittedQueryGroups,
 };
 
 function setSnapshotId(
@@ -154,6 +155,17 @@ function submitQueryGroups(state: State, _: PayloadAction<null>): State {
     ...state,
     submittedQueryGroups: queryGroups,
     submittedQueryGroupsWithNames: queryGroupsWithNames,
+  };
+}
+
+function clearSubmittedQueryGroups(
+  state: State,
+  _: PayloadAction<null>
+): State {
+  return {
+    ...state,
+    submittedQueryGroups: null,
+    submittedQueryGroupsWithNames: null,
   };
 }
 

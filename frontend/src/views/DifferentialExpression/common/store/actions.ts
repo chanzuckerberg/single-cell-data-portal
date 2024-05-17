@@ -37,6 +37,14 @@ export function submitQueryGroups(): GetActionTypeOfReducer<
     type: "submitQueryGroups",
   };
 }
+export function clearSubmittedQueryGroups(): GetActionTypeOfReducer<
+  (typeof REDUCERS)["clearSubmittedQueryGroups"]
+> {
+  return {
+    payload: null,
+    type: "clearSubmittedQueryGroups",
+  };
+}
 
 export function clearQueryGroup1Filters(): GetActionTypeOfReducer<
   (typeof REDUCERS)["clearQueryGroup1Filters"]

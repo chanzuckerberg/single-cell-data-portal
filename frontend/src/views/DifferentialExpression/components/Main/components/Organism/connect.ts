@@ -9,6 +9,7 @@ import {
 import {
   clearQueryGroup1Filters,
   clearQueryGroup2Filters,
+  clearSubmittedQueryGroups,
   selectOrganism,
 } from "src/views/DifferentialExpression/common/store/actions";
 import { Organism as IOrganism } from "src/views/DifferentialExpression/common/types";
@@ -25,6 +26,7 @@ export const useConnect = () => {
       track(EVENTS.WMG_SELECT_ORGANISM, { payload: organism?.name });
       dispatch(clearQueryGroup1Filters());
       dispatch(clearQueryGroup2Filters());
+      dispatch(clearSubmittedQueryGroups());
       dispatch(selectOrganism(organism?.id || null));
     },
     [dispatch, organismId]
