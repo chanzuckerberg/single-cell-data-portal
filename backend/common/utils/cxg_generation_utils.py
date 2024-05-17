@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import tiledb
 
-from backend.common.constants import UNS_METADATA_KEYS, SPATIAL_KEY
+from backend.common.constants import UNS_SPATIAL_KEY
 from backend.common.utils.spatial import SpatialDataProcessor
 from backend.common.utils.type_conversion_utils import get_dtype_and_schema_of_array
 
@@ -49,7 +49,7 @@ def convert_uns_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="
 
     with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
         for key, value in metadata_dict.items():
-            if key == SPATIAL_KEY:
+            if key == UNS_SPATIAL_KEY:
                 for object_id, content in value.items():
                     
                         object_filtered = spatial_processor.filter_spatial_data(content, object_id)
