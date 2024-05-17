@@ -125,7 +125,6 @@ const config: PlaywrightTestConfig = {
         userAgent: devices["Desktop Chrome"].userAgent + CZI_CHECKER,
         permissions: CLIPBOARD_PERMISSIONS,
         extraHTTPHeaders,
-        actionTimeout: 10000,
       },
     },
     {
@@ -135,7 +134,6 @@ const config: PlaywrightTestConfig = {
         ...devices["Desktop Firefox"],
         userAgent: devices["Desktop Firefox"].userAgent + CZI_CHECKER,
         extraHTTPHeaders,
-        actionTimeout: 10000,
       },
     },
     {
@@ -146,7 +144,6 @@ const config: PlaywrightTestConfig = {
         userAgent: devices["Desktop Edge"].userAgent + CZI_CHECKER,
         permissions: CLIPBOARD_PERMISSIONS,
         extraHTTPHeaders,
-        actionTimeout: 10000,
       },
     },
   ],
