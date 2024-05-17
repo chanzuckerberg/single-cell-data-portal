@@ -53,10 +53,8 @@ def convert_uns_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="
                 for object_id, content in value.items():
                     object_filtered = spatial_processor.filter_spatial_data(content, object_id)
                     spatial_processor.create_deep_zoom_assets(cxg_container, content)
-            else:
-                continue
 
-            metadata_array.meta[key] = pickle.dumps(object_filtered)
+                metadata_array.meta[key] = pickle.dumps(object_filtered)
 
 
 def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, index_column_name, ctx):
