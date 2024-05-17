@@ -51,7 +51,7 @@ class SpatialDataProcessor:
         upper = (height - new_dimension) / 2
         right = (width + new_dimension) / 2
         lower = (height + new_dimension) / 2
-        return (left, upper, right, lower)
+        return tuple(map(int, (left, upper, right, lower)))
 
     def _prepare_image(self, content):
         """
