@@ -27,8 +27,8 @@ export const CardContent = styled.div`
 `;
 
 export const CloseButtonWrapper = styled.div`
-  position: absolute;
-  top: 8px;
-  right: 8px;
+  position: sticky;
+  top: 0px;
+  right: 0px;
   background-color: white;
 `;

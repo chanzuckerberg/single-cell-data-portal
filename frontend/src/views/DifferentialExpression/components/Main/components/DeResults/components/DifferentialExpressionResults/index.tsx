@@ -15,6 +15,7 @@ import {
   StyledTooltipText,
   StyledInterpretButton,
   GroupButtonsWrapper,
+  Overlay,
 } from "./style";
 import cxgIcon from "./images/cxg.svg";
 import { Pagination } from "@mui/material";
@@ -172,6 +173,7 @@ const DifferentialExpressionResults = ({
 
   return (
     <>
+      {interpretationCardVisible && !isLoadingInterpret && <Overlay />}
       <CellGroupWrapper data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_INFO}>
         <CellGroupTitleWrapper>
           <CellGroupTitle>Cell Group 1</CellGroupTitle>

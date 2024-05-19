@@ -12,7 +12,7 @@ export const useConnect = ({
   setIsLoadingInterpret: Props["setIsLoadingInterpret"];
 }) => {
   const {
-    data: { message: analysisMessage },
+    data: { message: analysisMessage, prompt: analysisPrompt },
     isLoading,
   } = useInterpretDeResults({
     isQueryGroup1,
@@ -25,6 +25,7 @@ export const useConnect = ({
 
   return {
     analysisMessage,
+    analysisPrompt,
     isLoading,
   };
 };

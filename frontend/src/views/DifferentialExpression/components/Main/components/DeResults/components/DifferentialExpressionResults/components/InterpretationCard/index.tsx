@@ -11,6 +11,7 @@ const InterpretationCard = ({
   setIsLoadingInterpret,
   setIsVisible,
 }: Props) => {
+  console.log(differentialExpressionResults);
   const { analysisMessage, isLoading } = useConnect({
     isQueryGroup1,
     differentialExpressionResults,
@@ -18,21 +19,19 @@ const InterpretationCard = ({
   });
 
   return !isLoading ? (
-    <>
-      <CardWrapper>
-        <CloseButtonWrapper>
-          <ButtonIcon
-            sdsType="tertiary"
-            sdsIcon="xMark"
-            sdsSize="small"
-            onClick={() => setIsVisible(false)}
-          />
-        </CloseButtonWrapper>
-        <CardContent>
-          <ReactMarkdown>{analysisMessage}</ReactMarkdown>
-        </CardContent>
-      </CardWrapper>
-    </>
+    <CardWrapper>
+      <CloseButtonWrapper>
+        <ButtonIcon
+          sdsType="tertiary"
+          sdsIcon="xMark"
+          sdsSize="small"
+          onClick={() => setIsVisible(false)}
+        />
+      </CloseButtonWrapper>
+      <CardContent>
+        <ReactMarkdown>{analysisMessage}</ReactMarkdown>
+      </CardContent>
+    </CardWrapper>
   ) : null;
 };
 
