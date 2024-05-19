@@ -1,5 +1,6 @@
 import openai
 
+from backend.common.utils.ontology_parser import ontology_parser
 from backend.de.api.config import DeConfig
 from backend.wmg.data.query import DeQueryCriteria
 
@@ -25,22 +26,37 @@ def interpret_de_results(
 def _craft_de_interpretation_prompt(
     criteria1: DeQueryCriteria, criteria2: DeQueryCriteria, selected_group: int, genes: list[dict[str, str]]
 ) -> str:
+    def get_term_labels(ontology_term_ids: list[str]) -> list[str]:
+        return [ontology_parser.get_term_label(term_id) for term_id in ontology_term_ids]
+
     def format_criteria(criteria: DeQueryCriteria) -> str:
         parts = [
-            f"Organism: {criteria.organism_ontology_term_id}",
-            f"Tissues: {', '.join(criteria.tissue_ontology_term_ids)}" if criteria.tissue_ontology_term_ids else "",
+            f"Organism: {ontology_parser.get_term_label(criteria.organism_ontology_term_id)}",
             (
-                f"Cell Types: {', '.join(criteria.cell_type_ontology_term_ids)}"
+                f"Tissues: {', '.join(get_term_labels(criteria.tissue_ontology_term_ids))}"
+                if criteria.tissue_ontology_term_ids
+                else ""
+            ),
+            (
+                f"Cell Types: {', '.join(get_term_labels(criteria.cell_type_ontology_term_ids))}"
                 if criteria.cell_type_ontology_term_ids
                 else ""
             ),
-            f"Diseases: {', '.join(criteria.disease_ontology_term_ids)}" if criteria.disease_ontology_term_ids else "",
             (
-                f"Ethnicities: {', '.join(criteria.self_reported_ethnicity_ontology_term_ids)}"
+                f"Diseases: {', '.join(get_term_labels(criteria.disease_ontology_term_ids))}"
+                if criteria.disease_ontology_term_ids
+                else ""
+            ),
+            (
+                f"Ethnicities: {', '.join(get_term_labels(criteria.self_reported_ethnicity_ontology_term_ids))}"
                 if criteria.self_reported_ethnicity_ontology_term_ids
                 else ""
             ),
-            f"Sexes: {', '.join(criteria.sex_ontology_term_ids)}" if criteria.sex_ontology_term_ids else "",
+            (
+                f"Sexes: {', '.join(get_term_labels(criteria.sex_ontology_term_ids))}"
+                if criteria.sex_ontology_term_ids
+                else ""
+            ),
         ]
         return ", ".join([part for part in parts if part])
 
@@ -48,7 +64,7 @@ def _craft_de_interpretation_prompt(
     formatted_criteria2 = format_criteria(criteria2)
     formatted_genes = "\n  ".join(
         [
-            f"{i+1}. {gene['gene_symbol']} (p-value: {gene['p_value']}, effect size: {gene['effect_size']})"
+            f"{i+1}. {gene['gene_symbol']} (p-value: {gene['adjusted_p_value']}, effect size: {gene['effect_size']})"
             for i, gene in enumerate(genes)
         ]
     )
