@@ -70,13 +70,18 @@ def _craft_de_interpretation_prompt(
     )
 
     prompt = f"""
-Please analyze the following differential expression (DE) results and provide a detailed interpretation focusing on biologically interesting and relevant signals, such as pathway enrichment. Factor the reported p-value and effect sizes into account. Typically, p-values < 0.001 and effect sizes > 1 are meaningful.
+    Please analyze the following differential expression (DE) results and provide a detailed interpretation focusing on
+    biologically interesting and relevant signals, such as pathway enrichment. The p-values and effect sizes are provided
+    for your reference. You may consider them in your analysis but do not discuss them as part of your report to the user.
+    Typically, p-values < 0.05 and effect sizes > 1 are meaningful.
 
-- **Group 1 Criteria**: {formatted_criteria1}
-- **Group 2 Criteria**: {formatted_criteria2}
-- **Top DE Genes for Group {selected_group}**:
-  {formatted_genes}
+    - **Group 1 Criteria**: {formatted_criteria1}
+    - **Group 2 Criteria**: {formatted_criteria2}
+    - **Top DE Genes for Group {selected_group}**:
+    {formatted_genes}
 
-Please include in your analysis any significant pathways, biological processes, or functional annotations that are enriched in these top differentially expressed genes. Also, describe any notable patterns or trends that emerge from these results.
-"""
+    Please include in your analysis any significant pathways, biological processes, or functional annotations that are enriched
+    in these top differentially expressed genes. Also, describe any notable patterns or trends that emerge from these results,
+    especially given the biological context of the query.
+    """
     return prompt.strip()
