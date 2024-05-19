@@ -1,10 +1,12 @@
 import openai
+from flask import stream_with_context
 
 from backend.common.utils.ontology_parser import ontology_parser
 from backend.de.api.config import DeConfig
 from backend.wmg.data.query import DeQueryCriteria
 
 
+@stream_with_context
 def interpret_de_results(
     criteria1: DeQueryCriteria,
     criteria2: DeQueryCriteria,
@@ -19,8 +21,12 @@ def interpret_de_results(
         model="gpt-4o-2024-05-13",
         messages=messages,
         api_key=DeConfig().openai_api_key,
+        stream=True,
     )
-    return response["choices"][0]["message"]["content"]
+    for chunk in response:
+        if "choices" in chunk:
+            text = chunk["choices"][0]["delta"].get("content", "")
+            yield f"data: {text}\n\n"
 
 
 def _craft_de_interpretation_prompt(

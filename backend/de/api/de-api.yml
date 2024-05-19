@@ -296,7 +296,7 @@ paths:
         "200":
           description: OK
           content:
-            application/json:
+            text/event-stream:
               schema:
                 type: object
                 required:

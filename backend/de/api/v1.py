@@ -5,7 +5,7 @@ import connexion
 import numpy as np
 import pandas as pd
 from ddtrace import tracer
-from flask import jsonify
+from flask import Response, jsonify
 from scipy import stats
 from server_timing import Timing as ServerTiming
 
@@ -348,10 +348,9 @@ def interpretDeResults():
     criteria1 = DeQueryCriteria(**queryGroup1Filters)
     criteria2 = DeQueryCriteria(**queryGroup2Filters)
 
-    with ServerTiming.time("interpret differential expression results"):
-        message = interpret_de_results(criteria1, criteria2, is_group_one, de_genes)
-
-    return jsonify(dict(message=message))
+    return Response(
+        interpret_de_results(criteria1, criteria2, is_group_one, de_genes), content_type="text/event-stream"
+    )
 
 
 def _get_cell_counts_for_query(q: WmgQuery, criteria: WmgFiltersQueryCriteria) -> pd.DataFrame:
