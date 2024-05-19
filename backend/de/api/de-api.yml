@@ -301,8 +301,11 @@ paths:
                 type: object
                 required:
                   - message
+                  - prompt
                 properties:
                   message:
+                    type: string
+                  prompt:
                     type: string
 components:
   schemas:

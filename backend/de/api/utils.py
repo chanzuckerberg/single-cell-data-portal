@@ -20,7 +20,7 @@ def interpret_de_results(
         messages=messages,
         api_key=DeConfig().openai_api_key,
     )
-    return response["choices"][0]["message"]["content"]
+    return response["choices"][0]["message"]["content"], prompt
 
 
 def _craft_de_interpretation_prompt(

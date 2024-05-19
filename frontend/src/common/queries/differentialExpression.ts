@@ -427,6 +427,7 @@ interface InterpretDeResultsQuery {
 
 interface InterpretDeResultsResponse {
   message: string;
+  prompt: string;
 }
 
 async function fetchInterpretDeResults({
@@ -487,7 +488,7 @@ export function useInterpretDeResults(query: InterpretDeResultsQuery | null): {
 
   return useMemo(() => {
     if (isLoading || !data) {
-      return { data: { message: "" }, isLoading };
+      return { data: { message: "", prompt: "" }, isLoading };
     }
 
     return { data, isLoading: false };

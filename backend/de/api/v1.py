@@ -349,9 +349,9 @@ def interpretDeResults():
     criteria2 = DeQueryCriteria(**queryGroup2Filters)
 
     with ServerTiming.time("interpret differential expression results"):
-        message = interpret_de_results(criteria1, criteria2, is_group_one, de_genes)
+        message, prompt = interpret_de_results(criteria1, criteria2, is_group_one, de_genes)
 
-    return jsonify(dict(message=message))
+    return jsonify(dict(message=message, prompt=prompt))
 
 
 def _get_cell_counts_for_query(q: WmgQuery, criteria: WmgFiltersQueryCriteria) -> pd.DataFrame:
