@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useInterpretDeResults } from "src/common/queries/differentialExpression";
 import { Props } from "./types";
 
@@ -6,8 +6,11 @@ export const useConnect = ({
   isQueryGroup1,
   differentialExpressionResults,
   setIsLoadingInterpret,
-}: Props) => {
-  const [isCardVisible, setIsCardVisible] = useState(false);
+}: {
+  isQueryGroup1: Props["isQueryGroup1"];
+  differentialExpressionResults: Props["differentialExpressionResults"];
+  setIsLoadingInterpret: Props["setIsLoadingInterpret"];
+}) => {
   const {
     data: { message: analysisMessage },
     isLoading,
@@ -20,13 +23,7 @@ export const useConnect = ({
     setIsLoadingInterpret(isLoading);
   }, [isLoading, setIsLoadingInterpret]);
 
-  const toggleCardVisibility = () => {
-    setIsCardVisible((prev) => !prev);
-  };
-
   return {
     analysisMessage,
-    isCardVisible,
-    toggleCardVisibility,
   };
 };

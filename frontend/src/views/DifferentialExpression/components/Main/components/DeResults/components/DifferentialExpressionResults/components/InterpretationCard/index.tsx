@@ -3,11 +3,13 @@ import { useConnect } from "./connect";
 import { CardWrapper, CardContent } from "./style";
 import { Props } from "./types";
 const InterpretationCard = ({
+  isVisible,
   isQueryGroup1,
   differentialExpressionResults,
   setIsLoadingInterpret,
+  setIsVisible,
 }: Props) => {
-  const { analysisMessage, isCardVisible, toggleCardVisibility } = useConnect({
+  const { analysisMessage } = useConnect({
     isQueryGroup1,
     differentialExpressionResults,
     setIsLoadingInterpret,
@@ -15,13 +17,13 @@ const InterpretationCard = ({
 
   return (
     <>
-      {isCardVisible && (
+      {isVisible && (
         <CardWrapper>
           <CardContent>{analysisMessage}</CardContent>
         </CardWrapper>
       )}
-      <button onClick={toggleCardVisibility}>
-        {isCardVisible ? "Hide Analysis" : "Show Analysis"}
+      <button onClick={() => setIsVisible((prev) => !prev)}>
+        {isVisible ? "Hide Analysis" : "Show Analysis"}
       </button>
     </>
   );

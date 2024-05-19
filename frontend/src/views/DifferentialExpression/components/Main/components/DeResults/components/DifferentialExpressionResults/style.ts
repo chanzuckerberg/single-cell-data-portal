@@ -1,11 +1,5 @@
 import styled from "@emotion/styled";
-import {
-  Button,
-  Callout,
-  fontBodyM,
-  fontBodyS,
-  fontBodyXxs,
-} from "@czi-sds/components";
+import { Button, Callout, fontBodyS, fontBodyXxs } from "@czi-sds/components";
 import { gray100, primary400 } from "src/common/theme";
 import { TextField } from "@mui/material";
 import Image from "next/image";

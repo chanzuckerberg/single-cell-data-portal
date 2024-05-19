@@ -71,6 +71,8 @@ const DifferentialExpressionResults = ({
     setIsQueryGroup1BeingInterpreted,
     isLoadingInterpret,
     setIsLoadingInterpret,
+    interpretationCardVisible,
+    setInterpretationCardVisible,
   } = useConnect({
     queryGroups,
     queryGroupsWithNames,
@@ -158,7 +160,15 @@ const DifferentialExpressionResults = ({
     setPage,
   ]);
 
-  const interpretText = isLoadingInterpret ? "Interpreting..." : "Interpret";
+  const interpretText1 =
+    isQueryGroup1BeingInterpreted && isLoadingInterpret
+      ? "Interpreting..."
+      : "Interpret";
+
+  const interpretText2 =
+    !isQueryGroup1BeingInterpreted && isLoadingInterpret
+      ? "Interpreting..."
+      : "Interpret";
   return (
     <>
       <CellGroupWrapper data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_INFO}>
@@ -166,10 +176,15 @@ const DifferentialExpressionResults = ({
           <CellGroupTitle>Cell Group 1</CellGroupTitle>
           <GroupButtonsWrapper>
             <StyledInterpretButton
-              onClick={() => setIsQueryGroup1BeingInterpreted(true)}
+              onClick={() => {
+                setIsQueryGroup1BeingInterpreted(true);
+                setInterpretationCardVisible(true);
+              }}
             >
-              {isLoadingInterpret && <Spinner />}
-              {interpretText}
+              {isLoadingInterpret && isQueryGroup1BeingInterpreted && (
+                <Spinner />
+              )}
+              {interpretText1}
             </StyledInterpretButton>
             <Tooltip
               sdsStyle="dark"
@@ -217,10 +232,15 @@ const DifferentialExpressionResults = ({
             <StyledInterpretButton
               sdsStyle="primary"
               sdsType="filled"
-              onClick={() => setIsQueryGroup1BeingInterpreted(true)}
+              onClick={() => {
+                setIsQueryGroup1BeingInterpreted(true);
+                setInterpretationCardVisible(true);
+              }}
             >
-              {isLoadingInterpret && <Spinner />}
-              {interpretText}
+              {isLoadingInterpret && !isQueryGroup1BeingInterpreted && (
+                <Spinner />
+              )}
+              {interpretText2}
             </StyledInterpretButton>
             <Tooltip
               sdsStyle="dark"
@@ -282,6 +302,8 @@ const DifferentialExpressionResults = ({
         <Pagination count={pageCount} page={page} onChange={handlePageChange} />
       </TableWrapper>
       <InterpretationCard
+        isVisible={interpretationCardVisible}
+        setIsVisible={setInterpretationCardVisible}
         isQueryGroup1={isQueryGroup1BeingInterpreted}
         differentialExpressionResults={genesToInterpret}
         setIsLoadingInterpret={setIsLoadingInterpret}

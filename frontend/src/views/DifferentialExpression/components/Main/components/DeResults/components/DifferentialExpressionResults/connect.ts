@@ -31,6 +31,8 @@ export const useConnect = ({
 }) => {
   const [page, setPage] = useState(1);
   const [isLoadingInterpret, setIsLoadingInterpret] = useState(false);
+  const [interpretationCardVisible, setInterpretationCardVisible] =
+    useState(false);
   const [isQueryGroup1BeingInterpreted, setIsQueryGroup1BeingInterpreted] =
     useState(false);
   const { n_cells: nCellsGroup1 } = useProcessedQueryGroupFilterDimensions(
@@ -121,6 +123,7 @@ export const useConnect = ({
     (nCellsOverlap / Math.max(nCellsGroup1, nCellsGroup2)) *
     100
   ).toFixed(2);
+
   return {
     page,
     setPage,
@@ -137,5 +140,7 @@ export const useConnect = ({
     setIsQueryGroup1BeingInterpreted,
     isLoadingInterpret,
     setIsLoadingInterpret,
+    interpretationCardVisible,
+    setInterpretationCardVisible,
   };
 };
