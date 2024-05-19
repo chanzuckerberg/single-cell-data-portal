@@ -1,7 +1,0 @@
-DEBUG    ddtrace.internal.remoteconfig.worker:worker.py:53 Agent is down or Remote Config is not enabled in the Agent
-Check your Agent version, you need an Agent running on 7.39.1 version or above.
-Check Your Remote Config environment variables on your Agent:
-DD_REMOTE_CONFIGURATION_ENABLED=true
-See: https://docs.datadoghq.com/agent/guide/how_remote_config_works/, 8 additional messages skipped
-DEBUG    ddtrace.internal.remoteconfig._subscribers:_subscribers.py:45 [PID 1 | PPID 0] Subscriber ASM is getting data, 19 additional messages skipped
-DEBUG    ddtrace.internal.remoteconfig._subscribers:_subscribers.py:47 [PID 1 | PPID 0] Subscriber ASM got data, 19 additional messages skipped
