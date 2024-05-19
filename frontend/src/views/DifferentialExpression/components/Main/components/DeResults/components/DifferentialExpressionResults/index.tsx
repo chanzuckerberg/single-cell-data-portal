@@ -40,6 +40,7 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { useConnect } from "./connect";
 import { Props } from "./types";
+import InterpretationCard from "./components/InterpretationCard";
 
 const DifferentialExpressionResults = ({
   queryGroups,
@@ -63,6 +64,9 @@ const DifferentialExpressionResults = ({
     pageCount,
     handlePageChange,
     overlapPercent,
+    genesToInterpret,
+    isQueryGroup1BeingInterpreted,
+    setIsQueryGroup1BeingInterpreted,
   } = useConnect({
     queryGroups,
     queryGroupsWithNames,
@@ -155,6 +159,9 @@ const DifferentialExpressionResults = ({
       <CellGroupWrapper data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_INFO}>
         <CellGroupTitleWrapper>
           <CellGroupTitle>Cell Group 1</CellGroupTitle>
+          <button onClick={() => setIsQueryGroup1BeingInterpreted(true)}>
+            Interpret
+          </button>
           <Tooltip
             sdsStyle="dark"
             placement="left"
@@ -196,6 +203,9 @@ const DifferentialExpressionResults = ({
       <CellGroupWrapper data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_INFO}>
         <CellGroupTitleWrapper>
           <CellGroupTitle>Cell Group 2</CellGroupTitle>
+          <button onClick={() => setIsQueryGroup1BeingInterpreted(true)}>
+            Interpret
+          </button>
           <Tooltip
             sdsStyle="dark"
             placement="left"
@@ -254,6 +264,10 @@ const DifferentialExpressionResults = ({
 
         <Pagination count={pageCount} page={page} onChange={handlePageChange} />
       </TableWrapper>
+      <InterpretationCard
+        isQueryGroup1={isQueryGroup1BeingInterpreted}
+        differentialExpressionResults={genesToInterpret}
+      />
     </>
   );
 };
