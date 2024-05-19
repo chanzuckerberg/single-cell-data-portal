@@ -206,12 +206,35 @@ paths:
                           maxLength: 4
                           minimum: 0.0
                           maximum: 1.0
-  /v1/interpretDeResults:
+
+  /v1/streamInterpretDeResults/{process_id}:
+    get:
+      summary: Stream interpretation of differential expression results
+      tags:
+        - de
+      operationId: backend.de.api.v1.streamInterpretDeResults
+      parameters:
+        - name: process_id
+          in: path
+          required: true
+          schema:
+            type: string
+            description: Unique identifier for the differential expression LLM interpretation process
+      responses:
+        "200":
+          description: OK
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: Server-Sent Events stream containing interpreted results
+
+  /v1/initInterpretDeResults:
     post:
       summary: Interpret differential expression results using OpenAI GPT-4o.
       tags:
         - de
-      operationId: backend.de.api.v1.interpretDeResults
+      operationId: backend.de.api.v1.initInterpretDeResults
       parameters: []
       requestBody:
         content:
@@ -296,14 +319,15 @@ paths:
         "200":
           description: OK
           content:
-            text/event-stream:
+            application/json:
               schema:
                 type: object
                 required:
-                  - message
+                  - process_id
                 properties:
-                  message:
+                  process_id:
                     type: string
+
 components:
   schemas:
     problem:

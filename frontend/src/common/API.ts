@@ -24,5 +24,6 @@ export enum API {
   CENSUS_MODELS_MANIFEST = "/contrib/cell-census/contributions.json",
   DE_FILTERS_QUERY = "/de/v1/filters",
   DE_QUERY = "/de/v1/differentialExpression",
-  INTERPRET_DE_RESULTS = "/de/v1/interpretDeResults",
+  INIT_INTERPRET_DE_RESULTS = "/de/v1/initInterpretDeResults",
+  STREAM_INTERPRET_DE_RESULTS = "/de/v1/streamInterpretDeResults",
 }

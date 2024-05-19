@@ -16,7 +16,7 @@ const InterpretationCard = ({
     differentialExpressionResults,
     setIsLoadingInterpret,
   });
-
+  console.log(analysisMessage);
   return !isLoading ? (
     <>
       <CardWrapper>

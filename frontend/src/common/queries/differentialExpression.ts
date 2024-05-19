@@ -1,4 +1,4 @@
-import { useContext, useMemo } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API_URL } from "src/configs/configs";
 import {
@@ -429,7 +429,7 @@ interface InterpretDeResultsResponse {
   message: string;
 }
 
-async function fetchInterpretDeResults({
+async function initInterpretDeResults({
   contextFilters,
   query,
   signal,
@@ -437,11 +437,11 @@ async function fetchInterpretDeResults({
   contextFilters: ReturnType<typeof useDEQueryRequestBody>;
   query: InterpretDeResultsQuery | null;
   signal?: AbortSignal;
-}): Promise<InterpretDeResultsResponse | undefined> {
+}): Promise<{ process_id: string } | undefined> {
   if (!query || !contextFilters) return;
 
   const body = { ...contextFilters, ...query };
-  const url = API_URL + API.INTERPRET_DE_RESULTS;
+  const url = API_URL + API.INIT_INTERPRET_DE_RESULTS;
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
@@ -450,7 +450,7 @@ async function fetchInterpretDeResults({
     method: "POST",
     signal,
   });
-  const json: InterpretDeResultsResponse = await response.json();
+  const json: { process_id: string } = await response.json();
 
   if (!response.ok) {
     throw json;
@@ -459,37 +459,78 @@ async function fetchInterpretDeResults({
   return json;
 }
 
-const USE_INTERPRET_DE_RESULTS = {
-  entities: [ENTITIES.INTERPRET_DE_RESULTS],
-  id: "interpret-de-results",
-};
+function useEventSource(url: string | null, enabled: boolean) {
+  const [data, setData] = useState<InterpretDeResultsResponse | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<Event | null>(null);
 
-function useInterpretDeResultsQuery(
-  contextFilters: ReturnType<typeof useDEQueryRequestBody>,
-  query: InterpretDeResultsQuery | null
-): UseQueryResult<InterpretDeResultsResponse> {
-  return useQuery(
-    [USE_INTERPRET_DE_RESULTS, contextFilters, query],
-    ({ signal }) => fetchInterpretDeResults({ contextFilters, query, signal }),
-    {
-      enabled: Boolean(query),
-      staleTime: Infinity,
-    }
-  );
+  useEffect(() => {
+    if (!enabled || !url) return;
+
+    setIsLoading(true);
+
+    const eventSource = new EventSource(url);
+
+    eventSource.onmessage = (event) => {
+      const parsedData: InterpretDeResultsResponse = JSON.parse(event.data);
+      setData(parsedData);
+    };
+
+    eventSource.onerror = (err) => {
+      setError(err);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [url, enabled]);
+
+  return { data, isLoading, error };
 }
 
 export function useInterpretDeResults(query: InterpretDeResultsQuery | null): {
   data: InterpretDeResultsResponse;
   isLoading: boolean;
+  error: Event | null;
 } {
   const contextFilters = useDEQueryRequestBody();
-  const { data, isLoading } = useInterpretDeResultsQuery(contextFilters, query);
+  const [processId, setProcessId] = useState<string | null>(null);
+  const url = useMemo(
+    () =>
+      processId
+        ? `${API_URL}${API.STREAM_INTERPRET_DE_RESULTS}/${processId}`
+        : null,
+    [processId]
+  );
+
+  useEffect(() => {
+    if (!query || !contextFilters) return;
+
+    const fetchProcessId = async () => {
+      try {
+        const response = await initInterpretDeResults({
+          contextFilters,
+          query,
+        });
+        if (response) {
+          setProcessId(response.process_id);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchProcessId();
+  }, [query, contextFilters]);
+
+  const { data, isLoading, error } = useEventSource(url, Boolean(processId));
 
   return useMemo(() => {
     if (isLoading || !data) {
-      return { data: { message: "" }, isLoading };
+      return { data: { message: "" }, isLoading, error };
     }
 
-    return { data, isLoading: false };
-  }, [data, isLoading]);
+    return { data, isLoading: false, error };
+  }, [data, isLoading, error]);
 }

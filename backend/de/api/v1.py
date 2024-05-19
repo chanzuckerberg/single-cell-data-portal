@@ -11,6 +11,7 @@ from server_timing import Timing as ServerTiming
 
 from backend.common.marker_gene_files.blacklist import marker_gene_blacklist
 from backend.common.utils.rollup import descendants
+from backend.de.api.storage import retrieve_process_data, store_process_data
 from backend.de.api.utils import interpret_de_results
 from backend.wmg.api.wmg_api_config import (
     WMG_API_FORCE_LOAD_SNAPSHOT_ID,
@@ -336,8 +337,17 @@ def run_differential_expression(q: WmgQuery, criteria1, criteria2) -> Tuple[List
     return statistics, n_overlap
 
 
-@tracer.wrap(name="interpretDeResults", service="de-api", resource="interpretDeResults", span_type="de-api")
-def interpretDeResults():
+@tracer.wrap(name="streamInterpretDeResults", service="de-api", resource="streamInterpretDeResults", span_type="de-api")
+def streamInterpretDeResults(process_id):
+    criteria1, criteria2, is_group_one, de_genes = retrieve_process_data(process_id)
+
+    return Response(
+        interpret_de_results(criteria1, criteria2, is_group_one, de_genes), content_type="text/event-stream"
+    )
+
+
+@tracer.wrap(name="initInterpretDeResults", service="de-api", resource="initInterpretDeResults", span_type="de-api")
+def initInterpretDeResults():
     request = connexion.request.json
 
     queryGroup1Filters = request["queryGroup1Filters"]
@@ -348,9 +358,10 @@ def interpretDeResults():
     criteria1 = DeQueryCriteria(**queryGroup1Filters)
     criteria2 = DeQueryCriteria(**queryGroup2Filters)
 
-    return Response(
-        interpret_de_results(criteria1, criteria2, is_group_one, de_genes), content_type="text/event-stream"
-    )
+    # Store or process the request data as needed
+    process_id = store_process_data(criteria1, criteria2, is_group_one, de_genes)
+
+    return jsonify(dict(process_id=process_id))
 
 
 def _get_cell_counts_for_query(q: WmgQuery, criteria: WmgFiltersQueryCriteria) -> pd.DataFrame:
