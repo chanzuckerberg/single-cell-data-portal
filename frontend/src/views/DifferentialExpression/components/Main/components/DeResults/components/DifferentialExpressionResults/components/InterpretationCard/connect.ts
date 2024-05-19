@@ -25,5 +25,6 @@ export const useConnect = ({
 
   return {
     analysisMessage,
+    isLoading,
   };
 };

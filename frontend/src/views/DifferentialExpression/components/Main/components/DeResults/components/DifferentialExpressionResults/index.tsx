@@ -169,6 +169,7 @@ const DifferentialExpressionResults = ({
     !isQueryGroup1BeingInterpreted && isLoadingInterpret
       ? "Interpreting..."
       : "Interpret";
+
   return (
     <>
       <CellGroupWrapper data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_INFO}>
@@ -233,7 +234,7 @@ const DifferentialExpressionResults = ({
               sdsStyle="primary"
               sdsType="filled"
               onClick={() => {
-                setIsQueryGroup1BeingInterpreted(true);
+                setIsQueryGroup1BeingInterpreted(false);
                 setInterpretationCardVisible(true);
               }}
             >
@@ -301,13 +302,14 @@ const DifferentialExpressionResults = ({
 
         <Pagination count={pageCount} page={page} onChange={handlePageChange} />
       </TableWrapper>
-      <InterpretationCard
-        isVisible={interpretationCardVisible}
-        setIsVisible={setInterpretationCardVisible}
-        isQueryGroup1={isQueryGroup1BeingInterpreted}
-        differentialExpressionResults={genesToInterpret}
-        setIsLoadingInterpret={setIsLoadingInterpret}
-      />
+      {interpretationCardVisible && (
+        <InterpretationCard
+          setIsVisible={setInterpretationCardVisible}
+          isQueryGroup1={isQueryGroup1BeingInterpreted}
+          differentialExpressionResults={genesToInterpret}
+          setIsLoadingInterpret={setIsLoadingInterpret}
+        />
+      )}
     </>
   );
 };

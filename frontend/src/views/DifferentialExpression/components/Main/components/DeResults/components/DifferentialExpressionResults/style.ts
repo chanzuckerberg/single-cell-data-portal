@@ -113,6 +113,10 @@ export const StyledInterpretButton = styled(Button)`
   ${fontBodyS}
   color: ${primary400};
   font-weight: 600;
+  display: flex;
+  flex-direction: row;
+  column-gap: 4px;
+  align-items: center;
 `;
 
 export const GroupButtonsWrapper = styled.div`
