@@ -30,6 +30,7 @@ export const useConnect = ({
   sortDirection: Props["sortDirection"];
 }) => {
   const [page, setPage] = useState(1);
+  const [isLoadingInterpret, setIsLoadingInterpret] = useState(false);
   const [isQueryGroup1BeingInterpreted, setIsQueryGroup1BeingInterpreted] =
     useState(false);
   const { n_cells: nCellsGroup1 } = useProcessedQueryGroupFilterDimensions(
@@ -134,5 +135,7 @@ export const useConnect = ({
     genesToInterpret,
     isQueryGroup1BeingInterpreted,
     setIsQueryGroup1BeingInterpreted,
+    isLoadingInterpret,
+    setIsLoadingInterpret,
   };
 };

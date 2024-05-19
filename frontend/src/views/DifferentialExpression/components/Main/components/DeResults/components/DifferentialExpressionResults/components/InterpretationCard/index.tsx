@@ -5,10 +5,12 @@ import { Props } from "./types";
 const InterpretationCard = ({
   isQueryGroup1,
   differentialExpressionResults,
+  setIsLoadingInterpret,
 }: Props) => {
   const { analysisMessage, isCardVisible, toggleCardVisibility } = useConnect({
     isQueryGroup1,
     differentialExpressionResults,
+    setIsLoadingInterpret,
   });
 
   return (

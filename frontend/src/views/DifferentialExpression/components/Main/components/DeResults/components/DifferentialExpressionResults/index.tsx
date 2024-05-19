@@ -13,6 +13,8 @@ import {
   StyledCallout,
   StyledIconImage,
   StyledTooltipText,
+  StyledInterpretButton,
+  GroupButtonsWrapper,
 } from "./style";
 import cxgIcon from "./images/cxg.svg";
 import { Pagination } from "@mui/material";
@@ -21,7 +23,7 @@ import { ButtonIcon, Tooltip } from "@czi-sds/components";
 
 import { DifferentialExpressionRow } from "../../types";
 import { MAX_NUM_TOP_GENES_TO_PORT_TO_GE, ROWS_PER_PAGE } from "./constants";
-import { CellCountTitle } from "../../../../style";
+import { CellCountTitle, Spinner } from "../../../../style";
 import QueryGroupTags from "./components/QueryGroupTags";
 import {
   DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_INFO,
@@ -67,6 +69,8 @@ const DifferentialExpressionResults = ({
     genesToInterpret,
     isQueryGroup1BeingInterpreted,
     setIsQueryGroup1BeingInterpreted,
+    isLoadingInterpret,
+    setIsLoadingInterpret,
   } = useConnect({
     queryGroups,
     queryGroupsWithNames,
@@ -154,40 +158,46 @@ const DifferentialExpressionResults = ({
     setPage,
   ]);
 
+  const interpretText = isLoadingInterpret ? "Interpreting..." : "Interpret";
   return (
     <>
       <CellGroupWrapper data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_INFO}>
         <CellGroupTitleWrapper>
           <CellGroupTitle>Cell Group 1</CellGroupTitle>
-          <button onClick={() => setIsQueryGroup1BeingInterpreted(true)}>
-            Interpret
-          </button>
-          <Tooltip
-            sdsStyle="dark"
-            placement="left"
-            width="wide"
-            arrow
-            title={
-              <StyledTooltipText>
-                Launch Gene Expression with the top{" "}
-                {MAX_NUM_TOP_GENES_TO_PORT_TO_GE} genes having the largest
-                positive effect sizes, indicating an increase in expression.
-                <br />
-                <br />
-                Filters applied to Cell Group 1 will also be used in Gene
-                Expression.
-              </StyledTooltipText>
-            }
-          >
-            <OpenInGE
-              href={openInGeHref1}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-testid={DIFFERENTIAL_EXPRESSION_OPEN_IN_GE_1_BUTTON}
+          <GroupButtonsWrapper>
+            <StyledInterpretButton
+              onClick={() => setIsQueryGroup1BeingInterpreted(true)}
             >
-              <StyledIconImage alt="CxG icon" src={cxgIcon} />
-            </OpenInGE>
-          </Tooltip>
+              {isLoadingInterpret && <Spinner />}
+              {interpretText}
+            </StyledInterpretButton>
+            <Tooltip
+              sdsStyle="dark"
+              placement="left"
+              width="wide"
+              arrow
+              title={
+                <StyledTooltipText>
+                  Launch Gene Expression with the top{" "}
+                  {MAX_NUM_TOP_GENES_TO_PORT_TO_GE} genes having the largest
+                  positive effect sizes, indicating an increase in expression.
+                  <br />
+                  <br />
+                  Filters applied to Cell Group 1 will also be used in Gene
+                  Expression.
+                </StyledTooltipText>
+              }
+            >
+              <OpenInGE
+                href={openInGeHref1}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid={DIFFERENTIAL_EXPRESSION_OPEN_IN_GE_1_BUTTON}
+              >
+                <StyledIconImage alt="CxG icon" src={cxgIcon} />
+              </OpenInGE>
+            </Tooltip>
+          </GroupButtonsWrapper>
         </CellGroupTitleWrapper>
         <CellCountTitle data-testid={DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT}>
           {nCellsGroup1.toLocaleString()} cells |{" "}
@@ -203,35 +213,42 @@ const DifferentialExpressionResults = ({
       <CellGroupWrapper data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_INFO}>
         <CellGroupTitleWrapper>
           <CellGroupTitle>Cell Group 2</CellGroupTitle>
-          <button onClick={() => setIsQueryGroup1BeingInterpreted(true)}>
-            Interpret
-          </button>
-          <Tooltip
-            sdsStyle="dark"
-            placement="left"
-            width="wide"
-            arrow
-            title={
-              <StyledTooltipText>
-                Launch Gene Expression with the top{" "}
-                {MAX_NUM_TOP_GENES_TO_PORT_TO_GE} genes having the largest
-                negative effect sizes, indicating a decrease in expression.
-                <br />
-                <br />
-                Filters applied to Cell Group 2 will also be used in Gene
-                Expression.
-              </StyledTooltipText>
-            }
-          >
-            <OpenInGE
-              href={openInGeHref2}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-testid={DIFFERENTIAL_EXPRESSION_OPEN_IN_GE_2_BUTTON}
+          <GroupButtonsWrapper>
+            <StyledInterpretButton
+              sdsStyle="primary"
+              sdsType="filled"
+              onClick={() => setIsQueryGroup1BeingInterpreted(true)}
             >
-              <StyledIconImage alt="CxG icon" src={cxgIcon} />
-            </OpenInGE>
-          </Tooltip>
+              {isLoadingInterpret && <Spinner />}
+              {interpretText}
+            </StyledInterpretButton>
+            <Tooltip
+              sdsStyle="dark"
+              placement="left"
+              width="wide"
+              arrow
+              title={
+                <StyledTooltipText>
+                  Launch Gene Expression with the top{" "}
+                  {MAX_NUM_TOP_GENES_TO_PORT_TO_GE} genes having the largest
+                  negative effect sizes, indicating a decrease in expression.
+                  <br />
+                  <br />
+                  Filters applied to Cell Group 2 will also be used in Gene
+                  Expression.
+                </StyledTooltipText>
+              }
+            >
+              <OpenInGE
+                href={openInGeHref2}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid={DIFFERENTIAL_EXPRESSION_OPEN_IN_GE_2_BUTTON}
+              >
+                <StyledIconImage alt="CxG icon" src={cxgIcon} />
+              </OpenInGE>
+            </Tooltip>
+          </GroupButtonsWrapper>
         </CellGroupTitleWrapper>
         <CellCountTitle data-testid={DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT}>
           {nCellsGroup2.toLocaleString()} cells |{" "}
@@ -267,6 +284,7 @@ const DifferentialExpressionResults = ({
       <InterpretationCard
         isQueryGroup1={isQueryGroup1BeingInterpreted}
         differentialExpressionResults={genesToInterpret}
+        setIsLoadingInterpret={setIsLoadingInterpret}
       />
     </>
   );

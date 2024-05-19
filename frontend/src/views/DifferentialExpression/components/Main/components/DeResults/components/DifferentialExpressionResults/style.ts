@@ -1,5 +1,11 @@
 import styled from "@emotion/styled";
-import { Callout, fontBodyS, fontBodyXxs } from "@czi-sds/components";
+import {
+  Button,
+  Callout,
+  fontBodyM,
+  fontBodyS,
+  fontBodyXxs,
+} from "@czi-sds/components";
 import { gray100, primary400 } from "src/common/theme";
 import { TextField } from "@mui/material";
 import Image from "next/image";
@@ -107,4 +113,16 @@ export const StyledIconImage = styled(Image)`
 
 export const StyledTooltipText = styled.div`
   text-align: left;
+`;
+
+export const StyledInterpretButton = styled(Button)`
+  ${fontBodyS}
+  color: ${primary400};
+  font-weight: 600;
+`;
+
+export const GroupButtonsWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  column-gap: 4px;
 `;
