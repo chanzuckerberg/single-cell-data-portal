@@ -395,7 +395,9 @@ def _calculate_t_test_metrics(sum1, sumsq1, n1, sum2, sumsq2, n2):
         # this is log fold change because mean1 and mean2 are already log transformed
         log_fold_changes = mean1 - mean2
 
-        pvals_adj = _benjamini_hochberg_correction(stats.t.sf(tscores, dof))
+        # two-sided test
+        pvals = 2 * stats.t.sf(np.abs(tscores), dof)
+        pvals_adj = _benjamini_hochberg_correction(pvals)
 
     return log_fold_changes, effects, pvals_adj
 
