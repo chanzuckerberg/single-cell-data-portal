@@ -8,7 +8,7 @@ import tiledb
 
 from backend.common.constants import UNS_SPATIAL_KEY
 from backend.common.utils.type_conversion_utils import get_dtype_and_schema_of_array
-from backend.layers.processing.spatial import SpatialDataProcessor
+from backend.layers.processing.utils.spatial import SpatialDataProcessor
 
 
 def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="cxg_group_metadata", ctx=None):

@@ -13,15 +13,15 @@ from backend.common.utils.color_conversion_utils import (
 )
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.common.utils.cxg_constants import CxgConstants
-from backend.common.utils.cxg_generation_utils import (
+from backend.common.utils.matrix_utils import is_matrix_sparse
+from backend.common.utils.tiledb import consolidation_buffer_size
+from backend.layers.processing.utils.cxg_generation_utils import (
     convert_dataframe_to_cxg_array,
     convert_dictionary_to_cxg_group,
     convert_matrices_to_cxg_arrays,
     convert_ndarray_to_cxg_dense_array,
     convert_uns_to_cxg_group,
 )
-from backend.common.utils.matrix_utils import is_matrix_sparse
-from backend.common.utils.tiledb import consolidation_buffer_size
 
 
 class H5ADDataFile:
