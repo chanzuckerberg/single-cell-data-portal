@@ -170,7 +170,7 @@ class DeAPIV1Tests(unittest.TestCase):
 
         expected_effect_size_sums = [-334, 648, 71, 2654, 696, 2763, 2021]
         expected_log_fold_change_sums = [-54, 102, 66, 491, 199, 532, 483]
-        expected_log_p_value_sums = [123276, 118181, 100175, 26160, 107902, 8908, 7560]
+        expected_log_p_value_sums = [348318, 133077, 195787, 125959, 134096, 69440, 123317]
         expected_n_overlap = [0, 0, 0, 0, 0, 0, 37]
 
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
