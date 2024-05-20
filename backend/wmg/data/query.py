@@ -97,7 +97,7 @@ class WmgQuery:
     @tracer.wrap(name="expression_summary_diffexp", service="de-api", resource="_query", span_type="de-api")
     def expression_summary_diffexp(self, criteria: DeQueryCriteria) -> DataFrame:
         return self._query(
-            cube=_select_cube_with_best_discriminatory_power(self._snapshot, criteria),
+            # cube=_select_cube_with_best_discriminatory_power(self._snapshot, criteria),
             criteria=criteria,
         )
 
@@ -268,37 +268,3 @@ def retrieve_top_n_markers(query_result, test, n_markers):
         markers = markers.sort_values("marker_score", ascending=False)
     records = markers[attrs].to_dict(orient="records")
     return records
-
-
-def _select_cube_with_best_discriminatory_power(snapshot: WmgSnapshot, criteria: DeQueryCriteria) -> Array:
-    """
-    Selects the cube with the best discriminatory power based on the given criteria.
-
-    This function evaluates each dimension's discriminatory power by comparing the number
-    of criteria specified for that dimension against its total cardinality within the snapshot.
-    It then selects the cube that maximizes this discriminatory power. If no dimension meets the
-    criteria or if the discriminatory power cannot be determined, the default cube is selected.
-
-    Parameters
-    ----------
-    snapshot : WmgSnapshot
-        The snapshot object containing all cubes and their metadata.
-    criteria : DeQueryCriteria
-        The criteria object containing dimensions and their corresponding values to filter on.
-
-    Returns
-    -------
-    Array
-        The cube with the best discriminatory power based on the given criteria.
-    """
-    cardinality_per_dimension = snapshot.cardinality_per_dimension
-    criteria_dict = criteria.dict()
-    base_indexed_dims = [dim.name for dim in snapshot.diffexp_expression_summary_cubes["default"].schema.domain]
-    discriminatory_power = {
-        depluralize(dim): len(criteria_dict[dim]) / cardinality_per_dimension[depluralize(dim)]
-        for dim in criteria_dict
-        if len(criteria_dict[dim]) > 0 and depluralize(dim) not in base_indexed_dims
-    }
-    use_default = len(discriminatory_power) == 0
-    cube_key = "default" if use_default else min(discriminatory_power, key=discriminatory_power.get)
-    return snapshot.diffexp_expression_summary_cubes[cube_key]
