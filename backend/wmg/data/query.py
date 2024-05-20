@@ -7,6 +7,7 @@ from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
 
+from backend.wmg.data.schemas.cube_schema_diffexp import cell_counts_indexed_dims
 from backend.wmg.data.snapshot import WmgSnapshot
 
 
@@ -151,11 +152,21 @@ class WmgQuery:
         name="expression_summary_and_cell_counts_diffexp", service="de-api", resource="_query", span_type="de-api"
     )
     def expression_summary_and_cell_counts_diffexp(self, criteria: DeQueryCriteria) -> tuple[DataFrame, DataFrame]:
+        use_simple = not any(
+            depluralize(key) not in cell_counts_indexed_dims and values for key, values in dict(criteria).items()
+        )
+
         cell_counts_diffexp_df = self.cell_counts_diffexp_df(criteria)
-        group_ids = cell_counts_diffexp_df["group_id"].unique().tolist()
+        key = "group_id_simple" if use_simple else "group_id"
+        cube = (
+            self._snapshot.expression_summary_diffexp_simple_cube
+            if use_simple
+            else self._snapshot.expression_summary_diffexp_cube
+        )
+        group_ids = cell_counts_diffexp_df[key].unique().tolist()
         return (
             pd.concat(
-                self._snapshot.expression_summary_diffexp_cube.query(
+                cube.query(
                     return_incomplete=True,
                     use_arrow=True,
                     dims=["group_id"],

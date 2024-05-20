@@ -17,6 +17,7 @@ from backend.wmg.data.snapshot import (
     EXPRESSION_SUMMARY_CUBE_NAME,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
     EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAME,
+    EXPRESSION_SUMMARY_DIFFEXP_SIMPLE_CUBE_NAME,
     FILTER_RELATIONSHIPS_FILENAME,
     MARKER_GENES_CUBE_NAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
@@ -111,6 +112,7 @@ if __name__ == "__main__":
             EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
             CELL_COUNTS_DIFFEXP_CUBE_NAME,
             EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAME,
+            EXPRESSION_SUMMARY_DIFFEXP_SIMPLE_CUBE_NAME,
         ]:
             if (
                 cube_name == fixture_type
@@ -121,6 +123,10 @@ if __name__ == "__main__":
                 )
                 or (
                     cube_name == CELL_COUNTS_DIFFEXP_CUBE_NAME
+                    and fixture_type == FixtureType.differential_expression.value
+                )
+                or (
+                    cube_name == EXPRESSION_SUMMARY_DIFFEXP_SIMPLE_CUBE_NAME
                     and fixture_type == FixtureType.differential_expression.value
                 )
             ):
