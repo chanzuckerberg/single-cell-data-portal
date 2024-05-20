@@ -93,6 +93,9 @@ class WmgSnapshot:
     # cardinality per dimension dictionary
     cardinality_per_dimension: Optional[Dict] = field(default=None)
 
+    # cell counts dataframe
+    cell_counts_df: Optional[DataFrame] = field(default=None)
+
 
 # Cached data
 cached_snapshot: Optional[WmgSnapshot] = None
@@ -311,12 +314,13 @@ def _load_snapshot(
     # TODO: Okay to keep TileDB arrays open indefinitely? Is it faster than re-opening each request?
     #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
     #  -data-portal/2134
+    cell_counts_cube = _open_cube(f"{snapshot_uri}/{CELL_COUNTS_CUBE_NAME}")
     return WmgSnapshot(
         snapshot_identifier=snapshot_id,
         expression_summary_cube=_open_cube(f"{snapshot_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
         expression_summary_default_cube=_open_cube(f"{snapshot_uri}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
         marker_genes_cube=_open_cube(f"{snapshot_uri}/{MARKER_GENES_CUBE_NAME}"),
-        cell_counts_cube=_open_cube(f"{snapshot_uri}/{CELL_COUNTS_CUBE_NAME}"),
+        cell_counts_cube=cell_counts_cube,
         cell_type_orderings=cell_type_orderings.set_index(["tissue_ontology_term_id", "cell_type_ontology_term_id"])[
             "order"
         ].to_dict(),
@@ -328,6 +332,7 @@ def _load_snapshot(
             name.split("__")[-1]: _open_cube(f"{snapshot_uri}/{name}") for name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
         },
         cardinality_per_dimension=cardinality_per_dimension,
+        cell_counts_df=cell_counts_cube.df[:],
     )
 
 

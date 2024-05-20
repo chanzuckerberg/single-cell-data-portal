@@ -3,6 +3,7 @@ CELLGUIDE_PIPELINE_FIXTURES_BASEPATH = "tests/unit/backend/cellguide/pipeline/fi
 CANONICAL_MARKER_GENES_FIXTURE_FILENAME = "canonical_marker_genes.json"
 COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME = "computational_marker_genes.json"
 REFORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME = "reformatted_computational_marker_genes.json"
+FORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME = "formatted_computational_marker_genes.json"
 TISSUE_METADATA_FIXTURE_FILENAME = "tissue_metadata.json"
 CELLTYPE_METADATA_FIXTURE_FILENAME = "cell_metadata.json"
 ONTOLOGY_GRAPH_FIXTURE_FILENAME = "ontology_graph.json"

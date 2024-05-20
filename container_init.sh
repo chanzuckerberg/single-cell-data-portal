@@ -68,4 +68,4 @@ export DD_GEVENT_PATCH_ALL=true
 
 echo "starting gunicorn server"
 exec gunicorn ${HTTPS_CERT_AND_KEY} --worker-class gevent --workers 1 --bind 0.0.0.0:5000 backend.api_server.app:app \
-  --max-requests 10000 --timeout 180 --keep-alive 61 --log-level info
+  --max-requests 10000 --timeout 540 --keep-alive 61 --log-level info

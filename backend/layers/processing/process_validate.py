@@ -117,12 +117,11 @@ class ProcessValidate(ProcessingLogic):
         """
         is_single = spatial_dict.get("is_single")
         has_fullres = False
-        # schema validation ensures nested 'fullres' key is only included when is_single is True
-        if is_single:
-            # schema validation ensures there can only be one other key in uns["spatial"] if "is_single" is True
-            library_id = [key for key in spatial_dict if key != "is_single"][0]
-            if "fullres" in spatial_dict[library_id]["images"]:
-                has_fullres = True
+        spatial_library_ids = [key for key in spatial_dict if key != "is_single"]
+        # schema validation ensures there can only be at max, one other key in uns["spatial"] if "is_single" is True
+        library_id = spatial_library_ids.pop() if spatial_library_ids else None
+        if library_id and "images" in spatial_dict[library_id] and "fullres" in spatial_dict[library_id]["images"]:
+            has_fullres = True
         return SpatialMetadata(is_single=bool(is_single), has_fullres=has_fullres)
 
     @logit

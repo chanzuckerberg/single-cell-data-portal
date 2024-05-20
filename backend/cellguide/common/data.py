@@ -8,6 +8,8 @@ from backend.cellguide.common.constants import COMPUTATIONAL_MARKER_GENES_FOLDER
 from backend.cellguide.common.providers.s3_provider import S3Provider
 from backend.cellguide.common.utils import get_object_key
 
+_marker_gene_data_cache = None
+
 
 def _defaultdict_to_dict(d):
     if isinstance(d, defaultdict):
@@ -33,6 +35,27 @@ def _initialize_cellguide_marker_gene_dict():
         ),
     )
     marker_gene_data = json.loads(gzip.decompress(compressed_data).decode("utf-8"))
+
+    return format_marker_gene_data(marker_gene_data)
+
+
+def format_marker_gene_data(marker_gene_data):
+    """
+    Reformat the raw marker gene data into a structured dictionary.
+
+    The function transforms the raw marker gene data into a nested dictionary format organized by organism, tissue,
+    and cell type, where each cell type contains a list of marker genes with their respective scores and properties.
+
+    Parameters:
+        marker_gene_data (dict): The raw marker gene data loaded from JSON, expected to have a structure where each
+                                 gene is mapped to organisms, which in turn map to tissues, and then to a list of
+                                 marker details.
+
+    Returns:
+        dict: A nested dictionary with the structure {organism: {tissue: {cell_type_id: [marker details]}}}.
+              Each marker detail is a dictionary containing the gene, marker score, and other properties.
+    """
+
     data = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
 
     for gene in marker_gene_data:
@@ -51,9 +74,6 @@ def _initialize_cellguide_marker_gene_dict():
                 data[organism][tissue][cell_type].sort(key=lambda x: -x["marker_score"])
 
     return data
-
-
-_marker_gene_data_cache = None
 
 
 def get_marker_gene_data():
