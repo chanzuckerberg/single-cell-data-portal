@@ -6,6 +6,7 @@ import tiledb
 
 from backend.wmg.data.schemas.cube_schema_diffexp import (
     cell_counts_logical_dims,
+    cell_counts_logical_dims_exclude_dataset_id,
     cell_counts_schema,
     expression_summary_schema,
 )
@@ -50,10 +51,14 @@ def create_expression_summary_and_cell_counts_diffexp_cubes(corpus_path: str):
         create_empty_cube_if_needed(cell_counts_diffexp_uri, cell_counts_schema)
         with tiledb.open(cell_counts_uri, "r") as cube:
             cell_counts_df = cube.df[:]
-        cell_counts_df = cell_counts_df.groupby(cell_counts_logical_dims).sum(numeric_only=True)
-        groups = cell_counts_df.index
-        cell_counts_df["group_id"] = pd.Series(range(len(groups)), index=groups)
-        cell_counts_df = cell_counts_df.reset_index()
+
+        groups_no_dataset_id = cell_counts_df.groupby(cell_counts_logical_dims_exclude_dataset_id).first().index
+        group_ids_indexer = pd.Series(range(len(groups_no_dataset_id)), index=groups_no_dataset_id)
+
+        cell_counts_df = cell_counts_df.groupby(cell_counts_logical_dims).sum(numeric_only=True).reset_index()
+        groups = cell_counts_df.set_index(cell_counts_logical_dims_exclude_dataset_id).index
+        cell_counts_df["group_id"] = group_ids_indexer[groups].values
+
         logger.info(f"Writing cell_counts diffexp cube to {cell_counts_diffexp_uri}")
         tiledb.from_pandas(cell_counts_diffexp_uri, cell_counts_df, mode="append")
 
@@ -63,12 +68,12 @@ def create_expression_summary_and_cell_counts_diffexp_cubes(corpus_path: str):
         with tiledb.open(expression_summary_uri, "r") as cube:
             for row in cube.query(return_incomplete=True).df[:]:
                 row = (
-                    row.groupby(cell_counts_logical_dims + ["gene_ontology_term_id"])
+                    row.groupby(cell_counts_logical_dims_exclude_dataset_id + ["gene_ontology_term_id"])
                     .sum(numeric_only=True)
                     .reset_index()
-                    .set_index(cell_counts_logical_dims)
+                    .set_index(cell_counts_logical_dims_exclude_dataset_id)
                 )
-                row["group_id"] = pd.Series(data=cell_counts_df["group_id"], index=groups)[row.index].values
+                row["group_id"] = group_ids_indexer[row.index].values
                 row = row.reset_index(drop=True)
 
                 tiledb.from_pandas(

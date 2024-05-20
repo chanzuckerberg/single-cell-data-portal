@@ -94,13 +94,6 @@ class WmgQuery:
         self._snapshot = snapshot
         self._cube_query_params = cube_query_params
 
-    @tracer.wrap(name="expression_summary_diffexp", service="de-api", resource="_query", span_type="de-api")
-    def expression_summary_diffexp(self, criteria: DeQueryCriteria) -> DataFrame:
-        return self._query(
-            # cube=_select_cube_with_best_discriminatory_power(self._snapshot, criteria),
-            criteria=criteria,
-        )
-
     @tracer.wrap(name="expression_summary", service="wmg-api", resource="_query", span_type="wmg-api")
     def expression_summary(self, criteria: WmgQueryCriteria, compare_dimension=None) -> DataFrame:
         return self._query(
@@ -142,6 +135,34 @@ class WmgQuery:
             if key in df.columns and values:
                 mask &= df[key].isin(values)
         return df[mask].rename(columns={"n_cells": "n_total_cells"})
+
+    def cell_counts_diffexp_df(self, criteria: DeQueryCriteria) -> DataFrame:
+        df = self._snapshot.cell_counts_diffexp_df
+        mask = np.array([True] * len(df))
+        for key, values in dict(criteria).items():
+            values = values if isinstance(values, list) else [values]
+            key = depluralize(key)
+            if key in df.columns and values:
+                mask &= df[key].isin(values)
+
+        return df[mask].rename(columns={"n_cells": "n_total_cells"})
+
+    @tracer.wrap(
+        name="expression_summary_and_cell_counts_diffexp", service="de-api", resource="_query", span_type="de-api"
+    )
+    def expression_summary_and_cell_counts_diffexp(self, criteria: DeQueryCriteria) -> tuple[DataFrame, DataFrame]:
+        cell_counts_diffexp_df = self.cell_counts_diffexp_df(criteria)
+        group_ids = cell_counts_diffexp_df["group_id"].unique().tolist()
+        return (
+            pd.concat(
+                self._snapshot.expression_summary_diffexp_cube.query(
+                    return_incomplete=True,
+                    use_arrow=True,
+                    dims=["group_id"],
+                ).df[group_ids]
+            ),
+            cell_counts_diffexp_df,
+        )
 
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
     #  /chanzuckerberg/single-cell-data-portal/2133

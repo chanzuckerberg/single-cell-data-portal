@@ -60,14 +60,19 @@ cell_counts_indexed_dims = [
     "organism_ontology_term_id",
 ]
 
-cell_counts_non_indexed_dims = [
+cell_counts_non_indexed_dims_excluding_dataset_id = [
     "publication_citation",
     "disease_ontology_term_id",
     "self_reported_ethnicity_ontology_term_id",
     "sex_ontology_term_id",
 ]
+cell_counts_non_indexed_dims = cell_counts_non_indexed_dims_excluding_dataset_id + ["dataset_id"]
 
 cell_counts_logical_dims = cell_counts_indexed_dims + cell_counts_non_indexed_dims
+
+cell_counts_logical_dims_exclude_dataset_id = (
+    cell_counts_indexed_dims + cell_counts_non_indexed_dims_excluding_dataset_id
+)
 
 cell_counts_domain = tiledb.Domain(
     [

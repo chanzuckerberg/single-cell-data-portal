@@ -68,6 +68,7 @@ class WmgSnapshot:
     # TileDB array containing the total cell counts (expressed gene count, non-expressed mean, etc.) aggregated by
     # multiple cell metadata dimensions (but no gene dimension). See the full schema at
     # backend/wmg/data/schemas/cube_schema.py.
+    # TODO: remove this in favor of cell_counts_df
     cell_counts_cube: Optional[Array] = field(default=None)
 
     # Dictionary of (cell type, tissue) tuples as keys and order as values.
@@ -87,6 +88,12 @@ class WmgSnapshot:
 
     # cell counts dataframe
     cell_counts_df: Optional[DataFrame] = field(default=None)
+
+    # cell counts diffexp dataframe
+    cell_counts_diffexp_df: Optional[DataFrame] = field(default=None)
+
+    # expression summary diffexp cube
+    expression_summary_diffexp_cube: Optional[Array] = field(default=None)
 
 
 # Cached data
@@ -306,6 +313,7 @@ def _load_snapshot(
     #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
     #  -data-portal/2134
     cell_counts_cube = _open_cube(f"{snapshot_uri}/{CELL_COUNTS_CUBE_NAME}")
+    cell_counts_diffexp_cube = _open_cube(f"{snapshot_uri}/{CELL_COUNTS_DIFFEXP_CUBE_NAME}")
     return WmgSnapshot(
         snapshot_identifier=snapshot_id,
         expression_summary_cube=_open_cube(f"{snapshot_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
@@ -323,6 +331,8 @@ def _load_snapshot(
         #     name.split("__")[-1]: _open_cube(f"{snapshot_uri}/{name}") for name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
         # },
         cell_counts_df=cell_counts_cube.df[:],
+        cell_counts_diffexp_df=cell_counts_diffexp_cube.df[:],
+        expression_summary_diffexp_cube=_open_cube(f"{snapshot_uri}/{EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAME}"),
     )
 
 
