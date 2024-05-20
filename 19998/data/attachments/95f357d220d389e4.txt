@@ -1,4 +1,0 @@
-[PID 1 | PPID 0] Subscriber ASM is getting data, 23 additional messages skipped
-{"levelname": "DEBUG", "asctime": "2024-05-20T03:19:00.020Z", "name": "ddtrace.internal.remoteconfig._subscribers", "message": "[PID 1 | PPID 0] Subscriber ASM is getting data, 23 additional messages skipped", "lineno": 45, "pathname": "/usr/local/lib/python3.10/dist-packages/ddtrace/internal/remoteconfig/_subscribers.py", "request_id": ""}
-[PID 1 | PPID 0] Subscriber ASM got data, 23 additional messages skipped
-{"levelname": "DEBUG", "asctime": "2024-05-20T03:19:00.020Z", "name": "ddtrace.internal.remoteconfig._subscribers", "message": "[PID 1 | PPID 0] Subscriber ASM got data, 23 additional messages skipped", "lineno": 47, "pathname": "/usr/local/lib/python3.10/dist-packages/ddtrace/internal/remoteconfig/_subscribers.py", "request_id": ""}
