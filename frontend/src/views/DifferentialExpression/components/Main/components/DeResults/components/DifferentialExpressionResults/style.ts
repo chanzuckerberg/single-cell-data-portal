@@ -44,26 +44,12 @@ export const TableHeaderWrapper = styled.div`
   flex-direction: column;
 `;
 
-interface EffectSizeHeaderWrapperProps {
-  disabled?: boolean;
-}
-export const EffectSizeHeaderWrapper = styled.div<EffectSizeHeaderWrapperProps>`
+export const EffectSizeHeaderWrapper = styled.div`
   display: flex;
   flex-direction: row;
   column-gap: 8px;
   align-items: center;
-  ${({ disabled }) =>
-    disabled
-      ? `
-    cursor: not-allowed;
-    pointer-events: none;
-    opacity: 0.5;
-  `
-      : `
-    cursor: pointer;
-    pointer-events: auto;
-    opacity: 1;
-  `}
+  cursor: pointer;
 `;
 
 export const CellGroupWrapper = styled.div`
@@ -123,6 +109,11 @@ export const StyledTooltipText = styled.div`
   text-align: left;
 `;
 
+export const InterpretButtonWrapper = styled.div`
+  width: ${TABLE_WIDTH};
+  display: flex;
+  justify-content: flex-end;
+`;
 export const StyledInterpretButton = styled(Button)`
   ${fontBodyS}
   color: ${primary400};

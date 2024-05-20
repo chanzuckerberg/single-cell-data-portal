@@ -15,6 +15,7 @@ import {
   StyledTooltipText,
   StyledInterpretButton,
   Overlay,
+  InterpretButtonWrapper,
 } from "./style";
 import cxgIcon from "./images/cxg.svg";
 import { Pagination } from "@mui/material";
@@ -114,7 +115,6 @@ const DifferentialExpressionResults = ({
             variant="outlined"
             onChange={handleSearch}
             placeholder="e.g. JCHAIN"
-            disabled={isLoadingInterpret}
           />
         </TableHeaderWrapper>
       ),
@@ -125,7 +125,6 @@ const DifferentialExpressionResults = ({
             placeholder="e.g >1.0"
             variant="outlined"
             onChange={handleLfcFilter}
-            disabled={isLoadingInterpret}
           />
         </TableHeaderWrapper>
       ),
@@ -136,7 +135,6 @@ const DifferentialExpressionResults = ({
           <EffectSizeHeaderWrapper
             data-testid={DIFFERENTIAL_EXPRESSION_SORT_DIRECTION}
             onClick={handleSortDirectionChange}
-            disabled={isLoadingInterpret}
           >
             Effect Size{" "}
             <ButtonIcon
@@ -148,7 +146,6 @@ const DifferentialExpressionResults = ({
             placeholder="e.g >1.0"
             variant="outlined"
             onChange={handleEffectSizeFilter}
-            disabled={isLoadingInterpret}
           />
         </TableHeaderWrapper>
       ),
@@ -160,7 +157,6 @@ const DifferentialExpressionResults = ({
     setEffectSizeFilter,
     setSortDirection,
     setPage,
-    isLoadingInterpret,
   ]);
 
   const interpretText1 = isLoadingInterpret ? "Interpreting..." : "Interpret";
@@ -257,15 +253,17 @@ const DifferentialExpressionResults = ({
           underestimation of differences.
         </StyledCallout>
       )}
-      <StyledInterpretButton
-        disabled={isLoadingInterpret}
-        onClick={() => {
-          setInterpretationCardVisible(true);
-        }}
-      >
-        {isLoadingInterpret && <Spinner />}
-        {interpretText1}
-      </StyledInterpretButton>
+      <InterpretButtonWrapper>
+        <StyledInterpretButton
+          onClick={() => {
+            setInterpretationCardVisible(true);
+          }}
+          disabled={isLoadingInterpret}
+        >
+          {isLoadingInterpret && <Spinner />}
+          {interpretText1}
+        </StyledInterpretButton>
+      </InterpretButtonWrapper>
       <TableWrapper data-testid={DIFFERENTIAL_EXPRESSION_RESULTS_TABLE}>
         <Table<Omit<DifferentialExpressionRow, "adjustedPValue">>
           columns={["name", "logFoldChange", "effectSize"]}
