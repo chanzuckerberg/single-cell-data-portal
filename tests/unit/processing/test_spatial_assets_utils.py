@@ -275,10 +275,10 @@ def test__convert_uns_to_cxg_group(setup_spatial_processor, mocker):
     ctx = setup_spatial_processor["ctx"]
     mock_spatial_processor = setup_spatial_processor["mock_spatial_processor"]
 
-    mock_from_numpy = mocker.patch("backend.common.utils.cxg_generation_utils.tiledb.from_numpy")
-    mock_tiledb_open = mocker.patch("backend.common.utils.cxg_generation_utils.tiledb.open", mocker.mock_open())
+    mock_from_numpy = mocker.patch("backend.layers.processing.utils.cxg_generation_utils.tiledb.from_numpy")
+    mock_tiledb_open = mocker.patch("backend.layers.processing.utils.cxg_generation_utils.tiledb.open", mocker.mock_open())
     mocker.patch(
-        "backend.common.utils.cxg_generation_utils.SpatialDataProcessor",
+        "backend.layers.processing.utils.cxg_generation_utils.SpatialDataProcessor",
         return_value=mock_spatial_processor,
     )
 
