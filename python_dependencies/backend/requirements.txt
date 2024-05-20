@@ -28,7 +28,6 @@ PyMySQL==1.1.0
 pydantic>=1.10.7, <2
 python-jose[cryptography]>=3.1.0
 python-json-logger
-pyvips==2.2.2
 requests>=2.22.0
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
 scanpy>=1.9.8, <2

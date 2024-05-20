@@ -10,7 +10,7 @@ import pytest
 from PIL import Image
 
 from backend.common.utils.cxg_generation_utils import convert_uns_to_cxg_group
-from backend.common.utils.spatial import SpatialDataProcessor
+from backend.layers.processing.spatial import SpatialDataProcessor
 from backend.layers.thirdparty.s3_provider import S3Provider
 from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 

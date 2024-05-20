@@ -1,7 +1,7 @@
 import io
 import logging
 import os
-import shutil
+import tempfile
 
 import numpy as np
 import pyvips
@@ -10,7 +10,6 @@ from PIL import Image
 from backend.layers.thirdparty.s3_provider import S3Provider
 
 logger = logging.getLogger(__name__)
-
 
 class SpatialDataProcessor:
     """
@@ -81,11 +80,8 @@ class SpatialDataProcessor:
         Image.MAX_IMAGE_PIXELS = None  # Disable the image size limit
         try:
             with Image.fromarray(image_array_uint8) as img:
-                # Convert image to RGB mode if it's not already
-                if img.mode != "RGB":
-                    img = img.convert("RGB")
                 cropped_img = img.crop(self._calculate_aspect_ratio_crop(img.size))  # Crop the image
-                cropped_img.save(io.BytesIO(), format="JPEG", quality=90)  # Save or manipulate as needed
+                cropped_img.save(io.BytesIO(), format="JPEG", quality=100)  # Save or manipulate as needed
                 # Flip the image vertically due to explorer client rendering images upside down
                 flipped_img = cropped_img.transpose(Image.FLIP_TOP_BOTTOM)
                 return np.array(flipped_img)
@@ -93,18 +89,18 @@ class SpatialDataProcessor:
             logger.exception("Error processing image")
             raise
 
-    def _generate_deep_zoom_assets(self, image_array, folder_name):
+    def _generate_deep_zoom_assets(self, image_array, assets_folder):
         """
         Generate deep zoom assets from the image array.
 
         Args:
             image_array (np.ndarray): The image array.
-            folder_name (str): The name of the folder to save the assets.
+            assets_folder (str): The temporary directory to save the assets.
         """
         h, w, bands = image_array.shape
         linear = image_array.reshape(w * h * bands)
         image = pyvips.Image.new_from_memory(linear.data, w, h, bands, "uchar")
-        image.dzsave(folder_name + "spatial", suffix=".jpeg")
+        image.dzsave(os.path.join(assets_folder, "spatial"), suffix=".webp")
 
     def _upload_assets(self, assets_folder):
         """
@@ -113,9 +109,8 @@ class SpatialDataProcessor:
         Args:
             assets_folder (str): The folder containing the assets.
         """
-        s3_uri = f"s3://{self.bucket_name}/{self.asset_directory}/{assets_folder}"
+        s3_uri = f"s3://{self.bucket_name}/{self.asset_directory}/{os.path.basename(assets_folder)}"
         self.s3_provider.upload_directory(assets_folder, s3_uri)
-        shutil.rmtree(assets_folder)
 
     def create_deep_zoom_assets(self, container_name, content):
         """
@@ -124,14 +119,16 @@ class SpatialDataProcessor:
         Args:
             container_name (str): The name of the container.
             content (dict): The content dictionary containing the image array.
-
         """
         try:
-            assets_folder = container_name.replace(".cxg", "") + "/"
-            image_array = self._prepare_image(content)
-            processed_image = self._process_and_flip_image(image_array)
-            self._generate_deep_zoom_assets(processed_image, assets_folder)
-            self._upload_assets(assets_folder)
+            with tempfile.TemporaryDirectory() as temp_dir:
+                assets_folder = os.path.join(temp_dir, container_name.replace(".cxg", ""))
+                os.makedirs(assets_folder)
+
+                image_array = self._prepare_image(content)
+                processed_image = self._process_and_flip_image(image_array)
+                self._generate_deep_zoom_assets(processed_image, assets_folder)
+                self._upload_assets(assets_folder)
         except Exception as e:
             logger.exception(f"Failed to create and upload deep zoom assets: {e}")
             raise

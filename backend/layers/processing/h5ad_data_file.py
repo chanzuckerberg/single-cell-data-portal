@@ -131,10 +131,7 @@ class H5ADDataFile:
 
         for embedding_name, embedding_values in self.anndata.obsm.items():
             if is_valid_embedding(self.anndata, embedding_name, embedding_values):
-                if embedding_name == "spatial":  # if spatial no need to strip X_ prefix
-                    embedding_name = f"{embedding_container}/{embedding_name}"
-                else:
-                    embedding_name = f"{embedding_container}/{embedding_name[2:]}"
+                embedding_name = f"{embedding_container}/{embedding_name[2:]}"
                 convert_ndarray_to_cxg_dense_array(embedding_name, embedding_values, ctx)
                 logging.info(f"\t\t...{embedding_name} embedding created")
 
