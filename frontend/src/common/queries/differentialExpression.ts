@@ -414,15 +414,9 @@ function useSnapshotId(): string | null {
   return snapshotId || null;
 }
 
-export interface DifferentialExpressionResultToInterpret {
-  gene_symbol: string;
-  effect_size: string;
-  adjusted_p_value: string;
-}
-
 interface InterpretDeResultsQuery {
-  isQueryGroup1: boolean;
-  differentialExpressionResults: DifferentialExpressionResultToInterpret[];
+  deGenes1: string[];
+  deGenes2: string[];
 }
 
 interface InterpretDeResultsResponse {

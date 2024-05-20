@@ -133,12 +133,6 @@ export const StyledInterpretButton = styled(Button)`
   align-items: center;
 `;
 
-export const GroupButtonsWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  column-gap: 4px;
-`;
-
 export const Overlay = styled.div`
   position: fixed;
   top: 0;

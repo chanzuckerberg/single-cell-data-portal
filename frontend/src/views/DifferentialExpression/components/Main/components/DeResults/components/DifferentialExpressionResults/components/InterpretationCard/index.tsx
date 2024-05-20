@@ -6,13 +6,11 @@ import { Props } from "./types";
 import { ButtonIcon } from "@czi-sds/components";
 
 const InterpretationCard = ({
-  isQueryGroup1,
   differentialExpressionResults,
   setIsLoadingInterpret,
   setIsVisible,
 }: Props) => {
   const { analysisMessage, isLoading } = useConnect({
-    isQueryGroup1,
     differentialExpressionResults,
     setIsLoadingInterpret,
   });

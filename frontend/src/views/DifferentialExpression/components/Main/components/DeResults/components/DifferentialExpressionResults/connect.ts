@@ -4,15 +4,10 @@ import { QueryGroup } from "src/views/DifferentialExpression/common/store/reduce
 
 import { generateAndCopyShareUrl } from "./utils";
 
-import {
-  MAX_NUM_TOP_GENES_TO_INTERPRET,
-  MAX_NUM_TOP_GENES_TO_PORT_TO_GE,
-  ROWS_PER_PAGE,
-} from "./constants";
+import { MAX_NUM_TOP_GENES_TO_PORT_TO_GE, ROWS_PER_PAGE } from "./constants";
 
 import useProcessedQueryGroupFilterDimensions from "../../../common/query_group_filter_dimensions";
 import { Props } from "./types";
-import { DifferentialExpressionResultToInterpret } from "src/common/queries/differentialExpression";
 
 export const useConnect = ({
   queryGroups,
@@ -32,8 +27,6 @@ export const useConnect = ({
   const [page, setPage] = useState(1);
   const [isLoadingInterpret, setIsLoadingInterpret] = useState(false);
   const [interpretationCardVisible, setInterpretationCardVisible] =
-    useState(false);
-  const [isQueryGroup1BeingInterpreted, setIsQueryGroup1BeingInterpreted] =
     useState(false);
   const { n_cells: nCellsGroup1 } = useProcessedQueryGroupFilterDimensions(
     queryGroups.queryGroup1
@@ -90,33 +83,6 @@ export const useConnect = ({
     sortedAndFilteredResults,
   ]);
 
-  const genesToInterpret: DifferentialExpressionResultToInterpret[] =
-    useMemo(() => {
-      const sliceFromBeginning = isQueryGroup1BeingInterpreted
-        ? sortDirection === "desc"
-        : sortDirection === "asc";
-      return sliceFromBeginning
-        ? sortedAndFilteredResults
-            .slice(0, MAX_NUM_TOP_GENES_TO_INTERPRET)
-            .map((row) => ({
-              gene_symbol: row.name,
-              effect_size: row.effectSize,
-              adjusted_p_value: row.adjustedPValue,
-            }))
-        : sortedAndFilteredResults
-            .slice(-MAX_NUM_TOP_GENES_TO_INTERPRET)
-            .reverse()
-            .map((row) => ({
-              gene_symbol: row.name,
-              effect_size: row.effectSize,
-              adjusted_p_value: row.adjustedPValue,
-            }));
-    }, [
-      sortDirection,
-      sortedAndFilteredResults,
-      isQueryGroup1BeingInterpreted,
-    ]);
-
   const pageCount = Math.ceil(sortedAndFilteredResults.length / ROWS_PER_PAGE);
 
   const overlapPercent = (
@@ -135,9 +101,6 @@ export const useConnect = ({
     pageCount,
     handlePageChange,
     overlapPercent,
-    genesToInterpret,
-    isQueryGroup1BeingInterpreted,
-    setIsQueryGroup1BeingInterpreted,
     isLoadingInterpret,
     setIsLoadingInterpret,
     interpretationCardVisible,

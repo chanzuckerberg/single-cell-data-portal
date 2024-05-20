@@ -1,9 +1,8 @@
 import { SetStateAction, Dispatch } from "react";
-import { DifferentialExpressionResultToInterpret } from "src/common/queries/differentialExpression";
+import { DifferentialExpressionRow } from "../../../../types";
 
 export interface Props {
-  isQueryGroup1: boolean;
-  differentialExpressionResults: DifferentialExpressionResultToInterpret[];
+  differentialExpressionResults: DifferentialExpressionRow[];
   setIsLoadingInterpret: Dispatch<SetStateAction<boolean>>;
   setIsVisible: Dispatch<SetStateAction<boolean>>;
 }

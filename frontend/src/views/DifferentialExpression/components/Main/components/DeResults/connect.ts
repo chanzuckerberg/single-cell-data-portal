@@ -142,6 +142,7 @@ export const useConnect = ({ setIsLoading }: Props) => {
     setLfcFilter,
     setEffectSizeFilter,
     sortDirection,
+    differentialExpressionResults,
     setSortDirection,
     isSourceDatasetSidebarOpen,
     setIsSourceDatasetSidebarOpen,
