@@ -12,14 +12,12 @@ from tiledb import Array
 
 from backend.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
-from backend.wmg.data.schemas.expression_summary_cube_schemas_diffexp import expression_summary_secondary_dims
 from backend.wmg.data.tiledb import create_ctx
 
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
 PRIMARY_FILTER_DIMENSIONS_FILENAME = "primary_filter_dimensions.json"
 EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
-EXPRESSION_SUMMARY_DIFFEXP_CUBE_PREFIX = "expression_summary_diffexp"
 EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME = "expression_summary_default"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
 EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAME = "expression_summary_diffexp"
@@ -28,10 +26,6 @@ MARKER_GENES_CUBE_NAME = "marker_genes"
 FILTER_RELATIONSHIPS_FILENAME = "filter_relationships.json"
 DATASET_METADATA_FILENAME = "dataset_metadata.json"
 CELL_TYPE_ANCESTORS_FILENAME = "cell_type_ancestors.json"
-EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES = [
-    f"{EXPRESSION_SUMMARY_DIFFEXP_CUBE_PREFIX}__{dim}" for dim in expression_summary_secondary_dims
-]
-EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES.append(f"{EXPRESSION_SUMMARY_DIFFEXP_CUBE_PREFIX}__default")
 
 STACK_NAME = os.environ.get("REMOTE_DEV_PREFIX")
 
@@ -325,9 +319,9 @@ def _load_snapshot(
         filter_relationships=filter_relationships,
         dataset_metadata=dataset_metadata,
         cell_type_ancestors=pd.Series(cell_type_ancestors),
-        diffexp_expression_summary_cubes={
-            name.split("__")[-1]: _open_cube(f"{snapshot_uri}/{name}") for name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
-        },
+        # diffexp_expression_summary_cubes={
+        #     name.split("__")[-1]: _open_cube(f"{snapshot_uri}/{name}") for name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
+        # },
         cell_counts_df=cell_counts_cube.df[:],
     )
 

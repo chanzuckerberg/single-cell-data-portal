@@ -10,12 +10,13 @@ import tiledb
 
 from backend.wmg.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
+    CELL_COUNTS_DIFFEXP_CUBE_NAME,
     CELL_TYPE_ANCESTORS_FILENAME,
     CELL_TYPE_ORDERINGS_FILENAME,
     DATASET_METADATA_FILENAME,
     EXPRESSION_SUMMARY_CUBE_NAME,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
-    EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES,
+    EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAME,
     FILTER_RELATIONSHIPS_FILENAME,
     MARKER_GENES_CUBE_NAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
@@ -108,15 +109,10 @@ if __name__ == "__main__":
             MARKER_GENES_CUBE_NAME,
             EXPRESSION_SUMMARY_CUBE_NAME,
             EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
-        ] + EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES:
-            if (
-                cube_name == fixture_type
-                or fixture_type == FixtureType.all.value
-                or (
-                    cube_name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
-                    and fixture_type == FixtureType.differential_expression.value
-                )
-            ):
+            CELL_COUNTS_DIFFEXP_CUBE_NAME,
+            EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAME,
+        ]:
+            if cube_name == fixture_type or fixture_type == FixtureType.all.value:
                 with tiledb.open(os.path.join(corpus_path, cube_name)) as cube:
                     df = cube.df[:]
                 path = os.path.join(new_snapshot, cube_name + ".csv")

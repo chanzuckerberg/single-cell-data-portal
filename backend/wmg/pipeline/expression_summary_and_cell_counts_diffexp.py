@@ -4,7 +4,7 @@ import os
 import pandas as pd
 import tiledb
 
-from backend.wmg.data.schemas.expression_summary_cube_schemas_diffexp import (
+from backend.wmg.data.schemas.cube_schema_diffexp import (
     cell_counts_logical_dims,
     cell_counts_schema,
     expression_summary_schema,
@@ -70,9 +70,10 @@ def create_expression_summary_and_cell_counts_diffexp_cubes(corpus_path: str):
                 )
                 row["group_id"] = pd.Series(data=cell_counts_df["group_id"], index=groups)[row.index].values
                 row = row.reset_index(drop=True)
+
                 tiledb.from_pandas(
                     expression_summary_diffexp_uri,
-                    row,
+                    row[_get_columns_from_array_schema(expression_summary_schema)],
                     mode="append",
                 )
 
@@ -83,3 +84,9 @@ def create_expression_summary_and_cell_counts_diffexp_cubes(corpus_path: str):
 
     pipeline_state[EXPRESSION_SUMMARY_AND_CELL_COUNTS_DIFFEXP_CUBES_CREATED_FLAG] = True
     write_pipeline_state(pipeline_state, corpus_path)
+
+
+def _get_columns_from_array_schema(array_schema: tiledb.ArraySchema):
+    dimension_names = [dim.name for dim in array_schema.domain]
+    attribute_names = [attr.name for attr in array_schema]
+    return dimension_names + attribute_names
