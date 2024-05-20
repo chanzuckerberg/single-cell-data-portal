@@ -1,8 +1,6 @@
 import os
 import pickle
 import tempfile
-from os import mkdir
-from uuid import uuid4
 
 import numpy as np
 import pytest
@@ -11,14 +9,6 @@ from PIL import Image
 from backend.layers.processing.utils.cxg_generation_utils import convert_uns_to_cxg_group
 from backend.layers.processing.utils.spatial import SpatialDataProcessor
 from backend.layers.thirdparty.s3_provider import S3Provider
-from tests.unit.backend.fixtures.environment_setup import fixture_file_path
-
-
-@pytest.fixture
-def testing_cxg_temp_directory():
-    directory = fixture_file_path(str(uuid4()))
-    mkdir(directory)
-    yield directory
 
 
 @pytest.fixture
