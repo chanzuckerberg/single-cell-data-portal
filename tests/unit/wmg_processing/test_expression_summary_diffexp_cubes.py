@@ -9,7 +9,9 @@ from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     EXPRESSION_SUMMARY_DIFFEXP_CUBES_CREATED_FLAG,
 )
-from backend.wmg.pipeline.expression_summary_diffexp import create_expression_summary_diffexp_cubes
+from backend.wmg.pipeline.expression_summary_and_cell_counts_diffexp import (
+    create_expression_summary_and_cell_counts_diffexp_cubes,
+)
 from backend.wmg.pipeline.utils import load_pipeline_state, write_pipeline_state
 from tests.test_utils import sort_dataframe
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot_tmpdir
@@ -41,7 +43,7 @@ class ExpressionSummaryDiffexpTests(unittest.TestCase):
             shutil.rmtree(f"{self.temp_cube_dir.name}/{cube_name}")
 
     def test_expression_summary_diffexp(self):
-        create_expression_summary_diffexp_cubes(self.temp_cube_dir.name)
+        create_expression_summary_and_cell_counts_diffexp_cubes(self.temp_cube_dir.name)
         for cube_name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES:
             with (tiledb.open(f"{self.temp_cube_dir.name}/{cube_name}") as es_cube,):
                 expression_summary_diffexp_df = sort_dataframe(es_cube.df[:])

@@ -25,7 +25,6 @@ from backend.wmg.data.schemas.expression_summary_cube_schemas_diffexp import (
 )
 from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema as marker_genes_schema_actual
 from backend.wmg.data.snapshot import (
-    CARDINALITY_PER_DIMENSION_FILENAME,
     CELL_COUNTS_CUBE_NAME,
     CELL_TYPE_ANCESTORS_FILENAME,
     CELL_TYPE_ORDERINGS_FILENAME,
@@ -258,15 +257,11 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
             fca = stack.enter_context(
                 gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_TYPE_ANCESTORS_FILENAME}.gz", "rt")
             )
-            cpd = stack.enter_context(
-                gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{CARDINALITY_PER_DIMENSION_FILENAME}.gz", "rt")
-            )
 
             filter_relationships = json.load(fr)
             primary_filter_dimensions = json.load(fp)
             dataset_metadata = json.load(fd)
             cell_type_ancestors = json.load(fca)
-            cardinality_per_dimension = json.load(cpd)
 
             yield WmgSnapshot(
                 snapshot_identifier=snapshot_name,
@@ -279,7 +274,6 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
                 dataset_metadata=dataset_metadata,
                 cell_type_ancestors=cell_type_ancestors,
                 diffexp_expression_summary_cubes=diffexp_cubes,
-                cardinality_per_dimension=cardinality_per_dimension,
                 cell_counts_df=cell_counts,
             )
 
@@ -330,14 +324,12 @@ def load_realistic_test_snapshot_tmpdir(snapshot_name: str) -> WmgSnapshot:
         gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{DATASET_METADATA_FILENAME}.gz", "rt") as fd,
         gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_TYPE_ORDERINGS_FILENAME}.gz", "rt") as fc,
         gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_TYPE_ANCESTORS_FILENAME}.gz", "rt") as fca,
-        gzip.open(f"{FIXTURES_ROOT}/{snapshot_name}/{CARDINALITY_PER_DIMENSION_FILENAME}.gz", "rt") as cpd,
     ):
         filter_relationships = json.load(fr)
         primary_filter_dimensions = json.load(fp)
         dataset_metadata = json.load(fd)
         cell_type_orderings = json.load(fc)
         cell_type_ancestors = json.load(fca)
-        cardinality_per_dimension = json.load(cpd)
 
     with open(f"{cube_dir}/{FILTER_RELATIONSHIPS_FILENAME}", "w") as fr_out:
         json.dump(filter_relationships, fr_out)
@@ -349,8 +341,6 @@ def load_realistic_test_snapshot_tmpdir(snapshot_name: str) -> WmgSnapshot:
         json.dump(cell_type_orderings, fc_out)
     with open(f"{cube_dir}/{CELL_TYPE_ANCESTORS_FILENAME}", "w") as fca_out:
         json.dump(cell_type_ancestors, fca_out)
-    with open(f"{cube_dir}/{CARDINALITY_PER_DIMENSION_FILENAME}", "w") as cpd_out:
-        json.dump(cardinality_per_dimension, cpd_out)
 
     return cube_dir_temp
 
