@@ -1,8 +1,0 @@
-headers -  {'host': 'localhost', 'Cookie': 'cxguser=eyJhY2Nlc3NfdG9rZW4iOiAib3duZXIiLCAicmVmcmVzaF90b2tlbiI6ICJyYW5kb20tMTcxNjEzNjg3NC4yNDM4OTE3IiwgInNjb3BlIjogIm9wZW5pZCBwcm9maWxlIGVtYWlsIG9mZmxpbmUiLCAiZXhwaXJlc19pbiI6IDMsICJ0b2tlbl90eXBlIjogIkJlYXJlciIsICJleHBpcmVzX2F0IjogM30='}
-headers -  {'host': 'localhost', 'Cookie': 'cxguser=eyJhY2Nlc3NfdG9rZW4iOiAib3duZXIiLCAicmVmcmVzaF90b2tlbiI6ICJyYW5kb20tMTcxNjEzNjg3NC4yNDkzMDg4IiwgInNjb3BlIjogIm9wZW5pZCBwcm9maWxlIGVtYWlsIG9mZmxpbmUiLCAiZXhwaXJlc19pbiI6IDMsICJ0b2tlbl90eXBlIjogIkJlYXJlciIsICJleHBpcmVzX2F0IjogM30='}
-headers -  {'host': 'localhost', 'Cookie': 'cxguser=eyJhY2Nlc3NfdG9rZW4iOiAib3duZXIiLCAicmVmcmVzaF90b2tlbiI6ICJyYW5kb20tMTcxNjEzNjg3NC4yNTE1NzgzIiwgInNjb3BlIjogIm9wZW5pZCBwcm9maWxlIGVtYWlsIG9mZmxpbmUiLCAiZXhwaXJlc19pbiI6IDMsICJ0b2tlbl90eXBlIjogIkJlYXJlciIsICJleHBpcmVzX2F0IjogM30='}
-headers -  {'host': 'localhost', 'Cookie': 'cxguser=eyJhY2Nlc3NfdG9rZW4iOiAib3duZXIiLCAicmVmcmVzaF90b2tlbiI6ICJyYW5kb20tMTcxNjEzNjg3NC4yNTU5MSIsICJzY29wZSI6ICJvcGVuaWQgcHJvZmlsZSBlbWFpbCBvZmZsaW5lIiwgImV4cGlyZXNfaW4iOiAzLCAidG9rZW5fdHlwZSI6ICJCZWFyZXIiLCAiZXhwaXJlc19hdCI6IDN9'}
-headers -  {'host': 'localhost'}
-headers -  {'host': 'localhost'}
-headers -  {'host': 'localhost'}
-headers -  {'host': 'localhost'}
