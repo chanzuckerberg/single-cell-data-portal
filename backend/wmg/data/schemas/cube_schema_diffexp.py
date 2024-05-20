@@ -85,6 +85,7 @@ cell_counts_logical_attrs = [
     # total count of cells, regardless of expression level
     tiledb.Attr(name="n_cells", dtype=np.uint32, filters=filters_numeric),
     tiledb.Attr(name="group_id", dtype=np.uint32, filters=filters_numeric),
+    tiledb.Attr(name="group_id_simple", dtype=np.uint32, filters=filters_numeric),
 ]
 
 cell_counts_physical_attrs = [

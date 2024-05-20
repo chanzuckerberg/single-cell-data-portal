@@ -21,6 +21,7 @@ EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
 EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME = "expression_summary_default"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
 EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAME = "expression_summary_diffexp"
+EXPRESSION_SUMMARY_DIFFEXP_SIMPLE_CUBE_NAME = "expression_summary_diffexp_simple"
 CELL_COUNTS_DIFFEXP_CUBE_NAME = "cell_counts_diffexp"
 MARKER_GENES_CUBE_NAME = "marker_genes"
 FILTER_RELATIONSHIPS_FILENAME = "filter_relationships.json"
@@ -94,6 +95,9 @@ class WmgSnapshot:
 
     # expression summary diffexp cube
     expression_summary_diffexp_cube: Optional[Array] = field(default=None)
+
+    # expression summary diffexp simple cube
+    expression_summary_diffexp_simple_cube: Optional[Array] = field(default=None)
 
 
 # Cached data
@@ -333,6 +337,9 @@ def _load_snapshot(
         cell_counts_df=cell_counts_cube.df[:],
         cell_counts_diffexp_df=cell_counts_diffexp_cube.df[:],
         expression_summary_diffexp_cube=_open_cube(f"{snapshot_uri}/{EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAME}"),
+        expression_summary_diffexp_simple_cube=_open_cube(
+            f"{snapshot_uri}/{EXPRESSION_SUMMARY_DIFFEXP_SIMPLE_CUBE_NAME}"
+        ),
     )
 
 
