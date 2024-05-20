@@ -11,6 +11,7 @@ from backend.layers.thirdparty.s3_provider import S3Provider
 
 logger = logging.getLogger(__name__)
 
+
 class SpatialDataProcessor:
     """
     A class that processes spatial data and generates deep zoom assets.

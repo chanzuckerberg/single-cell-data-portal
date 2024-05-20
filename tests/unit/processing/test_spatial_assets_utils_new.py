@@ -2,11 +2,11 @@ import copy
 import os
 import pickle
 import tempfile
-import pytest
 from os import mkdir
 from uuid import uuid4
 
 import numpy as np
+import pytest
 from PIL import Image
 
 from backend.common.utils.cxg_generation_utils import convert_uns_to_cxg_group
