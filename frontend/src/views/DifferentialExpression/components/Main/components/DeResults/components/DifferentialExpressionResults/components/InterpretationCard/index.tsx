@@ -11,7 +11,6 @@ const InterpretationCard = ({
   setIsLoadingInterpret,
   setIsVisible,
 }: Props) => {
-  console.log(differentialExpressionResults);
   const { analysisMessage, isLoading } = useConnect({
     isQueryGroup1,
     differentialExpressionResults,
