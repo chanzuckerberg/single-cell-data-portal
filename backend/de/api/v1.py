@@ -19,7 +19,7 @@ from backend.wmg.api.wmg_api_config import (
 )
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.query import DeQueryCriteria, WmgFiltersQueryCriteria, WmgQuery
-from backend.wmg.data.schemas.expression_summary_cube_schemas_diffexp import (
+from backend.wmg.data.schemas.cube_schema_diffexp import (
     base_expression_summary_indexed_dims,
     expression_summary_secondary_dims,
 )
