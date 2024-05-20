@@ -117,6 +117,7 @@ const DifferentialExpressionResults = ({
             variant="outlined"
             onChange={handleSearch}
             placeholder="e.g. JCHAIN"
+            disabled={isLoadingInterpret}
           />
         </TableHeaderWrapper>
       ),
@@ -127,6 +128,7 @@ const DifferentialExpressionResults = ({
             placeholder="e.g >1.0"
             variant="outlined"
             onChange={handleLfcFilter}
+            disabled={isLoadingInterpret}
           />
         </TableHeaderWrapper>
       ),
@@ -137,6 +139,7 @@ const DifferentialExpressionResults = ({
           <EffectSizeHeaderWrapper
             data-testid={DIFFERENTIAL_EXPRESSION_SORT_DIRECTION}
             onClick={handleSortDirectionChange}
+            disabled={isLoadingInterpret}
           >
             Effect Size{" "}
             <ButtonIcon
@@ -148,6 +151,7 @@ const DifferentialExpressionResults = ({
             placeholder="e.g >1.0"
             variant="outlined"
             onChange={handleEffectSizeFilter}
+            disabled={isLoadingInterpret}
           />
         </TableHeaderWrapper>
       ),
@@ -159,6 +163,7 @@ const DifferentialExpressionResults = ({
     setEffectSizeFilter,
     setSortDirection,
     setPage,
+    isLoadingInterpret,
   ]);
 
   const interpretText1 =
@@ -179,6 +184,7 @@ const DifferentialExpressionResults = ({
           <CellGroupTitle>Cell Group 1</CellGroupTitle>
           <GroupButtonsWrapper>
             <StyledInterpretButton
+              disabled={isLoadingInterpret}
               onClick={() => {
                 setIsQueryGroup1BeingInterpreted(true);
                 setInterpretationCardVisible(true);
@@ -233,8 +239,7 @@ const DifferentialExpressionResults = ({
           <CellGroupTitle>Cell Group 2</CellGroupTitle>
           <GroupButtonsWrapper>
             <StyledInterpretButton
-              sdsStyle="primary"
-              sdsType="filled"
+              disabled={isLoadingInterpret}
               onClick={() => {
                 setIsQueryGroup1BeingInterpreted(false);
                 setInterpretationCardVisible(true);

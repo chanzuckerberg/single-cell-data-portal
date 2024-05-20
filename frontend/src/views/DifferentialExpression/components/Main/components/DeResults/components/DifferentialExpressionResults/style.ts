@@ -44,12 +44,26 @@ export const TableHeaderWrapper = styled.div`
   flex-direction: column;
 `;
 
-export const EffectSizeHeaderWrapper = styled.div`
+interface EffectSizeHeaderWrapperProps {
+  disabled?: boolean;
+}
+export const EffectSizeHeaderWrapper = styled.div<EffectSizeHeaderWrapperProps>`
   display: flex;
   flex-direction: row;
   column-gap: 8px;
   align-items: center;
-  cursor: pointer;
+  ${({ disabled }) =>
+    disabled
+      ? `
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: 0.5;
+  `
+      : `
+    cursor: pointer;
+    pointer-events: auto;
+    opacity: 1;
+  `}
 `;
 
 export const CellGroupWrapper = styled.div`
