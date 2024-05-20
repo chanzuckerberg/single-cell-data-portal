@@ -53,7 +53,7 @@ class SpatialDataProcessor:
         lower = (height + new_dimension) / 2
         return tuple(map(int, (left, upper, right, lower)))
 
-    def _prepare_image(self, content):
+    def _fetch_image(self, content):
         """
         Prepare the image array for processing.
 
@@ -64,9 +64,7 @@ class SpatialDataProcessor:
             np.ndarray: The prepared image array.
         """
         resolution = "fullres" if "fullres" in content["images"] else "hires"
-        image_array = content["images"][resolution]
-        image_array_uint8 = np.uint8(image_array * 255 if resolution == "hires" else image_array)
-        return image_array_uint8
+        return content["images"][resolution]
 
     def _process_and_flip_image(self, image_array_uint8):
         """
@@ -126,7 +124,7 @@ class SpatialDataProcessor:
                 assets_folder = os.path.join(temp_dir, container_name.replace(".cxg", ""))
                 os.makedirs(assets_folder)
 
-                image_array = self._prepare_image(content)
+                image_array = self._fetch_image(content)
                 processed_image = self._process_and_flip_image(image_array)
                 self._generate_deep_zoom_assets(processed_image, assets_folder)
                 self._upload_assets(assets_folder)

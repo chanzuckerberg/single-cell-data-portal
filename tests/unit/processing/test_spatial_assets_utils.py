@@ -1,4 +1,3 @@
-import copy
 import os
 import pickle
 import tempfile
@@ -16,12 +15,21 @@ from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 
 
 @pytest.fixture
-def setup_spatial_processor(mocker):
-    testing_cxg_temp_directory = fixture_file_path(str(uuid4()))
+def testing_cxg_temp_directory():
+    directory = fixture_file_path(str(uuid4()))
+    mkdir(directory)
+    yield directory
+    # Cleanup can be added here if needed
 
-    s3_provider_mock = mocker.MagicMock(spec=S3Provider)
-    library_id = "abcd123"
-    valid_uns = {
+
+@pytest.fixture
+def s3_provider_mock(mocker):
+    return mocker.MagicMock(spec=S3Provider)
+
+
+@pytest.fixture
+def valid_uns():
+    return {
         "spatial": {
             "library_id_1": {
                 "images": {"hires": np.random.rand(10, 10, 3), "fullres": np.random.rand(20, 20, 3)},
@@ -29,43 +37,59 @@ def setup_spatial_processor(mocker):
             }
         }
     }
-    valid_spatial_data = valid_uns["spatial"]["library_id_1"]
-    invalid_uns = {}
-    spatial_processor = SpatialDataProcessor(s3_provider=s3_provider_mock)
-    mkdir(testing_cxg_temp_directory)
-
-    output_folder = "test_output"
-    cxg_container = "test_container"
-    group_metadata_name = "uns"
-    ctx = None
-
-    mock_spatial_processor = mocker.MagicMock(spec=SpatialDataProcessor)
-    mock_spatial_processor.filter_spatial_data.return_value = valid_uns["spatial"]
-
-    return {
-        "testing_cxg_temp_directory": testing_cxg_temp_directory,
-        "s3_provider_mock": s3_provider_mock,
-        "library_id": library_id,
-        "valid_uns": valid_uns,
-        "valid_spatial_data": valid_spatial_data,
-        "invalid_uns": invalid_uns,
-        "spatial_processor": spatial_processor,
-        "output_folder": output_folder,
-        "cxg_container": cxg_container,
-        "group_metadata_name": group_metadata_name,
-        "ctx": ctx,
-        "mock_spatial_processor": mock_spatial_processor,
-    }
 
 
-def test__valid_input_metadata_copy(setup_spatial_processor):
+@pytest.fixture
+def valid_spatial_data(valid_uns):
+    return valid_uns["spatial"]["library_id_1"]
+
+
+@pytest.fixture
+def invalid_uns():
+    return {}
+
+
+@pytest.fixture
+def spatial_processor(s3_provider_mock):
+    return SpatialDataProcessor(s3_provider=s3_provider_mock)
+
+
+@pytest.fixture
+def output_folder():
+    return "test_output"
+
+
+@pytest.fixture
+def cxg_container():
+    return "test_container"
+
+
+@pytest.fixture
+def group_metadata_name():
+    return "uns"
+
+
+@pytest.fixture
+def mock_spatial_processor(mocker, valid_uns):
+    processor = mocker.MagicMock(spec=SpatialDataProcessor)
+    processor.filter_spatial_data.return_value = valid_uns["spatial"]
+    return processor
+
+
+@pytest.fixture
+def library_id():
+    return "abcd123"
+
+
+@pytest.fixture
+def ctx():
+    return None
+
+
+def test__valid_input_metadata_copy(spatial_processor, valid_spatial_data, library_id):
     """
     Test case for verifying the required metadata is present
     """
-    spatial_processor = setup_spatial_processor["spatial_processor"]
-    valid_spatial_data = setup_spatial_processor["valid_spatial_data"]
-    library_id = setup_spatial_processor["library_id"]
-
     # Expected output based on the input data
     expected_output = {
         library_id: {
@@ -82,43 +106,49 @@ def test__valid_input_metadata_copy(setup_spatial_processor):
     assert result == expected_output, f"Expected {expected_output}, but got {result}"
 
 
-def test__invalid_input_metadata_copy(setup_spatial_processor):
+def test__invalid_input_metadata_copy(spatial_processor, invalid_uns, library_id):
     """
-    Test case to verify that a KeyError is raised when passing input metadata
+    Test case to verify that a KeyError is raised when passing invalid input metadata
     """
-    spatial_processor = setup_spatial_processor["spatial_processor"]
-    invalid_uns = setup_spatial_processor["invalid_uns"]
-    library_id = setup_spatial_processor["library_id"]
     with pytest.raises(KeyError):
         spatial_processor.filter_spatial_data(invalid_uns, library_id)
 
 
-def test__full_high_res_image_present(setup_spatial_processor):
+def test__fetch_image_fullres(spatial_processor, valid_spatial_data):
     """
-    Test that the default image is fullres if present otherwise fall back to hires
+    Test that _fetch_image returns the fullres image when present.
     """
-    spatial_processor = setup_spatial_processor["spatial_processor"]
-    valid_spatial_data = setup_spatial_processor["valid_spatial_data"]
+    image_array = spatial_processor._fetch_image(valid_spatial_data)
+    assert image_array.shape == (20, 20, 3), "Expected fullres image to be returned."
 
-    image_array_uint8 = spatial_processor._prepare_image(valid_spatial_data)
-    assert image_array_uint8.shape == (20, 20, 3)
 
-    valid_hires_uns = copy.deepcopy(valid_spatial_data)
-    valid_hires_uns["images"].pop("fullres", None)
-    image_array_uint8 = spatial_processor._prepare_image(valid_hires_uns)
-    assert image_array_uint8.shape == (10, 10, 3)
+def test__fetch_image_hires(spatial_processor, valid_spatial_data):
+    """
+    Test that _fetch_image returns the hires image when fullres is not present.
+    """
+    valid_spatial_data_without_fullres = valid_spatial_data.copy()
+    del valid_spatial_data_without_fullres["images"]["fullres"]
 
-    non_valid_uns = copy.deepcopy(valid_hires_uns)
-    non_valid_uns["images"].pop("hires", None)
+    image_array = spatial_processor._fetch_image(valid_spatial_data_without_fullres)
+    assert image_array.shape == (10, 10, 3), "Expected hires image to be returned."
+
+
+def test__fetch_image_key_error(spatial_processor, valid_spatial_data):
+    """
+    Test that _fetch_image raises KeyError when neither fullres nor hires images are present.
+    """
+    valid_spatial_data_without_images = valid_spatial_data.copy()
+    del valid_spatial_data_without_images["images"]["fullres"]
+    del valid_spatial_data_without_images["images"]["hires"]
+
     with pytest.raises(KeyError):
-        image_array_uint8 = spatial_processor._prepare_image(non_valid_uns)
+        spatial_processor._fetch_image(valid_spatial_data_without_images)
 
 
-def test__process_and_flip_image(setup_spatial_processor):
+def test__process_and_flip_image(spatial_processor):
     """
     Test the image processing method
     """
-    spatial_processor = setup_spatial_processor["spatial_processor"]
     test_image_array = (np.random.rand(10, 10, 3) * 255).astype(np.uint8)
     expected_flipped_array = np.flipud(test_image_array)
 
@@ -126,11 +156,10 @@ def test__process_and_flip_image(setup_spatial_processor):
     assert np.array_equal(flipped_image_array, expected_flipped_array)
 
 
-def test__crop_to_aspect_ratio(setup_spatial_processor):
+def test__crop_to_aspect_ratio(spatial_processor):
     """
     Test the cropping method to ensure the image is cropped to a square
     """
-    spatial_processor = setup_spatial_processor["spatial_processor"]
     width, height = 23, 11
     test_image_array = (np.random.rand(height, width, 3) * 255).astype(np.uint8)
 
@@ -154,12 +183,10 @@ def test__crop_to_aspect_ratio(setup_spatial_processor):
     ), "Crop is not centered correctly"
 
 
-def test__generate_deep_zoom_assets(setup_spatial_processor, mocker):
+def test__generate_deep_zoom_assets(spatial_processor, output_folder, mocker):
     """
     Test the method to generate deep zoom assets
     """
-    spatial_processor = setup_spatial_processor["spatial_processor"]
-    output_folder = setup_spatial_processor["output_folder"]
     test_image_array = (np.random.rand(100, 100, 3) * 255).astype(np.uint8)
 
     mock_new_from_memory = mocker.patch("pyvips.Image.new_from_memory")
@@ -181,13 +208,10 @@ def test__generate_deep_zoom_assets(setup_spatial_processor, mocker):
         mock_image.dzsave.assert_called_once_with(expected_output_path, suffix=".webp")
 
 
-def test__upload_assets(setup_spatial_processor, mocker):
+def test__upload_assets(spatial_processor, output_folder, mocker):
     """
     Test upload assets to S3
     """
-    spatial_processor = setup_spatial_processor["spatial_processor"]
-    output_folder = setup_spatial_processor["output_folder"]
-
     mock_upload = mocker.patch.object(spatial_processor.s3_provider, "upload_directory")
 
     spatial_processor._upload_assets(output_folder)
@@ -197,13 +221,10 @@ def test__upload_assets(setup_spatial_processor, mocker):
     mock_upload.assert_called_once_with(output_folder, expected_s3_uri)
 
 
-def test__upload_assets_failure(setup_spatial_processor, mocker):
+def test__upload_assets_failure(spatial_processor, output_folder, mocker):
     """
     Test upload assets to S3 when the upload fails
     """
-    spatial_processor = setup_spatial_processor["spatial_processor"]
-    output_folder = setup_spatial_processor["output_folder"]
-
     mock_upload = mocker.patch.object(spatial_processor.s3_provider, "upload_directory")
     mock_upload.side_effect = Exception("Failed to upload")
 
@@ -214,12 +235,8 @@ def test__upload_assets_failure(setup_spatial_processor, mocker):
     mock_upload.assert_called_once_with(output_folder, expected_s3_uri)
 
 
-def test__create_deep_zoom_assets(setup_spatial_processor, mocker):
-    spatial_processor = setup_spatial_processor["spatial_processor"]
-    cxg_container = setup_spatial_processor["cxg_container"]
-    valid_spatial_data = setup_spatial_processor["valid_spatial_data"]
-
-    mock_prepare_image = mocker.patch.object(spatial_processor, "_prepare_image")
+def test__create_deep_zoom_assets(spatial_processor, cxg_container, valid_spatial_data, mocker):
+    mock_fetch_image = mocker.patch.object(spatial_processor, "_fetch_image")
     mock_process_and_flip_image = mocker.patch.object(spatial_processor, "_process_and_flip_image")
     mock_generate_deep_zoom_assets = mocker.patch.object(spatial_processor, "_generate_deep_zoom_assets")
     mock_upload_assets = mocker.patch.object(spatial_processor, "_upload_assets")
@@ -230,7 +247,7 @@ def test__create_deep_zoom_assets(setup_spatial_processor, mocker):
     mock_temp_dir.return_value.__enter__.return_value = temp_dir_name
 
     # mock return values for the internal methods
-    mock_prepare_image.return_value = np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8)
+    mock_fetch_image.return_value = np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8)
     mock_process_and_flip_image.return_value = np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8)
 
     # call the method under test
@@ -239,42 +256,32 @@ def test__create_deep_zoom_assets(setup_spatial_processor, mocker):
     assets_folder = os.path.join(temp_dir_name, cxg_container.replace(".cxg", ""))
 
     # assertions to ensure each step is called
-    mock_prepare_image.assert_called_once_with(valid_spatial_data)
-    mock_process_and_flip_image.assert_called_once_with(mock_prepare_image.return_value)
+    mock_fetch_image.assert_called_once_with(valid_spatial_data)
+    mock_process_and_flip_image.assert_called_once_with(mock_fetch_image.return_value)
     mock_generate_deep_zoom_assets.assert_called_once_with(mock_process_and_flip_image.return_value, assets_folder)
     mock_upload_assets.assert_called_once_with(assets_folder)
 
 
-def test__create_deep_zoom_assets_exception(setup_spatial_processor, mocker):
-    spatial_processor = setup_spatial_processor["spatial_processor"]
-    cxg_container = setup_spatial_processor["cxg_container"]
-    valid_spatial_data = setup_spatial_processor["valid_spatial_data"]
-
-    mock_prepare_image = mocker.patch.object(spatial_processor, "_prepare_image")
+def test__create_deep_zoom_assets_exception(spatial_processor, cxg_container, valid_spatial_data, mocker):
+    mock_fetch_image = mocker.patch.object(spatial_processor, "_fetch_image")
     mock_process_and_flip_image = mocker.patch.object(spatial_processor, "_process_and_flip_image")
     mock_generate_deep_zoom_assets = mocker.patch.object(spatial_processor, "_generate_deep_zoom_assets")
     mock_upload_assets = mocker.patch.object(spatial_processor, "_upload_assets")
 
-    # mock an exception in the _prepare_image method
-    mock_prepare_image.side_effect = Exception("Test exception")
+    # mock an exception in the _fetch_image method
+    mock_fetch_image.side_effect = Exception("Test exception")
 
     # assert that the method raises an exception
     with pytest.raises(Exception, match="Test exception"):
         spatial_processor.create_deep_zoom_assets(cxg_container, valid_spatial_data)
 
-    mock_prepare_image.assert_called_once_with(valid_spatial_data)
+    mock_fetch_image.assert_called_once_with(valid_spatial_data)
     mock_process_and_flip_image.assert_not_called()
     mock_generate_deep_zoom_assets.assert_not_called()
     mock_upload_assets.assert_not_called()
 
 
-def test__convert_uns_to_cxg_group(setup_spatial_processor, mocker):
-    cxg_container = setup_spatial_processor["cxg_container"]
-    valid_uns = setup_spatial_processor["valid_uns"]
-    group_metadata_name = setup_spatial_processor["group_metadata_name"]
-    ctx = setup_spatial_processor["ctx"]
-    mock_spatial_processor = setup_spatial_processor["mock_spatial_processor"]
-
+def test__convert_uns_to_cxg_group(cxg_container, valid_uns, group_metadata_name, ctx, mock_spatial_processor, mocker):
     mock_from_numpy = mocker.patch("backend.layers.processing.utils.cxg_generation_utils.tiledb.from_numpy")
     mock_tiledb_open = mocker.patch(
         "backend.layers.processing.utils.cxg_generation_utils.tiledb.open", mocker.mock_open()
