@@ -151,7 +151,7 @@ local-shell: ## Open a command shell in one of the dev containers. ex: make loca
 	docker compose exec $(CONTAINER) bash
 
 .PHONY: local-unit-test
-local-unit-test: local-unit-test-backend local-unit-test-wmg-backend local-unit-test-wmg-processing local-unit-test-cellguide-pipeline local-unit-test-processing local-unit-test-cxg-admin
+local-unit-test: local-unit-test-backend local-unit-test-wmg-backend local-unit-test-de-backend local-unit-test-wmg-processing local-unit-test-cellguide-pipeline local-unit-test-processing local-unit-test-cxg-admin
 # Run all backend and processing unit tests in the dev environment, with code coverage
 
 .PHONY: local-unit-test-backend
@@ -163,6 +163,12 @@ local-unit-test-backend: .env.ecr
 local-unit-test-wmg-backend: .env.ecr
 	docker compose $(COMPOSE_OPTS) run --rm -T backend bash -c \
 	"cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/backend/wmg/";
+
+.PHONY: local-unit-test-de-backend
+local-unit-test-de-backend: .env.ecr
+	docker compose $(COMPOSE_OPTS) run --rm -T backend bash -c \
+	"cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/backend/de/";
+
 
 .PHONY: local-integration-test-backend
 local-integration-test-backend: .env.ecr
