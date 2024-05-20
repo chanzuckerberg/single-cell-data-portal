@@ -342,14 +342,14 @@ def interpretDeResults():
 
     queryGroup1Filters = request["queryGroup1Filters"]
     queryGroup2Filters = request["queryGroup2Filters"]
-    is_group_one = request["isQueryGroup1"]
-    de_genes = request["differentialExpressionResults"]
+    de_genes1 = request["deGenes1"]
+    de_genes2 = request["deGenes2"]
 
     criteria1 = DeQueryCriteria(**queryGroup1Filters)
     criteria2 = DeQueryCriteria(**queryGroup2Filters)
 
     with ServerTiming.time("interpret differential expression results"):
-        message, prompt = interpret_de_results(criteria1, criteria2, is_group_one, de_genes)
+        message, prompt = interpret_de_results(criteria1, criteria2, de_genes1, de_genes2)
 
     return jsonify(dict(message=message, prompt=prompt))
 

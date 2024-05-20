@@ -265,33 +265,27 @@ paths:
                       $ref: "#/components/schemas/de_ontology_term_id_list"
                   required:
                     - organism_ontology_term_id
-                isQueryGroup1:
-                  type: boolean
-                  description: >
-                    Boolean indicating whether the query group is group 1 or group 2.
-                differentialExpressionResults:
+                deGenes1:
                   description: ->
-                    Differential expression results
+                    Differentially expressed genes for group 1
                   type: array
                   items:
                     description: ->
-                      Object with gene id, p-value, and effect size.
-                    type: object
-                    properties:
-                      gene_symbol:
-                        description: gene symbol
-                        type: string
-                      effect_size:
-                        description: effect size
-                        type: string
-                      adjusted_p_value:
-                        description: benjamini hochberg-adjusted p-value
-                        type: string
+                      Gene symbol
+                    type: string
+                deGenes2:
+                  description: ->
+                    Differentially expressed genes for group 2
+                  type: array
+                  items:
+                    description: ->
+                      Gene symbol
+                    type: string
               required:
                 - queryGroup1Filters
                 - queryGroup2Filters
-                - isQueryGroup1
-                - differentialExpressionResults
+                - deGenes1
+                - deGenes2
       responses:
         "200":
           description: OK

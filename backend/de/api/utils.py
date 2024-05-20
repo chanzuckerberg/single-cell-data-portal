@@ -8,10 +8,10 @@ from backend.wmg.data.query import DeQueryCriteria
 def interpret_de_results(
     criteria1: DeQueryCriteria,
     criteria2: DeQueryCriteria,
-    is_group_one: bool,
-    genes: list[dict[str, str]],
+    genes1: list[str],
+    genes2: list[str],
 ) -> str:
-    prompt = _craft_de_interpretation_prompt(criteria1, criteria2, "1" if is_group_one else "2", genes)
+    prompt = _craft_de_interpretation_prompt(criteria1, criteria2, genes1, genes2)
 
     messages = [{"role": "user", "content": prompt}]
 
@@ -24,7 +24,7 @@ def interpret_de_results(
 
 
 def _craft_de_interpretation_prompt(
-    criteria1: DeQueryCriteria, criteria2: DeQueryCriteria, selected_group: int, genes: list[dict[str, str]]
+    criteria1: DeQueryCriteria, criteria2: DeQueryCriteria, genes1: list[str], genes2: list[str]
 ) -> str:
     def get_term_labels(ontology_term_ids: list[str]) -> list[str]:
         return [ontology_parser.get_term_label(term_id) for term_id in ontology_term_ids]
@@ -62,26 +62,22 @@ def _craft_de_interpretation_prompt(
 
     formatted_criteria1 = format_criteria(criteria1)
     formatted_criteria2 = format_criteria(criteria2)
-    formatted_genes = "\n  ".join(
-        [
-            f"{i+1}. {gene['gene_symbol']} (p-value: {gene['adjusted_p_value']}, effect size: {gene['effect_size']})"
-            for i, gene in enumerate(genes)
-        ]
-    )
+    formatted_genes1 = "\n  ".join([f"{i+1}. {gene}" for i, gene in enumerate(genes1)])
+    formatted_genes2 = "\n  ".join([f"{i+1}. {gene}" for i, gene in enumerate(genes2)])
 
     prompt = f"""
-    Please analyze the following differential expression (DE) results and provide a detailed interpretation focusing on
-    biologically interesting and relevant signals, such as pathway enrichment. The p-values and effect sizes are provided
-    for your reference. You may consider them in your analysis but do not discuss them as part of your report to the user.
-    Typically, p-values < 0.05 and effect sizes > 1 are meaningful.
+Please analyze the following differential expression (DE) results and provide a detailed interpretation focusing on
+biologically interesting and relevant signals, such as pathway enrichment. 
 
-    - **Group 1 Criteria**: {formatted_criteria1}
-    - **Group 2 Criteria**: {formatted_criteria2}
-    - **Top DE Genes for Group {selected_group}**:
-    {formatted_genes}
+- **Group 1 Criteria**: {formatted_criteria1}
+- **Group 2 Criteria**: {formatted_criteria2}
+- **Top Upregulated Genes for Group 1 (Downregulated for Group 2)**:
+{formatted_genes1}
+- **Top Downregulated Genes for Group 1 (Upregulated for Group 2)**:
+{formatted_genes2}
 
-    Please include in your analysis any significant pathways, biological processes, or functional annotations that are enriched
-    in these top differentially expressed genes. Also, describe any notable patterns or trends that emerge from these results,
-    especially given the biological context of the query.
-    """
+Please include in your analysis any significant pathways, biological processes, or functional annotations that are enriched
+in these top differentially expressed genes. Also, describe any notable patterns or trends that emerge from these results,
+especially given the biological context of the query.
+"""
     return prompt.strip()
