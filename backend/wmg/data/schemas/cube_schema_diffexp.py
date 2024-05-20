@@ -84,7 +84,9 @@ cell_counts_domain = tiledb.Domain(
 cell_counts_logical_attrs = [
     # total count of cells, regardless of expression level
     tiledb.Attr(name="n_cells", dtype=np.uint32, filters=filters_numeric),
+    # groups corresponding to dimensions in cell_counts_logical_dims_exclude_dataset_id
     tiledb.Attr(name="group_id", dtype=np.uint32, filters=filters_numeric),
+    # groups corresponding to dimensions in cell_counts_indexed_dims
     tiledb.Attr(name="group_id_simple", dtype=np.uint32, filters=filters_numeric),
 ]
 
