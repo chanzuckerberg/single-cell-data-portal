@@ -19,7 +19,6 @@ def testing_cxg_temp_directory():
     directory = fixture_file_path(str(uuid4()))
     mkdir(directory)
     yield directory
-    # Cleanup can be added here if needed
 
 
 @pytest.fixture
