@@ -7,6 +7,7 @@ from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
 
+from backend.wmg.data.schemas.cube_schema_diffexp import cell_counts_indexed_dims
 from backend.wmg.data.snapshot import WmgSnapshot
 
 
@@ -94,13 +95,6 @@ class WmgQuery:
         self._snapshot = snapshot
         self._cube_query_params = cube_query_params
 
-    @tracer.wrap(name="expression_summary_diffexp", service="de-api", resource="_query", span_type="de-api")
-    def expression_summary_diffexp(self, criteria: DeQueryCriteria) -> DataFrame:
-        return self._query(
-            cube=_select_cube_with_best_discriminatory_power(self._snapshot, criteria),
-            criteria=criteria,
-        )
-
     @tracer.wrap(name="expression_summary", service="wmg-api", resource="_query", span_type="wmg-api")
     def expression_summary(self, criteria: WmgQueryCriteria, compare_dimension=None) -> DataFrame:
         return self._query(
@@ -142,6 +136,44 @@ class WmgQuery:
             if key in df.columns and values:
                 mask &= df[key].isin(values)
         return df[mask].rename(columns={"n_cells": "n_total_cells"})
+
+    def cell_counts_diffexp_df(self, criteria: DeQueryCriteria) -> DataFrame:
+        df = self._snapshot.cell_counts_diffexp_df
+        mask = np.array([True] * len(df))
+        for key, values in dict(criteria).items():
+            values = values if isinstance(values, list) else [values]
+            key = depluralize(key)
+            if key in df.columns and values:
+                mask &= df[key].isin(values)
+
+        return df[mask].rename(columns={"n_cells": "n_total_cells"})
+
+    @tracer.wrap(
+        name="expression_summary_and_cell_counts_diffexp", service="de-api", resource="_query", span_type="de-api"
+    )
+    def expression_summary_and_cell_counts_diffexp(self, criteria: DeQueryCriteria) -> tuple[DataFrame, DataFrame]:
+        use_simple = not any(
+            depluralize(key) not in cell_counts_indexed_dims and values for key, values in dict(criteria).items()
+        )
+
+        cell_counts_diffexp_df = self.cell_counts_diffexp_df(criteria)
+        key = "group_id_simple" if use_simple else "group_id"
+        cube = (
+            self._snapshot.expression_summary_diffexp_simple_cube
+            if use_simple
+            else self._snapshot.expression_summary_diffexp_cube
+        )
+        group_ids = cell_counts_diffexp_df[key].unique().tolist()
+        return (
+            pd.concat(
+                cube.query(
+                    return_incomplete=True,
+                    use_arrow=True,
+                    dims=["group_id"],
+                ).df[group_ids]
+            ),
+            cell_counts_diffexp_df,
+        )
 
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
     #  /chanzuckerberg/single-cell-data-portal/2133
@@ -268,37 +300,3 @@ def retrieve_top_n_markers(query_result, test, n_markers):
         markers = markers.sort_values("marker_score", ascending=False)
     records = markers[attrs].to_dict(orient="records")
     return records
-
-
-def _select_cube_with_best_discriminatory_power(snapshot: WmgSnapshot, criteria: DeQueryCriteria) -> Array:
-    """
-    Selects the cube with the best discriminatory power based on the given criteria.
-
-    This function evaluates each dimension's discriminatory power by comparing the number
-    of criteria specified for that dimension against its total cardinality within the snapshot.
-    It then selects the cube that maximizes this discriminatory power. If no dimension meets the
-    criteria or if the discriminatory power cannot be determined, the default cube is selected.
-
-    Parameters
-    ----------
-    snapshot : WmgSnapshot
-        The snapshot object containing all cubes and their metadata.
-    criteria : DeQueryCriteria
-        The criteria object containing dimensions and their corresponding values to filter on.
-
-    Returns
-    -------
-    Array
-        The cube with the best discriminatory power based on the given criteria.
-    """
-    cardinality_per_dimension = snapshot.cardinality_per_dimension
-    criteria_dict = criteria.dict()
-    base_indexed_dims = [dim.name for dim in snapshot.diffexp_expression_summary_cubes["default"].schema.domain]
-    discriminatory_power = {
-        depluralize(dim): len(criteria_dict[dim]) / cardinality_per_dimension[depluralize(dim)]
-        for dim in criteria_dict
-        if len(criteria_dict[dim]) > 0 and depluralize(dim) not in base_indexed_dims
-    }
-    use_default = len(discriminatory_power) == 0
-    cube_key = "default" if use_default else min(discriminatory_power, key=discriminatory_power.get)
-    return snapshot.diffexp_expression_summary_cubes[cube_key]
