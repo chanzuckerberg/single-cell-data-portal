@@ -120,6 +120,7 @@ class H5ADDataFile:
                 isinstance(embedding_name, str)
                 and (embedding_name.startswith("X_") or embedding_name == "spatial")
                 and len(embedding_name) > 2
+                and embedding_name != "X_spatial"
             )
             is_valid = is_valid and isinstance(embedding_array, np.ndarray) and embedding_array.dtype.kind in "fiu"
             is_valid = is_valid and embedding_array.shape[0] == adata.n_obs and embedding_array.shape[1] >= 2
