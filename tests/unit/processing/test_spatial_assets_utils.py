@@ -144,12 +144,16 @@ def test__process_and_flip_image(spatial_processor):
     flipped_image_array = spatial_processor._process_and_flip_image(test_image_array)
     assert np.array_equal(flipped_image_array, expected_flipped_array)
 
-@pytest.mark.parametrize("width, height", [
-    (23, 11),
-    (50, 30),
-    (100, 100),
-    (200, 150),
-])
+
+@pytest.mark.parametrize(
+    "width, height",
+    [
+        (23, 11),
+        (50, 30),
+        (100, 100),
+        (200, 150),
+    ],
+)
 def test__crop_to_aspect_ratio(spatial_processor, width, height):
     """
     Test the cropping method to ensure the image is cropped to a square
@@ -174,7 +178,7 @@ def test__crop_to_aspect_ratio(spatial_processor, width, height):
         expected_upper + expected_height,
     ), "Crop is not centered correctly"
 
-    
+
 def test__generate_deep_zoom_assets(spatial_processor, output_folder, mocker):
     """
     Test the method to generate deep zoom assets
