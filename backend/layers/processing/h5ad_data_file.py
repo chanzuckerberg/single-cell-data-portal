@@ -131,7 +131,6 @@ class H5ADDataFile:
         tiledb.group_create(embedding_container, ctx=ctx)
 
         for embedding_name, embedding_values in self.anndata.obsm.items():
-            print(embedding_name)
             if is_valid_embedding(self.anndata, embedding_name, embedding_values):
                 if embedding_name == "spatial":
                     embedding_name = f"{embedding_container}/{embedding_name}"
