@@ -331,9 +331,6 @@ def _load_snapshot(
         filter_relationships=filter_relationships,
         dataset_metadata=dataset_metadata,
         cell_type_ancestors=pd.Series(cell_type_ancestors),
-        # diffexp_expression_summary_cubes={
-        #     name.split("__")[-1]: _open_cube(f"{snapshot_uri}/{name}") for name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
-        # },
         cell_counts_df=cell_counts_cube.df[:],
         cell_counts_diffexp_df=cell_counts_diffexp_cube.df[:],
         expression_summary_diffexp_cube=_open_cube(f"{snapshot_uri}/{EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAME}"),
