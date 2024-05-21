@@ -12,25 +12,21 @@ from tiledb import Array
 
 from backend.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
-from backend.wmg.data.schemas.expression_summary_cube_schemas_diffexp import expression_summary_secondary_dims
 from backend.wmg.data.tiledb import create_ctx
 
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
 PRIMARY_FILTER_DIMENSIONS_FILENAME = "primary_filter_dimensions.json"
-CARDINALITY_PER_DIMENSION_FILENAME = "cardinality_per_dimension.json"
 EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
-EXPRESSION_SUMMARY_DIFFEXP_CUBE_PREFIX = "expression_summary_diffexp"
 EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME = "expression_summary_default"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
+EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAME = "expression_summary_diffexp"
+EXPRESSION_SUMMARY_DIFFEXP_SIMPLE_CUBE_NAME = "expression_summary_diffexp_simple"
+CELL_COUNTS_DIFFEXP_CUBE_NAME = "cell_counts_diffexp"
 MARKER_GENES_CUBE_NAME = "marker_genes"
 FILTER_RELATIONSHIPS_FILENAME = "filter_relationships.json"
 DATASET_METADATA_FILENAME = "dataset_metadata.json"
 CELL_TYPE_ANCESTORS_FILENAME = "cell_type_ancestors.json"
-EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES = [
-    f"{EXPRESSION_SUMMARY_DIFFEXP_CUBE_PREFIX}__{dim}" for dim in expression_summary_secondary_dims
-]
-EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES.append(f"{EXPRESSION_SUMMARY_DIFFEXP_CUBE_PREFIX}__default")
 
 STACK_NAME = os.environ.get("REMOTE_DEV_PREFIX")
 
@@ -73,6 +69,7 @@ class WmgSnapshot:
     # TileDB array containing the total cell counts (expressed gene count, non-expressed mean, etc.) aggregated by
     # multiple cell metadata dimensions (but no gene dimension). See the full schema at
     # backend/wmg/data/schemas/cube_schema.py.
+    # TODO: remove this in favor of cell_counts_df
     cell_counts_cube: Optional[Array] = field(default=None)
 
     # Dictionary of (cell type, tissue) tuples as keys and order as values.
@@ -90,11 +87,17 @@ class WmgSnapshot:
     # cell type ancestors pandas Series
     cell_type_ancestors: Optional[pd.Series] = field(default=None)
 
-    # cardinality per dimension dictionary
-    cardinality_per_dimension: Optional[Dict] = field(default=None)
-
     # cell counts dataframe
     cell_counts_df: Optional[DataFrame] = field(default=None)
+
+    # cell counts diffexp dataframe
+    cell_counts_diffexp_df: Optional[DataFrame] = field(default=None)
+
+    # expression summary diffexp cube
+    expression_summary_diffexp_cube: Optional[Array] = field(default=None)
+
+    # expression summary diffexp simple cube
+    expression_summary_diffexp_simple_cube: Optional[Array] = field(default=None)
 
 
 # Cached data
@@ -306,7 +309,6 @@ def _load_snapshot(
     filter_relationships = _load_filter_graph_data(snapshot_rel_path, snapshot_fs_root_path)
     cell_type_ancestors = _load_cell_type_ancestors(snapshot_rel_path, snapshot_fs_root_path)
     dataset_metadata = _load_dataset_metadata(snapshot_rel_path, snapshot_fs_root_path)
-    cardinality_per_dimension = _load_cardinality_per_dimension_data(snapshot_rel_path, snapshot_fs_root_path)
 
     snapshot_uri = _get_wmg_snapshot_fullpath(snapshot_rel_path, snapshot_fs_root_path)
     logger.info(f"Loading WMG snapshot from absolute path: {snapshot_uri}")
@@ -315,6 +317,7 @@ def _load_snapshot(
     #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
     #  -data-portal/2134
     cell_counts_cube = _open_cube(f"{snapshot_uri}/{CELL_COUNTS_CUBE_NAME}")
+    cell_counts_diffexp_cube = _open_cube(f"{snapshot_uri}/{CELL_COUNTS_DIFFEXP_CUBE_NAME}")
     return WmgSnapshot(
         snapshot_identifier=snapshot_id,
         expression_summary_cube=_open_cube(f"{snapshot_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
@@ -328,11 +331,12 @@ def _load_snapshot(
         filter_relationships=filter_relationships,
         dataset_metadata=dataset_metadata,
         cell_type_ancestors=pd.Series(cell_type_ancestors),
-        diffexp_expression_summary_cubes={
-            name.split("__")[-1]: _open_cube(f"{snapshot_uri}/{name}") for name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
-        },
-        cardinality_per_dimension=cardinality_per_dimension,
         cell_counts_df=cell_counts_cube.df[:],
+        cell_counts_diffexp_df=cell_counts_diffexp_cube.df[:],
+        expression_summary_diffexp_cube=_open_cube(f"{snapshot_uri}/{EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAME}"),
+        expression_summary_diffexp_simple_cube=_open_cube(
+            f"{snapshot_uri}/{EXPRESSION_SUMMARY_DIFFEXP_SIMPLE_CUBE_NAME}"
+        ),
     )
 
 
@@ -390,11 +394,6 @@ def _load_cell_type_order(snapshot_rel_path: str, snapshot_fs_root_path: Optiona
 
 def _load_primary_filter_data(snapshot_rel_path: str, snapshot_fs_root_path: Optional[str] = None) -> Dict:
     rel_path = f"{snapshot_rel_path}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}"
-    return json.loads(_read_wmg_data_file(rel_path, snapshot_fs_root_path))
-
-
-def _load_cardinality_per_dimension_data(snapshot_rel_path: str, snapshot_fs_root_path: Optional[str] = None) -> Dict:
-    rel_path = f"{snapshot_rel_path}/{CARDINALITY_PER_DIMENSION_FILENAME}"
     return json.loads(_read_wmg_data_file(rel_path, snapshot_fs_root_path))
 
 
