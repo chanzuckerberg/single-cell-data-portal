@@ -4,5 +4,6 @@ click
 coverage
 parameterized
 pytest
+pytest-mock
 pytest-subtests
 ruff==0.4.3 # Must be kept in sync with ruff version in .pre-commit-config.yaml
