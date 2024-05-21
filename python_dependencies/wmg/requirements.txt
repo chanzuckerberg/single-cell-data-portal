@@ -17,7 +17,7 @@ psutil==5.9.5
 pyarrow==12.0.0
 pydantic==1.10.7
 pygraphviz==1.11
-PyMySQL==0.9.3
+PyMySQL==1.1.1
 python-json-logger==2.0.7
 requests>=2.22.0
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
