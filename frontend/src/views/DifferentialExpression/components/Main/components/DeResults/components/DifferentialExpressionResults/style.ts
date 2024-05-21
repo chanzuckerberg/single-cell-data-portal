@@ -3,6 +3,9 @@ import { Callout, fontBodyS, fontBodyXxs } from "@czi-sds/components";
 import { gray100, primary400 } from "src/common/theme";
 import { TextField } from "@mui/material";
 import Image from "next/image";
+import { inputBaseClasses } from "@mui/material/InputBase";
+import { inputLabelClasses } from "@mui/material/InputLabel";
+import { alertClasses } from "@mui/material/Alert";
 
 const TABLE_WIDTH = "386px";
 export const TableWrapper = styled.div`
@@ -29,11 +32,11 @@ export const StyledTextField = styled(TextField)`
   height: 32px;
   max-width: 140px;
   margin-top: 4px;
-  & .MuiInputBase-root {
+  & .${inputBaseClasses.root} {
     padding: 0;
     height: 32px;
   }
-  & .MuiInputLabel-root {
+  & .${inputLabelClasses.root} {
     margin-top: -8px;
     z-index: 0;
   }
@@ -90,7 +93,7 @@ export const FilterTagsWrapper = styled.div`
 export const StyledCallout = styled(Callout)`
   width: ${TABLE_WIDTH};
 
-  .MuiAlert-icon {
+  .${alertClasses.icon} {
     margin-top: auto;
     margin-bottom: auto;
   }

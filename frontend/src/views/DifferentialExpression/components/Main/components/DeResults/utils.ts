@@ -2,6 +2,10 @@ const parseExpressions = (expression: string) => {
   const expressions = expression
     .split(",")
     .map((expr) => {
+      // This regex matches an expression with an optional comparison operator
+      // (<, <=, >, >=) followed by an optional absolute value indicator (|),
+      // a number (which can be in scientific notation), and another optional
+      // absolute value indicator (|)
       const match = expr.match(/([<>]=?)\|?(-?\d*\.?\d+(?:e[+-]?\d+)?)\|?/);
       if (!match) return null;
 

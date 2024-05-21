@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { CommonThemeProps, getColors } from "@czi-sds/components";
+import { chipClasses } from "@mui/material/Chip";
 
 export const Wrapper = styled.div<CommonThemeProps>`
   display: flex;
@@ -10,7 +11,7 @@ export const Wrapper = styled.div<CommonThemeProps>`
   padding: 12px;
   background-color: #f8f8f8;
 
-  div > div > .MuiChip-root {
+  div > div > .${chipClasses.root} {
     display: none;
   }
 

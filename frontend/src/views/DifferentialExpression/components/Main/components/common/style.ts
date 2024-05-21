@@ -1,23 +1,12 @@
 import styled from "@emotion/styled";
-import {
-  Dropdown,
-  fontBodyS,
-  getFontWeights,
-  getSpaces,
-} from "@czi-sds/components";
+import { Dropdown, fontBodyS } from "@czi-sds/components";
+import { fontWeightSemibold, spacesXxs } from "src/common/theme";
 
 export const Label = styled("div")`
   ${fontBodyS}
 
-  ${(props) => {
-    const fontWeights = getFontWeights(props);
-    const spaces = getSpaces(props);
-
-    return `
-      font-weight: ${fontWeights?.semibold};
-      margin-bottom: ${spaces?.xxs}px;
-    `;
-  }}
+  font-weight: ${fontWeightSemibold};
+  margin-bottom: ${spacesXxs}px;
 `;
 
 export const Wrapper = styled("div")`

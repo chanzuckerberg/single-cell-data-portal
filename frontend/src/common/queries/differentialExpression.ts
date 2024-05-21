@@ -139,7 +139,7 @@ const USE_DE_QUERY = {
   id: "de-query",
 };
 
-function useWMGFiltersQuery(
+function useDEFiltersQuery(
   query: FiltersQuery | null
 ): UseQueryResult<FiltersQueryResponse> {
   const dispatch = useContext(DispatchContext);
@@ -229,7 +229,6 @@ export function useAvailableOrganisms() {
   return useMemo(() => {
     if (isLoading || !data) return { data: [], isLoading };
 
-    // const { organism_terms } = data;
     const organism_terms = CXG_CENSUS_ORGANISMS;
 
     return {
@@ -253,7 +252,6 @@ export function useDifferentialExpression(): {
         data: {
           differentialExpressionResults: [],
           nOverlap: 0,
-          overlappingPopulations: [],
         },
         isLoading,
       };
@@ -308,9 +306,9 @@ export function useQueryGroupFilterDimensions(queryGroup: QueryGroup): {
   n_cells: number;
   isLoading: boolean;
 } {
-  const requestBody = useWMGFiltersQueryRequestBodyForQueryGroups(queryGroup);
+  const requestBody = useDEFiltersQueryRequestBodyForQueryGroups(queryGroup);
 
-  const { data, isLoading } = useWMGFiltersQuery(requestBody);
+  const { data, isLoading } = useDEFiltersQuery(requestBody);
 
   return useMemo(() => {
     if (isLoading || !data)
@@ -349,7 +347,7 @@ export function useQueryGroupFilterDimensions(queryGroup: QueryGroup): {
   }, [data, isLoading]);
 }
 
-function useWMGFiltersQueryRequestBodyForQueryGroups(queryGroup: QueryGroup) {
+function useDEFiltersQueryRequestBodyForQueryGroups(queryGroup: QueryGroup) {
   const { organismId } = useContext(StateContext);
   const {
     developmentStages,

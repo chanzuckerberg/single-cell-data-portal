@@ -16,7 +16,7 @@ export const useConnect = ({ setIsLoading }: Props) => {
 
   const [isSourceDatasetSidebarOpen, setIsSourceDatasetSidebarOpen] =
     useState(false);
-  const { data, isLoading } = useDifferentialExpression();
+  const { data, isLoading: isLoadingRaw } = useDifferentialExpression();
   const {
     differentialExpressionResults: rawDifferentialExpressionResults,
     nOverlap,
@@ -31,7 +31,7 @@ export const useConnect = ({ setIsLoading }: Props) => {
   } = useContext(StateContext);
 
   useEffect(() => {
-    if (!organismId || isLoading) return;
+    if (!organismId || isLoadingRaw) return;
     const formattedResults = rawDifferentialExpressionResults.map(
       (diffExpResult) => {
         return {
@@ -44,13 +44,13 @@ export const useConnect = ({ setIsLoading }: Props) => {
       }
     );
     setDifferentialExpressionResults(formattedResults);
-  }, [rawDifferentialExpressionResults, isLoading, organismId]);
+  }, [rawDifferentialExpressionResults, isLoadingRaw, organismId]);
 
   const showEmpty = !queryGroups;
 
   useEffect(() => {
-    setIsLoading(isLoading);
-  }, [isLoading, setIsLoading]);
+    setIsLoading(isLoadingRaw);
+  }, [isLoadingRaw, setIsLoading]);
 
   const sortedAndFilteredResults = useMemo(() => {
     return differentialExpressionResults
@@ -83,7 +83,7 @@ export const useConnect = ({ setIsLoading }: Props) => {
   ]);
 
   const downloadCSV = useCallback(() => {
-    if (!queryGroupsWithNames || !queryGroups || isLoading) return;
+    if (!queryGroupsWithNames || !queryGroups || isLoadingRaw) return;
 
     const { queryGroup1, queryGroup2 } = queryGroupsWithNames;
 
@@ -131,11 +131,16 @@ export const useConnect = ({ setIsLoading }: Props) => {
     document.body.removeChild(link);
 
     track(EVENTS.DE_DOWNLOAD_CLICKED, craftPayloadWithQueryGroups(queryGroups));
-  }, [sortedAndFilteredResults, queryGroups, queryGroupsWithNames, isLoading]);
+  }, [
+    sortedAndFilteredResults,
+    queryGroups,
+    queryGroupsWithNames,
+    isLoadingRaw,
+  ]);
 
   return {
     queryGroups,
-    isLoading,
+    isLoading: isLoadingRaw,
     queryGroupsWithNames,
     organismId,
     setSearchQuery,

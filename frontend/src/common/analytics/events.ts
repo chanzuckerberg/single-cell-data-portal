@@ -144,4 +144,6 @@ export enum EVENTS {
   DE_DOWNLOAD_CLICKED = "DE_DOWNLOAD_CLICKED",
   // Event triggered when a visitor searches for a gene
   DE_SEARCH_GENE = "DE_SEARCH_GENE",
+  // Event triggered when a visitor selects an organism
+  DE_SELECT_ORGANISM = "DE_SELECT_ORGANISM",
 }
