@@ -131,8 +131,12 @@ class H5ADDataFile:
         tiledb.group_create(embedding_container, ctx=ctx)
 
         for embedding_name, embedding_values in self.anndata.obsm.items():
+            print(embedding_name)
             if is_valid_embedding(self.anndata, embedding_name, embedding_values):
-                embedding_name = f"{embedding_container}/{embedding_name[2:]}"
+                if embedding_name == "spatial":
+                    embedding_name = f"{embedding_container}/{embedding_name}"
+                else:
+                    embedding_name = f"{embedding_container}/{embedding_name[2:]}"
                 convert_ndarray_to_cxg_dense_array(embedding_name, embedding_values, ctx)
                 logging.info(f"\t\t...{embedding_name} embedding created")
 

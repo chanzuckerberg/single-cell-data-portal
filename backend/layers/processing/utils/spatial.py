@@ -64,7 +64,6 @@ class SpatialDataProcessor:
             np.ndarray: The prepared image array.
         """
         resolution = "fullres" if "fullres" in content["images"] else "hires"
-        print(content["images"][resolution])
         image_array = content["images"][resolution]
         image_array_uint8 = np.uint8(image_array * 255)
         return image_array_uint8
@@ -80,7 +79,6 @@ class SpatialDataProcessor:
             np.ndarray: The processed and flipped image array.
         """
         Image.MAX_IMAGE_PIXELS = None  # Disable the image size limit
-        print(type(image_array_uint8))
         try:
             with Image.fromarray(image_array_uint8) as img:
                 cropped_img = img.crop(self._calculate_aspect_ratio_crop(img.size))  # Crop the image
