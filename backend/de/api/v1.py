@@ -19,10 +19,7 @@ from backend.wmg.api.wmg_api_config import (
 )
 from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.wmg.data.query import DeQueryCriteria, WmgFiltersQueryCriteria, WmgQuery
-from backend.wmg.data.schemas.expression_summary_cube_schemas_diffexp import (
-    base_expression_summary_indexed_dims,
-    expression_summary_secondary_dims,
-)
+from backend.wmg.data.schemas.cube_schema_diffexp import cell_counts_logical_dims_exclude_dataset_id
 from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 
 DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
@@ -242,56 +239,22 @@ def run_differential_expression(q: WmgQuery, criteria1, criteria2) -> Tuple[List
             set(sum([descendants(i) for i in criteria2.cell_type_ontology_term_ids], []))
         )
 
-    cell_counts1 = q.cell_counts_df(criteria1)
-    cell_counts2 = q.cell_counts_df(criteria2)
+    es1, cell_counts1 = q.expression_summary_and_cell_counts_diffexp(criteria1)
+    es2, cell_counts2 = q.expression_summary_and_cell_counts_diffexp(criteria2)
 
     n_cells1 = cell_counts1["n_total_cells"].sum()
     n_cells2 = cell_counts2["n_total_cells"].sum()
-    es1 = q.expression_summary_diffexp(criteria1)
-    es2 = q.expression_summary_diffexp(criteria2)
 
     # identify number of overlapping populations
     filter_columns = [
         col
-        for col in (base_expression_summary_indexed_dims + expression_summary_secondary_dims)
+        for col in cell_counts_logical_dims_exclude_dataset_id
         if col in cell_counts1.columns and col in cell_counts2.columns
     ]
     index1 = cell_counts1.set_index(filter_columns).index
     index2 = cell_counts2.set_index(filter_columns).index
     overlap_filter = index1.isin(index2)
     n_overlap = int(cell_counts1[overlap_filter]["n_total_cells"].sum())
-
-    """ (alec): If the specific overlapping populations are ever required, refer to this code
-    unique_overlap_indices = index1[overlap_filter].unique()
-    
-    num_values_per_level = {
-        name: unique_overlap_indices.get_level_values(name).unique().size for name in unique_overlap_indices.names
-    }
-    overlap = []
-    for dims in [dict(zip(unique_overlap_indices.names, idx, strict=False)) for idx in unique_overlap_indices]:
-        population = {}
-        if "disease_ontology_term_id" in dims and num_values_per_level["disease_ontology_term_id"] > 1:
-            population["disease_terms"] = ontology_term_id_label_mapping(dims["disease_ontology_term_id"])
-        if "sex_ontology_term_id" in dims and num_values_per_level["sex_ontology_term_id"] > 1:
-            population["sex_terms"] = ontology_term_id_label_mapping(dims["sex_ontology_term_id"])
-        if (
-            "self_reported_ethnicity_ontology_term_id" in dims
-            and "," not in dims["self_reported_ethnicity_ontology_term_id"]
-            and num_values_per_level["self_reported_ethnicity_ontology_term_id"] > 1
-        ):
-            population["self_reported_ethnicity_terms"] = ontology_term_id_label_mapping(
-                dims["self_reported_ethnicity_ontology_term_id"]
-            )
-        if "publication_citation" in dims and num_values_per_level["publication_citation"] > 1:
-            population["publication_citations"] = dims["publication_citation"]
-        if "cell_type_ontology_term_id" in dims and num_values_per_level["cell_type_ontology_term_id"] > 1:
-            population["cell_type_terms"] = ontology_term_id_label_mapping(dims["cell_type_ontology_term_id"])
-        if "tissue_ontology_term_id" in dims and num_values_per_level["tissue_ontology_term_id"] > 1:
-            population["tissue_terms"] = ontology_term_id_label_mapping(dims["tissue_ontology_term_id"])
-        if "organism_ontology_term_id" in dims and num_values_per_level["organism_ontology_term_id"] > 1:
-            population["organism_terms"] = ontology_term_id_label_mapping(dims["organism_ontology_term_id"])
-        overlap.append(population)
-    """
 
     es_agg1 = es1.groupby("gene_ontology_term_id").sum(numeric_only=True)
     es_agg2 = es2.groupby("gene_ontology_term_id").sum(numeric_only=True)
@@ -340,7 +303,7 @@ def _get_cell_counts_for_query(q: WmgQuery, criteria: WmgFiltersQueryCriteria) -
         criteria.cell_type_ontology_term_ids = list(
             set(sum([descendants(i) for i in criteria.cell_type_ontology_term_ids], []))
         )
-    cell_counts = q.cell_counts_df(criteria)
+    cell_counts = q.cell_counts_diffexp_df(criteria)
     return int(cell_counts["n_total_cells"].sum())
 
 
