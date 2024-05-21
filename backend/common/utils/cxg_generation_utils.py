@@ -1,5 +1,6 @@
 import json
 import logging
+import pickle
 
 import numpy as np
 import pandas as pd
@@ -29,6 +30,32 @@ def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata
     with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
         for key, value in metadata_dict.items():
             metadata_array.meta[key] = value
+
+
+def convert_uns_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="cxg_group_metadata", ctx=None):
+ 
+    array_name = f"{cxg_container}/{group_metadata_name}"
+
+    tiledb.from_numpy(array_name, np.zeros((1,)))
+
+    def iterate_over_dict(metadata_dict):
+        with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
+            for key, value in metadata_dict.items():
+                if not key.startswith("spatial"):
+                    continue
+                print(f"key: {key}, type:{type(value)}, value: {value}")
+                if isinstance(value, dict):
+                    try:
+                        metadata_array.meta[key] = pickle.dumps(value)
+                    except Exception as e:
+                        logging.error(f"Error adding metadata {key} to {array_name}: {e}")
+                else:
+                    try:
+                        metadata_array.meta[key] = value
+                    except Exception as e:
+                        logging.error(f"Error adding metadata {key} to {array_name}: {e}")
+
+    iterate_over_dict(metadata_dict)
 
 
 def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, index_column_name, ctx):
