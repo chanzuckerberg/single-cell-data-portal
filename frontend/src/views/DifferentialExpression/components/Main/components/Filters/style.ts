@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
 import { CommonThemeProps, getColors } from "@czi-sds/components";
-import { chipClasses } from "@mui/material/Chip";
 
 export const Wrapper = styled.div<CommonThemeProps>`
   display: flex;
@@ -10,10 +9,6 @@ export const Wrapper = styled.div<CommonThemeProps>`
   row-gap: 12px;
   padding: 12px;
   background-color: #f8f8f8;
-
-  div > div > .${chipClasses.root} {
-    display: none;
-  }
 
   ${(props: CommonThemeProps) => {
     const colors = getColors(props);
