@@ -149,8 +149,8 @@ def test__process_and_flip_image(spatial_processor):
     "width, height",
     [
         (23, 11),
-        (50, 30),
-        (100, 100),
+        (55, 30),
+        (100, 55),
         (200, 150),
     ],
 )
@@ -171,11 +171,16 @@ def test__crop_to_aspect_ratio(spatial_processor, width, height):
     expected_width = expected_height = min(test_image.size)
     expected_left = (test_image.width - expected_width) / 2
     expected_upper = (test_image.height - expected_height) / 2
-    assert crop_box == (
-        expected_left,
-        expected_upper,
-        expected_left + expected_width,
-        expected_upper + expected_height,
+    assert crop_box == tuple(
+        map(
+            int,
+            (
+                expected_left,
+                expected_upper,
+                expected_left + expected_width,
+                expected_upper + expected_height,
+            ),
+        )
     ), "Crop is not centered correctly"
 
 

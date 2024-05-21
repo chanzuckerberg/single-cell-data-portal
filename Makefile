@@ -178,7 +178,7 @@ local-integration-test-backend: .env.ecr
 .PHONY: local-unit-test-processing
 local-unit-test-processing: .env.ecr # Run processing-unittest target in `processing` Docker container
 	docker compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
-	bash -c "cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/processing/test_spatial_assets_utils.py --verbose";
+	bash -c "cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/processing/";
 
 .PHONY: local-unit-test-wmg-processing
 local-unit-test-wmg-processing: .env.ecr # Run processing-unittest target in `wmg_processing` Docker container
