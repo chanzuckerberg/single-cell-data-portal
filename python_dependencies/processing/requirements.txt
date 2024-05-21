@@ -19,6 +19,5 @@ rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
 s3fs==0.4.2
 scanpy==1.9.3
 SQLAlchemy==2.*
-SQLAlchemy-Utils
 tenacity
 tiledb==0.25.0  # Portal's tiledb version should always be the same or older than Explorer's
