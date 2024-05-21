@@ -1,14 +1,8 @@
-alembic==1.11.1
-anndata==0.8.0
 boto3==1.28.7
 botocore>=1.31.7, <1.32.0
 cellxgene-census>=1.10.0 # WMG pipeline always reads the latest version of Census so we need to use the latest package version
 cellxgene-ontology-guide==0.8.0
-dataclasses-json==0.5.7
 ddtrace==2.1.4
-furl==2.1.3
-jsonschema==4.18.4
-moto>=5.0.0
 numba>=0.58.0
 numpy==1.23.5
 openai==0.27.7
@@ -17,14 +11,8 @@ psutil==5.9.5
 pyarrow==12.0.0
 pydantic==1.10.7
 pygraphviz==1.11
-PyMySQL==0.9.3
 python-json-logger==2.0.7
 requests>=2.22.0
-rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
-scanpy==1.9.3
 scipy==1.10.1
-SQLAlchemy==1.4.49
-SQLAlchemy-Utils==0.41.1
-tenacity==8.2.2
 tiledbsoma>=1.7.0 # WMG pipeline always reads the latest version of Census so we need to use the latest package version
 dask==2023.8.1
