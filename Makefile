@@ -11,7 +11,6 @@ export DEPLOYMENT_STAGE ?= test
 COVERAGE_DATA_FILE=.coverage.$(shell git rev-parse --short HEAD)
 COVERAGE_FILTER=--omit=*/dist-packages/*,*/backend/database/*,*/backend/scripts/*,*/site-packages/* --include=*/backend/*,*/tests/unit/*
 export COVERAGE_RUN_ARGS:=--data-file=$(COVERAGE_DATA_FILE) --parallel-mode $(COVERAGE_FILTER)
-export SQLALCHEMY_WARN_20=1
 
 .PHONY: fmt
 fmt:
