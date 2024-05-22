@@ -83,6 +83,12 @@ resource "aws_sfn_state_machine" "state_machine" {
             "ResultPath": "$.error"
           }
         ],
+        "Retry": [ {
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+            "IntervalSeconds": 3,
+            "MaxAttempts": 5,
+            "BackoffRate": 2
+        } ],
         "ResultPath": "$.batch"
       },
       "RegisterJobDefinition": {
@@ -137,6 +143,12 @@ resource "aws_sfn_state_machine" "state_machine" {
           }
         },
         "Resource": "arn:aws:states:::aws-sdk:batch:registerJobDefinition",
+        "Retry": [ {
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+            "IntervalSeconds": 3,
+            "MaxAttempts": 5,
+            "BackoffRate": 2
+        } ],
         "ResultPath": "$.batch"
       },
       "Validate": {
@@ -166,6 +178,12 @@ resource "aws_sfn_state_machine" "state_machine" {
         },
         "ResultPath": null,
         "TimeoutSeconds": ${local.timeout},
+        "Retry": [ {
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+            "IntervalSeconds": 3,
+            "MaxAttempts": 5,
+            "BackoffRate": 2
+        } ],
         "Catch": [
           {
             "ErrorEquals": [
@@ -204,6 +222,12 @@ resource "aws_sfn_state_machine" "state_machine" {
                     ]
                   }
                 },
+                "Retry": [ {
+                    "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+                    "IntervalSeconds": 3,
+                    "MaxAttempts": 5,
+                    "BackoffRate": 2
+                } ],
                 "Catch": [
                   {
                     "ErrorEquals": [
@@ -220,13 +244,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Type": "Pass",
                 "End": true
               }
-            },
-            "Retry": [ {
-                "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
-                "IntervalSeconds": 3,
-                "MaxAttempts": 5,
-                "BackoffRate": 2
-            } ],
+            }
           },
           {
             "StartAt": "Seurat",
@@ -252,6 +270,12 @@ resource "aws_sfn_state_machine" "state_machine" {
                     ]
                   }
                 },
+                "Retry": [ {
+                    "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+                    "IntervalSeconds": 3,
+                    "MaxAttempts": 5,
+                    "BackoffRate": 2
+                } ],
                 "Catch": [
                   {
                     "ErrorEquals": [
@@ -267,13 +291,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Type": "Pass",
                 "End": true
               }
-            },
-            "Retry": [ {
-                "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
-                "IntervalSeconds": 3,
-                "MaxAttempts": 5,
-                "BackoffRate": 2
-            } ],
+            }
           }
         ]
       },
@@ -380,13 +398,7 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Type": "Pass",
         "End": true
       }
-    },
-    "Retry": [ {
-        "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
-        "IntervalSeconds": 3,
-        "MaxAttempts": 5,
-        "BackoffRate": 2
-    } ],
+    }
 }
 EOF
 }
