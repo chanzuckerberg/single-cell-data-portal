@@ -412,6 +412,9 @@ const Sitemap = ({ docPaths, collections }: Props): JSX.Element => {
           <SitemapNavLink href={ROUTES.WHERE_IS_MY_GENE}>
             Gene-Expression
           </SitemapNavLink>
+          <SitemapNavLink href={ROUTES.DE}>
+            Differential-Expression
+          </SitemapNavLink>
           <SitemapPageLink href={`#docs`}>
             Docs
             <DownChevron />
