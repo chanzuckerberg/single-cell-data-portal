@@ -490,6 +490,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "ResultPath": "$.result"
                 }
               }
+            },
             "ItemsPath": "$.datasets",
             "Next": "CollectionPublish",
             "MaxConcurrency": 32,
