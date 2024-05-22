@@ -6,6 +6,7 @@ export interface Props {
   queryGroups: QueryGroups;
   queryGroupsWithNames: QueryGroups;
   organismId: string;
+  differentialExpressionResults: DifferentialExpressionRow[];
   sortedAndFilteredResults: DifferentialExpressionRow[];
   nCellsOverlap: number;
   setSearchQuery: Dispatch<SetStateAction<string>>;

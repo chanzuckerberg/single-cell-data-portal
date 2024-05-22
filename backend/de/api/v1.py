@@ -11,6 +11,7 @@ from server_timing import Timing as ServerTiming
 
 from backend.common.marker_gene_files.blacklist import marker_gene_blacklist
 from backend.common.utils.rollup import descendants
+from backend.de.api.utils import interpret_de_results
 from backend.wmg.api.wmg_api_config import (
     WMG_API_FORCE_LOAD_SNAPSHOT_ID,
     WMG_API_READ_FS_CACHED_SNAPSHOT,
@@ -296,6 +297,24 @@ def run_differential_expression(q: WmgQuery, criteria1, criteria2) -> Tuple[List
                 }
             )
     return statistics, n_overlap
+
+
+@tracer.wrap(name="interpretDeResults", service="de-api", resource="interpretDeResults", span_type="de-api")
+def interpretDeResults():
+    request = connexion.request.json
+
+    queryGroup1Filters = request["queryGroup1Filters"]
+    queryGroup2Filters = request["queryGroup2Filters"]
+    de_genes1 = request["deGenes1"]
+    de_genes2 = request["deGenes2"]
+
+    criteria1 = DeQueryCriteria(**queryGroup1Filters)
+    criteria2 = DeQueryCriteria(**queryGroup2Filters)
+
+    with ServerTiming.time("interpret differential expression results"):
+        message, prompt = interpret_de_results(criteria1, criteria2, de_genes1, de_genes2)
+
+    return jsonify(dict(message=message, prompt=prompt))
 
 
 def _get_cell_counts_for_query(q: WmgQuery, criteria: WmgFiltersQueryCriteria) -> pd.DataFrame:
