@@ -7,10 +7,18 @@ import {
   fontHeaderL,
 } from "@czi-sds/components";
 import styled from "@emotion/styled";
-import { error500, spacesDefault, spacesXl, spacesXxs } from "src/common/theme";
+import {
+  error400,
+  error500,
+  spacesDefault,
+  spacesXl,
+  spacesXxs,
+} from "src/common/theme";
 import { Button } from "src/components/common/Button";
 
 export const ActionButton = styled(Button)`
+  background-color: ${error400};
+  color: white;
   &:hover {
     background-color: ${error500};
   }
