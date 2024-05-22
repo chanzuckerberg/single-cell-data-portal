@@ -1,8 +1,14 @@
 import logging
 import os
+from sys import platform
 
-import tiledb
-from tiledbsoma import ExperimentAxisQuery
+if platform == "darwin":
+    # tiledbsome must be imported before tiledb. This only affects Macs.
+    from tiledbsoma import ExperimentAxisQuery  # noqa
+    import tiledb  # noqa
+else:
+    import tiledb
+    from tiledbsoma import ExperimentAxisQuery
 
 from backend.wmg.data.schemas.cube_schema import (
     cell_counts_logical_dims,

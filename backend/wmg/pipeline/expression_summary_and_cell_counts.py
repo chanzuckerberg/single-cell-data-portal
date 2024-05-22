@@ -1,8 +1,15 @@
 import os
+from sys import platform
 
 import cellxgene_census
-import tiledb
-import tiledbsoma as soma
+
+if platform == "darwin":
+    # tiledbsome must be imported before tiledb. This only affects Macs.
+    import tiledbsoma as soma  # noqa
+    import tiledb  # noqa
+else:
+    import tiledb
+    import tiledbsoma as soma
 from packaging import version
 
 from backend.wmg.data.snapshot import (

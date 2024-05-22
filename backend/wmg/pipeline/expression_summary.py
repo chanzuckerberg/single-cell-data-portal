@@ -1,13 +1,20 @@
 import logging
 import math
 import os
+from sys import platform
 
 import numpy as np
 import pandas as pd
-import tiledb
+
+if platform == "darwin":
+    # tiledbsome must be imported before tiledb. This only affects Macs.
+    from tiledbsoma import ExperimentAxisQuery  # noqa
+    import tiledb  # noqa
+else:
+    import tiledb
+    from tiledbsoma import ExperimentAxisQuery
 from numba import njit
 from scipy import sparse
-from tiledbsoma import ExperimentAxisQuery
 
 from backend.wmg.data.schemas.cube_schema import (
     expression_summary_indexed_dims_no_gene_ontology,
