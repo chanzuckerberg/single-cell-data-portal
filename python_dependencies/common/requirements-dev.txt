@@ -3,6 +3,7 @@ black==24.3.0  # Must be kept in sync with black version in .pre-commit-config.y
 click
 coverage
 furl>=2.1.2, <3
+moto>=5.0.0
 parameterized
 pytest
 pytest-subtests
