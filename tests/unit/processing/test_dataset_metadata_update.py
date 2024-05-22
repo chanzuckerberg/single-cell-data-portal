@@ -11,7 +11,6 @@ from parameterized import parameterized
 from rpy2.robjects.packages import importr
 
 from backend.common.utils.corpora_constants import CorporaConstants
-from backend.common.utils.cxg_generation_utils import convert_dictionary_to_cxg_group
 from backend.layers.common.entities import (
     CollectionVersionId,
     DatasetArtifactMetadataUpdate,
@@ -26,6 +25,7 @@ from backend.layers.common.entities import (
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.processing.dataset_metadata_update import DatasetMetadataUpdater, DatasetMetadataUpdaterWorker
 from backend.layers.processing.exceptions import ProcessingFailed
+from backend.layers.processing.utils.cxg_generation_utils import convert_dictionary_to_cxg_group
 from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
