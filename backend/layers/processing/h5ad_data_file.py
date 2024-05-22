@@ -13,15 +13,14 @@ from backend.common.utils.color_conversion_utils import (
 )
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.common.utils.cxg_constants import CxgConstants
-from backend.common.utils.matrix_utils import is_matrix_sparse
-from backend.common.utils.tiledb import consolidation_buffer_size
-from backend.layers.processing.utils.cxg_generation_utils import (
+from backend.common.utils.cxg_generation_utils import (
     convert_dataframe_to_cxg_array,
     convert_dictionary_to_cxg_group,
     convert_matrices_to_cxg_arrays,
     convert_ndarray_to_cxg_dense_array,
-    convert_uns_to_cxg_group,
 )
+from backend.common.utils.matrix_utils import is_matrix_sparse
+from backend.common.utils.tiledb import consolidation_buffer_size
 
 
 class H5ADDataFile:
@@ -80,9 +79,6 @@ class H5ADDataFile:
         convert_dataframe_to_cxg_array(output_cxg_directory, "var", self.var, self.var_index_column_name, ctx)
         logging.info("\t...dataset var dataframe saved")
 
-        convert_uns_to_cxg_group(output_cxg_directory, self.anndata.uns, "uns", ctx)
-        logging.info("\t...dataset uns dataframe saved")
-
         self.write_anndata_embeddings_to_cxg(output_cxg_directory, ctx)
         logging.info("\t...dataset embeddings saved")
 
@@ -116,12 +112,7 @@ class H5ADDataFile:
                 * with all values finite or NaN (no +Inf or -Inf)
             """
 
-            is_valid = (
-                isinstance(embedding_name, str)
-                and (embedding_name.startswith("X_") or embedding_name == "spatial")
-                and len(embedding_name) > 2
-                and embedding_name != "X_spatial"
-            )
+            is_valid = isinstance(embedding_name, str) and embedding_name.startswith("X_") and len(embedding_name) > 2
             is_valid = is_valid and isinstance(embedding_array, np.ndarray) and embedding_array.dtype.kind in "fiu"
             is_valid = is_valid and embedding_array.shape[0] == adata.n_obs and embedding_array.shape[1] >= 2
             is_valid = is_valid and not np.any(np.isinf(embedding_array)) and not np.all(np.isnan(embedding_array))
@@ -132,10 +123,7 @@ class H5ADDataFile:
 
         for embedding_name, embedding_values in self.anndata.obsm.items():
             if is_valid_embedding(self.anndata, embedding_name, embedding_values):
-                if embedding_name == "spatial":
-                    embedding_name = f"{embedding_container}/{embedding_name}"
-                else:
-                    embedding_name = f"{embedding_container}/{embedding_name[2:]}"
+                embedding_name = f"{embedding_container}/{embedding_name[2:]}"
                 convert_ndarray_to_cxg_dense_array(embedding_name, embedding_values, ctx)
                 logging.info(f"\t\t...{embedding_name} embedding created")
 
