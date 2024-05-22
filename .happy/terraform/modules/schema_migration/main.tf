@@ -465,7 +465,13 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   ],
                   "ResultPath": "$.result"
                 }
-              }
+              },
+              "Retry": [ {
+                "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+                "IntervalSeconds": 3,
+                "MaxAttempts": 5,
+                "BackoffRate": 2
+              } ],
             },
             "ItemsPath": "$.datasets",
             "Next": "CollectionPublish",
@@ -486,7 +492,13 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "Type": "Pass",
             "End": true
           }
-        }
+        },
+        "Retry": [ {
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+            "IntervalSeconds": 3,
+            "MaxAttempts": 5,
+            "BackoffRate": 2
+        } ],
       },
       "ItemsPath": "$",
       "MaxConcurrency": 40,
@@ -541,7 +553,13 @@ resource aws_sfn_state_machine sfn_schema_migration {
       },
       "End": true
     }
-  }
+  },
+  "Retry": [ {
+    "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+    "IntervalSeconds": 3,
+    "MaxAttempts": 5,
+    "BackoffRate": 2
+  } ],
 }
 EOF
 }

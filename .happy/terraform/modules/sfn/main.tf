@@ -220,7 +220,13 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Type": "Pass",
                 "End": true
               }
-            }
+            },
+            "Retry": [ {
+                "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+                "IntervalSeconds": 3,
+                "MaxAttempts": 5,
+                "BackoffRate": 2
+            } ],
           },
           {
             "StartAt": "Seurat",
@@ -261,7 +267,13 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Type": "Pass",
                 "End": true
               }
-            }
+            },
+            "Retry": [ {
+                "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+                "IntervalSeconds": 3,
+                "MaxAttempts": 5,
+                "BackoffRate": 2
+            } ],
           }
         ]
       },
@@ -309,6 +321,12 @@ resource "aws_sfn_state_machine" "state_machine" {
           "JobDefinition.$": "$.batch.JobDefinitionName"
         },
         "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition",
+        "Retry": [ {
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+            "IntervalSeconds": 3,
+            "MaxAttempts": 5,
+            "BackoffRate": 2
+        } ],
         "ResultPath": null
       },
       "DeregisterJobDefinition": {
@@ -318,6 +336,12 @@ resource "aws_sfn_state_machine" "state_machine" {
           "JobDefinition.$": "$[0].batch.JobDefinitionName"
         },
         "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition",
+        "Retry": [ {
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+            "IntervalSeconds": 3,
+            "MaxAttempts": 5,
+            "BackoffRate": 2
+        } ],
         "ResultPath": null
       },
       "CheckForErrors": {
@@ -356,7 +380,13 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Type": "Pass",
         "End": true
       }
-    }
+    },
+    "Retry": [ {
+        "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+        "IntervalSeconds": 3,
+        "MaxAttempts": 5,
+        "BackoffRate": 2
+    } ],
 }
 EOF
 }
