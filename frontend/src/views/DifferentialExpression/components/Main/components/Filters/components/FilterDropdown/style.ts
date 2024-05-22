@@ -8,8 +8,6 @@ import { inputBaseClasses } from "@mui/material/InputBase";
 import { formLabelClasses } from "@mui/material/FormLabel";
 import { autocompleteClasses } from "@mui/material/Autocomplete";
 
-console.log();
-
 const Tag = styled.div`
   display: inline-flex;
   align-items: center;
