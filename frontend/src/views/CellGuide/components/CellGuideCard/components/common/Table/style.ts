@@ -33,6 +33,7 @@ export const StyledHeadCell = styled.th`
 
 interface StyledRowProps extends CommonThemeProps {
   highlight: boolean;
+  hoverable?: boolean;
 }
 export const StyledRow = styled.tr<StyledRowProps>`
   background-color: ${(props) => (props.highlight ? gray100(props) : "white")};
@@ -43,9 +44,13 @@ export const StyledRow = styled.tr<StyledRowProps>`
   &:hover .hover-button {
     visibility: visible;
   }
-  &:hover {
-    background-color: ${gray200};
-  }
+  ${(props) =>
+    props.hoverable &&
+    `
+    &:hover {
+      background-color: ${gray200(props)};
+    }
+  `}
 `;
 
 export const StyledCell = styled.td`

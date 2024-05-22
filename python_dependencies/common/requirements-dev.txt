@@ -6,5 +6,6 @@ furl>=2.1.2, <3
 moto>=5.0.0
 parameterized
 pytest
+pytest-mock
 pytest-subtests
 ruff==0.4.3 # Must be kept in sync with ruff version in .pre-commit-config.yaml
