@@ -10,6 +10,10 @@ export const Wrapper = styled.div<CommonThemeProps>`
   padding: 12px;
   background-color: #f8f8f8;
 
+  div > div > .MuiChip-root {
+    display: none;
+  }
+
   ${(props: CommonThemeProps) => {
     const colors = getColors(props);
     return `

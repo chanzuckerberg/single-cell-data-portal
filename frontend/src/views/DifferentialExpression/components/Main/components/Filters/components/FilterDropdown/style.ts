@@ -3,10 +3,6 @@ import styled from "@emotion/styled";
 import { Autocomplete, TextField } from "@mui/material";
 import { gray400, primary400 } from "src/common/theme";
 import { FilterOption } from "../../types";
-import { formControlClasses } from "@mui/material/FormControl";
-import { inputBaseClasses } from "@mui/material/InputBase";
-import { formLabelClasses } from "@mui/material/FormLabel";
-import { autocompleteClasses } from "@mui/material/Autocomplete";
 
 const Tag = styled.div`
   display: inline-flex;
@@ -48,16 +44,16 @@ export const StyledAutocomplete = styled(
 )`
   width: 300px;
 
-  & .${formControlClasses.root} {
+  & .MuiFormControl-root {
     overflow-x: auto;
     max-width: 300px;
     padding-top: 8px;
     background-color: transparent;
   }
-  & .${formLabelClasses.root} {
+  & .MuiFormLabel-root {
     margin-top: 8px;
   }
-  & .${inputBaseClasses.root} {
+  & .MuiInputBase-root {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -68,21 +64,21 @@ export const StyledAutocomplete = styled(
     padding: 8px !important;
     background-color: white;
   }
-  & .${autocompleteClasses.tag} {
+  & .MuiAutocomplete-tag {
     white-space: nowrap;
     width: fit-content;
   }
-  & + .${autocompleteClasses.popper} {
+  & + .MuiAutocomplete-popper {
     max-width: 300px;
   }
-  & .${autocompleteClasses.endAdornment} {
+  & .MuiAutocomplete-endAdornment {
     position: relative;
     display: flex;
     flex-direction: row;
     right: unset !important;
     order: -1;
   }
-  & .${inputBaseClasses.input} {
+  & .MuiInputBase-input {
     width: 45px !important;
     order: -2;
   }

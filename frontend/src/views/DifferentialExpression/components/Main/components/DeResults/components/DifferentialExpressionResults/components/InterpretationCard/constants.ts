@@ -1,0 +1,3 @@
+export const MAX_NUM_TOP_GENES_TO_INTERPRET = 50;
+export const MIN_EFEFCT_SIZE_TO_INTERPRET = 0.5;
+export const MAX_P_VALUE_TO_INTERPRET = 0.05;

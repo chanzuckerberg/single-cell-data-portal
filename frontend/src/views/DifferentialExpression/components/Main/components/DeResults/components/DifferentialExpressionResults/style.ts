@@ -1,11 +1,8 @@
 import styled from "@emotion/styled";
-import { Callout, fontBodyS, fontBodyXxs } from "@czi-sds/components";
+import { Button, Callout, fontBodyS, fontBodyXxs } from "@czi-sds/components";
 import { gray100, primary400 } from "src/common/theme";
 import { TextField } from "@mui/material";
 import Image from "next/image";
-import { inputBaseClasses } from "@mui/material/InputBase";
-import { inputLabelClasses } from "@mui/material/InputLabel";
-import { alertClasses } from "@mui/material/Alert";
 
 const TABLE_WIDTH = "386px";
 export const TableWrapper = styled.div`
@@ -32,11 +29,11 @@ export const StyledTextField = styled(TextField)`
   height: 32px;
   max-width: 140px;
   margin-top: 4px;
-  & .${inputBaseClasses.root} {
+  & .MuiInputBase-root {
     padding: 0;
     height: 32px;
   }
-  & .${inputLabelClasses.root} {
+  & .MuiInputLabel-root {
     margin-top: -8px;
     z-index: 0;
   }
@@ -93,7 +90,7 @@ export const FilterTagsWrapper = styled.div`
 export const StyledCallout = styled(Callout)`
   width: ${TABLE_WIDTH};
 
-  .${alertClasses.icon} {
+  .MuiAlert-icon {
     margin-top: auto;
     margin-bottom: auto;
   }
@@ -110,4 +107,29 @@ export const StyledIconImage = styled(Image)`
 
 export const StyledTooltipText = styled.div`
   text-align: left;
+`;
+
+export const InterpretButtonWrapper = styled.div`
+  width: ${TABLE_WIDTH};
+  display: flex;
+  justify-content: flex-end;
+`;
+export const StyledInterpretButton = styled(Button)`
+  ${fontBodyS}
+  color: ${primary400};
+  font-weight: 600;
+  display: flex;
+  flex-direction: row;
+  column-gap: 4px;
+  align-items: center;
+`;
+
+export const Overlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
 `;

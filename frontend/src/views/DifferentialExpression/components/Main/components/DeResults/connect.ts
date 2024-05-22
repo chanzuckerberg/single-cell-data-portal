@@ -16,7 +16,7 @@ export const useConnect = ({ setIsLoading }: Props) => {
 
   const [isSourceDatasetSidebarOpen, setIsSourceDatasetSidebarOpen] =
     useState(false);
-  const { data, isLoading: isLoadingRaw } = useDifferentialExpression();
+  const { data, isLoading } = useDifferentialExpression();
   const {
     differentialExpressionResults: rawDifferentialExpressionResults,
     nOverlap,
@@ -31,7 +31,7 @@ export const useConnect = ({ setIsLoading }: Props) => {
   } = useContext(StateContext);
 
   useEffect(() => {
-    if (!organismId || isLoadingRaw) return;
+    if (!organismId || isLoading) return;
     const formattedResults = rawDifferentialExpressionResults.map(
       (diffExpResult) => {
         return {
@@ -44,13 +44,13 @@ export const useConnect = ({ setIsLoading }: Props) => {
       }
     );
     setDifferentialExpressionResults(formattedResults);
-  }, [rawDifferentialExpressionResults, isLoadingRaw, organismId]);
+  }, [rawDifferentialExpressionResults, isLoading, organismId]);
 
   const showEmpty = !queryGroups;
 
   useEffect(() => {
-    setIsLoading(isLoadingRaw);
-  }, [isLoadingRaw, setIsLoading]);
+    setIsLoading(isLoading);
+  }, [isLoading, setIsLoading]);
 
   const sortedAndFilteredResults = useMemo(() => {
     return differentialExpressionResults
@@ -83,7 +83,7 @@ export const useConnect = ({ setIsLoading }: Props) => {
   ]);
 
   const downloadCSV = useCallback(() => {
-    if (!queryGroupsWithNames || !queryGroups || isLoadingRaw) return;
+    if (!queryGroupsWithNames || !queryGroups || isLoading) return;
 
     const { queryGroup1, queryGroup2 } = queryGroupsWithNames;
 
@@ -131,22 +131,18 @@ export const useConnect = ({ setIsLoading }: Props) => {
     document.body.removeChild(link);
 
     track(EVENTS.DE_DOWNLOAD_CLICKED, craftPayloadWithQueryGroups(queryGroups));
-  }, [
-    sortedAndFilteredResults,
-    queryGroups,
-    queryGroupsWithNames,
-    isLoadingRaw,
-  ]);
+  }, [sortedAndFilteredResults, queryGroups, queryGroupsWithNames, isLoading]);
 
   return {
     queryGroups,
-    isLoading: isLoadingRaw,
+    isLoading,
     queryGroupsWithNames,
     organismId,
     setSearchQuery,
     setLfcFilter,
     setEffectSizeFilter,
     sortDirection,
+    differentialExpressionResults,
     setSortDirection,
     isSourceDatasetSidebarOpen,
     setIsSourceDatasetSidebarOpen,

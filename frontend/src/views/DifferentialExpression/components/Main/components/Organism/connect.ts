@@ -23,7 +23,7 @@ export const useConnect = () => {
     (organism: IOrganism | null): void => {
       if (!dispatch || !organism || organismId === organism.id) return;
 
-      track(EVENTS.DE_SELECT_ORGANISM, { payload: organism?.name });
+      track(EVENTS.WMG_SELECT_ORGANISM, { payload: organism?.name });
       dispatch(clearQueryGroup1Filters());
       dispatch(clearQueryGroup2Filters());
       dispatch(clearSubmittedQueryGroups());

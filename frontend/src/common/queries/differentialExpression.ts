@@ -139,7 +139,7 @@ const USE_DE_QUERY = {
   id: "de-query",
 };
 
-function useDEFiltersQuery(
+function useWMGFiltersQuery(
   query: FiltersQuery | null
 ): UseQueryResult<FiltersQueryResponse> {
   const dispatch = useContext(DispatchContext);
@@ -229,6 +229,7 @@ export function useAvailableOrganisms() {
   return useMemo(() => {
     if (isLoading || !data) return { data: [], isLoading };
 
+    // const { organism_terms } = data;
     const organism_terms = CXG_CENSUS_ORGANISMS;
 
     return {
@@ -252,6 +253,7 @@ export function useDifferentialExpression(): {
         data: {
           differentialExpressionResults: [],
           nOverlap: 0,
+          overlappingPopulations: [],
         },
         isLoading,
       };
@@ -306,9 +308,9 @@ export function useQueryGroupFilterDimensions(queryGroup: QueryGroup): {
   n_cells: number;
   isLoading: boolean;
 } {
-  const requestBody = useDEFiltersQueryRequestBodyForQueryGroups(queryGroup);
+  const requestBody = useWMGFiltersQueryRequestBodyForQueryGroups(queryGroup);
 
-  const { data, isLoading } = useDEFiltersQuery(requestBody);
+  const { data, isLoading } = useWMGFiltersQuery(requestBody);
 
   return useMemo(() => {
     if (isLoading || !data)
@@ -347,7 +349,7 @@ export function useQueryGroupFilterDimensions(queryGroup: QueryGroup): {
   }, [data, isLoading]);
 }
 
-function useDEFiltersQueryRequestBodyForQueryGroups(queryGroup: QueryGroup) {
+function useWMGFiltersQueryRequestBodyForQueryGroups(queryGroup: QueryGroup) {
   const { organismId } = useContext(StateContext);
   const {
     developmentStages,
@@ -410,4 +412,79 @@ function useSnapshotId(): string | null {
   const { snapshotId } = state;
 
   return snapshotId || null;
+}
+
+interface InterpretDeResultsQuery {
+  deGenes1: string[];
+  deGenes2: string[];
+}
+
+interface InterpretDeResultsResponse {
+  message: string;
+  prompt: string;
+}
+
+async function fetchInterpretDeResults({
+  contextFilters,
+  query,
+  signal,
+}: {
+  contextFilters: ReturnType<typeof useDEQueryRequestBody>;
+  query: InterpretDeResultsQuery | null;
+  signal?: AbortSignal;
+}): Promise<InterpretDeResultsResponse | undefined> {
+  if (!query || !contextFilters) return;
+
+  const body = { ...contextFilters, ...query };
+  const url = API_URL + API.INTERPRET_DE_RESULTS;
+
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    body: JSON.stringify(body),
+    method: "POST",
+    signal,
+  });
+  const json: InterpretDeResultsResponse = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+
+  return json;
+}
+
+const USE_INTERPRET_DE_RESULTS = {
+  entities: [ENTITIES.INTERPRET_DE_RESULTS],
+  id: "interpret-de-results",
+};
+
+function useInterpretDeResultsQuery(
+  contextFilters: ReturnType<typeof useDEQueryRequestBody>,
+  query: InterpretDeResultsQuery | null
+): UseQueryResult<InterpretDeResultsResponse> {
+  return useQuery(
+    [USE_INTERPRET_DE_RESULTS, contextFilters, query],
+    ({ signal }) => fetchInterpretDeResults({ contextFilters, query, signal }),
+    {
+      enabled: Boolean(query),
+      staleTime: Infinity,
+    }
+  );
+}
+
+export function useInterpretDeResults(query: InterpretDeResultsQuery | null): {
+  data: InterpretDeResultsResponse;
+  isLoading: boolean;
+} {
+  const contextFilters = useDEQueryRequestBody();
+  const { data, isLoading } = useInterpretDeResultsQuery(contextFilters, query);
+
+  return useMemo(() => {
+    if (isLoading || !data) {
+      return { data: { message: "", prompt: "" }, isLoading };
+    }
+
+    return { data, isLoading: false };
+  }, [data, isLoading]);
 }
