@@ -1,0 +1,11 @@
+ERROR    backend.layers.processing.utils.spatial:spatial.py:134 Failed to create and upload deep zoom assets: Test exception
+Traceback (most recent call last):
+  File "/single-cell-data-portal/backend/layers/processing/utils/spatial.py", line 129, in create_deep_zoom_assets
+    image_array = self._fetch_image(content)
+  File "/usr/lib/python3.10/unittest/mock.py", line 1114, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/usr/lib/python3.10/unittest/mock.py", line 1118, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/usr/lib/python3.10/unittest/mock.py", line 1173, in _execute_mock_call
+    raise effect
+Exception: Test exception
