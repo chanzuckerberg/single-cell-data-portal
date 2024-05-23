@@ -1,6 +1,98 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended"
+  "timezone": "UTC",
+  "prCreation": "immediate",
+  "automergeType": "pr",
+  "extends": ["config:base"],
+
+  "packageRules": [
+    {
+      "groupName": "Ignore packages",
+      "matchFileNames": [".happy/**", "scripts/**"],
+      "enabled": false
+    },
+    {
+      "groupName": "Github Actions",
+      "matchManagers": ["github-actions", "docker-compose"],
+      "matchFileNames": [".github/**", "docker-compose.yml"],
+      "enabled": true,
+      "assignees": ["seve"]
+    },
+    {
+      "groupName": "Backend",
+      "matchManagers": ["pip_requirements", "dockerfile"],
+      "matchFileNames": [
+        "python_dependencies/backend/**",
+        "Dockerfile.backend"
+      ],
+      "enabled": true,
+      "assignees": ["Bento007"]
+    },
+    {
+      "groupName": "WMG Pipeline",
+      "matchManagers": ["pip_requirements", "dockerfile"],
+      "matchFileNames": [
+        "python_dependencies/wmg/**",
+        "Dockerfile.wmg_pipeline"
+      ],
+      "enabled": true,
+      "assignees": ["atarashansky"]
+    },
+    {
+      "groupName": "Upload Handler",
+      "matchManagers": ["pip_requirements", "dockerfile"],
+      "matchFileNames": [
+        "python_dependencies/upload_handler/**",
+        "Dockerfile.upload_failures",
+        "Dockerfile.upload_success"
+      ],
+      "enabled": true,
+      "assignees": ["ebezzi"]
+    },
+    {
+      "groupName": "Submissions",
+      "matchManagers": ["pip_requirements"],
+      "matchFileNames": ["python_dependencies/submissions/**"],
+      "enabled": true,
+      "assignees": ["nayib-jose-gloria"]
+    },
+    {
+      "groupName": "CellGuide Pipeline",
+      "matchManagers": ["pip_requirements", "dockerfile"],
+      "matchFileNames": [
+        "python_dependencies/cellguide_pipeline/**",
+        "Dockerfile.cellguide_pipeline"
+      ],
+      "enabled": true,
+      "assignees": ["atarashansky"]
+    },
+    {
+      "groupName": "Processing",
+      "matchManagers": ["pip_requirements", "dockerfile"],
+      "matchFileNames": [
+        "python_dependencies/processing/**",
+        "Dockerfile.processing",
+        "Dockerfile.processing_base"
+      ],
+      "enabled": true,
+      "assignees": ["Bento007"]
+    },
+    {
+      "groupName": "Common",
+      "matchManagers": ["pip_requirements", "html"],
+      "matchFileNames": [
+        "python_dependencies/common/**",
+        "backend/api_server/index.html"
+      ],
+      "enabled": true,
+      "assignees": ["nayib-jose-gloria"]
+    },
+    {
+      "groupName": "Frontend",
+      "matchManagers": ["npm", "nvm", "dockerfile"],
+      "matchFileNames": ["frontend/**"],
+      "enabled": true,
+      "assignees": ["tihuan"]
+    }
   ]
 }
