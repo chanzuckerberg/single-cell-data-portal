@@ -4,7 +4,8 @@
   "prCreation": "immediate",
   "automergeType": "pr",
   "extends": ["config:base"],
-
+  "separateMajorMinor": false,
+  "separateMinorPatch": false,
   "packageRules": [
     {
       "matchUpdateTypes": [
