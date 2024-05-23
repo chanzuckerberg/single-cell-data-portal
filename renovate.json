@@ -7,12 +7,12 @@
   "separateMajorMinor": false,
   "separateMinorPatch": false,
   "vulnerabilityAlerts": {
-    "groupName": "Disable separate vulnerability PRs",
-    "enabled": false
+    "groupName": "Security Updates",
+    "enabled": true
   },
   "packageRules": [
     {
-      "groupName": "Ignore packages",
+      "groupName": "Ignore Packages",
       "matchFileNames": [".happy/**", "scripts/**"],
       "enabled": false
     },
@@ -29,43 +29,18 @@
       "matchFileNames": [
         "python_dependencies/backend/**",
         "Dockerfile.backend",
-        "backend/api_server/index.html"
+        "backend/api_server/index.html",
+        "python_dependencies/common/**"
       ],
       "enabled": true,
-      "assignees": ["Bento007"]
+      "assignees": ["Bento007", "nayib-jose-gloria", "atarashansky"]
     },
     {
-      "groupName": "WMG Pipeline",
+      "groupName": "WMG and CellGuide Pipeline",
       "matchManagers": ["pip_requirements", "dockerfile"],
       "matchFileNames": [
         "python_dependencies/wmg/**",
-        "Dockerfile.wmg_pipeline"
-      ],
-      "enabled": true,
-      "assignees": ["atarashansky"]
-    },
-    {
-      "groupName": "Upload Handler",
-      "matchManagers": ["pip_requirements", "dockerfile"],
-      "matchFileNames": [
-        "python_dependencies/upload_handler/**",
-        "Dockerfile.upload_failures",
-        "Dockerfile.upload_success"
-      ],
-      "enabled": true,
-      "assignees": ["ebezzi"]
-    },
-    {
-      "groupName": "Submissions",
-      "matchManagers": ["pip_requirements"],
-      "matchFileNames": ["python_dependencies/submissions/**"],
-      "enabled": true,
-      "assignees": ["nayib-jose-gloria"]
-    },
-    {
-      "groupName": "CellGuide Pipeline",
-      "matchManagers": ["pip_requirements", "dockerfile"],
-      "matchFileNames": [
+        "Dockerfile.wmg_pipeline",
         "python_dependencies/cellguide_pipeline/**",
         "Dockerfile.cellguide_pipeline"
       ],
@@ -73,29 +48,27 @@
       "assignees": ["atarashansky"]
     },
     {
-      "groupName": "Processing",
+      "groupName": "Submissions",
       "matchManagers": ["pip_requirements", "dockerfile"],
       "matchFileNames": [
+        "python_dependencies/submissions/**",
+        "python_dependencies/upload_handler/**",
+        "Dockerfile.dataset_submissions",
+        "Dockerfile.upload_failures",
+        "Dockerfile.upload_success",
         "python_dependencies/processing/**",
         "Dockerfile.processing",
         "Dockerfile.processing_base"
       ],
       "enabled": true,
-      "assignees": ["Bento007"]
-    },
-    {
-      "groupName": "Common",
-      "matchManagers": ["pip_requirements"],
-      "matchFileNames": ["python_dependencies/common/**"],
-      "enabled": true,
-      "assignees": ["nayib-jose-gloria"]
+      "assignees": ["nayib-jose-gloria", "ebezzi", "Bento007"]
     },
     {
       "groupName": "Frontend",
       "matchManagers": ["npm", "nvm", "dockerfile"],
       "matchFileNames": ["frontend/**"],
       "enabled": true,
-      "assignees": ["tihuan"]
+      "assignees": ["tihuan", "seve"]
     }
   ]
 }
