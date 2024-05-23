@@ -236,7 +236,7 @@ def test__upload_assets_failure(spatial_processor, output_folder, mocker):
     mock_upload.assert_called_once_with(output_folder, expected_s3_uri)
 
 
-def test__create_deep_zoom_assets(spatial_processor, cxg_container, valid_spatial_data, mocker):
+def test__create_deep_zoom_assets(spatial_processor, cxg_container, valid_spatial_data, mocker, tmpdir):
     mock_fetch_image = mocker.patch.object(spatial_processor, "_fetch_image")
     mock_process_and_flip_image = mocker.patch.object(spatial_processor, "_process_and_flip_image")
     mock_generate_deep_zoom_assets = mocker.patch.object(spatial_processor, "_generate_deep_zoom_assets")
@@ -244,8 +244,7 @@ def test__create_deep_zoom_assets(spatial_processor, cxg_container, valid_spatia
 
     # mock the TemporaryDirectory context manager
     mock_temp_dir = mocker.patch("tempfile.TemporaryDirectory")
-    temp_dir_name = "/mock/temp/dir"
-    mock_temp_dir.return_value.__enter__.return_value = temp_dir_name
+    mock_temp_dir.return_value.__enter__.return_value = tmpdir
 
     # mock return values for the internal methods
     mock_fetch_image.return_value = np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8)
@@ -254,7 +253,7 @@ def test__create_deep_zoom_assets(spatial_processor, cxg_container, valid_spatia
     # call the method under test
     spatial_processor.create_deep_zoom_assets(cxg_container, valid_spatial_data)
 
-    assets_folder = os.path.join(temp_dir_name, cxg_container.replace(".cxg", ""))
+    assets_folder = os.path.join(tmpdir, cxg_container.replace(".cxg", ""))
 
     # assertions to ensure each step is called
     mock_fetch_image.assert_called_once_with(valid_spatial_data)
