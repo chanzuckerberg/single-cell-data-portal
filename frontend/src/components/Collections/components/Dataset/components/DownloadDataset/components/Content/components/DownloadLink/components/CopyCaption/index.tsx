@@ -1,5 +1,4 @@
-import { Caption } from "./style";
-import { Link } from "@czi-sds/components";
+import { Caption, StyledLink } from "./style";
 import { DATASET_ASSET_FORMAT } from "src/common/entities";
 
 const DISCOVER_API_URL = "https://api.cellxgene.cziscience.com/curation/ui/#/";
@@ -23,25 +22,29 @@ export default function CopyCaption({ selectedFormat }: Props): JSX.Element {
       <p>
         Individual datasets and their versions may also be downloaded
         programmatically using the{" "}
-        <Link href={DISCOVER_API_URL} rel="noreferrer noopener" target="_blank">
+        <StyledLink
+          href={DISCOVER_API_URL}
+          rel="noreferrer noopener"
+          target="_blank"
+        >
           Discover API
-        </Link>
+        </StyledLink>
         . The{" "}
-        <Link href={SCHEMA_URL} rel="noreferrer noopener" target="_blank">
+        <StyledLink href={SCHEMA_URL} rel="noreferrer noopener" target="_blank">
           dataset schema
-        </Link>{" "}
+        </StyledLink>{" "}
         describes the required metadata embedded in all datasets submitted to CZ
         CELLxGENE Discover.{" "}
         {selectedFormat === DATASET_ASSET_FORMAT.RDS && (
           <>
             All datasets are automatically converted to a{" "}
-            <Link
+            <StyledLink
               href={SEURAT_SCHEMA_URL}
               rel="noreferrer noopener"
               target="_blank"
             >
               Seurat v5 object
-            </Link>
+            </StyledLink>
             .
           </>
         )}

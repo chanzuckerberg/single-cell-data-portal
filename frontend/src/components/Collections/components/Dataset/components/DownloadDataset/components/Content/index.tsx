@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@czi-sds/components";
 import { DialogLoader as Loader } from "src/components/Datasets/components/DownloadDataset/style";
+import { StyledButton } from "./style";
 
 interface Props {
   isError?: boolean;
@@ -157,14 +158,14 @@ const Content: FC<Props> = ({
         )}
       </DialogContent>
       <DialogActions>
-        <Button
+        <StyledButton
           isAllCaps={false}
           onClick={onClose}
           sdsStyle="minimal"
           sdsType="secondary"
         >
           Cancel
-        </Button>
+        </StyledButton>
         <Button
           data-testid="download-asset-download-button"
           disabled={isDownloadDisabled}

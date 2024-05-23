@@ -5,4 +5,5 @@ export const CopyButton = styled(Button)`
   ${fontBodyS}
   font-weight: 500;
   min-width: unset;
+  text-transform: none;
 `;

@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
-import { fontBodyXs } from "@czi-sds/components";
-import { textSecondary } from "src/common/theme";
+import { Link, fontBodyXs } from "@czi-sds/components";
+import { primary400, textSecondary } from "src/common/theme";
 
 export const Caption = styled.div`
   ${fontBodyXs}
@@ -17,4 +17,8 @@ export const Caption = styled.div`
   b {
     font-weight: 500;
   }
+`;
+
+export const StyledLink = styled(Link)`
+  color: ${primary400};
 `;
