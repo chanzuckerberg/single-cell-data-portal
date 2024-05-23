@@ -6,37 +6,17 @@
   "extends": ["config:base"],
   "separateMajorMinor": false,
   "separateMinorPatch": false,
+  "vulnerabilityAlerts": {
+    "groupName": "Disable separate vulnerability PRs",
+    "enabled": false
+  },
   "packageRules": [
     {
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "patch",
-        "pin",
-        "pinDigest",
-        "digest",
-        "lockFileMaintenance",
-        "rollback",
-        "bump",
-        "replacement"
-      ],
       "groupName": "Ignore packages",
       "matchFileNames": [".happy/**", "scripts/**"],
       "enabled": false
     },
     {
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "patch",
-        "pin",
-        "pinDigest",
-        "digest",
-        "lockFileMaintenance",
-        "rollback",
-        "bump",
-        "replacement"
-      ],
       "groupName": "Github Actions",
       "matchManagers": ["github-actions", "docker-compose"],
       "matchFileNames": [".github/**", "docker-compose.yml"],
@@ -44,18 +24,6 @@
       "assignees": ["seve"]
     },
     {
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "patch",
-        "pin",
-        "pinDigest",
-        "digest",
-        "lockFileMaintenance",
-        "rollback",
-        "bump",
-        "replacement"
-      ],
       "groupName": "Backend",
       "matchManagers": ["pip_requirements", "dockerfile", "html"],
       "matchFileNames": [
@@ -67,18 +35,6 @@
       "assignees": ["Bento007"]
     },
     {
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "patch",
-        "pin",
-        "pinDigest",
-        "digest",
-        "lockFileMaintenance",
-        "rollback",
-        "bump",
-        "replacement"
-      ],
       "groupName": "WMG Pipeline",
       "matchManagers": ["pip_requirements", "dockerfile"],
       "matchFileNames": [
@@ -89,18 +45,6 @@
       "assignees": ["atarashansky"]
     },
     {
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "patch",
-        "pin",
-        "pinDigest",
-        "digest",
-        "lockFileMaintenance",
-        "rollback",
-        "bump",
-        "replacement"
-      ],
       "groupName": "Upload Handler",
       "matchManagers": ["pip_requirements", "dockerfile"],
       "matchFileNames": [
@@ -112,18 +56,6 @@
       "assignees": ["ebezzi"]
     },
     {
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "patch",
-        "pin",
-        "pinDigest",
-        "digest",
-        "lockFileMaintenance",
-        "rollback",
-        "bump",
-        "replacement"
-      ],
       "groupName": "Submissions",
       "matchManagers": ["pip_requirements"],
       "matchFileNames": ["python_dependencies/submissions/**"],
@@ -131,18 +63,6 @@
       "assignees": ["nayib-jose-gloria"]
     },
     {
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "patch",
-        "pin",
-        "pinDigest",
-        "digest",
-        "lockFileMaintenance",
-        "rollback",
-        "bump",
-        "replacement"
-      ],
       "groupName": "CellGuide Pipeline",
       "matchManagers": ["pip_requirements", "dockerfile"],
       "matchFileNames": [
@@ -153,18 +73,6 @@
       "assignees": ["atarashansky"]
     },
     {
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "patch",
-        "pin",
-        "pinDigest",
-        "digest",
-        "lockFileMaintenance",
-        "rollback",
-        "bump",
-        "replacement"
-      ],
       "groupName": "Processing",
       "matchManagers": ["pip_requirements", "dockerfile"],
       "matchFileNames": [
@@ -176,18 +84,6 @@
       "assignees": ["Bento007"]
     },
     {
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "patch",
-        "pin",
-        "pinDigest",
-        "digest",
-        "lockFileMaintenance",
-        "rollback",
-        "bump",
-        "replacement"
-      ],
       "groupName": "Common",
       "matchManagers": ["pip_requirements"],
       "matchFileNames": ["python_dependencies/common/**"],
@@ -195,18 +91,6 @@
       "assignees": ["nayib-jose-gloria"]
     },
     {
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "patch",
-        "pin",
-        "pinDigest",
-        "digest",
-        "lockFileMaintenance",
-        "rollback",
-        "bump",
-        "replacement"
-      ],
       "groupName": "Frontend",
       "matchManagers": ["npm", "nvm", "dockerfile"],
       "matchFileNames": ["frontend/**"],
