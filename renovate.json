@@ -56,10 +56,11 @@
         "replacement"
       ],
       "groupName": "Backend",
-      "matchManagers": ["pip_requirements", "dockerfile"],
+      "matchManagers": ["pip_requirements", "dockerfile", "html"],
       "matchFileNames": [
         "python_dependencies/backend/**",
-        "Dockerfile.backend"
+        "Dockerfile.backend",
+        "backend/api_server/index.html"
       ],
       "enabled": true,
       "assignees": ["Bento007"]
@@ -187,11 +188,8 @@
         "replacement"
       ],
       "groupName": "Common",
-      "matchManagers": ["pip_requirements", "html"],
-      "matchFileNames": [
-        "python_dependencies/common/**",
-        "backend/api_server/index.html"
-      ],
+      "matchManagers": ["pip_requirements"],
+      "matchFileNames": ["python_dependencies/common/**"],
       "enabled": true,
       "assignees": ["nayib-jose-gloria"]
     },
