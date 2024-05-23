@@ -12,7 +12,7 @@ WMG_SNAPSHOT_FS_CACHE_ROOT_PATH="/single-cell-data-portal/wmg_snapshot_cache"
 
 # LATEST_READER_SNAPSHOT_SCHEMA_VERSION here and WMG_API_SNAPSHOT_SCHEMA_VERSION
 # in backend/wmg/api/wmg_api_config.py should have the same value
-LATEST_READER_SNAPSHOT_SCHEMA_VERSION="v4"
+LATEST_READER_SNAPSHOT_SCHEMA_VERSION="v5"
 
 echo "| ENV VAR DOWNLOAD_WMG_DATA_TO_DISK: ${DOWNLOAD_WMG_DATA_TO_DISK}"
 
@@ -68,4 +68,4 @@ export DD_GEVENT_PATCH_ALL=true
 
 echo "starting gunicorn server"
 exec gunicorn ${HTTPS_CERT_AND_KEY} --worker-class gevent --workers 1 --bind 0.0.0.0:5000 backend.api_server.app:app \
-  --max-requests 10000 --timeout 180 --keep-alive 61 --log-level info
+  --max-requests 10000 --timeout 540 --keep-alive 61 --log-level info

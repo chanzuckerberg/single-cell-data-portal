@@ -27,7 +27,7 @@ ADD backend/wmg/config.py backend/wmg/config.py
 ADD backend/wmg/data backend/wmg/data
 ADD backend/wmg/pipeline backend/wmg/pipeline
 ADD backend/wmg/api backend/wmg/api
-ADD backend/cellguide/pipeline backend/cellguide/pipeline
+ADD backend/cellguide backend/cellguide
 ADD backend/layers backend/layers
 ADD backend/common backend/common
 
