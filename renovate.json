@@ -7,9 +7,10 @@
   "separateMajorMinor": false,
   "separateMinorPatch": false,
   "vulnerabilityAlerts": {
-    "groupName": "Security Updates",
+    "groupName": "Security Vulnerabilities",
     "enabled": true
   },
+  "labels": ["renovate"],
   "packageRules": [
     {
       "groupName": "Ignore Packages",
