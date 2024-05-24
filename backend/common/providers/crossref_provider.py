@@ -148,7 +148,7 @@ class CrossrefProvider(CrossrefProviderInterface):
             # Calculate the deposited date; used when checking for updates.
             deposited_at = None
             if "deposited" in message and (deposited_timestamp := message["deposited"].get("timestamp")) is not None:
-                deposited_at = datetime.fromtimestamp(deposited_timestamp / 1000)
+                deposited_at = datetime.fromisoformat(deposited_timestamp)
 
             # Journal
             try:
@@ -185,9 +185,9 @@ class CrossrefProvider(CrossrefProviderInterface):
             # Preprint
             is_preprint = message.get("subtype") == "preprint"
             if is_preprint:
-                published_metadata, published_doi_curie = self.fetch_published_metadata(message)
+                published_metadata, published_doi_curie, published_deposited_at = self.fetch_published_metadata(message)
                 if published_metadata and published_doi_curie:  # if not, use preprint doi curie
-                    return published_metadata, published_doi_curie, deposited_at
+                    return published_metadata, published_doi_curie, published_deposited_at
 
             return (
                 {

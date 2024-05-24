@@ -87,6 +87,7 @@ class TestCrossrefProvider(unittest.TestCase):
             response._content = str.encode(json.dumps(content))
             return response
 
+        now = datetime.utcnow()
         body = {
             "status": "ok",
             "message": {
@@ -102,6 +103,7 @@ class TestCrossrefProvider(unittest.TestCase):
                         "sequence": "additional",
                     },
                 ],
+                "deposited": {"timestamp": now.isoformat()},
                 "published-online": {"date-parts": [[2021, 11, 10]]},
                 "container-title": ["Nature"],
                 "subtype": "preprint",
@@ -148,7 +150,7 @@ class TestCrossrefProvider(unittest.TestCase):
             self.subTest("Preprint DOI is used when published is referenced but cannot be retrieved")
             and patch.object(provider, "fetch_published_metadata") as fetch_published_metadata_mock
         ):
-            fetch_published_metadata_mock.return_value = (None, None)
+            fetch_published_metadata_mock.return_value = (None, None, None)
 
             preprint_body = copy.deepcopy(body)
             response_preprint = make_response(preprint_body)
@@ -178,6 +180,7 @@ class TestCrossrefProvider(unittest.TestCase):
     def test__provider_parses_authors_and_dates_correctly(self, mock_config, mock_get):
         response = Response()
         response.status_code = 200
+        now = datetime.utcnow()
         response._content = str.encode(
             json.dumps(
                 {
@@ -213,7 +216,7 @@ class TestCrossrefProvider(unittest.TestCase):
                                 "name": "Bat consortium",
                             },
                         ],
-                        "deposited": {"timestamp": 1713204331000},
+                        "deposited": {"timestamp": now.isoformat()},
                         "published-online": {"date-parts": [[2021, 11]]},
                         "container-title": ["Nature"],
                     },
@@ -235,7 +238,6 @@ class TestCrossrefProvider(unittest.TestCase):
                 {"given": "John", "family": "Doe"},
                 {"given": "Jane", "family": "Doe"},
             ],
-            "deposited_at": datetime.fromtimestamp(1713204331),
             "published_year": 2021,
             "published_month": 11,
             "published_day": 1,
