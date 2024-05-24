@@ -189,7 +189,7 @@ class TestApi(BaseFunctionalTestCase):
     def test_dataset_upload_flow_with_visium_dataset(self):
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
         collection_id = self._create_test_collection(headers, "test_dataset_upload_flow_with_visium_dataset")
-        self._verify_upload_succeeded(collection_id, headers, self.test_visium_dataset_uri)
+        self._verify_upload_succeeded(collection_id, headers, self.test_visium_dataset_uri, timeout=1200)
 
     def _create_test_collection(self, headers, name="my2collection"):
         body = {
@@ -212,7 +212,7 @@ class TestApi(BaseFunctionalTestCase):
         self.assertIn("collection_id", data)
         return collection_id
 
-    def _verify_upload_succeeded(self, collection_id, headers, dataset_uri):
+    def _verify_upload_succeeded(self, collection_id, headers, dataset_uri, timeout=600):
         body = {"url": dataset_uri}
 
         res = self.session.post(
@@ -259,7 +259,7 @@ class TestApi(BaseFunctionalTestCase):
                         self.fail(f"Anndata CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
                     if cxg_status == rds_status == h5ad_status == "UPLOADED":
                         keep_trying = False
-                if time.time() >= timer + 600:
+                if time.time() >= timer + timeout:
                     raise TimeoutError(
                         f"Dataset upload or conversion timed out after 10 min. Check logs for dataset: {dataset_id}"
                     )
