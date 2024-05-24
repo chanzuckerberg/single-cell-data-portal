@@ -181,6 +181,17 @@ class TestApi(BaseFunctionalTestCase):
 
     @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
     def test_dataset_upload_flow(self):
+        headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
+        collection_id = self._create_test_collection(headers)
+        self._verify_upload_succeeded(collection_id, headers, self.test_dataset_uri)
+
+    @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
+    def test_dataset_upload_flow_with_visium_dataset(self):
+        headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
+        collection_id = self._create_test_collection(headers)
+        self._verify_upload_succeeded(collection_id, headers, self.test_visium_dataset_uri)
+
+    def _create_test_collection(self, headers):
         body = {
             "contact_email": "lisbon@gmail.com",
             "contact_name": "Madrid Sparkle",
@@ -192,7 +203,6 @@ class TestApi(BaseFunctionalTestCase):
             "name": "my2collection",
         }
 
-        headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
         res = self.session.post(f"{self.api}/dp/v1/collections", data=json.dumps(body), headers=headers)
         res.raise_for_status()
         data = json.loads(res.content)
@@ -200,8 +210,10 @@ class TestApi(BaseFunctionalTestCase):
         self.addCleanup(self.session.delete, f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
         self.assertStatusCode(requests.codes.created, res)
         self.assertIn("collection_id", data)
+        return collection_id
 
-        body = {"url": self.test_dataset_uri}
+    def _verify_upload_succeeded(self, collection_id, headers, dataset_uri):
+        body = {"url": dataset_uri}
 
         res = self.session.post(
             f"{self.api}/dp/v1/collections/{collection_id}/upload-links", data=json.dumps(body), headers=headers
