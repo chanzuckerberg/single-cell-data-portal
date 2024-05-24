@@ -241,7 +241,7 @@ def test__upload_assets_failure(spatial_processor, asset_folder, dataset_version
     mock_upload.assert_called_once_with(asset_folder, expected_s3_uri)
 
 
-def test__create_deep_zoom_assets(spatial_processor, cxg_container, valid_spatial_data, mocker):
+def test__create_deep_zoom_assets(spatial_processor, cxg_container, valid_spatial_data, dataset_version_id, mocker):
     mock_fetch_image = mocker.patch.object(spatial_processor, "_fetch_image")
     mock_process_and_flip_image = mocker.patch.object(spatial_processor, "_process_and_flip_image")
     mock_generate_deep_zoom_assets = mocker.patch.object(spatial_processor, "_generate_deep_zoom_assets")
@@ -257,7 +257,7 @@ def test__create_deep_zoom_assets(spatial_processor, cxg_container, valid_spatia
     mock_process_and_flip_image.return_value = np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8)
 
     # call the method under test
-    spatial_processor.create_deep_zoom_assets(cxg_container, valid_spatial_data)
+    spatial_processor.create_deep_zoom_assets(cxg_container, valid_spatial_data, dataset_version_id)
 
     assets_folder = os.path.join(temp_dir_name, cxg_container.replace(".cxg", ""))
 
@@ -265,10 +265,12 @@ def test__create_deep_zoom_assets(spatial_processor, cxg_container, valid_spatia
     mock_fetch_image.assert_called_once_with(valid_spatial_data)
     mock_process_and_flip_image.assert_called_once_with(mock_fetch_image.return_value)
     mock_generate_deep_zoom_assets.assert_called_once_with(mock_process_and_flip_image.return_value, assets_folder)
-    mock_upload_assets.assert_called_once_with(assets_folder)
+    mock_upload_assets.assert_called_once_with(assets_folder, dataset_version_id)
 
 
-def test__create_deep_zoom_assets_exception(spatial_processor, cxg_container, valid_spatial_data, mocker):
+def test__create_deep_zoom_assets_exception(
+    spatial_processor, cxg_container, valid_spatial_data, dataset_version_id, mocker
+):
     mock_fetch_image = mocker.patch.object(spatial_processor, "_fetch_image")
     mock_process_and_flip_image = mocker.patch.object(spatial_processor, "_process_and_flip_image")
     mock_generate_deep_zoom_assets = mocker.patch.object(spatial_processor, "_generate_deep_zoom_assets")
@@ -279,7 +281,7 @@ def test__create_deep_zoom_assets_exception(spatial_processor, cxg_container, va
 
     # assert that the method raises an exception
     with pytest.raises(Exception, match="Test exception"):
-        spatial_processor.create_deep_zoom_assets(cxg_container, valid_spatial_data)
+        spatial_processor.create_deep_zoom_assets(cxg_container, valid_spatial_data, dataset_version_id)
 
     mock_fetch_image.assert_called_once_with(valid_spatial_data)
     mock_process_and_flip_image.assert_not_called()
@@ -287,7 +289,9 @@ def test__create_deep_zoom_assets_exception(spatial_processor, cxg_container, va
     mock_upload_assets.assert_not_called()
 
 
-def test__convert_uns_to_cxg_group(cxg_container, valid_uns, group_metadata_name, ctx, mock_spatial_processor, mocker):
+def test__convert_uns_to_cxg_group(
+    cxg_container, valid_uns, group_metadata_name, ctx, mock_spatial_processor, dataset_version_id, mocker
+):
     mock_from_numpy = mocker.patch("backend.layers.processing.utils.cxg_generation_utils.tiledb.from_numpy")
     mock_tiledb_open = mocker.patch(
         "backend.layers.processing.utils.cxg_generation_utils.tiledb.open", mocker.mock_open()
@@ -300,7 +304,7 @@ def test__convert_uns_to_cxg_group(cxg_container, valid_uns, group_metadata_name
     mock_metadata_array = mock_tiledb_open.return_value.__enter__.return_value
     mock_metadata_array.meta = {}
 
-    convert_uns_to_cxg_group(cxg_container, valid_uns, group_metadata_name, ctx)
+    convert_uns_to_cxg_group(cxg_container, valid_uns, dataset_version_id, group_metadata_name, ctx)
 
     # check if from_numpy is called correctly
     mock_from_numpy.assert_called_once_with(f"{cxg_container}/{group_metadata_name}", np.zeros((1,)))
@@ -324,5 +328,5 @@ def test__convert_uns_to_cxg_group(cxg_container, valid_uns, group_metadata_name
 
     # check if create_deep_zoom_assets is called correctly
     mock_spatial_processor.create_deep_zoom_assets.assert_called_once_with(
-        cxg_container, valid_uns["spatial"]["library_id_1"]
+        cxg_container, valid_uns["spatial"]["library_id_1"], dataset_version_id
     )
