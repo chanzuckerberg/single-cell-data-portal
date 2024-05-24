@@ -182,16 +182,16 @@ class TestApi(BaseFunctionalTestCase):
     @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
     def test_dataset_upload_flow(self):
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
-        collection_id = self._create_test_collection(headers)
+        collection_id = self._create_test_collection(headers, "test_dataset_upload_flow")
         self._verify_upload_succeeded(collection_id, headers, self.test_dataset_uri)
 
     @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
     def test_dataset_upload_flow_with_visium_dataset(self):
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
-        collection_id = self._create_test_collection(headers)
+        collection_id = self._create_test_collection(headers, "test_dataset_upload_flow_with_visium_dataset")
         self._verify_upload_succeeded(collection_id, headers, self.test_visium_dataset_uri)
 
-    def _create_test_collection(self, headers):
+    def _create_test_collection(self, headers, name="my2collection"):
         body = {
             "contact_email": "lisbon@gmail.com",
             "contact_name": "Madrid Sparkle",
@@ -200,7 +200,7 @@ class TestApi(BaseFunctionalTestCase):
             "links": [
                 {"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "https://protocol.com"}
             ],
-            "name": "my2collection",
+            "name": name,
         }
 
         res = self.session.post(f"{self.api}/dp/v1/collections", data=json.dumps(body), headers=headers)
