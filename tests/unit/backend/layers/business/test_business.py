@@ -194,7 +194,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         os.unsetenv("DATASETS_BUCKET")
 
     def initialize_empty_unpublished_collection(
-        self, owner: str = test_user_name, curator_name: str = test_curator_name, links: List[Link] = []
+        self, owner: str = test_user_name, curator_name: str = test_curator_name, links: List[Link] = None
     ) -> CollectionVersion:
         """
         Initializes an unpublished collection to be used for testing, with no datasets
@@ -218,7 +218,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         curator_name: str = test_curator_name,
         complete_dataset_ingestion: bool = True,
         num_datasets: int = 2,
-        links: List[Link] = [],
+        links: List[Link] = None,
     ) -> CollectionVersionWithDatasets:
         """
         Initializes an unpublished collection to be used for testing, with two datasets.
@@ -244,7 +244,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         curator_name: str = test_curator_name,
         published_at: datetime = None,
         num_datasets: int = 2,
-        links: List[Link] = [],
+        links: List[Link] = None,
     ) -> CollectionVersionWithDatasets:
         """
         Initializes a published collection to be used for testing, with a single dataset
@@ -286,7 +286,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         curator_name: str = test_curator_name,
         published_at: datetime = None,
         num_datasets: int = 2,
-        links: List[Link] = [],
+        links: List[Link] = None,
     ) -> Tuple[CollectionVersionWithDatasets, CollectionVersionWithDatasets]:
         # Published with an unpublished revision
         published_version = self.initialize_published_collection(owner, curator_name, published_at, num_datasets, links)

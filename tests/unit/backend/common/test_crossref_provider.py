@@ -1,7 +1,7 @@
 import copy
-from datetime import datetime
 import json
 import unittest
+from datetime import datetime
 from unittest.mock import Mock, patch
 
 from requests import RequestException
