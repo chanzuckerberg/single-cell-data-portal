@@ -83,6 +83,12 @@ resource "aws_sfn_state_machine" "state_machine" {
             "ResultPath": "$.error"
           }
         ],
+        "Retry": [ {
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+            "IntervalSeconds": 3,
+            "MaxAttempts": 5,
+            "BackoffRate": 2
+        } ],
         "ResultPath": "$.batch"
       },
       "RegisterJobDefinition": {
@@ -137,6 +143,12 @@ resource "aws_sfn_state_machine" "state_machine" {
           }
         },
         "Resource": "arn:aws:states:::aws-sdk:batch:registerJobDefinition",
+        "Retry": [ {
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+            "IntervalSeconds": 3,
+            "MaxAttempts": 5,
+            "BackoffRate": 2
+        } ],
         "ResultPath": "$.batch"
       },
       "Validate": {
@@ -166,6 +178,12 @@ resource "aws_sfn_state_machine" "state_machine" {
         },
         "ResultPath": null,
         "TimeoutSeconds": ${local.timeout},
+        "Retry": [ {
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+            "IntervalSeconds": 3,
+            "MaxAttempts": 5,
+            "BackoffRate": 2
+        } ],
         "Catch": [
           {
             "ErrorEquals": [
@@ -204,6 +222,12 @@ resource "aws_sfn_state_machine" "state_machine" {
                     ]
                   }
                 },
+                "Retry": [ {
+                    "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+                    "IntervalSeconds": 3,
+                    "MaxAttempts": 5,
+                    "BackoffRate": 2
+                } ],
                 "Catch": [
                   {
                     "ErrorEquals": [
@@ -246,6 +270,12 @@ resource "aws_sfn_state_machine" "state_machine" {
                     ]
                   }
                 },
+                "Retry": [ {
+                    "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+                    "IntervalSeconds": 3,
+                    "MaxAttempts": 5,
+                    "BackoffRate": 2
+                } ],
                 "Catch": [
                   {
                     "ErrorEquals": [
@@ -309,6 +339,12 @@ resource "aws_sfn_state_machine" "state_machine" {
           "JobDefinition.$": "$.batch.JobDefinitionName"
         },
         "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition",
+        "Retry": [ {
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+            "IntervalSeconds": 3,
+            "MaxAttempts": 5,
+            "BackoffRate": 2
+        } ],
         "ResultPath": null
       },
       "DeregisterJobDefinition": {
@@ -318,6 +354,12 @@ resource "aws_sfn_state_machine" "state_machine" {
           "JobDefinition.$": "$[0].batch.JobDefinitionName"
         },
         "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition",
+        "Retry": [ {
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
+            "IntervalSeconds": 3,
+            "MaxAttempts": 5,
+            "BackoffRate": 2
+        } ],
         "ResultPath": null
       },
       "CheckForErrors": {
