@@ -84,9 +84,14 @@ def test__valid_input_metadata_copy(spatial_processor, valid_spatial_data, libra
     """
     Test case for verifying the required metadata is present
     """
-    # Expected output based on the input data
     expected_output = {
         library_id: {
+            "image_properties": {
+                "resolution": "fullres",
+                "crop_coords": (0, 0, 20, 20),
+                "width": 20,
+                "height": 20,
+            },
             "images": {"hires": valid_spatial_data["images"]["hires"], "fullres": []},
             "scalefactors": {
                 "spot_diameter_fullres": valid_spatial_data["scalefactors"]["spot_diameter_fullres"],
@@ -112,8 +117,9 @@ def test__fetch_image_fullres(spatial_processor, valid_spatial_data):
     """
     Test that _fetch_image returns the fullres image when present.
     """
-    image_array = spatial_processor._fetch_image(valid_spatial_data)
+    image_array, resolution = spatial_processor._fetch_image(valid_spatial_data)
     assert image_array.shape == (20, 20, 3), "Expected fullres image to be returned."
+    assert resolution == "fullres", "Expected fullres resolution to be returned."
 
 
 def test__fetch_image_hires(spatial_processor, valid_spatial_data):
@@ -123,8 +129,9 @@ def test__fetch_image_hires(spatial_processor, valid_spatial_data):
     valid_spatial_data_without_fullres = valid_spatial_data.copy()
     del valid_spatial_data_without_fullres["images"]["fullres"]
 
-    image_array = spatial_processor._fetch_image(valid_spatial_data_without_fullres)
+    image_array, resolution = spatial_processor._fetch_image(valid_spatial_data_without_fullres)
     assert image_array.shape == (10, 10, 3), "Expected hires image to be returned."
+    assert resolution == "hires", "Expected hires resolution to be returned."
 
 
 def test__fetch_image_key_error(spatial_processor, valid_spatial_data):
@@ -211,7 +218,7 @@ def test__generate_deep_zoom_assets(spatial_processor, asset_folder, mocker):
 
         # verify dzsave was called correctly on the mock_image object
         expected_output_path = os.path.join(assets_folder, "spatial")
-        mock_image.dzsave.assert_called_once_with(expected_output_path, suffix=".webp")
+        mock_image.dzsave.assert_called_once_with(expected_output_path, suffix=".jpeg")
 
 
 def test__upload_assets(spatial_processor, asset_folder, dataset_version_id, mocker):
@@ -253,7 +260,7 @@ def test__create_deep_zoom_assets(spatial_processor, cxg_container, valid_spatia
     mock_temp_dir.return_value.__enter__.return_value = temp_dir_name
 
     # mock return values for the internal methods
-    mock_fetch_image.return_value = np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8)
+    mock_fetch_image.return_value = (np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8), "fullres")
     mock_process_and_flip_image.return_value = np.random.randint(0, 255, (100, 100, 3), dtype=np.uint8)
 
     # call the method under test
@@ -263,7 +270,7 @@ def test__create_deep_zoom_assets(spatial_processor, cxg_container, valid_spatia
 
     # assertions to ensure each step is called
     mock_fetch_image.assert_called_once_with(valid_spatial_data)
-    mock_process_and_flip_image.assert_called_once_with(mock_fetch_image.return_value)
+    mock_process_and_flip_image.assert_called_once_with(mock_fetch_image.return_value[0])
     mock_generate_deep_zoom_assets.assert_called_once_with(mock_process_and_flip_image.return_value, assets_folder)
     mock_upload_assets.assert_called_once_with(assets_folder, dataset_version_id)
 

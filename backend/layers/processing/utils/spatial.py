@@ -64,9 +64,11 @@ class SpatialDataProcessor:
             np.ndarray: The prepared image array.
         """
         resolution = "fullres" if "fullres" in content["images"] else "hires"
+
         image_array = content["images"][resolution]
-        image_array_uint8 = np.uint8(image_array * 255)
-        return image_array_uint8
+        image_array_uint8 = np.uint8(image_array)
+
+        return image_array_uint8, resolution
 
     def _process_and_flip_image(self, image_array_uint8):
         """
@@ -81,10 +83,21 @@ class SpatialDataProcessor:
         Image.MAX_IMAGE_PIXELS = None  # Disable the image size limit
         try:
             with Image.fromarray(image_array_uint8) as img:
-                cropped_img = img.crop(self._calculate_aspect_ratio_crop(img.size))  # Crop the image
-                cropped_img.save(io.BytesIO(), format="JPEG", quality=100)  # Save or manipulate as needed
+                # #####
+                # Convert RGBA to RGB if needed for JPEG compatibility:
+                # bake the alpha channel into the image by pasting it onto
+                # a white background
+                # #####
+                if img.mode == "RGBA":
+                    background = Image.new("RGB", img.size, (255, 255, 255))
+                    background.paste(img, (0, 0), img)
+                    img = background
+                cropped_img = img.crop(self._calculate_aspect_ratio_crop(img.size))
+                cropped_img.save(io.BytesIO(), format="JPEG", quality=100)
+
                 # Flip the image vertically due to explorer client rendering images upside down
                 flipped_img = cropped_img.transpose(Image.FLIP_TOP_BOTTOM)
+
                 return np.array(flipped_img)
         except Exception:
             logger.exception("Error processing image")
@@ -101,7 +114,7 @@ class SpatialDataProcessor:
         h, w, bands = image_array.shape
         linear = image_array.reshape(w * h * bands)
         image = pyvips.Image.new_from_memory(linear.data, w, h, bands, "uchar")
-        image.dzsave(os.path.join(assets_folder, "spatial"), suffix=".webp")
+        image.dzsave(os.path.join(assets_folder, "spatial"), suffix=".jpeg")
 
     def _upload_assets(self, assets_folder, dataset_version_id):
         """
@@ -128,7 +141,7 @@ class SpatialDataProcessor:
                 assets_folder = os.path.join(temp_dir, container_name.replace(".cxg", ""))
                 os.makedirs(assets_folder)
 
-                image_array = self._fetch_image(content)
+                image_array, _ = self._fetch_image(content)
                 processed_image = self._process_and_flip_image(image_array)
                 self._generate_deep_zoom_assets(processed_image, assets_folder)
                 self._upload_assets(assets_folder, dataset_version_id)
@@ -147,8 +160,19 @@ class SpatialDataProcessor:
         Returns:
             dict: The filtered spatial data.
         """
+        image_array_uint8, resolution = self._fetch_image(content)
+        with Image.fromarray(image_array_uint8) as img:
+            width, height = img.size
+            width = height = min(width, height)
+            crop_coords = self._calculate_aspect_ratio_crop(img.size)
         return {
             library_id: {
+                "image_properties": {
+                    "resolution": resolution,
+                    "crop_coords": crop_coords,
+                    "width": width,
+                    "height": height,
+                },
                 "images": {"hires": content["images"]["hires"], "fullres": []},
                 "scalefactors": {
                     "spot_diameter_fullres": content["scalefactors"]["spot_diameter_fullres"],
