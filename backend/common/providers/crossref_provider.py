@@ -11,8 +11,8 @@ from backend.common.doi import doi_curie_from_link
 
 
 class CrossrefProviderInterface:
-    def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str]]:
-        return None, None
+    def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str], Optional[datetime]]:
+        return None, None, None
 
     def fetch_preprint_published_doi(self, doi):
         pass
@@ -111,7 +111,7 @@ class CrossrefProvider(CrossrefProviderInterface):
                 return doi
         return f"{title}\n\n - {citation}"
 
-    def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str]]:
+    def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str], Optional[datetime]]:
         """
         Fetches and extracts publisher metadata from Crossref for a specified DOI.
         If the Crossref API URI isn't in the configuration, we will just return an empty object.
@@ -119,11 +119,12 @@ class CrossrefProvider(CrossrefProviderInterface):
         :param doi: str - DOI uri link or curie identifier
         return: tuple - publisher metadata dict and DOI curie identifier
         """
+
         doi_curie = doi_curie_from_link(doi)
 
         res = self._fetch_crossref_payload(doi_curie)
         if not res:
-            return None, None
+            return None, None, None
 
         try:
             message = res.json()["message"]
@@ -143,6 +144,11 @@ class CrossrefProvider(CrossrefProviderInterface):
                 if isinstance(v, dict) and "date-parts" in v:
                     dt = v["date-parts"][0]
                     dates.append(f"{k}: {dt}")
+
+            # Calculate the deposited date; used when checking for updates.
+            deposited_at = None
+            if "deposited" in message and (deposited_timestamp := message["deposited"].get("timestamp")) is not None:
+                deposited_at = datetime.fromtimestamp(deposited_timestamp / 1000)
 
             # Journal
             try:
@@ -181,7 +187,7 @@ class CrossrefProvider(CrossrefProviderInterface):
             if is_preprint:
                 published_metadata, published_doi_curie = self.fetch_published_metadata(message)
                 if published_metadata and published_doi_curie:  # if not, use preprint doi curie
-                    return published_metadata, published_doi_curie
+                    return published_metadata, published_doi_curie, deposited_at
 
             return (
                 {
@@ -194,11 +200,14 @@ class CrossrefProvider(CrossrefProviderInterface):
                     "is_preprint": is_preprint,
                 },
                 doi_curie,
+                deposited_at,
             )
         except Exception as e:
             raise CrossrefParseException("Cannot parse metadata from Crossref") from e
 
-    def fetch_published_metadata(self, doi_response_message: dict) -> Tuple[Optional[dict], Optional[str]]:
+    def fetch_published_metadata(
+        self, doi_response_message: dict
+    ) -> Tuple[Optional[dict], Optional[str], Optional[datetime]]:
         try:
             published_doi = doi_response_message["relation"]["is-preprint-of"]
             # the new DOI to query for ...
@@ -206,4 +215,4 @@ class CrossrefProvider(CrossrefProviderInterface):
                 if entity["id-type"] == "doi":
                     return self.fetch_metadata(entity["id"])
         except Exception:  # if fetch of published doi errors out, just use preprint doi
-            return None, None
+            return None, None, None

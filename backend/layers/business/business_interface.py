@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Iterable, List, Optional, Tuple
 
 from backend.layers.business.entities import (
@@ -62,7 +63,9 @@ class BusinessLogicInterface:
     ) -> Optional[CollectionVersionWithDatasets]:
         pass
 
-    def _get_publisher_metadata(self, doi: str, errors: list) -> Tuple[Optional[dict], Optional[str]]:
+    def _get_publisher_metadata(
+        self, doi: str, errors: list
+    ) -> Tuple[Optional[dict], Optional[str], Optional[datetime]]:
         pass
 
     def create_collection(

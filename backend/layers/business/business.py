@@ -166,7 +166,9 @@ class BusinessLogic(BusinessLogicInterface):
             current_dataset_version_id, new_dataset_version_id, metadata_update
         )
 
-    def _get_publisher_metadata(self, doi: str, errors: list) -> Tuple[Optional[dict], Optional[str]]:
+    def _get_publisher_metadata(
+        self, doi: str, errors: list
+    ) -> Tuple[Optional[dict], Optional[str], Optional[datetime]]:
         """
         Retrieves publisher metadata from Crossref.
         """
@@ -176,7 +178,7 @@ class BusinessLogic(BusinessLogicInterface):
             errors.append({"link_type": CollectionLinkType.DOI, "reason": "DOI cannot be found on Crossref"})
         except CrossrefException as e:
             logging.warning(f"CrossrefException on create_collection: {e}. Will ignore metadata.")
-        return None, None
+        return None, None, None
 
     def create_collection(
         self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
@@ -197,7 +199,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         publisher_metadata = None
         if doi_link:
-            publisher_metadata, doi_curie_from_crossref = self._get_publisher_metadata(doi_link.uri, errors)
+            publisher_metadata, doi_curie_from_crossref, _ = self._get_publisher_metadata(doi_link.uri, errors)
             # Ensure DOI link has correct hyperlink formation a la https://doi.org/{curie_identifier}
             # DOI returned from Crossref may be a different (published) DOI altogether if submitted DOI is preprint
             doi_link.uri = f"https://doi.org/{doi_curie_from_crossref}"
@@ -404,7 +406,7 @@ class BusinessLogic(BusinessLogicInterface):
                 unset_publisher_metadata = True
             elif new_doi and new_doi != current_doi:
                 # If the DOI has changed, fetch and update the metadata
-                publisher_metadata_to_set, doi_curie_from_crossref = self._get_publisher_metadata(new_doi, errors)
+                publisher_metadata_to_set, doi_curie_from_crossref, _ = self._get_publisher_metadata(new_doi, errors)
                 new_doi = f"https://doi.org/{doi_curie_from_crossref}"
                 next((link for link in body.links if link.type == "DOI")).uri = new_doi  # noqa - DOI link exists
 
@@ -971,6 +973,14 @@ class BusinessLogic(BusinessLogicInterface):
             version_datasets = {dataset.version_id.id for dataset in version.datasets}
             if canonical_datasets != version_datasets:
                 has_dataset_revisions = True
+
+            # Update publisher metadata if there are updates in Crossref that have occurred since last publish.
+            doi_link = next((link for link in version.metadata.links if link.type == "DOI"), None)
+            if doi_link:
+                # Don't track/raise errors here; just keep the existing publisher metadata.
+                publisher_metadata, _, deposited_at = self._get_publisher_metadata(doi_link.uri, [])
+                if publisher_metadata and deposited_at and deposited_at > date_of_last_publish:
+                    self.database_provider.save_collection_publisher_metadata(version_id, publisher_metadata)
 
         # Finalize Collection publication and delete any tombstoned assets
         dataset_version_ids_to_delete_from_s3 = self.database_provider.finalize_collection_version(
