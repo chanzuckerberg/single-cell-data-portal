@@ -9,8 +9,7 @@ from dask.diagnostics import ProgressBar
 
 from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
 from backend.cellguide.pipeline.ontology_tree.types import OntologyTree, OntologyTreeState
-from backend.common.census_cube.utils import ontology_parser, to_dict
-from backend.common.utils.rollup import rollup_across_cell_type_descendants
+from backend.common.census_cube.utils import ontology_parser, rollup_across_cell_type_descendants, to_dict
 
 logger = logging.getLogger(__name__)
 

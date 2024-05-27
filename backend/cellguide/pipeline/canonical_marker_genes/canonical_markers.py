@@ -17,9 +17,9 @@ from backend.cellguide.pipeline.canonical_marker_genes.utils import (
     get_title_and_citation_from_doi,
 )
 from backend.cellguide.pipeline.constants import ASCTB_MASTER_SHEET_URL, CELLGUIDE_PIPELINE_NUM_CPUS
-from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
 from backend.common.census_cube.data.ontology_labels import ontology_term_label
 from backend.common.census_cube.utils import setup_retry_session
+from backend.common.marker_genes.marker_gene_files.gene_metadata import get_gene_id_to_name_and_symbol
 
 logger = logging.getLogger(__name__)
 

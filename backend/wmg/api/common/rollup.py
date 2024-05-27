@@ -10,7 +10,7 @@ import pandas as pd
 from ddtrace import tracer
 from pandas import DataFrame
 
-from backend.common.utils.rollup import are_cell_types_not_redundant_nodes
+from backend.common.census_cube.utils import are_cell_types_not_redundant_nodes
 
 ######################### PUBLIC FUNCTIONS IN ALPHABETIC ORDER ##################################
 

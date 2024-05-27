@@ -46,7 +46,7 @@ class MarkerGenesTests(unittest.TestCase):
 
     def test_marker_genes_cube(self):
         with patch(
-            "backend.cellguide.pipeline.computational_marker_genes.computational_markers.bootstrap_rows_percentiles",
+            "backend.common.marker_genes.computational_markers.bootstrap_rows_percentiles",
             new=mock_bootstrap_rows_percentiles,
         ):
             create_marker_genes_cube(self.temp_cube_dir.name)

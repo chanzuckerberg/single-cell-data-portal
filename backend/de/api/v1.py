@@ -15,8 +15,8 @@ from backend.common.census_cube.data.ontology_labels import gene_term_label, ont
 from backend.common.census_cube.data.query import CensusCubeQuery
 from backend.common.census_cube.data.schemas.cube_schema_diffexp import cell_counts_logical_dims_exclude_dataset_id
 from backend.common.census_cube.data.snapshot import CensusSnapshot, load_snapshot
+from backend.common.census_cube.utils import descendants
 from backend.common.marker_genes.marker_gene_files.blacklist import marker_gene_blacklist
-from backend.common.utils.rollup import descendants
 from backend.de.api.config import (
     CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
     CENSUS_CUBE_API_READ_FS_CACHED_SNAPSHOT,

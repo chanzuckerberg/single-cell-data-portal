@@ -193,7 +193,7 @@ def run_cellguide_pipeline(fixture_type: FixtureType):
         if fixture_type in [FixtureType.computational_marker_genes, FixtureType.all]:
             # Get computational marker genes
             with patch(
-                "backend.cellguide.pipeline.computational_marker_genes.computational_markers.bootstrap_rows_percentiles",
+                "backend.common.marker_genes.computational_markers.bootstrap_rows_percentiles",
                 new=mock_bootstrap_rows_percentiles,
             ):
                 computational_marker_genes, reformatted_marker_genes, formatted_marker_genes = (

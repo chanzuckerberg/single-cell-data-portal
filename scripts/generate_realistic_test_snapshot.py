@@ -7,6 +7,7 @@ from enum import Enum
 from unittest.mock import Mock, patch
 
 import tiledb
+import tiledbsoma  # noqa
 
 from backend.common.census_cube.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
@@ -84,7 +85,7 @@ if __name__ == "__main__":
             new=MockCensusParameters,
         ),
         patch(
-            "backend.cellguide.pipeline.computational_marker_genes.computational_markers.bootstrap_rows_percentiles",
+            "backend.common.marker_genes.computational_markers.bootstrap_rows_percentiles",
             new=mock_bootstrap_rows_percentiles,
         ),
         patch(
