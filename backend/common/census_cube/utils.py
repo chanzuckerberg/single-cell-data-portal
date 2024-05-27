@@ -1,14 +1,28 @@
 import os
+from functools import lru_cache
 from typing import Dict
 
 import numpy as np
 import pandas as pd
 import requests
+from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
-from backend.common.census_cube.data.constants import WMG_PINNED_SCHEMA_VERSION
+from backend.common.census_cube.data.constants import (
+    CENSUS_CUBE_API_SNAPSHOT_FS_CACHE_ROOT_PATH,
+    CENSUS_CUBE_DATA_SCHEMA_VERSION,
+    CENSUS_CUBE_PINNED_SCHEMA_VERSION,
+)
+from backend.common.census_cube.data.snapshot import load_snapshot
 from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
+from backend.common.utils.rollup import rollup_across_cell_type_descendants
+
+DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
+SNAPSHOT_FS_ROOT_PATH = CENSUS_CUBE_API_SNAPSHOT_FS_CACHE_ROOT_PATH if (DEPLOYMENT_STAGE != "test") else None
+
+# exported and used by all modules related to the census cube
+ontology_parser = OntologyParser(schema_version=f"v{CENSUS_CUBE_PINNED_SCHEMA_VERSION}")
 
 
 def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:
@@ -121,7 +135,7 @@ def get_datasets_from_discover_api():
     datasets = {}
     if API_URL:
         session = setup_retry_session()
-        dataset_metadata_url = f"{API_URL}/curation/v1/datasets?schema_version={WMG_PINNED_SCHEMA_VERSION}"
+        dataset_metadata_url = f"{API_URL}/curation/v1/datasets?schema_version={CENSUS_CUBE_PINNED_SCHEMA_VERSION}"
         response = session.get(dataset_metadata_url)
         if response.status_code == 200:
             datasets = response.json()
@@ -200,3 +214,68 @@ def to_dict(a, b):
     slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
     d = dict(zip(np.unique(a), [list(set(x)) for x in slists], strict=False))
     return d
+
+
+@lru_cache(maxsize=None)
+def get_all_cell_type_ids_in_corpus(root_node="CL:0000000") -> list[str]:
+    """
+    Retrieve all cell type IDs in the corpus that have at least one cell present, starting from a specified root node in the ontology.
+
+    This function uses the ontology parser to get all descendant cell type IDs from the root node, including the root node itself.
+    It then fetches the cell counts dataframe from the snapshot and groups it by cell type ontology term ID to sum up the cell counts.
+    Cell types with zero cells are added to ensure all cell types from the ontology are represented in the output, even if they have no cells.
+    Descendant cell counts are rolled up into each cell type node and remaining cell types with zero cells after rollup are filtered out.
+    The function finally returns a list of cell type IDs that have cells.
+
+    Parameters:
+        root_node (str): The ontology term ID of the root node from which to start gathering cell type IDs.
+
+    Returns:
+        list[str]: A list of cell type ontology term IDs that have at least one cell in the corpus.
+    """
+    snapshot = load_snapshot(
+        snapshot_schema_version=CENSUS_CUBE_DATA_SCHEMA_VERSION,
+        explicit_snapshot_id_to_load=None,
+        snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
+    )
+    all_cell_type_ids = ontology_parser.get_term_descendants(root_node, include_self=True)
+    cell_counts_df = snapshot.cell_counts_df
+
+    cell_counts_df = (
+        cell_counts_df.groupby("cell_type_ontology_term_id").sum(numeric_only=True)[["n_cells"]].reset_index()
+    )
+    # to_attach is a DataFrame that will contain cell type ontology term ids that are not present in the input cell counts dataframe. These will be added with 0 counts.
+    to_attach = pd.DataFrame()
+    to_attach["cell_type_ontology_term_id"] = [
+        i for i in all_cell_type_ids if i not in cell_counts_df["cell_type_ontology_term_id"].values
+    ]
+    to_attach["n_cells"] = 0
+    cell_counts_df = pd.concat([cell_counts_df, to_attach], axis=0)
+    cell_counts_df_rollup = rollup_across_cell_type_descendants(cell_counts_df)
+    cell_counts_df_rollup = cell_counts_df_rollup.set_index("cell_type_ontology_term_id")["n_cells"]
+    all_cell_type_ids_in_corpus = cell_counts_df_rollup.index.values[cell_counts_df_rollup.values > 0]
+    return list(all_cell_type_ids_in_corpus)
+
+
+@lru_cache(maxsize=None)
+def get_all_tissue_ids_in_corpus() -> list[str]:
+    """
+    Retrieve all tissue IDs in the corpus that have at least one cell present.
+
+    This function fetches the cell counts dataframe from the snapshot.
+    It then uses a utility function to convert the grouped data into a dictionary mapping tissue IDs to cell type IDs.
+    The function finally returns a list of tissue IDs that have cells.
+
+    Returns:
+        list[str]: A list of tissue ontology term IDs that have at least one cell in the corpus.
+    """
+    snapshot = load_snapshot(
+        snapshot_schema_version=CENSUS_CUBE_DATA_SCHEMA_VERSION,
+        explicit_snapshot_id_to_load=None,
+        snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
+    )
+    cell_counts_df = snapshot.cell_counts_df
+    uberon_by_celltype = to_dict(
+        cell_counts_df["tissue_ontology_term_id"], cell_counts_df["cell_type_ontology_term_id"]
+    )
+    return list(uberon_by_celltype.keys())

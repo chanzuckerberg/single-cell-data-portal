@@ -2,7 +2,7 @@ import json
 import logging
 
 from backend.common.census_cube.data.snapshot import DATASET_METADATA_FILENAME
-from backend.common.census_cube.data.utils import get_datasets_from_discover_api
+from backend.common.census_cube.utils import get_datasets_from_discover_api
 from backend.wmg.pipeline.constants import DATASET_METADATA_CREATED_FLAG
 from backend.wmg.pipeline.utils import load_pipeline_state, log_func_runtime, write_pipeline_state
 

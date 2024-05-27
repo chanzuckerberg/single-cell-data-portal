@@ -8,6 +8,7 @@ from flask import jsonify
 from pandas import DataFrame
 from server_timing import Timing as ServerTiming
 
+from backend.common.census_cube.data.constants import CENSUS_CUBE_API_SNAPSHOT_FS_CACHE_ROOT_PATH
 from backend.common.census_cube.data.criteria import (
     BaseQueryCriteria,
     CensusCubeQueryCriteria,
@@ -21,25 +22,26 @@ from backend.common.census_cube.data.query import (
 )
 from backend.common.census_cube.data.schemas.cube_schema import expression_summary_non_indexed_dims
 from backend.common.census_cube.data.snapshot import CensusSnapshot, load_snapshot
-from backend.common.census_cube.data.utils import (
+from backend.common.census_cube.utils import (
     depluralize,
     find_all_dim_option_values,
     find_dim_option_values,
 )
 from backend.wmg.api.common.expression_dotplot import get_dot_plot_data
 from backend.wmg.api.common.rollup import rollup
-from backend.wmg.api.wmg_api_config import (
-    READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
-    READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
-    WMG_API_FORCE_LOAD_SNAPSHOT_ID,
-    WMG_API_READ_FS_CACHED_SNAPSHOT,
-    WMG_API_SNAPSHOT_FS_CACHE_ROOT_PATH,
-    WMG_API_SNAPSHOT_SCHEMA_VERSION,
+from backend.wmg.api.config import (
+    CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
+    CENSUS_CUBE_API_READ_FS_CACHED_SNAPSHOT,
+    CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
+    READER_CENSUS_CUBE_CUBE_QUERY_VALID_ATTRIBUTES,
+    READER_CENSUS_CUBE_CUBE_QUERY_VALID_DIMENSIONS,
 )
 
 DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
 SNAPSHOT_FS_ROOT_PATH = (
-    WMG_API_SNAPSHOT_FS_CACHE_ROOT_PATH if (WMG_API_READ_FS_CACHED_SNAPSHOT and DEPLOYMENT_STAGE != "test") else None
+    CENSUS_CUBE_API_SNAPSHOT_FS_CACHE_ROOT_PATH
+    if (CENSUS_CUBE_API_READ_FS_CACHED_SNAPSHOT and DEPLOYMENT_STAGE != "test")
+    else None
 )
 
 
@@ -54,8 +56,8 @@ SNAPSHOT_FS_ROOT_PATH = (
 def primary_filter_dimensions():
     with ServerTiming.time("load snapshot"):
         snapshot: CensusSnapshot = load_snapshot(
-            snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
-            explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+            snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
+            explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
             snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
 
@@ -77,15 +79,15 @@ def query():
 
     with ServerTiming.time("load snapshot"):
         snapshot: CensusSnapshot = load_snapshot(
-            snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
-            explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+            snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
+            explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
             snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
 
     with ServerTiming.time("query tiledb"):
         cube_query_params = CensusCubeQueryParams(
-            cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
-            cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+            cube_query_valid_attrs=READER_CENSUS_CUBE_CUBE_QUERY_VALID_ATTRIBUTES,
+            cube_query_valid_dims=READER_CENSUS_CUBE_CUBE_QUERY_VALID_DIMENSIONS,
         )
         q = CensusCubeQuery(snapshot, cube_query_params)
         default = snapshot.expression_summary_default_cube is not None and compare is None
@@ -151,8 +153,8 @@ def filters():
 
     with ServerTiming.time("load snapshot"):
         snapshot: CensusSnapshot = load_snapshot(
-            snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
-            explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+            snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
+            explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
             snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
 
@@ -176,8 +178,8 @@ def markers():
     n_markers = request["n_markers"]
     test = request["test"]
     snapshot: CensusSnapshot = load_snapshot(
-        snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
-        explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+        snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
+        explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
         snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
     )
 
@@ -188,8 +190,8 @@ def markers():
     )
 
     cube_query_params = CensusCubeQueryParams(
-        cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
-        cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+        cube_query_valid_attrs=READER_CENSUS_CUBE_CUBE_QUERY_VALID_ATTRIBUTES,
+        cube_query_valid_dims=READER_CENSUS_CUBE_CUBE_QUERY_VALID_DIMENSIONS,
     )
 
     q = CensusCubeQuery(snapshot, cube_query_params)

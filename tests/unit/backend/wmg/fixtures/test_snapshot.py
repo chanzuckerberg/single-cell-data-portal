@@ -47,7 +47,7 @@ from backend.common.census_cube.data.snapshot import (
     CensusSnapshot,
 )
 from backend.common.census_cube.data.tiledb import create_ctx
-from backend.common.census_cube.data.utils import build_filter_relationships
+from backend.common.census_cube.utils import build_filter_relationships
 from tests.unit.backend.wmg.fixtures import FIXTURES_ROOT
 from tests.unit.backend.wmg.fixtures.test_cube_schema import (
     cell_counts_indexed_dims,

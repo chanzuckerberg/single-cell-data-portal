@@ -64,7 +64,7 @@ class TestCubePipe(unittest.TestCase):
         the lower level functions that WMG uses to figure out where to write and read snapshots from.
         """
 
-        wmg_bucket_name = os.environ.get("WMG_BUCKET")
+        wmg_bucket_name = os.environ.get("CENSUS_CUBE_BUCKET")
 
         # Verify that we're writing to the correct path in s3
         dest_path = _get_wmg_snapshot_s3_fullpath("v1", "snapshot-id", True)

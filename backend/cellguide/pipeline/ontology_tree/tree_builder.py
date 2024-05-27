@@ -1,16 +1,15 @@
 import copy
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, Tuple
+from typing import Dict, Tuple
 
-import numpy as np
 import pandas as pd
-from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from dask import compute, delayed
 from dask.diagnostics import ProgressBar
 
-from backend.cellguide.pipeline.constants import CELL_GUIDE_PINNED_SCHEMA_VERSION, CELLGUIDE_PIPELINE_NUM_CPUS
+from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
 from backend.cellguide.pipeline.ontology_tree.types import OntologyTree, OntologyTreeState
+from backend.common.census_cube.utils import ontology_parser, to_dict
 from backend.common.utils.rollup import rollup_across_cell_type_descendants
 
 logger = logging.getLogger(__name__)
@@ -74,7 +73,7 @@ class OntologyTreeBuilder:
         """
 
         logger.info("Loading COG ontologies...")
-        self.ontology = OntologyParser(schema_version=f"v{CELL_GUIDE_PINNED_SCHEMA_VERSION}")
+        self.ontology = ontology_parser
 
         logger.info("Initializing tissue data structures from the input cell counts dataframe...")
         self.tissue_counts_df = cell_counts_df.groupby("tissue_ontology_term_id").sum(numeric_only=True)["n_cells"]
@@ -83,7 +82,7 @@ class OntologyTreeBuilder:
             .sum(numeric_only=True)
             .reset_index()
         )
-        self.uberon_by_celltype = _to_dict(
+        self.uberon_by_celltype = to_dict(
             cell_counts_df["tissue_ontology_term_id"], cell_counts_df["cell_type_ontology_term_id"]
         )
 
@@ -816,21 +815,3 @@ def _getShownData(graph: OntologyTree, notShownWhenExpandedNodes=None) -> Dict[s
             else:
                 _getShownData(child, notShownWhenExpandedNodes)
     return notShownWhenExpandedNodes
-
-
-def _to_dict(a: list[Any], b: list[Any]) -> Dict[Any, list[Any]]:
-    """
-    convert a flat key array (a) and a value array (b) into a dictionary with values grouped by keys
-    """
-    a = np.array(a)
-    b = np.array(b)
-    idx = np.argsort(a)
-    a = a[idx]
-    b = b[idx]
-    bounds = np.where(a[:-1] != a[1:])[0] + 1
-    bounds = np.append(np.append(0, bounds), a.size)
-    bounds_left = bounds[:-1]
-    bounds_right = bounds[1:]
-    slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
-    d = dict(zip(np.unique(a), [list(set(x)) for x in slists], strict=False))
-    return d

@@ -1,6 +1,6 @@
 from backend.cellguide.pipeline.canonical_marker_genes.utils import format_citation_dp
 from backend.cellguide.pipeline.source_collections.types import SourceCollectionsData
-from backend.common.census_cube.data.utils import get_collections_from_discover_api, get_datasets_from_discover_api
+from backend.common.census_cube.utils import get_collections_from_discover_api, get_datasets_from_discover_api
 from backend.common.utils.rollup import descendants
 
 

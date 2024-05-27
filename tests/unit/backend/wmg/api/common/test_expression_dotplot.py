@@ -8,9 +8,9 @@ import unittest
 
 from backend.common.census_cube.data.query import CensusCubeQuery, CensusCubeQueryCriteria, CensusCubeQueryParams
 from backend.wmg.api.common.expression_dotplot import agg_cell_type_counts, agg_tissue_counts, get_dot_plot_data
-from backend.wmg.api.wmg_api_config import (
-    READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
-    READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+from backend.wmg.api.config import (
+    READER_CENSUS_CUBE_CUBE_QUERY_VALID_ATTRIBUTES,
+    READER_CENSUS_CUBE_CUBE_QUERY_VALID_DIMENSIONS,
 )
 from tests.unit.backend.wmg.fixtures.test_cube_schema import expression_summary_non_indexed_dims
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
@@ -65,8 +65,8 @@ def generate_expected_dot_plot_data_with_pandas(snapshot, criteria):
 class ExpressionDotPlotTest(unittest.TestCase):
     def setUp(self):
         self.cube_query_params = CensusCubeQueryParams(
-            cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
-            cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+            cube_query_valid_attrs=READER_CENSUS_CUBE_CUBE_QUERY_VALID_ATTRIBUTES,
+            cube_query_valid_dims=READER_CENSUS_CUBE_CUBE_QUERY_VALID_DIMENSIONS,
         )
 
     def test__query_all_indexed_dims_single_value__returns_correct_result(self):

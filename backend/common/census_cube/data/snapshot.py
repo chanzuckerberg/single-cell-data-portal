@@ -31,7 +31,7 @@ CELL_TYPE_ANCESTORS_FILENAME = "cell_type_ancestors.json"
 STACK_NAME = os.environ.get("REMOTE_DEV_PREFIX")
 
 # root directory under which the data artifact exists
-WMG_ROOT_DIR_PATH = STACK_NAME.strip("/") if STACK_NAME else ""
+CENSUS_CUBE_ROOT_DIR_PATH = STACK_NAME.strip("/") if STACK_NAME else ""
 
 logger = logging.getLogger("wmg")
 
@@ -206,8 +206,8 @@ def _get_wmg_snapshot_schema_dir_rel_path(snapshot_schema_version: str) -> str:
     fullpath. Therefore, "pr-6447/snapshots/v3" would be the relative path returned by this function.
 
     2. A filesystem fullpath to a snapshot schema version maybe:
-    /single-cell-data-portal/wmg_snapshot_cache/snapshots/v3.
-    Here, "/single-cell-data-portal/wmg_snapshot_cache" is considered the "root" of the
+    /single-cell-data-portal/census_cube_snapshot_cache/snapshots/v3.
+    Here, "/single-cell-data-portal/census_cube_snapshot_cache" is considered the "root" of the
     fullpath. Therefore "snapshots/v3" would be the relative path returned by
     this function.
 
@@ -221,8 +221,8 @@ def _get_wmg_snapshot_schema_dir_rel_path(snapshot_schema_version: str) -> str:
     """
     data_schema_dir_rel_path = f"snapshots/{snapshot_schema_version}"
 
-    if WMG_ROOT_DIR_PATH:
-        data_schema_dir_rel_path = f"{WMG_ROOT_DIR_PATH}/{data_schema_dir_rel_path}"
+    if CENSUS_CUBE_ROOT_DIR_PATH:
+        data_schema_dir_rel_path = f"{CENSUS_CUBE_ROOT_DIR_PATH}/{data_schema_dir_rel_path}"
 
     return data_schema_dir_rel_path
 
@@ -242,8 +242,8 @@ def _get_wmg_snapshot_rel_path(snapshot_schema_version: str, snapshot_id: str) -
     returned by this function.
 
     2. A filesystem fullpath to a particular snapshot_id maybe:
-    /single-cell-data-portal/wmg_snapshot_cache/snapshots/v3/1704754452.
-    Here, "/single-cell-data-portal/wmg_snapshot_cache" is considered the "root" of the
+    /single-cell-data-portal/census_cube_snapshot_cache/snapshots/v3/1704754452.
+    Here, "/single-cell-data-portal/census_cube_snapshot_cache" is considered the "root" of the
     fullpath. Therefore "snapshots/v3/1704754452" would be the relative path returned by
     this function.
 
@@ -270,7 +270,7 @@ def _get_wmg_snapshot_fullpath(snapshot_rel_path: str, snapshot_fs_root_path: Op
     1. For snapshot on S3, this maybe: s3://env-rdev-wmg/pr-6447/snapshots/v3/1704754452.
 
     2. For snapshot on local disk, this maybe:
-    /single-cell-data-portal/wmg_snapshot_cache/snapshots/v3/1704754452
+    /single-cell-data-portal/census_cube_snapshot_cache/snapshots/v3/1704754452
 
     Args:
         snapshot_rel_path (str): The relative path of the snapshot.

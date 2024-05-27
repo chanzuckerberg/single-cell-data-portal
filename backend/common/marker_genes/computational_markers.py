@@ -10,17 +10,18 @@ from dask import compute, delayed
 from dask.diagnostics import ProgressBar
 from tqdm import tqdm
 
-from backend.cellguide.pipeline.computational_marker_genes.types import ComputationalMarkerGenes
-from backend.cellguide.pipeline.computational_marker_genes.utils import (
+from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
+from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
+from backend.common.census_cube.data.snapshot import CensusSnapshot
+from backend.common.census_cube.utils import get_all_cell_type_ids_in_corpus
+from backend.common.marker_genes.marker_gene_files.blacklist import marker_gene_blacklist
+from backend.common.marker_genes.types import ComputationalMarkerGenes
+from backend.common.marker_genes.utils import (
     bootstrap_rows_percentiles,
     calculate_cohens_d,
     calculate_specificity_excluding_nans,
     query_gene_info_for_gene_description,
 )
-from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
-from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
-from backend.common.census_cube.data.snapshot import CensusSnapshot
-from backend.common.marker_gene_files.blacklist import marker_gene_blacklist
 from backend.common.utils.rollup import (
     are_cell_types_colinear,
     get_overlapping_cell_type_descendants,
@@ -45,8 +46,8 @@ MARKER_SCORE_THRESHOLD = 0.5
 
 
 class MarkerGenesCalculator:
-    def __init__(self, *, snapshot: CensusSnapshot, all_cell_type_ids_in_corpus: list[str], groupby_terms: list[str]):
-        self.all_cell_type_ids_in_corpus = all_cell_type_ids_in_corpus
+    def __init__(self, *, snapshot: CensusSnapshot, groupby_terms: list[str]):
+        self.all_cell_type_ids_in_corpus = get_all_cell_type_ids_in_corpus()
 
         gene_metadata = get_gene_id_to_name_and_symbol()
         self.gene_id_to_name = gene_metadata.gene_id_to_name

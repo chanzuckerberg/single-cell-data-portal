@@ -10,9 +10,9 @@ from backend.common.census_cube.data.query import (
     MarkerGeneQueryCriteria,
     retrieve_top_n_markers,
 )
-from backend.wmg.api.wmg_api_config import (
-    READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
-    READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+from backend.wmg.api.config import (
+    READER_CENSUS_CUBE_CUBE_QUERY_VALID_ATTRIBUTES,
+    READER_CENSUS_CUBE_CUBE_QUERY_VALID_DIMENSIONS,
 )
 from tests.test_utils import sort_dataframe
 from tests.unit.backend.wmg.fixtures.test_snapshot import create_temp_wmg_snapshot, load_realistic_test_snapshot
@@ -100,8 +100,8 @@ class CensusCubeQueryParamsTest(unittest.TestCase):
 class QueryTest(unittest.TestCase):
     def setUp(self):
         self.cube_query_params = CensusCubeQueryParams(
-            cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
-            cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+            cube_query_valid_attrs=READER_CENSUS_CUBE_CUBE_QUERY_VALID_ATTRIBUTES,
+            cube_query_valid_dims=READER_CENSUS_CUBE_CUBE_QUERY_VALID_DIMENSIONS,
         )
 
     def test__query_marker_genes_cube__returns_correct_top_10_markers(self):
@@ -149,8 +149,8 @@ class QueryTest(unittest.TestCase):
 class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
     def setUp(self):
         self.cube_query_params = CensusCubeQueryParams(
-            cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
-            cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+            cube_query_valid_attrs=READER_CENSUS_CUBE_CUBE_QUERY_VALID_ATTRIBUTES,
+            cube_query_valid_dims=READER_CENSUS_CUBE_CUBE_QUERY_VALID_DIMENSIONS,
         )
 
     def test__single_dimension__returns_all_dimension_and_terms(self):

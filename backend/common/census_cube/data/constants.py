@@ -14,4 +14,10 @@ INCLUDED_ASSAYS = {
     "EFO:0010010": "CEL-seq2",
 }
 
-WMG_PINNED_SCHEMA_VERSION = "5.0.0"
+CENSUS_CUBE_PINNED_SCHEMA_VERSION = "5.0.0"
+
+CENSUS_CUBE_DATA_SCHEMA_VERSION = "v5"
+
+# Local filesystem root path where WMG snapshot
+# is cached
+CENSUS_CUBE_API_SNAPSHOT_FS_CACHE_ROOT_PATH = "/single-cell-data-portal/census_cube_snapshot_cache"

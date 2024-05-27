@@ -8,12 +8,12 @@ from backend.cellguide.common.constants import (
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.ontology_tree.types import OntologyTreeData
 from backend.cellguide.pipeline.utils import output_json, output_json_per_key
+from backend.common.census_cube.data.constants import CENSUS_CUBE_DATA_SCHEMA_VERSION
 from backend.common.census_cube.data.snapshot import CensusSnapshot, load_snapshot
-from backend.wmg.api.wmg_api_config import WMG_API_SNAPSHOT_SCHEMA_VERSION
 
 
 def run(*, output_directory):
-    snapshot = load_snapshot(snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION)
+    snapshot = load_snapshot(snapshot_schema_version=CENSUS_CUBE_DATA_SCHEMA_VERSION)
     ontology_tree_data = get_ontology_tree_data(snapshot=snapshot)
 
     for organism in ontology_tree_data:

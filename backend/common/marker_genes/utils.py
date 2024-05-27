@@ -4,7 +4,7 @@ from typing import Tuple
 import numpy as np
 from numba import njit, prange
 
-from backend.common.census_cube.data.utils import setup_retry_session
+from backend.common.census_cube.utils import setup_retry_session
 from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
 
 

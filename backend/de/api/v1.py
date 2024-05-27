@@ -9,23 +9,25 @@ from flask import jsonify
 from scipy import stats
 from server_timing import Timing as ServerTiming
 
+from backend.common.census_cube.data.constants import CENSUS_CUBE_API_SNAPSHOT_FS_CACHE_ROOT_PATH
 from backend.common.census_cube.data.criteria import BaseQueryCriteria
 from backend.common.census_cube.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.common.census_cube.data.query import CensusCubeQuery
 from backend.common.census_cube.data.schemas.cube_schema_diffexp import cell_counts_logical_dims_exclude_dataset_id
 from backend.common.census_cube.data.snapshot import CensusSnapshot, load_snapshot
-from backend.common.marker_gene_files.blacklist import marker_gene_blacklist
+from backend.common.marker_genes.marker_gene_files.blacklist import marker_gene_blacklist
 from backend.common.utils.rollup import descendants
-from backend.wmg.api.wmg_api_config import (
-    WMG_API_FORCE_LOAD_SNAPSHOT_ID,
-    WMG_API_READ_FS_CACHED_SNAPSHOT,
-    WMG_API_SNAPSHOT_FS_CACHE_ROOT_PATH,
-    WMG_API_SNAPSHOT_SCHEMA_VERSION,
+from backend.de.api.config import (
+    CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
+    CENSUS_CUBE_API_READ_FS_CACHED_SNAPSHOT,
+    CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
 )
 
 DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
 SNAPSHOT_FS_ROOT_PATH = (
-    WMG_API_SNAPSHOT_FS_CACHE_ROOT_PATH if (WMG_API_READ_FS_CACHED_SNAPSHOT and DEPLOYMENT_STAGE != "test") else None
+    CENSUS_CUBE_API_SNAPSHOT_FS_CACHE_ROOT_PATH
+    if (CENSUS_CUBE_API_READ_FS_CACHED_SNAPSHOT and DEPLOYMENT_STAGE != "test")
+    else None
 )
 
 """
@@ -48,8 +50,8 @@ def filters():
 
     with ServerTiming.time("load snapshot"):
         snapshot: CensusSnapshot = load_snapshot(
-            snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
-            explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+            snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
+            explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
             snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
 
@@ -198,8 +200,8 @@ def differentialExpression():
     criteria2 = BaseQueryCriteria(**queryGroup2Filters)
 
     snapshot: CensusSnapshot = load_snapshot(
-        snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
-        explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
+        snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
+        explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
         snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
     )
 

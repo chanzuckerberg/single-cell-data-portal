@@ -10,9 +10,9 @@ from backend.common.census_cube.data.snapshot import (
     CensusSnapshot,
     _open_cube,
 )
-from backend.wmg.api.wmg_api_config import (
-    READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
-    READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+from backend.wmg.api.config import (
+    READER_CENSUS_CUBE_CUBE_QUERY_VALID_ATTRIBUTES,
+    READER_CENSUS_CUBE_CUBE_QUERY_VALID_DIMENSIONS,
 )
 
 pd.set_option("max_columns", 10)
@@ -36,8 +36,8 @@ def wmg_query() -> query.CensusCubeQuery:
     snapshot_id = 1662103227  # _read_s3obj("latest_snapshot_identifier")
     snapshot = load_snapshot(snapshot_id)
     cube_query_params = query.CensusCubeQueryParams(
-        cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
-        cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+        cube_query_valid_attrs=READER_CENSUS_CUBE_CUBE_QUERY_VALID_ATTRIBUTES,
+        cube_query_valid_dims=READER_CENSUS_CUBE_CUBE_QUERY_VALID_DIMENSIONS,
     )
     return query.CensusCubeQuery(snapshot, cube_query_params)
 

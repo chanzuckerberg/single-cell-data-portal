@@ -5,7 +5,7 @@ import numba as nb
 import numpy as np
 import pandas as pd
 
-from backend.common.utils.ontology_parser import ontology_parser
+from backend.common.census_cube.utils import ontology_parser
 
 
 # cache finding descendants per cell type
