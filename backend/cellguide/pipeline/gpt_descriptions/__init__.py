@@ -7,8 +7,8 @@ from backend.cellguide.pipeline.gpt_descriptions.gpt_description_generator impor
 from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.utils import output_json_per_key
+from backend.common.census_cube.data.snapshot import load_snapshot
 from backend.wmg.api.wmg_api_config import WMG_API_SNAPSHOT_SCHEMA_VERSION
-from backend.wmg.data.snapshot import load_snapshot
 
 logging.basicConfig(level=logging.INFO)
 

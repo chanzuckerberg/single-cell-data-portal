@@ -19,6 +19,7 @@ from backend.cellguide.pipeline.computational_marker_genes.utils import (
 )
 from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
 from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
+from backend.common.census_cube.data.snapshot import CensusSnapshot
 from backend.common.marker_gene_files.blacklist import marker_gene_blacklist
 from backend.common.utils.rollup import (
     are_cell_types_colinear,
@@ -26,7 +27,6 @@ from backend.common.utils.rollup import (
     rollup_across_cell_type_descendants,
     rollup_across_cell_type_descendants_array,
 )
-from backend.wmg.data.snapshot import WmgSnapshot
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ MARKER_SCORE_THRESHOLD = 0.5
 
 
 class MarkerGenesCalculator:
-    def __init__(self, *, snapshot: WmgSnapshot, all_cell_type_ids_in_corpus: list[str], groupby_terms: list[str]):
+    def __init__(self, *, snapshot: CensusSnapshot, all_cell_type_ids_in_corpus: list[str], groupby_terms: list[str]):
         self.all_cell_type_ids_in_corpus = all_cell_type_ids_in_corpus
 
         gene_metadata = get_gene_id_to_name_and_symbol()

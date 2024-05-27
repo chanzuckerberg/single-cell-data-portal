@@ -6,8 +6,8 @@ from backend.cellguide.pipeline.constants import HOMO_SAPIENS_ORGANISM_ONTOLOGY_
 from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.utils import output_json_per_key
+from backend.common.census_cube.data.snapshot import CensusSnapshot, load_snapshot
 from backend.wmg.api.wmg_api_config import WMG_API_SNAPSHOT_SCHEMA_VERSION
-from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ def run(*, output_directory: str):
     output_json_per_key(data, f"{output_directory}/{CANONICAL_MARKER_GENES_FOLDERNAME}")
 
 
-def get_canonical_marker_genes(*, snapshot: WmgSnapshot, ontology_tree: OntologyTreeBuilder) -> dict:
+def get_canonical_marker_genes(*, snapshot: CensusSnapshot, ontology_tree: OntologyTreeBuilder) -> dict:
     wmg_tissues = [
         next(iter(i.keys()))
         for i in snapshot.primary_filter_dimensions["tissue_terms"][HOMO_SAPIENS_ORGANISM_ONTOLOGY_TERM_ID]

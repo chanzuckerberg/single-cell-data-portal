@@ -4,12 +4,12 @@ from typing import List, Set
 import pandas as pd
 import tiledb
 
-from backend.common.utils.ontology_parser import ontology_parser
-from backend.wmg.data.snapshot import (
+from backend.common.census_cube.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     CELL_TYPE_ORDERINGS_FILENAME,
 )
-from backend.wmg.data.utils import to_dict
+from backend.common.census_cube.data.utils import to_dict
+from backend.common.utils.ontology_parser import ontology_parser
 from backend.wmg.pipeline.constants import (
     CELL_TYPE_ORDERING_CREATED_FLAG,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,

@@ -16,7 +16,7 @@ from backend.cellguide.pipeline.ontology_tree import (
 )
 from backend.cellguide.pipeline.source_collections import get_source_collections_data
 from backend.cellguide.pipeline.utils import output_json
-from backend.wmg.data.utils import setup_retry_session
+from backend.common.census_cube.data.utils import setup_retry_session
 from tests.test_utils.mocks import (
     mock_bootstrap_rows_percentiles,
     mock_get_asctb_master_sheet,

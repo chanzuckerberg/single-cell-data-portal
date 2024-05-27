@@ -8,6 +8,24 @@ from flask import jsonify
 from pandas import DataFrame
 from server_timing import Timing as ServerTiming
 
+from backend.common.census_cube.data.criteria import (
+    BaseQueryCriteria,
+    CensusCubeQueryCriteria,
+    MarkerGeneQueryCriteria,
+)
+from backend.common.census_cube.data.ontology_labels import gene_term_label, ontology_term_label
+from backend.common.census_cube.data.query import (
+    CensusCubeQuery,
+    CensusCubeQueryParams,
+    retrieve_top_n_markers,
+)
+from backend.common.census_cube.data.schemas.cube_schema import expression_summary_non_indexed_dims
+from backend.common.census_cube.data.snapshot import CensusSnapshot, load_snapshot
+from backend.common.census_cube.data.utils import (
+    depluralize,
+    find_all_dim_option_values,
+    find_dim_option_values,
+)
 from backend.wmg.api.common.expression_dotplot import get_dot_plot_data
 from backend.wmg.api.common.rollup import rollup
 from backend.wmg.api.wmg_api_config import (
@@ -17,22 +35,6 @@ from backend.wmg.api.wmg_api_config import (
     WMG_API_READ_FS_CACHED_SNAPSHOT,
     WMG_API_SNAPSHOT_FS_CACHE_ROOT_PATH,
     WMG_API_SNAPSHOT_SCHEMA_VERSION,
-)
-from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
-from backend.wmg.data.query import (
-    MarkerGeneQueryCriteria,
-    WmgCubeQueryParams,
-    WmgFiltersQueryCriteria,
-    WmgQuery,
-    WmgQueryCriteriaV2,
-    retrieve_top_n_markers,
-)
-from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
-from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
-from backend.wmg.data.utils import (
-    depluralize,
-    find_all_dim_option_values,
-    find_dim_option_values,
 )
 
 DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
@@ -51,7 +53,7 @@ SNAPSHOT_FS_ROOT_PATH = (
 )
 def primary_filter_dimensions():
     with ServerTiming.time("load snapshot"):
-        snapshot: WmgSnapshot = load_snapshot(
+        snapshot: CensusSnapshot = load_snapshot(
             snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
             snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
@@ -71,21 +73,21 @@ def query():
     if compare:
         compare = find_dimension_id_from_compare(compare)
 
-    criteria = WmgQueryCriteriaV2(**request["filter"])
+    criteria = CensusCubeQueryCriteria(**request["filter"])
 
     with ServerTiming.time("load snapshot"):
-        snapshot: WmgSnapshot = load_snapshot(
+        snapshot: CensusSnapshot = load_snapshot(
             snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
             snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
 
     with ServerTiming.time("query tiledb"):
-        cube_query_params = WmgCubeQueryParams(
+        cube_query_params = CensusCubeQueryParams(
             cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
             cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
         )
-        q = WmgQuery(snapshot, cube_query_params)
+        q = CensusCubeQuery(snapshot, cube_query_params)
         default = snapshot.expression_summary_default_cube is not None and compare is None
         for dim in criteria.dict():
             if len(criteria.dict()[dim]) > 0 and depluralize(dim) in expression_summary_non_indexed_dims:
@@ -145,10 +147,10 @@ def filters():
     request = connexion.request.json
     sanitize_api_query_dict(request["filter"])
 
-    criteria = WmgFiltersQueryCriteria(**request["filter"])
+    criteria = BaseQueryCriteria(**request["filter"])
 
     with ServerTiming.time("load snapshot"):
-        snapshot: WmgSnapshot = load_snapshot(
+        snapshot: CensusSnapshot = load_snapshot(
             snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
             snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
@@ -173,7 +175,7 @@ def markers():
     organism = request["organism"]
     n_markers = request["n_markers"]
     test = request["test"]
-    snapshot: WmgSnapshot = load_snapshot(
+    snapshot: CensusSnapshot = load_snapshot(
         snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
         explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
         snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
@@ -185,12 +187,12 @@ def markers():
         cell_type_ontology_term_id=cell_type,
     )
 
-    cube_query_params = WmgCubeQueryParams(
+    cube_query_params = CensusCubeQueryParams(
         cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
         cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
     )
 
-    q = WmgQuery(snapshot, cube_query_params)
+    q = CensusCubeQuery(snapshot, cube_query_params)
     df = q.marker_genes(criteria)
     marker_genes = retrieve_top_n_markers(df, test, n_markers)
     return jsonify(
@@ -250,7 +252,7 @@ def sanitize_api_query_dict(query_dict: Any):
         query_dict["self_reported_ethnicity_ontology_term_ids"] = ethnicity_term_ids_to_keep
 
 
-def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
+def fetch_datasets_metadata(snapshot: CensusSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
     return [
         snapshot.dataset_metadata.get(dataset_id, dict(id=dataset_id, label="", collection_id="", collection_label=""))
         for dataset_id in dataset_ids
@@ -266,7 +268,7 @@ def find_dimension_id_from_compare(compare: str) -> str:
     }.get(compare)
 
 
-def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
+def is_criteria_empty(criteria: BaseQueryCriteria) -> bool:
     criteria = criteria.dict()
     for key in criteria:
         if key != "organism_ontology_term_id":
@@ -280,7 +282,7 @@ def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
 
 
 @tracer.wrap(name="build_filter_dims_values", service="wmg-api", resource="filters", span_type="wmg-api")
-def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot) -> Dict:
+def build_filter_dims_values(criteria: BaseQueryCriteria, snapshot: CensusSnapshot) -> Dict:
     dims = {
         "dataset_id": "",
         "disease_ontology_term_id": "",

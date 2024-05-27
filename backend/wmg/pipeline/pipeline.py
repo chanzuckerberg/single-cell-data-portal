@@ -7,13 +7,13 @@ from typing import Optional
 
 import tiledb
 
+from backend.common.census_cube.data.snapshot import CELL_COUNTS_CUBE_NAME
 from backend.common.utils.result_notification import (
     format_failed_batch_issue_slack_alert,
     gen_wmg_pipeline_failure_message,
     gen_wmg_pipeline_success_message,
     notify_slack,
 )
-from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME
 from backend.wmg.pipeline.cell_type_ancestors import create_cell_type_ancestors
 from backend.wmg.pipeline.cell_type_ordering import create_cell_type_ordering
 from backend.wmg.pipeline.constants import (

@@ -13,8 +13,8 @@ from backend.cellguide.pipeline.computational_marker_genes.computational_markers
 from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.utils import output_json, output_json_per_key
+from backend.common.census_cube.data.snapshot import CensusSnapshot, load_snapshot
 from backend.wmg.api.wmg_api_config import WMG_API_SNAPSHOT_SCHEMA_VERSION
-from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,9 @@ def run(*, output_directory: str):
     )
 
 
-def get_computational_marker_genes(*, snapshot: WmgSnapshot, ontology_tree: OntologyTreeBuilder) -> tuple[dict, dict]:
+def get_computational_marker_genes(
+    *, snapshot: CensusSnapshot, ontology_tree: OntologyTreeBuilder
+) -> tuple[dict, dict]:
     """
     This function calculates the marker genes per tissue and across tissues.
 

@@ -4,8 +4,8 @@ import os
 
 import tiledb
 
+from backend.common.census_cube.data.snapshot import CELL_COUNTS_CUBE_NAME, CELL_TYPE_ANCESTORS_FILENAME
 from backend.common.utils.rollup import ancestors
-from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, CELL_TYPE_ANCESTORS_FILENAME
 from backend.wmg.pipeline.constants import (
     CELL_TYPE_ANCESTORS_CREATED_FLAG,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,

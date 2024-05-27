@@ -4,8 +4,8 @@ from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBu
 from backend.cellguide.pipeline.source_collections.source_collections_generator import generate_source_collections_data
 from backend.cellguide.pipeline.source_collections.types import SourceCollectionsData
 from backend.cellguide.pipeline.utils import output_json_per_key
+from backend.common.census_cube.data.snapshot import load_snapshot
 from backend.wmg.api.wmg_api_config import WMG_API_SNAPSHOT_SCHEMA_VERSION
-from backend.wmg.data.snapshot import load_snapshot
 
 
 def run(*, output_directory: str) -> dict[str, SourceCollectionsData]:

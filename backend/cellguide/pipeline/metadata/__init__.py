@@ -7,8 +7,8 @@ from backend.cellguide.pipeline.metadata.types import CellMetadata, TissueMetada
 from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.utils import output_json
+from backend.common.census_cube.data.snapshot import load_snapshot
 from backend.wmg.api.wmg_api_config import WMG_API_SNAPSHOT_SCHEMA_VERSION
-from backend.wmg.data.snapshot import load_snapshot
 
 
 def run(*, output_directory: str):

@@ -7,8 +7,8 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
+from backend.common.census_cube.data.constants import WMG_PINNED_SCHEMA_VERSION
 from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
-from backend.wmg.data.constants import WMG_PINNED_SCHEMA_VERSION
 
 
 def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:

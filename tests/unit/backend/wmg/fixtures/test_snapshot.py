@@ -15,19 +15,23 @@ import tiledb
 from numpy.random import randint, random
 from pandas import DataFrame
 
-from backend.wmg.data.schemas.cube_schema import cell_counts_schema as cell_counts_schema_actual
-from backend.wmg.data.schemas.cube_schema import expression_summary_schema as expression_summary_schema_actual
-from backend.wmg.data.schemas.cube_schema_default import (
+from backend.common.census_cube.data.schemas.cube_schema import cell_counts_schema as cell_counts_schema_actual
+from backend.common.census_cube.data.schemas.cube_schema import (
+    expression_summary_schema as expression_summary_schema_actual,
+)
+from backend.common.census_cube.data.schemas.cube_schema_default import (
     expression_summary_schema as expression_summary_default_schema_actual,
 )
-from backend.wmg.data.schemas.cube_schema_diffexp import (
+from backend.common.census_cube.data.schemas.cube_schema_diffexp import (
     cell_counts_schema as cell_counts_diffexp_schema_actual,
 )
-from backend.wmg.data.schemas.cube_schema_diffexp import (
+from backend.common.census_cube.data.schemas.cube_schema_diffexp import (
     expression_summary_schema as expression_summary_diffexp_schema_actual,
 )
-from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema as marker_genes_schema_actual
-from backend.wmg.data.snapshot import (
+from backend.common.census_cube.data.schemas.marker_gene_cube_schema import (
+    marker_genes_schema as marker_genes_schema_actual,
+)
+from backend.common.census_cube.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     CELL_COUNTS_DIFFEXP_CUBE_NAME,
     CELL_TYPE_ANCESTORS_FILENAME,
@@ -40,10 +44,10 @@ from backend.wmg.data.snapshot import (
     FILTER_RELATIONSHIPS_FILENAME,
     MARKER_GENES_CUBE_NAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
-    WmgSnapshot,
+    CensusSnapshot,
 )
-from backend.wmg.data.tiledb import create_ctx
-from backend.wmg.data.utils import build_filter_relationships
+from backend.common.census_cube.data.tiledb import create_ctx
+from backend.common.census_cube.data.utils import build_filter_relationships
 from tests.unit.backend.wmg.fixtures import FIXTURES_ROOT
 from tests.unit.backend.wmg.fixtures.test_cube_schema import (
     cell_counts_indexed_dims,
@@ -91,7 +95,7 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
     implementation is wildly inefficient, but it is good enough for test code.
     """
     # must import lazily
-    import backend.wmg.data.ontology_labels as ontology_labels
+    import backend.common.census_cube.data.ontology_labels as ontology_labels
 
     if ontology_labels.gene_term_id_labels is None:
         ontology_labels.__load_genes()
@@ -191,7 +195,7 @@ def reverse_cell_type_ordering(cell_type_ontology_ids: List[str]) -> List[int]:
 
 
 @contextlib.contextmanager
-def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
+def load_realistic_test_snapshot(snapshot_name: str) -> CensusSnapshot:
     with tempfile.TemporaryDirectory() as cube_dir:
         cell_counts = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_COUNTS_CUBE_NAME}.csv.gz", index_col=0)
         expression_summary = pd.read_csv(
@@ -286,7 +290,7 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
             dataset_metadata = json.load(fd)
             cell_type_ancestors = json.load(fca)
 
-            yield WmgSnapshot(
+            yield CensusSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
                 expression_summary_default_cube=expression_summary_default_cube,
@@ -303,7 +307,7 @@ def load_realistic_test_snapshot(snapshot_name: str) -> WmgSnapshot:
             )
 
 
-def load_realistic_test_snapshot_tmpdir(snapshot_name: str) -> WmgSnapshot:
+def load_realistic_test_snapshot_tmpdir(snapshot_name: str) -> CensusSnapshot:
     cube_dir_temp = tempfile.TemporaryDirectory()
     cube_dir = cube_dir_temp.name
 
@@ -392,7 +396,7 @@ def create_temp_wmg_snapshot(
     exclude_logical_coord_fn: Callable[[NamedTuple], bool] = None,
     cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
     cell_ordering_generator_fn: Callable[[List[str]], List[int]] = forward_cell_type_ordering,
-) -> WmgSnapshot:
+) -> CensusSnapshot:
     with tempfile.TemporaryDirectory() as cube_dir:
         expression_summary_cube_dir, cell_counts_cube_dir = create_cubes(
             cube_dir,
@@ -416,7 +420,7 @@ def create_temp_wmg_snapshot(
         ):
             cc = cell_counts_cube.df[:]
             filter_relationships = build_filter_relationships(cc)
-            yield WmgSnapshot(
+            yield CensusSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
                 cell_counts_cube=cell_counts_cube,
