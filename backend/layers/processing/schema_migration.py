@@ -174,7 +174,6 @@ class SchemaMigrate(ProcessingLogic):
                 # ^^^ The top level fields are used for handling error cases in the AWS SFN.
                 "datasets": [
                     {
-                        "can_publish": str(can_publish),
                         "collection_id": collection_id,
                         "collection_url": collection_url,
                         "collection_version_id": private_collection_version_id,
@@ -196,7 +195,7 @@ class SchemaMigrate(ProcessingLogic):
         self._store_sfn_response("publish_and_cleanup", version.collection_id.id, response)
         return response
 
-    def publish_and_cleanup(self, collection_version_id: str, can_publish: bool) -> list:
+    def publish_and_cleanup(self, collection_version_id: str) -> list:
         errors = []
         collection_version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
         object_keys_to_delete = []
@@ -259,7 +258,7 @@ class SchemaMigrate(ProcessingLogic):
         self.s3_provider.delete_files(self.artifact_bucket, object_keys_to_delete)
         if errors:
             self._store_sfn_response("report/errors", collection_version_id, errors)
-        elif can_publish:
+        elif extra_info["can_publish"] == "true":
             self.business_logic.publish_collection_version(collection_version.version_id)
         return errors
 
@@ -381,9 +380,8 @@ class SchemaMigrate(ProcessingLogic):
             )
         elif step_name == "collection_publish":
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]
-            can_publish = os.environ["CAN_PUBLISH"].lower() == "true"
             publish_and_cleanup = self.error_wrapper(self.publish_and_cleanup, collection_version_id)
-            response = publish_and_cleanup(collection_version_id=collection_version_id, can_publish=can_publish)
+            response = publish_and_cleanup(collection_version_id=collection_version_id)
         elif step_name == "report":
             response = self.report()
         self.logger.info("output", extra={"response": response})
