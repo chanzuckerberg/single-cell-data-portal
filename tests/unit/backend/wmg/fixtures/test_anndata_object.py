@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
 
-from backend.wmg.data.constants import INCLUDED_ASSAYS
+from backend.common.census_cube.data.constants import INCLUDED_ASSAYS
 
 
 def create_anndata_test_object(num_genes: int = 3, num_cells: int = 5):

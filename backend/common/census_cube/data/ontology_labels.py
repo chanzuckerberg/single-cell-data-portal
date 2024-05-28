@@ -3,13 +3,7 @@ import gzip
 import pathlib
 from typing import IO, Optional
 
-from backend.common.utils.ontology_parser import ontology_parser
-
-# TODO: Place this module into a common ontology util package with development_stage_ontology_mapping.py and
-#  extract_ontology_terms_from_owl.py. https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
-#  /chanzuckerberg/single-cell-data-portal/2133
-
-all_ontologies_json_file = "all_ontology.json.gz"
+from backend.common.census_cube.utils import ontology_parser
 
 genes_files = [
     "genes_ercc.csv.gz",
@@ -50,7 +44,7 @@ def __load_genes() -> None:
 
 def __open_ontology_resource(file) -> IO:
     curr_path = pathlib.Path(__file__).parent.absolute()
-    root_path = curr_path.parent.parent
+    root_path = curr_path.parent.parent.parent
     file_path = root_path.joinpath("common", "ontology_files", file)
     return gzip.open(file_path)
 

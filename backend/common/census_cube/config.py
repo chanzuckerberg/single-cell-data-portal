@@ -3,7 +3,7 @@ import os
 from backend.common.utils.secret_config import SecretConfig
 
 
-class WmgConfig(SecretConfig):
+class CensusCubeConfig(SecretConfig):
     def __init__(self, *args, **kwargs):
         super().__init__("backend", secret_name="wmg_config", **kwargs)
 

@@ -1,18 +1,18 @@
-# Examples of ad hoc queries of the WMG Expression Summary cube using the WmgQuery class
+# Examples of ad hoc queries of the WMG Expression Summary cube using the CensusCubeQuery class
 
 import os
 
 import pandas as pd
 
-from backend.wmg.api.wmg_api_config import (
-    READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
-    READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
-)
-from backend.wmg.data import query
-from backend.wmg.data.snapshot import (
+from backend.common.census_cube.data import query
+from backend.common.census_cube.data.snapshot import (
     EXPRESSION_SUMMARY_CUBE_NAME,
-    WmgSnapshot,
+    CensusCubeSnapshot,
     _open_cube,
+)
+from backend.wmg.api.config import (
+    READER_CENSUS_CUBE_CUBE_QUERY_VALID_ATTRIBUTES,
+    READER_CENSUS_CUBE_CUBE_QUERY_VALID_DIMENSIONS,
 )
 
 pd.set_option("max_columns", 10)
@@ -22,24 +22,24 @@ pd.set_option("display.width", 256)
 os.environ["DEPLOYMENT_STAGE"] = "dev"
 
 
-def load_snapshot(snapshot_id) -> WmgSnapshot:
+def load_snapshot(snapshot_id) -> CensusCubeSnapshot:
     cube = _open_cube(
         f's3://cellxgene-wmg-{os.environ["DEPLOYMENT_STAGE"]}/{snapshot_id}/{EXPRESSION_SUMMARY_CUBE_NAME}/'
     )
-    return WmgSnapshot(
+    return CensusCubeSnapshot(
         snapshot_identifier=snapshot_id,
         expression_summary_cube=cube,
     )
 
 
-def wmg_query() -> query.WmgQuery:
+def wmg_query() -> query.CensusCubeQuery:
     snapshot_id = 1662103227  # _read_s3obj("latest_snapshot_identifier")
     snapshot = load_snapshot(snapshot_id)
-    cube_query_params = query.WmgCubeQueryParams(
-        cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
-        cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+    cube_query_params = query.CensusCubeQueryParams(
+        cube_query_valid_attrs=READER_CENSUS_CUBE_CUBE_QUERY_VALID_ATTRIBUTES,
+        cube_query_valid_dims=READER_CENSUS_CUBE_CUBE_QUERY_VALID_DIMENSIONS,
     )
-    return query.WmgQuery(snapshot, cube_query_params)
+    return query.CensusCubeQuery(snapshot, cube_query_params)
 
 
 if __name__ == "__main__":
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     # print(q._snapshot.expression_summary_cube.df[genes, tissues, :, organism])
 
     # res = q.expression_summary(
-    #     query.WmgQueryCriteria(
+    #     query.CensusCubeQueryCriteria(
     #         gene_ontology_term_ids=genes,
     #         organism_ontology_term_id=organism,
     #         tissue_ontology_term_ids=tissues,
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     # print(res)
 
     # res = q.cell_counts(
-    #     query.WmgQueryCriteria(
+    #     query.CensusCubeQueryCriteria(
     #         organism_ontology_term_id=organism,
     #         tissue_ontology_term_ids=tissues,
     #     )

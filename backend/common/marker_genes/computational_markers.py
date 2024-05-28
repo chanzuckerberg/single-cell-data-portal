@@ -10,23 +10,24 @@ from dask import compute, delayed
 from dask.diagnostics import ProgressBar
 from tqdm import tqdm
 
-from backend.cellguide.pipeline.computational_marker_genes.types import ComputationalMarkerGenes
-from backend.cellguide.pipeline.computational_marker_genes.utils import (
+from backend.common.census_cube.data.snapshot import CensusCubeSnapshot
+from backend.common.census_cube.utils import (
+    are_cell_types_colinear,
+    get_all_cell_type_ids_in_corpus,
+    get_overlapping_cell_type_descendants,
+    rollup_across_cell_type_descendants,
+    rollup_across_cell_type_descendants_array,
+)
+from backend.common.marker_genes.constants import MARKER_SCORE_THRESHOLD, PIPELINE_NUM_CPUS
+from backend.common.marker_genes.marker_gene_files.blacklist import marker_gene_blacklist
+from backend.common.marker_genes.marker_gene_files.gene_metadata import get_gene_id_to_name_and_symbol
+from backend.common.marker_genes.types import ComputationalMarkerGenes
+from backend.common.marker_genes.utils import (
     bootstrap_rows_percentiles,
     calculate_cohens_d,
     calculate_specificity_excluding_nans,
     query_gene_info_for_gene_description,
 )
-from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
-from backend.cellguide.pipeline.utils import get_gene_id_to_name_and_symbol
-from backend.common.marker_gene_files.blacklist import marker_gene_blacklist
-from backend.common.utils.rollup import (
-    are_cell_types_colinear,
-    get_overlapping_cell_type_descendants,
-    rollup_across_cell_type_descendants,
-    rollup_across_cell_type_descendants_array,
-)
-from backend.wmg.data.snapshot import WmgSnapshot
 
 logger = logging.getLogger(__name__)
 
@@ -41,12 +42,10 @@ For instance, users can stratify marker gene calculation across just organisms, 
 or any arbitrary combinations of metadata dimensions.
 """
 
-MARKER_SCORE_THRESHOLD = 0.5
-
 
 class MarkerGenesCalculator:
-    def __init__(self, *, snapshot: WmgSnapshot, all_cell_type_ids_in_corpus: list[str], groupby_terms: list[str]):
-        self.all_cell_type_ids_in_corpus = all_cell_type_ids_in_corpus
+    def __init__(self, *, snapshot: CensusCubeSnapshot, groupby_terms: list[str]):
+        self.all_cell_type_ids_in_corpus = get_all_cell_type_ids_in_corpus(snapshot)
 
         gene_metadata = get_gene_id_to_name_and_symbol()
         self.gene_id_to_name = gene_metadata.gene_id_to_name
@@ -383,13 +382,13 @@ class MarkerGenesCalculator:
                 for i in range(len(cell_types_o))
             ]
             logger.info(
-                f"Getting marker genes for {len(cell_types_o)} cell types in combination {combination} using {CELLGUIDE_PIPELINE_NUM_CPUS} CPUs..."
+                f"Getting marker genes for {len(cell_types_o)} cell types in combination {combination} using {PIPELINE_NUM_CPUS} CPUs..."
             )
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
 
                 with ProgressBar():
-                    results = compute(*delayed_results, num_workers=CELLGUIDE_PIPELINE_NUM_CPUS)
+                    results = compute(*delayed_results, num_workers=PIPELINE_NUM_CPUS)
 
                 effect_sizes = []
                 for iteration in tqdm(

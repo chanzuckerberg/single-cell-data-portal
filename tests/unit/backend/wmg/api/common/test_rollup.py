@@ -12,8 +12,8 @@ import pytest
 from pandas import DataFrame
 from pandas.testing import assert_frame_equal
 
+from backend.common.census_cube.data.snapshot import CELL_TYPE_ANCESTORS_FILENAME
 from backend.wmg.api.common.rollup import rollup
-from backend.wmg.data.snapshot import CELL_TYPE_ANCESTORS_FILENAME
 from tests.unit.backend.wmg.fixtures import FIXTURES_ROOT
 
 
