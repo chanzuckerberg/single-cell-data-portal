@@ -66,7 +66,8 @@ class SchemaMigrate(ProcessingLogic):
             _resp = {}
             if collection.is_published() and collection.collection_id.id in has_revision:
                 continue
-
+            if collection.collection_id.id not in ["0aab20b3-c30c-4606-bd2e-d20dae739c45"]:
+                continue
             if collection.is_published():
                 # published collection without an active revision
                 _resp["can_publish"] = str(True)
