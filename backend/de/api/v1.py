@@ -14,7 +14,7 @@ from backend.common.census_cube.data.criteria import BaseQueryCriteria
 from backend.common.census_cube.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.common.census_cube.data.query import CensusCubeQuery
 from backend.common.census_cube.data.schemas.cube_schema_diffexp import cell_counts_logical_dims_exclude_dataset_id
-from backend.common.census_cube.data.snapshot import CensusSnapshot, load_snapshot
+from backend.common.census_cube.data.snapshot import CensusCubeSnapshot, load_snapshot
 from backend.common.census_cube.utils import descendants
 from backend.common.marker_genes.marker_gene_files.blacklist import marker_gene_blacklist
 from backend.de.api.config import (
@@ -30,16 +30,6 @@ SNAPSHOT_FS_ROOT_PATH = (
     else None
 )
 
-"""
-We have a data structure that must be shared between CellGuide, DE, and WMG applications as they all are derived from the same source.
-
-Which means that any WMG data stuff must be generalized. What's a better name for it? WMG stands for "Where's my Gene" but it's vestigial, 
-the new name is Gene Expression. The data structure contains expression aggregates across cells, but now it also contains other information to serve
-cases like marker genes and differential expression.
-
-A better name would be: 
-"""
-
 
 @tracer.wrap(name="filters", service="wmg-api", resource="filters", span_type="wmg-api")
 def filters():
@@ -49,7 +39,7 @@ def filters():
     criteria = BaseQueryCriteria(**request["filter"])
 
     with ServerTiming.time("load snapshot"):
-        snapshot: CensusSnapshot = load_snapshot(
+        snapshot: CensusCubeSnapshot = load_snapshot(
             snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
             snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
@@ -115,7 +105,7 @@ def is_criteria_empty(criteria: BaseQueryCriteria) -> bool:
 
 
 @tracer.wrap(name="build_filter_dims_values", service="wmg-api", resource="filters", span_type="wmg-api")
-def build_filter_dims_values(criteria: BaseQueryCriteria, snapshot: CensusSnapshot, q: CensusCubeQuery) -> Dict:
+def build_filter_dims_values(criteria: BaseQueryCriteria, snapshot: CensusCubeSnapshot, q: CensusCubeQuery) -> Dict:
 
     if is_criteria_empty(criteria):
         df = snapshot.cell_counts_df[
@@ -166,7 +156,7 @@ def build_filter_dims_values(criteria: BaseQueryCriteria, snapshot: CensusSnapsh
     return response_filter_dims_values
 
 
-def fetch_datasets_metadata(snapshot: CensusSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
+def fetch_datasets_metadata(snapshot: CensusCubeSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
     return [
         snapshot.dataset_metadata.get(dataset_id, dict(id=dataset_id, label="", collection_id="", collection_label=""))
         for dataset_id in dataset_ids
@@ -199,7 +189,7 @@ def differentialExpression():
     criteria1 = BaseQueryCriteria(**queryGroup1Filters)
     criteria2 = BaseQueryCriteria(**queryGroup2Filters)
 
-    snapshot: CensusSnapshot = load_snapshot(
+    snapshot: CensusCubeSnapshot = load_snapshot(
         snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
         explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
         snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,

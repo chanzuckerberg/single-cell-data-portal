@@ -44,7 +44,7 @@ from backend.common.census_cube.data.snapshot import (
     FILTER_RELATIONSHIPS_FILENAME,
     MARKER_GENES_CUBE_NAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
-    CensusSnapshot,
+    CensusCubeSnapshot,
 )
 from backend.common.census_cube.data.tiledb import create_ctx
 from backend.common.census_cube.utils import build_filter_relationships
@@ -195,7 +195,7 @@ def reverse_cell_type_ordering(cell_type_ontology_ids: List[str]) -> List[int]:
 
 
 @contextlib.contextmanager
-def load_realistic_test_snapshot(snapshot_name: str) -> CensusSnapshot:
+def load_realistic_test_snapshot(snapshot_name: str) -> CensusCubeSnapshot:
     with tempfile.TemporaryDirectory() as cube_dir:
         cell_counts = pd.read_csv(f"{FIXTURES_ROOT}/{snapshot_name}/{CELL_COUNTS_CUBE_NAME}.csv.gz", index_col=0)
         expression_summary = pd.read_csv(
@@ -290,7 +290,7 @@ def load_realistic_test_snapshot(snapshot_name: str) -> CensusSnapshot:
             dataset_metadata = json.load(fd)
             cell_type_ancestors = json.load(fca)
 
-            yield CensusSnapshot(
+            yield CensusCubeSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
                 expression_summary_default_cube=expression_summary_default_cube,
@@ -307,7 +307,7 @@ def load_realistic_test_snapshot(snapshot_name: str) -> CensusSnapshot:
             )
 
 
-def load_realistic_test_snapshot_tmpdir(snapshot_name: str) -> CensusSnapshot:
+def load_realistic_test_snapshot_tmpdir(snapshot_name: str) -> CensusCubeSnapshot:
     cube_dir_temp = tempfile.TemporaryDirectory()
     cube_dir = cube_dir_temp.name
 
@@ -396,7 +396,7 @@ def create_temp_wmg_snapshot(
     exclude_logical_coord_fn: Callable[[NamedTuple], bool] = None,
     cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
     cell_ordering_generator_fn: Callable[[List[str]], List[int]] = forward_cell_type_ordering,
-) -> CensusSnapshot:
+) -> CensusCubeSnapshot:
     with tempfile.TemporaryDirectory() as cube_dir:
         expression_summary_cube_dir, cell_counts_cube_dir = create_cubes(
             cube_dir,
@@ -420,7 +420,7 @@ def create_temp_wmg_snapshot(
         ):
             cc = cell_counts_cube.df[:]
             filter_relationships = build_filter_relationships(cc)
-            yield CensusSnapshot(
+            yield CensusCubeSnapshot(
                 snapshot_identifier=snapshot_name,
                 expression_summary_cube=expression_summary_cube,
                 cell_counts_cube=cell_counts_cube,

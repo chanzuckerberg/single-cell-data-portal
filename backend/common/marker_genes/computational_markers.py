@@ -10,7 +10,7 @@ from dask import compute, delayed
 from dask.diagnostics import ProgressBar
 from tqdm import tqdm
 
-from backend.common.census_cube.data.snapshot import CensusSnapshot
+from backend.common.census_cube.data.snapshot import CensusCubeSnapshot
 from backend.common.census_cube.utils import (
     are_cell_types_colinear,
     get_all_cell_type_ids_in_corpus,
@@ -44,7 +44,7 @@ or any arbitrary combinations of metadata dimensions.
 
 
 class MarkerGenesCalculator:
-    def __init__(self, *, snapshot: CensusSnapshot, groupby_terms: list[str]):
+    def __init__(self, *, snapshot: CensusCubeSnapshot, groupby_terms: list[str]):
         self.all_cell_type_ids_in_corpus = get_all_cell_type_ids_in_corpus(snapshot=snapshot)
 
         gene_metadata = get_gene_id_to_name_and_symbol()

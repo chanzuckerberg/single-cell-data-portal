@@ -39,7 +39,7 @@ logger = logging.getLogger("wmg")
 
 
 @dataclass
-class CensusSnapshot:
+class CensusCubeSnapshot:
     """
     All of the data artifacts the WMG API depends upon to perform its functions, versioned by "snapshot_identifier".
     These are read from data artifacts, per the relative file names, above.
@@ -101,7 +101,7 @@ class CensusSnapshot:
 
 
 # Cached data
-cached_snapshot: Optional[CensusSnapshot] = None
+cached_snapshot: Optional[CensusCubeSnapshot] = None
 
 
 @tracer.wrap(name="load_snapshot", service="wmg-api", resource="query", span_type="wmg-api")
@@ -110,7 +110,7 @@ def load_snapshot(
     snapshot_schema_version: str,
     explicit_snapshot_id_to_load: Optional[str] = None,
     snapshot_fs_root_path: Optional[str] = None,
-) -> CensusSnapshot:
+) -> CensusCubeSnapshot:
     """
     Loads and caches the snapshot identified by the snapshot schema version and a snapshot id.
 
@@ -127,7 +127,7 @@ def load_snapshot(
         snapshot_fs_root_path (str, optional): The root path of the snapshot on the local filesystem. Defaults to None.
 
     Returns:
-        CensusSnapshot: The loaded snapshot.
+        CensusCubeSnapshot: The loaded snapshot.
 
     """
     global cached_snapshot
@@ -289,7 +289,7 @@ def _get_wmg_snapshot_fullpath(snapshot_rel_path: str, snapshot_fs_root_path: Op
 
 def _load_snapshot(
     *, snapshot_schema_version: str, snapshot_id: str, snapshot_fs_root_path: Optional[str] = None
-) -> CensusSnapshot:
+) -> CensusCubeSnapshot:
     """
     Load a snapshot given its schema version, id, and root path in the filesystem.
 
@@ -299,7 +299,7 @@ def _load_snapshot(
         snapshot_fs_root_path (Optional[str]): The root path of the snapshot in the filesystem. Defaults to None.
 
     Returns:
-        CensusSnapshot: The loaded snapshot.
+        CensusCubeSnapshot: The loaded snapshot.
     """
 
     snapshot_rel_path = _get_wmg_snapshot_rel_path(snapshot_schema_version, snapshot_id)
@@ -318,7 +318,7 @@ def _load_snapshot(
     #  -data-portal/2134
     cell_counts_cube = _open_cube(f"{snapshot_uri}/{CELL_COUNTS_CUBE_NAME}")
     cell_counts_diffexp_cube = _open_cube(f"{snapshot_uri}/{CELL_COUNTS_DIFFEXP_CUBE_NAME}")
-    return CensusSnapshot(
+    return CensusCubeSnapshot(
         snapshot_identifier=snapshot_id,
         expression_summary_cube=_open_cube(f"{snapshot_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
         expression_summary_default_cube=_open_cube(f"{snapshot_uri}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),

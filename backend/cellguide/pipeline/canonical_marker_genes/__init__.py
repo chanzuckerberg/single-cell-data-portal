@@ -5,7 +5,7 @@ from backend.cellguide.pipeline.canonical_marker_genes.canonical_markers import 
 from backend.cellguide.pipeline.constants import HOMO_SAPIENS_ORGANISM_ONTOLOGY_TERM_ID
 from backend.cellguide.pipeline.utils import output_json_per_key
 from backend.common.census_cube.data.constants import CENSUS_CUBE_DATA_SCHEMA_VERSION
-from backend.common.census_cube.data.snapshot import CensusSnapshot, load_snapshot
+from backend.common.census_cube.data.snapshot import CensusCubeSnapshot, load_snapshot
 from backend.common.census_cube.utils import get_all_cell_type_ids_in_corpus
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ def run(*, output_directory: str):
     output_json_per_key(data, f"{output_directory}/{CANONICAL_MARKER_GENES_FOLDERNAME}")
 
 
-def get_canonical_marker_genes(*, snapshot: CensusSnapshot) -> dict:
+def get_canonical_marker_genes(*, snapshot: CensusCubeSnapshot) -> dict:
     wmg_tissues = [
         next(iter(i.keys()))
         for i in snapshot.primary_filter_dimensions["tissue_terms"][HOMO_SAPIENS_ORGANISM_ONTOLOGY_TERM_ID]

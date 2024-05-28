@@ -9,7 +9,7 @@ from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBu
 from backend.cellguide.pipeline.ontology_tree.types import OntologyTreeData
 from backend.cellguide.pipeline.utils import output_json, output_json_per_key
 from backend.common.census_cube.data.constants import CENSUS_CUBE_DATA_SCHEMA_VERSION
-from backend.common.census_cube.data.snapshot import CensusSnapshot, load_snapshot
+from backend.common.census_cube.data.snapshot import CensusCubeSnapshot, load_snapshot
 
 
 def run(*, output_directory):
@@ -51,18 +51,18 @@ def get_celltype_to_tissue_mapping(all_states_per_tissue):
     return celltype_to_tissue_mapping
 
 
-def get_ontology_tree_builder(*, snapshot: CensusSnapshot) -> OntologyTreeBuilder:
+def get_ontology_tree_builder(*, snapshot: CensusCubeSnapshot) -> OntologyTreeBuilder:
     cell_counts_df = snapshot.cell_counts_cube.df[:]
     return OntologyTreeBuilder(cell_counts_df)
 
 
-def get_ontology_tree_builder_for_organism(*, snapshot: CensusSnapshot, organism: str) -> OntologyTreeBuilder:
+def get_ontology_tree_builder_for_organism(*, snapshot: CensusCubeSnapshot, organism: str) -> OntologyTreeBuilder:
     cell_counts_df = snapshot.cell_counts_cube.df[:]
     cell_counts_df = cell_counts_df[cell_counts_df["organism_ontology_term_id"] == organism]
     return OntologyTreeBuilder(cell_counts_df)
 
 
-def get_ontology_tree_data(*, snapshot: CensusSnapshot) -> tuple[OntologyTreeBuilder, OntologyTreeData]:
+def get_ontology_tree_data(*, snapshot: CensusCubeSnapshot) -> tuple[OntologyTreeBuilder, OntologyTreeData]:
     organisms = snapshot.cell_counts_cube.df[:]["organism_ontology_term_id"].unique()
     ontology_tree_data = {}
     for organism in organisms:

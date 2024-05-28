@@ -21,7 +21,7 @@ from backend.common.census_cube.data.query import (
     retrieve_top_n_markers,
 )
 from backend.common.census_cube.data.schemas.cube_schema import expression_summary_non_indexed_dims
-from backend.common.census_cube.data.snapshot import CensusSnapshot, load_snapshot
+from backend.common.census_cube.data.snapshot import CensusCubeSnapshot, load_snapshot
 from backend.common.census_cube.utils import (
     depluralize,
     find_all_dim_option_values,
@@ -55,7 +55,7 @@ SNAPSHOT_FS_ROOT_PATH = (
 )
 def primary_filter_dimensions():
     with ServerTiming.time("load snapshot"):
-        snapshot: CensusSnapshot = load_snapshot(
+        snapshot: CensusCubeSnapshot = load_snapshot(
             snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
             snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
@@ -78,7 +78,7 @@ def query():
     criteria = CensusCubeQueryCriteria(**request["filter"])
 
     with ServerTiming.time("load snapshot"):
-        snapshot: CensusSnapshot = load_snapshot(
+        snapshot: CensusCubeSnapshot = load_snapshot(
             snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
             snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
@@ -152,7 +152,7 @@ def filters():
     criteria = BaseQueryCriteria(**request["filter"])
 
     with ServerTiming.time("load snapshot"):
-        snapshot: CensusSnapshot = load_snapshot(
+        snapshot: CensusCubeSnapshot = load_snapshot(
             snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
             snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
@@ -177,7 +177,7 @@ def markers():
     organism = request["organism"]
     n_markers = request["n_markers"]
     test = request["test"]
-    snapshot: CensusSnapshot = load_snapshot(
+    snapshot: CensusCubeSnapshot = load_snapshot(
         snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
         explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
         snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
@@ -254,7 +254,7 @@ def sanitize_api_query_dict(query_dict: Any):
         query_dict["self_reported_ethnicity_ontology_term_ids"] = ethnicity_term_ids_to_keep
 
 
-def fetch_datasets_metadata(snapshot: CensusSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
+def fetch_datasets_metadata(snapshot: CensusCubeSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
     return [
         snapshot.dataset_metadata.get(dataset_id, dict(id=dataset_id, label="", collection_id="", collection_label=""))
         for dataset_id in dataset_ids
@@ -284,7 +284,7 @@ def is_criteria_empty(criteria: BaseQueryCriteria) -> bool:
 
 
 @tracer.wrap(name="build_filter_dims_values", service="wmg-api", resource="filters", span_type="wmg-api")
-def build_filter_dims_values(criteria: BaseQueryCriteria, snapshot: CensusSnapshot) -> Dict:
+def build_filter_dims_values(criteria: BaseQueryCriteria, snapshot: CensusCubeSnapshot) -> Dict:
     dims = {
         "dataset_id": "",
         "disease_ontology_term_id": "",

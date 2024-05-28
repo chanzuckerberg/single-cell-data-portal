@@ -7,7 +7,7 @@ import pandas as pd
 from backend.common.census_cube.data import query
 from backend.common.census_cube.data.snapshot import (
     EXPRESSION_SUMMARY_CUBE_NAME,
-    CensusSnapshot,
+    CensusCubeSnapshot,
     _open_cube,
 )
 from backend.wmg.api.config import (
@@ -22,11 +22,11 @@ pd.set_option("display.width", 256)
 os.environ["DEPLOYMENT_STAGE"] = "dev"
 
 
-def load_snapshot(snapshot_id) -> CensusSnapshot:
+def load_snapshot(snapshot_id) -> CensusCubeSnapshot:
     cube = _open_cube(
         f's3://cellxgene-wmg-{os.environ["DEPLOYMENT_STAGE"]}/{snapshot_id}/{EXPRESSION_SUMMARY_CUBE_NAME}/'
     )
-    return CensusSnapshot(
+    return CensusCubeSnapshot(
         snapshot_identifier=snapshot_id,
         expression_summary_cube=cube,
     )

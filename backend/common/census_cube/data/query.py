@@ -12,7 +12,7 @@ from backend.common.census_cube.data.criteria import (
     MarkerGeneQueryCriteria,
 )
 from backend.common.census_cube.data.schemas.cube_schema_diffexp import cell_counts_indexed_dims
-from backend.common.census_cube.data.snapshot import CensusSnapshot
+from backend.common.census_cube.data.snapshot import CensusCubeSnapshot
 
 
 class CensusCubeQueryParams:
@@ -37,7 +37,7 @@ class CensusCubeQueryParams:
 
 
 class CensusCubeQuery:
-    def __init__(self, snapshot: CensusSnapshot, cube_query_params: Optional[CensusCubeQueryParams] = None) -> None:
+    def __init__(self, snapshot: CensusCubeSnapshot, cube_query_params: Optional[CensusCubeQueryParams] = None) -> None:
         self._snapshot = snapshot
         self._cube_query_params = cube_query_params
 

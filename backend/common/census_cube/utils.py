@@ -15,7 +15,7 @@ from backend.common.census_cube.data.constants import (
     CENSUS_CUBE_DATA_SCHEMA_VERSION,
     CENSUS_CUBE_PINNED_SCHEMA_VERSION,
 )
-from backend.common.census_cube.data.snapshot import CensusSnapshot, load_snapshot
+from backend.common.census_cube.data.snapshot import CensusCubeSnapshot, load_snapshot
 from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
 
 DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
@@ -216,7 +216,7 @@ def to_dict(a, b):
     return d
 
 
-def get_all_cell_type_ids_in_corpus(snapshot: CensusSnapshot = None, root_node="CL:0000000") -> list[str]:
+def get_all_cell_type_ids_in_corpus(snapshot: CensusCubeSnapshot = None, root_node="CL:0000000") -> list[str]:
     """
     Retrieve all cell type IDs in the corpus that have at least one cell present, starting from a specified root node in the ontology.
 
@@ -258,7 +258,7 @@ def get_all_cell_type_ids_in_corpus(snapshot: CensusSnapshot = None, root_node="
     return list(all_cell_type_ids_in_corpus)
 
 
-def get_all_tissue_ids_in_corpus(snapshot: CensusSnapshot = None) -> list[str]:
+def get_all_tissue_ids_in_corpus(snapshot: CensusCubeSnapshot = None) -> list[str]:
     """
     Retrieve all tissue IDs in the corpus that have at least one cell present.
 

@@ -11,7 +11,7 @@ from backend.common.census_cube.data.snapshot import (
     EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
     MARKER_GENES_CUBE_NAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
-    CensusSnapshot,
+    CensusCubeSnapshot,
 )
 from backend.common.marker_genes.computational_markers import MarkerGenesCalculator
 from backend.wmg.pipeline.constants import (
@@ -53,7 +53,7 @@ def create_marker_genes_cube(corpus_path: str):
         tiledb.open(expression_summary_default_cube_uri, "r") as expression_summary_default_cube,
     ):
         primary_filter_dimensions = json.load(f)
-        snapshot = CensusSnapshot(
+        snapshot = CensusCubeSnapshot(
             primary_filter_dimensions=primary_filter_dimensions,
             cell_counts_cube=cell_counts_cube,
             expression_summary_default_cube=expression_summary_default_cube,
