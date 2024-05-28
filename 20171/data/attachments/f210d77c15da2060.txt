@@ -1,1 +1,0 @@
-{"levelname": "INFO", "asctime": "2024-05-28T05:23:33.028Z", "name": "processing", "message": "Start download_from_source_uri", "lineno": 26, "pathname": "/single-cell-data-portal/backend/layers/processing/logger.py", "type": "METRIC"}
