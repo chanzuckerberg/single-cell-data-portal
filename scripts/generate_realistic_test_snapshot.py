@@ -6,8 +6,12 @@ import tempfile
 from enum import Enum
 from unittest.mock import Mock, patch
 
-import tiledb  # noqa
-import tiledbsoma  # noqa
+# Import tiledbsoma before tiledb to prevent segmentation faults on macOS.
+# This import order is critical to avoid a race condition with a mutex lock error,
+# which occurs only when tiledbsoma is imported after tiledb in this module and also
+# imported in any upstream module.
+import tiledbsoma  # noqa: F401, isort:skip
+import tiledb
 
 from backend.common.census_cube.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
