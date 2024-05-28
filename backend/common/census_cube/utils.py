@@ -10,16 +10,9 @@ from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
-from backend.common.census_cube.data.constants import (
-    CENSUS_CUBE_API_SNAPSHOT_FS_CACHE_ROOT_PATH,
-    CENSUS_CUBE_DATA_SCHEMA_VERSION,
-    CENSUS_CUBE_PINNED_SCHEMA_VERSION,
-)
-from backend.common.census_cube.data.snapshot import CensusCubeSnapshot, load_snapshot
+from backend.common.census_cube.data.constants import CENSUS_CUBE_PINNED_SCHEMA_VERSION
+from backend.common.census_cube.data.snapshot import CensusCubeSnapshot
 from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
-
-DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
-SNAPSHOT_FS_ROOT_PATH = CENSUS_CUBE_API_SNAPSHOT_FS_CACHE_ROOT_PATH if (DEPLOYMENT_STAGE != "test") else None
 
 # exported and used by all modules related to the census cube
 ontology_parser = OntologyParser(schema_version=f"v{CENSUS_CUBE_PINNED_SCHEMA_VERSION}")
@@ -216,7 +209,7 @@ def to_dict(a, b):
     return d
 
 
-def get_all_cell_type_ids_in_corpus(snapshot: CensusCubeSnapshot = None, root_node="CL:0000000") -> list[str]:
+def get_all_cell_type_ids_in_corpus(snapshot: CensusCubeSnapshot, root_node="CL:0000000") -> list[str]:
     """
     Retrieve all cell type IDs in the corpus that have at least one cell present, starting from a specified root node in the ontology.
 
@@ -227,17 +220,12 @@ def get_all_cell_type_ids_in_corpus(snapshot: CensusCubeSnapshot = None, root_no
     The function finally returns a list of cell type IDs that have cells.
 
     Parameters:
+        snapshot (CensusCubeSnapshot): The snapshot to load.
         root_node (str): The ontology term ID of the root node from which to start gathering cell type IDs.
 
     Returns:
         list[str]: A list of cell type ontology term IDs that have at least one cell in the corpus.
     """
-    if snapshot is None:
-        snapshot = load_snapshot(
-            snapshot_schema_version=CENSUS_CUBE_DATA_SCHEMA_VERSION,
-            explicit_snapshot_id_to_load=None,
-            snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
-        )
 
     all_cell_type_ids = ontology_parser.get_term_descendants(root_node, include_self=True)
     cell_counts_df = snapshot.cell_counts_df
@@ -258,7 +246,7 @@ def get_all_cell_type_ids_in_corpus(snapshot: CensusCubeSnapshot = None, root_no
     return list(all_cell_type_ids_in_corpus)
 
 
-def get_all_tissue_ids_in_corpus(snapshot: CensusCubeSnapshot = None) -> list[str]:
+def get_all_tissue_ids_in_corpus(snapshot: CensusCubeSnapshot) -> list[str]:
     """
     Retrieve all tissue IDs in the corpus that have at least one cell present.
 
@@ -266,15 +254,11 @@ def get_all_tissue_ids_in_corpus(snapshot: CensusCubeSnapshot = None) -> list[st
     It then uses a utility function to convert the grouped data into a dictionary mapping tissue IDs to cell type IDs.
     The function finally returns a list of tissue IDs that have cells.
 
+    Parameters:
+        snapshot (CensusCubeSnapshot): The snapshot to load.
     Returns:
         list[str]: A list of tissue ontology term IDs that have at least one cell in the corpus.
     """
-    if snapshot is None:
-        snapshot = load_snapshot(
-            snapshot_schema_version=CENSUS_CUBE_DATA_SCHEMA_VERSION,
-            explicit_snapshot_id_to_load=None,
-            snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
-        )
     cell_counts_df = snapshot.cell_counts_df
     uberon_by_celltype = to_dict(
         cell_counts_df["tissue_ontology_term_id"], cell_counts_df["cell_type_ontology_term_id"]

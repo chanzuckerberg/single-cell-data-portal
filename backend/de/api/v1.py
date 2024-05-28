@@ -1,4 +1,3 @@
-import os
 from typing import Any, Dict, Iterable, List, Tuple
 
 import connexion
@@ -9,7 +8,6 @@ from flask import jsonify
 from scipy import stats
 from server_timing import Timing as ServerTiming
 
-from backend.common.census_cube.data.constants import CENSUS_CUBE_API_SNAPSHOT_FS_CACHE_ROOT_PATH
 from backend.common.census_cube.data.criteria import BaseQueryCriteria
 from backend.common.census_cube.data.ontology_labels import gene_term_label, ontology_term_label
 from backend.common.census_cube.data.query import CensusCubeQuery
@@ -19,15 +17,7 @@ from backend.common.census_cube.utils import descendants
 from backend.common.marker_genes.marker_gene_files.blacklist import marker_gene_blacklist
 from backend.de.api.config import (
     CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
-    CENSUS_CUBE_API_READ_FS_CACHED_SNAPSHOT,
     CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
-)
-
-DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
-SNAPSHOT_FS_ROOT_PATH = (
-    CENSUS_CUBE_API_SNAPSHOT_FS_CACHE_ROOT_PATH
-    if (CENSUS_CUBE_API_READ_FS_CACHED_SNAPSHOT and DEPLOYMENT_STAGE != "test")
-    else None
 )
 
 
@@ -42,7 +32,6 @@ def filters():
         snapshot: CensusCubeSnapshot = load_snapshot(
             snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
-            snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
 
     with ServerTiming.time("calculate filters and build response"):
@@ -192,7 +181,6 @@ def differentialExpression():
     snapshot: CensusCubeSnapshot = load_snapshot(
         snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
         explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
-        snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
     )
 
     # cube_query_params are not required to instantiate CensusCubeQuery for differential expression

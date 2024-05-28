@@ -1,4 +1,3 @@
-import os
 from collections import defaultdict
 from typing import Any, Dict, Iterable, List
 
@@ -8,7 +7,6 @@ from flask import jsonify
 from pandas import DataFrame
 from server_timing import Timing as ServerTiming
 
-from backend.common.census_cube.data.constants import CENSUS_CUBE_API_SNAPSHOT_FS_CACHE_ROOT_PATH
 from backend.common.census_cube.data.criteria import (
     BaseQueryCriteria,
     CensusCubeQueryCriteria,
@@ -31,19 +29,10 @@ from backend.wmg.api.common.expression_dotplot import get_dot_plot_data
 from backend.wmg.api.common.rollup import rollup
 from backend.wmg.api.config import (
     CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
-    CENSUS_CUBE_API_READ_FS_CACHED_SNAPSHOT,
     CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
     READER_CENSUS_CUBE_CUBE_QUERY_VALID_ATTRIBUTES,
     READER_CENSUS_CUBE_CUBE_QUERY_VALID_DIMENSIONS,
 )
-
-DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
-SNAPSHOT_FS_ROOT_PATH = (
-    CENSUS_CUBE_API_SNAPSHOT_FS_CACHE_ROOT_PATH
-    if (CENSUS_CUBE_API_READ_FS_CACHED_SNAPSHOT and DEPLOYMENT_STAGE != "test")
-    else None
-)
-
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
@@ -58,7 +47,6 @@ def primary_filter_dimensions():
         snapshot: CensusCubeSnapshot = load_snapshot(
             snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
-            snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
 
     return jsonify(snapshot.primary_filter_dimensions)
@@ -81,7 +69,6 @@ def query():
         snapshot: CensusCubeSnapshot = load_snapshot(
             snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
-            snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
 
     with ServerTiming.time("query tiledb"):
@@ -155,7 +142,6 @@ def filters():
         snapshot: CensusCubeSnapshot = load_snapshot(
             snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
             explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
-            snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
         )
 
     with ServerTiming.time("calculate filters and build response"):
@@ -180,7 +166,6 @@ def markers():
     snapshot: CensusCubeSnapshot = load_snapshot(
         snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
         explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
-        snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
     )
 
     criteria = MarkerGeneQueryCriteria(

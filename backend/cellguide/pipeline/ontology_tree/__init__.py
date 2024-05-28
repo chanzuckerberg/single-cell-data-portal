@@ -5,15 +5,15 @@ from backend.cellguide.common.constants import (
     ONTOLOGY_TREE_STATE_PER_TISSUE_FOLDERNAME,
     ONTOLOGY_TREE_TOPLEVEL_FOLDERNAME,
 )
+from backend.cellguide.pipeline.constants import CELLGUIDE_CENSUS_CUBE_DATA_SCHEMA_VERSION
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.ontology_tree.types import OntologyTreeData
 from backend.cellguide.pipeline.utils import output_json, output_json_per_key
-from backend.common.census_cube.data.constants import CENSUS_CUBE_DATA_SCHEMA_VERSION
-from backend.common.census_cube.data.snapshot import CensusCubeSnapshot, load_snapshot
+from backend.common.census_cube.data import snapshot as sn
 
 
 def run(*, output_directory):
-    snapshot = load_snapshot(snapshot_schema_version=CENSUS_CUBE_DATA_SCHEMA_VERSION)
+    snapshot = sn.load_snapshot(snapshot_schema_version=CELLGUIDE_CENSUS_CUBE_DATA_SCHEMA_VERSION)
     ontology_tree_data = get_ontology_tree_data(snapshot=snapshot)
 
     for organism in ontology_tree_data:
@@ -51,18 +51,18 @@ def get_celltype_to_tissue_mapping(all_states_per_tissue):
     return celltype_to_tissue_mapping
 
 
-def get_ontology_tree_builder(*, snapshot: CensusCubeSnapshot) -> OntologyTreeBuilder:
+def get_ontology_tree_builder(*, snapshot: sn.CensusCubeSnapshot) -> OntologyTreeBuilder:
     cell_counts_df = snapshot.cell_counts_cube.df[:]
     return OntologyTreeBuilder(cell_counts_df)
 
 
-def get_ontology_tree_builder_for_organism(*, snapshot: CensusCubeSnapshot, organism: str) -> OntologyTreeBuilder:
+def get_ontology_tree_builder_for_organism(*, snapshot: sn.CensusCubeSnapshot, organism: str) -> OntologyTreeBuilder:
     cell_counts_df = snapshot.cell_counts_cube.df[:]
     cell_counts_df = cell_counts_df[cell_counts_df["organism_ontology_term_id"] == organism]
     return OntologyTreeBuilder(cell_counts_df)
 
 
-def get_ontology_tree_data(*, snapshot: CensusCubeSnapshot) -> tuple[OntologyTreeBuilder, OntologyTreeData]:
+def get_ontology_tree_data(*, snapshot: sn.CensusCubeSnapshot) -> tuple[OntologyTreeBuilder, OntologyTreeData]:
     organisms = snapshot.cell_counts_cube.df[:]["organism_ontology_term_id"].unique()
     ontology_tree_data = {}
     for organism in organisms:

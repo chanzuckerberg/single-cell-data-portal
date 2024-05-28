@@ -20,4 +20,4 @@ CENSUS_CUBE_DATA_SCHEMA_VERSION = "v5"
 
 # Local filesystem root path where WMG snapshot
 # is cached
-CENSUS_CUBE_API_SNAPSHOT_FS_CACHE_ROOT_PATH = "/single-cell-data-portal/census_cube_snapshot_cache"
+CENSUS_CUBE_SNAPSHOT_FS_CACHE_ROOT_PATH = "/single-cell-data-portal/census_cube_snapshot_cache"

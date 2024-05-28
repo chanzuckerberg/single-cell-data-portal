@@ -1,5 +1,6 @@
 import logging
 
+from backend.cellguide.pipeline.constants import CELLGUIDE_CENSUS_CUBE_DATA_SCHEMA_VERSION
 from backend.cellguide.pipeline.gpt_descriptions.gpt_description_generator import (
     generate_new_gpt_descriptions,
     generate_new_seo_gpt_descriptions,
@@ -7,14 +8,13 @@ from backend.cellguide.pipeline.gpt_descriptions.gpt_description_generator impor
 from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
 from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.utils import output_json_per_key
-from backend.common.census_cube.data.constants import CENSUS_CUBE_DATA_SCHEMA_VERSION
-from backend.common.census_cube.data.snapshot import load_snapshot
+from backend.common.census_cube.data import snapshot as sn
 
 logging.basicConfig(level=logging.INFO)
 
 
 def run(*, gpt_output_directory: str, gpt_seo_output_directory: str):
-    snapshot = load_snapshot(snapshot_schema_version=CENSUS_CUBE_DATA_SCHEMA_VERSION)
+    snapshot = sn.load_snapshot(snapshot_schema_version=CELLGUIDE_CENSUS_CUBE_DATA_SCHEMA_VERSION)
     ontology_tree = get_ontology_tree_builder(snapshot=snapshot)
     new_gpt_descriptions, new_gpt_seo_descriptions = get_new_gpt_descriptions(ontology_tree=ontology_tree)
     output_json_per_key(new_gpt_descriptions, gpt_output_directory)

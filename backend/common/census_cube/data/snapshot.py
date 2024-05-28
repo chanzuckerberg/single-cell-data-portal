@@ -11,6 +11,7 @@ from pandas import DataFrame
 from tiledb import Array
 
 from backend.common.census_cube.config import CensusCubeConfig
+from backend.common.census_cube.data.constants import CENSUS_CUBE_SNAPSHOT_FS_CACHE_ROOT_PATH
 from backend.common.census_cube.data.tiledb import create_ctx
 from backend.common.utils.s3_buckets import buckets
 
@@ -33,6 +34,9 @@ STACK_NAME = os.environ.get("REMOTE_DEV_PREFIX")
 # root directory under which the data artifact exists
 CENSUS_CUBE_ROOT_DIR_PATH = STACK_NAME.strip("/") if STACK_NAME else ""
 
+DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
+SNAPSHOT_FS_ROOT_PATH = CENSUS_CUBE_SNAPSHOT_FS_CACHE_ROOT_PATH if (DEPLOYMENT_STAGE != "test") else None
+
 logger = logging.getLogger("wmg")
 
 ###################################### PUBLIC INTERFACE #################################
@@ -46,6 +50,9 @@ class CensusCubeSnapshot:
     """
 
     snapshot_identifier: Optional[str] = field(default=None)
+
+    # The version of the snapshot schema that is loaded.
+    snapshot_schema_version: Optional[str] = field(default=None)
 
     # TileDB array containing expression summary statistics (expressed gene count, non-expressed mean,
     # etc.) aggregated by multiple cell metadata dimensions and genes. See the full schema at
@@ -109,7 +116,7 @@ def load_snapshot(
     *,
     snapshot_schema_version: str,
     explicit_snapshot_id_to_load: Optional[str] = None,
-    snapshot_fs_root_path: Optional[str] = None,
+    snapshot_fs_root_path: Optional[str] = SNAPSHOT_FS_ROOT_PATH,
 ) -> CensusCubeSnapshot:
     """
     Loads and caches the snapshot identified by the snapshot schema version and a snapshot id.
@@ -320,6 +327,7 @@ def _load_snapshot(
     cell_counts_diffexp_cube = _open_cube(f"{snapshot_uri}/{CELL_COUNTS_DIFFEXP_CUBE_NAME}")
     return CensusCubeSnapshot(
         snapshot_identifier=snapshot_id,
+        snapshot_schema_version=snapshot_schema_version,
         expression_summary_cube=_open_cube(f"{snapshot_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
         expression_summary_default_cube=_open_cube(f"{snapshot_uri}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
         marker_genes_cube=_open_cube(f"{snapshot_uri}/{MARKER_GENES_CUBE_NAME}"),

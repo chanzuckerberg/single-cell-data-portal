@@ -36,7 +36,7 @@ class TestSourceCollectionsGenerator(unittest.TestCase):
                 new=mock_get_collections_from_curation_endpoint,
             ),
         ):
-            all_cell_type_ids_in_corpus = get_all_cell_type_ids_in_corpus(snapshot=snapshot)
+            all_cell_type_ids_in_corpus = get_all_cell_type_ids_in_corpus(snapshot)
             source_collections = generate_source_collections_data(all_cell_type_ids_in_corpus)
             self.assertTrue(
                 compare_dicts(

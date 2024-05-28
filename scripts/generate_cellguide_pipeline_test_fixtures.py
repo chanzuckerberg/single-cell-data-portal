@@ -91,7 +91,7 @@ def run_cellguide_pipeline(fixture_type: FixtureType):
     with (
         load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot,
         patch(
-            "backend.common.census_cube.utils.load_snapshot",
+            "backend.common.census_cube.data.snapshot.load_snapshot",
             return_value=snapshot,
         ),
         patch(

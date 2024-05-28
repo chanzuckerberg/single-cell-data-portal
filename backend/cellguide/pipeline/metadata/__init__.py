@@ -1,10 +1,12 @@
 from backend.cellguide.common.constants import CELL_GUIDE_METADATA_FILENAME, CELL_GUIDE_TISSUE_METADATA_FILENAME
+from backend.cellguide.pipeline.constants import CELLGUIDE_CENSUS_CUBE_DATA_SCHEMA_VERSION
 from backend.cellguide.pipeline.metadata.metadata_generator import (
     generate_cellguide_card_metadata,
     generate_cellguide_tissue_card_metadata,
 )
 from backend.cellguide.pipeline.metadata.types import CellMetadata, TissueMetadata
 from backend.cellguide.pipeline.utils import output_json
+from backend.common.census_cube.data import snapshot as sn
 from backend.common.census_cube.utils import get_all_cell_type_ids_in_corpus, get_all_tissue_ids_in_corpus
 
 
@@ -27,7 +29,8 @@ def get_cell_metadata() -> dict[str, CellMetadata]:
 
     Note that we will be filtering out obsolete cell types and invalid non-CL cell types.
     """
-    all_cell_type_ids_in_corpus = get_all_cell_type_ids_in_corpus()
+    snapshot = sn.load_snapshot(snapshot_schema_version=CELLGUIDE_CENSUS_CUBE_DATA_SCHEMA_VERSION)
+    all_cell_type_ids_in_corpus = get_all_cell_type_ids_in_corpus(snapshot)
     return generate_cellguide_card_metadata(all_cell_type_ids_in_corpus)
 
 
@@ -41,5 +44,6 @@ def get_tissue_metadata() -> dict[str, TissueMetadata]:
 
     Note that we will be filtering out obsolete tissues.
     """
-    all_tissue_ids_in_corpus = get_all_tissue_ids_in_corpus()
+    snapshot = sn.load_snapshot(snapshot_schema_version=CELLGUIDE_CENSUS_CUBE_DATA_SCHEMA_VERSION)
+    all_tissue_ids_in_corpus = get_all_tissue_ids_in_corpus(snapshot)
     return generate_cellguide_tissue_card_metadata(all_tissue_ids_in_corpus)

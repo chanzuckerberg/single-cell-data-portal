@@ -6,9 +6,9 @@ from backend.cellguide.common.constants import (
     MARKER_GENE_PRESENCE_FILENAME,
 )
 from backend.cellguide.common.data import format_marker_gene_data
+from backend.cellguide.pipeline.constants import CELLGUIDE_CENSUS_CUBE_DATA_SCHEMA_VERSION
 from backend.cellguide.pipeline.utils import output_json, output_json_per_key
-from backend.common.census_cube.data.constants import CENSUS_CUBE_DATA_SCHEMA_VERSION
-from backend.common.census_cube.data.snapshot import CensusCubeSnapshot, load_snapshot
+from backend.common.census_cube.data import snapshot as sn
 from backend.common.marker_genes.computational_markers import MarkerGenesCalculator
 from backend.common.marker_genes.constants import MARKER_SCORE_THRESHOLD
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def run(*, output_directory: str):
-    snapshot = load_snapshot(snapshot_schema_version=CENSUS_CUBE_DATA_SCHEMA_VERSION)
+    snapshot = sn.load_snapshot(snapshot_schema_version=CELLGUIDE_CENSUS_CUBE_DATA_SCHEMA_VERSION)
 
     marker_genes, reformatted_marker_genes, formatted_marker_gene_data = get_computational_marker_genes(
         snapshot=snapshot,
@@ -32,7 +32,7 @@ def run(*, output_directory: str):
     )
 
 
-def get_computational_marker_genes(*, snapshot: CensusCubeSnapshot) -> tuple[dict, dict]:
+def get_computational_marker_genes(*, snapshot: sn.CensusCubeSnapshot) -> tuple[dict, dict]:
     """
     This function calculates the marker genes per tissue and across tissues.
 
