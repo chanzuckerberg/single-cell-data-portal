@@ -96,7 +96,7 @@ class ProcessSeurat(ProcessingLogic):
         )
 
     @logit
-    def make_seurat(self, local_filename):
+    def make_seurat(self, local_filename, *args, **kwargs):
         """
         Create a Seurat rds file from the AnnData file.
         """
