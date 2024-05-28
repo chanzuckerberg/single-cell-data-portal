@@ -87,7 +87,6 @@ class TestCrossrefProvider(unittest.TestCase):
             response._content = str.encode(json.dumps(content))
             return response
 
-        now = datetime.utcnow()
         body = {
             "status": "ok",
             "message": {
@@ -180,7 +179,6 @@ class TestCrossrefProvider(unittest.TestCase):
     def test__provider_parses_authors_and_dates_correctly(self, mock_config, mock_get):
         response = Response()
         response.status_code = 200
-        now = datetime.utcnow()
         response._content = str.encode(
             json.dumps(
                 {
@@ -216,7 +214,7 @@ class TestCrossrefProvider(unittest.TestCase):
                                 "name": "Bat consortium",
                             },
                         ],
-                        "deposited": {"timestamp": 1716932866440},
+                        "deposited": {"timestamp": 17169328664},
                         "published-online": {"date-parts": [[2021, 11]]},
                         "container-title": ["Nature"],
                     },
