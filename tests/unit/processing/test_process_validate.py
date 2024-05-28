@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest.mock import MagicMock, Mock, patch
 
 from backend.layers.common.entities import (
@@ -27,7 +28,7 @@ class ProcessingTest(BaseProcessingTest):
         6. upload the labeled file to S3
         """
         dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=0"
-        self.crossref_provider.fetch_metadata = Mock(return_value=({}, "12.2345"))
+        self.crossref_provider.fetch_metadata = Mock(return_value=({}, "12.2345", datetime.utcnow()))
 
         collection = self.generate_unpublished_collection(
             links=[Link(name=None, type="DOI", uri="http://doi.org/12.2345")]
