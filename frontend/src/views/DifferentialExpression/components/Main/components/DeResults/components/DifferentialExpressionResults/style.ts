@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Callout, fontBodyS, fontBodyXxs } from "@czi-sds/components";
+import { Callout, fontBodyS, fontBodyXxs, Button } from "@czi-sds/components";
 import { gray100, primary400 } from "src/common/theme";
 import { TextField } from "@mui/material";
 import Image from "next/image";
@@ -110,4 +110,29 @@ export const StyledIconImage = styled(Image)`
 
 export const StyledTooltipText = styled.div`
   text-align: left;
+`;
+
+export const InterpretButtonWrapper = styled.div`
+  width: ${TABLE_WIDTH};
+  display: flex;
+  justify-content: flex-end;
+`;
+export const StyledInterpretButton = styled(Button)`
+  ${fontBodyS}
+  color: ${primary400};
+  font-weight: 600;
+  display: flex;
+  flex-direction: row;
+  column-gap: 4px;
+  align-items: center;
+`;
+
+export const Overlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
 `;

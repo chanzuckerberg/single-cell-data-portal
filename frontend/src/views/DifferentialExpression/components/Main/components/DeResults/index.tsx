@@ -35,6 +35,7 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
     sortDirection,
     setSortDirection,
     isSourceDatasetSidebarOpen,
+    differentialExpressionResults,
     setIsSourceDatasetSidebarOpen,
     sortedAndFilteredResults,
     downloadCSV,
@@ -77,6 +78,7 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
                 queryGroups={queryGroups}
                 queryGroupsWithNames={queryGroupsWithNames}
                 organismId={organismId}
+                differentialExpressionResults={differentialExpressionResults}
                 sortedAndFilteredResults={sortedAndFilteredResults}
                 nCellsOverlap={nOverlap}
                 setSearchQuery={setSearchQuery}

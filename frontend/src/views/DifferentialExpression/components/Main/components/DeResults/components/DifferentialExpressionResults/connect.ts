@@ -25,7 +25,9 @@ export const useConnect = ({
   sortDirection: Props["sortDirection"];
 }) => {
   const [page, setPage] = useState(1);
-
+  const [isLoadingInterpret, setIsLoadingInterpret] = useState(false);
+  const [interpretationCardVisible, setInterpretationCardVisible] =
+    useState(false);
   const { n_cells: nCellsGroup1 } = useProcessedQueryGroupFilterDimensions(
     queryGroups.queryGroup1
   );
@@ -98,5 +100,9 @@ export const useConnect = ({
     pageCount,
     handlePageChange,
     overlapPercent,
+    isLoadingInterpret,
+    setIsLoadingInterpret,
+    interpretationCardVisible,
+    setInterpretationCardVisible,
   };
 };

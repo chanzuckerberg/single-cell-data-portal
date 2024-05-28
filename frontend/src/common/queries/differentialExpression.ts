@@ -411,3 +411,78 @@ function useSnapshotId(): string | null {
 
   return snapshotId || null;
 }
+
+interface InterpretDeResultsQuery {
+  deGenes1: string[];
+  deGenes2: string[];
+}
+
+interface InterpretDeResultsResponse {
+  message: string;
+  prompt: string;
+}
+
+async function fetchInterpretDeResults({
+  contextFilters,
+  query,
+  signal,
+}: {
+  contextFilters: ReturnType<typeof useDEQueryRequestBody>;
+  query: InterpretDeResultsQuery | null;
+  signal?: AbortSignal;
+}): Promise<InterpretDeResultsResponse | undefined> {
+  if (!query || !contextFilters) return;
+
+  const body = { ...contextFilters, ...query };
+  const url = API_URL + API.INTERPRET_DE_RESULTS;
+
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    body: JSON.stringify(body),
+    method: "POST",
+    signal,
+  });
+  const json: InterpretDeResultsResponse = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+
+  return json;
+}
+
+const USE_INTERPRET_DE_RESULTS = {
+  entities: [ENTITIES.INTERPRET_DE_RESULTS],
+  id: "interpret-de-results",
+};
+
+function useInterpretDeResultsQuery(
+  contextFilters: ReturnType<typeof useDEQueryRequestBody>,
+  query: InterpretDeResultsQuery | null
+): UseQueryResult<InterpretDeResultsResponse> {
+  return useQuery(
+    [USE_INTERPRET_DE_RESULTS, contextFilters, query],
+    ({ signal }) => fetchInterpretDeResults({ contextFilters, query, signal }),
+    {
+      enabled: Boolean(query),
+      staleTime: Infinity,
+    }
+  );
+}
+
+export function useInterpretDeResults(query: InterpretDeResultsQuery | null): {
+  data: InterpretDeResultsResponse;
+  isLoading: boolean;
+} {
+  const contextFilters = useDEQueryRequestBody();
+  const { data, isLoading } = useInterpretDeResultsQuery(contextFilters, query);
+
+  return useMemo(() => {
+    if (isLoading || !data) {
+      return { data: { message: "", prompt: "" }, isLoading };
+    }
+
+    return { data, isLoading: false };
+  }, [data, isLoading]);
+}

@@ -13,6 +13,9 @@ import {
   StyledCallout,
   StyledIconImage,
   StyledTooltipText,
+  StyledInterpretButton,
+  Overlay,
+  InterpretButtonWrapper,
 } from "./style";
 import cxgIcon from "./images/cxg.svg";
 import { Pagination } from "@mui/material";
@@ -21,7 +24,7 @@ import { ButtonIcon, Tooltip } from "@czi-sds/components";
 
 import { DifferentialExpressionRow } from "../../types";
 import { MAX_NUM_TOP_GENES_TO_PORT_TO_GE, ROWS_PER_PAGE } from "./constants";
-import { CellCountTitle } from "../../../../style";
+import { CellCountTitle, Spinner } from "../../../../style";
 import QueryGroupTags from "./components/QueryGroupTags";
 import {
   DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_INFO,
@@ -40,11 +43,13 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { useConnect } from "./connect";
 import { Props } from "./types";
+import InterpretationCard from "./components/InterpretationCard";
 
 const DifferentialExpressionResults = ({
   queryGroups,
   queryGroupsWithNames,
   organismId,
+  differentialExpressionResults,
   sortedAndFilteredResults,
   nCellsOverlap,
   setSearchQuery,
@@ -63,6 +68,10 @@ const DifferentialExpressionResults = ({
     pageCount,
     handlePageChange,
     overlapPercent,
+    isLoadingInterpret,
+    setIsLoadingInterpret,
+    interpretationCardVisible,
+    setInterpretationCardVisible,
   } = useConnect({
     queryGroups,
     queryGroupsWithNames,
@@ -150,8 +159,11 @@ const DifferentialExpressionResults = ({
     setPage,
   ]);
 
+  const interpretText1 = isLoadingInterpret ? "Interpreting..." : "Interpret";
+
   return (
     <>
+      {interpretationCardVisible && !isLoadingInterpret && <Overlay />}
       <CellGroupWrapper data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_INFO}>
         <CellGroupTitleWrapper>
           <CellGroupTitle>Cell Group 1</CellGroupTitle>
@@ -241,6 +253,17 @@ const DifferentialExpressionResults = ({
           underestimation of differences.
         </StyledCallout>
       )}
+      <InterpretButtonWrapper>
+        <StyledInterpretButton
+          onClick={() => {
+            setInterpretationCardVisible(true);
+          }}
+          disabled={isLoadingInterpret}
+        >
+          {isLoadingInterpret && <Spinner />}
+          {interpretText1}
+        </StyledInterpretButton>
+      </InterpretButtonWrapper>
       <TableWrapper data-testid={DIFFERENTIAL_EXPRESSION_RESULTS_TABLE}>
         <Table<Omit<DifferentialExpressionRow, "adjustedPValue">>
           columns={["name", "logFoldChange", "effectSize"]}
@@ -254,6 +277,13 @@ const DifferentialExpressionResults = ({
 
         <Pagination count={pageCount} page={page} onChange={handlePageChange} />
       </TableWrapper>
+      {interpretationCardVisible && (
+        <InterpretationCard
+          setIsVisible={setInterpretationCardVisible}
+          differentialExpressionResults={differentialExpressionResults}
+          setIsLoadingInterpret={setIsLoadingInterpret}
+        />
+      )}
     </>
   );
 };

@@ -206,7 +206,101 @@ paths:
                           maxLength: 4
                           minimum: 0.0
                           maximum: 1.0
-
+  /v1/interpretDeResults:
+    post:
+      summary: Interpret differential expression results using OpenAI GPT-4o.
+      tags:
+        - de
+      operationId: backend.de.api.v1.interpretDeResults
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                queryGroup1Filters:
+                  type: object
+                  properties:
+                    organism_ontology_term_id:
+                      type: string
+                    tissue_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    publication_citations:
+                      type: array
+                      items:
+                        type: string
+                    disease_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    sex_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    development_ontology_stage_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    self_reported_ethnicity_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    cell_type_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                  required:
+                    - organism_ontology_term_id
+                queryGroup2Filters:
+                  type: object
+                  properties:
+                    organism_ontology_term_id:
+                      type: string
+                    tissue_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    publication_citations:
+                      type: array
+                      items:
+                        type: string
+                    disease_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    sex_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    development_ontology_stage_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    self_reported_ethnicity_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                    cell_type_ontology_term_ids:
+                      $ref: "#/components/schemas/de_ontology_term_id_list"
+                  required:
+                    - organism_ontology_term_id
+                deGenes1:
+                  description: ->
+                    Differentially expressed genes for group 1
+                  type: array
+                  items:
+                    description: ->
+                      Gene symbol
+                    type: string
+                deGenes2:
+                  description: ->
+                    Differentially expressed genes for group 2
+                  type: array
+                  items:
+                    description: ->
+                      Gene symbol
+                    type: string
+              required:
+                - queryGroup1Filters
+                - queryGroup2Filters
+                - deGenes1
+                - deGenes2
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - message
+                  - prompt
+                properties:
+                  message:
+                    type: string
+                  prompt:
+                    type: string
 components:
   schemas:
     problem:
