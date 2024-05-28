@@ -2,8 +2,6 @@ import os
 
 ASCTB_MASTER_SHEET_URL = "https://ccf-ontology.hubmapconsortium.org/v2.3.0/ccf-asctb-all.json"
 
-ENSEMBL_GENE_ID_TO_DESCRIPTION_FILENAME = "ensembl_gene_ids_to_descriptions.tsv.gz"
-
 HOMO_SAPIENS_ORGANISM_ONTOLOGY_TERM_ID = "NCBITaxon:9606"
 
 # If CELLGUIDE_PIPELINE_NUM_CPUS is not set, use 12 CPUs by default
@@ -15,4 +13,4 @@ CELLGUIDE_PIPELINE_NUM_CPUS = min(os.cpu_count(), os.getenv("CELLGUIDE_PIPELINE_
 
 CELL_GUIDE_DATA_BUCKET_PATH_PREFIX = "s3://cellguide-data-public-"
 
-CELL_GUIDE_PINNED_SCHEMA_VERSION = "5.0.0"
+CELLGUIDE_CENSUS_CUBE_DATA_SCHEMA_VERSION = "v5"

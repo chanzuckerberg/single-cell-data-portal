@@ -4,7 +4,7 @@ import unittest
 import pandas as pd
 import tiledb
 
-from backend.wmg.data.snapshot import (
+from backend.common.census_cube.data.snapshot import (
     CELL_COUNTS_DIFFEXP_CUBE_NAME,
     EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAME,
     EXPRESSION_SUMMARY_DIFFEXP_SIMPLE_CUBE_NAME,
