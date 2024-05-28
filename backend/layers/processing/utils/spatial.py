@@ -124,7 +124,8 @@ class SpatialDataProcessor:
             assets_folder (str): The folder containing the assets.
             dataset_version_id (str): The UUID uniquely identifying the dataset version.
         """
-        s3_uri = f"s3://{self.bucket_name}/{self.asset_directory}/{dataset_version_id}"
+        version_id = dataset_version_id.replace(".cxg", "")
+        s3_uri = f"s3://{self.bucket_name}/{self.asset_directory}/{version_id}"
         self.s3_provider.upload_directory(assets_folder, s3_uri)
 
     def create_deep_zoom_assets(self, container_name, content, dataset_version_id):
