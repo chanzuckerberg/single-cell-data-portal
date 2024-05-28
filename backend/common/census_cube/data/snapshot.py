@@ -10,9 +10,10 @@ from ddtrace import tracer
 from pandas import DataFrame
 from tiledb import Array
 
+from backend.common.census_cube.config import CensusCubeConfig
+from backend.common.census_cube.data.constants import CENSUS_CUBE_SNAPSHOT_FS_CACHE_ROOT_PATH
+from backend.common.census_cube.data.tiledb import create_ctx
 from backend.common.utils.s3_buckets import buckets
-from backend.wmg.config import WmgConfig
-from backend.wmg.data.tiledb import create_ctx
 
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
@@ -31,7 +32,10 @@ CELL_TYPE_ANCESTORS_FILENAME = "cell_type_ancestors.json"
 STACK_NAME = os.environ.get("REMOTE_DEV_PREFIX")
 
 # root directory under which the data artifact exists
-WMG_ROOT_DIR_PATH = STACK_NAME.strip("/") if STACK_NAME else ""
+CENSUS_CUBE_ROOT_DIR_PATH = STACK_NAME.strip("/") if STACK_NAME else ""
+
+DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
+SNAPSHOT_FS_ROOT_PATH = CENSUS_CUBE_SNAPSHOT_FS_CACHE_ROOT_PATH if (DEPLOYMENT_STAGE != "test") else None
 
 logger = logging.getLogger("wmg")
 
@@ -39,13 +43,16 @@ logger = logging.getLogger("wmg")
 
 
 @dataclass
-class WmgSnapshot:
+class CensusCubeSnapshot:
     """
     All of the data artifacts the WMG API depends upon to perform its functions, versioned by "snapshot_identifier".
     These are read from data artifacts, per the relative file names, above.
     """
 
     snapshot_identifier: Optional[str] = field(default=None)
+
+    # The version of the snapshot schema that is loaded.
+    snapshot_schema_version: Optional[str] = field(default=None)
 
     # TileDB array containing expression summary statistics (expressed gene count, non-expressed mean,
     # etc.) aggregated by multiple cell metadata dimensions and genes. See the full schema at
@@ -101,7 +108,7 @@ class WmgSnapshot:
 
 
 # Cached data
-cached_snapshot: Optional[WmgSnapshot] = None
+cached_snapshot: Optional[CensusCubeSnapshot] = None
 
 
 @tracer.wrap(name="load_snapshot", service="wmg-api", resource="query", span_type="wmg-api")
@@ -109,8 +116,8 @@ def load_snapshot(
     *,
     snapshot_schema_version: str,
     explicit_snapshot_id_to_load: Optional[str] = None,
-    snapshot_fs_root_path: Optional[str] = None,
-) -> WmgSnapshot:
+    snapshot_fs_root_path: Optional[str] = SNAPSHOT_FS_ROOT_PATH,
+) -> CensusCubeSnapshot:
     """
     Loads and caches the snapshot identified by the snapshot schema version and a snapshot id.
 
@@ -127,7 +134,7 @@ def load_snapshot(
         snapshot_fs_root_path (str, optional): The root path of the snapshot on the local filesystem. Defaults to None.
 
     Returns:
-        WmgSnapshot: The loaded snapshot.
+        CensusCubeSnapshot: The loaded snapshot.
 
     """
     global cached_snapshot
@@ -206,8 +213,8 @@ def _get_wmg_snapshot_schema_dir_rel_path(snapshot_schema_version: str) -> str:
     fullpath. Therefore, "pr-6447/snapshots/v3" would be the relative path returned by this function.
 
     2. A filesystem fullpath to a snapshot schema version maybe:
-    /single-cell-data-portal/wmg_snapshot_cache/snapshots/v3.
-    Here, "/single-cell-data-portal/wmg_snapshot_cache" is considered the "root" of the
+    /single-cell-data-portal/census_cube_snapshot_cache/snapshots/v3.
+    Here, "/single-cell-data-portal/census_cube_snapshot_cache" is considered the "root" of the
     fullpath. Therefore "snapshots/v3" would be the relative path returned by
     this function.
 
@@ -221,8 +228,8 @@ def _get_wmg_snapshot_schema_dir_rel_path(snapshot_schema_version: str) -> str:
     """
     data_schema_dir_rel_path = f"snapshots/{snapshot_schema_version}"
 
-    if WMG_ROOT_DIR_PATH:
-        data_schema_dir_rel_path = f"{WMG_ROOT_DIR_PATH}/{data_schema_dir_rel_path}"
+    if CENSUS_CUBE_ROOT_DIR_PATH:
+        data_schema_dir_rel_path = f"{CENSUS_CUBE_ROOT_DIR_PATH}/{data_schema_dir_rel_path}"
 
     return data_schema_dir_rel_path
 
@@ -242,8 +249,8 @@ def _get_wmg_snapshot_rel_path(snapshot_schema_version: str, snapshot_id: str) -
     returned by this function.
 
     2. A filesystem fullpath to a particular snapshot_id maybe:
-    /single-cell-data-portal/wmg_snapshot_cache/snapshots/v3/1704754452.
-    Here, "/single-cell-data-portal/wmg_snapshot_cache" is considered the "root" of the
+    /single-cell-data-portal/census_cube_snapshot_cache/snapshots/v3/1704754452.
+    Here, "/single-cell-data-portal/census_cube_snapshot_cache" is considered the "root" of the
     fullpath. Therefore "snapshots/v3/1704754452" would be the relative path returned by
     this function.
 
@@ -270,7 +277,7 @@ def _get_wmg_snapshot_fullpath(snapshot_rel_path: str, snapshot_fs_root_path: Op
     1. For snapshot on S3, this maybe: s3://env-rdev-wmg/pr-6447/snapshots/v3/1704754452.
 
     2. For snapshot on local disk, this maybe:
-    /single-cell-data-portal/wmg_snapshot_cache/snapshots/v3/1704754452
+    /single-cell-data-portal/census_cube_snapshot_cache/snapshots/v3/1704754452
 
     Args:
         snapshot_rel_path (str): The relative path of the snapshot.
@@ -283,13 +290,13 @@ def _get_wmg_snapshot_fullpath(snapshot_rel_path: str, snapshot_fs_root_path: Op
     if snapshot_fs_root_path:
         return os.path.join(snapshot_fs_root_path, snapshot_rel_path)
 
-    wmg_config = WmgConfig()
+    wmg_config = CensusCubeConfig()
     return os.path.join("s3://", wmg_config.bucket, snapshot_rel_path)
 
 
 def _load_snapshot(
     *, snapshot_schema_version: str, snapshot_id: str, snapshot_fs_root_path: Optional[str] = None
-) -> WmgSnapshot:
+) -> CensusCubeSnapshot:
     """
     Load a snapshot given its schema version, id, and root path in the filesystem.
 
@@ -299,7 +306,7 @@ def _load_snapshot(
         snapshot_fs_root_path (Optional[str]): The root path of the snapshot in the filesystem. Defaults to None.
 
     Returns:
-        WmgSnapshot: The loaded snapshot.
+        CensusCubeSnapshot: The loaded snapshot.
     """
 
     snapshot_rel_path = _get_wmg_snapshot_rel_path(snapshot_schema_version, snapshot_id)
@@ -318,8 +325,9 @@ def _load_snapshot(
     #  -data-portal/2134
     cell_counts_cube = _open_cube(f"{snapshot_uri}/{CELL_COUNTS_CUBE_NAME}")
     cell_counts_diffexp_cube = _open_cube(f"{snapshot_uri}/{CELL_COUNTS_DIFFEXP_CUBE_NAME}")
-    return WmgSnapshot(
+    return CensusCubeSnapshot(
         snapshot_identifier=snapshot_id,
+        snapshot_schema_version=snapshot_schema_version,
         expression_summary_cube=_open_cube(f"{snapshot_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
         expression_summary_default_cube=_open_cube(f"{snapshot_uri}/{EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME}"),
         marker_genes_cube=_open_cube(f"{snapshot_uri}/{MARKER_GENES_CUBE_NAME}"),
@@ -384,7 +392,7 @@ def _local_disk_snapshot_is_valid(
 
 
 def _open_cube(cube_uri) -> Array:
-    return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
+    return tiledb.open(cube_uri, ctx=create_ctx(json.loads(CensusCubeConfig().tiledb_config_overrides)))
 
 
 def _load_cell_type_order(snapshot_rel_path: str, snapshot_fs_root_path: Optional[str] = None) -> DataFrame:
@@ -454,7 +462,7 @@ def _read_value_at_s3_key(key_path: str) -> str:
     """
     s3 = buckets.portal_resource
 
-    wmg_config = WmgConfig()
+    wmg_config = CensusCubeConfig()
     wmg_config.load()
 
     s3obj = s3.Object(wmg_config.bucket, key_path)
