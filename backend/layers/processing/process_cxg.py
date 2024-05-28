@@ -67,7 +67,7 @@ class ProcessCxg(ProcessingLogic):
         self.process_cxg(labeled_h5ad_filename, dataset_version_id, cellxgene_bucket, current_artifacts)
 
     @logit
-    def make_cxg(self, local_filename):
+    def make_cxg(self, local_filename, dataset_version_id):
         """
         Convert the uploaded H5AD file to the CXG format servicing the cellxgene Explorer.
         """
@@ -75,7 +75,7 @@ class ProcessCxg(ProcessingLogic):
         cxg_output_container = local_filename.replace(".h5ad", ".cxg")
         try:
             h5ad_data_file = H5ADDataFile(local_filename, var_index_column_name="feature_name")
-            h5ad_data_file.to_cxg(cxg_output_container, sparse_threshold=25.0)
+            h5ad_data_file.to_cxg(cxg_output_container, sparse_threshold=25.0, dataset_version_id=dataset_version_id.id)
         except Exception as ex:
             # TODO use a specialized exception
             msg = "CXG conversion failed."

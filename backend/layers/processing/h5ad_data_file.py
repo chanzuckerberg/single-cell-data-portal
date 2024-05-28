@@ -54,7 +54,9 @@ class H5ADDataFile:
 
         self.validate_anndata()
 
-    def to_cxg(self, output_cxg_directory, sparse_threshold, convert_anndata_colors_to_cxg_colors=True):
+    def to_cxg(
+        self, output_cxg_directory, sparse_threshold, dataset_version_id, convert_anndata_colors_to_cxg_colors=True
+    ):
         """
         Writes the following attributes of the anndata to CXG: 1) the metadata as metadata attached to an empty
         DenseArray, 2) the obs DataFrame as a DenseArray, 3) the var DataFrame as a DenseArray, 4) all valid
@@ -80,7 +82,7 @@ class H5ADDataFile:
         convert_dataframe_to_cxg_array(output_cxg_directory, "var", self.var, self.var_index_column_name, ctx)
         logging.info("\t...dataset var dataframe saved")
 
-        convert_uns_to_cxg_group(output_cxg_directory, self.anndata.uns, "uns", ctx)
+        convert_uns_to_cxg_group(output_cxg_directory, self.anndata.uns, dataset_version_id, "uns", ctx)
         logging.info("\t...dataset uns dataframe saved")
 
         self.write_anndata_embeddings_to_cxg(output_cxg_directory, ctx)
