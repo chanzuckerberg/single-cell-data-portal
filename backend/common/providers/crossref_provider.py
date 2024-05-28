@@ -148,7 +148,7 @@ class CrossrefProvider(CrossrefProviderInterface):
             # Calculate the deposited date; used when checking for updates.
             deposited_at = None
             if "deposited" in message and (deposited_timestamp := message["deposited"].get("timestamp")) is not None:
-                deposited_at = datetime.fromisoformat(deposited_timestamp)
+                deposited_at = datetime.fromtimestamp(deposited_timestamp / 1000)
 
             # Journal
             try:
