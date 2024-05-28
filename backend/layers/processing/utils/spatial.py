@@ -116,23 +116,26 @@ class SpatialDataProcessor:
         image = pyvips.Image.new_from_memory(linear.data, w, h, bands, "uchar")
         image.dzsave(os.path.join(assets_folder, "spatial"), suffix=".jpeg")
 
-    def _upload_assets(self, assets_folder):
+    def _upload_assets(self, assets_folder, dataset_version_id):
         """
         Upload the deep zoom assets to the S3 bucket.
 
         Args:
             assets_folder (str): The folder containing the assets.
+            dataset_version_id (str): The UUID uniquely identifying the dataset version.
         """
-        s3_uri = f"s3://{self.bucket_name}/{self.asset_directory}/{os.path.basename(assets_folder)}"
+        version_id = dataset_version_id.replace(".cxg", "")
+        s3_uri = f"s3://{self.bucket_name}/{self.asset_directory}/{version_id}"
         self.s3_provider.upload_directory(assets_folder, s3_uri)
 
-    def create_deep_zoom_assets(self, container_name, content):
+    def create_deep_zoom_assets(self, container_name, content, dataset_version_id):
         """
         Create deep zoom assets for a container.
 
         Args:
             container_name (str): The name of the container.
             content (dict): The content dictionary containing the image array.
+            dataset_version_id (str): The UUID uniquely identifying the dataset version.
         """
         try:
             with tempfile.TemporaryDirectory() as temp_dir:
@@ -142,7 +145,7 @@ class SpatialDataProcessor:
                 image_array, _ = self._fetch_image(content)
                 processed_image = self._process_and_flip_image(image_array)
                 self._generate_deep_zoom_assets(processed_image, assets_folder)
-                self._upload_assets(assets_folder)
+                self._upload_assets(assets_folder, dataset_version_id)
         except Exception as e:
             logger.exception(f"Failed to create and upload deep zoom assets: {e}")
             raise
