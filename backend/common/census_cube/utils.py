@@ -259,7 +259,7 @@ def get_all_cell_type_ids_in_corpus(snapshot: CensusSnapshot = None, root_node="
 
 
 @lru_cache(maxsize=None)
-def get_all_tissue_ids_in_corpus() -> list[str]:
+def get_all_tissue_ids_in_corpus(snapshot: CensusSnapshot = None) -> list[str]:
     """
     Retrieve all tissue IDs in the corpus that have at least one cell present.
 
@@ -270,11 +270,12 @@ def get_all_tissue_ids_in_corpus() -> list[str]:
     Returns:
         list[str]: A list of tissue ontology term IDs that have at least one cell in the corpus.
     """
-    snapshot = load_snapshot(
-        snapshot_schema_version=CENSUS_CUBE_DATA_SCHEMA_VERSION,
-        explicit_snapshot_id_to_load=None,
-        snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
-    )
+    if snapshot is None:
+        snapshot = load_snapshot(
+            snapshot_schema_version=CENSUS_CUBE_DATA_SCHEMA_VERSION,
+            explicit_snapshot_id_to_load=None,
+            snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
+        )
     cell_counts_df = snapshot.cell_counts_df
     uberon_by_celltype = to_dict(
         cell_counts_df["tissue_ontology_term_id"], cell_counts_df["cell_type_ontology_term_id"]
