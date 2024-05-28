@@ -15,7 +15,7 @@ from backend.common.census_cube.data.constants import (
     CENSUS_CUBE_DATA_SCHEMA_VERSION,
     CENSUS_CUBE_PINNED_SCHEMA_VERSION,
 )
-from backend.common.census_cube.data.snapshot import load_snapshot
+from backend.common.census_cube.data.snapshot import CensusSnapshot, load_snapshot
 from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
 
 DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
@@ -216,8 +216,7 @@ def to_dict(a, b):
     return d
 
 
-@lru_cache(maxsize=None)
-def get_all_cell_type_ids_in_corpus(root_node="CL:0000000") -> list[str]:
+def get_all_cell_type_ids_in_corpus(snapshot: CensusSnapshot = None, root_node="CL:0000000") -> list[str]:
     """
     Retrieve all cell type IDs in the corpus that have at least one cell present, starting from a specified root node in the ontology.
 
@@ -233,11 +232,13 @@ def get_all_cell_type_ids_in_corpus(root_node="CL:0000000") -> list[str]:
     Returns:
         list[str]: A list of cell type ontology term IDs that have at least one cell in the corpus.
     """
-    snapshot = load_snapshot(
-        snapshot_schema_version=CENSUS_CUBE_DATA_SCHEMA_VERSION,
-        explicit_snapshot_id_to_load=None,
-        snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
-    )
+    if snapshot is None:
+        snapshot = load_snapshot(
+            snapshot_schema_version=CENSUS_CUBE_DATA_SCHEMA_VERSION,
+            explicit_snapshot_id_to_load=None,
+            snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
+        )
+
     all_cell_type_ids = ontology_parser.get_term_descendants(root_node, include_self=True)
     cell_counts_df = snapshot.cell_counts_df
 

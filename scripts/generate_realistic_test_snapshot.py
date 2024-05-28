@@ -6,7 +6,7 @@ import tempfile
 from enum import Enum
 from unittest.mock import Mock, patch
 
-import tiledb
+import tiledb  # noqa
 import tiledbsoma  # noqa
 
 from backend.common.census_cube.data.snapshot import (

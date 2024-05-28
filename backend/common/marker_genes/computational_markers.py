@@ -45,7 +45,7 @@ or any arbitrary combinations of metadata dimensions.
 
 class MarkerGenesCalculator:
     def __init__(self, *, snapshot: CensusSnapshot, groupby_terms: list[str]):
-        self.all_cell_type_ids_in_corpus = get_all_cell_type_ids_in_corpus()
+        self.all_cell_type_ids_in_corpus = get_all_cell_type_ids_in_corpus(snapshot=snapshot)
 
         gene_metadata = get_gene_id_to_name_and_symbol()
         self.gene_id_to_name = gene_metadata.gene_id_to_name

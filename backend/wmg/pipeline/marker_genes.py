@@ -57,6 +57,7 @@ def create_marker_genes_cube(corpus_path: str):
             primary_filter_dimensions=primary_filter_dimensions,
             cell_counts_cube=cell_counts_cube,
             expression_summary_default_cube=expression_summary_default_cube,
+            cell_counts_df=cell_counts_cube.df[:],
         )
         calculator = MarkerGenesCalculator(
             snapshot=snapshot,

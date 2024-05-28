@@ -11,7 +11,6 @@ from backend.cellguide.pipeline.explorer_cxgs import get_valid_cxgs
 from backend.cellguide.pipeline.metadata import get_cell_metadata, get_tissue_metadata
 from backend.cellguide.pipeline.ontology_tree import (
     get_celltype_to_tissue_mapping,
-    get_ontology_tree_builder,
     get_ontology_tree_data,
 )
 from backend.cellguide.pipeline.source_collections import get_source_collections_data
@@ -89,18 +88,40 @@ class FixtureType(str, Enum):
 
 
 def run_cellguide_pipeline(fixture_type: FixtureType):
-    with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
-        # Get ontology tree data
-
-        ontology_tree = get_ontology_tree_builder(snapshot=snapshot)
-
+    with (
+        load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot,
+        patch(
+            "backend.common.census_cube.utils.load_snapshot",
+            return_value=snapshot,
+        ),
+        patch(
+            "backend.cellguide.pipeline.explorer_cxgs.get_folders_from_s3",
+            new=mock_get_folders_from_s3,
+        ),
+        patch(
+            "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_asctb_master_sheet",
+            new=mock_get_asctb_master_sheet,
+        ),
+        patch(
+            "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_title_and_citation_from_doi",
+            new=mock_get_title_and_citation_from_doi,
+        ),
+        patch(
+            "backend.cellguide.pipeline.source_collections.source_collections_generator.get_datasets_from_discover_api",
+            new=mock_get_datasets_from_curation_endpoint,
+        ),
+        patch(
+            "backend.cellguide.pipeline.source_collections.source_collections_generator.get_collections_from_discover_api",
+            new=mock_get_collections_from_curation_endpoint,
+        ),
+        patch(
+            "backend.common.marker_genes.computational_markers.bootstrap_rows_percentiles",
+            new=mock_bootstrap_rows_percentiles,
+        ),
+    ):
         if fixture_type in [FixtureType.valid_explorer_cxgs, FixtureType.all]:
             # Get valid cxgs
-            with patch(
-                "backend.cellguide.pipeline.explorer_cxgs.get_folders_from_s3",
-                new=mock_get_folders_from_s3,
-            ):
-                valid_explorer_cxgs = get_valid_cxgs()
+            valid_explorer_cxgs = get_valid_cxgs()
             output_json(
                 valid_explorer_cxgs,
                 f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{VALID_EXPLORER_CXGS_FIXTURE_FILENAME}",
@@ -130,7 +151,7 @@ def run_cellguide_pipeline(fixture_type: FixtureType):
 
         if fixture_type in [FixtureType.celltype_metadata, FixtureType.all]:
             # Get cell metadata
-            cell_metadata = get_cell_metadata(ontology_tree=ontology_tree)
+            cell_metadata = get_cell_metadata()
             output_json(
                 cell_metadata,
                 f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{CELLTYPE_METADATA_FIXTURE_FILENAME}",
@@ -138,7 +159,7 @@ def run_cellguide_pipeline(fixture_type: FixtureType):
 
         if fixture_type in [FixtureType.tissue_metadata, FixtureType.all]:
             # Get tissue metadata
-            tissue_metadata = get_tissue_metadata(ontology_tree=ontology_tree)
+            tissue_metadata = get_tissue_metadata()
             output_json(
                 tissue_metadata,
                 f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{TISSUE_METADATA_FIXTURE_FILENAME}",
@@ -156,61 +177,39 @@ def run_cellguide_pipeline(fixture_type: FixtureType):
             output_json(data, f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{ASCTB_MASTER_SHEET_FIXTURE_FILENAME}")
 
             # Get canonical marker genes
-            with (
-                patch(
-                    "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_asctb_master_sheet",
-                    new=mock_get_asctb_master_sheet,
-                ),
-                patch(
-                    "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_title_and_citation_from_doi",
-                    new=mock_get_title_and_citation_from_doi,
-                ),
-            ):
-                canonical_marker_genes = get_canonical_marker_genes(snapshot=snapshot, ontology_tree=ontology_tree)
-                output_json(
-                    canonical_marker_genes,
-                    f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{CANONICAL_MARKER_GENES_FIXTURE_FILENAME}",
-                )
+            canonical_marker_genes = get_canonical_marker_genes(snapshot=snapshot)
+            output_json(
+                canonical_marker_genes,
+                f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{CANONICAL_MARKER_GENES_FIXTURE_FILENAME}",
+            )
 
         if fixture_type in [FixtureType.source_collections, FixtureType.all]:
             # Get source data
-            with (
-                patch(
-                    "backend.cellguide.pipeline.source_collections.source_collections_generator.get_datasets_from_discover_api",
-                    new=mock_get_datasets_from_curation_endpoint,
-                ),
-                patch(
-                    "backend.cellguide.pipeline.source_collections.source_collections_generator.get_collections_from_discover_api",
-                    new=mock_get_collections_from_curation_endpoint,
-                ),
-            ):
-                source_collections = get_source_collections_data(ontology_tree=ontology_tree)
-                output_json(
-                    source_collections,
-                    f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{SOURCE_COLLECTIONS_FIXTURE_FILENAME}",
-                )
+
+            source_collections = get_source_collections_data()
+            output_json(
+                source_collections,
+                f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{SOURCE_COLLECTIONS_FIXTURE_FILENAME}",
+            )
 
         if fixture_type in [FixtureType.computational_marker_genes, FixtureType.all]:
             # Get computational marker genes
-            with patch(
-                "backend.common.marker_genes.computational_markers.bootstrap_rows_percentiles",
-                new=mock_bootstrap_rows_percentiles,
-            ):
-                computational_marker_genes, reformatted_marker_genes, formatted_marker_genes = (
-                    get_computational_marker_genes(snapshot=snapshot, ontology_tree=ontology_tree)
-                )
-                output_json(
-                    computational_marker_genes,
-                    f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}",
-                )
-                output_json(
-                    reformatted_marker_genes,
-                    f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{REFORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}",
-                )
-                output_json(
-                    formatted_marker_genes,
-                    f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{FORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}",
-                )
+
+            computational_marker_genes, reformatted_marker_genes, formatted_marker_genes = (
+                get_computational_marker_genes(snapshot=snapshot)
+            )
+            output_json(
+                computational_marker_genes,
+                f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}",
+            )
+            output_json(
+                reformatted_marker_genes,
+                f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{REFORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}",
+            )
+            output_json(
+                formatted_marker_genes,
+                f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{FORMATTED_COMPUTATIONAL_MARKER_GENES_FIXTURE_FILENAME}",
+            )
 
 
 if __name__ == "__main__":
