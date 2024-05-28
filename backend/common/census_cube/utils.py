@@ -258,7 +258,6 @@ def get_all_cell_type_ids_in_corpus(snapshot: CensusSnapshot = None, root_node="
     return list(all_cell_type_ids_in_corpus)
 
 
-@lru_cache(maxsize=None)
 def get_all_tissue_ids_in_corpus(snapshot: CensusSnapshot = None) -> list[str]:
     """
     Retrieve all tissue IDs in the corpus that have at least one cell present.
