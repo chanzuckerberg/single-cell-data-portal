@@ -4,16 +4,16 @@ import os
 import pandas as pd
 import tiledb
 
-from backend.wmg.data.schemas.cube_schema_default import (
+from backend.common.census_cube.data.schemas.cube_schema_default import (
     expression_summary_indexed_dims,
     expression_summary_non_indexed_dims,
     expression_summary_schema,
 )
-from backend.wmg.data.snapshot import (
+from backend.common.census_cube.data.snapshot import (
     EXPRESSION_SUMMARY_CUBE_NAME,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
 )
-from backend.wmg.data.tiledb import create_ctx
+from backend.common.census_cube.data.tiledb import create_ctx
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,

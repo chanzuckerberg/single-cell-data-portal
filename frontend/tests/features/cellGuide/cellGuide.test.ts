@@ -43,7 +43,6 @@ import {
 import { LANDING_PAGE_HEADER } from "src/views/CellGuide/components/LandingPage/constants";
 
 import {
-  CELL_GUIDE_CARD_CL_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_TOOLTIP_LINK,
   CELL_GUIDE_CARD_SYNONYMS,
@@ -1609,7 +1608,6 @@ function getSearchBarLocator(page: Page) {
 async function assertAllCellCardComponentsArePresent(page: Page) {
   await isElementVisible(page, CELL_GUIDE_CARD_HEADER_NAME);
   await isElementVisible(page, CELL_GUIDE_CARD_HEADER_TAG);
-  await isElementVisible(page, CELL_GUIDE_CARD_CL_DESCRIPTION);
   await isElementVisible(page, CELL_GUIDE_CARD_GPT_DESCRIPTION);
   await isElementVisible(page, CELL_GUIDE_CARD_SYNONYMS);
   await isElementVisible(page, CELL_GUIDE_CARD_GPT_TOOLTIP_LINK);

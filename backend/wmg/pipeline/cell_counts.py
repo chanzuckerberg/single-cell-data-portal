@@ -4,11 +4,11 @@ import os
 import tiledb
 from tiledbsoma import ExperimentAxisQuery
 
-from backend.wmg.data.schemas.cube_schema import (
+from backend.common.census_cube.data.schemas.cube_schema import (
     cell_counts_logical_dims,
     cell_counts_schema,
 )
-from backend.wmg.data.snapshot import (
+from backend.common.census_cube.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
 )
 from backend.wmg.pipeline.constants import (

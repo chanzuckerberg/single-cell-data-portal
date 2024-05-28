@@ -7,13 +7,14 @@ from typing import Optional
 
 import tiledb
 
+from backend.common.census_cube.data.constants import CENSUS_CUBE_DATA_SCHEMA_VERSION
+from backend.common.census_cube.data.snapshot import CELL_COUNTS_CUBE_NAME
 from backend.common.utils.result_notification import (
     format_failed_batch_issue_slack_alert,
     gen_wmg_pipeline_failure_message,
     gen_wmg_pipeline_success_message,
     notify_slack,
 )
-from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME
 from backend.wmg.pipeline.cell_type_ancestors import create_cell_type_ancestors
 from backend.wmg.pipeline.cell_type_ordering import create_cell_type_ordering
 from backend.wmg.pipeline.constants import (
@@ -26,7 +27,6 @@ from backend.wmg.pipeline.constants import (
     FILTER_RELATIONSHIPS_CREATED_FLAG,
     MARKER_GENES_CUBE_CREATED_FLAG,
     PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG,
-    WMG_DATA_SCHEMA_VERSION,
 )
 from backend.wmg.pipeline.dataset_metadata import create_dataset_metadata
 from backend.wmg.pipeline.errors import PipelineStepMissing
@@ -89,7 +89,7 @@ def run_pipeline(corpus_path: Optional[str] = None, skip_validation: bool = Fals
         snapshot_id = os.path.basename(os.path.normpath(corpus_path))
         cube_data_s3_path = upload_artifacts_to_s3(
             snapshot_source_path=corpus_path,
-            snapshot_schema_version=WMG_DATA_SCHEMA_VERSION,
+            snapshot_schema_version=CENSUS_CUBE_DATA_SCHEMA_VERSION,
             snapshot_id=snapshot_id,
             is_snapshot_validation_successful=is_valid,
         )

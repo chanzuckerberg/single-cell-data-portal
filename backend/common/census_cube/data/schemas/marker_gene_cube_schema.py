@@ -3,7 +3,7 @@
 import numpy as np
 import tiledb
 
-from backend.wmg.data.schemas.tiledb_filters import filters_categorical, filters_numeric
+from backend.common.census_cube.data.schemas.tiledb_filters import filters_categorical, filters_numeric
 
 # These are the queryable cube dimensions that will be modeled as
 # TileDB `Dim`s and thus can be used for _efficiently_ querying

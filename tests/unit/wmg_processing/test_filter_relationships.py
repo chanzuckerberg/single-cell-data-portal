@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from backend.wmg.data.snapshot import FILTER_RELATIONSHIPS_FILENAME
+from backend.common.census_cube.data.snapshot import FILTER_RELATIONSHIPS_FILENAME
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     FILTER_RELATIONSHIPS_CREATED_FLAG,

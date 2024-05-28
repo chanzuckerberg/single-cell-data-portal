@@ -4,11 +4,11 @@ import os
 
 import tiledb
 
-from backend.wmg.data.snapshot import (
+from backend.common.census_cube.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     FILTER_RELATIONSHIPS_FILENAME,
 )
-from backend.wmg.data.utils import build_filter_relationships
+from backend.common.census_cube.utils import build_filter_relationships
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     FILTER_RELATIONSHIPS_CREATED_FLAG,

@@ -3,16 +3,16 @@ from typing import NamedTuple
 
 import pandas as pd
 
-from backend.wmg.api.wmg_api_config import (
-    READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
-    READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
-)
-from backend.wmg.data.query import (
+from backend.common.census_cube.data.query import (
+    CensusCubeQuery,
+    CensusCubeQueryCriteria,
+    CensusCubeQueryParams,
     MarkerGeneQueryCriteria,
-    WmgCubeQueryParams,
-    WmgQuery,
-    WmgQueryCriteria,
     retrieve_top_n_markers,
+)
+from backend.wmg.api.config import (
+    READER_CENSUS_CUBE_CUBE_QUERY_VALID_ATTRIBUTES,
+    READER_CENSUS_CUBE_CUBE_QUERY_VALID_DIMENSIONS,
 )
 from tests.test_utils import sort_dataframe
 from tests.unit.backend.wmg.fixtures.test_snapshot import create_temp_wmg_snapshot, load_realistic_test_snapshot
@@ -43,12 +43,12 @@ def generate_expected_marker_gene_data_with_pandas(snapshot, criteria, statistic
     return expected
 
 
-class WmgCubeQueryParamsTest(unittest.TestCase):
+class CensusCubeQueryParamsTest(unittest.TestCase):
     def test__cube_query_params_for_expression_summary_cube(self):
         cube_query_valid_attrs = ["gene_ontology_term_id", "cell_type_ontology_term_id"]
         cube_query_valid_dims = ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"]
 
-        cube_query_params = WmgCubeQueryParams(
+        cube_query_params = CensusCubeQueryParams(
             cube_query_valid_attrs=cube_query_valid_attrs,
             cube_query_valid_dims=cube_query_valid_dims,
         )
@@ -99,9 +99,9 @@ class WmgCubeQueryParamsTest(unittest.TestCase):
 
 class QueryTest(unittest.TestCase):
     def setUp(self):
-        self.cube_query_params = WmgCubeQueryParams(
-            cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
-            cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+        self.cube_query_params = CensusCubeQueryParams(
+            cube_query_valid_attrs=READER_CENSUS_CUBE_CUBE_QUERY_VALID_ATTRIBUTES,
+            cube_query_valid_dims=READER_CENSUS_CUBE_CUBE_QUERY_VALID_DIMENSIONS,
         )
 
     def test__query_marker_genes_cube__returns_correct_top_10_markers(self):
@@ -111,7 +111,7 @@ class QueryTest(unittest.TestCase):
             organism_ontology_term_id="NCBITaxon:9606",
         )
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
-            q = WmgQuery(snapshot, self.cube_query_params)
+            q = CensusCubeQuery(snapshot, self.cube_query_params)
             result = q.marker_genes(criteria)
             marker_genes = retrieve_top_n_markers(result, "ttest", 10)
             expected = generate_expected_marker_gene_data_with_pandas(snapshot, criteria, "ttest", 10)
@@ -124,20 +124,20 @@ class QueryTest(unittest.TestCase):
             organism_ontology_term_id="NCBITaxon:9606",
         )
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
-            q = WmgQuery(snapshot, self.cube_query_params)
+            q = CensusCubeQuery(snapshot, self.cube_query_params)
             result = q.marker_genes(criteria)
             marker_genes = retrieve_top_n_markers(result, "ttest", 0)
             expected = generate_expected_marker_gene_data_with_pandas(snapshot, criteria, "ttest", 0)
             self.assertEqual(marker_genes, expected)
 
     def test__query_expression_summary_default_cube__returns_correct_results(self):
-        criteria = WmgQueryCriteria(
+        criteria = CensusCubeQueryCriteria(
             gene_ontology_term_ids=["ENSG00000286269", "ENSG00000286270"],
             organism_ontology_term_id="NCBITaxon:9606",
             tissue_ontology_term_ids=["UBERON:0002097"],
         )
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
-            q = WmgQuery(snapshot, self.cube_query_params)
+            q = CensusCubeQuery(snapshot, self.cube_query_params)
             query_result = sort_dataframe(q.expression_summary_default(criteria))
             expected_query_result = _filter_dataframe(snapshot.expression_summary_default_cube.df[:], criteria.dict())
             del expected_query_result["organism_ontology_term_id"]
@@ -148,15 +148,15 @@ class QueryTest(unittest.TestCase):
 
 class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
     def setUp(self):
-        self.cube_query_params = WmgCubeQueryParams(
-            cube_query_valid_attrs=READER_WMG_CUBE_QUERY_VALID_ATTRIBUTES,
-            cube_query_valid_dims=READER_WMG_CUBE_QUERY_VALID_DIMENSIONS,
+        self.cube_query_params = CensusCubeQueryParams(
+            cube_query_valid_attrs=READER_CENSUS_CUBE_CUBE_QUERY_VALID_ATTRIBUTES,
+            cube_query_valid_dims=READER_CENSUS_CUBE_CUBE_QUERY_VALID_DIMENSIONS,
         )
 
     def test__single_dimension__returns_all_dimension_and_terms(self):
         dim_size = 3
         with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
-            q = WmgQuery(snapshot, self.cube_query_params)
+            q = CensusCubeQuery(snapshot, self.cube_query_params)
             result = q.list_primary_filter_dimension_term_ids("tissue_ontology_term_id")
             self.assertEquals(
                 ["tissue_ontology_term_id_0", "tissue_ontology_term_id_1", "tissue_ontology_term_id_2"], result
@@ -173,7 +173,7 @@ class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
         with create_temp_wmg_snapshot(
             dim_size=dim_size, exclude_logical_coord_fn=exclude_one_tissue_per_organism
         ) as snapshot:
-            q = WmgQuery(snapshot, self.cube_query_params)
+            q = CensusCubeQuery(snapshot, self.cube_query_params)
             result = q.list_grouped_primary_filter_dimensions_term_ids(
                 "tissue_ontology_term_id", "organism_ontology_term_id"
             )
