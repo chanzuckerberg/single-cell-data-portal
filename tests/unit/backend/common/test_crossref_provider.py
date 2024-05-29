@@ -1,6 +1,7 @@
 import copy
 import json
 import unittest
+from datetime import datetime
 from unittest.mock import Mock, patch
 
 from requests import RequestException
@@ -178,6 +179,7 @@ class TestCrossrefProvider(unittest.TestCase):
     def test__provider_parses_authors_and_dates_correctly(self, mock_config, mock_get):
         response = Response()
         response.status_code = 200
+        deposited_timestamp = 17169328664
         response._content = str.encode(
             json.dumps(
                 {
@@ -213,7 +215,7 @@ class TestCrossrefProvider(unittest.TestCase):
                                 "name": "Bat consortium",
                             },
                         ],
-                        "deposited": {"timestamp": 17169328664},
+                        "deposited": {"timestamp": deposited_timestamp},
                         "published-online": {"date-parts": [[2021, 11]]},
                         "container-title": ["Nature"],
                     },
@@ -223,7 +225,7 @@ class TestCrossrefProvider(unittest.TestCase):
 
         mock_get.return_value = response
         provider = CrossrefProvider()
-        res, _, _ = provider.fetch_metadata("test_doi")
+        res, _, deposited_at = provider.fetch_metadata("test_doi")
         mock_get.assert_called_once()
 
         expected_response = {
@@ -244,6 +246,7 @@ class TestCrossrefProvider(unittest.TestCase):
         }
 
         self.assertDictEqual(expected_response, res)
+        self.assertEqual(datetime.fromtiestamp(deposited_timestamp / 1000), deposited_at)  # noqa: F821
 
     @patch("backend.common.providers.crossref_provider.requests.get")
     @patch("backend.common.providers.crossref_provider.CorporaConfig")

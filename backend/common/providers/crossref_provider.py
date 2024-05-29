@@ -11,7 +11,7 @@ from backend.common.doi import doi_curie_from_link
 
 
 class CrossrefProviderInterface:
-    def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str], Optional[datetime]]:
+    def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str], Optional[float]]:
         return None, None, None
 
     def fetch_preprint_published_doi(self, doi):
@@ -139,16 +139,10 @@ class CrossrefProvider(CrossrefProviderInterface):
 
             published_year, published_month, published_day = self.parse_date_parts(published_date)
 
-            dates = []
-            for k, v in message.items():
-                if isinstance(v, dict) and "date-parts" in v:
-                    dt = v["date-parts"][0]
-                    dates.append(f"{k}: {dt}")
-
             # Calculate the deposited date; used when checking for updates.
             deposited_at = None
             if "deposited" in message and (deposited_timestamp := message["deposited"].get("timestamp")) is not None:
-                deposited_at = datetime.fromtimestamp(deposited_timestamp / 1000)
+                deposited_at = deposited_timestamp / 1000
 
             # Journal
             try:
@@ -207,7 +201,7 @@ class CrossrefProvider(CrossrefProviderInterface):
 
     def fetch_published_metadata(
         self, doi_response_message: dict
-    ) -> Tuple[Optional[dict], Optional[str], Optional[datetime]]:
+    ) -> Tuple[Optional[dict], Optional[str], Optional[float]]:
         try:
             published_doi = doi_response_message["relation"]["is-preprint-of"]
             # the new DOI to query for ...

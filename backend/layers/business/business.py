@@ -166,9 +166,7 @@ class BusinessLogic(BusinessLogicInterface):
             current_dataset_version_id, new_dataset_version_id, metadata_update
         )
 
-    def _get_publisher_metadata(
-        self, doi: str, errors: list
-    ) -> Tuple[Optional[dict], Optional[str], Optional[datetime]]:
+    def _get_publisher_metadata(self, doi: str, errors: list) -> Tuple[Optional[dict], Optional[str], Optional[float]]:
         """
         Retrieves publisher metadata from Crossref.
         """
@@ -978,8 +976,12 @@ class BusinessLogic(BusinessLogicInterface):
             doi_link = next((link for link in version.metadata.links if link.type == "DOI"), None)
             if doi_link:
                 # Don't track/raise errors here; just keep the existing publisher metadata.
-                publisher_metadata, _, deposited_at = self._get_publisher_metadata(doi_link.uri, [])
-                if publisher_metadata and deposited_at and deposited_at > date_of_last_publish:
+                publisher_metadata, _, deposited_at_timestamp = self._get_publisher_metadata(doi_link.uri, [])
+                if (
+                    publisher_metadata
+                    and deposited_at_timestamp
+                    and datetime.fromtimestamp(deposited_at_timestamp) > date_of_last_publish
+                ):
                     self.database_provider.save_collection_publisher_metadata(version_id, publisher_metadata)
 
         # Finalize Collection publication and delete any tombstoned assets
