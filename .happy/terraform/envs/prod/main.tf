@@ -12,6 +12,8 @@ module stack {
   require_okta                 = false
   frontend_url                 = "https://cellxgene.cziscience.com"
   backend_url                  = "https://api.cellxgene.cziscience.com"
+  backend_de_url                = "https://de-api.cellxgene.cziscience.com"
+  backend_wmg_url                = "https://wmg-api.cellxgene.cziscience.com"
   stack_prefix                 = ""
   batch_container_memory_limit = 63500
   wmg_batch_container_memory_limit = 248000
@@ -23,6 +25,14 @@ module stack {
   backend_instance_count       = 6
   backend_cpus                 = 4
   backend_workers              = 5 # Rule of thumb is num CPUs + 1
+  backend_de_instance_count    = 4
+  backend_de_memory            = 8192
+  backend_de_cpus              = 4
+  backend_de_workers           = 5
+  backend_wmg_instance_count    = 4
+  backend_wmg_memory            = 8192
+  backend_wmg_cpus              = 4
+  backend_wmg_workers           = 5  
 
   wait_for_steady_state        = var.wait_for_steady_state
   dd_key_secret_arn            = "arn:aws:secretsmanager:us-west-2:231426846575:secret:dd_api_key-tvi1Ey"

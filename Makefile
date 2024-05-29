@@ -100,8 +100,8 @@ local-status: ## Show the status of the containers in the dev environment.
 
 .PHONY: local-rebuild
 local-rebuild: .env.ecr local-ecr-login ## Rebuild local dev without re-importing data
-	docker compose $(COMPOSE_OPTS) build frontend backend processing wmg_processing database oidc localstack
-	docker compose $(COMPOSE_OPTS) up -d frontend backend processing database oidc localstack
+	docker compose $(COMPOSE_OPTS) build frontend backend backend_de backend_wmg processing wmg_processing database oidc localstack
+	docker compose $(COMPOSE_OPTS) up -d frontend backend backend_de backend_wmg processing database oidc localstack
 
 local-rebuild-backend: .env.ecr local-ecr-login
 	docker compose $(COMPOSE_OPTS) build backend
@@ -114,6 +114,12 @@ local-rebuild-wmg-processing: .env.ecr local-ecr-login
 
 local-rebuild-cellguide-pipeline: .env.ecr local-ecr-login
 	docker compose $(COMPOSE_OPTS) build cellguide_pipeline
+
+local-rebuild-de-backend: .env.ecr local-ecr-login
+	docker compose $(COMPOSE_OPTS) build backend_de
+
+local-rebuild-wmg-backend: .env.ecr local-ecr-login
+	docker compose $(COMPOSE_OPTS) build backend_wmg
 
 .PHONY: local-sync
 local-sync: local-rebuild local-init  ## Re-sync the local-environment state after modifying library deps or docker configs
@@ -161,12 +167,12 @@ local-unit-test-backend: .env.ecr
 
 .PHONY: local-unit-test-wmg-backend
 local-unit-test-wmg-backend: .env.ecr
-	docker compose $(COMPOSE_OPTS) run --rm -T backend bash -c \
+	docker compose $(COMPOSE_OPTS) run --rm -T backend_wmg bash -c \
 	"cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/backend/wmg/";
 
 .PHONY: local-unit-test-de-backend
 local-unit-test-de-backend: .env.ecr
-	docker compose $(COMPOSE_OPTS) run --rm -T backend bash -c \
+	docker compose $(COMPOSE_OPTS) run --rm -T backend_de bash -c \
 	"cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/backend/de/";
 
 

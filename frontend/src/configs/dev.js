@@ -2,6 +2,8 @@ const { PLAUSIBLE_DATA_DOMAIN_STAGING } = require("./common");
 
 const configs = {
   API_URL: "https://api.cellxgene.dev.single-cell.czi.technology",
+  DE_API_URL: "https://de-api.cellxgene.dev.single-cell.czi.technology",
+  WMG_API_URL: "https://wmg-api.cellxgene.dev.single-cell.czi.technology",
   CELLGUIDE_DATA_URL:
     "https://cellguide.cellxgene.dev.single-cell.czi.technology",
   CENSUS_MODELS_DATA_URL: "https://contrib.cellxgene.cziscience.com",

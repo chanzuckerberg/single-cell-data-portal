@@ -12,6 +12,8 @@ module stack {
   require_okta                 = false
   frontend_url                 = "https://cellxgene.staging.single-cell.czi.technology"
   backend_url                  = "https://api.cellxgene.staging.single-cell.czi.technology"
+  backend_de_url                = "https://de-api.cellxgene.staging.single-cell.czi.technology"
+  backend_wmg_url                = "https://wmg-api.cellxgene.staging.single-cell.czi.technology"
   stack_prefix                 = ""
   batch_container_memory_limit = 63500
   wmg_batch_container_memory_limit = 248000
@@ -22,6 +24,14 @@ module stack {
   frontend_memory              = 4096
   backend_instance_count       = 4
   backend_workers              = 1
+  backend_de_instance_count    = 4
+  backend_de_memory            = 8192
+  backend_de_cpus              = 2
+  backend_de_workers           = 3
+  backend_wmg_instance_count    = 4
+  backend_wmg_memory            = 8192
+  backend_wmg_cpus              = 2
+  backend_wmg_workers           = 3  
   wait_for_steady_state        = var.wait_for_steady_state
   dd_key_secret_arn            = "arn:aws:secretsmanager:us-west-2:699936264352:secret:dd_api_key-nGPNwx"
 }

@@ -7,6 +7,8 @@
   "services": [
     "frontend",
     "backend",
+    "backend_de",
+    "backend_wmg",
     "cellguide_pipeline",
     "processing",
     "dataset_submissions",
@@ -16,28 +18,34 @@
   ],
   "slices": {
     "frontend": {
-        "profile": "fullstack"
+      "profile": "fullstack"
     },
     "backend": {
-        "profile": "fullstack"
+      "profile": "fullstack"
+    },
+    "backend_de": {
+      "profile": "fullstack"
+    },
+    "backend_wmg": {
+      "profile": "fullstack"
     },
     "cellguide_pipeline": {
-        "profile": "cellguide_pipeline"
+      "profile": "cellguide_pipeline"
     },
     "processing": {
-        "profile": "processing"
+      "profile": "processing"
     },
     "wmg_processing": {
-        "profile": "wmg_processing"
+      "profile": "wmg_processing"
     },
     "dataset_submissions": {
-        "profile": "dataset_submissions"
+      "profile": "dataset_submissions"
     },
     "upload_failures": {
-        "profile": "upload_failures"
+      "profile": "upload_failures"
     },
     "upload_success": {
-        "profile": "upload_success"
+      "profile": "upload_success"
     }
   },
   "environments": {

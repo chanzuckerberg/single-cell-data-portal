@@ -27,9 +27,17 @@ locals {
   # TODO: Assess whether this is safe for Portal API as well. Trying 1 worker in rdev portal backend containers, to minimize use of memory by TileDB (allocates multi-GB per process)
   # Note: keep-alive timeout should always be greater than the idle timeout of the load balancer (60 seconds)
   backend_workers              = var.backend_workers 
+  backend_de_workers           = var.backend_de_workers
+  backend_wmg_workers           = var.backend_wmg_workers
   backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "${local.backend_workers}",
     "--bind", "0.0.0.0:5000", "backend.api_server.app:app", "--max-requests", "10000", "--timeout", "180",
     "--keep-alive", "61", "--log-level", "info"]
+  backend_de_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "${local.backend_de_workers}",
+    "--bind", "0.0.0.0:5000", "backend.de.server.app:app", "--max-requests", "10000", "--timeout", "540",
+    "--keep-alive", "61", "--log-level", "info"]
+  backend_wmg_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "${local.backend_wmg_workers}",
+    "--bind", "0.0.0.0:5000", "backend.wmg.server.app:app", "--max-requests", "10000", "--timeout", "180",
+    "--keep-alive", "61", "--log-level", "info"]    
   data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/seed_data_04_2f30f3bcc9aa.sql"
 
   vpc_id                          = local.secret["cloud_env"]["vpc_id"]
@@ -41,6 +49,8 @@ locals {
 
   frontend_image_repo             = local.secret["ecrs"]["frontend"]["url"]
   backend_image_repo              = local.secret["ecrs"]["backend"]["url"]
+  backend_de_image_repo           = local.secret["ecrs"]["backend_de"]["url"]
+  backend_wmg_image_repo           = local.secret["ecrs"]["backend_wmg"]["url"]
   upload_image_repo               = local.secret["ecrs"]["processing"]["url"]
   lambda_upload_success_repo      = local.secret["ecrs"]["upload_success"]["url"]
   lambda_upload_repo              = local.secret["ecrs"]["upload_failures"]["url"]
@@ -58,10 +68,16 @@ locals {
 
   frontend_listener_arn        = try(local.secret[local.alb_key]["frontend"]["listener_arn"], "")
   backend_listener_arn         = try(local.secret[local.alb_key]["backend"]["listener_arn"], "")
+  backend_de_listener_arn         = try(local.secret[local.alb_key]["backend_de"]["listener_arn"], "")
+  backend_wmg_listener_arn         = try(local.secret[local.alb_key]["backend_wmg"]["listener_arn"], "")
   frontend_alb_zone            = try(local.secret[local.alb_key]["frontend"]["zone_id"], "")
   backend_alb_zone             = try(local.secret[local.alb_key]["backend"]["zone_id"], "")
+  backend_de_alb_zone             = try(local.secret[local.alb_key]["backend_de"]["zone_id"], "")
+  backend_wmg_alb_zone             = try(local.secret[local.alb_key]["backend_wmg"]["zone_id"], "")
   frontend_alb_dns             = try(local.secret[local.alb_key]["frontend"]["dns_name"], "")
   backend_alb_dns              = try(local.secret[local.alb_key]["backend"]["dns_name"], "")
+  backend_de_alb_dns              = try(local.secret[local.alb_key]["backend_de"]["dns_name"], "")
+  backend_wmg_alb_dns              = try(local.secret[local.alb_key]["backend_wmg"]["dns_name"], "")
 
   artifact_bucket            = try(local.secret["s3_buckets"]["artifact"]["name"], "")
   cellxgene_bucket           = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
@@ -76,6 +92,8 @@ locals {
 
   frontend_url = try(join("", ["https://", module.frontend_dns[0].dns_prefix, ".", local.external_dns]), var.frontend_url)
   backend_url  = try(join("", ["https://", module.backend_dns[0].dns_prefix, ".", local.external_dns]), var.backend_url)
+  backend_de_url  = try(join("", ["https://", module.backend_de_dns[0].dns_prefix, ".", local.external_dns]), var.backend_de_url)
+  backend_wmg_url  = try(join("", ["https://", module.backend_wmg_dns[0].dns_prefix, ".", local.external_dns]), var.backend_wmg_url)
 }
 
 module frontend_dns {
@@ -95,6 +113,26 @@ module backend_dns {
   app_name              = "backend"
   alb_dns               = local.backend_alb_dns
   canonical_hosted_zone = local.backend_alb_zone
+  zone                  = local.internal_dns
+}
+
+module backend_de_dns {
+  count                 = var.require_okta ? 1 : 0
+  source                = "../dns"
+  custom_stack_name     = local.custom_stack_name
+  app_name              = "backend_de"
+  alb_dns               = local.backend_de_alb_dns
+  canonical_hosted_zone = local.backend_de_alb_zone
+  zone                  = local.internal_dns
+}
+
+module backend_wmg_dns {
+  count                 = var.require_okta ? 1 : 0
+  source                = "../dns"
+  custom_stack_name     = local.custom_stack_name
+  app_name              = "backend_wmg"
+  alb_dns               = local.backend_wmg_alb_dns
+  canonical_hosted_zone = local.backend_wmg_alb_zone
   zone                  = local.internal_dns
 }
 
@@ -121,6 +159,8 @@ module frontend_service {
   host_match                 = try(join(".", [module.frontend_dns[0].dns_prefix, local.external_dns]), "")
   priority                   = local.priority
   api_url                    = local.backend_url
+  de_api_url                 = local.backend_de_url
+  wmg_api_url                = local.backend_wmg_url
   frontend_url               = local.frontend_url
   remote_dev_prefix          = local.remote_dev_prefix
   dataset_submissions_bucket = local.dataset_submissions_bucket
@@ -155,6 +195,78 @@ module backend_service {
   host_match                 = try(join(".", [module.backend_dns[0].dns_prefix, local.external_dns]), "")
   priority                   = local.priority
   api_url                    = local.backend_url
+  frontend_url               = local.frontend_url
+  remote_dev_prefix          = local.remote_dev_prefix
+  dataset_submissions_bucket = local.dataset_submissions_bucket
+  datasets_bucket            = local.datasets_bucket
+  execution_role             = local.ecs_execution_role
+
+  # Bump health_check_interval from 30 seconds to 60 seconds so that WMG snapshot download,
+  # which at the time of this writing is around 54GB, has time to complete.
+  health_check_interval      = 60 
+  dd_key_secret_arn          = var.dd_key_secret_arn
+
+  wait_for_steady_state = local.wait_for_steady_state
+}
+
+module backend_de_service {
+  source                     = "../service"
+  custom_stack_name          = local.custom_stack_name
+  app_name                   = "backend_de"
+  vpc                        = local.vpc_id
+  image                      = "${local.backend_de_image_repo}:${local.image_tag}"
+  cluster                    = local.cluster
+  desired_count              = var.backend_de_instance_count
+  listener                   = local.backend_de_listener_arn
+  subnets                    = local.subnets
+  security_groups            = local.security_groups
+  task_role_arn              = local.ecs_role_arn
+  service_port               = 5000
+  task_storage_size_gb       = 100
+  memory                     = var.backend_de_memory
+  cpu                        = var.backend_de_cpus * 1024
+  cmd                        = local.backend_de_cmd
+  deployment_stage           = local.deployment_stage
+  step_function_arn          = module.upload_sfn.step_function_arn
+  host_match                 = try(join(".", [module.backend_de_dns[0].dns_prefix, local.external_dns]), "")
+  priority                   = local.priority
+  api_url                    = local.backend_de_url
+  frontend_url               = local.frontend_url
+  remote_dev_prefix          = local.remote_dev_prefix
+  dataset_submissions_bucket = local.dataset_submissions_bucket
+  datasets_bucket            = local.datasets_bucket
+  execution_role             = local.ecs_execution_role
+
+  # Bump health_check_interval from 30 seconds to 60 seconds so that WMG snapshot download,
+  # which at the time of this writing is around 54GB, has time to complete.
+  health_check_interval      = 60 
+  dd_key_secret_arn          = var.dd_key_secret_arn
+
+  wait_for_steady_state = local.wait_for_steady_state
+}
+
+module backend_wmg_service {
+  source                     = "../service"
+  custom_stack_name          = local.custom_stack_name
+  app_name                   = "backend_wmg"
+  vpc                        = local.vpc_id
+  image                      = "${local.backend_wmg_image_repo}:${local.image_tag}"
+  cluster                    = local.cluster
+  desired_count              = var.backend_wmg_instance_count
+  listener                   = local.backend_wmg_listener_arn
+  subnets                    = local.subnets
+  security_groups            = local.security_groups
+  task_role_arn              = local.ecs_role_arn
+  service_port               = 5000
+  task_storage_size_gb       = 100
+  memory                     = var.backend_wmg_memory
+  cpu                        = var.backend_wmg_cpus * 1024
+  cmd                        = local.backend_wmg_cmd
+  deployment_stage           = local.deployment_stage
+  step_function_arn          = module.upload_sfn.step_function_arn
+  host_match                 = try(join(".", [module.backend_wmg_dns[0].dns_prefix, local.external_dns]), "")
+  priority                   = local.priority
+  api_url                    = local.backend_wmg_url
   frontend_url               = local.frontend_url
   remote_dev_prefix          = local.remote_dev_prefix
   dataset_submissions_bucket = local.dataset_submissions_bucket

@@ -153,7 +153,7 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          make local-rebuild-backend
+          make local-rebuild-wmg-backend
       - name: Run unit tests
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
@@ -212,7 +212,7 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          make local-rebuild-backend
+          make local-rebuild-de-backend
       - name: Run unit tests
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr

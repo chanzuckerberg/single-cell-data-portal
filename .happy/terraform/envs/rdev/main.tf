@@ -19,6 +19,14 @@ module stack {
   backend_instance_count       = 1
   frontend_instance_count      = 1
   backend_memory               = 8192
+  backend_de_instance_count    = 1
+  backend_de_memory            = 8192
+  backend_de_cpus              = 1
+  backend_de_workers           = 1
+  backend_wmg_instance_count    = 1
+  backend_wmg_memory            = 8192
+  backend_wmg_cpus              = 1
+  backend_wmg_workers           = 1  
   frontend_memory              = 4096
   dd_key_secret_arn            = "arn:aws:secretsmanager:us-west-2:699936264352:secret:dd_api_key-nGPNwx"
 

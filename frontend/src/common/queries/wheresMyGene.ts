@@ -1,6 +1,6 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
-import { API_URL } from "src/configs/configs";
+import { WMG_API_URL as API_URL } from "src/configs/configs";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/constants";
 import {
   DispatchContext,
