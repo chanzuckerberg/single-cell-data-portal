@@ -1,7 +1,6 @@
 import copy
 import json
 import unittest
-from datetime import datetime
 from unittest.mock import Mock, patch
 
 from requests import RequestException
@@ -246,7 +245,7 @@ class TestCrossrefProvider(unittest.TestCase):
         }
 
         self.assertDictEqual(expected_response, res)
-        self.assertEqual(datetime.fromtiestamp(deposited_timestamp / 1000), deposited_at)  # noqa: F821
+        self.assertEqual(deposited_timestamp / 1000, deposited_at)
 
     @patch("backend.common.providers.crossref_provider.requests.get")
     @patch("backend.common.providers.crossref_provider.CorporaConfig")

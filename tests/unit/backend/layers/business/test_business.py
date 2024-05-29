@@ -225,7 +225,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         By default also completes dataset ingestion (normally, a process that would be done asynchonously).
         Pass `complete_dataset_ingestion=False` if you want to initialize datasets only.
         """
-        version = self.initialize_empty_unpublished_collection(owner, curator_name, links=links)
+        version = self.initialize_empty_unpublished_collection(owner, curator_name, links)
         for _ in range(num_datasets):
             dataset_version = self.database_provider.create_canonical_dataset(
                 version.version_id,
