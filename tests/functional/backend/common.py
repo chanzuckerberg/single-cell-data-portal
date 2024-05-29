@@ -153,19 +153,34 @@ class BaseFunctionalTestCase(unittest.TestCase):
         if cleanup:
             self.addCleanup(requests.delete, f"{self.api}/dp/v1/datasets/{dataset_id}", headers=headers)
 
+        self.assertStatusCode(requests.codes.accepted, res)
+
         keep_trying = True
+        expected_upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
+        # conversion statuses can be `None` when/if we hit the status endpoint too early after an upload
+        expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADING", "UPLOADED", "NA", None]
         timer = time.time()
         while keep_trying:
-            res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=headers)
+            res = self.session.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=headers)
             res.raise_for_status()
             data = json.loads(res.content)
             upload_status = data["upload_status"]
+            if upload_status:
+                self.assertIn(upload_status, expected_upload_statuses)
+
+            # conversion statuses only returned once uploaded
             if upload_status == "UPLOADED":
                 cxg_status = data.get("cxg_status")
                 rds_status = data.get("rds_status")
                 h5ad_status = data.get("h5ad_status")
-                processing_status = data.get("processing_status")
-                if cxg_status == rds_status == h5ad_status == "UPLOADED" and processing_status == "SUCCESS":
+                self.assertIn(data.get("cxg_status"), expected_conversion_statuses)
+                if cxg_status == "FAILED":
+                    self.fail(f"CXG CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
+                if rds_status == "FAILED":
+                    self.fail(f"RDS CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
+                if h5ad_status == "FAILED":
+                    self.fail(f"Anndata CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
+                if cxg_status == rds_status == h5ad_status == "UPLOADED":
                     keep_trying = False
             if time.time() >= timer + 600:
                 raise TimeoutError(

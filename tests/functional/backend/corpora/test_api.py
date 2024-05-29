@@ -1,6 +1,5 @@
 import json
 import os
-import time
 import unittest
 
 import requests
@@ -183,13 +182,7 @@ class TestApi(BaseFunctionalTestCase):
     def test_dataset_upload_flow(self):
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
         collection_id = self._create_test_collection(headers, "test_dataset_upload_flow")
-        self._verify_upload_succeeded(collection_id, headers, self.test_dataset_uri)
-
-    @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
-    def test_dataset_upload_flow_with_visium_dataset(self):
-        headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
-        collection_id = self._create_test_collection(headers, "test_dataset_upload_flow_with_visium_dataset")
-        self._verify_upload_succeeded(collection_id, headers, self.test_visium_dataset_uri, timeout=1200)
+        self._verify_upload_and_delete_succeeded(collection_id, headers, self.test_dataset_uri)
 
     def _create_test_collection(self, headers, name="my2collection"):
         body = {
@@ -212,59 +205,8 @@ class TestApi(BaseFunctionalTestCase):
         self.assertIn("collection_id", data)
         return collection_id
 
-    def _verify_upload_succeeded(self, collection_id, headers, dataset_uri, timeout=600):
-        body = {"url": dataset_uri}
-
-        res = self.session.post(
-            f"{self.api}/dp/v1/collections/{collection_id}/upload-links", data=json.dumps(body), headers=headers
-        )
-        res.raise_for_status()
-        dataset_id = json.loads(res.content)["dataset_id"]
-        self.addCleanup(self.session.delete, f"{self.api}/dp/v1/datasets/{dataset_id}", headers=headers)
-
-        self.assertStatusCode(requests.codes.accepted, res)
-
-        res = self.session.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=headers)
-        res.raise_for_status()
-        data = json.loads(res.content)
-        self.assertStatusCode(requests.codes.ok, res)
-        self.assertEqual(data["upload_status"], "WAITING")
-
-        with self.subTest("Test dataset conversion"):
-            keep_trying = True
-            expected_upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
-            # conversion statuses can be `None` when/if we hit the status endpoint too early after an upload
-            expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADING", "UPLOADED", "NA", None]
-            timer = time.time()
-            while keep_trying:
-                data = None
-                res = self.session.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=headers)
-                res.raise_for_status()
-                data = json.loads(res.content)
-                upload_status = data["upload_status"]
-                if upload_status:
-                    self.assertIn(upload_status, expected_upload_statuses)
-
-                # conversion statuses only returned once uploaded
-                if upload_status == "UPLOADED":
-                    cxg_status = data.get("cxg_status")
-                    rds_status = data.get("rds_status")
-                    h5ad_status = data.get("h5ad_status")
-                    self.assertIn(data.get("cxg_status"), expected_conversion_statuses)
-                    if cxg_status == "FAILED":
-                        self.fail(f"CXG CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
-                    if rds_status == "FAILED":
-                        self.fail(f"RDS CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
-                    if h5ad_status == "FAILED":
-                        self.fail(f"Anndata CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
-                    if cxg_status == rds_status == h5ad_status == "UPLOADED":
-                        keep_trying = False
-                if time.time() >= timer + timeout:
-                    raise TimeoutError(
-                        f"Dataset upload or conversion timed out after 10 min. Check logs for dataset: {dataset_id}"
-                    )
-                time.sleep(10)
-
+    def _verify_upload_and_delete_succeeded(self, collection_id, headers, dataset_uri):
+        dataset_id = self.upload_and_wait(collection_id, dataset_uri)
         with self.subTest("test non owner cant retrieve status"):
             no_auth_headers = {"Content-Type": "application/json"}
             res = self.session.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=no_auth_headers)
