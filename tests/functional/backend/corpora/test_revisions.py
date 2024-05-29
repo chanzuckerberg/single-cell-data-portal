@@ -46,7 +46,7 @@ class TestRevisions(BaseFunctionalTestCase):
         return f"https://cellxgene.{self.deployment_stage}.single-cell.czi.technology/e/{dataset_id}.cxg/"
 
     # TODO: Remove rdev from skip list. Rdev Explorer is required for this test to pass.
-    @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] in ["prod", "rdev"], "Do not make test collections public in prod")
+    @unittest.skipIf(os.environ["DEPLOYMENT_STAGE"] in ["prod"], "Do not make test collections public in prod")
     def test_revision_flow(self):
 
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
