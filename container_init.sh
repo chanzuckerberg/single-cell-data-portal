@@ -8,10 +8,10 @@ echo
 # Download WMG data snapshot to a mounted filesystem of the compute node on AWS
 # This is done as optimization because retrieving data from local disk is
 # significantly faster than retrieving data from S3
-WMG_SNAPSHOT_FS_CACHE_ROOT_PATH="/single-cell-data-portal/wmg_snapshot_cache"
+WMG_SNAPSHOT_FS_CACHE_ROOT_PATH="/single-cell-data-portal/census_cube_snapshot_cache"
 
 # LATEST_READER_SNAPSHOT_SCHEMA_VERSION here and WMG_API_SNAPSHOT_SCHEMA_VERSION
-# in backend/wmg/api/wmg_api_config.py should have the same value
+# in backend/common/census_cube/api/config.py should have the same value
 LATEST_READER_SNAPSHOT_SCHEMA_VERSION="v5"
 
 echo "| ENV VAR DOWNLOAD_WMG_DATA_TO_DISK: ${DOWNLOAD_WMG_DATA_TO_DISK}"

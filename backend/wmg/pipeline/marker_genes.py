@@ -5,16 +5,15 @@ import os
 import pandas as pd
 import tiledb
 
-from backend.cellguide.pipeline.computational_marker_genes.computational_markers import MarkerGenesCalculator
-from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
-from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema
-from backend.wmg.data.snapshot import (
+from backend.common.census_cube.data.schemas.marker_gene_cube_schema import marker_genes_schema
+from backend.common.census_cube.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
     MARKER_GENES_CUBE_NAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
-    WmgSnapshot,
+    CensusCubeSnapshot,
 )
+from backend.common.marker_genes.computational_markers import MarkerGenesCalculator
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,
@@ -54,15 +53,14 @@ def create_marker_genes_cube(corpus_path: str):
         tiledb.open(expression_summary_default_cube_uri, "r") as expression_summary_default_cube,
     ):
         primary_filter_dimensions = json.load(f)
-        snapshot = WmgSnapshot(
+        snapshot = CensusCubeSnapshot(
             primary_filter_dimensions=primary_filter_dimensions,
             cell_counts_cube=cell_counts_cube,
             expression_summary_default_cube=expression_summary_default_cube,
+            cell_counts_df=cell_counts_cube.df[:],
         )
-        ontology_tree = get_ontology_tree_builder(snapshot=snapshot)
         calculator = MarkerGenesCalculator(
             snapshot=snapshot,
-            all_cell_type_ids_in_corpus=ontology_tree.all_cell_type_ids_in_corpus,
             groupby_terms=["organism_ontology_term_id", "tissue_ontology_term_id"],
         )
         marker_genes = calculator.get_computational_marker_genes()
