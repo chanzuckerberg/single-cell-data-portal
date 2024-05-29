@@ -54,7 +54,7 @@ class TestRevisions(BaseFunctionalTestCase):
         collection_id = self.create_collection(headers)
 
         dataset_1_dropbox_url = self.test_dataset_uri
-        dataset_2_dropbox_url = self.test_dataset_uri
+        dataset_2_dropbox_url = self.test_visium_dataset_uri
 
         # Uploads a dataset
         self.upload_and_wait(collection_id, dataset_1_dropbox_url)
