@@ -354,6 +354,10 @@ resource aws_sfn_state_machine sfn_schema_migration {
                     "Value.$": "$.collection_version_id"
                   },
                   {
+                    "Name": "CAN_PUBLISH",
+                    "Value.$": "$.can_publish"
+                  },
+                  {
                     "Name": "TASK_TOKEN",
                     "Value.$": "$$.Task.Token"
                   },

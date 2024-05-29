@@ -135,7 +135,7 @@ class TestPublishAndCleanup:
             ]
         )
         local_schema_migrate.business_logic.get_collection_version.return_value = collection_version
-        errors = local_schema_migrate.publish_and_cleanup(collection_version.version_id.id, False)
+        errors = local_schema_migrate.publish_and_cleanup(collection_version.version_id.id)
         assert errors == []
         local_schema_migrate.business_logic.publish_collection_version.assert_not_called()
         local_schema_migrate.s3_provider.delete_files.assert_any_call(
