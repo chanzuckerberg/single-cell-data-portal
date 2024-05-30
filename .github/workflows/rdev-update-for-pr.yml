@@ -149,8 +149,6 @@ jobs:
         run: |
           summary="## Deployment Summary"
           summary+="\n- backend_url: https://${{ env.STACK_NAME }}-backend.rdev.single-cell.czi.technology"
-          summary+="\n- backend_de_url: https://${{ env.STACK_NAME }}-backend-de.rdev.single-cell.czi.technology"
-          summary+="\n- backend_wmg_url: https://${{ env.STACK_NAME }}-backend-wmg.rdev.single-cell.czi.technology"
           summary+="\n- frontend_url: https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology"
           summary+="\n- delete_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-deletion:1"
           summary+="\n- migrate_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-migration:1"

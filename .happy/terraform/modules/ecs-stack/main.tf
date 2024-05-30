@@ -92,8 +92,6 @@ locals {
 
   frontend_url = try(join("", ["https://", module.frontend_dns[0].dns_prefix, ".", local.external_dns]), var.frontend_url)
   backend_url  = try(join("", ["https://", module.backend_dns[0].dns_prefix, ".", local.external_dns]), var.backend_url)
-  backend_de_url  = try(join("", ["https://", module.backend_de_dns[0].dns_prefix, ".", local.external_dns]), var.backend_de_url)
-  backend_wmg_url  = try(join("", ["https://", module.backend_wmg_dns[0].dns_prefix, ".", local.external_dns]), var.backend_wmg_url)
 }
 
 module frontend_dns {
@@ -159,8 +157,6 @@ module frontend_service {
   host_match                 = try(join(".", [module.frontend_dns[0].dns_prefix, local.external_dns]), "")
   priority                   = local.priority
   api_url                    = local.backend_url
-  de_api_url                 = local.backend_de_url
-  wmg_api_url                = local.backend_wmg_url
   frontend_url               = local.frontend_url
   remote_dev_prefix          = local.remote_dev_prefix
   dataset_submissions_bucket = local.dataset_submissions_bucket
@@ -230,7 +226,7 @@ module backend_de_service {
   step_function_arn          = module.upload_sfn.step_function_arn
   host_match                 = try(join(".", [module.backend_de_dns[0].dns_prefix, local.external_dns]), "")
   priority                   = local.priority
-  api_url                    = local.backend_de_url
+  api_url                    = local.backend_url
   frontend_url               = local.frontend_url
   remote_dev_prefix          = local.remote_dev_prefix
   dataset_submissions_bucket = local.dataset_submissions_bucket
@@ -266,7 +262,7 @@ module backend_wmg_service {
   step_function_arn          = module.upload_sfn.step_function_arn
   host_match                 = try(join(".", [module.backend_wmg_dns[0].dns_prefix, local.external_dns]), "")
   priority                   = local.priority
-  api_url                    = local.backend_wmg_url
+  api_url                    = local.backend_url
   frontend_url               = local.frontend_url
   remote_dev_prefix          = local.remote_dev_prefix
   dataset_submissions_bucket = local.dataset_submissions_bucket

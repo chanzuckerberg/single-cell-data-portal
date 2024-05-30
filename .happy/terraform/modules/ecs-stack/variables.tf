@@ -64,18 +64,6 @@ variable backend_url {
   default     = ""
 }
 
-variable backend_de_url {
-  type        = string
-  description = "For non-proxied stacks, send in the canonical front/backend URL's"
-  default     = ""
-}
-
-variable backend_wmg_url {
-  type        = string
-  description = "For non-proxied stacks, send in the canonical front/backend URL's"
-  default     = ""
-}
-
 variable frontend_url {
   type        = string
   description = "For non-proxied stacks, send in the canonical front/backend URL's"
