@@ -4,72 +4,18 @@ import numpy as np
 import pandas as pd
 from ddtrace import tracer
 from pandas import DataFrame
-from pydantic import BaseModel, Field
 from tiledb import Array
 
-from backend.wmg.data.schemas.cube_schema_diffexp import cell_counts_indexed_dims
-from backend.wmg.data.snapshot import WmgSnapshot
+from backend.common.census_cube.data.criteria import (
+    BaseQueryCriteria,
+    CensusCubeQueryCriteria,
+    MarkerGeneQueryCriteria,
+)
+from backend.common.census_cube.data.schemas.cube_schema_diffexp import cell_counts_indexed_dims
+from backend.common.census_cube.data.snapshot import CensusCubeSnapshot
 
 
-class WmgQueryCriteria(BaseModel):
-    gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)  # required!
-    organism_ontology_term_id: str  # required!
-    tissue_ontology_term_ids: List[str] = Field(unique_items=True, min_items=1)  # required!
-    tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
-    # assay_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    development_stage_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    self_reported_ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-
-
-class DeQueryCriteria(BaseModel):
-    organism_ontology_term_id: str
-    tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    publication_citations: List[str] = Field(default=[], unique_items=True, min_items=0)
-    disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    self_reported_ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-
-
-class WmgQueryCriteriaV2(BaseModel):
-    gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)  # required!
-    organism_ontology_term_id: str  # required!
-    tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
-    # assay_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    development_stage_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    self_reported_ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    publication_citations: List[str] = Field(default=[], unique_items=True, min_items=0)
-
-
-class WmgFiltersQueryCriteria(BaseModel):
-    organism_ontology_term_id: str  # required!
-    tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    development_stage_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    self_reported_ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    publication_citations: List[str] = Field(default=[], unique_items=True, min_items=0)
-
-
-class MarkerGeneQueryCriteria(BaseModel):
-    organism_ontology_term_id: str  # required!
-    tissue_ontology_term_id: str  # required!
-    cell_type_ontology_term_id: str  # required!
-
-
-class WmgCubeQueryParams:
+class CensusCubeQueryParams:
     def __init__(self, cube_query_valid_attrs, cube_query_valid_dims):
         self.cube_query_valid_attrs = cube_query_valid_attrs
         self.cube_query_valid_dims = cube_query_valid_dims
@@ -90,13 +36,13 @@ class WmgCubeQueryParams:
         return index_name
 
 
-class WmgQuery:
-    def __init__(self, snapshot: WmgSnapshot, cube_query_params: Optional[WmgCubeQueryParams] = None) -> None:
+class CensusCubeQuery:
+    def __init__(self, snapshot: CensusCubeSnapshot, cube_query_params: Optional[CensusCubeQueryParams] = None) -> None:
         self._snapshot = snapshot
         self._cube_query_params = cube_query_params
 
     @tracer.wrap(name="expression_summary", service="wmg-api", resource="_query", span_type="wmg-api")
-    def expression_summary(self, criteria: WmgQueryCriteria, compare_dimension=None) -> DataFrame:
+    def expression_summary(self, criteria: CensusCubeQueryCriteria, compare_dimension=None) -> DataFrame:
         return self._query(
             cube=self._snapshot.expression_summary_cube,
             criteria=criteria,
@@ -104,7 +50,7 @@ class WmgQuery:
         )
 
     @tracer.wrap(name="expression_summary_default", service="wmg-api", resource="_query", span_type="wmg-api")
-    def expression_summary_default(self, criteria: WmgQueryCriteria) -> DataFrame:
+    def expression_summary_default(self, criteria: CensusCubeQueryCriteria) -> DataFrame:
         return self._query(
             cube=self._snapshot.expression_summary_default_cube,
             criteria=criteria,
@@ -118,7 +64,7 @@ class WmgQuery:
         )
 
     @tracer.wrap(name="cell_counts", service="wmg-api", resource="_query", span_type="wmg-api")
-    def cell_counts(self, criteria: WmgQueryCriteria, compare_dimension=None) -> DataFrame:
+    def cell_counts(self, criteria: BaseQueryCriteria, compare_dimension=None) -> DataFrame:
         cell_counts = self._query(
             cube=self._snapshot.cell_counts_cube,
             criteria=criteria.copy(exclude={"gene_ontology_term_ids"}),
@@ -127,7 +73,7 @@ class WmgQuery:
         cell_counts.rename(columns={"n_cells": "n_total_cells"}, inplace=True)  # expressed & non-expressed cells
         return cell_counts
 
-    def cell_counts_df(self, criteria: WmgQueryCriteria) -> DataFrame:
+    def cell_counts_df(self, criteria: BaseQueryCriteria) -> DataFrame:
         df = self._snapshot.cell_counts_df
         mask = np.array([True] * len(df))
         for key, values in dict(criteria).items():
@@ -137,7 +83,7 @@ class WmgQuery:
                 mask &= df[key].isin(values)
         return df[mask].rename(columns={"n_cells": "n_total_cells"})
 
-    def cell_counts_diffexp_df(self, criteria: DeQueryCriteria) -> DataFrame:
+    def cell_counts_diffexp_df(self, criteria: BaseQueryCriteria) -> DataFrame:
         df = self._snapshot.cell_counts_diffexp_df
         mask = np.array([True] * len(df))
         for key, values in dict(criteria).items():
@@ -151,7 +97,7 @@ class WmgQuery:
     @tracer.wrap(
         name="expression_summary_and_cell_counts_diffexp", service="de-api", resource="_query", span_type="de-api"
     )
-    def expression_summary_and_cell_counts_diffexp(self, criteria: DeQueryCriteria) -> tuple[DataFrame, DataFrame]:
+    def expression_summary_and_cell_counts_diffexp(self, criteria: BaseQueryCriteria) -> tuple[DataFrame, DataFrame]:
         use_simple = not any(
             depluralize(key) not in cell_counts_indexed_dims and values for key, values in dict(criteria).items()
         )
@@ -180,7 +126,7 @@ class WmgQuery:
     def _query(
         self,
         cube: Array,
-        criteria: Union[DeQueryCriteria, WmgQueryCriteria, WmgQueryCriteriaV2, MarkerGeneQueryCriteria],
+        criteria: Union[BaseQueryCriteria, CensusCubeQueryCriteria, MarkerGeneQueryCriteria],
         compare_dimension=None,
     ) -> DataFrame:
         indexed_dims = [dim.name for dim in cube.schema.domain]

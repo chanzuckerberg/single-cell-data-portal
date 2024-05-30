@@ -6,7 +6,7 @@ import unittest
 from unittest import mock
 from unittest.mock import Mock, patch
 
-from backend.wmg.data.snapshot import _get_wmg_snapshot_schema_dir_rel_path
+from backend.common.census_cube.data.snapshot import _get_wmg_snapshot_schema_dir_rel_path
 from backend.wmg.pipeline.constants import MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION
 from backend.wmg.pipeline.expression_summary_and_cell_counts import create_expression_summary_and_cell_counts_cubes
 from backend.wmg.pipeline.load_cube import _get_wmg_snapshot_s3_fullpath
@@ -64,7 +64,7 @@ class TestCubePipe(unittest.TestCase):
         the lower level functions that WMG uses to figure out where to write and read snapshots from.
         """
 
-        wmg_bucket_name = os.environ.get("WMG_BUCKET")
+        wmg_bucket_name = os.environ.get("CENSUS_CUBE_BUCKET")
 
         # Verify that we're writing to the correct path in s3
         dest_path = _get_wmg_snapshot_s3_fullpath("v1", "snapshot-id", True)

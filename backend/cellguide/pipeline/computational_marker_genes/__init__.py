@@ -6,25 +6,20 @@ from backend.cellguide.common.constants import (
     MARKER_GENE_PRESENCE_FILENAME,
 )
 from backend.cellguide.common.data import format_marker_gene_data
-from backend.cellguide.pipeline.computational_marker_genes.computational_markers import (
-    MARKER_SCORE_THRESHOLD,
-    MarkerGenesCalculator,
-)
-from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
-from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
+from backend.cellguide.pipeline.constants import CELLGUIDE_CENSUS_CUBE_DATA_SCHEMA_VERSION
 from backend.cellguide.pipeline.utils import output_json, output_json_per_key
-from backend.wmg.api.wmg_api_config import WMG_API_SNAPSHOT_SCHEMA_VERSION
-from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
+from backend.common.census_cube.data import snapshot as sn
+from backend.common.marker_genes.computational_markers import MarkerGenesCalculator
+from backend.common.marker_genes.constants import MARKER_SCORE_THRESHOLD
 
 logger = logging.getLogger(__name__)
 
 
 def run(*, output_directory: str):
-    snapshot = load_snapshot(snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION)
-    ontology_tree = get_ontology_tree_builder(snapshot=snapshot)
+    snapshot = sn.load_snapshot(snapshot_schema_version=CELLGUIDE_CENSUS_CUBE_DATA_SCHEMA_VERSION)
+
     marker_genes, reformatted_marker_genes, formatted_marker_gene_data = get_computational_marker_genes(
         snapshot=snapshot,
-        ontology_tree=ontology_tree,
     )
     output_json_per_key(marker_genes, f"{output_directory}/{COMPUTATIONAL_MARKER_GENES_FOLDERNAME}")
     output_json(
@@ -37,7 +32,7 @@ def run(*, output_directory: str):
     )
 
 
-def get_computational_marker_genes(*, snapshot: WmgSnapshot, ontology_tree: OntologyTreeBuilder) -> tuple[dict, dict]:
+def get_computational_marker_genes(*, snapshot: sn.CensusCubeSnapshot) -> tuple[dict, dict]:
     """
     This function calculates the marker genes per tissue and across tissues.
 
@@ -50,18 +45,15 @@ def get_computational_marker_genes(*, snapshot: WmgSnapshot, ontology_tree: Onto
     -------
     dict - A dictionary containing the marker genes per tissue and across tissues keyed by cell type ontology term ID.
     """
-    all_cell_types_in_corpus = ontology_tree.all_cell_type_ids_in_corpus
 
     calculator = MarkerGenesCalculator(
         snapshot=snapshot,
-        all_cell_type_ids_in_corpus=all_cell_types_in_corpus,
         groupby_terms=["organism_ontology_term_id", "cell_type_ontology_term_id"],
     )
     marker_genes = calculator.get_computational_marker_genes()
 
     calculator = MarkerGenesCalculator(
         snapshot=snapshot,
-        all_cell_type_ids_in_corpus=all_cell_types_in_corpus,
         groupby_terms=["organism_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"],
     )
     marker_genes_per_tissue = calculator.get_computational_marker_genes()

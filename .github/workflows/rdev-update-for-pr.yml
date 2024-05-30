@@ -3,7 +3,7 @@ name: Create/Update rdev for PR
 on:
   pull_request:
     branches-ignore:
-      - prod
+      - "prod"
     types:
       - opened
       - synchronize
@@ -25,6 +25,7 @@ permissions:
 
 jobs:
   get_previous_image_digests:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     outputs:
       ecr_repos: ${{ steps.get_digests.outputs.ecr_repos }}
@@ -55,10 +56,12 @@ jobs:
           echo "IMAGE_DIGESTS=${IMAGE_DIGESTS[@]}" >> $GITHUB_OUTPUT
 
   build_images:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     uses: ./.github/workflows/build-images.yml
     secrets: inherit
 
   seed-wmg-cellguide-rdev:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
@@ -82,6 +85,7 @@ jobs:
           ./scripts/populate_rdev_with_wmg_data.sh ${{ env.STACK_NAME }}
 
   deploy-rdev:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     concurrency:
       group: pr-${{ github.event.number }}-happy
@@ -113,6 +117,7 @@ jobs:
           happy_version: "0.110.1"
 
   delete-previous-images:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     needs:
       - get_previous_image_digests
@@ -140,8 +145,8 @@ jobs:
           done
 
   summarize:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') && github.event.action == 'opened' }}
     runs-on: ubuntu-22.04
-    if: github.event.action == 'opened'
     steps:
       - name: Summerize deployment
         id: summary
@@ -164,6 +169,7 @@ jobs:
             })
 
   rdev-tests:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     uses: ./.github/workflows/rdev-tests.yml
     secrets: inherit
     needs:
