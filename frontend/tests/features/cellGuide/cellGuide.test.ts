@@ -86,7 +86,6 @@ import {
 const { describe } = test;
 
 const NEURON_CELL_TYPE_ID = "CL_0000540";
-const FOREBRAIN_NEUROBLAST_CELL_TYPE_ID = "CL_1000042";
 const NEURAL_CELL_CELL_TYPE_ID = "CL_0002319";
 const GLIOBLAST_CELL_TYPE_ID = "CL_0000030";
 const T_CELL_CELL_TYPE_ID = "CL_0000084";
@@ -295,11 +294,14 @@ describe("Cell Guide", () => {
       await isElementVisible(page, CELL_GUIDE_CARD_VALIDATED_DESCRIPTION);
     });
 
-    test("CellGuide card GPT description tooltip displays disclaimer", async ({
+    // More and more validated descriptions are coming through, so this test will
+    // start failing since GPT descriptions will not be shown for cell types that have
+    // validated data.
+    test.skip("CellGuide card GPT description tooltip displays disclaimer", async ({
       page,
     }) => {
       await goToPage(
-        `${TEST_URL}${ROUTES.CELL_GUIDE}/${FOREBRAIN_NEUROBLAST_CELL_TYPE_ID}`,
+        `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`,
         page
       );
       await isElementVisible(page, CELL_GUIDE_CARD_GPT_TOOLTIP_LINK);
