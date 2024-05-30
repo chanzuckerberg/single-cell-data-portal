@@ -8,6 +8,15 @@ output backend_url {
   description = "The URL endpoint for the website service"
 }
 
+output backend_de_url {
+  value       = local.backend_de_url
+  description = "The URL endpoint for the differential expression backend service"
+}
+
+output backend_wmg_url {
+  value       = local.backend_wmg_url
+  description = "The URL endpoint for the wmg backend service"
+}
 
 output delete_db_task_definition_arn {
   value       = try(module.delete_db[0].task_definition_arn, "")
