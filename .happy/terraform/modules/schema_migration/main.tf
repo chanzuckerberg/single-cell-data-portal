@@ -322,8 +322,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "Type": "Choice",
             "Choices": [
               {
-                "Variable": "$.no_datasets",
-                "IsPresent": true,
+                "Variable": "$.key_name",
+                "IsPresent": false,
                 "Next": "CollectionPublish"
               }
             ],
@@ -494,7 +494,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
               },
               "Parameters": {
                 "Bucket.$": "${var.artifact_bucket}",
-                "Key.$": "$.result.key_name"
+                "Key.$": "$.key_name"
               }
             },
             "Next": "CollectionPublish",
@@ -524,7 +524,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
         },
         "Parameters": {
           "Bucket.$": "${var.artifact_bucket}",
-          "Key.$": "$.result.key_name"
+          "Key.$": "$.key_name"
         }
       },
       "MaxConcurrency": 40,

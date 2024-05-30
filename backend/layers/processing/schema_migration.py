@@ -138,12 +138,12 @@ class SchemaMigrate(ProcessingLogic):
     def collection_migrate(self, collection_id: str, collection_version_id: str, can_publish: bool) -> Dict[str, str]:
         # Get datasets from collection
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
+        # Filter out datasets that are already on the current schema version
         datasets = [dataset for dataset in version.datasets if not self.check_dataset_is_latest_schema_version(dataset)]
 
         # Generate canonical collection url
         collection_url = self.business_logic.get_collection_url(version.collection_id.id)
 
-        # Filter out datasets that are already on the current schema version
         if not datasets:
             # Handles the case were the collection has no datasets or all datasets are already migrated.
             if len(version.datasets) == 0:
@@ -152,14 +152,13 @@ class SchemaMigrate(ProcessingLogic):
                 self.logger.info(
                     "All datasets in the collection have been migrated", extra={"dataset_count": len(version.datasets)}
                 )
-            response = {
+            response_for_publish_and_cleanup = {
                 "can_publish": str(False),  # skip publishing, because the collection is already published and no
                 # revision is created, or the collection is private or a revision.
                 "collection_version_id": collection_version_id,
                 "collection_url": collection_url,
-                "datasets": [],
-                "no_datasets": str(True),
             }
+            response_for_dataset_migrate = []
         else:
             if version.is_published():
                 # Create a new collection version(revision) if the collection is already published
@@ -169,35 +168,32 @@ class SchemaMigrate(ProcessingLogic):
             else:
                 private_collection_version_id = collection_version_id
 
-            response = {
+            response_for_publish_and_cleanup = {
                 "can_publish": str(can_publish),
                 "collection_version_id": private_collection_version_id,
                 "collection_url": collection_url,
-                # ^^^ The top level fields are used for handling error cases in the AWS SFN.
-                "datasets": [
-                    {
-                        "can_publish": str(can_publish),
-                        "collection_id": collection_id,
-                        "collection_url": collection_url,
-                        "collection_version_id": private_collection_version_id,
-                        "dataset_id": dataset.dataset_id.id,
-                        "dataset_version_id": dataset.version_id.id,
-                        "execution_id": self.execution_id,
-                    }
-                    for dataset in datasets
-                    if dataset.status.processing_status == DatasetProcessingStatus.SUCCESS
-                    # Filter out datasets that are not successfully processed
-                ],
-                # The repeated fields in datasets is required for the AWS SFN job that uses it.
             }
 
-            if not response["datasets"]:
-                # Handles the case were the collection has no processed datasets
-                response["no_datasets"] = str(True)
-        response["execution_id"] = self.execution_id
-        self._store_sfn_response("publish_and_cleanup", version.collection_id.id, response)
-        key_name = self._store_sfn_response("span_datasets", version.collection_id.id, response)
-        return {"key_name": key_name}
+            response_for_dataset_migrate = [
+                {
+                    "collection_id": collection_id,
+                    "collection_url": collection_url,
+                    "collection_version_id": private_collection_version_id,
+                    "dataset_id": dataset.dataset_id.id,
+                    "dataset_version_id": dataset.version_id.id,
+                    "execution_id": self.execution_id,
+                }
+                for dataset in datasets
+                if dataset.status.processing_status == DatasetProcessingStatus.SUCCESS
+                # Filter out datasets that are not successfully processed
+            ]
+        self._store_sfn_response("publish_and_cleanup", version.collection_id.id, response_for_publish_and_cleanup)
+        if response_for_dataset_migrate:
+            key_name = self._store_sfn_response("span_datasets", version.collection_id.id, response_for_dataset_migrate)
+            response = {"key_name": key_name}
+        else:
+            response = {}
+        return response
 
     def publish_and_cleanup(self, collection_version_id: str, can_publish: bool) -> list:
         errors = []
