@@ -4,6 +4,8 @@ on:
   pull_request:
     branches:
       - "*"
+    branches-ignore:
+      - renovate/*
   push:
     branches:
       - "main"
