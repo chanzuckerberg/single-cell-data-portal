@@ -2,9 +2,9 @@ name: Delete rdev for PR
 
 on:
   pull_request:
-    branches-ignore:
-      - prod
-      - "renovate/*"
+    branches:
+      - "!prod"
+      - "!renovate/*"
     types:
       - closed
 
