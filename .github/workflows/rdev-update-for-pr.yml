@@ -2,9 +2,9 @@ name: Create/Update rdev for PR
 
 on:
   pull_request:
-    branches-ignore:
-      - prod
-      - "renovate/*"
+    branches:
+      - "!prod"
+      - "!renovate/*"
     types:
       - opened
       - synchronize
