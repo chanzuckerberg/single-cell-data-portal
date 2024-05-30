@@ -43,7 +43,7 @@ class SchemaMigrate(ProcessingLogic):
         unpublished_collections = [*self.business_logic.get_collections(CollectionQueryFilter(is_published=False))]
         return itertools.chain(unpublished_collections, published_collections)
 
-    def gather_collections(self, auto_publish: bool) -> Dict[str, str]:
+    def gather_collections(self, auto_publish: bool) -> Tuple[Dict[str, str], Dict[str, str]]:
         """
         This function is used to gather all the collections and their datasets that will be migrated
         A json file is created and uploaded to S3 with the list of collections and datasets that will be migrated. It
@@ -58,7 +58,7 @@ class SchemaMigrate(ProcessingLogic):
 
         :param auto_publish: bool - if False, coerce can_publish to False for all collections. if True, determine
         can_publish on collection-by-collection basis based on business logic
-        :return: the key name of the file uploaded to S3
+        :return: the response retuned to the step function and the list of collections to be migrated
         """
         response_for_span_collections = []
 
@@ -95,7 +95,8 @@ class SchemaMigrate(ProcessingLogic):
         if limit > 0:
             response_for_span_collections = random.sample(response_for_span_collections, limit)
         key_name = self._store_sfn_response("span_collections", "collections", response_for_span_collections)
-        return {"key_name": key_name}, response_for_span_collections
+        response_for_sfn = {"key_name": key_name}
+        return response_for_sfn, response_for_span_collections
 
     def dataset_migrate(
         self, collection_version_id: str, collection_id: str, dataset_id: str, dataset_version_id: str
@@ -138,6 +139,15 @@ class SchemaMigrate(ProcessingLogic):
     def collection_migrate(
         self, collection_id: str, collection_version_id: str, can_publish: bool
     ) -> Tuple[Dict[str, str], Dict[str, str], List[Dict[str, str]]]:
+        """
+        This function is used to migrate a collection and its datasets to the latest schema version.
+
+        :param collection_id: the canonical collection id
+        :param collection_version_id: the collection version to migrate
+        :param can_publish: if True, the collection will be published after migration
+        :return: the response retuned to the step function, the response for the publish_and_cleanup step function, and
+        the list of datasets to be migrated
+        """
         # Get datasets from collection
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
         # Filter out datasets that are already on the current schema version
@@ -160,7 +170,7 @@ class SchemaMigrate(ProcessingLogic):
                 # revision is created, or the collection is private or a revision.
                 "collection_version_id": collection_version_id,
             }
-            response = {"collection_version_id": collection_version_id}
+            response_for_sfn = {"collection_version_id": collection_version_id}
         else:
             if version.is_published():
                 # Create a new collection version(revision) if the collection is already published
@@ -186,18 +196,18 @@ class SchemaMigrate(ProcessingLogic):
                 "can_publish": str(can_publish),
                 "collection_version_id": private_collection_version_id,
             }
-            response = {"collection_version_id": private_collection_version_id}
+            response_for_sfn = {"collection_version_id": private_collection_version_id}
         response_for_publish_and_cleanup["datasets"] = response_for_dataset_migrate
         response_for_publish_and_cleanup["collection_url"] = collection_url
 
-        response["execution_id"] = self.execution_id
+        response_for_sfn["execution_id"] = self.execution_id
 
         self._store_sfn_response("publish_and_cleanup", version.collection_id.id, response_for_publish_and_cleanup)
 
         if response_for_dataset_migrate:
             key_name = self._store_sfn_response("span_datasets", version.collection_id.id, response_for_dataset_migrate)
-            response["key_name"] = key_name
-        return response, response_for_publish_and_cleanup, response_for_dataset_migrate
+            response_for_sfn["key_name"] = key_name
+        return (response_for_sfn, response_for_publish_and_cleanup, response_for_dataset_migrate)
 
     def publish_and_cleanup(self, collection_version_id: str) -> list:
         errors = []
