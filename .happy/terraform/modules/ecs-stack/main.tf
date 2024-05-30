@@ -120,7 +120,7 @@ module backend_de_dns {
   count                 = var.require_okta ? 1 : 0
   source                = "../dns"
   custom_stack_name     = local.custom_stack_name
-  app_name              = "backend_de"
+  app_name              = "backend-de"
   alb_dns               = local.backend_de_alb_dns
   canonical_hosted_zone = local.backend_de_alb_zone
   zone                  = local.internal_dns
@@ -130,7 +130,7 @@ module backend_wmg_dns {
   count                 = var.require_okta ? 1 : 0
   source                = "../dns"
   custom_stack_name     = local.custom_stack_name
-  app_name              = "backend_wmg"
+  app_name              = "backend-wmg"
   alb_dns               = local.backend_wmg_alb_dns
   canonical_hosted_zone = local.backend_wmg_alb_zone
   zone                  = local.internal_dns
@@ -212,7 +212,7 @@ module backend_service {
 module backend_de_service {
   source                     = "../service"
   custom_stack_name          = local.custom_stack_name
-  app_name                   = "backend_de"
+  app_name                   = "backend-de"
   vpc                        = local.vpc_id
   image                      = "${local.backend_de_image_repo}:${local.image_tag}"
   cluster                    = local.cluster
@@ -248,7 +248,7 @@ module backend_de_service {
 module backend_wmg_service {
   source                     = "../service"
   custom_stack_name          = local.custom_stack_name
-  app_name                   = "backend_wmg"
+  app_name                   = "backend-wmg"
   vpc                        = local.vpc_id
   image                      = "${local.backend_wmg_image_repo}:${local.image_tag}"
   cluster                    = local.cluster
