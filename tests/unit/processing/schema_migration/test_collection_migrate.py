@@ -63,12 +63,20 @@ class TestCollectionMigrate:
         schema_migrate._store_sfn_response.assert_any_call(
             "span_datasets", private.collection_id.id, response_for_span_datasets
         )
+
+        # verify response_for_publish_and_cleanup
         assert response_for_publish_and_cleanup["collection_version_id"] == private.version_id.id
         assert (
             response_for_publish_and_cleanup["collection_url"]
             == f"https://collections_domain/collections/{private.collection_id.id}"
         )
+
+        # Verify response
         assert "key_name" in response
+        assert response["collection_version_id"] == private.version_id.id
+        assert response["execution_id"] == "test-execution-arn"
+
+        # Verify response_for_span_datasets
         for i in range(len(response_for_span_datasets)):
             assert response_for_span_datasets[i].pop("collection_version_id") == private.version_id.id
             assert response_for_span_datasets[i].pop("collection_id") == private.collection_id.id
@@ -87,13 +95,20 @@ class TestCollectionMigrate:
         schema_migrate._store_sfn_response.assert_called_once_with(
             "publish_and_cleanup", published.collection_id.id, response_for_publish_and_cleanup
         )
+
+        # verify response_for_publish_and_cleanup
         assert response_for_publish_and_cleanup["collection_version_id"] == published.version_id.id
         assert (
             response_for_publish_and_cleanup["collection_url"]
             == f"https://collections_domain/collections/{published.collection_id.id}"
         )
+        # verify response_for_span_datasets
         assert not response_for_span_datasets
+
+        # verify response
         assert "key_name" not in response
+        assert response["collection_version_id"] == published.version_id.id
+        assert response["execution_id"] == "test-execution-arn"
 
     def test_can_publish_true_and_filtered_schema_version(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
@@ -106,13 +121,21 @@ class TestCollectionMigrate:
         schema_migrate._store_sfn_response.assert_called_once_with(
             "publish_and_cleanup", published.collection_id.id, response_for_publish_and_cleanup
         )
+
+        # verify response_for_publish_and_cleanup
         assert response_for_publish_and_cleanup["collection_version_id"] == published.version_id.id
         assert (
             response_for_publish_and_cleanup["collection_url"]
             == f"https://collections_domain/collections/{published.collection_id.id}"
         )
+
+        # verify response_for_span_datasets
         assert not response_for_span_datasets
+
+        # verify response
         assert "key_name" not in response
+        assert response["collection_version_id"] == published.version_id.id
+        assert response["execution_id"] == "test-execution-arn"
 
     def test_no_datasets(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
@@ -126,10 +149,18 @@ class TestCollectionMigrate:
         schema_migrate._store_sfn_response.assert_called_once_with(
             "publish_and_cleanup", published.collection_id.id, response_for_publish_and_cleanup
         )
+
+        # verify response_for_publish_and_cleanup
         assert response_for_publish_and_cleanup["collection_version_id"] == published.version_id.id
         assert (
             response_for_publish_and_cleanup["collection_url"]
             == f"https://collections_domain/collections/{published.collection_id.id}"
         )
+
+        # verify response_for_span_datasets
         assert not response_for_span_datasets
+
+        # verify response
         assert "key_name" not in response
+        assert response["collection_version_id"] == published.version_id.id
+        assert response["execution_id"] == "test-execution-arn"

@@ -159,10 +159,8 @@ class SchemaMigrate(ProcessingLogic):
                 "can_publish": str(False),  # skip publishing, because the collection is already published and no
                 # revision is created, or the collection is private or a revision.
                 "collection_version_id": collection_version_id,
-                "collection_url": collection_url,
-                "datasets": response_for_dataset_migrate,
             }
-            response_for_dataset_migrate = []
+            response = {"collection_version_id": collection_version_id}
         else:
             if version.is_published():
                 # Create a new collection version(revision) if the collection is already published
@@ -187,16 +185,18 @@ class SchemaMigrate(ProcessingLogic):
             response_for_publish_and_cleanup = {
                 "can_publish": str(can_publish),
                 "collection_version_id": private_collection_version_id,
-                "collection_url": collection_url,
-                "datasets": response_for_dataset_migrate,
             }
+            response = {"collection_version_id": private_collection_version_id}
+        response_for_publish_and_cleanup["datasets"] = response_for_dataset_migrate
+        response_for_publish_and_cleanup["collection_url"] = collection_url
+
+        response["execution_id"] = self.execution_id
 
         self._store_sfn_response("publish_and_cleanup", version.collection_id.id, response_for_publish_and_cleanup)
+
         if response_for_dataset_migrate:
             key_name = self._store_sfn_response("span_datasets", version.collection_id.id, response_for_dataset_migrate)
-            response = {"key_name": key_name}
-        else:
-            response = {}
+            response["key_name"] = key_name
         return response, response_for_publish_and_cleanup, response_for_dataset_migrate
 
     def publish_and_cleanup(self, collection_version_id: str) -> list:
@@ -296,6 +296,10 @@ class SchemaMigrate(ProcessingLogic):
         self.s3_provider.download_file(self.artifact_bucket, key_name, local_file)
         with open(local_file, "r") as f:
             data = json.load(f)
+        self.logger.info(
+            "Downloaded from S3",
+            extra={"file_name": local_file, "bucket": self.artifact_bucket, "key": key_name, "data": data},
+        )
         self.s3_provider.delete_files(self.artifact_bucket, [key_name])  # delete after reading.
         return data
 
@@ -338,9 +342,12 @@ class SchemaMigrate(ProcessingLogic):
             self.logger.info("Report", extra=report)
             report_str = json.dumps(report, indent=4, sort_keys=True, cls=CustomJSONEncoder)
             report_message = f"Schema migration results ({os.environ['DEPLOYMENT_STAGE']} env)"
-            # if report["errors"]:
-            #     report_message += " @sc-oncall-eng"
             self._upload_to_slack("schema_migration_report.json", report_str, report_message)
+            # Cleanup leftover schema migration files
+            self.s3_provider.delete_prefix(
+                self.artifact_bucket, self.get_key_prefix(f"schema_migration/{self.execution_id}")
+            )
+
             return report
         except Exception as e:
             self.logger.exception("Failed to generate report")
