@@ -350,7 +350,7 @@ services:
       context: .
       cache_from:
         - "${DOCKER_REPO}corpora-backend-de:branch-main"
-      dockerfile: Dockerfile.backend-de
+      dockerfile: Dockerfile.backend_de
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT=$HAPPY_COMMIT
@@ -393,7 +393,7 @@ services:
       context: .
       cache_from:
         - "${DOCKER_REPO}corpora-backend-wmg:branch-main"
-      dockerfile: Dockerfile.backend-wmg
+      dockerfile: Dockerfile.backend_wmg
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT=$HAPPY_COMMIT
