@@ -1,2 +1,0 @@
-{"levelname": "ERROR", "asctime": "2024-05-29T22:49:08.029Z", "name": "root", "message": "Dataset Version ID not found", "lineno": 101, "pathname": "/single-cell-data-portal/backend/layers/processing/upload_failures/app.py"}
-{"levelname": "ERROR", "asctime": "2024-05-29T22:49:08.029Z", "name": "root", "message": "Dataset version ID None not found", "lineno": 107, "pathname": "/single-cell-data-portal/backend/layers/processing/upload_failures/app.py"}
