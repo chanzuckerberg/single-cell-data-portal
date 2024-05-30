@@ -92,8 +92,8 @@ locals {
 
   frontend_url = try(join("", ["https://", module.frontend_dns[0].dns_prefix, ".", local.external_dns]), var.frontend_url)
   backend_url  = try(join("", ["https://", module.backend_dns[0].dns_prefix, ".", local.external_dns]), var.backend_url)
-  backend_de_url  = try(join("", ["https://", module.backend_de_dns[0].dns_prefix, ".", local.external_dns]), var.backend_de_url)
-  backend_wmg_url  = try(join("", ["https://", module.backend_wmg_dns[0].dns_prefix, ".", local.external_dns]), var.backend_wmg_url)
+  backend_de_url  = try(join("", ["https://", module.backend_de_dns[0].dns_prefix, ".", local.external_dns]), var.backend_de_url != "" ? var.backend_de_url : var.backend_url)
+  backend_wmg_url  = try(join("", ["https://", module.backend_wmg_dns[0].dns_prefix, ".", local.external_dns]), var.backend_wmg_url != "" ? var.backend_wmg_url : var.backend_url)
 }
 
 module frontend_dns {

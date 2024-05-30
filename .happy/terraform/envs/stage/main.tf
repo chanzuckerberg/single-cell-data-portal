@@ -12,8 +12,6 @@ module stack {
   require_okta                 = false
   frontend_url                 = "https://cellxgene.staging.single-cell.czi.technology"
   backend_url                  = "https://api.cellxgene.staging.single-cell.czi.technology"
-  backend_de_url                = "https://de-api.cellxgene.staging.single-cell.czi.technology"
-  backend_wmg_url                = "https://wmg-api.cellxgene.staging.single-cell.czi.technology"
   stack_prefix                 = ""
   batch_container_memory_limit = 63500
   wmg_batch_container_memory_limit = 248000
