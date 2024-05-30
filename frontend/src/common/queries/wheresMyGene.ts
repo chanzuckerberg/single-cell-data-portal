@@ -1,6 +1,9 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
-import { WMG_API_URL as API_URL } from "src/configs/configs";
+import {
+  API_URL as BE_API_URL,
+  WMG_API_URL as API_URL,
+} from "src/configs/configs";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/constants";
 import {
   DispatchContext,
@@ -1280,7 +1283,7 @@ export async function fetchGeneInfo({
   signal,
 }: FetchGeneInfoParams): Promise<GeneInfo> {
   const url =
-    API_URL + API.WMG_GENE_INFO + `?geneID=${geneID}&gene=${geneSymbol}`;
+    BE_API_URL + API.WMG_GENE_INFO + `?geneID=${geneID}&gene=${geneSymbol}`;
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS, // Required for CORS
     signal,
