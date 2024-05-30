@@ -20,13 +20,13 @@ module stack {
   cg_desired_vcpus                 = 128
   backend_memory               = 4096
   frontend_memory              = 4096
-  backend_instance_count       = 4
-  backend_workers              = 1
-  backend_de_instance_count    = 4
+  backend_instance_count       = 1
+  backend_workers              = 5
+  backend_de_instance_count    = 1
   backend_de_memory            = 8192
   backend_de_cpus              = 2
   backend_de_workers           = 3
-  backend_wmg_instance_count    = 4
+  backend_wmg_instance_count    = 1
   backend_wmg_memory            = 8192
   backend_wmg_cpus              = 2
   backend_wmg_workers           = 3  
