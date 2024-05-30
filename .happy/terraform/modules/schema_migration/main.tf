@@ -493,7 +493,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "InputType": "JSON"
               },
               "Parameters": {
-                "Bucket.$": "${var.artifact_bucket}",
+                "Bucket": "${var.artifact_bucket}",
                 "Key.$": "$.key_name"
               }
             },
@@ -523,7 +523,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
           "InputType": "JSON"
         },
         "Parameters": {
-          "Bucket.$": "${var.artifact_bucket}",
+          "Bucket": "${var.artifact_bucket}",
           "Key.$": "$.key_name"
         }
       },
