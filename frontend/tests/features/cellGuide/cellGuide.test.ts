@@ -295,7 +295,10 @@ describe("Cell Guide", () => {
       await isElementVisible(page, CELL_GUIDE_CARD_VALIDATED_DESCRIPTION);
     });
 
-    test("CellGuide card GPT description tooltip displays disclaimer", async ({
+    // More and more validated descriptions are coming through, so this test will
+    // start failing since GPT descriptions will not be shown for cell types that have
+    // validated data.
+    test.skip("CellGuide card GPT description tooltip displays disclaimer", async ({
       page,
     }) => {
       await goToPage(
