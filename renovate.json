@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "timezone": "UTC",
-  "prCreation": "immediate",
+  "schedule": "every weekend",
   "automergeType": "pr",
   "extends": ["config:base"],
   "separateMajorMinor": false,
@@ -30,6 +30,8 @@
       "matchFileNames": [
         "python_dependencies/backend/**",
         "Dockerfile.backend",
+        "Dockerfile.backend_de",
+        "Dockerfile.backend_wmg",
         "backend/api_server/index.html",
         "python_dependencies/common/**"
       ],
@@ -40,7 +42,7 @@
       "groupName": "WMG and CellGuide Pipeline",
       "matchManagers": ["pip_requirements", "dockerfile"],
       "matchFileNames": [
-        "python_dependencies/wmg/**",
+        "python_dependencies/wmg_processing/**",
         "Dockerfile.wmg_pipeline",
         "python_dependencies/cellguide_pipeline/**",
         "Dockerfile.cellguide_pipeline"
