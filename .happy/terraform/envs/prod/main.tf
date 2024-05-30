@@ -20,9 +20,9 @@ module stack {
   wmg_desired_vcpus                = 128
   cg_desired_vcpus                 = 128
   cg_batch_container_memory_limit  = 248000
-  backend_memory               = 30 * 1024
+  backend_memory               = 4 * 1024
   frontend_memory              = 4096
-  backend_instance_count       = 6
+  backend_instance_count       = 4
   backend_cpus                 = 4
   backend_workers              = 5 # Rule of thumb is num CPUs + 1
   backend_de_instance_count    = 4

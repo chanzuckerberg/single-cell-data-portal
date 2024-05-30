@@ -18,7 +18,7 @@ module stack {
   cg_batch_container_memory_limit  = 248000
   backend_instance_count       = 1
   frontend_instance_count      = 1
-  backend_memory               = 8192
+  backend_memory               = 4096
   backend_de_instance_count    = 1
   backend_de_memory            = 8192
   backend_de_cpus              = 1
