@@ -1,11 +1,12 @@
 // (thuang): For local development, please copy the content of this file
 // to a new file named `configs.js` in this directory.
 
+const API_URL = "https://api.cellxgene.dev.single-cell.czi.technology";
 const configs = {
   // Dev
-  API_URL: "https://api.cellxgene.dev.single-cell.czi.technology",
-  DE_API_URL: "https://de-api.cellxgene.dev.single-cell.czi.technology",
-  WMG_API_URL: "https://wmg-api.cellxgene.dev.single-cell.czi.technology",
+  API_URL,
+  DE_API_URL: API_URL,
+  WMG_API_URL: API_URL,
   CELLGUIDE_DATA_URL:
     "https://cellguide.cellxgene.dev.single-cell.czi.technology",
   // Staging
