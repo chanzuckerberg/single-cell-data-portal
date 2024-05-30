@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import random
-from typing import Any, Dict, Iterable, List
+from typing import Dict, Iterable
 
 from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.json import CustomJSONEncoder
@@ -43,10 +43,11 @@ class SchemaMigrate(ProcessingLogic):
         unpublished_collections = [*self.business_logic.get_collections(CollectionQueryFilter(is_published=False))]
         return itertools.chain(unpublished_collections, published_collections)
 
-    def gather_collections(self, auto_publish: bool) -> List[Dict[str, str]]:
+    def gather_collections(self, auto_publish: bool) -> Dict[str, str]:
         """
         This function is used to gather all the collections and their datasets that will be migrated
-        :return: A dictionary with the following structure:
+        A json file is created and uploaded to S3 with the list of collections and datasets that will be migrated. It
+        has the following structure:
         [
             {"can_publish": "true", "collection_id": "<collection_id>", "collection_version_id":
             "<collection_version_id>"},
@@ -57,6 +58,7 @@ class SchemaMigrate(ProcessingLogic):
 
         :param auto_publish: bool - if False, coerce can_publish to False for all collections. if True, determine
         can_publish on collection-by-collection basis based on business logic
+        :return: the key name of the file uploaded to S3
         """
         response = []
 
@@ -92,8 +94,8 @@ class SchemaMigrate(ProcessingLogic):
         limit = int(self.limit_migration) if isinstance(self.limit_migration, str) else self.limit_migration
         if limit > 0:
             response = random.sample(response, limit)
-
-        return response
+        key_name = self._store_sfn_response("span_collections", "collections", response)
+        return {"key_name": key_name}
 
     def dataset_migrate(
         self, collection_version_id: str, collection_id: str, dataset_id: str, dataset_version_id: str
@@ -133,7 +135,7 @@ class SchemaMigrate(ProcessingLogic):
             "execution_id": self.execution_id,
         }
 
-    def collection_migrate(self, collection_id: str, collection_version_id: str, can_publish: bool) -> Dict[str, Any]:
+    def collection_migrate(self, collection_id: str, collection_version_id: str, can_publish: bool) -> Dict[str, str]:
         # Get datasets from collection
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
         datasets = [dataset for dataset in version.datasets if not self.check_dataset_is_latest_schema_version(dataset)]
@@ -194,7 +196,8 @@ class SchemaMigrate(ProcessingLogic):
                 response["no_datasets"] = str(True)
         response["execution_id"] = self.execution_id
         self._store_sfn_response("publish_and_cleanup", version.collection_id.id, response)
-        return response
+        key_name = self._store_sfn_response("span_datasets", version.collection_id.id, response)
+        return {"key_name": key_name}
 
     def publish_and_cleanup(self, collection_version_id: str, can_publish: bool) -> list:
         errors = []
@@ -259,7 +262,7 @@ class SchemaMigrate(ProcessingLogic):
         self.s3_provider.delete_files(self.artifact_bucket, object_keys_to_delete)
         if errors:
             self._store_sfn_response("report/errors", collection_version_id, errors)
-        elif can_publish:
+        elif extra_info["can_publish"]:
             self.business_logic.publish_collection_version(collection_version.version_id)
         return errors
 
@@ -278,6 +281,7 @@ class SchemaMigrate(ProcessingLogic):
         self.logger.info(
             "Uploaded to S3", extra={"file_name": local_file, "bucket": self.artifact_bucket, "key": key_name}
         )
+        return key_name
 
     def _retrieve_sfn_response(self, directory: str, file_name: str):
         """
