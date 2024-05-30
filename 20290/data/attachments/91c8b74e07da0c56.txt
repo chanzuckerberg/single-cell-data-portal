@@ -1,1 +1,0 @@
-INFO     backend.layers.business.business:business.py:517 {'message': 'ingesting dataset', 'collection_version_id': 8e450725-b59d-4106-938f-dd333f98d6ec, 'url': 'http://fake.url', 'current_dataset_version_id': None}
