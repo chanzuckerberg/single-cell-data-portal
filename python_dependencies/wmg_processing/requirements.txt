@@ -12,7 +12,7 @@ moto>=5.0.0
 numba>=0.58.0
 numpy==1.23.5
 openai==0.27.7
-pandas==2.2.1
+pandas==2.2.2
 psutil==5.9.5
 pyarrow==12.0.0
 pydantic==1.10.7
