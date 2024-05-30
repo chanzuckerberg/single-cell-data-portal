@@ -52,8 +52,8 @@ services:
     restart: always
     depends_on:
       - backend
-      - backend_de
-      - backend_wmg
+      - backend-de
+      - backend-wmg
     ports:
       - "3000:3000"
     command: ["./container_init.sh"]
@@ -340,7 +340,7 @@ services:
         aliases:
           - backend.corporanet.local
 
-  backend_de:
+  backend-de:
     image: "${DOCKER_REPO}corpora-backend-de"
     platform: linux/amd64
     profiles:
@@ -350,7 +350,7 @@ services:
       context: .
       cache_from:
         - "${DOCKER_REPO}corpora-backend-de:branch-main"
-      dockerfile: Dockerfile.backend_de
+      dockerfile: Dockerfile.backend-de
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT=$HAPPY_COMMIT
@@ -383,7 +383,7 @@ services:
         aliases:
           - backend.corporanet.local
 
-  backend_wmg:
+  backend-wmg:
     image: "${DOCKER_REPO}corpora-backend-wmg"
     platform: linux/amd64
     profiles:
@@ -393,7 +393,7 @@ services:
       context: .
       cache_from:
         - "${DOCKER_REPO}corpora-backend-wmg:branch-main"
-      dockerfile: Dockerfile.backend_wmg
+      dockerfile: Dockerfile.backend-wmg
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT=$HAPPY_COMMIT

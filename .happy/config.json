@@ -7,8 +7,8 @@
   "services": [
     "frontend",
     "backend",
-    "backend_de",
-    "backend_wmg",
+    "backend-de",
+    "backend-wmg",
     "cellguide_pipeline",
     "processing",
     "dataset_submissions",
@@ -23,10 +23,10 @@
     "backend": {
       "profile": "fullstack"
     },
-    "backend_de": {
+    "backend-de": {
       "profile": "fullstack"
     },
-    "backend_wmg": {
+    "backend-wmg": {
       "profile": "fullstack"
     },
     "cellguide_pipeline": {
