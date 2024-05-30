@@ -14,7 +14,7 @@ numpy==1.23.5
 openai==0.27.7
 pandas==2.2.1
 psutil==5.9.5
-pyarrow==12.0.0
+pyarrow==14.0.1
 pydantic==1.10.7
 pygraphviz==1.11
 python-json-logger==2.0.7
