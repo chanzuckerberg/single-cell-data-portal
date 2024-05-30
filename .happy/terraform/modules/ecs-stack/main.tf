@@ -49,8 +49,8 @@ locals {
 
   frontend_image_repo             = local.secret["ecrs"]["frontend"]["url"]
   backend_image_repo              = local.secret["ecrs"]["backend"]["url"]
-  backend_de_image_repo           = local.secret["ecrs"]["backend_de"]["url"]
-  backend_wmg_image_repo           = local.secret["ecrs"]["backend_wmg"]["url"]
+  backend_de_image_repo           = local.secret["ecrs"]["backend-de"]["url"]
+  backend_wmg_image_repo          = local.secret["ecrs"]["backend-wmg"]["url"]
   upload_image_repo               = local.secret["ecrs"]["processing"]["url"]
   lambda_upload_success_repo      = local.secret["ecrs"]["upload_success"]["url"]
   lambda_upload_repo              = local.secret["ecrs"]["upload_failures"]["url"]
