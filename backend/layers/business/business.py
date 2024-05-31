@@ -1097,25 +1097,25 @@ class BusinessLogic(BusinessLogicInterface):
         forcing curators to re-publish the collection once artifacts update is complete, otherwise,
         - if Crossref has been updated since last publish, update collection version publisher metadata.
 
-        :param collection_version_id: The collection version to check for publisher updates.
+        :param collection_version_id: The collection version to check publisher updates for.
         :param date_of_last_publish: The originally published at or revised at date of collection version.
         """
-        # Get the DOI link from the collection version metadata; exit if no DOI link.
+        # Get the DOI from the collection version metadata; exit if no DOI.
         links = version.metadata.links
-        doi_link = next((link for link in links if link.type == "DOI"), None)
-        if not doi_link:
+        link_doi = next((link for link in links if link.type == "DOI"), None)
+        if not link_doi:
             return
 
         # Fetch the latest publisher metadata from Crossref. Ignore errors, and exit if no metadata is found.
-        publisher_metadata, crossref_doi_curie, deposited_at_timestamp = self._get_publisher_metadata(doi_link.uri, [])
+        publisher_metadata, crossref_doi_curie, deposited_at_timestamp = self._get_publisher_metadata(link_doi.uri, [])
         if not publisher_metadata or not crossref_doi_curie:
             return
 
         # Handle change in publisher metadata from pre-print to published.
         crossref_doi = f"https://doi.org/{crossref_doi_curie}"
-        if crossref_doi != doi_link.uri:
+        if crossref_doi != link_doi.uri:
 
-            # Set the DOI link in the collection version metadata links to be the returned DOI and update collection
+            # Set the DOI in the collection version metadata links to be the returned DOI and update collection
             # version (subsequently triggering update of artifacts).
             updated_links = [Link(link.name, link.type, crossref_doi) if link.type == "DOI" else link for link in links]
             update = CollectionMetadataUpdate(
@@ -1131,7 +1131,7 @@ class BusinessLogic(BusinessLogicInterface):
             # Curators will need to re-publish once artifact updates are complete.
             raise CollectionPublishException(
                 [
-                    f"DOI was updated from {doi_link.uri} to {crossref_doi} requiring updates to corresponding artifacts. "
+                    f"DOI was updated from {link_doi.uri} to {crossref_doi} requiring updates to corresponding artifacts. "
                     "Retry publish once artifact updates are complete."
                 ]
             )
