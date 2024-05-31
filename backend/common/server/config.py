@@ -74,7 +74,6 @@ def register_routes(app, api_base_paths):
 
     def before_request():
         g.start_time = time.time()
-        g.memory_usage = []
         g.request_id = generate_request_id()
         g.track_memory = request.headers.get("X-Enable-Memory-Tracking", "false").lower() == "true"
         if g.track_memory:
@@ -101,7 +100,7 @@ def register_routes(app, api_base_paths):
 
         total_time = time.time() - g.start_time
         response.headers.add("X-Request-Id", get_request_id())
-        response.headers.add("X-Total-Process-Time", f"{total_time:.3f}s")
+        response.headers.add("X-Total-Request-Time", f"{total_time:.3f}s")
 
         app.logger.info(
             dict(
@@ -116,8 +115,16 @@ def register_routes(app, api_base_paths):
         return response
 
     def _track_memory_usage():
+        app.logger.info("Memory tracking thread started")
         while g.track_memory:
-            g.memory_usage.append(memory_usage(-1, interval=0.25, timeout=0.25)[0])
+            try:
+                usage = memory_usage(-1, interval=0.25, timeout=0.25)
+                if usage:
+                    g.memory_usage.append(usage[0])
+                    app.logger.info(f"Memory usage recorded: {usage[0]:.3f} MiB")
+            except Exception as e:
+                app.logger.error(f"Error tracking memory usage: {e}")
+        app.logger.info("Memory tracking thread stopped")
 
     def handle_corpora_error(exception):
         if exception.status >= 500:
