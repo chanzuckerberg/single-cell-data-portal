@@ -6,3 +6,4 @@ flask-server-timing~=0.1.2
 ddtrace~=2.8.5
 python-json-logger
 boto3~=1.34.114
+memory-profiler~=0.61.0

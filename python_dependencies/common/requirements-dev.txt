@@ -5,3 +5,4 @@ parameterized
 pytest
 pytest-mock
 pytest-subtests
+memory-profiler~=0.61.0

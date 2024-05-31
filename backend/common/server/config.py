@@ -1,11 +1,13 @@
 import json
 import os
+import threading
 import time
 from urllib.parse import urlparse
 
 from connexion import FlaskApi, FlaskApp, ProblemException, problem
 from flask import Response, g, request
 from flask_cors import CORS
+from memory_profiler import memory_usage
 from server_timing import Timing as ServerTiming
 from swagger_ui_bundle import swagger_ui_path
 
@@ -71,8 +73,12 @@ def register_routes(app, api_base_paths):
         """
 
     def before_request():
-        g.start = time.time()
+        g.start_time = time.time()
+        g.memory_usage = []
         g.request_id = generate_request_id()
+        g.track_memory = True
+        g.memory_thread = threading.Thread(target=_track_memory_usage)
+        g.memory_thread.start()
         app.logger.info(
             dict(
                 type="REQUEST",
@@ -85,18 +91,29 @@ def register_routes(app, api_base_paths):
         )
 
     def after_request(response: Response):
+        g.track_memory = False
+        g.memory_thread.join()  # Ensure the memory tracking thread has finished
+        total_time = time.time() - g.start_time
+        peak_memory = max(g.memory_usage) if g.memory_usage else 0
         app.logger.info(
             dict(
                 type="RESPONSE",
                 details=dict(
                     status_code=response.status_code,
                     content_length=response.content_length,
-                    response_time=time.time() - g.start,
+                    response_time=total_time,
+                    peak_memory_usage=peak_memory,
                 ),
             )
         )
-        response.headers["X-Request-Id"] = get_request_id()
+        response.headers.add("X-Request-Id", get_request_id())
+        response.headers.add("X-Total-Process-Time", f"{total_time:.3f}s")
+        response.headers.add("X-Peak-Memory-Usage", f"{peak_memory:.3f} MiB")
         return response
+
+    def _track_memory_usage():
+        while g.track_memory:
+            g.memory_usage.append(memory_usage(-1, interval=0.25, timeout=0.25)[0])
 
     def handle_corpora_error(exception):
         if exception.status >= 500:
