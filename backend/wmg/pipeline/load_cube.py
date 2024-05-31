@@ -11,7 +11,7 @@ stack_name = os.environ.get("REMOTE_DEV_PREFIX")
 # root directory in the s3 bucket under which the data artifact directories will be written to
 wmg_s3_root_dir_path = stack_name.strip("/") if stack_name else ""
 
-wmg_bucket_name = os.environ.get("WMG_BUCKET")
+wmg_bucket_name = os.environ.get("CENSUS_CUBE_BUCKET")
 wmg_s3_bucket_uri = f"s3://{wmg_bucket_name}"
 
 logger = logging.getLogger(__name__)

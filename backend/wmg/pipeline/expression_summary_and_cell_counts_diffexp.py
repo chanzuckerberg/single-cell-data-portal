@@ -4,21 +4,21 @@ import os
 import pandas as pd
 import tiledb
 
-from backend.wmg.data.schemas.cube_schema_diffexp import (
+from backend.common.census_cube.data.schemas.cube_schema_diffexp import (
     cell_counts_indexed_dims,
     cell_counts_logical_dims,
     cell_counts_logical_dims_exclude_dataset_id,
     cell_counts_schema,
     expression_summary_schema,
 )
-from backend.wmg.data.snapshot import (
+from backend.common.census_cube.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     CELL_COUNTS_DIFFEXP_CUBE_NAME,
     EXPRESSION_SUMMARY_CUBE_NAME,
     EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAME,
     EXPRESSION_SUMMARY_DIFFEXP_SIMPLE_CUBE_NAME,
 )
-from backend.wmg.data.tiledb import create_ctx
+from backend.common.census_cube.data.tiledb import create_ctx
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_DIFFEXP_CUBES_CREATED_FLAG,

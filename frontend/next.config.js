@@ -40,6 +40,8 @@ const defaultSecureHeaders = {
         HUBSPOT_FORMS_URL,
         PLAUSIBLE_URL,
         configs.API_URL,
+        configs.WMG_API_URL,
+        configs.DE_API_URL,
         configs.CELLGUIDE_DATA_URL,
         configs.CENSUS_MODELS_DATA_URL,
         CROSS_REF_URL,

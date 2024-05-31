@@ -52,6 +52,8 @@ services:
     restart: always
     depends_on:
       - backend
+      - backend-de
+      - backend-wmg
     ports:
       - "3000:3000"
     command: ["./container_init.sh"]
@@ -337,6 +339,93 @@ services:
       corporanet:
         aliases:
           - backend.corporanet.local
+
+  backend-de:
+    image: "${DOCKER_REPO}corpora-backend-de"
+    platform: linux/amd64
+    profiles:
+      - backend
+      - fullstack
+    build:
+      context: .
+      cache_from:
+        - "${DOCKER_REPO}corpora-backend-de:branch-main"
+      dockerfile: Dockerfile.backend_de
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+        - HAPPY_COMMIT=$HAPPY_COMMIT
+        - HAPPY_BRANCH=$HAPPY_BRANCH
+        - INSTALL_DEV=$INSTALL_DEV
+        - HAPPY_TAG
+    restart: always
+    command: ["./container_init.sh"]
+    depends_on:
+      - localstack
+    ports:
+      - "5000:5000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CORPORA_LOCAL_DEV=true
+      - AWS_REGION=us-west-2
+      - AWS_DEFAULT_REGION=us-west-2
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - BOTO_ENDPOINT_URL=http://localstack:4566
+      - DEPLOYMENT_STAGE=test
+      - RESTART_ON_FAILURE=yes
+      - DEV_MODE_COOKIES=1
+      - IS_DOCKER_DEV=yes # This skips some unit tests.
+    volumes:
+      # Mount dirs in a layout suitable for running tests.
+      - .:/single-cell-data-portal
+    networks:
+      corporanet:
+        aliases:
+          - backend.corporanet.local
+
+  backend-wmg:
+    image: "${DOCKER_REPO}corpora-backend-wmg"
+    platform: linux/amd64
+    profiles:
+      - backend
+      - fullstack
+    build:
+      context: .
+      cache_from:
+        - "${DOCKER_REPO}corpora-backend-wmg:branch-main"
+      dockerfile: Dockerfile.backend_wmg
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+        - HAPPY_COMMIT=$HAPPY_COMMIT
+        - HAPPY_BRANCH=$HAPPY_BRANCH
+        - INSTALL_DEV=$INSTALL_DEV
+        - HAPPY_TAG
+    restart: always
+    command: ["./container_init.sh"]
+    depends_on:
+      - localstack
+    ports:
+      - "5000:5000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CORPORA_LOCAL_DEV=true
+      - AWS_REGION=us-west-2
+      - AWS_DEFAULT_REGION=us-west-2
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - BOTO_ENDPOINT_URL=http://localstack:4566
+      - DEPLOYMENT_STAGE=test
+      - RESTART_ON_FAILURE=yes
+      - DEV_MODE_COOKIES=1
+      - IS_DOCKER_DEV=yes # This skips some unit tests.
+    volumes:
+      # Mount dirs in a layout suitable for running tests.
+      - .:/single-cell-data-portal
+    networks:
+      corporanet:
+        aliases:
+          - backend.corporanet.local
+
   oidc:
     image: soluto/oidc-server-mock:0.3.0
     # For Mac M1, you may need to build this image from source.
