@@ -43,7 +43,6 @@ import {
 import { LANDING_PAGE_HEADER } from "src/views/CellGuide/components/LandingPage/constants";
 
 import {
-  CELL_GUIDE_CARD_GPT_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_TOOLTIP_LINK,
   CELL_GUIDE_CARD_SYNONYMS,
   CELL_GUIDE_CARD_VALIDATED_DESCRIPTION,
@@ -295,7 +294,10 @@ describe("Cell Guide", () => {
       await isElementVisible(page, CELL_GUIDE_CARD_VALIDATED_DESCRIPTION);
     });
 
-    test("CellGuide card GPT description tooltip displays disclaimer", async ({
+    // More and more validated descriptions are coming through, so this test will
+    // start failing since GPT descriptions will not be shown for cell types that have
+    // validated data.
+    test.skip("CellGuide card GPT description tooltip displays disclaimer", async ({
       page,
     }) => {
       await goToPage(
@@ -1608,9 +1610,7 @@ function getSearchBarLocator(page: Page) {
 async function assertAllCellCardComponentsArePresent(page: Page) {
   await isElementVisible(page, CELL_GUIDE_CARD_HEADER_NAME);
   await isElementVisible(page, CELL_GUIDE_CARD_HEADER_TAG);
-  await isElementVisible(page, CELL_GUIDE_CARD_GPT_DESCRIPTION);
   await isElementVisible(page, CELL_GUIDE_CARD_SYNONYMS);
-  await isElementVisible(page, CELL_GUIDE_CARD_GPT_TOOLTIP_LINK);
   await isElementVisible(page, CELL_GUIDE_CARD_SEARCH_BAR);
   await isElementVisible(page, CELL_GUIDE_CARD_ENRICHED_GENES_TABLE);
   await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW);

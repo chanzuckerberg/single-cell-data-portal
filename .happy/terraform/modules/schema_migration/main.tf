@@ -322,8 +322,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "Type": "Choice",
             "Choices": [
               {
-                "Variable": "$.no_datasets",
-                "IsPresent": true,
+                "Variable": "$.key_name",
+                "IsPresent": false,
                 "Next": "CollectionPublish"
               }
             ],
@@ -352,10 +352,6 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   {
                     "Name": "COLLECTION_VERSION_ID",
                     "Value.$": "$.collection_version_id"
-                  },
-                  {
-                    "Name": "CAN_PUBLISH",
-                    "Value.$": "$.can_publish"
                   },
                   {
                     "Name": "TASK_TOKEN",
@@ -487,11 +483,20 @@ resource aws_sfn_state_machine sfn_schema_migration {
                       "ResultPath": null
                     }
                   ],
-                  "ResultPath": "$.result"
+                  "ResultPath": null
                 }
               }
             },
-            "ItemsPath": "$.datasets",
+            "ItemReader": {
+              "Resource": "arn:aws:states:::s3:getObject",
+              "ReaderConfig": {
+                "InputType": "JSON"
+              },
+              "Parameters": {
+                "Bucket": "${var.artifact_bucket}",
+                "Key.$": "$.key_name"
+              }
+            },
             "Next": "CollectionPublish",
             "MaxConcurrency": 32,
             "Catch": [
@@ -512,7 +517,16 @@ resource aws_sfn_state_machine sfn_schema_migration {
           }
         }
       },
-      "ItemsPath": "$",
+      "ItemReader": {
+        "Resource": "arn:aws:states:::s3:getObject",
+        "ReaderConfig": {
+          "InputType": "JSON"
+        },
+        "Parameters": {
+          "Bucket": "${var.artifact_bucket}",
+          "Key.$": "$.key_name"
+        }
+      },
       "MaxConcurrency": 40,
       "Next": "report",
       "Catch": [
