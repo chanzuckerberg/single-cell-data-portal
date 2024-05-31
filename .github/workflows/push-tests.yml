@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - "*"
-      - "!renovate/*"
   push:
     branches:
       - "main"
@@ -26,6 +25,7 @@ permissions:
 
 jobs:
   lint:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
@@ -66,6 +66,7 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   backend-unit-test:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -125,6 +126,7 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   backend-wmg-unit-test:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -154,7 +156,7 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          make local-rebuild-backend
+          make local-rebuild-wmg-backend
       - name: Run unit tests
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
@@ -184,6 +186,7 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   backend-de-unit-test:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -213,7 +216,7 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          make local-rebuild-backend
+          make local-rebuild-de-backend
       - name: Run unit tests
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
@@ -243,6 +246,7 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   processing-unit-test:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -302,6 +306,7 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   wmg-processing-unit-test:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -358,6 +363,7 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   cellguide-pipeline-unit-test:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -414,6 +420,7 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   cxg-admin-unit-test:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -473,6 +480,7 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   backend-integration-test:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -530,6 +538,7 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   submit-codecoverage:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     needs:
       - backend-unit-test
       - backend-integration-test
@@ -570,6 +579,7 @@ jobs:
           name: codecov-umbrella
 
   publish-test-report:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     needs:
       - backend-unit-test
       - backend-wmg-unit-test

@@ -203,6 +203,14 @@ resource aws_ecs_task_definition task_definition {
         "value": "${var.api_url}"
       },
       {
+        "name": "DE_API_URL",
+        "value": "${var.de_api_url}"
+      },
+      {
+        "name": "WMG_API_URL",
+        "value": "${var.wmg_api_url}"
+      },
+      {
         "name": "AWS_DEFAULT_REGION",
         "value": "${data.aws_region.current.name}"
       },

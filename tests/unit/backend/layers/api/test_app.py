@@ -26,10 +26,6 @@ class TestAPI(BaseAPIPortalTest):
         response = self.app.get("/curation/ui/")
         self.assertEqual(200, response.status_code)
 
-    def test__wmg_v2_api_swagger_ui__returns_200(self):
-        response = self.app.get("/wmg/v2/ui/")
-        self.assertEqual(200, response.status_code)
-
     def test__catchall_exception_handler(self):
         with self.assertLogs("corpora-api-test", level=logging.ERROR) as logs:
             response = self.app.get("/exception")

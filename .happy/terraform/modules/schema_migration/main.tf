@@ -313,7 +313,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "ErrorEquals": [
                   "States.ALL"
                 ],
-                "ResultPath": "$.error",
+                "ResultPath": null,
                 "Next": "CollectionPublish"
               }
             ]
@@ -322,8 +322,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "Type": "Choice",
             "Choices": [
               {
-                "Variable": "$.no_datasets",
-                "IsPresent": true,
+                "Variable": "$.key_name",
+                "IsPresent": false,
                 "Next": "CollectionPublish"
               }
             ],
@@ -354,10 +354,6 @@ resource aws_sfn_state_machine sfn_schema_migration {
                     "Value.$": "$.collection_version_id"
                   },
                   {
-                    "Name": "CAN_PUBLISH",
-                    "Value.$": "$.can_publish"
-                  },
-                  {
                     "Name": "TASK_TOKEN",
                     "Value.$": "$$.Task.Token"
                   },
@@ -381,7 +377,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "States.ALL"
                 ],
                 "Next": "CollectionError",
-                "ResultPath": "$.error"
+                "ResultPath": null
               }
             ]
           },
@@ -454,7 +450,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                         "States.ALL"
                       ],
                       "Next": "DatasetError",
-                      "ResultPath": "$.error"
+                      "ResultPath": null
                     }
                   ],
                   "ResultPath": "$.result"
@@ -484,14 +480,23 @@ resource aws_sfn_state_machine sfn_schema_migration {
                         "States.ALL"
                       ],
                       "Next": "DatasetError",
-                      "ResultPath": "$.error"
+                      "ResultPath": null
                     }
                   ],
-                  "ResultPath": "$.result"
+                  "ResultPath": null
                 }
               }
             },
-            "ItemsPath": "$.datasets",
+            "ItemReader": {
+              "Resource": "arn:aws:states:::s3:getObject",
+              "ReaderConfig": {
+                "InputType": "JSON"
+              },
+              "Parameters": {
+                "Bucket": "${var.artifact_bucket}",
+                "Key.$": "$.key_name"
+              }
+            },
             "Next": "CollectionPublish",
             "MaxConcurrency": 32,
             "Catch": [
@@ -500,7 +505,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "States.ALL"
                 ],
                 "Next": "CollectionPublish",
-                "ResultPath": "$.error"
+                "ResultPath": null
               }
             ],
             "OutputPath": "$[0]",
@@ -512,7 +517,16 @@ resource aws_sfn_state_machine sfn_schema_migration {
           }
         }
       },
-      "ItemsPath": "$",
+      "ItemReader": {
+        "Resource": "arn:aws:states:::s3:getObject",
+        "ReaderConfig": {
+          "InputType": "JSON"
+        },
+        "Parameters": {
+          "Bucket": "${var.artifact_bucket}",
+          "Key.$": "$.key_name"
+        }
+      },
       "MaxConcurrency": 40,
       "Next": "report",
       "Catch": [

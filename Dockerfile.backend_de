@@ -1,0 +1,50 @@
+FROM ubuntu:22.04
+
+ENV APP_NAME=corpora-api-de
+ENV EXPORT_ENV_VARS_TO_LAMBDA="APP_NAME DEPLOYMENT_STAGE"
+ENV LC_ALL=C.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get install -y python3 libhdf5-dev python3-h5py gettext moreutils build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests python3-aiohttp llvm jq && \
+    rm -rf /var/lib/apt/lists/*
+
+# Don't re-run pip install unless either requirements.txt has changed.
+WORKDIR /single-cell-data-portal
+COPY /python_dependencies/backend/de/requirements.txt requirements.txt
+COPY /python_dependencies/backend/common/server/requirements.txt common-server-requirements.txt
+COPY /python_dependencies/common/ .
+ARG INSTALL_DEV=false
+RUN python3 -m pip install --upgrade pip setuptools
+
+# TODO: Determine if cmake is really needed for ddtrace
+# see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
+RUN python3 -m pip install cmake
+RUN python3 -m pip install -r common-server-requirements.txt
+RUN python3 -m pip install -r requirements.txt
+RUN if [ "$INSTALL_DEV" = "true" ]; then python3 -m pip install -r requirements-dev.txt; fi
+# Install awscli to download wmg snapshot to the local disk
+RUN python3 -m pip install awscli
+EXPOSE 5000
+
+# Install utilities to /single-cell-data-portal so we can run db migrations.
+ADD tests/unit/backend/de /single-cell-data-portal/tests/unit/backend/de
+ADD backend/de/server/container_init.sh /single-cell-data-portal/container_init.sh
+ADD backend/de /single-cell-data-portal/backend/de
+ADD backend/common /single-cell-data-portal/backend/common
+
+ARG HAPPY_BRANCH="unknown"
+ARG HAPPY_COMMIT=""
+LABEL branch=${HAPPY_BRANCH}
+LABEL commit=${HAPPY_COMMIT}
+ENV COMMIT_SHA=${HAPPY_COMMIT}
+ENV COMMIT_BRANCH=${HAPPY_BRANCH}
+
+# For Datadog <-> gunicorn integration
+# https://docs.datadoghq.com/containers/docker/integrations/?tab=docker#configuration
+# https://docs.datadoghq.com/integrations/gunicorn/#metric-collection
+LABEL "com.datadoghq.ad.check_names"='["gunicorn"]'
+LABEL "com.datadoghq.ad.init_configs"='[{}]'
+LABEL "com.datadoghq.ad.instances"='[{ "proc_name": "backend.api_server.app:app" }]'
+
+ENTRYPOINT ["/single-cell-data-portal/container_init.sh"]

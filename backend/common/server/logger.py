@@ -16,7 +16,7 @@ def configure_logging(app_name):
             "version": 1,  # The version of dictConfig to use. This must be 1.
             "filters": {
                 "request_id": {
-                    "()": "backend.api_server.request_id.RequestIdFilter",
+                    "()": "backend.common.server.request_id.RequestIdFilter",
                 },
             },
             "formatters": {
