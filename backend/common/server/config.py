@@ -78,7 +78,7 @@ def register_routes(app, api_base_paths):
         g.track_memory = request.headers.get("X-Enable-Memory-Tracking", "false").lower() == "true"
         if g.track_memory:
             g.memory_usage = []
-            g.memory_thread = threading.Thread(target=_track_memory_usage, args=(g,))
+            g.memory_thread = threading.Thread(target=_track_memory_usage, args=(app,))
             g.memory_thread.start()
         app.logger.info(
             dict(
@@ -113,12 +113,6 @@ def register_routes(app, api_base_paths):
             )
         )
         return response
-
-    def _track_memory_usage(g_context):
-        while g_context.track_memory:
-            usage = memory_usage(-1, interval=0.25, timeout=0.25)
-            if usage:
-                g_context.memory_usage.append(usage[0])
 
     def handle_corpora_error(exception):
         if exception.status >= 500:
@@ -203,6 +197,14 @@ def create_api_app(api_paths_and_spec_files, **server_args):
     app = configure_flask_app(app)
     register_routes(app, [base_path for base_path, _ in api_paths_and_spec_files])
     return app
+
+
+def _track_memory_usage(app):
+    with app.app_context():
+        while g.track_memory:
+            usage = memory_usage(-1, interval=0.25, timeout=0.25)
+            if usage:
+                g.memory_usage.append(usage[0])
 
 
 configure_logging(APP_NAME)
