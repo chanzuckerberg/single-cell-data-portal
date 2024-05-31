@@ -66,32 +66,34 @@ class SchemaMigrate(ProcessingLogic):
         # iterates over unpublished collections first, so published versions are skipped if there is an active revision
 
         # temp: filter for Collections containing visium and slide-seq-v2 datasets
-        COLLECTIONS = [
-            "e68d20e4-5c51-4f6c-b599-30a08858c5ce",
-            "1dbbd47f-80be-4048-8516-c9fa50cb4890",
-            "d1c3e6e4-950e-4a5f-83b4-8de13153299a",
-            "362505ba-aff6-4589-a407-667a9e18bf8a",
-            "8dac14c9-e100-45c7-8ace-051ac2b7737a",
-            "19b54e58-8e71-497b-ad03-aa9a6ca52ce0",
-            "8fcfd5ec-e671-4836-9a96-52110e11db32",
-            "790b6cbd-2cec-4782-8173-08d53e6afc43",
-            "e0612e2e-0867-4773-bff9-b5e08b2a77e7",
-            "d74b6979-efba-47cd-990a-9d80ccf29055",
-            "02b01703-bf1b-48de-b99a-23bef8cccc81",
-            "8e880741-bf9a-4c8e-9227-934204631d2a",
-            "a96133de-e951-4e2d-ace6-59db8b3bfb1d",
-            "21bbfaec-6958-46bc-b1cd-1535752f6304",
-            "2d69ef57-864d-4f58-93f5-4fbd6fab06a6",
-            "7c1fbbae-5f69-4e3e-950d-d819466aecb2",
-            "0aab20b3-c30c-4606-bd2e-d20dae739c45",
-        ]
+        # TODO remove commented sectection bellow
+        # COLLECTIONS = [
+        #     "e68d20e4-5c51-4f6c-b599-30a08858c5ce",
+        #     "1dbbd47f-80be-4048-8516-c9fa50cb4890",
+        #     "d1c3e6e4-950e-4a5f-83b4-8de13153299a",
+        #     "362505ba-aff6-4589-a407-667a9e18bf8a",
+        #     "8dac14c9-e100-45c7-8ace-051ac2b7737a",
+        #     "19b54e58-8e71-497b-ad03-aa9a6ca52ce0",
+        #     "8fcfd5ec-e671-4836-9a96-52110e11db32",
+        #     "790b6cbd-2cec-4782-8173-08d53e6afc43",
+        #     "e0612e2e-0867-4773-bff9-b5e08b2a77e7",
+        #     "d74b6979-efba-47cd-990a-9d80ccf29055",
+        #     "02b01703-bf1b-48de-b99a-23bef8cccc81",
+        #     "8e880741-bf9a-4c8e-9227-934204631d2a",
+        #     "a96133de-e951-4e2d-ace6-59db8b3bfb1d",
+        #     "21bbfaec-6958-46bc-b1cd-1535752f6304",
+        #     "2d69ef57-864d-4f58-93f5-4fbd6fab06a6",
+        #     "7c1fbbae-5f69-4e3e-950d-d819466aecb2",
+        #     "0aab20b3-c30c-4606-bd2e-d20dae739c45",
+        # ]
 
         for collection in self.fetch_collections():
             _resp = {}
             if collection.is_published() and collection.collection_id.id in has_revision:
                 continue
-            if collection.collection_id.id not in COLLECTIONS:
-                continue
+            # if collection.collection_id.id not in COLLECTIONS:
+            #     continue
+            # TODO: remove commented section
             if collection.is_published():
                 # published collection without an active revision
                 _resp["can_publish"] = str(True)
