@@ -1,2 +1,0 @@
-INFO     processing:schema_migration.py:217 skipping dataset
-INFO     processing:schema_migration.py:256 Deleting files
