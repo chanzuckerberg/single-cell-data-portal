@@ -1806,9 +1806,8 @@ class TestGetDatasets(BaseAPIPortalTest):
         self.assertEqual([], body["assets"])
 
     def test_get_all_datasets_200(self):
-        self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata(), "12.3456/j.celrep", 17169328.664)
-        )
+        crossref_return_value_1 = (generate_mock_publisher_metadata(), "12.3456/j.celrep", 17169328.664)
+        self.crossref_provider.fetch_metadata = Mock(return_value=crossref_return_value_1)
         published_collection_1 = self.generate_published_collection(
             add_datasets=2,
             metadata=CollectionMetadata(
@@ -1878,6 +1877,9 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertEqual(collection_names, received_collection_names)
             self.assertEqual(expected_collection_dois, received_collection_dois)
             self.assertEqual(expected_collection_doi_labels, received_collection_doi_labels)
+
+        # Mock Crossref return value for revision.
+        self.crossref_provider.fetch_metadata = Mock(return_value=crossref_return_value_1)
 
         self.generate_dataset(
             collection_version=revision,
