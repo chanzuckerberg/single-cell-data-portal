@@ -2317,12 +2317,14 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         """
 
         # Mock the Crossref check.
-        doi = "test/doi"
-        self.crossref_provider.fetch_metadata = Mock(return_value=({"authors": ["Test Author"]}, doi, 17169328.664))
+        doi_curie = "test/doi"
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=({"authors": ["Test Author"]}, doi_curie, 17169328.664)
+        )
 
         # Create a revision with a DOI.
         metadata = deepcopy(self.sample_collection_metadata)
-        links = [Link("test doi", "DOI", doi)]
+        links = [Link("test doi", "DOI", f"https://doi.org/{doi_curie}")]
         metadata.links = links
         _, revision = self.initialize_collection_with_an_unpublished_revision(links=links)
 
@@ -2335,24 +2337,68 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         # Confirm Crossref was called.
         self.crossref_provider.fetch_metadata.assert_called_once()
 
-    def test_publish_revision_publisher_metadata_not_updated_ok(self):
+    def test_publish_revision_changed_doi_collection_updated_ok(self):
         """
-        When publishing a revision, publisher metadata should not be updated if the deposited date is before
-        the revised at or originally published at date of the corresponding collection.
+        When publishing a revision - and there is a change in DOI - collection and artifacts should be updated.
+        """
+
+        # Mock the Crossref check.
+        doi_curie = "test/doi"
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=({"authors": ["Test Author"]}, doi_curie, 17169328.664)
+        )
+
+        # Create a revision with a DOI.
+        metadata = deepcopy(self.sample_collection_metadata)
+        links = [Link("test doi", "DOI", f"https://doi.org/{doi_curie}")]
+        metadata.links = links
+        _, revision = self.initialize_collection_with_an_unpublished_revision(links=links)
+
+        # Mock a DOI change from Crossref.
+        new_doi_curie = "new/test/doi"
+        self.crossref_provider.fetch_metadata.reset_mock()
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=({"authors": ["Test Author"]}, new_doi_curie, 17169328.664)
+        )
+
+        # Mock the call to update the collection and artifacts.
+        self.business_logic.update_collection_version = Mock()
+
+        # Mock the publisher metadata update.
+        self.database_provider.save_collection_publisher_metadata = Mock()
+
+        # Publish the revision.
+        with self.assertRaises(CollectionPublishException):
+            self.business_logic.publish_collection_version(revision.version_id)
+
+        # Confirm Crossref was called.
+        self.crossref_provider.fetch_metadata.assert_called_once()
+
+        # Confirm collection (and artifacts) update was called.
+        self.business_logic.update_collection_version.assert_called_once()
+
+        # Confirm the metadata was not updated.
+        self.database_provider.save_collection_publisher_metadata.assert_not_called()
+
+    def test_publish_revision_same_doi_publisher_metadata_not_updated_ok(self):
+        """
+        When publishing a revision - and there is no change in DOI - publisher metadata should not be
+        updated if the deposited date is before the revised at or originally published at date of the
+        corresponding collection.
         """
 
         # Get the time before the collection is published.
         before_published_at = datetime.utcnow().timestamp()
 
         # Create a revision with a DOI.
-        doi = "test/doi"
-        links = [Link("test doi", "DOI", doi)]
+        doi_curie = "test/doi"
+        links = [Link("test doi", "DOI", f"https://doi.org/{doi_curie}")]
         _, revision = self.initialize_collection_with_an_unpublished_revision(links=links)
 
         # Mock the Crossref update, and set the deposited date to be before the published date of the collection.
         expected_publisher_metadata = {"authors": ["Test Author"]}
         self.crossref_provider.fetch_metadata = Mock(
-            return_value=(expected_publisher_metadata, doi, before_published_at)
+            return_value=(expected_publisher_metadata, doi_curie, before_published_at)
         )
 
         # Mock the publisher metadata update.
@@ -2367,15 +2413,15 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         # Confirm the metadata was not updated.
         self.database_provider.save_collection_publisher_metadata.assert_not_called()
 
-    def test_publish_revision_publisher_metadata_updated_ok(self):
+    def test_publish_revision_same_doi_publisher_metadata_updated_ok(self):
         """
-        When publishing a revision, publisher metadata should be updated if the deposited date is after
-        the revised at or published at date of the corresponding collection.
+        When publishing a revision - and there is no change in DOI - publisher metadata should be updated
+        if the deposited date is after the revised at or published at date of the corresponding collection.
         """
 
         # Create a published collection.
-        doi = "test/doi"
-        links = [Link("test doi", "DOI", doi)]
+        doi_curie = "test/doi"
+        links = [Link("test doi", "DOI", f"https://doi.org/{doi_curie}")]
         collection = self.initialize_published_collection(links=links)
 
         # Get the time after the collection has been published.
@@ -2387,7 +2433,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         # Mock the Crossref update, and set the deposited date to be after the published date of the collection.
         expected_publisher_metadata = {"authors": ["Test Author"]}
         self.crossref_provider.fetch_metadata = Mock(
-            return_value=(expected_publisher_metadata, doi, after_published_at)
+            return_value=(expected_publisher_metadata, doi_curie, after_published_at)
         )
 
         # Mock the publisher metadata update.

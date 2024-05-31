@@ -972,17 +972,8 @@ class BusinessLogic(BusinessLogicInterface):
             if canonical_datasets != version_datasets:
                 has_dataset_revisions = True
 
-            # Update publisher metadata if there are updates in Crossref that have occurred since last publish.
-            doi_link = next((link for link in version.metadata.links if link.type == "DOI"), None)
-            if doi_link:
-                # Don't track/raise errors here; just keep the existing publisher metadata.
-                publisher_metadata, _, deposited_at_timestamp = self._get_publisher_metadata(doi_link.uri, [])
-                if (
-                    publisher_metadata
-                    and deposited_at_timestamp
-                    and datetime.fromtimestamp(deposited_at_timestamp) > date_of_last_publish
-                ):
-                    self.database_provider.save_collection_publisher_metadata(version_id, publisher_metadata)
+            # Check Crossref for updates in publisher metadata since last publish.
+            self._update_revision_publisher_metadata(version, date_of_last_publish)
 
         # Finalize Collection publication and delete any tombstoned assets
         dataset_version_ids_to_delete_from_s3 = self.database_provider.finalize_collection_version(
@@ -1098,6 +1089,57 @@ class BusinessLogic(BusinessLogicInterface):
                     self.s3_provider.delete_prefix(bucket, prefix)
             except S3DeleteException as e:
                 raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
+
+    def _update_revision_publisher_metadata(self, version: CollectionVersion, date_of_last_publish: datetime) -> None:
+        """
+        Call Crossref for the latest publisher metadata and:
+        - if a DOI has moved from pre-print to published, trigger update to collection (and artifacts) and raise exception,
+        forcing curators to re-publish the collection once artifacts update is complete, otherwise,
+        - if Crossref has been updated since last publish, update collection version publisher metadata.
+
+        :param collection_version_id: The collection version to check for publisher updates.
+        :param date_of_last_publish: The originally published at or revised at date of collection version.
+        """
+        # Get the DOI link from the collection version metadata; exit if no DOI link.
+        links = version.metadata.links
+        doi_link = next((link for link in links if link.type == "DOI"), None)
+        if not doi_link:
+            return
+
+        # Fetch the latest publisher metadata from Crossref. Ignore errors, and exit if no metadata is found.
+        publisher_metadata, crossref_doi_curie, deposited_at_timestamp = self._get_publisher_metadata(doi_link.uri, [])
+        if not publisher_metadata or not crossref_doi_curie:
+            return
+
+        # Handle change in publisher metadata from pre-print to published.
+        crossref_doi = f"https://doi.org/{crossref_doi_curie}"
+        if crossref_doi != doi_link.uri:
+
+            # Set the DOI link in the collection version metadata links to be the returned DOI and update collection
+            # version (subsequently triggering update of artifacts).
+            updated_links = [Link(link.name, link.type, crossref_doi) if link.type == "DOI" else link for link in links]
+            update = CollectionMetadataUpdate(
+                name=None,
+                description=None,
+                contact_name=None,
+                contact_email=None,
+                links=updated_links,
+                consortia=None,
+            )
+            self.update_collection_version(version.version_id, update, True)
+
+            # Curators will need to re-publish once artifact updates are complete.
+            raise CollectionPublishException(
+                [
+                    f"DOI was updated from {doi_link.uri} to {crossref_doi} requiring updates to corresponding artifacts. "
+                    "Retry publish once artifact updates are complete."
+                ]
+            )
+
+        # Otherwise, DOI is unchanged: check if there are updates in Crossref that have occurred since last publish and
+        # update collection metadata if so.
+        if deposited_at_timestamp and datetime.fromtimestamp(deposited_at_timestamp) > date_of_last_publish:
+            self.database_provider.save_collection_publisher_metadata(version.version_id, publisher_metadata)
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str
