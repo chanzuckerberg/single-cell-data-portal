@@ -78,7 +78,7 @@ def register_routes(app, api_base_paths):
         g.track_memory = request.headers.get("X-Enable-Memory-Tracking", "false").lower() == "true"
         if g.track_memory:
             g.memory_usage = []
-            g.memory_thread = threading.Thread(target=_track_memory_usage)
+            g.memory_thread = threading.Thread(target=_track_memory_usage, args=(g,))
             g.memory_thread.start()
         app.logger.info(
             dict(
@@ -114,17 +114,11 @@ def register_routes(app, api_base_paths):
         )
         return response
 
-    def _track_memory_usage():
-        app.logger.info("Memory tracking thread started")
-        while g.track_memory:
-            try:
-                usage = memory_usage(-1, interval=0.25, timeout=0.25)
-                if usage:
-                    g.memory_usage.append(usage[0])
-                    app.logger.info(f"Memory usage recorded: {usage[0]:.3f} MiB")
-            except Exception as e:
-                app.logger.error(f"Error tracking memory usage: {e}")
-        app.logger.info("Memory tracking thread stopped")
+    def _track_memory_usage(g_context):
+        while g_context.track_memory:
+            usage = memory_usage(-1, interval=0.25, timeout=0.25)
+            if usage:
+                g_context.memory_usage.append(usage[0])
 
     def handle_corpora_error(exception):
         if exception.status >= 500:
