@@ -20,6 +20,7 @@ class TestH5ADDataFile(unittest.TestCase):
         self.sample_h5ad_filename = self._write_anndata_to_file(self.sample_anndata)
 
         self.sample_output_directory = path.splitext(self.sample_h5ad_filename)[0] + ".cxg"
+        self.dataset_version_id = "test_dataset_version_id"
 
     def tearDown(self):
         if self.sample_h5ad_filename:
@@ -108,31 +109,31 @@ class TestH5ADDataFile(unittest.TestCase):
 
     def test__to_cxg__simple_anndata_no_corpora_and_sparse(self):
         h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
-        h5ad_file.to_cxg(self.sample_output_directory, 100)
+        h5ad_file.to_cxg(self.sample_output_directory, 100, self.dataset_version_id)
 
         self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, True)
 
     def test__to_cxg__simple_anndata_with_corpora_and_sparse(self):
         h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
-        h5ad_file.to_cxg(self.sample_output_directory, 100)
+        h5ad_file.to_cxg(self.sample_output_directory, 100, self.dataset_version_id)
 
         self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, True)
 
     def test__to_cxg__simple_anndata_no_corpora_and_dense(self):
         h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
-        h5ad_file.to_cxg(self.sample_output_directory, 0)
+        h5ad_file.to_cxg(self.sample_output_directory, 0, self.dataset_version_id)
 
         self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, False)
 
     def test__to_cxg__simple_anndata_with_corpora_and_dense(self):
         h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
-        h5ad_file.to_cxg(self.sample_output_directory, 0)
+        h5ad_file.to_cxg(self.sample_output_directory, 0, self.dataset_version_id)
 
         self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, False)
 
     def test__to_cxg__simple_anndata_with_corpora_and_dense_using_feature_name_var_index(self):
         h5ad_file = H5ADDataFile(self.sample_h5ad_filename, var_index_column_name="feature_name")
-        h5ad_file.to_cxg(self.sample_output_directory, 0)
+        h5ad_file.to_cxg(self.sample_output_directory, 0, self.dataset_version_id)
 
         self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, False)
         self._validate_cxg_var_index_column_match(
@@ -142,7 +143,7 @@ class TestH5ADDataFile(unittest.TestCase):
 
     def test__to_cxg__simple_anndata_with_different_var_index_than_h5ad(self):
         h5ad_file = H5ADDataFile(self.sample_h5ad_filename, var_index_column_name="int_category")
-        h5ad_file.to_cxg(self.sample_output_directory, 0)
+        h5ad_file.to_cxg(self.sample_output_directory, 0, self.dataset_version_id)
 
         self._validate_cxg_var_index_column_match(
             self.sample_output_directory,
@@ -155,7 +156,7 @@ class TestH5ADDataFile(unittest.TestCase):
         sparse_with_column_shift_filename = self._write_anndata_to_file(anndata)
 
         h5ad_file = H5ADDataFile(sparse_with_column_shift_filename)
-        h5ad_file.to_cxg(self.sample_output_directory, 50)
+        h5ad_file.to_cxg(self.sample_output_directory, 50, self.dataset_version_id)
 
         self._validate_cxg_and_h5ad_content_match(
             sparse_with_column_shift_filename, self.sample_output_directory, False, has_column_encoding=True
