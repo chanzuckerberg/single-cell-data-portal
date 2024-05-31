@@ -94,6 +94,19 @@ variable "api_url" {
   description = "URL for the backend api."
 }
 
+# these URLs are only used for the frontend service
+variable "wmg_api_url" {
+  type        = string
+  description = "URL for the wmg backend api."
+  default     = ""
+}
+
+variable "de_api_url" {
+  type        = string
+  description = "URL for the differential expression backend api."
+  default     = ""
+}
+
 variable "frontend_url" {
   type        = string
   description = "URL for the frontend app."

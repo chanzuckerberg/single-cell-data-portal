@@ -6,6 +6,8 @@ export AWS_SECRET_ACCESS_KEY=nonce
 
 export FRONTEND_URL=https://frontend.corporanet.local:3000
 export BACKEND_URL=https://backend.corporanet.local:5000
+export BACKEND_DE_URL=https://backend-de.corporanet.local:5000
+export BACKEND_WMG_URL=https://backend-wmg.corporanet.local:5000
 
 # NOTE: This script is intended to run INSIDE the dockerized dev environment!
 # If you need to run it directly on your laptop for some reason, change
@@ -20,8 +22,8 @@ export OIDC_BROWSER_URL=https://oidc.corporanet.local:8443
 oauth_file="oauth/users.json"
 oauth_user=$(cat ${oauth_file} | jq '.[0]')
 
-export TEST_ACCOUNT_USERNAME=$(jq '.Username' <<< "${oauth_user}")
-export TEST_ACCOUNT_PASSWORD=$(jq '.Password' <<< "${oauth_user}")
+export TEST_ACCOUNT_USERNAME=$(jq '.Username' <<<"${oauth_user}")
+export TEST_ACCOUNT_PASSWORD=$(jq '.Password' <<<"${oauth_user}")
 
 echo -n "waiting for localstack to be ready: "
 until $(curl --output /dev/null --silent --head ${LOCALSTACK_URL}); do
@@ -72,7 +74,6 @@ ${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/auth0
     "curation_audience": "localhost/curation"
 }' || true
 
-
 # TODO: python3 -m unittest tests.unit.backend.common.test_authorizer.TestAuthorizer.test_invalid_token
 ${local_aws} secretsmanager update-secret --secret-id corpora/cicd/test/auth0-secret --secret-string '{
     "client_id": "",
@@ -98,7 +99,7 @@ python3 -m scripts.populate_db
 
 # Make a WMG snapshot
 echo "Setting up WMG snapshot data"
-tmp_snapshot_dir=`mktemp -d`
+tmp_snapshot_dir=$(mktemp -d)
 snapshot_identifier='dummy-snapshot'
 wmg_bucket="wmg-test"
 wmg_config_secret_name="corpora/backend/test/wmg_config"
@@ -120,3 +121,5 @@ echo
 echo "Dev env is up and running!"
 echo "  Frontend: ${FRONTEND_URL}"
 echo "  Backend: ${BACKEND_URL}"
+echo "  Backend DE: ${BACKEND_DE_URL}"
+echo "  Backend WMG: ${BACKEND_WMG_URL}"
