@@ -76,9 +76,11 @@ def register_routes(app, api_base_paths):
         g.start_time = time.time()
         g.memory_usage = []
         g.request_id = generate_request_id()
-        g.track_memory = True
-        g.memory_thread = threading.Thread(target=_track_memory_usage)
-        g.memory_thread.start()
+        g.track_memory = request.headers.get("X-Enable-Memory-Tracking", "false").lower() == "true"
+        if g.track_memory:
+            g.memory_usage = []
+            g.memory_thread = threading.Thread(target=_track_memory_usage)
+            g.memory_thread.start()
         app.logger.info(
             dict(
                 type="REQUEST",
@@ -91,10 +93,16 @@ def register_routes(app, api_base_paths):
         )
 
     def after_request(response: Response):
-        g.track_memory = False
-        g.memory_thread.join()  # Ensure the memory tracking thread has finished
+        if g.track_memory:
+            g.track_memory = False
+            g.memory_thread.join()
+            peak_memory = max(g.memory_usage) if g.memory_usage else 0
+            response.headers.add("X-Peak-Memory-Usage", f"{peak_memory:.3f} MiB")
+
         total_time = time.time() - g.start_time
-        peak_memory = max(g.memory_usage) if g.memory_usage else 0
+        response.headers.add("X-Request-Id", get_request_id())
+        response.headers.add("X-Total-Process-Time", f"{total_time:.3f}s")
+
         app.logger.info(
             dict(
                 type="RESPONSE",
@@ -102,13 +110,9 @@ def register_routes(app, api_base_paths):
                     status_code=response.status_code,
                     content_length=response.content_length,
                     response_time=total_time,
-                    peak_memory_usage=peak_memory,
                 ),
             )
         )
-        response.headers.add("X-Request-Id", get_request_id())
-        response.headers.add("X-Total-Process-Time", f"{total_time:.3f}s")
-        response.headers.add("X-Peak-Memory-Usage", f"{peak_memory:.3f} MiB")
         return response
 
     def _track_memory_usage():
