@@ -84,10 +84,10 @@ resource "aws_sfn_state_machine" "state_machine" {
           }
         ],
         "Retry": [ {
-            "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
-            "IntervalSeconds": 3,
-            "MaxAttempts": 5,
-            "BackoffRate": 2
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException"],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 7,
+            "BackoffRate": 5
         } ],
         "ResultPath": "$.batch"
       },
@@ -144,10 +144,10 @@ resource "aws_sfn_state_machine" "state_machine" {
         },
         "Resource": "arn:aws:states:::aws-sdk:batch:registerJobDefinition",
         "Retry": [ {
-            "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
-            "IntervalSeconds": 3,
-            "MaxAttempts": 5,
-            "BackoffRate": 2
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException"],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 7,
+            "BackoffRate": 5
         } ],
         "ResultPath": "$.batch"
       },
@@ -179,10 +179,10 @@ resource "aws_sfn_state_machine" "state_machine" {
         "ResultPath": null,
         "TimeoutSeconds": ${local.timeout},
         "Retry": [ {
-            "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
-            "IntervalSeconds": 3,
-            "MaxAttempts": 5,
-            "BackoffRate": 2
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException"],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 7,
+            "BackoffRate": 5
         } ],
         "Catch": [
           {
@@ -223,10 +223,10 @@ resource "aws_sfn_state_machine" "state_machine" {
                   }
                 },
                 "Retry": [ {
-                    "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
-                    "IntervalSeconds": 3,
-                    "MaxAttempts": 5,
-                    "BackoffRate": 2
+                    "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException"],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 7,
+                    "BackoffRate": 5
                 } ],
                 "Catch": [
                   {
@@ -271,10 +271,10 @@ resource "aws_sfn_state_machine" "state_machine" {
                   }
                 },
                 "Retry": [ {
-                    "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
-                    "IntervalSeconds": 3,
-                    "MaxAttempts": 5,
-                    "BackoffRate": 2
+                    "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException"],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 7,
+                    "BackoffRate": 5
                 } ],
                 "Catch": [
                   {
@@ -340,10 +340,10 @@ resource "aws_sfn_state_machine" "state_machine" {
         },
         "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition",
         "Retry": [ {
-            "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
-            "IntervalSeconds": 3,
-            "MaxAttempts": 5,
-            "BackoffRate": 2
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException"],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 7,
+            "BackoffRate": 5
         } ],
         "ResultPath": null
       },
@@ -355,10 +355,10 @@ resource "aws_sfn_state_machine" "state_machine" {
         },
         "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition",
         "Retry": [ {
-            "ErrorEquals": ["AWS.Batch.TooManyRequestsException"],
-            "IntervalSeconds": 3,
-            "MaxAttempts": 5,
-            "BackoffRate": 2
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException"],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 7,
+            "BackoffRate": 5
         } ],
         "ResultPath": null
       },
