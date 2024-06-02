@@ -24,7 +24,7 @@
     "@visx/gradient": "^3.3.0",
     "@visx/group": "^3.3.0",
     "@visx/hierarchy": "^3.3.0",
-    "@visx/responsive": "^3.3.0",
+    "@visx/responsive": "^3.10.2",
     "@visx/shape": "^3.5.0",
     "@visx/tooltip": "^3.3.0",
     "@visx/zoom": "^3.3.0",
