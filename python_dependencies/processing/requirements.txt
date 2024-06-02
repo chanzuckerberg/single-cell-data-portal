@@ -7,7 +7,7 @@ dataclasses-json
 ddtrace==2.1.4
 numba==0.56.2
 numpy==1.23.2
-pandas==1.4.4
+pandas==2.2.2
 psutil>=5.9.0
 psycopg2-binary==2.*
 pyarrow>=1.0
