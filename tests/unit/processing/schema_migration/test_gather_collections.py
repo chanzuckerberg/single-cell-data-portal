@@ -25,7 +25,7 @@ class TestGatherCollections:
         published, migration_revision = collections["migration_revision"]
         # get_collections is called twice
         schema_migrate.business_logic.get_collections.side_effect = [[published], [migration_revision]]
-        response = schema_migrate.gather_collections(auto_publish=True)
+        _, response = schema_migrate.gather_collections(auto_publish=True)
         assert len(response) == 1
         assert {
             "can_publish": "True",
