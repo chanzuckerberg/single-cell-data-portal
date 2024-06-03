@@ -180,7 +180,6 @@ resource aws_sfn_state_machine sfn_schema_migration {
         "Next": "ApplyDefaults",
         "ResultPath": "$.inputDefaults",
         "Parameters": {
-          "auto_publish": "False",
           "limit_migration": "0"
         }
     },
@@ -220,10 +219,6 @@ resource aws_sfn_state_machine sfn_schema_migration {
             {
               "Name": "EXECUTION_ID",
               "Value.$": "$$.Execution.Name"
-            },
-            {
-              "Name": "AUTO_PUBLISH",
-              "Value.$": "$.auto_publish"
             },
             {
               "Name": "LIMIT_MIGRATION",
@@ -287,10 +282,6 @@ resource aws_sfn_state_machine sfn_schema_migration {
                     "Value.$": "$.collection_version_id"
                   },
                   {
-                    "Name": "CAN_PUBLISH",
-                    "Value.$": "$.can_publish"
-                  },
-                  {
                     "Name": "TASK_TOKEN",
                     "Value.$": "$$.Task.Token"
                   },
@@ -314,7 +305,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "States.ALL"
                 ],
                 "ResultPath": null,
-                "Next": "CollectionPublish"
+                "Next": "CollectionCleanup"
               }
             ]
           },
@@ -324,17 +315,17 @@ resource aws_sfn_state_machine sfn_schema_migration {
               {
                 "Variable": "$.key_name",
                 "IsPresent": false,
-                "Next": "CollectionPublish"
+                "Next": "CollectionCleanup"
               }
             ],
             "Default": "SpanDatasets"
           },
-          "CollectionPublish": {
+          "CollectionCleanup": {
             "Type": "Task",
             "Resource": "arn:aws:states:::batch:submitJob.sync",
             "Parameters": {
             "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
-            "JobName": "Collection_publish",
+            "JobName": "Collection_cleanup",
             "JobQueue": "${var.job_queue_arn}",
               "Timeout": {
                 "AttemptDurationSeconds": 600
@@ -343,7 +334,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "Environment": [
                   {
                     "Name": "STEP_NAME",
-                    "Value": "collection_publish"
+                    "Value": "collection_cleanup"
                   },
                   {
                     "Name": "MIGRATE",
@@ -497,14 +488,14 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "Key.$": "$.key_name"
               }
             },
-            "Next": "CollectionPublish",
+            "Next": "CollectionCleanup",
             "MaxConcurrency": 32,
             "Catch": [
               {
                 "ErrorEquals": [
                   "States.ALL"
                 ],
-                "Next": "CollectionPublish",
+                "Next": "CollectionCleanup",
                 "ResultPath": null
               }
             ],
