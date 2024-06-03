@@ -63,15 +63,16 @@ class DatabaseProvider(DatabaseProviderInterface):
     def _drop_schema(self):
         from sqlalchemy.schema import DropSchema
 
-        with contextlib.suppress(ProgrammingError):
-            self._engine.execute(DropSchema(self._schema_name, cascade=True))
+        with contextlib.suppress(ProgrammingError), self._engine.begin() as conn:
+            conn.execute(DropSchema(self._schema_name, cascade=True))
 
     def _create_schema(self):
         from sqlalchemy.schema import CreateSchema
 
         from backend.layers.persistence.orm import metadata
 
-        self._engine.execute(CreateSchema(self._schema_name))
+        with self._engine.begin() as conn:
+            conn.execute(CreateSchema(self._schema_name))
         metadata.schema = self._schema_name
         metadata.create_all(bind=self._engine)
 
@@ -82,7 +83,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 self._session_maker = sessionmaker(bind=self._engine)
             session = self._session_maker(**kwargs)
             yield session
-            if session.transaction:
+            if session.in_transaction():
                 session.commit()
             else:
                 session.expire_all()

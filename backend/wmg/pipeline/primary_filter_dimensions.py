@@ -5,8 +5,8 @@ import os
 import tiledb
 from cellxgene_ontology_guide.curated_ontology_term_lists import CuratedOntologyTermList, get_curated_ontology_term_list
 
-from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
-from backend.wmg.data.snapshot import (
+from backend.common.census_cube.data.ontology_labels import gene_term_label, ontology_term_label
+from backend.common.census_cube.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,

@@ -13,7 +13,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
-from backend.layers.processing.utils import rds_citation_from_h5ad
+from backend.layers.processing.utils.rds_citation_from_h5ad import rds_citation_from_h5ad
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
@@ -96,7 +96,7 @@ class ProcessSeurat(ProcessingLogic):
         )
 
     @logit
-    def make_seurat(self, local_filename):
+    def make_seurat(self, local_filename, *args, **kwargs):
         """
         Create a Seurat rds file from the AnnData file.
         """

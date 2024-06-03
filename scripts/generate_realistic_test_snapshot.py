@@ -6,17 +6,23 @@ import tempfile
 from enum import Enum
 from unittest.mock import Mock, patch
 
+# Import tiledbsoma before tiledb to prevent segmentation faults on macOS.
+# This import order is critical to avoid a race condition with a mutex lock error,
+# which occurs only when tiledbsoma is imported after tiledb in this module and also
+# imported in any upstream module.
+import tiledbsoma  # noqa: F401, isort:skip
 import tiledb
 
-from backend.wmg.data.snapshot import (
-    CARDINALITY_PER_DIMENSION_FILENAME,
+from backend.common.census_cube.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
+    CELL_COUNTS_DIFFEXP_CUBE_NAME,
     CELL_TYPE_ANCESTORS_FILENAME,
     CELL_TYPE_ORDERINGS_FILENAME,
     DATASET_METADATA_FILENAME,
     EXPRESSION_SUMMARY_CUBE_NAME,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
-    EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES,
+    EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAME,
+    EXPRESSION_SUMMARY_DIFFEXP_SIMPLE_CUBE_NAME,
     FILTER_RELATIONSHIPS_FILENAME,
     MARKER_GENES_CUBE_NAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
@@ -83,7 +89,7 @@ if __name__ == "__main__":
             new=MockCensusParameters,
         ),
         patch(
-            "backend.cellguide.pipeline.computational_marker_genes.computational_markers.bootstrap_rows_percentiles",
+            "backend.common.marker_genes.computational_markers.bootstrap_rows_percentiles",
             new=mock_bootstrap_rows_percentiles,
         ),
         patch(
@@ -109,12 +115,23 @@ if __name__ == "__main__":
             MARKER_GENES_CUBE_NAME,
             EXPRESSION_SUMMARY_CUBE_NAME,
             EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME,
-        ] + EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES:
+            CELL_COUNTS_DIFFEXP_CUBE_NAME,
+            EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAME,
+            EXPRESSION_SUMMARY_DIFFEXP_SIMPLE_CUBE_NAME,
+        ]:
             if (
                 cube_name == fixture_type
                 or fixture_type == FixtureType.all.value
                 or (
-                    cube_name in EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAMES
+                    cube_name == EXPRESSION_SUMMARY_DIFFEXP_CUBE_NAME
+                    and fixture_type == FixtureType.differential_expression.value
+                )
+                or (
+                    cube_name == CELL_COUNTS_DIFFEXP_CUBE_NAME
+                    and fixture_type == FixtureType.differential_expression.value
+                )
+                or (
+                    cube_name == EXPRESSION_SUMMARY_DIFFEXP_SIMPLE_CUBE_NAME
                     and fixture_type == FixtureType.differential_expression.value
                 )
             ):
@@ -132,16 +149,8 @@ if __name__ == "__main__":
             CELL_TYPE_ORDERINGS_FILENAME,
             FILTER_RELATIONSHIPS_FILENAME,
             CELL_TYPE_ANCESTORS_FILENAME,
-            CARDINALITY_PER_DIMENSION_FILENAME,
         ]:
-            if (
-                filename.split(".json")[0] == fixture_type
-                or fixture_type == FixtureType.all.value
-                or (
-                    filename == CARDINALITY_PER_DIMENSION_FILENAME
-                    and fixture_type == FixtureType.differential_expression.value
-                )
-            ):
+            if filename.split(".json")[0] == fixture_type or fixture_type == FixtureType.all.value:
                 path = os.path.join(new_snapshot, filename)
                 print(f"Writing {path}")
                 shutil.copy(os.path.join(corpus_path, filename), path)

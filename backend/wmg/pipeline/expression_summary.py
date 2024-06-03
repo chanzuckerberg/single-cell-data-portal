@@ -9,13 +9,13 @@ from numba import njit
 from scipy import sparse
 from tiledbsoma import ExperimentAxisQuery
 
-from backend.wmg.data.schemas.cube_schema import (
+from backend.common.census_cube.data.schemas.cube_schema import (
     expression_summary_indexed_dims_no_gene_ontology,
     expression_summary_non_indexed_dims,
     expression_summary_schema,
 )
-from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME
-from backend.wmg.data.tiledb import create_ctx
+from backend.common.census_cube.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME
+from backend.common.census_cube.data.tiledb import create_ctx
 from backend.wmg.pipeline.constants import (
     ASSAYS_FOR_GENE_LENGTH_NORMALIZATION,
     DIMENSION_NAME_MAP_CENSUS_TO_WMG,

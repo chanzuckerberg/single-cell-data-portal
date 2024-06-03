@@ -100,8 +100,8 @@ local-status: ## Show the status of the containers in the dev environment.
 
 .PHONY: local-rebuild
 local-rebuild: .env.ecr local-ecr-login ## Rebuild local dev without re-importing data
-	docker compose $(COMPOSE_OPTS) build frontend backend processing wmg_processing database oidc localstack
-	docker compose $(COMPOSE_OPTS) up -d frontend backend processing database oidc localstack
+	docker compose $(COMPOSE_OPTS) build frontend backend backend-de backend-wmg processing wmg_processing database oidc localstack
+	docker compose $(COMPOSE_OPTS) up -d frontend backend backend-de backend-wmg processing database oidc localstack
 
 local-rebuild-backend: .env.ecr local-ecr-login
 	docker compose $(COMPOSE_OPTS) build backend
@@ -114,6 +114,12 @@ local-rebuild-wmg-processing: .env.ecr local-ecr-login
 
 local-rebuild-cellguide-pipeline: .env.ecr local-ecr-login
 	docker compose $(COMPOSE_OPTS) build cellguide_pipeline
+
+local-rebuild-de-backend: .env.ecr local-ecr-login
+	docker compose $(COMPOSE_OPTS) build backend-de
+
+local-rebuild-wmg-backend: .env.ecr local-ecr-login
+	docker compose $(COMPOSE_OPTS) build backend-wmg
 
 .PHONY: local-sync
 local-sync: local-rebuild local-init  ## Re-sync the local-environment state after modifying library deps or docker configs
@@ -151,7 +157,7 @@ local-shell: ## Open a command shell in one of the dev containers. ex: make loca
 	docker compose exec $(CONTAINER) bash
 
 .PHONY: local-unit-test
-local-unit-test: local-unit-test-backend local-unit-test-wmg-backend local-unit-test-wmg-processing local-unit-test-cellguide-pipeline local-unit-test-processing local-unit-test-cxg-admin
+local-unit-test: local-unit-test-backend local-unit-test-wmg-backend local-unit-test-de-backend local-unit-test-wmg-processing local-unit-test-cellguide-pipeline local-unit-test-processing local-unit-test-cxg-admin
 # Run all backend and processing unit tests in the dev environment, with code coverage
 
 .PHONY: local-unit-test-backend
@@ -161,8 +167,14 @@ local-unit-test-backend: .env.ecr
 
 .PHONY: local-unit-test-wmg-backend
 local-unit-test-wmg-backend: .env.ecr
-	docker compose $(COMPOSE_OPTS) run --rm -T backend bash -c \
+	docker compose $(COMPOSE_OPTS) run --rm -T backend-wmg bash -c \
 	"cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/backend/wmg/";
+
+.PHONY: local-unit-test-de-backend
+local-unit-test-de-backend: .env.ecr
+	docker compose $(COMPOSE_OPTS) run --rm -T backend-de bash -c \
+	"cd /single-cell-data-portal && coverage run $(COVERAGE_RUN_ARGS) -m pytest --alluredir=./allure-results tests/unit/backend/de/";
+
 
 .PHONY: local-integration-test-backend
 local-integration-test-backend: .env.ecr

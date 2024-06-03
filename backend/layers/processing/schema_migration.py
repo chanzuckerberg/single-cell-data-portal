@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import random
-from typing import Any, Dict, Iterable, List
+from typing import Dict, Iterable, List, Tuple
 
 from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.json import CustomJSONEncoder
@@ -43,10 +43,11 @@ class SchemaMigrate(ProcessingLogic):
         unpublished_collections = [*self.business_logic.get_collections(CollectionQueryFilter(is_published=False))]
         return itertools.chain(unpublished_collections, published_collections)
 
-    def gather_collections(self, auto_publish: bool) -> List[Dict[str, str]]:
+    def gather_collections(self, auto_publish: bool) -> Tuple[Dict[str, str], Dict[str, str]]:
         """
         This function is used to gather all the collections and their datasets that will be migrated
-        :return: A dictionary with the following structure:
+        A json file is created and uploaded to S3 with the list of collections and datasets that will be migrated. It
+        has the following structure:
         [
             {"can_publish": "true", "collection_id": "<collection_id>", "collection_version_id":
             "<collection_version_id>"},
@@ -57,8 +58,9 @@ class SchemaMigrate(ProcessingLogic):
 
         :param auto_publish: bool - if False, coerce can_publish to False for all collections. if True, determine
         can_publish on collection-by-collection basis based on business logic
+        :return: the response retuned to the step function and the list of collections to be migrated
         """
-        response = []
+        response_for_span_collections = []
 
         has_migration_revision = set()
         # iterates over unpublished collections first, so published versions are skipped if there is an active revision
@@ -88,14 +90,15 @@ class SchemaMigrate(ProcessingLogic):
                 collection_version_id=collection.version_id.id,
                 execution_id=self.execution_id,
             )
-            response.append(_resp)
+            response_for_span_collections.append(_resp)
 
         # For testing purposes, only migrate a randomly sampled subset of the collections gathered
         limit = int(self.limit_migration) if isinstance(self.limit_migration, str) else self.limit_migration
         if limit > 0:
-            response = random.sample(response, limit)
-
-        return response
+            response_for_span_collections = random.sample(response_for_span_collections, limit)
+        key_name = self._store_sfn_response("span_collections", "collections", response_for_span_collections)
+        response_for_sfn = {"key_name": key_name}
+        return response_for_sfn, response_for_span_collections
 
     def dataset_migrate(
         self, collection_version_id: str, collection_id: str, dataset_id: str, dataset_version_id: str
@@ -135,15 +138,26 @@ class SchemaMigrate(ProcessingLogic):
             "execution_id": self.execution_id,
         }
 
-    def collection_migrate(self, collection_id: str, collection_version_id: str, can_publish: bool) -> Dict[str, Any]:
+    def collection_migrate(
+        self, collection_id: str, collection_version_id: str, can_publish: bool
+    ) -> Tuple[Dict[str, str], Dict[str, str], List[Dict[str, str]]]:
+        """
+        This function is used to migrate a collection and its datasets to the latest schema version.
+
+        :param collection_id: the canonical collection id
+        :param collection_version_id: the collection version to migrate
+        :param can_publish: if True, the collection will be published after migration
+        :return: the response retuned to the step function, the response for the publish_and_cleanup step function, and
+        the list of datasets to be migrated
+        """
         # Get datasets from collection
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
+        # Filter out datasets that are already on the current schema version
         datasets = [dataset for dataset in version.datasets if not self.check_dataset_is_latest_schema_version(dataset)]
 
         # Generate canonical collection url
         collection_url = self.business_logic.get_collection_url(version.collection_id.id)
 
-        # Filter out datasets that are already on the current schema version
         if not datasets:
             # Handles the case were the collection has no datasets or all datasets are already migrated.
             if len(version.datasets) == 0:
@@ -152,14 +166,13 @@ class SchemaMigrate(ProcessingLogic):
                 self.logger.info(
                     "All datasets in the collection have been migrated", extra={"dataset_count": len(version.datasets)}
                 )
-            response = {
+            response_for_dataset_migrate = []
+            response_for_publish_and_cleanup = {
                 "can_publish": str(False),  # skip publishing, because the collection is already published and no
                 # revision is created, or the collection is private or a revision.
                 "collection_version_id": collection_version_id,
-                "collection_url": collection_url,
-                "datasets": [],
-                "no_datasets": str(True),
             }
+            response_for_sfn = {"collection_version_id": collection_version_id}
         else:
             if version.is_published():
                 # Create a new collection version(revision) if the collection is already published
@@ -169,37 +182,37 @@ class SchemaMigrate(ProcessingLogic):
                 ).version_id.id
             else:
                 private_collection_version_id = collection_version_id
-
-            response = {
+            response_for_dataset_migrate = [
+                {
+                    "collection_id": collection_id,
+                    "collection_url": collection_url,
+                    "collection_version_id": private_collection_version_id,
+                    "dataset_id": dataset.dataset_id.id,
+                    "dataset_version_id": dataset.version_id.id,
+                    "execution_id": self.execution_id,
+                }
+                for dataset in datasets
+                if dataset.status.processing_status == DatasetProcessingStatus.SUCCESS
+                # Filter out datasets that are not successfully processed
+            ]
+            response_for_publish_and_cleanup = {
                 "can_publish": str(can_publish),
                 "collection_version_id": private_collection_version_id,
-                "collection_url": collection_url,
-                # ^^^ The top level fields are used for handling error cases in the AWS SFN.
-                "datasets": [
-                    {
-                        "can_publish": str(can_publish),
-                        "collection_id": collection_id,
-                        "collection_url": collection_url,
-                        "collection_version_id": private_collection_version_id,
-                        "dataset_id": dataset.dataset_id.id,
-                        "dataset_version_id": dataset.version_id.id,
-                        "execution_id": self.execution_id,
-                    }
-                    for dataset in datasets
-                    if dataset.status.processing_status == DatasetProcessingStatus.SUCCESS
-                    # Filter out datasets that are not successfully processed
-                ],
-                # The repeated fields in datasets is required for the AWS SFN job that uses it.
             }
+            response_for_sfn = {"collection_version_id": private_collection_version_id}
+        response_for_publish_and_cleanup["datasets"] = response_for_dataset_migrate
+        response_for_publish_and_cleanup["collection_url"] = collection_url
 
-            if not response["datasets"]:
-                # Handles the case were the collection has no processed datasets
-                response["no_datasets"] = str(True)
-        response["execution_id"] = self.execution_id
-        self._store_sfn_response("publish_and_cleanup", version.collection_id.id, response)
-        return response
+        response_for_sfn["execution_id"] = self.execution_id
 
-    def publish_and_cleanup(self, collection_version_id: str, can_publish: bool) -> list:
+        self._store_sfn_response("publish_and_cleanup", version.collection_id.id, response_for_publish_and_cleanup)
+
+        if response_for_dataset_migrate:
+            key_name = self._store_sfn_response("span_datasets", version.collection_id.id, response_for_dataset_migrate)
+            response_for_sfn["key_name"] = key_name
+        return (response_for_sfn, response_for_publish_and_cleanup, response_for_dataset_migrate)
+
+    def publish_and_cleanup(self, collection_version_id: str) -> list:
         errors = []
         collection_version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
         object_keys_to_delete = []
@@ -262,7 +275,7 @@ class SchemaMigrate(ProcessingLogic):
         self.s3_provider.delete_files(self.artifact_bucket, object_keys_to_delete)
         if errors:
             self._store_sfn_response("report/errors", collection_version_id, errors)
-        elif can_publish:
+        elif extra_info["can_publish"].lower() == "true":
             self.business_logic.publish_collection_version(collection_version.version_id)
         return errors
 
@@ -281,6 +294,7 @@ class SchemaMigrate(ProcessingLogic):
         self.logger.info(
             "Uploaded to S3", extra={"file_name": local_file, "bucket": self.artifact_bucket, "key": key_name}
         )
+        return key_name
 
     def _retrieve_sfn_response(self, directory: str, file_name: str):
         """
@@ -295,6 +309,10 @@ class SchemaMigrate(ProcessingLogic):
         self.s3_provider.download_file(self.artifact_bucket, key_name, local_file)
         with open(local_file, "r") as f:
             data = json.load(f)
+        self.logger.info(
+            "Downloaded from S3",
+            extra={"file_name": local_file, "bucket": self.artifact_bucket, "key": key_name, "data": data},
+        )
         self.s3_provider.delete_files(self.artifact_bucket, [key_name])  # delete after reading.
         return data
 
@@ -337,9 +355,12 @@ class SchemaMigrate(ProcessingLogic):
             self.logger.info("Report", extra=report)
             report_str = json.dumps(report, indent=4, sort_keys=True, cls=CustomJSONEncoder)
             report_message = f"Schema migration results ({os.environ['DEPLOYMENT_STAGE']} env)"
-            # if report["errors"]:
-            #     report_message += " @sc-oncall-eng"
             self._upload_to_slack("schema_migration_report.json", report_str, report_message)
+            # Cleanup leftover schema migration files
+            self.s3_provider.delete_prefix(
+                self.artifact_bucket, self.get_key_prefix(f"schema_migration/{self.execution_id}")
+            )
+
             return report
         except Exception as e:
             self.logger.exception("Failed to generate report")
@@ -359,13 +380,13 @@ class SchemaMigrate(ProcessingLogic):
         if step_name == "gather_collections":
             gather_collections = self.error_wrapper(self.gather_collections, "gather_collections")
             auto_publish = os.environ["AUTO_PUBLISH"].lower() == "true"
-            response = gather_collections(auto_publish)
+            response, _ = gather_collections(auto_publish)
         elif step_name == "collection_migrate":
             collection_id = os.environ["COLLECTION_ID"]
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]
             can_publish = os.environ["CAN_PUBLISH"].lower() == "true"
             collection_migrate = self.error_wrapper(self.collection_migrate, collection_id)
-            response = collection_migrate(
+            response, _, _ = collection_migrate(
                 collection_id=collection_id,
                 collection_version_id=collection_version_id,
                 can_publish=can_publish,
@@ -384,9 +405,8 @@ class SchemaMigrate(ProcessingLogic):
             )
         elif step_name == "collection_publish":
             collection_version_id = os.environ["COLLECTION_VERSION_ID"]
-            can_publish = os.environ["CAN_PUBLISH"].lower() == "true"
             publish_and_cleanup = self.error_wrapper(self.publish_and_cleanup, collection_version_id)
-            response = publish_and_cleanup(collection_version_id=collection_version_id, can_publish=can_publish)
+            response = publish_and_cleanup(collection_version_id=collection_version_id)
         elif step_name == "report":
             response = self.report()
         self.logger.info("output", extra={"response": response})

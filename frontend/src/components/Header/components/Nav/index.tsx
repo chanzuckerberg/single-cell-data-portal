@@ -62,6 +62,16 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
               <Link href={ROUTES.CELL_GUIDE}>Cell Guide</Link>
               <BetaChip label="Beta" size="small" />
             </LinkWrapper>
+            {/* Uncomment this when DE is ready for release */}
+            {/* <LinkWrapper
+              isActive={isRouteActive(pathname, ROUTES.DE)}
+              onClick={() => {
+                track(EVENTS.DE_CLICK_NAV);
+              }}
+            >
+              <Link href={ROUTES.DE}>Differential Expression</Link>
+              <BetaChip label="Beta" size="small" />
+            </LinkWrapper> */}
           </NavItemContainer>
         </NavSection>
         <NavDivider />
