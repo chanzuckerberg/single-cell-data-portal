@@ -6,7 +6,7 @@ from backend.layers.common.entities import DatasetProcessingStatus
 from tests.unit.processing.schema_migration.conftest import make_mock_collection_version, make_mock_dataset_version
 
 
-def factory_download_file(can_publish):
+def factory_download_file():
     def download_file(bucket, key_name, local_path):
         contents = {
             "datasets": [
@@ -23,7 +23,7 @@ def factory_download_file(can_publish):
                     "dataset_version_id": "prev_non_migrated_dataset_version_id",
                 },
             ],
-            # these datasets populate the processed_dataset variable in the publish_and_cleanup function
+            # these datasets populate the processed_dataset variable in the log_errors_and_cleanup function
         }
         with open(local_path, "w") as f:
             f.write(json.dumps(contents))
@@ -42,7 +42,7 @@ def mock_json_dump(response, f, **kwargs):
 @patch("backend.layers.processing.schema_migration.json.dump", side_effect=mock_json_dump)
 class TestLogErrorsAndCleanup:
     def test_OK(self, mock_json, schema_migrate):
-        schema_migrate.business_logic.s3_provider.download_file = factory_download_file(True)
+        schema_migrate.business_logic.s3_provider.download_file = factory_download_file()
         schema_migrate.business_logic.s3_provider.delete_files = Mock()
         datasets = [
             make_mock_dataset_version(
@@ -57,7 +57,7 @@ class TestLogErrorsAndCleanup:
         errors = schema_migrate.log_errors_and_cleanup(collection_version.version_id.id)
         assert errors == []
         schema_migrate.s3_provider.delete_files.assert_any_call(
-            "artifact-bucket", ["schema_migration/test-execution-arn/publish_and_cleanup/collection_id.json"]
+            "artifact-bucket", ["schema_migration/test-execution-arn/log_errors_and_cleanup/collection_id.json"]
         )
         schema_migrate.s3_provider.delete_files.assert_any_call(
             "artifact-bucket",
@@ -65,7 +65,7 @@ class TestLogErrorsAndCleanup:
         )
 
     def test_with_errors(self, mock_json, schema_migrate):
-        schema_migrate.business_logic.s3_provider.download_file = factory_download_file(True)
+        schema_migrate.business_logic.s3_provider.download_file = factory_download_file()
         schema_migrate.business_logic.s3_provider.delete_files = Mock()
         failed_dataset = make_mock_dataset_version(
             dataset_id="dataset_id_2",
@@ -106,7 +106,7 @@ class TestLogErrorsAndCleanup:
             "rollback": False,
         } in errors
         schema_migrate.s3_provider.delete_files.assert_any_call(
-            "artifact-bucket", ["schema_migration/test-execution-arn/publish_and_cleanup/collection_id.json"]
+            "artifact-bucket", ["schema_migration/test-execution-arn/log_errors_and_cleanup/collection_id.json"]
         )
         schema_migrate.s3_provider.delete_files.assert_any_call(
             "artifact-bucket",
@@ -116,36 +116,11 @@ class TestLogErrorsAndCleanup:
             ],
         )
 
-    def test_can_not_publish(self, mock_json, schema_migrate):
-        schema_migrate.business_logic.s3_provider.download_file = factory_download_file(False)
-        schema_migrate.business_logic.s3_provider.delete_files = Mock()
-        dataset_status = dict(processing_status=DatasetProcessingStatus.SUCCESS)
-        metadata = dict(schema_version="1.0.0")
-        collection_version = make_mock_collection_version(
-            [
-                make_mock_dataset_version(
-                    dataset_id="dataset_id_1",
-                    version_id="new_successful_dataset_version_id",
-                    status=dataset_status,
-                    metadata=metadata,
-                )
-            ]
-        )
-        schema_migrate.business_logic.get_collection_version.return_value = collection_version
-        errors = schema_migrate.log_errors_and_cleanup(collection_version.version_id.id)
-        assert errors == []
-        schema_migrate.s3_provider.delete_files.assert_any_call(
-            "artifact-bucket", ["schema_migration/test-execution-arn/publish_and_cleanup/collection_id.json"]
-        )
-        schema_migrate.s3_provider.delete_files.assert_any_call(
-            "artifact-bucket", ["prev_successful_dataset_version_id/migrated.h5ad"]
-        )
-
     def test_skip_unprocessed_datasets(self, mock_json, schema_migrate):
         """
-        Test that datasets that do not appear in the processed_datasets variable in publish_and_cleanup are skipped
+        Test that datasets that do not appear in the processed_datasets variable in log_errors_and_cleanup are skipped
         """
-        schema_migrate.business_logic.s3_provider.download_file = factory_download_file(False)
+        schema_migrate.business_logic.s3_provider.download_file = factory_download_file()
         schema_migrate.business_logic.s3_provider.delete_files = Mock()
         collection_version = make_mock_collection_version([make_mock_dataset_version()])
         schema_migrate.business_logic.get_collection_version.return_value = collection_version
@@ -154,6 +129,6 @@ class TestLogErrorsAndCleanup:
         assert errors == []
         schema_migrate.check_dataset_is_latest_schema_version.assert_not_called()
         schema_migrate.s3_provider.delete_files.assert_any_call(
-            "artifact-bucket", ["schema_migration/test-execution-arn/publish_and_cleanup/collection_id.json"]
+            "artifact-bucket", ["schema_migration/test-execution-arn/log_errors_and_cleanup/collection_id.json"]
         )
         schema_migrate.s3_provider.delete_files.assert_any_call("artifact-bucket", [])
