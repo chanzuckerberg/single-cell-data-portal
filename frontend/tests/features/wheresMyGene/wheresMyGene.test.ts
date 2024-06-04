@@ -749,10 +749,10 @@ describe("Where's My Gene", () => {
 
       await goToWMG(page);
       await waitForLoadingSpinnerToResolve(page);
-      await page
-        .getByTestId("newsletter-modal-banner-wrapper")
-        .getByLabel("Close")
-        .click();
+      // await page
+      //   .getByTestId("newsletter-modal-banner-wrapper")
+      //   .getByLabel("Close")
+      //   .click();
       await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
 
       await page.keyboard.type("JCHAIN");

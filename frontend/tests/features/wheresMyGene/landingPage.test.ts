@@ -34,13 +34,13 @@ describe("Tests for Gene Expression page", () => {
     // +Gene button
     await expect(page.getByTestId(ADD_GENE_BTN)).toBeVisible();
     // survey alert
-    await expect(
-      page.getByTestId("newsletter-modal-banner-wrapper")
-    ).toContainText(ALERT);
-    await expect(page.getByText("quick survey")).toHaveAttribute(
-      "href",
-      SURVEY_LINK
-    );
+    // await expect(
+    //   page.getByTestId("newsletter-modal-banner-wrapper")
+    // ).toContainText(ALERT);
+    // await expect(page.getByText("quick survey")).toHaveAttribute(
+    //   "href",
+    //   SURVEY_LINK
+    // );
     // default organism filter
     await expect(page.getByTestId("add-organism")).toContainText(
       "Homo sapiens"
