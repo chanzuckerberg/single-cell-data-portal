@@ -29,6 +29,7 @@ const CreateCollectionButton = (
   // Omit is a temporary workaround until SDS fixes button typing
   props: Omit<ButtonProps, "sdsStyle" | "sdsType">
 ) => (
+  // @ts-expect-error -- resolve when SDS fixes button typing
   <StyledButton sdsStyle="square" sdsType="primary" {...props}>
     Create Collection
   </StyledButton>
