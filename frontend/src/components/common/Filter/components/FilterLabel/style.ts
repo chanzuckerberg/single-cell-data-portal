@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { CommonThemeProps, fontBodyS, getColors } from "@czi-sds/components";
-import { spacesXxs } from "src/common/theme";
+import { spacesS, spacesXxs, spacesXxxs } from "src/common/theme";
 
 interface Props extends CommonThemeProps {
   isOpen: boolean;
@@ -8,8 +8,8 @@ interface Props extends CommonThemeProps {
 
 const grey500 = (props: CommonThemeProps) => getColors(props)?.gray[500];
 
-export const CategoryButton = styled("span")<Props>`
-  display: block;
+export const CategoryButton = styled("div")<Props>`
+  margin: ${spacesXxxs}px 0 ${spacesS}px;
 
   .MuiButton-root {
     ${fontBodyS}

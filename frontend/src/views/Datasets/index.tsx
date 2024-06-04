@@ -39,6 +39,7 @@ import { CATEGORY_FILTER_DENY_LIST } from "src/views/Datasets/common/constants";
 import { useViewMode, VIEW_MODE } from "src/common/hooks/useViewMode";
 import { DatasetsView as View } from "./style";
 import { GridLoader as Loader } from "src/components/common/Grid/components/Loader/style";
+import { DatasetsSideBarPositioner as SideBarPositioner } from "src/views/Datasets/style";
 
 /**
  * Collection ID object key.
@@ -368,7 +369,7 @@ export default function Datasets(): JSX.Element {
     storeMultiPanelSelectedUIState,
   ]);
 
-  // Handle side bar open/closed state beyond scope of component.
+  // Handle sidebar open/closed state beyond scope of component.
   const [isSideBarOpen, storeIsSideBarOpen] = useSessionStorage<boolean>(
     KEYS.SIDE_BAR_DATASETS,
     true
@@ -388,6 +389,7 @@ export default function Datasets(): JSX.Element {
               label="Filters"
               isOpen={isSideBarOpen}
               onToggle={storeIsSideBarOpen}
+              SideBarPositionerComponent={SideBarPositioner}
             >
               <Filter {...filterInstance} />
             </SideBar>

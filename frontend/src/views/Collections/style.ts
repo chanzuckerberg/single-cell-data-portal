@@ -1,8 +1,21 @@
 import styled from "@emotion/styled";
 import { View } from "src/views/globalStyle";
+import {
+  SideBarOpenButtonWrapper,
+  SideBarPositioner,
+} from "src/components/common/SideBar/style";
+import { spacesXl, spacesXs } from "src/common/theme";
 
 export const CollectionsView = styled(View)`
   display: grid;
-  gap: 24px;
+  gap: ${spacesXl}px;
   place-content: flex-start stretch;
+`;
+
+export const CollectionsSideBarPositioner = styled(SideBarPositioner)`
+  ${SideBarOpenButtonWrapper} {
+    .MuiButton-root {
+      margin-bottom: ${spacesXs}px;
+    }
+  }
 `;

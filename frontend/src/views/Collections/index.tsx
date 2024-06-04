@@ -29,7 +29,10 @@ import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { Title } from "src/components/common/Grid/components/Title";
 import CreateCollection from "src/components/CreateCollectionModal";
 import SideBar from "src/components/common/SideBar";
-import { CollectionsView as View } from "./style";
+import {
+  CollectionsSideBarPositioner as SideBarPositioner,
+  CollectionsView as View,
+} from "./style";
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
 import CountCell from "src/components/common/Grid/components/CountCell";
 import {
@@ -337,7 +340,7 @@ export default function Collections(): JSX.Element {
     storeMultiPanelSelectedUIState,
   ]);
 
-  // Handle side bar open/closed state beyond scope of component.
+  // Handle sidebar open/closed state beyond scope of component.
   const [isSideBarOpen, storeIsSideBarOpen] = useSessionStorage<boolean>(
     KEYS.SIDE_BAR_COLLECTIONS,
     true
@@ -357,6 +360,7 @@ export default function Collections(): JSX.Element {
               label="Filters"
               isOpen={isSideBarOpen}
               onToggle={storeIsSideBarOpen}
+              SideBarPositionerComponent={SideBarPositioner}
             >
               <CategoryFilters
                 filters={partitionCategoryViews(categoryViews, mode)}
