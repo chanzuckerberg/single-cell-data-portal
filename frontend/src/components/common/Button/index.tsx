@@ -16,8 +16,9 @@ import { css, SerializedStyles } from "@emotion/react";
 
 type ButtonProps = RawButtonProps & CommonThemeProps;
 
-export const Button = styled(RawButton)`
+export const Button = styled(RawButton)<ButtonProps>`
   ${squarePrimary}
+  ${squareSecondary}
   ${minimalSecondary}
 `;
 
@@ -30,6 +31,18 @@ function squarePrimary(props: ButtonProps): SerializedStyles | undefined {
     ${commonStyle(props)}
     min-width: 80px;
     color: ${grayWhite()};
+    padding: ${spacesXs(props)}px ${spacesM(props)}px;
+  `;
+}
+
+function squareSecondary(props: ButtonProps): SerializedStyles | undefined {
+  const { sdsStyle, sdsType } = props;
+
+  if (sdsStyle !== "square" || sdsType !== "secondary") return;
+
+  return css`
+    ${commonStyle(props)}
+    min-width: 80px;
     padding: ${spacesXs(props)}px ${spacesM(props)}px;
   `;
 }
