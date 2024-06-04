@@ -9,6 +9,9 @@ import {
   grayWhite,
   spacesM,
   spacesXs,
+  success400,
+  success500,
+  success600,
   textPrimary,
   textSecondary,
 } from "src/common/theme";
@@ -23,9 +26,16 @@ export const Button = styled(RawButton)<ButtonProps>`
 `;
 
 function squarePrimary(props: ButtonProps): SerializedStyles | undefined {
-  const { sdsStyle, sdsType } = props;
+  const { color, sdsStyle, sdsType } = props;
 
   if (sdsStyle !== "square" || sdsType !== "primary") return;
+
+  if (color === "success") {
+    return css`
+      ${commonStyle(props)}
+      ${squarePrimarySuccessStyle(props)}
+    `;
+  }
 
   return css`
     ${commonStyle(props)}
@@ -54,6 +64,7 @@ function minimalSecondary(props: ButtonProps): SerializedStyles | undefined {
 
   return css`
     ${commonStyle(props)}
+    ${textTransformStyle(props)}
     color: ${textSecondary(props)};
 
     &:hover {
@@ -66,5 +77,30 @@ function commonStyle(props: ButtonProps): SerializedStyles {
   return css`
     ${fontBodyS(props)}
     font-weight: 500;
+  `;
+}
+
+function squarePrimarySuccessStyle(props: ButtonProps): SerializedStyles {
+  return css`
+    box-shadow: inset 0 0 0 1px ${success400(props)};
+
+    &:hover {
+      background-color: ${success500(props)};
+      box-shadow: inset 0 0 0 1px ${success500(props)};
+    }
+
+    &:active {
+      background-color: ${success600(props)};
+      box-shadow: inset 0 0 0 1px ${success600(props)};
+    }
+  `;
+}
+
+// Custom fix for SDS button sdsType "minimal" button; isAllCaps is expected to be an optional style see https://github.com/chanzuckerberg/sci-components/blob/main/packages/components/src/core/Button/index.tsx#L68 and https://github.com/chanzuckerberg/sci-components/blob/main/packages/components/src/core/Button/style.ts#L219.
+function textTransformStyle(props: ButtonProps): SerializedStyles | undefined {
+  const { isAllCaps } = props;
+  if (isAllCaps || isAllCaps === undefined) return;
+  return css`
+    text-transform: none;
   `;
 }
