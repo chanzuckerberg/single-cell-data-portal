@@ -15,7 +15,7 @@ ENV PIP_NO_CACHE_DIR=1
 
 WORKDIR /
 
-COPY /python_dependencies/wmg/ .
+COPY /python_dependencies/wmg_processing/ .
 COPY /python_dependencies/common/ .
 ARG INSTALL_DEV=false
 RUN pip3 install -r requirements.txt

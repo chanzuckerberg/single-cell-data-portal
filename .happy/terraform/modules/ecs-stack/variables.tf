@@ -64,6 +64,18 @@ variable backend_url {
   default     = ""
 }
 
+variable backend_de_url {
+  type        = string
+  description = "For non-proxied stacks, send in the canonical front/backend URL's"
+  default     = ""
+}
+
+variable backend_wmg_url {
+  type        = string
+  description = "For non-proxied stacks, send in the canonical front/backend URL's"
+  default     = ""
+}
+
 variable frontend_url {
   type        = string
   description = "For non-proxied stacks, send in the canonical front/backend URL's"
@@ -112,6 +124,12 @@ variable cg_desired_vcpus {
   default     = 128
 }
 
+variable frontend_memory {
+  type        = number
+  description = "Memory reservation for the frontend task"
+  default     = 4096
+}
+
 variable frontend_instance_count {
   type        = number
   description = "How many frontend tasks to run"
@@ -124,9 +142,33 @@ variable backend_instance_count {
   default     = 2
 }
 
+variable backend_de_instance_count {
+  type        = number
+  description = "How many backend_de tasks to run"
+  default     = 2
+}
+
+variable backend_wmg_instance_count {
+  type        = number
+  description = "How many backend_wmg tasks to run"
+  default     = 2
+}
+
 variable backend_memory {
   type        = number
   description = "Memory reservation for the backend task"
+  default     = 2048
+}
+
+variable backend_de_memory {
+  type        = number
+  description = "Memory reservation for the backend_de task"
+  default     = 2048
+}
+
+variable backend_wmg_memory {
+  type        = number
+  description = "Memory reservation for the backend_wmg task"
   default     = 2048
 }
 
@@ -135,12 +177,18 @@ variable "backend_cpus" {
   description = "CPUs for the backend task"
   default     = 2
 }
-
-variable frontend_memory {
+variable "backend_de_cpus" {
   type        = number
-  description = "Memory reservation for the backend task"
-  default     = 4096
+  description = "CPUs for the backend_de task"
+  default     = 2
 }
+variable "backend_wmg_cpus" {
+  type        = number
+  description = "CPUs for the backend_wmg task"
+  default     = 2
+}
+
+
 
 variable schema_migration_ecs_memory {
   type        = number
@@ -151,6 +199,17 @@ variable schema_migration_ecs_memory {
 variable backend_workers {
   type        = number
   description = "Number of backend workers to run. Set to 1 by default for dev and staging."
+  default     = 1
+}
+variable backend_de_workers {
+  type        = number
+  description = "Number of backend_de workers to run. Set to 1 by default for dev and staging."
+  default     = 1
+}
+
+variable backend_wmg_workers {
+  type        = number
+  description = "Number of backend_wmg workers to run. Set to 1 by default for dev and staging."
   default     = 1
 }
 
