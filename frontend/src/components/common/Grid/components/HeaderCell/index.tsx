@@ -36,7 +36,7 @@ export default function HeaderCell({
           <SortIcon>
             <Icon
               sdsIcon={isSortedDesc === false ? "ChevronUp" : "ChevronDown"} // Show chevron down when isSortedDesc is true or undefined.
-              sdsSize="s"
+              sdsSize="xs"
               sdsType="interactive"
             />
           </SortIcon>
