@@ -1,17 +1,15 @@
 import {
   DefaultAutocompleteOption,
-  DropdownProps,
   Dropdown as SDSDropdown,
+  DropdownPopper,
+  DropdownProps,
 } from "@czi-sds/components";
 import { AutocompleteValue } from "@mui/base";
 import {
   FormLabelText,
   Optional,
 } from "src/components/common/Form/common/style";
-import {
-  DropdownForm,
-  DropdownPopper,
-} from "src/components/common/Form/Dropdown/style";
+import { DropdownForm } from "src/components/common/Form/Dropdown/style";
 
 export type Value = AutocompleteValue<
   DefaultAutocompleteOption,
@@ -75,7 +73,6 @@ export default function Dropdown({
         options={options}
         PopperComponent={(popperProps) => {
           const { anchorEl } = popperProps;
-
           return (
             <DropdownPopper
               disablePortal={disablePortal}
