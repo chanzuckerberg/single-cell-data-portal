@@ -1,5 +1,5 @@
 import { TagFilter } from "@czi-sds/components";
-import { Fragment } from "react";
+import { SelectedTags } from "./style";
 
 type OnRemoveFn = () => void;
 
@@ -14,7 +14,7 @@ interface Props {
 
 export default function FilterTags({ tags }: Props): JSX.Element | null {
   return tags && tags.length ? (
-    <Fragment>
+    <SelectedTags>
       {tags.map(({ label, onRemove }, i) => (
         <TagFilter
           clickable={false}
@@ -24,7 +24,7 @@ export default function FilterTags({ tags }: Props): JSX.Element | null {
           onDelete={onRemove}
         />
       ))}
-    </Fragment>
+    </SelectedTags>
   ) : null;
 }
 
