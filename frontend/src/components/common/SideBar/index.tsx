@@ -87,18 +87,21 @@ export default function SideBar({
             disabled={disabled}
             endIcon={
               <Icon
+                color="gray"
                 sdsIcon={
                   (position === Position.LEFT ? isExpanded : !isExpanded)
                     ? "ChevronLeft"
                     : "ChevronRight"
                 }
-                sdsSize="l"
-                sdsType="button"
+                sdsSize="xs"
+                sdsType="static"
+                shade={500}
               />
             }
+            isAllCaps={false}
             onClick={() => handleExpandedClick(!isExpanded)}
             sdsStyle="minimal"
-            size="large"
+            sdsType="secondary"
           >
             <ToggleButtonText>
               {!isExpanded && truncatedLabel ? truncatedLabel : label}

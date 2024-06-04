@@ -3,9 +3,9 @@ import { LIGHT_GRAY } from "src/components/common/theme";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import { CommonThemeProps, fontBodyS } from "@czi-sds/components";
 import {
+  fontWeightSemibold,
   grey300,
   grey500,
-  fontWeightSemibold,
   spacesL,
   spacesS,
   spacesXl,
@@ -69,22 +69,14 @@ export const SideBarToggleButtonWrapper = styled.span`
   .MuiButton-root {
     width: 100%;
 
-    &:hover {
-      background: none;
+    .MuiButton-endIcon {
+      margin: 0;
+      width: 16px;
     }
 
-    .MuiButton-endIcon {
-      align-items: center;
-      display: flex;
-      height: 20px;
-      justify-content: center;
-      margin: 0;
-      width: 20px;
-
-      .MuiSvgIcon-root {
+    &:hover {
+      .MuiButton-endIcon .MuiSvgIcon-root {
         color: ${grey500};
-        height: 14px;
-        width: 14px;
       }
     }
   }
@@ -95,6 +87,7 @@ export const ToggleButtonText = styled.span`
   color: #000000;
   font-weight: ${fontWeightSemibold};
   letter-spacing: -0.006em;
+  text-transform: capitalize; /* required; SDS Button props isAllCaps for sdsType "minimal" does not currently facilitate text-transformation see https://github.com/chanzuckerberg/sci-components/blob/main/packages/components/src/core/Button/style.ts#L219 */
 `;
 
 export const SideBarClosedButtonWrapper = styled(SideBarToggleButtonWrapper)`
