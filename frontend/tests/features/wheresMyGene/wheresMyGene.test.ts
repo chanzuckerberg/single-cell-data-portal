@@ -571,8 +571,8 @@ describe("Where's My Gene", () => {
       await waitForElement(page, RIGHT_SIDEBAR_TITLE_TEST_ID);
     });
   });
-
-  describe("Newsletter", () => {
+  // Skipped until banners are added back to WMG
+  describe.skip("Newsletter", () => {
     const NEWSLETTER_MODAL_CONTENT = "newsletter-modal-content";
     const NEWSLETTER_MODAL_OPEN_BUTTON = "newsletter-modal-open-button";
     const NEWSLETTER_MODAL_CLOSE_BUTTON = "newsletter-modal-close-button";

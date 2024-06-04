@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { ReactNode } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import Header from "../Header";
+import LandingFooter from "../LandingFooter";
 import LandingHeader from "../MobileFriendlyHeader";
 import { Wrapper } from "./style";
 
@@ -17,6 +18,7 @@ const Layout = ({ children }: Props) => {
       <>
         <LandingHeader data-testid="landing-footer" />
         {children}
+        <LandingFooter />
       </>
     );
   } else if (pathname === ROUTES.CELL_GUIDE) {
