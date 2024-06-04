@@ -23,6 +23,7 @@ export const Button = styled(RawButton)<ButtonProps>`
   ${squarePrimary}
   ${squareSecondary}
   ${minimalSecondary}
+  ${minimalPrimary}
 `;
 
 function squarePrimary(props: ButtonProps): SerializedStyles | undefined {
@@ -54,6 +55,17 @@ function squareSecondary(props: ButtonProps): SerializedStyles | undefined {
     ${commonStyle(props)}
     min-width: 80px;
     padding: ${spacesXs(props)}px ${spacesM(props)}px;
+  `;
+}
+
+function minimalPrimary(props: ButtonProps): SerializedStyles | undefined {
+  const { sdsStyle, sdsType } = props;
+
+  if (sdsStyle !== "minimal" || sdsType !== "primary") return;
+
+  return css`
+    ${commonStyle(props)}
+    ${textTransformStyle(props)}
   `;
 }
 
