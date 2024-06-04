@@ -19,14 +19,18 @@ export default function FilterLabel({
 }: Props): JSX.Element {
   return (
     <FilterLabelTooltip tooltip={tooltip}>
-      <ButtonDropdown
-        disabled={isDisabled}
-        onClick={onOpenFilter}
-        sdsStyle="minimal"
-        sdsType="secondary"
-      >
-        {label}
-      </ButtonDropdown>
+      {/* The dropdown button is enclosed within a <span> tag to enable tooltip functionality when the button is disabled. */}
+      {/* See https://github.com/chanzuckerberg/sci-components/blob/main/packages/components/src/core/Tooltip/index.tsx#L28. */}
+      <span>
+        <ButtonDropdown
+          disabled={isDisabled}
+          onClick={onOpenFilter}
+          sdsStyle="minimal"
+          sdsType="secondary"
+        >
+          {label}
+        </ButtonDropdown>
+      </span>
     </FilterLabelTooltip>
   );
 }
