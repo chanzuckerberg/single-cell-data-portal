@@ -11,10 +11,10 @@ import {
 } from "tests/utils/wmgUtils";
 
 const { describe } = test;
-const ALERT =
-  "Subscribeto our newsletter to receive updates about new features.Send us feedback with thisquick survey.";
+// const ALERT =
+//   "Subscribeto our newsletter to receive updates about new features.Send us feedback with thisquick survey.";
 
-const SURVEY_LINK = "https://airtable.com/shrLwepDSEX1HI6bo";
+// const SURVEY_LINK = "https://airtable.com/shrLwepDSEX1HI6bo";
 
 const LEGEND_WRAPPER = "legend-wrapper";
 const DOT_SIZES = ["4", "9", "12", "14", "16"];
