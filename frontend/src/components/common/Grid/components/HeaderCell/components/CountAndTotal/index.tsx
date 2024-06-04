@@ -21,7 +21,7 @@ export default function CountAndTotal({
           hover={false}
           label={countAndTotal}
           sdsStyle="square"
-          sdsType="primary"
+          sdsType="secondary"
         />
       )}
     </>
