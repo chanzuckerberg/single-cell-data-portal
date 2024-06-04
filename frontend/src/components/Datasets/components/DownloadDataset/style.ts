@@ -49,19 +49,9 @@ export const Dialog = styled(SDSDialog)`
         color: ${grey500};
       }
 
-      .MuiFormGroup-root {
-        flex-direction: row;
+      .MuiFormGroup-row {
         gap: ${spacesL}px;
-
-        .MuiFormControlLabel-root {
-          display: flex;
-          gap: ${spacesS}px;
-          margin: 0;
-        }
-
-        .MuiRadio-root {
-          padding: 0;
-        }
+        margin-bottom: -${spacesL}px; /* negative margin to account for SDS InputRadio FormControlLabel margin see https://github.com/chanzuckerberg/sci-components/blob/main/packages/components/src/core/InputRadio/style.ts#L85 */
       }
     }
   }
