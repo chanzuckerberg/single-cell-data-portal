@@ -450,7 +450,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                         "States.ALL"
                       ],
                       "Next": "DatasetError",
-                      "ResultPath": "$.error"
+                      "ResultPath": null
                     }
                   ],
                   "ResultPath": "$.result"
@@ -480,7 +480,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                         "States.ALL"
                       ],
                       "Next": "DatasetError",
-                      "ResultPath": "$.error"
+                      "ResultPath": null
                     }
                   ],
                   "ResultPath": null
@@ -505,7 +505,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "States.ALL"
                 ],
                 "Next": "CollectionPublish",
-                "ResultPath": "$.error"
+                "ResultPath": null
               }
             ],
             "OutputPath": "$[0]",
@@ -535,7 +535,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "States.ALL"
           ],
           "Next": "report",
-          "ResultPath": "$.error"
+          "ResultPath": null
         }
       ],
       "ToleratedFailurePercentage": 20
