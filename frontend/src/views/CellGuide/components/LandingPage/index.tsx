@@ -93,9 +93,7 @@ export default function LandingPage(): JSX.Element {
         >
           {/* Search will open at top of page for mobile */}
           {!openMobileSearch && (
-            <CellGuideCardSearchBar
-              skinnyModeBreakpointWidth={MAX_WIDTH_BREAKPOINT_PX}
-            />
+            <CellGuideCardSearchBar skinnyMode={skinnyMode} />
           )}
         </div>
       </Wrapper>
