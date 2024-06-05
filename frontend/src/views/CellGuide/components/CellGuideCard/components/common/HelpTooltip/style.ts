@@ -18,6 +18,7 @@ export const TooltipButton = styled(Button)`
   font-size: 12px;
   min-width: 12px;
   margin-left: 2.5px;
+  text-transform: none;
 `;
 
 export const StyledIconImage = styled(Image)`
