@@ -20,7 +20,7 @@ export const useConnect = () => {
   const { data: organisms } = useAvailableOrganisms();
 
   const handleOnChange = useCallback(
-    (organism: IOrganism | null): void => {
+    (_: React.SyntheticEvent, organism: IOrganism | null): void => {
       if (!dispatch || !organism || organismId === organism.id) return;
 
       track(EVENTS.DE_SELECT_ORGANISM, { payload: organism?.name });

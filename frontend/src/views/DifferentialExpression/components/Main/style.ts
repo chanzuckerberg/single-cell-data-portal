@@ -3,11 +3,11 @@ import { keyframes } from "@emotion/react";
 import {
   fontHeaderXl,
   fontBodyS,
-  getColors,
   CommonThemeProps,
   Button,
   fontBodyXxs,
 } from "@czi-sds/components";
+import { gray500, primary400 } from "src/common/theme";
 
 const LEFT_PANEL_WIDTH = "60vw";
 const RIGHT_PANEL_WIDTH = "40vw";
@@ -63,25 +63,14 @@ export const CellCountTitle = styled.div`
 `;
 
 export const WordPop = styled.span<CommonThemeProps>`
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-        color: ${colors?.primary[400]};
-    `;
-  }}
+  color: ${primary400};
 `;
 
 export const StepSubHeader = styled.div`
   ${fontBodyS}
 
   margin-bottom: 32px;
-
-  ${(props) => {
-    const colors = getColors(props);
-    return `
-        color: ${colors?.gray[500]};
-    `;
-  }}
+  color: ${gray500};
 `;
 
 export const RunButton = styled(Button)`
