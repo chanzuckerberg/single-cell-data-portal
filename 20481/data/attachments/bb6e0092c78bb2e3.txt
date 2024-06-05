@@ -1,3 +1,0 @@
-INFO     backend.layers.business.business:business.py:517 {'message': 'ingesting dataset', 'collection_version_id': b86e8c56-8241-4dd5-9fcb-454e9682d16f, 'url': 'http://fake.url', 'current_dataset_version_id': None}
-INFO     backend.layers.business.business:business.py:517 {'message': 'ingesting dataset', 'collection_version_id': b86e8c56-8241-4dd5-9fcb-454e9682d16f, 'url': None, 'current_dataset_version_id': f27475e6-e62f-405b-a57c-11f28c25e55d}
-ERROR    processing:dataset_metadata_update.py:235 Cannot find raw H5AD artifact uri for f27475e6-e62f-405b-a57c-11f28c25e55d.
