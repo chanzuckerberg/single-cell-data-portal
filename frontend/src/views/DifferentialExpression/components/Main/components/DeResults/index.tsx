@@ -54,7 +54,7 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
                 data-testid={DIFFERENTIAL_EXPRESSION_RESULTS_DOWNLOAD_BUTTON}
                 disabled={isLoading}
               >
-                <StyledIcon sdsIcon="download" sdsSize="l" sdsType="static" />
+                <StyledIcon sdsIcon="Download" sdsSize="l" sdsType="static" />
                 <ButtonLabel>Download</ButtonLabel>
               </ButtonsWrapper>
               <ButtonsWrapper
@@ -64,7 +64,7 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
                 data-testid={DIFFERENTIAL_EXPRESSION_SOURCE_DATA_BUTTON}
                 disabled={isLoading}
               >
-                <StyledIcon sdsIcon="infoCircle" sdsSize="l" sdsType="static" />
+                <StyledIcon sdsIcon="InfoCircle" sdsSize="l" sdsType="static" />
                 <ButtonLabel>Source Data</ButtonLabel>
               </ButtonsWrapper>
             </FlexRow>
