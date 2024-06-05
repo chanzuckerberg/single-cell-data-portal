@@ -6,9 +6,6 @@ import {
   fontBodyS,
 } from "@czi-sds/components";
 import {
-  grayWhite,
-  spacesM,
-  spacesXs,
   success400,
   success500,
   success600,
@@ -20,41 +17,16 @@ import { css, SerializedStyles } from "@emotion/react";
 type ButtonProps = RawButtonProps & CommonThemeProps;
 
 export const Button = styled(RawButton)<ButtonProps>`
-  ${squarePrimary}
-  ${squareSecondary}
-  ${minimalSecondary}
+  ${commonStyle}
   ${minimalPrimary}
+  ${minimalSecondary}
+  ${squarePrimary}
 `;
 
-function squarePrimary(props: ButtonProps): SerializedStyles | undefined {
-  const { color, sdsStyle, sdsType } = props;
-
-  if (sdsStyle !== "square" || sdsType !== "primary") return;
-
-  if (color === "success") {
-    return css`
-      ${commonStyle(props)}
-      ${squarePrimarySuccessStyle(props)}
-    `;
-  }
-
+function commonStyle(props: ButtonProps): SerializedStyles {
   return css`
-    ${commonStyle(props)}
-    min-width: 80px;
-    color: ${grayWhite()};
-    padding: ${spacesXs(props)}px ${spacesM(props)}px;
-  `;
-}
-
-function squareSecondary(props: ButtonProps): SerializedStyles | undefined {
-  const { sdsStyle, sdsType } = props;
-
-  if (sdsStyle !== "square" || sdsType !== "secondary") return;
-
-  return css`
-    ${commonStyle(props)}
-    min-width: 80px;
-    padding: ${spacesXs(props)}px ${spacesM(props)}px;
+    ${fontBodyS(props)}
+    font-weight: 500;
   `;
 }
 
@@ -64,7 +36,6 @@ function minimalPrimary(props: ButtonProps): SerializedStyles | undefined {
   if (sdsStyle !== "minimal" || sdsType !== "primary") return;
 
   return css`
-    ${commonStyle(props)}
     ${textTransformStyle(props)}
   `;
 }
@@ -75,7 +46,6 @@ function minimalSecondary(props: ButtonProps): SerializedStyles | undefined {
   if (sdsStyle !== "minimal" || sdsType !== "secondary") return;
 
   return css`
-    ${commonStyle(props)}
     ${textTransformStyle(props)}
     color: ${textSecondary(props)};
 
@@ -85,11 +55,16 @@ function minimalSecondary(props: ButtonProps): SerializedStyles | undefined {
   `;
 }
 
-function commonStyle(props: ButtonProps): SerializedStyles {
-  return css`
-    ${fontBodyS(props)}
-    font-weight: 500;
-  `;
+function squarePrimary(props: ButtonProps): SerializedStyles | undefined {
+  const { color, sdsStyle, sdsType } = props;
+
+  if (sdsStyle !== "square" || sdsType !== "primary") return;
+
+  if (color === "success") {
+    return css`
+      ${squarePrimarySuccessStyle(props)}
+    `;
+  }
 }
 
 function squarePrimarySuccessStyle(props: ButtonProps): SerializedStyles {

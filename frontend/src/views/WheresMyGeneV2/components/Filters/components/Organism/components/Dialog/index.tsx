@@ -1,6 +1,5 @@
 import { Dialog as RawDialog } from "@czi-sds/components";
 import {
-  ActionButton,
   StyledDialogAction,
   StyledDialogContent,
   StyledDialogPaper,
@@ -32,10 +31,22 @@ export default function Dialog({ handleCancel, handleConfirm, isOpen }: Props) {
       </StyledDialogContent>
       <StyledDialogAction data-testid="dialog-actions" buttonPosition="right">
         <>
-          <Button onClick={handleCancel}>Cancel</Button>
-          <ActionButton color="error" onClick={handleConfirm}>
+          <Button
+            isAllCaps={false}
+            onClick={handleCancel}
+            sdsStyle="minimal"
+            sdsType="secondary"
+          >
+            Cancel
+          </Button>
+          <Button
+            color="error"
+            onClick={handleConfirm}
+            sdsStyle="square"
+            sdsType="destructive"
+          >
             Confirm
-          </ActionButton>
+          </Button>
         </>
       </StyledDialogAction>
     </RawDialog>
