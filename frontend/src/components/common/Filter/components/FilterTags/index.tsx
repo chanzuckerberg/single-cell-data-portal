@@ -1,5 +1,4 @@
-import { Icon, TagFilter } from "@czi-sds/components";
-import { SelectedTags } from "./style";
+import { TagFilter } from "@czi-sds/components";
 
 type OnRemoveFn = () => void;
 
@@ -14,17 +13,17 @@ interface Props {
 
 export default function FilterTags({ tags }: Props): JSX.Element | null {
   return tags && tags.length ? (
-    <SelectedTags>
+    <div>
       {tags.map(({ label, onRemove }, i) => (
         <TagFilter
+          clickable={false}
           key={isLabelRange(label) ? label.join("") : `${label}${i}`}
-          deleteIcon={<Icon sdsIcon="XMark" sdsSize="xs" sdsType="button" />}
           label={isLabelRange(label) ? `${label[0]} - ${label[1]}` : label}
           onClick={onRemove}
           onDelete={onRemove}
         />
       ))}
-    </SelectedTags>
+    </div>
   ) : null;
 }
 

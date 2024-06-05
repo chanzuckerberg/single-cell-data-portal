@@ -3,7 +3,7 @@ import unittest
 from math import log
 from unittest.mock import patch
 
-from backend.api_server.app import app
+from backend.de.server.app import app
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
@@ -15,7 +15,7 @@ TEST_SNAPSHOT = "realistic-test-snapshot"
 class DeAPIV1Tests(unittest.TestCase):
     def setUp(self):
         super().setUp()
-        with EnvironmentSetup(dict(APP_NAME="corpora-api")):
+        with EnvironmentSetup(dict(APP_NAME="corpora-api-de")):
             self.app = app.test_client(use_cookies=False)
 
     @classmethod
@@ -146,10 +146,33 @@ class DeAPIV1Tests(unittest.TestCase):
                     "sex_ontology_term_ids": ["PATO:0000384"],
                 },
             },
+            {
+                "queryGroup1Filters": {
+                    "organism_ontology_term_id": "NCBITaxon:10090",
+                    "tissue_ontology_term_ids": [],
+                    "cell_type_ontology_term_ids": ["CL:0000115"],
+                    "publication_citations": [],
+                    "disease_ontology_term_ids": [],
+                    "self_reported_ethnicity_ontology_term_ids": [],
+                    "sex_ontology_term_ids": ["PATO:0000383"],
+                },
+                "queryGroup2Filters": {
+                    "organism_ontology_term_id": "NCBITaxon:10090",
+                    "tissue_ontology_term_ids": [],
+                    "cell_type_ontology_term_ids": [],
+                    "publication_citations": [],
+                    "disease_ontology_term_ids": [],
+                    "self_reported_ethnicity_ontology_term_ids": [],
+                    "sex_ontology_term_ids": ["PATO:0000383"],
+                },
+            },
         ]
-        expected_effect_size_sums = [-425, 689, 24, 3211, 761, 3325]
-        expected_t_score_sums = [-30185, 40208, -2615, -10351, 25281, -13515]
-        expected_log_p_value_sums = [151838, 160395, 127387, 53251, 136980, 23265]
+
+        expected_effect_size_sums = [-334, 648, 71, 2654, 696, 2763, 2021]
+        expected_log_fold_change_sums = [-54, 102, 66, 491, 199, 532, 483]
+        expected_log_p_value_sums = [348318, 133077, 195787, 125959, 134096, 69440, 123317]
+        expected_n_overlap = [0, 0, 0, 0, 0, 0, 37]
+
         with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
             for i, test_case in enumerate(test_cases):
                 with self.subTest(test_case=test_case):
@@ -163,9 +186,13 @@ class DeAPIV1Tests(unittest.TestCase):
                     result = json.loads(response.data)
                     effect_size_sum = round(sum([i["effect_size"] for i in result["differentialExpressionResults"]]))
                     log_p_value_sum = round(
-                        sum([-log(i["p_value"] + 1e-300) for i in result["differentialExpressionResults"]])
+                        sum([-log(i["adjusted_p_value"] + 1e-300) for i in result["differentialExpressionResults"]])
                     )
-                    t_score_sum = round(sum([i["t_score"] for i in result["differentialExpressionResults"]]))
+                    log_fold_change_sum = round(
+                        sum([i["log_fold_change"] for i in result["differentialExpressionResults"]])
+                    )
+
                     self.assertEqual(effect_size_sum, expected_effect_size_sums[i])
-                    self.assertEqual(t_score_sum, expected_t_score_sums[i])
+                    self.assertEqual(log_fold_change_sum, expected_log_fold_change_sums[i])
                     self.assertEqual(log_p_value_sum, expected_log_p_value_sums[i])
+                    self.assertEqual(result["n_overlap"], expected_n_overlap[i])

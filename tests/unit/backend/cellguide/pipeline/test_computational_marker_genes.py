@@ -36,7 +36,7 @@ class MarkerGeneCalculatorTests(unittest.TestCase):
         with (
             load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot,
             patch(
-                "backend.cellguide.pipeline.computational_marker_genes.computational_markers.bootstrap_rows_percentiles",
+                "backend.common.marker_genes.computational_markers.bootstrap_rows_percentiles",
                 new=mock_bootstrap_rows_percentiles,
             ),
         ):

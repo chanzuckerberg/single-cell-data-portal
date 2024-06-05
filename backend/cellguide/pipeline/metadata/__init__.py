@@ -1,27 +1,24 @@
 from backend.cellguide.common.constants import CELL_GUIDE_METADATA_FILENAME, CELL_GUIDE_TISSUE_METADATA_FILENAME
+from backend.cellguide.pipeline.constants import CELLGUIDE_CENSUS_CUBE_DATA_SCHEMA_VERSION
 from backend.cellguide.pipeline.metadata.metadata_generator import (
     generate_cellguide_card_metadata,
     generate_cellguide_tissue_card_metadata,
 )
 from backend.cellguide.pipeline.metadata.types import CellMetadata, TissueMetadata
-from backend.cellguide.pipeline.ontology_tree import get_ontology_tree_builder
-from backend.cellguide.pipeline.ontology_tree.tree_builder import OntologyTreeBuilder
 from backend.cellguide.pipeline.utils import output_json
-from backend.wmg.api.wmg_api_config import WMG_API_SNAPSHOT_SCHEMA_VERSION
-from backend.wmg.data.snapshot import load_snapshot
+from backend.common.census_cube.data import snapshot as sn
+from backend.common.census_cube.utils import get_all_cell_type_ids_in_corpus, get_all_tissue_ids_in_corpus
 
 
 def run(*, output_directory: str):
-    snapshot = load_snapshot(snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION)
-    ontology_tree = get_ontology_tree_builder(snapshot=snapshot)
-    cell_metadata = get_cell_metadata(ontology_tree=ontology_tree)
-    tissue_metadata = get_tissue_metadata(ontology_tree=ontology_tree)
+    cell_metadata = get_cell_metadata()
+    tissue_metadata = get_tissue_metadata()
 
     output_json(cell_metadata, f"{output_directory}/{CELL_GUIDE_METADATA_FILENAME}")
     output_json(tissue_metadata, f"{output_directory}/{CELL_GUIDE_TISSUE_METADATA_FILENAME}")
 
 
-def get_cell_metadata(*, ontology_tree: OntologyTreeBuilder) -> dict[str, CellMetadata]:
+def get_cell_metadata() -> dict[str, CellMetadata]:
     """
     For all cell type ids in the corpus, this pipeline will generate metadata about each cell, including:
     - name, ex: "native cell"
@@ -32,10 +29,12 @@ def get_cell_metadata(*, ontology_tree: OntologyTreeBuilder) -> dict[str, CellMe
 
     Note that we will be filtering out obsolete cell types and invalid non-CL cell types.
     """
-    return generate_cellguide_card_metadata(ontology_tree.all_cell_type_ids_in_corpus)
+    snapshot = sn.load_snapshot(snapshot_schema_version=CELLGUIDE_CENSUS_CUBE_DATA_SCHEMA_VERSION)
+    all_cell_type_ids_in_corpus = get_all_cell_type_ids_in_corpus(snapshot)
+    return generate_cellguide_card_metadata(all_cell_type_ids_in_corpus)
 
 
-def get_tissue_metadata(*, ontology_tree: OntologyTreeBuilder) -> dict[str, TissueMetadata]:
+def get_tissue_metadata() -> dict[str, TissueMetadata]:
     """
     For all tissue ids in the corpus, this pipeline will generate metadata about each tissue, including:
     - name, ex: "lung"
@@ -45,4 +44,6 @@ def get_tissue_metadata(*, ontology_tree: OntologyTreeBuilder) -> dict[str, Tiss
 
     Note that we will be filtering out obsolete tissues.
     """
-    return generate_cellguide_tissue_card_metadata(ontology_tree.all_tissue_ids_in_corpus)
+    snapshot = sn.load_snapshot(snapshot_schema_version=CELLGUIDE_CENSUS_CUBE_DATA_SCHEMA_VERSION)
+    all_tissue_ids_in_corpus = get_all_tissue_ids_in_corpus(snapshot)
+    return generate_cellguide_tissue_card_metadata(all_tissue_ids_in_corpus)

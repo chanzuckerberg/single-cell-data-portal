@@ -5,7 +5,7 @@ import tiledb
 import tiledbsoma as soma
 from packaging import version
 
-from backend.wmg.data.snapshot import (
+from backend.common.census_cube.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
 )
 from backend.wmg.pipeline.cell_counts import create_cell_counts_cube

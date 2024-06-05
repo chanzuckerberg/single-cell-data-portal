@@ -7,13 +7,14 @@ from typing import Optional
 
 import tiledb
 
+from backend.common.census_cube.data.constants import CENSUS_CUBE_DATA_SCHEMA_VERSION
+from backend.common.census_cube.data.snapshot import CELL_COUNTS_CUBE_NAME
 from backend.common.utils.result_notification import (
     format_failed_batch_issue_slack_alert,
     gen_wmg_pipeline_failure_message,
     gen_wmg_pipeline_success_message,
     notify_slack,
 )
-from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME
 from backend.wmg.pipeline.cell_type_ancestors import create_cell_type_ancestors
 from backend.wmg.pipeline.cell_type_ordering import create_cell_type_ordering
 from backend.wmg.pipeline.constants import (
@@ -21,18 +22,19 @@ from backend.wmg.pipeline.constants import (
     CELL_TYPE_ORDERING_CREATED_FLAG,
     DATASET_METADATA_CREATED_FLAG,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
+    EXPRESSION_SUMMARY_AND_CELL_COUNTS_DIFFEXP_CUBES_CREATED_FLAG,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,
-    EXPRESSION_SUMMARY_DIFFEXP_CUBES_CREATED_FLAG,
     FILTER_RELATIONSHIPS_CREATED_FLAG,
     MARKER_GENES_CUBE_CREATED_FLAG,
     PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG,
-    WMG_DATA_SCHEMA_VERSION,
 )
 from backend.wmg.pipeline.dataset_metadata import create_dataset_metadata
 from backend.wmg.pipeline.errors import PipelineStepMissing
 from backend.wmg.pipeline.expression_summary_and_cell_counts import create_expression_summary_and_cell_counts_cubes
+from backend.wmg.pipeline.expression_summary_and_cell_counts_diffexp import (
+    create_expression_summary_and_cell_counts_diffexp_cubes,
+)
 from backend.wmg.pipeline.expression_summary_default import create_expression_summary_default_cube
-from backend.wmg.pipeline.expression_summary_diffexp import create_expression_summary_diffexp_cubes
 from backend.wmg.pipeline.filter_relationships import create_filter_relationships_graph
 from backend.wmg.pipeline.load_cube import upload_artifacts_to_s3
 from backend.wmg.pipeline.marker_genes import create_marker_genes_cube
@@ -48,7 +50,10 @@ PIPELINE_STEPS = [
         "step": create_expression_summary_and_cell_counts_cubes,
     },
     {"flag": EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG, "step": create_expression_summary_default_cube},
-    {"flag": EXPRESSION_SUMMARY_DIFFEXP_CUBES_CREATED_FLAG, "step": create_expression_summary_diffexp_cubes},
+    {
+        "flag": EXPRESSION_SUMMARY_AND_CELL_COUNTS_DIFFEXP_CUBES_CREATED_FLAG,
+        "step": create_expression_summary_and_cell_counts_diffexp_cubes,
+    },
     {"flag": CELL_TYPE_ANCESTORS_CREATED_FLAG, "step": create_cell_type_ancestors},
     {"flag": FILTER_RELATIONSHIPS_CREATED_FLAG, "step": create_filter_relationships_graph},
     {"flag": PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG, "step": create_primary_filter_dimensions},
@@ -84,7 +89,7 @@ def run_pipeline(corpus_path: Optional[str] = None, skip_validation: bool = Fals
         snapshot_id = os.path.basename(os.path.normpath(corpus_path))
         cube_data_s3_path = upload_artifacts_to_s3(
             snapshot_source_path=corpus_path,
-            snapshot_schema_version=WMG_DATA_SCHEMA_VERSION,
+            snapshot_schema_version=CENSUS_CUBE_DATA_SCHEMA_VERSION,
             snapshot_id=snapshot_id,
             is_snapshot_validation_successful=is_valid,
         )

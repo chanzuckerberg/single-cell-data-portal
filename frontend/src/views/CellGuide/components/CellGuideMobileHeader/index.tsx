@@ -58,6 +58,7 @@ const CellGuideMobileHeader = ({
       {/* Flex Item Left */}
       <div id="cellguide-search-icon">
         <Button
+          sdsStyle="icon"
           icon="Search"
           sdsStyle="icon"
           id="cellguide-search-icon"

@@ -1,7 +1,6 @@
 import Head from "next/head";
 import CellGuideCardSearchBar from "../CellGuideCardSearchBar";
 import { StyledHeader, Wrapper } from "./style";
-import CellGuideBottomBanner from "../CellGuideBottomBanner";
 import { LANDING_PAGE_HEADER } from "src/views/CellGuide/components/LandingPage/constants";
 import CellGuideMobileHeader from "../CellGuideMobileHeader";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -98,7 +97,6 @@ export default function LandingPage(): JSX.Element {
           )}
         </div>
       </Wrapper>
-      <CellGuideBottomBanner includeSurveyLink={!skinnyMode} />
     </div>
   );
 }

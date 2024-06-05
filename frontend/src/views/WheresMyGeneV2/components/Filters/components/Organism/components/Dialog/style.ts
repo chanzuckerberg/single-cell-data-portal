@@ -7,22 +7,7 @@ import {
   fontHeaderL,
 } from "@czi-sds/components";
 import styled from "@emotion/styled";
-import {
-  error400,
-  error500,
-  spacesDefault,
-  spacesXl,
-  spacesXxs,
-} from "src/common/theme";
-import { Button } from "src/components/common/Button";
-
-export const ActionButton = styled(Button)`
-  background-color: ${error400};
-  color: white;
-  &:hover {
-    background-color: ${error500};
-  }
-`;
+import { spacesDefault, spacesXl, spacesXxs } from "src/common/theme";
 
 export const StyledDialogTitle = styled(DialogTitle)`
   ${fontHeaderL}
@@ -50,6 +35,10 @@ export const StyledDialogContent = styled(DialogContent)`
  * 16px, so reducing margin-left to spacesXxs gives us that
  */
 export const StyledDialogAction = styled(DialogActions)`
+  .MuiButton-text {
+    min-width: 64px; /* (mcdade): reinstated min-width to SDS minimal button to maintain the desired word to word space as per (thuang) above */
+  }
+
   &.MuiDialogActions-spacing > :not(:first-of-type) {
     margin-left: ${spacesXxs}px;
   }

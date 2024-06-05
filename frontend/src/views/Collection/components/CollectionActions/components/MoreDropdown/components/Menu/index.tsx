@@ -3,6 +3,7 @@ import DeleteCollection from "src/components/Collections/components/DeleteCollec
 import CreateCollection from "src/components/CreateCollectionModal";
 import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
 import {
+  Icon,
   MenuItemProps as SDSMenuItemProps,
   MenuProps as SDSMenuProps,
 } from "@czi-sds/components";
@@ -30,8 +31,15 @@ const DeleteButton = ({
       data-testid={
         isRevision ? "dropdown-cancel-revision" : "dropdown-delete-collection"
       }
-      icon="TrashCan"
-      sdsIconProps={{ color: "red" }}
+      icon={
+        <Icon
+          color="red"
+          sdsIcon="TrashCan"
+          sdsSize="xs"
+          sdsType="static"
+          shade={400}
+        />
+      }
     >
       {isRevision ? "Cancel Revision" : "Delete Collection"}
     </DeleteMenuItem>
@@ -43,8 +51,15 @@ const EditButton = (props: Partial<SDSMenuItemProps<"Edit">>) => {
     <MenuItem
       {...props}
       data-testid="dropdown-edit-details"
-      icon="Edit"
-      sdsIconProps={{ color: "gray", shade: 400 }}
+      icon={
+        <Icon
+          color="gray"
+          sdsIcon="Edit"
+          sdsSize="xs"
+          sdsType="static"
+          shade={400}
+        />
+      }
     >
       Edit Details
     </MenuItem>
@@ -78,12 +93,12 @@ const Menu = ({
       <ReorderMenuItem
         data-testid="dropdown-reorder-datasets"
         disabled={reorder.disabled}
+        icon={<IconSort />}
         onClick={() => {
           menuProps.onClose();
           reorder.startReorder();
         }}
       >
-        <IconSort />
         Reorder Datasets
       </ReorderMenuItem>
       <DeleteCollection
