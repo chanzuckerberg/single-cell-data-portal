@@ -245,7 +245,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "States.ALL"
           ],
           "Next": "report",
-          "ResultPath": "$.error"
+          "ResultPath": null
         }
       ]
     },
@@ -313,7 +313,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "ErrorEquals": [
                   "States.ALL"
                 ],
-                "ResultPath": "$.error",
+                "ResultPath": null,
                 "Next": "CollectionPublish"
               }
             ]
@@ -377,7 +377,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "States.ALL"
                 ],
                 "Next": "CollectionError",
-                "ResultPath": "$.error"
+                "ResultPath": null
               }
             ]
           },
