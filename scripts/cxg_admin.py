@@ -285,11 +285,15 @@ def get_public_datasets(ctx):
 
 
 @cli.group("schema-migration")
-def schema_migration_cli():
+@click.pass_context
+def schema_migration_cli(ctx):
     """
     Commands for schema migration
     """
-    pass
+    deployment = ctx.obj["deployment"]
+    happy_env = "stage" if deployment == "staging" else ctx.obj["deployment"]
+    happy_config = json.loads(AwsSecret(f"happy/env-{happy_env}-config").value)
+    os.environ["ARTIFACT_BUCKET"] = happy_config["s3_buckets"]["artifact"]["name"]
 
 
 @schema_migration_cli.command()
@@ -314,7 +318,7 @@ def generate_report(ctx, execution_id: str, output_path: str):
     ./scripts/cxg_admin.py --deployment dev schema-migration generate-report execution_id
     ./scripts/cxg_admin.py --deployment dev schema-migration generate-report fe7207bd-eb8a-4767-9d78-fa1abedbf693
     """
-    schema_migration.generate_report(ctx, execution_id, output_path, os.environ["DATASETS_BUCKET"])
+    schema_migration.generate_report(ctx, execution_id, output_path, os.environ["ARTIFACT_BUCKET"])
 
 
 if __name__ == "__main__":

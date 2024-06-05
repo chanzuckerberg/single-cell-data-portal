@@ -24,3 +24,4 @@ def generate_report(ctx, execution_id: str, report_path: str, artifact_bucket: s
     report_file = Path(report_path).joinpath(f"{ctx.obj['deployment']}-{execution_id}.json")
     with open(report_file, "w") as f:
         json.dump(report, f, indent=4, sort_keys=True, cls=CustomJSONEncoder)
+    print(f"Report saved to {report_file}")
