@@ -31,7 +31,7 @@ class SchemaMigrate(ProcessingLogic):
         self.schema_validator = schema_validator
         self.business_logic = business_logic
         self.s3_provider = business_logic.s3_provider  # For compatiblity with ProcessingLogic
-        self.artifact_bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
+        self.artifact_bucket = os.environ.get("ARTIFACT_BUCKET", "artifact-bucket")
         self.execution_id = os.environ.get("EXECUTION_ID", "test-execution-arn")
         self.logger = logging.getLogger("processing")
         self.local_path: str = "."  # Used for testing

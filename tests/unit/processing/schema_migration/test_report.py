@@ -25,6 +25,6 @@ def test_report(schema_migrate_and_collections, tmpdir):
         "errors": ["files_0.json", "files_1.json", "files_2.json"],
         "migrate_changes": ["dataset_0_changes.json", "dataset_1_changes.json"],
     }
-    assert schema_migrate.s3_provider.delete_prefix.assert_called_once_with(
+    schema_migrate.s3_provider.delete_prefix.assert_called_once_with(
         schema_migrate.artifact_bucket, f"schema_migration/{schema_migrate.execution_id}"
     )
