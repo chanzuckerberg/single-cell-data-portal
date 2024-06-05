@@ -332,13 +332,13 @@ class SchemaMigrate(ProcessingLogic):
 
         return wrapper
 
-    def report(self, artifact_bucket=None, execution_id=None, progress=False) -> dict:
+    def report(self, artifact_bucket=None, execution_id=None, dry_run=True) -> dict:
         """
         Generate a report of the schema migration process. This function will download all the error and migration
         :param artifact_bucket: The bucket where the schema migration artifacts are stored.
         :param execution_id: the execution id of the AWS SFN schema migration in progress.
-        :param progress: If progress is True, then a progress report will be generated and returned based on
-            exection_id provided. The report will not be uploaded to slack and the s3 object will remain intack.
+        :param dry_run: If dry_run is True, then a report will be returned without deleting any s3 assets or report to
+            slack.
         :return: a json report of the schema migration process
         """
         artifact_bucket = artifact_bucket or self.artifact_bucket
@@ -364,7 +364,7 @@ class SchemaMigrate(ProcessingLogic):
 
             retrieve_report_files_from_s3("errors")
             retrieve_report_files_from_s3("migrate_changes")
-            if not progress:
+            if not dry_run:
                 self.logger.info("Report", extra=report)
                 report_str = json.dumps(report, indent=4, sort_keys=True, cls=CustomJSONEncoder)
                 report_message = f"Schema migration results ({os.environ['DEPLOYMENT_STAGE']} env)"
