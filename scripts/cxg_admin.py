@@ -316,7 +316,6 @@ def generate_report(ctx, execution_id: str, output_path: str):
     """
     Generates a report for the schema migration process.
     ./scripts/cxg_admin.py --deployment dev schema-migration generate-report execution_id
-    ./scripts/cxg_admin.py --deployment dev schema-migration generate-report fe7207bd-eb8a-4767-9d78-fa1abedbf693
     """
     schema_migration.generate_report(ctx, execution_id, output_path, os.environ["ARTIFACT_BUCKET"])
 
