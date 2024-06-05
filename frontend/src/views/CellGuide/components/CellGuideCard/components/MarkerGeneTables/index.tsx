@@ -9,7 +9,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { Button, Tooltip } from "@czi-sds/components";
+import { Tooltip } from "@czi-sds/components";
 import {
   TableTitle,
   TableTitleWrapper,
@@ -37,6 +37,7 @@ import {
   StyledLink,
   ReferenceTooltipWrapper,
   StyledImageWrapper,
+  StyledButton,
 } from "./style";
 import Table from "../common/Table";
 import { Pagination } from "@mui/material";
@@ -357,7 +358,7 @@ const MarkerGeneTables = ({
     ) => (
       <NoWrapWrapper>
         {row.symbol}{" "}
-        <Button
+        <StyledButton
           aria-label={`display gene info for ${row.symbol}`}
           className="hover-button"
           icon="InfoCircle"
