@@ -1,9 +1,10 @@
 import styled from "@emotion/styled";
 import { Popover } from "@mui/material";
-import { shadowM, spacesXxs } from "src/common/theme";
+import { shadowM, spacesXxs, spacesXxxs } from "src/common/theme";
 
 export const Filter = styled.div`
   font-feature-settings: normal; /* required; overrides layout.css specification */
+  margin: ${spacesXxxs}px 0;
 `;
 
 export const FilterPopover = styled(Popover)`

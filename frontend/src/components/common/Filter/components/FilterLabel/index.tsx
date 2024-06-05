@@ -1,6 +1,6 @@
 import React, { MouseEvent } from "react";
 import FilterLabelTooltip from "src/components/common/Filter/components/FilterLabel/components/FilterLabelTooltip";
-import { ButtonDropdown } from "./style";
+import { InputDropdown } from "src/components/common/Filter/components/FilterLabel/style";
 
 type OnOpenFilterFn = (event: MouseEvent<HTMLElement>) => void;
 
@@ -19,17 +19,19 @@ export default function FilterLabel({
 }: Props): JSX.Element {
   return (
     <FilterLabelTooltip tooltip={tooltip}>
-      {/* The dropdown button is enclosed within a <span> tag to enable tooltip functionality when the button is disabled. */}
+      {/* The InputDropdown is enclosed within a <span> tag to enable tooltip functionality when the component is disabled. */}
       {/* See https://github.com/chanzuckerberg/sci-components/blob/main/packages/components/src/core/Tooltip/index.tsx#L28. */}
       <span>
-        <ButtonDropdown
+        <InputDropdown
           disabled={isDisabled}
+          intent="default"
+          label={label}
           onClick={onOpenFilter}
+          sdsStage="default"
           sdsStyle="minimal"
-          sdsType="secondary"
-        >
-          {label}
-        </ButtonDropdown>
+          sdsType="label"
+          state="default"
+        />
       </span>
     </FilterLabelTooltip>
   );
