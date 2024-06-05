@@ -1,0 +1,4 @@
+INFO     processing:schema_migration.py:315 Downloaded from S3
+INFO     processing:schema_migration.py:241 checking dataset
+INFO     processing:schema_migration.py:274 checked dataset
+INFO     processing:schema_migration.py:275 Deleting files
