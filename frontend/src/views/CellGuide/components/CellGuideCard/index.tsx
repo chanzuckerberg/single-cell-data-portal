@@ -27,7 +27,6 @@ import CellGuideMobileHeader from "../CellGuideMobileHeader";
 import GeneInfoSideBar from "src/components/GeneInfoSideBar";
 import { titleize } from "src/common/utils/string";
 import Head from "next/head";
-import CellGuideBottomBanner from "../CellGuideBottomBanner";
 import { StickySidebarStyle } from "./components/CellGuideCardSidebar/style";
 import {
   CELL_GUIDE_CARD_GLOBAL_ORGANISM_FILTER_DROPDOWN,
@@ -478,8 +477,6 @@ export default function CellGuideCard({
           </StyledRightSideBar>
         )
       )}
-      {/* dont include long survey link text if in mobile view */}
-      <CellGuideBottomBanner includeSurveyLink={!skinnyMode} />
     </>
   );
 }

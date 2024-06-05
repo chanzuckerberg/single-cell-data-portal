@@ -23,7 +23,6 @@ import {
 import Link from "../CellGuideCard/components/common/Link";
 import Head from "next/head";
 import { titleize } from "src/common/utils/string";
-import CellGuideBottomBanner from "../CellGuideBottomBanner";
 import {
   TISSUE_CARD_HEADER_NAME,
   TISSUE_CARD_HEADER_TAG,
@@ -248,7 +247,6 @@ export default function TissueCard({ description, name }: Props): JSX.Element {
           </Wrapper>
         </TissueCardView>
       </TissueCardWrapper>
-      <CellGuideBottomBanner includeSurveyLink={!skinnyMode} />
     </>
   );
 }
