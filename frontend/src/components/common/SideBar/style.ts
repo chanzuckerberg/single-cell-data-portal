@@ -1,15 +1,17 @@
 import styled from "@emotion/styled";
 import { LIGHT_GRAY } from "src/components/common/theme";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
-import { CommonThemeProps, fontBodyS } from "@czi-sds/components";
+import { CommonThemeProps, fontHeaderM } from "@czi-sds/components";
 import {
-  fontWeightSemibold,
   grey300,
   grey500,
   spacesL,
   spacesS,
   spacesXl,
+  spacesXxxs,
 } from "src/common/theme";
+import { css, SerializedStyles } from "@emotion/react";
+import { Button } from "src/components/common/Button";
 
 export enum Position {
   LEFT = "left",
@@ -63,51 +65,59 @@ export const SideBarPositioner = styled.div<PositionerProps>`
   }
 `;
 
-export const SideBarToggleButtonWrapper = styled.span`
-  display: block;
+export const ToggleButtonText = styled.span`
+  ${fontHeaderM}
+  color: #000000;
+`;
 
-  .MuiButton-root {
-    width: 100%;
+export const ToggleButton = styled(Button, {
+  shouldForwardProp: (prop) => prop !== "isExpanded",
+})<PositionerProps>`
+  .MuiButton-endIcon {
+    margin: 0;
+  }
 
+  &:hover {
     .MuiButton-endIcon {
-      margin: 0;
-      width: 16px;
-    }
-
-    &:hover {
-      .MuiButton-endIcon .MuiSvgIcon-root {
+      .MuiSvgIcon-root {
         color: ${grey500};
       }
     }
   }
+
+  ${(props) =>
+    props.isExpanded &&
+    css`
+      justify-content: space-between;
+      margin-bottom: ${spacesS(props)}px;
+      padding: 0;
+    `}
+  ${(props) =>
+    !props.isExpanded &&
+    css`
+      flex-direction: column-reverse;
+      gap: ${spacesS(props)}px;
+      min-width: 0;
+      padding: ${spacesXl(props)}px ${spacesS(props)}px;
+
+      ${ToggleButtonText} {
+        transform: scale(-1);
+        writing-mode: vertical-rl;
+      }
+    `}
 `;
 
-export const ToggleButtonText = styled.span`
-  ${fontBodyS}
-  color: #000000;
-  font-weight: ${fontWeightSemibold};
-  letter-spacing: -0.006em;
-  text-transform: capitalize; /* required; SDS Button props isAllCaps for sdsType "minimal" does not currently facilitate text-transformation see https://github.com/chanzuckerberg/sci-components/blob/main/packages/components/src/core/Button/style.ts#L219 */
-`;
+export function sideBarPositionerPadding(
+  props: PositionerProps
+): SerializedStyles | undefined {
+  if (props.isExpanded) {
+    return css`
+      padding: ${spacesL(props)}px ${spacesS(props)}px;
 
-export const SideBarClosedButtonWrapper = styled(SideBarToggleButtonWrapper)`
-  .MuiButton-root {
-    flex-direction: column-reverse;
-    gap: ${spacesS}px;
-    min-width: 0;
-    padding: ${spacesXl}px ${spacesS}px;
-
-    ${ToggleButtonText} {
-      transform: scale(-1);
-      writing-mode: vertical-rl;
-    }
+      ${ToggleButton} {
+        margin-bottom: ${spacesXxxs(props)}px;
+        padding: 0 ${spacesS(props)}px;
+      }
+    `;
   }
-`;
-
-export const SideBarOpenButtonWrapper = styled(SideBarToggleButtonWrapper)`
-  .MuiButton-root {
-    justify-content: space-between;
-    margin-bottom: ${spacesS}px;
-    padding: 0;
-  }
-`;
+}
