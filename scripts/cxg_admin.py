@@ -382,7 +382,7 @@ def migrate_redesign_correct_published_at(ctx):
 
 @cli.command()
 @click.pass_context
-@click.argument("report_patj", type=click.Path(exists=True))
+@click.argument("report_path", type=click.Path(exists=True))
 def rollback_datasets(ctx, report_path: str):
     """
     Used to rollback a datasets to a previous version.
@@ -390,6 +390,18 @@ def rollback_datasets(ctx, report_path: str):
     ./scripts/cxg_admin.py --deployment dev rollback-dataset report.json
     """
     schema_migration.rollback_dataset(ctx, report_path)
+
+
+@click.command()
+@click.pass_context
+@click.argument("execution_id", type=str)
+@click.argument("output_path", type=click.Path(writable=True), default=".")
+def schema_migrations_generate_report(ctx, execution_id: str, output_path: str):
+    """
+    Generates a report for the schema migration process.
+    ./scripts/cxg_admin.py --deployment dev schema-migrations-generate-report execution_id
+    """
+    schema_migration.generate_report(ctx, execution_id, output_path, os.environ["DATASETS_BUCKET"])
 
 
 if __name__ == "__main__":

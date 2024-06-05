@@ -36,7 +36,13 @@ class SchemaMigrate(ProcessingLogic):
         self.logger = logging.getLogger("processing")
         self.local_path: str = "."  # Used for testing
         self.limit_migration = os.environ.get("LIMIT_MIGRATION", 0)  # Run a small migration for testing
-        self.schema_version = schema_validator.get_current_schema_version()
+        self._schema_version = None
+
+    @property
+    def schema_version(self):
+        if not self._schema_version:
+            self._schema_version = self.schema_validator.get_current_schema_version()
+        return self._schema_version
 
     def fetch_collections(self) -> Iterable[CollectionVersion]:
         published_collections = [*self.business_logic.get_collections(CollectionQueryFilter(is_published=True))]
@@ -326,37 +332,45 @@ class SchemaMigrate(ProcessingLogic):
 
         return wrapper
 
-    def report(self) -> str:
+    def report(self, artifact_bucket=None, execution_id=None, progress=False) -> dict:
+        """
+        Generate a report of the schema migration process. This function will download all the error and migration
+        :param artifact_bucket: The bucket where the schema migration artifacts are stored.
+        :param execution_id: the execution id of the AWS SFN schema migration in progress.
+        :param progress: If progress is True, then a progress report will be generated and returned based on
+            exection_id provided. The report will not be uploaded to slack and the s3 object will remain intack.
+        :return: a json report of the schema migration process
+        """
+        artifact_bucket = artifact_bucket or self.artifact_bucket
+        execution_id = execution_id or self.execution_id
+
         try:
             report = dict(errors=[], migrate_changes=[])
 
             def retrieve_report_files_from_s3(message_type: str):
                 s3_keys = list(
                     self.s3_provider.list_directory(
-                        self.artifact_bucket,
-                        self.get_key_prefix(f"schema_migration/{self.execution_id}/report/{message_type}"),
+                        artifact_bucket,
+                        self.get_key_prefix(f"schema_migration/{execution_id}/report/{message_type}"),
                     )
                 )
                 self.logger.info("Subdirectory Count", extra={"message_type": message_type, "count": len(s3_keys)})
                 for s3_key in s3_keys:
                     local_file = os.path.join(self.local_path, "data.json")
-                    self.s3_provider.download_file(self.artifact_bucket, s3_key, local_file)
+                    self.s3_provider.download_file(artifact_bucket, s3_key, local_file)
                     with open(local_file, "r") as f:
                         jn = json.load(f)
                     report[message_type].append(jn)
-                # Cleanup S3 files
-                self.s3_provider.delete_files(self.artifact_bucket, s3_keys)
 
             retrieve_report_files_from_s3("errors")
             retrieve_report_files_from_s3("migrate_changes")
-            self.logger.info("Report", extra=report)
-            report_str = json.dumps(report, indent=4, sort_keys=True, cls=CustomJSONEncoder)
-            report_message = f"Schema migration results ({os.environ['DEPLOYMENT_STAGE']} env)"
-            self._upload_to_slack("schema_migration_report.json", report_str, report_message)
-            # Cleanup leftover schema migration files
-            self.s3_provider.delete_prefix(
-                self.artifact_bucket, self.get_key_prefix(f"schema_migration/{self.execution_id}")
-            )
+            if not progress:
+                self.logger.info("Report", extra=report)
+                report_str = json.dumps(report, indent=4, sort_keys=True, cls=CustomJSONEncoder)
+                report_message = f"Schema migration results ({os.environ['DEPLOYMENT_STAGE']} env)"
+                self._upload_to_slack("schema_migration_report.json", report_str, report_message)
+                # Cleanup leftover schema migration files
+                self.s3_provider.delete_prefix(artifact_bucket, self.get_key_prefix(f"schema_migration/{execution_id}"))
 
             return report
         except Exception as e:
