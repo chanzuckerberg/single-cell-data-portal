@@ -1,6 +1,6 @@
 import json
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from backend.cellguide.pipeline.canonical_marker_genes.canonical_markers import CanonicalMarkerGenesCompiler
 from backend.cellguide.pipeline.utils import convert_dataclass_to_dict_and_strip_nones
@@ -35,8 +35,8 @@ class CanonicalMarkerGeneCompilerTests(unittest.TestCase):
                     new=mock_get_asctb_master_sheet,
                 ),
                 patch(
-                    "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.CrossrefProvider.get_title_and_citation_from_doi",
-                    side_effect=mock_get_title_and_citation_from_doi,
+                    "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.CrossrefProvider",
+                    new=Mock(get_title_and_citation_from_doi=Mock(side_effect=mock_get_title_and_citation_from_doi)),
                 ),
             ):
                 marker_gene_compiler = CanonicalMarkerGenesCompiler(

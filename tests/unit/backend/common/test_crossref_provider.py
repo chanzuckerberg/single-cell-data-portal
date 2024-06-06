@@ -369,7 +369,7 @@ class TestCrossrefProvider(unittest.TestCase):
         mock_get.return_value = mock_response
 
         result = provider.get_title_and_citation_from_doi("10.1016/j.cell.2019.11.025")
-        self.assertEqual(result, "Test Title\n\n - Doe et al. (2022) Test Journal")
+        self.assertEqual(result, "Test Title\n\n - Doe (2022) Test Journal")
 
 
 if __name__ == "__main__":

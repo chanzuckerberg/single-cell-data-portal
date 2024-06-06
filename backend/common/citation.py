@@ -40,7 +40,7 @@ def format_citation_crossref(message: dict) -> str:
         The formatted citation string.
     """
     author_str_suffix = ""
-    if len(message["authors"]) > 1:
+    if len(message["author"]) > 1:
         author_str_suffix = " et al."
     first_author = message["author"][0]
     author_str = f"{first_author['family']} et al." if "family" in first_author else f"{first_author['name']} et al."
