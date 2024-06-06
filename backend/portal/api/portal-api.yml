@@ -1291,7 +1291,7 @@ components:
           type: string
         detail:
           type: string
-    summmary_citation:
+    summary_citation:
       description: Summary citation for the associated DOI
       type: string
       nullable: true

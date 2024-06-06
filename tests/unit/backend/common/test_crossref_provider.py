@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 from requests import RequestException
 from requests.models import HTTPError, Response
 
-from backend.layers.common.provider.crossref_provider import (
+from backend.layers.common.providers.crossref_provider import (
     CrossrefDOINotFoundException,
     CrossrefException,
     CrossrefFetchException,
