@@ -1,4 +1,5 @@
 import html
+import logging
 from datetime import datetime
 from typing import Optional, Tuple
 
@@ -61,6 +62,11 @@ class CrossrefProvider(CrossrefProviderInterface):
         return (year, month, day)
 
     def _fetch_crossref_payload(self, doi):
+
+        if self.crossref_api_key is None:
+            logging.info("No Crossref API key found, skipping metadata fetching.")
+            return None
+
         try:
             res = requests.get(
                 f"{self.base_crossref_uri}/{doi}",

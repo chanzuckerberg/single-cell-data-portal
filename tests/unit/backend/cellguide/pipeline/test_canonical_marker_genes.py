@@ -36,7 +36,7 @@ class CanonicalMarkerGeneCompilerTests(unittest.TestCase):
                 ),
                 patch(
                     "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.CrossrefProvider",
-                    new=Mock(get_title_and_citation_from_doi=Mock(return_value=mock_get_title_and_citation_from_doi)),
+                    new=Mock(get_title_and_citation_from_doi=mock_get_title_and_citation_from_doi),
                 ),
             ):
                 marker_gene_compiler = CanonicalMarkerGenesCompiler(

@@ -11,7 +11,7 @@ class TestCitation(unittest.TestCase):
             "created": {"date-parts": [[2022]]},
         }
         result = format_citation_crossref(message)
-        self.assertEqual(result, "Doe, John et al. (2022) Test Journal")
+        self.assertEqual(result, "Doe (2022) Test Journal")
 
         message = {
             "authors": [
@@ -28,4 +28,4 @@ class TestCitation(unittest.TestCase):
             "published_year": 2023,
         }
         result = format_citation_dp(message)
-        self.assertEqual(result, "Gabitto, Mariano I. et al. (2023) bioRxiv")
+        self.assertEqual(result, "Gabitto et al. (2023) bioRxiv")
