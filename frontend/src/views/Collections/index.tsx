@@ -122,7 +122,7 @@ export default function Collections(): JSX.Element {
       // Viewable in collections mode, hidden in curator mode.
       {
         Cell: ({ row }: RowPropsValue<CollectionRow>) => {
-          return <div>{row.values.summaryCitation}</div>;
+          return <div>{row.values.summary_citation}</div>;
         },
         Header: "Publication",
         accessor: COLLECTION_SUMMARY_CITATION,
@@ -219,7 +219,7 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: "summaryCitation",
+        accessor: "summary_citation",
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.PUBLICATION,
       },

@@ -244,7 +244,7 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: "summaryCitation",
+        accessor: "summary_citation",
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.PUBLICATION,
       },

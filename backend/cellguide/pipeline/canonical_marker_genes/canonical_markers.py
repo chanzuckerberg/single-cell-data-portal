@@ -12,14 +12,12 @@ from backend.cellguide.pipeline.canonical_marker_genes.types import (
     ParsedAsctbTableEntry,
     Reference,
 )
-from backend.cellguide.pipeline.canonical_marker_genes.utils import (
-    clean_doi,
-    get_title_and_citation_from_doi,
-)
 from backend.cellguide.pipeline.constants import ASCTB_MASTER_SHEET_URL, CELLGUIDE_PIPELINE_NUM_CPUS
 from backend.common.census_cube.data.ontology_labels import ontology_term_label
 from backend.common.census_cube.utils import setup_retry_session
+from backend.common.doi import clean_doi
 from backend.common.marker_genes.marker_gene_files.gene_metadata import get_gene_id_to_name_and_symbol
+from backend.common.provider.crossref_provider import CrossrefProvider
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +51,7 @@ class CanonicalMarkerGenesCompiler:
 
         gene_metadata = get_gene_id_to_name_and_symbol()
         self.gene_id_to_name = gene_metadata.gene_id_to_name
+        self.crossref_provider = CrossrefProvider()
 
     def _get_tissue_id(self, anatomical_structures: list[AnatomicalStructure]) -> str:
         """
@@ -132,7 +131,7 @@ class CanonicalMarkerGenesCompiler:
             doi = clean_doi(ref.doi)
             if doi:
                 if doi not in doi_to_citation:
-                    title = get_title_and_citation_from_doi(doi)
+                    title = self.crossref_provider.get_title_and_citation_from_doi(doi)
                     doi_to_citation[doi] = title
                 else:
                     title = doi_to_citation[doi]

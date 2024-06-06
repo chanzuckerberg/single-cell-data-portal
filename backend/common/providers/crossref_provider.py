@@ -5,8 +5,9 @@ from typing import Optional, Tuple
 
 import requests
 
+from backend.common.citation import format_citation_crossref
 from backend.common.corpora_config import CorporaConfig
-from backend.layers.common.doi import doi_curie_from_link
+from backend.common.doi import doi_curie_from_link
 
 
 class CrossrefProviderInterface:
@@ -73,6 +74,36 @@ class CrossrefProvider(CrossrefProviderInterface):
                 raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
 
         return res
+
+    def get_title_and_citation_from_doi(self, doi: str) -> str:
+        """
+        Retrieves the title and citation from a DOI.
+
+        Parameters
+        ----------
+        doi : str
+            The DOI string.
+
+        Returns
+        -------
+        str
+            The title and citation associated with the DOI.
+        """
+
+        response = self._fetch_crossref_payload(doi)
+        data = response.json()
+
+        # Get the title and citation count from the data
+        try:
+            title = data["message"]["title"][0]
+            citation = format_citation_crossref(data["message"])
+        except Exception:
+            try:
+                title = data["message"]["items"][0]["title"][0]
+                citation = format_citation_crossref(data["message"]["items"][0])
+            except Exception:
+                return doi
+        return f"{title}\n\n - {citation}"
 
     def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str]]:
         """
