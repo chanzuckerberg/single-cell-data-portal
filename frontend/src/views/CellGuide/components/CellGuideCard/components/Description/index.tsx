@@ -348,7 +348,7 @@ export default function Description({
           <StyledTag
             sdsType="secondary"
             sdsStyle="square"
-            color="success"
+            color="positive"
             icon={
               <Image
                 src={validatedIcon}

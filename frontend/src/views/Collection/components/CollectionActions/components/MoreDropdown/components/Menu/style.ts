@@ -1,12 +1,6 @@
 import styled from "@emotion/styled";
 import { Menu as SDSMenu, MenuItem as SDSMenuItem } from "@czi-sds/components";
-import {
-  error400,
-  grey400,
-  shadowM,
-  spacesS,
-  spacesXxs,
-} from "src/common/theme";
+import { error400, grey400, shadowM, spacesS } from "src/common/theme";
 
 export const Menu = styled(SDSMenu)`
   &.MuiPopover-root {
@@ -22,11 +16,13 @@ export const Menu = styled(SDSMenu)`
 export const MenuItem = styled(SDSMenuItem)`
   &.MuiMenuItem-root {
     .primary-text {
-      gap: ${spacesS}px;
-
       > span {
         display: flex;
-        margin: ${spacesXxs}px 0;
+        margin-right: ${spacesS}px;
+      }
+
+      svg {
+        align-self: center;
       }
     }
   }
@@ -44,7 +40,6 @@ export const ReorderMenuItem = styled(MenuItem)`
   &.MuiMenuItem-root {
     svg {
       color: ${grey400};
-      margin: ${spacesXxs}px 0;
     }
 
     &.Mui-disabled {

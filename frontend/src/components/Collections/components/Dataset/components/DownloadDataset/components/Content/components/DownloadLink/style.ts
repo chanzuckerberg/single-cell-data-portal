@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyS } from "@czi-sds/components";
+import { fontCodeS } from "@czi-sds/components";
 import {
   cornersM,
   grey100,
@@ -21,10 +21,11 @@ export const CodeBlock = styled.div`
   padding: ${spacesS}px ${spacesM}px;
 
   code {
-    ${fontBodyS}
+    ${fontCodeS}
     background-color: transparent;
     box-sizing: content-box;
     flex: 1;
+    line-height: 20px;
     max-height: 40px;
     overflow: hidden;
     padding: ${spacesXxs}px 0 0;

@@ -1,11 +1,10 @@
 import { ReactNode, useEffect, useState } from "react";
-import { Button, Icon } from "@czi-sds/components";
+import { Icon } from "@czi-sds/components";
 import {
   Position,
   SideBar as SideBarWrapper,
-  SideBarClosedButtonWrapper,
-  SideBarOpenButtonWrapper,
   SideBarPositioner,
+  ToggleButton,
   ToggleButtonText,
 } from "src/components/common/SideBar/style";
 import { noop } from "src/common/constants/utils";
@@ -18,7 +17,7 @@ export const FILTERS_PANEL_EXPANDED_WIDTH_PX = 240;
  */
 export type SideBarToggleFn = (expanded: boolean) => void;
 
-export interface Props {
+export interface SidebarProps {
   children: ReactNode;
   className?: string;
   label: ReactNode;
@@ -50,13 +49,10 @@ export default function SideBar({
   wmgSideBar,
   truncatedLabel = "",
   onWidthChange = noop,
-}: Props): JSX.Element {
+}: SidebarProps): JSX.Element {
   // seve: wmgSideBar does not have isOpen prop, so we need to set default to true/open
   const [isExpanded, setIsExpanded] = useState(isOpen || !!wmgSideBar);
   const sideBarWidth = isExpanded ? width : COLLAPSED_WIDTH_PX;
-  const SideBarToggleButtonWrapper = isExpanded
-    ? SideBarOpenButtonWrapper
-    : SideBarClosedButtonWrapper;
 
   /**
    * Handle click on open/close icon; update state.
@@ -81,31 +77,33 @@ export default function SideBar({
       data-testid={testId}
     >
       <SideBarPositionerComponent isExpanded={isExpanded}>
-        <SideBarToggleButtonWrapper>
-          <Button
-            data-testid="side-bar-toggle-button"
-            disabled={disabled}
-            endIcon={
-              <Icon
-                sdsIcon={
-                  (position === Position.LEFT ? isExpanded : !isExpanded)
-                    ? "chevronLeft"
-                    : "chevronRight"
-                }
-                sdsSize="l"
-                sdsType="button"
-              />
-            }
-            onClick={() => handleExpandedClick(!isExpanded)}
-            sdsStyle="minimal"
-            sdsType="minimal"
-            size="large"
-          >
-            <ToggleButtonText>
-              {!isExpanded && truncatedLabel ? truncatedLabel : label}
-            </ToggleButtonText>
-          </Button>
-        </SideBarToggleButtonWrapper>
+        <ToggleButton
+          data-testid="side-bar-toggle-button"
+          disabled={disabled}
+          endIcon={
+            <Icon
+              color="gray"
+              sdsIcon={
+                (position === Position.LEFT ? isExpanded : !isExpanded)
+                  ? "ChevronLeft"
+                  : "ChevronRight"
+              }
+              sdsSize="s"
+              sdsType="static"
+              shade={500}
+            />
+          }
+          fullWidth
+          isAllCaps={false}
+          isExpanded={isExpanded}
+          onClick={() => handleExpandedClick(!isExpanded)}
+          sdsStyle="minimal"
+          sdsType="secondary"
+        >
+          <ToggleButtonText>
+            {!isExpanded && truncatedLabel ? truncatedLabel : label}
+          </ToggleButtonText>
+        </ToggleButton>
         {isExpanded ? content : null}
       </SideBarPositionerComponent>
     </SideBarWrapperComponent>

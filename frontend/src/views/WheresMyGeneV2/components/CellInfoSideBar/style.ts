@@ -78,6 +78,13 @@ export const CopyGenesButton = styled(Button)`
   font-weight: 500;
   margin-left: -5px;
   padding-left: ${spacesM}px;
+  text-transform: unset;
+`;
+
+export const AddToDotplotButton = styled(Button)`
+  ${fontBodyS}
+  text-transform: unset;
+  font-weight: 500;
 `;
 
 export const MarkerStrengthContainer = styled("div")`

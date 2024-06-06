@@ -1,4 +1,5 @@
 import {
+  Button,
   CommonThemeProps,
   fontBodyS,
   fontBodyXs,
@@ -40,6 +41,7 @@ export const ReferenceTooltipWrapper = styled.div`
 export const NoWrapWrapper = styled.span`
   white-space: nowrap;
   display: flex;
+  align-items: center;
   column-gap: ${spacesS}px;
 `;
 
@@ -133,5 +135,17 @@ export const StyledImageWrapper = styled.div<StyledImageWrapperProps>`
   cursor: pointer;
   min-width: 12px;
   min-height: 12px;
+  padding-top: 2px;
   visibility: ${(props) => (props.isActive ? "visible !important" : "unset")};
+`;
+
+export const StyledButton = styled(Button)`
+  padding: 0;
+  max-width: 12px;
+  max-height: 12px;
+
+  .MuiSvgIcon-root {
+    width: 12px;
+    height: 12px;
+  }
 `;
