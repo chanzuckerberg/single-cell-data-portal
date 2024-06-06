@@ -35,7 +35,7 @@ class CanonicalMarkerGeneCompilerTests(unittest.TestCase):
                     new=mock_get_asctb_master_sheet,
                 ),
                 patch(
-                    "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_title_and_citation_from_doi",
+                    "backend.common.providers.crossref_provider.CrossrefProvider.get_title_and_citation_from_doi",
                     new=mock_get_title_and_citation_from_doi,
                 ),
             ):
