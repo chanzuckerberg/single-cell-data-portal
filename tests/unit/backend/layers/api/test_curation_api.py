@@ -6,6 +6,7 @@ from collections import defaultdict
 from dataclasses import asdict
 from unittest.mock import Mock, patch
 
+from backend.common.providers.crossref_provider import CrossrefDOINotFoundException
 from backend.common.utils.api_key import generate
 from backend.curation.api.v1.curation.collections.common import EntityColumns
 from backend.layers.common.entities import (
@@ -23,7 +24,6 @@ from backend.layers.common.entities import (
     SpatialMetadata,
     Visibility,
 )
-from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException
 from tests.unit.backend.layers.api.test_portal_api import generate_mock_publisher_metadata
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate

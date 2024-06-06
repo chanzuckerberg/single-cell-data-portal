@@ -9,6 +9,7 @@ from unittest.mock import Mock, patch
 from furl import furl
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
+from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.layers.business.entities import DatasetArtifactDownloadData
 from backend.layers.common.entities import (
     CollectionId,
@@ -22,7 +23,6 @@ from backend.layers.common.entities import (
     OntologyTermId,
     TissueOntologyTermId,
 )
-from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.layers.thirdparty.uri_provider import FileInfo, FileInfoException
 from tests.unit.backend.layers.api.fixture import generate_mock_publisher_metadata
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest

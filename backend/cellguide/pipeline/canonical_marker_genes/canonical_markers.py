@@ -17,7 +17,7 @@ from backend.common.census_cube.data.ontology_labels import ontology_term_label
 from backend.common.census_cube.utils import setup_retry_session
 from backend.common.doi import clean_doi
 from backend.common.marker_genes.marker_gene_files.gene_metadata import get_gene_id_to_name_and_symbol
-from backend.common.provider.crossref_provider import CrossrefProvider
+from backend.common.providers.crossref_provider import CrossrefProvider
 
 logger = logging.getLogger(__name__)
 
