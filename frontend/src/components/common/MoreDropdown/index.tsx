@@ -1,24 +1,24 @@
-import { PopoverProps, Popover } from "@blueprintjs/core";
-import { ButtonIconProps } from "@czi-sds/components";
-import { MoreButton } from "src/components/common/MoreDropdown/style";
+import { Popover, PopoverProps } from "@blueprintjs/core";
+import { Button, ButtonProps } from "@czi-sds/components";
 
 interface Props {
   popoverProps?: PopoverProps;
-  buttonProps?: Partial<ButtonIconProps<"dotsHorizontal", "small">>;
+  buttonProps?: Partial<ButtonProps>;
 }
 
 const MoreDropdown = ({
   popoverProps = {},
-  buttonProps = {} as Props["buttonProps"],
+  buttonProps = {},
 }: Props): JSX.Element => {
   return (
     <Popover {...popoverProps}>
-      <MoreButton
+      <Button
         {...buttonProps}
         data-testid="collection-more-button"
-        sdsIcon="dotsHorizontal"
+        icon="DotsHorizontal"
         sdsSize="small"
-        sdsType="tertiary"
+        sdsStyle="icon"
+        sdsType="secondary"
       />
     </Popover>
   );
