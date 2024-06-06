@@ -43,7 +43,7 @@ def format_citation_crossref(message: dict) -> str:
     if len(message["author"]) > 1:
         author_str_suffix = " et al."
     first_author = message["author"][0]
-    author_str = f"{first_author['family']} et al." if "family" in first_author else f"{first_author['name']} et al."
+    author_str = f"{first_author['family']}" if "family" in first_author else f"{first_author['name']}"
     author_str += author_str_suffix
 
     journal = message["container-title"][0] if len(message["container-title"]) else ""
