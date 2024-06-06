@@ -3,7 +3,7 @@ import unittest
 from math import log
 from unittest.mock import patch
 
-from backend.api_server.app import app
+from backend.de.server.app import app
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     load_realistic_test_snapshot,
@@ -15,7 +15,7 @@ TEST_SNAPSHOT = "realistic-test-snapshot"
 class DeAPIV1Tests(unittest.TestCase):
     def setUp(self):
         super().setUp()
-        with EnvironmentSetup(dict(APP_NAME="corpora-api")):
+        with EnvironmentSetup(dict(APP_NAME="corpora-api-de")):
             self.app = app.test_client(use_cookies=False)
 
     @classmethod

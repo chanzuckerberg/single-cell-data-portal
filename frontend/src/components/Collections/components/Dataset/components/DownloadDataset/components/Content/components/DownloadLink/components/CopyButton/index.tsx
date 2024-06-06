@@ -1,8 +1,8 @@
 import copy from "clipboard-copy";
 import { useEffect, useRef, useState } from "react";
-import { CopyButton as Button } from "./style";
 import { Fade } from "@mui/material";
 import { ANIMATION, ANIMATION_STEP } from "./constants";
+import { Button } from "src/components/common/Button";
 
 interface Props {
   downloadLink: string;
@@ -76,6 +76,7 @@ export default function CopyButton({
 /**
  * Returns the button text to display.
  * @param step - Current animation step.
+ * @param label - Button label.
  * @returns button text.
  */
 function getButtonText(step: number, label: string): string {

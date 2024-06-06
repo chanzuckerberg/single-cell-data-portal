@@ -1,6 +1,6 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
-import { API_URL } from "src/configs/configs";
+import { DE_API_URL as API_URL } from "src/configs/configs";
 import {
   DispatchContext,
   StateContext,

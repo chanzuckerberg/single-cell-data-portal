@@ -17,11 +17,11 @@ export default function CountAndTotal({
     <>
       {!!countAndTotal && (
         <Tag
-          color="gray"
+          color="neutral"
           hover={false}
           label={countAndTotal}
           sdsStyle="square"
-          sdsType="primary"
+          sdsType="secondary"
         />
       )}
     </>
