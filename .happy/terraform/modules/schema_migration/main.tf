@@ -234,7 +234,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
       },
       "Next": "SpanCollections",
       "Retry": [ {
-          "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException"],
+          "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
           "IntervalSeconds": 2,
           "MaxAttempts": 7,
           "BackoffRate": 5
@@ -303,7 +303,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
             },
             "Next": "DatasetsExists",
             "Retry": [ {
-                "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException"],
+                "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
                 "IntervalSeconds": 2,
                 "MaxAttempts": 7,
                 "BackoffRate": 5
@@ -366,7 +366,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
             },
             "End": true,
             "Retry": [ {
-                "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException"],
+                "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
                 "IntervalSeconds": 2,
                 "MaxAttempts": 7,
                 "BackoffRate": 5
@@ -439,7 +439,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   },
                   "Next": "StepFunctionsStartExecution",
                   "Retry": [ {
-                      "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException"],
+                      "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
                       "IntervalSeconds": 2,
                       "MaxAttempts": 7,
                       "BackoffRate": 5
@@ -578,7 +578,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
         }
       },
       "Retry": [ {
-        "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException"],
+        "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
         "IntervalSeconds": 2,
         "MaxAttempts": 7,
         "BackoffRate": 5
