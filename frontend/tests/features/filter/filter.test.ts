@@ -4,7 +4,6 @@
 
 // App dependencies
 import { expect } from "@playwright/test";
-import { PublisherMetadata } from "src/common/entities";
 import {
   calculateMonthsSincePublication,
   calculateRecency,
