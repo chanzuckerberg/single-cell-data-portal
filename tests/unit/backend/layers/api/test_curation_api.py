@@ -1806,7 +1806,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             ),
         )
         self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata(), "78.91011/j.celrep")
+            return_value=(generate_mock_publisher_metadata(journal_override="Science"), "78.91011/j.celrep")
         )
         published_collection_2 = self.generate_published_collection(
             owner="other owner",
@@ -1834,7 +1834,9 @@ class TestGetDatasets(BaseAPIPortalTest):
         with self.subTest("With no credentials"):
             self.assertEqual(3, len(response.json))
 
-        with self.subTest("Contains collection_id, collection_version_id, collection_name and collection_doi"):
+        with self.subTest(
+            "Contains collection_id, collection_version_id, collection_name, collection_doi, and collection_doi_label"
+        ):
             collection_ids = {published_collection_1.collection_id.id, published_collection_2.collection_id.id}
             collection__version_ids = {
                 published_collection_1.version_id.id,
@@ -1842,21 +1844,25 @@ class TestGetDatasets(BaseAPIPortalTest):
             }
             collection_names = {published_collection_1.metadata.name, published_collection_2.metadata.name}
             expected_collection_dois = {"12.3456/j.celrep", "78.91011/j.celrep"}
+            expected_collection_doi_labels = {"Doe et al. (2021) Nature", "Doe et al. (2021) Science"}
 
             received_collection_ids = set()
             received_collection_version_ids = set()
             received_collection_names = set()
             received_collection_dois = set()
+            received_collection_doi_labels = set()
             for dataset in response.json:
                 received_collection_ids.add(dataset["collection_id"])
                 received_collection_version_ids.add(dataset["collection_version_id"])
                 received_collection_names.add(dataset["collection_name"])
                 received_collection_dois.add(dataset["collection_doi"])
+                received_collection_doi_labels.add(dataset["collection_doi_label"])
 
             self.assertEqual(collection_ids, received_collection_ids)
             self.assertEqual(collection__version_ids, received_collection_version_ids)
             self.assertEqual(collection_names, received_collection_names)
             self.assertEqual(expected_collection_dois, received_collection_dois)
+            self.assertEqual(expected_collection_doi_labels, received_collection_doi_labels)
 
         self.generate_dataset(
             collection_version=revision,

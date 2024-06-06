@@ -295,7 +295,9 @@ def reshape_dataset_for_curation_datasets_index_api(
     ds["collection_name"] = collection_version.metadata.name
     doi, _ = extract_doi_from_links(collection_version.metadata.links)
     ds["collection_doi"] = doi
-    ds["collection_doi_label"] = format_citation_dp(collection_version.publisher_metadata)
+    ds["collection_doi_label"] = (
+        format_citation_dp(collection_version.publisher_metadata) if collection_version.publisher_metadata else None
+    )
 
     # At this point, dataset shape for public requests are complete.
     if is_dataset_visibility_public:
