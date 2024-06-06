@@ -498,7 +498,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
               }
             },
             "Next": "CollectionPublish",
-            "MaxConcurrency": 32,
+            "MaxConcurrency": 5,
             "Catch": [
               {
                 "ErrorEquals": [
@@ -527,7 +527,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
           "Key.$": "$.key_name"
         }
       },
-      "MaxConcurrency": 40,
+      "MaxConcurrency": 10,
       "Next": "report",
       "Catch": [
         {
