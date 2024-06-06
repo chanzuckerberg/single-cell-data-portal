@@ -355,6 +355,7 @@ class TestCrossrefProvider(unittest.TestCase):
     @patch("backend.common.providers.crossref_provider.requests.get")
     def test__get_title_and_citation_from_doi(self, mock_get):
         provider = CrossrefProvider()
+        provider.crossref_api_key = "test_key"
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
