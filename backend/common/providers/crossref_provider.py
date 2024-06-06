@@ -16,6 +16,12 @@ class CrossrefProviderInterface:
     def fetch_preprint_published_doi(self, doi):
         pass
 
+    def _fetch_crossref_payload(self, doi):
+        pass
+
+    def get_title_and_citation_from_doi(self, doi: str) -> str:
+        pass
+
 
 class CrossrefException(Exception):
     pass
@@ -134,12 +140,16 @@ class CrossrefProvider(CrossrefProviderInterface):
 
             # Journal
             try:
+                raw_journal = None
                 if "short-container-title" in message and message["short-container-title"]:
                     raw_journal = message["short-container-title"][0]
                 elif "container-title" in message and message["container-title"]:
                     raw_journal = message["container-title"][0]
                 elif "institution" in message:
                     raw_journal = message["institution"][0]["name"]
+
+                if raw_journal is None:
+                    raise CrossrefParseException("Journal node missing")
             except Exception:
                 raise CrossrefParseException("Journal node missing") from None
 
