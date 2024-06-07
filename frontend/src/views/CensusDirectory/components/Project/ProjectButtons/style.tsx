@@ -12,7 +12,6 @@ export const ButtonsColumn = styled.div`
 export const ButtonsRow = styled.div`
   display: flex;
   flex-direction: row;
-
   gap: ${spacesDefault}px;
   margin-bottom: ${spacesXl}px;
 
