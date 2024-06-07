@@ -1,0 +1,11 @@
+INFO     backend.layers.business.business:business.py:517 {'message': 'ingesting dataset', 'collection_version_id': 9831bace-94ff-4725-89f5-ee9e61c329df, 'url': 'http://fake.url', 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:517 {'message': 'ingesting dataset', 'collection_version_id': 9831bace-94ff-4725-89f5-ee9e61c329df, 'url': None, 'current_dataset_version_id': cd0df102-cfa8-456b-8fdf-c152647ec457}
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:91 Uploaded [2b405e46-eff6-4f2e-8b30-d0d985f486eb//tmp/tmpoec6htus/test.rds] to s3://artifact_bucket/2b405e46-eff6-4f2e-8b30-d0d985f486eb/test.rds
+INFO     processing:process_logic.py:93 Updated database with rds.
+INFO     processing:process_logic.py:100 Uploaded 2b405e46-eff6-4f2e-8b30-d0d985f486eb.rds to s3://datasets_bucket/2b405e46-eff6-4f2e-8b30-d0d985f486eb/2b405e46-eff6-4f2e-8b30-d0d985f486eb.rds
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
