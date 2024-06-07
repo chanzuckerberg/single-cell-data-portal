@@ -44,15 +44,15 @@ resource aws_batch_job_definition schema_migrations_swap {
     resourceRequirements = [
       {
         type= "VCPU",
-        Value="32"
+        Value="8"
       },
       {
         Type="MEMORY",
-        Value = "256000"
+        Value = "64000"
       }
     ]
     linuxParameters= {
-     maxSwap= 0,
+     maxSwap= 30000,
      swappiness= 60
     },
     logConfiguration= {
@@ -498,7 +498,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
               }
             },
             "Next": "CollectionPublish",
-            "MaxConcurrency": 5,
+            "MaxConcurrency": 10,
             "Catch": [
               {
                 "ErrorEquals": [
