@@ -12,11 +12,18 @@ export const ButtonsColumn = styled.div`
 export const ButtonsRow = styled.div`
   display: flex;
   flex-direction: row;
+
   gap: ${spacesDefault}px;
   margin-bottom: ${spacesXl}px;
 
   & > div {
     margin-right: ${spacesXl}px;
+  }
+
+  button {
+    height: 35px;
+    max-height: 35px;
+    line-height: 1.2;
   }
 `;
 
