@@ -18,6 +18,12 @@ export const ButtonsRow = styled.div`
   & > div {
     margin-right: ${spacesXl}px;
   }
+
+  button {
+    height: 35px;
+    max-height: 35px;
+    line-height: 1.2;
+  }
 `;
 
 export const StyledButton = styled(Button)`
