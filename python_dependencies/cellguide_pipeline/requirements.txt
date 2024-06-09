@@ -31,7 +31,7 @@ scipy==1.11.1
 six==1.16.0
 tiledb
 typing_extensions==4.11.0
-tzdata==2023.3
+tzdata==2024.1
 urllib3==1.26.16
 pyarrow==12.0.0
 dask==2023.8.1
