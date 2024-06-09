@@ -17,7 +17,7 @@ pyvips==2.2.2
 requests>=2.22.0
 rpy2==3.5.16
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
-s3fs==0.4.2
+s3fs==2024.6.0
 scanpy==1.9.8
 SQLAlchemy==2.*
 tenacity
