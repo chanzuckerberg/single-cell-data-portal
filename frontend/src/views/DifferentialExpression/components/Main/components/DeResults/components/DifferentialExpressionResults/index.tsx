@@ -17,7 +17,7 @@ import {
 import cxgIcon from "./images/cxg.svg";
 import { Pagination } from "@mui/material";
 import Table from "src/views/CellGuide/components/CellGuideCard/components/common/Table";
-import { ButtonIcon, Tooltip } from "@czi-sds/components";
+import { Button, Tooltip } from "@czi-sds/components";
 
 import { DifferentialExpressionRow } from "../../types";
 import { MAX_NUM_TOP_GENES_TO_PORT_TO_GE, ROWS_PER_PAGE } from "./constants";
@@ -128,9 +128,11 @@ const DifferentialExpressionResults = ({
             onClick={handleSortDirectionChange}
           >
             Effect Size{" "}
-            <ButtonIcon
-              sdsIcon={sortDirection === "asc" ? "chevronUp" : "chevronDown"}
+            <Button
+              sdsStyle="icon"
+              icon={sortDirection === "asc" ? "ChevronUp" : "ChevronDown"}
               sdsSize="small"
+              sdsType="tertiary"
             />
           </EffectSizeHeaderWrapper>
           <StyledTextField
@@ -234,7 +236,7 @@ const DifferentialExpressionResults = ({
       {nCellsOverlap > 0 && (
         <StyledCallout
           data-testid={DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT}
-          intent={parseFloat(overlapPercent) > 25 ? "warning" : "info"}
+          intent={parseFloat(overlapPercent) > 25 ? "notice" : "info"}
         >
           {nCellsOverlap.toLocaleString()} overlapping cells ({overlapPercent}
           %) between groups. Selecting highly overlapping groups can result in

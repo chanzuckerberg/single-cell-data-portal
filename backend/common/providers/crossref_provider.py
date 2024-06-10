@@ -5,8 +5,9 @@ from typing import Optional, Tuple
 
 import requests
 
+from backend.common.citation import format_citation_crossref
 from backend.common.corpora_config import CorporaConfig
-from backend.layers.common.doi import doi_curie_from_link
+from backend.common.doi import doi_curie_from_link
 
 
 class CrossrefProviderInterface:
@@ -14,6 +15,12 @@ class CrossrefProviderInterface:
         return None, None
 
     def fetch_preprint_published_doi(self, doi):
+        pass
+
+    def _fetch_crossref_payload(self, doi):
+        pass
+
+    def get_title_and_citation_from_doi(self, doi: str) -> str:
         pass
 
 
@@ -74,6 +81,36 @@ class CrossrefProvider(CrossrefProviderInterface):
 
         return res
 
+    def get_title_and_citation_from_doi(self, doi: str) -> str:
+        """
+        Retrieves the title and citation from a DOI.
+
+        Parameters
+        ----------
+        doi : str
+            The DOI string.
+
+        Returns
+        -------
+        str
+            The title and citation associated with the DOI.
+        """
+
+        response = self._fetch_crossref_payload(doi)
+        data = response.json()
+
+        # Get the title and citation count from the data
+        try:
+            title = data["message"]["title"][0]
+            citation = format_citation_crossref(data["message"])
+        except Exception:
+            try:
+                title = data["message"]["items"][0]["title"][0]
+                citation = format_citation_crossref(data["message"]["items"][0])
+            except Exception:
+                return doi
+        return f"{title}\n\n - {citation}"
+
     def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str]]:
         """
         Fetches and extracts publisher metadata from Crossref for a specified DOI.
@@ -109,12 +146,16 @@ class CrossrefProvider(CrossrefProviderInterface):
 
             # Journal
             try:
+                raw_journal = None
                 if "short-container-title" in message and message["short-container-title"]:
                     raw_journal = message["short-container-title"][0]
                 elif "container-title" in message and message["container-title"]:
                     raw_journal = message["container-title"][0]
                 elif "institution" in message:
                     raw_journal = message["institution"][0]["name"]
+
+                if raw_journal is None:
+                    raise CrossrefParseException("Journal node missing")
             except Exception:
                 raise CrossrefParseException("Journal node missing") from None
 
