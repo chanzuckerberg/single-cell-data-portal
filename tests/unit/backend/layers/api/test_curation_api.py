@@ -1820,7 +1820,11 @@ class TestGetDatasets(BaseAPIPortalTest):
             ),
         )
         self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata(journal_override="Science"), "78.91011/j.celrep", datetime.utcnow())
+            return_value=(
+                generate_mock_publisher_metadata(journal_override="Science"),
+                "78.91011/j.celrep",
+                datetime.utcnow(),
+            )
         )
         published_collection_2 = self.generate_published_collection(
             owner="other owner",
