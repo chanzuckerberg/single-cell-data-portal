@@ -445,6 +445,8 @@ paths:
                       type: string
                     publisher_metadata:
                       $ref: "#/components/schemas/publisher_metadata"
+                    summary_citation:
+                      $ref: "#/components/schemas/summary_citation"
                     published_at:
                       type: number
                     revised_at:
@@ -490,6 +492,8 @@ paths:
                       type: string
                     publisher_metadata:
                       $ref: "#/components/schemas/publisher_metadata"
+                    summary_citation:
+                      $ref: "#/components/schemas/summary_citation"
                     published_at:
                       type: number
                       nullable: true
@@ -1124,6 +1128,8 @@ components:
           $ref: "#/components/schemas/publisher_metadata"
         revising_in:
           $ref: "#/components/schemas/revising_in"
+        summary_citation:
+          $ref: "#/components/schemas/summary_citation"
         datasets:
           type: array
           items:
@@ -1285,6 +1291,11 @@ components:
           type: string
         detail:
           type: string
+    summary_citation:
+      description: Summary citation for the associated DOI
+      type: string
+      nullable: true
+      example: "Ahern et al. (2022) Cell"
     dataset_identifiers:
       type: object
       description: Information for identifying and accessing a datatset
