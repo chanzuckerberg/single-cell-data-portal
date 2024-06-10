@@ -250,7 +250,7 @@ export default function SaveExport({
           disabled={selectedGenes.length === 0}
           sdsSize="medium"
           sdsType="primary"
-          sdsIcon="download"
+          icon="Download"
         />
       </ButtonWrapper>
       <StyledModal
@@ -313,7 +313,7 @@ export default function SaveExport({
             <DownloadButton
               sdsStyle="square"
               sdsType="primary"
-              sdsSize="large"
+              // sdsSize="large" (TODO): figure out if replacement necessary
               onClick={handleDownload}
               disabled={!selectedFileTypes.length}
               data-testid="dialog-download-button"

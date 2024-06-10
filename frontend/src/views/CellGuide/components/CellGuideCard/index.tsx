@@ -42,10 +42,10 @@ import {
   TISSUE_AGNOSTIC,
 } from "./components/MarkerGeneTables/constants";
 import {
-  DefaultDropdownMenuOption,
   Dropdown,
   InputDropdownProps,
-  ButtonIcon,
+  Button,
+  DefaultAutocompleteOption,
 } from "@czi-sds/components";
 import { useComponentWidth } from "./components/common/hooks/useIsComponentPastBreakpoint";
 import { DEFAULT_ONTOLOGY_HEIGHT } from "../common/OntologyDagView/common/constants";
@@ -56,7 +56,7 @@ import { useComputationalMarkerGenesTableRowsAndFilters } from "./components/Mar
 import { useConnect } from "./connect";
 import { SDSOrgan } from "src/views/CellGuide/components/CellGuideCard/types";
 import { getCellTypeLink } from "src/views/CellGuide/common/utils";
-import { TextField } from "@mui/material";
+import { AutocompleteValue, TextField } from "@mui/material";
 
 export const SDS_INPUT_DROPDOWN_PROPS: InputDropdownProps = {
   sdsStyle: "square",
@@ -134,7 +134,8 @@ export default function CellGuideCard({
   const titleizedCellTypeName = titleize(cellTypeName);
 
   const handleChangeOrgan = (
-    option: DefaultDropdownMenuOption | null = null
+    _: React.SyntheticEvent, // event
+    option: AutocompleteValue<DefaultAutocompleteOption, false, false, false>
   ) => {
     const { name, id } = (option || {}) as SDSOrgan;
 
@@ -153,7 +154,10 @@ export default function CellGuideCard({
     router.push(url, url, { scroll: false });
   };
 
-  const handleChangeOrganism = (option: DefaultDropdownMenuOption | null) => {
+  const handleChangeOrganism = (
+    _: React.SyntheticEvent,
+    option: AutocompleteValue<DefaultAutocompleteOption, false, false, false>
+  ) => {
     if (!option || option.name === selectedOrganism.name) return;
     setSelectedOrganism(option);
     track(EVENTS.CG_SELECT_ORGANISM, { organism: option.name });
@@ -212,7 +216,7 @@ export default function CellGuideCard({
   }). ${rawSeoDescription}`;
 
   const OrganismSelectorDropdown = (
-    <Dropdown
+    <Dropdown<DefaultAutocompleteOption, false, false, false>
       InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
       search
       label={selectedOrganism?.name}
@@ -225,7 +229,7 @@ export default function CellGuideCard({
   const dropdownComponents = (
     <CellGuideCardHeaderInnerWrapper>
       {OrganismSelectorDropdown}
-      <Dropdown
+      <Dropdown<DefaultAutocompleteOption, false, false, false>
         InputDropdownProps={SDS_INPUT_DROPDOWN_PROPS}
         search
         label={tissueName}
@@ -302,11 +306,12 @@ export default function CellGuideCard({
         <MobileTooltipWrapper>
           <MobileTooltipHeader>
             <MobileTooltipTitle>{tooltipContent.title}</MobileTooltipTitle>
-            <ButtonIcon
+            <Button
               onClick={() => {
                 setTooltipContent(null);
               }}
-              sdsIcon="xMark"
+              icon="XMark"
+              sdsStyle="icon"
               sdsSize="medium"
             />
           </MobileTooltipHeader>
@@ -333,7 +338,7 @@ export default function CellGuideCard({
                   label={cellTypeId}
                   sdsType="secondary"
                   sdsStyle="square"
-                  color="gray"
+                  color="neutral"
                   hover
                 />
               </a>

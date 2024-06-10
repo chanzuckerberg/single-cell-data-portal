@@ -150,7 +150,7 @@ export default function WheresMyGene(): JSX.Element {
               <UnderlyingDataChangeBanner />
             </StyledBannerContainer>
           )}
-          <Top id="top-legend">
+          <Top sidebarWidth={sidebarWidth} id="top-legend">
             <Notification />
             <Legend
               selectedCellTypes={cellTypesByTissueName}
