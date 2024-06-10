@@ -4,7 +4,7 @@ Authlib==0.14.3
 boto3>=1.11.17
 botocore>=1.14.17
 connexion[swagger-ui]==2.14.2
-dataclasses-json==0.6.6
+dataclasses-json==0.6.7
 cellxgene-ontology-guide==0.8.0
 # TODO: Check if this is really essential for APM tracing
 # see ticket: https://github.com/chanzuckerberg/single-cell-data-portal/issues/5821
