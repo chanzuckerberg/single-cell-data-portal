@@ -2,6 +2,7 @@ from dataclasses import asdict
 
 from flask import Response, jsonify, make_response
 
+import backend.common.doi as doi
 from backend.common.utils.http_exceptions import InvalidParametersHTTPException, MethodNotAllowedException
 from backend.curation.api.v1.curation.collections.common import (
     extract_doi_from_links,
@@ -12,7 +13,6 @@ from backend.curation.api.v1.curation.collections.common import (
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionMetadataUpdate
 from backend.layers.business.exceptions import CollectionUpdateException, InvalidMetadataException
-from backend.layers.common import doi
 from backend.layers.common.entities import CollectionId, CollectionLinkType, Link
 from backend.portal.api.providers import get_business_logic
 

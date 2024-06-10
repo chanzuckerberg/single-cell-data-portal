@@ -1039,7 +1039,7 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
   {
     analyticsEvent: EVENTS.FILTER_SELECT_PUBLICATION,
     categoryFilterId: CATEGORY_FILTER_ID.PUBLICATION,
-    filterOnKey: "summaryCitation",
+    filterOnKey: "summary_citation",
     label: "Publication",
     labelKind: "VALUE",
     matchKind: "INCLUDES_SOME",
