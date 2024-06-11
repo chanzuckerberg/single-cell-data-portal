@@ -29,10 +29,8 @@ import {
 } from "src/views/WheresMyGeneV2/style";
 import { View } from "src/views/globalStyle";
 import HeatMap from "../HeatMap";
-import BottomBanner from "src/components/BottomBanner";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "src/views/WheresMyGeneV2/components/CellInfoSideBar/style";
 import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExport/ExportBanner";
-import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
 import { StyledRightSideBar } from "./style";
 import { useConnect } from "src/views/WheresMyGeneV2/components/Main/connect";
 import Notification from "src/components/Notification";
@@ -152,7 +150,7 @@ export default function WheresMyGene(): JSX.Element {
               <UnderlyingDataChangeBanner />
             </StyledBannerContainer>
           )}
-          <Top id="top-legend">
+          <Top sidebarWidth={sidebarWidth} id="top-legend">
             <Notification />
             <Legend
               selectedCellTypes={cellTypesByTissueName}
@@ -212,11 +210,6 @@ export default function WheresMyGene(): JSX.Element {
           />
         </Wrapper>
       </View>
-
-      <BottomBanner
-        airtableLink={GENE_EXPRESSION_BANNER_SURVEY_LINK}
-        includeSurveyLink
-      />
     </>
   );
 }

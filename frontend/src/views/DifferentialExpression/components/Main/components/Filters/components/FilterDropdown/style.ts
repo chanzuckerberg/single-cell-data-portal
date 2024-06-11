@@ -81,6 +81,7 @@ export const StyledAutocomplete = styled(
     flex-direction: row;
     right: unset !important;
     order: -1;
+    top: 14px;
   }
   & .${inputBaseClasses.input} {
     width: 45px !important;

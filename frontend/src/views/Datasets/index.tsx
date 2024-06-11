@@ -37,7 +37,10 @@ import SideBar from "src/components/common/SideBar";
 import { ALIGNMENT } from "src/components/common/Grid/common/entities";
 import { CATEGORY_FILTER_DENY_LIST } from "src/views/Datasets/common/constants";
 import { useViewMode, VIEW_MODE } from "src/common/hooks/useViewMode";
-import { DatasetsView as View } from "./style";
+import {
+  DatasetsSideBarPositioner as SideBarPositioner,
+  DatasetsView as View,
+} from "./style";
 import { GridLoader as Loader } from "src/components/common/Grid/components/Loader/style";
 
 /**
@@ -244,7 +247,7 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: "summaryCitation",
+        accessor: "summary_citation",
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.PUBLICATION,
       },
@@ -388,6 +391,7 @@ export default function Datasets(): JSX.Element {
               label="Filters"
               isOpen={isSideBarOpen}
               onToggle={storeIsSideBarOpen}
+              SideBarPositionerComponent={SideBarPositioner}
             >
               <Filter {...filterInstance} />
             </SideBar>

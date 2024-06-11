@@ -9,6 +9,7 @@ from unittest.mock import Mock, patch
 from furl import furl
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
+from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.layers.business.entities import DatasetArtifactDownloadData
 from backend.layers.common.entities import (
     CollectionId,
@@ -22,7 +23,6 @@ from backend.layers.common.entities import (
     OntologyTermId,
     TissueOntologyTermId,
 )
-from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.layers.thirdparty.uri_provider import FileInfo, FileInfoException
 from tests.unit.backend.layers.api.fixture import generate_mock_publisher_metadata
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
@@ -693,6 +693,7 @@ class TestCollection(BaseAPIPortalTest):
         self.assertEqual(body["contact_name"], data["contact_name"])
         self.assertEqual(body["contact_email"], data["contact_email"])
         self.assertEqual(body["consortia"], [])
+        self.assertEqual(body["summary_citation"], "Doe et al. (2021) Nature")
 
         # test that non owners only have read access
         no_cookie_headers = {"host": "localhost", "Content-Type": "application/json"}
@@ -814,8 +815,8 @@ class TestCollection(BaseAPIPortalTest):
         """
         The `collections/index` endpoint should only return public collections
         """
-
-        collection = self.generate_published_collection()
+        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "123"))
+        collection = self.generate_published_collection(links=[Link("Link 1", "DOI", "http://doi.org/123")])
         collection_to_tombstone = self.generate_published_collection()
         private_collection = self.generate_unpublished_collection()
 
@@ -842,6 +843,9 @@ class TestCollection(BaseAPIPortalTest):
         # Both `published_at` and `revised_at` should point to the same timestamp
         self.assertEqual(actual_collection["published_at"], collection.published_at.timestamp())
         self.assertEqual(actual_collection["revised_at"], collection.published_at.timestamp())
+        # assert publisher metadata /summary citation are included
+        self.assertDictEqual(actual_collection["publisher_metadata"], collection.publisher_metadata)
+        self.assertEqual(actual_collection["summary_citation"], "Doe et al. (2021) Nature")
 
         # test that the owner of a private collection can not see the private collection
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}

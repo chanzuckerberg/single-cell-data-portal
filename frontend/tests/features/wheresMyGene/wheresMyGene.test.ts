@@ -571,8 +571,8 @@ describe("Where's My Gene", () => {
       await waitForElement(page, RIGHT_SIDEBAR_TITLE_TEST_ID);
     });
   });
-
-  describe("Newsletter", () => {
+  // Skipped until banners are added back to WMG
+  describe.skip("Newsletter", () => {
     const NEWSLETTER_MODAL_CONTENT = "newsletter-modal-content";
     const NEWSLETTER_MODAL_OPEN_BUTTON = "newsletter-modal-open-button";
     const NEWSLETTER_MODAL_CLOSE_BUTTON = "newsletter-modal-close-button";
@@ -749,10 +749,10 @@ describe("Where's My Gene", () => {
 
       await goToWMG(page);
       await waitForLoadingSpinnerToResolve(page);
-      await page
-        .getByTestId("newsletter-modal-banner-wrapper")
-        .getByLabel("Close")
-        .click();
+      // await page
+      //   .getByTestId("newsletter-modal-banner-wrapper")
+      //   .getByLabel("Close")
+      //   .click();
       await clickUntilOptionsShowUp({ page, testId: ADD_GENE_ID });
 
       await page.keyboard.type("JCHAIN");

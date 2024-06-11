@@ -4,7 +4,7 @@ import unittest
 import pandas as pd
 import tiledb
 
-from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME
+from backend.common.census_cube.data.snapshot import EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,
