@@ -1804,7 +1804,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
     def test_create_collection_version_is_auto_version_succeeds__with_revision(self):
         """
         Given a canonical collection with a published version and an unpublished version where is_auto_version is False,
-        creating another unpublished collection version where is_auto_verison is True will succeed.
+        creating another unpublished collection version where is_auto_version is True will succeed.
         """
         published_collection = self.initialize_published_collection()
         existing_revision = self.business_logic.create_collection_version(
@@ -1829,8 +1829,8 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         # The new version should not be published (aka Private)
         self.assertIsNone(auto_revision.published_at)
 
-        # The new version has is_auto_version == True
-        self.assertFalse(auto_revision.is_auto_version)
+        # The new version has is_auto_version == True, while existing is False
+        self.assertFalse(existing_revision.is_auto_version)
         self.assertTrue(auto_revision.is_auto_version)
 
     def test_create_collection_version_fails_if_collection_not_exists(self):
