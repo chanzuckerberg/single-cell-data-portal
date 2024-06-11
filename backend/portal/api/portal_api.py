@@ -6,6 +6,8 @@ from urllib.parse import urlparse
 
 from flask import Response, jsonify, make_response
 
+from backend.common import doi
+from backend.common.citation import format_citation_dp
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.utils.http_exceptions import (
     ConflictException,
@@ -35,7 +37,6 @@ from backend.layers.business.exceptions import (
     InvalidURIException,
     MaxFileSizeExceededException,
 )
-from backend.layers.common import doi
 from backend.layers.common.entities import (
     CollectionId,
     CollectionMetadata,
@@ -290,6 +291,9 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
             "name": collection.metadata.name,
             "published_at": collection.canonical_collection.originally_published_at,
             "publisher_metadata": collection.publisher_metadata,  # TODO: convert
+            "summary_citation": (
+                format_citation_dp(collection.publisher_metadata) if collection.publisher_metadata else None
+            ),
             "revision_of": revision_of,
             "revising_in": revising_in,
             "updated_at": collection.published_at or collection.created_at,
@@ -430,6 +434,7 @@ def get_collection_index():
             transformed_collection["publisher_metadata"] = _publisher_metadata_to_response(
                 collection.publisher_metadata
             )
+            transformed_collection["summary_citation"] = format_citation_dp(collection.publisher_metadata)
 
         transformed_collection["published_at"] = collection.canonical_collection.originally_published_at
         transformed_collection["revised_at"] = collection.published_at
@@ -484,6 +489,7 @@ def get_user_collection_index(token_info):
             transformed_collection["publisher_metadata"] = _publisher_metadata_to_response(
                 collection.publisher_metadata
             )
+            transformed_collection["summary_citation"] = format_citation_dp(collection.publisher_metadata)
 
         transformed_collection["consortia"] = collection.metadata.consortia
 
