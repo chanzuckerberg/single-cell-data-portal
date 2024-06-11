@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import {
-  ButtonIcon,
+  Button,
   fontBodyXxs,
   fontBodyXxxs,
   getColors,
@@ -27,7 +27,7 @@ export const BadgeCounter = styled(Badge)<StyledBadgeProps>`
   top: 4px;
   left: 14px;
 
-  .MuiBadge-badge {
+  .base-Badge-badge {
     position: relative;
     top: -2px;
     margin: 0px;
@@ -58,11 +58,11 @@ export const StyledLabel = styled.div`
   }}
 `;
 
-export const StyledButtonIcon = styled(ButtonIcon)<ButtonProps>`
+export const StyledButtonIcon = styled(Button)<ButtonProps>`
   width: 30px;
   height: 30px;
   position: absolute;
   cursor: pointer;
-  padding-top: 34px;
   z-index: 1;
+  margin-top: 19px;
 `;

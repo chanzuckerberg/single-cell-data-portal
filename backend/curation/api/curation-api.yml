@@ -1125,6 +1125,8 @@ components:
           $ref: "#/components/schemas/citation"
         collection_doi:
           $ref: "#/components/schemas/doi"
+        collection_doi_label:
+          $ref: "#/components/schemas/doi_label"
         collection_id:
           $ref: "#/components/schemas/collection_id"
         collection_name:
@@ -1409,6 +1411,11 @@ components:
       type: string
       nullable: true
       example: "10.1093/ajae/aaq063"
+    doi_label:
+      description: Summary citation for the given DOI
+      type: string
+      nullable: true
+      example: "Ahern et al. (2022) Cell"
     donor_id:
       description: Free-text that identifies a unique individual that data were derived from.
       type: array

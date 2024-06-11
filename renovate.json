@@ -1,0 +1,77 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "timezone": "UTC",
+  "schedule": "every weekend",
+  "automergeType": "pr",
+  "extends": ["config:base"],
+  "separateMajorMinor": false,
+  "separateMinorPatch": false,
+  "vulnerabilityAlerts": {
+    "groupName": "Security Vulnerabilities",
+    "enabled": true
+  },
+  "labels": ["renovate"],
+  "packageRules": [
+    {
+      "groupName": "Ignore Packages",
+      "matchFileNames": [".happy/**", "scripts/**"],
+      "enabled": false
+    },
+    {
+      "groupName": "Github Actions",
+      "matchManagers": ["github-actions", "docker-compose"],
+      "matchFileNames": [".github/**", "docker-compose.yml"],
+      "enabled": true,
+      "assignees": ["seve"]
+    },
+    {
+      "groupName": "Backend",
+      "matchManagers": ["pip_requirements", "dockerfile", "html"],
+      "matchFileNames": [
+        "python_dependencies/backend/**",
+        "Dockerfile.backend",
+        "Dockerfile.backend_de",
+        "Dockerfile.backend_wmg",
+        "backend/api_server/index.html",
+        "python_dependencies/common/**"
+      ],
+      "enabled": true,
+      "assignees": ["Bento007", "nayib-jose-gloria", "atarashansky"]
+    },
+    {
+      "groupName": "WMG and CellGuide Pipeline",
+      "matchManagers": ["pip_requirements", "dockerfile"],
+      "matchFileNames": [
+        "python_dependencies/wmg_processing/**",
+        "Dockerfile.wmg_pipeline",
+        "python_dependencies/cellguide_pipeline/**",
+        "Dockerfile.cellguide_pipeline"
+      ],
+      "enabled": true,
+      "assignees": ["atarashansky"]
+    },
+    {
+      "groupName": "Submissions",
+      "matchManagers": ["pip_requirements", "dockerfile"],
+      "matchFileNames": [
+        "python_dependencies/submissions/**",
+        "python_dependencies/upload_handler/**",
+        "Dockerfile.dataset_submissions",
+        "Dockerfile.upload_failures",
+        "Dockerfile.upload_success",
+        "python_dependencies/processing/**",
+        "Dockerfile.processing",
+        "Dockerfile.processing_base"
+      ],
+      "enabled": true,
+      "assignees": ["nayib-jose-gloria", "ebezzi", "Bento007"]
+    },
+    {
+      "groupName": "Frontend",
+      "matchManagers": ["npm", "nvm", "dockerfile"],
+      "matchFileNames": ["frontend/**"],
+      "enabled": true,
+      "assignees": ["tihuan", "seve"]
+    }
+  ]
+}

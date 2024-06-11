@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import CellGuideCardSearchBar from "../CellGuideCardSearchBar";
-import { ButtonIcon } from "@czi-sds/components";
+import { Button } from "@czi-sds/components";
 import {
   MobileHeader,
   MobileHeaderWrapper,
@@ -40,7 +40,7 @@ const CellGuideMobileHeader = ({
       }}
     >
       <SearchBarWrapper>
-        <CellGuideCardSearchBar autoFocus />
+        <CellGuideCardSearchBar skinnyMode />
       </SearchBarWrapper>
 
       <StyledCancelButton
@@ -57,8 +57,9 @@ const CellGuideMobileHeader = ({
     <>
       {/* Flex Item Left */}
       <div id="cellguide-search-icon">
-        <ButtonIcon
-          sdsIcon="search"
+        <Button
+          sdsStyle="icon"
+          icon="Search"
           id="cellguide-search-icon"
           onClick={() => {
             setSearchIsOpen(true);
@@ -71,8 +72,8 @@ const CellGuideMobileHeader = ({
 
       {/* Flex Item Right */}
       <div id="cellguide-nav-dropdown">
-        <ButtonIcon
-          sdsIcon={pageNavIsOpen ? "chevronUp" : "chevronDown"}
+        <Button
+          icon={pageNavIsOpen ? "ChevronUp" : "ChevronDown"}
           onClick={() => setPageNavIsOpen && setPageNavIsOpen(!pageNavIsOpen)}
         />
       </div>

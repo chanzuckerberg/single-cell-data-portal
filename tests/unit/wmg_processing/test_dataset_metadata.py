@@ -2,7 +2,7 @@ import json
 import unittest
 from unittest.mock import patch
 
-from backend.wmg.data.snapshot import DATASET_METADATA_FILENAME
+from backend.common.census_cube.data.snapshot import DATASET_METADATA_FILENAME
 from backend.wmg.pipeline.constants import (
     DATASET_METADATA_CREATED_FLAG,
 )

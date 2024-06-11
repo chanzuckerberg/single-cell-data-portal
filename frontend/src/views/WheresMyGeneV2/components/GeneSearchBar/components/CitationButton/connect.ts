@@ -17,7 +17,7 @@ export const useConnect = () => {
     createNotification({
       message: CITATION_NOTIFICATION_TEXT,
       intent: "info",
-      sdsIcon: "quote",
+      sdsIcon: "Quote",
       sdsSize: "l",
       label: CITATION_NOTIFICATION_LABEL,
       isCitation: true,

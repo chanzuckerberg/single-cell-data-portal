@@ -108,7 +108,7 @@ const Collection: FC = () => {
   const collectionConsortia = collection.consortia;
   const collectionMetadataLinks = buildCollectionMetadataLinks(
     collection.links,
-    collection.summaryCitation,
+    collection.summary_citation,
     collection.contact_name,
     collection.contact_email
   );

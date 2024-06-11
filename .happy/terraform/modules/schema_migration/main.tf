@@ -233,6 +233,12 @@ resource aws_sfn_state_machine sfn_schema_migration {
         }
       },
       "Next": "SpanCollections",
+      "Retry": [ {
+          "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 7,
+          "BackoffRate": 5
+      } ],
       "Catch": [
         {
           "ErrorEquals": [
@@ -296,12 +302,18 @@ resource aws_sfn_state_machine sfn_schema_migration {
               }
             },
             "Next": "DatasetsExists",
+            "Retry": [ {
+                "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 7,
+                "BackoffRate": 5
+            } ],
             "Catch": [
               {
                 "ErrorEquals": [
                   "States.ALL"
                 ],
-                "ResultPath": "$.error",
+                "ResultPath": null,
                 "Next": "CollectionPublish"
               }
             ]
@@ -310,8 +322,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "Type": "Choice",
             "Choices": [
               {
-                "Variable": "$.no_datasets",
-                "IsPresent": true,
+                "Variable": "$.key_name",
+                "IsPresent": false,
                 "Next": "CollectionPublish"
               }
             ],
@@ -342,10 +354,6 @@ resource aws_sfn_state_machine sfn_schema_migration {
                     "Value.$": "$.collection_version_id"
                   },
                   {
-                    "Name": "CAN_PUBLISH",
-                    "Value.$": "$.can_publish"
-                  },
-                  {
                     "Name": "TASK_TOKEN",
                     "Value.$": "$$.Task.Token"
                   },
@@ -357,13 +365,19 @@ resource aws_sfn_state_machine sfn_schema_migration {
               }
             },
             "End": true,
+            "Retry": [ {
+                "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 7,
+                "BackoffRate": 5
+            } ],
             "Catch": [
               {
                 "ErrorEquals": [
                   "States.ALL"
                 ],
                 "Next": "CollectionError",
-                "ResultPath": "$.error"
+                "ResultPath": null
               }
             ]
           },
@@ -424,13 +438,19 @@ resource aws_sfn_state_machine sfn_schema_migration {
                     }
                   },
                   "Next": "StepFunctionsStartExecution",
+                  "Retry": [ {
+                      "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
+                      "IntervalSeconds": 2,
+                      "MaxAttempts": 7,
+                      "BackoffRate": 5
+                  } ],
                   "Catch": [
                     {
                       "ErrorEquals": [
                         "States.ALL"
                       ],
                       "Next": "DatasetError",
-                      "ResultPath": "$.error"
+                      "ResultPath": null
                     }
                   ],
                   "ResultPath": "$.result"
@@ -460,23 +480,32 @@ resource aws_sfn_state_machine sfn_schema_migration {
                         "States.ALL"
                       ],
                       "Next": "DatasetError",
-                      "ResultPath": "$.error"
+                      "ResultPath": null
                     }
                   ],
-                  "ResultPath": "$.result"
+                  "ResultPath": null
                 }
               }
             },
-            "ItemsPath": "$.datasets",
+            "ItemReader": {
+              "Resource": "arn:aws:states:::s3:getObject",
+              "ReaderConfig": {
+                "InputType": "JSON"
+              },
+              "Parameters": {
+                "Bucket": "${var.artifact_bucket}",
+                "Key.$": "$.key_name"
+              }
+            },
             "Next": "CollectionPublish",
-            "MaxConcurrency": 32,
+            "MaxConcurrency": 10,
             "Catch": [
               {
                 "ErrorEquals": [
                   "States.ALL"
                 ],
                 "Next": "CollectionPublish",
-                "ResultPath": "$.error"
+                "ResultPath": null
               }
             ],
             "OutputPath": "$[0]",
@@ -488,8 +517,17 @@ resource aws_sfn_state_machine sfn_schema_migration {
           }
         }
       },
-      "ItemsPath": "$",
-      "MaxConcurrency": 40,
+      "ItemReader": {
+        "Resource": "arn:aws:states:::s3:getObject",
+        "ReaderConfig": {
+          "InputType": "JSON"
+        },
+        "Parameters": {
+          "Bucket": "${var.artifact_bucket}",
+          "Key.$": "$.key_name"
+        }
+      },
+      "MaxConcurrency": 10,
       "Next": "report",
       "Catch": [
         {
@@ -539,6 +577,12 @@ resource aws_sfn_state_machine sfn_schema_migration {
           ]
         }
       },
+      "Retry": [ {
+        "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
+        "IntervalSeconds": 2,
+        "MaxAttempts": 7,
+        "BackoffRate": 5
+      } ],
       "End": true
     }
   }

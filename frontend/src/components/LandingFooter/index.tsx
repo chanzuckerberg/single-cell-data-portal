@@ -10,7 +10,7 @@ import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtabl
 import { useState } from "react";
 
 const LandingFooter = (): JSX.Element => {
-  const [isHubSpotReady, setIsHubSpotReady] = useState(false);
+  const [, setIsHubSpotReady] = useState(false);
 
   return (
     <>
@@ -22,10 +22,7 @@ const LandingFooter = (): JSX.Element => {
         // (thuang): The first instance of BottomBanner in the UI needs to call onHubSpotReady()
         onHubSpotReady={() => setIsHubSpotReady(true)}
       />
-      <BottomBanner
-        isHubSpotReady={isHubSpotReady}
-        airtableLink={GENE_EXPRESSION_BANNER_SURVEY_LINK}
-      />
+
       <footer className={styles.footer}>
         <div className={styles.footerTopContainer}>
           <div className={styles.footerLogo}>

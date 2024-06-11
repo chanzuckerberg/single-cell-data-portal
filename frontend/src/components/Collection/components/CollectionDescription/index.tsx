@@ -6,7 +6,7 @@ import {
   DescriptionText,
   MAX_LINE_COUNT,
 } from "src/components/Collection/components/CollectionDescription/style";
-import { Button } from "@czi-sds/components";
+import { Button } from "src/components/common/Button";
 
 enum EllipsisMode {
   "NONE" = "NONE",
