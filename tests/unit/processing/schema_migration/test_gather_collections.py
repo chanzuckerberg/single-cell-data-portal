@@ -74,7 +74,7 @@ class TestGatherCollections:
         private = collections["private"][0]
         published_with_non_migration_revision, revision = collections["revision"]
         published_with_migration_revision, migration_revision = collections["migration_revision"]
-        # get_collections is called thrice
+        # get_collections is called twice
         schema_migrate.business_logic.get_collections.side_effect = [
             [published_no_revision, published_with_non_migration_revision, published_with_migration_revision],
             [private, revision, migration_revision],
