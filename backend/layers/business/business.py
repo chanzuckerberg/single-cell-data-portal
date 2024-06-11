@@ -972,8 +972,17 @@ class BusinessLogic(BusinessLogicInterface):
             if canonical_datasets != version_datasets:
                 has_dataset_revisions = True
 
-            # Check Crossref for updates in publisher metadata since last publish.
-            self._update_revision_publisher_metadata(version, date_of_last_publish)
+            # Check Crossref for updates in publisher metadata since last publish. Raise exception if DOI has moved from
+            # pre-print to published, forcing curators to re-publish the collection once corresponding artifacts update is complete.
+            doi_update = self._update_revision_publisher_metadata(version, date_of_last_publish)
+            if doi_update:
+                # Curators will need to re-publish once artifact updates are complete.
+                raise CollectionPublishException(
+                    [
+                        f"DOI was updated from {doi_update[0]} to {doi_update[1]} requiring updates to corresponding artifacts. "
+                        "Retry publish once artifact updates are complete."
+                    ]
+                )
 
         # Finalize Collection publication and delete any tombstoned assets
         dataset_version_ids_to_delete_from_s3 = self.database_provider.finalize_collection_version(
@@ -1090,15 +1099,17 @@ class BusinessLogic(BusinessLogicInterface):
             except S3DeleteException as e:
                 raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
 
-    def _update_revision_publisher_metadata(self, version: CollectionVersion, date_of_last_publish: datetime) -> None:
+    def _update_revision_publisher_metadata(
+        self, version: CollectionVersion, date_of_last_publish: datetime
+    ) -> Optional[Tuple[str, str]]:
         """
         Call Crossref for the latest publisher metadata and:
-        - if a DOI has moved from pre-print to published, trigger update to collection (and artifacts) and raise exception,
-        forcing curators to re-publish the collection once artifacts update is complete, otherwise,
+        - if a DOI has moved from pre-print to published, trigger update to collection (and artifacts), otherwise,
         - if Crossref has been updated since last publish, update collection version publisher metadata.
 
         :param collection_version_id: The collection version to check publisher updates for.
         :param date_of_last_publish: The originally published at or revised at date of collection version.
+        :return: Tuple of current DOI and DOI returned from Crossref if DOI has changed, otherwise None.
         """
         # Get the DOI from the collection version metadata; exit if no DOI.
         links = version.metadata.links
@@ -1128,18 +1139,14 @@ class BusinessLogic(BusinessLogicInterface):
             )
             self.update_collection_version(version.version_id, update, True)
 
-            # Curators will need to re-publish once artifact updates are complete.
-            raise CollectionPublishException(
-                [
-                    f"DOI was updated from {link_doi.uri} to {crossref_doi} requiring updates to corresponding artifacts. "
-                    "Retry publish once artifact updates are complete."
-                ]
-            )
+            return link_doi.uri, crossref_doi
 
         # Otherwise, DOI is unchanged: check if there are updates in Crossref that have occurred since last publish and
         # update collection metadata if so.
         if deposited_at_timestamp and datetime.fromtimestamp(deposited_at_timestamp) > date_of_last_publish:
             self.database_provider.save_collection_publisher_metadata(version.version_id, publisher_metadata)
+
+        return None
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str
