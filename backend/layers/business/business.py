@@ -960,9 +960,10 @@ class BusinessLogic(BusinessLogicInterface):
 
         date_of_last_publish = datetime.min
         has_dataset_revisions = False
+        is_revision = version.canonical_collection.version_id is not None
         # if collection is a revision and has no changes to previous version's datasets--don't update 'revised_at'
         # used for cases where revision only contains collection-level metadata changes
-        if version.canonical_collection.version_id is not None:
+        if is_revision:
             date_of_last_publish = (
                 version.canonical_collection.revised_at or version.canonical_collection.originally_published_at
             )
@@ -972,17 +973,18 @@ class BusinessLogic(BusinessLogicInterface):
             if canonical_datasets != version_datasets:
                 has_dataset_revisions = True
 
-            # Check Crossref for updates in publisher metadata since last publish. Raise exception if DOI has moved from
-            # pre-print to published, forcing curators to re-publish the collection once corresponding artifacts update is complete.
-            doi_update = self._update_revision_publisher_metadata(version, date_of_last_publish)
-            if doi_update:
-                # Curators will need to re-publish once artifact updates are complete.
-                raise CollectionPublishException(
-                    [
-                        f"DOI was updated from {doi_update[0]} to {doi_update[1]} requiring updates to corresponding artifacts. "
-                        "Retry publish once artifact updates are complete."
-                    ]
-                )
+        # Check Crossref for updates in publisher metadata since last publish of revision, or since private collection was created.
+        # Raise exception if DOI has moved from pre-print to published, forcing curators to re-publish the collection once corresponding
+        # artifacts update is complete.
+        last_action_at = date_of_last_publish if is_revision else version.created_at
+        doi_update = self._update_crossref_metadata(version, last_action_at)
+        if doi_update:
+            raise CollectionPublishException(
+                [
+                    f"DOI was updated from {doi_update[0]} to {doi_update[1]} requiring updates to corresponding artifacts. "
+                    "Retry publish once artifact updates are complete."
+                ]
+            )
 
         # Finalize Collection publication and delete any tombstoned assets
         dataset_version_ids_to_delete_from_s3 = self.database_provider.finalize_collection_version(
@@ -1099,16 +1101,17 @@ class BusinessLogic(BusinessLogicInterface):
             except S3DeleteException as e:
                 raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
 
-    def _update_revision_publisher_metadata(
-        self, version: CollectionVersion, date_of_last_publish: datetime
+    def _update_crossref_metadata(
+        self, version: CollectionVersion, last_action_at: datetime
     ) -> Optional[Tuple[str, str]]:
         """
         Call Crossref for the latest publisher metadata and:
         - if a DOI has moved from pre-print to published, trigger update to collection (and artifacts), otherwise,
-        - if Crossref has been updated since last publish, update collection version publisher metadata.
+        - if Crossref has been updated since last publish of revision or since private collection was created, update collection
+          version publisher metadata.
 
-        :param collection_version_id: The collection version to check publisher updates for.
-        :param date_of_last_publish: The originally published at or revised at date of collection version.
+        :param collection_version_id: The collection version (either a revision or a private collection) to check publisher updates for.
+        :param last_action_at: The originally published at or revised at date of revision, or the created at date of a private collection.
         :return: Tuple of current DOI and DOI returned from Crossref if DOI has changed, otherwise None.
         """
         # Get the DOI from the collection version metadata; exit if no DOI.
@@ -1141,9 +1144,9 @@ class BusinessLogic(BusinessLogicInterface):
 
             return link_doi.uri, crossref_doi
 
-        # Otherwise, DOI is unchanged: check if there are updates in Crossref that have occurred since last publish and
-        # update collection metadata if so.
-        if deposited_at_timestamp and datetime.fromtimestamp(deposited_at_timestamp) > date_of_last_publish:
+        # Otherwise, DOI is unchanged: check if there are updates in Crossref that have occurred since last publish of
+        # revision or since private collection was created, and update collection metadata if so.
+        if deposited_at_timestamp and datetime.fromtimestamp(deposited_at_timestamp) > last_action_at:
             self.database_provider.save_collection_publisher_metadata(version.version_id, publisher_metadata)
 
         return None

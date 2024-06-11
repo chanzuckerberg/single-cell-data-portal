@@ -4,7 +4,6 @@ import time
 import uuid
 from collections import defaultdict
 from dataclasses import asdict
-from datetime import datetime
 from unittest.mock import Mock, patch
 
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException
@@ -1823,7 +1822,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             return_value=(
                 generate_mock_publisher_metadata(journal_override="Science"),
                 "78.91011/j.celrep",
-                datetime.utcnow(),
+                17169328.664,
             )
         )
         published_collection_2 = self.generate_published_collection(

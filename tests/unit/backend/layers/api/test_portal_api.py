@@ -828,7 +828,7 @@ class TestCollection(BaseAPIPortalTest):
         The `collections/index` endpoint should only return public collections
         """
         self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata(), "123", datetime.utcnow())
+            return_value=(generate_mock_publisher_metadata(), "123", 17169328.664)
         )
         collection = self.generate_published_collection(links=[Link("Link 1", "DOI", "http://doi.org/123")])
         collection_to_tombstone = self.generate_published_collection()
