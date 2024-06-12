@@ -92,8 +92,8 @@ class PublishRevisions(ProcessingLogic):
                     )
                     try:
                         self.business_logic.publish_collection_version(collection_version.version_id)
-                    except Exception as e:
-                        logging.exception(f"Failed to publish collection version. {e}")
+                    except Exception:
+                        logging.exception("Failed to publish collection version.")
 
 
 if __name__ == "__main__":
