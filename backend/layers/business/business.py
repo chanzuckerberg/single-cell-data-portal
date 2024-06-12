@@ -960,9 +960,9 @@ class BusinessLogic(BusinessLogicInterface):
 
         date_of_last_publish = datetime.min
         has_dataset_revisions = False
-        is_revision = version.canonical_collection.version_id is not None
         # if collection is a revision and has no changes to previous version's datasets--don't update 'revised_at'
         # used for cases where revision only contains collection-level metadata changes
+        is_revision = version.canonical_collection.version_id is not None
         if is_revision:
             date_of_last_publish = (
                 version.canonical_collection.revised_at or version.canonical_collection.originally_published_at
@@ -1142,6 +1142,7 @@ class BusinessLogic(BusinessLogicInterface):
             )
             self.update_collection_version(version.version_id, update, True)
 
+            # Return the existing DOI and the DOI returned from Crossref.
             return link_doi.uri, crossref_doi
 
         # Otherwise, DOI is unchanged: check if there are updates in Crossref that have occurred since last publish of
