@@ -92,8 +92,8 @@ class PublishRevisions(ProcessingLogic):
                     )
                     try:
                         self.business_logic.publish_collection_version(collection_version.version_id)
-                    except Exception:
-                        logging.exception("Failed to publish collection version.")
+                    except Exception as e:
+                        logging.exception(f"Failed to publish collection version. {e}")
 
 
 if __name__ == "__main__":
@@ -105,5 +105,7 @@ if __name__ == "__main__":
         S3Provider(),
         UriProvider(),
     )
-    do_not_publish_list = os.environ.get("DO_NOT_PUBLISH_LIST", None).split(",")
+    do_not_publish_list = os.environ.get("DO_NOT_PUBLISH_LIST", None)
+    if do_not_publish_list is not None:
+        do_not_publish_list = do_not_publish_list.split(",")
     PublishRevisions(business_logic, do_not_publish_list).run()
