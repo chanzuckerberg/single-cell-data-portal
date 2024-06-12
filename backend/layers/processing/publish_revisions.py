@@ -105,5 +105,7 @@ if __name__ == "__main__":
         S3Provider(),
         UriProvider(),
     )
-    do_not_publish_list = os.environ.get("DO_NOT_PUBLISH_LIST", None).split(",")
+    do_not_publish_list = os.environ.get("DO_NOT_PUBLISH_LIST", None)
+    if do_not_publish_list is not None:
+        do_not_publish_list = do_not_publish_list.split(",")
     PublishRevisions(business_logic, do_not_publish_list).run()
