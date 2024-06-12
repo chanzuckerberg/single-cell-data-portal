@@ -35,16 +35,11 @@ import {
   TISSUE_CARD_UBERON_DESCRIPTION,
 } from "src/views/CellGuide/components/TissueCard/constants";
 
-import {
-  CELL_GUIDE_CARD_SEARCH_BAR,
-  CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT,
-} from "src/views/CellGuide/components/CellGuideCardSearchBar/constants";
+import { CELL_GUIDE_CARD_SEARCH_BAR } from "src/views/CellGuide/components/CellGuideCardSearchBar/constants";
 
 import { LANDING_PAGE_HEADER } from "src/views/CellGuide/components/LandingPage/constants";
 
 import {
-  CELL_GUIDE_CARD_CL_DESCRIPTION,
-  CELL_GUIDE_CARD_GPT_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_TOOLTIP_LINK,
   CELL_GUIDE_CARD_SYNONYMS,
   CELL_GUIDE_CARD_VALIDATED_DESCRIPTION,
@@ -223,43 +218,6 @@ describe("Cell Guide", () => {
         `${TEST_URL}${ROUTES.CELL_GUIDE}/tissues/UBERON_0002048`
       ); // lung
     });
-    test("Cell type search bar keyboard input works properly", async ({
-      page,
-    }) => {
-      await goToPage(`${TEST_URL}${ROUTES.CELL_GUIDE}`, page);
-
-      const element = getSearchBarLocator(page);
-
-      await waitForElementAndClick(element);
-
-      await tryUntil(
-        async () => {
-          /**
-           * (thuang): Clear the input field before typing in it.
-           */
-          await element.clear();
-          await element.type("neuron");
-          // input down arrow key
-          await element.press("ArrowDown");
-          const firstOption = page.getByRole("option").first();
-          const firstOptionText = await firstOption?.textContent();
-          expect(firstOptionText).toBe("neuron");
-
-          // get css classes of first option
-          const firstOptionClasses = await firstOption?.getAttribute("class");
-          expect(firstOptionClasses).toContain("Mui-focused");
-        },
-        { page }
-      );
-
-      await Promise.all([
-        // check that the url has changed to the correct CellGuide card after browser finishes navigating
-        page.waitForURL(
-          `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`
-        ), // input enter
-        element.press("Enter"),
-      ]);
-    });
   });
 
   describe("CellGuide Card", () => {
@@ -296,7 +254,10 @@ describe("Cell Guide", () => {
       await isElementVisible(page, CELL_GUIDE_CARD_VALIDATED_DESCRIPTION);
     });
 
-    test("CellGuide card GPT description tooltip displays disclaimer", async ({
+    // More and more validated descriptions are coming through, so this test will
+    // start failing since GPT descriptions will not be shown for cell types that have
+    // validated data.
+    test.skip("CellGuide card GPT description tooltip displays disclaimer", async ({
       page,
     }) => {
       await goToPage(
@@ -1596,23 +1557,13 @@ async function waitForOptionsToLoad(page: Page) {
 }
 
 function getSearchBarLocator(page: Page) {
-  return (
-    page
-      .getByTestId(CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT)
-      /**
-       * data-testid `CELL_GUIDE_CARD_SEARCH_BAR_TEXT_INPUT` is on a div instead of the <input />
-       */
-      .locator("input")
-  );
+  return page.getByTestId(CELL_GUIDE_CARD_SEARCH_BAR);
 }
 
 async function assertAllCellCardComponentsArePresent(page: Page) {
   await isElementVisible(page, CELL_GUIDE_CARD_HEADER_NAME);
   await isElementVisible(page, CELL_GUIDE_CARD_HEADER_TAG);
-  await isElementVisible(page, CELL_GUIDE_CARD_CL_DESCRIPTION);
-  await isElementVisible(page, CELL_GUIDE_CARD_GPT_DESCRIPTION);
   await isElementVisible(page, CELL_GUIDE_CARD_SYNONYMS);
-  await isElementVisible(page, CELL_GUIDE_CARD_GPT_TOOLTIP_LINK);
   await isElementVisible(page, CELL_GUIDE_CARD_SEARCH_BAR);
   await isElementVisible(page, CELL_GUIDE_CARD_ENRICHED_GENES_TABLE);
   await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW);

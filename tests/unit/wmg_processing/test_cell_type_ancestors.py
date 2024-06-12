@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from backend.wmg.data.snapshot import CELL_TYPE_ANCESTORS_FILENAME
+from backend.common.census_cube.data.snapshot import CELL_TYPE_ANCESTORS_FILENAME
 from backend.wmg.pipeline.cell_type_ancestors import create_cell_type_ancestors
 from backend.wmg.pipeline.constants import (
     CELL_TYPE_ANCESTORS_CREATED_FLAG,

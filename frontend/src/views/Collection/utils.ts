@@ -36,14 +36,14 @@ const LINK_ORDER: COLLECTION_LINK_TYPE[] = [
 /**
  * Returns collection metadata in preferred order of display.
  * @param links - links associated with collection.
- * @param summaryCitation - Summary citation format of collection publication metadata.
+ * @param summary_citation - Summary citation format of collection publication metadata.
  * @param contactName - Name of collection contact.
  * @param contactEmail - Email of collection contact.
  * @returns Array of collection metadata in preferred order of display.
  */
 export function buildCollectionMetadataLinks(
   links: Link[],
-  summaryCitation: string,
+  summary_citation: string,
   contactName?: Collection["contact_name"],
   contactEmail?: Collection["contact_email"]
 ): CollectionMetadataLink[] {
@@ -56,7 +56,7 @@ export function buildCollectionMetadataLinks(
   /* If collection has an associated DOI, display either the summary citation or the DOI itself. */
   const doiLink = links.find((link: Link) => link.link_type === "DOI");
   if (doiLink) {
-    const doiMetadataLink = buildDoiMetadataLink(doiLink, summaryCitation);
+    const doiMetadataLink = buildDoiMetadataLink(doiLink, summary_citation);
     if (doiMetadataLink) {
       collectionMetadataLinks.push(doiMetadataLink);
 
@@ -97,7 +97,7 @@ export function buildCollectionMetadataLinks(
  */
 function buildDoiMetadataLink(
   doiLink: Link,
-  summaryCitation: string
+  summary_citation: string
 ): CollectionMetadataLink | undefined {
   // Build display model of DOI link.
   const doiMetadataLink = buildCollectionMetadataLink(doiLink);
@@ -106,7 +106,7 @@ function buildDoiMetadataLink(
   }
 
   // If there's no summary citation for the collection, return the DOI link with the label "DOI".
-  if (summaryCitation === CATEGORY_VALUE_KEY.NO_PUBLICATION) {
+  if (summary_citation === CATEGORY_VALUE_KEY.NO_PUBLICATION) {
     return {
       ...doiMetadataLink,
       label: "DOI",
@@ -117,7 +117,7 @@ function buildDoiMetadataLink(
   return {
     ...doiMetadataLink,
     label: "Publication",
-    value: summaryCitation,
+    value: summary_citation,
   };
 }
 

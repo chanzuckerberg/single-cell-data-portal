@@ -10,13 +10,9 @@ import Details from "./components/Details";
 import Name from "./components/Name";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@czi-sds/components";
+import { DialogActions, DialogContent, DialogTitle } from "@czi-sds/components";
 import { DialogLoader as Loader } from "src/components/Datasets/components/DownloadDataset/style";
+import { Button } from "src/components/common/Button";
 
 interface Props {
   isError?: boolean;

@@ -3,7 +3,7 @@ name: Delete rdev for PR
 on:
   pull_request:
     branches-ignore:
-      - prod
+      - "prod"
     types:
       - closed
 
@@ -22,6 +22,7 @@ concurrency:
 
 jobs:
   delete-rdev:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials

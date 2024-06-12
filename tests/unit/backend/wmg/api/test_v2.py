@@ -5,9 +5,9 @@ from unittest.mock import patch
 
 from pytest import approx
 
-from backend.api_server.app import app
+from backend.common.census_cube.data.query import MarkerGeneQueryCriteria
 from backend.wmg.api.v2 import find_dimension_id_from_compare
-from backend.wmg.data.query import MarkerGeneQueryCriteria
+from backend.wmg.server.app import app
 from tests.test_utils import compare_dicts
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.test_cube_schema import expression_summary_non_indexed_dims
@@ -466,7 +466,7 @@ class WmgApiV2Tests(unittest.TestCase):
 
     def setUp(self):
         super().setUp()
-        with EnvironmentSetup(dict(APP_NAME="corpora-api")):
+        with EnvironmentSetup(dict(APP_NAME="corpora-api-wmg")):
             self.app = app.test_client(use_cookies=False)
 
     @classmethod

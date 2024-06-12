@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from backend.wmg.data.snapshot import CELL_TYPE_ORDERINGS_FILENAME
+from backend.common.census_cube.data.snapshot import CELL_TYPE_ORDERINGS_FILENAME
 from backend.wmg.pipeline.cell_type_ordering import create_cell_type_ordering
 from backend.wmg.pipeline.constants import (
     CELL_TYPE_ORDERING_CREATED_FLAG,

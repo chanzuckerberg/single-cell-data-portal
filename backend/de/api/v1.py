@@ -1,4 +1,3 @@
-import os
 from typing import Any, Dict, Iterable, List, Tuple
 
 import connexion
@@ -9,22 +8,16 @@ from flask import jsonify
 from scipy import stats
 from server_timing import Timing as ServerTiming
 
-from backend.common.marker_gene_files.blacklist import marker_gene_blacklist
-from backend.common.utils.rollup import descendants
-from backend.wmg.api.wmg_api_config import (
-    WMG_API_FORCE_LOAD_SNAPSHOT_ID,
-    WMG_API_READ_FS_CACHED_SNAPSHOT,
-    WMG_API_SNAPSHOT_FS_CACHE_ROOT_PATH,
-    WMG_API_SNAPSHOT_SCHEMA_VERSION,
-)
-from backend.wmg.data.ontology_labels import gene_term_label, ontology_term_label
-from backend.wmg.data.query import DeQueryCriteria, WmgFiltersQueryCriteria, WmgQuery
-from backend.wmg.data.schemas.cube_schema_diffexp import cell_counts_logical_dims_exclude_dataset_id
-from backend.wmg.data.snapshot import WmgSnapshot, load_snapshot
-
-DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE", "")
-SNAPSHOT_FS_ROOT_PATH = (
-    WMG_API_SNAPSHOT_FS_CACHE_ROOT_PATH if (WMG_API_READ_FS_CACHED_SNAPSHOT and DEPLOYMENT_STAGE != "test") else None
+from backend.common.census_cube.data.criteria import BaseQueryCriteria
+from backend.common.census_cube.data.ontology_labels import gene_term_label, ontology_term_label
+from backend.common.census_cube.data.query import CensusCubeQuery
+from backend.common.census_cube.data.schemas.cube_schema_diffexp import cell_counts_logical_dims_exclude_dataset_id
+from backend.common.census_cube.data.snapshot import CensusCubeSnapshot, load_snapshot
+from backend.common.census_cube.utils import descendants
+from backend.common.marker_genes.marker_gene_files.blacklist import marker_gene_blacklist
+from backend.de.api.config import (
+    CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
+    CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
 )
 
 
@@ -33,17 +26,16 @@ def filters():
     request = connexion.request.json
     sanitize_api_query_dict(request["filter"])
 
-    criteria = WmgFiltersQueryCriteria(**request["filter"])
+    criteria = BaseQueryCriteria(**request["filter"])
 
     with ServerTiming.time("load snapshot"):
-        snapshot: WmgSnapshot = load_snapshot(
-            snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
-            explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
-            snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
+        snapshot: CensusCubeSnapshot = load_snapshot(
+            snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
+            explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
         )
 
     with ServerTiming.time("calculate filters and build response"):
-        q = WmgQuery(snapshot, cube_query_params=None)
+        q = CensusCubeQuery(snapshot, cube_query_params=None)
         response_filter_dims_values = build_filter_dims_values(criteria, snapshot, q)
         n_cells = _get_cell_counts_for_query(q, criteria)
 
@@ -88,7 +80,7 @@ def sanitize_api_query_dict(query_dict: Any):
         query_dict["self_reported_ethnicity_ontology_term_ids"] = ethnicity_term_ids_to_keep
 
 
-def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
+def is_criteria_empty(criteria: BaseQueryCriteria) -> bool:
     criteria = criteria.dict()
     for key in criteria:
         if key != "organism_ontology_term_id":
@@ -102,7 +94,7 @@ def is_criteria_empty(criteria: WmgFiltersQueryCriteria) -> bool:
 
 
 @tracer.wrap(name="build_filter_dims_values", service="wmg-api", resource="filters", span_type="wmg-api")
-def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSnapshot, q: WmgQuery) -> Dict:
+def build_filter_dims_values(criteria: BaseQueryCriteria, snapshot: CensusCubeSnapshot, q: CensusCubeQuery) -> Dict:
 
     if is_criteria_empty(criteria):
         df = snapshot.cell_counts_df[
@@ -153,7 +145,7 @@ def build_filter_dims_values(criteria: WmgFiltersQueryCriteria, snapshot: WmgSna
     return response_filter_dims_values
 
 
-def fetch_datasets_metadata(snapshot: WmgSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
+def fetch_datasets_metadata(snapshot: CensusCubeSnapshot, dataset_ids: Iterable[str]) -> List[Dict]:
     return [
         snapshot.dataset_metadata.get(dataset_id, dict(id=dataset_id, label="", collection_id="", collection_label=""))
         for dataset_id in dataset_ids
@@ -183,17 +175,16 @@ def differentialExpression():
     queryGroup1Filters = request["queryGroup1Filters"]
     queryGroup2Filters = request["queryGroup2Filters"]
 
-    criteria1 = DeQueryCriteria(**queryGroup1Filters)
-    criteria2 = DeQueryCriteria(**queryGroup2Filters)
+    criteria1 = BaseQueryCriteria(**queryGroup1Filters)
+    criteria2 = BaseQueryCriteria(**queryGroup2Filters)
 
-    snapshot: WmgSnapshot = load_snapshot(
-        snapshot_schema_version=WMG_API_SNAPSHOT_SCHEMA_VERSION,
-        explicit_snapshot_id_to_load=WMG_API_FORCE_LOAD_SNAPSHOT_ID,
-        snapshot_fs_root_path=SNAPSHOT_FS_ROOT_PATH,
+    snapshot: CensusCubeSnapshot = load_snapshot(
+        snapshot_schema_version=CENSUS_CUBE_API_SNAPSHOT_SCHEMA_VERSION,
+        explicit_snapshot_id_to_load=CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
     )
 
-    # cube_query_params are not required to instantiate WmgQuery for differential expression
-    q = WmgQuery(snapshot, cube_query_params=None)
+    # cube_query_params are not required to instantiate CensusCubeQuery for differential expression
+    q = CensusCubeQuery(snapshot, cube_query_params=None)
 
     with ServerTiming.time("run differential expression"):
         de_results, n_overlap = run_differential_expression(q, criteria1, criteria2)
@@ -207,7 +198,7 @@ def differentialExpression():
     )
 
 
-def run_differential_expression(q: WmgQuery, criteria1, criteria2) -> Tuple[List[Dict], int]:
+def run_differential_expression(q: CensusCubeQuery, criteria1, criteria2) -> Tuple[List[Dict], int]:
     """
     Runs differential expression analysis between two sets of criteria.
 
@@ -218,7 +209,7 @@ def run_differential_expression(q: WmgQuery, criteria1, criteria2) -> Tuple[List
     and finally runs the statistical test (t-test).
 
     Parameters:
-    - q: WmgQuery object
+    - q: CensusCubeQuery object
     - criteria1: The first set of criteria for differential expression analysis.
     - criteria2: The second set of criteria for differential expression analysis.
 
@@ -298,7 +289,7 @@ def run_differential_expression(q: WmgQuery, criteria1, criteria2) -> Tuple[List
     return statistics, n_overlap
 
 
-def _get_cell_counts_for_query(q: WmgQuery, criteria: WmgFiltersQueryCriteria) -> pd.DataFrame:
+def _get_cell_counts_for_query(q: CensusCubeQuery, criteria: BaseQueryCriteria) -> pd.DataFrame:
     if criteria.cell_type_ontology_term_ids:
         criteria.cell_type_ontology_term_ids = list(
             set(sum([descendants(i) for i in criteria.cell_type_ontology_term_ids], []))

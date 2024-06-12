@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pandas as pd
 import tiledb
 
-from backend.wmg.data.snapshot import MARKER_GENES_CUBE_NAME
+from backend.common.census_cube.data.snapshot import MARKER_GENES_CUBE_NAME
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
     EXPRESSION_SUMMARY_DEFAULT_CUBE_CREATED_FLAG,
@@ -46,7 +46,7 @@ class MarkerGenesTests(unittest.TestCase):
 
     def test_marker_genes_cube(self):
         with patch(
-            "backend.cellguide.pipeline.computational_marker_genes.computational_markers.bootstrap_rows_percentiles",
+            "backend.common.marker_genes.computational_markers.bootstrap_rows_percentiles",
             new=mock_bootstrap_rows_percentiles,
         ):
             create_marker_genes_cube(self.temp_cube_dir.name)

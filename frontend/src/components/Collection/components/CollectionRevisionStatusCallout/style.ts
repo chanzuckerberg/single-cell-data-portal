@@ -8,6 +8,7 @@ export const CollectionRevisionCallout = styled(Banner)`
   letter-spacing: -0.006em;
   position: absolute;
   top: 0;
+  width: 100%;
 
   > div > div {
     display: contents; /* targeting @czi-sds/components IconWrapper style to override iconSize "l" and spaces "m" setting in app theme */

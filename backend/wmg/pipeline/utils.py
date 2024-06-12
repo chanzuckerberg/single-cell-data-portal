@@ -7,7 +7,7 @@ import unicodedata
 import tiledb
 from tiledb import ArraySchema
 
-from backend.wmg.data.utils import (
+from backend.common.census_cube.utils import (
     get_collections_from_discover_api,
     get_datasets_from_discover_api,
 )

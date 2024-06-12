@@ -3,7 +3,7 @@ name: Create/Update rdev for PR
 on:
   pull_request:
     branches-ignore:
-      - prod
+      - "prod"
     types:
       - opened
       - synchronize
@@ -25,6 +25,7 @@ permissions:
 
 jobs:
   get_previous_image_digests:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     outputs:
       ecr_repos: ${{ steps.get_digests.outputs.ecr_repos }}
@@ -43,7 +44,8 @@ jobs:
       - name: Get previous image digests for each repo
         id: get_digests
         run: |
-          ECR_REPOS=(corpora-frontend corpora-backend corpora-upload-failures corpora-upload-success \
+          ECR_REPOS=(corpora-frontend corpora-backend corpora-backend-de corpora-backend-wmg \
+            corpora-upload-failures corpora-upload-success \
             dataset-submissions corpora-upload wmg-processing cellguide-pipeline)
           IMAGE_DIGESTS=()
           for ecr_repo in "${ECR_REPOS[@]}"; do
@@ -55,10 +57,12 @@ jobs:
           echo "IMAGE_DIGESTS=${IMAGE_DIGESTS[@]}" >> $GITHUB_OUTPUT
 
   build_images:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     uses: ./.github/workflows/build-images.yml
     secrets: inherit
 
   seed-wmg-cellguide-rdev:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
@@ -82,6 +86,7 @@ jobs:
           ./scripts/populate_rdev_with_wmg_data.sh ${{ env.STACK_NAME }}
 
   deploy-rdev:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     concurrency:
       group: pr-${{ github.event.number }}-happy
@@ -113,6 +118,7 @@ jobs:
           happy_version: "0.110.1"
 
   delete-previous-images:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: ubuntu-22.04
     needs:
       - get_previous_image_digests
@@ -140,14 +146,16 @@ jobs:
           done
 
   summarize:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') && github.event.action == 'opened' }}
     runs-on: ubuntu-22.04
-    if: github.event.action == 'opened'
     steps:
       - name: Summerize deployment
         id: summary
         run: |
           summary="## Deployment Summary"
           summary+="\n- backend_url: https://${{ env.STACK_NAME }}-backend.rdev.single-cell.czi.technology"
+          summary+="\n- backend_de_url: https://${{ env.STACK_NAME }}-backend-de.rdev.single-cell.czi.technology"
+          summary+="\n- backend_wmg_url: https://${{ env.STACK_NAME }}-backend-wmg.rdev.single-cell.czi.technology"
           summary+="\n- frontend_url: https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology"
           summary+="\n- delete_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-deletion:1"
           summary+="\n- migrate_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-migration:1"
@@ -164,6 +172,7 @@ jobs:
             })
 
   rdev-tests:
+    if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     uses: ./.github/workflows/rdev-tests.yml
     secrets: inherit
     needs:

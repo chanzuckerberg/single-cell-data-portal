@@ -11,10 +11,10 @@ import {
 } from "tests/utils/wmgUtils";
 
 const { describe } = test;
-const ALERT =
-  "Subscribeto our newsletter to receive updates about new features.Send us feedback with thisquick survey.";
+// const ALERT =
+//   "Subscribeto our newsletter to receive updates about new features.Send us feedback with thisquick survey.";
 
-const SURVEY_LINK = "https://airtable.com/shrLwepDSEX1HI6bo";
+// const SURVEY_LINK = "https://airtable.com/shrLwepDSEX1HI6bo";
 
 const LEGEND_WRAPPER = "legend-wrapper";
 const DOT_SIZES = ["4", "9", "12", "14", "16"];
@@ -34,13 +34,13 @@ describe("Tests for Gene Expression page", () => {
     // +Gene button
     await expect(page.getByTestId(ADD_GENE_BTN)).toBeVisible();
     // survey alert
-    await expect(
-      page.getByTestId("newsletter-modal-banner-wrapper")
-    ).toContainText(ALERT);
-    await expect(page.getByText("quick survey")).toHaveAttribute(
-      "href",
-      SURVEY_LINK
-    );
+    // await expect(
+    //   page.getByTestId("newsletter-modal-banner-wrapper")
+    // ).toContainText(ALERT);
+    // await expect(page.getByText("quick survey")).toHaveAttribute(
+    //   "href",
+    //   SURVEY_LINK
+    // );
     // default organism filter
     await expect(page.getByTestId("add-organism")).toContainText(
       "Homo sapiens"

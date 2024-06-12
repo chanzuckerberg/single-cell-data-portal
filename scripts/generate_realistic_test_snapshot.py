@@ -6,9 +6,14 @@ import tempfile
 from enum import Enum
 from unittest.mock import Mock, patch
 
+# Import tiledbsoma before tiledb to prevent segmentation faults on macOS.
+# This import order is critical to avoid a race condition with a mutex lock error,
+# which occurs only when tiledbsoma is imported after tiledb in this module and also
+# imported in any upstream module.
+import tiledbsoma  # noqa: F401, isort:skip
 import tiledb
 
-from backend.wmg.data.snapshot import (
+from backend.common.census_cube.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     CELL_COUNTS_DIFFEXP_CUBE_NAME,
     CELL_TYPE_ANCESTORS_FILENAME,
@@ -84,7 +89,7 @@ if __name__ == "__main__":
             new=MockCensusParameters,
         ),
         patch(
-            "backend.cellguide.pipeline.computational_marker_genes.computational_markers.bootstrap_rows_percentiles",
+            "backend.common.marker_genes.computational_markers.bootstrap_rows_percentiles",
             new=mock_bootstrap_rows_percentiles,
         ),
         patch(

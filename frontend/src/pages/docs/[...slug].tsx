@@ -221,7 +221,7 @@ const DirectoryListItem = ({
       >
         {directory.dirName.split("__")[1]}{" "}
         <Icon
-          sdsIcon={isExpanded % 2 == 1 ? "chevronDown" : "chevronRight"}
+          sdsIcon={isExpanded % 2 == 1 ? "ChevronDown" : "ChevronRight"}
           sdsSize="s"
           sdsType="interactive"
         />
@@ -373,7 +373,12 @@ const DocContent = styled.div`
   }
 `;
 
-const StyledImage = styled(Image)();
+const StyledImage = styled(Image)`
+  object-fit: contain;
+  width: 100% !important;
+  position: relative !important;
+  height: unset !important;
+`;
 
 const ImageContainer = styled.div`
   width: 100%;
@@ -381,13 +386,6 @@ const ImageContainer = styled.div`
 
   > span {
     position: unset !important;
-  }
-
-  ${StyledImage} {
-    object-fit: contain;
-    width: 100% !important;
-    position: relative !important;
-    height: unset !important;
   }
 `;
 

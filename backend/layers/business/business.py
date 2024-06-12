@@ -8,7 +8,13 @@ from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.corpora_config import CorporaConfig
+from backend.common.doi import doi_curie_from_link
 from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
+from backend.common.providers.crossref_provider import (
+    CrossrefDOINotFoundException,
+    CrossrefException,
+    CrossrefProviderInterface,
+)
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
     CollectionMetadataUpdate,
@@ -38,7 +44,6 @@ from backend.layers.business.exceptions import (
 )
 from backend.layers.common import validation
 from backend.layers.common.cleanup import sanitize
-from backend.layers.common.doi import doi_curie_from_link
 from backend.layers.common.entities import (
     CanonicalCollection,
     CollectionId,
@@ -74,11 +79,6 @@ from backend.layers.common.helpers import (
 from backend.layers.common.regex import S3_URI_REGEX
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
-from backend.layers.thirdparty.crossref_provider import (
-    CrossrefDOINotFoundException,
-    CrossrefException,
-    CrossrefProviderInterface,
-)
 from backend.layers.thirdparty.s3_exceptions import S3DeleteException
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
