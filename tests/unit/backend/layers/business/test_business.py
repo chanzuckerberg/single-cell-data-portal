@@ -1756,16 +1756,101 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(version.version_id, published_collection.version_id)
         self.assertNotEqual(version.version_id, new_version.version_id)
 
-    def test_create_collection_version_fails_if_other_versions(self):
+    def test_create_collection_version_multiple_auto_versions_false_fails(self):
         """
-        A collection version can only be created if there are no other unpublished versions
-        for that specific canonical collection
+        Given a canonical collection with a published version and an unpublished version with is_auto_version == False,
+        creating an unpublished collection version where is_auto_verison is False will fail.
         """
         published_collection = self.initialize_published_collection()
-        self.business_logic.create_collection_version(published_collection.collection_id)
+        self.business_logic.create_collection_version(published_collection.collection_id, is_auto_version=False)
 
         with self.assertRaises(CollectionVersionException):
-            self.business_logic.create_collection_version(published_collection.collection_id)
+            self.business_logic.create_collection_version(published_collection.collection_id, is_auto_version=False)
+
+    def test_create_collection_version_multiple_auto_versions_fails(self):
+        """
+        Given a canonical collection with a published version and an unpublished version with is_auto_version == True,
+        creating another unpublished collection version where is_auto_verison is False will fail.
+        """
+        published_collection = self.initialize_published_collection()
+        self.business_logic.create_collection_version(published_collection.collection_id, is_auto_version=True)
+
+        with self.assertRaises(CollectionVersionException):
+            self.business_logic.create_collection_version(published_collection.collection_id, is_auto_version=False)
+
+    def test_create_collection_version_multiple_auto_versions_true_fails(self):
+        """
+        Given a canonical collection with a published version and an unpublished version where is_auto_version is True,
+        creating another unpublished collection version where is_auto_version is True will fail.
+        """
+        published_collection = self.initialize_published_collection()
+        self.business_logic.create_collection_version(published_collection.collection_id, is_auto_version=True)
+
+        with self.assertRaises(CollectionVersionException):
+            self.business_logic.create_collection_version(published_collection.collection_id, is_auto_version=True)
+
+    def test_create_collection_version_is_auto_version_succeeds(self):
+        """
+        Given a canonical collection with a published version and no unpublished versions,
+        creating an unpublished collection version where is_auto_verison is True will succeed.
+        """
+        published_collection = self.initialize_published_collection()
+        new_version = self.business_logic.create_collection_version(
+            published_collection.collection_id, is_auto_version=True
+        )
+
+        # The new version has a different version_id
+        self.assertNotEqual(published_collection.version_id, new_version.version_id)
+
+        # The new version has the same collection_id, collection metadata, and datasets
+        self.assertEqual(published_collection.collection_id, new_version.collection_id)
+        self.assertEqual(published_collection.metadata, new_version.metadata)
+        self.assertEqual(published_collection.datasets, new_version.datasets)
+
+        # The new version should not be published (aka Private)
+        self.assertIsNone(new_version.published_at)
+
+        # The canonical collection should be published
+        self.assertIsNotNone(new_version.canonical_collection.originally_published_at)
+
+        # get_collection still retrieves the original version
+        version = self.business_logic.get_published_collection_version(published_collection.collection_id)
+        self.assertEqual(version.version_id, published_collection.version_id)
+        self.assertNotEqual(version.version_id, new_version.version_id)
+
+        self.assertTrue(new_version.is_auto_version)
+
+    def test_create_collection_version_is_auto_version_succeeds__with_revision(self):
+        """
+        Given a canonical collection with a published version and an unpublished version where is_auto_version is False,
+        creating another unpublished collection version where is_auto_version is True will succeed.
+        """
+        published_collection = self.initialize_published_collection()
+        existing_revision = self.business_logic.create_collection_version(
+            published_collection.collection_id, is_auto_version=False
+        )
+        auto_revision = self.business_logic.create_collection_version(
+            published_collection.collection_id, is_auto_version=True
+        )
+
+        # The new version has a different version_id
+        self.assertNotEqual(published_collection.version_id, auto_revision.version_id)
+        self.assertNotEqual(existing_revision.version_id, auto_revision.version_id)
+
+        # Both revisions are linked to the same canonical collection
+        self.assertEqual(published_collection.collection_id, existing_revision.collection_id)
+        self.assertEqual(published_collection.collection_id, auto_revision.collection_id)
+
+        # The new version has the same collection metadata, and datasets
+        self.assertEqual(published_collection.metadata, auto_revision.metadata)
+        self.assertEqual(published_collection.datasets, auto_revision.datasets)
+
+        # The new version should not be published (aka Private)
+        self.assertIsNone(auto_revision.published_at)
+
+        # The new version has is_auto_version == True, while existing is False
+        self.assertFalse(existing_revision.is_auto_version)
+        self.assertTrue(auto_revision.is_auto_version)
 
     def test_create_collection_version_fails_if_collection_not_exists(self):
         """
@@ -1917,6 +2002,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertIsNotNone(published_version.canonical_collection.originally_published_at)
         self.assertEqual(published_version.published_at, published_version.canonical_collection.originally_published_at)
         self.assertEqual(published_version.data_submission_policy_version, DATA_SUBMISSION_POLICY_VERSION)
+        self.assertEqual(published_version.is_auto_version, False)
 
         # The published and unpublished collection have the same collection_id and version_id
         self.assertEqual(published_version.collection_id, unpublished_collection.collection_id)
@@ -2138,6 +2224,43 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         canonical = self.business_logic.get_collection_version(second_version.version_id).canonical_collection
         self.assertEqual(canonical.originally_published_at, first_version.published_at)
+
+    def test_publish_version_sets_is_auto_version_False(self):
+        """
+        When publishing a collection version, is_auto_version should be set to False
+        """
+        published_collection = self.initialize_published_collection()
+        new_version = self.business_logic.create_collection_version(
+            published_collection.collection_id, is_auto_version=True
+        )
+        self.assertTrue(new_version.is_auto_version)
+        self.business_logic.publish_collection_version(new_version.version_id)
+
+        published_new_version = self.business_logic.get_collection_version(new_version.version_id)
+        self.assertFalse(published_new_version.is_auto_version)
+
+    def test_publish_version_cleanup_with_auto_version(self):
+        """
+        When publishing an auto_version, do NOT cleanup dataset versions from an open revision
+        """
+        published_collection = self.initialize_published_collection()
+        collection_open_revision = self.business_logic.create_collection_version(
+            published_collection.collection_id, is_auto_version=False
+        )
+        dataset_to_replace = collection_open_revision.datasets[0]
+        new_dataset_version_in_open_revision = self.database_provider.replace_dataset_in_collection_version(
+            collection_open_revision.version_id, dataset_to_replace.version_id
+        )
+        auto_version = self.business_logic.create_collection_version(
+            published_collection.collection_id, is_auto_version=True
+        )
+        self.business_logic.publish_collection_version(auto_version.version_id)
+
+        # open revision's new dataset and its artifacts should still be persisted
+        self.assertIsNotNone(
+            self.database_provider.get_dataset_version(new_dataset_version_in_open_revision.version_id)
+        )
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_replace.artifacts]
 
     def test_get_all_collections_published_does_not_retrieve_old_versions(self):
         """
