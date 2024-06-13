@@ -1,3 +1,0 @@
-INFO     processing:schema_migration.py:315 Downloaded from S3
-INFO     processing:schema_migration.py:236 skipping dataset
-INFO     processing:schema_migration.py:275 Deleting files
