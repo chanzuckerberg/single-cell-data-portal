@@ -2,8 +2,9 @@ import unittest
 
 import pytest
 import requests
-from functional.backend.utils import assertStatusCode, distributed_singleton, get_auth_token, make_cookie
 from jose import jwt
+
+from tests.functional.backend.utils import assertStatusCode, distributed_singleton, get_auth_token, make_cookie
 
 
 @pytest.fixture(scope="session")

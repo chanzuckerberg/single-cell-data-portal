@@ -4,11 +4,11 @@ import time
 
 import pytest
 import requests
-from functional.backend.constants import API_URL
-from functional.backend.utils import distributed_singleton, get_auth_token, make_cookie
 from requests.adapters import HTTPAdapter, Retry
 
 from backend.common.corpora_config import CorporaAuthConfig
+from tests.functional.backend.constants import API_URL
+from tests.functional.backend.utils import distributed_singleton, get_auth_token, make_cookie
 
 
 @pytest.fixture(scope="session")

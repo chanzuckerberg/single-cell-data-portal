@@ -6,10 +6,10 @@ import unittest
 from typing import Optional
 
 import requests
-from functional.backend.constants import API_URL, AUDIENCE
 from requests.adapters import HTTPAdapter, Response, Retry
 
 from backend.common.corpora_config import CorporaAuthConfig
+from tests.functional.backend.constants import API_URL, AUDIENCE
 
 
 class BaseFunctionalTestCase(unittest.TestCase):

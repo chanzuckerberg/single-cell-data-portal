@@ -3,10 +3,10 @@ import os
 
 import pytest
 import requests
-from functional.backend.utils import assertStatusCode
 from requests import HTTPError
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
+from tests.functional.backend.utils import assertStatusCode
 
 
 def test_version(session, api_url):

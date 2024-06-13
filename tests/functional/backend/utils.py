@@ -4,7 +4,8 @@ from typing import Callable, Optional
 
 import requests
 from filelock import FileLock
-from functional.backend.constants import AUDIENCE
+
+from tests.functional.backend.constants import AUDIENCE
 
 
 def distributed_singleton(tmp_path_factory, worker_id: str, func: Callable) -> dict:

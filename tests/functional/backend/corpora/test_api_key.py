@@ -3,8 +3,9 @@ import time
 import unittest
 
 import pytest
-from functional.backend.utils import assertStatusCode
 from tenacity import retry, stop_after_attempt, wait_incrementing
+
+from tests.functional.backend.utils import assertStatusCode
 
 
 @pytest.mark.skipIf(
