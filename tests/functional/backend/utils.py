@@ -71,3 +71,17 @@ def make_cookie(auth_token: str) -> str:
 def assertStatusCode(actual: int, expected_response: requests.Response):
     request_id = expected_response.headers.get("X-Request-Id")
     assert actual == expected_response.status_code, f"{request_id=}"
+
+
+def create_test_collection(headers, request, session, api_url, body):
+    res = session.post(f"{api_url}/dp/v1/collections", data=json.dumps(body), headers=headers)
+    res.raise_for_status()
+    data = json.loads(res.content)
+    collection_id = data["collection_id"]
+    request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/collections/{collection_id}", headers=headers))
+    assertStatusCode(requests.codes.created, res)
+    return collection_id
+
+
+def create_explorer_url(dataset_id: str, deployment_stage: str) -> str:
+    return f"https://cellxgene.{deployment_stage}.single-cell.czi.technology/e/{dataset_id}.cxg/"

@@ -167,13 +167,12 @@ def upload_and_wait(session, api_url, curator_cookie, deployment_stage, request)
     return _upload_and_wait
 
 
-@pytest.fixture
-def collection_data():
+def generate_collection_data(request):
     return {
         "contact_email": "lisbon@gmail.com",
         "contact_name": "Madrid Sparkle",
         "curator_name": "John Smith",
         "description": "Well here are some words",
         "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "https://protocol.com"}],
-        "name": "my2collection",
+        "name": request.function.__name__,
     }

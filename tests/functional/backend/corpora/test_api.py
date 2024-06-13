@@ -3,6 +3,7 @@ import os
 
 import pytest
 import requests
+from functional.backend.utils import create_test_collection
 from requests import HTTPError
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
@@ -151,32 +152,11 @@ def test_delete_private_collection(session, api_url, curator_cookie, collection_
 
 @pytest.mark.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
 def test_dataset_upload_flow_with_visium_dataset(
-    session, curator_cookie, api_url, upload_and_wait, visium_dataset_uri, request
+    session, curator_cookie, api_url, upload_and_wait, visium_dataset_uri, request, collection_data
 ):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
-    collection_id = _create_test_collection(
-        headers, request, session, api_url, "test_dataset_upload_flow_with_visium_dataset"
-    )
+    collection_id = create_test_collection(headers, request, session, api_url, collection_data)
     _verify_upload_and_delete_succeeded(collection_id, headers, visium_dataset_uri, session, api_url, upload_and_wait)
-
-
-def _create_test_collection(headers, request, session, api_url, name="my2collection"):
-    body = {
-        "contact_email": "lisbon@gmail.com",
-        "contact_name": "Madrid Sparkle",
-        "curator_name": "John Smith",
-        "description": "Well here are some words",
-        "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "https://protocol.com"}],
-        "name": name,
-    }
-
-    res = session.post(f"{api_url}/dp/v1/collections", data=json.dumps(body), headers=headers)
-    res.raise_for_status()
-    data = json.loads(res.content)
-    collection_id = data["collection_id"]
-    request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/collections/{collection_id}", headers=headers))
-    assertStatusCode(requests.codes.created, res)
-    return collection_id
 
 
 def _verify_upload_and_delete_succeeded(collection_id, headers, dataset_uri, session, api_url, upload_and_wait):
