@@ -394,7 +394,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             version_rows = (
-                session.query(CollectionVersionTable).filter_by(collection_id=collection_id.id, is_published=None).all()
+                session.query(CollectionVersionTable).filter_by(collection_id=collection_id.id, published_at=None).all()
             )
             canonical_collection = self.get_canonical_collection(collection_id)
             versions = list()
