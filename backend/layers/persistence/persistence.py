@@ -281,32 +281,23 @@ class DatabaseProvider(DatabaseProviderInterface):
                 canonical_ids.append(version.dataset_id)
                 artifact_ids.extend(version.artifacts)
 
-            if get_tombstoned:
-                canonical_dataset_query = session.query(DatasetTable).filter(DatasetTable.id.in_(canonical_ids))
-            else:
-                canonical_dataset_query = (
-                    session.query(DatasetTable)
-                    .filter(DatasetTable.id.in_(canonical_ids))
-                    .filter(DatasetTable.tombstone.is_(False))
-                )
+            canonical_dataset_query = session.query(DatasetTable).filter(DatasetTable.id.in_(canonical_ids))
+            if not get_tombstoned:
+                canonical_dataset_query = canonical_dataset_query.filter(DatasetTable.tombstone.is_(False))
             canonical_datasets = canonical_dataset_query.all()
-
-            canonical_map = {canonical_dataset.id: canonical_dataset for canonical_dataset in canonical_datasets}
-
             artifacts = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.id.in_(artifact_ids)).all()
-            artifact_map = {artifact.id: artifact for artifact in artifacts}
 
-            datasets = []
-            for version in versions:
-                canonical_dataset_row = canonical_map.get(version.dataset_id)
-                if not canonical_dataset_row:
-                    continue  # Dataset has the wrong tombstone value
-                canonical_dataset = self._row_to_canonical_dataset(canonical_dataset_row)
-                version_artifacts = [
-                    self._row_to_dataset_artifact(artifact_map.get(artifact_id)) for artifact_id in version.artifacts
-                ]
-                datasets.append(self._row_to_dataset_version(version, canonical_dataset, version_artifacts))
-        return datasets
+        canonical_map = {canonical_dataset.id: canonical_dataset for canonical_dataset in canonical_datasets}
+        artifact_map = {artifact.id: artifact for artifact in artifacts}
+        for version in versions:
+            canonical_dataset_row = canonical_map.get(version.dataset_id)
+            if not canonical_dataset_row:
+                continue  # Dataset has the wrong tombstone value
+            canonical_dataset = self._row_to_canonical_dataset(canonical_dataset_row)
+            version_artifacts = [
+                self._row_to_dataset_artifact(artifact_map.get(artifact_id)) for artifact_id in version.artifacts
+            ]
+            yield self._row_to_dataset_version(version, canonical_dataset, version_artifacts)
 
     def get_collection_version_with_datasets(
         self, version_id: CollectionVersionId, get_tombstoned: bool = False
@@ -461,14 +452,9 @@ class DatabaseProvider(DatabaseProviderInterface):
         will be present in the CollectionVersion.datasets array for active (mapped) Collection versions.
         """
         with self._manage_session() as session:
-            if get_tombstoned:
-                canonical_collections = session.query(CollectionTable).filter(CollectionTable.version_id.isnot(None))
-            else:
-                canonical_collections = (
-                    session.query(CollectionTable)
-                    .filter(CollectionTable.version_id.isnot(None))
-                    .filter_by(tombstone=False)
-                )
+            canonical_collections = session.query(CollectionTable).filter(CollectionTable.version_id.isnot(None))
+            if not get_tombstoned:
+                canonical_collections = canonical_collections.filter_by(tombstone=False)
 
             mapped_version_ids = {cc.version_id: cc for cc in canonical_collections.all()}
             versions = (

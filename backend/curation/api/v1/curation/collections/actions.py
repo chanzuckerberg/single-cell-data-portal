@@ -1,3 +1,5 @@
+import logging
+
 from flask import jsonify, make_response
 
 import backend.common.doi as doi
@@ -37,11 +39,13 @@ def get(visibility: str, token_info: dict, curator: str = None):
         else:
             filters["curator_name"] = curator
 
-    print(filters)
+    logging.info(filters)
 
     resp_collections = []
     for collection_version in get_business_logic().get_collections(CollectionQueryFilter(**filters)):
-        resp_collection = reshape_for_curation_api(collection_version, user_info, preview=True)
+        resp_collection = reshape_for_curation_api(
+            collection_version, user_info, preview=True
+        )  # why does this make database queries?
         resp_collections.append(resp_collection)
     return jsonify(resp_collections)
 
