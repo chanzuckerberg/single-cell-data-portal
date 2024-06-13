@@ -1,7 +1,6 @@
 import Head from "next/head";
 import CellGuideCardSearchBar from "../CellGuideCardSearchBar";
 import { StyledHeader, Wrapper } from "./style";
-import CellGuideBottomBanner from "../CellGuideBottomBanner";
 import { LANDING_PAGE_HEADER } from "src/views/CellGuide/components/LandingPage/constants";
 import CellGuideMobileHeader from "../CellGuideMobileHeader";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -94,13 +93,10 @@ export default function LandingPage(): JSX.Element {
         >
           {/* Search will open at top of page for mobile */}
           {!openMobileSearch && (
-            <CellGuideCardSearchBar
-              skinnyModeBreakpointWidth={MAX_WIDTH_BREAKPOINT_PX}
-            />
+            <CellGuideCardSearchBar skinnyMode={skinnyMode} />
           )}
         </div>
       </Wrapper>
-      <CellGuideBottomBanner includeSurveyLink={!skinnyMode} />
     </div>
   );
 }

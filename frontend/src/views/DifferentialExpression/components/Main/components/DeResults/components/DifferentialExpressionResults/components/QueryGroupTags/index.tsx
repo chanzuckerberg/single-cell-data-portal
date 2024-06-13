@@ -46,7 +46,7 @@ const QueryGroupTags = ({
             <span>
               <StyledTag
                 key={key}
-                color="gray"
+                color="neutral"
                 sdsType="secondary"
                 label={label}
               />

@@ -87,7 +87,7 @@ export default function FilterViewList({
                   <ListItemIcon>
                     {(selected || selectedPartial) && (
                       <Icon
-                        sdsIcon={selected ? "check" : "minus"}
+                        sdsIcon={selected ? "Check" : "Minus"}
                         sdsSize="s"
                         sdsType="iconButton"
                       />

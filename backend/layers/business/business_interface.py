@@ -62,7 +62,7 @@ class BusinessLogicInterface:
     ) -> Optional[CollectionVersionWithDatasets]:
         pass
 
-    def _get_publisher_metadata(self, doi: str, errors: list) -> Tuple[Optional[dict], Optional[str]]:
+    def _get_publisher_metadata(self, doi: str, errors: list) -> Tuple[Optional[dict], Optional[str], Optional[float]]:
         pass
 
     def create_collection(

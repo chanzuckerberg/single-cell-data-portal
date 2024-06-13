@@ -8,7 +8,13 @@ from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.corpora_config import CorporaConfig
+from backend.common.doi import doi_curie_from_link
 from backend.common.feature_flag import FeatureFlagService, FeatureFlagValues
+from backend.common.providers.crossref_provider import (
+    CrossrefDOINotFoundException,
+    CrossrefException,
+    CrossrefProviderInterface,
+)
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
     CollectionMetadataUpdate,
@@ -38,7 +44,6 @@ from backend.layers.business.exceptions import (
 )
 from backend.layers.common import validation
 from backend.layers.common.cleanup import sanitize
-from backend.layers.common.doi import doi_curie_from_link
 from backend.layers.common.entities import (
     CanonicalCollection,
     CollectionId,
@@ -74,11 +79,6 @@ from backend.layers.common.helpers import (
 from backend.layers.common.regex import S3_URI_REGEX
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
-from backend.layers.thirdparty.crossref_provider import (
-    CrossrefDOINotFoundException,
-    CrossrefException,
-    CrossrefProviderInterface,
-)
 from backend.layers.thirdparty.s3_exceptions import S3DeleteException
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
@@ -166,7 +166,7 @@ class BusinessLogic(BusinessLogicInterface):
             current_dataset_version_id, new_dataset_version_id, metadata_update
         )
 
-    def _get_publisher_metadata(self, doi: str, errors: list) -> Tuple[Optional[dict], Optional[str]]:
+    def _get_publisher_metadata(self, doi: str, errors: list) -> Tuple[Optional[dict], Optional[str], Optional[float]]:
         """
         Retrieves publisher metadata from Crossref.
         """
@@ -176,7 +176,7 @@ class BusinessLogic(BusinessLogicInterface):
             errors.append({"link_type": CollectionLinkType.DOI, "reason": "DOI cannot be found on Crossref"})
         except CrossrefException as e:
             logging.warning(f"CrossrefException on create_collection: {e}. Will ignore metadata.")
-        return None, None
+        return None, None, None
 
     def create_collection(
         self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
@@ -197,7 +197,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         publisher_metadata = None
         if doi_link:
-            publisher_metadata, doi_curie_from_crossref = self._get_publisher_metadata(doi_link.uri, errors)
+            publisher_metadata, doi_curie_from_crossref, _ = self._get_publisher_metadata(doi_link.uri, errors)
             # Ensure DOI link has correct hyperlink formation a la https://doi.org/{curie_identifier}
             # DOI returned from Crossref may be a different (published) DOI altogether if submitted DOI is preprint
             doi_link.uri = f"https://doi.org/{doi_curie_from_crossref}"
@@ -404,7 +404,7 @@ class BusinessLogic(BusinessLogicInterface):
                 unset_publisher_metadata = True
             elif new_doi and new_doi != current_doi:
                 # If the DOI has changed, fetch and update the metadata
-                publisher_metadata_to_set, doi_curie_from_crossref = self._get_publisher_metadata(new_doi, errors)
+                publisher_metadata_to_set, doi_curie_from_crossref, _ = self._get_publisher_metadata(new_doi, errors)
                 new_doi = f"https://doi.org/{doi_curie_from_crossref}"
                 next((link for link in body.links if link.type == "DOI")).uri = new_doi  # noqa - DOI link exists
 
@@ -972,7 +972,8 @@ class BusinessLogic(BusinessLogicInterface):
         has_dataset_revisions = False
         # if collection is a revision and has no changes to previous version's datasets--don't update 'revised_at'
         # used for cases where revision only contains collection-level metadata changes
-        if version.canonical_collection.version_id is not None:
+        is_revision = version.canonical_collection.version_id is not None
+        if is_revision:
             date_of_last_publish = (
                 version.canonical_collection.revised_at or version.canonical_collection.originally_published_at
             )
@@ -982,7 +983,21 @@ class BusinessLogic(BusinessLogicInterface):
             if canonical_datasets != version_datasets:
                 has_dataset_revisions = True
 
+        # Check Crossref for updates in publisher metadata since last publish of revision, or since private collection was created.
+        # Raise exception if DOI has moved from pre-print to published, forcing curators to re-publish the collection once corresponding
+        # artifacts update is complete.
+        last_action_at = date_of_last_publish if is_revision else version.created_at
+        doi_update = self._update_crossref_metadata(version, last_action_at)
+        if doi_update:
+            raise CollectionPublishException(
+                [
+                    f"DOI was updated from {doi_update[0]} to {doi_update[1]} requiring updates to corresponding artifacts. "
+                    "Retry publish once artifact updates are complete."
+                ]
+            )
+
         # Finalize Collection publication and delete any tombstoned assets
+        is_auto_version = version.is_auto_version
         dataset_version_ids_to_delete_from_s3 = self.database_provider.finalize_collection_version(
             version.collection_id,
             version_id,
@@ -993,12 +1008,16 @@ class BusinessLogic(BusinessLogicInterface):
         self.delete_dataset_versions_from_public_bucket(dataset_version_ids_to_delete_from_s3)
 
         # Handle cleanup of unpublished versions
+        versions_to_keep = {dv.version_id.id for dv in version.datasets}
+        # If version published was an auto_version, there may be an open revision with dataset versions to keep
+        if is_auto_version:
+            open_revision = self.database_provider.get_unpublished_versions_for_collection(version.collection_id)
+            if open_revision:
+                versions_to_keep.update({dv.version_id.id for dv in open_revision[0].datasets})
         dataset_versions = self.database_provider.get_all_dataset_versions_for_collection(
             version.collection_id, from_date=date_of_last_publish
         )
-        versions_to_delete = list(
-            filter(lambda dv: dv.version_id.id not in {dv.version_id.id for dv in version.datasets}, dataset_versions)
-        )
+        versions_to_delete = list(filter(lambda dv: dv.version_id.id not in versions_to_keep, dataset_versions))
         self.delete_dataset_version_assets(versions_to_delete)
         self.database_provider.delete_dataset_versions(versions_to_delete)
 
@@ -1096,6 +1115,57 @@ class BusinessLogic(BusinessLogicInterface):
                     self.s3_provider.delete_prefix(bucket, prefix)
             except S3DeleteException as e:
                 raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
+
+    def _update_crossref_metadata(
+        self, version: CollectionVersion, last_action_at: datetime
+    ) -> Optional[Tuple[str, str]]:
+        """
+        Call Crossref for the latest publisher metadata and:
+        - if a DOI has moved from pre-print to published, trigger update to collection (and artifacts), otherwise,
+        - if Crossref has been updated since last publish of revision or since private collection was created, update collection
+          version publisher metadata.
+
+        :param collection_version_id: The collection version (either a revision or a private collection) to check publisher updates for.
+        :param last_action_at: The originally published at or revised at date of revision, or the created at date of a private collection.
+        :return: Tuple of current DOI and DOI returned from Crossref if DOI has changed, otherwise None.
+        """
+        # Get the DOI from the collection version metadata; exit if no DOI.
+        links = version.metadata.links
+        link_doi = next((link for link in links if link.type == "DOI"), None)
+        if not link_doi:
+            return
+
+        # Fetch the latest publisher metadata from Crossref. Ignore errors, and exit if no metadata is found.
+        publisher_metadata, crossref_doi_curie, deposited_at_timestamp = self._get_publisher_metadata(link_doi.uri, [])
+        if not publisher_metadata or not crossref_doi_curie:
+            return
+
+        # Handle change in publisher metadata from pre-print to published.
+        crossref_doi = f"https://doi.org/{crossref_doi_curie}"
+        if crossref_doi != link_doi.uri:
+
+            # Set the DOI in the collection version metadata links to be the returned DOI and update collection
+            # version (subsequently triggering update of artifacts).
+            updated_links = [Link(link.name, link.type, crossref_doi) if link.type == "DOI" else link for link in links]
+            update = CollectionMetadataUpdate(
+                name=None,
+                description=None,
+                contact_name=None,
+                contact_email=None,
+                links=updated_links,
+                consortia=None,
+            )
+            self.update_collection_version(version.version_id, update, True)
+
+            # Return the existing DOI and the DOI returned from Crossref.
+            return link_doi.uri, crossref_doi
+
+        # Otherwise, DOI is unchanged: check if there are updates in Crossref that have occurred since last publish of
+        # revision or since private collection was created, and update collection metadata if so.
+        if deposited_at_timestamp and datetime.fromtimestamp(deposited_at_timestamp) > last_action_at:
+            self.database_provider.save_collection_publisher_metadata(version.version_id, publisher_metadata)
+
+        return None
 
     def _get_collection_and_dataset(
         self, collection_id: str, dataset_id: str
