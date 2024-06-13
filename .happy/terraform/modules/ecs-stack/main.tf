@@ -31,7 +31,7 @@ locals {
   backend_wmg_workers           = var.backend_wmg_workers
   backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "${local.backend_workers}",
     "--bind", "0.0.0.0:5000", "backend.api_server.app:app", "--max-requests", "10000", "--timeout", "180",
-    "--keep-alive", "61", "--log-level", "info"]
+    "--keep-alive", "100", "--log-level", "info"]
   backend_de_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "${local.backend_de_workers}",
     "--bind", "0.0.0.0:5000", "backend.de.server.app:app", "--max-requests", "10000", "--timeout", "540",
     "--keep-alive", "61", "--log-level", "info"]
