@@ -2239,6 +2239,29 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         published_new_version = self.business_logic.get_collection_version(new_version.version_id)
         self.assertFalse(published_new_version.is_auto_version)
 
+    def test_publish_version_cleanup_with_auto_version(self):
+        """
+        When publishing an auto_version, do NOT cleanup dataset versions from an open revision
+        """
+        published_collection = self.initialize_published_collection()
+        collection_open_revision = self.business_logic.create_collection_version(
+            published_collection.collection_id, is_auto_version=False
+        )
+        dataset_to_replace = collection_open_revision.datasets[0]
+        new_dataset_version_in_open_revision = self.database_provider.replace_dataset_in_collection_version(
+            collection_open_revision.version_id, dataset_to_replace.version_id
+        )
+        auto_version = self.business_logic.create_collection_version(
+            published_collection.collection_id, is_auto_version=True
+        )
+        self.business_logic.publish_collection_version(auto_version.version_id)
+
+        # open revision's new dataset and its artifacts should still be persisted
+        self.assertIsNotNone(
+            self.database_provider.get_dataset_version(new_dataset_version_in_open_revision.version_id)
+        )
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_replace.artifacts]
+
     def test_get_all_collections_published_does_not_retrieve_old_versions(self):
         """
         `get_collections` with is_published=True should not return versions that were previously

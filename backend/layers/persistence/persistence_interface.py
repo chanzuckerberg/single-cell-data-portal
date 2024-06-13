@@ -81,6 +81,13 @@ class DatabaseProviderInterface:
         Retrieves all the collection versions that are mapped to a canonical collection.
         """
 
+    def get_unpublished_versions_for_collection(
+        self, collection_id: CollectionId, get_tombstoned: bool = False
+    ) -> List[CollectionVersionWithDatasets]:
+        """
+        Retrieves all versions for a specific collections that have published_at set to None
+        """
+
     def tombstone_collection(self, collection_id: CollectionId) -> None:
         """
         Deletes (tombstones) a canonical collection.

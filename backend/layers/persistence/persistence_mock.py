@@ -271,6 +271,19 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 )
         return versions
 
+    def get_unpublished_versions_for_collection(
+        self, collection_id: CollectionId, get_tombstoned: bool = False
+    ) -> Iterable[CollectionVersionWithDatasets]:
+        versions = []
+        for collection_version in self.collections_versions.values():
+            if collection_version.collection_id == collection_id and collection_version.published_at is None:
+                versions.append(
+                    self._update_version_with_canonical(
+                        collection_version, update_datasets=True, get_tombstoned=get_tombstoned
+                    )
+                )
+        return versions
+
     def get_collection_version_with_datasets(
         self, version_id: CollectionVersionId, get_tombstoned: bool = False
     ) -> CollectionVersionWithDatasets:

@@ -997,6 +997,7 @@ class BusinessLogic(BusinessLogicInterface):
             )
 
         # Finalize Collection publication and delete any tombstoned assets
+        is_auto_version = version.is_auto_version
         dataset_version_ids_to_delete_from_s3 = self.database_provider.finalize_collection_version(
             version.collection_id,
             version_id,
@@ -1007,12 +1008,16 @@ class BusinessLogic(BusinessLogicInterface):
         self.delete_dataset_versions_from_public_bucket(dataset_version_ids_to_delete_from_s3)
 
         # Handle cleanup of unpublished versions
+        versions_to_keep = {dv.version_id.id for dv in version.datasets}
+        # If version published was an auto_version, there may be an open revision with dataset versions to keep
+        if is_auto_version:
+            open_revision = self.database_provider.get_unpublished_versions_for_collection(version.collection_id)
+            if open_revision:
+                versions_to_keep.update({dv.version_id.id for dv in open_revision[0].datasets})
         dataset_versions = self.database_provider.get_all_dataset_versions_for_collection(
             version.collection_id, from_date=date_of_last_publish
         )
-        versions_to_delete = list(
-            filter(lambda dv: dv.version_id.id not in {dv.version_id.id for dv in version.datasets}, dataset_versions)
-        )
+        versions_to_delete = list(filter(lambda dv: dv.version_id.id not in versions_to_keep, dataset_versions))
         self.delete_dataset_version_assets(versions_to_delete)
         self.database_provider.delete_dataset_versions(versions_to_delete)
 

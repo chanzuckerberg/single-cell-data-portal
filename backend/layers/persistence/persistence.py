@@ -386,6 +386,26 @@ class DatabaseProvider(DatabaseProviderInterface):
                 versions.append(version)
             return versions
 
+    def get_unpublished_versions_for_collection(
+        self, collection_id: CollectionId, get_tombstoned: bool = False
+    ) -> List[CollectionVersionWithDatasets]:
+        """
+        Retrieves all versions for a specific collections that have published_at set to None
+        """
+        with self._manage_session() as session:
+            version_rows = (
+                session.query(CollectionVersionTable).filter_by(collection_id=collection_id.id, is_published=None).all()
+            )
+            canonical_collection = self.get_canonical_collection(collection_id)
+            versions = list()
+            for i in range(len(version_rows)):
+                datasets = self.get_dataset_versions_by_id(
+                    [DatasetVersionId(str(id)) for id in version_rows[i].datasets], get_tombstoned=get_tombstoned
+                )
+                version = self._row_to_collection_version_with_datasets(version_rows[i], canonical_collection, datasets)
+                versions.append(version)
+            return versions
+
     def get_all_collections_versions(self, get_tombstoned: bool = False) -> Iterable[CollectionVersion]:
         """
         Retrieves all versions of all collections.
