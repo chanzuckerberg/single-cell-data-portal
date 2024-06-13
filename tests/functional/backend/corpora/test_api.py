@@ -3,7 +3,7 @@ import os
 
 import pytest
 import requests
-from functional.backend.conftest import assertStatusCode
+from functional.backend.utils import assertStatusCode
 from requests import HTTPError
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
@@ -146,7 +146,7 @@ def test_delete_private_collection(session, api_url, curator_cookie, collection_
     res = session.get(f"{api_url}/dp/v1/collections?visibility=PRIVATE", headers=no_auth_headers)
     data = json.loads(res.content)
     collection_ids = [x["id"] for x in data["collections"]]
-    assert collection_id in collection_ids
+    assert collection_id not in collection_ids
 
 
 @pytest.mark.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")

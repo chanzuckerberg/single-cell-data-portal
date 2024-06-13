@@ -1,29 +1,14 @@
-import base64
 import json
 import os
 import time
 
 import pytest
 import requests
+from functional.backend.constants import API_URL
+from functional.backend.utils import distributed_singleton, get_auth_token, make_cookie
 from requests.adapters import HTTPAdapter, Retry
 
 from backend.common.corpora_config import CorporaAuthConfig
-
-API_URL = {
-    "prod": "https://api.cellxgene.cziscience.com",
-    "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
-    "dev": "https://api.cellxgene.dev.single-cell.czi.technology",
-    "test": "https://localhost:5000",
-    "rdev": f"https://{os.getenv('STACK_NAME', '')}-backend.rdev.single-cell.czi.technology",
-}
-
-AUDIENCE = {
-    "prod": "api.cellxgene.cziscience.com",
-    "staging": "api.cellxgene.staging.single-cell.czi.technology",
-    "test": "api.cellxgene.dev.single-cell.czi.technology",
-    "dev": "api.cellxgene.dev.single-cell.czi.technology",
-    "rdev": "api.cellxgene.dev.single-cell.czi.technology",
-}
 
 
 @pytest.fixture(scope="session")
@@ -53,7 +38,32 @@ def visium_dataset_uri():
 
 
 @pytest.fixture(scope="session")
-def session(deployment_stage, config, tmp_path_factory, worker_id):
+def proxy_auth_token(config, deployment_stage, tmp_path_factory, worker_id) -> dict:
+    """
+    Generate a proxy token for rdev. If running in parallel mode this will be shared across workers to avoid rate
+    limiting
+    """
+
+    def _proxy_auth_token() -> dict:
+        if deployment_stage == "rdev":
+            payload = {
+                "client_id": config.test_app_id,
+                "client_secret": config.test_app_secret,
+                "grant_type": "client_credentials",
+                "audience": "https://api.cellxgene.dev.single-cell.czi.technology/dp/v1/curator",
+            }
+            headers = {"content-type": "application/json"}
+            res = requests.post("https://czi-cellxgene-dev.us.auth0.com/oauth/token", json=payload, headers=headers)
+            res.raise_for_status()
+            access_token = res.json()["access_token"]
+            return {"Authorization": f"Bearer {access_token}"}
+        return {}
+
+    return distributed_singleton(tmp_path_factory, worker_id, _proxy_auth_token)
+
+
+@pytest.fixture(scope="session")
+def session(proxy_auth_token):
     session = requests.Session()
     retry_config = Retry(
         total=7,
@@ -62,49 +72,24 @@ def session(deployment_stage, config, tmp_path_factory, worker_id):
         allowed_methods={"DELETE", "GET", "HEAD", "PUT", "POST"},
     )
     session.mount("https://", HTTPAdapter(max_retries=retry_config))
-    if deployment_stage == "rdev":
-        payload = {
-            "client_id": config.test_app_id,
-            "client_secret": config.test_app_secret,
-            "grant_type": "client_credentials",
-            "audience": "https://api.cellxgene.dev.single-cell.czi.technology/dp/v1/curator",
-        }
-        headers = {"content-type": "application/json"}
-        res = requests.post("https://czi-cellxgene-dev.us.auth0.com/oauth/token", json=payload, headers=headers)
-        res.raise_for_status()
-        access_token = res.json()["access_token"]
-        session.headers.update(Authorization=f"Bearer {access_token}")
+    session.headers.update(**proxy_auth_token)
     yield session
     session.close()
 
 
 @pytest.fixture(scope="session")
-def auth_token(config, session, deployment_stage):
-    username = config.functest_account_username
-    password = config.functest_account_password
-    response = session.post(
-        "https://czi-cellxgene-dev.us.auth0.com/oauth/token",
-        headers={"content-type": "application/x-www-form-urlencoded"},
-        data=dict(
-            grant_type="password",
-            username=username,
-            password=password,
-            audience=AUDIENCE.get(deployment_stage),
-            scope="openid profile email offline",
-            client_id=config.client_id,
-            client_secret=config.client_secret,
-        ),
-    )
-    response.raise_for_status()
-    return {
-        "access_token": response.json()["access_token"],
-        "id_token": response.json()["id_token"],
-    }
+def functest_auth_token(config, session, deployment_stage, tmp_path_factory, worker_id):
+    def _auth_token():
+        username = config.functest_account_username
+        password = config.functest_account_password
+        return get_auth_token(username, password, session, config, deployment_stage)
+
+    return distributed_singleton(tmp_path_factory, worker_id, _auth_token)
 
 
 @pytest.fixture(scope="session")
-def curator_cookie(auth_token):
-    return base64.b64encode(json.dumps(auth_token).encode("utf-8")).decode()
+def curator_cookie(functest_auth_token):
+    return make_cookie(functest_auth_token)
 
 
 @pytest.fixture(scope="session")
@@ -113,18 +98,16 @@ def api_url(deployment_stage):
 
 
 @pytest.fixture(scope="session")
-def curation_api_access_token(session, api_url, config):
-    response = session.post(
-        f"{api_url}/curation/v1/auth/token",
-        headers={"x-api-key": config.super_curator_api_key},
-    )
-    response.raise_for_status()
-    return response.json()["access_token"]
+def curation_api_access_token(session, api_url, config, tmp_path_factory, worker_id):
+    def _curation_api_access_token(session, api_url, config):
+        response = session.post(
+            f"{api_url}/curation/v1/auth/token",
+            headers={"x-api-key": config.super_curator_api_key},
+        )
+        response.raise_for_status()
+        return response.json()["access_token"]
 
-
-def assertStatusCode(actual: int, expected_response: requests.Response):
-    request_id = expected_response.headers.get("X-Request-Id")
-    assert actual == expected_response.status_code, f"{request_id=}"
+    return distributed_singleton(tmp_path_factory, worker_id, _curation_api_access_token)
 
 
 @pytest.fixture(scope="session")
