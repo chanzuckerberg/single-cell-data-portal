@@ -6,19 +6,39 @@ class TestGatherCollections:
         # get_collections is called twice
         schema_migrate.business_logic.get_collections.side_effect = [[published], [revision]]
         _, response = schema_migrate.gather_collections(auto_publish=True)
+        assert len(response) == 2
         assert {
             "can_publish": "True",
             "collection_id": published.collection_id.id,
-            "collection_version_id": published.collection_id.id,
+            "collection_version_id": published.version_id.id,
             "execution_id": "test-execution-arn",
-        } not in response
+        } in response
         assert {
             "can_publish": "False",
             "collection_id": revision.collection_id.id,
             "collection_version_id": revision.version_id.id,
             "execution_id": "test-execution-arn",
         } in response
+
+    def test_with_migration_revision(self, schema_migrate_and_collections):
+        schema_migrate, collections = schema_migrate_and_collections
+        published, migration_revision = collections["migration_revision"]
+        # get_collections is called twice
+        schema_migrate.business_logic.get_collections.side_effect = [[published], [migration_revision]]
+        _, response = schema_migrate.gather_collections(auto_publish=True)
         assert len(response) == 1
+        assert {
+            "can_publish": "True",
+            "collection_id": published.collection_id.id,
+            "collection_version_id": published.version_id.id,
+            "execution_id": "test-execution-arn",
+        } not in response
+        assert {
+            "can_publish": "True",
+            "collection_id": migration_revision.collection_id.id,
+            "collection_version_id": migration_revision.version_id.id,
+            "execution_id": "test-execution-arn",
+        } in response
 
     def test_with_published(self, schema_migrate_and_collections):
         schema_migrate, collections = schema_migrate_and_collections
@@ -52,13 +72,15 @@ class TestGatherCollections:
         schema_migrate, collections = schema_migrate_and_collections
         published_no_revision = collections["published"][0]
         private = collections["private"][0]
-        published_with_revision, revision = collections["revision"]
+        published_with_non_migration_revision, revision = collections["revision"]
+        published_with_migration_revision, migration_revision = collections["migration_revision"]
         # get_collections is called twice
         schema_migrate.business_logic.get_collections.side_effect = [
-            [published_no_revision, published_with_revision],
-            [private, revision],
+            [published_no_revision, published_with_non_migration_revision, published_with_migration_revision],
+            [private, revision, migration_revision],
         ]
         _, response = schema_migrate.gather_collections(auto_publish=False)
+        assert len(response) == 5
         for obj in [
             {
                 "can_publish": "False",
@@ -76,6 +98,18 @@ class TestGatherCollections:
                 "can_publish": "False",
                 "collection_id": revision.collection_id.id,
                 "collection_version_id": revision.version_id.id,
+                "execution_id": "test-execution-arn",
+            },
+            {
+                "can_publish": "False",
+                "collection_id": published_with_non_migration_revision.collection_id.id,
+                "collection_version_id": published_with_non_migration_revision.version_id.id,
+                "execution_id": "test-execution-arn",
+            },
+            {
+                "can_publish": "False",
+                "collection_id": migration_revision.collection_id.id,
+                "collection_version_id": migration_revision.version_id.id,
                 "execution_id": "test-execution-arn",
             },
         ]:

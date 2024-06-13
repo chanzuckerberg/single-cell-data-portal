@@ -799,20 +799,30 @@ class BusinessLogic(BusinessLogicInterface):
         """
         self.database_provider.update_dataset_artifact(artifact_id, artifact_uri)
 
-    def create_collection_version(self, collection_id: CollectionId) -> CollectionVersionWithDatasets:
+    def create_collection_version(
+        self, collection_id: CollectionId, is_auto_version: bool = False
+    ) -> CollectionVersionWithDatasets:
         """
         Creates a collection version for an existing canonical collection.
-        Also ensures that the collection does not have any active, unpublished version
+        If is_auto_version is False, ensures that the collection does not have any active, unpublished version.
+        If is_auto_version is True, ensures that the collection does not have an active, unpublished migration
+        revision.
         """
 
         all_versions = self.database_provider.get_all_versions_for_collection(collection_id)
         if not all_versions:
             raise CollectionVersionException(f"Collection {collection_id} cannot be found")
 
-        if any(v for v in all_versions if v.published_at is None):
-            raise CollectionVersionException(f"Collection {collection_id} already has an unpublished version")
+        unpublished_versions = [v for v in all_versions if v.published_at is None]
+        if unpublished_versions:
+            if is_auto_version and any(v.is_auto_version for v in unpublished_versions):
+                raise CollectionVersionException(
+                    f"Collection {collection_id} already has an unpublished migration revision."
+                )
+            elif not is_auto_version:
+                raise CollectionVersionException(f"Collection {collection_id} already has an unpublished version")
 
-        added_version_id = self.database_provider.add_collection_version(collection_id)
+        added_version_id = self.database_provider.add_collection_version(collection_id, is_auto_version)
         return self.get_collection_version(added_version_id)
 
     def delete_collection_version(self, collection_version: CollectionVersionWithDatasets) -> None:
@@ -987,6 +997,7 @@ class BusinessLogic(BusinessLogicInterface):
             )
 
         # Finalize Collection publication and delete any tombstoned assets
+        is_auto_version = version.is_auto_version
         dataset_version_ids_to_delete_from_s3 = self.database_provider.finalize_collection_version(
             version.collection_id,
             version_id,
@@ -997,12 +1008,16 @@ class BusinessLogic(BusinessLogicInterface):
         self.delete_dataset_versions_from_public_bucket(dataset_version_ids_to_delete_from_s3)
 
         # Handle cleanup of unpublished versions
+        versions_to_keep = {dv.version_id.id for dv in version.datasets}
+        # If version published was an auto_version, there may be an open revision with dataset versions to keep
+        if is_auto_version:
+            open_revision = self.database_provider.get_unpublished_versions_for_collection(version.collection_id)
+            if open_revision:
+                versions_to_keep.update({dv.version_id.id for dv in open_revision[0].datasets})
         dataset_versions = self.database_provider.get_all_dataset_versions_for_collection(
             version.collection_id, from_date=date_of_last_publish
         )
-        versions_to_delete = list(
-            filter(lambda dv: dv.version_id.id not in {dv.version_id.id for dv in version.datasets}, dataset_versions)
-        )
+        versions_to_delete = list(filter(lambda dv: dv.version_id.id not in versions_to_keep, dataset_versions))
         self.delete_dataset_version_assets(versions_to_delete)
         self.database_provider.delete_dataset_versions(versions_to_delete)
 

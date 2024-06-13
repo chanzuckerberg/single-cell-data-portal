@@ -67,7 +67,7 @@ class PublishRevisions(ProcessingLogic):
 
     def run(self):
         for collection_version in self.business_logic.get_collections(CollectionQueryFilter(is_published=False)):
-            if collection_version.is_unpublished_version():
+            if collection_version.is_unpublished_version() and collection_version.is_auto_version:
                 if collection_version.version_id.id in self.do_not_publish_list:
                     self.logger.info(
                         "Skipping collection version, it is in the do not publish list",
