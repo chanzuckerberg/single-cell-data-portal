@@ -36,6 +36,7 @@ class CollectionVersionTable:
     schema_version = Column(String)
     datasets = Column(ARRAY(UUID(as_uuid=True)))
     has_custom_dataset_order = Column(BOOLEAN)
+    is_auto_version = Column(BOOLEAN)
     data_submission_policy_version = Column(String)
 
 
