@@ -194,15 +194,21 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         os.unsetenv("DATASETS_BUCKET")
 
     def initialize_empty_unpublished_collection(
-        self, owner: str = test_user_name, curator_name: str = test_curator_name
+        self, owner: str = test_user_name, curator_name: str = test_curator_name, links: List[Link] = None
     ) -> CollectionVersion:
         """
         Initializes an unpublished collection to be used for testing, with no datasets
         """
+        if links:
+            metadata = deepcopy(self.sample_collection_metadata)
+            metadata.links = links
+        else:
+            metadata = self.sample_collection_metadata
+
         version = self.database_provider.create_canonical_collection(
             owner,
             curator_name,
-            self.sample_collection_metadata,
+            metadata,
         )
         return version
 
@@ -212,13 +218,14 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         curator_name: str = test_curator_name,
         complete_dataset_ingestion: bool = True,
         num_datasets: int = 2,
+        links: List[Link] = None,
     ) -> CollectionVersionWithDatasets:
         """
         Initializes an unpublished collection to be used for testing, with two datasets.
         By default also completes dataset ingestion (normally, a process that would be done asynchonously).
         Pass `complete_dataset_ingestion=False` if you want to initialize datasets only.
         """
-        version = self.initialize_empty_unpublished_collection(owner, curator_name)
+        version = self.initialize_empty_unpublished_collection(owner, curator_name, links)
         for _ in range(num_datasets):
             dataset_version = self.database_provider.create_canonical_dataset(
                 version.version_id,
@@ -237,11 +244,12 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         curator_name: str = test_curator_name,
         published_at: datetime = None,
         num_datasets: int = 2,
+        links: List[Link] = None,
     ) -> CollectionVersionWithDatasets:
         """
         Initializes a published collection to be used for testing, with a single dataset
         """
-        version = self.initialize_unpublished_collection(owner, curator_name, num_datasets=num_datasets)
+        version = self.initialize_unpublished_collection(owner, curator_name, num_datasets=num_datasets, links=links)
         # published_at must be later than created_at for constituent Dataset Versions
         if published_at:
             assert published_at >= datetime.utcnow()
@@ -278,9 +286,10 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         curator_name: str = test_curator_name,
         published_at: datetime = None,
         num_datasets: int = 2,
+        links: List[Link] = None,
     ) -> Tuple[CollectionVersionWithDatasets, CollectionVersionWithDatasets]:
         # Published with an unpublished revision
-        published_version = self.initialize_published_collection(owner, curator_name, published_at, num_datasets)
+        published_version = self.initialize_published_collection(owner, curator_name, published_at, num_datasets, links)
         revision = self.business_logic.create_collection_version(published_version.collection_id)
         return (
             self.database_provider.get_collection_version_with_datasets(published_version.version_id),
@@ -372,7 +381,9 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         self.sample_collection_metadata.links = links_with_doi
 
         expected_publisher_metadata = {"authors": ["Test Author"]}
-        self.crossref_provider.fetch_metadata = Mock(return_value=(expected_publisher_metadata, "good/doi"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(expected_publisher_metadata, "good/doi", 17169328.664)
+        )
 
         collection = self.business_logic.create_collection(
             test_user_name, test_curator_name, self.sample_collection_metadata
@@ -647,7 +658,9 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         metadata.links = links
 
         expected_publisher_metadata = {"authors": ["Test Author"]}
-        self.crossref_provider.fetch_metadata = Mock(return_value=(expected_publisher_metadata, "test/doi"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(expected_publisher_metadata, "test/doi", 17169328.664)
+        )
 
         # We need to call `business_logic.create_collection` so that the publisher metadata is populated
         version = self.business_logic.create_collection(test_user_name, test_curator_name, metadata)
@@ -677,7 +690,9 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         links = [Link("test doi", "DOI", "http://doi.org/test.doi")]
         metadata.links = links
 
-        self.crossref_provider.fetch_metadata = Mock(return_value=({"authors": ["Test Author"]}, "test.doi"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=({"authors": ["Test Author"]}, "test.doi", 17169328.664)
+        )
 
         # We need to call `business_logic.create_collection` so that the publisher metadata is populated
         version = self.business_logic.create_collection(test_user_name, test_curator_name, metadata)
@@ -693,7 +708,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             consortia=None,
         )
 
-        expected_updated_publisher_metadata = ({"authors": ["New Test Author"]}, "new.test.doi")
+        expected_updated_publisher_metadata = ({"authors": ["New Test Author"]}, "new.test.doi", 17169328.664)
         self.crossref_provider.fetch_metadata = Mock(return_value=expected_updated_publisher_metadata)
         self.batch_job_provider.start_metadata_update_batch_job = Mock()
         self.business_logic.update_collection_version(version.version_id, body)
@@ -720,7 +735,9 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         )
         self.batch_job_provider.start_metadata_update_batch_job = Mock()
         self.business_logic.generate_dataset_citation = Mock(return_value="test citation")
-        self.crossref_provider.fetch_metadata = Mock(return_value=({"authors": ["New Test Author"]}, "new.test.doi"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=({"authors": ["New Test Author"]}, "new.test.doi", 17169328.664)
+        )
 
         self.business_logic.update_collection_version(revision.version_id, body)
         assert self.batch_job_provider.start_metadata_update_batch_job.call_count == 2
@@ -749,7 +766,9 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             links=[Link("new test doi", "DOI", "http://doi.org/new.test.doi")],
             consortia=None,
         )
-        self.crossref_provider.fetch_metadata = Mock(return_value=({"authors": ["New Test Author"]}, "new.test.doi"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=({"authors": ["New Test Author"]}, "new.test.doi", 17169328.664)
+        )
 
         with self.assertRaises(CollectionUpdateException):
             self.business_logic.update_collection_version(revision.version_id, body)
@@ -2355,6 +2374,312 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         self.assertEqual(dataset_0.canonical_dataset.published_at, published_collection.published_at)
         self.assertEqual(dataset_1.canonical_dataset.published_at, published_collection.published_at)
+
+    def test_publish_new_collection_no_doi_crossref_not_checked_ok(self):
+        """
+        When publishing a new collection without a DOI, no Crossref check should be made.
+        """
+
+        # Create an unpublished collection without a DOI.
+        collection = self.initialize_unpublished_collection()
+
+        # Mock the Crossref check.
+        self.crossref_provider.fetch_metadata = Mock()
+
+        # Publish the collection.
+        self.business_logic.publish_collection_version(collection.version_id)
+
+        # Confirm Crossref was not called.
+        self.crossref_provider.fetch_metadata.assert_not_called()
+
+    def test_publish_private_collection_crossref_checked_ok(self):
+        """
+        When publishing a new collection with a DOI, a Crossref check should be made.
+        """
+
+        # Mock the Crossref check.
+        doi_curie = "test/doi"
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=({"authors": ["Test Author"]}, doi_curie, 17169328.664)
+        )
+
+        # Create a private collection with a DOI.
+        links = [Link("test doi", "DOI", f"https://doi.org/{doi_curie}")]
+        collection_version = self.initialize_unpublished_collection(links=links)
+
+        # Publish the private collection.
+        self.business_logic.publish_collection_version(collection_version.version_id)
+
+        # Confirm Crossref was called.
+        self.crossref_provider.fetch_metadata.assert_called_once()
+
+    def test_publish_private_collection_same_doi_publisher_metadata_not_updated_ok(self):
+        """
+        When publishing a private collection - and there is no change in DOI - publisher metadata should not
+        be updated if the deposited date is before the created at date of the corresponding collection.
+        """
+
+        # Get the time before the collection is created.
+        before_created_at = datetime.utcnow().timestamp()
+
+        # Create a private collection with a DOI.
+        doi_curie = "test/doi"
+        links = [Link("test doi", "DOI", f"https://doi.org/{doi_curie}")]
+        collection_version = self.initialize_unpublished_collection(links=links)
+
+        # Mock the Crossref update, and set the deposited date to be before the created at date of the collection.
+        expected_publisher_metadata = {"authors": ["Test Author"]}
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(expected_publisher_metadata, doi_curie, before_created_at)
+        )
+
+        # Mock the publisher metadata update.
+        self.database_provider.save_collection_publisher_metadata = Mock()
+
+        # Publish the private collection.
+        self.business_logic.publish_collection_version(collection_version.version_id)
+
+        # Confirm Crossref was called.
+        self.crossref_provider.fetch_metadata.assert_called_once()
+
+        # Confirm the metadata was not updated.
+        self.database_provider.save_collection_publisher_metadata.assert_not_called()
+
+    def test_publish_private_collection_same_doi_publisher_metadata_updated_ok(self):
+        """
+        When publishing a private collection - and there is no change in DOI - publisher metadata should be
+        updated if the deposited date is after the created at date of the corresponding collection.
+        """
+
+        # Create a private collection.
+        doi_curie = "test/doi"
+        links = [Link("test doi", "DOI", f"https://doi.org/{doi_curie}")]
+        collection_version = self.initialize_unpublished_collection(links=links)
+
+        # Get the time after the collection has been created.
+        after_created_at = datetime.utcnow().timestamp()
+
+        # Mock the Crossref update, and set the deposited date to be after the created at date of the collection.
+        expected_publisher_metadata = {"authors": ["Test Author"]}
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(expected_publisher_metadata, doi_curie, after_created_at)
+        )
+
+        # Mock the publisher metadata update.
+        self.database_provider.save_collection_publisher_metadata = Mock()
+
+        # Publish the private collection.
+        self.business_logic.publish_collection_version(collection_version.version_id)
+
+        # Confirm Crossref was called.
+        self.crossref_provider.fetch_metadata.assert_called_once()
+
+        # Confirm the publisher metadata was updated.
+        self.database_provider.save_collection_publisher_metadata.assert_called_once()
+
+    def test_publish_revision_no_doi_crossref_not_checked_ok(self):
+        """
+        Crossref should not be called to check for updates to the publisher metadata when publishing
+        a revision that has no DOI.
+        """
+
+        # Create a revision without a DOI.
+        _, revision = self.initialize_collection_with_an_unpublished_revision()
+
+        # Mock the Crossref check.
+        self.crossref_provider.fetch_metadata = Mock()
+
+        # Publish the revision.
+        self.business_logic.publish_collection_version(revision.version_id)
+
+        # Confirm Crossref was not called.
+        self.crossref_provider.fetch_metadata.assert_not_called()
+
+    def test_publish_revision_crossref_checked_ok(self):
+        """
+        Crossref should be called to check for updates to the publisher metadata when publishing
+        a revision that has a DOI.
+        """
+
+        # Mock the Crossref check.
+        doi_curie = "test/doi"
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=({"authors": ["Test Author"]}, doi_curie, 17169328.664)
+        )
+
+        # Create a revision with a DOI.
+        links = [Link("test doi", "DOI", f"https://doi.org/{doi_curie}")]
+        _, revision = self.initialize_collection_with_an_unpublished_revision(links=links)
+
+        # Reset the Crossref check so we can check it on publish.
+        self.crossref_provider.fetch_metadata.reset_mock()
+
+        # Publish the revision.
+        self.business_logic.publish_collection_version(revision.version_id)
+
+        # Confirm Crossref was called.
+        self.crossref_provider.fetch_metadata.assert_called_once()
+
+    def test_publish_revision_changed_doi_collection_updated_ok(self):
+        """
+        When publishing a revision - and there is a change in DOI - collection and artifacts should be updated.
+        """
+
+        # Mock the Crossref check.
+        doi_curie = "test/doi"
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=({"authors": ["Test Author"]}, doi_curie, 17169328.664)
+        )
+
+        # Create a revision with a DOI.
+        links = [Link("test doi", "DOI", f"https://doi.org/{doi_curie}")]
+        _, revision = self.initialize_collection_with_an_unpublished_revision(links=links)
+
+        # Mock a DOI change from Crossref.
+        new_doi_curie = "new/test/doi"
+        self.crossref_provider.fetch_metadata.reset_mock()
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=({"authors": ["Test Author"]}, new_doi_curie, 17169328.664)
+        )
+
+        # Mock the call to update the collection and artifacts.
+        self.business_logic.update_collection_version = Mock()
+
+        # Mock the publisher metadata update.
+        self.database_provider.save_collection_publisher_metadata = Mock()
+
+        # Publish the revision.
+        with self.assertRaises(CollectionPublishException):
+            self.business_logic.publish_collection_version(revision.version_id)
+
+        # Confirm Crossref was called.
+        self.crossref_provider.fetch_metadata.assert_called_once()
+
+        # Confirm collection (and artifacts) update was called.
+        self.business_logic.update_collection_version.assert_called_once()
+
+        # Confirm the metadata was not updated.
+        self.database_provider.save_collection_publisher_metadata.assert_not_called()
+
+    def test_publish_revision_same_doi_publisher_metadata_not_updated_ok(self):
+        """
+        When publishing a revision - and there is no change in DOI - publisher metadata should not be
+        updated if the deposited date is before the revised at or originally published at date of the
+        corresponding collection.
+        """
+
+        # Get the time before the collection is published.
+        before_published_at = datetime.utcnow().timestamp()
+
+        # Create a revision with a DOI.
+        doi_curie = "test/doi"
+        links = [Link("test doi", "DOI", f"https://doi.org/{doi_curie}")]
+        _, revision = self.initialize_collection_with_an_unpublished_revision(links=links)
+
+        # Mock the Crossref update, and set the deposited date to be before the published date of the collection.
+        expected_publisher_metadata = {"authors": ["Test Author"]}
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(expected_publisher_metadata, doi_curie, before_published_at)
+        )
+
+        # Mock the publisher metadata update.
+        self.database_provider.save_collection_publisher_metadata = Mock()
+
+        # Publish the revision.
+        self.business_logic.publish_collection_version(revision.version_id)
+
+        # Confirm Crossref was called.
+        self.crossref_provider.fetch_metadata.assert_called_once()
+
+        # Confirm the metadata was not updated.
+        self.database_provider.save_collection_publisher_metadata.assert_not_called()
+
+    def test_publish_revision_same_doi_publisher_metadata_updated_ok(self):
+        """
+        When publishing a revision - and there is no change in DOI - publisher metadata should be updated
+        if the deposited date is after the revised at or published at date of the corresponding collection.
+        """
+
+        # Create a published collection.
+        doi_curie = "test/doi"
+        links = [Link("test doi", "DOI", f"https://doi.org/{doi_curie}")]
+        collection = self.initialize_published_collection(links=links)
+
+        # Get the time after the collection has been published.
+        after_published_at = datetime.utcnow().timestamp()
+
+        # Create a revision.
+        revision = self.business_logic.create_collection_version(collection.collection_id)
+
+        # Mock the Crossref update, and set the deposited date to be after the published date of the collection.
+        expected_publisher_metadata = {"authors": ["Test Author"]}
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(expected_publisher_metadata, doi_curie, after_published_at)
+        )
+
+        # Mock the publisher metadata update.
+        self.database_provider.save_collection_publisher_metadata = Mock()
+
+        # Publish the revision.
+        self.business_logic.publish_collection_version(revision.version_id)
+
+        # Confirm Crossref was called.
+        self.crossref_provider.fetch_metadata.assert_called_once()
+
+        # Confirm the publisher metadata was updated.
+        self.database_provider.save_collection_publisher_metadata.assert_called_once()
+
+    def test_update_crossref_metadata_same_doi_returns_none_ok(self):
+        """
+        The check for changes in Crossref returns None if there is no change between the existing DOI and the
+        DOI returned from Crossref.
+        """
+
+        # Mock the Crossref check.
+        doi_curie = "test/doi"
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=({"authors": ["Test Author"]}, doi_curie, 17169328.664)
+        )
+
+        # Create a revision with a DOI.
+        links = [Link("test doi", "DOI", f"https://doi.org/{doi_curie}")]
+        _, revision = self.initialize_collection_with_an_unpublished_revision(links=links)
+
+        # Check Crossref for updates.
+        doi_update = self.business_logic._update_crossref_metadata(revision, datetime.utcnow())
+
+        # Confirm the returned DOI update is None.
+        self.assertIsNone(doi_update)
+
+    def test_update_crossref_metadata_changed_doi_returns_doi_update_ok(self):
+        """
+        The check for changes in Crossref returns the existing DOI and the returned Crossref DOI if there is a
+        change between the two.
+        """
+
+        # Mock the Crossref check.
+        doi_curie = "test/doi"
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=({"authors": ["Test Author"]}, doi_curie, 17169328.664)
+        )
+
+        # Create a revision with a DOI.
+        links = [Link("test doi", "DOI", f"https://doi.org/{doi_curie}")]
+        _, revision = self.initialize_collection_with_an_unpublished_revision(links=links)
+
+        # Mock a DOI change from Crossref.
+        new_doi_curie = "new/test/doi"
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=({"authors": ["Test Author"]}, new_doi_curie, 17169328.664)
+        )
+
+        # Check Crossref for updates.
+        doi_update = self.business_logic._update_crossref_metadata(revision, datetime.utcnow())
+
+        # Confirm the DOI update is not None, and the existing and new DOI are returned.
+        self.assertIsNotNone(doi_update)
+        self.assertEqual(doi_update[0], f"https://doi.org/{doi_curie}")
+        self.assertEqual(doi_update[1], f"https://doi.org/{new_doi_curie}")
 
 
 class TestCollectionUtilities(BaseBusinessLogicTestCase):
