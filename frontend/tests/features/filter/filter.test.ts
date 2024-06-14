@@ -4,9 +4,7 @@
 
 // App dependencies
 import { expect } from "@playwright/test";
-import { PublisherMetadata } from "src/common/entities";
 import {
-  buildSummaryCitation,
   calculateMonthsSincePublication,
   calculateRecency,
   CollectionResponse,
@@ -140,40 +138,6 @@ describe("filter", () => {
         collection.publisher_metadata
       );
       expect(recency).toEqual(publishedAt);
-    });
-  });
-  describe("Build Summary Citation", () => {
-    test("builds summary citation for consortium first author", () => {
-      const consortiumName = "The Tabula Sapiens Consortium";
-      const journal = "bioRxiv";
-      const year = 2022;
-      const publisherMetadata = {
-        authors: [
-          { name: consortiumName },
-          { family: "Quake", given: "Stephen R" },
-        ],
-        journal: journal,
-        published_year: year,
-      } as PublisherMetadata;
-      const summaryCitation = buildSummaryCitation(publisherMetadata);
-      expect(summaryCitation).toEqual(
-        `${consortiumName} et al. (${year}) ${journal}`
-      );
-    });
-    test("builds summary citation for person first author", () => {
-      const family = "Quake";
-      const journal = "bioRxiv";
-      const year = 2022;
-      const publisherMetadata = {
-        authors: [
-          { family: family, given: "Stephen R" },
-          { name: "The Tabula Sapiens Consortium" },
-        ],
-        journal: journal,
-        published_year: year,
-      } as PublisherMetadata;
-      const summaryCitation = buildSummaryCitation(publisherMetadata);
-      expect(summaryCitation).toEqual(`${family} et al. (${year}) ${journal}`);
     });
   });
   describe("Process tissue type", () => {

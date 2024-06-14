@@ -9,6 +9,7 @@ from unittest.mock import Mock, patch
 from furl import furl
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
+from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.layers.business.entities import DatasetArtifactDownloadData
 from backend.layers.common.entities import (
     CollectionId,
@@ -22,7 +23,6 @@ from backend.layers.common.entities import (
     OntologyTermId,
     TissueOntologyTermId,
 )
-from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.layers.thirdparty.uri_provider import FileInfo, FileInfoException
 from tests.unit.backend.layers.api.fixture import generate_mock_publisher_metadata
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
@@ -359,7 +359,9 @@ class TestCollection(BaseAPIPortalTest):
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
             "consortia": ["Consortia 1"],
         }
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.1016"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.1016", 17169328.664)
+        )
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
@@ -418,7 +420,9 @@ class TestCollection(BaseAPIPortalTest):
             ],
             "consortia": ["Consortia 3", "Consortia 1"],
         }
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.1016/foo"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.1016/foo", 17169328.664)
+        )
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
@@ -444,7 +448,9 @@ class TestCollection(BaseAPIPortalTest):
             ],
             "consortia": ["Consortia 1"],
         }
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.1016/foo"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.1016/foo", 17169328.664)
+        )
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
@@ -592,7 +598,9 @@ class TestCollection(BaseAPIPortalTest):
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
             "consortia": ["Consortia 1"],
         }
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.1016"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.1016", 17169328.664)
+        )
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
@@ -677,7 +685,9 @@ class TestCollection(BaseAPIPortalTest):
                 {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
             ],
         }
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.1017"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.1017", 17169328.664)
+        )
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(data))
         self.assertEqual(201, response.status_code)
         collection_id = json.loads(response.data)["collection_id"]
@@ -693,6 +703,7 @@ class TestCollection(BaseAPIPortalTest):
         self.assertEqual(body["contact_name"], data["contact_name"])
         self.assertEqual(body["contact_email"], data["contact_email"])
         self.assertEqual(body["consortia"], [])
+        self.assertEqual(body["summary_citation"], "Doe et al. (2021) Nature")
 
         # test that non owners only have read access
         no_cookie_headers = {"host": "localhost", "Content-Type": "application/json"}
@@ -728,7 +739,9 @@ class TestCollection(BaseAPIPortalTest):
             ],
             "consortia": ["Consortia 1   "],
         }
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.1017"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.1017", 17169328.664)
+        )
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(data))
         self.assertEqual(201, response.status_code)
         collection_id = json.loads(response.data)["collection_id"]
@@ -814,8 +827,10 @@ class TestCollection(BaseAPIPortalTest):
         """
         The `collections/index` endpoint should only return public collections
         """
-
-        collection = self.generate_published_collection()
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "123", 17169328.664)
+        )
+        collection = self.generate_published_collection(links=[Link("Link 1", "DOI", "http://doi.org/123")])
         collection_to_tombstone = self.generate_published_collection()
         private_collection = self.generate_unpublished_collection()
 
@@ -842,6 +857,9 @@ class TestCollection(BaseAPIPortalTest):
         # Both `published_at` and `revised_at` should point to the same timestamp
         self.assertEqual(actual_collection["published_at"], collection.published_at.timestamp())
         self.assertEqual(actual_collection["revised_at"], collection.published_at.timestamp())
+        # assert publisher metadata /summary citation are included
+        self.assertDictEqual(actual_collection["publisher_metadata"], collection.publisher_metadata)
+        self.assertEqual(actual_collection["summary_citation"], "Doe et al. (2021) Nature")
 
         # test that the owner of a private collection can not see the private collection
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
@@ -1178,7 +1196,9 @@ class TestUpdateCollection(BaseAPIPortalTest):
             "consortia",
         ]
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.1016"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.1016", 17169328.664)
+        )
 
         # Update the collection
         expected_body = {
@@ -1202,7 +1222,9 @@ class TestUpdateCollection(BaseAPIPortalTest):
     def test__update_collection_strip_string_fields__OK(self):
         collection = self.generate_unpublished_collection()
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.1016"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.1016", 17169328.664)
+        )
 
         # Update the collection
         new_body = {
@@ -1227,7 +1249,9 @@ class TestUpdateCollection(BaseAPIPortalTest):
         )
 
     def test__update_collection_partial__OK(self):
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "123"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "123", 17169328.664)
+        )
         collection = self.generate_unpublished_collection(links=[Link("Link 1", "DOI", "http://doi.org/123")])
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
 
@@ -1366,7 +1390,9 @@ class TestUpdateCollection(BaseAPIPortalTest):
     def test__update_collection_links__OK(self):
         collection = self.generate_unpublished_collection()
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.1016"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.1016", 17169328.664)
+        )
 
         # add links
         links = [{"link_name": "DOI Link", "link_url": "https://doi.org/10.1016", "link_type": "DOI"}]
@@ -1411,7 +1437,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
     def test__update_collection_new_doi_updates_metadata(self):
         # Generate a collection with "Old Journal" as publisher metadata
         self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata("Old Journal"), "123")
+            return_value=(generate_mock_publisher_metadata("Old Journal"), "123", 17169328.664)
         )
         collection = self.generate_unpublished_collection(links=[Link("Link 1", "DOI", "http://doi.org/123")])
 
@@ -1424,7 +1450,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
 
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata("New Journal"), "10.1234/5678")
+            return_value=(generate_mock_publisher_metadata("New Journal"), "10.1234/5678", 17169328.664)
         )
         response = self.app.put(
             f"/dp/v1/collections/{collection.version_id}",
@@ -1444,7 +1470,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
     def test__update_collection_remove_doi_deletes_metadata(self):
         # Generate a collection with "Old Journal" as publisher metadata
         self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata("Old Journal"), "123")
+            return_value=(generate_mock_publisher_metadata("Old Journal"), "123", 17169328.664)
         )
 
         collection = self.generate_unpublished_collection(links=[Link("Link 1", "DOI", "https://doi.org/123")])
@@ -1455,7 +1481,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
 
         # From now on, Crossref will return `New Journal`
         self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata("This will"), "not be called")
+            return_value=(generate_mock_publisher_metadata("This will"), "not be called", 17169328.664)
         )
 
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
@@ -1477,7 +1503,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
     # ✅
     def test__update_collection_same_doi_does_not_update_metadata(self):
         self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata("Old Journal"), "123")
+            return_value=(generate_mock_publisher_metadata("Old Journal"), "123", 17169328.664)
         )
 
         collection = self.generate_unpublished_collection(links=[Link("Link 1", "DOI", "http://doi.org/123")])
@@ -2435,7 +2461,9 @@ class TestRevision(BaseAPIPortalTest):
             Link("Link 1", "OTHER", "http://link.good"),
             Link("DOI Link", "DOI", "http://doi.org/10.1016"),
         ]
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.1016"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.1016", 17169328.664)
+        )
         published_collection = self.generate_published_collection(links=links, add_datasets=2)
 
         # Starts a revision

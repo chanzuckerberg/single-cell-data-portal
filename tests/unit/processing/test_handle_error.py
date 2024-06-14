@@ -89,7 +89,7 @@ def get_collection_version_mock():
             publisher_metadata={},
             published_at=None,
             created_at=datetime.datetime.now(),
-            schema_version="5.0.0",
+            schema_version="5.1.0",
             canonical_collection=CanonicalCollection(
                 id=CollectionId("collection123"),
                 version_id=None,
@@ -98,6 +98,7 @@ def get_collection_version_mock():
                 tombstoned=False,
             ),
             has_custom_dataset_order=False,
+            is_auto_version=False,
             data_submission_policy_version="2.0",
         )
     )
