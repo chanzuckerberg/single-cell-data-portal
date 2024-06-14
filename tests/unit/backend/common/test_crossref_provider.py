@@ -19,7 +19,7 @@ class TestCrossrefProvider(unittest.TestCase):
     @patch("backend.common.providers.crossref_provider.requests.get")
     def test__provider_does_not_call_crossref_in_test(self, mock_get):
         provider = CrossrefProvider()
-        metadata, doi = provider.fetch_metadata("test_doi")
+        metadata, doi, _ = provider.fetch_metadata("test_doi")
         self.assertIsNone(metadata)
         mock_get.assert_not_called()
 
@@ -57,7 +57,7 @@ class TestCrossrefProvider(unittest.TestCase):
 
         mock_get.return_value = response
         provider = CrossrefProvider()
-        res, doi_curie_from_crossref = provider.fetch_metadata("test_doi")
+        res, doi_curie_from_crossref, _ = provider.fetch_metadata("test_doi")
         self.assertEqual("test_doi", doi_curie_from_crossref)
         mock_get.assert_called_once()
 
@@ -101,6 +101,7 @@ class TestCrossrefProvider(unittest.TestCase):
                         "sequence": "additional",
                     },
                 ],
+                "deposited": {"timestamp": 1716932866440},
                 "published-online": {"date-parts": [[2021, 11, 10]]},
                 "container-title": ["Nature"],
                 "subtype": "preprint",
@@ -129,7 +130,7 @@ class TestCrossrefProvider(unittest.TestCase):
 
             responses = [response_published, response_preprint]
             mock_get.side_effect = lambda *x, **y: responses.pop()
-            res, doi_curie_from_crossref = provider.fetch_metadata("preprint_doi")
+            res, doi_curie_from_crossref, _ = provider.fetch_metadata("preprint_doi")
             self.assertEqual("published_doi", doi_curie_from_crossref)
             expected_response = {
                 "authors": [{"given": "Jonathan", "family": "Doe"}, {"given": "Jane", "family": "Doe"}],
@@ -147,7 +148,7 @@ class TestCrossrefProvider(unittest.TestCase):
             self.subTest("Preprint DOI is used when published is referenced but cannot be retrieved")
             and patch.object(provider, "fetch_published_metadata") as fetch_published_metadata_mock
         ):
-            fetch_published_metadata_mock.return_value = (None, None)
+            fetch_published_metadata_mock.return_value = (None, None, None)
 
             preprint_body = copy.deepcopy(body)
             response_preprint = make_response(preprint_body)
@@ -158,7 +159,7 @@ class TestCrossrefProvider(unittest.TestCase):
 
             responses = [response_published, response_preprint]
             mock_get.side_effect = lambda *x, **y: responses.pop()
-            res, doi_curie_from_crossref = provider.fetch_metadata("preprint_doi")
+            res, doi_curie_from_crossref, _ = provider.fetch_metadata("preprint_doi")
             self.assertEqual("preprint_doi", doi_curie_from_crossref)
             expected_response = {
                 "authors": [{"given": "John", "family": "Doe"}, {"given": "Jane", "family": "Doe"}],
@@ -177,6 +178,7 @@ class TestCrossrefProvider(unittest.TestCase):
     def test__provider_parses_authors_and_dates_correctly(self, mock_config, mock_get):
         response = Response()
         response.status_code = 200
+        deposited_timestamp = 17169328664
         response._content = str.encode(
             json.dumps(
                 {
@@ -212,6 +214,7 @@ class TestCrossrefProvider(unittest.TestCase):
                                 "name": "Bat consortium",
                             },
                         ],
+                        "deposited": {"timestamp": deposited_timestamp},
                         "published-online": {"date-parts": [[2021, 11]]},
                         "container-title": ["Nature"],
                     },
@@ -221,7 +224,7 @@ class TestCrossrefProvider(unittest.TestCase):
 
         mock_get.return_value = response
         provider = CrossrefProvider()
-        res, _ = provider.fetch_metadata("test_doi")
+        res, _, deposited_at = provider.fetch_metadata("test_doi")
         mock_get.assert_called_once()
 
         expected_response = {
@@ -242,6 +245,7 @@ class TestCrossrefProvider(unittest.TestCase):
         }
 
         self.assertDictEqual(expected_response, res)
+        self.assertEqual(deposited_timestamp / 1000, deposited_at)
 
     @patch("backend.common.providers.crossref_provider.requests.get")
     @patch("backend.common.providers.crossref_provider.CorporaConfig")
@@ -265,7 +269,7 @@ class TestCrossrefProvider(unittest.TestCase):
 
         mock_get.return_value = response
         provider = CrossrefProvider()
-        author_data, _ = provider.fetch_metadata("test_doi")
+        author_data, _, _ = provider.fetch_metadata("test_doi")
         mock_get.assert_called_once()
 
         expected_response = {
