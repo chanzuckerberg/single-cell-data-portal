@@ -287,17 +287,17 @@ class DatabaseProvider(DatabaseProviderInterface):
             canonical_datasets = canonical_dataset_query.all()
             artifacts = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.id.in_(artifact_ids)).all()
 
-        canonical_map = {canonical_dataset.id: canonical_dataset for canonical_dataset in canonical_datasets}
-        artifact_map = {artifact.id: artifact for artifact in artifacts}
-        for version in versions:
-            canonical_dataset_row = canonical_map.get(version.dataset_id)
-            if not canonical_dataset_row:
-                continue  # Dataset has the wrong tombstone value
-            canonical_dataset = self._row_to_canonical_dataset(canonical_dataset_row)
-            version_artifacts = [
-                self._row_to_dataset_artifact(artifact_map.get(artifact_id)) for artifact_id in version.artifacts
-            ]
-            yield self._row_to_dataset_version(version, canonical_dataset, version_artifacts)
+            canonical_map = {canonical_dataset.id: canonical_dataset for canonical_dataset in canonical_datasets}
+            artifact_map = {artifact.id: artifact for artifact in artifacts}
+            for version in versions:
+                canonical_dataset_row = canonical_map.get(version.dataset_id)
+                if not canonical_dataset_row:
+                    continue  # Dataset has the wrong tombstone value
+                canonical_dataset = self._row_to_canonical_dataset(canonical_dataset_row)
+                version_artifacts = [
+                    self._row_to_dataset_artifact(artifact_map.get(artifact_id)) for artifact_id in version.artifacts
+                ]
+                yield self._row_to_dataset_version(version, canonical_dataset, version_artifacts)
 
     def get_collection_version_with_datasets(
         self, version_id: CollectionVersionId, get_tombstoned: bool = False
@@ -322,14 +322,17 @@ class DatabaseProvider(DatabaseProviderInterface):
             all_collection_versions_rows = (
                 session.query(CollectionVersionTable).filter_by(collection_id=canonical_collection.id.id).all()
             )
-        all_collection_versions = [
-            self._row_to_collection_version(c_v_row, canonical_collection) for c_v_row in all_collection_versions_rows
-        ]
-        dataset_versions = self.get_dataset_versions_by_id(
-            [DatasetVersionId(str(id)) for id in collection_version.datasets]
-        )
-        set_revised_at_field(dataset_versions, all_collection_versions)
-        return self._row_to_collection_version_with_datasets(collection_version, canonical_collection, dataset_versions)
+            all_collection_versions = [
+                self._row_to_collection_version(c_v_row, canonical_collection)
+                for c_v_row in all_collection_versions_rows
+            ]
+            dataset_versions = self.get_dataset_versions_by_id(
+                [DatasetVersionId(str(id)) for id in collection_version.datasets]
+            )
+            set_revised_at_field(dataset_versions, all_collection_versions)
+            return self._row_to_collection_version_with_datasets(
+                collection_version, canonical_collection, dataset_versions
+            )
 
     def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersionWithDatasets]:
         """
@@ -343,16 +346,18 @@ class DatabaseProvider(DatabaseProviderInterface):
             version_id = version_id[0]
             collection_versions = session.query(CollectionVersionTable).filter_by(collection_id=collection_id.id).all()
 
-        collection_version = next(c_v_row for c_v_row in collection_versions if c_v_row.id == version_id)
-        canonical_collection = self.get_canonical_collection(collection_id)
-        dataset_versions = self.get_dataset_versions_by_id(
-            [DatasetVersionId(str(id)) for id in collection_version.datasets]
-        )
-        all_collection_versions = [
-            self._row_to_collection_version(c_v_row, canonical_collection) for c_v_row in collection_versions
-        ]
-        set_revised_at_field(dataset_versions, all_collection_versions)
-        return self._row_to_collection_version_with_datasets(collection_version, canonical_collection, dataset_versions)
+            collection_version = next(c_v_row for c_v_row in collection_versions if c_v_row.id == version_id)
+            canonical_collection = self.get_canonical_collection(collection_id)
+            dataset_versions = self.get_dataset_versions_by_id(
+                [DatasetVersionId(str(id)) for id in collection_version.datasets]
+            )
+            all_collection_versions = [
+                self._row_to_collection_version(c_v_row, canonical_collection) for c_v_row in collection_versions
+            ]
+            set_revised_at_field(dataset_versions, all_collection_versions)
+            return self._row_to_collection_version_with_datasets(
+                collection_version, canonical_collection, dataset_versions
+            )
 
     def get_all_versions_for_collection(
         self, collection_id: CollectionId, get_tombstoned: bool = False
@@ -366,10 +371,10 @@ class DatabaseProvider(DatabaseProviderInterface):
             versions = []
             dataset_version_ids = [DatasetVersionId(str(_id)) for vr in version_rows for _id in vr.datasets]
             datasets = {dv.version_id: dv for dv in self.get_dataset_versions_by_id(dataset_version_ids)}
-        for row in version_rows:
-            ds = [datasets[id] for id in row.datasets]
-            version = self._row_to_collection_version_with_datasets(row, canonical_collection, ds)
-            versions.append(version)
+            for row in version_rows:
+                ds = [datasets[id] for id in row.datasets]
+                version = self._row_to_collection_version_with_datasets(row, canonical_collection, ds)
+                versions.append(version)
         return versions
 
     def get_unpublished_versions_for_collection(
