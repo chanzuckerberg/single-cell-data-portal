@@ -373,12 +373,15 @@ class DatabaseProvider(DatabaseProviderInterface):
             canonical_collection = self.get_canonical_collection(collection_id)
             versions = []
             dataset_version_ids = [DatasetVersionId(str(_id)) for vr in version_rows for _id in vr.datasets]
-            datasets = {dv.version_id: dv for dv in self.get_dataset_versions_by_id(dataset_version_ids)}
+            datasets = {
+                str(dv.version_id): dv
+                for dv in self.get_dataset_versions_by_id(dataset_version_ids, get_tombstoned=get_tombstoned)
+            }
             for row in version_rows:
-                ds = [datasets[id] for id in row.datasets]
+                ds = [datasets[str(id)] for id in row.datasets]
                 version = self._row_to_collection_version_with_datasets(row, canonical_collection, ds)
                 versions.append(version)
-        return versions
+            return versions
 
     def get_unpublished_versions_for_collection(
         self, collection_id: CollectionId, get_tombstoned: bool = False
@@ -393,9 +396,12 @@ class DatabaseProvider(DatabaseProviderInterface):
             canonical_collection = self.get_canonical_collection(collection_id)
             versions = []
             dataset_version_ids = [DatasetVersionId(str(_id)) for vr in version_rows for _id in vr.datasets]
-            datasets = {dv.version_id: dv for dv in self.get_dataset_versions_by_id(dataset_version_ids)}
+            datasets = {
+                str(dv.version_id): dv
+                for dv in self.get_dataset_versions_by_id(dataset_version_ids, get_tombstoned=get_tombstoned)
+            }
             for row in version_rows:
-                ds = [datasets[id] for id in row.datasets]
+                ds = [datasets[str(id)] for id in row.datasets]
                 version = self._row_to_collection_version_with_datasets(row, canonical_collection, ds)
                 versions.append(version)
             return versions
@@ -409,9 +415,10 @@ class DatabaseProvider(DatabaseProviderInterface):
             versions = session.query(CollectionVersionTable).all()
 
             # Create a canonical mapping
-            all_canonical_collections = session.query(CollectionTable)
-            if not get_tombstoned:
-                all_canonical_collections = all_canonical_collections.filter(CollectionTable.tombstone.isnot(True))
+            if get_tombstoned:
+                all_canonical_collections = session.query(CollectionTable)
+            else:
+                all_canonical_collections = session.query(CollectionTable).filter(CollectionTable.tombstone.isnot(True))
 
             all_canonical_map = dict()
             for collection_row in all_canonical_collections.all():
@@ -454,9 +461,14 @@ class DatabaseProvider(DatabaseProviderInterface):
         will be present in the CollectionVersion.datasets array for active (mapped) Collection versions.
         """
         with self._manage_session() as session:
-            canonical_collections = session.query(CollectionTable).filter(CollectionTable.version_id.isnot(None))
-            if not get_tombstoned:
-                canonical_collections = canonical_collections.filter_by(tombstone=False)
+            if get_tombstoned:
+                canonical_collections = session.query(CollectionTable).filter(CollectionTable.version_id.isnot(None))
+            else:
+                canonical_collections = (
+                    session.query(CollectionTable)
+                    .filter(CollectionTable.version_id.isnot(None))
+                    .filter_by(tombstone=False)
+                )
 
             mapped_version_ids = {cc.version_id: cc for cc in canonical_collections.all()}
             versions = (
@@ -613,7 +625,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         for d_v_row in dataset_version_rows:
             dataset_version_ids.append(str(d_v_row.id))
             for artifact in d_v_row.artifacts:
-                artifact_ids.append(str(artifact.id))
+                artifact_ids.append(str(artifact))
         artifact_delete_statement = delete(DatasetArtifactTable).where(DatasetArtifactTable.id.in_(artifact_ids))
         session.execute(artifact_delete_statement)
         dataset_version_delete_statement = delete(DatasetVersionTable).where(
