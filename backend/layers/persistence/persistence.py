@@ -275,7 +275,7 @@ class DatabaseProvider(DatabaseProviderInterface):
     ) -> List[DatasetVersion]:
         ids = [dv_id.id for dv_id in ids]
         with self._manage_session() as session:
-            with ServerTiming.time("get dataset versions"):
+            with ServerTiming.time("get-dataset-versions-2"):
                 versions = session.query(DatasetVersionTable).filter(DatasetVersionTable.id.in_(ids)).all()
                 canonical_ids = []
                 artifact_ids = []
@@ -283,18 +283,18 @@ class DatabaseProvider(DatabaseProviderInterface):
                     canonical_ids.append(version.dataset_id)
                     artifact_ids.extend(version.artifacts)
 
-            with ServerTiming.time("get canonical datasets"):
+            with ServerTiming.time("get-canonical-datasets"):
                 canonical_dataset_query = session.query(DatasetTable).filter(DatasetTable.id.in_(canonical_ids))
                 if not get_tombstoned:
                     canonical_dataset_query = canonical_dataset_query.filter(DatasetTable.tombstone.is_(False))
                 canonical_datasets = canonical_dataset_query.all()
                 canonical_map = {canonical_dataset.id: canonical_dataset for canonical_dataset in canonical_datasets}
 
-            with ServerTiming.time("get artifacts"):
+            with ServerTiming.time("get-artifacts"):
                 artifacts = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.id.in_(artifact_ids)).all()
                 artifact_map = {artifact.id: artifact for artifact in artifacts}
 
-            with ServerTiming.time("hydrate dataset versions"):
+            with ServerTiming.time("hydrate-dataset-versions"):
                 datasets = []
                 for version in versions:
                     canonical_dataset_row = canonical_map.get(version.dataset_id)
@@ -418,9 +418,10 @@ class DatabaseProvider(DatabaseProviderInterface):
         TODO: for performance reasons, it might be necessary to add a filtering parameter here.
         """
         with self._manage_session() as session:
-            versions = session.query(CollectionVersionTable).all()
+            with ServerTiming.time("Get-collection-versions"):
+                versions = session.query(CollectionVersionTable).all()
 
-            with ServerTiming.time("Create a canonical mapping"):
+            with ServerTiming.time("Get-collection-canonical"):
                 if get_tombstoned:
                     all_canonical_collections = session.query(CollectionTable)
                 else:
@@ -443,16 +444,17 @@ class DatabaseProvider(DatabaseProviderInterface):
                     )
 
             result = []
-            with ServerTiming.time("all_dataset_tombstones and all_dataset_version_mappings mapping"):
+            with ServerTiming.time("get_dataset_tombstones"):
                 all_dataset_tombstones = {
                     str(dataset.id)
                     for dataset in session.query(DatasetTable).filter(DatasetTable.tombstone.is_(True)).all()
                 }
+            with ServerTiming.time("get_dataset_versions_1"):
                 all_dataset_version_mappings = {
                     str(dataset_version.id): str(dataset_version.dataset_id)
                     for dataset_version in session.query(DatasetVersionTable).all()
                 }
-            with ServerTiming.time("Filtering and mapping"):
+            with ServerTiming.time("Filtering-and-mapping"):
                 for v in versions:
                     include_dataset_version_ids = []
                     if str(v.collection_id) in all_canonical_map:
