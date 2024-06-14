@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Iterable, List, Optional, Tuple, Union
 
-from sqlalchemy import create_engine, delete
+from sqlalchemy import create_engine, delete, update
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 from tenacity import retry
@@ -367,13 +367,13 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             version_rows = session.query(CollectionVersionTable).filter_by(collection_id=collection_id.id).all()
-            canonical_collection = self.get_canonical_collection(collection_id)
-            versions = list()
-            for i in range(len(version_rows)):
-                datasets = self.get_dataset_versions_by_id(
-                    [DatasetVersionId(str(id)) for id in version_rows[i].datasets], get_tombstoned=get_tombstoned
-                )
-                version = self._row_to_collection_version_with_datasets(version_rows[i], canonical_collection, datasets)
+            canonical_collection = self.get_canonical_collection(collection_id)  # this also make a session call
+            versions = []
+            dataset_version_ids = [DatasetVersionId(str(_id)) for vr in version_rows for _id in vr.datasets]
+            datasets = {dv.version_id: dv for dv in self.get_dataset_versions_by_id(dataset_version_ids)}
+            for row in version_rows:
+                ds = [datasets[id] for id in row.datasets]
+                version = self._row_to_collection_version_with_datasets(row, canonical_collection, ds)
                 versions.append(version)
             return versions
 
@@ -406,10 +406,9 @@ class DatabaseProvider(DatabaseProviderInterface):
             versions = session.query(CollectionVersionTable).all()
 
             # Create a canonical mapping
-            if get_tombstoned:
-                all_canonical_collections = session.query(CollectionTable)
-            else:
-                all_canonical_collections = session.query(CollectionTable).filter(CollectionTable.tombstone.isnot(True))
+            all_canonical_collections = session.query(CollectionTable)
+            if not get_tombstoned:
+                all_canonical_collections = all_canonical_collections.filter(CollectionTable.tombstone.isnot(True))
 
             all_canonical_map = dict()
             for collection_row in all_canonical_collections.all():
@@ -606,11 +605,18 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Delete DatasetVersionTable rows (and their dependent DatasetArtifactTable rows)
         """
+        dataset_version_ids = []
+        artifact_ids = []
         for d_v_row in dataset_version_rows:
-            ids = [str(_id) for _id in d_v_row.artifacts]
-            artifact_delete_statement = delete(DatasetArtifactTable).where(DatasetArtifactTable.id.in_(ids))
-            session.execute(artifact_delete_statement)
-            session.delete(d_v_row)
+            dataset_version_ids.append(str(d_v_row.id))
+            for artifact in d_v_row.artifacts:
+                artifact_ids.append(str(artifact.id))
+        artifact_delete_statement = delete(DatasetArtifactTable).where(DatasetArtifactTable.id.in_(artifact_ids))
+        session.execute(artifact_delete_statement)
+        dataset_version_delete_statement = delete(DatasetVersionTable).where(
+            DatasetVersionTable.id.in_(dataset_version_ids)
+        )
+        session.execute(dataset_version_delete_statement)
         session.flush()
 
     def finalize_collection_version(
@@ -665,11 +671,16 @@ class DatabaseProvider(DatabaseProviderInterface):
             # get all dataset versions for the datasets that are being tombstoned
             dataset_version_ids_to_delete_from_s3 = []
             if dataset_ids_to_tombstone:
-                datasets = session.query(DatasetTable).filter(DatasetTable.id.in_(dataset_ids_to_tombstone)).all()
-                for dataset in datasets:
-                    dataset.tombstone = True
-                    dataset_all_versions = session.query(DatasetVersionTable).filter_by(dataset_id=dataset.id).all()
-                    dataset_version_ids_to_delete_from_s3.extend([dv.id for dv in dataset_all_versions])
+                tombstone_dataset_statement = (
+                    update(DatasetTable).where(DatasetTable.id.in_(dataset_ids_to_tombstone)).values(tombstone=True)
+                )
+                session.execute(tombstone_dataset_statement)
+                dataset_all_version_ids = (
+                    session.query(DatasetVersionTable)
+                    .filter(DatasetVersionTable.dataset_id.in_(dataset_ids_to_tombstone))
+                    .all()
+                )
+                dataset_version_ids_to_delete_from_s3.extend(dataset_all_version_ids)
 
             # update dataset versions for datasets that are not being tombstoned
             dataset_version_ids = session.query(CollectionVersionTable.datasets).filter_by(id=version_id.id).one()[0]
@@ -998,14 +1009,16 @@ class DatabaseProvider(DatabaseProviderInterface):
             # Confirm collection version datasets length matches given dataset version IDs length.
             if len(collection_version.datasets) != len(dataset_version_ids):
                 raise ValueError(
-                    f"Dataset Version IDs length does not match Collection Version {collection_version_id} Datasets length"
+                    f"Dataset Version IDs length does not match Collection Version {collection_version_id} Datasets "
+                    f"length"
                 )
 
             # Confirm all given dataset version IDs belong to collection version.
             if {dv_id.id for dv_id in dataset_version_ids} != {str(d) for d in collection_version.datasets}:
                 raise ValueError("Dataset Version IDs do not match saved Collection Version Dataset IDs")
 
-            # Replace collection version datasets with given, ordered dataset version IDs and update custom ordered flag.
+            # Replace collection version datasets with given, ordered dataset version IDs and update custom ordered
+            # flag.
             updated_datasets = [uuid.UUID(dv_id.id) for dv_id in dataset_version_ids]
             collection_version.datasets = updated_datasets
             collection_version.has_custom_dataset_order = True
