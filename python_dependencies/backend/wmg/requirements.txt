@@ -1,6 +1,6 @@
 pandas~=2.2.2
 pydantic~=1.10.7
-numba~=0.59.1
+numba~=0.60.0
 cellxgene_ontology_guide~=1.0.0
 tiledb
 psutil~=5.9.8
