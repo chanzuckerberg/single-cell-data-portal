@@ -691,11 +691,11 @@ class DatabaseProvider(DatabaseProviderInterface):
                 )
                 session.execute(tombstone_dataset_statement)
                 dataset_all_version_ids = (
-                    session.query(DatasetVersionTable)
+                    session.query(DatasetVersionTable.id)
                     .filter(DatasetVersionTable.dataset_id.in_(dataset_ids_to_tombstone))
                     .all()
                 )
-                dataset_version_ids_to_delete_from_s3.extend(dataset_all_version_ids)
+                dataset_version_ids_to_delete_from_s3.extend(str(dv_id) for dv_id in dataset_all_version_ids)
 
             # update dataset versions for datasets that are not being tombstoned
             dataset_version_ids = session.query(CollectionVersionTable.datasets).filter_by(id=version_id.id).one()[0]

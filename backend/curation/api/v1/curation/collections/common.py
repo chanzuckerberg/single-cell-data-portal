@@ -204,7 +204,8 @@ def reshape_datasets_for_curation_api(
             dataset_versions.append(dv)
         else:
             dataset_version_ids.append(dv)
-    dataset_versions.extend(business_logic.database_provider.get_dataset_versions_by_id(dataset_version_ids))
+    if dataset_version_ids:
+        dataset_versions.extend(business_logic.database_provider.get_dataset_versions_by_id(dataset_version_ids))
     for dv in dataset_versions:
         reshaped_dataset = reshape_dataset_for_curation_api(
             dv, use_canonical_url, preview, as_canonical=not as_version, is_published=is_published
