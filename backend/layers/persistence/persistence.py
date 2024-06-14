@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Iterable, List, Optional, Tuple, Union
 
+from server_timing import Timing as ServerTiming
 from sqlalchemy import create_engine, delete, update
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
@@ -274,32 +275,37 @@ class DatabaseProvider(DatabaseProviderInterface):
     ) -> List[DatasetVersion]:
         ids = [dv_id.id for dv_id in ids]
         with self._manage_session() as session:
-            versions = session.query(DatasetVersionTable).filter(DatasetVersionTable.id.in_(ids)).all()
-            canonical_ids = []
-            artifact_ids = []
-            for version in versions:
-                canonical_ids.append(version.dataset_id)
-                artifact_ids.extend(version.artifacts)
+            with ServerTiming.time("get dataset versions"):
+                versions = session.query(DatasetVersionTable).filter(DatasetVersionTable.id.in_(ids)).all()
+                canonical_ids = []
+                artifact_ids = []
+                for version in versions:
+                    canonical_ids.append(version.dataset_id)
+                    artifact_ids.extend(version.artifacts)
 
-            canonical_dataset_query = session.query(DatasetTable).filter(DatasetTable.id.in_(canonical_ids))
-            if not get_tombstoned:
-                canonical_dataset_query = canonical_dataset_query.filter(DatasetTable.tombstone.is_(False))
-            canonical_datasets = canonical_dataset_query.all()
-            canonical_map = {canonical_dataset.id: canonical_dataset for canonical_dataset in canonical_datasets}
+            with ServerTiming.time("get canonical datasets"):
+                canonical_dataset_query = session.query(DatasetTable).filter(DatasetTable.id.in_(canonical_ids))
+                if not get_tombstoned:
+                    canonical_dataset_query = canonical_dataset_query.filter(DatasetTable.tombstone.is_(False))
+                canonical_datasets = canonical_dataset_query.all()
+                canonical_map = {canonical_dataset.id: canonical_dataset for canonical_dataset in canonical_datasets}
 
-            artifacts = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.id.in_(artifact_ids)).all()
-            artifact_map = {artifact.id: artifact for artifact in artifacts}
+            with ServerTiming.time("get artifacts"):
+                artifacts = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.id.in_(artifact_ids)).all()
+                artifact_map = {artifact.id: artifact for artifact in artifacts}
 
-            datasets = []
-            for version in versions:
-                canonical_dataset_row = canonical_map.get(version.dataset_id)
-                if not canonical_dataset_row:
-                    continue  # Dataset has the wrong tombstone value
-                canonical_dataset = self._row_to_canonical_dataset(canonical_dataset_row)
-                version_artifacts = [
-                    self._row_to_dataset_artifact(artifact_map.get(artifact_id)) for artifact_id in version.artifacts
-                ]
-                datasets.append(self._row_to_dataset_version(version, canonical_dataset, version_artifacts))
+            with ServerTiming.time("hydrate dataset versions"):
+                datasets = []
+                for version in versions:
+                    canonical_dataset_row = canonical_map.get(version.dataset_id)
+                    if not canonical_dataset_row:
+                        continue  # Dataset has the wrong tombstone value
+                    canonical_dataset = self._row_to_canonical_dataset(canonical_dataset_row)
+                    version_artifacts = [
+                        self._row_to_dataset_artifact(artifact_map.get(artifact_id))
+                        for artifact_id in version.artifacts
+                    ]
+                    datasets.append(self._row_to_dataset_version(version, canonical_dataset, version_artifacts))
         return datasets
 
     def get_collection_version_with_datasets(
@@ -414,43 +420,51 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             versions = session.query(CollectionVersionTable).all()
 
-            # Create a canonical mapping
-            if get_tombstoned:
-                all_canonical_collections = session.query(CollectionTable)
-            else:
-                all_canonical_collections = session.query(CollectionTable).filter(CollectionTable.tombstone.isnot(True))
+            with ServerTiming.time("Create a canonical mapping"):
+                if get_tombstoned:
+                    all_canonical_collections = session.query(CollectionTable)
+                else:
+                    all_canonical_collections = session.query(CollectionTable).filter(
+                        CollectionTable.tombstone.isnot(True)
+                    )
 
-            all_canonical_map = dict()
-            for collection_row in all_canonical_collections.all():
-                all_canonical_map[str(collection_row.id)] = CanonicalCollection(
-                    CollectionId(str(collection_row.id)),
-                    None if collection_row.version_id is None else CollectionVersionId(str(collection_row.version_id)),
-                    collection_row.originally_published_at,
-                    collection_row.revised_at,
-                    collection_row.tombstone,
-                )
+                all_canonical_map = dict()
+                for collection_row in all_canonical_collections.all():
+                    all_canonical_map[str(collection_row.id)] = CanonicalCollection(
+                        CollectionId(str(collection_row.id)),
+                        (
+                            None
+                            if collection_row.version_id is None
+                            else CollectionVersionId(str(collection_row.version_id))
+                        ),
+                        collection_row.originally_published_at,
+                        collection_row.revised_at,
+                        collection_row.tombstone,
+                    )
 
             result = []
-            all_dataset_tombstones = {
-                str(dataset.id)
-                for dataset in session.query(DatasetTable).filter(DatasetTable.tombstone.is_(True)).all()
-            }
-            all_dataset_version_mappings = {
-                str(dataset_version.id): str(dataset_version.dataset_id)
-                for dataset_version in session.query(DatasetVersionTable).all()
-            }
-            for v in versions:
-                include_dataset_version_ids = []
-                if str(v.collection_id) in all_canonical_map:
-                    for dataset_version_id in v.datasets:
-                        dataset_version_id_str = str(dataset_version_id)
-                        dataset_id = all_dataset_version_mappings[dataset_version_id_str]
-                        if dataset_id:
-                            if not get_tombstoned and dataset_id in all_dataset_tombstones:
-                                continue
-                            include_dataset_version_ids.append(dataset_version_id)
-                    v.datasets = include_dataset_version_ids
-                    result.append(self._row_to_collection_version(v, all_canonical_map[str(v.collection_id)]))
+            with ServerTiming.time("all_dataset_tombstones and all_dataset_version_mappings mapping"):
+                all_dataset_tombstones = {
+                    str(dataset.id)
+                    for dataset in session.query(DatasetTable).filter(DatasetTable.tombstone.is_(True)).all()
+                }
+                all_dataset_version_mappings = {
+                    str(dataset_version.id): str(dataset_version.dataset_id)
+                    for dataset_version in session.query(DatasetVersionTable).all()
+                }
+            with ServerTiming.time("Filtering and mapping"):
+                for v in versions:
+                    include_dataset_version_ids = []
+                    if str(v.collection_id) in all_canonical_map:
+                        for dataset_version_id in v.datasets:
+                            dataset_version_id_str = str(dataset_version_id)
+                            dataset_id = all_dataset_version_mappings[dataset_version_id_str]
+                            if dataset_id:
+                                if not get_tombstoned and dataset_id in all_dataset_tombstones:
+                                    continue
+                                include_dataset_version_ids.append(dataset_version_id)
+                        v.datasets = include_dataset_version_ids
+                        result.append(self._row_to_collection_version(v, all_canonical_map[str(v.collection_id)]))
 
             return result
 
