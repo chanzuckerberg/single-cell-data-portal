@@ -285,10 +285,12 @@ class DatabaseProvider(DatabaseProviderInterface):
             if not get_tombstoned:
                 canonical_dataset_query = canonical_dataset_query.filter(DatasetTable.tombstone.is_(False))
             canonical_datasets = canonical_dataset_query.all()
-            artifacts = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.id.in_(artifact_ids)).all()
-
             canonical_map = {canonical_dataset.id: canonical_dataset for canonical_dataset in canonical_datasets}
+
+            artifacts = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.id.in_(artifact_ids)).all()
             artifact_map = {artifact.id: artifact for artifact in artifacts}
+
+            datasets = []
             for version in versions:
                 canonical_dataset_row = canonical_map.get(version.dataset_id)
                 if not canonical_dataset_row:
@@ -297,7 +299,8 @@ class DatabaseProvider(DatabaseProviderInterface):
                 version_artifacts = [
                     self._row_to_dataset_artifact(artifact_map.get(artifact_id)) for artifact_id in version.artifacts
                 ]
-                yield self._row_to_dataset_version(version, canonical_dataset, version_artifacts)
+                datasets.append(self._row_to_dataset_version(version, canonical_dataset, version_artifacts))
+        return datasets
 
     def get_collection_version_with_datasets(
         self, version_id: CollectionVersionId, get_tombstoned: bool = False
