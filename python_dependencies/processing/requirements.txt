@@ -4,7 +4,7 @@ boto3>=1.11.17
 botocore>=1.14.17
 cellxgene-schema
 dataclasses-json
-ddtrace==2.1.4
+ddtrace==2.9.1
 numba==0.59.1
 numpy==1.26.4
 pandas==1.4.4
@@ -13,7 +13,7 @@ psycopg2-binary==2.*
 pyarrow>=1.0
 pydantic>=1.9.0
 python-json-logger
-pyvips==2.2.2
+pyvips==2.2.3
 requests>=2.22.0
 rpy2==3.5.16
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
