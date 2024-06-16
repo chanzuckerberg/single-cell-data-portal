@@ -6,7 +6,7 @@
   "author": "Chan Zuckerberg Initiative",
   "dependencies": {
     "@blueprintjs/core": "^5.8.2",
-    "@blueprintjs/icons": "^5.7.0",
+    "@blueprintjs/icons": "^5.9.0",
     "@blueprintjs/select": "^5.0.23",
     "@czi-sds/components": "^20.4.0",
     "@czi-sds/data-viz": "^0.3.0",
