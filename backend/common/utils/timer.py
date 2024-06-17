@@ -2,19 +2,6 @@ import logging
 import time
 from contextlib import contextmanager
 
-try:
-    from server_timing import Timing as ServerTiming
-except ImportError:
-
-    class ServerTiming:
-        """this is a dummy class to avoid import errors for application that do not return API timing"""
-
-        @staticmethod
-        @contextmanager
-        def time(key):  # noqa
-            yield
-
-
 logging.basicConfig(level=logging.INFO)
 
 
@@ -22,8 +9,7 @@ logging.basicConfig(level=logging.INFO)
 def log_time_taken(description: str = "Code block"):
     start_time = time.time()
     try:
-        with ServerTiming.time(description):
-            yield
+        yield
     finally:
         end_time = time.time()
         elapsed_time = end_time - start_time
