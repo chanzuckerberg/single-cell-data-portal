@@ -52,6 +52,7 @@ const DifferentialExpressionResults = ({
   setEffectSizeFilter,
   sortDirection,
   setSortDirection,
+  errorMessage,
 }: Props) => {
   const {
     page,
@@ -233,7 +234,15 @@ const DifferentialExpressionResults = ({
           <QueryGroupTags queryGroupsWithNames={queryGroupsWithNames} />
         </FilterTagsWrapper>
       </CellGroupWrapper>
-      {nCellsOverlap > 0 && (
+      {!!errorMessage && (
+        <StyledCallout
+          data-testid={DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT}
+          intent="negative"
+        >
+          {errorMessage}
+        </StyledCallout>
+      )}
+      {nCellsOverlap > 0 && !errorMessage && (
         <StyledCallout
           data-testid={DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT}
           intent={parseFloat(overlapPercent) > 25 ? "notice" : "info"}

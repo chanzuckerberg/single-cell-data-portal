@@ -8,6 +8,7 @@ import {
   fontBodyXxs,
 } from "@czi-sds/components";
 import { gray500, primary400 } from "src/common/theme";
+import { SvgIcon } from "@mui/material";
 
 const LEFT_PANEL_WIDTH = "60vw";
 const RIGHT_PANEL_WIDTH = "40vw";
@@ -113,4 +114,11 @@ export const Spinner = styled.div`
   border-radius: 50%;
   border-left-color: #000;
   animation: ${spin} 0.5s linear infinite;
+`;
+
+export const StyledSvgIcon = styled(SvgIcon)`
+  color: inherit;
+  &:active {
+    color: ${primary400};
+  }
 `;

@@ -146,7 +146,18 @@ module.exports = {
       ),
     },
   },
+
   webpack: (config, { webpack }) => {
+    config.module.rules.push({
+      test: /\.svg$/,
+      use: ["@svgr/webpack", "url-loader"],
+      type: "javascript/auto",
+      issuer: {
+        and: [/\.(ts|tsx|js|jsx|md|mdx)$/],
+      },
+    });
+
+    // Return the updated config with the existing plugins
     return {
       ...config,
       plugins: [

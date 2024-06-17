@@ -17,6 +17,7 @@ import Organism from "./components/Organism";
 import DeResults from "./components/DeResults";
 import Loader from "./components/Loader";
 import Method from "./components/Method";
+import OverlapBehavior from "./components/OverlapBehavior";
 import {
   DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER,
   DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER,
@@ -103,6 +104,7 @@ export default function DifferentialExpression(): JSX.Element {
             <FlexRow>
               <Organism />
               <Method />
+              <OverlapBehavior />
             </FlexRow>
             <FlexRow>
               <div data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER}>
@@ -172,3 +174,81 @@ export default function DifferentialExpression(): JSX.Element {
     </TwoPanelLayout>
   );
 }
+
+// interface CirclesOverlapBothProps {
+//   isActive: boolean;
+//   onClick: () => void;
+// }
+// const CirclesOverlapBoth = ({ isActive, onClick }: CirclesOverlapBothProps) => {
+//   const fillColor = isActive ? "blue" : "gray"; // Change colors as needed
+//   return (
+//     <div onClick={onClick}>
+//       <Icon sdsIcon="CirclesOverlap2" sdsSize="s" sdsType="button" />
+//     </div>
+//   );
+// };
+
+// interface CirclesOverlapLeftProps {
+//   isActive: boolean;
+//   onClick: () => void;
+// }
+// const CirclesOverlapLeft = ({ isActive, onClick }: CirclesOverlapLeftProps) => {
+//   const fillColor = isActive ? "blue" : "gray"; // Change colors as needed
+//   return (
+//     <SvgIcon onClick={onClick}>
+//       <svg
+//         width="16"
+//         height="16"
+//         viewBox="0 0 16 16"
+//         xmlns="http://www.w3.org/2000/svg"
+//       >
+//         <path
+//           d="M15.25 8C15.25 10.3333 13.3166 12.25 10.9 12.25C8.48354 12.25 6.55005 10.3333 6.55005 8C6.55005 5.66672 8.48354 3.75 10.9 3.75C13.3166 3.75 15.25 5.66672 15.25 8Z"
+//           fill="white"
+//           stroke={fillColor}
+//           stroke-width="1.5"
+//         />
+//         <path
+//           d="M9.45 8C9.45 10.3333 7.51651 12.25 5.1 12.25C2.68349 12.25 0.75 10.3333 0.75 8C0.75 5.66672 2.68349 3.75 5.1 3.75C7.51651 3.75 9.45 5.66672 9.45 8Z"
+//           fill={fillColor}
+//           stroke={fillColor}
+//           stroke-width="1.5"
+//         />
+//       </svg>
+//     </SvgIcon>
+//   );
+// };
+
+// interface CirclesOverlapRightProps {
+//   isActive: boolean;
+//   onClick: () => void;
+// }
+// const CirclesOverlapRight = ({
+//   isActive,
+//   onClick,
+// }: CirclesOverlapRightProps) => {
+//   const fillColor = isActive ? "blue" : "gray"; // Change colors as needed
+//   return (
+//     <SvgIcon onClick={onClick}>
+//       <svg
+//         width="16"
+//         height="16"
+//         viewBox="0 0 16 16"
+//         xmlns="http://www.w3.org/2000/svg"
+//       >
+//         <path
+//           d="M9.45 8C9.45 10.3333 7.51651 12.25 5.1 12.25C2.68349 12.25 0.75 10.3333 0.75 8C0.75 5.66672 2.68349 3.75 5.1 3.75C7.51651 3.75 9.45 5.66672 9.45 8Z"
+//           fill="white"
+//           stroke={fillColor}
+//           stroke-width="1.5"
+//         />
+//         <path
+//           d="M15.25 8C15.25 10.3333 13.3166 12.25 10.9 12.25C8.48354 12.25 6.55005 10.3333 6.55005 8C6.55005 5.66672 8.48354 3.75 10.9 3.75C13.3166 3.75 15.25 5.66672 15.25 8Z"
+//           fill={fillColor}
+//           stroke={fillColor}
+//           stroke-width="1.5"
+//         />
+//       </svg>
+//     </SvgIcon>
+//   );
+// };

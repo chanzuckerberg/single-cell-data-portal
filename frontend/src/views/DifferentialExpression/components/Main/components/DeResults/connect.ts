@@ -9,6 +9,7 @@ import { EVENTS } from "src/common/analytics/events";
 import { craftPayloadWithQueryGroups } from "../../utils";
 
 export const useConnect = ({ setIsLoading }: Props) => {
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [lfcFilter, setLfcFilter] = useState("");
   const [effectSizeFilter, setEffectSizeFilter] = useState("");
@@ -16,7 +17,11 @@ export const useConnect = ({ setIsLoading }: Props) => {
 
   const [isSourceDatasetSidebarOpen, setIsSourceDatasetSidebarOpen] =
     useState(false);
-  const { data, isLoading: isLoadingRaw } = useDifferentialExpression();
+  const {
+    data,
+    isLoading: isLoadingRaw,
+    errorMessage: errorMessageRaw,
+  } = useDifferentialExpression();
   const {
     differentialExpressionResults: rawDifferentialExpressionResults,
     nOverlap,
@@ -45,6 +50,15 @@ export const useConnect = ({ setIsLoading }: Props) => {
     );
     setDifferentialExpressionResults(formattedResults);
   }, [rawDifferentialExpressionResults, isLoadingRaw, organismId]);
+
+  // Set error message if there is an error and the data is not loading
+  useEffect(() => {
+    if (errorMessageRaw && !isLoadingRaw) {
+      setErrorMessage(errorMessageRaw);
+    } else {
+      setErrorMessage(null);
+    }
+  }, [errorMessageRaw, isLoadingRaw]);
 
   const showEmpty = !queryGroups;
 
@@ -154,5 +168,6 @@ export const useConnect = ({ setIsLoading }: Props) => {
     downloadCSV,
     showEmpty,
     nOverlap,
+    errorMessage,
   };
 };

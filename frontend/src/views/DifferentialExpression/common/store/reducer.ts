@@ -1,3 +1,5 @@
+import { ExcludeOverlappingCells } from "../types";
+
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
   payload: Payload;
@@ -26,6 +28,7 @@ export interface State {
   submittedQueryGroups: QueryGroups | null;
   submittedQueryGroupsWithNames: QueryGroupsWithNames | null;
   snapshotId: string | null;
+  excludeOverlappingCells: ExcludeOverlappingCells;
 }
 
 export const EMPTY_FILTERS = {
@@ -41,6 +44,7 @@ export const EMPTY_FILTERS = {
 export const INITIAL_STATE: State = {
   organismId: null,
   snapshotId: null,
+  excludeOverlappingCells: "excludeTwo",
   queryGroups: { queryGroup1: EMPTY_FILTERS, queryGroup2: EMPTY_FILTERS },
   queryGroupsWithNames: {
     queryGroup1: EMPTY_FILTERS,
@@ -59,6 +63,7 @@ export const REDUCERS = {
   clearQueryGroup2Filters,
   submitQueryGroups,
   clearSubmittedQueryGroups,
+  setExcludeOverlappingCells,
 };
 
 function setSnapshotId(
@@ -70,6 +75,16 @@ function setSnapshotId(
   return {
     ...state,
     snapshotId: payload,
+  };
+}
+
+function setExcludeOverlappingCells(
+  state: State,
+  action: PayloadAction<ExcludeOverlappingCells>
+): State {
+  return {
+    ...state,
+    excludeOverlappingCells: action.payload,
   };
 }
 

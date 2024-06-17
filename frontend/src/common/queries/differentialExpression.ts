@@ -14,6 +14,7 @@ import {
   QueryGroup,
 } from "src/views/DifferentialExpression/common/store/reducer";
 import { RawDataset } from "./wheresMyGene";
+import { ExcludeOverlappingCells } from "src/views/DifferentialExpression/common/types";
 
 interface RawOntologyTerm {
   [id: string]: string;
@@ -35,6 +36,7 @@ interface FiltersQuery {
 }
 
 interface DifferentialExpressionQuery {
+  excludeOverlappingCells: ExcludeOverlappingCells;
   queryGroup1Filters: FilterSecondary;
   queryGroup2Filters: FilterSecondary;
 }
@@ -243,31 +245,52 @@ export function useAvailableOrganisms() {
 export function useDifferentialExpression(): {
   data: DifferentialExpressionQueryResult;
   isLoading: boolean;
+  errorMessage: string | null;
 } {
   const requestBody = useDEQueryRequestBody();
   const { data, isLoading } = useDEQuery(requestBody);
   return useMemo(() => {
-    if (isLoading || !data)
+    if (isLoading || !data || data.successCode === 1) {
+      let errorMessage;
+      switch (true) {
+        case isLoading:
+          errorMessage = "Loading results";
+          break;
+        case data?.successCode === 1:
+          errorMessage =
+            "One of the groups has 0 cells after filtering out overlapping cells.";
+          break;
+        default:
+          errorMessage =
+            "An error occurred while fetching the differential expression results.";
+      }
       return {
         data: {
           differentialExpressionResults: [],
           nOverlap: 0,
         },
         isLoading,
+        errorMessage,
       };
+    }
+
     return {
       data: {
         differentialExpressionResults: data.differentialExpressionResults,
         nOverlap: data.n_overlap,
       },
       isLoading: false,
+      errorMessage: null,
     };
   }, [data, isLoading]);
 }
 
 function useDEQueryRequestBody() {
-  const { organismId, submittedQueryGroups: queryGroups } =
-    useContext(StateContext);
+  const {
+    organismId,
+    submittedQueryGroups: queryGroups,
+    excludeOverlappingCells,
+  } = useContext(StateContext);
 
   return useMemo(() => {
     if (!queryGroups || !organismId) {
@@ -277,6 +300,7 @@ function useDEQueryRequestBody() {
     const { queryGroup1, queryGroup2 } = queryGroups;
 
     return {
+      excludeOverlappingCells,
       queryGroup1Filters: {
         development_stage_ontology_term_ids: queryGroup1.developmentStages,
         disease_ontology_term_ids: queryGroup1.diseases,
@@ -298,7 +322,7 @@ function useDEQueryRequestBody() {
         publication_citations: queryGroup2.publicationCitations,
       },
     };
-  }, [organismId, queryGroups]);
+  }, [organismId, queryGroups, excludeOverlappingCells]);
 }
 
 export function useQueryGroupFilterDimensions(queryGroup: QueryGroup): {

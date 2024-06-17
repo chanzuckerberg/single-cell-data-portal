@@ -109,6 +109,14 @@ paths:
             schema:
               type: object
               properties:
+                excludeOverlappingCells:
+                  type: string
+                  description: "This parameter specifies the method for handling overlapping cells between the two groups."
+                  enum:
+                    - excludeBoth
+                    - excludeOne
+                    - excludeTwo
+                  default: excludeTwo
                 queryGroup1Filters:
                   type: object
                   properties:
@@ -156,6 +164,7 @@ paths:
                   required:
                     - organism_ontology_term_id
               required:
+                - excludeOverlappingCells
                 - queryGroup1Filters
                 - queryGroup2Filters
       responses:
@@ -167,6 +176,8 @@ paths:
                 type: object
                 required:
                   - differentialExpressionResults
+                  - successCode
+                  - n_overlap
                 properties:
                   snapshot_id:
                     $ref: "#/components/schemas/de_snapshot_id"
@@ -174,6 +185,14 @@ paths:
                     description: ->
                       Number of overlapping populations between the two groups.
                     type: integer
+                  successCode:
+                    description: >
+                      Indicates the success status of the operation. 
+                      0 means success, 1 means one of the groups has 0 cells after filtering out overlapping cells.
+                    type: integer
+                    enum:
+                      - 0
+                      - 1
                   differentialExpressionResults:
                     description: ->
                       Differential expression results
