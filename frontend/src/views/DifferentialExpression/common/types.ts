@@ -6,4 +6,4 @@ export interface Organism {
 export type ExcludeOverlappingCells =
   | "excludeOne"
   | "excludeTwo"
-  | "excludeBoth";
+  | "retainBoth";

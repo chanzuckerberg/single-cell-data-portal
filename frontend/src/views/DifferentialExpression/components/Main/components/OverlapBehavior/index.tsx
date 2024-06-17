@@ -1,5 +1,6 @@
 import { ReactComponent as CirclesOverlapLeft } from "src/common/icons/circlesOverlapLeft.svg";
 import { ReactComponent as CirclesOverlapRight } from "src/common/icons/circlesOverlapRight.svg";
+import { ReactComponent as CirclesOverlapBoth } from "src/common/icons/circlesOverlapBoth.svg";
 
 import { SegmentedControl } from "@czi-sds/components";
 import { Label } from "../common/style";
@@ -22,19 +23,19 @@ export default function Method(): JSX.Element {
         defaultValue={"excludeTwo"}
         buttonDefinition={[
           {
-            icon: <CirclesOverlapLeft data-element="excludeOne" />,
+            icon: <CirclesOverlapLeft />,
             value: "excludeOne",
             tooltipText: "Exclude overlapping cells from group 1",
           },
           {
-            icon: <CirclesOverlapRight data-element="excludeTwo" />,
+            icon: <CirclesOverlapRight />,
             value: "excludeTwo",
             tooltipText: "Exclude overlapping cells from group 2",
           },
           {
-            icon: "CirclesOverlap2",
-            value: "excludeBoth",
-            tooltipText: "Exclude overlapping cells from both groups",
+            icon: <CirclesOverlapBoth />,
+            value: "retainBoth",
+            tooltipText: "Retain overlapping cells in both groups",
           },
         ]}
       />

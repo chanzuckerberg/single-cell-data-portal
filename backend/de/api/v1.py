@@ -261,7 +261,7 @@ def run_differential_expression(
         es1 = es1[~es_index1.isin(es_index2)]
     elif excludeOverlappingCells == "excludeTwo":
         es2 = es2[~es_index2.isin(es_index1)]
-    elif excludeOverlappingCells == "excludeBoth":
+    elif excludeOverlappingCells == "retainBoth":
         es1 = es1[~es_index1.isin(es_index2)]
         es2 = es2[~es_index2.isin(es_index1)]
 

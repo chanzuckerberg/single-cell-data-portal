@@ -113,7 +113,7 @@ paths:
                   type: string
                   description: "This parameter specifies the method for handling overlapping cells between the two groups."
                   enum:
-                    - excludeBoth
+                    - retainBoth
                     - excludeOne
                     - excludeTwo
                   default: excludeTwo
