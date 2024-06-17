@@ -6,7 +6,8 @@ from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Iterable, List, Optional, Tuple, Union
 
-from sqlalchemy import create_engine, delete
+from server_timing import Timing as ServerTiming
+from sqlalchemy import create_engine, delete, update
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 from tenacity import retry
@@ -14,6 +15,7 @@ from tenacity.stop import stop_after_attempt
 from tenacity.wait import wait_fixed
 
 from backend.common.corpora_config import CorporaDbConfig
+from backend.common.utils.timer import log_time_taken
 from backend.layers.business.exceptions import CollectionIsPublishedException, DatasetIsPublishedException
 from backend.layers.common.entities import (
     CanonicalCollection,
@@ -281,16 +283,10 @@ class DatabaseProvider(DatabaseProviderInterface):
                 canonical_ids.append(version.dataset_id)
                 artifact_ids.extend(version.artifacts)
 
-            if get_tombstoned:
-                canonical_dataset_query = session.query(DatasetTable).filter(DatasetTable.id.in_(canonical_ids))
-            else:
-                canonical_dataset_query = (
-                    session.query(DatasetTable)
-                    .filter(DatasetTable.id.in_(canonical_ids))
-                    .filter(DatasetTable.tombstone.is_(False))
-                )
+            canonical_dataset_query = session.query(DatasetTable).filter(DatasetTable.id.in_(canonical_ids))
+            if not get_tombstoned:
+                canonical_dataset_query = canonical_dataset_query.filter(DatasetTable.tombstone.is_(False))
             canonical_datasets = canonical_dataset_query.all()
-
             canonical_map = {canonical_dataset.id: canonical_dataset for canonical_dataset in canonical_datasets}
 
             artifacts = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.id.in_(artifact_ids)).all()
@@ -377,12 +373,15 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             version_rows = session.query(CollectionVersionTable).filter_by(collection_id=collection_id.id).all()
             canonical_collection = self.get_canonical_collection(collection_id)
-            versions = list()
-            for i in range(len(version_rows)):
-                datasets = self.get_dataset_versions_by_id(
-                    [DatasetVersionId(str(id)) for id in version_rows[i].datasets], get_tombstoned=get_tombstoned
-                )
-                version = self._row_to_collection_version_with_datasets(version_rows[i], canonical_collection, datasets)
+            versions = []
+            dataset_version_ids = [DatasetVersionId(str(_id)) for vr in version_rows for _id in vr.datasets]
+            datasets = {
+                str(dv.version_id): dv
+                for dv in self.get_dataset_versions_by_id(dataset_version_ids, get_tombstoned=get_tombstoned)
+            }
+            for row in version_rows:
+                ds = [datasets[str(id)] for id in row.datasets]
+                version = self._row_to_collection_version_with_datasets(row, canonical_collection, ds)
                 versions.append(version)
             return versions
 
@@ -397,12 +396,15 @@ class DatabaseProvider(DatabaseProviderInterface):
                 session.query(CollectionVersionTable).filter_by(collection_id=collection_id.id, published_at=None).all()
             )
             canonical_collection = self.get_canonical_collection(collection_id)
-            versions = list()
-            for i in range(len(version_rows)):
-                datasets = self.get_dataset_versions_by_id(
-                    [DatasetVersionId(str(id)) for id in version_rows[i].datasets], get_tombstoned=get_tombstoned
-                )
-                version = self._row_to_collection_version_with_datasets(version_rows[i], canonical_collection, datasets)
+            versions = []
+            dataset_version_ids = [DatasetVersionId(str(_id)) for vr in version_rows for _id in vr.datasets]
+            datasets = {
+                str(dv.version_id): dv
+                for dv in self.get_dataset_versions_by_id(dataset_version_ids, get_tombstoned=get_tombstoned)
+            }
+            for row in version_rows:
+                ds = [datasets[str(id)] for id in row.datasets]
+                version = self._row_to_collection_version_with_datasets(row, canonical_collection, ds)
                 versions.append(version)
             return versions
 
@@ -412,33 +414,42 @@ class DatabaseProvider(DatabaseProviderInterface):
         TODO: for performance reasons, it might be necessary to add a filtering parameter here.
         """
         with self._manage_session() as session:
-            versions = session.query(CollectionVersionTable).all()
+            with ServerTiming.time("get-cv-all"), log_time_taken("get-cv-all"):
+                versions = session.query(CollectionVersionTable).all()
 
-            # Create a canonical mapping
-            if get_tombstoned:
-                all_canonical_collections = session.query(CollectionTable)
-            else:
-                all_canonical_collections = session.query(CollectionTable).filter(CollectionTable.tombstone.isnot(True))
+            with ServerTiming.time("get-cc-by-id"), log_time_taken("get-cc-by-id"):
+                if get_tombstoned:
+                    all_canonical_collections = session.query(CollectionTable)
+                else:
+                    all_canonical_collections = session.query(CollectionTable).filter(
+                        CollectionTable.tombstone.isnot(True)
+                    )
 
-            all_canonical_map = dict()
-            for collection_row in all_canonical_collections.all():
-                all_canonical_map[str(collection_row.id)] = CanonicalCollection(
-                    CollectionId(str(collection_row.id)),
-                    None if collection_row.version_id is None else CollectionVersionId(str(collection_row.version_id)),
-                    collection_row.originally_published_at,
-                    collection_row.revised_at,
-                    collection_row.tombstone,
-                )
+                all_canonical_map = dict()
+                for collection_row in all_canonical_collections.all():
+                    all_canonical_map[str(collection_row.id)] = CanonicalCollection(
+                        CollectionId(str(collection_row.id)),
+                        (
+                            None
+                            if collection_row.version_id is None
+                            else CollectionVersionId(str(collection_row.version_id))
+                        ),
+                        collection_row.originally_published_at,
+                        collection_row.revised_at,
+                        collection_row.tombstone,
+                    )
 
             result = []
-            all_dataset_tombstones = {
-                str(dataset.id)
-                for dataset in session.query(DatasetTable).filter(DatasetTable.tombstone.is_(True)).all()
-            }
-            all_dataset_version_mappings = {
-                str(dataset_version.id): str(dataset_version.dataset_id)
-                for dataset_version in session.query(DatasetVersionTable).all()
-            }
+            with ServerTiming.time("get-cdt-all"), log_time_taken("get-cdt-all"):
+                all_dataset_tombstones = {
+                    str(dataset.id)
+                    for dataset in session.query(DatasetTable).filter(DatasetTable.tombstone.is_(True)).all()
+                }
+            with ServerTiming.time("get-dv-all"), log_time_taken("get-dv-all"):
+                all_dataset_version_mappings = {
+                    str(dataset_version.id): str(dataset_version.dataset_id)
+                    for dataset_version in session.query(DatasetVersionTable).all()
+                }
             for v in versions:
                 include_dataset_version_ids = []
                 if str(v.collection_id) in all_canonical_map:
@@ -461,21 +472,25 @@ class DatabaseProvider(DatabaseProviderInterface):
         will be present in the CollectionVersion.datasets array for active (mapped) Collection versions.
         """
         with self._manage_session() as session:
-            if get_tombstoned:
-                canonical_collections = session.query(CollectionTable).filter(CollectionTable.version_id.isnot(None))
-            else:
-                canonical_collections = (
-                    session.query(CollectionTable)
-                    .filter(CollectionTable.version_id.isnot(None))
-                    .filter_by(tombstone=False)
-                )
+            with ServerTiming.time("get-cc-all"), log_time_taken("get-cc-all"):
+                if get_tombstoned:
+                    canonical_collections = session.query(CollectionTable).filter(
+                        CollectionTable.version_id.isnot(None)
+                    )
+                else:
+                    canonical_collections = (
+                        session.query(CollectionTable)
+                        .filter(CollectionTable.version_id.isnot(None))
+                        .filter_by(tombstone=False)
+                    )
 
-            mapped_version_ids = {cc.version_id: cc for cc in canonical_collections.all()}
-            versions = (
-                session.query(CollectionVersionTable)
-                .filter(CollectionVersionTable.id.in_(mapped_version_ids.keys()))
-                .all()
-            )  # noqa
+                mapped_version_ids = {cc.version_id: cc for cc in canonical_collections.all()}
+            with ServerTiming.time("get-cv-by-id"), log_time_taken("get-cv-by-id"):
+                versions = (
+                    session.query(CollectionVersionTable)
+                    .filter(CollectionVersionTable.id.in_(mapped_version_ids.keys()))
+                    .all()
+                )  # noqa
 
             for version in versions:
                 canonical_row = mapped_version_ids[version.id]
@@ -620,11 +635,18 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Delete DatasetVersionTable rows (and their dependent DatasetArtifactTable rows)
         """
+        dataset_version_ids = []
+        artifact_ids = []
         for d_v_row in dataset_version_rows:
-            ids = [str(_id) for _id in d_v_row.artifacts]
-            artifact_delete_statement = delete(DatasetArtifactTable).where(DatasetArtifactTable.id.in_(ids))
-            session.execute(artifact_delete_statement)
-            session.delete(d_v_row)
+            dataset_version_ids.append(str(d_v_row.id))
+            for artifact in d_v_row.artifacts:
+                artifact_ids.append(str(artifact))
+        artifact_delete_statement = delete(DatasetArtifactTable).where(DatasetArtifactTable.id.in_(artifact_ids))
+        session.execute(artifact_delete_statement)
+        dataset_version_delete_statement = delete(DatasetVersionTable).where(
+            DatasetVersionTable.id.in_(dataset_version_ids)
+        )
+        session.execute(dataset_version_delete_statement)
         session.flush()
 
     def finalize_collection_version(
@@ -679,11 +701,16 @@ class DatabaseProvider(DatabaseProviderInterface):
             # get all dataset versions for the datasets that are being tombstoned
             dataset_version_ids_to_delete_from_s3 = []
             if dataset_ids_to_tombstone:
-                datasets = session.query(DatasetTable).filter(DatasetTable.id.in_(dataset_ids_to_tombstone)).all()
-                for dataset in datasets:
-                    dataset.tombstone = True
-                    dataset_all_versions = session.query(DatasetVersionTable).filter_by(dataset_id=dataset.id).all()
-                    dataset_version_ids_to_delete_from_s3.extend([dv.id for dv in dataset_all_versions])
+                tombstone_dataset_statement = (
+                    update(DatasetTable).where(DatasetTable.id.in_(dataset_ids_to_tombstone)).values(tombstone=True)
+                )
+                session.execute(tombstone_dataset_statement)
+                dataset_all_version_ids = (
+                    session.query(DatasetVersionTable.id)
+                    .filter(DatasetVersionTable.dataset_id.in_(dataset_ids_to_tombstone))
+                    .all()
+                )
+                dataset_version_ids_to_delete_from_s3.extend(str(dv_id) for dv_id in dataset_all_version_ids)
 
             # update dataset versions for datasets that are not being tombstoned
             dataset_version_ids = session.query(CollectionVersionTable.datasets).filter_by(id=version_id.id).one()[0]
