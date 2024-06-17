@@ -211,6 +211,7 @@ const DifferentialExpressionResults = ({
         <FilterTagsWrapper>
           <QueryGroupTags
             isQueryGroup1
+            queryGroups={queryGroups}
             queryGroupsWithNames={queryGroupsWithNames}
           />
         </FilterTagsWrapper>
@@ -250,7 +251,10 @@ const DifferentialExpressionResults = ({
           <EffectSizeIndicator>{"(-) Effect Size"}</EffectSizeIndicator>
         </CellCountTitle>
         <FilterTagsWrapper>
-          <QueryGroupTags queryGroupsWithNames={queryGroupsWithNames} />
+          <QueryGroupTags
+            queryGroups={queryGroups}
+            queryGroupsWithNames={queryGroupsWithNames}
+          />
         </FilterTagsWrapper>
       </CellGroupWrapper>
       {nCellsOverlap > 0 && (
