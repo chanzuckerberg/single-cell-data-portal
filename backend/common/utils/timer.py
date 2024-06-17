@@ -7,6 +7,8 @@ try:
 except ImportError:
 
     class ServerTiming:
+        """this is a dummy class to avoid import errors for application that do not return API timing"""
+
         @staticmethod
         @contextmanager
         def time(key):  # noqa
