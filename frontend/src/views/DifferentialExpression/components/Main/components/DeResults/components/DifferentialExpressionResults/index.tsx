@@ -4,7 +4,7 @@ import {
   CellGroupTitleWrapper,
   CellGroupWrapper,
   EffectSizeHeaderWrapper,
-  EffectSizeIndicator,
+  CellGroupStatsIndicator,
   FilterTagsWrapper,
   StyledTextField,
   TableHeaderWrapper,
@@ -63,6 +63,8 @@ const DifferentialExpressionResults = ({
     pageCount,
     handlePageChange,
     overlapPercent,
+    numDatasets1,
+    numDatasets2,
   } = useConnect({
     queryGroups,
     queryGroupsWithNames,
@@ -185,8 +187,10 @@ const DifferentialExpressionResults = ({
           </Tooltip>
         </CellGroupTitleWrapper>
         <CellCountTitle data-testid={DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT}>
-          {nCellsGroup1.toLocaleString()} cells |{" "}
-          <EffectSizeIndicator>{"(+) Effect Size"}</EffectSizeIndicator>
+          <CellGroupStatsIndicator>
+            {nCellsGroup1.toLocaleString()} cells | {numDatasets1} | (+) Effect
+            Size
+          </CellGroupStatsIndicator>
         </CellCountTitle>
         <FilterTagsWrapper>
           <QueryGroupTags
@@ -226,8 +230,10 @@ const DifferentialExpressionResults = ({
           </Tooltip>
         </CellGroupTitleWrapper>
         <CellCountTitle data-testid={DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT}>
-          {nCellsGroup2.toLocaleString()} cells |{" "}
-          <EffectSizeIndicator>{"(-) Effect Size"}</EffectSizeIndicator>
+          <CellGroupStatsIndicator>
+            {nCellsGroup2.toLocaleString()} cells | {numDatasets2} | (-) Effect
+            Size
+          </CellGroupStatsIndicator>
         </CellCountTitle>
         <FilterTagsWrapper>
           <QueryGroupTags queryGroupsWithNames={queryGroupsWithNames} />

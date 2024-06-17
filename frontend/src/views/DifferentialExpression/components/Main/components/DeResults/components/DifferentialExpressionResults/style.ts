@@ -77,7 +77,7 @@ export const CellGroupTitle = styled.span`
   font-weight: 600;
 `;
 
-export const EffectSizeIndicator = styled.span`
+export const CellGroupStatsIndicator = styled.span`
   ${fontBodyXxs}
   color: #959595;
 `;
