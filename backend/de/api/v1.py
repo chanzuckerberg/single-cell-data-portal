@@ -249,20 +249,17 @@ def run_differential_expression(
         for col in cell_counts_logical_dims_exclude_dataset_id
         if col in cell_counts1.columns and col in cell_counts2.columns
     ]
+
     index1 = cell_counts1.set_index(filter_columns).index
     index2 = cell_counts2.set_index(filter_columns).index
     overlap_filter = index1.isin(index2)
     n_overlap = int(cell_counts1[overlap_filter]["n_total_cells"].sum())
 
-    es_index1 = es1.set_index(filter_columns).index
-    es_index2 = es2.set_index(filter_columns).index
-
+    es_index1 = es1["group_id"]
+    es_index2 = es2["group_id"]
     if excludeOverlappingCells == "excludeOne":
         es1 = es1[~es_index1.isin(es_index2)]
     elif excludeOverlappingCells == "excludeTwo":
-        es2 = es2[~es_index2.isin(es_index1)]
-    elif excludeOverlappingCells == "retainBoth":
-        es1 = es1[~es_index1.isin(es_index2)]
         es2 = es2[~es_index2.isin(es_index1)]
 
     if es1.shape[0] == 0 or es2.shape[0] == 0:

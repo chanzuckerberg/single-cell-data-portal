@@ -103,13 +103,13 @@ class CensusCubeQuery:
         )
 
         cell_counts_diffexp_df = self.cell_counts_diffexp_df(criteria)
-        key = "group_id_simple" if use_simple else "group_id"
+        cell_counts_group_id_key = "group_id_simple" if use_simple else "group_id"
         cube = (
             self._snapshot.expression_summary_diffexp_simple_cube
             if use_simple
             else self._snapshot.expression_summary_diffexp_cube
         )
-        group_ids = cell_counts_diffexp_df[key].unique().tolist()
+        group_ids = cell_counts_diffexp_df[cell_counts_group_id_key].unique().tolist()
         return (
             pd.concat(
                 cube.query(
