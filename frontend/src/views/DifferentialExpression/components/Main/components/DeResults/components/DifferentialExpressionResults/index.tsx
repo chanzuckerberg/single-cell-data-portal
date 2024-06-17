@@ -40,6 +40,8 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { useConnect } from "./connect";
 import { Props } from "./types";
+import HelpTooltip from "src/views/CellGuide/components/CellGuideCard/components/common/HelpTooltip";
+import { ROUTES } from "src/common/constants/routes";
 
 const DifferentialExpressionResults = ({
   queryGroups,
@@ -127,7 +129,25 @@ const DifferentialExpressionResults = ({
             data-testid={DIFFERENTIAL_EXPRESSION_SORT_DIRECTION}
             onClick={handleSortDirectionChange}
           >
-            Effect Size{" "}
+            Effect Size
+            <HelpTooltip
+              title={"Effect Size"}
+              dark
+              text={
+                <>
+                  The effect size is the log fold change of the gene expression
+                  between two cell groups normalized by the pooled standard
+                  deviation, otherwise known as Cohen&apos;s d.
+                  <br />
+                  <br />
+                  <div>
+                    <a href={ROUTES.FMG_DOCS} rel="noopener" target="_blank">
+                      Learn more about how Cohen&apos;s d is calculated.
+                    </a>
+                  </div>
+                </>
+              }
+            />
             <Button
               sdsStyle="icon"
               icon={sortDirection === "asc" ? "ChevronUp" : "ChevronDown"}
