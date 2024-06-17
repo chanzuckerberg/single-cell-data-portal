@@ -25,8 +25,9 @@ class CollectionTable:
 class CollectionVersionTable:
     __tablename__ = "CollectionVersion"
 
-    id = Column(UUID(as_uuid=True), primary_key=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, index=True)
     collection_id = Column(UUID(as_uuid=True))
+    # canonical_collection = Relationship("CollectionTable")
     collection_metadata = Column(JSON)
     owner = Column(String)
     curator_name = Column(String)
@@ -56,6 +57,7 @@ class DatasetVersionTable:
 
     id = Column(UUID(as_uuid=True), primary_key=True)
     dataset_id = Column(UUID(as_uuid=True), ForeignKey("Dataset.id"))
+    # canonical_dataset = Relationship("DatasetTable")
     collection_id = Column(UUID(as_uuid=True))
     created_at = Column(DateTime)
     dataset_metadata = Column(JSON)
