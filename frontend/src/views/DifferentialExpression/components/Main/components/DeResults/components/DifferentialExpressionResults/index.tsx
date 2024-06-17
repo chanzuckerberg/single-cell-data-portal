@@ -252,6 +252,9 @@ const DifferentialExpressionResults = ({
           )}
           hoverable={false}
           columnIdToName={columnIdToName}
+          columnIdToNumCharactersTruncateThreshold={{
+            name: 8,
+          }}
         />
 
         <Pagination count={pageCount} page={page} onChange={handlePageChange} />
