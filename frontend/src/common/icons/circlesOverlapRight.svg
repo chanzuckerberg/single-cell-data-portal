@@ -9,11 +9,15 @@
     fill="white"
     stroke="currentColor"
     stroke-width="1.5"
+    fill-opacity="0.5"
+    stroke-opacity="1.0"    
   />
   <path
     d="M15.25 8C15.25 10.3333 13.3166 12.25 10.9 12.25C8.48354 12.25 6.55005 10.3333 6.55005 8C6.55005 5.66672 8.48354 3.75 10.9 3.75C13.3166 3.75 15.25 5.66672 15.25 8Z"
     fill="currentColor"
     stroke="currentColor"
     stroke-width="1.5"
+    fill-opacity="0.5"
+    stroke-opacity="1.0"    
   />
 </svg>

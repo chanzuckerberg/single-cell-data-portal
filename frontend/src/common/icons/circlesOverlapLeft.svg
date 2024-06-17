@@ -9,6 +9,8 @@
     fill="white"
     stroke="currentColor"    
     stroke-width="1.5"
+    fill-opacity="0.5"
+    stroke-opacity="1.0"    
 
   />
   <path
@@ -16,5 +18,7 @@
     fill="currentColor"
     stroke="currentColor"    
     stroke-width="1.5"
+    fill-opacity="0.5"
+    stroke-opacity="1.0"    
   />
 </svg>
