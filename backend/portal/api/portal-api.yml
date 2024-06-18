@@ -410,11 +410,11 @@ paths:
         "400":
           $ref: "#/components/responses/400"
         "401":
-          $ref: "#/components/responses/401"          
+          $ref: "#/components/responses/401"
         "403":
-          $ref: "#/components/responses/403"      
+          $ref: "#/components/responses/403"
         "405":
-          $ref: "#/components/responses/405"    
+          $ref: "#/components/responses/405"
 
   /v1/collections/{collection_id}/order-datasets:
     put:
