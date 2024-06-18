@@ -58,38 +58,23 @@ export default function DifferentialExpression(): JSX.Element {
             >
               Find differentially expressed genes between custom group of cells
               across the CELLxGENE data corpus. For additional help and
-              information, read our documentation.
+              information, read our{" "}
+              <a
+                href="/docs/01__CellxGene"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => track(EVENTS.DE_DOCUMENTATION_CLICKED)}
+              >
+                documentation
+              </a>
+              .
               <br />
               <br />
               This tool uses Welch&apos;s t-test to identify differentially
-              expressed genes between groups of cell in the CELLxGENE Census.
-              While the t-test performs reasonably well on individual datasets{" "}
-              <a
-                href="https://www.mdpi.com/2073-4425/12/12/1947"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                [1]
-              </a>
-              <a
-                href="https://www.nature.com/articles/s41467-019-12266-7"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                [2]
-              </a>
-              <a
-                href="https://www.nature.com/articles/nmeth.4612"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                [3]
-              </a>
-              , its performance on concatenated, non-integrated datasets has not
-              been extensively evaluated. We recommend using this tool for
-              preliminary investigations and following up with a more robust
-              method for formal analysis. Learn more about our data filtering
-              and normalization{" "}
+              expressed genes between groups of cells in the CELLxGENE Census.
+              We recommend using this tool for preliminary investigations and
+              following up with more robust methods for formal analysis. Learn
+              more about data filtering and normalization{" "}
               <a
                 href="/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_3__Gene%20Expression%20Data%20Processing"
                 target="_blank"
