@@ -7,6 +7,8 @@ import {
   GrayTag,
   StyledTextField,
   StyledAutocomplete,
+  StyledCallout,
+  StyledIcon,
 } from "./style";
 import {
   DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX,
@@ -16,6 +18,7 @@ import {
 import { sortOptions } from "./utils";
 import { useConnect } from "./connect";
 import { Props } from "./types";
+import { Icon } from "@czi-sds/components";
 
 function FilterDropdown({
   options,
@@ -42,6 +45,21 @@ function FilterDropdown({
         getOptionLabel={(option) => option.name}
         value={selectedOptions}
         disablePortal
+        noOptionsText={
+          <StyledCallout
+            icon={
+              <Icon
+                color="gray"
+                sdsIcon="InfoCircle"
+                sdsSize="l"
+                sdsType="static"
+              />
+            }
+            intent="info"
+          >
+            Results may be limited by other selections made in this cell group.
+          </StyledCallout>
+        }
         isOptionEqualToValue={(option, value) => option.id === value.id}
         popupIcon={null}
         renderInput={(params) => {
