@@ -11,6 +11,7 @@ import {
   TwoPanelLayout,
   CellCountTitle,
   Spinner,
+  QueryGroupAndButtonWrapper,
 } from "./style";
 import QueryGroupFilters from "./components/Filters";
 import Organism from "./components/Organism";
@@ -104,65 +105,67 @@ export default function DifferentialExpression(): JSX.Element {
               <Organism />
               <Method />
             </FlexRow>
-            <FlexRow>
-              <div data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER}>
-                <CellGroupTitle>
-                  Cell Group 1
-                  <CellCountTitle
-                    data-testid={DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT}
-                  >
-                    {isLoadingGroup1 && (
-                      <Spinner
-                        data-testid={
-                          DIFFERENTIAL_EXPRESSION_FILTERS_LOADING_SPINNER
-                        }
-                      />
-                    )}
-                    {nCellsGroup1.toLocaleString()} cells
-                  </CellCountTitle>
-                </CellGroupTitle>
-                <QueryGroupFilters
-                  key={`query-group-1`}
-                  queryGroup={queryGroup1}
-                  isQueryGroup1={true}
-                />
-              </div>
+            <QueryGroupAndButtonWrapper>
+              <FlexRow>
+                <div data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER}>
+                  <CellGroupTitle>
+                    Cell Group 1
+                    <CellCountTitle
+                      data-testid={DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT}
+                    >
+                      {isLoadingGroup1 && (
+                        <Spinner
+                          data-testid={
+                            DIFFERENTIAL_EXPRESSION_FILTERS_LOADING_SPINNER
+                          }
+                        />
+                      )}
+                      {nCellsGroup1.toLocaleString()} cells
+                    </CellCountTitle>
+                  </CellGroupTitle>
+                  <QueryGroupFilters
+                    key={`query-group-1`}
+                    queryGroup={queryGroup1}
+                    isQueryGroup1={true}
+                  />
+                </div>
 
-              <div data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER}>
-                <CellGroupTitle>
-                  Cell Group 2
-                  <CellCountTitle
-                    data-testid={DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT}
-                  >
-                    {isLoadingGroup2 && (
-                      <Spinner
-                        data-testid={
-                          DIFFERENTIAL_EXPRESSION_FILTERS_LOADING_SPINNER
-                        }
-                      />
-                    )}
-                    {nCellsGroup2.toLocaleString()} cells
-                  </CellCountTitle>
-                </CellGroupTitle>
-                <QueryGroupFilters
-                  key={`query-group-2`}
-                  queryGroup={queryGroup2}
-                  isQueryGroup1={false}
-                />
-              </div>
-            </FlexRow>
-            <RunButtonWrapper>
-              <RunButton
-                color="primary"
-                size="large"
-                variant="contained"
-                onClick={handleRunDifferentialExpression}
-                disabled={!canRunDifferentialExpression}
-                data-testid={DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON}
-              >
-                Find genes
-              </RunButton>
-            </RunButtonWrapper>
+                <div data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER}>
+                  <CellGroupTitle>
+                    Cell Group 2
+                    <CellCountTitle
+                      data-testid={DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT}
+                    >
+                      {isLoadingGroup2 && (
+                        <Spinner
+                          data-testid={
+                            DIFFERENTIAL_EXPRESSION_FILTERS_LOADING_SPINNER
+                          }
+                        />
+                      )}
+                      {nCellsGroup2.toLocaleString()} cells
+                    </CellCountTitle>
+                  </CellGroupTitle>
+                  <QueryGroupFilters
+                    key={`query-group-2`}
+                    queryGroup={queryGroup2}
+                    isQueryGroup1={false}
+                  />
+                </div>
+              </FlexRow>
+              <RunButtonWrapper>
+                <RunButton
+                  color="primary"
+                  size="large"
+                  variant="contained"
+                  onClick={handleRunDifferentialExpression}
+                  disabled={!canRunDifferentialExpression}
+                  data-testid={DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON}
+                >
+                  Find genes
+                </RunButton>
+              </RunButtonWrapper>
+            </QueryGroupAndButtonWrapper>
           </QuerySelectorWrapper>
         </Wrapper>
       </div>

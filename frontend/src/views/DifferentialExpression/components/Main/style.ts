@@ -9,17 +9,18 @@ import {
 } from "@czi-sds/components";
 import { gray500, primary400 } from "src/common/theme";
 
-const LEFT_PANEL_WIDTH = "60vw";
-const RIGHT_PANEL_WIDTH = "40vw";
+const RIGHT_PANEL_WIDTH = "480px";
 
 export const TwoPanelLayout = styled.div`
   display: flex;
   flex-direction: row;
-
+  padding-left: 80px;
+  justify-content: space-between;
   .leftPanel {
     border-right: 1px solid #ccc;
-    width: ${LEFT_PANEL_WIDTH};
-    min-width: fit-content;
+    flex-grow: 1;
+    padding-right: 80px;
+    display: flex;
   }
 
   .rightPanel {
@@ -94,7 +95,13 @@ export const FlexRow = styled.div`
 `;
 
 export const QuerySelectorWrapper = styled.div`
-  width: 698px;
+  display: flex;
+  flex-direction: column;
+`;
+
+export const QueryGroupAndButtonWrapper = styled.div`
+  justify-content: flex-end;
+  max-width: 696px;
 `;
 
 const spin = keyframes`

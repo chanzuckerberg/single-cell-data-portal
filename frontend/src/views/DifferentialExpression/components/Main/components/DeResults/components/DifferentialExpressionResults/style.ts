@@ -7,7 +7,7 @@ import { inputBaseClasses } from "@mui/material/InputBase";
 import { inputLabelClasses } from "@mui/material/InputLabel";
 import { alertClasses } from "@mui/material/Alert";
 
-const TABLE_WIDTH = "386px";
+const TABLE_WIDTH = "480px";
 export const TableWrapper = styled.div`
   width: ${TABLE_WIDTH};
   [class*="StyledCell"] {
