@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { Props } from "./types";
 
@@ -11,9 +11,13 @@ export const useConnect = ({
   selectedOptionIds: Props["selectedOptionIds"];
   allAvailableOptions: Props["allAvailableOptions"];
 }) => {
+  const [previousSelectedOptions, setPreviousSelectedOptions] = useState<
+    Props["options"]
+  >([]);
+
   const selectedOptions = useMemo(() => {
     const optionsMap = new Map(options.map((option) => [option.id, option]));
-    return allAvailableOptions
+    const newOptions = allAvailableOptions
       .filter((option) => selectedOptionIds.includes(option.id))
       .map((availableOption) => {
         const foundOption = optionsMap.get(availableOption.id);
@@ -25,8 +29,15 @@ export const useConnect = ({
           }
         );
       });
+    newOptions.sort(
+      (a, b) =>
+        selectedOptionIds.indexOf(a.id) - selectedOptionIds.indexOf(b.id)
+    );
+    return newOptions;
   }, [options, allAvailableOptions, selectedOptionIds]);
   return {
     selectedOptions,
+    previousSelectedOptions,
+    setPreviousSelectedOptions,
   };
 };

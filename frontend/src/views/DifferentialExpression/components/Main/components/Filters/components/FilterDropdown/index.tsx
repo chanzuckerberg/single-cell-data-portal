@@ -24,7 +24,11 @@ function FilterDropdown({
   selectedOptionIds,
   handleChange,
 }: Props): JSX.Element {
-  const { selectedOptions } = useConnect({
+  const {
+    selectedOptions,
+    previousSelectedOptions,
+    setPreviousSelectedOptions,
+  } = useConnect({
     options,
     allAvailableOptions,
     selectedOptionIds,
@@ -35,9 +39,13 @@ function FilterDropdown({
       <StyledAutocomplete
         data-testid={`${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}${label}`}
         options={options}
+        onClose={() => setPreviousSelectedOptions(selectedOptions)}
         multiple
         onChange={(_: React.SyntheticEvent, newValue: FilterOption[]) => {
           handleChange(newValue);
+          if (newValue.length === 0) {
+            setPreviousSelectedOptions(newValue);
+          }
         }}
         getOptionLabel={(option) => option.name}
         value={selectedOptions}
@@ -90,7 +98,7 @@ function FilterDropdown({
               );
             })
             .sort((entityA: FilterOption, entityB: FilterOption) =>
-              sortOptions(entityA, entityB, state, selectedOptions)
+              sortOptions(entityA, entityB, state, previousSelectedOptions)
             );
         }}
         disableCloseOnSelect
