@@ -1,8 +1,0 @@
-Agent is down or Remote Config is not enabled in the Agent
-Check your Agent version, you need an Agent running on 7.39.1 version or above.
-Check Your Remote Config environment variables on your Agent:
-DD_REMOTE_CONFIGURATION_ENABLED=true
-See: https://docs.datadoghq.com/agent/guide/how_remote_config_works/, 1 additional messages skipped
-{"levelname": "DEBUG", "asctime": "2024-06-13T19:12:02.013Z", "name": "ddtrace.internal.remoteconfig.worker", "message": "Agent is down or Remote Config is not enabled in the Agent\nCheck your Agent version, you need an Agent running on 7.39.1 version or above.\nCheck Your Remote Config environment variables on your Agent:\nDD_REMOTE_CONFIGURATION_ENABLED=true\nSee: https://docs.datadoghq.com/agent/guide/how_remote_config_works/, 1 additional messages skipped", "lineno": 53, "pathname": "/usr/local/lib/python3.10/dist-packages/ddtrace/internal/remoteconfig/worker.py", "request_id": ""}
-{"levelname": "INFO", "asctime": "2024-06-13T19:12:03.013Z", "name": "corpora-api-wmg-test", "message": "", "lineno": 76, "pathname": "/single-cell-data-portal/backend/common/server/config.py", "request_id": "d3bff170-caed-4b2e-b182-1352094329af", "type": "REQUEST", "details": {"url": "/wmg/v2/query", "method": "POST", "content_length": 192}}
-{"levelname": "INFO", "asctime": "2024-06-13T19:12:03.013Z", "name": "corpora-api-wmg-test", "message": "", "lineno": 88, "pathname": "/single-cell-data-portal/backend/common/server/config.py", "request_id": "d3bff170-caed-4b2e-b182-1352094329af", "type": "RESPONSE", "details": {"status_code": 200, "content_length": 25302, "response_time": 0.05691933631896973}}
