@@ -2370,6 +2370,137 @@ class TestDataset(BaseAPIPortalTest):
             res = self.app.get(test_url, headers)
             self.assertEqual(404, res.status_code)
 
+    def test__update_dataset__ok(self):
+        # Generate dataset with a processing status of SUCCESS.
+        dataset_data = self.generate_dataset(
+            statuses=[
+                DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED),
+            ]
+        )
+
+        # Build and send request.
+        test_url = f"/dp/v1/collections/{dataset_data.collection_version_id}/datasets/{dataset_data.dataset_version_id}"
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.get_cxguser_token(),
+        }
+        dataset_update = {
+            "title": "new title",
+        }
+        data = json.dumps(dataset_update)
+        response = self.app.patch(test_url, data=data, headers=headers)
+
+        # Confirm update was successful.
+        self.assertEqual(202, response.status_code)
+
+    def test__update_dataset_no_authentication__401(self):
+        # Generate dataset.
+        dataset_data = self.generate_dataset()
+
+        # Build request without auth and send.
+        test_url = f"/dp/v1/collections/{dataset_data.collection_version_id}/datasets/{dataset_data.dataset_version_id}"
+        modified_dataset = {
+            "title": "new title",
+        }
+        data = json.dumps(modified_dataset)
+        response = self.app.patch(test_url, data=data)
+
+        # Confirm forbidden response.
+        self.assertEqual(401, response.status_code)
+
+    def test__update_dataset_not_authorized_403(self):
+        # Generate dataset.
+        dataset_data = self.generate_dataset(owner="someone_else")
+
+        # Build request with unauthorized user and send.
+        test_url = f"/dp/v1/collections/{dataset_data.collection_version_id}/datasets/{dataset_data.dataset_version_id}"
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.get_cxguser_token(),
+        }
+        dataset_update = {
+            "title": "new title",
+        }
+        data = json.dumps(dataset_update)
+        response = self.app.patch(test_url, data=data, headers=headers)
+
+        # Confirm forbidden response.
+        self.assertEqual(403, response.status_code)
+
+    def test__update_dataset_collection_published__403(self):
+        # Generate dataset with a processing status of SUCCESS, and published collection.
+        dataset_data = self.generate_dataset(
+            statuses=[
+                DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED),
+            ],
+            publish=True,
+        )
+
+        # Build and send request
+        test_url = f"/dp/v1/collections/{dataset_data.collection_version_id}/datasets/{dataset_data.dataset_version_id}"
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.get_cxguser_token(),
+        }
+        dataset_update = {
+            "title": "new title",
+        }
+        data = json.dumps(dataset_update)
+        response = self.app.patch(test_url, data=data, headers=headers)
+
+        # Confirm update was unsuccessful.
+        self.assertEqual(403, response.status_code)
+
+    def test__update_dataset_invalid_collection__403(self):
+        # Generate dataset with a processing status of SUCCESS.
+        dataset_data = self.generate_dataset(
+            statuses=[
+                DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED),
+            ],
+        )
+
+        # Build request using invalid collection and send.
+        test_url = f"/dp/v1/collections/{str(uuid.uuid4())}/datasets/{dataset_data.dataset_version_id}"
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.get_cxguser_token(),
+        }
+        dataset_update = {
+            "title": "new title",
+        }
+        data = json.dumps(dataset_update)
+        response = self.app.patch(test_url, data=data, headers=headers)
+
+        # Confirm update was unsuccessful.
+        self.assertEqual(403, response.status_code)
+
+    def test__update_dataset_invalid_processing_status__405(self):
+        # Generate dataset with an invalid processing status.
+        dataset_data = self.generate_dataset()
+
+        # Build and send request.
+        test_url = f"/dp/v1/collections/{dataset_data.collection_version_id}/datasets/{dataset_data.dataset_version_id}"
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.get_cxguser_token(),
+        }
+        dataset_update = {
+            "title": "new title",
+        }
+        data = json.dumps(dataset_update)
+        response = self.app.patch(test_url, data=data, headers=headers)
+
+        # Confirm update was unsuccessful.
+        self.assertEqual(405, response.status_code)
+
 
 class TestDatasetCurators(BaseAPIPortalTest):
     def setUp(self):

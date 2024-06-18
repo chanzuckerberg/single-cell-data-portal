@@ -1,7 +1,7 @@
 from typing import Union
 
 from backend.layers.business.entities import CollectionMetadataUpdate
-from backend.layers.common.entities import CollectionMetadata
+from backend.layers.common.entities import CollectionMetadata, DatasetArtifactMetadataUpdate
 
 
 def strip_fields(metadata: Union[CollectionMetadata, CollectionMetadataUpdate]):
@@ -28,3 +28,12 @@ def sort_consortia(metadata: Union[CollectionMetadata, CollectionMetadataUpdate]
 def sanitize(metadata: Union[CollectionMetadata, CollectionMetadataUpdate]):
     strip_fields(metadata)
     sort_consortia(metadata)
+
+
+def sanitize_dataset_artifact_metadata_update(metadata: DatasetArtifactMetadataUpdate):
+    """
+    Dataset title is currently the only field available for update via the FE and DP and
+    Discover APIs; strip whitespace from title.
+    """
+    if metadata.title is not None:
+        metadata.title = metadata.title.strip()
