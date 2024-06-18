@@ -1,3 +1,5 @@
+import logging
+
 from flask import jsonify, make_response
 
 import backend.common.doi as doi
@@ -37,7 +39,7 @@ def get(visibility: str, token_info: dict, curator: str = None):
         else:
             filters["curator_name"] = curator
 
-    print(filters)
+    logging.info(filters)
 
     resp_collections = []
     for collection_version in get_business_logic().get_collections(CollectionQueryFilter(**filters)):
