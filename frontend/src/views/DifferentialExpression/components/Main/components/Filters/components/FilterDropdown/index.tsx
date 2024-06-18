@@ -8,7 +8,6 @@ import {
   StyledTextField,
   StyledAutocomplete,
   StyledCallout,
-  StyledIcon,
 } from "./style";
 import {
   DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX,
