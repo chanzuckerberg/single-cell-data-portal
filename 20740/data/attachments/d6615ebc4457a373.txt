@@ -1,2 +1,0 @@
-INFO     processing:schema_migration.py:166 All datasets in the collection have been migrated
-INFO     processing:schema_migration.py:294 Uploaded to S3
