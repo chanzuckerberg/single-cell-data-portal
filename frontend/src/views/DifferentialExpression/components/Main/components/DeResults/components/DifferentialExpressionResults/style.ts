@@ -6,8 +6,8 @@ import Image from "next/image";
 import { inputBaseClasses } from "@mui/material/InputBase";
 import { inputLabelClasses } from "@mui/material/InputLabel";
 import { alertClasses } from "@mui/material/Alert";
+import { TABLE_WIDTH } from "../../style";
 
-const TABLE_WIDTH = "480px";
 export const TableWrapper = styled.div`
   width: ${TABLE_WIDTH};
   [class*="StyledCell"] {
