@@ -21,6 +21,8 @@ export const DIFFERENTIAL_EXPRESSION_INSTRUCTIONS_SIDEBAR =
   "differential-expression-instructions-sidebar";
 export const DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON =
   "differential-expression-find-genes-button";
+export const DIFFERENTIAL_EXPRESSION_CLEAR_ALL_BUTTON =
+  "differential-expression-clear-all-button";
 export const DIFFERENTIAL_EXPRESSION_COPY_FILTERS_BUTTON_PREFIX =
   "differential-expression-copy-filters-button-";
 export const DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT =

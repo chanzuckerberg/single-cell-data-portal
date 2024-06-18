@@ -15,6 +15,7 @@ import {
   DIFFERENTIAL_EXPRESSION_FILTER_TAG_GRAY,
   DIFFERENTIAL_EXPRESSION_INSTRUCTIONS_SIDEBAR,
   DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON,
+  DIFFERENTIAL_EXPRESSION_CLEAR_ALL_BUTTON,
   DIFFERENTIAL_EXPRESSION_COPY_FILTERS_BUTTON_PREFIX,
   DIFFERENTIAL_EXPRESSION_RESULTS_DOWNLOAD_BUTTON,
   DIFFERENTIAL_EXPRESSION_SOURCE_DATA_BUTTON,
@@ -371,6 +372,59 @@ describe("Differential Expression", () => {
       expect(initialCellCountGroup1).not.toBe(updatedCellCountGroup1);
     });
 
+    test("Clear all button clears query groups", async ({ page }) => {
+      // Populate "lung" in cell group 1 filter tissue
+      const tissueFilterAutocompleteGroup1 = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
+        .getByTestId(
+          `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Tissue`
+        );
+      await clickOnAutocompleteDropdownItem(
+        tissueFilterAutocompleteGroup1,
+        "lung"
+      );
+
+      // Populate "blood" in cell group 2 filter tissue
+      const tissueFilterAutocompleteGroup2 = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER)
+        .getByTestId(
+          `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Tissue`
+        );
+      await clickOnAutocompleteDropdownItem(
+        tissueFilterAutocompleteGroup2,
+        "blood"
+      );
+
+      // Ensure "Find Genes" button is enabled
+      const findGenesButton = page.getByTestId(
+        DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON
+      );
+      await expect(findGenesButton).toBeEnabled();
+
+      // Click "Clear all" button
+      const clearAllButton = page.getByTestId(
+        DIFFERENTIAL_EXPRESSION_CLEAR_ALL_BUTTON
+      );
+      await clearAllButton.click();
+      await waitForFiltersEndpoint(page);
+
+      // Ensure "Find Genes" button is disabled again
+      await expect(findGenesButton).toBeDisabled();
+
+      // Ensure "lung" tag is no longer present in cell group 1 filter
+      const lungTag = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
+        .getByTestId(DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY)
+        .filter({ hasText: "lung" });
+      await expect(lungTag).toHaveCount(0);
+
+      // Ensure "blood" tag is no longer present in cell group 2 filter
+      const bloodTag = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER)
+        .getByTestId(DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY)
+        .filter({ hasText: "blood" });
+      await expect(bloodTag).toHaveCount(0);
+    });
     test("Find genes button only active when both filters populated", async ({
       page,
     }) => {

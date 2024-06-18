@@ -75,15 +75,25 @@ export const StepSubHeader = styled.div`
 
 export const RunButton = styled(Button)`
   ${fontBodyS}
-  margin-bottom: 50px;
-  margin-top: 59px;
-  width: 256px;
+  width: fit-content;
+  font-weight: 500;
+  padding: 6px 12px;
+`;
+
+export const ClearAllButton = styled(Button)`
+  ${fontBodyS}
+  width: fit-content;
+  font-weight: 500;
+  padding: 6px 12px;
+  color: ${gray500};
 `;
 
 export const RunButtonWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
+  margin-bottom: 50px;
+  margin-top: 24px;
 `;
 
 export const FlexRow = styled.div`

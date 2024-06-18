@@ -4,7 +4,11 @@ import {
   StateContext,
 } from "src/views/DifferentialExpression/common/store";
 
-import { submitQueryGroups } from "src/views/DifferentialExpression/common/store/actions";
+import {
+  submitQueryGroups,
+  clearQueryGroup1Filters,
+  clearQueryGroup2Filters,
+} from "src/views/DifferentialExpression/common/store/actions";
 import useProcessedQueryGroupFilterDimensions from "./components/common/query_group_filter_dimensions";
 
 import { track } from "src/common/analytics";
@@ -43,6 +47,12 @@ export const useConnect = () => {
     );
   };
 
+  const handleClearQueryGroups = () => {
+    if (!dispatch) return;
+    dispatch(clearQueryGroup1Filters());
+    dispatch(clearQueryGroup2Filters());
+  };
+
   const { n_cells: nCellsGroup1, isLoading: isLoadingGroup1 } =
     useProcessedQueryGroupFilterDimensions(queryGroup1);
   const { n_cells: nCellsGroup2, isLoading: isLoadingGroup2 } =
@@ -55,6 +65,7 @@ export const useConnect = () => {
     queryGroup2,
     canRunDifferentialExpression,
     handleRunDifferentialExpression,
+    handleClearQueryGroups,
     nCellsGroup1,
     isLoadingGroup1,
     nCellsGroup2,
