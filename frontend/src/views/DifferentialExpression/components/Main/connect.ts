@@ -31,7 +31,10 @@ export const useConnect = () => {
     (value) => value.length > 0
   );
   const canRunDifferentialExpression =
-    !isLoading && isQueryGroup1NotEmpty && isQueryGroup2NotEmpty;
+    !isLoading &&
+    isQueryGroup1NotEmpty &&
+    isQueryGroup2NotEmpty &&
+    JSON.stringify(queryGroup1) !== JSON.stringify(queryGroup2);
 
   const handleRunDifferentialExpression = () => {
     if (!dispatch) return;
