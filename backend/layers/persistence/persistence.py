@@ -6,7 +6,6 @@ from contextlib import contextmanager
 from datetime import datetime
 from typing import Any, Iterable, List, Optional, Tuple, Union
 
-from server_timing import Timing as ServerTiming
 from sqlalchemy import create_engine, delete, update
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
@@ -414,10 +413,10 @@ class DatabaseProvider(DatabaseProviderInterface):
         TODO: for performance reasons, it might be necessary to add a filtering parameter here.
         """
         with self._manage_session() as session:
-            with ServerTiming.time("get-cv-all"), log_time_taken("get-cv-all"):
+            with log_time_taken("get-cv-all"):
                 versions = session.query(CollectionVersionTable).all()
 
-            with ServerTiming.time("get-cc-by-id"), log_time_taken("get-cc-by-id"):
+            with log_time_taken("get-cc-by-id"):
                 if get_tombstoned:
                     all_canonical_collections = session.query(CollectionTable)
                 else:
@@ -440,12 +439,12 @@ class DatabaseProvider(DatabaseProviderInterface):
                     )
 
             result = []
-            with ServerTiming.time("get-cdt-all"), log_time_taken("get-cdt-all"):
+            with log_time_taken("get-cdt-all"):
                 all_dataset_tombstones = {
                     str(dataset.id)
                     for dataset in session.query(DatasetTable).filter(DatasetTable.tombstone.is_(True)).all()
                 }
-            with ServerTiming.time("get-dv-all"), log_time_taken("get-dv-all"):
+            with log_time_taken("get-dv-all"):
                 all_dataset_version_mappings = {
                     str(dataset_version.id): str(dataset_version.dataset_id)
                     for dataset_version in session.query(DatasetVersionTable).all()
@@ -472,7 +471,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         will be present in the CollectionVersion.datasets array for active (mapped) Collection versions.
         """
         with self._manage_session() as session:
-            with ServerTiming.time("get-cc-all"), log_time_taken("get-cc-all"):
+            with log_time_taken("get-cc-all"):
                 if get_tombstoned:
                     canonical_collections = session.query(CollectionTable).filter(
                         CollectionTable.version_id.isnot(None)
@@ -485,7 +484,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                     )
 
                 mapped_version_ids = {cc.version_id: cc for cc in canonical_collections.all()}
-            with ServerTiming.time("get-cv-by-id"), log_time_taken("get-cv-by-id"):
+            with log_time_taken("get-cv-by-id"):
                 versions = (
                     session.query(CollectionVersionTable)
                     .filter(CollectionVersionTable.id.in_(mapped_version_ids.keys()))
