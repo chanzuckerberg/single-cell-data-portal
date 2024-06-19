@@ -4,5 +4,5 @@ pydantic~=1.10.7
 numba~=0.59.1
 cellxgene_ontology_guide~=1.0.0
 tiledb
-psutil~=5.9.8
+psutil~=6.0.0
 pyarrow==16.0.0
