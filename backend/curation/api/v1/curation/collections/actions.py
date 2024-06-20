@@ -4,6 +4,7 @@ from flask import jsonify, make_response
 
 import backend.common.doi as doi
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
+from backend.common.utils.timer import log_accumulative_time_taken
 from backend.curation.api.v1.curation.collections.common import reshape_for_curation_api
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionQueryFilter
@@ -42,9 +43,11 @@ def get(visibility: str, token_info: dict, curator: str = None):
     logging.info(filters)
 
     resp_collections = []
-    for collection_version in get_business_logic().get_collections(CollectionQueryFilter(**filters)):
-        resp_collection = reshape_for_curation_api(collection_version, user_info, preview=True)
-        resp_collections.append(resp_collection)
+    with log_accumulative_time_taken("reshape_for_curation_api") as time_accumulator:
+        for collection_version in get_business_logic().get_collections(CollectionQueryFilter(**filters)):
+            with time_accumulator.time(f"{collection_version.collection_id.id}"):
+                resp_collection = reshape_for_curation_api(collection_version, user_info)
+                resp_collections.append(resp_collection)
     return jsonify(resp_collections)
 
 
