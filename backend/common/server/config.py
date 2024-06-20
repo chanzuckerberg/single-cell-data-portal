@@ -92,6 +92,7 @@ def register_routes(app, api_base_paths):
                     status_code=response.status_code,
                     content_length=response.content_length,
                     response_time=time.time() - g.start,
+                    request=dict(url=request.path, method=request.method),
                 ),
             )
         )
