@@ -147,7 +147,26 @@ module.exports = {
     },
   },
 
-  webpack: (config, { webpack }) => {
+  webpack: (config, { webpack, dev }) => {
+    if (dev) {
+      config.module.rules.push({
+        // This rule is to enable SVG imports when experimental-https is set.
+        // experimental-https prevents SVGs from being imported correctly on local servers
+        test: /\.svg$/,
+        loader: "next-image-loader",
+        issuer: {
+          and: [/\.(ts|tsx|js|jsx|md|mdx)$/],
+        },
+        options: {
+          isDev: true,
+          compilerType: "server",
+          basePath: "",
+          assetPrefix: "",
+        },
+        exclude: path.resolve(__dirname, "src/common/icons"),
+      });
+    }
+
     config.module.rules.push({
       test: /\.svg$/,
       use: ["@svgr/webpack", "url-loader"],
@@ -155,6 +174,7 @@ module.exports = {
       issuer: {
         and: [/\.(ts|tsx|js|jsx|md|mdx)$/],
       },
+      include: dev ? path.resolve(__dirname, "src/common/icons") : undefined,
     });
 
     // Return the updated config with the existing plugins
