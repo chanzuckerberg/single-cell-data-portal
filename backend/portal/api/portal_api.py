@@ -671,13 +671,18 @@ def update_dataset(collection_id: str, dataset_id: str, body: dict, token_info: 
     """
 
     # Confirm user is authorized to update the dataset.
-    _assert_dataset_has_right_owner(DatasetVersionId(dataset_id), UserInfo(token_info))
+    dataset_version, _ = _assert_dataset_has_right_owner(DatasetVersionId(dataset_id), UserInfo(token_info))
+
+    # Find collection version for private collections, or collection version for revisions.
+    collection_version = lookup_collection(collection_id)
+    if collection_version is None:
+        raise ForbiddenHTTPException()
 
     # Create payload and attempt update.
     payload = DatasetArtifactMetadataUpdate(body.get("title"))
     try:
         get_business_logic().update_dataset_artifact_metadata(
-            CollectionVersionId(collection_id), DatasetVersionId(dataset_id), payload
+            collection_version.version_id, dataset_version.version_id, payload
         )
     except InvalidMetadataException as ex:
         raise InvalidParametersHTTPException(detail=ex.errors) from None
