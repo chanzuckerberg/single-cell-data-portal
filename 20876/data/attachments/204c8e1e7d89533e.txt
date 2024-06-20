@@ -1,0 +1,1 @@
+INFO     root:actions.py:42 {'is_published': False, 'owner': 'test_user_id'}
