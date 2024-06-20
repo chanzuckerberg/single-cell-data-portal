@@ -390,7 +390,7 @@ paths:
       security:
         - cxguserCookie: []
       description: >-
-        Update a dataset's title, including updates to the corresponding dataset artifacts.
+        Update a dataset's title and title of corresponding dataset artifacts.
       operationId: backend.portal.api.portal_api.update_dataset
       parameters:
         - $ref: "#/components/parameters/path_collection_id"

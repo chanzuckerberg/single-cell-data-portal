@@ -2460,7 +2460,7 @@ class TestDataset(BaseAPIPortalTest):
         self.assertEqual(403, response.status_code)
 
     def test__update_private_collection_dataset_collection_published__403(self):
-        # Generate dataset with a processing status of SUCCESS, and published collection.
+        # Generate dataset with a processing status of SUCCESS, and publish collection.
         dataset_data = self.generate_dataset(
             statuses=[
                 DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS),
