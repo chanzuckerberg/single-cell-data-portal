@@ -7,7 +7,12 @@ import { ButtonsColumn, ButtonsRow, StyledButton } from "./style";
 import DetailItem from "../../DetailItem";
 import { DATA_TYPE_TO_EMBEDDING } from "..";
 
-const IGNORE_DIFFERENT_METADATA_KEYS = ["model_link", "id"];
+const IGNORE_DIFFERENT_METADATA_KEYS = [
+  "model_link",
+  "id",
+  "relative_uri",
+  "indexes",
+];
 const ATTRIBUTE_TO_LABEL: Record<string, string> = {
   experiment_name: "Organism",
   n_cells: "Cells",
