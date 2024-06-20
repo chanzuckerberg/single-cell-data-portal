@@ -1,7 +1,7 @@
 import logging
 import time
 from contextlib import contextmanager
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 
@@ -12,7 +12,7 @@ Accumulators: dict[str, Any] = dict()
 
 @contextmanager
 def log_time_taken(
-    description: str = "Code block",
+    description: str,
 ):
     start_time = time.time()
     try:
@@ -31,7 +31,7 @@ class TimeAccumulator:
     @contextmanager
     def time(
         self,
-        description: str = "Code block",
+        description: Optional[str] = None,
     ):
         start_time = time.time()
         try:
