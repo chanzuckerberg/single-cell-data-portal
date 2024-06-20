@@ -673,7 +673,7 @@ def update_dataset(collection_id: str, dataset_id: str, body: dict, token_info: 
     # Confirm user is authorized to update the dataset.
     dataset_version, _ = _assert_dataset_has_right_owner(DatasetVersionId(dataset_id), UserInfo(token_info))
 
-    # Find collection version for private collections, or collection version for revisions.
+    # Find collection version.
     collection_version = lookup_collection(collection_id)
     if collection_version is None:
         raise ForbiddenHTTPException()
