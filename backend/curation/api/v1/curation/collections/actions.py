@@ -46,7 +46,7 @@ def get(visibility: str, token_info: dict, curator: str = None):
     with log_accumulative_time_taken("reshape_for_curation_api") as time_accumulator:
         for collection_version in get_business_logic().get_collections(CollectionQueryFilter(**filters)):
             with time_accumulator.time(f"{collection_version.collection_id.id}"):
-                resp_collection = reshape_for_curation_api(collection_version, user_info)
+                resp_collection = reshape_for_curation_api(collection_version, user_info, preview=True)
                 resp_collections.append(resp_collection)
     return jsonify(resp_collections)
 
