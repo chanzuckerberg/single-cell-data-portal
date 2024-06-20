@@ -1,1 +1,0 @@
-ERROR    processing:publish_revisions.py:80 Unable to publish collection version.

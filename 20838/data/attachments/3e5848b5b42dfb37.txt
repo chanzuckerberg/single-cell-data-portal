@@ -1,3 +1,0 @@
-INFO     scripts.zenhub_close:zenhub_close.py:128 Closing issues:
-	#101 (Sample Issue 1)
-INFO     scripts.zenhub_close:zenhub_close.py:130 {'data': {'closeIssues': {'successCount': 1}}}

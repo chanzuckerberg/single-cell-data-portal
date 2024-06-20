@@ -1,1 +1,0 @@
-INFO     processing:publish_revisions.py:72 Skipping collection version, it is in the do not publish list

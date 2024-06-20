@@ -1,3 +1,0 @@
-INFO     root:actions.py:43 {'is_published': False, 'owner': 'test_user_id'}
-INFO     root:timer.py:41 {'type': 'METRIC', 'details': {'description': '62331f7a-3a6e-40af-86d0-137152218a05', 'time': 0.0017361640930175781, 'unit': 'seconds', 'group': 'reshape_for_curation_api'}}
-INFO     root:timer.py:89 {'type': 'METRIC', 'details': {'group': 'reshape_for_curation_api', 'records': 1, 'total_time': 0.0017361640930175781, 'max_time': 0.0017361640930175781, 'min_time': 0.0017361640930175781, 'median_time': 0.0017361640930175781, '_95th_percentile': 0.0017361640930175781, '_99th_percentile': 0.0017361640930175781, 'unit': 'seconds'}}
