@@ -48,6 +48,18 @@ class TimeAccumulator:
 
     def todict(self):
         records = self.records
+        if not records:
+            return dict(
+                group=self.group,
+                records=0,
+                total_time=0,
+                max_time=0,
+                min_time=0,
+                median_time=0,
+                _95th_percentile=0,
+                _99th_percentile=0,
+                unit="seconds",
+            )
         records.sort(key=lambda x: x["elapsed"])
         times = [record["elapsed"] for record in records]
         self.total_time = sum(times)
@@ -57,6 +69,7 @@ class TimeAccumulator:
         self._95th_percentile, self._99th_percentile = np.percentile(times, [95, 99])
         return dict(
             group=self.group,
+            records=len(records),
             total_time=self.total_time,
             max_time=self.max_time,
             min_time=self.min_time,
