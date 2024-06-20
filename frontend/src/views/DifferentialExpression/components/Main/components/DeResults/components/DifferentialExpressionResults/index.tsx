@@ -64,6 +64,7 @@ const DifferentialExpressionResults = ({
     pageCount,
     handlePageChange,
     overlapPercent,
+    showOverlappingCellsCallout,
   } = useConnect({
     queryGroups,
     queryGroupsWithNames,
@@ -242,7 +243,7 @@ const DifferentialExpressionResults = ({
           {errorMessage}
         </StyledCallout>
       )}
-      {nCellsOverlap > 0 && !errorMessage && (
+      {nCellsOverlap > 0 && !errorMessage && showOverlappingCellsCallout && (
         <StyledCallout
           data-testid={DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT}
           intent={parseFloat(overlapPercent) > 25 ? "notice" : "info"}
