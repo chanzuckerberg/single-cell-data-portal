@@ -13,11 +13,11 @@ sys.path.insert(0, pkg_root)  # noqa
 from urllib.parse import urlparse
 
 from backend.common.corpora_config import CorporaDbConfig
+from backend.common.providers.crossref_provider import CrossrefProvider
 from backend.common.utils.aws import AwsSecret
 from backend.layers.business.business import BusinessLogic
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.thirdparty.cloudfront_provider import CloudfrontProvider
-from backend.layers.thirdparty.crossref_provider import CrossrefProvider
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
 from backend.layers.thirdparty.uri_provider import UriProvider
@@ -25,6 +25,7 @@ from scripts.cxg_admin_scripts import (
     dataset_details,
     deletions,
     reprocess_datafile,
+    request_logs,
     schema_migration,
     tombstones,
     updates,
@@ -64,6 +65,7 @@ def cli(ctx, deployment):
         logging.error("The deployment arg must be one of 'dev', 'staging', or 'prod'")
         exit(1)
     happy_env = "stage" if deployment == "staging" else deployment
+    stackname = f"{happy_env}stack"
     happy_config = json.loads(AwsSecret(f"happy/env-{happy_env}-config").value)
     os.environ["DATASETS_BUCKET"] = happy_config["s3_buckets"]["datasets"]["name"]
 
@@ -72,6 +74,7 @@ def cli(ctx, deployment):
     ctx.obj["business_logic"] = BusinessLogic(
         DatabaseProvider(get_database_uri()), CrossrefProvider(), StepFunctionProvider(), S3Provider(), UriProvider()
     )
+    ctx.obj["stackname"] = stackname
     ctx.obj["cloudfront_provider"] = CloudfrontProvider()
 
 
@@ -280,7 +283,7 @@ def get_public_datasets(ctx):
 
 @cli.command()
 @click.pass_context
-@click.argument("report_patj", type=click.Path(exists=True))
+@click.argument("report_path", type=click.Path(exists=True))
 def rollback_datasets(ctx, report_path: str):
     """
     Used to rollback a datasets to a previous version.
@@ -288,6 +291,19 @@ def rollback_datasets(ctx, report_path: str):
     ./scripts/cxg_admin.py --deployment dev rollback-dataset report.json
     """
     schema_migration.rollback_dataset(ctx, report_path)
+
+
+@cli.command()
+@click.pass_context
+@click.argument("request_id", type=click.Path(exists=True))
+def get_request_logs(ctx, request_id: str):
+    """
+    Get the requests from from AWS cloudwatch given the request_id
+    :param ctx:
+    :param request_id:
+    :return:
+    """
+    print(json.dumps(request_logs.get(request_id, ctx["deployment_stage"], ctx["stackname"]), indent=4))
 
 
 if __name__ == "__main__":
