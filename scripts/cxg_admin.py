@@ -17,6 +17,7 @@ from backend.common.providers.crossref_provider import CrossrefProvider
 from backend.common.utils.aws import AwsSecret
 from backend.layers.business.business import BusinessLogic
 from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.thirdparty.batch_job_provider import BatchJobProvider
 from backend.layers.thirdparty.cloudfront_provider import CloudfrontProvider
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
@@ -64,15 +65,20 @@ def cli(ctx, deployment):
     if deployment not in ("dev", "staging", "prod"):
         logging.error("The deployment arg must be one of 'dev', 'staging', or 'prod'")
         exit(1)
+    os.environ["DEPLOYMENT_STAGE"] = deployment
     happy_env = "stage" if deployment == "staging" else deployment
     stackname = f"{happy_env}stack"
     happy_config = json.loads(AwsSecret(f"happy/env-{happy_env}-config").value)
     os.environ["DATASETS_BUCKET"] = happy_config["s3_buckets"]["datasets"]["name"]
 
-    os.environ["DEPLOYMENT_STAGE"] = deployment
     ctx.obj["deployment"] = deployment
     ctx.obj["business_logic"] = BusinessLogic(
-        DatabaseProvider(get_database_uri()), CrossrefProvider(), StepFunctionProvider(), S3Provider(), UriProvider()
+        DatabaseProvider(get_database_uri()),
+        BatchJobProvider(),
+        CrossrefProvider(),
+        StepFunctionProvider(),
+        S3Provider(),
+        UriProvider(),
     )
     ctx.obj["stackname"] = stackname
     ctx.obj["cloudfront_provider"] = CloudfrontProvider()
@@ -295,15 +301,15 @@ def rollback_datasets(ctx, report_path: str):
 
 @cli.command()
 @click.pass_context
-@click.argument("request_id", type=click.Path(exists=True))
-def get_request_logs(ctx, request_id: str):
+@click.argument("request_id")
+@click.option("--hours", default=6, help="Number of hours to look back in the logs")
+def get_request_logs(ctx, request_id: str, hours: int):
     """
     Get the requests from from AWS cloudwatch given the request_id
-    :param ctx:
-    :param request_id:
-    :return:
+
+    ./scripts/cxg_admin.py --deployment dev get-request-logs <request_id>
     """
-    print(json.dumps(request_logs.get(request_id, ctx["deployment_stage"], ctx["stackname"]), indent=4))
+    print(json.dumps(request_logs.get(request_id, hours, ctx.obj["deployment"], ctx.obj["stackname"]), indent=4))
 
 
 if __name__ == "__main__":

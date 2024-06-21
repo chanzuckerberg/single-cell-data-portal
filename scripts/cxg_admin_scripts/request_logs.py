@@ -1,20 +1,30 @@
+"""
+This script is used to get the logs of a request from AWS cloudwatch given the request_id
+
+It can also be used standal by modifying the constants in the __main__ block. This is useful for testing as well as
+getting logs from an rdev environment which the cxg_admin CLI does not support.
+"""
+
 import json
+import time
 from typing import List
 
 import boto3
 
 
-def get(request_id: str, deployment_stage: str, stackname: str) -> List[dict]:
+def get(request_id: str, hours: int, deployment_stage: str, stackname: str) -> List[dict]:
     """
     Get the requests from from AWS cloudwatch given the request_id
     :param request_id:
     :param deployment_stage:
     :param stackname:
     """
-
+    request_id = request_id.strip()
     client = boto3.client("logs")
     filter_pattern = f'{{$.request_id="{request_id}"}}'
     log_group_name = f"/dp/{deployment_stage}/{stackname}/backend"
+    end_time = int(time.time()) * 1000
+    start_time = end_time - hours * 60 * 60 * 1000
 
     def get_logs(next_token: str = None):
         kwargs = dict(
@@ -23,6 +33,8 @@ def get(request_id: str, deployment_stage: str, stackname: str) -> List[dict]:
             filterPattern=filter_pattern,
             limit=100,
             unmask=False,
+            startTime=start_time,
+            endTime=end_time,
         )
         if next_token:
             kwargs["nextToken"] = next_token
@@ -41,6 +53,8 @@ def get(request_id: str, deployment_stage: str, stackname: str) -> List[dict]:
                 if message.get("type") == "REQUEST":
                     beginning = True
                 result.append(message)
+        if "nextToken" not in logs:
+            break
         logs = get_logs(logs["nextToken"])
     return result
 
@@ -48,8 +62,8 @@ def get(request_id: str, deployment_stage: str, stackname: str) -> List[dict]:
 if __name__ == "__main__":
     import os
 
-    os.environ["AWS_PROFILE"] = "single-cell-dev"
-    request_id = "cf017e14-7a04-426f-91a7-bf81318c27a6"
-    deployment_stage = "rdev"
-    stack_name = "pr-7217"
-    print(json.dumps(get(request_id, deployment_stage, stack_name), indent=4))
+    os.environ["AWS_PROFILE"] = "single-cell-prod"
+    request_id = "1407b9b9-c202-4b71-adbb-b08193379e3f"
+    deployment_stage = "prod"
+    stack_name = "prodstack"
+    print(json.dumps(get(request_id, 3, deployment_stage, stack_name), indent=4))
