@@ -46,7 +46,7 @@ class DeAPIV1Tests(unittest.TestCase):
             [0, 0, 0, 0, 0, 0, 37],
         ]
 
-        for test_index, excludeOverlappingCells in enumerate(["retainBoth", "excludeOne", "excludeTwo"]):
+        for test_index, exclude_overlapping_cells in enumerate(["retainBoth", "excludeOne", "excludeTwo"]):
             test_cases = [
                 {
                     "queryGroup1Filters": {
@@ -192,7 +192,7 @@ class DeAPIV1Tests(unittest.TestCase):
 
             with load_realistic_test_snapshot(TEST_SNAPSHOT) as snapshot:
                 for i, test_case in enumerate(test_cases):
-                    test_case["excludeOverlappingCells"] = excludeOverlappingCells
+                    test_case["exclude_overlapping_cells"] = exclude_overlapping_cells
 
                     with self.subTest(test_case=test_case):
                         load_snapshot.return_value = snapshot

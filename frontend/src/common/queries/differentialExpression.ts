@@ -36,7 +36,7 @@ interface FiltersQuery {
 }
 
 interface DifferentialExpressionQuery {
-  excludeOverlappingCells: ExcludeOverlappingCells;
+  exclude_overlapping_cells: ExcludeOverlappingCells;
   queryGroup1Filters: FilterSecondary;
   queryGroup2Filters: FilterSecondary;
 }
@@ -242,6 +242,11 @@ export function useAvailableOrganisms() {
   }, [data, isLoading]);
 }
 
+enum DEQuerySuccessCode {
+  SUCCESS = 0,
+  FAILURE = 1,
+}
+
 export function useDifferentialExpression(): {
   data: DifferentialExpressionQueryResult;
   isLoading: boolean;
@@ -250,13 +255,13 @@ export function useDifferentialExpression(): {
   const requestBody = useDEQueryRequestBody();
   const { data, isLoading } = useDEQuery(requestBody);
   return useMemo(() => {
-    if (isLoading || !data || data.successCode === 1) {
+    if (isLoading || !data || data.successCode === DEQuerySuccessCode.FAILURE) {
       let errorMessage;
       switch (true) {
         case isLoading:
-          errorMessage = "Loading results";
+          errorMessage = null;
           break;
-        case data?.successCode === 1:
+        case data?.successCode === DEQuerySuccessCode.FAILURE:
           errorMessage =
             "One of the groups has 0 cells after filtering out overlapping cells.";
           break;
@@ -300,7 +305,7 @@ function useDEQueryRequestBody() {
     const { queryGroup1, queryGroup2 } = queryGroups;
 
     return {
-      excludeOverlappingCells,
+      exclude_overlapping_cells: excludeOverlappingCells,
       queryGroup1Filters: {
         development_stage_ontology_term_ids: queryGroup1.developmentStages,
         disease_ontology_term_ids: queryGroup1.diseases,

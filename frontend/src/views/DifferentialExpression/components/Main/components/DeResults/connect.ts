@@ -9,7 +9,6 @@ import { EVENTS } from "src/common/analytics/events";
 import { craftPayloadWithQueryGroups } from "../../utils";
 
 export const useConnect = ({ setIsLoading }: Props) => {
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [lfcFilter, setLfcFilter] = useState("");
   const [effectSizeFilter, setEffectSizeFilter] = useState("");
@@ -51,14 +50,7 @@ export const useConnect = ({ setIsLoading }: Props) => {
     setDifferentialExpressionResults(formattedResults);
   }, [rawDifferentialExpressionResults, isLoadingRaw, organismId]);
 
-  // Set error message if there is an error and the data is not loading
-  useEffect(() => {
-    if (errorMessageRaw && !isLoadingRaw) {
-      setErrorMessage(errorMessageRaw);
-    } else {
-      setErrorMessage(null);
-    }
-  }, [errorMessageRaw, isLoadingRaw]);
+  const errorMessage = isLoadingRaw ? null : errorMessageRaw || null;
 
   const showEmpty = !queryGroups;
 

@@ -20,25 +20,27 @@ export default function Method(): JSX.Element {
         onChange={(_, value) => {
           setActiveValue(value);
         }}
-        defaultValue={"excludeTwo"}
-        buttonDefinition={[
-          {
-            icon: <CirclesOverlapLeft />,
-            value: "excludeOne",
-            tooltipText: "Exclude overlapping cells from group 1",
-          },
-          {
-            icon: <CirclesOverlapRight />,
-            value: "excludeTwo",
-            tooltipText: "Exclude overlapping cells from group 2",
-          },
-          {
-            icon: <CirclesOverlapBoth />,
-            value: "retainBoth",
-            tooltipText: "Retain overlapping cells in both groups",
-          },
-        ]}
+        defaultValue="excludeTwo"
+        buttonDefinition={BUTTON_DEFINITION}
       />
     </Wrapper>
   );
 }
+
+const BUTTON_DEFINITION = [
+  {
+    icon: <CirclesOverlapLeft />,
+    value: "excludeOne",
+    tooltipText: "Exclude overlapping cells from group 1",
+  },
+  {
+    icon: <CirclesOverlapRight />,
+    value: "excludeTwo",
+    tooltipText: "Exclude overlapping cells from group 2",
+  },
+  {
+    icon: <CirclesOverlapBoth />,
+    value: "retainBoth",
+    tooltipText: "Retain overlapping cells in both groups",
+  },
+];

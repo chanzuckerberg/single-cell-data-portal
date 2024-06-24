@@ -174,7 +174,7 @@ def differentialExpression():
 
     queryGroup1Filters = request["queryGroup1Filters"]
     queryGroup2Filters = request["queryGroup2Filters"]
-    excludeOverlappingCells = request["excludeOverlappingCells"]
+    exclude_overlapping_cells = request["exclude_overlapping_cells"]
 
     criteria1 = BaseQueryCriteria(**queryGroup1Filters)
     criteria2 = BaseQueryCriteria(**queryGroup2Filters)
@@ -189,7 +189,7 @@ def differentialExpression():
 
     with ServerTiming.time("run differential expression"):
         de_results, n_overlap, successCode = run_differential_expression(
-            q, criteria1, criteria2, excludeOverlappingCells
+            q, criteria1, criteria2, exclude_overlapping_cells
         )
 
     return jsonify(
@@ -203,7 +203,7 @@ def differentialExpression():
 
 
 def run_differential_expression(
-    q: CensusCubeQuery, criteria1, criteria2, excludeOverlappingCells
+    q: CensusCubeQuery, criteria1, criteria2, exclude_overlapping_cells
 ) -> Tuple[List[Dict], int]:
     """
     Runs differential expression analysis between two sets of criteria.
@@ -218,12 +218,15 @@ def run_differential_expression(
     - q: CensusCubeQuery object
     - criteria1: The first set of criteria for differential expression analysis.
     - criteria2: The second set of criteria for differential expression analysis.
-    - excludeOverlappingCells: A string specifying how overlapping cells should be handled.
+    - exclude_overlapping_cells: A string specifying how overlapping cells should be handled.
 
     Returns:
     A tuple containing two elements:
     - A list of dictionaries, each representing a gene and its differential expression metrics.
     - An integer representing the number of overlapping populations between the two groups.
+    - An integer representing the success code of the differential expression analysis.
+        0: Success
+        1: No cells in one or both groups after filtering out overlapping cells
     """
 
     # augment criteria1 and criteria2 with descendants if cell_type_ontology_term_ids is specified
@@ -257,9 +260,9 @@ def run_differential_expression(
 
     es_index1 = es1["group_id"]
     es_index2 = es2["group_id"]
-    if excludeOverlappingCells == "excludeOne":
+    if exclude_overlapping_cells == "excludeOne":
         es1 = es1[~es_index1.isin(es_index2)]
-    elif excludeOverlappingCells == "excludeTwo":
+    elif exclude_overlapping_cells == "excludeTwo":
         es2 = es2[~es_index2.isin(es_index1)]
 
     if es1.shape[0] == 0 or es2.shape[0] == 0:
