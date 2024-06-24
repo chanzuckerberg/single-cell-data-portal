@@ -109,7 +109,7 @@ paths:
             schema:
               type: object
               properties:
-                excludeOverlappingCells:
+                exclude_overlapping_cells:
                   type: string
                   description: "This parameter specifies the method for handling overlapping cells between the two groups."
                   enum:
@@ -164,7 +164,7 @@ paths:
                   required:
                     - organism_ontology_term_id
               required:
-                - excludeOverlappingCells
+                - exclude_overlapping_cells
                 - queryGroup1Filters
                 - queryGroup2Filters
       responses:
