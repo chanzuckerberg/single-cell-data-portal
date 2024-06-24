@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useContext } from "react";
 
 import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
 
@@ -8,6 +8,7 @@ import { MAX_NUM_TOP_GENES_TO_PORT_TO_GE, ROWS_PER_PAGE } from "./constants";
 
 import useProcessedQueryGroupFilterDimensions from "../../../common/query_group_filter_dimensions";
 import { Props } from "./types";
+import { StateContext } from "src/views/DifferentialExpression/common/store";
 
 export const useConnect = ({
   queryGroups,
@@ -24,6 +25,7 @@ export const useConnect = ({
   nCellsOverlap: Props["nCellsOverlap"];
   sortDirection: Props["sortDirection"];
 }) => {
+  const { excludeOverlappingCells } = useContext(StateContext);
   const [page, setPage] = useState(1);
 
   const { n_cells: nCellsGroup1 } = useProcessedQueryGroupFilterDimensions(
@@ -98,5 +100,6 @@ export const useConnect = ({
     pageCount,
     handlePageChange,
     overlapPercent,
+    showOverlappingCellsCallout: excludeOverlappingCells === "retainBoth",
   };
 };

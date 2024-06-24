@@ -13,4 +13,5 @@ export interface Props {
   setEffectSizeFilter: Dispatch<SetStateAction<string>>;
   sortDirection: "asc" | "desc";
   setSortDirection: Dispatch<SetStateAction<"asc" | "desc">>;
+  errorMessage: string | null;
 }
