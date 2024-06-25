@@ -124,7 +124,7 @@ export default function DifferentialExpression(): JSX.Element {
                     </CellCountTitle>
                   </CellGroupTitle>
                   <QueryGroupFilters
-                    key={`query-group-1`}
+                    key="query-group-1"
                     queryGroup={queryGroup1}
                     isQueryGroup1={true}
                   />
@@ -147,7 +147,7 @@ export default function DifferentialExpression(): JSX.Element {
                     </CellCountTitle>
                   </CellGroupTitle>
                   <QueryGroupFilters
-                    key={`query-group-2`}
+                    key="query-group-2"
                     queryGroup={queryGroup2}
                     isQueryGroup1={false}
                   />
