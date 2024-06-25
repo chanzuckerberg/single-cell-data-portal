@@ -52,6 +52,7 @@ const DifferentialExpressionResults = ({
   setEffectSizeFilter,
   sortDirection,
   setSortDirection,
+  errorMessage,
 }: Props) => {
   const {
     page,
@@ -65,6 +66,7 @@ const DifferentialExpressionResults = ({
     overlapPercent,
     numDatasetsText1,
     numDatasetsText2,
+    showOverlappingCellsCallout,
   } = useConnect({
     queryGroups,
     queryGroupsWithNames,
@@ -239,7 +241,15 @@ const DifferentialExpressionResults = ({
           <QueryGroupTags queryGroupsWithNames={queryGroupsWithNames} />
         </FilterTagsWrapper>
       </CellGroupWrapper>
-      {nCellsOverlap > 0 && (
+      {!!errorMessage && (
+        <StyledCallout
+          data-testid={DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT}
+          intent="negative"
+        >
+          {errorMessage}
+        </StyledCallout>
+      )}
+      {nCellsOverlap > 0 && !errorMessage && showOverlappingCellsCallout && (
         <StyledCallout
           data-testid={DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT}
           intent={parseFloat(overlapPercent) > 25 ? "notice" : "info"}
@@ -258,6 +268,9 @@ const DifferentialExpressionResults = ({
           )}
           hoverable={false}
           columnIdToName={columnIdToName}
+          columnIdToNumCharactersTruncateThreshold={{
+            name: 8,
+          }}
         />
 
         <Pagination count={pageCount} page={page} onChange={handlePageChange} />

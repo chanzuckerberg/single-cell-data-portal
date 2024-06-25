@@ -27,6 +27,8 @@ export const DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT =
   "differential-expression-filter-cell-count";
 export const DIFFERENTIAL_EXPRESSION_FILTERS_LOADING_SPINNER =
   "differential-expression-filters-loading-spinner";
+export const DIFFERENTIAL_EXPRESSION_OVERLAP_BEHAVIOR =
+  "differential-expression-overlap-behavior";
 
 // RESULTS VIEW DATA-TESTID CONSTANTS
 export const DIFFERENTIAL_EXPRESSION_RESULTS_DOWNLOAD_BUTTON =
