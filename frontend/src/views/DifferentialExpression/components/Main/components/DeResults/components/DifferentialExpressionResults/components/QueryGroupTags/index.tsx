@@ -60,7 +60,7 @@ const QueryGroupTags = ({
             clickToViewText
           ) : (
             <div>
-              <b>{clickToViewText}</b>
+              {key === "cellTypes" && <b>{clickToViewText}</b>}
               {selected.map((value, index) => (
                 <div key={`value-${value}-${index}`}>{getValue(index)}</div>
               ))}
@@ -78,24 +78,20 @@ const QueryGroupTags = ({
             title={tooltipContent}
           >
             <span>
-              <StyledTag
-                key={key}
-                color="neutral"
-                sdsType="secondary"
+              <TagWrapper
+                key={`${key}-tag-wrapper`}
+                selectedId={selectedId[0]}
                 isSingleCellType={key === "cellTypes" && selected.length === 1}
-                label={label}
-                onClick={
-                  key === "cellTypes" && selected.length === 1
-                    ? () => {
-                        const url = getCellTypeLink({
-                          cellTypeId: selectedId[0],
-                          tissueId: NO_ORGAN_ID,
-                        });
-                        window.open(url, "_blank");
-                      }
-                    : undefined
-                }
-              />
+              >
+                <StyledTag
+                  color="neutral"
+                  sdsType="secondary"
+                  isSingleCellType={
+                    key === "cellTypes" && selected.length === 1
+                  }
+                  label={label}
+                />
+              </TagWrapper>
             </span>
           </Tooltip>
         );
@@ -103,5 +99,34 @@ const QueryGroupTags = ({
     </>
   );
 };
+
+interface TagWrapperProps {
+  children: React.ReactNode;
+  key: string;
+  selectedId: string;
+  isSingleCellType: boolean;
+}
+
+function TagWrapper({
+  children,
+  key,
+  selectedId,
+  isSingleCellType,
+}: TagWrapperProps) {
+  if (!isSingleCellType) {
+    return <span key={key}>{children}</span>;
+  }
+
+  const url = getCellTypeLink({
+    cellTypeId: selectedId,
+    tissueId: NO_ORGAN_ID,
+  });
+
+  return (
+    <a key={key} href={url} rel="noopener" target="_blank">
+      {children}
+    </a>
+  );
+}
 
 export default QueryGroupTags;
