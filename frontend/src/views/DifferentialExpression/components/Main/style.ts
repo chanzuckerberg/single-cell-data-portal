@@ -7,7 +7,8 @@ import {
   Button,
   fontBodyXxs,
 } from "@czi-sds/components";
-import { gray500, primary400 } from "src/common/theme";
+import { fontWeightMedium, gray500, primary400 } from "src/common/theme";
+import { SvgIcon } from "@mui/material";
 
 const LEFT_PANEL_WIDTH = "60vw";
 const RIGHT_PANEL_WIDTH = "40vw";
@@ -75,15 +76,25 @@ export const StepSubHeader = styled.div`
 
 export const RunButton = styled(Button)`
   ${fontBodyS}
-  margin-bottom: 50px;
-  margin-top: 59px;
-  width: 256px;
+  width: fit-content;
+  font-weight: ${fontWeightMedium};
+  padding: 6px 12px;
+`;
+
+export const ClearAllButton = styled(Button)`
+  ${fontBodyS}
+  width: fit-content;
+  font-weight: ${fontWeightMedium};
+  padding: 6px 12px;
+  color: ${gray500};
 `;
 
 export const RunButtonWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
+  margin-bottom: 50px;
+  margin-top: 24px;
 `;
 
 export const FlexRow = styled.div`
@@ -113,4 +124,11 @@ export const Spinner = styled.div`
   border-radius: 50%;
   border-left-color: #000;
   animation: ${spin} 0.5s linear infinite;
+`;
+
+export const StyledSvgIcon = styled(SvgIcon)`
+  color: inherit;
+  &:active {
+    color: ${primary400};
+  }
 `;

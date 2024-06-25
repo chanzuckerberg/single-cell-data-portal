@@ -15,6 +15,7 @@ import {
   DIFFERENTIAL_EXPRESSION_FILTER_TAG_GRAY,
   DIFFERENTIAL_EXPRESSION_INSTRUCTIONS_SIDEBAR,
   DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON,
+  DIFFERENTIAL_EXPRESSION_CLEAR_ALL_BUTTON,
   DIFFERENTIAL_EXPRESSION_COPY_FILTERS_BUTTON_PREFIX,
   DIFFERENTIAL_EXPRESSION_RESULTS_DOWNLOAD_BUTTON,
   DIFFERENTIAL_EXPRESSION_SOURCE_DATA_BUTTON,
@@ -31,6 +32,7 @@ import {
   DIFFERENTIAL_EXPRESSION_FILTERS_LOADING_SPINNER,
   DIFFERENTIAL_EXPRESSION_SORT_DIRECTION,
   DIFFERENTIAL_EXPRESSION_SOURCE_DATA_SIDEBAR,
+  DIFFERENTIAL_EXPRESSION_OVERLAP_BEHAVIOR,
 } from "src/views/DifferentialExpression/common/constants";
 
 const { describe } = test;
@@ -371,6 +373,59 @@ describe("Differential Expression", () => {
       expect(initialCellCountGroup1).not.toBe(updatedCellCountGroup1);
     });
 
+    test("Clear all button clears query groups", async ({ page }) => {
+      // Populate "lung" in cell group 1 filter tissue
+      const tissueFilterAutocompleteGroup1 = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
+        .getByTestId(
+          `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Tissue`
+        );
+      await clickOnAutocompleteDropdownItem(
+        tissueFilterAutocompleteGroup1,
+        "lung"
+      );
+
+      // Populate "blood" in cell group 2 filter tissue
+      const tissueFilterAutocompleteGroup2 = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER)
+        .getByTestId(
+          `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Tissue`
+        );
+      await clickOnAutocompleteDropdownItem(
+        tissueFilterAutocompleteGroup2,
+        "blood"
+      );
+
+      // Ensure "Find Genes" button is enabled
+      const findGenesButton = page.getByTestId(
+        DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON
+      );
+      await expect(findGenesButton).toBeEnabled();
+
+      // Click "Clear all" button
+      const clearAllButton = page.getByTestId(
+        DIFFERENTIAL_EXPRESSION_CLEAR_ALL_BUTTON
+      );
+      await clearAllButton.click();
+      await waitForFiltersEndpoint(page);
+
+      // Ensure "Find Genes" button is disabled again
+      await expect(findGenesButton).toBeDisabled();
+
+      // Ensure "lung" tag is no longer present in cell group 1 filter
+      const lungTag = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
+        .getByTestId(DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY)
+        .filter({ hasText: "lung" });
+      await expect(lungTag).toHaveCount(0);
+
+      // Ensure "blood" tag is no longer present in cell group 2 filter
+      const bloodTag = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER)
+        .getByTestId(DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY)
+        .filter({ hasText: "blood" });
+      await expect(bloodTag).toHaveCount(0);
+    });
     test("Find genes button only active when both filters populated", async ({
       page,
     }) => {
@@ -421,7 +476,7 @@ describe("Differential Expression", () => {
 
   describe("Results", () => {
     test("All tests", async ({ page }) => {
-      await runDEQuery(page);
+      await runDEQuery(page, false);
 
       await test.step("Cell Group 1 and 2 contain the correct number of cells and filter tags", async () => {
         // Check number of cells
@@ -500,7 +555,6 @@ describe("Differential Expression", () => {
         await newPage2.close();
       });
 
-      // TODO: Figure out how to test when callout is present
       await test.step("No overlapping cells info callout present", async () => {
         await expect(
           page.getByTestId(DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT)
@@ -686,6 +740,21 @@ describe("Differential Expression", () => {
         expect(dataRow2.length).toBe(columnNames.length);
         expect(dataRow3.length).toBe(columnNames.length);
       });
+
+      await runDEQuery(page, true);
+      await test.step("Overlapping cells info callout is visible when overlapping cells are not filtered", async () => {
+        // Ensure the callout is not visible at first
+        await expect(
+          page.getByTestId(DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT)
+        ).not.toBeVisible();
+
+        // Ensure the callout is visible when overlapping cells are not filtered
+        await page
+          .getByTestId(DIFFERENTIAL_EXPRESSION_OVERLAP_BEHAVIOR)
+          .locator("button:nth-child(3)")
+          .click();
+        await isElementVisible(page, DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT);
+      });
     });
   });
 });
@@ -732,8 +801,10 @@ const clickOnAutocompleteDropdownItem = async (
   await waitForFiltersEndpoint(autocomplete.page());
 };
 
-const runDEQuery = async (page: Page) => {
+const runDEQuery = async (page: Page, includeOverlappingCells = false) => {
   // Type "lung" in tissue filter for group 1
+  await page.reload();
+
   const tissueFilterAutocompleteGroup1 = page
     .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
     .getByTestId(`${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Tissue`);
@@ -755,17 +826,18 @@ const runDEQuery = async (page: Page) => {
     cellTypeFilterAutocompleteGroup1,
     "plasma cell"
   );
-  // Type "acinar cell" in cell type filter for group 2
-  const cellTypeFilterAutocompleteGroup2 = page
-    .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER)
-    .getByTestId(
-      `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Cell Type`
+  if (!includeOverlappingCells) {
+    // Type "acinar cell" in cell type filter for group 2
+    const cellTypeFilterAutocompleteGroup2 = page
+      .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER)
+      .getByTestId(
+        `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Cell Type`
+      );
+    await clickOnAutocompleteDropdownItem(
+      cellTypeFilterAutocompleteGroup2,
+      "acinar cell"
     );
-  await clickOnAutocompleteDropdownItem(
-    cellTypeFilterAutocompleteGroup2,
-    "acinar cell"
-  );
-
+  }
   // Hit the "Find Genes" button
   const findGenesButton = page.getByTestId(
     DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON

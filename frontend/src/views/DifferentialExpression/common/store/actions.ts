@@ -64,6 +64,15 @@ export function clearQueryGroup2Filters(): GetActionTypeOfReducer<
   };
 }
 
+export function setExcludeOverlappingCells(
+  excludeOverlappingCells: State["excludeOverlappingCells"]
+): GetActionTypeOfReducer<(typeof REDUCERS)["setExcludeOverlappingCells"]> {
+  return {
+    payload: excludeOverlappingCells,
+    type: "setExcludeOverlappingCells",
+  };
+}
+
 export function setSnapshotId(
   snapshotId: State["snapshotId"]
 ): GetActionTypeOfReducer<(typeof REDUCERS)["setSnapshotId"]> {

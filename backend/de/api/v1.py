@@ -174,6 +174,7 @@ def differentialExpression():
 
     queryGroup1Filters = request["queryGroup1Filters"]
     queryGroup2Filters = request["queryGroup2Filters"]
+    exclude_overlapping_cells = request["exclude_overlapping_cells"]
 
     criteria1 = BaseQueryCriteria(**queryGroup1Filters)
     criteria2 = BaseQueryCriteria(**queryGroup2Filters)
@@ -187,18 +188,23 @@ def differentialExpression():
     q = CensusCubeQuery(snapshot, cube_query_params=None)
 
     with ServerTiming.time("run differential expression"):
-        de_results, n_overlap = run_differential_expression(q, criteria1, criteria2)
+        de_results, n_overlap, successCode = run_differential_expression(
+            q, criteria1, criteria2, exclude_overlapping_cells
+        )
 
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
             differentialExpressionResults=de_results,
             n_overlap=n_overlap,
+            successCode=successCode,
         )
     )
 
 
-def run_differential_expression(q: CensusCubeQuery, criteria1, criteria2) -> Tuple[List[Dict], int]:
+def run_differential_expression(
+    q: CensusCubeQuery, criteria1, criteria2, exclude_overlapping_cells
+) -> Tuple[List[Dict], int]:
     """
     Runs differential expression analysis between two sets of criteria.
 
@@ -212,11 +218,15 @@ def run_differential_expression(q: CensusCubeQuery, criteria1, criteria2) -> Tup
     - q: CensusCubeQuery object
     - criteria1: The first set of criteria for differential expression analysis.
     - criteria2: The second set of criteria for differential expression analysis.
+    - exclude_overlapping_cells: A string specifying how overlapping cells should be handled.
 
     Returns:
     A tuple containing two elements:
     - A list of dictionaries, each representing a gene and its differential expression metrics.
     - An integer representing the number of overlapping populations between the two groups.
+    - An integer representing the success code of the differential expression analysis.
+        0: Success
+        1: No cells in one or both groups after filtering out overlapping cells
     """
 
     # augment criteria1 and criteria2 with descendants if cell_type_ontology_term_ids is specified
@@ -242,10 +252,21 @@ def run_differential_expression(q: CensusCubeQuery, criteria1, criteria2) -> Tup
         for col in cell_counts_logical_dims_exclude_dataset_id
         if col in cell_counts1.columns and col in cell_counts2.columns
     ]
+
     index1 = cell_counts1.set_index(filter_columns).index
     index2 = cell_counts2.set_index(filter_columns).index
     overlap_filter = index1.isin(index2)
     n_overlap = int(cell_counts1[overlap_filter]["n_total_cells"].sum())
+
+    es_index1 = es1["group_id"]
+    es_index2 = es2["group_id"]
+    if exclude_overlapping_cells == "excludeOne":
+        es1 = es1[~es_index1.isin(es_index2)]
+    elif exclude_overlapping_cells == "excludeTwo":
+        es2 = es2[~es_index2.isin(es_index1)]
+
+    if es1.shape[0] == 0 or es2.shape[0] == 0:
+        return [], n_overlap, 1
 
     es_agg1 = es1.groupby("gene_ontology_term_id").sum(numeric_only=True)
     es_agg2 = es2.groupby("gene_ontology_term_id").sum(numeric_only=True)
@@ -286,7 +307,7 @@ def run_differential_expression(q: CensusCubeQuery, criteria1, criteria2) -> Tup
                     "adjusted_p_value": pval,
                 }
             )
-    return statistics, n_overlap
+    return statistics, n_overlap, 0
 
 
 def _get_cell_counts_for_query(q: CensusCubeQuery, criteria: BaseQueryCriteria) -> pd.DataFrame:

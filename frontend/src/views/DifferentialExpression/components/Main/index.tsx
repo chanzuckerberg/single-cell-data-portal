@@ -11,15 +11,18 @@ import {
   TwoPanelLayout,
   CellCountTitle,
   Spinner,
+  ClearAllButton,
 } from "./style";
 import QueryGroupFilters from "./components/Filters";
 import Organism from "./components/Organism";
 import DeResults from "./components/DeResults";
 import Loader from "./components/Loader";
 import Method from "./components/Method";
+import OverlapBehavior from "./components/OverlapBehavior";
 import {
   DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER,
   DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER,
+  DIFFERENTIAL_EXPRESSION_CLEAR_ALL_BUTTON,
   DIFFERENTIAL_EXPRESSION_FILTERS_LOADING_SPINNER,
   DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT,
   DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON,
@@ -37,6 +40,7 @@ export default function DifferentialExpression(): JSX.Element {
     queryGroup2,
     canRunDifferentialExpression,
     handleRunDifferentialExpression,
+    handleClearQueryGroups,
     nCellsGroup1,
     isLoadingGroup1,
     nCellsGroup2,
@@ -103,6 +107,7 @@ export default function DifferentialExpression(): JSX.Element {
             <FlexRow>
               <Organism />
               <Method />
+              <OverlapBehavior />
             </FlexRow>
             <FlexRow>
               <div data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER}>
@@ -151,7 +156,17 @@ export default function DifferentialExpression(): JSX.Element {
                 />
               </div>
             </FlexRow>
+
             <RunButtonWrapper>
+              <ClearAllButton
+                color="inherit"
+                size="large"
+                variant="text"
+                onClick={handleClearQueryGroups}
+                data-testid={DIFFERENTIAL_EXPRESSION_CLEAR_ALL_BUTTON}
+              >
+                Clear all
+              </ClearAllButton>
               <RunButton
                 color="primary"
                 size="large"
