@@ -18,6 +18,7 @@ import Organism from "./components/Organism";
 import DeResults from "./components/DeResults";
 import Loader from "./components/Loader";
 import Method from "./components/Method";
+import OverlapBehavior from "./components/OverlapBehavior";
 import {
   DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER,
   DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER,
@@ -106,6 +107,7 @@ export default function DifferentialExpression(): JSX.Element {
             <FlexRow>
               <Organism />
               <Method />
+              <OverlapBehavior />
             </FlexRow>
             <FlexRow>
               <div data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER}>

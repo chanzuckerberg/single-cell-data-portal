@@ -40,6 +40,7 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
     downloadCSV,
     showEmpty,
     nOverlap,
+    errorMessage,
   } = useConnect({ setIsLoading });
 
   return (
@@ -84,6 +85,7 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
                 setEffectSizeFilter={setEffectSizeFilter}
                 sortDirection={sortDirection}
                 setSortDirection={setSortDirection}
+                errorMessage={errorMessage}
               />
             )}
         </ResultsWrapper>
@@ -96,11 +98,10 @@ export default function DeResults({ setIsLoading }: Props): JSX.Element {
             <ol>
               <li>
                 Select a cell group of interest within the Cell Group 1 box by
-                using the dropdown selectors.
-                <br />
-                <br />
-                To copy the same selection over to Cell Group 2, click the copy
-                button to the right of each dropdown in Cell Group 1.
+                using the dropdown selectors. All categories are optional, but
+                at least one selection must be made to run the tool. To copy the
+                same selection over to Cell Group 2, click the copy button to
+                the right of each dropdown in Cell Group 1.
               </li>
               <li>
                 Within Cell Group 2, select a group that the cell group of
