@@ -1,7 +1,14 @@
 import { Callout, fontBodyS, fontBodyXs } from "@czi-sds/components";
 import styled from "@emotion/styled";
 import { Autocomplete, TextField, alertClasses } from "@mui/material";
-import { gray100, gray400, gray500, primary400 } from "src/common/theme";
+import {
+  fontWeightMedium,
+  fontWeightRegular,
+  gray100,
+  gray400,
+  gray500,
+  primary400,
+} from "src/common/theme";
 import { FilterOption } from "../../types";
 import { formControlClasses } from "@mui/material/FormControl";
 import { inputBaseClasses } from "@mui/material/InputBase";
@@ -15,7 +22,7 @@ const Tag = styled.div`
   color: white;
   border-radius: 4px;
   ${fontBodyXs}
-  font-weight: 500;
+  font-weight: ${fontWeightMedium};
   margin-right: 5px;
   cursor: default;
 `;
@@ -93,7 +100,7 @@ export const StyledCallout = styled(Callout)`
   width: 100%;
   background-color: ${gray100};
   ${fontBodyS}
-  font-weight: 400;
+  font-weight: ${fontWeightRegular};
   color: ${gray500};
 
   .${alertClasses.icon} {
