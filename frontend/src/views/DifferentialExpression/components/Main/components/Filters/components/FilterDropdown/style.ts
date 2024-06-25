@@ -2,7 +2,6 @@ import { Callout, fontBodyS, fontBodyXs } from "@czi-sds/components";
 import styled from "@emotion/styled";
 import { Autocomplete, TextField, alertClasses } from "@mui/material";
 import {
-  fontWeightMedium,
   fontWeightRegular,
   gray100,
   gray400,
@@ -22,7 +21,7 @@ const Tag = styled.div`
   color: white;
   border-radius: 4px;
   ${fontBodyXs}
-  font-weight: ${fontWeightMedium};
+  font-weight: 500;
   margin-right: 5px;
   cursor: default;
 `;
