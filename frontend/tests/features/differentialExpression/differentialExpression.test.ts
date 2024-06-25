@@ -515,16 +515,16 @@ describe("Differential Expression", () => {
           .locator('[class*="MuiChip-label"]')
           .all();
         expect(cellGroup1Chips).toHaveLength(2);
-        expect(cellGroup1Chips[0]).toHaveText("1 tissue");
-        expect(cellGroup1Chips[1]).toHaveText("1 cell type");
+        expect(cellGroup1Chips[0]).toHaveText("lung");
+        expect(cellGroup1Chips[1]).toHaveText("plasma cell");
 
         const cellGroup2Chips = await page
           .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_INFO)
           .locator('[class*="MuiChip-label"]')
           .all();
         expect(cellGroup2Chips).toHaveLength(2);
-        expect(cellGroup2Chips[0]).toHaveText("1 tissue");
-        expect(cellGroup2Chips[1]).toHaveText("1 cell type");
+        expect(cellGroup2Chips[0]).toHaveText("lung");
+        expect(cellGroup2Chips[1]).toHaveText("acinar cell");
       });
 
       await test.step("Open in GE opens in a new tab with expected URL for Cell Group 1", async () => {
