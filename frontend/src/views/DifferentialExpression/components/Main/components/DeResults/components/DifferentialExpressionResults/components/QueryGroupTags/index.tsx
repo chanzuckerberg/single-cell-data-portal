@@ -67,6 +67,7 @@ const QueryGroupTags = ({
             </div>
           );
 
+        const isSingleCellType = key === "cellTypes" && selected.length === 1;
         return (
           <Tooltip
             key={`${key}-tooltip`}
@@ -81,14 +82,12 @@ const QueryGroupTags = ({
               <TagWrapper
                 key={`${key}-tag-wrapper`}
                 selectedId={selectedId[0]}
-                isSingleCellType={key === "cellTypes" && selected.length === 1}
+                isSingleCellType={isSingleCellType}
               >
                 <StyledTag
                   color="neutral"
                   sdsType="secondary"
-                  isSingleCellType={
-                    key === "cellTypes" && selected.length === 1
-                  }
+                  isSingleCellType={isSingleCellType}
                   label={label}
                 />
               </TagWrapper>

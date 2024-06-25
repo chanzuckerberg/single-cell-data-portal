@@ -135,7 +135,7 @@ const DifferentialExpressionResults = ({
           >
             Effect Size
             <HelpTooltip
-              title={"Effect Size"}
+              title="Effect Size"
               dark
               text={
                 <>
