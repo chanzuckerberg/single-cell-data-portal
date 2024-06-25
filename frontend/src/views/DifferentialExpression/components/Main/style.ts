@@ -7,7 +7,7 @@ import {
   Button,
   fontBodyXxs,
 } from "@czi-sds/components";
-import { fontWeightMedium, gray500, primary400 } from "src/common/theme";
+import { gray500, primary400 } from "src/common/theme";
 import { SvgIcon } from "@mui/material";
 
 const RIGHT_PANEL_WIDTH = "480px";
@@ -78,14 +78,14 @@ export const StepSubHeader = styled.div`
 export const RunButton = styled(Button)`
   ${fontBodyS}
   width: fit-content;
-  font-weight: ${fontWeightMedium};
+  font-weight: 500;
   padding: 6px 12px;
 `;
 
 export const ClearAllButton = styled(Button)`
   ${fontBodyS}
   width: fit-content;
-  font-weight: ${fontWeightMedium};
+  font-weight: 500;
   padding: 6px 12px;
   color: ${gray500};
 `;
