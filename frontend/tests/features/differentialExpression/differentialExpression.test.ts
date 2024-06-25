@@ -749,6 +749,8 @@ const clickOnAutocompleteDropdownItem = async (
 
 const runDEQuery = async (page: Page, includeOverlappingCells = false) => {
   // Type "lung" in tissue filter for group 1
+  await page.reload();
+
   const tissueFilterAutocompleteGroup1 = page
     .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
     .getByTestId(`${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Tissue`);
