@@ -12,7 +12,6 @@ import { useQueryGroupFilterDimensions } from "src/common/queries/differentialEx
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { StateContext } from "src/views/DifferentialExpression/common/store";
 
-
 export const useConnect = ({
   queryGroups,
   queryGroupsWithNames,
