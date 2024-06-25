@@ -63,8 +63,8 @@ const DifferentialExpressionResults = ({
     pageCount,
     handlePageChange,
     overlapPercent,
-    numDatasets1,
-    numDatasets2,
+    numDatasetsText1,
+    numDatasetsText2,
   } = useConnect({
     queryGroups,
     queryGroupsWithNames,
@@ -188,8 +188,8 @@ const DifferentialExpressionResults = ({
         </CellGroupTitleWrapper>
         <CellCountTitle data-testid={DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT}>
           <CellGroupStatsIndicator>
-            {nCellsGroup1.toLocaleString()} cells | {numDatasets1} | (+) Effect
-            Size
+            {nCellsGroup1.toLocaleString()} cells | {numDatasetsText1} | (+)
+            Effect Size
           </CellGroupStatsIndicator>
         </CellCountTitle>
         <FilterTagsWrapper>
@@ -231,8 +231,8 @@ const DifferentialExpressionResults = ({
         </CellGroupTitleWrapper>
         <CellCountTitle data-testid={DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT}>
           <CellGroupStatsIndicator>
-            {nCellsGroup2.toLocaleString()} cells | {numDatasets2} | (-) Effect
-            Size
+            {nCellsGroup2.toLocaleString()} cells | {numDatasetsText2} | (-)
+            Effect Size
           </CellGroupStatsIndicator>
         </CellCountTitle>
         <FilterTagsWrapper>

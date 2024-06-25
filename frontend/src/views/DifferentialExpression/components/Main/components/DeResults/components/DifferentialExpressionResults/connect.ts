@@ -110,10 +110,10 @@ export const useConnect = ({
     pageCount,
     handlePageChange,
     overlapPercent,
-    numDatasets1: `${datasets1.length} dataset${
+    numDatasetsText1: `${datasets1.length} dataset${
       datasets1.length !== 1 ? "s" : ""
     }`,
-    numDatasets2: `${datasets2.length} dataset${
+    numDatasetsText2: `${datasets2.length} dataset${
       datasets2.length !== 1 ? "s" : ""
     }`,
   };
