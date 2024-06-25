@@ -1,0 +1,1 @@
+{"levelname": "INFO", "asctime": "2024-06-25T20:12:54.025Z", "name": "processing", "message": "Skipping collection version, it is in the do not publish list", "lineno": 72, "pathname": "/single-cell-data-portal/backend/layers/processing/publish_revisions.py", "collection_version_id": "05bff5e7-8581-4cff-b872-8e9e4e59ab52"}
