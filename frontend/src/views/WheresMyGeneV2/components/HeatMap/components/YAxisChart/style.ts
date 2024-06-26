@@ -1,4 +1,3 @@
-import Image from "next/image";
 import styled from "@emotion/styled";
 import { HEAT_MAP_BASE_CELL_PX, Y_AXIS_CHART_WIDTH_PX } from "../../utils";
 import { ECHART_AXIS_LABEL_COLOR_HEX } from "../XAxisChart/style";
@@ -110,12 +109,6 @@ function yAxisHeight({ height }: { height: number }) {
     height: ${height}px;
   `;
 }
-
-export const StyledImage = styled(Image)`
-  :hover {
-    filter: brightness(0);
-  }
-`;
 
 export const TissueLabel = styled.div`
   white-space: nowrap;

@@ -1,6 +1,6 @@
-import { ReactComponent as CirclesOverlapLeft } from "src/common/icons/circlesOverlapLeft.svg";
-import { ReactComponent as CirclesOverlapRight } from "src/common/icons/circlesOverlapRight.svg";
-import { ReactComponent as CirclesOverlapBoth } from "src/common/icons/circlesOverlapBoth.svg";
+import CirclesOverlapLeft from "src/common/icons/circlesOverlapLeft.svg";
+import CirclesOverlapRight from "src/common/icons/circlesOverlapRight.svg";
+import CirclesOverlapBoth from "src/common/icons/circlesOverlapBoth.svg";
 
 import { SegmentedControl } from "@czi-sds/components";
 import { Label } from "../common/style";
