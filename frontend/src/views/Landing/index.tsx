@@ -8,7 +8,7 @@ import { useInView } from "react-intersection-observer";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
-import wordmark from "src/common/images/cellxgene-discover-wordmark.svg";
+import Wordmark from "src/common/images/cellxgene-discover-wordmark.svg";
 import LaptopImg from "src/components/common/staticPages/cellxgene-laptop-updated.png";
 import HeroBg from "src/components/common/staticPages/cellxgene_hero_bg.png";
 import AnnotateImg from "src/components/common/staticPages/annotate.png";
@@ -334,7 +334,7 @@ const LandingPage = (): JSX.Element => {
           </div>
           <div className={styles.heroTextContainer}>
             <div className={styles.heroLogo}>
-              <Image src={wordmark} alt="CZ CELLxGENE Discover" priority />
+              <Wordmark />
             </div>
             <h1>Discover the mechanisms of human health</h1>
             <p>
