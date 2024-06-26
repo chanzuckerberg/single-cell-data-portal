@@ -8,7 +8,7 @@ import {
 } from "@czi-sds/components";
 import { gray500, primary400 } from "src/common/theme";
 
-const TABLE_WIDTH = "386px";
+export const TABLE_WIDTH = "480px";
 
 export const ButtonLabel = styled.span`
   ${fontBodyM}
