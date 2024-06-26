@@ -5,17 +5,16 @@ import plasmaImage from "./plasma.png";
 import { ContentWrapper, Wrapper, TooltipLink, Label } from "./style";
 import { MAX_EXPRESSION_LABEL_TEST_ID } from "./constants";
 import {
-  StyledIconImage,
   StyledTooltip,
   TooltipContent,
   TooltipButton,
 } from "src/views/WheresMyGeneV2/components/CellInfoSideBar/style";
-import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { COLOR_LEGEND, COLOR_LEGEND_TOOLTIP_CONTENT } from "./constants";
 import { ROUTES } from "src/common/constants/routes";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { useConnect } from "../Legend/connect";
+import { StyledQuestionMarkIcon } from "src/common/style";
 
 const CONTENT_WIDTH_PX = 120;
 
@@ -60,7 +59,7 @@ export default function RelativeGeneExpression({
         }
       >
         <TooltipButton sdsStyle="minimal" sdsType="secondary" isAllCaps={false}>
-          <StyledIconImage alt="question mark" src={questionMarkIcon} />
+          <StyledQuestionMarkIcon />
         </TooltipButton>
       </Tooltip>
       <ContentWrapper>
