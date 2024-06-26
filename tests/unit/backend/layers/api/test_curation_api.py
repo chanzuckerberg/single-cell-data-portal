@@ -1300,12 +1300,16 @@ class TestPatchCollectionID(BaseAPIPortalTest):
             {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
         ]
         new_doi = "10.1016"  # a real DOI (CURIE reference)
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.2020"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.2020", 17169328.664)
+        )
         collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
         self.assertEqual(initial_doi, original_collection["doi"])
         metadata = {"doi": new_doi}
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.1016"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.1016", 17169328.664)
+        )
         response = self.app.patch(
             f"/curation/v1/collections/{collection_id}",
             json=metadata,
@@ -1320,7 +1324,9 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         links = [
             {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
         ]
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.2020"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.2020", 17169328.664)
+        )
         collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
         self.assertEqual(initial_consortia, original_collection["consortia"])
@@ -1339,7 +1345,9 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         links = [
             {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
         ]
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.2020"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.2020", 17169328.664)
+        )
         collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
         self.assertEqual(initial_consortia, original_collection["consortia"])
@@ -1358,7 +1366,9 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         links = [
             {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
         ]
-        self.crossref_provider.fetch_metadata = Mock(return_value=(generate_mock_publisher_metadata(), "10.2020"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(generate_mock_publisher_metadata(), "10.2020", 17169328.664)
+        )
         collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
         self.assertEqual(initial_consortia, original_collection["consortia"])
@@ -1376,7 +1386,7 @@ class TestPatchCollectionID(BaseAPIPortalTest):
             {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi/10.1011/something"},
         ]
         self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata(), "10.1011/something")
+            return_value=(generate_mock_publisher_metadata(), "10.1011/something", 17169328.664)
         )
         collection = self.generate_collection(links=links, visibility="PRIVATE")
         collection_id = collection.collection_id
@@ -1397,7 +1407,9 @@ class TestPatchCollectionID(BaseAPIPortalTest):
             {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi/10.1011/something"},
         ]
         mock_publisher_metadata = generate_mock_publisher_metadata()
-        self.crossref_provider.fetch_metadata = Mock(return_value=(mock_publisher_metadata, "10.1011/something"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(mock_publisher_metadata, "10.1011/something", 17169328.664)
+        )
 
         collection = self.generate_collection(links=links, visibility="PRIVATE")
         collection_id = collection.collection_id
@@ -1424,7 +1436,9 @@ class TestPatchCollectionID(BaseAPIPortalTest):
             {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
         ]
         mock_publisher_metadata = generate_mock_publisher_metadata()
-        self.crossref_provider.fetch_metadata = Mock(return_value=(mock_publisher_metadata, "10.1011/something"))
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=(mock_publisher_metadata, "10.1011/something", 17169328.664)
+        )
 
         collection = self.generate_collection(links=links, visibility="PRIVATE")
         self.assertIsNotNone(collection.publisher_metadata)
@@ -1791,9 +1805,8 @@ class TestGetDatasets(BaseAPIPortalTest):
         self.assertEqual([], body["assets"])
 
     def test_get_all_datasets_200(self):
-        self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata(), "12.3456/j.celrep")
-        )
+        crossref_return_value_1 = (generate_mock_publisher_metadata(), "12.3456/j.celrep", 17169328.664)
+        self.crossref_provider.fetch_metadata = Mock(return_value=crossref_return_value_1)
         published_collection_1 = self.generate_published_collection(
             add_datasets=2,
             metadata=CollectionMetadata(
@@ -1806,7 +1819,11 @@ class TestGetDatasets(BaseAPIPortalTest):
             ),
         )
         self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata(journal_override="Science"), "78.91011/j.celrep")
+            return_value=(
+                generate_mock_publisher_metadata(journal_override="Science"),
+                "78.91011/j.celrep",
+                17169328.664,
+            )
         )
         published_collection_2 = self.generate_published_collection(
             owner="other owner",
@@ -1863,6 +1880,9 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertEqual(collection_names, received_collection_names)
             self.assertEqual(expected_collection_dois, received_collection_dois)
             self.assertEqual(expected_collection_doi_labels, received_collection_doi_labels)
+
+        # Mock Crossref return value for revision.
+        self.crossref_provider.fetch_metadata = Mock(return_value=crossref_return_value_1)
 
         self.generate_dataset(
             collection_version=revision,
@@ -2165,7 +2185,7 @@ class TestGetDatasets(BaseAPIPortalTest):
 
     def test_get_datasets_by_schema_200(self):
         self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata(), "12.3456/j.celrep")
+            return_value=(generate_mock_publisher_metadata(), "12.3456/j.celrep", 17169328.664)
         )
         published_collection_1 = self.generate_published_collection(
             add_datasets=2,
@@ -2179,7 +2199,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             ),
         )
         self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata(), "78.91011/j.celrep")
+            return_value=(generate_mock_publisher_metadata(), "78.91011/j.celrep", 17169328.664)
         )
         published_collection_2 = self.generate_published_collection(
             owner="other owner",
@@ -2196,7 +2216,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             dataset_schema_version="3.1.0",
         )
         self.crossref_provider.fetch_metadata = Mock(
-            return_value=(generate_mock_publisher_metadata(), "78.91011/j.celrep")
+            return_value=(generate_mock_publisher_metadata(), "78.91011/j.celrep", 17169328.664)
         )
         published_collection_3 = self.generate_published_collection(
             owner="other owner",

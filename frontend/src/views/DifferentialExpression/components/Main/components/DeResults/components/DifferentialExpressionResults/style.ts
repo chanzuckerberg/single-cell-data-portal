@@ -6,8 +6,8 @@ import Image from "next/image";
 import { inputBaseClasses } from "@mui/material/InputBase";
 import { inputLabelClasses } from "@mui/material/InputLabel";
 import { alertClasses } from "@mui/material/Alert";
+import { TABLE_WIDTH } from "../../style";
 
-const TABLE_WIDTH = "386px";
 export const TableWrapper = styled.div`
   width: ${TABLE_WIDTH};
   [class*="StyledCell"] {
@@ -77,7 +77,7 @@ export const CellGroupTitle = styled.span`
   font-weight: 600;
 `;
 
-export const EffectSizeIndicator = styled.span`
+export const CellGroupStatsIndicator = styled.span`
   ${fontBodyXxs}
   color: #959595;
 `;
