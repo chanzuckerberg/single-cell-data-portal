@@ -26,6 +26,7 @@ from scripts.cxg_admin_scripts import (
     dataset_details,
     deletions,
     reprocess_datafile,
+    request_logs,
     schema_migration,
     tombstones,
     updates,
@@ -64,11 +65,12 @@ def cli(ctx, deployment):
     if deployment not in ("dev", "staging", "prod"):
         logging.error("The deployment arg must be one of 'dev', 'staging', or 'prod'")
         exit(1)
+    os.environ["DEPLOYMENT_STAGE"] = deployment
     happy_env = "stage" if deployment == "staging" else deployment
+    stackname = f"{happy_env}stack"
     happy_config = json.loads(AwsSecret(f"happy/env-{happy_env}-config").value)
     os.environ["DATASETS_BUCKET"] = happy_config["s3_buckets"]["datasets"]["name"]
 
-    os.environ["DEPLOYMENT_STAGE"] = deployment
     ctx.obj["deployment"] = deployment
     ctx.obj["business_logic"] = BusinessLogic(
         DatabaseProvider(get_database_uri()),
@@ -78,6 +80,7 @@ def cli(ctx, deployment):
         S3Provider(),
         UriProvider(),
     )
+    ctx.obj["stackname"] = stackname
     ctx.obj["cloudfront_provider"] = CloudfrontProvider()
 
 
@@ -307,7 +310,7 @@ def rollback_datasets(ctx, report_path: str):
     """
     schema_migration.rollback_dataset(ctx, report_path)
 
-
+    
 @schema_migration_cli.command()
 @click.pass_context
 @click.argument("execution_id")
@@ -318,6 +321,20 @@ def generate_report(ctx, execution_id: str, output_path: str):
     ./scripts/cxg_admin.py --deployment dev schema-migration generate-report execution_id
     """
     schema_migration.generate_report(ctx, execution_id, output_path, os.environ["ARTIFACT_BUCKET"])
+
+    
+@cli.command()
+@click.pass_context
+@click.argument("request_id")
+@click.option("--hours", default=6, help="Number of hours to look back in the logs")
+def get_request_logs(ctx, request_id: str, hours: int):
+    """
+    Get the requests from from AWS cloudwatch given the request_id
+
+    ./scripts/cxg_admin.py --deployment dev get-request-logs <request_id>
+    """
+    print(json.dumps(request_logs.get(request_id, hours, ctx.obj["deployment"], ctx.obj["stackname"]), indent=4))
+
 
 
 if __name__ == "__main__":
