@@ -62,8 +62,8 @@ def get(request_id: str, hours: int, deployment_stage: str, stackname: str) -> L
 if __name__ == "__main__":
     import os
 
-    os.environ["AWS_PROFILE"] = "single-cell-prod"
-    request_id = "1407b9b9-c202-4b71-adbb-b08193379e3f"
-    deployment_stage = "prod"
-    stack_name = "prodstack"
+    os.environ["AWS_PROFILE"] = "single-cell-dev"
+    request_id = "a388db58-6d5a-4e28-9aeb-140b0f42c366 "
+    deployment_stage = "rdev"
+    stack_name = "pr-7203"
     print(json.dumps(get(request_id, 3, deployment_stage, stack_name), indent=4))
