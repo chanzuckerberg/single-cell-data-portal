@@ -275,7 +275,7 @@ const CellTypeButton = ({
               }
             }}
           >
-            <InfoSVG data-testid="marker-gene-button" />
+            <InfoSVG data-testid="marker-gene-button" id={cellType.name} />
           </InfoButtonWrapper>
         )}
       </FlexRow>
