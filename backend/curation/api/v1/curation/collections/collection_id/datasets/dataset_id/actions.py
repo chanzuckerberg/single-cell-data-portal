@@ -25,10 +25,12 @@ from backend.layers.business.exceptions import (
     DatasetIsPrivateException,
     DatasetIsTombstonedException,
     DatasetNotFoundException,
+    InvalidMetadataException,
     InvalidURIException,
 )
 from backend.layers.common.entities import (
     CollectionVersionWithDatasets,
+    DatasetArtifactMetadataUpdate,
     DatasetId,
     DatasetVersion,
 )
@@ -141,3 +143,35 @@ def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):
             "the submission has finished processing."
         ) from None
     # End of duplicate block
+
+
+def patch(collection_id: str, dataset_id: str, body: dict, token_info: dict):
+    """
+    Update a dataset's metadata.
+    """
+
+    # Find collection and dataset.
+    collection_version, dataset_version = _get_collection_and_dataset(collection_id, dataset_id)
+
+    # Confirm user has permission to update dataset.
+    if not UserInfo(token_info).is_user_owner_or_allowed(collection_version.owner):
+        raise ForbiddenHTTPException()
+
+    # Create payload and attempt update.
+    payload = DatasetArtifactMetadataUpdate(body.get("title"))
+    try:
+        get_business_logic().update_dataset_artifact_metadata(
+            collection_version.version_id, dataset_version.version_id, payload
+        )
+    except InvalidMetadataException as ex:
+        raise InvalidParametersHTTPException(ext=dict(invalid_parameters=ex.errors)) from None
+    except CollectionNotFoundException:
+        raise NotFoundHTTPException() from None
+    except CollectionIsPublishedException:
+        raise ForbiddenHTTPException() from None
+    except DatasetInWrongStatusException:
+        raise MethodNotAllowedException(
+            detail="Dataset cannot be updated if processing status is not SUCCESS."
+        ) from None
+
+    return Response(status=202)
