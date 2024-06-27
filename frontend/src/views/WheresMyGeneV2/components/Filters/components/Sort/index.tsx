@@ -2,11 +2,9 @@ import { Tooltip } from "@czi-sds/components";
 import { Wrapper, FilterLabel, StyledDropdown } from "../common/style";
 import { ViewOptionsWrapper } from "./style";
 import {
-  StyledIconImage,
   StyledTooltip,
   TooltipButton,
 } from "src/views/WheresMyGeneV2/components/CellInfoSideBar/style";
-import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { ROUTES } from "src/common/constants/routes";
 import {
   SELECT_TISSUE_GENE_TEXT,
@@ -16,6 +14,7 @@ import {
 import { CellTypeOptionType, Props } from "./types";
 import { useConnect } from "./connect";
 import { CELL_TYPE_OPTIONS, GENE_OPTIONS } from "./constants";
+import { StyledQuestionMarkIcon } from "src/common/style";
 
 export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
   const {
@@ -62,7 +61,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
               sdsType="secondary"
               isAllCaps={false}
             >
-              <StyledIconImage alt="question mark" src={questionMarkIcon} />
+              <StyledQuestionMarkIcon />
             </TooltipButton>
           </Tooltip>
         </FilterLabel>
@@ -112,7 +111,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
               sdsType="secondary"
               isAllCaps={false}
             >
-              <StyledIconImage alt="question mark" src={questionMarkIcon} />
+              <StyledQuestionMarkIcon />
             </TooltipButton>
           </Tooltip>
         </FilterLabel>
