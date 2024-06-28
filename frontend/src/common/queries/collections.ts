@@ -417,6 +417,67 @@ export function usePublishCollection() {
 }
 
 /**
+ * Execute PATCH to edit the dataset for the given collection.
+ * @param param
+ * @param param.collectionId - Collection ID to edit dataset for.
+ * @param param.datasetId - Dataset ID to edit.
+ * @param param.payload - Payload containing the edited dataset.
+ * @returns API response.
+ */
+const editDataset = async function editDataset({
+  collectionId,
+  datasetId,
+  payload,
+}: {
+  collectionId: Collection["id"];
+  datasetId: string;
+  payload: string;
+}) {
+  idError(collectionId);
+  const url = apiTemplateToUrl(API_URL + API.COLLECTION_EDIT_DATASET, {
+    id: collectionId,
+    dataset_id: datasetId,
+  });
+
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    body: payload,
+    method: "PATCH",
+  });
+
+  if (!response.ok) {
+    throw await response.json();
+  }
+
+  // Endpoint response is empty on 202; return successful promise.
+  return Promise.resolve({ collectionId });
+};
+
+/**
+ * Edits dataset.
+ */
+export function useEditDataset() {
+  const queryClient = useQueryClient();
+  return useMutation(editDataset, {
+    onSuccess: async ({ collectionId }): Promise<void> => {
+      await queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
+      await queryClient.invalidateQueries(
+        [USE_COLLECTIONS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
+      );
+      await queryClient.invalidateQueries(
+        [USE_DATASETS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
+      );
+    },
+    onError: async () => {
+      // TODO(cc) error handling.
+    },
+  });
+}
+
+/**
  * Execute PUT to update the datasets order for the given collection.
  * @param param
  * @param param.collectionId - Collection ID to update datasets order for.

@@ -3,6 +3,7 @@ import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { Dataset } from "src/common/entities";
 import Content from "./components/Content";
 import { Dialog } from "src/components/Datasets/components/DownloadDataset/style";
+import { useDialog } from "src/views/Collection/hooks/useDialog";
 
 interface Props {
   Button: ElementType;
@@ -17,7 +18,7 @@ const DownloadDataset: FC<Props> = ({
   isDisabled = false,
   name,
 }) => {
-  const [isOpen, setIsOpen] = React.useState(false);
+  const { onClose, onOpen, open } = useDialog();
 
   if (!dataAssets.length) {
     return null;
@@ -29,14 +30,10 @@ const DownloadDataset: FC<Props> = ({
         datasetName={name}
         data-testid="dataset-download-button"
         disabled={isDisabled || !dataAssets.length}
-        onClick={() => setIsOpen(true)}
+        onClick={onOpen}
       />
-      <Dialog onClose={() => setIsOpen(false)} open={isOpen}>
-        <Content
-          name={name}
-          dataAssets={dataAssets}
-          onClose={() => setIsOpen(false)}
-        />
+      <Dialog onClose={() => onClose()} open={open}>
+        <Content name={name} dataAssets={dataAssets} onClose={onClose} />
       </Dialog>
     </>
   );

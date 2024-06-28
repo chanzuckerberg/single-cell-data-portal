@@ -242,13 +242,9 @@ const DatasetRow: FC<Props> = ({
           {visibility === VISIBILITY_TYPE.PRIVATE &&
             accessType === ACCESS_TYPE.WRITE && (
               <MoreDropdown
-                collectionId={collectionId}
-                datasetId={dataset.id}
-                isPublished={!!dataset.published_at} // Dataset has been published.
-                revisionsEnabled={revisionsEnabled}
-                onUploadFile={onUploadFile}
-                isLoading={isLoading}
+                dataset={dataset}
                 disabled={dataset.tombstone ?? false}
+                menuItemProps={{ isLoading, onUploadFile, revisionsEnabled }}
               />
             )}
           <DownloadDataset

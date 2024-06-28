@@ -1,10 +1,9 @@
-import { Button as RawButton, H6, Intent } from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
+import { H6, Intent } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import * as React from "react";
-import { FC, useEffect, useState } from "react";
+import { ElementType, FC, useEffect, useState } from "react";
 import { useDeleteDataset } from "src/common/queries/datasets";
-import { Collection } from "src/common/entities";
+import { Dataset } from "src/common/entities";
 
 const AsyncAlert = loadable(
   () =>
@@ -12,18 +11,14 @@ const AsyncAlert = loadable(
 );
 
 interface Props {
-  Button?: React.ElementType;
-  collectionId: Collection["id"];
-  datasetId?: string;
+  Button: ElementType;
+  dataset: Dataset;
 }
 
-const DeleteDataset: FC<Props> = ({
-  Button = DefaultButton,
-  collectionId,
-  datasetId,
-}) => {
+const DeleteDataset: FC<Props> = ({ Button, dataset }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { mutateAsync: deleteDataset, isLoading } = useDeleteDataset();
+  const { collection_id: collectionId, id: datasetId } = dataset;
 
   // Closes delete dataset dialog when component unmounts.
   // In the event of a successful dataset deletion, the cache invalidation of the collection triggers the
@@ -69,9 +64,5 @@ const DeleteDataset: FC<Props> = ({
     </>
   );
 };
-
-function DefaultButton({ ...props }) {
-  return <RawButton icon={IconNames.TRASH} minimal {...props} />;
-}
 
 export default DeleteDataset;
