@@ -2351,7 +2351,7 @@ class TestPatchDataset(BaseAPIPortalTest):
             ],
         )
 
-        # Attempt to update dataset title.
+        # Attempt to update dataset title as super curator.
         response = self.app.patch(
             f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}",
             data=json.dumps({"title": "new title"}),
@@ -2370,7 +2370,7 @@ class TestPatchDataset(BaseAPIPortalTest):
             ],
         )
 
-        # Attempt to update dataset title.
+        # Attempt to update dataset title without auth.
         response = self.app.patch(
             f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}",
             data=json.dumps({"title": "new title"}),
@@ -2388,7 +2388,7 @@ class TestPatchDataset(BaseAPIPortalTest):
             ],
         )
 
-        # Attempt to update dataset title.
+        # Attempt to update dataset title as a non-owner.
         response = self.app.patch(
             f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}",
             data=json.dumps({"title": "new title"}),
@@ -2427,7 +2427,7 @@ class TestPatchDataset(BaseAPIPortalTest):
             ],
         )
 
-        # Attempt to update dataset title.
+        # Attempt to update dataset title with an invalid collection ID.
         response = self.app.patch(
             f"/curation/v1/collections/{str(uuid.uuid4())}/datasets/{dataset.dataset_id}",
             data=json.dumps({"title": "new title"}),
@@ -2438,7 +2438,7 @@ class TestPatchDataset(BaseAPIPortalTest):
         self.assertEqual(404, response.status_code)
 
     def test_patch_private_collection_dataset_invalid_status_405(self):
-        # Generate private collection and dataset.
+        # Generate private collection and a dataset with a non-SUCCESS processing status.
         dataset = self.generate_dataset()
 
         # Attempt to update dataset title.
