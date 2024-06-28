@@ -362,7 +362,7 @@ services:
     depends_on:
       - localstack
     ports:
-      - "5000:5000"
+      - "5001:5000"
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
@@ -378,10 +378,11 @@ services:
     volumes:
       # Mount dirs in a layout suitable for running tests.
       - .:/single-cell-data-portal
+      - ./oauth/pkcs12:/tmp/pkcs12:ro
     networks:
       corporanet:
         aliases:
-          - backend.corporanet.local
+          - backend-de.corporanet.local
 
   backend-wmg:
     image: "${DOCKER_REPO}corpora-backend-wmg"
@@ -405,7 +406,7 @@ services:
     depends_on:
       - localstack
     ports:
-      - "5000:5000"
+      - "5001:5000"
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
@@ -421,10 +422,11 @@ services:
     volumes:
       # Mount dirs in a layout suitable for running tests.
       - .:/single-cell-data-portal
+      - ./oauth/pkcs12:/tmp/pkcs12:ro
     networks:
       corporanet:
         aliases:
-          - backend.corporanet.local
+          - backend-wmg.corporanet.local
 
   oidc:
     image: soluto/oidc-server-mock:0.3.0
