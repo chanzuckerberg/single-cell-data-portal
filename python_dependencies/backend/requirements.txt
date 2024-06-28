@@ -13,11 +13,8 @@ ddtrace>=2.1.4, <3
 Flask>=2.2.3, <3
 Flask-Cors>=3.0.6
 flask-server-timing>=0.1.2
-furl>=2.1.2, <3
 gunicorn[gevent]==22.0.0
-jsonschema>=3.2.0, <4
 matplotlib>=3.6.3, <3.7 # 3.7.0 isn't compatible with scanpy: https://github.com/scverse/scanpy/issues/2411
-moto>=5.0.0
 numba==0.59.1 # required for where's my gene
 numpy==1.23.5  # required for where's my gene
 pandas==1.5.3 # required for where's my gene
