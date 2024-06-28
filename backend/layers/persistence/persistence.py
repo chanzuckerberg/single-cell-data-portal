@@ -84,10 +84,6 @@ class DatabaseProvider(DatabaseProviderInterface):
                 self._session_maker = sessionmaker(bind=self._engine)
             session = self._session_maker(**kwargs)
             yield session
-            if session.in_transaction():
-                session.commit()
-            else:
-                session.expire_all()
         except SQLAlchemyError as e:
             logger.exception(e)
             if session is not None:
@@ -253,7 +249,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             session.add(canonical_collection)
             session.add(collection_version_row)
-
+            session.commit()
             return self._row_to_collection_version(
                 collection_version_row, CanonicalCollection(collection_id, None, None, None, False)
             )
@@ -517,6 +513,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             )
             for dataset in datasets:
                 dataset.tombstone = True
+            session.commit()
 
     def resurrect_collection(self, collection_id: CollectionId, datasets_to_resurrect: Iterable[str]) -> None:
         """
@@ -531,6 +528,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             datasets = session.query(DatasetTable).filter(DatasetTable.id.in_(datasets_to_resurrect))
             for dataset in datasets:
                 dataset.tombstone = False
+            session.commit()
 
     def save_collection_metadata(
         self, version_id: CollectionVersionId, collection_metadata: CollectionMetadata
@@ -541,6 +539,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one()
             version.collection_metadata = collection_metadata.to_json()
+            session.commit()
 
     def save_collection_publisher_metadata(
         self, version_id: CollectionVersionId, publisher_metadata: Optional[dict]
@@ -551,6 +550,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one()
             version.publisher_metadata = json.dumps(publisher_metadata)
+            session.commit()
 
     def add_collection_version(self, collection_id: CollectionId, is_auto_version: bool) -> CollectionVersionId:
         """
@@ -579,6 +579,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 data_submission_policy_version=None,
             )
             session.add(new_version)
+            session.commit()
             return CollectionVersionId(new_version_id)
 
     def delete_unpublished_collection(self, collection_id: CollectionId) -> None:
@@ -591,6 +592,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 if collection.originally_published_at:
                     raise CollectionIsPublishedException(f"Published Collection {collection_id} cannot be deleted")
                 session.delete(collection)
+                session.commit()
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         """
@@ -602,6 +604,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 if version.published_at:
                     raise CollectionIsPublishedException(f"Published Collection Version {version_id} cannot be deleted")
                 session.delete(version)
+                session.commit()
 
     def delete_datasets(self, datasets: List[Union[DatasetId, CanonicalDataset]]) -> None:
         """
@@ -616,6 +619,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 dataset_versions = session.query(DatasetVersionTable).filter_by(dataset_id=d_id).all()
                 self._delete_dataset_version_and_artifact_rows(dataset_versions, session)
                 session.delete(dataset_row)
+            session.commit()
 
     def delete_dataset_versions(self, dataset_versions: List[Union[DatasetVersionId, DatasetVersion]]) -> None:
         """
@@ -627,6 +631,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             ]
             dataset_version_rows = session.query(DatasetVersionTable).filter(DatasetVersionTable.id.in_(ids)).all()
             self._delete_dataset_version_and_artifact_rows(dataset_version_rows, session)
+            session.commit()
 
     def _delete_dataset_version_and_artifact_rows(
         self, dataset_version_rows: List[DatasetVersionTable], session: Session
@@ -722,7 +727,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 dataset.version_id = dataset_version.id  # point the dataset to the new version
                 if dataset.published_at is None:
                     dataset.published_at = published_at
-
+            session.commit()
             return dataset_version_ids_to_delete_from_s3
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId, get_tombstoned: bool = False) -> DatasetVersion:
@@ -846,6 +851,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             session.add(canonical_dataset)
             session.add(dataset_version)
+            session.commit()
             return self._row_to_dataset_version(dataset_version, CanonicalDataset(dataset_id, None, False, None), [])
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
@@ -863,6 +869,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             artifacts = list(dataset_version.artifacts)
             artifacts.append(uuid.UUID(artifact_id.id))
             dataset_version.artifacts = artifacts
+            session.commit()
         return artifact_id
 
     def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
@@ -872,6 +879,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             artifact = session.query(DatasetArtifactTable).filter_by(id=artifact_id.id).one()
             artifact.uri = artifact_uri
+            session.commit()
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
@@ -883,6 +891,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["processing_status"] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
+            session.commit()
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_validation_status(self, version_id: DatasetVersionId, status: DatasetValidationStatus) -> None:
@@ -894,6 +903,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["validation_status"] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
+            session.commit()
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_upload_status(self, version_id: DatasetVersionId, status: DatasetUploadStatus) -> None:
@@ -905,6 +915,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["upload_status"] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
+            session.commit()
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_conversion_status(
@@ -918,6 +929,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status[status_type] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
+            session.commit()
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
@@ -926,6 +938,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["validation_message"] = validation_message
             dataset_version.status = json.dumps(dataset_version_status)
+            session.commit()
 
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
         """
@@ -942,6 +955,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version.dataset_metadata = metadata.to_json()
+            session.commit()
 
     def add_dataset_to_collection_version_mapping(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
@@ -956,6 +970,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             updated_datasets = list(collection_version.datasets)
             updated_datasets.append(uuid.UUID(dataset_version_id.id))
             collection_version.datasets = updated_datasets
+            session.commit()
 
     def delete_dataset_from_collection_version(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
@@ -972,6 +987,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             updated_datasets: List[uuid.UUID] = list(collection_version.datasets)
             updated_datasets.remove(uuid.UUID(dataset_version_id.id))
             collection_version.datasets = updated_datasets
+            session.commit()
 
     def replace_dataset_in_collection_version(
         self,
@@ -1021,7 +1037,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             idx = next(i for i, e in enumerate(datasets) if str(e) == old_dataset_version_id.id)
             datasets[idx] = uuid.UUID(new_dataset_version_id.id)
             collection_version.datasets = datasets
-
+            session.commit()
             return new_dataset_version
 
     def set_collection_version_datasets_order(
@@ -1049,6 +1065,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             updated_datasets = [uuid.UUID(dv_id.id) for dv_id in dataset_version_ids]
             collection_version.datasets = updated_datasets
             collection_version.has_custom_dataset_order = True
+            session.commit()
 
     def get_dataset_mapped_version(
         self, dataset_id: DatasetId, get_tombstoned: bool = False
