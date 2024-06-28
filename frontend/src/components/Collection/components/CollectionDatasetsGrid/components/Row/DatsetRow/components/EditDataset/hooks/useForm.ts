@@ -37,7 +37,7 @@ export function useForm(): UseForm {
         );
         const errors = validateForm(fieldValues, defaultValues);
         if (isValid(errors)) {
-          onSubmit(dataset, fieldValues);
+          await onSubmit(dataset, fieldValues);
         } else {
           setErrors(errors);
         }
