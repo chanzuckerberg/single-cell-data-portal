@@ -17,7 +17,7 @@ export const StyledInputText = styled(SDSInputText)`
 `;
 
 export const Label = styled.label`
-  ${fontCapsXxs};
+  ${fontCapsXxs}
   color: ${textSecondary};
   display: block;
   margin-bottom: ${spacesS}px;
