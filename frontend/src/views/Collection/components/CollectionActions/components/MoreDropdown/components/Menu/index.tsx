@@ -2,20 +2,20 @@ import { Collection } from "src/common/entities";
 import DeleteCollection from "src/components/Collections/components/DeleteCollection";
 import CreateCollection from "src/components/CreateCollectionModal";
 import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
+import { Icon, MenuProps as SDSMenuProps } from "@czi-sds/components";
 import {
-  Icon,
-  MenuItemProps as SDSMenuItemProps,
-  MenuProps as SDSMenuProps,
-} from "@czi-sds/components";
-import {
-  DeleteMenuItem,
   Menu as StyledMenu,
-  MenuItem,
-  ReorderMenuItem,
+  MenuItem as StyledMenuItem,
+  MenuItemProps as StyledMenuItemProps,
 } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/style";
-import { DEFAULT_MENU_PROPS } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/constants";
-import IconSort from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/components/IconSort";
+import {
+  DEFAULT_MENU_PROPS,
+  DELETE_ICON_PROPS,
+  EDIT_ICON_PROPS,
+} from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/constants";
 import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
+import { MENU_ITEM_COLOR } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/types";
+import IconSort from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/components/IconSort";
 
 interface MenuProps extends Partial<Omit<SDSMenuProps, "onClose">> {
   onClose: () => void;
@@ -24,45 +24,30 @@ interface MenuProps extends Partial<Omit<SDSMenuProps, "onClose">> {
 const DeleteButton = ({
   isRevision,
   ...props
-}: Partial<SDSMenuItemProps<"TrashCan">> & { isRevision: boolean }) => {
+}: Partial<StyledMenuItemProps<"TrashCan">> & { isRevision: boolean }) => {
   return (
-    <DeleteMenuItem
+    <StyledMenuItem
       {...props}
+      color={MENU_ITEM_COLOR.ERROR} // Targets custom menu item text color.
       data-testid={
         isRevision ? "dropdown-cancel-revision" : "dropdown-delete-collection"
       }
-      icon={
-        <Icon
-          color="red"
-          sdsIcon="TrashCan"
-          sdsSize="xs"
-          sdsType="static"
-          shade={400}
-        />
-      }
+      icon={<Icon {...DELETE_ICON_PROPS} />}
     >
       {isRevision ? "Cancel Revision" : "Delete Collection"}
-    </DeleteMenuItem>
+    </StyledMenuItem>
   );
 };
 
-const EditButton = (props: Partial<SDSMenuItemProps<"Edit">>) => {
+const EditButton = (props: Partial<StyledMenuItemProps<"Edit">>) => {
   return (
-    <MenuItem
+    <StyledMenuItem
       {...props}
       data-testid="dropdown-edit-details"
-      icon={
-        <Icon
-          color="gray"
-          sdsIcon="Edit"
-          sdsSize="xs"
-          sdsType="static"
-          shade={400}
-        />
-      }
+      icon={<Icon {...EDIT_ICON_PROPS} />}
     >
       Edit Details
-    </MenuItem>
+    </StyledMenuItem>
   );
 };
 
@@ -90,7 +75,8 @@ const Menu = ({
       open={Boolean(menuProps.open)}
     >
       <CreateCollection id={collection.id} Button={EditButton} />
-      <ReorderMenuItem
+      <StyledMenuItem
+        color={MENU_ITEM_COLOR.GRAY} // Targets menu item custom icon color.
         data-testid="dropdown-reorder-datasets"
         disabled={reorder.disabled}
         icon={<IconSort />}
@@ -100,7 +86,7 @@ const Menu = ({
         }}
       >
         Reorder Datasets
-      </ReorderMenuItem>
+      </StyledMenuItem>
       <DeleteCollection
         Button={DeleteButton}
         handleDeleteCollection={handleDeleteCollection}

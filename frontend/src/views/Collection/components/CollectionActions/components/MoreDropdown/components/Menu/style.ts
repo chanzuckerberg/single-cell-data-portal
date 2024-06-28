@@ -1,6 +1,20 @@
 import styled from "@emotion/styled";
-import { Menu as SDSMenu, MenuItem as SDSMenuItem } from "@czi-sds/components";
-import { error400, grey400, shadowM, spacesS } from "src/common/theme";
+import {
+  CommonThemeProps,
+  IconNameToSmallSizes,
+  Menu as SDSMenu,
+  MenuItem as SDSMenuItem,
+  MenuItemProps as SDSMenuItemProps,
+} from "@czi-sds/components";
+import { error400, gray400, shadowM, spacesM, spacesS } from "src/common/theme";
+import { MENU_ITEM_COLOR } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/types";
+import { css, SerializedStyles } from "@emotion/react";
+
+export interface MenuItemProps<IconName extends keyof IconNameToSmallSizes>
+  extends SDSMenuItemProps<IconName>,
+    CommonThemeProps {
+  color?: MENU_ITEM_COLOR;
+}
 
 export const Menu = styled(SDSMenu)`
   &.MuiPopover-root {
@@ -13,8 +27,9 @@ export const Menu = styled(SDSMenu)`
   }
 `;
 
-export const MenuItem = styled(SDSMenuItem)`
+export const MenuItem = styled(SDSMenuItem)<MenuItemProps<"TrashCan" | "Edit">>`
   &.MuiMenuItem-root {
+    ${customMenuItem}
     .primary-text {
       > span {
         display: flex;
@@ -28,24 +43,32 @@ export const MenuItem = styled(SDSMenuItem)`
   }
 `;
 
-export const DeleteMenuItem = styled(MenuItem)`
-  &.MuiMenuItem-root {
-    .primary-text {
-      color: ${error400};
-    }
-  }
-`;
-
-export const ReorderMenuItem = styled(MenuItem)`
-  &.MuiMenuItem-root {
-    svg {
-      color: ${grey400};
-    }
-
-    &.Mui-disabled {
-      svg {
-        color: inherit;
+function customMenuItem(
+  props: MenuItemProps<"TrashCan" | "Edit">
+): SerializedStyles | undefined {
+  // Custom "error" color for menu item (with "error" icon).
+  if (props.color === MENU_ITEM_COLOR.ERROR) {
+    return css`
+      &:not(.Mui-disabled) {
+        .primary-text {
+          color: ${error400(props)};
+        }
       }
-    }
+    `;
   }
-`;
+  // Custom "gray" color for menu item (with custom icon).
+  if (props.color === MENU_ITEM_COLOR.GRAY) {
+    return css`
+      .MuiSvgIcon-root {
+        color: ${gray400(props)};
+        font-size: ${spacesM(props)}px;
+      }
+
+      &.Mui-disabled {
+        .MuiSvgIcon-root {
+          color: inherit;
+        }
+      }
+    `;
+  }
+}

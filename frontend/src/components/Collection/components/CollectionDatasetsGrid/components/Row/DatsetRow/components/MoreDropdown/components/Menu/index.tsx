@@ -1,86 +1,69 @@
+import DropboxChooser from "src/components/DropboxChooser";
+import { Props } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/components/Menu/types";
+import DeleteDataset from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/DeleteDataset";
 import {
-  MenuItemProps,
-  Intent,
-  Menu as RawMenu,
-  MenuItem,
-} from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
-import styled from "@emotion/styled";
-import DropboxChooser, {
-  Props as ChooserProps,
-} from "src/components/DropboxChooser";
-import DeleteDataset from "../../../DeleteDataset";
-import { Collection } from "src/common/entities";
+  Menu as StyledMenu,
+  MenuItem as StyledMenuItem,
+} from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/style";
+import {
+  DEFAULT_MENU_PROPS,
+  DELETE_ICON_PROPS,
+  EDIT_ICON_PROPS,
+} from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/constants";
+import { MENU_ITEM_COLOR } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/types";
+import { Icon } from "@czi-sds/components";
+import EditDataset from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset";
+import { isDeleteDatasetAvailable } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/components/Menu/utils";
 
-const DeleteButton = (props: MenuItemProps) => {
+export default function Menu({
+  dataset,
+  menuItemProps,
+  menuProps,
+}: Props): JSX.Element {
+  const { isLoading, onUploadFile, revisionsEnabled } = menuItemProps;
+  const canDelete = isDeleteDatasetAvailable(dataset, revisionsEnabled);
   return (
-    <MenuItem
-      {...props}
-      shouldDismissPopover={false}
-      icon={IconNames.TRASH}
-      intent={Intent.DANGER}
-      text="Delete Dataset"
-    />
-  );
-};
-
-const UpdateButton = (props: Partial<MenuItemProps>) => {
-  return (
-    <MenuItem
-      {...props}
-      shouldDismissPopover={false}
-      icon={IconNames.EDIT}
-      intent={Intent.NONE}
-      text="Update Dataset"
-    />
-  );
-};
-
-interface Props {
-  collectionId: Collection["id"];
-  datasetId?: string;
-  isPublished: boolean;
-  revisionsEnabled: boolean;
-  onUploadFile: ChooserProps["onUploadFile"];
-  isLoading: boolean;
-}
-
-const StyledMenu = styled(RawMenu)`
-  border-radius: 3px;
-  padding: 8px;
-
-  & > li:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-const Menu = ({
-  collectionId,
-  datasetId = "",
-  isPublished,
-  revisionsEnabled,
-  onUploadFile,
-  isLoading,
-}: Props): JSX.Element => {
-  // A dataset may be deleted if the collection is private, or the dataset has not been previously
-  // published; where the published_at property is used to determine whether the dataset has been previously published.
-  const shouldShowDelete = !revisionsEnabled || !isPublished;
-  return (
-    <StyledMenu>
+    <StyledMenu {...DEFAULT_MENU_PROPS} {...menuProps}>
+      {/* Edit */}
+      {revisionsEnabled && (
+        <EditDataset
+          Button={(buttonProps) => (
+            <StyledMenuItem
+              icon={<Icon {...EDIT_ICON_PROPS} />}
+              {...buttonProps}
+            >
+              Rename Dataset
+            </StyledMenuItem>
+          )}
+          dataset={dataset}
+        />
+      )}
+      {/* Upload */}
       {revisionsEnabled && (
         <DropboxChooser onUploadFile={onUploadFile}>
-          <UpdateButton disabled={isLoading} />
+          <StyledMenuItem
+            disabled={isLoading}
+            icon={<Icon {...EDIT_ICON_PROPS} />}
+          >
+            Update Dataset
+          </StyledMenuItem>
         </DropboxChooser>
       )}
-      {shouldShowDelete && (
+      {/* Delete */}
+      {canDelete && (
         <DeleteDataset
-          Button={DeleteButton}
-          collectionId={collectionId}
-          datasetId={datasetId}
+          Button={(buttonProps) => (
+            <StyledMenuItem
+              color={MENU_ITEM_COLOR.ERROR} // Targets custom menu item text color.
+              icon={<Icon {...DELETE_ICON_PROPS} />}
+              {...buttonProps}
+            >
+              Delete Dataset
+            </StyledMenuItem>
+          )}
+          dataset={dataset}
         />
       )}
     </StyledMenu>
   );
-};
-
-export default Menu;
+}

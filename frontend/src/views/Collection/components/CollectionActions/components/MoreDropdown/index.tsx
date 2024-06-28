@@ -1,9 +1,10 @@
-import { Fragment, MouseEvent, useState } from "react";
+import { Fragment } from "react";
 import { Collection } from "src/common/entities";
 import Menu from "./components/Menu";
 import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
 import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
-import { Button } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/style";
+import { useMoreMenu } from "src/views/Collection/hooks/useMoreMenu";
+import { IconButton as Button } from "src/components/common/Button";
 
 interface Props {
   collection: Collection;
@@ -20,19 +21,7 @@ const MoreDropdown = ({
   isRevision,
   reorder,
 }: Props) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLButtonElement>(null);
-  const open = Boolean(anchorEl);
-
-  // Opens menu.
-  const onOpen = (mouseEvent: MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(mouseEvent.currentTarget);
-  };
-
-  // Closes menu.
-  const onClose = () => {
-    setAnchorEl(null);
-  };
-
+  const { anchorEl, onClose, open, onOpen } = useMoreMenu();
   return (
     <Fragment>
       <Button
