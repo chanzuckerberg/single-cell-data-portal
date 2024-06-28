@@ -2,7 +2,7 @@ import Image from "next/image";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
-import wordmark from "src/common/images/cellxgene-discover-wordmark.svg";
+import Wordmark from "src/common/images/cellxgene-discover-wordmark.svg";
 import CZILogo from "src/components/common/staticPages/czi-logo-white.png";
 import BottomBanner from "../BottomBanner";
 import styles from "./index.module.scss";
@@ -27,7 +27,7 @@ const LandingFooter = (): JSX.Element => {
         <div className={styles.footerTopContainer}>
           <div className={styles.footerLogo}>
             <a href={ROUTES.HOMEPAGE} target="_blank" rel="noopener">
-              <Image src={wordmark} alt="CZ CELLxGENE Discover" />
+              <Wordmark />
             </a>
           </div>
 
