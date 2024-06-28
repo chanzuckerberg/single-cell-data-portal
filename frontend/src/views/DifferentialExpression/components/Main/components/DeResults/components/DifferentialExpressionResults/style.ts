@@ -2,7 +2,6 @@ import styled from "@emotion/styled";
 import { Callout, fontBodyS, fontBodyXxs } from "@czi-sds/components";
 import { gray100, primary400 } from "src/common/theme";
 import { TextField } from "@mui/material";
-import Image from "next/image";
 import { inputBaseClasses } from "@mui/material/InputBase";
 import { inputLabelClasses } from "@mui/material/InputLabel";
 import { alertClasses } from "@mui/material/Alert";
@@ -97,15 +96,6 @@ export const StyledCallout = styled(Callout)`
     margin-top: auto;
     margin-bottom: auto;
   }
-`;
-
-export const StyledIconImage = styled(Image)`
-  width: 24px;
-  height: 24px;
-
-  /* CSS filter generated for #0073FF (primary400) using https://isotropic.co/tool/hex-color-to-css-filter/ */
-  filter: invert(37%) sepia(58%) saturate(7350%) hue-rotate(205deg)
-    brightness(105%) contrast(105%);
 `;
 
 export const StyledTooltipText = styled.div`

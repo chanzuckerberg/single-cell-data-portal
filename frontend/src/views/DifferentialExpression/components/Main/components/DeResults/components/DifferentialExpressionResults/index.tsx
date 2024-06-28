@@ -11,10 +11,9 @@ import {
   TableWrapper,
   OpenInGE,
   StyledCallout,
-  StyledIconImage,
   StyledTooltipText,
 } from "./style";
-import cxgIcon from "./images/cxg.svg";
+import CxgIcon from "./images/cxg.svg";
 import { Pagination } from "@mui/material";
 import Table from "src/views/CellGuide/components/CellGuideCard/components/common/Table";
 import { Button, Tooltip } from "@czi-sds/components";
@@ -204,7 +203,7 @@ const DifferentialExpressionResults = ({
               rel="noopener noreferrer"
               data-testid={DIFFERENTIAL_EXPRESSION_OPEN_IN_GE_1_BUTTON}
             >
-              <StyledIconImage alt="CxG icon" src={cxgIcon} />
+              <CxgIcon />
             </OpenInGE>
           </Tooltip>
         </CellGroupTitleWrapper>
@@ -248,7 +247,7 @@ const DifferentialExpressionResults = ({
               rel="noopener noreferrer"
               data-testid={DIFFERENTIAL_EXPRESSION_OPEN_IN_GE_2_BUTTON}
             >
-              <StyledIconImage alt="CxG icon" src={cxgIcon} />
+              <CxgIcon />
             </OpenInGE>
           </Tooltip>
         </CellGroupTitleWrapper>

@@ -7,13 +7,12 @@ import {
 } from "src/views/WheresMyGeneV2/common/constants";
 import { DefaultAutocompleteOption, Tooltip } from "@czi-sds/components";
 import {
-  StyledIconImage,
   StyledTooltip,
   TooltipButton,
 } from "src/views/WheresMyGeneV2/components/CellInfoSideBar/style";
-import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import { Props } from "./types";
 import { useConnect } from "./connect";
+import { StyledQuestionMarkIcon } from "src/common/style";
 
 export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
   const { optionLabel, handleChange, InputDropdownProps } = useConnect({
@@ -48,7 +47,7 @@ export default function Compare({ areFiltersDisabled }: Props): JSX.Element {
               sdsType="secondary"
               isAllCaps={false}
             >
-              <StyledIconImage alt="question mark" src={questionMarkIcon} />
+              <StyledQuestionMarkIcon />
             </TooltipButton>
           </Tooltip>
         </Label>
