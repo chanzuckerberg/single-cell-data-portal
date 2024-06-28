@@ -30,14 +30,6 @@ def dataset_uri():
 
 
 @pytest.fixture(scope="session")
-def visium_dataset_uri():
-    return (
-        "https://www.dropbox.com/scl/fi/lmhue0va6ihk50ivp26da/visium_small.h5ad?rlkey=n0fo4dyi1ah7ckg9kgzwlhm8s&st"
-        "=p7jzej8j&dl=0"
-    )
-
-
-@pytest.fixture(scope="session")
 def proxy_auth_token(config, deployment_stage, tmp_path_factory, worker_id) -> dict:
     """
     Generate a proxy token for rdev. If running in parallel mode this will be shared across workers to avoid rate

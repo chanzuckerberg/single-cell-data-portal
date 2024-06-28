@@ -26,10 +26,6 @@ class BaseFunctionalTestCase(unittest.TestCase):
             "https://www.dropbox.com/scl/fi/y50umqlcrbz21a6jgu99z/"
             "5_0_0_example_valid.h5ad?rlkey=s7p6ybyx082hswix26hbl11pm&dl=0"
         )
-        cls.test_visium_dataset_uri = (
-            "https://www.dropbox.com/scl/fi/lmhue0va6ihk50ivp26da/visium_small.h5ad?rlkey=n0f"
-            "o4dyi1ah7ckg9kgzwlhm8s&st=p7jzej8j&dl=0"
-        )
         cls.session = requests.Session()
         # apply retry config to idempotent http methods we use + POST requests, which are currently all either
         # idempotent (wmg queries) or low risk to rerun in dev/staging. Update if this changes in functional tests.
