@@ -15,7 +15,7 @@ export interface PayloadAction<Payload> {
 export interface NotificationProps {
   message: string;
   notificationId?: string;
-  intent: "info" | "success" | "warning" | "error";
+  intent: "info" | "negative" | "positive" | "notice";
   sdsIcon: keyof IconNameToSizes;
   sdsSize: "s" | "l" | "xs" | "xl";
   label: string;

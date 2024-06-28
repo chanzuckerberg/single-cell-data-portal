@@ -6,6 +6,8 @@ from urllib.parse import urlparse
 
 from flask import Response, jsonify, make_response
 
+from backend.common import doi
+from backend.common.citation import format_citation_dp
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.utils.http_exceptions import (
     ConflictException,
@@ -35,7 +37,6 @@ from backend.layers.business.exceptions import (
     InvalidURIException,
     MaxFileSizeExceededException,
 )
-from backend.layers.common import doi
 from backend.layers.common.entities import (
     CollectionId,
     CollectionMetadata,
@@ -43,6 +44,7 @@ from backend.layers.common.entities import (
     CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
+    DatasetArtifactMetadataUpdate,
     DatasetArtifactType,
     DatasetId,
     DatasetStatus,
@@ -290,6 +292,9 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
             "name": collection.metadata.name,
             "published_at": collection.canonical_collection.originally_published_at,
             "publisher_metadata": collection.publisher_metadata,  # TODO: convert
+            "summary_citation": (
+                format_citation_dp(collection.publisher_metadata) if collection.publisher_metadata else None
+            ),
             "revision_of": revision_of,
             "revising_in": revising_in,
             "updated_at": collection.published_at or collection.created_at,
@@ -430,6 +435,7 @@ def get_collection_index():
             transformed_collection["publisher_metadata"] = _publisher_metadata_to_response(
                 collection.publisher_metadata
             )
+            transformed_collection["summary_citation"] = format_citation_dp(collection.publisher_metadata)
 
         transformed_collection["published_at"] = collection.canonical_collection.originally_published_at
         transformed_collection["revised_at"] = collection.published_at
@@ -484,6 +490,7 @@ def get_user_collection_index(token_info):
             transformed_collection["publisher_metadata"] = _publisher_metadata_to_response(
                 collection.publisher_metadata
             )
+            transformed_collection["summary_citation"] = format_citation_dp(collection.publisher_metadata)
 
         transformed_collection["consortia"] = collection.metadata.consortia
 
@@ -656,6 +663,39 @@ def set_collection_version_datasets_order(collection_id: str, body: dict, token_
         raise ForbiddenHTTPException() from None
 
     return make_response("", 200)
+
+
+def update_dataset(collection_id: str, dataset_id: str, body: dict, token_info: dict):
+    """
+    Updates a dataset using the fields specified in `body`.
+    """
+
+    # Confirm user is authorized to update the dataset.
+    dataset_version, _ = _assert_dataset_has_right_owner(DatasetVersionId(dataset_id), UserInfo(token_info))
+
+    # Find collection version.
+    collection_version = lookup_collection(collection_id)
+    if collection_version is None:
+        raise ForbiddenHTTPException()
+
+    # Create payload and attempt update.
+    payload = DatasetArtifactMetadataUpdate(body.get("title"))
+    try:
+        get_business_logic().update_dataset_artifact_metadata(
+            collection_version.version_id, dataset_version.version_id, payload
+        )
+    except InvalidMetadataException as ex:
+        raise InvalidParametersHTTPException(detail=ex.errors) from None
+    except CollectionNotFoundException as ex:
+        raise ForbiddenHTTPException(detail=ex.errors) from None
+    except CollectionIsPublishedException as ex:
+        raise ForbiddenHTTPException(detail=ex.errors) from None
+    except DatasetInWrongStatusException:
+        raise MethodNotAllowedException(
+            detail="Dataset cannot be updated if processing status is not SUCCESS."
+        ) from None
+
+    return Response(status=202)
 
 
 # TODO: those two methods should probably be collapsed into one

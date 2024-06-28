@@ -1,39 +1,5 @@
 import styled from "@emotion/styled";
-import { Autocomplete } from "@mui/material";
-import { fontBodyXs, fontCapsXxxs } from "@czi-sds/components";
-import { fontWeightSemibold, gray500 } from "src/common/theme";
-
-export const StyledAutocomplete = styled(Autocomplete)`
-  height: 32px;
-
-  .MuiInputBase-root {
-    padding-right: 8px !important;
-  }
-  & .MuiAutocomplete-inputRoot[class*="MuiInput-root"] {
-    padding: 0px;
-  }
-  &
-    .MuiAutocomplete-inputRoot[class*="MuiOutlinedInput-root"]
-    .MuiAutocomplete-input {
-    padding: 0px;
-  }
-  & .MuiInputLabel-root {
-    margin-top: -8px;
-    z-index: 0;
-  }
-  & .MuiInputLabel-root.MuiInputLabel-shrink {
-    margin-top: 0px;
-  }
-`;
-
-export const SectionTitle = styled.div`
-  ${fontCapsXxxs}
-  font-weight: ${fontWeightSemibold};
-  margin-bottom: 0px !important;
-  cursor: default;
-  padding-left: 12px !important;
-  color: ${gray500};
-`;
+import { fontBodyXs } from "@czi-sds/components";
 
 export const SectionItem = styled.li`
   ${fontBodyXs}
@@ -41,4 +7,19 @@ export const SectionItem = styled.li`
   cursor: pointer;
   padding-left: 20px !important;
   margin-bottom: 8px !important;
+`;
+
+interface WrapperProps {
+  fullWidth?: boolean;
+}
+export const Wrapper = styled.div<WrapperProps>`
+  .base-Popper-root {
+    width: ${({ fullWidth }) => (fullWidth ? "100%" : "auto")};
+    height: fit-content;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+    border: none;
+  }
+  .base-Popper-root.MuiAutocomplete-popper.MuiAutocomplete-popperDisablePortal {
+    box-shadow: none;
+  }
 `;

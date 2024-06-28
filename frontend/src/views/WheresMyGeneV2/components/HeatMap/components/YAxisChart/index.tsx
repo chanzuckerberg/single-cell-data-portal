@@ -36,7 +36,6 @@ import {
   FlexRow,
   FlexRowJustified,
   HiddenCellTypeLabelStyle,
-  StyledImage,
   TissueHeaderLabelStyle,
   Wrapper,
   TissueLabel,
@@ -176,8 +175,8 @@ const TissueHeaderButton = ({
         }, [tissueID, tissueName, handleExpandCollapse])}
       >
         <Icon
-          sdsIcon={expanded ? "triangleDown" : "triangleRight"}
-          sdsSize="s"
+          sdsIcon={expanded ? "TriangleDown" : "TriangleRight"}
+          sdsSize="xs"
           color="gray"
           sdsType="static"
           shade={300}
@@ -276,18 +275,7 @@ const CellTypeButton = ({
               }
             }}
           >
-            <StyledImage
-              data-testid="marker-gene-button"
-              src={InfoSVG.src}
-              /**
-               * (thuang): https://nextjs.org/docs/pages/api-reference/components/image-legacy#layout
-               * Use the <StyledImage /> width and height, since default is `intrinsic`
-               */
-              layout="fixed"
-              width="10"
-              height="10"
-              alt={`display marker genes for ${cellType.name}`}
-            />
+            <InfoSVG data-testid="marker-gene-button" id={cellType.name} />
           </InfoButtonWrapper>
         )}
       </FlexRow>

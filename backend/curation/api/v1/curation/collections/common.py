@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 from uuid import UUID
 
+from backend.common.citation import format_citation_dp
 from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.http_exceptions import (
     ForbiddenHTTPException,
@@ -194,11 +195,20 @@ def reshape_datasets_for_curation_api(
     as_version: bool = False,
     is_published: bool = False,
 ) -> List[dict]:
+    business_logic = get_business_logic()
     active_datasets = []
+    dataset_version_ids = []
+    dataset_versions = []
     for dv in datasets:
-        dataset_version = get_business_logic().get_dataset_version(dv) if isinstance(dv, DatasetVersionId) else dv
+        if isinstance(dv, DatasetVersion):
+            dataset_versions.append(dv)
+        else:
+            dataset_version_ids.append(dv)
+    if dataset_version_ids:
+        dataset_versions.extend(business_logic.database_provider.get_dataset_versions_by_id(dataset_version_ids))
+    for dv in dataset_versions:
         reshaped_dataset = reshape_dataset_for_curation_api(
-            dataset_version, use_canonical_url, preview, as_canonical=not as_version, is_published=is_published
+            dv, use_canonical_url, preview, as_canonical=not as_version, is_published=is_published
         )
         active_datasets.append(reshaped_dataset)
     return active_datasets
@@ -274,7 +284,8 @@ def reshape_dataset_for_curation_datasets_index_api(
     """
     Create the response shape for the curation datasets index API response. Handles shape for both public and private
     requests.
-    :param visibility: the requested visibility of the datasets to be included in the dataset index response; either PUBLIC or PRIVATE.
+    :param visibility: the requested visibility of the datasets to be included in the dataset index response; either
+    PUBLIC or PRIVATE.
     :param collection_version: the collection version of the dataset to be included in the API response.
     :param dataset_version: a dataset version to be included in the API response.
     :return: A dictionary shaped for inclusion in the datasets index API response.
@@ -294,6 +305,9 @@ def reshape_dataset_for_curation_datasets_index_api(
     ds["collection_name"] = collection_version.metadata.name
     doi, _ = extract_doi_from_links(collection_version.metadata.links)
     ds["collection_doi"] = doi
+    ds["collection_doi_label"] = (
+        format_citation_dp(collection_version.publisher_metadata) if collection_version.publisher_metadata else None
+    )
 
     # At this point, dataset shape for public requests are complete.
     if is_dataset_visibility_public:

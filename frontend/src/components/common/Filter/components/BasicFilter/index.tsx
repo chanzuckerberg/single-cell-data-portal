@@ -23,7 +23,6 @@ export default function BasicFilter({
     <Filter>
       <FilterLabel
         isDisabled={isDisabled}
-        isOpen={isOpen}
         label={label}
         onOpenFilter={(mouseEvent: MouseEvent<HTMLElement>) =>
           setAnchorEl(mouseEvent.currentTarget)

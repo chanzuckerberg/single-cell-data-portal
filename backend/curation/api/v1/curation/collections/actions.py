@@ -1,11 +1,13 @@
+import logging
+
 from flask import jsonify, make_response
 
+import backend.common.doi as doi
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from backend.curation.api.v1.curation.collections.common import reshape_for_curation_api
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionQueryFilter
 from backend.layers.business.exceptions import CollectionCreationException, InvalidMetadataException
-from backend.layers.common import doi
 from backend.layers.common.entities import CollectionLinkType, CollectionMetadata, Link, Visibility
 from backend.portal.api.providers import get_business_logic
 
@@ -37,7 +39,7 @@ def get(visibility: str, token_info: dict, curator: str = None):
         else:
             filters["curator_name"] = curator
 
-    print(filters)
+    logging.info(filters)
 
     resp_collections = []
     for collection_version in get_business_logic().get_collections(CollectionQueryFilter(**filters)):

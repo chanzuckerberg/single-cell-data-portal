@@ -2,8 +2,8 @@ import { Fragment, MouseEvent, useState } from "react";
 import { Collection } from "src/common/entities";
 import Menu from "./components/Menu";
 import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
-import { ButtonIcon } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/style";
 import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
+import { Button } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/style";
 
 interface Props {
   collection: Collection;
@@ -35,13 +35,14 @@ const MoreDropdown = ({
 
   return (
     <Fragment>
-      <ButtonIcon
+      <Button
         data-testid="collection-more-button"
+        icon="DotsHorizontal"
         onClick={onOpen}
         open={open}
-        sdsIcon="dotsHorizontal"
         sdsSize="small"
-        sdsType="tertiary"
+        sdsStyle="icon"
+        sdsType="secondary"
       />
       <Menu
         collection={collection}

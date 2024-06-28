@@ -696,7 +696,7 @@ export enum PUBLICATION_DATE_LABELS {
  */
 export interface PublisherMetadataCategories {
   publicationDateValues?: number[]; // Set of date bins that publication date falls within
-  summaryCitation: string;
+  summary_citation: string;
 }
 
 /**

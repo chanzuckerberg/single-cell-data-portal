@@ -28,7 +28,6 @@ import {
   HoverContainer,
   DeleteButtonWrapper,
 } from "./style";
-import { StyledImage } from "../YAxisChart/style";
 import InfoSVG from "src/common/images/info-sign-icon.svg";
 import {
   X_AXIS_CHART_HEIGHT_PX,
@@ -78,7 +77,7 @@ function GeneButton({
             }
           }}
         >
-          <Icon sdsIcon="trashCan" sdsSize="s" sdsType="interactive"></Icon>
+          <Icon sdsIcon="TrashCan" sdsSize="s" sdsType="interactive"></Icon>
         </DeleteButtonWrapper>
 
         <InfoButtonWrapper
@@ -93,13 +92,7 @@ function GeneButton({
             dispatch(selectGeneInfoFromXAxis(geneName));
           }}
         >
-          <StyledImage
-            src={InfoSVG.src}
-            width="10"
-            height="10"
-            alt={`display gene info for ${geneName}`}
-            data-testid={`gene-info-icon-${geneName}`}
-          />
+          <InfoSVG data-testid={`gene-info-icon-${geneName}`} />
         </InfoButtonWrapper>
       </HoverContainer>
       <XAxisLabel className={"gene-label-container"}>

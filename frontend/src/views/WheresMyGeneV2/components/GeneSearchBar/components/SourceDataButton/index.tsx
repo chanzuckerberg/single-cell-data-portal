@@ -32,9 +32,10 @@ export default function SourceDataButton({
           track(EVENTS.WMG_SOURCE_DATA_CLICKED);
           handleRightSidebarButtonClick(event);
         }}
+        sdsStyle="icon"
         sdsSize="medium"
         sdsType="primary"
-        sdsIcon="infoCircle"
+        icon="InfoCircle"
       />
     </StyledButtonDiv>
   );

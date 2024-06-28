@@ -1,11 +1,9 @@
-import {
-  DefaultMenuSelectOption,
-  InputDropdownProps as RawInputDropdownProps,
-} from "@czi-sds/components";
+import { InputDropdownProps as RawInputDropdownProps } from "@czi-sds/components";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { StyledDropdown, Wrapper, Label } from "../common/style";
 import { DIFFERENTIAL_EXPRESSION_ORGANISM_DROPDOWN } from "src/views/DifferentialExpression/common/constants";
 import { useConnect } from "./connect";
+import { Organism as IOrganism } from "src/views/DifferentialExpression/common/types";
 
 const InputDropdownProps: Partial<RawInputDropdownProps> = {
   sdsStyle: "square",
@@ -16,10 +14,10 @@ export default function Organism(): JSX.Element {
   return (
     <Wrapper>
       <Label>Organism</Label>
-      <StyledDropdown
+      <StyledDropdown<IOrganism, false, false, false>
         label={organism?.name || "Select"}
         options={organisms || EMPTY_ARRAY}
-        onChange={handleOnChange as tempOnChange}
+        onChange={handleOnChange}
         InputDropdownProps={InputDropdownProps}
         data-testid={DIFFERENTIAL_EXPRESSION_ORGANISM_DROPDOWN}
         value={organism}
@@ -27,8 +25,3 @@ export default function Organism(): JSX.Element {
     </Wrapper>
   );
 }
-
-// (HACK): Not sure why styled Dropdown changes `onChange` type
-type tempOnChange = (
-  options: DefaultMenuSelectOption | DefaultMenuSelectOption[] | null
-) => void;

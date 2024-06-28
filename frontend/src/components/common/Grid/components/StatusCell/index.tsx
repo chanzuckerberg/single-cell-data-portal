@@ -7,7 +7,6 @@ import {
   StatusTag,
   StatusTags,
 } from "src/components/common/Grid/components/StatusCell/style";
-
 interface Props {
   revisionButton?: ReactNode;
   status?: COLLECTION_STATUS[];
@@ -41,7 +40,7 @@ export default function StatusCell({
           <StatusTag key={status}>
             <Tag
               color={
-                status === COLLECTION_STATUS.PUBLISHED ? "success" : "primary"
+                status === COLLECTION_STATUS.PUBLISHED ? "positive" : "info"
               }
               data-testid="status-tag"
               label={status}

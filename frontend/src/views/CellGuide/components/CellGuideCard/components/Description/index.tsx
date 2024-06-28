@@ -26,14 +26,12 @@ import {
   useCellTypeMetadata,
   useValidatedDescription,
 } from "src/common/queries/cellGuide";
-import validatedIcon from "src/common/images/validated.svg";
+import ValidatedIcon from "src/common/images/validated.svg";
 import Link from "../common/Link";
 import { StyledLink } from "../common/Link/style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { CELL_GUIDE_CORRECTION_SURVEY_LINK } from "src/common/constants/airtableLinks";
-import questionMarkIcon from "src/common/images/question-mark-icon.svg";
-import { StyledIconImage } from "../common/HelpTooltip/style";
 import {
   CELL_GUIDE_CARD_CL_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_DESCRIPTION,
@@ -43,7 +41,9 @@ import {
   CELL_GUIDE_CARD_SYNONYMS,
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 import { useIsComponentPastBreakpointHeight } from "../common/hooks/useIsComponentPastBreakpoint";
-import Image from "next/image";
+import { StyledQuestionMarkIcon } from "src/common/style";
+
+// TODO(SVGR) ADD BACK HOVER BRIGHTNESS CHANGE
 
 const SLOT_PROPS: TooltipProps["slotProps"] = {
   tooltip: {
@@ -224,7 +224,7 @@ export default function Description({
               });
           }}
         >
-          <StyledIconImage alt="question mark" src={questionMarkIcon} />
+          <StyledQuestionMarkIcon />
         </StyledLink>
       </StyledTooltip>
     </SourceLink>
@@ -348,15 +348,8 @@ export default function Description({
           <StyledTag
             sdsType="secondary"
             sdsStyle="square"
-            color="success"
-            icon={
-              <Image
-                src={validatedIcon}
-                alt="validated"
-                width={16}
-                height={16}
-              />
-            }
+            color="positive"
+            icon={<ValidatedIcon />}
             label="Validated"
           />{" "}
           This description has been validated by our Biocurator team.{" "}

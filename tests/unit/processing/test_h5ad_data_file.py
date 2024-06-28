@@ -171,7 +171,7 @@ class TestH5ADDataFile(unittest.TestCase):
 
         col_name = "fo/o"
 
-        attrs = [tiledb.Attr(name=col_name, dtype=np.int)]
+        attrs = [tiledb.Attr(name=col_name, dtype=int)]
         domain = tiledb.Domain(tiledb.Dim(domain=(0, 99), tile=100, dtype=np.uint32))
         schema = tiledb.ArraySchema(
             domain=domain, sparse=False, attrs=attrs, cell_order="row-major", tile_order="row-major"
@@ -181,7 +181,7 @@ class TestH5ADDataFile(unittest.TestCase):
         try:
             with tiledb.open("foo", mode="w") as A:
                 value = dict()
-                value[col_name] = np.zeros((100,), dtype=np.int)
+                value[col_name] = np.zeros((100,), dtype=int)
                 A[:] = value  # if there's a regression, this statement will throw a TileDBError
                 # if we get here we're good
         finally:

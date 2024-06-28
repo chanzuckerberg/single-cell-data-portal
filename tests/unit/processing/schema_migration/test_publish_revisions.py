@@ -19,12 +19,14 @@ def publish_revisions() -> PublishRevisions:
 
 @pytest.fixture
 def publish_revisions_and_collections(
-    tmpdir, publish_revisions, published_collection, revision, private
+    tmpdir, publish_revisions, published_collection, revision, migration_revision, private
 ) -> Tuple[PublishRevisions, Dict[str, List]]:
     db = {
         published_collection.version_id.id: published_collection,
         revision[0].version_id.id: revision[0],
         revision[1].version_id.id: revision[1],
+        migration_revision[0].version_id.id: migration_revision[0],
+        migration_revision[1].version_id.id: migration_revision[1],
         private.version_id.id: private,
     }
 
@@ -36,7 +38,12 @@ def publish_revisions_and_collections(
 
     publish_revisions.business_logic.get_collection_version = _get_collection_version
     publish_revisions.business_logic.get_collections = _get_collections
-    return publish_revisions, {"published": [published_collection], "revision": revision, "private": [private]}
+    return publish_revisions, {
+        "published": [published_collection],
+        "revision": revision,
+        "migration_revision": migration_revision,
+        "private": [private],
+    }
 
 
 class TestPublishRevisions:
@@ -89,7 +96,7 @@ class TestPublishRevisions:
         # Mock necessary objects and methods
         caplog.set_level(logging.INFO)
         publish_revisions, collections = publish_revisions_and_collections
-        _, revision = collections["revision"]
+        _, migration_revision = collections["migration_revision"]
         publish_revisions.business_logic.get_collections.return_value = [collections]
         publish_revisions.check_datasets = Mock(return_value=[])
 
@@ -97,16 +104,18 @@ class TestPublishRevisions:
         publish_revisions.run()
 
         # Assert the calls and behavior
-        publish_revisions.check_datasets.assert_called_once_with(revision)
+        publish_revisions.check_datasets.assert_called_once_with(migration_revision)
         assert "Publishing collection version." in caplog.messages
-        publish_revisions.business_logic.publish_collection_version.assert_called_once_with(revision.version_id)
+        publish_revisions.business_logic.publish_collection_version.assert_called_once_with(
+            migration_revision.version_id
+        )
 
     def test_run_neg(self, publish_revisions_and_collections, caplog):
         """Run method when check_datasets returns errors."""
         # Mock necessary objects and methods
         caplog.set_level(logging.INFO)
         publish_revisions, collections = publish_revisions_and_collections
-        _, revision = collections["revision"]
+        _, migration_revision = collections["migration_revision"]
         publish_revisions.business_logic.get_collections.return_value = [collections]
         publish_revisions.check_datasets = Mock(return_value=["error message"])
 
@@ -114,7 +123,7 @@ class TestPublishRevisions:
         publish_revisions.run()
 
         # Assert the calls and behavior
-        publish_revisions.check_datasets.assert_called_once_with(revision)
+        publish_revisions.check_datasets.assert_called_once_with(migration_revision)
         assert "Unable to publish collection version." in caplog.messages
         publish_revisions.business_logic.publish_collection_version.assert_not_called()
 
@@ -123,9 +132,9 @@ class TestPublishRevisions:
         # Mock necessary objects and methods
         caplog.set_level(logging.INFO)
         publish_revisions, collections = publish_revisions_and_collections
-        _, revision = collections["revision"]
+        _, migration_revision = collections["migration_revision"]
         publish_revisions.business_logic.get_collections.return_value = [collections]
-        publish_revisions.do_not_publish_list = [revision.version_id.id]
+        publish_revisions.do_not_publish_list = [migration_revision.version_id.id]
         publish_revisions.check_datasets = Mock(return_value=[])
 
         # Call the method

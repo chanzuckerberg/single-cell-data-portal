@@ -1,7 +1,4 @@
-import {
-  ComplexFilterInputDropdown,
-  DefaultMenuSelectOption,
-} from "@czi-sds/components";
+import { DefaultMenuSelectOption } from "@czi-sds/components";
 import { memo } from "react";
 import Organism from "./components/Organism";
 import Compare from "./components/Compare";
@@ -39,77 +36,65 @@ export default memo(function Filters({
   return (
     <Wrapper>
       <FilterContainer>
-        <StyledComplexFilter
+        <StyledComplexFilter<DefaultMenuSelectOption, true, false, false>
           multiple
           data-testid="disease-filter"
           search
           label="Disease"
-          options={terms.disease as unknown as DefaultMenuSelectOption[]}
+          options={terms.disease}
           onChange={handle.diseasesChange}
-          value={selected.diseases as unknown as DefaultMenuSelectOption[]}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
+          value={selected.diseases}
+          InputDropdownComponent={StyledComplexFilterInputDropdown}
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
         />
-        <StyledComplexFilter
+        <StyledComplexFilter<DefaultMenuSelectOption, true, false, false>
           multiple
           data-testid="self-reported-ethnicity-filter"
           search
           label="Self-Reported Ethnicity"
-          options={
-            terms.self_reported_ethnicity as unknown as DefaultMenuSelectOption[]
-          }
+          options={terms.self_reported_ethnicity}
           onChange={handle.ethnicitiesChange}
-          value={selected.ethnicities as unknown as DefaultMenuSelectOption[]}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
+          value={selected.ethnicities}
+          InputDropdownComponent={StyledComplexFilterInputDropdown}
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
         />
 
-        <StyledComplexFilter
+        <StyledComplexFilter<DefaultMenuSelectOption, true, false, false>
           multiple
           data-testid="publication-filter"
           search
           label="Publication"
-          options={terms.publication as unknown as DefaultMenuSelectOption[]}
+          options={terms.publication}
           onChange={handle.publicationsChange}
-          value={selected.publications as unknown as DefaultMenuSelectOption[]}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
+          value={selected.publications}
+          InputDropdownComponent={StyledComplexFilterInputDropdown}
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
         />
 
-        <StyledComplexFilter
+        <StyledComplexFilter<DefaultMenuSelectOption, true, false, false>
           multiple
           data-testid="sex-filter"
           search
           label="Sex"
-          options={terms.sex as unknown as DefaultMenuSelectOption[]}
+          options={terms.sex}
           onChange={handle.sexesChange}
-          value={selected.sexes as unknown as DefaultMenuSelectOption[]}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
+          value={selected.sexes}
+          InputDropdownComponent={StyledComplexFilterInputDropdown}
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
         />
-        <StyledComplexFilter
+        <StyledComplexFilter<DefaultMenuSelectOption, true, false, false>
           multiple
           data-testid="tissue-filter"
           search
           label="Tissue"
-          options={terms.tissue as unknown as DefaultMenuSelectOption[]}
+          options={terms.tissue}
           onChange={handle.tissuesChange}
-          value={selected.tissues as unknown as DefaultMenuSelectOption[]}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
+          value={selected.tissues}
+          InputDropdownComponent={StyledComplexFilterInputDropdown}
           DropdownMenuProps={DropdownMenuProps}
           InputDropdownProps={InputDropdownProps}
         />

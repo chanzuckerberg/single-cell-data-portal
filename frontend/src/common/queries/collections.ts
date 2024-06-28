@@ -7,7 +7,6 @@ import {
 } from "react-query";
 import { Collection, COLLECTION_STATUS, Dataset } from "src/common/entities";
 import {
-  buildSummaryCitation,
   createTaggedTissueOntology,
   ProcessedCollectionResponse,
   TissueOntology,
@@ -205,11 +204,6 @@ function fetchCollection() {
         publishedCounterpart
       );
     }
-
-    // Add summary citation to collection.
-    collection.summaryCitation = buildSummaryCitation(
-      collection.publisher_metadata
-    );
 
     return collection;
   };
