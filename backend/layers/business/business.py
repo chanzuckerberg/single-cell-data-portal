@@ -43,7 +43,7 @@ from backend.layers.business.exceptions import (
     NoPreviousDatasetVersionException,
 )
 from backend.layers.common import validation
-from backend.layers.common.cleanup import sanitize
+from backend.layers.common.cleanup import sanitize, sanitize_dataset_artifact_metadata_update
 from backend.layers.common.entities import (
     CanonicalCollection,
     CollectionId,
@@ -463,6 +463,23 @@ class BusinessLogic(BusinessLogicInterface):
             raise CollectionIsPublishedException([f"Collection version {collection_version_id.id} is published"])
         return collection_version
 
+    def _assert_dataset_version_processing_status(
+        self, dataset_version_id: DatasetVersionId, expected_status: DatasetProcessingStatus
+    ) -> DatasetVersion:
+        """
+        Ensures a dataset version is in the expected processing status.
+
+        :param dataset_version_id: The dataset version to check the processing status of.
+        :param expected_status: The expected processing status of the dataset version.
+        :return: The dataset version if it is in the expected processing status.
+        """
+        dataset = self.database_provider.get_dataset_version(dataset_version_id)
+        if dataset.status.processing_status != expected_status:
+            raise DatasetInWrongStatusException(
+                f"Dataset {dataset_version_id.id} processing status must be {expected_status.name} but is {dataset.status.processing_status}."
+            )
+        return dataset
+
     def create_empty_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         """
         Creates an empty dataset that can be later used for ingestion
@@ -624,6 +641,36 @@ class BusinessLogic(BusinessLogicInterface):
         Sets the metadata for a dataset version
         """
         self.database_provider.set_dataset_metadata(dataset_version_id, metadata)
+
+    def update_dataset_artifact_metadata(
+        self,
+        collection_version_id: CollectionVersionId,
+        dataset_version_id: DatasetVersionId,
+        metadata_update: DatasetArtifactMetadataUpdate,
+    ) -> None:
+        """
+        Validates dataset artifact metadata update and triggers corresponding updates. Currently only supports
+        updating dataset title.
+
+        :param collection_version_id: Collection of dataset to update.
+        :param dataset_version_id: Version ID of dataset to update.
+        :param metadata_update: Metadata update to apply.
+        """
+        # Format submitted update values.
+        sanitize_dataset_artifact_metadata_update(metadata_update)
+
+        # Confirm update values are valid.
+        validation.verify_dataset_artifact_metadata_update(metadata_update)
+
+        # Dataset can only be updated if corresponding collection is unpublished.
+        self._assert_collection_version_unpublished(collection_version_id)
+
+        # Dataset can only be updated if its processing status is SUCCESS.
+        self._assert_dataset_version_processing_status(dataset_version_id, DatasetProcessingStatus.SUCCESS)
+
+        # Trigger update of dataset artifact.
+        collection_version = self.get_collection_version(collection_version_id)
+        self.trigger_dataset_artifact_update(collection_version, metadata_update, dataset_version_id)
 
     def get_all_mapped_datasets(self) -> List[DatasetVersion]:
         """
