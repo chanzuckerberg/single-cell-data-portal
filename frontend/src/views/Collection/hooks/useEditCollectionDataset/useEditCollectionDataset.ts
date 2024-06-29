@@ -2,8 +2,8 @@ import {
   FieldValues,
   UseEditCollectionDataset,
 } from "src/views/Collection/hooks/useEditCollectionDataset/common/entities";
-import { Dataset } from "src/common/entities";
 import { useEditDataset } from "src/common/queries/collections";
+import { PathParams } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/hooks/types";
 
 /**
  * Edit functionality for collection dataset.
@@ -12,11 +12,11 @@ export function useEditCollectionDataset(): UseEditCollectionDataset {
   const editDatasetMutation = useEditDataset();
 
   const onEditDataset = async (
-    dataset: Dataset,
+    pathParams: PathParams,
     fieldValues: FieldValues
   ): Promise<void> => {
     // Send order to BE.
-    const { collection_id: collectionId, id: datasetId } = dataset;
+    const { collectionId, datasetId } = pathParams;
     const payload = JSON.stringify(fieldValues);
     await editDatasetMutation.mutateAsync(
       {

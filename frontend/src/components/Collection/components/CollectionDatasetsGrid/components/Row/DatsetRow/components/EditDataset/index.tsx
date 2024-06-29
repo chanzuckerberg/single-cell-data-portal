@@ -15,20 +15,29 @@ import { useForm } from "src/components/Collection/components/CollectionDatasets
 import { Dataset } from "src/common/entities";
 import { FieldValues } from "src/views/Collection/hooks/useEditCollectionDataset/common/entities";
 
-export default function EditDataset({ Button, dataset }: Props): JSX.Element {
+export default function EditDataset({
+  Button,
+  collectionId,
+  dataset,
+}: Props): JSX.Element {
   const { onClose, onOpen, open } = useDialog();
   const {
     editDatasetAction: { onEditDataset },
   } = useEditCollectionDataset();
   const { clearErrors, errors, handleSubmit } = useForm();
   const fieldValues = mapDatasetToFieldValues(dataset);
+  const { id: datasetId } = dataset;
   return (
     <Fragment>
       <Button onClick={onOpen} />
       <StyledDialog
         {...DIALOG_PROPS}
         onClose={() => onClose(clearErrors)}
-        onSubmit={handleSubmit(onEditDataset, dataset, fieldValues)}
+        onSubmit={handleSubmit(
+          onEditDataset,
+          { collectionId, datasetId },
+          fieldValues
+        )}
         open={open}
       >
         <DialogTitle title="Edit Dataset" />

@@ -2,8 +2,8 @@ import { FormEvent, useCallback, useState } from "react";
 import {
   FieldErrors,
   HandleSubmit,
+  PathParams,
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/hooks/types";
-import { Dataset } from "src/common/entities";
 import { FieldValues } from "src/views/Collection/hooks/useEditCollectionDataset/common/entities";
 
 export interface UseForm {
@@ -25,8 +25,11 @@ export function useForm(): UseForm {
 
   const handleSubmit = useCallback(
     (
-      onSubmit: (dataset: Dataset, fieldValues: FieldValues) => Promise<void>,
-      dataset: Dataset,
+      onSubmit: (
+        pathParams: PathParams,
+        fieldValues: FieldValues
+      ) => Promise<void>,
+      pathParams: PathParams,
       defaultValues: FieldValues
     ) => {
       return async (event: FormEvent) => {
@@ -37,7 +40,7 @@ export function useForm(): UseForm {
         );
         const errors = validateForm(fieldValues, defaultValues);
         if (isValid(errors)) {
-          await onSubmit(dataset, fieldValues);
+          await onSubmit(pathParams, fieldValues);
         } else {
           setErrors(errors);
         }
