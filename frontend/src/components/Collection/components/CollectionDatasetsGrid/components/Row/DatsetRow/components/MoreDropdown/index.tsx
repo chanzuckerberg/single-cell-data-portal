@@ -9,6 +9,7 @@ import { useMoreMenu } from "src/views/Collection/hooks/useMoreMenu";
 import Menu from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/components/Menu";
 
 export default function MoreDropdown({
+  collectionId,
   dataset,
   disabled,
   menuItemProps,
@@ -24,6 +25,7 @@ export default function MoreDropdown({
         open={open}
       />
       <Menu
+        collectionId={collectionId}
         dataset={dataset}
         menuItemProps={menuItemProps}
         menuProps={{ anchorEl, onClose, open }}

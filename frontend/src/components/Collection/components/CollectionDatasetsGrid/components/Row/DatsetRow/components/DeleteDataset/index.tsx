@@ -3,7 +3,7 @@ import loadable from "@loadable/component";
 import * as React from "react";
 import { ElementType, FC, useEffect, useState } from "react";
 import { useDeleteDataset } from "src/common/queries/datasets";
-import { Dataset } from "src/common/entities";
+import { Collection } from "src/common/entities";
 
 const AsyncAlert = loadable(
   () =>
@@ -12,13 +12,13 @@ const AsyncAlert = loadable(
 
 interface Props {
   Button: ElementType;
-  dataset: Dataset;
+  collectionId: Collection["id"];
+  datasetId?: string;
 }
 
-const DeleteDataset: FC<Props> = ({ Button, dataset }) => {
+const DeleteDataset: FC<Props> = ({ Button, collectionId, datasetId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { mutateAsync: deleteDataset, isLoading } = useDeleteDataset();
-  const { collection_id: collectionId, id: datasetId } = dataset;
 
   // Closes delete dataset dialog when component unmounts.
   // In the event of a successful dataset deletion, the cache invalidation of the collection triggers the

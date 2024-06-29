@@ -16,6 +16,7 @@ import EditDataset from "src/components/Collection/components/CollectionDatasets
 import { isDeleteDatasetAvailable } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/components/Menu/utils";
 
 export default function Menu({
+  collectionId,
   dataset,
   menuItemProps,
   menuProps,
@@ -35,6 +36,7 @@ export default function Menu({
               Rename Dataset
             </StyledMenuItem>
           )}
+          collectionId={collectionId}
           dataset={dataset}
         />
       )}
@@ -61,7 +63,8 @@ export default function Menu({
               Delete Dataset
             </StyledMenuItem>
           )}
-          dataset={dataset}
+          collectionId={collectionId}
+          datasetId={dataset.id}
         />
       )}
     </StyledMenu>

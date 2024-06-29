@@ -242,6 +242,7 @@ const DatasetRow: FC<Props> = ({
           {visibility === VISIBILITY_TYPE.PRIVATE &&
             accessType === ACCESS_TYPE.WRITE && (
               <MoreDropdown
+                collectionId={collectionId}
                 dataset={dataset}
                 disabled={dataset.tombstone ?? false}
                 menuItemProps={{ isLoading, onUploadFile, revisionsEnabled }}
