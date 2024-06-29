@@ -26,20 +26,19 @@ export default function Menu({
   return (
     <StyledMenu {...DEFAULT_MENU_PROPS} {...menuProps}>
       {/* Edit */}
-      {revisionsEnabled && (
-        <EditDataset
-          Button={(buttonProps) => (
-            <StyledMenuItem
-              icon={<Icon {...EDIT_ICON_PROPS} />}
-              {...buttonProps}
-            >
-              Rename Dataset
-            </StyledMenuItem>
-          )}
-          collectionId={collectionId}
-          dataset={dataset}
-        />
-      )}
+      <EditDataset
+        Button={(buttonProps) => (
+          <StyledMenuItem
+            disabled={isLoading}
+            icon={<Icon {...EDIT_ICON_PROPS} />}
+            {...buttonProps}
+          >
+            Rename Dataset
+          </StyledMenuItem>
+        )}
+        collectionId={collectionId}
+        dataset={dataset}
+      />
       {/* Upload */}
       {revisionsEnabled && (
         <DropboxChooser onUploadFile={onUploadFile}>
