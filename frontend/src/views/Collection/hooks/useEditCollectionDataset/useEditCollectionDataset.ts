@@ -3,7 +3,10 @@ import {
   UseEditCollectionDataset,
 } from "src/views/Collection/hooks/useEditCollectionDataset/common/entities";
 import { useEditDataset } from "src/common/queries/collections";
-import { PathParams } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/hooks/types";
+import {
+  PathParams,
+  SubmitOptions,
+} from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/hooks/types";
 
 /**
  * Edit functionality for collection dataset.
@@ -13,7 +16,8 @@ export function useEditCollectionDataset(): UseEditCollectionDataset {
 
   const onEditDataset = async (
     pathParams: PathParams,
-    fieldValues: FieldValues
+    fieldValues: FieldValues,
+    submitOptions?: SubmitOptions
   ): Promise<void> => {
     // Send order to BE.
     const { collectionId, datasetId } = pathParams;
@@ -26,10 +30,10 @@ export function useEditCollectionDataset(): UseEditCollectionDataset {
       },
       {
         onSuccess: () => {
-          // TODO(cc) close dialog.
+          submitOptions?.onSuccess?.();
         },
         onError: () => {
-          // TODO(cc) error banner.
+          submitOptions?.onError?.();
         },
       }
     );

@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 
 export interface UseDialog {
-  onClose: (onAfterClose?: () => void) => void;
+  onClose: () => void;
   onOpen: () => void;
   open: boolean;
 }
@@ -19,9 +19,8 @@ export function useDialog(): UseDialog {
   }, []);
 
   // Closes dialog.
-  const onClose = useCallback((onAfterClose?: () => void) => {
+  const onClose = useCallback(() => {
     setOpen(false);
-    onAfterClose?.();
   }, []);
 
   return { onClose, onOpen, open };
