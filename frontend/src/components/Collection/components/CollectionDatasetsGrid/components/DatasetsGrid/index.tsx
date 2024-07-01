@@ -10,11 +10,13 @@ import { useDragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/useDra
 import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
 import { getDragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/common/utils";
 import { DatasetsGrid as Grid } from "src/components/Collection/components/CollectionDatasetsGrid/components/DatasetsGrid/style";
+import { EditDataset } from "src/views/Collection/hooks/useEditCollectionDataset/common/entities";
 
 interface Props {
   className?: string;
   collectionId: Collection["id"];
   datasets: Dataset[];
+  editDataset: EditDataset;
   uploadedFiles: UploadedFiles;
   invalidateCollectionQuery: () => void;
   visibility: VISIBILITY_TYPE;
@@ -42,6 +44,7 @@ const DatasetsGrid: FC<Props> = ({
   className,
   collectionId,
   datasets,
+  editDataset,
   uploadedFiles,
   invalidateCollectionQuery,
   visibility,
@@ -76,6 +79,7 @@ const DatasetsGrid: FC<Props> = ({
             collectionId={collectionId}
             dataset={dataset}
             dragAndDrop={getDragAndDrop(dragAndDrop, index)}
+            editDataset={editDataset}
             file={uploadedFiles[dataset.id]}
             invalidateCollectionQuery={invalidateCollectionQuery}
             onUploadFile={onUploadFile(reuploadDataset, dataset.id)}

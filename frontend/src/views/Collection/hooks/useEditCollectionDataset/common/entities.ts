@@ -3,6 +3,10 @@ import {
   SubmitOptions,
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/hooks/types";
 
+export interface EditDataset {
+  onEditDataset: OnEditDatasetFn;
+}
+
 export interface FieldValues {
   [key: string]: string;
 }

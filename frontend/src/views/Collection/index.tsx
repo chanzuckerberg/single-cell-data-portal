@@ -32,7 +32,11 @@ import {
 } from "./utils";
 import CollectionActions from "src/views/Collection/components/CollectionActions";
 import { useReorder } from "src/views/Collection/hooks/useReorder/useReorder";
-import { getReorder } from "src/views/Collection/hooks/useReorder/common/utils";
+import {
+  getEditDataset,
+  getReorder,
+} from "src/views/Collection/hooks/useReorder/common/utils";
+import { useEditCollectionDataset } from "src/views/Collection/hooks/useEditCollectionDataset/useEditCollectionDataset";
 
 const Collection: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -52,6 +56,7 @@ const Collection: FC = () => {
 
   const { data: collection, isError, isFetching } = useCollection({ id });
   const reorder = useReorder(id);
+  const editCollectionDataset = useEditCollectionDataset();
 
   useEffect(() => {
     if (
@@ -114,6 +119,8 @@ const Collection: FC = () => {
   );
   // Reorder datasets related values and actions.
   const reorderProps = getReorder(reorder, datasets);
+  // Edit dataset related action.
+  const editDatasetProps = getEditDataset(editCollectionDataset);
 
   return (
     <>
@@ -155,6 +162,7 @@ const Collection: FC = () => {
         <DatasetTab
           collectionId={id}
           datasets={sortCollectionDatasets(datasets, reorder.orderedIds)}
+          editDataset={editDatasetProps}
           isRevision={isRevision}
           reorder={reorderProps}
           visibility={collection.visibility}

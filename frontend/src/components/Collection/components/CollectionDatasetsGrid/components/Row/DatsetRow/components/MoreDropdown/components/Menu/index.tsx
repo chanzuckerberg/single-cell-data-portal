@@ -22,7 +22,8 @@ export default function Menu({
   menuItemProps,
   menuProps,
 }: Props): JSX.Element {
-  const { isLoading, onUploadFile, revisionsEnabled } = menuItemProps;
+  const { editDataset, isFailed, isLoading, onUploadFile, revisionsEnabled } =
+    menuItemProps;
   const canDelete = isDeleteDatasetAvailable(dataset, revisionsEnabled);
   return (
     <StyledMenu {...DEFAULT_MENU_PROPS} {...menuProps}>
@@ -31,7 +32,7 @@ export default function Menu({
         Button={(buttonProps) => (
           <StyledMenuItem
             data-testid={DROPDOWN_EDIT_DATASET}
-            disabled={isLoading}
+            disabled={isFailed || isLoading}
             icon={<Icon {...EDIT_ICON_PROPS} />}
             {...buttonProps}
           >
@@ -40,6 +41,7 @@ export default function Menu({
         )}
         collectionId={collectionId}
         dataset={dataset}
+        editDataset={editDataset}
         menuProps={menuProps}
       />
       {/* Upload */}

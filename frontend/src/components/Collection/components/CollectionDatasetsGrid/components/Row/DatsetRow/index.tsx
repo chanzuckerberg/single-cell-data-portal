@@ -51,6 +51,7 @@ import ReorderModeRow, {
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow";
 import { DragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/common/entities";
 import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
+import { EditDataset } from "src/views/Collection/hooks/useEditCollectionDataset/common/entities";
 
 const AsyncTooltip = loadable(
   () =>
@@ -87,6 +88,7 @@ interface Props {
   collectionId: Collection["id"];
   dataset: Dataset;
   dragAndDrop: DragAndDrop;
+  editDataset: EditDataset;
   file?: UploadingFile;
   invalidateCollectionQuery: () => void;
   visibility: Collection["visibility"];
@@ -100,6 +102,7 @@ const DatasetRow: FC<Props> = ({
   collectionId,
   dataset,
   dragAndDrop,
+  editDataset,
   file,
   invalidateCollectionQuery,
   visibility,
@@ -245,7 +248,13 @@ const DatasetRow: FC<Props> = ({
                 collectionId={collectionId}
                 dataset={dataset}
                 disabled={dataset.tombstone ?? false}
-                menuItemProps={{ isLoading, onUploadFile, revisionsEnabled }}
+                menuItemProps={{
+                  editDataset,
+                  isFailed,
+                  isLoading,
+                  onUploadFile,
+                  revisionsEnabled,
+                }}
               />
             )}
           <DownloadDataset
