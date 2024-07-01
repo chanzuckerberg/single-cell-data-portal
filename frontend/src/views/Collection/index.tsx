@@ -119,7 +119,7 @@ const Collection: FC = () => {
   );
   // Reorder datasets related values and actions.
   const reorderProps = getReorder(reorder, datasets);
-  // Edit dataset related action.
+  // Edit dataset related values and actions.
   const editDatasetProps = getEditDataset(editCollectionDataset);
 
   return (

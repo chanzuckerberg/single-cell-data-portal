@@ -51,7 +51,7 @@ import ReorderModeRow, {
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow";
 import { DragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/common/entities";
 import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
-import { EditDataset } from "src/views/Collection/hooks/useEditCollectionDataset/common/entities";
+import { EditDataset } from "src/views/Collection/hooks/useEditCollectionDataset/types";
 
 const AsyncTooltip = loadable(
   () =>

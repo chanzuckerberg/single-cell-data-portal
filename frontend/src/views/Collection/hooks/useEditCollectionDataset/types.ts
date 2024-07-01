@@ -1,14 +1,13 @@
 import {
+  CollectionDatasetFormMethod,
+  FieldValues,
   PathParams,
   SubmitOptions,
-} from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/hooks/types";
+} from "src/views/Collection/hooks/useCollectionDatasetForm/types";
 
 export interface EditDataset {
+  formMethod: CollectionDatasetFormMethod;
   onEditDataset: OnEditDatasetFn;
-}
-
-export interface FieldValues {
-  [key: string]: string;
 }
 
 export type OnEditDatasetFn = (
@@ -17,10 +16,11 @@ export type OnEditDatasetFn = (
   submitOptions?: SubmitOptions
 ) => Promise<void>;
 
-export interface EditDatasetAction {
+export interface EditCollectionDatasetAction {
   onEditDataset: OnEditDatasetFn;
 }
 
 export interface UseEditCollectionDataset {
-  editDatasetAction: EditDatasetAction;
+  editDatasetAction: EditCollectionDatasetAction;
+  formMethod: CollectionDatasetFormMethod;
 }

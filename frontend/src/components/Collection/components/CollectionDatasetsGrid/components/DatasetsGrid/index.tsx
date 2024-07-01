@@ -10,7 +10,7 @@ import { useDragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/useDra
 import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
 import { getDragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/common/utils";
 import { DatasetsGrid as Grid } from "src/components/Collection/components/CollectionDatasetsGrid/components/DatasetsGrid/style";
-import { EditDataset } from "src/views/Collection/hooks/useEditCollectionDataset/common/entities";
+import { EditDataset } from "src/views/Collection/hooks/useEditCollectionDataset/types";
 
 interface Props {
   className?: string;

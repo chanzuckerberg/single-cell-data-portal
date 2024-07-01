@@ -7,14 +7,14 @@ import {
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/components/EditDatasetFields/style";
 
 export default function EditDatasetFields({
-  clearErrors,
-  errors,
-  fieldValues,
+  defaultValues,
+  formMethod,
 }: Props): JSX.Element {
+  const { clearErrors, errors } = formMethod;
   return (
     <StyledInputText
       {...TITLE_INPUT_TEXT_PROPS}
-      defaultValue={fieldValues.title}
+      defaultValue={defaultValues.title}
       error={Boolean(errors.title)}
       helperText={errors.title}
       label={<Label>Name</Label>}

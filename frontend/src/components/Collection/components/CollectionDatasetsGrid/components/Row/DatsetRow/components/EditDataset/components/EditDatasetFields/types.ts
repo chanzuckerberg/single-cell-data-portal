@@ -1,8 +1,9 @@
-import { FieldValues } from "src/views/Collection/hooks/useEditCollectionDataset/common/entities";
-import { FieldErrors } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/hooks/types";
+import {
+  CollectionDatasetFormMethod,
+  FieldValues,
+} from "src/views/Collection/hooks/useCollectionDatasetForm/types";
 
 export interface Props {
-  clearErrors: () => void;
-  errors: FieldErrors;
-  fieldValues: FieldValues;
+  defaultValues: FieldValues;
+  formMethod: CollectionDatasetFormMethod;
 }

@@ -1,8 +1,12 @@
 import { FormEvent } from "react";
-import { FieldValues } from "src/views/Collection/hooks/useEditCollectionDataset/common/entities";
-import { Collection, Dataset } from "src/common/entities";
 
 export type FieldErrors = Record<keyof FieldValues, string>;
+
+export interface FieldValues {
+  [key: string]: string;
+}
+
+export type CollectionDatasetFormMethod = UseCollectionDatasetForm;
 
 export type HandleSubmit = (
   onSubmit: OnSubmit,
@@ -17,12 +21,15 @@ export type OnSubmit = (
   submitOptions?: SubmitOptions
 ) => Promise<void>;
 
-export interface PathParams {
-  collectionId: Collection["id"];
-  datasetId: Dataset["id"];
-}
+export type PathParams = Record<string, string>;
 
 export interface SubmitOptions {
   onError?: () => void;
   onSuccess?: () => void;
+}
+
+export interface UseCollectionDatasetForm {
+  clearErrors: () => void;
+  errors: FieldErrors;
+  handleSubmit: HandleSubmit;
 }

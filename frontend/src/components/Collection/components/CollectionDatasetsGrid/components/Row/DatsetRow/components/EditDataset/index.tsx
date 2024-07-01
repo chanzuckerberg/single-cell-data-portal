@@ -10,9 +10,7 @@ import {
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/constants";
 import { useDialog } from "src/views/Collection/hooks/useDialog";
 import EditDatasetFields from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/components/EditDatasetFields";
-import { useForm } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/hooks/useForm";
-import { Dataset } from "src/common/entities";
-import { FieldValues } from "src/views/Collection/hooks/useEditCollectionDataset/common/entities";
+import { mapDatasetToFormDefaultValues } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/utils";
 
 export default function EditDataset({
   Button,
@@ -22,20 +20,15 @@ export default function EditDataset({
   menuProps,
 }: Props): JSX.Element {
   const { onClose, onOpen, open } = useDialog();
-  const { clearErrors, errors, handleSubmit } = useForm();
-  const { onEditDataset } = editDataset;
-  const fieldValues = mapDatasetToFieldValues(dataset);
+  const { onEditDataset, formMethod } = editDataset;
+  const { clearErrors, handleSubmit } = formMethod;
   const { id: datasetId } = dataset;
+  const defaultValues = mapDatasetToFormDefaultValues(dataset);
 
   const onAfterClose = useCallback(() => {
     clearErrors();
     menuProps.onClose(); // Close the "more" menu after the dialog closes.
   }, [clearErrors, menuProps]);
-
-  const onError = useCallback(() => {
-    // TODO(cc) Banner.
-    onClose();
-  }, [onClose]);
 
   return (
     <Fragment>
@@ -46,8 +39,8 @@ export default function EditDataset({
         onSubmit={handleSubmit(
           onEditDataset,
           { collectionId, datasetId },
-          fieldValues,
-          { onError, onSuccess: onClose }
+          defaultValues,
+          { onError: onClose, onSuccess: onClose }
         )}
         onTransitionExited={onAfterClose}
         open={open}
@@ -55,9 +48,8 @@ export default function EditDataset({
         <DialogTitle title="Edit Dataset" />
         <DialogContent>
           <EditDatasetFields
-            clearErrors={clearErrors}
-            errors={errors}
-            fieldValues={fieldValues}
+            defaultValues={defaultValues}
+            formMethod={formMethod}
           />
         </DialogContent>
         <DialogActions>
@@ -69,15 +61,4 @@ export default function EditDataset({
       </StyledDialog>
     </Fragment>
   );
-}
-
-/**
- * Maps dataset to form field values.
- * @param dataset - Dataset.
- * @returns dataset mapped to form field values.
- */
-function mapDatasetToFieldValues(dataset: Dataset): FieldValues {
-  return {
-    title: dataset.name,
-  };
 }
