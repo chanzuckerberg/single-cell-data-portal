@@ -9,7 +9,7 @@ import {
 import {
   EditDataset,
   UseEditCollectionDataset,
-} from "src/views/Collection/hooks/useEditCollectionDataset/common/entities";
+} from "src/views/Collection/hooks/useEditCollectionDataset/types";
 
 /**
  * Returns the datasets IDs, associated with the given collection.
@@ -28,10 +28,11 @@ export function getDatasetIds(datasets: Dataset[]): string[] {
 export function getEditDataset(
   editCollectionDataset: UseEditCollectionDataset
 ): EditDataset {
-  const { editDatasetAction } = editCollectionDataset;
+  const { editDatasetAction, formMethod } = editCollectionDataset;
   const { onEditDataset } = editDatasetAction;
   return {
     onEditDataset,
+    formMethod,
   };
 }
 

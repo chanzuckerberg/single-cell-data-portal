@@ -1,7 +1,7 @@
 import { ElementType } from "react";
 import { Collection, Dataset } from "src/common/entities";
 import { UseMoreMenu } from "src/views/Collection/hooks/useMoreMenu";
-import { EditDataset } from "src/views/Collection/hooks/useEditCollectionDataset/common/entities";
+import { EditDataset } from "src/views/Collection/hooks/useEditCollectionDataset/types";
 
 export interface Props {
   Button: ElementType;

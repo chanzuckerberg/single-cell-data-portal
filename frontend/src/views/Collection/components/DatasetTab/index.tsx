@@ -17,7 +17,7 @@ import Toast from "src/views/Collection/components/Toast";
 import EmptyModal from "../EmptyModal";
 import { UploadedFiles } from "src/views/Collection/components/CollectionActions/components/AddButton";
 import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
-import { EditDataset } from "src/views/Collection/hooks/useEditCollectionDataset/common/entities";
+import { EditDataset } from "src/views/Collection/hooks/useEditCollectionDataset/types";
 
 interface Props {
   collectionId: Collection["id"];
