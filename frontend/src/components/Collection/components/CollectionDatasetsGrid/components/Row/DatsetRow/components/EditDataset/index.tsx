@@ -9,7 +9,6 @@ import {
   SAVE_BUTTON_PROPS,
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/constants";
 import { useDialog } from "src/views/Collection/hooks/useDialog";
-import { useEditCollectionDataset } from "src/views/Collection/hooks/useEditCollectionDataset/useEditCollectionDataset";
 import EditDatasetFields from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/components/EditDatasetFields";
 import { useForm } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/hooks/useForm";
 import { Dataset } from "src/common/entities";
@@ -19,13 +18,12 @@ export default function EditDataset({
   Button,
   collectionId,
   dataset,
+  editDataset,
   menuProps,
 }: Props): JSX.Element {
   const { onClose, onOpen, open } = useDialog();
-  const {
-    editDatasetAction: { onEditDataset },
-  } = useEditCollectionDataset();
   const { clearErrors, errors, handleSubmit } = useForm();
+  const { onEditDataset } = editDataset;
   const fieldValues = mapDatasetToFieldValues(dataset);
   const { id: datasetId } = dataset;
 
