@@ -14,6 +14,7 @@ import { MENU_ITEM_COLOR } from "src/views/Collection/components/CollectionActio
 import { Icon } from "@czi-sds/components";
 import EditDataset from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset";
 import { isDeleteDatasetAvailable } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/components/Menu/utils";
+import { DROPDOWN_EDIT_DATASET } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/components/Menu/constants";
 
 export default function Menu({
   collectionId,
@@ -29,6 +30,7 @@ export default function Menu({
       <EditDataset
         Button={(buttonProps) => (
           <StyledMenuItem
+            data-testid={DROPDOWN_EDIT_DATASET}
             disabled={isLoading}
             icon={<Icon {...EDIT_ICON_PROPS} />}
             {...buttonProps}
