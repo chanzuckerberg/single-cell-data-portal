@@ -1,4 +1,7 @@
-import { PathParams } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/hooks/types";
+import {
+  PathParams,
+  SubmitOptions,
+} from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/hooks/types";
 
 export interface FieldValues {
   [key: string]: string;
@@ -6,7 +9,8 @@ export interface FieldValues {
 
 export type OnEditDatasetFn = (
   pathParams: PathParams,
-  fieldValues: FieldValues
+  fieldValues: FieldValues,
+  submitOptions?: SubmitOptions
 ) => Promise<void>;
 
 export interface EditDatasetAction {

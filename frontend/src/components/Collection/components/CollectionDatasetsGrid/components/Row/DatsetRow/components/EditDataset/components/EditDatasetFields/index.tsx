@@ -7,6 +7,7 @@ import {
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/components/EditDatasetFields/style";
 
 export default function EditDatasetFields({
+  clearErrors,
   errors,
   fieldValues,
 }: Props): JSX.Element {
@@ -17,6 +18,10 @@ export default function EditDatasetFields({
       error={Boolean(errors.title)}
       helperText={errors.title}
       label={<Label>Name</Label>}
+      onChange={() => {
+        if (errors.title) clearErrors();
+      }}
+      onKeyDown={(e) => e.stopPropagation()} // Prevents the input field from losing focus when a key matching the first letter of a menu item is pressed.
     />
   );
 }

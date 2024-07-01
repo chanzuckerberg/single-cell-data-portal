@@ -38,6 +38,7 @@ export default function Menu({
         )}
         collectionId={collectionId}
         dataset={dataset}
+        menuProps={menuProps}
       />
       {/* Upload */}
       {revisionsEnabled && (

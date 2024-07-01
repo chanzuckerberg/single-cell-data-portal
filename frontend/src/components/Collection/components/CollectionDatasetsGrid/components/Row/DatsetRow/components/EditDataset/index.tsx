@@ -1,5 +1,5 @@
 import { Props } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/types";
-import React, { Fragment } from "react";
+import React, { Fragment, useCallback } from "react";
 import { Dialog as StyledDialog } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/style";
 import { DialogActions, DialogContent, DialogTitle } from "@czi-sds/components";
 import { Button as StyledButton } from "src/components/common/Button";
@@ -19,6 +19,7 @@ export default function EditDataset({
   Button,
   collectionId,
   dataset,
+  menuProps,
 }: Props): JSX.Element {
   const { onClose, onOpen, open } = useDialog();
   const {
@@ -27,28 +28,42 @@ export default function EditDataset({
   const { clearErrors, errors, handleSubmit } = useForm();
   const fieldValues = mapDatasetToFieldValues(dataset);
   const { id: datasetId } = dataset;
+
+  const onAfterClose = useCallback(() => {
+    clearErrors();
+    menuProps.onClose(); // Close the "more" menu after the dialog closes.
+  }, [clearErrors, menuProps]);
+
+  const onError = useCallback(() => {
+    // TODO(cc) Banner.
+    onClose();
+  }, [onClose]);
+
   return (
     <Fragment>
       <Button onClick={onOpen} />
       <StyledDialog
         {...DIALOG_PROPS}
-        onClose={() => onClose(clearErrors)}
+        onClose={onClose}
         onSubmit={handleSubmit(
           onEditDataset,
           { collectionId, datasetId },
-          fieldValues
+          fieldValues,
+          { onError, onSuccess: onClose }
         )}
+        onTransitionExited={onAfterClose}
         open={open}
       >
         <DialogTitle title="Edit Dataset" />
         <DialogContent>
-          <EditDatasetFields errors={errors} fieldValues={fieldValues} />
+          <EditDatasetFields
+            clearErrors={clearErrors}
+            errors={errors}
+            fieldValues={fieldValues}
+          />
         </DialogContent>
         <DialogActions>
-          <StyledButton
-            {...CANCEL_BUTTON_PROPS}
-            onClick={() => onClose(clearErrors)}
-          >
+          <StyledButton {...CANCEL_BUTTON_PROPS} onClick={onClose}>
             Cancel
           </StyledButton>
           <StyledButton {...SAVE_BUTTON_PROPS}>Save</StyledButton>

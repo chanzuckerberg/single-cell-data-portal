@@ -3,6 +3,7 @@ import {
   FieldErrors,
   HandleSubmit,
   PathParams,
+  SubmitOptions,
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/hooks/types";
 import { FieldValues } from "src/views/Collection/hooks/useEditCollectionDataset/common/entities";
 
@@ -27,10 +28,12 @@ export function useForm(): UseForm {
     (
       onSubmit: (
         pathParams: PathParams,
-        fieldValues: FieldValues
+        fieldValues: FieldValues,
+        submitOptions?: SubmitOptions
       ) => Promise<void>,
       pathParams: PathParams,
-      defaultValues: FieldValues
+      defaultValues: FieldValues,
+      submitOptions?: SubmitOptions
     ) => {
       return async (event: FormEvent) => {
         event.preventDefault();
@@ -40,7 +43,7 @@ export function useForm(): UseForm {
         );
         const errors = validateForm(fieldValues, defaultValues);
         if (isValid(errors)) {
-          await onSubmit(pathParams, fieldValues);
+          await onSubmit(pathParams, fieldValues, submitOptions);
         } else {
           setErrors(errors);
         }
@@ -66,10 +69,25 @@ function getFieldValues(
   const fieldValues = {} as FieldValues;
   for (const key of Object.keys(defaultValues)) {
     if (formData.has(key)) {
-      Object.assign(fieldValues, { [key]: formData.get(key) });
+      const value = formData.get(key);
+      Object.assign(fieldValues, { [key]: formatFormDataValue(value) });
     }
   }
   return fieldValues;
+}
+
+/**
+ * Returns form data entry value, formatted, if necessary.
+ * @param value - Form data entry value.
+ * @returns formatted data entry value.
+ */
+function formatFormDataValue(
+  value: FormDataEntryValue | null
+): FormDataEntryValue | null {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+  return value;
 }
 
 /**
