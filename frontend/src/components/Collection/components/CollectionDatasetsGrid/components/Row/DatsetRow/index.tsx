@@ -52,6 +52,7 @@ import ReorderModeRow, {
 import { DragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/common/entities";
 import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
 import { EditDataset } from "src/views/Collection/hooks/useEditCollectionDataset/types";
+import { DATASET_TITLE } from "src/components/Datasets/components/Grid/components/DatasetNameCell/constants";
 
 const AsyncTooltip = loadable(
   () =>
@@ -193,7 +194,10 @@ const DatasetRow: FC<Props> = ({
   return (
     <Row {...(rowProps as ReorderModeRowProps)}>
       <td>
-        <DatasetNameCell name={name}>
+        <DatasetNameCell
+          dataTestId={`${DATASET_TITLE}-${dataset.id}`}
+          name={name}
+        >
           {!isLoading && (
             <ErrorTooltip isFailed={isFailed} error={error} type={type} />
           )}

@@ -5,6 +5,8 @@ import { DialogActions, DialogContent, DialogTitle } from "@czi-sds/components";
 import { Button as StyledButton } from "src/components/common/Button";
 import {
   CANCEL_BUTTON_PROPS,
+  DATASET_EDIT_CANCEL,
+  DATASET_EDIT_SAVE,
   DIALOG_PROPS,
   SAVE_BUTTON_PROPS,
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/constants";
@@ -53,10 +55,16 @@ export default function EditDataset({
           />
         </DialogContent>
         <DialogActions>
-          <StyledButton {...CANCEL_BUTTON_PROPS} onClick={onClose}>
+          <StyledButton
+            {...CANCEL_BUTTON_PROPS}
+            data-testid={DATASET_EDIT_CANCEL}
+            onClick={onClose}
+          >
             Cancel
           </StyledButton>
-          <StyledButton {...SAVE_BUTTON_PROPS}>Save</StyledButton>
+          <StyledButton {...SAVE_BUTTON_PROPS} data-testid={DATASET_EDIT_SAVE}>
+            Save
+          </StyledButton>
         </DialogActions>
       </StyledDialog>
     </Fragment>
