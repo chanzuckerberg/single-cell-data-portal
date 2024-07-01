@@ -443,7 +443,7 @@ const editDataset = async function editDataset({
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
     body: payload,
-    method: "PATCH",
+    method: "PUT",
   });
 
   if (!response.ok) {
