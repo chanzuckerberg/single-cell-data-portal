@@ -421,8 +421,8 @@ export function usePublishCollection() {
  * @param param
  * @param param.collectionId - Collection ID to edit dataset for.
  * @param param.datasetId - Dataset ID to edit.
- * @param param.payload - Payload containing the edited dataset.
- * @returns API response.
+ * @param param.payload - Payload containing the new dataset title.
+ * @returns Resolved promise with collection ID.
  */
 const editDataset = async function editDataset({
   collectionId,
