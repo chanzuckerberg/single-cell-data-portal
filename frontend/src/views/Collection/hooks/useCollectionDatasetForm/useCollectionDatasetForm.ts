@@ -60,6 +60,7 @@ export function useCollectionDatasetForm(): UseCollectionDatasetForm {
           event.target as HTMLFormElement
         );
         if (isValid(fieldErrors)) {
+          submitOptions?.onValid?.();
           await onSubmit(pathParams, fieldValues, submitOptions);
         } else {
           setErrors(fieldErrors);
