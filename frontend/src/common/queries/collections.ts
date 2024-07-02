@@ -422,7 +422,7 @@ export function usePublishCollection() {
  * @param param.collectionId - Collection ID to edit dataset for.
  * @param param.datasetId - Dataset ID to edit.
  * @param param.payload - Payload containing the new dataset title.
- * @returns Resolved promise with collection ID.
+ * @returns Resolved promise.
  */
 const editDataset = async function editDataset({
   collectionId,
@@ -451,7 +451,7 @@ const editDataset = async function editDataset({
   }
 
   // Endpoint response is empty on 202; return successful promise.
-  return Promise.resolve({ collectionId });
+  return Promise.resolve();
 };
 
 /**
@@ -460,19 +460,11 @@ const editDataset = async function editDataset({
 export function useEditDataset() {
   const queryClient = useQueryClient();
   return useMutation(editDataset, {
-    onSuccess: async ({ collectionId }): Promise<void> => {
-      await queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
-      await queryClient.invalidateQueries(
-        [USE_COLLECTIONS_INDEX],
-        DEFAULT_BACKGROUND_REFETCH
-      );
-      await queryClient.invalidateQueries(
-        [USE_DATASETS_INDEX],
-        DEFAULT_BACKGROUND_REFETCH
-      );
-    },
-    onError: async () => {
-      // TODO(cc) error handling.
+    onSuccess: async (_, variables): Promise<void> => {
+      await queryClient.invalidateQueries([
+        USE_COLLECTION,
+        variables.collectionId,
+      ]);
     },
   });
 }

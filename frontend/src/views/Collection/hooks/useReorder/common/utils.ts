@@ -32,6 +32,9 @@ export function getEditDataset(
   const { onEditDataset } = editDatasetAction;
   return {
     onEditDataset,
+    onError: () => {
+      /* TODO(cc) complete notification */
+    },
     formMethod,
   };
 }

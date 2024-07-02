@@ -31,11 +31,11 @@ export function useEditCollectionDataset(): UseEditCollectionDataset {
           payload,
         },
         {
-          onSuccess: () => {
-            submitOptions?.onSuccess?.();
-          },
           onError: () => {
             submitOptions?.onError?.();
+          },
+          onSuccess: () => {
+            submitOptions?.onSuccess?.();
           },
         }
       );

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import {
-  TITLE_FIELD_NAME,
-  TITLE_INPUT_TEXT_PROPS,
+  FIELD_NAMES,
+  INPUT_TEXT_PROPS,
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/components/EditDatasetFields/constants";
 import { Props } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/components/EditDatasetFields/types";
 import {
@@ -31,14 +31,14 @@ export default function EditDatasetFields({
 
   return (
     <StyledInputText
-      {...TITLE_INPUT_TEXT_PROPS}
-      defaultValue={defaultValues.title}
-      error={Boolean(errors.title)}
-      helperText={errors.title}
+      {...INPUT_TEXT_PROPS.TITLE}
+      defaultValue={defaultValues[FIELD_NAMES.TITLE]}
+      error={Boolean(errors[FIELD_NAMES.TITLE])}
+      helperText={errors[FIELD_NAMES.TITLE]}
       label={<Label>Name</Label>}
       onChange={(e) => {
-        register(TITLE_FIELD_NAME).onChange(e);
-        if (errors.title) clearErrors(TITLE_FIELD_NAME);
+        register(FIELD_NAMES.TITLE).onChange(e);
+        if (errors[FIELD_NAMES.TITLE]) clearErrors(FIELD_NAMES.TITLE);
       }}
       onKeyDown={(e) => e.stopPropagation()} // Prevents the input field from losing focus when a key matching the first letter of a menu item is pressed.
     />
