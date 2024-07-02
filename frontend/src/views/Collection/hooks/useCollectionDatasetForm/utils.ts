@@ -7,6 +7,24 @@ import {
 import { DEFAULT_FIELD_ERRORS } from "src/views/Collection/hooks/useCollectionDatasetForm/constants";
 
 /**
+ * Clears given field error or all field errors.
+ * @param fieldErrors - Field errors.
+ * @param name - Field name.
+ * @returns updated field errors.
+ */
+export function clearFieldErrors(
+  fieldErrors: FieldErrors,
+  name?: string
+): FieldErrors {
+  const updatedFieldErrors = { ...fieldErrors };
+  if (!name) return DEFAULT_FIELD_ERRORS;
+  if (name in updatedFieldErrors) {
+    delete updatedFieldErrors[name];
+  }
+  return updatedFieldErrors;
+}
+
+/**
  * Returns field values and errors from form data.
  * @param formEl - Form element.
  * @param defaultValues - Default field values.
@@ -87,24 +105,6 @@ export function updateDirtyFields(
     }
   }
   return updatedDirtyFields;
-}
-
-/**
- * Updates field errors.
- * If field name is not provided, all field errors are cleared.
- * @param fieldErrors - Field errors.
- * @param name - Field name.
- * @returns updated field errors.
- */
-export function updateFieldErrors(
-  fieldErrors: FieldErrors,
-  name?: string
-): FieldErrors {
-  const updatedFieldErrors = { ...fieldErrors };
-  if (!name) return DEFAULT_FIELD_ERRORS;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Allow unused variable for object destructuring.
-  const { [name]: _v, ...rest } = updatedFieldErrors;
-  return rest;
 }
 
 /**

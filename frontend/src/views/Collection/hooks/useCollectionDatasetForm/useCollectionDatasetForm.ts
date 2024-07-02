@@ -17,10 +17,10 @@ import {
   UseCollectionDatasetForm,
 } from "src/views/Collection/hooks/useCollectionDatasetForm/types";
 import {
+  clearFieldErrors,
   getAndValidateFieldValues,
   isValid,
   updateDirtyFields,
-  updateFieldErrors,
 } from "src/views/Collection/hooks/useCollectionDatasetForm/utils";
 import {
   DEFAULT_DIRTY_FIELDS,
@@ -41,7 +41,7 @@ export function useCollectionDatasetForm(): UseCollectionDatasetForm {
   const [isDirty, setIsDirty] = useState<boolean>(false);
 
   const clearErrors = useCallback((name?: FieldName) => {
-    setErrors((prevErrors) => updateFieldErrors(prevErrors, name));
+    setErrors((prevErrors) => clearFieldErrors(prevErrors, name));
   }, []);
 
   const handleSubmit = useCallback(
