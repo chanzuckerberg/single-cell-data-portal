@@ -6,10 +6,6 @@ import {
   UPLOAD_STATUS,
   VALIDATION_STATUS,
 } from "src/common/entities";
-import {
-  EditDataset,
-  UseEditCollectionDataset,
-} from "src/views/Collection/hooks/useEditCollectionDataset/types";
 
 /**
  * Returns the datasets IDs, associated with the given collection.
@@ -18,25 +14,6 @@ import {
  */
 export function getDatasetIds(datasets: Dataset[]): string[] {
   return datasets.map((dataset) => dataset.id);
-}
-
-/**
- * Returns edit dataset related actions related to dataset editing.
- * @param editCollectionDataset - Edit collection dataset.
- * @return edit dataset related actions.
- */
-export function getEditDataset(
-  editCollectionDataset: UseEditCollectionDataset
-): EditDataset {
-  const { editDatasetAction, formMethod } = editCollectionDataset;
-  const { onEditDataset } = editDatasetAction;
-  return {
-    onEditDataset,
-    onError: () => {
-      /* TODO(cc) complete notification */
-    },
-    formMethod,
-  };
 }
 
 /**
