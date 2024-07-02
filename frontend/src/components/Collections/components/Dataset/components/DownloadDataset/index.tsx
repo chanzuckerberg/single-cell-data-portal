@@ -32,7 +32,7 @@ const DownloadDataset: FC<Props> = ({
         disabled={isDisabled || !dataAssets.length}
         onClick={onOpen}
       />
-      <Dialog onClose={() => onClose()} open={open}>
+      <Dialog onClose={onClose} open={open}>
         <Content name={name} dataAssets={dataAssets} onClose={onClose} />
       </Dialog>
     </>
