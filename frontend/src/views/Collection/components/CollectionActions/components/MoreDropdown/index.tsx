@@ -3,7 +3,7 @@ import { Collection } from "src/common/entities";
 import Menu from "./components/Menu";
 import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
 import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
-import { useMoreMenu } from "src/views/Collection/hooks/useMoreMenu";
+import { useMenu } from "src/views/Collection/hooks/useMenu";
 import { IconButton as Button } from "src/components/common/Button";
 
 interface Props {
@@ -21,7 +21,7 @@ const MoreDropdown = ({
   isRevision,
   reorder,
 }: Props) => {
-  const { anchorEl, onClose, open, onOpen } = useMoreMenu();
+  const { anchorEl, onClose, open, onOpen } = useMenu();
   return (
     <Fragment>
       <Button

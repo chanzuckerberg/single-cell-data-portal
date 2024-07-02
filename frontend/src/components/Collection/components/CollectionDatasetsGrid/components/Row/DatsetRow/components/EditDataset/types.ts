@@ -1,6 +1,6 @@
 import { ElementType } from "react";
 import { Collection, Dataset } from "src/common/entities";
-import { UseMoreMenu } from "src/views/Collection/hooks/useMoreMenu";
+import { UseMenu } from "src/views/Collection/hooks/useMenu";
 import { EditDataset } from "src/views/Collection/hooks/useEditCollectionDataset/types";
 
 export interface Props {
@@ -8,5 +8,5 @@ export interface Props {
   collectionId: Collection["id"];
   dataset: Dataset;
   editDataset: EditDataset;
-  menuProps: Omit<UseMoreMenu, "onOpen">;
+  menuProps: Omit<UseMenu, "onOpen">;
 }
