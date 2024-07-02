@@ -1,8 +1,7 @@
-import { Button as RawButton, H6, Intent } from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
+import { H6, Intent } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import * as React from "react";
-import { FC, useEffect, useState } from "react";
+import { ElementType, FC, useEffect, useState } from "react";
 import { useDeleteDataset } from "src/common/queries/datasets";
 import { Collection } from "src/common/entities";
 
@@ -12,16 +11,12 @@ const AsyncAlert = loadable(
 );
 
 interface Props {
-  Button?: React.ElementType;
+  Button: ElementType;
   collectionId: Collection["id"];
   datasetId?: string;
 }
 
-const DeleteDataset: FC<Props> = ({
-  Button = DefaultButton,
-  collectionId,
-  datasetId,
-}) => {
+const DeleteDataset: FC<Props> = ({ Button, collectionId, datasetId }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { mutateAsync: deleteDataset, isLoading } = useDeleteDataset();
 
@@ -69,9 +64,5 @@ const DeleteDataset: FC<Props> = ({
     </>
   );
 };
-
-function DefaultButton({ ...props }) {
-  return <RawButton icon={IconNames.TRASH} minimal {...props} />;
-}
 
 export default DeleteDataset;

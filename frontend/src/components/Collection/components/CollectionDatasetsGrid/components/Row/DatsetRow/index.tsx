@@ -51,6 +51,8 @@ import ReorderModeRow, {
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/ReorderModeRow";
 import { DragAndDrop } from "src/views/Collection/hooks/useDragAndDrop/common/entities";
 import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
+import { EditDataset } from "src/views/Collection/hooks/useEditCollectionDataset/types";
+import { DATASET_TITLE } from "src/components/Datasets/components/Grid/components/DatasetNameCell/constants";
 
 const AsyncTooltip = loadable(
   () =>
@@ -87,6 +89,7 @@ interface Props {
   collectionId: Collection["id"];
   dataset: Dataset;
   dragAndDrop: DragAndDrop;
+  editDataset: EditDataset;
   file?: UploadingFile;
   invalidateCollectionQuery: () => void;
   visibility: Collection["visibility"];
@@ -100,6 +103,7 @@ const DatasetRow: FC<Props> = ({
   collectionId,
   dataset,
   dragAndDrop,
+  editDataset,
   file,
   invalidateCollectionQuery,
   visibility,
@@ -190,7 +194,10 @@ const DatasetRow: FC<Props> = ({
   return (
     <Row {...(rowProps as ReorderModeRowProps)}>
       <td>
-        <DatasetNameCell name={name}>
+        <DatasetNameCell
+          dataTestId={`${DATASET_TITLE}-${dataset.id}`}
+          name={name}
+        >
           {!isLoading && (
             <ErrorTooltip isFailed={isFailed} error={error} type={type} />
           )}
@@ -243,12 +250,15 @@ const DatasetRow: FC<Props> = ({
             accessType === ACCESS_TYPE.WRITE && (
               <MoreDropdown
                 collectionId={collectionId}
-                datasetId={dataset.id}
-                isPublished={!!dataset.published_at} // Dataset has been published.
-                revisionsEnabled={revisionsEnabled}
-                onUploadFile={onUploadFile}
-                isLoading={isLoading}
+                dataset={dataset}
                 disabled={dataset.tombstone ?? false}
+                menuItemProps={{
+                  editDataset,
+                  isFailed,
+                  isLoading,
+                  onUploadFile,
+                  revisionsEnabled,
+                }}
               />
             )}
           <DownloadDataset

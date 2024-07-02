@@ -17,11 +17,13 @@ import Toast from "src/views/Collection/components/Toast";
 import EmptyModal from "../EmptyModal";
 import { UploadedFiles } from "src/views/Collection/components/CollectionActions/components/AddButton";
 import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
+import { EditDataset } from "src/views/Collection/hooks/useEditCollectionDataset/types";
 
 interface Props {
   collectionId: Collection["id"];
   visibility: Collection["visibility"];
   datasets: Array<Dataset>;
+  editDataset: EditDataset;
   isRevision: boolean;
   reorder: Reorder;
 }
@@ -30,6 +32,7 @@ const DatasetTab: FC<Props> = ({
   collectionId,
   visibility,
   datasets,
+  editDataset,
   isRevision,
   reorder,
 }) => {
@@ -84,6 +87,7 @@ const DatasetTab: FC<Props> = ({
           accessType={collection?.access_type}
           collectionId={collectionId}
           datasets={datasets}
+          editDataset={editDataset}
           invalidateCollectionQuery={invalidateCollectionQuery}
           isReorder={reorder.isReorder}
           isRevision={isRevision}

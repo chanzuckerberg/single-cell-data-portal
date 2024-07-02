@@ -1,7 +1,8 @@
-import React, { ElementType, FC, useState } from "react";
+import React, { ElementType, FC } from "react";
 import { useDatasetAssets } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DownloadDataset/util";
 import Content from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content";
-import { Dialog } from "src/components/Datasets/components/DownloadDataset/style";
+import { StyledDialog } from "src/components/Datasets/components/DownloadDataset/style";
+import { useDialog } from "src/views/Collection/hooks/useDialog";
 
 interface Props {
   Button: ElementType;
@@ -22,12 +23,12 @@ const DownloadDataset: FC<Props> = ({
   isDisabled = false,
   name,
 }) => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const { onClose, onOpen, open } = useDialog();
 
   // Fetch the dataset assets on open of download modal.
   const { datasetAssets, isError, isLoading } = useDatasetAssets(
     datasetId,
-    isOpen
+    open
   );
 
   return (
@@ -36,17 +37,17 @@ const DownloadDataset: FC<Props> = ({
         datasetName={name}
         data-testid="dataset-download-button"
         disabled={isDisabled}
-        onClick={() => setIsOpen(true)}
+        onClick={onOpen}
       />
-      <Dialog onClose={() => setIsOpen(false)} open={isOpen}>
+      <StyledDialog onClose={onClose} open={open}>
         <Content
           dataAssets={datasetAssets}
           isError={isError}
           isLoading={isLoading}
           name={name}
-          onClose={() => setIsOpen(false)}
+          onClose={onClose}
         />
-      </Dialog>
+      </StyledDialog>
     </>
   );
 };

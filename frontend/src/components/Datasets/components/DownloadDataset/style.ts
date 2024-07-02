@@ -1,38 +1,17 @@
-import {
-  Dialog as SDSDialog,
-  fontBodyS,
-  fontCapsXxs,
-} from "@czi-sds/components";
+import { fontBodyS, fontCapsXxs } from "@czi-sds/components";
 import styled from "@emotion/styled";
-import {
-  grey100,
-  grey500,
-  shadowL,
-  spacesL,
-  spacesS,
-  spacesXl,
-} from "src/common/theme";
+import { grey500, spacesL, spacesS, spacesXl } from "src/common/theme";
 import Loader from "src/components/common/Grid/components/Loader";
+import { StyledDialog as CommonStyledDialog } from "src/views/Collection/common/style";
 
-export const Dialog = styled(SDSDialog)`
-  .MuiBackdrop-root {
-    background-color: rgba(0, 0, 0, 0.3);
-  }
-
+export const StyledDialog = styled(CommonStyledDialog)`
   .MuiDialog-paper {
-    border: 1px solid ${grey100};
-    box-shadow: ${shadowL};
     gap: ${spacesXl}px;
     min-height: 570px; /* min-height ensures dialog height consistency in any download state. */
-    padding: 32px;
   }
 
   .MuiDialogTitle-root {
     margin: 0;
-
-    .MuiTypography-root {
-      letter-spacing: -0.46px;
-    }
   }
 
   .MuiDialogContent-root {
@@ -52,18 +31,6 @@ export const Dialog = styled(SDSDialog)`
       .MuiFormGroup-row {
         gap: ${spacesL}px;
         margin-bottom: -${spacesL}px; /* negative margin to account for SDS InputRadio FormControlLabel margin see https://github.com/chanzuckerberg/sci-components/blob/main/packages/components/src/core/InputRadio/style.ts#L85 */
-      }
-    }
-  }
-
-  .MuiDialogActions-root {
-    gap: ${spacesL}px;
-    margin: 0;
-    padding-top: ${spacesL}px;
-
-    .MuiButton-root {
-      &.MuiButton-containedPrimary {
-        margin: 0;
       }
     }
   }
