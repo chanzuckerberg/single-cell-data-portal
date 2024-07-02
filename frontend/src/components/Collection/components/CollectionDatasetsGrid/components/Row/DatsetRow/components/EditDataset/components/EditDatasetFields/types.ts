@@ -1,9 +1,7 @@
-import {
-  CollectionDatasetFormMethod,
-  FieldValues,
-} from "src/views/Collection/hooks/useCollectionDatasetForm/types";
+import { CollectionDatasetFormMethod } from "src/views/Collection/hooks/useCollectionDatasetForm/types";
+import { Dataset } from "src/common/entities";
 
 export interface Props {
-  defaultValues: FieldValues;
+  dataset: Dataset;
   formMethod: CollectionDatasetFormMethod;
 }

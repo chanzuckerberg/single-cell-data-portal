@@ -7,7 +7,7 @@ export const StyledInputText = styled(SDSInputText)`
     margin: 0;
 
     .MuiFormHelperText-root {
-      margin: 8px 0 0 0;
+      margin: 4px 0 0 0;
 
       &:first-letter {
         text-transform: capitalize;

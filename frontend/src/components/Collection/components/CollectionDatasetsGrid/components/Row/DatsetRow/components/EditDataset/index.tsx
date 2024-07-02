@@ -12,7 +12,6 @@ import {
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/constants";
 import { useDialog } from "src/views/Collection/hooks/useDialog";
 import EditDatasetFields from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/components/EditDatasetFields";
-import { mapDatasetToFormDefaultValues } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/utils";
 
 export default function EditDataset({
   Button,
@@ -23,9 +22,12 @@ export default function EditDataset({
 }: Props): JSX.Element {
   const { onClose, onOpen, open } = useDialog();
   const { onEditDataset, formMethod } = editDataset;
-  const { clearErrors, handleSubmit } = formMethod;
+  const {
+    clearErrors,
+    formState: { isDirty },
+    handleSubmit,
+  } = formMethod;
   const { id: datasetId } = dataset;
-  const defaultValues = mapDatasetToFormDefaultValues(dataset);
 
   const onAfterClose = useCallback(() => {
     clearErrors();
@@ -41,7 +43,6 @@ export default function EditDataset({
         onSubmit={handleSubmit(
           onEditDataset,
           { collectionId, datasetId },
-          defaultValues,
           { onError: onClose, onSuccess: onClose }
         )}
         onTransitionExited={onAfterClose}
@@ -49,10 +50,7 @@ export default function EditDataset({
       >
         <DialogTitle title="Edit Dataset" />
         <DialogContent>
-          <EditDatasetFields
-            defaultValues={defaultValues}
-            formMethod={formMethod}
-          />
+          <EditDatasetFields dataset={dataset} formMethod={formMethod} />
         </DialogContent>
         <DialogActions>
           <StyledButton
@@ -62,7 +60,11 @@ export default function EditDataset({
           >
             Cancel
           </StyledButton>
-          <StyledButton {...SAVE_BUTTON_PROPS} data-testid={DATASET_EDIT_SAVE}>
+          <StyledButton
+            {...SAVE_BUTTON_PROPS}
+            data-testid={DATASET_EDIT_SAVE}
+            disabled={!isDirty}
+          >
             Save
           </StyledButton>
         </DialogActions>

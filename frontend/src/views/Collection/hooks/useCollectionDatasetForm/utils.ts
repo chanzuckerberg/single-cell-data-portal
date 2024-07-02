@@ -1,7 +1,10 @@
 import {
+  DefaultValues,
+  DirtyFields,
   FieldErrors,
   FieldValues,
 } from "src/views/Collection/hooks/useCollectionDatasetForm/types";
+import { DEFAULT_FIELD_ERRORS } from "src/views/Collection/hooks/useCollectionDatasetForm/constants";
 
 /**
  * Returns field values and errors from form data.
@@ -11,7 +14,7 @@ import {
  */
 export function getAndValidateFieldValues(
   formEl: HTMLFormElement,
-  defaultValues: FieldValues
+  defaultValues: DefaultValues
 ): [FieldValues, FieldErrors] {
   const fieldValues = getFieldValues(formEl, defaultValues);
   const fieldErrors = validateForm(fieldValues, defaultValues);
@@ -26,7 +29,7 @@ export function getAndValidateFieldValues(
  */
 export function getFieldValues(
   formEl: HTMLFormElement,
-  defaultValues: FieldValues
+  defaultValues: DefaultValues
 ): FieldValues {
   const formData: FormData = new FormData(formEl);
   const fieldValues = {} as FieldValues;
@@ -63,6 +66,48 @@ export function isValid(errors: FieldErrors): boolean {
 }
 
 /**
+ * Updates dirty fields.
+ * If the field value is different from the default value, the field is marked as dirty.
+ * @param dirtyFields - Dirty fields.
+ * @param fieldValues - Field values.
+ * @param defaultValues - Default field values.
+ * @returns updated dirty fields.
+ */
+export function updateDirtyFields(
+  dirtyFields: DirtyFields,
+  fieldValues: FieldValues,
+  defaultValues: DefaultValues
+): DirtyFields {
+  const updatedDirtyFields = { ...dirtyFields };
+  for (const [key, value] of Object.entries(fieldValues)) {
+    if (value !== defaultValues[key]) {
+      Object.assign(updatedDirtyFields, { [key]: true });
+    } else {
+      delete updatedDirtyFields[key];
+    }
+  }
+  return updatedDirtyFields;
+}
+
+/**
+ * Updates field errors.
+ * If field name is not provided, all field errors are cleared.
+ * @param fieldErrors - Field errors.
+ * @param name - Field name.
+ * @returns updated field errors.
+ */
+export function updateFieldErrors(
+  fieldErrors: FieldErrors,
+  name?: string
+): FieldErrors {
+  const updatedFieldErrors = { ...fieldErrors };
+  if (!name) return DEFAULT_FIELD_ERRORS;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Allow unused variable for object destructuring.
+  const { [name]: _v, ...rest } = updatedFieldErrors;
+  return rest;
+}
+
+/**
  * Validates form data.
  * @param fieldValues - Field values.
  * @param defaultValues - Default field values.
@@ -70,7 +115,7 @@ export function isValid(errors: FieldErrors): boolean {
  */
 export function validateForm(
   fieldValues: FieldValues,
-  defaultValues: FieldValues
+  defaultValues: DefaultValues
 ): FieldErrors {
   const fieldErrors = {} as FieldErrors;
   for (const [key, value] of Object.entries(fieldValues)) {
