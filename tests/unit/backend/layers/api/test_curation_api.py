@@ -6,7 +6,7 @@ from collections import defaultdict
 from dataclasses import asdict
 from unittest.mock import Mock, patch
 
-from requests import HTTPError
+from requests import HTTPError, Response
 
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException
 from backend.common.utils.api_key import generate
@@ -2824,8 +2824,9 @@ class TestAuthToken(BaseAPIPortalTest):
         test_secret = "password1234"
         test_email = "user@email.com"
         test_user_id = "test_user_id"
-        test_error = HTTPError()
-        test_error.status_code = 403
+        test_response = Response()
+        test_response.status_code = 403
+        test_error = HTTPError(response=test_response)
         CorporaAuthConfig().api_key_secret = test_secret
         auth0_management_session.get_user_api_key_identity = Mock(return_value={"profileData": {"email": test_email}})
         auth0_management_session.generate_access_token = Mock(side_effect=test_error)
