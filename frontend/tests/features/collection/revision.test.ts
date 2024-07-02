@@ -1,6 +1,10 @@
 import { expect, Locator, Page, test } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
+import { DATASET_EDIT_FORM, DATASET_EDIT_SAVE } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/constants";
+import { DROPDOWN_EDIT_DATASET } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/components/Menu/constants";
+import { DATASET_MORE_BUTTON } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/constants";
+import { DATASET_TITLE } from "src/components/Datasets/components/Grid/components/DatasetNameCell/constants";
 import { TEST_URL } from "tests/common/constants";
 import {
   getInnerText,
@@ -217,6 +221,54 @@ describe("Collection Revision @loggedIn", () => {
 
     await deleteRevision(page);
   });
+
+  describe("edit dataset", () => {
+    test("allows rename dataset", async ({ page }) => {
+      // Create and navigate to revision.
+      const testId = buildCollectionRowLocator(COLLECTION_ROW_WRITE_PUBLISHED_ID);
+      await startRevision(page, testId);
+
+      // Get first dataset row in collection.
+      const datasetRows = await locateDatasets(page);
+      expect(datasetRows.length).toBeGreaterThanOrEqual(1);
+      const datasetRow = datasetRows[0];      
+
+      // Display rename dialog.
+      await enterDatasetRenameMode(page, datasetRow);
+
+      // Confirm modal is visible.
+      await page.waitForSelector(getTestID(DATASET_EDIT_FORM));
+      
+      // Confirm input is visible and displays current dataset name.
+      const datasetName = await getInnerText(
+        `css=[data-testid^="${DATASET_TITLE}"]`,
+        page
+      );
+      expect(await page.inputValue("input#title")).toBe(datasetName);
+
+      // Enter new title.
+      const newDatasetTitle = String(Date.now());
+      await page.fill("input#title", newDatasetTitle);
+
+      // Save.
+      await page.getByTestId(DATASET_EDIT_SAVE).click();
+
+      // Confirm dataset is updating.
+      await tryUntil(
+        async () => {
+          // Confirm modal is closed.
+          await expect(page.getByTestId(DATASET_EDIT_FORM)).not.toBeVisible();
+
+          // Confirm at least one dataset row is updating.
+          await expect(page.getByRole("progressbar")).toBeVisible();
+        },
+        { page }
+      );
+
+      // Tear down.
+      await deleteRevision(page);
+    });
+  });  
 
   describe("reorder datasets", () => {
     const MIN_DATASET_COUNT = 3;
@@ -630,6 +682,17 @@ function buildReorderableCollectionRowLocator(): RegExp {
 async function cancelReorder(page: Page): Promise<void> {
   // Click cancel to return back to edit mode.
   await page.getByTestId(TEST_ID_REORDER_DATASETS_CANCEL).click();
+}
+
+/**
+ * Enter rename dataset mode by clicking the "more" option on the dataset row and then the 
+ * "rename dataset" menu option.
+ * @param datasetRow - Playwright page model.
+ * @param datasetRow - Locator of dataset row in collection. 
+ */
+async function enterDatasetRenameMode(page: Page, datasetRow: Locator): Promise<void> {
+  await datasetRow.getByTestId(DATASET_MORE_BUTTON).click();
+  await page.getByTestId(DROPDOWN_EDIT_DATASET).click();
 }
 
 /**
