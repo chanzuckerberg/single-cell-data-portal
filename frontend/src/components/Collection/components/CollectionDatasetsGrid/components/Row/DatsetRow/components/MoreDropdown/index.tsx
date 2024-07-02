@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import { Props } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/types";
 import {
   DATASET_MORE_BUTTON,
-  DEFAULT_BUTTON_PROPS,
+  MORE_ICON_BUTTON_PROPS,
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/constants";
 import { StyledButton } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/style";
 import { useMoreMenu } from "src/views/Collection/hooks/useMoreMenu";
@@ -18,7 +18,7 @@ export default function MoreDropdown({
   return (
     <Fragment>
       <StyledButton
-        {...DEFAULT_BUTTON_PROPS}
+        {...MORE_ICON_BUTTON_PROPS}
         data-testid={DATASET_MORE_BUTTON}
         disabled={disabled}
         onClick={onOpen}

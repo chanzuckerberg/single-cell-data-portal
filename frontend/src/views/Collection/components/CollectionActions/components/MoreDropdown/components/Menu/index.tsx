@@ -9,9 +9,9 @@ import {
   MenuItemProps as StyledMenuItemProps,
 } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/style";
 import {
-  DEFAULT_MENU_PROPS,
   DELETE_ICON_PROPS,
   EDIT_ICON_PROPS,
+  MENU_PROPS,
 } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/constants";
 import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
 import { MENU_ITEM_COLOR } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/types";
@@ -69,11 +69,7 @@ const Menu = ({
   reorder,
 }: Props) => {
   return (
-    <StyledMenu
-      {...DEFAULT_MENU_PROPS}
-      {...menuProps}
-      open={Boolean(menuProps.open)}
-    >
+    <StyledMenu {...MENU_PROPS} {...menuProps} open={Boolean(menuProps.open)}>
       <CreateCollection id={collection.id} Button={EditButton} />
       <StyledMenuItem
         color={MENU_ITEM_COLOR.GRAY} // Targets menu item custom icon color.
