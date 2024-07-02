@@ -43,6 +43,7 @@ export type RegisterFn = (name: FieldName) => {
 export interface SubmitOptions {
   onError?: () => void;
   onSuccess?: () => void;
+  onValid?: () => void;
 }
 
 export interface UseCollectionDatasetForm {

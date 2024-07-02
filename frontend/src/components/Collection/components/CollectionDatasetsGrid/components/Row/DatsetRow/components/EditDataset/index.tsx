@@ -43,7 +43,10 @@ export default function EditDataset({
         onSubmit={handleSubmit(
           onEditDataset,
           { collectionId, datasetId },
-          { onError, onSuccess: onClose }
+          {
+            onError,
+            onValid: onClose,
+          }
         )}
         onTransitionExited={onAfterClose}
         open={open}
