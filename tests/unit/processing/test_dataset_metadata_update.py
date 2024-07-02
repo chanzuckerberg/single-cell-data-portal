@@ -79,8 +79,12 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         )
         mock_worker = mock_worker_factory.return_value
         self.updater.has_valid_artifact_statuses = Mock(return_value=True)
-        self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
+        self.updater.update_metadata(
+            current_dataset_version_id, new_dataset_version_id, DatasetArtifactMetadataUpdate(citation="New Citation")
+        )
 
+        # skip raw_h5ad update since no updated fields are expected fields in raw H5AD
+        mock_worker.update_raw_h5ad.assert_not_called()
         mock_worker.update_h5ad.assert_called_once()
         mock_worker.update_rds.assert_called_once()
         mock_worker.update_cxg.assert_called_once()
@@ -125,8 +129,11 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         )
         mock_worker = mock_worker_factory.return_value
         self.updater.has_valid_artifact_statuses = Mock(return_value=True)
-        self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
+        self.updater.update_metadata(
+            current_dataset_version_id, new_dataset_version_id, DatasetArtifactMetadataUpdate(title="New Dataset Title")
+        )
 
+        mock_worker.update_raw_h5ad.assert_called_once()
         mock_worker.update_h5ad.assert_called_once()
         mock_worker.update_rds.assert_not_called()
         mock_worker.update_cxg.assert_called_once()
@@ -349,6 +356,44 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
             return local_path
 
         self.updater.download_from_source_uri = Mock(side_effect=mock_download)
+
+    @patch("backend.common.utils.dl_sources.uri.downloader")
+    @patch("backend.layers.processing.dataset_metadata_update.os.remove")
+    @patch("scanpy.read_h5ad")
+    def test_update_raw_h5ad(self, mock_read_h5ad, *args):
+        collection_version = self.generate_unpublished_collection(add_datasets=1)
+        current_dataset_version = collection_version.datasets[0]
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version.version_id,
+            url=None,
+            file_size=0,
+            current_dataset_version_id=current_dataset_version.version_id,
+            start_step_function=False,
+        )
+        key_prefix = new_dataset_version_id.id
+        metadata_update = DatasetArtifactMetadataUpdate(
+            citation="Publication DOI www.doi.org/567.8", title="New Dataset Title"
+        )
+
+        # Mock anndata object
+        mock_anndata = Mock(spec=scanpy.AnnData)
+        mock_anndata.uns = {"title": "Old Dataset Title", "other_metadata": "misc."}
+        mock_anndata.write = Mock()
+        mock_read_h5ad.return_value = mock_anndata
+
+        self.updater.update_raw_h5ad(None, key_prefix, new_dataset_version_id, metadata_update)
+
+        local_filename = CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME
+        # check mock_anndata object
+        mock_read_h5ad.assert_called_with(local_filename)
+        assert "citation" not in mock_anndata.uns
+        assert mock_anndata.uns["title"] == "New Dataset Title"
+        assert mock_anndata.uns["other_metadata"] == "misc"
+        # check s3 uris exist
+        assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id.id}/{local_filename}")
+        # check processing status
+        new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
+        assert new_dataset_version.status.upload_status == DatasetUploadStatus.UPLOADED
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("backend.layers.processing.dataset_metadata_update.os.remove")
