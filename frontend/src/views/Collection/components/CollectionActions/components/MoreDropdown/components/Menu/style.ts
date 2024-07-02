@@ -10,13 +10,14 @@ import { error400, gray400, shadowM, spacesM, spacesS } from "src/common/theme";
 import { MENU_ITEM_COLOR } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/types";
 import { css, SerializedStyles } from "@emotion/react";
 
-export interface MenuItemProps<IconName extends keyof IconNameToSmallSizes>
-  extends SDSMenuItemProps<IconName>,
+export interface StyledMenuItemProps<
+  IconName extends keyof IconNameToSmallSizes,
+> extends SDSMenuItemProps<IconName>,
     CommonThemeProps {
   color?: MENU_ITEM_COLOR;
 }
 
-export const Menu = styled(SDSMenu)`
+export const StyledMenu = styled(SDSMenu)`
   &.MuiPopover-root {
     z-index: 10; /* positions menu beneath BP portals to allow proper layering with delete/publish collection alert interactions */
   }
@@ -27,7 +28,9 @@ export const Menu = styled(SDSMenu)`
   }
 `;
 
-export const MenuItem = styled(SDSMenuItem)<MenuItemProps<"TrashCan" | "Edit">>`
+export const StyledMenuItem = styled(SDSMenuItem)<
+  StyledMenuItemProps<"TrashCan" | "Edit">
+>`
   &.MuiMenuItem-root {
     ${customMenuItem}
     .primary-text {
@@ -44,7 +47,7 @@ export const MenuItem = styled(SDSMenuItem)<MenuItemProps<"TrashCan" | "Edit">>`
 `;
 
 function customMenuItem(
-  props: MenuItemProps<"TrashCan" | "Edit">
+  props: StyledMenuItemProps<"TrashCan" | "Edit">
 ): SerializedStyles | undefined {
   // Custom "error" color for menu item (with "error" icon).
   if (props.color === MENU_ITEM_COLOR.ERROR) {

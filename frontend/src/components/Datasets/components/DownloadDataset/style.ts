@@ -2,9 +2,9 @@ import { fontBodyS, fontCapsXxs } from "@czi-sds/components";
 import styled from "@emotion/styled";
 import { grey500, spacesL, spacesS, spacesXl } from "src/common/theme";
 import Loader from "src/components/common/Grid/components/Loader";
-import { StyledDialog } from "src/views/Collection/common/style";
+import { StyledDialog as CommonStyledDialog } from "src/views/Collection/common/style";
 
-export const Dialog = styled(StyledDialog)`
+export const StyledDialog = styled(CommonStyledDialog)`
   .MuiDialog-paper {
     gap: ${spacesXl}px;
     min-height: 570px; /* min-height ensures dialog height consistency in any download state. */

@@ -4,9 +4,9 @@ import CreateCollection from "src/components/CreateCollectionModal";
 import { DeleteCollectionFn } from "src/views/Collection/components/CollectionActions";
 import { Icon, MenuProps as SDSMenuProps } from "@czi-sds/components";
 import {
-  Menu as StyledMenu,
-  MenuItem as StyledMenuItem,
-  MenuItemProps as StyledMenuItemProps,
+  StyledMenu,
+  StyledMenuItem,
+  StyledMenuItemProps,
 } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/style";
 import {
   DELETE_ICON_PROPS,

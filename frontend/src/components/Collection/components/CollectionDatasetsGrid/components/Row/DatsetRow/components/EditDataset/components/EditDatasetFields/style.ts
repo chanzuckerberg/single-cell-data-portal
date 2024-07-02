@@ -16,7 +16,7 @@ export const StyledInputText = styled(SDSInputText)`
   }
 `;
 
-export const Label = styled.label`
+export const StyledLabel = styled.label`
   ${fontCapsXxs}
   color: ${textSecondary};
   display: block;

@@ -1,6 +1,6 @@
 import { Props } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/types";
 import React, { Fragment, useCallback } from "react";
-import { Dialog as StyledDialog } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/style";
+import { StyledDialog } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/style";
 import { DialogActions, DialogContent, DialogTitle } from "@czi-sds/components";
 import { Button as StyledButton } from "src/components/common/Button";
 import {
