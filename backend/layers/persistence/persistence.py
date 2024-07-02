@@ -384,7 +384,8 @@ class DatabaseProvider(DatabaseProviderInterface):
             }
             for row in collection_version_rows:
                 # filter out datasets that were not returned by get_dataset_versions_by_id
-                ds = [datasets[str(id)] for id in row.datasets if str(id) in datasets]
+                actual_datasets = filter(lambda dv_id: str(dv_id) in datasets, row.datasets)
+                ds = [datasets[str(dv_id)] for dv_id in actual_datasets]
                 version = self._row_to_collection_version_with_datasets(row, canonical_collection, ds)
                 versions.append(version)
             return versions
