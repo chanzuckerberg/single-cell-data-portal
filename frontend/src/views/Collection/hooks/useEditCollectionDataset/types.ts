@@ -8,6 +8,7 @@ import {
 export interface EditDataset {
   formMethod: CollectionDatasetFormMethod;
   onEditDataset: OnEditDatasetFn;
+  onError: () => void;
 }
 
 export type OnEditDatasetFn = (

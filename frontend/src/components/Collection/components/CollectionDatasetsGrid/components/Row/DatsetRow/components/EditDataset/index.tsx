@@ -21,7 +21,7 @@ export default function EditDataset({
   menuProps,
 }: Props): JSX.Element {
   const { onClose, onOpen, open } = useDialog();
-  const { onEditDataset, formMethod } = editDataset;
+  const { onEditDataset, onError, formMethod } = editDataset;
   const {
     formState: { isDirty },
     handleSubmit,
@@ -43,7 +43,7 @@ export default function EditDataset({
         onSubmit={handleSubmit(
           onEditDataset,
           { collectionId, datasetId },
-          { onError: onClose, onSuccess: onClose }
+          { onError }
         )}
         onTransitionExited={onAfterClose}
         open={open}
@@ -64,6 +64,7 @@ export default function EditDataset({
             {...SAVE_BUTTON_PROPS}
             data-testid={DATASET_EDIT_SAVE}
             disabled={!isDirty}
+            onClick={onClose}
           >
             Save
           </StyledButton>
