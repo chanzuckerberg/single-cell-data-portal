@@ -6,9 +6,9 @@ import {
   MenuItem as StyledMenuItem,
 } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/style";
 import {
-  DEFAULT_MENU_PROPS,
   DELETE_ICON_PROPS,
   EDIT_ICON_PROPS,
+  MENU_PROPS,
 } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/constants";
 import { MENU_ITEM_COLOR } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/types";
 import { Icon } from "@czi-sds/components";
@@ -26,7 +26,7 @@ export default function Menu({
     menuItemProps;
   const canDelete = isDeleteDatasetAvailable(dataset, revisionsEnabled);
   return (
-    <StyledMenu {...DEFAULT_MENU_PROPS} {...menuProps}>
+    <StyledMenu {...MENU_PROPS} {...menuProps}>
       {/* Edit */}
       <EditDataset
         Button={(buttonProps) => (

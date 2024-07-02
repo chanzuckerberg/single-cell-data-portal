@@ -1,6 +1,6 @@
 import { IconProps, MenuProps as SDSProps } from "@czi-sds/components";
 
-export const DEFAULT_MENU_PROPS: Partial<SDSProps> = {
+export const MENU_PROPS: Partial<SDSProps> = {
   anchorOrigin: {
     horizontal: "right",
     vertical: "bottom",
