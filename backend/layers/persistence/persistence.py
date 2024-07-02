@@ -383,7 +383,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 for dv in self.get_dataset_versions_by_id(dataset_version_ids, get_tombstoned=get_tombstoned)
             }
             for row in collection_version_rows:
-                # if a dataset is tombstones it may not appear in the datasets dict depending on get_tombstoned
+                # filter out datasets that were not returned by get_dataset_versions_by_id
                 ds = [datasets[str(id)] for id in row.datasets if str(id) in datasets]
                 version = self._row_to_collection_version_with_datasets(row, canonical_collection, ds)
                 versions.append(version)
