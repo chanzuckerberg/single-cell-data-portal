@@ -12,7 +12,7 @@ export const INPUT_TEXT_PROPS: Record<
 > = {
   TITLE: {
     fullWidth: true,
-    id: "title",
+    id: FIELD_NAMES.TITLE,
     name: FIELD_NAMES.TITLE,
     sdsType: "textField",
   },
