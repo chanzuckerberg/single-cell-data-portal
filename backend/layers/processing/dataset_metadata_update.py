@@ -20,6 +20,7 @@ from backend.layers.common.entities import (
     DatasetConversionStatus,
     DatasetProcessingStatus,
     DatasetStatusKey,
+    DatasetUploadStatus,
     DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
@@ -76,14 +77,16 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
 
         adata.write(raw_h5ad_filename, compression="gzip")
 
+        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)
         self.create_artifact(
             raw_h5ad_filename,
             DatasetArtifactType.RAW_H5AD,
             new_key_prefix,
             new_dataset_version_id,
             self.artifact_bucket,
-            DatasetStatusKey.UPLOAD,
+            DatasetStatusKey.H5AD,
         )
+        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
         os.remove(raw_h5ad_filename)
 
     def update_h5ad(
