@@ -4,7 +4,7 @@ import { spacesXxl } from "src/common/theme";
 
 export const CollectionView = styled.div`
   padding: ${spacesXxl}px;
-  position: relative; /* positions banner */
+  position: relative; /* positions banner, notification */
 `;
 
 export const CollectionHero = styled.div`

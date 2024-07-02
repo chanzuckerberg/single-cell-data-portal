@@ -32,11 +32,11 @@ import {
 } from "./utils";
 import CollectionActions from "src/views/Collection/components/CollectionActions";
 import { useReorder } from "src/views/Collection/hooks/useReorder/useReorder";
-import {
-  getEditDataset,
-  getReorder,
-} from "src/views/Collection/hooks/useReorder/common/utils";
+import { getReorder } from "src/views/Collection/hooks/useReorder/common/utils";
 import { useEditCollectionDataset } from "src/views/Collection/hooks/useEditCollectionDataset/useEditCollectionDataset";
+import Notification from "src/views/Collection/components/Notification";
+import { useCollectionNotification } from "src/views/Collection/hooks/useNotification/useCollectionNotification";
+import { getEditDataset } from "src/views/Collection/hooks/useEditCollectionDataset/utils";
 
 const Collection: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -55,6 +55,7 @@ const Collection: FC = () => {
   }
 
   const { data: collection, isError, isFetching } = useCollection({ id });
+  const collectionNotification = useCollectionNotification();
   const reorder = useReorder(id);
   const editCollectionDataset = useEditCollectionDataset();
 
@@ -120,7 +121,10 @@ const Collection: FC = () => {
   // Reorder datasets related values and actions.
   const reorderProps = getReorder(reorder, datasets);
   // Edit dataset related values and actions.
-  const editDatasetProps = getEditDataset(editCollectionDataset);
+  const editDatasetProps = getEditDataset(
+    editCollectionDataset,
+    collectionNotification
+  );
 
   return (
     <>
@@ -128,6 +132,8 @@ const Collection: FC = () => {
         <title>{collection.name} - CZ CELLxGENE Discover</title>
       </Head>
       <CollectionView>
+        {/* Notification */}
+        <Notification {...collectionNotification} />
         {/* Collection revision status callout */}
         <CollectionRevisionStatusCallout collection={collection} />
         {/* Collection title and actions */}
