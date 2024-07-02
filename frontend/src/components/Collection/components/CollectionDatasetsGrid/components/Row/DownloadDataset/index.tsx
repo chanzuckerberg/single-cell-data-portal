@@ -1,7 +1,7 @@
 import React, { ElementType, FC } from "react";
 import { useDatasetAssets } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DownloadDataset/util";
 import Content from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content";
-import { Dialog } from "src/components/Datasets/components/DownloadDataset/style";
+import { StyledDialog } from "src/components/Datasets/components/DownloadDataset/style";
 import { useDialog } from "src/views/Collection/hooks/useDialog";
 
 interface Props {
@@ -39,7 +39,7 @@ const DownloadDataset: FC<Props> = ({
         disabled={isDisabled}
         onClick={onOpen}
       />
-      <Dialog onClose={onClose} open={open}>
+      <StyledDialog onClose={onClose} open={open}>
         <Content
           dataAssets={datasetAssets}
           isError={isError}
@@ -47,7 +47,7 @@ const DownloadDataset: FC<Props> = ({
           name={name}
           onClose={onClose}
         />
-      </Dialog>
+      </StyledDialog>
     </>
   );
 };

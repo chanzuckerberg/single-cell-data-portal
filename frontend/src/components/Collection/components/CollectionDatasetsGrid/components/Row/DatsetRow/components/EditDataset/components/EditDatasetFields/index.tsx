@@ -5,8 +5,8 @@ import {
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/components/EditDatasetFields/constants";
 import { Props } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/components/EditDatasetFields/types";
 import {
-  Label,
   StyledInputText,
+  StyledLabel,
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/components/EditDatasetFields/style";
 import { mapDatasetToFormDefaultValues } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/components/EditDatasetFields/utils";
 
@@ -35,7 +35,7 @@ export default function EditDatasetFields({
       defaultValue={defaultValues[FIELD_NAMES.TITLE]}
       error={Boolean(errors[FIELD_NAMES.TITLE])}
       helperText={errors[FIELD_NAMES.TITLE]}
-      label={<Label>Name</Label>}
+      label={<StyledLabel>Name</StyledLabel>}
       onChange={(e) => {
         register(FIELD_NAMES.TITLE).onChange(e);
         if (errors[FIELD_NAMES.TITLE]) clearErrors(FIELD_NAMES.TITLE);

@@ -2,8 +2,8 @@ import DropboxChooser from "src/components/DropboxChooser";
 import { Props } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/components/Menu/types";
 import DeleteDataset from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/DeleteDataset";
 import {
-  Menu as StyledMenu,
-  MenuItem as StyledMenuItem,
+  StyledMenu,
+  StyledMenuItem,
 } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/style";
 import {
   DELETE_ICON_PROPS,
