@@ -233,8 +233,15 @@ describe("Collection Revision @loggedIn", () => {
       expect(datasetRows.length).toBeGreaterThanOrEqual(1);
       const datasetRow = datasetRows[0];      
 
-      // Display rename dialog.
-      await enterDatasetRenameMode(page, datasetRow);
+      // Show the dataset more menu.
+      const datasetMoreButton = datasetRow.getByTestId(DATASET_MORE_BUTTON);
+      await expect(datasetMoreButton).toBeVisible();
+      await datasetMoreButton.click();
+
+      // Show the edit dataset modal.
+      const editDatasetButton = page.getByTestId(DROPDOWN_EDIT_DATASET);
+      await expect(editDatasetButton).toBeVisible();
+      await editDatasetButton.click();
 
       // Confirm modal is visible.
       await page.waitForSelector(getTestID(DATASET_EDIT_FORM));
@@ -682,17 +689,6 @@ function buildReorderableCollectionRowLocator(): RegExp {
 async function cancelReorder(page: Page): Promise<void> {
   // Click cancel to return back to edit mode.
   await page.getByTestId(TEST_ID_REORDER_DATASETS_CANCEL).click();
-}
-
-/**
- * Enter rename dataset mode by clicking the "more" option on the dataset row and then the 
- * "rename dataset" menu option.
- * @param datasetRow - Playwright page model.
- * @param datasetRow - Locator of dataset row in collection. 
- */
-async function enterDatasetRenameMode(page: Page, datasetRow: Locator): Promise<void> {
-  await datasetRow.getByTestId(DATASET_MORE_BUTTON).click();
-  await page.getByTestId(DROPDOWN_EDIT_DATASET).click();
 }
 
 /**
