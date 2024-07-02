@@ -50,5 +50,6 @@ export interface UseCollectionDatasetForm {
   formState: FormState;
   handleSubmit: HandleSubmit;
   register: RegisterFn;
+  reset: () => void;
   setDefaultValues: Dispatch<SetStateAction<DefaultValues>>;
 }
