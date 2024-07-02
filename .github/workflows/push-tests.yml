@@ -38,13 +38,13 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - uses: actions/setup-python@v5
 
       - name: check backend
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
       - uses: actions/setup-node@v4
         with:
           node-version-file: "frontend/.nvmrc"
@@ -80,12 +80,12 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44.3.0
+        uses: tj-actions/changed-files@v44.5.5
         with:
           files: |
             Dockerfile*
@@ -103,20 +103,20 @@ jobs:
           make local-unit-test-backend
 
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
 
       - name: Upload Allure results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
 
-      - uses: 8398a7/action-slack@v3.15.0
+      - uses: 8398a7/action-slack@v3.16.2
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -140,12 +140,12 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44.3.0
+        uses: tj-actions/changed-files@v44.5.5
         with:
           files: |
             Dockerfile*
@@ -163,20 +163,20 @@ jobs:
           make local-unit-test-wmg-backend
 
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
 
       - name: Upload Allure results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
 
-      - uses: 8398a7/action-slack@v3.15.0
+      - uses: 8398a7/action-slack@v3.16.2
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -200,12 +200,12 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44.3.0
+        uses: tj-actions/changed-files@v44.5.5
         with:
           files: |
             Dockerfile*
@@ -223,20 +223,20 @@ jobs:
           make local-unit-test-de-backend
 
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
 
       - name: Upload Allure results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
 
-      - uses: 8398a7/action-slack@v3.15.0
+      - uses: 8398a7/action-slack@v3.16.2
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -260,12 +260,12 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44.3.0
+        uses: tj-actions/changed-files@v44.5.5
         with:
           files: |
             Dockerfile*
@@ -283,20 +283,20 @@ jobs:
           make local-unit-test-processing
 
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
 
       - name: Upload Allure results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
 
-      - uses: 8398a7/action-slack@v3.15.0
+      - uses: 8398a7/action-slack@v3.16.2
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -320,12 +320,12 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44.3.0
+        uses: tj-actions/changed-files@v44.5.5
         with:
           files: |
             Dockerfile*
@@ -342,18 +342,18 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-unit-test-wmg-processing
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
       - name: Upload Allure results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
-      - uses: 8398a7/action-slack@v3.15.0
+      - uses: 8398a7/action-slack@v3.16.2
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -377,12 +377,12 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44.3.0
+        uses: tj-actions/changed-files@v44.5.5
         with:
           files: |
             Dockerfile*
@@ -399,18 +399,18 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-unit-test-cellguide-pipeline
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
       - name: Upload Allure results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
-      - uses: 8398a7/action-slack@v3.15.0
+      - uses: 8398a7/action-slack@v3.16.2
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -434,12 +434,12 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44.3.0
+        uses: tj-actions/changed-files@v44.5.5
         with:
           files: |
             Dockerfile*
@@ -457,20 +457,20 @@ jobs:
           make local-unit-test-cxg-admin
 
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
 
       - name: Upload Allure results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
 
-      - uses: 8398a7/action-slack@v3.15.0
+      - uses: 8398a7/action-slack@v3.16.2
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -494,12 +494,12 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44.3.0
+        uses: tj-actions/changed-files@v44.5.5
         with:
           files: |
             Dockerfile*
@@ -516,19 +516,19 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-integration-test-backend
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
 
       - name: Upload Allure results as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
-      - uses: 8398a7/action-slack@v3.15.0
+      - uses: 8398a7/action-slack@v3.16.2
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -558,10 +558,10 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: coverage
           path: .
@@ -570,7 +570,7 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make coverage/report-xml
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           env_vars: OS,PYTHON
@@ -591,14 +591,14 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: allure-results
           path: allure-results
 
       # Checkout gh-pages branch and get Allure result history
       - name: Get Allure history
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         if: always()
         continue-on-error: true
         with:
@@ -620,7 +620,7 @@ jobs:
       # Deploy Allure report to github pages
       - name: Deploy report to Github Pages
         if: always()
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
