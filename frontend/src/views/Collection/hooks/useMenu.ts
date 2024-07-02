@@ -1,6 +1,6 @@
 import { MouseEvent, useCallback, useState } from "react";
 
-export interface UseMoreMenu {
+export interface UseMenu {
   anchorEl: HTMLButtonElement | null;
   onClose: () => void;
   onOpen: (mouseEvent: MouseEvent<HTMLButtonElement>) => void;
@@ -8,10 +8,10 @@ export interface UseMoreMenu {
 }
 
 /**
- * Menu functionality for collection view "more" dropdown.
+ * Menu functionality for collection view menu dropdown.
  * @returns menu functionality.
  */
-export function useMoreMenu(): UseMoreMenu {
+export function useMenu(): UseMenu {
   const [anchorEl, setAnchorEl] = useState<null | HTMLButtonElement>(null);
   const open = Boolean(anchorEl);
 

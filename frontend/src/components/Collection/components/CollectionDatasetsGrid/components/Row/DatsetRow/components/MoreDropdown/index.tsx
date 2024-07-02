@@ -5,7 +5,7 @@ import {
   MORE_ICON_BUTTON_PROPS,
 } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/constants";
 import { StyledButton } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/style";
-import { useMoreMenu } from "src/views/Collection/hooks/useMoreMenu";
+import { useMenu } from "src/views/Collection/hooks/useMenu";
 import Menu from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/components/Menu";
 
 export default function MoreDropdown({
@@ -14,7 +14,7 @@ export default function MoreDropdown({
   disabled,
   menuItemProps,
 }: Props): JSX.Element {
-  const { anchorEl, onClose, onOpen, open } = useMoreMenu();
+  const { anchorEl, onClose, onOpen, open } = useMenu();
   return (
     <Fragment>
       <StyledButton
