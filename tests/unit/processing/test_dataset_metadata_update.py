@@ -130,10 +130,10 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         mock_worker = mock_worker_factory.return_value
         self.updater.has_valid_artifact_statuses = Mock(return_value=True)
         self.updater.update_metadata(
-            current_dataset_version_id, new_dataset_version_id, DatasetArtifactMetadataUpdate(title="New Dataset Title")
+            current_dataset_version_id, new_dataset_version_id, DatasetArtifactMetadataUpdate(citation="New Citation")
         )
 
-        mock_worker.update_raw_h5ad.assert_called_once()
+        mock_worker.update_raw_h5ad.assert_not_called()
         mock_worker.update_h5ad.assert_called_once()
         mock_worker.update_rds.assert_not_called()
         mock_worker.update_cxg.assert_called_once()
@@ -149,6 +149,44 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         assert new_dataset_version.status.processing_status == DatasetProcessingStatus.SUCCESS
 
         assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad")
+
+    @patch("backend.common.utils.dl_sources.uri.downloader")
+    @patch("scanpy.read_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
+    @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker")
+    def test_update_metadata__raw_h5ad_updated(self, mock_worker_factory, *args):
+        current_dataset_version = self.generate_dataset(
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+            ]
+        )
+        collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
+        current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            current_dataset_version_id=current_dataset_version_id,
+            start_step_function=False,
+        )
+        mock_worker = mock_worker_factory.return_value
+        self.updater.has_valid_artifact_statuses = Mock(return_value=True)
+        self.updater.update_metadata(
+            current_dataset_version_id, new_dataset_version_id, DatasetArtifactMetadataUpdate(title="New Dataset Title")
+        )
+
+        mock_worker.update_raw_h5ad.assert_called_once()
+        mock_worker.update_h5ad.assert_called_once()
+        mock_worker.update_rds.assert_called_once()
+        mock_worker.update_cxg.assert_called_once()
+
+        # check that collection version maps to dataset version with updated metadata
+        collection_version = self.business_logic.get_collection_version(collection_version_id)
+        new_dataset_version = collection_version.datasets[0]
+
+        assert new_dataset_version.status.processing_status == DatasetProcessingStatus.SUCCESS
 
     def test_update_metadata__current_dataset_version_bad_processing_status(self, *args):
         current_dataset_version = self.generate_dataset(
@@ -388,12 +426,20 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
         mock_read_h5ad.assert_called_with(local_filename)
         assert "citation" not in mock_anndata.uns
         assert mock_anndata.uns["title"] == "New Dataset Title"
-        assert mock_anndata.uns["other_metadata"] == "misc"
+        assert mock_anndata.uns["other_metadata"] == "misc."
         # check s3 uris exist
         assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id.id}/{local_filename}")
-        # check processing status
+        # check DB DatasetVersion
         new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
+        assert new_dataset_version.metadata.schema_version == collection_version.datasets[0].metadata.schema_version
+        artifacts = [(artifact.uri, artifact.type) for artifact in new_dataset_version.artifacts]
+        assert (
+            f"s3://artifact_bucket/{new_dataset_version_id.id}/{local_filename}",
+            DatasetArtifactType.RAW_H5AD,
+        ) in artifacts
+        # check processing status
         assert new_dataset_version.status.upload_status == DatasetUploadStatus.UPLOADED
+        assert new_dataset_version.status.h5ad_status == DatasetConversionStatus.UPLOADED
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("backend.layers.processing.dataset_metadata_update.os.remove")
