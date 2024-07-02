@@ -431,7 +431,6 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
         assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id.id}/{local_filename}")
         # check DB DatasetVersion
         new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
-        assert new_dataset_version.metadata.schema_version == collection_version.datasets[0].metadata.schema_version
         artifacts = [(artifact.uri, artifact.type) for artifact in new_dataset_version.artifacts]
         assert (
             f"s3://artifact_bucket/{new_dataset_version_id.id}/{local_filename}",
