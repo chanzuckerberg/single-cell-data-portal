@@ -35,7 +35,7 @@ export default function EditDatasetFields({
       defaultValue={defaultValues[FIELD_NAMES.TITLE]}
       error={Boolean(errors[FIELD_NAMES.TITLE])}
       helperText={errors[FIELD_NAMES.TITLE]}
-      label={<StyledLabel>Name</StyledLabel>}
+      label={<StyledLabel htmlFor={FIELD_NAMES.TITLE}>Name</StyledLabel>}
       onChange={(e) => {
         register(FIELD_NAMES.TITLE).onChange(e);
         if (errors[FIELD_NAMES.TITLE]) clearErrors(FIELD_NAMES.TITLE);

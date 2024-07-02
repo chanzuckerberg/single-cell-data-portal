@@ -43,7 +43,7 @@ export default function EditDataset({
         onSubmit={handleSubmit(
           onEditDataset,
           { collectionId, datasetId },
-          { onError }
+          { onError, onSuccess: onClose }
         )}
         onTransitionExited={onAfterClose}
         open={open}
@@ -64,7 +64,6 @@ export default function EditDataset({
             {...SAVE_BUTTON_PROPS}
             data-testid={DATASET_EDIT_SAVE}
             disabled={!isDirty}
-            onClick={onClose}
           >
             Save
           </StyledButton>

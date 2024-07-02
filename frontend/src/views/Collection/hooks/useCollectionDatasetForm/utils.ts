@@ -33,8 +33,19 @@ export function getAndValidateFieldValues(
   formEl: HTMLFormElement
 ): [FieldValues, FieldErrors] {
   const fieldValues = getFieldValues(formEl);
-  const fieldErrors = validateForm(fieldValues);
+  const fieldErrors = validateForm(formEl, fieldValues);
   return [fieldValues, fieldErrors];
+}
+
+/**
+ * Returns field label value.
+ * @param formEl - Form element.
+ * @param key - Field value key.
+ * @returns field label value.
+ */
+function getFieldLabelValue(formEl: HTMLFormElement, key: string): string {
+  const labelEl = formEl.querySelector(`label[for="${key}"]`);
+  return labelEl?.textContent || key;
 }
 
 /**
@@ -103,14 +114,20 @@ export function updateDirtyFields(
 
 /**
  * Validates form data.
+ * @param formEl - Form element.
  * @param fieldValues - Field values.
  * @returns error.
  */
-export function validateForm(fieldValues: FieldValues): FieldErrors {
+export function validateForm(
+  formEl: HTMLFormElement,
+  fieldValues: FieldValues
+): FieldErrors {
   const fieldErrors = {} as FieldErrors;
   for (const [key, value] of Object.entries(fieldValues)) {
     if (!value) {
-      Object.assign(fieldErrors, { [key]: `${key} is required` });
+      Object.assign(fieldErrors, {
+        [key]: `${getFieldLabelValue(formEl, key)} is required`,
+      });
     }
   }
   return fieldErrors;
