@@ -23,16 +23,16 @@ export default function EditDataset({
   const { onClose, onOpen, open } = useDialog();
   const { onEditDataset, formMethod } = editDataset;
   const {
-    clearErrors,
     formState: { isDirty },
     handleSubmit,
+    reset: resetForm,
   } = formMethod;
   const { id: datasetId } = dataset;
 
   const onAfterClose = useCallback(() => {
-    clearErrors();
+    resetForm();
     menuProps.onClose(); // Close the "more" menu after the dialog closes.
-  }, [clearErrors, menuProps]);
+  }, [menuProps, resetForm]);
 
   return (
     <Fragment>

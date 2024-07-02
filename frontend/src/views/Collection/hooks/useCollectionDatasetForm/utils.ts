@@ -27,36 +27,30 @@ export function clearFieldErrors(
 /**
  * Returns field values and errors from form data.
  * @param formEl - Form element.
- * @param defaultValues - Default field values.
  * @returns field values and errors tuple.
  */
 export function getAndValidateFieldValues(
-  formEl: HTMLFormElement,
-  defaultValues: DefaultValues
+  formEl: HTMLFormElement
 ): [FieldValues, FieldErrors] {
-  const fieldValues = getFieldValues(formEl, defaultValues);
-  const fieldErrors = validateForm(fieldValues, defaultValues);
+  const fieldValues = getFieldValues(formEl);
+  const fieldErrors = validateForm(fieldValues);
   return [fieldValues, fieldErrors];
 }
 
 /**
  * Returns field values from form data.
  * @param formEl - Form element.
- * @param defaultValues - Default field values.
  * @returns field values.
  */
-export function getFieldValues(
-  formEl: HTMLFormElement,
-  defaultValues: DefaultValues
-): FieldValues {
+export function getFieldValues(formEl: HTMLFormElement): FieldValues {
   const formData: FormData = new FormData(formEl);
   const fieldValues = {} as FieldValues;
-  for (const key of Object.keys(defaultValues)) {
-    if (formData.has(key)) {
-      const value = formData.get(key);
+  formData.forEach((value: FormDataEntryValue, key: string) => {
+    // Currently, only string values are supported.
+    if (typeof value === "string") {
       Object.assign(fieldValues, { [key]: formatFormDataValue(value) });
     }
-  }
+  });
   return fieldValues;
 }
 
@@ -110,16 +104,12 @@ export function updateDirtyFields(
 /**
  * Validates form data.
  * @param fieldValues - Field values.
- * @param defaultValues - Default field values.
  * @returns error.
  */
-export function validateForm(
-  fieldValues: FieldValues,
-  defaultValues: DefaultValues
-): FieldErrors {
+export function validateForm(fieldValues: FieldValues): FieldErrors {
   const fieldErrors = {} as FieldErrors;
   for (const [key, value] of Object.entries(fieldValues)) {
-    if (!value || value === defaultValues[key]) {
+    if (!value) {
       Object.assign(fieldErrors, { [key]: `${key} is required` });
     }
   }

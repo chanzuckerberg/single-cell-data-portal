@@ -57,8 +57,7 @@ export function useCollectionDatasetForm(): UseCollectionDatasetForm {
       return async (event: FormEvent) => {
         event.preventDefault();
         const [fieldValues, fieldErrors] = getAndValidateFieldValues(
-          event.target as HTMLFormElement,
-          defaultValues
+          event.target as HTMLFormElement
         );
         if (isValid(fieldErrors)) {
           await onSubmit(pathParams, fieldValues, submitOptions);
@@ -67,7 +66,7 @@ export function useCollectionDatasetForm(): UseCollectionDatasetForm {
         }
       };
     },
-    [defaultValues]
+    []
   );
 
   const register = useCallback(
@@ -86,6 +85,12 @@ export function useCollectionDatasetForm(): UseCollectionDatasetForm {
     [defaultValues]
   );
 
+  const reset = useCallback(() => {
+    setDefaultValues(DEFAULT_FIELD_VALUES);
+    setDirtyFields(DEFAULT_DIRTY_FIELDS);
+    setErrors(DEFAULT_FIELD_ERRORS);
+  }, []);
+
   useEffect(() => {
     setIsDirty(Object.keys(dirtyFields).length > 0);
   }, [dirtyFields]);
@@ -95,6 +100,7 @@ export function useCollectionDatasetForm(): UseCollectionDatasetForm {
     formState: { dirtyFields, errors, isDirty },
     handleSubmit,
     register,
+    reset,
     setDefaultValues,
   };
 }
