@@ -10,7 +10,6 @@ from tests.functional.backend.constants import API_URL
 from tests.functional.backend.utils import (
     get_auth_token,
     make_cookie,
-    make_dp_auth_header,
     make_proxy_auth_token,
     make_session,
     upload_and_wait,
@@ -32,7 +31,7 @@ class SmokeTestsInitializer:
         username, password = self.config.test_account_username, self.config.test_account_password
         auth_token = get_auth_token(username, password, self.session, self.config, self.deployment_stage)
         self.curator_cookie = make_cookie(auth_token)
-        self.headers = make_dp_auth_header(self.curator_cookie)
+        self.headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
 
     def get_collection_count(self):
         res = self.session.get(f"{self.api}/curation/v1/collections?visiblity=PUBLIC", headers=self.headers)

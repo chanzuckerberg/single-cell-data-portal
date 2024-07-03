@@ -40,7 +40,6 @@ def get_auth_token(
     session: Session,
     config: CorporaAuthConfig,
     deployment_stage: str,
-    api_url: str,
     additional_claims: Optional[list] = None,
 ) -> dict[str, str]:
     standard_claims = "openid profile email offline"
@@ -93,7 +92,7 @@ def create_explorer_url(dataset_id: str, deployment_stage: str) -> str:
 
 
 def upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id=None):
-    headers = make_dp_auth_header(curator_cookie)
+    headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     body = {"url": dropbox_url}
     errors = []
     if existing_dataset_id is None:
@@ -141,10 +140,6 @@ def upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url
             )
         time.sleep(10)
     return {"dataset_id": dataset_id, "errors": errors}
-
-
-def make_dp_auth_header(cxg_user_cookie: str):
-    return {"headers": {"Cookie": f"cxguser={cxg_user_cookie}", "Content-Type": "application/json"}}
 
 
 http_adapter = HTTPAdapter(
