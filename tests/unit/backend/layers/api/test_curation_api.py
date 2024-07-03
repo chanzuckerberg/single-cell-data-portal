@@ -6,6 +6,8 @@ from collections import defaultdict
 from dataclasses import asdict
 from unittest.mock import Mock, patch
 
+from requests import HTTPError, Response
+
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException
 from backend.common.utils.api_key import generate
 from backend.curation.api.v1.curation.collections.common import EntityColumns
@@ -2814,3 +2816,20 @@ class TestAuthToken(BaseAPIPortalTest):
         user_api_key = generate(test_user_id, test_secret)
         response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key})
         self.assertEqual(404, response.status_code)
+
+    @patch("backend.curation.api.v1.curation.auth.token.CorporaAuthConfig")
+    @patch("backend.curation.api.v1.curation.auth.token.auth0_management_session")
+    def test__post_token__401_old_token(self, auth0_management_session, CorporaAuthConfig):
+        """The old token fails to authenticate"""
+        test_secret = "password1234"
+        test_email = "user@email.com"
+        test_user_id = "test_user_id"
+        test_response = Response()
+        test_response.status_code = 403
+        test_error = HTTPError(response=test_response)
+        CorporaAuthConfig().api_key_secret = test_secret
+        auth0_management_session.get_user_api_key_identity = Mock(return_value={"profileData": {"email": test_email}})
+        auth0_management_session.generate_access_token = Mock(side_effect=test_error)
+        user_api_key = generate(test_user_id, test_secret)
+        response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key})
+        self.assertEqual(401, response.status_code)
