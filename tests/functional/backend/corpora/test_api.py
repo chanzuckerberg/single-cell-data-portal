@@ -157,8 +157,8 @@ def test_dataset_upload_flow_with_dataset(session, curator_cookie, api_url, uplo
     _verify_upload_and_delete_succeeded(collection_id, headers, DATASET_URI, session, api_url, upload_dataset)
 
 
-def _verify_upload_and_delete_succeeded(collection_id, headers, session, api_url, upload_and_wait):
-    dataset_id = upload_and_wait(collection_id, DATASET_URI)
+def _verify_upload_and_delete_succeeded(collection_id, headers, dataset_uri, session, api_url, upload_and_wait):
+    dataset_id = upload_and_wait(collection_id, dataset_uri)
     # test non owner cant retrieve status
     no_auth_headers = {"Content-Type": "application/json"}
     res = session.get(f"{api_url}/dp/v1/datasets/{dataset_id}/status", headers=no_auth_headers)

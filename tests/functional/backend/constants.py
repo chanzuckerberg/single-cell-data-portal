@@ -15,5 +15,7 @@ AUDIENCE = {
     "rdev": "api.cellxgene.dev.single-cell.czi.technology",
 }
 
-DATASET_URI = "https://www.dropbox.com/scl/fi/y50umqlcrbz21a6jgu99z/5_0_0_example_valid.h5ad?rlkey"
-"=s7p6ybyx082hswix26hbl11pm&dl=0"
+DATASET_URI = (
+    "https://www.dropbox.com/scl/fi/y50umqlcrbz21a6jgu99z/5_0_0_example_valid.h5ad?rlkey"
+    "=s7p6ybyx082hswix26hbl11pm&dl=0"
+)
