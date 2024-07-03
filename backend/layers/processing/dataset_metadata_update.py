@@ -20,6 +20,7 @@ from backend.layers.common.entities import (
     DatasetConversionStatus,
     DatasetProcessingStatus,
     DatasetStatusKey,
+    DatasetUploadStatus,
     DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
@@ -39,6 +40,7 @@ configure_logging(level=logging.INFO)
 
 # maps artifact name for metadata field to DB field name, if different
 ARTIFACT_TO_DB_FIELD = {"title": "name"}
+FIELDS_IN_RAW_H5AD = ["title"]
 
 
 class DatasetMetadataUpdaterWorker(ProcessDownload):
@@ -56,6 +58,40 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
         self.artifact_bucket = artifact_bucket
         self.datasets_bucket = datasets_bucket
 
+    def update_raw_h5ad(
+        self,
+        raw_h5ad_uri: str,
+        new_key_prefix: str,
+        new_dataset_version_id: DatasetVersionId,
+        metadata_update: DatasetArtifactMetadataUpdate,
+    ):
+        raw_h5ad_filename = self.download_from_source_uri(
+            source_uri=raw_h5ad_uri,
+            local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
+        )
+        try:
+            adata = scanpy.read_h5ad(raw_h5ad_filename)
+            for key, val in metadata_update.as_dict_without_none_values().items():
+                if key in adata.uns:
+                    adata.uns[key] = val
+
+            adata.write(raw_h5ad_filename, compression="gzip")
+
+            self.update_processing_status(
+                new_dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING
+            )
+            self.create_artifact(
+                raw_h5ad_filename,
+                DatasetArtifactType.RAW_H5AD,
+                new_key_prefix,
+                new_dataset_version_id,
+                self.artifact_bucket,
+                DatasetStatusKey.H5AD,
+            )
+            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
+        finally:
+            os.remove(raw_h5ad_filename)
+
     def update_h5ad(
         self,
         h5ad_uri: str,
@@ -68,33 +104,36 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
             source_uri=h5ad_uri,
             local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
         )
+        try:
+            adata = scanpy.read_h5ad(h5ad_filename)
+            metadata = current_dataset_version.metadata
+            # maps artifact name for metadata field to DB field name, if different
+            for key, val in metadata_update.as_dict_without_none_values().items():
+                adata.uns[key] = val
 
-        adata = scanpy.read_h5ad(h5ad_filename)
-        metadata = current_dataset_version.metadata
-        # maps artifact name for metadata field to DB field name, if different
-        for key, val in metadata_update.as_dict_without_none_values().items():
-            adata.uns[key] = val
+                db_field = ARTIFACT_TO_DB_FIELD.get(key) if key in ARTIFACT_TO_DB_FIELD else key
+                setattr(metadata, db_field, val)
 
-            db_field = ARTIFACT_TO_DB_FIELD.get(key) if key in ARTIFACT_TO_DB_FIELD else key
-            setattr(metadata, db_field, val)
+            adata.write(h5ad_filename, compression="gzip")
+            self.business_logic.set_dataset_metadata(new_dataset_version_id, metadata)
 
-        adata.write(h5ad_filename, compression="gzip")
-        self.business_logic.set_dataset_metadata(new_dataset_version_id, metadata)
-
-        self.create_artifact(
-            h5ad_filename,
-            DatasetArtifactType.H5AD,
-            new_key_prefix,
-            new_dataset_version_id,
-            self.artifact_bucket,
-            DatasetStatusKey.H5AD,
-            datasets_bucket=self.datasets_bucket,
-        )
-        os.remove(h5ad_filename)
-        self.update_processing_status(
-            new_dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID
-        )
-        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
+            self.create_artifact(
+                h5ad_filename,
+                DatasetArtifactType.H5AD,
+                new_key_prefix,
+                new_dataset_version_id,
+                self.artifact_bucket,
+                DatasetStatusKey.H5AD,
+                datasets_bucket=self.datasets_bucket,
+            )
+            self.update_processing_status(
+                new_dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID
+            )
+            self.update_processing_status(
+                new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED
+            )
+        finally:
+            os.remove(h5ad_filename)
 
     def update_rds(
         self,
@@ -107,29 +146,36 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
             source_uri=rds_uri,
             local_path=CorporaConstants.LABELED_RDS_ARTIFACT_FILENAME,
         )
-        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTING)
 
-        rds_object = base.readRDS(seurat_filename)
+        try:
+            self.update_processing_status(
+                new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTING
+            )
 
-        for key, val in metadata_update.as_dict_without_none_values().items():
-            seurat_metadata = seurat.Misc(object=rds_object)
-            if seurat_metadata.rx2[key]:
-                val = val if isinstance(val, list) else [val]
-                seurat_metadata[seurat_metadata.names.index(key)] = StrVector(val)
+            rds_object = base.readRDS(seurat_filename)
 
-        base.saveRDS(rds_object, file=seurat_filename)
+            for key, val in metadata_update.as_dict_without_none_values().items():
+                seurat_metadata = seurat.Misc(object=rds_object)
+                if seurat_metadata.rx2[key]:
+                    val = val if isinstance(val, list) else [val]
+                    seurat_metadata[seurat_metadata.names.index(key)] = StrVector(val)
 
-        self.create_artifact(
-            seurat_filename,
-            DatasetArtifactType.RDS,
-            new_key_prefix,
-            new_dataset_version_id,
-            self.artifact_bucket,
-            DatasetStatusKey.RDS,
-            datasets_bucket=self.datasets_bucket,
-        )
-        os.remove(seurat_filename)
-        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTED)
+            base.saveRDS(rds_object, file=seurat_filename)
+
+            self.create_artifact(
+                seurat_filename,
+                DatasetArtifactType.RDS,
+                new_key_prefix,
+                new_dataset_version_id,
+                self.artifact_bucket,
+                DatasetStatusKey.RDS,
+                datasets_bucket=self.datasets_bucket,
+            )
+            self.update_processing_status(
+                new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTED
+            )
+        finally:
+            os.remove(seurat_filename)
 
     def update_cxg(
         self,
@@ -160,6 +206,22 @@ class DatasetMetadataUpdater(ProcessDownload):
         self.artifact_bucket = artifact_bucket
         self.cellxgene_bucket = cellxgene_bucket
         self.datasets_bucket = datasets_bucket
+
+    @staticmethod
+    def update_raw_h5ad(
+        artifact_bucket: str,
+        datasets_bucket: str,
+        raw_h5ad_uri: str,
+        new_key_prefix: str,
+        new_dataset_version_id: DatasetVersionId,
+        metadata_update: DatasetArtifactMetadataUpdate,
+    ):
+        DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket).update_raw_h5ad(
+            raw_h5ad_uri,
+            new_key_prefix,
+            new_dataset_version_id,
+            metadata_update,
+        )
 
     @staticmethod
     def update_h5ad(
@@ -229,17 +291,33 @@ class DatasetMetadataUpdater(ProcessDownload):
             )
             return
 
+        artifact_jobs = []
+        new_artifact_key_prefix = self.get_key_prefix(new_dataset_version_id.id)
         if DatasetArtifactType.RAW_H5AD in artifact_uris:
             raw_h5ad_uri = artifact_uris[DatasetArtifactType.RAW_H5AD]
         else:
             self.logger.error(f"Cannot find raw H5AD artifact uri for {current_dataset_version_id}.")
             raise ValueError
 
-        self.upload_raw_h5ad(new_dataset_version_id, raw_h5ad_uri, self.artifact_bucket)
-
-        new_artifact_key_prefix = self.get_key_prefix(new_dataset_version_id.id)
-
-        artifact_jobs = []
+        # Only trigger raw H5AD update if any updated metadata is part of the raw H5AD artifact
+        if any(getattr(metadata_update, field, None) for field in FIELDS_IN_RAW_H5AD):
+            self.logger.info("Main: Starting thread for raw h5ad update")
+            raw_h5ad_job = Process(
+                target=DatasetMetadataUpdater.update_raw_h5ad,
+                args=(
+                    self.artifact_bucket,
+                    self.datasets_bucket,
+                    raw_h5ad_uri,
+                    new_artifact_key_prefix,
+                    new_dataset_version_id,
+                    metadata_update,
+                ),
+            )
+            artifact_jobs.append(raw_h5ad_job)
+            raw_h5ad_job.start()
+        else:
+            self.logger.info("Main: No raw h5ad update required")
+            self.upload_raw_h5ad(new_dataset_version_id, raw_h5ad_uri, self.artifact_bucket)
 
         if DatasetArtifactType.H5AD in artifact_uris:
             self.logger.info("Main: Starting thread for h5ad update")
