@@ -5,10 +5,10 @@ from urllib.parse import quote
 
 import pytest
 import requests
-from functional.backend.utils import assertStatusCode, create_explorer_url, create_test_collection
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
+from tests.functional.backend.utils import assertStatusCode, create_explorer_url, create_test_collection
 
 
 @pytest.mark.skipIf(os.environ["DEPLOYMENT_STAGE"] in ["prod"], "Do not make test collections public in prod")
