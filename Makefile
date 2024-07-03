@@ -38,7 +38,7 @@ cellguide-pipeline-unittest:
 
 .PHONY: functional-test
 functional-test:
-	python3 -m pytest tests/functional/ --rootdir=. --verbose -n auto
+	python3 -m pytest tests/functional/ --rootdir=. --verbose
 
 .PHONY: prod-performance-test
 prod-performance-test:
