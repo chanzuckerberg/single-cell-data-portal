@@ -3,12 +3,11 @@ import os
 
 import pytest
 import requests
-from functional.backend.constants import VISIUM_DATASET_URI
-from functional.backend.utils import create_test_collection
 from requests import HTTPError
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
-from tests.functional.backend.utils import assertStatusCode
+from tests.functional.backend.constants import DATASET_URI, VISIUM_DATASET_URI
+from tests.functional.backend.utils import assertStatusCode, create_test_collection
 
 
 def test_version(session, api_url):
@@ -44,7 +43,7 @@ def test_get_collections(session, api_url):
 
 
 @pytest.mark.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
-def test_collection_flow(session, api_url, curator_cookie, upload_and_wait, dataset_uri, collection_data):
+def test_collection_flow(session, api_url, curator_cookie, upload_dataset, collection_data):
     # create collection
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     res = session.post(f"{api_url}/dp/v1/collections", data=json.dumps(collection_data), headers=headers)
@@ -78,7 +77,7 @@ def test_collection_flow(session, api_url, curator_cookie, upload_and_wait, data
     for key in updated_data:
         assert updated_data[key] == data[key]
 
-    upload_and_wait(collection_id, dataset_uri)
+    upload_dataset(collection_id, DATASET_URI)
 
     # make collection public
     body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
