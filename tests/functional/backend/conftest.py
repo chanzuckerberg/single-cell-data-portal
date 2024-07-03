@@ -1,8 +1,6 @@
 import os
 
 import pytest
-import requests
-from requests.adapters import HTTPAdapter, Retry
 
 from backend.common.corpora_config import CorporaAuthConfig
 from tests.functional.backend.constants import API_URL
@@ -11,6 +9,8 @@ from tests.functional.backend.utils import (
     get_auth_token,
     make_cookie,
     make_dp_auth_header,
+    make_proxy_auth_token,
+    make_session,
     upload_and_wait,
 )
 
@@ -26,14 +26,6 @@ def deployment_stage():
 
 
 @pytest.fixture(scope="session")
-def dataset_uri():
-    return (
-        "https://www.dropbox.com/scl/fi/y50umqlcrbz21a6jgu99z/5_0_0_example_valid.h5ad?rlkey"
-        "=s7p6ybyx082hswix26hbl11pm&dl=0"
-    )
-
-
-@pytest.fixture(scope="session")
 def proxy_auth_token(config, deployment_stage, tmp_path_factory, worker_id) -> dict:
     """
     Generate a proxy token for rdev. If running in parallel mode this will be shared across workers to avoid rate
@@ -41,34 +33,14 @@ def proxy_auth_token(config, deployment_stage, tmp_path_factory, worker_id) -> d
     """
 
     def _proxy_auth_token() -> dict:
-        if deployment_stage == "rdev":
-            payload = {
-                "client_id": config.test_app_id,
-                "client_secret": config.test_app_secret,
-                "grant_type": "client_credentials",
-                "audience": "https://api.cellxgene.dev.single-cell.czi.technology/dp/v1/curator",
-            }
-            headers = {"content-type": "application/json"}
-            res = requests.post("https://czi-cellxgene-dev.us.auth0.com/oauth/token", json=payload, headers=headers)
-            res.raise_for_status()
-            access_token = res.json()["access_token"]
-            return {"Authorization": f"Bearer {access_token}"}
-        return {}
+        return make_proxy_auth_token(config, deployment_stage)
 
     return distributed_singleton(tmp_path_factory, worker_id, _proxy_auth_token)
 
 
 @pytest.fixture(scope="session")
 def session(proxy_auth_token):
-    session = requests.Session()
-    retry_config = Retry(
-        total=7,
-        backoff_factor=2,
-        status_forcelist=[500, 502, 503, 504],
-        allowed_methods={"DELETE", "GET", "HEAD", "PUT", "POST"},
-    )
-    session.mount("https://", HTTPAdapter(max_retries=retry_config))
-    session.headers.update(**proxy_auth_token)
+    session = make_session(proxy_auth_token)
     yield session
     session.close()
 

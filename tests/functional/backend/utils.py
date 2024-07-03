@@ -5,7 +5,10 @@ from typing import Callable, Optional
 
 import requests
 from filelock import FileLock
+from requests import Session
+from requests.adapters import HTTPAdapter, Retry
 
+from backend.common.corpora_config import CorporaAuthConfig
 from tests.functional.backend.constants import AUDIENCE
 
 
@@ -34,9 +37,10 @@ def distributed_singleton(tmp_path_factory, worker_id: str, func: Callable) -> d
 def get_auth_token(
     username: str,
     password: str,
-    session: str,
-    config: dict,
+    session: Session,
+    config: CorporaAuthConfig,
     deployment_stage: str,
+    api_url: str,
     additional_claims: Optional[list] = None,
 ) -> dict[str, str]:
     standard_claims = "openid profile email offline"
@@ -46,7 +50,7 @@ def get_auth_token(
     else:
         claims = standard_claims
     response = session.post(
-        "https://czi-cellxgene-dev.us.auth0.com/oauth/token",
+        "https://czi-cellxgene-dev.us.auth0.com/oauth/token",  # hardcoded becasue this is only needed for dev and rdev
         headers={"content-type": "application/x-www-form-urlencoded"},
         data=dict(
             grant_type="password",
@@ -65,7 +69,7 @@ def get_auth_token(
     return token
 
 
-def make_cookie(auth_token: str) -> str:
+def make_cookie(auth_token: dict) -> str:
     return base64.b64encode(json.dumps(auth_token).encode("utf-8")).decode()
 
 
@@ -141,3 +145,41 @@ def upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url
 
 def make_dp_auth_header(cxg_user_cookie: str):
     return {"headers": {"Cookie": f"cxguser={cxg_user_cookie}", "Content-Type": "application/json"}}
+
+
+http_adapter = HTTPAdapter(
+    max_retries=Retry(
+        total=7,
+        backoff_factor=2,
+        status_forcelist=[500, 502, 503, 504],
+        allowed_methods={"DELETE", "GET", "HEAD", "PUT", "POST"},
+    )
+)
+
+
+def make_session(proxy_auth_token):
+    session = requests.Session()
+    session.mount("https://", http_adapter)
+    session.headers.update(**proxy_auth_token)
+    return session
+
+
+def make_proxy_auth_token(config, deployment_stage) -> dict:
+    """
+    Generate a proxy token for rdev. If running in parallel mode this will be shared across workers to avoid rate
+    limiting
+    """
+
+    if deployment_stage == "rdev":
+        payload = {
+            "client_id": config.test_app_id,
+            "client_secret": config.test_app_secret,
+            "grant_type": "client_credentials",
+            "audience": "https://api.cellxgene.dev.single-cell.czi.technology/dp/v1/curator",
+        }
+        headers = {"content-type": "application/json"}
+        res = requests.post("https://czi-cellxgene-dev.us.auth0.com/oauth/token", json=payload, headers=headers)
+        res.raise_for_status()
+        access_token = res.json()["access_token"]
+        return {"Authorization": f"Bearer {access_token}"}
+    return {}

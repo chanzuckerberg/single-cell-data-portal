@@ -8,13 +8,13 @@ import requests
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
+from tests.functional.backend.constants import DATASET_URI
 from tests.functional.backend.utils import assertStatusCode, create_explorer_url, create_test_collection
 
 
 @pytest.mark.skipIf(os.environ["DEPLOYMENT_STAGE"] in ["prod"], "Do not make test collections public in prod")
 def test_revision_flow(
     curator_cookie,
-    dataset_uri,
     session,
     api_url,
     upload_dataset,
@@ -27,7 +27,7 @@ def test_revision_flow(
 
     collection_id = create_test_collection(headers, request, session, api_url, collection_data)
 
-    dataset_1_dropbox_url = dataset_2_dropbox_url = dataset_uri
+    dataset_1_dropbox_url = dataset_2_dropbox_url = DATASET_URI
 
     # Uploads a dataset
     upload_dataset(collection_id, dataset_1_dropbox_url)

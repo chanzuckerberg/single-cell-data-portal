@@ -1,10 +1,20 @@
 #!/usr/bin/env python
 import json
+import os
 import sys
 import threading
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
-from tests.functional.backend.common import BaseFunctionalTestCase
+from backend.common.corpora_config import CorporaAuthConfig
+from tests.functional.backend.constants import API_URL
+from tests.functional.backend.utils import (
+    get_auth_token,
+    make_cookie,
+    make_dp_auth_header,
+    make_proxy_auth_token,
+    make_session,
+    upload_and_wait,
+)
 
 # Amount to reduce chance of collision where multiple test instances select the same collection to test against
 NUM_TEST_DATASETS = 3
@@ -12,11 +22,17 @@ NUM_TEST_COLLECTIONS = 10
 TEST_ACCT_CONTACT_NAME = "Smoke Test User"
 
 
-class SmokeTestsInitializer(BaseFunctionalTestCase):
+class SmokeTestsInitializer:
     def __init__(self):
-        super().setUpClass(smoke_tests=True)
-        super().setUp()
-        self.headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
+        self.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
+        self.config = CorporaAuthConfig()
+        proxy_auth_token = make_proxy_auth_token(self.config, self.deployment_stage)
+        self.session = make_session(proxy_auth_token)
+        self.api = API_URL.get(self.deployment_stage)
+        username, password = self.config.test_account_username, self.config.test_account_password
+        auth_token = get_auth_token(username, password, self.session, self.config, self.deployment_stage)
+        self.curator_cookie = make_cookie(auth_token)
+        self.headers = make_dp_auth_header(self.curator_cookie)
 
     def get_collection_count(self):
         res = self.session.get(f"{self.api}/curation/v1/collections?visiblity=PUBLIC", headers=self.headers)
@@ -33,7 +49,7 @@ class SmokeTestsInitializer(BaseFunctionalTestCase):
     def create_and_publish_collection(self, dropbox_url):
         collection_id = self.create_collection()
         for _ in range(NUM_TEST_DATASETS):
-            self.upload_and_wait(collection_id, dropbox_url, cleanup=False)
+            upload_and_wait(collection_id, dropbox_url, cleanup=False)
         self.publish_collection(collection_id)
         print(f"created and published collection {collection_id}")
 
