@@ -91,7 +91,7 @@ def api_url(deployment_stage):
 
 @pytest.fixture(scope="session")
 def curation_api_access_token(session, api_url, config, tmp_path_factory, worker_id):
-    def _curation_api_access_token(session, api_url, config):
+    def _curation_api_access_token() -> str:
         response = session.post(
             f"{api_url}/curation/v1/auth/token",
             headers={"x-api-key": config.super_curator_api_key},
@@ -159,7 +159,8 @@ def upload_and_wait(session, api_url, curator_cookie, deployment_stage, request)
     return _upload_and_wait
 
 
-def generate_collection_data(request):
+@pytest.fixture()
+def collection_data(request):
     return {
         "contact_email": "lisbon@gmail.com",
         "contact_name": "Madrid Sparkle",
