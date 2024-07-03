@@ -1,3 +1,0 @@
-INFO     root:actions.py:43 {'is_published': True}
-INFO     root:timer.py:41 {'type': 'METRIC', 'details': {'description': 'fa56b1f6-38f1-4c30-8ff4-528993e156f1', 'time': 0.000560760498046875, 'unit': 'seconds', 'group': 'reshape_for_curation_api'}}
-INFO     root:timer.py:89 {'type': 'METRIC', 'details': {'group': 'reshape_for_curation_api', 'records': 1, 'total_time': 0.000560760498046875, 'max_time': 0.000560760498046875, 'min_time': 0.000560760498046875, 'median_time': 0.000560760498046875, '_95th_percentile': 0.000560760498046875, '_99th_percentile': 0.000560760498046875, 'unit': 'seconds'}}
