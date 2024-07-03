@@ -42,7 +42,7 @@ def test_get_collections(session, api_url):
 
 
 @pytest.mark.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
-def test_collection_flow(session, api_url, curator_cookie, upload_and_wait, dataset_uri, collection_data):
+def test_collection_flow(session, api_url, curator_cookie, upload_dataset, dataset_uri, collection_data):
     # create collection
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     res = session.post(f"{api_url}/dp/v1/collections", data=json.dumps(collection_data), headers=headers)
@@ -76,7 +76,7 @@ def test_collection_flow(session, api_url, curator_cookie, upload_and_wait, data
     for key in updated_data:
         assert updated_data[key] == data[key]
 
-    upload_and_wait(collection_id, dataset_uri)
+    upload_dataset(collection_id, dataset_uri)
 
     # make collection public
     body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
@@ -151,11 +151,11 @@ def test_delete_private_collection(session, api_url, curator_cookie, collection_
 
 @pytest.mark.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
 def test_dataset_upload_flow_with_dataset(
-    session, curator_cookie, api_url, upload_and_wait, dataset_uri, request, collection_data
+    session, curator_cookie, api_url, upload_dataset, dataset_uri, request, collection_data
 ):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     collection_id = create_test_collection(headers, request, session, api_url, collection_data)
-    _verify_upload_and_delete_succeeded(collection_id, headers, dataset_uri, session, api_url, upload_and_wait)
+    _verify_upload_and_delete_succeeded(collection_id, headers, dataset_uri, session, api_url, upload_dataset)
 
 
 def _verify_upload_and_delete_succeeded(collection_id, headers, dataset_uri, session, api_url, upload_and_wait):

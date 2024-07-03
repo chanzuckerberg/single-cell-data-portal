@@ -17,7 +17,7 @@ def test_revision_flow(
     dataset_uri,
     session,
     api_url,
-    upload_and_wait,
+    upload_dataset,
     curation_api_access_token,
     deployment_stage,
     request,
@@ -30,7 +30,7 @@ def test_revision_flow(
     dataset_1_dropbox_url = dataset_2_dropbox_url = dataset_uri
 
     # Uploads a dataset
-    upload_and_wait(collection_id, dataset_1_dropbox_url)
+    upload_dataset(collection_id, dataset_1_dropbox_url)
 
     # make collection public
     body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
@@ -70,7 +70,7 @@ def test_revision_flow(
     assert meta_payload_before_revision != meta_payload
 
     # Upload a new dataset
-    upload_and_wait(
+    upload_dataset(
         revision_id,
         dataset_2_dropbox_url,
         existing_dataset_id=private_dataset_id,
@@ -106,7 +106,7 @@ def test_revision_flow(
     public_datasets_before = session.get(f"{api_url}/dp/v1/collections/{canonical_collection_id}").json()["datasets"]
 
     # Upload a new dataset
-    another_dataset_id = upload_and_wait(revision_id, dataset_1_dropbox_url)
+    another_dataset_id = upload_dataset(revision_id, dataset_1_dropbox_url)
 
     # Adding a dataset to a revision does not impact public datasets in that collection
     # Get datasets for the collection (after uploading)
