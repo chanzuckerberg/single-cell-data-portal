@@ -107,11 +107,9 @@ def curation_api_access_token(session, api_url, config, tmp_path_factory, worker
 
 
 @pytest.fixture(scope="session")
-def upload_dataset(session, api_url, curator_cookie, deployment_stage, request):
+def upload_dataset(session, api_url, curator_cookie, request):
     def _upload_dataset(collection_id, dropbox_url, existing_dataset_id=None, cleanup=True):
-        result = upload_and_wait(
-            session, api_url, curator_cookie, deployment_stage, collection_id, dropbox_url, existing_dataset_id
-        )
+        result = upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id)
         dataset_id = result["dataset_id"]
         if cleanup:
             request.addfinalizer(
