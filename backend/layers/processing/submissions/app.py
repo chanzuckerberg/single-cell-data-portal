@@ -8,6 +8,7 @@ from urllib.parse import unquote_plus
 from pythonjsonlogger import jsonlogger
 
 from backend.common.logging_config import DATETIME_FORMAT, LOG_FORMAT
+from backend.common.providers.crossref_provider import CrossrefProvider
 from backend.common.utils.exceptions import (
     CorporaException,
     NonExistentCollectionException,
@@ -18,7 +19,6 @@ from backend.layers.business.business import BusinessLogic
 from backend.layers.business.exceptions import CollectionNotFoundException, DatasetNotFoundException
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.thirdparty.batch_job_provider import BatchJobProvider
-from backend.layers.thirdparty.crossref_provider import CrossrefProvider
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
 from backend.layers.thirdparty.uri_provider import UriProvider

@@ -1,6 +1,6 @@
-import { Button, fontBodyS } from "@czi-sds/components";
 import styled from "@emotion/styled";
-import { spacesM, spacesS, spacesXs } from "src/common/theme";
+import { spacesS } from "src/common/theme";
+import { Button } from "src/components/common/Button";
 
 export const CollectionActions = styled.div`
   align-items: center;
@@ -9,10 +9,5 @@ export const CollectionActions = styled.div`
 `;
 
 export const ActionButton = styled(Button)`
-  ${fontBodyS}
-  font-weight: 500;
-  height: 32px;
-  letter-spacing: -0.006em;
   min-width: 0;
-  padding: ${spacesXs}px ${spacesM}px;
 `;

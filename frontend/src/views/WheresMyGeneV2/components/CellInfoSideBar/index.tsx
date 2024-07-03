@@ -1,4 +1,4 @@
-import { Button, Icon, Tooltip } from "@czi-sds/components";
+import { Icon, Tooltip } from "@czi-sds/components";
 import React from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -10,7 +10,6 @@ import {
   NoMarkerGenesContainer,
   NoMarkerGenesDescription,
   NoMarkerGenesHeader,
-  StyledIconImage,
   StyledMarkerGeneHeader,
   StyledTooltip,
   TooltipContent,
@@ -18,10 +17,9 @@ import {
   TooltipButton,
   ButtonWrapper,
   TooltipLink,
+  AddToDotplotButton,
 } from "./style";
 import { Link } from "src/components/GeneInfoSideBar/style";
-import questionMarkIcon from "src/common/images/question-mark-icon.svg";
-import { StyledImage } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/style";
 import InfoSVG from "src/common/images/info-sign-icon.svg";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
 import { CellInfoBarProps } from "./types";
@@ -60,6 +58,7 @@ import {
   DivTableRow,
 } from "../../common/styles";
 import Description from "src/views/CellGuide/components/CellGuideCard/components/Description";
+import { StyledQuestionMarkIcon } from "src/common/style";
 
 function CellInfoSideBar({
   cellInfoCellType,
@@ -148,23 +147,22 @@ function CellInfoSideBar({
               sdsType="secondary"
               isAllCaps={false}
             >
-              <StyledIconImage alt="question mark" src={questionMarkIcon} />
+              <StyledQuestionMarkIcon />
             </TooltipButton>
           </Tooltip>
           <BetaChip label="Beta" size="small" />
         </ButtonWrapper>
-        <Button
+        <AddToDotplotButton
           data-testid="add-to-dotplot-fmg-button"
-          startIcon={<Icon sdsIcon="plus" sdsSize="s" sdsType="button" />}
+          startIcon={<Icon sdsIcon="Plus" sdsSize="s" sdsType="button" />}
           onClick={handleDisplayGenes}
           sdsStyle="minimal"
           sdsType="primary"
           isAllCaps={false}
-          style={{ fontWeight: "500" }}
           disabled={shouldShowEmptyState}
         >
           {MARKER_SCORE_DOTPLOT_BUTTON_TEXT}
-        </Button>
+        </AddToDotplotButton>
       </ButtonContainer>
       {shouldShowEmptyState ? (
         (track(EVENTS.WMG_FMG_NO_MARKER_GENES, {
@@ -192,7 +190,7 @@ function CellInfoSideBar({
                 sdsType="primary"
                 sdsStyle="minimal"
                 isAllCaps={false}
-                startIcon={<Icon sdsIcon="copy" sdsSize="s" sdsType="button" />}
+                startIcon={<Icon sdsIcon="Copy" sdsSize="s" sdsType="button" />}
               >
                 Copy
               </CopyGenesButton>
@@ -244,7 +242,7 @@ function CellInfoSideBar({
                   isAllCaps={false}
                   data-testid={MARKER_SCORE_TOOLTIP_TEST_ID}
                 >
-                  <StyledIconImage alt="question mark" src={questionMarkIcon} />
+                  <StyledQuestionMarkIcon />
                 </TooltipButton>
               </Tooltip>
             </DivTableCell>
@@ -288,7 +286,7 @@ function CellInfoSideBar({
                   isAllCaps={false}
                   data-testid={SPECIFICITY_TOOLTIP_TEST_ID}
                 >
-                  <StyledIconImage alt="question mark" src={questionMarkIcon} />
+                  <StyledQuestionMarkIcon />
                 </TooltipButton>
               </Tooltip>
             </DivTableCell>
@@ -307,13 +305,7 @@ function CellInfoSideBar({
                     });
                   }}
                 >
-                  <StyledImage
-                    id="gene-info-button-fmg"
-                    src={InfoSVG.src}
-                    width="10"
-                    height="10"
-                    alt={`display gene info for ${symbol}`}
-                  />
+                  <InfoSVG id="gene-info-button-fmg" />
                 </InfoButtonWrapper>
               </DivTableCell>
               <DivTableCellPadded data-testid="marker-scores-fmg" align>

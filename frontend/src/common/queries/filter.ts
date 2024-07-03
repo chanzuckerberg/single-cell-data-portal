@@ -3,10 +3,8 @@ import { QueryStatus, useQuery, UseQueryResult } from "react-query";
 import { API } from "src/common/API";
 import {
   ACCESS_TYPE,
-  Author,
   Collection,
   COLLECTION_STATUS,
-  Consortium,
   IS_PRIMARY_DATA,
   Ontology,
   PublisherMetadata,
@@ -84,6 +82,7 @@ export interface CollectionResponse {
   name: string;
   published_at: number;
   publisher_metadata: PublisherMetadata;
+  summary_citation: string;
   revised_at: number;
 }
 
@@ -109,7 +108,7 @@ export type ProcessedCollectionResponse = (
   publicationDateValues: number[];
   revisedBy?: string;
   status?: COLLECTION_STATUS[];
-  summaryCitation: string;
+  summary_citation: string;
 };
 
 /**
@@ -538,8 +537,8 @@ function buildDatasetRow(
     isOverMaxCellCount: checkIsOverMaxCellCount(dataset.cell_count),
     publicationDateValues,
     recency,
-    summaryCitation:
-      collection?.summaryCitation ?? CATEGORY_VALUE_KEY.NO_PUBLICATION,
+    summary_citation:
+      collection?.summary_citation ?? CATEGORY_VALUE_KEY.NO_PUBLICATION,
   };
   return sortCategoryValues(datasetRow);
 }
@@ -554,42 +553,6 @@ function buildConsortia(collection?: ProcessedCollectionResponse): string[] {
     return collection.consortia;
   }
   return [CATEGORY_VALUE_KEY.NO_CONSORTIUM];
-}
-
-/**
- * Build summary citation format from given publisher metadata:
- * Last name of first author (publication year) journal abbreviation such as Ren et al. (2021) Cell.
- * @param publisherMetadata - Publication metadata of a collection.
- */
-export function buildSummaryCitation(
-  publisherMetadata?: PublisherMetadata
-): string {
-  if (!publisherMetadata) {
-    return CATEGORY_VALUE_KEY.NO_PUBLICATION;
-  }
-
-  const citationTokens = [];
-
-  // Add author to citation - family name if first author is a person, name if first author is a consortium.
-  const { authors, journal, published_year: publishedYear } = publisherMetadata;
-  const [firstAuthor] = authors ?? [];
-  if (firstAuthor) {
-    if (isAuthorPerson(firstAuthor)) {
-      citationTokens.push(firstAuthor.family);
-    } else {
-      citationTokens.push(firstAuthor.name);
-    }
-
-    if (authors.length > 1) {
-      citationTokens.push("et al.");
-    }
-  }
-
-  // Add year and journal.
-  citationTokens.push(`(${publishedYear})`);
-  citationTokens.push(journal);
-
-  return citationTokens.join(" ");
 }
 
 /**
@@ -930,16 +893,6 @@ function groupDatasetRowsByCollection(
 }
 
 /**
- * Publication authors can be a person or a consortium; determine if the given author is in fact a person (and not a
- * consortium).
- * @param author - Person or consortium associated with a publication.
- * @returns True if author is a person and not a consortium.
- */
-function isAuthorPerson(author: Author | Consortium): author is Author {
-  return (author as Author).given !== undefined;
-}
-
-/**
  * Returns true if the given self reported ethnicity ontology term contains
  * mutliple ethnicities.
  * @param selfReportedEthnicity - Self reported ethnicity ontology term to
@@ -997,13 +950,15 @@ function processCollectionResponse(
   );
 
   // Build the summary citation from the collection's publication metadata, if any.
-  const summaryCitation = buildSummaryCitation(collection?.publisher_metadata);
+  const summary_citation = collection.summary_citation ?? [
+    CATEGORY_VALUE_KEY.NO_PUBLICATION,
+  ];
 
   return {
     ...collection,
     consortia,
     publicationDateValues,
-    summaryCitation,
+    summary_citation,
   };
 }
 

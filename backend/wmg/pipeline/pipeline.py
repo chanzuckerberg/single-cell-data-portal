@@ -29,7 +29,6 @@ from backend.wmg.pipeline.constants import (
     PRIMARY_FILTER_DIMENSIONS_CREATED_FLAG,
 )
 from backend.wmg.pipeline.dataset_metadata import create_dataset_metadata
-from backend.wmg.pipeline.errors import PipelineStepMissing
 from backend.wmg.pipeline.expression_summary_and_cell_counts import create_expression_summary_and_cell_counts_cubes
 from backend.wmg.pipeline.expression_summary_and_cell_counts_diffexp import (
     create_expression_summary_and_cell_counts_diffexp_cubes,
@@ -93,7 +92,13 @@ def run_pipeline(corpus_path: Optional[str] = None, skip_validation: bool = Fals
             snapshot_id=snapshot_id,
             is_snapshot_validation_successful=is_valid,
         )
-        stats = _get_stats(corpus_path)
+        # get dataset count
+        with tiledb.open(os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)) as cc_cube:
+            cell_counts_df = cc_cube.df[:]
+        dataset_count = len(cell_counts_df["dataset_id"].unique())
+        cell_count = int(cell_counts_df["n_cells"].sum())
+
+        stats = {"dataset_count": dataset_count, "cell_count": cell_count}
 
         if is_valid:
             logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot location: {cube_data_s3_path}")
@@ -131,17 +136,3 @@ def main():
 if __name__ == "__main__":
     main()
     sys.exit()
-
-
-def _get_stats(corpus_path: str) -> dict[str, int]:
-    pipeline_state = load_pipeline_state(corpus_path)
-    if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
-        raise PipelineStepMissing("cell_counts")
-
-    # get dataset count
-    with tiledb.open(os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)) as cc_cube:
-        cell_counts_df = cc_cube.df[:]
-    dataset_count = len(cell_counts_df["dataset_id"].unique())
-    cell_count = int(cell_counts_df["n_cells"].sum())
-
-    return {"dataset_count": dataset_count, "cell_count": cell_count}

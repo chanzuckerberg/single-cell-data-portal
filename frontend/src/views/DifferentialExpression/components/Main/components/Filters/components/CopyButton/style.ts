@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
-import { ButtonIcon } from "@czi-sds/components";
+import { Button } from "@czi-sds/components";
 
-export const StyledButtonIcon = styled(ButtonIcon)`
+export const StyledButtonIcon = styled(Button)`
   padding-top: 8px;
 `;

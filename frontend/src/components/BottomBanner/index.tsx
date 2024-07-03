@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Script from "next/script";
 import { memo } from "react";
 import {
@@ -12,7 +11,7 @@ import {
   FooterContentWrapper,
   StyledCloseButtonIcon,
 } from "./style";
-import cellxgeneLogoSvg from "src/common/images/CellxGene.svg";
+import CellxgeneLogoSvg from "src/common/images/CellxGene.svg";
 import Head from "next/head";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "src/views/WheresMyGeneV2/components/GeneSearchBar/components/SaveExport";
 import { noop } from "src/common/constants/utils";
@@ -132,9 +131,9 @@ export default memo(function BottomBanner({
                 isCloseButtonShown={false}
               >
                 <HeaderContainer>
-                  <Image alt="CellxGene Logo" src={cellxgeneLogoSvg} />
+                  <CellxgeneLogoSvg />
                   <StyledCloseButtonIcon
-                    sdsIcon="xMark"
+                    icon="XMark"
                     sdsSize="small"
                     onClick={toggleNewsletterSignupModal}
                     hideCloseButton={isDirectLink}

@@ -18,8 +18,12 @@ def ontology_term_label(ontology_term_id: str) -> Optional[str]:
     Returns the label for an ontology term, given its id. This excludes gene ontology term, which are handled
     separately by gene_gene_term_label(). Return None if ontology term id is invalid.
     """
-
-    return ontology_parser.get_term_label(ontology_term_id)
+    try:
+        return ontology_parser.get_term_label(ontology_term_id)
+    # If the ontology term id is invalid, return the ontology term id itself
+    # This is useful for cases like publication citation.
+    except ValueError:
+        return ontology_term_id
 
 
 def gene_term_label(gene_ontology_term_id: str) -> Optional[str]:

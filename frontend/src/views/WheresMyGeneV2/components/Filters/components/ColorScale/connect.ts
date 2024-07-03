@@ -8,7 +8,8 @@ import { COLOR_SCALE_OPTIONS } from "./constants";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { selectSortBy } from "src/views/WheresMyGeneV2/common/store/actions";
-import { Props } from "./types";
+import { ColorScaleOptionType, Props } from "./types";
+import { AutocompleteValue } from "@mui/base";
 
 export const useConnect = ({
   setIsScaled,
@@ -26,7 +27,8 @@ export const useConnect = ({
   }, [sortBy]);
 
   function colorScaleOnChange(
-    value: { id?: SORT_BY; name: string } | null
+    _: React.SyntheticEvent, // event
+    value: AutocompleteValue<ColorScaleOptionType, false, false, false>
   ): void {
     if (!dispatch || !value || colorScaledOption.name === value.name) return;
     track(EVENTS.WMG_OPTION_SELECT_COLOR_SCALE, {

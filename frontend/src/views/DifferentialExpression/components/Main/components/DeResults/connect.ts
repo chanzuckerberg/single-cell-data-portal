@@ -16,7 +16,11 @@ export const useConnect = ({ setIsLoading }: Props) => {
 
   const [isSourceDatasetSidebarOpen, setIsSourceDatasetSidebarOpen] =
     useState(false);
-  const { data, isLoading: isLoadingRaw } = useDifferentialExpression();
+  const {
+    data,
+    isLoading: isLoadingRaw,
+    errorMessage: errorMessageRaw,
+  } = useDifferentialExpression();
   const {
     differentialExpressionResults: rawDifferentialExpressionResults,
     nOverlap,
@@ -45,6 +49,8 @@ export const useConnect = ({ setIsLoading }: Props) => {
     );
     setDifferentialExpressionResults(formattedResults);
   }, [rawDifferentialExpressionResults, isLoadingRaw, organismId]);
+
+  const errorMessage = isLoadingRaw ? null : errorMessageRaw || null;
 
   const showEmpty = !queryGroups;
 
@@ -154,5 +160,6 @@ export const useConnect = ({ setIsLoading }: Props) => {
     downloadCSV,
     showEmpty,
     nOverlap,
+    errorMessage,
   };
 };

@@ -9,7 +9,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { ButtonIcon, Tooltip } from "@czi-sds/components";
+import { Tooltip } from "@czi-sds/components";
 import {
   TableTitle,
   TableTitleWrapper,
@@ -37,6 +37,7 @@ import {
   StyledLink,
   ReferenceTooltipWrapper,
   StyledImageWrapper,
+  StyledButton,
 } from "./style";
 import Table from "../common/Table";
 import { Pagination } from "@mui/material";
@@ -45,7 +46,7 @@ import {
   useComputationalMarkerGenesTableRowsAndFilters,
   useSelectedOrganForTooltipCopy,
 } from "./hooks/computational_markers";
-import treeDendrogram from "src/common/images/TreeDendogram.svg";
+import TreeDendrogram from "src/common/images/TreeDendogram.svg";
 import {
   CanonicalMarkerGeneTableData,
   useCanonicalMarkerGenesTableRowsAndFilters,
@@ -67,7 +68,6 @@ import {
   MARKER_GENES_TREE_ICON_BUTTON_TEST_ID,
 } from "src/views/CellGuide/components/CellGuideCard/components/MarkerGeneTables/constants";
 import { FMG_GENE_STRENGTH_THRESHOLD } from "src/views/WheresMyGeneV2/common/constants";
-import Image from "next/image";
 import { CellType } from "../../../common/OntologyDagView/common/types";
 import { CENSUS_LINK } from "src/components/Header/components/Nav/constants";
 import {
@@ -357,12 +357,13 @@ const MarkerGeneTables = ({
     ) => (
       <NoWrapWrapper>
         {row.symbol}{" "}
-        <ButtonIcon
+        <StyledButton
           aria-label={`display gene info for ${row.symbol}`}
           className="hover-button"
-          sdsIcon="infoCircle"
+          icon="InfoCircle"
           sdsSize="small"
           sdsType="secondary"
+          sdsStyle="icon"
           onClick={() => setGeneInfoGene(row.symbol.toUpperCase())}
         />
         {showEye && (
@@ -380,12 +381,8 @@ const MarkerGeneTables = ({
               selectGene(row.symbol);
             }}
           >
-            <Image
+            <TreeDendrogram
               data-testid={MARKER_GENES_TREE_ICON_BUTTON_TEST_ID(row.symbol)}
-              src={treeDendrogram}
-              alt={`activate marker gene mode for ${row.symbol}`}
-              width={12}
-              height={12}
             />
           </StyledImageWrapper>
         )}

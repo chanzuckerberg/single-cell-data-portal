@@ -28,7 +28,7 @@ function GeneInfoSideBar({
   // Component for when gene info cannot be found
   const GeneInfoNoData = (
     <>
-      <StyledCallout autoDismiss={false} intent={"error"}>
+      <StyledCallout autoDismiss={false} intent={"negative"}>
         Sorry, this gene could not be found on NCBI.
       </StyledCallout>
 
@@ -69,7 +69,7 @@ function GeneInfoResult({
 
         {show_warning_banner && (
           <>
-            <StyledCallout autoDismiss={false} intent={"warning"}>
+            <StyledCallout autoDismiss={false} intent={"notice"}>
               NCBI didn&apos;t return an exact match for this gene.
             </StyledCallout>
           </>

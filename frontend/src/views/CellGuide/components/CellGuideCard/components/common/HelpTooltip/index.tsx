@@ -1,13 +1,8 @@
 import { Tooltip } from "@czi-sds/components";
 
-import questionMarkIcon from "src/common/images/question-mark-icon.svg";
-import {
-  TooltipButton,
-  StyledTooltip,
-  StyledIconImage,
-  ExtraContentWrapper,
-} from "./style";
+import { TooltipButton, StyledTooltip, ExtraContentWrapper } from "./style";
 import { Dispatch, ReactElement, SetStateAction } from "react";
+import { StyledQuestionMarkIcon } from "src/common/style";
 
 const getSlotProps = (dark?: boolean) => {
   return {
@@ -70,8 +65,7 @@ const HelpTooltip = ({
         isAllCaps={false}
       >
         <ExtraContentWrapper>
-          <StyledIconImage
-            alt="question mark"
+          <StyledQuestionMarkIcon
             onClick={() => {
               if (skinnyMode && setTooltipContent) {
                 setTooltipContent({
@@ -80,7 +74,6 @@ const HelpTooltip = ({
                 });
               }
             }}
-            src={questionMarkIcon}
           />
           {extraContent}
         </ExtraContentWrapper>

@@ -29,7 +29,10 @@ import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { Title } from "src/components/common/Grid/components/Title";
 import CreateCollection from "src/components/CreateCollectionModal";
 import SideBar from "src/components/common/SideBar";
-import { CollectionsView as View } from "./style";
+import {
+  CollectionsSideBarPositioner as SideBarPositioner,
+  CollectionsView as View,
+} from "./style";
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
 import CountCell from "src/components/common/Grid/components/CountCell";
 import {
@@ -122,7 +125,7 @@ export default function Collections(): JSX.Element {
       // Viewable in collections mode, hidden in curator mode.
       {
         Cell: ({ row }: RowPropsValue<CollectionRow>) => {
-          return <div>{row.values.summaryCitation}</div>;
+          return <div>{row.values.summary_citation}</div>;
         },
         Header: "Publication",
         accessor: COLLECTION_SUMMARY_CITATION,
@@ -219,7 +222,7 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: "summaryCitation",
+        accessor: "summary_citation",
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.PUBLICATION,
       },
@@ -357,6 +360,7 @@ export default function Collections(): JSX.Element {
               label="Filters"
               isOpen={isSideBarOpen}
               onToggle={storeIsSideBarOpen}
+              SideBarPositionerComponent={SideBarPositioner}
             >
               <CategoryFilters
                 filters={partitionCategoryViews(categoryViews, mode)}

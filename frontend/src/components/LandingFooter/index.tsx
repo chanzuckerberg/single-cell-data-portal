@@ -2,7 +2,7 @@ import Image from "next/image";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
-import wordmark from "src/common/images/cellxgene-discover-wordmark.svg";
+import Wordmark from "src/common/images/cellxgene-discover-wordmark.svg";
 import CZILogo from "src/components/common/staticPages/czi-logo-white.png";
 import BottomBanner from "../BottomBanner";
 import styles from "./index.module.scss";
@@ -10,7 +10,7 @@ import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtabl
 import { useState } from "react";
 
 const LandingFooter = (): JSX.Element => {
-  const [isHubSpotReady, setIsHubSpotReady] = useState(false);
+  const [, setIsHubSpotReady] = useState(false);
 
   return (
     <>
@@ -22,15 +22,12 @@ const LandingFooter = (): JSX.Element => {
         // (thuang): The first instance of BottomBanner in the UI needs to call onHubSpotReady()
         onHubSpotReady={() => setIsHubSpotReady(true)}
       />
-      <BottomBanner
-        isHubSpotReady={isHubSpotReady}
-        airtableLink={GENE_EXPRESSION_BANNER_SURVEY_LINK}
-      />
+
       <footer className={styles.footer}>
         <div className={styles.footerTopContainer}>
           <div className={styles.footerLogo}>
             <a href={ROUTES.HOMEPAGE} target="_blank" rel="noopener">
-              <Image src={wordmark} alt="CZ CELLxGENE Discover" />
+              <Wordmark />
             </a>
           </div>
 

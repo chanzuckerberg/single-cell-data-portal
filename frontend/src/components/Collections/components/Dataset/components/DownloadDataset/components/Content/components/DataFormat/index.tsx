@@ -35,6 +35,7 @@ const DataFormat: FC<Props> = ({
       <RadioGroup
         name="dataFormat"
         onChange={handleChange}
+        row
         value={selectedFormat}
       >
         <InputRadio

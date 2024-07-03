@@ -67,7 +67,7 @@ class PublishRevisions(ProcessingLogic):
 
     def run(self):
         for collection_version in self.business_logic.get_collections(CollectionQueryFilter(is_published=False)):
-            if collection_version.is_unpublished_version():
+            if collection_version.is_unpublished_version() and collection_version.is_auto_version:
                 if collection_version.version_id.id in self.do_not_publish_list:
                     self.logger.info(
                         "Skipping collection version, it is in the do not publish list",
@@ -105,5 +105,7 @@ if __name__ == "__main__":
         S3Provider(),
         UriProvider(),
     )
-    do_not_publish_list = os.environ.get("DO_NOT_PUBLISH_LIST", None).split(",")
+    do_not_publish_list = os.environ.get("DO_NOT_PUBLISH_LIST", None)
+    if do_not_publish_list is not None:
+        do_not_publish_list = do_not_publish_list.split(",")
     PublishRevisions(business_logic, do_not_publish_list).run()

@@ -10,7 +10,9 @@ function CopyButton({ queryGroupKey, testId }: Props): JSX.Element {
   return (
     <StyledButtonIcon
       onClick={handleClick}
-      sdsIcon="copy"
+      icon="Copy"
+      sdsStyle="icon"
+      sdsType="secondary"
       sdsSize="small"
       disabled={disabled}
       data-testid={testId}

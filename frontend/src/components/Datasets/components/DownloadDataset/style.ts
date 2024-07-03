@@ -9,12 +9,8 @@ import {
   grey500,
   shadowL,
   spacesL,
-  spacesM,
   spacesS,
   spacesXl,
-  spacesXs,
-  textPrimary,
-  textSecondary,
 } from "src/common/theme";
 import Loader from "src/components/common/Grid/components/Loader";
 
@@ -53,19 +49,9 @@ export const Dialog = styled(SDSDialog)`
         color: ${grey500};
       }
 
-      .MuiFormGroup-root {
-        flex-direction: row;
+      .MuiFormGroup-row {
         gap: ${spacesL}px;
-
-        .MuiFormControlLabel-root {
-          display: flex;
-          gap: ${spacesS}px;
-          margin: 0;
-        }
-
-        .MuiRadio-root {
-          padding: 0;
-        }
+        margin-bottom: -${spacesL}px; /* negative margin to account for SDS InputRadio FormControlLabel margin see https://github.com/chanzuckerberg/sci-components/blob/main/packages/components/src/core/InputRadio/style.ts#L85 */
       }
     }
   }
@@ -76,23 +62,8 @@ export const Dialog = styled(SDSDialog)`
     padding-top: ${spacesL}px;
 
     .MuiButton-root {
-      ${fontBodyS}
-      font-weight: 500;
-      height: unset;
-      min-width: unset;
-
-      &.MuiButton-text {
-        color: ${textSecondary};
-
-        &:hover,
-        &:active {
-          color: ${textPrimary};
-        }
-      }
-
       &.MuiButton-containedPrimary {
         margin: 0;
-        padding: ${spacesXs}px ${spacesM}px;
       }
     }
   }

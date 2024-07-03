@@ -51,3 +51,29 @@ def portal_get_normalized_doi_url(doi_node: dict, errors: list) -> Optional[str]
             return None
         doi_url = f"https://doi.org/{parsed_doi}"
     return doi_url
+
+
+def clean_doi(doi: str) -> str:
+    """
+    Cleans the DOI string.
+
+    Parameters
+    ----------
+    doi : str
+        The DOI string to be cleaned.
+
+    Returns
+    -------
+    str
+        The cleaned DOI string.
+    """
+    doi = doi.strip()
+    if doi == "No DOI":
+        return ""
+
+    if doi != "" and doi[-1] == ".":
+        doi = doi[:-1]
+    if " " in doi:
+        doi = doi.split(" ")[1]  # this handles cases where the DOI string is "DOI: {doi}"
+    doi = doi.strip()
+    return doi

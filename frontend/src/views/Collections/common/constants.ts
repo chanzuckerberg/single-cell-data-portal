@@ -34,7 +34,7 @@ export const COLLECTION_REVISED_BY = "revisedBy";
 /**
  * Collection summary citation object key.
  */
-export const COLLECTION_SUMMARY_CITATION = "summaryCitation";
+export const COLLECTION_SUMMARY_CITATION = "summary_citation";
 
 /**
  * Collection status object key.
