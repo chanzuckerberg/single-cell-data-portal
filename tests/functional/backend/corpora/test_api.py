@@ -3,6 +3,7 @@ import os
 
 import pytest
 import requests
+from functional.backend.constants import VISIUM_DATASET_URI
 from functional.backend.utils import create_test_collection
 from requests import HTTPError
 
@@ -151,12 +152,10 @@ def test_delete_private_collection(session, api_url, curator_cookie, collection_
 
 
 @pytest.mark.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
-def test_dataset_upload_flow_with_visium_dataset(
-    session, curator_cookie, api_url, upload_and_wait, visium_dataset_uri, request, collection_data
-):
+def test_dataset_upload_flow_with_dataset(session, curator_cookie, api_url, upload_dataset, request, collection_data):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     collection_id = create_test_collection(headers, request, session, api_url, collection_data)
-    _verify_upload_and_delete_succeeded(collection_id, headers, visium_dataset_uri, session, api_url, upload_and_wait)
+    _verify_upload_and_delete_succeeded(collection_id, headers, VISIUM_DATASET_URI, session, api_url, upload_dataset)
 
 
 def _verify_upload_and_delete_succeeded(collection_id, headers, dataset_uri, session, api_url, upload_and_wait):
