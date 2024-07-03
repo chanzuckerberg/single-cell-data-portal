@@ -1,37 +1,14 @@
 import base64
 import json
 import time
-from typing import Callable, Optional
+from typing import Optional
 
 import requests
-from filelock import FileLock
 from requests import Session
 from requests.adapters import HTTPAdapter, Retry
 
 from backend.common.corpora_config import CorporaAuthConfig
 from tests.functional.backend.constants import AUDIENCE
-
-
-def distributed_singleton(tmp_path_factory, worker_id: str, func: Callable) -> dict:
-    """
-    This function wraps a pytest fixture so it is only instantiated once and shared across all workers in a distributed
-    test run.
-    """
-    if worker_id != "master":
-        # not executing with multiple workers, just produce the data and let
-        # pytest's fixture caching do its job
-        return func()
-    # get the temp directory shared by all workers
-    root_tmp_dir = tmp_path_factory.getbasetemp().parent
-
-    fn = root_tmp_dir.joinpath(func.__name__ + ".json")
-    with FileLock(str(fn) + ".lock"):
-        if fn.is_file():
-            data = json.loads(fn.read_text())
-        else:
-            data = func()
-            fn.write_text(json.dumps(data))
-    return data
 
 
 def get_auth_token(

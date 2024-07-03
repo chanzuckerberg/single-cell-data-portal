@@ -4,11 +4,10 @@ import pytest
 
 from backend.common.corpora_config import CorporaAuthConfig
 from tests.functional.backend.constants import API_URL
+from tests.functional.backend.distributed import distributed_singleton
 from tests.functional.backend.utils import (
-    distributed_singleton,
     get_auth_token,
     make_cookie,
-    make_dp_auth_header,
     make_proxy_auth_token,
     make_session,
     upload_and_wait,
@@ -83,12 +82,9 @@ def upload_dataset(session, api_url, curator_cookie, request):
     def _upload_dataset(collection_id, dropbox_url, existing_dataset_id=None, cleanup=True):
         result = upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id)
         dataset_id = result["dataset_id"]
+        headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
         if cleanup:
-            request.addfinalizer(
-                lambda: session.delete(
-                    f"{api_url}/dp/v1/datasets/{dataset_id}", headers=make_dp_auth_header(curator_cookie)
-                )
-            )
+            request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/datasets/{dataset_id}", headers=headers))
         if result["errors"]:
             raise pytest.fail(str(result["errors"]))
         return dataset_id
