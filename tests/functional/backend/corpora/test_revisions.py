@@ -13,11 +13,19 @@ from tests.functional.backend.utils import assertStatusCode, create_explorer_url
 
 @pytest.mark.skipIf(os.environ["DEPLOYMENT_STAGE"] in ["prod"], "Do not make test collections public in prod")
 def test_revision_flow(
-    curator_cookie, dataset_uri, session, api_url, upload_and_wait, curation_api_access_token, deployment_stage
+    curator_cookie,
+    dataset_uri,
+    session,
+    api_url,
+    upload_and_wait,
+    curation_api_access_token,
+    deployment_stage,
+    request,
+    collection_data,
 ):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
 
-    collection_id = create_test_collection(headers)
+    collection_id = create_test_collection(headers, request, session, api_url, collection_data)
 
     dataset_1_dropbox_url = dataset_2_dropbox_url = dataset_uri
 
