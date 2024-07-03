@@ -2,12 +2,17 @@ import os
 
 import pytest
 import requests
-from functional.backend.utils import make_dp_auth_header, upload_and_wait
 from requests.adapters import HTTPAdapter, Retry
 
 from backend.common.corpora_config import CorporaAuthConfig
 from tests.functional.backend.constants import API_URL
-from tests.functional.backend.utils import distributed_singleton, get_auth_token, make_cookie
+from tests.functional.backend.utils import (
+    distributed_singleton,
+    get_auth_token,
+    make_cookie,
+    make_dp_auth_header,
+    upload_and_wait,
+)
 
 
 @pytest.fixture(scope="session")
