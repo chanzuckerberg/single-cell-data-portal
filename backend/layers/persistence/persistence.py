@@ -370,16 +370,22 @@ class DatabaseProvider(DatabaseProviderInterface):
         Retrieves all versions for a specific collections, without filtering
         """
         with self._manage_session() as session:
-            version_rows = session.query(CollectionVersionTable).filter_by(collection_id=collection_id.id).all()
+            collection_version_rows = (
+                session.query(CollectionVersionTable).filter_by(collection_id=collection_id.id).all()
+            )
             canonical_collection = self.get_canonical_collection(collection_id)
             versions = []
-            dataset_version_ids = [DatasetVersionId(str(_id)) for vr in version_rows for _id in vr.datasets]
+            dataset_version_ids = [
+                DatasetVersionId(str(_id)) for cvr in collection_version_rows for _id in cvr.datasets
+            ]
             datasets = {
                 str(dv.version_id): dv
                 for dv in self.get_dataset_versions_by_id(dataset_version_ids, get_tombstoned=get_tombstoned)
             }
-            for row in version_rows:
-                ds = [datasets[str(id)] for id in row.datasets]
+            for row in collection_version_rows:
+                # filter out datasets that were not returned by get_dataset_versions_by_id
+                actual_datasets = filter(lambda dv_id: str(dv_id) in datasets, row.datasets)
+                ds = [datasets[str(dv_id)] for dv_id in actual_datasets]
                 version = self._row_to_collection_version_with_datasets(row, canonical_collection, ds)
                 versions.append(version)
             return versions
