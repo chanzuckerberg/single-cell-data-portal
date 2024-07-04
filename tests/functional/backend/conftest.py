@@ -46,12 +46,12 @@ def session(proxy_auth_token):
 
 @pytest.fixture(scope="session")
 def functest_auth_token(config, session, deployment_stage, tmp_path_factory, worker_id):
-    def _auth_token() -> dict[str, str]:
+    def _functest_auth_token() -> dict[str, str]:
         username = config.functest_account_username
         password = config.functest_account_password
         return get_auth_token(username, password, session, config, deployment_stage)
 
-    return distributed_singleton(tmp_path_factory, worker_id, _auth_token)
+    return distributed_singleton(tmp_path_factory, worker_id, _functest_auth_token)
 
 
 @pytest.fixture(scope="session")

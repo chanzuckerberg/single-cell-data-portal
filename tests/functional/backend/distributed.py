@@ -9,7 +9,7 @@ def distributed_singleton(tmp_path_factory, worker_id: str, func: Callable) -> d
     This function wraps a pytest fixture so it is only instantiated once and shared across all workers in a distributed
     test run.
     """
-    if worker_id != "master":
+    if worker_id == "master":
         # not executing with multiple workers, just produce the data and let
         # pytest's fixture caching do its job
         return func()
