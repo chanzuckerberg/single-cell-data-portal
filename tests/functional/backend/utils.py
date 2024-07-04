@@ -119,17 +119,14 @@ def upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url
     return {"dataset_id": dataset_id, "errors": errors}
 
 
-http_adapter = HTTPAdapter(
-    max_retries=Retry(
+def make_session(proxy_auth_token):
+    retry_strategy = Retry(
         total=7,
         backoff_factor=2,
         status_forcelist=[500, 502, 503, 504],
         allowed_methods={"DELETE", "GET", "HEAD", "PUT", "POST"},
     )
-)
-
-
-def make_session(proxy_auth_token):
+    http_adapter = HTTPAdapter(max_retries=retry_strategy)
     session = requests.Session()
     session.mount("https://", http_adapter)
     session.headers.update(**proxy_auth_token)
