@@ -151,7 +151,9 @@ def test_delete_private_collection(session, api_url, curator_cookie, collection_
 
 
 @pytest.mark.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
-def test_dataset_upload_flow_with_dataset(session, curator_cookie, api_url, upload_dataset, request, collection_data):
+def test_dataset_upload_flow_with_visium_dataset(
+    session, curator_cookie, api_url, upload_dataset, request, collection_data
+):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     collection_id = create_test_collection(headers, request, session, api_url, collection_data)
     _verify_upload_and_delete_succeeded(collection_id, headers, VISIUM_DATASET_URI, session, api_url, upload_dataset)
