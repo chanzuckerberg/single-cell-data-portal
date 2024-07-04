@@ -1,6 +1,6 @@
 import json
 import os
-from collections import Counter
+import unittest
 from urllib.parse import quote
 
 import pytest
@@ -67,7 +67,7 @@ def test_revision_flow(
     meta_payload_res.raise_for_status()
     meta_payload = meta_payload_res.json()
 
-    assert meta_payload_before_revision != meta_payload
+    assert meta_payload_before_revision == meta_payload
 
     # Upload a new dataset
     upload_dataset(
@@ -78,9 +78,9 @@ def test_revision_flow(
 
     # Check that the published dataset is still the same
     meta_payload_after_revision = session.get(f"{api_url}/dp/v1/datasets/meta?url={explorer_url}").json()
-    assert meta_payload_before_revision != meta_payload_after_revision
+    assert meta_payload_before_revision == meta_payload_after_revision
     schema_after_revision = get_schema_with_retries(dataset_id, api_url, session).json()
-    assert schema_before_revision != schema_after_revision
+    assert schema_before_revision == schema_after_revision
 
     # Publishing a revised dataset replaces the original dataset
     body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
@@ -111,7 +111,7 @@ def test_revision_flow(
     # Adding a dataset to a revision does not impact public datasets in that collection
     # Get datasets for the collection (after uploading)
     public_datasets_after = session.get(f"{api_url}/dp/v1/collections/{canonical_collection_id}").json()["datasets"]
-    assert Counter(list(public_datasets_before)) == Counter(list(public_datasets_after))
+    unittest.TestCase().assertCountEqual(public_datasets_before, public_datasets_after)
 
     # Publish the revision
     body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
