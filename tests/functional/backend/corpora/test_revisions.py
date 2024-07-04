@@ -52,7 +52,7 @@ def test_revision_flow(
     meta_payload_before_revision = meta_payload_before_revision_res.json()
 
     # Endpoint is eventually consistent
-    schema_before_revision = get_schema_with_retries(dataset_id).json()
+    schema_before_revision = get_schema_with_retries(dataset_id, api_url, session).json()
 
     # Start a revision
     res = session.post(f"{api_url}/dp/v1/collections/{canonical_collection_id}", headers=headers)
@@ -79,7 +79,7 @@ def test_revision_flow(
     # Check that the published dataset is still the same
     meta_payload_after_revision = session.get(f"{api_url}/dp/v1/datasets/meta?url={explorer_url}").json()
     assert meta_payload_before_revision != meta_payload_after_revision
-    schema_after_revision = get_schema_with_retries(dataset_id).json()
+    schema_after_revision = get_schema_with_retries(dataset_id, api_url, session).json()
     assert schema_before_revision != schema_after_revision
 
     # Publishing a revised dataset replaces the original dataset
@@ -157,7 +157,7 @@ def test_revision_flow(
     assertStatusCode(200, res)
 
     # Endpoint is eventually consistent
-    res = get_schema_with_retries(revision_deleted_dataset_id)
+    res = get_schema_with_retries(revision_deleted_dataset_id, api_url, session)
     assertStatusCode(200, res)
 
     # Publishing a revision that deletes a dataset removes it from the data portal
