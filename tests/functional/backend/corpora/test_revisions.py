@@ -176,13 +176,13 @@ def test_revision_flow(
 
 
 def get_schema_with_retries(dataset_id, api_url, session, desired_http_status_code=requests.codes.ok):
-    @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(50))
     def get_s3_uri():
         s3_uri_res = session.get(f"{api_url}/cellxgene/e/{dataset_id}.cxg/api/v0.3/s3_uri", allow_redirects=False)
         assert s3_uri_res.status_code == desired_http_status_code
         return s3_uri_res
 
-    @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(50))
     def get_schema(s3_uri_response_object):
         # parse s3_uri_response_object content
         s3_path = s3_uri_response_object.content.decode("utf-8").strip().strip('"')
