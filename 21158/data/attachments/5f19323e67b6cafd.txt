@@ -1,0 +1,8 @@
+INFO     root:actions.py:43 {'is_published': True, 'curator_name': 'Not A Curator'}
+INFO     root:timer.py:89 {'type': 'METRIC', 'details': {'group': 'reshape_for_curation_api', 'records': 0, 'total_time': 0, 'max_time': 0, 'min_time': 0, 'median_time': 0, '_95th_percentile': 0, '_99th_percentile': 0, 'unit': 'seconds'}}
+INFO     root:actions.py:43 {'is_published': True, 'curator_name': 'John Smith'}
+INFO     root:timer.py:41 {'type': 'METRIC', 'details': {'description': 'a2a2c4af-162b-4df9-b1ce-2965be820ef6', 'time': 0.0014491081237792969, 'unit': 'seconds', 'group': 'reshape_for_curation_api'}}
+INFO     root:timer.py:89 {'type': 'METRIC', 'details': {'group': 'reshape_for_curation_api', 'records': 1, 'total_time': 0.0014491081237792969, 'max_time': 0.0014491081237792969, 'min_time': 0.0014491081237792969, 'median_time': 0.0014491081237792969, '_95th_percentile': 0.0014491081237792969, '_99th_percentile': 0.0014491081237792969, 'unit': 'seconds'}}
+INFO     root:actions.py:43 {'is_published': False, 'curator_name': 'John Smith'}
+INFO     root:timer.py:41 {'type': 'METRIC', 'details': {'description': '1598f69c-9f6c-4bb6-93af-9ab8bff688bf', 'time': 3.600120544433594e-05, 'unit': 'seconds', 'group': 'reshape_for_curation_api'}}
+INFO     root:timer.py:89 {'type': 'METRIC', 'details': {'group': 'reshape_for_curation_api', 'records': 1, 'total_time': 3.600120544433594e-05, 'max_time': 3.600120544433594e-05, 'min_time': 3.600120544433594e-05, 'median_time': 3.600120544433594e-05, '_95th_percentile': 3.600120544433594e-05, '_99th_percentile': 3.600120544433594e-05, 'unit': 'seconds'}}
