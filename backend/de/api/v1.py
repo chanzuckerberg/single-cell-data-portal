@@ -36,6 +36,12 @@ def filters():
 
     with ServerTiming.time("calculate filters and build response"):
         q = CensusCubeQuery(snapshot, cube_query_params=None)
+
+        if criteria.cell_type_ontology_term_ids:
+            criteria.cell_type_ontology_term_ids = list(
+                set(sum([descendants(i) for i in criteria.cell_type_ontology_term_ids], []))
+            )
+
         response_filter_dims_values = build_filter_dims_values(criteria, snapshot, q)
         n_cells = _get_cell_counts_for_query(q, criteria)
 
@@ -311,10 +317,6 @@ def run_differential_expression(
 
 
 def _get_cell_counts_for_query(q: CensusCubeQuery, criteria: BaseQueryCriteria) -> pd.DataFrame:
-    if criteria.cell_type_ontology_term_ids:
-        criteria.cell_type_ontology_term_ids = list(
-            set(sum([descendants(i) for i in criteria.cell_type_ontology_term_ids], []))
-        )
     cell_counts = q.cell_counts_diffexp_df(criteria)
     return int(cell_counts["n_total_cells"].sum())
 
