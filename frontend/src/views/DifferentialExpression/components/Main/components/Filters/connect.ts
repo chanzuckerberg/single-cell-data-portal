@@ -5,13 +5,14 @@ import { DispatchContext } from "src/views/DifferentialExpression/common/store";
 import {
   EMPTY_FILTERS,
   QueryGroup,
+  FilterOption,
 } from "src/views/DifferentialExpression/common/store/reducer";
 import {
   selectQueryGroup1Filters,
   selectQueryGroup2Filters,
 } from "src/views/DifferentialExpression/common/store/actions";
 
-import { FilterOption, Props } from "./types";
+import { Props } from "./types";
 import useProcessedQueryGroupFilterDimensions from "../common/query_group_filter_dimensions";
 
 import { QUERY_GROUP_KEYS_TO_FILTER_EVENT_MAP } from "./constants";

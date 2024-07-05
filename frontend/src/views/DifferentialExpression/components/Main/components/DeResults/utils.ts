@@ -1,6 +1,7 @@
 const parseExpressions = (expression: string) => {
   const expressions = expression
     .split(",")
+    .map((expr) => expr.replace(/\s+/g, ""))
     .map((expr) => {
       // This regex matches an expression with an optional comparison operator
       // (<, <=, >, >=) followed by an optional absolute value indicator (|),

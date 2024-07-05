@@ -27,11 +27,13 @@ export default memo(function Filters({
       filterDropdownComponent: (
         <FilterDropdown
           key={`${queryGroupKey}-filter-dropdown`}
+          queryGroupKey={queryGroupKey}
           label={QUERY_GROUP_LABELS[index]}
           options={availableFilters[filterDimensionKey]}
           allAvailableOptions={allAvailableFilters[filterDimensionKey]}
           selectedOptionIds={queryGroup[queryGroupKey]}
           handleChange={handleFilterChange(queryGroupKey)}
+          isQueryGroup1={isQueryGroup1}
         />
       ),
       copyButtonComponent: isQueryGroup1 ? (
