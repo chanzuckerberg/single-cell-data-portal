@@ -1,5 +1,11 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { TooltipProps } from "@czi-sds/components";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { Icon, TooltipProps } from "@czi-sds/components";
 import {
   CellGuideCardDescription,
   ChatGptTooltipSubtext,
@@ -18,6 +24,7 @@ import {
   StyledTag,
   ReferencesWrapper,
   ValidatedInlineWrapper,
+  StyledLinkLabel,
 } from "./style";
 import { Label } from "src/components/Synonyms/style";
 
@@ -25,6 +32,7 @@ import {
   useGptDescription,
   useCellTypeMetadata,
   useValidatedDescription,
+  ORGANISM_NAME_TO_TAXON_ID_MAPPING,
 } from "src/common/queries/cellGuide";
 import ValidatedIcon from "src/common/images/validated.svg";
 import Link from "../common/Link";
@@ -42,6 +50,7 @@ import {
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 import { useIsComponentPastBreakpointHeight } from "../common/hooks/useIsComponentPastBreakpoint";
 import { StyledQuestionMarkIcon } from "src/common/style";
+import { ROUTES } from "src/common/constants/routes";
 
 // TODO(SVGR) ADD BACK HOVER BRIGHTNESS CHANGE
 
@@ -66,14 +75,20 @@ interface DescriptionProps {
   >;
   inSideBar?: boolean;
   synonyms?: string[];
+  selectedOrganism: string;
+  selectedOrganId: string;
+  nodeIdsWithNonzeroCells: string[];
 }
 export default function Description({
+  selectedOrganism,
+  selectedOrganId,
   cellTypeId,
   cellTypeName,
   skinnyMode,
   inSideBar,
   setTooltipContent,
   synonyms,
+  nodeIdsWithNonzeroCells,
 }: DescriptionProps): JSX.Element {
   const cellTypeIdRaw = cellTypeId.replace(":", "_");
   const [descriptionGpt, setDescriptionGpt] = useState<string>("");
@@ -89,6 +104,36 @@ export default function Description({
   const { isPastBreakpoint, containerRef } = useIsComponentPastBreakpointHeight(
     DESCRIPTION_BREAKPOINT_HEIGHT_PX
   );
+
+  const shareUrlForDE = useMemo(() => {
+    const organism = ORGANISM_NAME_TO_TAXON_ID_MAPPING[
+      selectedOrganism as keyof typeof ORGANISM_NAME_TO_TAXON_ID_MAPPING
+    ].replace("_", ":");
+    const tissueSuffix =
+      selectedOrganId == "" ? "" : `&tissues=${selectedOrganId}`;
+    const baseUrl = `${ROUTES.DE}?organism=${organism}&celltypes=`;
+    const maxUrlLength = 2000; // Maximum URL length to avoid 431 error
+    let cellTypesParam = nodeIdsWithNonzeroCells.join(",");
+    let fullUrl = `${baseUrl}${cellTypesParam}${tissueSuffix}`;
+
+    if (fullUrl.length > maxUrlLength) {
+      // If the full URL is too long, truncate the cell types parameter
+      const truncatedCellTypes = [];
+      for (let i = 0; i < nodeIdsWithNonzeroCells.length; i++) {
+        truncatedCellTypes.push(nodeIdsWithNonzeroCells[i]);
+        cellTypesParam = truncatedCellTypes.join(",");
+        fullUrl = `${baseUrl}${cellTypesParam}${tissueSuffix}`;
+        if (fullUrl.length > maxUrlLength) {
+          // Remove the last added cell type to stay within the limit
+          truncatedCellTypes.pop();
+          break;
+        }
+      }
+      cellTypesParam = truncatedCellTypes.join(",");
+    }
+
+    return `${ROUTES.DE}?organism=${organism}&celltypes=${cellTypesParam}${tissueSuffix}`;
+  }, [nodeIdsWithNonzeroCells, selectedOrganId, selectedOrganism]);
 
   useEffect(() => {
     if (isPastBreakpoint) {
@@ -322,6 +367,15 @@ export default function Description({
           })}
         </ReferencesWrapper>
       )}
+      <Link
+        url={shareUrlForDE}
+        label={
+          <StyledLinkLabel>
+            Open in Differential Expression
+            <Icon sdsIcon="ChevronRight" sdsType="static" sdsSize="xs" />
+          </StyledLinkLabel>
+        }
+      />
     </FlexContainer>
   );
   const validatedDescriptionComponent = (

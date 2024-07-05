@@ -104,6 +104,8 @@ export default function CellGuideCard({
     selectedOrganId,
     selectedOrganism,
     setSelectedOrganism,
+    nodeIdsWithNonzeroCells,
+    setNodeIdsWithNonzeroCells,
   } = useConnect();
 
   const tissueName = selectedOrgan?.name || "";
@@ -359,6 +361,9 @@ export default function CellGuideCard({
               NotFoundError: Failed to execute 'insertBefore' on 'Node'
             */}
             <Description
+              nodeIdsWithNonzeroCells={nodeIdsWithNonzeroCells}
+              selectedOrganism={selectedOrganism.name}
+              selectedOrganId={selectedOrganId}
               cellTypeId={cellTypeId}
               cellTypeName={cellTypeName}
               skinnyMode={skinnyMode}
@@ -385,6 +390,7 @@ export default function CellGuideCard({
                   selectedOrganism={selectedOrganism.name}
                   selectedGene={selectedGene}
                   geneDropdownComponent={geneDropdownComponent}
+                  setNodeIdsWithNonzeroCells={setNodeIdsWithNonzeroCells}
                 />
               </FullScreenProvider>
             </div>
