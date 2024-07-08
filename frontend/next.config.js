@@ -45,6 +45,7 @@ const defaultSecureHeaders = {
         configs.CELLGUIDE_DATA_URL,
         configs.CENSUS_MODELS_DATA_URL,
         CROSS_REF_URL,
+        "*",
       ],
       defaultSrc: ["'self'", HUBSPOT_FORMS_URL],
       fontSrc: ["'self'"],
