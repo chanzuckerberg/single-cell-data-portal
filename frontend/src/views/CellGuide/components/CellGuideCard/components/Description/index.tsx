@@ -356,6 +356,12 @@ export default function Description({
               <Icon sdsIcon="ChevronRight" sdsType="static" sdsSize="xs" />
             </StyledLinkLabel>
           }
+          onClick={() => {
+            track(EVENTS.CG_OPEN_IN_DE_CLICKED, {
+              cell_type: cellTypeId,
+              tissue: selectedOrganId,
+            });
+          }}
         />
       )}
     </FlexContainer>
