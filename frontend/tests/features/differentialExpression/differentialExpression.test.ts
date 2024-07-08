@@ -472,6 +472,44 @@ describe("Differential Expression", () => {
       // Ensure "Find Genes" button is disabled again
       await expect(findGenesButton).toBeDisabled();
     });
+
+    test("Differential Expression With Query Parameters", async ({ page }) => {
+      await goToPage(
+        `${TEST_URL}${ROUTES.DE}?organism=NCBITaxon:10090&celltypes=CL:0000622&tissues=UBERON:0001264`,
+        page
+      );
+      await waitForFiltersEndpoint(page);
+
+      // Ensure the organism dropdown is set to "Mus musculus"
+      const organismDropdown = page.getByTestId(
+        DIFFERENTIAL_EXPRESSION_ORGANISM_DROPDOWN
+      );
+      await expect(organismDropdown).toHaveText("Mus musculus");
+
+      const cellTypeFilterAutocompleteGroup1 = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
+        .getByTestId(
+          `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Cell Type`
+        );
+
+      const tissueFilterAutocompleteGroup1 = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
+        .getByTestId(
+          `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Tissue`
+        );
+
+      // Ensure the filters are applied correctly
+      await expect(
+        cellTypeFilterAutocompleteGroup1.getByTestId(
+          DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY
+        )
+      ).toHaveText("acinar cell");
+      await expect(
+        tissueFilterAutocompleteGroup1.getByTestId(
+          DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY
+        )
+      ).toHaveText("pancreas");
+    });
   });
 
   describe("Results", () => {
