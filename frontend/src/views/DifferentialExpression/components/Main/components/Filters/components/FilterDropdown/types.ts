@@ -1,4 +1,7 @@
-import { FilterOption } from "../../types";
+import {
+  FilterOption,
+  QueryGroup,
+} from "src/views/DifferentialExpression/common/store/reducer";
 
 export interface Props {
   label: string;
@@ -6,4 +9,6 @@ export interface Props {
   allAvailableOptions: FilterOption[];
   selectedOptionIds: string[];
   handleChange: (options: FilterOption[]) => void;
+  isQueryGroup1: boolean;
+  queryGroupKey: keyof QueryGroup;
 }

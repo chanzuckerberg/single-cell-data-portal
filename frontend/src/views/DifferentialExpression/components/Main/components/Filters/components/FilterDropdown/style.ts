@@ -8,7 +8,7 @@ import {
   gray500,
   primary400,
 } from "src/common/theme";
-import { FilterOption } from "../../types";
+import { FilterOption } from "src/views/DifferentialExpression/common/store/reducer";
 import { formControlClasses } from "@mui/material/FormControl";
 import { inputBaseClasses } from "@mui/material/InputBase";
 import { formLabelClasses } from "@mui/material/FormLabel";
