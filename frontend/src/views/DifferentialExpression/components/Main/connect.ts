@@ -123,12 +123,28 @@ export const useConnect = () => {
     const params = new URLSearchParams(search);
 
     const paramsToRemove: string[] = [];
-    const cellTypes = params.get("celltypes")?.split(",");
-    const diseases = params.get("diseases")?.split(",");
-    const ethnicities = params.get("ethnicities")?.split(",");
-    const publications = params.get("publications")?.split(",");
-    const sexes = params.get("sexes")?.split(",");
-    const tissues = params.get("tissues")?.split(",");
+
+    const getParamsAndRemove = (paramName: string) => {
+      const paramValues = params.get(paramName)?.split(",");
+      if (paramValues) {
+        paramsToRemove.push(paramName);
+      }
+      return paramValues;
+    };
+
+    const filterOptions = (
+      paramValues: string[],
+      filterTerms: { id: string; name: string }[]
+    ) => {
+      return filterTerms.filter((term) => paramValues.includes(term.id));
+    };
+
+    const cellTypes = getParamsAndRemove("celltypes");
+    const diseases = getParamsAndRemove("diseases");
+    const ethnicities = getParamsAndRemove("ethnicities");
+    const publications = getParamsAndRemove("publications");
+    const sexes = getParamsAndRemove("sexes");
+    const tissues = getParamsAndRemove("tissues");
     const organism: string | null = params.get("organism");
 
     if (organism) {
@@ -136,37 +152,36 @@ export const useConnect = () => {
     }
 
     if (tissues) {
-      paramsToRemove.push("tissues");
-      const tissuesFiltered = allFilterOptions.tissue_terms.filter((tissue) =>
-        tissues.includes(tissue.id)
+      const tissuesFiltered = filterOptions(
+        tissues,
+        allFilterOptions.tissue_terms
       );
       dispatch(selectQueryGroup1Filters("tissues", tissuesFiltered));
     }
 
     if (cellTypes) {
-      paramsToRemove.push("celltypes");
-      const cellTypesFiltered = allFilterOptions.cell_type_terms.filter(
-        (cellType) => cellTypes.includes(cellType.id)
+      const cellTypesFiltered = filterOptions(
+        cellTypes,
+        allFilterOptions.cell_type_terms
       );
       dispatch(selectQueryGroup1Filters("cellTypes", cellTypesFiltered));
     }
     if (diseases) {
-      paramsToRemove.push("diseases");
-      const diseasesFiltered = allFilterOptions.disease_terms.filter(
-        (disease) => diseases.includes(disease.id)
+      const diseasesFiltered = filterOptions(
+        diseases,
+        allFilterOptions.disease_terms
       );
       dispatch(selectQueryGroup1Filters("diseases", diseasesFiltered));
     }
     if (ethnicities) {
-      paramsToRemove.push("ethnicities");
-      const ethnicitiesFiltered =
-        allFilterOptions.self_reported_ethnicity_terms.filter((ethnicity) =>
-          ethnicities.includes(ethnicity.id)
-        );
+      const ethnicitiesFiltered = filterOptions(
+        ethnicities,
+        allFilterOptions.self_reported_ethnicity_terms
+      );
       dispatch(selectQueryGroup1Filters("ethnicities", ethnicitiesFiltered));
     }
+
     if (publications) {
-      paramsToRemove.push("publications");
       const publicationsFiltered = allFilterOptions.publication_citations
         .filter((publication) => publications.includes(publication))
         .map((publication) => ({
@@ -178,10 +193,7 @@ export const useConnect = () => {
       );
     }
     if (sexes) {
-      paramsToRemove.push("sexes");
-      const sexesFiltered = allFilterOptions.sex_terms.filter((sex) =>
-        sexes.includes(sex.id)
-      );
+      const sexesFiltered = filterOptions(sexes, allFilterOptions.sex_terms);
       dispatch(selectQueryGroup1Filters("sexes", sexesFiltered));
     }
     removeParams({
