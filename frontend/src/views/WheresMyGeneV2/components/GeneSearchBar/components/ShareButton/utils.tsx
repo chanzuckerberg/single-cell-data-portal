@@ -1,5 +1,6 @@
 import { NextRouter } from "next/router";
 import { Dispatch } from "react";
+import { ROUTES } from "src/common/constants/routes";
 import { TissueMetadataQueryResponse } from "src/common/queries/cellGuide";
 import { isSSR } from "src/common/utils/isSSR";
 import { removeParams } from "src/common/utils/removeParams";
@@ -62,6 +63,37 @@ export const generateAndCopyShareUrl = ({
   }
 
   return urlString;
+};
+
+export const generateDifferentialExpressionUrl = ({
+  filters,
+  organism,
+  tissue,
+  cellType,
+}: {
+  filters: State["selectedFilters"];
+  organism: State["selectedOrganismId"];
+  tissue: string;
+  cellType: string;
+}) => {
+  // Create a URL that contains the selected filters, cell type, and tissue as params in the URL
+  // This URL can be shared with others to reproduce the same view
+  const url = new URL(ROUTES.DE, window.location.origin);
+
+  // human is empty default
+  if (organism && organism !== HUMAN_ORGANISM_ID) {
+    url.searchParams.set("organism", organism);
+  }
+
+  Object.entries(stripEmptyFilters(filters)).forEach(([key, value]) => {
+    if (["diseases", "ethnicities", "publications", "sexes"].includes(key)) {
+      url.searchParams.set(key, value.join(","));
+    }
+  });
+
+  url.searchParams.set("celltypes", cellType);
+  url.searchParams.set("tissues", tissue);
+  return String(url);
 };
 
 const stripEmptyFilters = (

@@ -32,6 +32,7 @@ export const useConnect = ({ setIsLoading }: Props) => {
     organismId,
     submittedQueryGroups: queryGroups,
     submittedQueryGroupsWithNames: queryGroupsWithNames,
+    excludeOverlappingCells,
   } = useContext(StateContext);
 
   useEffect(() => {
@@ -136,12 +137,16 @@ export const useConnect = ({ setIsLoading }: Props) => {
     link.click();
     document.body.removeChild(link);
 
-    track(EVENTS.DE_DOWNLOAD_CLICKED, craftPayloadWithQueryGroups(queryGroups));
+    track(
+      EVENTS.DE_DOWNLOAD_CLICKED,
+      craftPayloadWithQueryGroups(queryGroups, excludeOverlappingCells)
+    );
   }, [
     sortedAndFilteredResults,
     queryGroups,
     queryGroupsWithNames,
     isLoadingRaw,
+    excludeOverlappingCells,
   ]);
 
   return {
