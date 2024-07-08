@@ -90,7 +90,6 @@ interface TreeProps {
   tissueName: string;
   setCellInfoCellType?: (props: CellType | null) => void;
   geneDropdownComponent?: React.ReactNode;
-  setNodeIdsWithNonzeroCells?: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 export default function OntologyDagView({
