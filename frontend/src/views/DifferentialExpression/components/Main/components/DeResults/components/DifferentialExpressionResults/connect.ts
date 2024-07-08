@@ -27,7 +27,11 @@ export const useConnect = ({
   nCellsOverlap: Props["nCellsOverlap"];
   sortDirection: Props["sortDirection"];
 }) => {
-  const { excludeOverlappingCells } = useContext(StateContext);
+  const {
+    excludeOverlappingCells,
+    selectedOptionsGroup1,
+    selectedOptionsGroup2,
+  } = useContext(StateContext);
   const [page, setPage] = useState(1);
 
   const { n_cells: nCellsGroup1 } = useProcessedQueryGroupFilterDimensions(
@@ -119,5 +123,7 @@ export const useConnect = ({
       datasets2.length !== 1 ? "s" : ""
     }`,
     showOverlappingCellsCallout: excludeOverlappingCells === "retainBoth",
+    selectedOptionsGroup1,
+    selectedOptionsGroup2,
   };
 };
