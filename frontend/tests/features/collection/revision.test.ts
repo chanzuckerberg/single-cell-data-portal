@@ -1,7 +1,10 @@
 import { expect, Locator, Page, test } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
-import { DATASET_EDIT_FORM, DATASET_EDIT_SAVE } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/constants";
+import {
+  DATASET_EDIT_FORM,
+  DATASET_EDIT_SAVE,
+} from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/EditDataset/constants";
 import { DROPDOWN_EDIT_DATASET } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/components/Menu/constants";
 import { DATASET_MORE_BUTTON } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/constants";
 import { DATASET_TITLE } from "src/components/Datasets/components/Grid/components/DatasetNameCell/constants";
@@ -225,13 +228,15 @@ describe("Collection Revision @loggedIn", () => {
   describe("edit dataset", () => {
     test("allows rename dataset", async ({ page }) => {
       // Create and navigate to revision.
-      const testId = buildCollectionRowLocator(COLLECTION_ROW_WRITE_PUBLISHED_ID);
+      const testId = buildCollectionRowLocator(
+        COLLECTION_ROW_WRITE_PUBLISHED_ID
+      );
       await startRevision(page, testId);
 
       // Get first dataset row in collection.
       const datasetRows = await locateDatasets(page);
       expect(datasetRows.length).toBeGreaterThanOrEqual(1);
-      const datasetRow = datasetRows[0];      
+      const datasetRow = datasetRows[0];
 
       // Show the dataset more menu.
       const datasetMoreButton = datasetRow.getByTestId(DATASET_MORE_BUTTON);
@@ -245,7 +250,7 @@ describe("Collection Revision @loggedIn", () => {
 
       // Confirm modal is visible.
       await page.waitForSelector(getTestID(DATASET_EDIT_FORM));
-      
+
       // Confirm input is visible and displays current dataset name.
       const datasetName = await getInnerText(
         `css=[data-testid^="${DATASET_TITLE}"]`,
@@ -275,7 +280,7 @@ describe("Collection Revision @loggedIn", () => {
       // Tear down.
       await deleteRevision(page);
     });
-  });  
+  });
 
   describe("reorder datasets", () => {
     const MIN_DATASET_COUNT = 3;
