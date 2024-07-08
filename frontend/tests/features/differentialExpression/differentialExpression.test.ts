@@ -15,6 +15,7 @@ import {
   DIFFERENTIAL_EXPRESSION_FILTER_TAG_GRAY,
   DIFFERENTIAL_EXPRESSION_INSTRUCTIONS_SIDEBAR,
   DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON,
+  DIFFERENTIAL_EXPRESSION_CLEAR_ALL_BUTTON,
   DIFFERENTIAL_EXPRESSION_COPY_FILTERS_BUTTON_PREFIX,
   DIFFERENTIAL_EXPRESSION_RESULTS_DOWNLOAD_BUTTON,
   DIFFERENTIAL_EXPRESSION_SOURCE_DATA_BUTTON,
@@ -31,6 +32,7 @@ import {
   DIFFERENTIAL_EXPRESSION_FILTERS_LOADING_SPINNER,
   DIFFERENTIAL_EXPRESSION_SORT_DIRECTION,
   DIFFERENTIAL_EXPRESSION_SOURCE_DATA_SIDEBAR,
+  DIFFERENTIAL_EXPRESSION_OVERLAP_BEHAVIOR,
 } from "src/views/DifferentialExpression/common/constants";
 
 const { describe } = test;
@@ -371,6 +373,59 @@ describe("Differential Expression", () => {
       expect(initialCellCountGroup1).not.toBe(updatedCellCountGroup1);
     });
 
+    test("Clear all button clears query groups", async ({ page }) => {
+      // Populate "lung" in cell group 1 filter tissue
+      const tissueFilterAutocompleteGroup1 = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
+        .getByTestId(
+          `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Tissue`
+        );
+      await clickOnAutocompleteDropdownItem(
+        tissueFilterAutocompleteGroup1,
+        "lung"
+      );
+
+      // Populate "blood" in cell group 2 filter tissue
+      const tissueFilterAutocompleteGroup2 = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER)
+        .getByTestId(
+          `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Tissue`
+        );
+      await clickOnAutocompleteDropdownItem(
+        tissueFilterAutocompleteGroup2,
+        "blood"
+      );
+
+      // Ensure "Find Genes" button is enabled
+      const findGenesButton = page.getByTestId(
+        DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON
+      );
+      await expect(findGenesButton).toBeEnabled();
+
+      // Click "Clear all" button
+      const clearAllButton = page.getByTestId(
+        DIFFERENTIAL_EXPRESSION_CLEAR_ALL_BUTTON
+      );
+      await clearAllButton.click();
+      await waitForFiltersEndpoint(page);
+
+      // Ensure "Find Genes" button is disabled again
+      await expect(findGenesButton).toBeDisabled();
+
+      // Ensure "lung" tag is no longer present in cell group 1 filter
+      const lungTag = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
+        .getByTestId(DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY)
+        .filter({ hasText: "lung" });
+      await expect(lungTag).toHaveCount(0);
+
+      // Ensure "blood" tag is no longer present in cell group 2 filter
+      const bloodTag = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER)
+        .getByTestId(DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY)
+        .filter({ hasText: "blood" });
+      await expect(bloodTag).toHaveCount(0);
+    });
     test("Find genes button only active when both filters populated", async ({
       page,
     }) => {
@@ -417,11 +472,49 @@ describe("Differential Expression", () => {
       // Ensure "Find Genes" button is disabled again
       await expect(findGenesButton).toBeDisabled();
     });
+
+    test("Differential Expression With Query Parameters", async ({ page }) => {
+      await goToPage(
+        `${TEST_URL}${ROUTES.DE}?organism=NCBITaxon:10090&celltypes=CL:0000622&tissues=UBERON:0001264`,
+        page
+      );
+      await waitForFiltersEndpoint(page);
+
+      // Ensure the organism dropdown is set to "Mus musculus"
+      const organismDropdown = page.getByTestId(
+        DIFFERENTIAL_EXPRESSION_ORGANISM_DROPDOWN
+      );
+      await expect(organismDropdown).toHaveText("Mus musculus");
+
+      const cellTypeFilterAutocompleteGroup1 = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
+        .getByTestId(
+          `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Cell Type`
+        );
+
+      const tissueFilterAutocompleteGroup1 = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
+        .getByTestId(
+          `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Tissue`
+        );
+
+      // Ensure the filters are applied correctly
+      await expect(
+        cellTypeFilterAutocompleteGroup1.getByTestId(
+          DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY
+        )
+      ).toHaveText("acinar cell");
+      await expect(
+        tissueFilterAutocompleteGroup1.getByTestId(
+          DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY
+        )
+      ).toHaveText("pancreas");
+    });
   });
 
   describe("Results", () => {
     test("All tests", async ({ page }) => {
-      await runDEQuery(page);
+      await runDEQuery({ page, mode: "default" });
 
       await test.step("Cell Group 1 and 2 contain the correct number of cells and filter tags", async () => {
         // Check number of cells
@@ -460,16 +553,16 @@ describe("Differential Expression", () => {
           .locator('[class*="MuiChip-label"]')
           .all();
         expect(cellGroup1Chips).toHaveLength(2);
-        expect(cellGroup1Chips[0]).toHaveText("1 tissue");
-        expect(cellGroup1Chips[1]).toHaveText("1 cell type");
+        expect(cellGroup1Chips[0]).toHaveText("lung");
+        expect(cellGroup1Chips[1]).toHaveText("plasma cell");
 
         const cellGroup2Chips = await page
           .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_INFO)
           .locator('[class*="MuiChip-label"]')
           .all();
         expect(cellGroup2Chips).toHaveLength(2);
-        expect(cellGroup2Chips[0]).toHaveText("1 tissue");
-        expect(cellGroup2Chips[1]).toHaveText("1 cell type");
+        expect(cellGroup2Chips[0]).toHaveText("lung");
+        expect(cellGroup2Chips[1]).toHaveText("acinar cell");
       });
 
       await test.step("Open in GE opens in a new tab with expected URL for Cell Group 1", async () => {
@@ -500,7 +593,6 @@ describe("Differential Expression", () => {
         await newPage2.close();
       });
 
-      // TODO: Figure out how to test when callout is present
       await test.step("No overlapping cells info callout present", async () => {
         await expect(
           page.getByTestId(DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT)
@@ -686,6 +778,30 @@ describe("Differential Expression", () => {
         expect(dataRow2.length).toBe(columnNames.length);
         expect(dataRow3.length).toBe(columnNames.length);
       });
+
+      await runDEQuery({ page, mode: "test_include_overlapping_cells" });
+      await test.step("Overlapping cells info callout is visible when overlapping cells are not filtered", async () => {
+        // Ensure the callout is not visible at first
+        await expect(
+          page.getByTestId(DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT)
+        ).not.toBeVisible();
+
+        // Ensure the callout is visible when overlapping cells are not filtered
+        await page
+          .getByTestId(DIFFERENTIAL_EXPRESSION_OVERLAP_BEHAVIOR)
+          .locator("button:nth-child(3)")
+          .click();
+        await isElementVisible(page, DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT);
+      });
+
+      await runDEQuery({ page, mode: "test_exclude_unavailable_tags" });
+      await test.step("Unavailable tags are excluded from results query group boxes", async () => {
+        const cellGroup1Info = page.getByTestId(
+          DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_INFO
+        );
+        await expect(cellGroup1Info).toHaveText("plasma cell");
+        await expect(cellGroup1Info).not.toHaveText("2 cell types");
+      });
     });
   });
 });
@@ -732,8 +848,19 @@ const clickOnAutocompleteDropdownItem = async (
   await waitForFiltersEndpoint(autocomplete.page());
 };
 
-const runDEQuery = async (page: Page) => {
+const runDEQuery = async ({
+  page,
+  mode = "default",
+}: {
+  page: Page;
+  mode?:
+    | "default"
+    | "test_include_overlapping_cells"
+    | "test_exclude_unavailable_tags";
+}) => {
   // Type "lung" in tissue filter for group 1
+  await page.reload();
+
   const tissueFilterAutocompleteGroup1 = page
     .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
     .getByTestId(`${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Tissue`);
@@ -755,17 +882,41 @@ const runDEQuery = async (page: Page) => {
     cellTypeFilterAutocompleteGroup1,
     "plasma cell"
   );
-  // Type "acinar cell" in cell type filter for group 2
-  const cellTypeFilterAutocompleteGroup2 = page
-    .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER)
-    .getByTestId(
-      `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Cell Type`
+  if (mode !== "test_include_overlapping_cells") {
+    // Type "acinar cell" in cell type filter for group 2
+    const cellTypeFilterAutocompleteGroup2 = page
+      .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER)
+      .getByTestId(
+        `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Cell Type`
+      );
+    await clickOnAutocompleteDropdownItem(
+      cellTypeFilterAutocompleteGroup2,
+      "acinar cell"
     );
-  await clickOnAutocompleteDropdownItem(
-    cellTypeFilterAutocompleteGroup2,
-    "acinar cell"
-  );
+  }
+  if (mode === "test_exclude_unavailable_tags") {
+    // Type "acinar cell" in cell type filter for group 1
+    const cellTypeFilterAutocompleteGroup1 = page
+      .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
+      .getByTestId(
+        `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Cell Type`
+      );
+    await clickOnAutocompleteDropdownItem(
+      cellTypeFilterAutocompleteGroup1,
+      "acinar cell"
+    );
 
+    // "chronic obstructive pulmonary disease" in disease filter for group 1
+    const diseaseFilterAutocompleteGroup1 = page
+      .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
+      .getByTestId(
+        `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Disease`
+      );
+    await clickOnAutocompleteDropdownItem(
+      diseaseFilterAutocompleteGroup1,
+      "chronic obstructive pulmonary disease"
+    );
+  }
   // Hit the "Find Genes" button
   const findGenesButton = page.getByTestId(
     DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON

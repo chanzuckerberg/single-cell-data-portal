@@ -1,6 +1,14 @@
+import { ExcludeOverlappingCells } from "../types";
+
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
   payload: Payload;
+}
+
+export interface FilterOption {
+  name: string;
+  id: string;
+  unavailable?: boolean;
 }
 
 export interface QueryGroup {
@@ -26,6 +34,13 @@ export interface State {
   submittedQueryGroups: QueryGroups | null;
   submittedQueryGroupsWithNames: QueryGroupsWithNames | null;
   snapshotId: string | null;
+  excludeOverlappingCells: ExcludeOverlappingCells;
+  selectedOptionsGroup1: {
+    [key in keyof QueryGroup]: FilterOption[];
+  };
+  selectedOptionsGroup2: {
+    [key in keyof QueryGroup]: FilterOption[];
+  };
 }
 
 export const EMPTY_FILTERS = {
@@ -41,6 +56,7 @@ export const EMPTY_FILTERS = {
 export const INITIAL_STATE: State = {
   organismId: null,
   snapshotId: null,
+  excludeOverlappingCells: "excludeTwo",
   queryGroups: { queryGroup1: EMPTY_FILTERS, queryGroup2: EMPTY_FILTERS },
   queryGroupsWithNames: {
     queryGroup1: EMPTY_FILTERS,
@@ -48,6 +64,8 @@ export const INITIAL_STATE: State = {
   },
   submittedQueryGroups: null,
   submittedQueryGroupsWithNames: null,
+  selectedOptionsGroup1: EMPTY_FILTERS,
+  selectedOptionsGroup2: EMPTY_FILTERS,
 };
 
 export const REDUCERS = {
@@ -59,6 +77,9 @@ export const REDUCERS = {
   clearQueryGroup2Filters,
   submitQueryGroups,
   clearSubmittedQueryGroups,
+  setExcludeOverlappingCells,
+  setSelectedOptionsGroup1,
+  setSelectedOptionsGroup2,
 };
 
 function setSnapshotId(
@@ -73,6 +94,16 @@ function setSnapshotId(
   };
 }
 
+function setExcludeOverlappingCells(
+  state: State,
+  action: PayloadAction<ExcludeOverlappingCells>
+): State {
+  return {
+    ...state,
+    excludeOverlappingCells: action.payload,
+  };
+}
+
 function selectOrganism(
   state: State,
   action: PayloadAction<string | null>
@@ -84,6 +115,30 @@ function selectOrganism(
   return {
     ...state,
     organismId: action.payload,
+  };
+}
+
+function setSelectedOptionsGroup1(
+  state: State,
+  action: PayloadAction<{ key: keyof QueryGroup; options: FilterOption[] }>
+): State {
+  const { key, options } = action.payload;
+
+  return {
+    ...state,
+    selectedOptionsGroup1: { ...state.selectedOptionsGroup1, [key]: options },
+  };
+}
+
+function setSelectedOptionsGroup2(
+  state: State,
+  action: PayloadAction<{ key: keyof QueryGroup; options: FilterOption[] }>
+): State {
+  const { key, options } = action.payload;
+
+  return {
+    ...state,
+    selectedOptionsGroup2: { ...state.selectedOptionsGroup2, [key]: options },
   };
 }
 

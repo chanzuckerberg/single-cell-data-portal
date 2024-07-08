@@ -1,3 +1,4 @@
+import requests
 from flask import make_response, request
 from jose import JWTError
 
@@ -14,9 +15,15 @@ def post():
         token_info = api_key.verify(user_api_key, config.api_key_secret)
     except JWTError:
         raise UnauthorizedError(detail="The API key is invalid") from None
-    else:
-        identity = auth0_management_session.get_user_api_key_identity(token_info["sub"])
-        if not identity:
-            raise NotFoundHTTPException(detail="The API key is no longer valid.")
+    identity = auth0_management_session.get_user_api_key_identity(token_info["sub"])
+    if not identity:
+        raise NotFoundHTTPException(detail="The API key is no longer valid.")
+    try:
         token = auth0_management_session.generate_access_token(identity["profileData"]["email"], user_api_key)
-        return make_response(token, 201)
+    except requests.exceptions.HTTPError as error:
+        if error.response.status_code == 403:
+            raise UnauthorizedError(
+                detail="This API key is old. use the latest API key or generate a new one."
+            ) from error
+        raise error
+    return make_response(token, 201)

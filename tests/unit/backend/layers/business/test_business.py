@@ -28,8 +28,10 @@ from backend.layers.business.exceptions import (
     CollectionUpdateException,
     CollectionVersionException,
     DatasetIngestException,
+    DatasetInWrongStatusException,
     DatasetIsTombstonedException,
     DatasetNotFoundException,
+    InvalidMetadataException,
     InvalidURIException,
     NoPreviousDatasetVersionException,
 )
@@ -1727,6 +1729,126 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
             self.business_logic.set_dataset_metadata(dataset.version_id, self.sample_dataset_metadata)
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             self.assertEqual(version_from_db.metadata, self.sample_dataset_metadata)
+
+    def test_update_dataset_artifact_metadata_missing_title_error(self):
+        """
+        Attempting to update a dataset without providing a title raises an exception.
+        """
+
+        # Create a private collection.
+        unpublished_collection = self.initialize_unpublished_collection()
+
+        # Create update.
+        update = DatasetArtifactMetadataUpdate()
+
+        # Confirm error is raised.
+        dataset = unpublished_collection.datasets[0]
+        with self.assertRaises(InvalidMetadataException):
+            self.business_logic.update_dataset_artifact_metadata(
+                unpublished_collection.version_id, dataset.version_id, update
+            )
+
+    def test_update_dataset_artifact_metadata_public_collection_error(self):
+        """
+        Attemping to update a dataset in a public collection raises an exception.
+        """
+
+        # Create public collection.
+        published_collection = self.initialize_published_collection()
+
+        # Create update.
+        update = DatasetArtifactMetadataUpdate(title="new title")
+
+        # Confirm error is raised.
+        dataset = published_collection.datasets[0]
+        with self.assertRaises(CollectionIsPublishedException):
+            self.business_logic.update_dataset_artifact_metadata(
+                published_collection.version_id, dataset.version_id, update
+            )
+
+    def test_update_dataset_artifact_metadata_invalid_status_error(self):
+        """
+        Attempting to update a dataset with a non-success processing status raises an exception.
+        """
+
+        # Create a private collection with a dataset that has not been fully ingested.
+        unpublished_collection = self.initialize_unpublished_collection(complete_dataset_ingestion=False)
+
+        # Create update.
+        update = DatasetArtifactMetadataUpdate(title="new title")
+
+        # Confirm error is raised.
+        dataset = unpublished_collection.datasets[0]
+        with self.assertRaises(DatasetInWrongStatusException):
+            self.business_logic.update_dataset_artifact_metadata(
+                unpublished_collection.version_id, dataset.version_id, update
+            )
+
+    def test_update_dataset_artifact_metadata_ok(self):
+        """
+        The dataset artifact metadata can be updated using `update_dataset_artifact_metadata`
+        """
+
+        # Create a private collection.
+        unpublished_collection = self.initialize_unpublished_collection()
+
+        # Create update.
+        update = DatasetArtifactMetadataUpdate(title="new title")
+
+        # Mock trigger artifact update.
+        self.business_logic.trigger_dataset_artifact_update = Mock()
+
+        # Attempt update.
+        dataset = unpublished_collection.datasets[0]
+        self.business_logic.update_dataset_artifact_metadata(
+            unpublished_collection.version_id, dataset.version_id, update
+        )
+
+        # Confirm trigger was called.
+        self.business_logic.trigger_dataset_artifact_update.assert_called_once()
+
+    def test_update_dataset_artifact_metadata_sanitized_ok(self):
+        """
+        The dataset artifact metadata can be updated with sanitized values.
+        """
+
+        # Create a private collection.
+        unpublished_collection = self.initialize_unpublished_collection()
+
+        # Create update.
+        title = "new title"
+        update = DatasetArtifactMetadataUpdate(title=f" {title} ")
+
+        # Mock trigger artifact update.
+        trigger_mock = self.business_logic.trigger_dataset_artifact_update = Mock()
+
+        # Attempt update.
+        dataset = unpublished_collection.datasets[0]
+        self.business_logic.update_dataset_artifact_metadata(
+            unpublished_collection.version_id, dataset.version_id, update
+        )
+
+        # Confirm update was sanitized.
+        args, _ = trigger_mock.call_args
+        assert args[1].title == title
+
+    def test_update_dataset_artifact_metadata_invalid_title_error(self):
+        """
+        Attempting to update a dataset with an invalid title raises an exception.
+        """
+
+        # Create a private collection.
+        unpublished_collection = self.initialize_unpublished_collection()
+
+        # Create update.
+        update = DatasetArtifactMetadataUpdate(title="new\x00title")
+
+        # Confirm error is raised.
+        dataset = unpublished_collection.datasets[0]
+        with self.assertRaises(InvalidMetadataException):
+            self.business_logic.update_dataset_artifact_metadata(
+                unpublished_collection.version_id, dataset.version_id, update
+            )
 
 
 class TestCollectionOperations(BaseBusinessLogicTestCase):

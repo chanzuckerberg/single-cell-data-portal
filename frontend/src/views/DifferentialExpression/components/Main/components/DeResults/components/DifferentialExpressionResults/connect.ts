@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useContext } from "react";
 
 import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
 
@@ -8,6 +8,9 @@ import { MAX_NUM_TOP_GENES_TO_PORT_TO_GE, ROWS_PER_PAGE } from "./constants";
 
 import useProcessedQueryGroupFilterDimensions from "../../../common/query_group_filter_dimensions";
 import { Props } from "./types";
+import { useQueryGroupFilterDimensions } from "src/common/queries/differentialExpression";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { StateContext } from "src/views/DifferentialExpression/common/store";
 
 export const useConnect = ({
   queryGroups,
@@ -24,6 +27,11 @@ export const useConnect = ({
   nCellsOverlap: Props["nCellsOverlap"];
   sortDirection: Props["sortDirection"];
 }) => {
+  const {
+    excludeOverlappingCells,
+    selectedOptionsGroup1,
+    selectedOptionsGroup2,
+  } = useContext(StateContext);
   const [page, setPage] = useState(1);
 
   const { n_cells: nCellsGroup1 } = useProcessedQueryGroupFilterDimensions(
@@ -87,6 +95,16 @@ export const useConnect = ({
     (nCellsOverlap / Math.max(nCellsGroup1, nCellsGroup2)) *
     100
   ).toFixed(2);
+
+  const { data: filterDimensions1 } = useQueryGroupFilterDimensions(
+    queryGroups.queryGroup1
+  );
+  const { data: filterDimensions2 } = useQueryGroupFilterDimensions(
+    queryGroups.queryGroup2
+  );
+
+  const { datasets: datasets1 = EMPTY_ARRAY } = filterDimensions1;
+  const { datasets: datasets2 = EMPTY_ARRAY } = filterDimensions2;
   return {
     page,
     setPage,
@@ -98,5 +116,14 @@ export const useConnect = ({
     pageCount,
     handlePageChange,
     overlapPercent,
+    numDatasetsText1: `${datasets1.length} dataset${
+      datasets1.length !== 1 ? "s" : ""
+    }`,
+    numDatasetsText2: `${datasets2.length} dataset${
+      datasets2.length !== 1 ? "s" : ""
+    }`,
+    showOverlappingCellsCallout: excludeOverlappingCells === "retainBoth",
+    selectedOptionsGroup1,
+    selectedOptionsGroup2,
   };
 };

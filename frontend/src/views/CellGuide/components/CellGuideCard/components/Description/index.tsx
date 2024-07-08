@@ -1,5 +1,11 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { TooltipProps } from "@czi-sds/components";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { Icon, TooltipProps } from "@czi-sds/components";
 import {
   CellGuideCardDescription,
   ChatGptTooltipSubtext,
@@ -18,6 +24,7 @@ import {
   StyledTag,
   ReferencesWrapper,
   ValidatedInlineWrapper,
+  StyledLinkLabel,
 } from "./style";
 import { Label } from "src/components/Synonyms/style";
 
@@ -25,15 +32,14 @@ import {
   useGptDescription,
   useCellTypeMetadata,
   useValidatedDescription,
+  ORGANISM_NAME_TO_TAXON_ID_MAPPING,
 } from "src/common/queries/cellGuide";
-import validatedIcon from "src/common/images/validated.svg";
+import ValidatedIcon from "src/common/images/validated.svg";
 import Link from "../common/Link";
 import { StyledLink } from "../common/Link/style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { CELL_GUIDE_CORRECTION_SURVEY_LINK } from "src/common/constants/airtableLinks";
-import questionMarkIcon from "src/common/images/question-mark-icon.svg";
-import { StyledIconImage } from "../common/HelpTooltip/style";
 import {
   CELL_GUIDE_CARD_CL_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_DESCRIPTION,
@@ -43,7 +49,10 @@ import {
   CELL_GUIDE_CARD_SYNONYMS,
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 import { useIsComponentPastBreakpointHeight } from "../common/hooks/useIsComponentPastBreakpoint";
-import Image from "next/image";
+import { StyledQuestionMarkIcon } from "src/common/style";
+import { ROUTES } from "src/common/constants/routes";
+
+// TODO(SVGR) ADD BACK HOVER BRIGHTNESS CHANGE
 
 const SLOT_PROPS: TooltipProps["slotProps"] = {
   tooltip: {
@@ -66,8 +75,12 @@ interface DescriptionProps {
   >;
   inSideBar?: boolean;
   synonyms?: string[];
+  selectedOrganism?: string;
+  selectedOrganId?: string;
 }
 export default function Description({
+  selectedOrganism,
+  selectedOrganId,
   cellTypeId,
   cellTypeName,
   skinnyMode,
@@ -89,6 +102,18 @@ export default function Description({
   const { isPastBreakpoint, containerRef } = useIsComponentPastBreakpointHeight(
     DESCRIPTION_BREAKPOINT_HEIGHT_PX
   );
+
+  const shareUrlForDE = useMemo(() => {
+    if (!selectedOrganism) {
+      return "";
+    }
+    const organism = ORGANISM_NAME_TO_TAXON_ID_MAPPING[
+      selectedOrganism as keyof typeof ORGANISM_NAME_TO_TAXON_ID_MAPPING
+    ].replace("_", ":");
+    const tissueSuffix =
+      selectedOrganId == "" ? "" : `&tissues=${selectedOrganId}`;
+    return `${ROUTES.DE}?organism=${organism}&celltypes=${cellTypeId}${tissueSuffix}`;
+  }, [selectedOrganId, selectedOrganism, cellTypeId]);
 
   useEffect(() => {
     if (isPastBreakpoint) {
@@ -224,7 +249,7 @@ export default function Description({
               });
           }}
         >
-          <StyledIconImage alt="question mark" src={questionMarkIcon} />
+          <StyledQuestionMarkIcon />
         </StyledLink>
       </StyledTooltip>
     </SourceLink>
@@ -322,6 +347,17 @@ export default function Description({
           })}
         </ReferencesWrapper>
       )}
+      {shareUrlForDE !== "" && (
+        <Link
+          url={shareUrlForDE}
+          label={
+            <StyledLinkLabel>
+              Open in Differential Expression
+              <Icon sdsIcon="ChevronRight" sdsType="static" sdsSize="xs" />
+            </StyledLinkLabel>
+          }
+        />
+      )}
     </FlexContainer>
   );
   const validatedDescriptionComponent = (
@@ -349,14 +385,7 @@ export default function Description({
             sdsType="secondary"
             sdsStyle="square"
             color="positive"
-            icon={
-              <Image
-                src={validatedIcon}
-                alt="validated"
-                width={16}
-                height={16}
-              />
-            }
+            icon={<ValidatedIcon />}
             label="Validated"
           />{" "}
           This description has been validated by our Biocurator team.{" "}

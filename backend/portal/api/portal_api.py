@@ -44,6 +44,7 @@ from backend.layers.common.entities import (
     CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
+    DatasetArtifactMetadataUpdate,
     DatasetArtifactType,
     DatasetId,
     DatasetStatus,
@@ -662,6 +663,39 @@ def set_collection_version_datasets_order(collection_id: str, body: dict, token_
         raise ForbiddenHTTPException() from None
 
     return make_response("", 200)
+
+
+def update_dataset(collection_id: str, dataset_id: str, body: dict, token_info: dict):
+    """
+    Updates a dataset using the fields specified in `body`.
+    """
+
+    # Confirm user is authorized to update the dataset.
+    dataset_version, _ = _assert_dataset_has_right_owner(DatasetVersionId(dataset_id), UserInfo(token_info))
+
+    # Find collection version.
+    collection_version = lookup_collection(collection_id)
+    if collection_version is None:
+        raise ForbiddenHTTPException()
+
+    # Create payload and attempt update.
+    payload = DatasetArtifactMetadataUpdate(body.get("title"))
+    try:
+        get_business_logic().update_dataset_artifact_metadata(
+            collection_version.version_id, dataset_version.version_id, payload
+        )
+    except InvalidMetadataException as ex:
+        raise InvalidParametersHTTPException(detail=ex.errors) from None
+    except CollectionNotFoundException as ex:
+        raise ForbiddenHTTPException(detail=ex.errors) from None
+    except CollectionIsPublishedException as ex:
+        raise ForbiddenHTTPException(detail=ex.errors) from None
+    except DatasetInWrongStatusException:
+        raise MethodNotAllowedException(
+            detail="Dataset cannot be updated if processing status is not SUCCESS."
+        ) from None
+
+    return Response(status=202)
 
 
 # TODO: those two methods should probably be collapsed into one
