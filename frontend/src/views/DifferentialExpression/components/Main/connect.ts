@@ -91,7 +91,11 @@ export const useConnect = () => {
     const { search } = window.location;
     const params = new URLSearchParams(search);
     const organism: string | null = params.get("organism");
-    if (!organism) return;
+
+    if (!organism) {
+      setOrganismInitializedFromShareURL(true); // homo sapiens is default
+      return;
+    }
 
     const isOrganismValid = availableOrganisms.some(
       (org) => org.id === organism

@@ -29,6 +29,12 @@ export const Link = styled.a`
   color: ${primary400};
 `;
 
+export const StyledLink = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
 export const GeneName = styled.div`
   ${fontBodyS}
   font-weight: 500;
