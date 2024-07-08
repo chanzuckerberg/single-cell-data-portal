@@ -42,7 +42,7 @@ export const useConnect = () => {
     setIsLoadingGetDeQuery(isLoadingGetDeQuery);
   }, [isLoadingGetDeQuery]);
   const dispatch = useContext(DispatchContext);
-  const { queryGroups } = useContext(StateContext);
+  const { queryGroups, excludeOverlappingCells } = useContext(StateContext);
   const { queryGroup1, queryGroup2 } = queryGroups;
 
   // check if any values in queryGroup1 are not empty
@@ -61,7 +61,7 @@ export const useConnect = () => {
 
     track(
       EVENTS.DE_FIND_GENES_CLICKED,
-      craftPayloadWithQueryGroups(queryGroups)
+      craftPayloadWithQueryGroups(queryGroups, excludeOverlappingCells)
     );
   };
 
