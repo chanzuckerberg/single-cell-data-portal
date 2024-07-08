@@ -49,7 +49,6 @@ async function fetchProjects(): Promise<ProjectResponse | undefined> {
     }
   );
 
-
   try {
     const result = await response.json();
     if (!response.ok) throw result;
@@ -95,7 +94,6 @@ async function fetchProjects(): Promise<ProjectResponse | undefined> {
           } catch (error) {
             console.log(error);
           }
-
         }
       )
     );
