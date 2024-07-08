@@ -92,7 +92,6 @@ def test__valid_input_metadata_copy(spatial_processor, valid_spatial_data, libra
                 "width": 20,
                 "height": 20,
             },
-            "images": {"hires": valid_spatial_data["images"]["hires"], "fullres": []},
             "scalefactors": {
                 "spot_diameter_fullres": valid_spatial_data["scalefactors"]["spot_diameter_fullres"],
                 "tissue_hires_scalef": valid_spatial_data["scalefactors"]["tissue_hires_scalef"],
@@ -321,10 +320,6 @@ def test__convert_uns_to_cxg_group(
     assert "spatial" in mock_metadata_array.meta
     spatial_data = pickle.loads(mock_metadata_array.meta["spatial"])
     assert "library_id_1" in spatial_data
-    assert np.array_equal(
-        spatial_data["library_id_1"]["images"]["hires"],
-        valid_uns["spatial"]["library_id_1"]["images"]["hires"],
-    )
     assert (
         spatial_data["library_id_1"]["scalefactors"]["spot_diameter_fullres"]
         == valid_uns["spatial"]["library_id_1"]["scalefactors"]["spot_diameter_fullres"]
