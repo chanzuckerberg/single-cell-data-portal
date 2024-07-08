@@ -310,7 +310,7 @@ def rollback_datasets(ctx, report_path: str):
     """
     schema_migration.rollback_dataset(ctx, report_path)
 
-    
+
 @schema_migration_cli.command()
 @click.pass_context
 @click.argument("execution_id")
@@ -322,7 +322,7 @@ def generate_report(ctx, execution_id: str, output_path: str):
     """
     schema_migration.generate_report(ctx, execution_id, output_path, os.environ["ARTIFACT_BUCKET"])
 
-    
+
 @cli.command()
 @click.pass_context
 @click.argument("request_id")
@@ -334,7 +334,6 @@ def get_request_logs(ctx, request_id: str, hours: int):
     ./scripts/cxg_admin.py --deployment dev get-request-logs <request_id>
     """
     print(json.dumps(request_logs.get(request_id, hours, ctx.obj["deployment"], ctx.obj["stackname"]), indent=4))
-
 
 
 if __name__ == "__main__":
