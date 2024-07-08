@@ -13,7 +13,7 @@ from backend.common.census_cube.data.ontology_labels import gene_term_label, ont
 from backend.common.census_cube.data.query import CensusCubeQuery
 from backend.common.census_cube.data.schemas.cube_schema_diffexp import cell_counts_logical_dims_exclude_dataset_id
 from backend.common.census_cube.data.snapshot import CensusCubeSnapshot, load_snapshot
-from backend.common.census_cube.utils import descendants
+from backend.common.census_cube.utils import ancestors, descendants
 from backend.common.marker_genes.marker_gene_files.blacklist import marker_gene_blacklist
 from backend.de.api.config import (
     CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
@@ -144,7 +144,7 @@ def build_filter_dims_values(criteria: BaseQueryCriteria, snapshot: CensusCubeSn
         ),
         publication_citations=dims["publication_citation"],
         cell_type_terms=build_ontology_term_id_label_mapping(
-            set(sum([descendants(i) for i in dims["cell_type_ontology_term_id"]], []))
+            set(sum([ancestors(i) for i in dims["cell_type_ontology_term_id"]], []))
         ),
         tissue_terms=build_ontology_term_id_label_mapping(dims["tissue_ontology_term_id"]),
         organism_terms=build_ontology_term_id_label_mapping(dims["organism_ontology_term_id"]),
