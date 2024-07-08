@@ -475,6 +475,7 @@ paths:
     patch:
       tags:
         - Collection
+        - Dataset
       summary: Update a Dataset's metadata.
       security:
         - curatorAccess: []
