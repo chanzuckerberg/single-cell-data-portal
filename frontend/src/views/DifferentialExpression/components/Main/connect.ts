@@ -25,6 +25,8 @@ import {
 import { EMPTY_FILTERS } from "../../common/store/reducer";
 
 export const useConnect = () => {
+  // These flags control a state machine that ensures proper initialization of the DE state
+  // from the URL query parameters. First organism is initialized, then the query group is initialized.
   const [organismInitializedFromShareURL, setOrganismInitializedFromShareURL] =
     useState<boolean>(false);
   const [
