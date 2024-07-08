@@ -287,16 +287,40 @@ def get_public_datasets(ctx):
     print(json.dumps(published_datasets, indent=2))
 
 
-@cli.command()
+@cli.group("schema-migration")
+@click.pass_context
+def schema_migration_cli(ctx):
+    """
+    Commands for schema migration
+    """
+    deployment = ctx.obj["deployment"]
+    happy_env = "stage" if deployment == "staging" else ctx.obj["deployment"]
+    happy_config = json.loads(AwsSecret(f"happy/env-{happy_env}-config").value)
+    os.environ["ARTIFACT_BUCKET"] = happy_config["s3_buckets"]["artifact"]["name"]
+
+
+@schema_migration_cli.command()
 @click.pass_context
 @click.argument("report_path", type=click.Path(exists=True))
 def rollback_datasets(ctx, report_path: str):
     """
     Used to rollback a datasets to a previous version.
 
-    ./scripts/cxg_admin.py --deployment dev rollback-dataset report.json
+    ./scripts/cxg_admin.py schema-migration --deployment dev rollback-dataset report.json
     """
     schema_migration.rollback_dataset(ctx, report_path)
+
+
+@schema_migration_cli.command()
+@click.pass_context
+@click.argument("execution_id")
+@click.argument("output_path", type=click.Path(writable=True), default=".")
+def generate_report(ctx, execution_id: str, output_path: str):
+    """
+    Generates a report for the schema migration process.
+    ./scripts/cxg_admin.py --deployment dev schema-migration generate-report execution_id
+    """
+    schema_migration.generate_report(ctx, execution_id, output_path, os.environ["ARTIFACT_BUCKET"])
 
 
 @cli.command()
