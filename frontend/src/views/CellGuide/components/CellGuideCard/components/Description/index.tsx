@@ -75,9 +75,9 @@ interface DescriptionProps {
   >;
   inSideBar?: boolean;
   synonyms?: string[];
-  selectedOrganism: string;
-  selectedOrganId: string;
-  nodeIdsWithNonzeroCells: string[];
+  selectedOrganism?: string;
+  selectedOrganId?: string;
+  nodeIdsWithNonzeroCells?: string[];
 }
 export default function Description({
   selectedOrganism,
@@ -106,6 +106,9 @@ export default function Description({
   );
 
   const shareUrlForDE = useMemo(() => {
+    if (!selectedOrganism || !selectedOrganId || !nodeIdsWithNonzeroCells) {
+      return "";
+    }
     const organism = ORGANISM_NAME_TO_TAXON_ID_MAPPING[
       selectedOrganism as keyof typeof ORGANISM_NAME_TO_TAXON_ID_MAPPING
     ].replace("_", ":");
@@ -367,15 +370,17 @@ export default function Description({
           })}
         </ReferencesWrapper>
       )}
-      <Link
-        url={shareUrlForDE}
-        label={
-          <StyledLinkLabel>
-            Open in Differential Expression
-            <Icon sdsIcon="ChevronRight" sdsType="static" sdsSize="xs" />
-          </StyledLinkLabel>
-        }
-      />
+      {shareUrlForDE !== "" && (
+        <Link
+          url={shareUrlForDE}
+          label={
+            <StyledLinkLabel>
+              Open in Differential Expression
+              <Icon sdsIcon="ChevronRight" sdsType="static" sdsSize="xs" />
+            </StyledLinkLabel>
+          }
+        />
+      )}
     </FlexContainer>
   );
   const validatedDescriptionComponent = (

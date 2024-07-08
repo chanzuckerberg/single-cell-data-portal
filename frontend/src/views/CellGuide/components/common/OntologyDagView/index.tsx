@@ -90,7 +90,7 @@ interface TreeProps {
   tissueName: string;
   setCellInfoCellType?: (props: CellType | null) => void;
   geneDropdownComponent?: React.ReactNode;
-  setNodeIdsWithNonzeroCells: React.Dispatch<React.SetStateAction<string[]>>;
+  setNodeIdsWithNonzeroCells?: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 export default function OntologyDagView({
@@ -327,9 +327,10 @@ export default function OntologyDagView({
     };
     traverse(subTree);
 
-    setNodeIdsWithNonzeroCells(
-      nodeIdsWithNonzeroCells.map((id) => id.split("__")[0])
-    );
+    setNodeIdsWithNonzeroCells &&
+      setNodeIdsWithNonzeroCells(
+        nodeIdsWithNonzeroCells.map((id) => id.split("__")[0])
+      );
   }, [treeData, cellTypeId, setNodeIdsWithNonzeroCells]);
 
   // Create the tree data structure

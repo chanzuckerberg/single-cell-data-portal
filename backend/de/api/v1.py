@@ -13,7 +13,7 @@ from backend.common.census_cube.data.ontology_labels import gene_term_label, ont
 from backend.common.census_cube.data.query import CensusCubeQuery
 from backend.common.census_cube.data.schemas.cube_schema_diffexp import cell_counts_logical_dims_exclude_dataset_id
 from backend.common.census_cube.data.snapshot import CensusCubeSnapshot, load_snapshot
-from backend.common.census_cube.utils import descendants
+from backend.common.census_cube.utils import ancestors, descendants
 from backend.common.marker_genes.marker_gene_files.blacklist import marker_gene_blacklist
 from backend.de.api.config import (
     CENSUS_CUBE_API_FORCE_LOAD_SNAPSHOT_ID,
@@ -36,6 +36,12 @@ def filters():
 
     with ServerTiming.time("calculate filters and build response"):
         q = CensusCubeQuery(snapshot, cube_query_params=None)
+
+        if criteria.cell_type_ontology_term_ids:
+            criteria.cell_type_ontology_term_ids = list(
+                set(sum([descendants(i) for i in criteria.cell_type_ontology_term_ids], []))
+            )
+
         response_filter_dims_values = build_filter_dims_values(criteria, snapshot, q)
         n_cells = _get_cell_counts_for_query(q, criteria)
 
@@ -137,7 +143,9 @@ def build_filter_dims_values(criteria: BaseQueryCriteria, snapshot: CensusCubeSn
             dims["self_reported_ethnicity_ontology_term_id"]
         ),
         publication_citations=dims["publication_citation"],
-        cell_type_terms=build_ontology_term_id_label_mapping(dims["cell_type_ontology_term_id"]),
+        cell_type_terms=build_ontology_term_id_label_mapping(
+            set(sum([ancestors(i) for i in dims["cell_type_ontology_term_id"]], []))
+        ),
         tissue_terms=build_ontology_term_id_label_mapping(dims["tissue_ontology_term_id"]),
         organism_terms=build_ontology_term_id_label_mapping(dims["organism_ontology_term_id"]),
     )
@@ -311,10 +319,6 @@ def run_differential_expression(
 
 
 def _get_cell_counts_for_query(q: CensusCubeQuery, criteria: BaseQueryCriteria) -> pd.DataFrame:
-    if criteria.cell_type_ontology_term_ids:
-        criteria.cell_type_ontology_term_ids = list(
-            set(sum([descendants(i) for i in criteria.cell_type_ontology_term_ids], []))
-        )
     cell_counts = q.cell_counts_diffexp_df(criteria)
     return int(cell_counts["n_total_cells"].sum())
 
