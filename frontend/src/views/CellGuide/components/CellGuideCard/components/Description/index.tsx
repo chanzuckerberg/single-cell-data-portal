@@ -77,7 +77,6 @@ interface DescriptionProps {
   synonyms?: string[];
   selectedOrganism?: string;
   selectedOrganId?: string;
-  nodeIdsWithNonzeroCells?: string[];
 }
 export default function Description({
   selectedOrganism,
@@ -88,7 +87,6 @@ export default function Description({
   inSideBar,
   setTooltipContent,
   synonyms,
-  nodeIdsWithNonzeroCells,
 }: DescriptionProps): JSX.Element {
   const cellTypeIdRaw = cellTypeId.replace(":", "_");
   const [descriptionGpt, setDescriptionGpt] = useState<string>("");
@@ -106,7 +104,7 @@ export default function Description({
   );
 
   const shareUrlForDE = useMemo(() => {
-    if (!selectedOrganism || !selectedOrganId || !nodeIdsWithNonzeroCells) {
+    if (!selectedOrganism) {
       return "";
     }
     const organism = ORGANISM_NAME_TO_TAXON_ID_MAPPING[
@@ -114,29 +112,8 @@ export default function Description({
     ].replace("_", ":");
     const tissueSuffix =
       selectedOrganId == "" ? "" : `&tissues=${selectedOrganId}`;
-    const baseUrl = `${ROUTES.DE}?organism=${organism}&celltypes=`;
-    const maxUrlLength = 2000; // Maximum URL length to avoid 431 error
-    let cellTypesParam = nodeIdsWithNonzeroCells.join(",");
-    let fullUrl = `${baseUrl}${cellTypesParam}${tissueSuffix}`;
-
-    if (fullUrl.length > maxUrlLength) {
-      // If the full URL is too long, truncate the cell types parameter
-      const truncatedCellTypes = [];
-      for (let i = 0; i < nodeIdsWithNonzeroCells.length; i++) {
-        truncatedCellTypes.push(nodeIdsWithNonzeroCells[i]);
-        cellTypesParam = truncatedCellTypes.join(",");
-        fullUrl = `${baseUrl}${cellTypesParam}${tissueSuffix}`;
-        if (fullUrl.length > maxUrlLength) {
-          // Remove the last added cell type to stay within the limit
-          truncatedCellTypes.pop();
-          break;
-        }
-      }
-      cellTypesParam = truncatedCellTypes.join(",");
-    }
-
-    return `${ROUTES.DE}?organism=${organism}&celltypes=${cellTypesParam}${tissueSuffix}`;
-  }, [nodeIdsWithNonzeroCells, selectedOrganId, selectedOrganism]);
+    return `${ROUTES.DE}?organism=${organism}&celltypes=${cellTypeId}${tissueSuffix}`;
+  }, [selectedOrganId, selectedOrganism, cellTypeId]);
 
   useEffect(() => {
     if (isPastBreakpoint) {

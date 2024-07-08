@@ -18,9 +18,6 @@ import { Gene } from "src/views/WheresMyGeneV2/common/types";
 
 export function useConnect() {
   const router = useRouter();
-  const [nodeIdsWithNonzeroCells, setNodeIdsWithNonzeroCells] = useState<
-    string[]
-  >([]);
 
   const [pageNavIsOpen, setPageNavIsOpen] = useState(false);
   const [selectedGene, setSelectedGene] = useState<string | undefined>(
@@ -189,7 +186,5 @@ export function useConnect() {
     selectedOrganId: tissueId,
     selectedOrganism,
     setSelectedOrganism,
-    nodeIdsWithNonzeroCells,
-    setNodeIdsWithNonzeroCells,
   };
 }

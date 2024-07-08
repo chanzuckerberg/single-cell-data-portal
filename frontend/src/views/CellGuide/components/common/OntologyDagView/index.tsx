@@ -104,7 +104,6 @@ export default function OntologyDagView({
   selectedOrganism,
   setCellInfoCellType,
   geneDropdownComponent,
-  setNodeIdsWithNonzeroCells,
 }: TreeProps) {
   selectedOrganism = selectedOrganism ?? "";
 
@@ -310,28 +309,6 @@ export default function OntologyDagView({
     }
     return newTree;
   }, [rawTree, initialTreeState, cellTypeId]);
-
-  useEffect(() => {
-    if (!treeData || !cellTypeId) return;
-    const subTree = getSubTree(treeData, `${cellTypeId}__0`);
-    if (!subTree) return;
-
-    const nodeIdsWithNonzeroCells: string[] = [];
-    const traverse = (node: TreeNodeWithState) => {
-      if (node.n_cells > 0) {
-        nodeIdsWithNonzeroCells.push(node.id);
-      }
-      if (node.children) {
-        node.children.forEach(traverse);
-      }
-    };
-    traverse(subTree);
-
-    setNodeIdsWithNonzeroCells &&
-      setNodeIdsWithNonzeroCells(
-        nodeIdsWithNonzeroCells.map((id) => id.split("__")[0])
-      );
-  }, [treeData, cellTypeId, setNodeIdsWithNonzeroCells]);
 
   // Create the tree data structure
   const data = useMemo(() => {
