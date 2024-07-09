@@ -79,17 +79,21 @@ async function fetchProjects(): Promise<ProjectResponse | undefined> {
             }
           );
 
-          const response = await fetch(url);
-          const result = await response.json();
-          let publication_info;
-          if (!response.ok) {
-            console.error(result);
-          } else {
-            publication_info = parseCrossRefResponse(result);
+          // If CrossRef fails (e.g. due to Too Many Requests), we still want to show the project
+          try {
+            const response = await fetch(url);
+            const result = await response.json();
+            let publication_info;
+            if (!response.ok) {
+              console.error(result);
+            } else {
+              publication_info = parseCrossRefResponse(result);
+              data[id].publication_info = publication_info;
+              data[id].publication_link = result.message.URL;
+            }
+          } catch (error) {
+            console.log(error);
           }
-
-          data[id].publication_info = publication_info;
-          data[id].publication_link = result.message.URL;
         }
       )
     );

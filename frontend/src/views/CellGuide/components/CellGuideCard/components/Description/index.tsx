@@ -1,5 +1,11 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { TooltipProps } from "@czi-sds/components";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { Icon, TooltipProps } from "@czi-sds/components";
 import {
   CellGuideCardDescription,
   ChatGptTooltipSubtext,
@@ -18,6 +24,7 @@ import {
   StyledTag,
   ReferencesWrapper,
   ValidatedInlineWrapper,
+  StyledLinkLabel,
 } from "./style";
 import { Label } from "src/components/Synonyms/style";
 
@@ -25,6 +32,7 @@ import {
   useGptDescription,
   useCellTypeMetadata,
   useValidatedDescription,
+  ORGANISM_NAME_TO_TAXON_ID_MAPPING,
 } from "src/common/queries/cellGuide";
 import ValidatedIcon from "src/common/images/validated.svg";
 import Link from "../common/Link";
@@ -42,6 +50,7 @@ import {
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 import { useIsComponentPastBreakpointHeight } from "../common/hooks/useIsComponentPastBreakpoint";
 import { StyledQuestionMarkIcon } from "src/common/style";
+import { ROUTES } from "src/common/constants/routes";
 
 // TODO(SVGR) ADD BACK HOVER BRIGHTNESS CHANGE
 
@@ -66,8 +75,12 @@ interface DescriptionProps {
   >;
   inSideBar?: boolean;
   synonyms?: string[];
+  selectedOrganism?: string;
+  selectedOrganId?: string;
 }
 export default function Description({
+  selectedOrganism,
+  selectedOrganId,
   cellTypeId,
   cellTypeName,
   skinnyMode,
@@ -89,6 +102,18 @@ export default function Description({
   const { isPastBreakpoint, containerRef } = useIsComponentPastBreakpointHeight(
     DESCRIPTION_BREAKPOINT_HEIGHT_PX
   );
+
+  const shareUrlForDE = useMemo(() => {
+    if (!selectedOrganism) {
+      return "";
+    }
+    const organism = ORGANISM_NAME_TO_TAXON_ID_MAPPING[
+      selectedOrganism as keyof typeof ORGANISM_NAME_TO_TAXON_ID_MAPPING
+    ].replace("_", ":");
+    const tissueSuffix =
+      selectedOrganId == "" ? "" : `&tissues=${selectedOrganId}`;
+    return `${ROUTES.DE}?organism=${organism}&celltypes=${cellTypeId}${tissueSuffix}`;
+  }, [selectedOrganId, selectedOrganism, cellTypeId]);
 
   useEffect(() => {
     if (isPastBreakpoint) {
@@ -321,6 +346,23 @@ export default function Description({
             );
           })}
         </ReferencesWrapper>
+      )}
+      {shareUrlForDE !== "" && (
+        <Link
+          url={shareUrlForDE}
+          label={
+            <StyledLinkLabel>
+              Open in Differential Expression
+              <Icon sdsIcon="ChevronRight" sdsType="static" sdsSize="xs" />
+            </StyledLinkLabel>
+          }
+          onClick={() => {
+            track(EVENTS.CG_OPEN_IN_DE_CLICKED, {
+              cell_type: cellTypeId,
+              tissue: selectedOrganId,
+            });
+          }}
+        />
       )}
     </FlexContainer>
   );

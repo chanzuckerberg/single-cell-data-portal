@@ -1,4 +1,4 @@
-import { FilterOption } from "../../types";
+import { FilterOption } from "src/views/DifferentialExpression/common/store/reducer";
 import { FilterOptionsState } from "@mui/material";
 
 export function sortOptions(
