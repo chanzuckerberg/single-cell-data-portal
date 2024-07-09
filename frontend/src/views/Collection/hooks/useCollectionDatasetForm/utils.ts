@@ -70,13 +70,8 @@ export function getFieldValues(formEl: HTMLFormElement): FieldValues {
  * @param value - Form data entry value.
  * @returns formatted data entry value.
  */
-export function formatFormDataValue(
-  value: FormDataEntryValue | null
-): FormDataEntryValue | null {
-  if (typeof value === "string") {
-    return value.trim();
-  }
-  return value;
+export function formatFormDataValue(value: string): string {
+  return value.trim();
 }
 
 /**
@@ -114,6 +109,7 @@ export function updateDirtyFields(
 
 /**
  * Validates form data.
+ * At present, form validation only checks if the field value is empty.
  * @param formEl - Form element.
  * @param fieldValues - Field values.
  * @returns error.
