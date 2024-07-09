@@ -60,6 +60,7 @@ import {
 } from "../../common/styles";
 import Description from "src/views/CellGuide/components/CellGuideCard/components/Description";
 import { StyledQuestionMarkIcon } from "src/common/style";
+import { DIFFERENTIAL_EXPRESSION_RELEASED_FLAG } from "src/views/DifferentialExpression/common/constants";
 
 function CellInfoSideBar({
   cellInfoCellType,
@@ -112,20 +113,22 @@ function CellInfoSideBar({
         {MARKER_SCORE_CELLGUIDE_LINK_TEXT}
         <Icon sdsIcon="ChevronRight" sdsType="static" sdsSize="xs" />
       </StyledLink>
-      <StyledLink
-        href={differentialExpressionUrl}
-        onClick={() =>
-          track(EVENTS.WMG_OPEN_IN_DE_CLICKED, {
-            cell_type: cellInfoCellType.cellType.id,
-            tissue: cellInfoCellType.tissueID,
-          })
-        }
-        target="_blank"
-        rel="noreferrer noopener"
-      >
-        {DIFFERENTIAL_EXPRESSION_LINK_TEXT}
-        <Icon sdsIcon="ChevronRight" sdsType="static" sdsSize="xs" />
-      </StyledLink>
+      {DIFFERENTIAL_EXPRESSION_RELEASED_FLAG && (
+        <StyledLink
+          href={differentialExpressionUrl}
+          onClick={() =>
+            track(EVENTS.WMG_OPEN_IN_DE_CLICKED, {
+              cell_type: cellInfoCellType.cellType.id,
+              tissue: cellInfoCellType.tissueID,
+            })
+          }
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          {DIFFERENTIAL_EXPRESSION_LINK_TEXT}
+          <Icon sdsIcon="ChevronRight" sdsType="static" sdsSize="xs" />
+        </StyledLink>
+      )}
       <ButtonContainer>
         <ButtonWrapper>
           <StyledMarkerGeneHeader>{MARKER_GENE_LABEL}</StyledMarkerGeneHeader>
