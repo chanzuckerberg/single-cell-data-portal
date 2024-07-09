@@ -465,6 +465,10 @@ export function useEditDataset() {
         USE_COLLECTION,
         variables.collectionId,
       ]);
+      await queryClient.invalidateQueries(
+        [USE_DATASETS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
+      );
     },
   });
 }
