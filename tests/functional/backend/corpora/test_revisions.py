@@ -13,6 +13,7 @@ from tests.functional.backend.utils import assertStatusCode, create_explorer_url
 
 
 @pytest.mark.skipIf(os.environ["DEPLOYMENT_STAGE"] in ["prod"], "Do not make test collections public in prod")
+@pytest.mark.skipIf(os.environ["DEPLOYMENT_STAGE"] in ["rdev"], "No explorer in rdev")
 def test_revision_flow(
     curator_cookie,
     session,
@@ -52,9 +53,8 @@ def test_revision_flow(
     meta_payload_before_revision_res.raise_for_status()
     meta_payload_before_revision = meta_payload_before_revision_res.json()
 
-    if deployment_stage != "rdev":  # skip if rdev. No explorer in rdev.
-        # Endpoint is eventually consistent
-        schema_before_revision = get_schema_with_retries(dataset_id, api_url, session).json()
+    # Endpoint is eventually consistent
+    schema_before_revision = get_schema_with_retries(dataset_id, api_url, session).json()
 
     # Start a revision
     res = session.post(f"{api_url}/dp/v1/collections/{canonical_collection_id}", headers=headers)
@@ -81,9 +81,8 @@ def test_revision_flow(
     # Check that the published dataset is still the same
     meta_payload_after_revision = session.get(f"{api_url}/dp/v1/datasets/meta?url={explorer_url}").json()
     assert meta_payload_before_revision == meta_payload_after_revision
-    if deployment_stage != "rdev":  # skip if rdev. No explorer in rdev.
-        schema_after_revision = get_schema_with_retries(dataset_id, api_url, session).json()
-        assert schema_before_revision == schema_after_revision
+    schema_after_revision = get_schema_with_retries(dataset_id, api_url, session).json()
+    assert schema_before_revision == schema_after_revision
 
     # Publishing a revised dataset replaces the original dataset
     body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
@@ -159,10 +158,9 @@ def test_revision_flow(
     res = session.get(f"{api_url}/dp/v1/datasets/meta?url={published_explorer_url}")
     assertStatusCode(200, res)
 
-    if deployment_stage != "rdev":  # skip if rdev. No explorer in rdev.
-        # Endpoint is eventually consistent
-        res = get_schema_with_retries(revision_deleted_dataset_id, api_url, session)
-        assertStatusCode(200, res)
+    # Endpoint is eventually consistent
+    res = get_schema_with_retries(revision_deleted_dataset_id, api_url, session)
+    assertStatusCode(200, res)
 
     # Publishing a revision that deletes a dataset removes it from the data portal
     # Publish the revision
