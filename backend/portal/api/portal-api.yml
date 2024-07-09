@@ -383,7 +383,7 @@ paths:
           $ref: "#/components/responses/404"
 
   /v1/collections/{collection_id}/datasets/{dataset_id}:
-    put:
+    patch:
       tags:
         - datasets
       summary: Update a dataset's metadata.
