@@ -5,6 +5,7 @@ export const StyledNotificationWrapper = styled.div`
   position: absolute;
   top: 16px;
   transform: translateX(-50%);
+  z-index: 1; /* positions above Collection hero, banner */
 
   .MuiPaper-root {
     margin: 0;
