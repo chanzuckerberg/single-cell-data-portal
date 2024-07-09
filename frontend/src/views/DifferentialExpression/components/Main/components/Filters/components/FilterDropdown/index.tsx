@@ -1,6 +1,5 @@
 import React from "react";
-
-import { FilterOption } from "../../types";
+import { Icon } from "@czi-sds/components";
 import {
   CloseIcon,
   PrimaryTag,
@@ -14,10 +13,10 @@ import {
   DIFFERENTIAL_EXPRESSION_FILTER_TAG_GRAY,
   DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY,
 } from "src/views/DifferentialExpression/common/constants";
+import { FilterOption } from "src/views/DifferentialExpression/common/store/reducer";
 import { sortOptions } from "./utils";
 import { useConnect } from "./connect";
 import { Props } from "./types";
-import { Icon } from "@czi-sds/components";
 
 function FilterDropdown({
   options,
@@ -25,6 +24,8 @@ function FilterDropdown({
   allAvailableOptions,
   selectedOptionIds,
   handleChange,
+  isQueryGroup1,
+  queryGroupKey,
 }: Props): JSX.Element {
   const {
     selectedOptions,
@@ -34,6 +35,8 @@ function FilterDropdown({
     options,
     allAvailableOptions,
     selectedOptionIds,
+    queryGroupKey,
+    isQueryGroup1,
   });
 
   return (

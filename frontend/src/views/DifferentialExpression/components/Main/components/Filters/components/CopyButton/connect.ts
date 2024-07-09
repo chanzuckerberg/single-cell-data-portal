@@ -8,7 +8,7 @@ import {
 } from "src/views/DifferentialExpression/common/store";
 import { selectQueryGroup2Filters } from "src/views/DifferentialExpression/common/store/actions";
 import { QUERY_GROUP_KEY_TO_FILTER_DIMENSION_MAP } from "../../../common/constants";
-import { FilterOption } from "../../types";
+import { FilterOption } from "src/views/DifferentialExpression/common/store/reducer";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { Props } from "./types";

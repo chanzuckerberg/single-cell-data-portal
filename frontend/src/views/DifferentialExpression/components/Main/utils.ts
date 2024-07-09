@@ -1,7 +1,9 @@
 import { QueryGroups, QueryGroup } from "../../common/store/reducer";
+import { ExcludeOverlappingCells } from "../../common/types";
 
 export const craftPayloadWithQueryGroups = (
-  queryGroups: QueryGroups
+  queryGroups: QueryGroups,
+  excludeOverlappingCells: ExcludeOverlappingCells
 ): Record<string, string> => {
   const payload: Record<string, string> = {};
 
@@ -13,5 +15,6 @@ export const craftPayloadWithQueryGroups = (
     }
   });
 
+  payload["overlap"] = excludeOverlappingCells;
   return payload;
 };

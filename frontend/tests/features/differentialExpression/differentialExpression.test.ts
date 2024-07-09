@@ -472,11 +472,49 @@ describe("Differential Expression", () => {
       // Ensure "Find Genes" button is disabled again
       await expect(findGenesButton).toBeDisabled();
     });
+
+    test("Differential Expression With Query Parameters", async ({ page }) => {
+      await goToPage(
+        `${TEST_URL}${ROUTES.DE}?organism=NCBITaxon:10090&celltypes=CL:0000622&tissues=UBERON:0001264`,
+        page
+      );
+      await waitForFiltersEndpoint(page);
+
+      // Ensure the organism dropdown is set to "Mus musculus"
+      const organismDropdown = page.getByTestId(
+        DIFFERENTIAL_EXPRESSION_ORGANISM_DROPDOWN
+      );
+      await expect(organismDropdown).toHaveText("Mus musculus");
+
+      const cellTypeFilterAutocompleteGroup1 = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
+        .getByTestId(
+          `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Cell Type`
+        );
+
+      const tissueFilterAutocompleteGroup1 = page
+        .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
+        .getByTestId(
+          `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Tissue`
+        );
+
+      // Ensure the filters are applied correctly
+      await expect(
+        cellTypeFilterAutocompleteGroup1.getByTestId(
+          DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY
+        )
+      ).toHaveText("acinar cell");
+      await expect(
+        tissueFilterAutocompleteGroup1.getByTestId(
+          DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY
+        )
+      ).toHaveText("pancreas");
+    });
   });
 
   describe("Results", () => {
     test("All tests", async ({ page }) => {
-      await runDEQuery(page, false);
+      await runDEQuery({ page, mode: "default" });
 
       await test.step("Cell Group 1 and 2 contain the correct number of cells and filter tags", async () => {
         // Check number of cells
@@ -741,7 +779,7 @@ describe("Differential Expression", () => {
         expect(dataRow3.length).toBe(columnNames.length);
       });
 
-      await runDEQuery(page, true);
+      await runDEQuery({ page, mode: "test_include_overlapping_cells" });
       await test.step("Overlapping cells info callout is visible when overlapping cells are not filtered", async () => {
         // Ensure the callout is not visible at first
         await expect(
@@ -754,6 +792,15 @@ describe("Differential Expression", () => {
           .locator("button:nth-child(3)")
           .click();
         await isElementVisible(page, DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT);
+      });
+
+      await runDEQuery({ page, mode: "test_exclude_unavailable_tags" });
+      await test.step("Unavailable tags are excluded from results query group boxes", async () => {
+        const cellGroup1Info = page.getByTestId(
+          DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_INFO
+        );
+        await expect(cellGroup1Info).toHaveText("plasma cell");
+        await expect(cellGroup1Info).not.toHaveText("2 cell types");
       });
     });
   });
@@ -801,7 +848,16 @@ const clickOnAutocompleteDropdownItem = async (
   await waitForFiltersEndpoint(autocomplete.page());
 };
 
-const runDEQuery = async (page: Page, includeOverlappingCells = false) => {
+const runDEQuery = async ({
+  page,
+  mode = "default",
+}: {
+  page: Page;
+  mode?:
+    | "default"
+    | "test_include_overlapping_cells"
+    | "test_exclude_unavailable_tags";
+}) => {
   // Type "lung" in tissue filter for group 1
   await page.reload();
 
@@ -826,7 +882,7 @@ const runDEQuery = async (page: Page, includeOverlappingCells = false) => {
     cellTypeFilterAutocompleteGroup1,
     "plasma cell"
   );
-  if (!includeOverlappingCells) {
+  if (mode !== "test_include_overlapping_cells") {
     // Type "acinar cell" in cell type filter for group 2
     const cellTypeFilterAutocompleteGroup2 = page
       .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER)
@@ -836,6 +892,29 @@ const runDEQuery = async (page: Page, includeOverlappingCells = false) => {
     await clickOnAutocompleteDropdownItem(
       cellTypeFilterAutocompleteGroup2,
       "acinar cell"
+    );
+  }
+  if (mode === "test_exclude_unavailable_tags") {
+    // Type "acinar cell" in cell type filter for group 1
+    const cellTypeFilterAutocompleteGroup1 = page
+      .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
+      .getByTestId(
+        `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Cell Type`
+      );
+    await clickOnAutocompleteDropdownItem(
+      cellTypeFilterAutocompleteGroup1,
+      "acinar cell"
+    );
+
+    // "chronic obstructive pulmonary disease" in disease filter for group 1
+    const diseaseFilterAutocompleteGroup1 = page
+      .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER)
+      .getByTestId(
+        `${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}Disease`
+      );
+    await clickOnAutocompleteDropdownItem(
+      diseaseFilterAutocompleteGroup1,
+      "chronic obstructive pulmonary disease"
     );
   }
   // Hit the "Find Genes" button
