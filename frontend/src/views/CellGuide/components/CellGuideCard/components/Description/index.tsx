@@ -51,6 +51,7 @@ import {
 import { useIsComponentPastBreakpointHeight } from "../common/hooks/useIsComponentPastBreakpoint";
 import { StyledQuestionMarkIcon } from "src/common/style";
 import { ROUTES } from "src/common/constants/routes";
+import { DIFFERENTIAL_EXPRESSION_RELEASED_FLAG } from "src/views/DifferentialExpression/common/constants";
 
 // TODO(SVGR) ADD BACK HOVER BRIGHTNESS CHANGE
 
@@ -347,7 +348,7 @@ export default function Description({
           })}
         </ReferencesWrapper>
       )}
-      {shareUrlForDE !== "" && (
+      {shareUrlForDE !== "" && DIFFERENTIAL_EXPRESSION_RELEASED_FLAG && (
         <Link
           url={shareUrlForDE}
           label={
