@@ -11,7 +11,7 @@ app = create_api_app(
     ],
     static_folder="backend/api_server/static",
 )
-app.json.encoders["/curation"] = CurationJSONEncoder
+app.apis["/curation"].blueprint.json_encoder = CurationJSONEncoder
 
 GeneChecker()
 
