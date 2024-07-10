@@ -1,0 +1,7 @@
+INFO     backend.layers.business.business:business.py:534 {'message': 'ingesting dataset', 'collection_version_id': c2a88b90-0ef6-4ec9-908a-f1e7fa835dba, 'url': 'http://fake.url', 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:534 {'message': 'ingesting dataset', 'collection_version_id': c2a88b90-0ef6-4ec9-908a-f1e7fa835dba, 'url': None, 'current_dataset_version_id': c23b0c50-6bde-43e9-99cd-c0edafb36aaf}
+INFO     processing:dataset_metadata_update.py:304 Main: Starting thread for raw h5ad update
+INFO     processing:dataset_metadata_update.py:323 Main: Starting thread for h5ad update
+INFO     processing:dataset_metadata_update.py:343 Main: Starting thread for rds update
+INFO     processing:dataset_metadata_update.py:366 Main: Starting thread for cxg update
+INFO     processing:process_logic.py:45 Updating processing status
