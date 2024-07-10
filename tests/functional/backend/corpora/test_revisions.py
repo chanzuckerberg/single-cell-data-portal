@@ -12,7 +12,7 @@ from tests.functional.backend.constants import DATASET_URI
 from tests.functional.backend.utils import assertStatusCode, create_explorer_url, create_test_collection
 
 
-@pytest.mark.skipIf(
+@pytest.mark.skipif(
     os.environ["DEPLOYMENT_STAGE"] in ["prod", "rdev"],
     "Do not make test collections public in prod. No explorer in rdev",
 )

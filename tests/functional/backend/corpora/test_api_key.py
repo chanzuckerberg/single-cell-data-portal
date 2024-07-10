@@ -8,7 +8,7 @@ from tenacity import retry, stop_after_attempt, wait_incrementing
 from tests.functional.backend.utils import assertStatusCode
 
 
-@pytest.mark.skipIf(
+@pytest.mark.skipif(
     os.environ["DEPLOYMENT_STAGE"] == "rdev",
     "Skipping for the rdev environment to avoid a flakey race condition. Uncomment if developing this "
     "feature to run in rdev. Restore this comment before merging to main. See "

@@ -42,7 +42,7 @@ def test_get_collections(session, api_url):
         assert isinstance(collection["created_at"], float)
 
 
-@pytest.mark.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
+@pytest.mark.skipif(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
 def test_collection_flow(session, api_url, curator_cookie, upload_dataset, collection_data):
     # create collection
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
@@ -115,7 +115,7 @@ def test_collection_flow(session, api_url, curator_cookie, upload_dataset, colle
     assertStatusCode(requests.codes.ok, res)
 
 
-@pytest.mark.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
+@pytest.mark.skipif(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
 def test_delete_private_collection(session, api_url, curator_cookie, collection_data, request):
     # create collection
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
@@ -150,7 +150,7 @@ def test_delete_private_collection(session, api_url, curator_cookie, collection_
     assert collection_id not in collection_ids
 
 
-@pytest.mark.skipIf(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
+@pytest.mark.skipif(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
 def test_dataset_upload_flow_with_dataset(session, curator_cookie, api_url, upload_dataset, request, collection_data):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     collection_id = create_test_collection(headers, request, session, api_url, collection_data)
