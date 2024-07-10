@@ -54,7 +54,6 @@ def configure_flask_app(flask_app):
     )
     flask_app.json_encoder = CustomJSONEncoder
     flask_app.json.sort_keys = True
-    flask_app.json.ensure_ascii = False
 
     return flask_app
 
