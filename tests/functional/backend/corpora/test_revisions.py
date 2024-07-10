@@ -4,11 +4,11 @@ import unittest
 from urllib.parse import quote
 
 import requests
-from functional.backend.skip_reason import skip_creation_on_prod, skip_no_explorer_in_rdev
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from tests.functional.backend.constants import DATASET_URI
+from tests.functional.backend.skip_reason import skip_creation_on_prod, skip_no_explorer_in_rdev
 from tests.functional.backend.utils import assertStatusCode, create_explorer_url, create_test_collection
 
 

@@ -2,11 +2,11 @@ import json
 
 import pytest
 import requests
-from functional.backend.skip_reason import skip_creation_on_prod
 from requests import HTTPError
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from tests.functional.backend.constants import DATASET_URI
+from tests.functional.backend.skip_reason import skip_creation_on_prod
 from tests.functional.backend.utils import assertStatusCode, create_test_collection
 
 
