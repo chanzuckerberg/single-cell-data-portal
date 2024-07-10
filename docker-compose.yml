@@ -329,6 +329,7 @@ services:
       - RESTART_ON_FAILURE=yes
       - DEV_MODE_COOKIES=1
       - IS_DOCKER_DEV=yes # This skips some unit tests.
+      - INSTALL_DEV=true
     volumes:
       # Mount dirs in a layout suitable for running tests.
       - .:/single-cell-data-portal
