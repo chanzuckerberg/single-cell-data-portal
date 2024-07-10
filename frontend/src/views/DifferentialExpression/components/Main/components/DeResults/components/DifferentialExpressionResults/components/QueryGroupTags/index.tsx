@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import {
   QueryGroup,
-  QueryGroups,
+  State,
 } from "src/views/DifferentialExpression/common/store/reducer";
 import { Tooltip } from "@czi-sds/components";
 import { StyledTag } from "./style";
@@ -11,47 +11,41 @@ import { NO_ORGAN_ID } from "src/views/CellGuide/components/CellGuideCard/compon
 import Link from "src/views/CellGuide/components/CellGuideCard/components/common/Link";
 
 const QueryGroupTags = ({
-  queryGroups,
-  queryGroupsWithNames,
-  isQueryGroup1,
+  selectedOptions,
 }: {
-  queryGroups: QueryGroups;
-  queryGroupsWithNames: QueryGroups;
-  isQueryGroup1?: boolean;
+  selectedOptions: State["selectedOptionsGroup1"];
 }) => {
-  const queryGroup = isQueryGroup1
-    ? queryGroupsWithNames.queryGroup1
-    : queryGroupsWithNames.queryGroup2;
-  const queryGroupIds = isQueryGroup1
-    ? queryGroups.queryGroup1
-    : queryGroups.queryGroup2;
   const nonEmptyQueryGroupKeys = useMemo(() => {
-    return Object.keys(queryGroup).filter(
-      (key) => queryGroup[key as keyof QueryGroup].length > 0
+    return Object.keys(selectedOptions).filter(
+      (key) => selectedOptions[key as keyof QueryGroup].length > 0
     );
-  }, [queryGroup]);
+  }, [selectedOptions]);
 
   return (
     <>
       {nonEmptyQueryGroupKeys.map((key) => {
         const queryGroupKey = key as keyof QueryGroup;
-        const selected = queryGroup[queryGroupKey];
-        const selectedId = queryGroupIds[queryGroupKey];
+        const selected = selectedOptions[queryGroupKey].filter(
+          (option) => !option.unavailable
+        );
+
         const suffix = QUERY_GROUP_KEY_TO_TAG_SUFFIX_MAP[queryGroupKey];
         const label =
-          selected.length > 1 ? `${selected.length} ${suffix}` : selected[0];
+          selected.length > 1
+            ? `${selected.length} ${suffix}`
+            : selected[0].name;
 
         const getValue = (index: number) => {
           return key === "cellTypes" ? (
             <Link
-              label={selected[index]}
+              label={selected[index].name}
               url={getCellTypeLink({
-                cellTypeId: selectedId[index],
+                cellTypeId: selected[index].id,
                 tissueId: NO_ORGAN_ID,
               })}
             />
           ) : (
-            selected[index]
+            selected[index].name
           );
         };
         const clickToViewText = "Click to view in CellGuide";
@@ -81,7 +75,7 @@ const QueryGroupTags = ({
             <span>
               <TagWrapper
                 key={`${key}-tag-wrapper`}
-                selectedId={selectedId[0]}
+                selectedId={selected[0].id}
                 isSingleCellType={isSingleCellType}
               >
                 <StyledTag

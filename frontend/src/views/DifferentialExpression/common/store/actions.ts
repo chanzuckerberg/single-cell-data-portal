@@ -1,4 +1,4 @@
-import { QueryGroup, REDUCERS, State } from "./reducer";
+import { FilterOption, QueryGroup, REDUCERS, State } from "./reducer";
 
 export function selectOrganism(
   organismId: State["organismId"]
@@ -6,6 +6,26 @@ export function selectOrganism(
   return {
     payload: organismId,
     type: "selectOrganism",
+  };
+}
+
+export function setSelectedOptionsGroup1(
+  key: keyof QueryGroup,
+  options: FilterOption[]
+): GetActionTypeOfReducer<(typeof REDUCERS)["setSelectedOptionsGroup1"]> {
+  return {
+    payload: { key, options },
+    type: "setSelectedOptionsGroup1",
+  };
+}
+
+export function setSelectedOptionsGroup2(
+  key: keyof QueryGroup,
+  options: FilterOption[]
+): GetActionTypeOfReducer<(typeof REDUCERS)["setSelectedOptionsGroup2"]> {
+  return {
+    payload: { key, options },
+    type: "setSelectedOptionsGroup2",
   };
 }
 

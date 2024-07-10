@@ -359,6 +359,8 @@ export default function CellGuideCard({
               NotFoundError: Failed to execute 'insertBefore' on 'Node'
             */}
             <Description
+              selectedOrganism={selectedOrganism.name}
+              selectedOrganId={selectedOrganId}
               cellTypeId={cellTypeId}
               cellTypeName={cellTypeName}
               skinnyMode={skinnyMode}

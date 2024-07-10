@@ -68,6 +68,8 @@ const DifferentialExpressionResults = ({
     numDatasetsText1,
     numDatasetsText2,
     showOverlappingCellsCallout,
+    selectedOptionsGroup1,
+    selectedOptionsGroup2,
   } = useConnect({
     queryGroups,
     queryGroupsWithNames,
@@ -214,11 +216,7 @@ const DifferentialExpressionResults = ({
           </CellGroupStatsIndicator>
         </CellCountTitle>
         <FilterTagsWrapper>
-          <QueryGroupTags
-            isQueryGroup1
-            queryGroups={queryGroups}
-            queryGroupsWithNames={queryGroupsWithNames}
-          />
+          <QueryGroupTags selectedOptions={selectedOptionsGroup1} />
         </FilterTagsWrapper>
       </CellGroupWrapper>
       <CellGroupWrapper data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_INFO}>
@@ -258,10 +256,7 @@ const DifferentialExpressionResults = ({
           </CellGroupStatsIndicator>
         </CellCountTitle>
         <FilterTagsWrapper>
-          <QueryGroupTags
-            queryGroups={queryGroups}
-            queryGroupsWithNames={queryGroupsWithNames}
-          />
+          <QueryGroupTags selectedOptions={selectedOptionsGroup2} />
         </FilterTagsWrapper>
       </CellGroupWrapper>
       {!!errorMessage && (

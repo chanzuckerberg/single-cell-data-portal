@@ -25,7 +25,7 @@ export const Content = styled.div`
   display: flex;
   flex-direction: column;
   margin: 80px auto;
-  max-width: 1200px;
+  max-width: 1400px;
 `;
 
 export const Header = styled.h1`
@@ -75,6 +75,7 @@ export const ProjectSubmitter = styled.h4`
 
 export const ProjectDescription = styled(Paragraph)`
   max-width: 85ch;
+  padding-right: 10px;
 `;
 
 export const ProjectContainer = styled.div`
@@ -100,6 +101,7 @@ export const ItemContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${spacesXxs}px;
+  min-width: 56px;
 `;
 
 export const ItemLabel = styled.div`
@@ -109,6 +111,7 @@ export const ItemLabel = styled.div`
     "clig" off,
     "liga" off;
   color: ${gray400};
+  white-space: nowrap;
 `;
 
 export const StyledRadioGroup = styled(RadioGroup)`

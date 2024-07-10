@@ -60,3 +60,7 @@ export const DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT =
 
 export const DIFFERENTIAL_EXPRESSION_SOURCE_DATA_SIDEBAR =
   "differential-expression-source-data-sidebar";
+
+// Set this to true when releasing DE or just delete all references to this flag.
+// Used to temporarily hide DE-adjacent features.
+export const DIFFERENTIAL_EXPRESSION_RELEASED_FLAG = false;

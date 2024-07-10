@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import isEqual from "lodash/isEqual";
 import { useQueryGroupFilterDimensions } from "src/common/queries/differentialExpression";
-import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
-import { FilterOption } from "../Filters/types";
+import {
+  QueryGroup,
+  FilterOption,
+} from "src/views/DifferentialExpression/common/store/reducer";
 
 const EMPTY_FILTERS = {
   disease_terms: [],

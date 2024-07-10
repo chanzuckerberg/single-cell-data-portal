@@ -12,10 +12,12 @@ const IGNORE_DIFFERENT_METADATA_KEYS = [
   "id",
   "relative_uri",
   "indexes",
+  "submission_date",
 ];
 const ATTRIBUTE_TO_LABEL: Record<string, string> = {
   experiment_name: "Organism",
-  n_cells: "Cells",
+  census_version: "Census Version",
+  n_embeddings: "Cells",
   data_type: "Embedding",
 };
 

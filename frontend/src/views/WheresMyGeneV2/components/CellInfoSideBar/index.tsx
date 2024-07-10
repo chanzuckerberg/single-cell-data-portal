@@ -19,7 +19,7 @@ import {
   TooltipLink,
   AddToDotplotButton,
 } from "./style";
-import { Link } from "src/components/GeneInfoSideBar/style";
+import { StyledLink } from "src/components/GeneInfoSideBar/style";
 import InfoSVG from "src/common/images/info-sign-icon.svg";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
 import { CellInfoBarProps } from "./types";
@@ -48,6 +48,7 @@ import {
   TABLE_HEADER_SPECIFICITY,
   SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF,
   SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF,
+  DIFFERENTIAL_EXPRESSION_LINK_TEXT,
 } from "./constants";
 import { useConnect } from "./connect";
 import {
@@ -59,6 +60,7 @@ import {
 } from "../../common/styles";
 import Description from "src/views/CellGuide/components/CellGuideCard/components/Description";
 import { StyledQuestionMarkIcon } from "src/common/style";
+import { DIFFERENTIAL_EXPRESSION_RELEASED_FLAG } from "src/views/DifferentialExpression/common/constants";
 
 function CellInfoSideBar({
   cellInfoCellType,
@@ -74,6 +76,7 @@ function CellInfoSideBar({
     handleMarkerScoreHoverEnd,
     handleSpecificityHoverEnd,
     setHoverStartTime,
+    differentialExpressionUrl,
   } = useConnect({
     cellInfoCellType,
   });
@@ -97,7 +100,7 @@ function CellInfoSideBar({
         skinnyMode={true}
         inSideBar
       />
-      <Link
+      <StyledLink
         href={`${ROUTES.CELL_GUIDE}/${cellInfoCellType.cellType.id}`}
         onClick={() =>
           track(EVENTS.WMG_OPEN_IN_CG_CLICKED, {
@@ -108,8 +111,24 @@ function CellInfoSideBar({
         rel="noreferrer noopener"
       >
         {MARKER_SCORE_CELLGUIDE_LINK_TEXT}
-      </Link>
-
+        <Icon sdsIcon="ChevronRight" sdsType="static" sdsSize="xs" />
+      </StyledLink>
+      {DIFFERENTIAL_EXPRESSION_RELEASED_FLAG && (
+        <StyledLink
+          href={differentialExpressionUrl}
+          onClick={() =>
+            track(EVENTS.WMG_OPEN_IN_DE_CLICKED, {
+              cell_type: cellInfoCellType.cellType.id,
+              tissue: cellInfoCellType.tissueID,
+            })
+          }
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          {DIFFERENTIAL_EXPRESSION_LINK_TEXT}
+          <Icon sdsIcon="ChevronRight" sdsType="static" sdsSize="xs" />
+        </StyledLink>
+      )}
       <ButtonContainer>
         <ButtonWrapper>
           <StyledMarkerGeneHeader>{MARKER_GENE_LABEL}</StyledMarkerGeneHeader>
