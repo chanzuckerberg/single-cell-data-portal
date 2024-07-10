@@ -1,10 +1,12 @@
 import json
 import os
 import time
+from typing import Any, Callable
 from urllib.parse import urlparse
 
 from connexion import FlaskApi, FlaskApp, ProblemException, problem
 from flask import Response, g, request
+from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
 from server_timing import Timing as ServerTiming
 from swagger_ui_bundle import swagger_ui_path
@@ -17,6 +19,16 @@ from backend.common.utils.json import CustomJSONEncoder
 
 DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
 APP_NAME = "{}-{}".format(os.environ.get("APP_NAME", "api"), DEPLOYMENT_STAGE)
+
+
+class _JSONProvider(DefaultJSONProvider):
+    encoders: dict[str, Callable] = {"default": CustomJSONEncoder}
+
+    def dumps(self, obj: Any, **kwargs: Any) -> str:
+        bp = self._app.blueprints.get(request.blueprint) if request else None
+        if bp:
+            kwargs.setdefault("cls", self.encoders.get(bp.name[1:], self.encoders["default"]))
+        return super().dumps(obj, **kwargs)
 
 
 def configure_flask_app(flask_app):
@@ -51,9 +63,12 @@ def configure_flask_app(flask_app):
         SESSION_COOKIE_SECURE=require_secure_cookies,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
-        JSON_SORT_KEYS=True,
     )
-    flask_app.json_encoder = CustomJSONEncoder
+    # flask_app.json_encoder = CustomJSONEncoder
+    flask_app.json = _JSONProvider(flask_app)
+    flask_app.json.sort_keys = True
+    flask_app.json.ensure_ascii = False
+
     return flask_app
 
 
@@ -141,7 +156,8 @@ def create_api_app(api_paths_and_spec_files, **server_args):
     based on the deployment stage.
 
     Args:
-        api_paths_and_spec_files (list of tuples): A list where each tuple contains a base path and a specification file.
+        api_paths_and_spec_files (list of tuples): A list where each tuple contains a base path and a specification
+        file.
         **server_args: Additional arguments to be passed to the FlaskApp.
 
     Returns:
