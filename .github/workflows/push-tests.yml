@@ -103,14 +103,14 @@ jobs:
           make local-unit-test-backend
 
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
 
       - name: Upload Allure results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
@@ -163,14 +163,14 @@ jobs:
           make local-unit-test-wmg-backend
 
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
 
       - name: Upload Allure results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
@@ -223,14 +223,14 @@ jobs:
           make local-unit-test-de-backend
 
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
 
       - name: Upload Allure results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
@@ -283,14 +283,14 @@ jobs:
           make local-unit-test-processing
 
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
 
       - name: Upload Allure results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
@@ -342,13 +342,13 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-unit-test-wmg-processing
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
       - name: Upload Allure results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
@@ -399,13 +399,13 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-unit-test-cellguide-pipeline
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
       - name: Upload Allure results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
@@ -457,14 +457,14 @@ jobs:
           make local-unit-test-cxg-admin
 
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
 
       - name: Upload Allure results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
@@ -516,14 +516,14 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-integration-test-backend
       - name: Upload coverage results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
 
       - name: Upload Allure results as an artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
@@ -561,7 +561,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v2
         with:
           name: coverage
           path: .
