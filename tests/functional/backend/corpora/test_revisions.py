@@ -13,7 +13,8 @@ from tests.functional.backend.utils import assertStatusCode, create_explorer_url
 
 
 @pytest.mark.skipIf(
-    os.environ["DEPLOYMENT_STAGE"] in ["prod"], "Do not make test collections public in prod. No explorer in rdev"
+    os.environ["DEPLOYMENT_STAGE"] in ["prod", "rdev"],
+    "Do not make test collections public in prod. No explorer in rdev",
 )
 def test_revision_flow(
     curator_cookie,
