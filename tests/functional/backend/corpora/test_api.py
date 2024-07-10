@@ -1,8 +1,8 @@
 import json
-import os
 
 import pytest
 import requests
+from functional.backend.skip_reason import skip_creation_on_prod
 from requests import HTTPError
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
@@ -10,6 +10,7 @@ from tests.functional.backend.constants import DATASET_URI
 from tests.functional.backend.utils import assertStatusCode, create_test_collection
 
 
+@skip_creation_on_prod
 def test_version(session, api_url):
     res = session.get(f"{api_url}/dp/v1/deployed_version")
     res.raise_for_status()
@@ -42,7 +43,7 @@ def test_get_collections(session, api_url):
         assert isinstance(collection["created_at"], float)
 
 
-@pytest.mark.skipif(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
+@skip_creation_on_prod
 def test_collection_flow(session, api_url, curator_cookie, upload_dataset, collection_data):
     # create collection
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
@@ -115,7 +116,7 @@ def test_collection_flow(session, api_url, curator_cookie, upload_dataset, colle
     assertStatusCode(requests.codes.ok, res)
 
 
-@pytest.mark.skipif(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
+@skip_creation_on_prod
 def test_delete_private_collection(session, api_url, curator_cookie, collection_data, request):
     # create collection
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
@@ -150,7 +151,7 @@ def test_delete_private_collection(session, api_url, curator_cookie, collection_
     assert collection_id not in collection_ids
 
 
-@pytest.mark.skipif(os.environ["DEPLOYMENT_STAGE"] == "prod", "Do not make test collections public in prod")
+@skip_creation_on_prod
 def test_dataset_upload_flow_with_dataset(session, curator_cookie, api_url, upload_dataset, request, collection_data):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     collection_id = create_test_collection(headers, request, session, api_url, collection_data)
