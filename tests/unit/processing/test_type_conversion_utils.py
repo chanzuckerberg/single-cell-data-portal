@@ -7,7 +7,7 @@ import pytest
 from pandas import DataFrame, Series
 from scipy import sparse
 
-from backend.common.utils.type_conversion_utils import (
+from backend.layers.processing.utils.type_conversion_utils import (
     get_dtype_and_schema_of_array,
     get_dtypes_and_schemas_of_dataframe,
     get_encoding_dtype_of_array,

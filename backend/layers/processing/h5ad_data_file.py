@@ -7,14 +7,13 @@ import anndata
 import numpy as np
 import tiledb
 
-from backend.common.utils.color_conversion_utils import (
+from backend.common.utils.corpora_constants import CorporaConstants
+from backend.common.utils.cxg_constants import CxgConstants
+from backend.common.utils.tiledb import consolidation_buffer_size
+from backend.layers.processing.utils.color_conversion_utils import (
     ColorFormatException,
     convert_anndata_category_colors_to_cxg_category_colors,
 )
-from backend.common.utils.corpora_constants import CorporaConstants
-from backend.common.utils.cxg_constants import CxgConstants
-from backend.common.utils.matrix_utils import is_matrix_sparse
-from backend.common.utils.tiledb import consolidation_buffer_size
 from backend.layers.processing.utils.cxg_generation_utils import (
     convert_dataframe_to_cxg_array,
     convert_dictionary_to_cxg_group,
@@ -22,6 +21,7 @@ from backend.layers.processing.utils.cxg_generation_utils import (
     convert_ndarray_to_cxg_dense_array,
     convert_uns_to_cxg_group,
 )
+from backend.layers.processing.utils.matrix_utils import is_matrix_sparse
 
 
 class H5ADDataFile:
