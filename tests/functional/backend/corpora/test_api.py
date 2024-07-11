@@ -5,7 +5,7 @@ import requests
 from requests import HTTPError
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
-from tests.functional.backend.constants import DATASET_URI
+from tests.functional.backend.constants import DATASET_URI, VISIUM_DATASET_URI
 from tests.functional.backend.skip_reason import skip_creation_on_prod
 from tests.functional.backend.utils import assertStatusCode, create_test_collection
 
@@ -156,6 +156,15 @@ def test_dataset_upload_flow_with_dataset(session, curator_cookie, api_url, uplo
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     collection_id = create_test_collection(headers, request, session, api_url, collection_data)
     _verify_upload_and_delete_succeeded(collection_id, headers, DATASET_URI, session, api_url, upload_dataset)
+
+
+@skip_creation_on_prod
+def test_dataset_upload_flow_with_visium_dataset(
+    session, curator_cookie, api_url, upload_dataset, request, collection_data
+):
+    headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
+    collection_id = create_test_collection(headers, request, session, api_url, collection_data)
+    _verify_upload_and_delete_succeeded(collection_id, headers, VISIUM_DATASET_URI, session, api_url, upload_dataset)
 
 
 def _verify_upload_and_delete_succeeded(collection_id, headers, dataset_uri, session, api_url, upload_and_wait):

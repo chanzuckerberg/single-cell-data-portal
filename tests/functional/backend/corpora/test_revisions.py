@@ -3,7 +3,6 @@ import os
 import unittest
 from urllib.parse import quote
 
-import pytest
 import requests
 from tenacity import retry, stop_after_attempt, wait_fixed
 

@@ -84,7 +84,6 @@ def upload_dataset(session, api_url, curator_cookie, request):
         dataset_id = result["dataset_id"]
         headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
         request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/datasets/{dataset_id}", headers=headers))
-
         if result["errors"]:
             raise pytest.fail(str(result["errors"]))
         return dataset_id
