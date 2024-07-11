@@ -112,9 +112,11 @@ def upload_and_wait(
             if rds_status == "FAILED":
                 errors.append(f"RDS CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
             if any(
-                cxg_status == rds_status == h5ad_status == "UPLOADED",
-                skip_rds_status and cxg_status == h5ad_status == "UPLOADED" and rds_status == "SKIPPED",
-                errors,
+                [
+                    cxg_status == rds_status == h5ad_status == "UPLOADED",
+                    skip_rds_status and cxg_status == h5ad_status == "UPLOADED" and rds_status == "SKIPPED",
+                    errors,
+                ]
             ):
                 keep_trying = False
         if time.time() >= timer + 1200:
