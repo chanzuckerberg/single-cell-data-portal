@@ -48,7 +48,7 @@ class SmokeTestsInitializer:
     def create_and_publish_collection(self, dropbox_url):
         collection_id = self.create_collection()
         for _ in range(NUM_TEST_DATASETS):
-            upload_and_wait(collection_id, dropbox_url, cleanup=False)
+            upload_and_wait(self.session, self.api, self.curator_cookie, collection_id, dropbox_url)
         self.publish_collection(collection_id)
         print(f"created and published collection {collection_id}")
 
