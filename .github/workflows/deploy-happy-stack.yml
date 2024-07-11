@@ -178,7 +178,7 @@ jobs:
           npx playwright install --with-deps
           cp src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
           DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}-logged-in
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v2
         if: always()
         with:
           name: logged-in-test-results
