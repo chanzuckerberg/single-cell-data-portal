@@ -1,5 +1,5 @@
 import { DispatchContext } from "src/views/DifferentialExpression/common/store";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 
 import { Props } from "./types";
 import {
@@ -44,23 +44,19 @@ export const useConnect = ({
       (a, b) =>
         selectedOptionIds.indexOf(a.id) - selectedOptionIds.indexOf(b.id)
     );
-    if (dispatch) {
-      if (isQueryGroup1) {
-        dispatch(setSelectedOptionsGroup1(queryGroupKey, newOptions));
-      } else {
-        dispatch(setSelectedOptionsGroup2(queryGroupKey, newOptions));
-      }
-    }
 
     return newOptions;
-  }, [
-    options,
-    allAvailableOptions,
-    selectedOptionIds,
-    queryGroupKey,
-    isQueryGroup1,
-    dispatch,
-  ]);
+  }, [options, allAvailableOptions, selectedOptionIds]);
+
+  useEffect(() => {
+    if (dispatch) {
+      if (isQueryGroup1) {
+        dispatch(setSelectedOptionsGroup1(queryGroupKey, selectedOptions));
+      } else {
+        dispatch(setSelectedOptionsGroup2(queryGroupKey, selectedOptions));
+      }
+    }
+  }, [selectedOptions, dispatch, isQueryGroup1, queryGroupKey]);
 
   return {
     selectedOptions,

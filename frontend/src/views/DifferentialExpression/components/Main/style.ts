@@ -139,3 +139,7 @@ export const StyledSvgIcon = styled(SvgIcon)`
     color: ${primary400};
   }
 `;
+
+export const StyledP = styled.p`
+  margin-bottom: 0;
+`;

@@ -56,7 +56,7 @@ export const EMPTY_FILTERS = {
 export const INITIAL_STATE: State = {
   organismId: null,
   snapshotId: null,
-  excludeOverlappingCells: "excludeTwo",
+  excludeOverlappingCells: "retainBoth",
   queryGroups: { queryGroup1: EMPTY_FILTERS, queryGroup2: EMPTY_FILTERS },
   queryGroupsWithNames: {
     queryGroup1: EMPTY_FILTERS,
@@ -204,12 +204,58 @@ function selectQueryGroup2Filters(
 }
 
 function submitQueryGroups(state: State, _: PayloadAction<null>): State {
-  const { queryGroups, queryGroupsWithNames } = state;
+  const {
+    queryGroups,
+    queryGroupsWithNames,
+    selectedOptionsGroup1,
+    selectedOptionsGroup2,
+  } = state;
+
+  const newQueryGroup1 = { ...queryGroups.queryGroup1 };
+  const newQueryGroup2 = { ...queryGroups.queryGroup2 };
+  for (const key in selectedOptionsGroup1) {
+    newQueryGroup1[key as keyof QueryGroup] = selectedOptionsGroup1[
+      key as keyof QueryGroup
+    ]
+      .filter((option: FilterOption) => !option.unavailable)
+      .map((option: FilterOption) => option.id);
+  }
+  for (const key in selectedOptionsGroup2) {
+    newQueryGroup2[key as keyof QueryGroup] = selectedOptionsGroup2[
+      key as keyof QueryGroup
+    ]
+      .filter((option: FilterOption) => !option.unavailable)
+      .map((option: FilterOption) => option.id);
+  }
+
+  const newQueryGroupWithNames1 = { ...queryGroupsWithNames.queryGroup1 };
+  const newQueryGroupWithNames2 = { ...queryGroupsWithNames.queryGroup2 };
+
+  for (const key in selectedOptionsGroup1) {
+    newQueryGroupWithNames1[key as keyof QueryGroup] = selectedOptionsGroup1[
+      key as keyof QueryGroup
+    ]
+      .filter((option: FilterOption) => !option.unavailable)
+      .map((option: FilterOption) => option.name);
+  }
+  for (const key in selectedOptionsGroup2) {
+    newQueryGroupWithNames2[key as keyof QueryGroup] = selectedOptionsGroup2[
+      key as keyof QueryGroup
+    ]
+      .filter((option: FilterOption) => !option.unavailable)
+      .map((option: FilterOption) => option.name);
+  }
 
   return {
     ...state,
-    submittedQueryGroups: queryGroups,
-    submittedQueryGroupsWithNames: queryGroupsWithNames,
+    submittedQueryGroups: {
+      queryGroup1: newQueryGroup1,
+      queryGroup2: newQueryGroup2,
+    },
+    submittedQueryGroupsWithNames: {
+      queryGroup1: newQueryGroupWithNames1,
+      queryGroup2: newQueryGroupWithNames2,
+    },
   };
 }
 
