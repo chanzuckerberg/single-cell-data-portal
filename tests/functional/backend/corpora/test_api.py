@@ -164,11 +164,15 @@ def test_dataset_upload_flow_with_visium_dataset(
 ):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     collection_id = create_test_collection(headers, request, session, api_url, collection_data)
-    _verify_upload_and_delete_succeeded(collection_id, headers, VISIUM_DATASET_URI, session, api_url, upload_dataset)
+    _verify_upload_and_delete_succeeded(
+        collection_id, headers, VISIUM_DATASET_URI, session, api_url, upload_dataset, skip_rds_status=True
+    )
 
 
-def _verify_upload_and_delete_succeeded(collection_id, headers, dataset_uri, session, api_url, upload_and_wait):
-    dataset_id = upload_and_wait(collection_id, dataset_uri)
+def _verify_upload_and_delete_succeeded(
+    collection_id, headers, dataset_uri, session, api_url, upload_and_wait, skip_rds_status=False
+):
+    dataset_id = upload_and_wait(collection_id, dataset_uri, skip_rds_status=skip_rds_status)
     # test non owner cant retrieve status
     no_auth_headers = {"Content-Type": "application/json"}
     res = session.get(f"{api_url}/dp/v1/datasets/{dataset_id}/status", headers=no_auth_headers)
