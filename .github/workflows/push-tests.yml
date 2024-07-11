@@ -103,14 +103,14 @@ jobs:
           make local-unit-test-backend
 
       - name: Upload coverage results as an artifact
-        uses: actions/download-artifact@v3
+        uses: actions/upload-artifact@v3
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
 
       - name: Upload Allure results as an artifact
-        uses: actions/download-artifact@v3
+        uses: actions/upload-artifact@v3
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
@@ -163,14 +163,14 @@ jobs:
           make local-unit-test-wmg-backend
 
       - name: Upload coverage results as an artifact
-        uses: actions/download-artifact@v3
+        uses: actions/upload-artifact@v3
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
 
       - name: Upload Allure results as an artifact
-        uses: actions/download-artifact@v3
+        uses: actions/upload-artifact@v3
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
@@ -223,14 +223,14 @@ jobs:
           make local-unit-test-de-backend
 
       - name: Upload coverage results as an artifact
-        uses: actions/download-artifact@v3
+        uses: actions/upload-artifact@v3
         with:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
 
       - name: Upload Allure results as an artifact
-        uses: actions/download-artifact@v3
+        uses: actions/upload-artifact@v3
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
