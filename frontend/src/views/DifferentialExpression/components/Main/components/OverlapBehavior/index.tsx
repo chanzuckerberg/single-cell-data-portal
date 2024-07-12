@@ -17,9 +17,7 @@ export default function Method(): JSX.Element {
       <SegmentedControl
         data-testid={DIFFERENTIAL_EXPRESSION_OVERLAP_BEHAVIOR}
         value={activeValue}
-        onChange={(_, value) => {
-          setActiveValue(value);
-        }}
+        onChange={(_, value) => value && setActiveValue(value)}
         defaultValue="excludeTwo"
         buttonDefinition={BUTTON_DEFINITION}
       />
@@ -29,18 +27,18 @@ export default function Method(): JSX.Element {
 
 const BUTTON_DEFINITION = [
   {
-    icon: <CirclesOverlapLeft />,
-    value: "excludeOne",
-    tooltipText: "Exclude overlapping cells from group 1",
-  },
-  {
-    icon: <CirclesOverlapRight />,
-    value: "excludeTwo",
-    tooltipText: "Exclude overlapping cells from group 2",
-  },
-  {
     icon: <CirclesOverlapBoth />,
     value: "retainBoth",
     tooltipText: "Retain overlapping cells in both groups",
+  },
+  {
+    icon: <CirclesOverlapLeft />,
+    value: "excludeTwo",
+    tooltipText: "Remove overlapping cells from group 2",
+  },
+  {
+    icon: <CirclesOverlapRight />,
+    value: "excludeOne",
+    tooltipText: "Remove overlapping cells from group 1",
   },
 ];
