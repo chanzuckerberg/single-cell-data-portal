@@ -10,7 +10,7 @@ import {
 import { gray500, primary400 } from "src/common/theme";
 import { SvgIcon } from "@mui/material";
 
-const RIGHT_PANEL_WIDTH = "480px";
+export const RIGHT_PANEL_WIDTH = 480;
 
 export const TwoPanelLayout = styled.div`
   display: flex;
@@ -25,8 +25,8 @@ export const TwoPanelLayout = styled.div`
   }
 
   .rightPanel {
-    width: ${RIGHT_PANEL_WIDTH};
     min-width: fit-content;
+    width: ${RIGHT_PANEL_WIDTH}px;
   }
 `;
 
