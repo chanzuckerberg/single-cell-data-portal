@@ -56,7 +56,7 @@ export const EMPTY_FILTERS = {
 export const INITIAL_STATE: State = {
   organismId: null,
   snapshotId: null,
-  excludeOverlappingCells: "excludeTwo",
+  excludeOverlappingCells: "retainBoth",
   queryGroups: { queryGroup1: EMPTY_FILTERS, queryGroup2: EMPTY_FILTERS },
   queryGroupsWithNames: {
     queryGroup1: EMPTY_FILTERS,
@@ -204,12 +204,49 @@ function selectQueryGroup2Filters(
 }
 
 function submitQueryGroups(state: State, _: PayloadAction<null>): State {
-  const { queryGroups, queryGroupsWithNames } = state;
+  const { selectedOptionsGroup1, selectedOptionsGroup2 } = state;
+
+  const filterAndMapOptions = (
+    selectedOptions: Record<string, FilterOption[]>,
+    mapTo: "id" | "name"
+  ) => {
+    const result: Record<string, string[]> = {};
+    for (const key in selectedOptions) {
+      result[key as keyof QueryGroup] = selectedOptions[key as keyof QueryGroup]
+        .filter((option: FilterOption) => !option.unavailable)
+        .map((option: FilterOption) => option[mapTo]);
+    }
+    return result;
+  };
+
+  const newQueryGroup1 = {
+    ...EMPTY_FILTERS,
+    ...filterAndMapOptions(selectedOptionsGroup1, "id"),
+  };
+  const newQueryGroup2 = {
+    ...EMPTY_FILTERS,
+    ...filterAndMapOptions(selectedOptionsGroup2, "id"),
+  };
+
+  const newQueryGroupWithNames1 = {
+    ...EMPTY_FILTERS,
+    ...filterAndMapOptions(selectedOptionsGroup1, "name"),
+  };
+  const newQueryGroupWithNames2 = {
+    ...EMPTY_FILTERS,
+    ...filterAndMapOptions(selectedOptionsGroup2, "name"),
+  };
 
   return {
     ...state,
-    submittedQueryGroups: queryGroups,
-    submittedQueryGroupsWithNames: queryGroupsWithNames,
+    submittedQueryGroups: {
+      queryGroup1: newQueryGroup1,
+      queryGroup2: newQueryGroup2,
+    },
+    submittedQueryGroupsWithNames: {
+      queryGroup1: newQueryGroupWithNames1,
+      queryGroup2: newQueryGroupWithNames2,
+    },
   };
 }
 
