@@ -789,7 +789,7 @@ describe("Differential Expression", () => {
         // Ensure the callout is visible when overlapping cells are not filtered
         await page
           .getByTestId(DIFFERENTIAL_EXPRESSION_OVERLAP_BEHAVIOR)
-          .locator("button:nth-child(3)")
+          .locator("button:nth-child(1)")
           .click();
         await isElementVisible(page, DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT);
       });
@@ -893,6 +893,11 @@ const runDEQuery = async ({
       cellTypeFilterAutocompleteGroup2,
       "acinar cell"
     );
+  } else {
+    await page
+      .getByTestId(DIFFERENTIAL_EXPRESSION_OVERLAP_BEHAVIOR)
+      .locator("button:nth-child(2)")
+      .click();
   }
   if (mode === "test_exclude_unavailable_tags") {
     // Type "acinar cell" in cell type filter for group 1
