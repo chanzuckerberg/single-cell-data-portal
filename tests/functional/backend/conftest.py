@@ -79,8 +79,10 @@ def curation_api_access_token(session, api_url, config, tmp_path_factory, worker
 
 @pytest.fixture(scope="session")
 def upload_dataset(session, api_url, curator_cookie, request):
-    def _upload_dataset(collection_id, dropbox_url, existing_dataset_id=None):
-        result = upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id)
+    def _upload_dataset(collection_id, dropbox_url, existing_dataset_id=None, skip_rds_status=False):
+        result = upload_and_wait(
+            session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id, skip_rds_status
+        )
         dataset_id = result["dataset_id"]
         headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
         request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/datasets/{dataset_id}", headers=headers))
