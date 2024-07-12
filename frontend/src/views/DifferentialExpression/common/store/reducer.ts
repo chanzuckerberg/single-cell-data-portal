@@ -204,47 +204,38 @@ function selectQueryGroup2Filters(
 }
 
 function submitQueryGroups(state: State, _: PayloadAction<null>): State {
-  const {
-    queryGroups,
-    queryGroupsWithNames,
-    selectedOptionsGroup1,
-    selectedOptionsGroup2,
-  } = state;
+  const { selectedOptionsGroup1, selectedOptionsGroup2 } = state;
 
-  const newQueryGroup1 = { ...queryGroups.queryGroup1 };
-  const newQueryGroup2 = { ...queryGroups.queryGroup2 };
-  for (const key in selectedOptionsGroup1) {
-    newQueryGroup1[key as keyof QueryGroup] = selectedOptionsGroup1[
-      key as keyof QueryGroup
-    ]
-      .filter((option: FilterOption) => !option.unavailable)
-      .map((option: FilterOption) => option.id);
-  }
-  for (const key in selectedOptionsGroup2) {
-    newQueryGroup2[key as keyof QueryGroup] = selectedOptionsGroup2[
-      key as keyof QueryGroup
-    ]
-      .filter((option: FilterOption) => !option.unavailable)
-      .map((option: FilterOption) => option.id);
-  }
+  const filterAndMapOptions = (
+    selectedOptions: Record<string, FilterOption[]>,
+    mapTo: "id" | "name"
+  ) => {
+    const result: Record<string, string[]> = {};
+    for (const key in selectedOptions) {
+      result[key as keyof QueryGroup] = selectedOptions[key as keyof QueryGroup]
+        .filter((option: FilterOption) => !option.unavailable)
+        .map((option: FilterOption) => option[mapTo]);
+    }
+    return result;
+  };
 
-  const newQueryGroupWithNames1 = { ...queryGroupsWithNames.queryGroup1 };
-  const newQueryGroupWithNames2 = { ...queryGroupsWithNames.queryGroup2 };
+  const newQueryGroup1 = {
+    ...EMPTY_FILTERS,
+    ...filterAndMapOptions(selectedOptionsGroup1, "id"),
+  };
+  const newQueryGroup2 = {
+    ...EMPTY_FILTERS,
+    ...filterAndMapOptions(selectedOptionsGroup2, "id"),
+  };
 
-  for (const key in selectedOptionsGroup1) {
-    newQueryGroupWithNames1[key as keyof QueryGroup] = selectedOptionsGroup1[
-      key as keyof QueryGroup
-    ]
-      .filter((option: FilterOption) => !option.unavailable)
-      .map((option: FilterOption) => option.name);
-  }
-  for (const key in selectedOptionsGroup2) {
-    newQueryGroupWithNames2[key as keyof QueryGroup] = selectedOptionsGroup2[
-      key as keyof QueryGroup
-    ]
-      .filter((option: FilterOption) => !option.unavailable)
-      .map((option: FilterOption) => option.name);
-  }
+  const newQueryGroupWithNames1 = {
+    ...EMPTY_FILTERS,
+    ...filterAndMapOptions(selectedOptionsGroup1, "name"),
+  };
+  const newQueryGroupWithNames2 = {
+    ...EMPTY_FILTERS,
+    ...filterAndMapOptions(selectedOptionsGroup2, "name"),
+  };
 
   return {
     ...state,

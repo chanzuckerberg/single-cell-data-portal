@@ -50,11 +50,10 @@ export const useConnect = ({
 
   useEffect(() => {
     if (dispatch) {
-      if (isQueryGroup1) {
-        dispatch(setSelectedOptionsGroup1(queryGroupKey, selectedOptions));
-      } else {
-        dispatch(setSelectedOptionsGroup2(queryGroupKey, selectedOptions));
-      }
+      const action = isQueryGroup1
+        ? setSelectedOptionsGroup1
+        : setSelectedOptionsGroup2;
+      dispatch(action(queryGroupKey, selectedOptions));
     }
   }, [selectedOptions, dispatch, isQueryGroup1, queryGroupKey]);
 
