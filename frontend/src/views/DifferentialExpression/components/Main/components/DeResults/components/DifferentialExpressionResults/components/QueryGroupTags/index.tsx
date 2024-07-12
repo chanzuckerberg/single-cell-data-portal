@@ -1,8 +1,5 @@
 import { useMemo } from "react";
-import {
-  QueryGroup,
-  State,
-} from "src/views/DifferentialExpression/common/store/reducer";
+import { QueryGroup } from "src/views/DifferentialExpression/common/store/reducer";
 import { Tooltip } from "@czi-sds/components";
 import { StyledTag } from "./style";
 import { QUERY_GROUP_KEY_TO_TAG_SUFFIX_MAP } from "./constants";
@@ -11,57 +8,59 @@ import { NO_ORGAN_ID } from "src/views/CellGuide/components/CellGuideCard/compon
 import Link from "src/views/CellGuide/components/CellGuideCard/components/common/Link";
 
 const QueryGroupTags = ({
-  selectedOptions,
+  submittedQueryGroup,
+  submittedQueryGroupWithNames,
 }: {
-  selectedOptions: State["selectedOptionsGroup1"];
+  submittedQueryGroup: QueryGroup;
+  submittedQueryGroupWithNames: QueryGroup;
 }) => {
   const nonEmptyQueryGroupKeys = useMemo(() => {
-    return Object.keys(selectedOptions).filter(
-      (key) => selectedOptions[key as keyof QueryGroup].length > 0
+    return Object.keys(submittedQueryGroup).filter(
+      (key) => submittedQueryGroup[key as keyof QueryGroup].length > 0
     );
-  }, [selectedOptions]);
+  }, [submittedQueryGroup]);
 
   return (
     <>
       {nonEmptyQueryGroupKeys.map((key) => {
         const queryGroupKey = key as keyof QueryGroup;
-        const selected = selectedOptions[queryGroupKey].filter(
-          (option) => !option.unavailable
-        );
+        const selectedIds = submittedQueryGroup[queryGroupKey];
+        const selectedNames = submittedQueryGroupWithNames[queryGroupKey];
 
         const suffix = QUERY_GROUP_KEY_TO_TAG_SUFFIX_MAP[queryGroupKey];
         const label =
-          selected.length > 1
-            ? `${selected.length} ${suffix}`
-            : selected[0].name;
+          selectedNames.length > 1
+            ? `${selectedNames.length} ${suffix}`
+            : selectedNames[0];
 
         const getValue = (index: number) => {
           return key === "cellTypes" ? (
             <Link
-              label={selected[index].name}
+              label={selectedNames[index]}
               url={getCellTypeLink({
-                cellTypeId: selected[index].id,
+                cellTypeId: selectedIds[index],
                 tissueId: NO_ORGAN_ID,
               })}
             />
           ) : (
-            selected[index].name
+            selectedNames[index]
           );
         };
         const clickToViewText = "Click to view in CellGuide";
         const tooltipContent =
-          selected.length === 1 && key === "cellTypes" ? (
+          selectedNames.length === 1 && key === "cellTypes" ? (
             clickToViewText
           ) : (
             <div>
               {key === "cellTypes" && <b>{clickToViewText}</b>}
-              {selected.map((value, index) => (
+              {selectedNames.map((value, index) => (
                 <div key={`value-${value}-${index}`}>{getValue(index)}</div>
               ))}
             </div>
           );
 
-        const isSingleCellType = key === "cellTypes" && selected.length === 1;
+        const isSingleCellType =
+          key === "cellTypes" && selectedNames.length === 1;
         return (
           <Tooltip
             key={`${key}-tooltip`}
@@ -69,13 +68,15 @@ const QueryGroupTags = ({
             placement="top"
             width="wide"
             leaveDelay={0}
-            disableHoverListener={key !== "cellTypes" && selected.length === 1}
+            disableHoverListener={
+              key !== "cellTypes" && selectedNames.length === 1
+            }
             title={tooltipContent}
           >
             <span>
               <TagWrapper
                 key={`${key}-tag-wrapper`}
-                selectedId={selected[0].id}
+                selectedId={selectedIds[0]}
                 isSingleCellType={isSingleCellType}
               >
                 <StyledTag
