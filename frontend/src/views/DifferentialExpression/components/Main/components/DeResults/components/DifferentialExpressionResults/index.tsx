@@ -68,8 +68,8 @@ const DifferentialExpressionResults = ({
     numDatasetsText1,
     numDatasetsText2,
     showOverlappingCellsCallout,
-    selectedOptionsGroup1,
-    selectedOptionsGroup2,
+    submittedQueryGroups,
+    submittedQueryGroupsWithNames,
   } = useConnect({
     queryGroups,
     queryGroupsWithNames,
@@ -177,6 +177,10 @@ const DifferentialExpressionResults = ({
     setPage,
   ]);
 
+  if (!submittedQueryGroups || !submittedQueryGroupsWithNames) {
+    return null;
+  }
+
   return (
     <>
       <CellGroupWrapper data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_INFO}>
@@ -216,7 +220,12 @@ const DifferentialExpressionResults = ({
           </CellGroupStatsIndicator>
         </CellCountTitle>
         <FilterTagsWrapper>
-          <QueryGroupTags selectedOptions={selectedOptionsGroup1} />
+          <QueryGroupTags
+            submittedQueryGroup={submittedQueryGroups.queryGroup1}
+            submittedQueryGroupWithNames={
+              submittedQueryGroupsWithNames.queryGroup1
+            }
+          />
         </FilterTagsWrapper>
       </CellGroupWrapper>
       <CellGroupWrapper data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_INFO}>
@@ -256,7 +265,12 @@ const DifferentialExpressionResults = ({
           </CellGroupStatsIndicator>
         </CellCountTitle>
         <FilterTagsWrapper>
-          <QueryGroupTags selectedOptions={selectedOptionsGroup2} />
+          <QueryGroupTags
+            submittedQueryGroup={submittedQueryGroups.queryGroup2}
+            submittedQueryGroupWithNames={
+              submittedQueryGroupsWithNames.queryGroup2
+            }
+          />
         </FilterTagsWrapper>
       </CellGroupWrapper>
       {!!errorMessage && (
