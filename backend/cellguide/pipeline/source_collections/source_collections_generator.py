@@ -11,14 +11,14 @@ def generate_source_collections_data(all_cell_type_ids_in_corpus: list[str]) -> 
     """
     with cellxgene_census.open_soma(census_version="latest") as census:
         datasets_metadata_df = census["census_info"]["datasets"].read().concat().to_pandas()
-
+        organisms_metadata_df = census["census_info"]["organisms"].read().concat().to_pandas().set_index("organism").T
         dataset_id_to_cell_type_ids_map = {}
         dataset_id_to_tissue_ids_map = {}
         dataset_id_to_disease_ids_map = {}
         dataset_id_to_organism_ids_map = {}
         for organism in ["homo_sapiens", "mus_musculus"]:
             obs = census["census_data"][organism]["obs"].read().concat().to_pandas()
-
+            obs["organism_ontology_term_id"] = organisms_metadata_df[organism]["organism_ontology_term_id"]
             for map_dict, column_name in zip(
                 [
                     dataset_id_to_cell_type_ids_map,
@@ -59,13 +59,11 @@ def generate_source_collections_data(all_cell_type_ids_in_corpus: list[str]) -> 
             dataset_id = datasets_metadata_df.iloc[i]["dataset_id"]
             collection_id = datasets_metadata_df.iloc[i]["collection_id"]
             if collection_id not in collections_to_source_data:
-                publication_title = datasets_metadata_df.iloc[i]["collection_doi_label"]
-                publication_title = publication_title if publication_title else "No publication"
                 source_data = SourceCollectionsData(
                     collection_name=datasets_metadata_df.iloc[i]["collection_name"],
                     collection_url=datasets_metadata_df.iloc[i]["collection_url"],
                     publication_url=datasets_metadata_df.iloc[i]["collection_doi"],
-                    publication_title=publication_title,
+                    publication_title=datasets_metadata_df.iloc[i]["collection_doi_label"],
                     tissue=dataset_id_to_tissue_ids_map[dataset_id],
                     disease=dataset_id_to_disease_ids_map[dataset_id],
                     organism=dataset_id_to_organism_ids_map[dataset_id],
@@ -73,5 +71,4 @@ def generate_source_collections_data(all_cell_type_ids_in_corpus: list[str]) -> 
                 collections_to_source_data[collection_id] = source_data
 
         source_collections_data[cell_id] = list(collections_to_source_data.values())
-
     return source_collections_data
