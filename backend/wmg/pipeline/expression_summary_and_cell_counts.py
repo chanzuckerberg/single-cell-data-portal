@@ -71,7 +71,7 @@ def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
             ) as query:
                 if not pipeline_state.get(EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG):
                     ExpressionSummaryCubeBuilder(
-                        query=query, corpus_path=corpus_path, organismId=organismId
+                        dataset_metadata=dataset_metadata, query=query, corpus_path=corpus_path, organismId=organismId
                     ).create_expression_summary_cube()
                     create_cell_counts_cube(
                         dataset_metadata=dataset_metadata, query=query, corpus_path=corpus_path, organismId=organismId
