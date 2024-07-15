@@ -15,6 +15,7 @@ import {
 import { css, SerializedStyles } from "@emotion/react";
 
 type ButtonProps = RawButtonProps & CommonThemeProps;
+type IconButtonProps = ButtonProps & { open?: boolean };
 
 export const Button = styled(RawButton)<ButtonProps>`
   ${commonStyle}
@@ -22,6 +23,22 @@ export const Button = styled(RawButton)<ButtonProps>`
   ${minimalSecondary}
   ${squarePrimary}
 `;
+
+export const IconButton = styled(RawButton)<IconButtonProps>`
+  ${commonIconStyle}
+`;
+
+function commonIconStyle(props: IconButtonProps): SerializedStyles | undefined {
+  const { open, sdsStyle } = props;
+  if (sdsStyle !== "icon") return;
+  if (open) {
+    return css`
+      .MuiSvgIcon-root {
+        color: ${textPrimary(props)};
+      }
+    `;
+  }
+}
 
 function commonStyle(props: ButtonProps): SerializedStyles {
   return css`
