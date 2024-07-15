@@ -2,15 +2,10 @@ import json
 import logging
 import os
 import time
-import unicodedata
 
 import tiledb
 from tiledb import ArraySchema
 
-from backend.common.census_cube.utils import (
-    get_collections_from_discover_api,
-    get_datasets_from_discover_api,
-)
 from backend.wmg.pipeline.constants import (
     DATASET_METADATA_CREATED_FLAG,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
@@ -44,36 +39,6 @@ def load_pipeline_state(corpus_path: str):
 def write_pipeline_state(pipeline_state: dict, corpus_path: str):
     with open(os.path.join(corpus_path, PIPELINE_STATE_FILENAME), "w") as f:
         json.dump(pipeline_state, f)
-
-
-def remove_accents(input_str):
-    nfkd_form = unicodedata.normalize("NFKD", input_str)
-    return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
-
-
-def return_dataset_dict_w_publications():
-    datasets = get_datasets_from_discover_api()
-    collections = get_collections_from_discover_api()
-    collections_dict = {collection["collection_id"]: collection for collection in collections}
-
-    # cchoi: creating a helper function to format citations properly
-    def create_formatted_citation(collection):
-        publisher_metadata = collection["publisher_metadata"]
-        if publisher_metadata is None:
-            return "No Publication"
-        first_author = collection["publisher_metadata"]["authors"][0]
-        # first_author could be either 'family' or 'name'
-        citation = f"{first_author['family'] if 'family' in first_author else first_author['name']} et al. {collection['publisher_metadata']['journal']} {collection['publisher_metadata']['published_year']}"
-        formatted_citation = "No Publication" if collection["publisher_metadata"]["is_preprint"] else citation
-        return formatted_citation
-
-    dataset_dict = {}
-    for dataset in datasets:
-        dataset_id = dataset["dataset_id"]
-        collection = collections_dict[dataset["collection_id"]]
-        dataset_dict[dataset_id] = create_formatted_citation(collection)
-
-    return dataset_dict
 
 
 def create_empty_cube_if_needed(uri: str, schema: ArraySchema):

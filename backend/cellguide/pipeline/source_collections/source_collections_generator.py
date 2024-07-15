@@ -1,10 +1,7 @@
+import cellxgene_census
+
 from backend.cellguide.pipeline.source_collections.types import SourceCollectionsData
-from backend.common.census_cube.utils import (
-    descendants,
-    get_collections_from_discover_api,
-    get_datasets_from_discover_api,
-)
-from backend.common.citation import format_citation_dp
+from backend.common.census_cube.utils import descendants
 
 
 def generate_source_collections_data(all_cell_type_ids_in_corpus: list[str]) -> dict[str, list[SourceCollectionsData]]:
@@ -12,11 +9,34 @@ def generate_source_collections_data(all_cell_type_ids_in_corpus: list[str]) -> 
     For each cell type id in the corpus, we want to generate a SourceCollectionsData object, which contains
     metadata about the source data for each cell type
     """
-    all_datasets = get_datasets_from_discover_api()
-    all_collections = get_collections_from_discover_api()
+    with cellxgene_census.open_soma(census_version="latest") as census:
+        datasets_metadata_df = census["census_info"]["datasets"].read().concat().to_pandas()
 
-    collections_dict = {collection["collection_id"]: collection for collection in all_collections}
-    datasets_dict = {dataset["dataset_id"]: dataset for dataset in all_datasets}
+        dataset_id_to_cell_type_ids_map = {}
+        dataset_id_to_tissue_ids_map = {}
+        dataset_id_to_disease_ids_map = {}
+        dataset_id_to_organism_ids_map = {}
+        for organism in ["homo_sapiens", "mus_musculus"]:
+            obs = census["census_data"][organism]["obs"].read().concat().to_pandas()
+
+            for map_dict, column_name in zip(
+                [
+                    dataset_id_to_cell_type_ids_map,
+                    dataset_id_to_tissue_ids_map,
+                    dataset_id_to_disease_ids_map,
+                    dataset_id_to_organism_ids_map,
+                ],
+                [
+                    "cell_type_ontology_term_id",
+                    "tissue_general_ontology_term_id",
+                    "disease_ontology_term_id",
+                    "organism_ontology_term_id",
+                ],
+                strict=False,
+            ):
+                df_agg = obs.groupby("dataset_id").agg({column_name: lambda x: ",".join(set(x.values))})
+                df_dict = {df_agg.index[i]: df_agg.values[i][0].split(",") for i in range(len(df_agg))}
+                map_dict.update(df_dict)
 
     source_collections_data: dict[str, list[SourceCollectionsData]] = {}
     for cell_id in all_cell_type_ids_in_corpus:
@@ -25,56 +45,32 @@ def generate_source_collections_data(all_cell_type_ids_in_corpus: list[str]) -> 
 
         # Generate a list of unique dataset ids that contain cell type ids in the lineage
         dataset_ids: list[str] = []
-        for dataset_id in datasets_dict:
-            for cell_type in datasets_dict[dataset_id]["cell_type"]:
-                if cell_type["ontology_term_id"] in lineage:
+        for dataset_id in dataset_id_to_cell_type_ids_map:
+            for cell_type in dataset_id_to_cell_type_ids_map[dataset_id]:
+                if cell_type in lineage:
                     dataset_ids.append(dataset_id)
                     break
         assert len(set(dataset_ids)) == len(dataset_ids)
 
         # Generate a mapping from collection id to SourceCollectionsData
         collections_to_source_data = {}
-        for dataset_id in dataset_ids:
-            dataset = datasets_dict[dataset_id]
-            collection_id = dataset["collection_id"]
 
-            # If we don't have any source data on this collection yet, create a new SourceCollectionsData object
+        for i in range(len(datasets_metadata_df)):
+            dataset_id = datasets_metadata_df.iloc[i]["dataset_id"]
+            collection_id = datasets_metadata_df.iloc[i]["collection_id"]
             if collection_id not in collections_to_source_data:
-                collection = collections_dict.get(collection_id)
+                publication_title = datasets_metadata_df.iloc[i]["collection_doi_label"]
+                publication_title = publication_title if publication_title else "No publication"
                 source_data = SourceCollectionsData(
-                    collection_name=collection["name"],
-                    collection_url=collection["collection_url"],
-                    publication_url=collection["doi"],
-                    publication_title=(
-                        format_citation_dp(collection["publisher_metadata"])
-                        if collection["publisher_metadata"]
-                        else "No publication"
-                    ),
-                    tissue=[],
-                    disease=[],
-                    organism=[],
+                    collection_name=datasets_metadata_df.iloc[i]["collection_name"],
+                    collection_url=datasets_metadata_df.iloc[i]["collection_url"],
+                    publication_url=datasets_metadata_df.iloc[i]["collection_doi"],
+                    publication_title=publication_title,
+                    tissue=dataset_id_to_tissue_ids_map[dataset_id],
+                    disease=dataset_id_to_disease_ids_map[dataset_id],
+                    organism=dataset_id_to_organism_ids_map[dataset_id],
                 )
                 collections_to_source_data[collection_id] = source_data
-
-            # Add the tissue, disease, and organism metadata from the dataset to the SourceCollectionsData object. If we
-            # previously found a SourceCollectionsData object, we'll want to add the tissue/disease/organism from this
-            # dataset to the existing object. If not, we'll want to create a new list for each of these fields.
-            source_data = collections_to_source_data[collection_id]
-
-            for tissue in dataset["tissue"]:
-                if tissue["ontology_term_id"] not in [t["ontology_term_id"] for t in source_data.tissue]:
-                    source_data.tissue.append(tissue)
-
-            for disease in dataset["disease"]:
-                if disease["ontology_term_id"] not in [d["ontology_term_id"] for d in source_data.disease]:
-                    source_data.disease.append(disease)
-
-            for organism in dataset["organism"]:
-                if organism["ontology_term_id"] not in [o["ontology_term_id"] for o in source_data.organism]:
-                    source_data.organism.append(organism)
-
-            # Add the SourceCollectionsData to the mapping
-            collections_to_source_data[collection_id] = source_data
 
         source_collections_data[cell_id] = list(collections_to_source_data.values())
 

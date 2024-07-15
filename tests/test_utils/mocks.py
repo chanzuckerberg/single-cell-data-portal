@@ -5,8 +5,6 @@ import numpy as np
 from tests.unit.backend.cellguide.pipeline.constants import (
     ASCTB_MASTER_SHEET_FIXTURE_FILENAME,
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
-    FAKE_COLLECTIONS_FIXTURE_FILENAME,
-    FAKE_DATASETS_FIXTURE_FILENAME,
 )
 
 
@@ -41,16 +39,6 @@ def mock_get_asctb_master_sheet():
         return json.load(f)
 
 
-def mock_get_datasets_from_curation_endpoint():
-    with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{FAKE_DATASETS_FIXTURE_FILENAME}", "r") as f:
-        return json.load(f)
-
-
-def mock_get_collections_from_curation_endpoint():
-    with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{FAKE_COLLECTIONS_FIXTURE_FILENAME}", "r") as f:
-        return json.load(f)
-
-
 def mock_get_title_and_citation_from_doi(doi: str):
     return f"title from {doi}\n\n-- citation"
 
@@ -72,8 +60,6 @@ def mock_bootstrap_rows_percentiles(
 
 
 class MockCensusParameters:
-    # NOTE: THIS SHOULD BE REVERTED BACK TO 'latest' ONCE THE PIPELINE HAS BEEN UPDATED
-    # TO BE COMPATIBLE WITH THE LATEST CENSUS VERSION (2.0 schema).
     census_version = "latest"
 
     def value_filter(organism: str) -> str:
@@ -82,7 +68,3 @@ class MockCensusParameters:
             "mus_musculus": "dataset_id in ['ef47280b-3e68-4188-a49a-7b8374c8a6f2']",
         }
         return organism_mapping[organism]
-
-
-def mock_return_dataset_dict_w_publications():
-    return {}

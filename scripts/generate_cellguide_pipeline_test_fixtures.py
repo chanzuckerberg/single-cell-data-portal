@@ -19,8 +19,6 @@ from backend.common.census_cube.utils import setup_retry_session
 from tests.test_utils.mocks import (
     mock_bootstrap_rows_percentiles,
     mock_get_asctb_master_sheet,
-    mock_get_collections_from_curation_endpoint,
-    mock_get_datasets_from_curation_endpoint,
     mock_get_folders_from_s3,
     mock_get_title_and_citation_from_doi,
 )
@@ -105,14 +103,6 @@ def run_cellguide_pipeline(fixture_type: FixtureType):
         patch(
             "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_title_and_citation_from_doi",
             new=mock_get_title_and_citation_from_doi,
-        ),
-        patch(
-            "backend.cellguide.pipeline.source_collections.source_collections_generator.get_datasets_from_discover_api",
-            new=mock_get_datasets_from_curation_endpoint,
-        ),
-        patch(
-            "backend.cellguide.pipeline.source_collections.source_collections_generator.get_collections_from_discover_api",
-            new=mock_get_collections_from_curation_endpoint,
         ),
         patch(
             "backend.common.marker_genes.computational_markers.bootstrap_rows_percentiles",

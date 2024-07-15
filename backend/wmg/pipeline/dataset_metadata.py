@@ -1,9 +1,10 @@
 import json
 import logging
 
+import cellxgene_census
+
 from backend.common.census_cube.data.snapshot import DATASET_METADATA_FILENAME
-from backend.common.census_cube.utils import get_datasets_from_discover_api
-from backend.wmg.pipeline.constants import DATASET_METADATA_CREATED_FLAG
+from backend.wmg.pipeline.constants import DATASET_METADATA_CREATED_FLAG, CensusParameters
 from backend.wmg.pipeline.utils import load_pipeline_state, log_func_runtime, write_pipeline_state
 
 logger = logging.getLogger(__name__)
@@ -18,16 +19,21 @@ def create_dataset_metadata(corpus_path: str) -> None:
     """
     logger.info("Generating dataset metadata file")
     pipeline_state = load_pipeline_state(corpus_path)
-    datasets = get_datasets_from_discover_api()
+
+    with cellxgene_census.open_soma(census_version=CensusParameters.census_version) as census:
+        dataset_metadata = census["census_info"]["datasets"].read().concat().to_pandas()
+
+    datasets = dataset_metadata.to_dict(orient="records")
+
     dataset_dict = {}
     for dataset in datasets:
-        dataset_id = dataset["dataset_id"]
-        dataset_dict[dataset_id] = dict(
-            id=dataset_id,
-            label=dataset["title"],
+        dataset_dict[dataset["dataset_id"]] = dict(
+            id=dataset["dataset_id"],
+            label=dataset["dataset_title"],
             collection_id=dataset["collection_id"],
             collection_label=dataset["collection_name"],
         )
+
     logger.info("Writing dataset metadata file")
     with open(f"{corpus_path}/{DATASET_METADATA_FILENAME}", "w") as f:
         json.dump(dataset_dict, f)

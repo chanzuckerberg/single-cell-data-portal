@@ -119,3 +119,23 @@ HIGH_LEVEL_TISSUES = [
     "UBERON:0000014",  # zone of skin
     "UBERON:0000916",  # abdomen
 ]
+
+
+ORGANISM_INFO = [
+    {"label": "homo_sapiens", "id": "NCBITaxon:9606"},
+    {"label": "mus_musculus", "id": "NCBITaxon:10090"},
+]
+
+
+class CensusParameters:
+    census_version = "latest"
+
+    def value_filter(organism: str) -> str:
+        organism_mapping = {
+            "homo_sapiens": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD} and cell_type_ontology_term_id != 'unknown'",
+            "mus_musculus": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD} and cell_type_ontology_term_id != 'unknown'",
+        }
+        value_filter = organism_mapping[organism]
+        # Filter out system-level tissues. Census filters out organoids + cell cultures
+        value_filter += " and tissue_general_ontology_term_id != 'UBERON:0001017' and tissue_general_ontology_term_id != 'UBERON:0001007' and tissue_general_ontology_term_id != 'UBERON:0002405' and tissue_general_ontology_term_id != 'UBERON:0000990' and tissue_general_ontology_term_id != 'UBERON:0001004' and tissue_general_ontology_term_id != 'UBERON:0001434'"
+        return value_filter

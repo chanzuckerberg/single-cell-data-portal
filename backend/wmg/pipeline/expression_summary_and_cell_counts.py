@@ -11,33 +11,15 @@ from backend.common.census_cube.data.snapshot import (
 from backend.wmg.pipeline.cell_counts import create_cell_counts_cube
 from backend.wmg.pipeline.constants import (
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
-    GENE_EXPRESSION_COUNT_MIN_THRESHOLD,
     MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION,
+    ORGANISM_INFO,
+    CensusParameters,
 )
 from backend.wmg.pipeline.expression_summary import ExpressionSummaryCubeBuilder
 from backend.wmg.pipeline.utils import (
     load_pipeline_state,
     write_pipeline_state,
 )
-
-ORGANISM_INFO = [
-    {"label": "homo_sapiens", "id": "NCBITaxon:9606"},
-    {"label": "mus_musculus", "id": "NCBITaxon:10090"},
-]
-
-
-class CensusParameters:
-    census_version = "latest"
-
-    def value_filter(organism: str) -> str:
-        organism_mapping = {
-            "homo_sapiens": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD} and cell_type_ontology_term_id != 'unknown'",
-            "mus_musculus": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD} and cell_type_ontology_term_id != 'unknown'",
-        }
-        value_filter = organism_mapping[organism]
-        # Filter out system-level tissues. Census filters out organoids + cell cultures
-        value_filter += " and tissue_general_ontology_term_id != 'UBERON:0001017' and tissue_general_ontology_term_id != 'UBERON:0001007' and tissue_general_ontology_term_id != 'UBERON:0002405' and tissue_general_ontology_term_id != 'UBERON:0000990' and tissue_general_ontology_term_id != 'UBERON:0001004' and tissue_general_ontology_term_id != 'UBERON:0001434'"
-        return value_filter
 
 
 def get_census_version_and_build_date(census: soma.Collection):
@@ -75,6 +57,8 @@ def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
                 f"Please use a version of cellxgene-census that supports census schema version {MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION} or lower."
             )
 
+        dataset_metadata = census["census_info"]["datasets"].read().concat().to_pandas()
+
         for organismInfo in ORGANISM_INFO:
             organism = organismInfo["label"]
             organismId = organismInfo["id"]
@@ -89,7 +73,9 @@ def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
                     ExpressionSummaryCubeBuilder(
                         query=query, corpus_path=corpus_path, organismId=organismId
                     ).create_expression_summary_cube()
-                    create_cell_counts_cube(query=query, corpus_path=corpus_path, organismId=organismId)
+                    create_cell_counts_cube(
+                        dataset_metadata=dataset_metadata, query=query, corpus_path=corpus_path, organismId=organismId
+                    )
 
     # write census schema version to cell counts cube metadata
     cell_counts_uri = os.path.join(corpus_path, CELL_COUNTS_CUBE_NAME)
