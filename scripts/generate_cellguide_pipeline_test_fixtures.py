@@ -1,3 +1,10 @@
+# Import tiledbsoma before tiledb to prevent segmentation faults on macOS.
+# This import order is critical to avoid a race condition with a mutex lock error,
+# which occurs only when tiledbsoma is imported after tiledb in this module and also
+# imported in any upstream module.
+import tiledbsoma  # noqa: F401, isort:skip
+import tiledb  # noqa: F401, isort:skip
+
 import argparse
 import os
 import sys
@@ -101,14 +108,16 @@ def run_cellguide_pipeline(fixture_type: FixtureType):
             new=mock_get_asctb_master_sheet,
         ),
         patch(
-            "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_title_and_citation_from_doi",
-            new=mock_get_title_and_citation_from_doi,
-        ),
+            "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.CrossrefProvider",
+        ) as MockCrossrefProvider,
         patch(
             "backend.common.marker_genes.computational_markers.bootstrap_rows_percentiles",
             new=mock_bootstrap_rows_percentiles,
         ),
     ):
+        mock_instance = MockCrossrefProvider.return_value
+        mock_instance.get_title_and_citation_from_doi.side_effect = mock_get_title_and_citation_from_doi
+
         if fixture_type in [FixtureType.valid_explorer_cxgs, FixtureType.all]:
             # Get valid cxgs
             valid_explorer_cxgs = get_valid_cxgs()
