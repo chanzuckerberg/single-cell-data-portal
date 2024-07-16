@@ -1,5 +1,6 @@
 import json
 import unittest
+from unittest.mock import patch
 
 from backend.common.census_cube.data.snapshot import DATASET_METADATA_FILENAME
 from backend.wmg.pipeline.constants import (
@@ -8,6 +9,7 @@ from backend.wmg.pipeline.constants import (
 from backend.wmg.pipeline.dataset_metadata import create_dataset_metadata
 from backend.wmg.pipeline.utils import load_pipeline_state, write_pipeline_state
 from tests.test_utils import compare_dicts
+from tests.test_utils.mocks import MockCensusParameters
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot_tmpdir
 
 
@@ -28,7 +30,11 @@ class DatasetMetadataTests(unittest.TestCase):
         cls.temp_cube_dir.cleanup()
 
     def test_dataset_metadata(self):
-        create_dataset_metadata(self.temp_cube_dir.name)
+        with patch(
+            "backend.wmg.pipeline.expression_summary_and_cell_counts.CensusParameters",
+            new=MockCensusParameters,
+        ):
+            create_dataset_metadata(self.temp_cube_dir.name)
 
         with open(f"{self.temp_cube_dir.name}/{DATASET_METADATA_FILENAME}") as f:
             dataset_metadata = json.load(f)
