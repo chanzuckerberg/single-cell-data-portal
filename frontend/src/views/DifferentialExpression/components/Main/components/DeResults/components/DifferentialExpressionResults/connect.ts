@@ -29,8 +29,8 @@ export const useConnect = ({
 }) => {
   const {
     excludeOverlappingCells,
-    selectedOptionsGroup1,
-    selectedOptionsGroup2,
+    submittedQueryGroups,
+    submittedQueryGroupsWithNames,
   } = useContext(StateContext);
   const [page, setPage] = useState(1);
 
@@ -123,7 +123,7 @@ export const useConnect = ({
       datasets2.length !== 1 ? "s" : ""
     }`,
     showOverlappingCellsCallout: excludeOverlappingCells === "retainBoth",
-    selectedOptionsGroup1,
-    selectedOptionsGroup2,
+    submittedQueryGroups,
+    submittedQueryGroupsWithNames,
   };
 };
