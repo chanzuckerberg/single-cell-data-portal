@@ -87,6 +87,10 @@ if __name__ == "__main__":
             new=MockCensusParameters,
         ),
         patch(
+            "backend.wmg.pipeline.dataset_metadata.CensusParameters",
+            new=MockCensusParameters,
+        ),
+        patch(
             "backend.common.marker_genes.computational_markers.bootstrap_rows_percentiles",
             new=mock_bootstrap_rows_percentiles,
         ),

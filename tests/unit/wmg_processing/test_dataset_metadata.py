@@ -31,7 +31,7 @@ class DatasetMetadataTests(unittest.TestCase):
 
     def test_dataset_metadata(self):
         with patch(
-            "backend.wmg.pipeline.expression_summary_and_cell_counts.CensusParameters",
+            "backend.wmg.pipeline.dataset_metadata.CensusParameters",
             new=MockCensusParameters,
         ):
             create_dataset_metadata(self.temp_cube_dir.name)
