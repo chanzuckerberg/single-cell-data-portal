@@ -301,20 +301,16 @@ class DatasetMetadataUpdater(ProcessDownload):
 
         # Only trigger raw H5AD update if any updated metadata is part of the raw H5AD artifact
         if any(getattr(metadata_update, field, None) for field in FIELDS_IN_RAW_H5AD):
-            self.logger.info("Main: Starting thread for raw h5ad update")
-            raw_h5ad_job = Process(
-                target=DatasetMetadataUpdater.update_raw_h5ad,
-                args=(
-                    self.artifact_bucket,
-                    self.datasets_bucket,
-                    raw_h5ad_uri,
-                    new_artifact_key_prefix,
-                    new_dataset_version_id,
-                    metadata_update,
-                ),
+            self.logger.info("Main: Raw h5ad update required")
+            # Done in main process because it's meant to be blocking to updating other artifacts
+            DatasetMetadataUpdater.update_raw_h5ad(
+                self.artifact_bucket,
+                self.datasets_bucket,
+                raw_h5ad_uri,
+                new_artifact_key_prefix,
+                new_dataset_version_id,
+                metadata_update,
             )
-            artifact_jobs.append(raw_h5ad_job)
-            raw_h5ad_job.start()
         else:
             self.logger.info("Main: No raw h5ad update required")
             self.upload_raw_h5ad(new_dataset_version_id, raw_h5ad_uri, self.artifact_bucket)
