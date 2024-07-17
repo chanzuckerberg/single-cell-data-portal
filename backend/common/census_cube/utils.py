@@ -15,7 +15,7 @@ from backend.common.census_cube.data.snapshot import CensusCubeSnapshot
 from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
 
 # exported and used by all modules related to the census cube
-ontology_parser = OntologyParser(schema_version=f"v{CENSUS_CUBE_PINNED_SCHEMA_VERSION}")
+ontology_parser = OntologyParser()
 
 
 def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:
