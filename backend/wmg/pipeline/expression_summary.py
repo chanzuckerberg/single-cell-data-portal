@@ -26,6 +26,7 @@ from backend.wmg.pipeline.utils import (
     create_empty_cube_if_needed,
     load_pipeline_state,
     log_func_runtime,
+    remove_accents,
 )
 
 logger = logging.getLogger(__name__)
@@ -325,8 +326,8 @@ class ExpressionSummaryCubeBuilder:
                     vals[k][idx : idx + n_vals] = dim_or_attr_values[k]
 
             if "publication_citation" in other_cube_attrs:
-                vals["publication_citation"][idx : idx + n_vals] = dataset_dict.get(
-                    dim_or_attr_values["dataset_id"], "No Publication"
+                vals["publication_citation"][idx : idx + n_vals] = remove_accents(
+                    dataset_dict.get(dim_or_attr_values["dataset_id"], "No Publication")
                 )
 
             idx += n_vals

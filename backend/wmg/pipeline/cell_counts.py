@@ -18,6 +18,7 @@ from backend.wmg.pipeline.constants import (
 from backend.wmg.pipeline.utils import (
     create_empty_cube_if_needed,
     log_func_runtime,
+    remove_accents,
 )
 
 logger = logging.getLogger(__name__)
@@ -52,7 +53,9 @@ def create_cell_counts_cube(
         for _, row in dataset_metadata.iterrows()
         if row["collection_doi_label"]
     }
-    df["publication_citation"] = [dataset_dict.get(dataset_id, "No Publication") for dataset_id in df["dataset_id"]]
+    df["publication_citation"] = [
+        remove_accents(dataset_dict.get(dataset_id, "No Publication")) for dataset_id in df["dataset_id"]
+    ]
     n_cells = df["n_cells"].to_numpy()
     df["n_cells"] = n_cells
 

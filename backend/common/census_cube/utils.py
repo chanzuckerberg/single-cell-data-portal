@@ -9,11 +9,10 @@ from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
-from backend.common.census_cube.data.constants import CENSUS_CUBE_PINNED_SCHEMA_VERSION
 from backend.common.census_cube.data.snapshot import CensusCubeSnapshot
 
 # exported and used by all modules related to the census cube
-ontology_parser = OntologyParser(schema_version=f"v{CENSUS_CUBE_PINNED_SCHEMA_VERSION}")
+ontology_parser = OntologyParser()
 
 
 def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:
