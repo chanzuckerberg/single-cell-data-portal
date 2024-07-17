@@ -6,7 +6,7 @@ import { DifferentialExpressionRow, Props } from "./types";
 import { applyFilter } from "./utils";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { craftPayloadWithQueryGroups } from "../../utils";
+import { useCraftPayloadWithQueryGroups } from "../../utils";
 
 export const useConnect = ({ setIsLoading }: Props) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,7 +32,6 @@ export const useConnect = ({ setIsLoading }: Props) => {
     organismId,
     submittedQueryGroups: queryGroups,
     submittedQueryGroupsWithNames: queryGroupsWithNames,
-    excludeOverlappingCells,
   } = useContext(StateContext);
 
   useEffect(() => {
@@ -89,6 +88,8 @@ export const useConnect = ({ setIsLoading }: Props) => {
     sortDirection,
   ]);
 
+  const payload = useCraftPayloadWithQueryGroups();
+
   const downloadCSV = useCallback(() => {
     if (!queryGroupsWithNames || !queryGroups || isLoadingRaw) return;
 
@@ -137,16 +138,13 @@ export const useConnect = ({ setIsLoading }: Props) => {
     link.click();
     document.body.removeChild(link);
 
-    track(
-      EVENTS.DE_DOWNLOAD_CLICKED,
-      craftPayloadWithQueryGroups(queryGroups, excludeOverlappingCells)
-    );
+    track(EVENTS.DE_DOWNLOAD_CLICKED, payload);
   }, [
     sortedAndFilteredResults,
     queryGroups,
     queryGroupsWithNames,
     isLoadingRaw,
-    excludeOverlappingCells,
+    payload,
   ]);
 
   return {
