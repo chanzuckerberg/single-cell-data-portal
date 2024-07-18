@@ -202,6 +202,7 @@ class SchemaMigrate(ProcessingLogic):
 
     def log_errors_and_cleanup(self, collection_version_id: str) -> list:
         errors = []
+        rolled_back_datasets = []
         collection_version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
         object_keys_to_delete = []
 
@@ -257,6 +258,7 @@ class SchemaMigrate(ProcessingLogic):
                 self.business_logic.restore_previous_dataset_version(
                     CollectionVersionId(collection_version_id), dataset.dataset_id
                 )
+                rolled_back_datasets.append(dataset)
                 self.logger.error(error)
                 errors.append(error)
             else:
@@ -268,9 +270,6 @@ class SchemaMigrate(ProcessingLogic):
         if errors:
             self._store_sfn_response("report/errors", collection_version_id, errors)
             # clean up artifacts for any now-orphaned, rolled back datasets
-            rolled_back_datasets = [
-                DatasetVersionId(error["dataset_version_id"]) for error in errors if error["rollback"]
-            ]
             if rolled_back_datasets:
                 # TODO: replace with async batch job to delete orphaned dataset version DB rows + artifacts
                 self.business_logic.delete_dataset_versions(rolled_back_datasets)

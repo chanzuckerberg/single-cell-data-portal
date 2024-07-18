@@ -1390,7 +1390,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         uris_to_delete = [a.uri for a in dataset_to_delete.artifacts]
         dataset_artifact_ids = [a.id for a in dataset_to_delete.artifacts]
 
-        self.business_logic.delete_dataset_versions([dataset_to_delete.version_id])
+        self.business_logic.delete_dataset_versions([dataset_to_delete])
 
         self.assertIsNone(self.business_logic.get_dataset_version(dataset_to_delete.version_id))
         self.assertEqual(self.database_provider.get_dataset_artifacts(dataset_artifact_ids), [])
