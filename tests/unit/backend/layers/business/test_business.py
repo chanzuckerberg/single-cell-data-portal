@@ -1384,6 +1384,18 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         # Act + Assert
         self.assertRaises(CollectionDeleteException, delete_artifacts, artifacts)
 
+    def test_delete_dataset_versions(self):
+        collection = self.initialize_unpublished_collection()
+        dataset_to_delete = collection.datasets[0]
+        uris_to_delete = [a.uri for a in dataset_to_delete.artifacts]
+        dataset_artifact_ids = [a.id for a in dataset_to_delete.artifacts]
+
+        self.business_logic.delete_dataset_version(dataset_to_delete.version_id)
+
+        self.assertIsNone(self.business_logic.get_dataset_version(dataset_to_delete.version_id))
+        self.assertEqual(self.database_provider.get_dataset_artifacts(dataset_artifact_ids), [])
+        [self.assertFalse(self.s3_provider.uri_exists(uri)) for uri in uris_to_delete]
+
 
 class TestGetDataset(BaseBusinessLogicTestCase):
     def test_get_all_datasets_ok(self):

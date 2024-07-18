@@ -253,6 +253,10 @@ class SchemaMigrate(ProcessingLogic):
                     "dataset_id": dataset_id,
                     "rollback": True,
                 }
+                # If the dataset is not successfully processed, rollback to the version from before migration
+                self.business_logic.restore_previous_dataset_version(
+                    CollectionVersionId(collection_version_id), dataset.dataset_id
+                )
                 self.logger.error(error)
                 errors.append(error)
             else:
@@ -263,6 +267,13 @@ class SchemaMigrate(ProcessingLogic):
         self.s3_provider.delete_files(self.artifact_bucket, object_keys_to_delete)
         if errors:
             self._store_sfn_response("report/errors", collection_version_id, errors)
+            # clean up artifacts for any now-orphaned, rolled back datasets
+            rolled_back_datasets = [
+                DatasetVersionId(error["dataset_version_id"]) for error in errors if error["rollback"]
+            ]
+            if rolled_back_datasets:
+                # TODO: replace with async batch job to delete orphaned dataset version DB rows + artifacts
+                self.business_logic.delete_dataset_versions(rolled_back_datasets)
         return errors
 
     def _store_sfn_response(self, directory: str, file_name: str, response: Dict[str, str]):
