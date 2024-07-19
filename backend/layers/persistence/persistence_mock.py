@@ -52,12 +52,16 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     # All the dataset versions
     datasets_versions: Dict[str, DatasetVersion]
 
+    # Dataset artifacts
+    dataset_artifacts: Dict[str, DatasetArtifact]
+
     def __init__(self) -> None:
         super().__init__()
         self.collections = {}  # rename to: active_collections
         self.collections_versions = {}
         self.datasets = {}  # rename to: active_datasets
         self.datasets_versions = {}
+        self.dataset_artifacts = {}
 
     # TODO: add publisher_metadata here?
     def create_canonical_collection(
@@ -250,6 +254,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self, dataset_version_rows: List[DatasetVersion], session: Any
     ) -> None:
         for d_v_row in dataset_version_rows:
+            for artifact_id in [a.id.id for a in d_v_row.artifacts]:
+                del self.dataset_artifacts[artifact_id]
             del self.datasets_versions[d_v_row.version_id.id]  # Artifacts live on DatasetVersion; they get deleted
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
@@ -488,11 +494,14 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     ) -> DatasetArtifactId:
         version = self.datasets_versions[version_id.id]
         artifact_id = DatasetArtifactId()
-        version.artifacts.append(DatasetArtifact(artifact_id, artifact_type, artifact_uri))
+        dataset_artifact = DatasetArtifact(artifact_id, artifact_type, artifact_uri)
+        version.artifacts.append(dataset_artifact)
+        self.dataset_artifacts[artifact_id.id] = dataset_artifact
         return artifact_id
 
     def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
         found_artifact = False
+        self.dataset_artifacts[artifact_id.id].uri = artifact_uri
         for version in self.datasets_versions.values():
             if found_artifact:
                 break
