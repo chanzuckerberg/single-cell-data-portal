@@ -466,9 +466,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def get_dataset_artifacts(self, dataset_artifact_id_list: List[DatasetArtifactId]) -> List[DatasetArtifact]:
         return [
-            self.dataset_artifacts[artifact_id]
+            self.dataset_artifacts[artifact_id.id]
             for artifact_id in dataset_artifact_id_list
-            if artifact_id in self.dataset_artifacts
+            if artifact_id.id in self.dataset_artifacts
         ]
 
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
