@@ -67,7 +67,8 @@ class ProcessCxg(ProcessingLogic):
         self.process_cxg(labeled_h5ad_filename, dataset_version_id, cellxgene_bucket, current_artifacts)
 
     @logit
-    def make_cxg(self, local_filename, dataset_version_id):
+    # @profile # uncomment for memory profiling tests
+    def make_cxg(self, local_filename, dataset_version_id: DatasetVersionId):
         """
         Convert the uploaded H5AD file to the CXG format servicing the cellxgene Explorer.
         """

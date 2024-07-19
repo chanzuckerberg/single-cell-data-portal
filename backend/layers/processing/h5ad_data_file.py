@@ -35,6 +35,7 @@ class H5ADDataFile:
         "py.deduplicate": True,  # May reduce memory requirements at cost of performance
     }
 
+    # @profile # uncomment for memory profiling tests
     def __init__(
         self,
         input_filename,
@@ -54,6 +55,7 @@ class H5ADDataFile:
 
         self.validate_anndata()
 
+    # @profile # uncomment for memory profiling tests
     def to_cxg(
         self, output_cxg_directory, sparse_threshold, dataset_version_id, convert_anndata_colors_to_cxg_colors=True
     ):
@@ -93,6 +95,7 @@ class H5ADDataFile:
 
         logging.info("Completed writing to CXG.")
 
+    # @profile # uncomment for memory profiling tests
     def write_anndata_x_matrices_to_cxg(self, output_cxg_directory, ctx, sparse_threshold):
         matrix_container = f"{output_cxg_directory}/X"
 
