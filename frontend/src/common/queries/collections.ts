@@ -350,7 +350,7 @@ export function useDeleteCollection(): UseMutationResult<
         // Invalidate the cached revision without re-fetching as:
         // 1. the revision no longer exists (requesting the canceled revision returns
         // an error status), and,
-        // 2. re-fetching causes the delete button - and the redirect-on-success 
+        // 2. re-fetching causes the delete button - and the redirect-on-success
         // function - to be unmounted.
         await queryClient.invalidateQueries(
           [USE_COLLECTION, collection.revision_of],
