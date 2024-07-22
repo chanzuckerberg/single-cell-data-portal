@@ -2,8 +2,7 @@ anndata==0.8.0
 awscli
 boto3>=1.11.17
 botocore>=1.14.17
-# TODO: remove, this is a temporary dependency to test the migration rollback
-git+https://github.com/chanzuckerberg/single-cell-curation/@nayib/temp-migration-test#subdirectory=cellxgene_schema_cli
+cellxgene-schema
 dataclasses-json
 ddtrace==2.1.4
 numba==0.59.1
