@@ -85,7 +85,7 @@ const DifferentialExpressionResults = ({
   > = useMemo(() => {
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery(event.target.value);
-      track(EVENTS.DE_SEARCH_GENE, { gene: event.target.value });
+      track(EVENTS.DE_SEARCH_GENE);
       setPage(1);
     };
     const handleLfcFilter = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -208,6 +208,9 @@ const DifferentialExpressionResults = ({
               target="_blank"
               rel="noopener noreferrer"
               data-testid={DIFFERENTIAL_EXPRESSION_OPEN_IN_GE_1_BUTTON}
+              onClick={() => {
+                track(EVENTS.DE_OPEN_IN_GENE_PAGE_CLICKED);
+              }}
             >
               <CxgIcon />
             </OpenInGE>
@@ -253,6 +256,9 @@ const DifferentialExpressionResults = ({
               target="_blank"
               rel="noopener noreferrer"
               data-testid={DIFFERENTIAL_EXPRESSION_OPEN_IN_GE_2_BUTTON}
+              onClick={() => {
+                track(EVENTS.DE_OPEN_IN_GENE_PAGE_CLICKED);
+              }}
             >
               <CxgIcon />
             </OpenInGE>
