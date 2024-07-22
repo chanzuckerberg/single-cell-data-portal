@@ -25,7 +25,7 @@ mprof plot
 ### Run memory-profiler and get a line by line analysis:
 
 ```bash
-docker compose --project-directory ../../ run --rm -w /single-cell-data-portal processing python -m memory_profiler ./tests/memory/processing/test_process_cxg.py > mprof-profiler.txt
+docker compose --project-directory ../../ run --rm -w /single-cell-data-portal processing python -m memory_profiler ./tests/memory/processing/test_process_cxg.py
 ```
 
 ### Run memray and produce a flamegraph:
