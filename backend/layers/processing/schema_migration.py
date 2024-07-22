@@ -325,7 +325,7 @@ class SchemaMigrate(ProcessingLogic):
 
         return wrapper
 
-    def report(self, artifact_bucket=None, execution_id=None, dry_run=True) -> dict:
+    def report(self, artifact_bucket=None, execution_id=None, dry_run=False) -> dict:
         """
         Generate a report of the schema migration process. This function will download all the error and migration
         :param artifact_bucket: The bucket where the schema migration artifacts are stored.
@@ -409,7 +409,7 @@ class SchemaMigrate(ProcessingLogic):
             log_errors_and_cleanup = self.error_wrapper(self.log_errors_and_cleanup, collection_version_id)
             response = log_errors_and_cleanup(collection_version_id=collection_version_id)
         elif step_name == "report":
-            response = self.report(dry_run=False)
+            response = self.report()
         self.logger.info("output", extra={"response": response})
         sfn_client = StepFunctionProvider().client
         sfn_client.send_task_success(
