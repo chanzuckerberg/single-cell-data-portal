@@ -349,7 +349,7 @@ export function useDeleteCollection(): UseMutationResult<
       if (collection.revision_of) {
         await queryClient.invalidateQueries(
           [USE_COLLECTION, collection.revision_of],
-          {refetchActive: false}
+          { refetchActive: false }
         );
       }
     },
