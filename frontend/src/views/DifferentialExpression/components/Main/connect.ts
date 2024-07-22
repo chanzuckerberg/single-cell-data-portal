@@ -15,7 +15,7 @@ import useProcessedQueryGroupFilterDimensions from "./components/common/query_gr
 
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { craftPayloadWithQueryGroups } from "./utils";
+import { useCraftPayloadWithQueryGroups } from "./utils";
 import { removeParams } from "src/common/utils/removeParams";
 import { useRouter } from "next/router";
 import {
@@ -42,7 +42,7 @@ export const useConnect = () => {
     setIsLoadingGetDeQuery(isLoadingGetDeQuery);
   }, [isLoadingGetDeQuery]);
   const dispatch = useContext(DispatchContext);
-  const { queryGroups, excludeOverlappingCells } = useContext(StateContext);
+  const { queryGroups } = useContext(StateContext);
   const { queryGroup1, queryGroup2 } = queryGroups;
 
   // check if any values in queryGroup1 are not empty
@@ -55,14 +55,13 @@ export const useConnect = () => {
   const canRunDifferentialExpression =
     !isLoading && isQueryGroup1NotEmpty && isQueryGroup2NotEmpty;
 
+  const payload = useCraftPayloadWithQueryGroups();
+
   const handleRunDifferentialExpression = () => {
     if (!dispatch) return;
     dispatch(submitQueryGroups());
 
-    track(
-      EVENTS.DE_FIND_GENES_CLICKED,
-      craftPayloadWithQueryGroups(queryGroups, excludeOverlappingCells)
-    );
+    track(EVENTS.DE_FIND_GENES_CLICKED, payload);
   };
 
   const handleClearQueryGroups = () => {
