@@ -409,7 +409,7 @@ class SchemaMigrate(ProcessingLogic):
             log_errors_and_cleanup = self.error_wrapper(self.log_errors_and_cleanup, collection_version_id)
             response = log_errors_and_cleanup(collection_version_id=collection_version_id)
         elif step_name == "report":
-            response = self.report()
+            response = self.report(dry_run=False)
         self.logger.info("output", extra={"response": response})
         sfn_client = StepFunctionProvider().client
         sfn_client.send_task_success(
