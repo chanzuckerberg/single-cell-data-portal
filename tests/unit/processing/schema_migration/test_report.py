@@ -21,7 +21,7 @@ def test_report(schema_migrate_and_collections, tmpdir):
     schema_migrate.business_logic.s3_provider.list_directory = mock_list_directory
     schema_migrate._upload_to_slack = lambda *args: None
     schema_migrate.local_path = str(tmpdir)
-    assert schema_migrate.report(dry_run=False) == {
+    assert schema_migrate.report() == {
         "errors": ["files_0.json", "files_1.json", "files_2.json"],
         "migrate_changes": ["dataset_0_changes.json", "dataset_1_changes.json"],
     }

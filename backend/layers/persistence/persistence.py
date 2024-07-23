@@ -460,7 +460,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 if str(v.collection_id) in all_canonical_map:
                     for dataset_version_id in v.datasets:
                         dataset_version_id_str = str(dataset_version_id)
-                        dataset_id = all_dataset_version_mappings[dataset_version_id_str]
+                        dataset_id = all_dataset_version_mappings.get(dataset_version_id_str)
                         if dataset_id:
                             if not get_tombstoned and dataset_id in all_dataset_tombstones:
                                 continue
