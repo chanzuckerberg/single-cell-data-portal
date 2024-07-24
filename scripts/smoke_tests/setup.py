@@ -6,7 +6,7 @@ import threading
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.corpora_config import CorporaAuthConfig
-from tests.functional.backend.constants import API_URL
+from tests.functional.backend.constants import API_URL, DATASET_URI
 from tests.functional.backend.utils import (
     get_auth_token,
     make_cookie,
@@ -88,14 +88,10 @@ if __name__ == "__main__":
     collection_count = smoke_test_init.get_collection_count()
     if collection_count >= NUM_TEST_COLLECTIONS:
         sys.exit(0)
-    dataset_dropbox_url = (
-        "https://www.dropbox.com/scl/fi/y50umqlcrbz21a6jgu99z/"
-        "5_0_0_example_valid.h5ad?rlkey=s7p6ybyx082hswix26hbl11pm&dl=0"
-    )
     num_to_create = NUM_TEST_COLLECTIONS - collection_count
     threads = []
     for _ in range(num_to_create):
-        thread = threading.Thread(target=smoke_test_init.create_and_publish_collection, args=(dataset_dropbox_url,))
+        thread = threading.Thread(target=smoke_test_init.create_and_publish_collection, args=(DATASET_URI,))
         threads.append(thread)
         thread.start()
     for thread in threads:
