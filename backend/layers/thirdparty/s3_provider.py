@@ -25,6 +25,14 @@ class S3Provider(S3ProviderInterface):
         parsed_url = urlparse(s3_uri)
         return parsed_url.netloc, parsed_url.path[1:]
 
+    def uri_exists(self, s3_uri: str) -> bool:
+        bucket, key = self.parse_s3_uri(s3_uri)
+        try:
+            self.client.head_object(Bucket=bucket, Key=key)
+            return True
+        except Exception:
+            return False
+
     def get_file_size(self, path: str) -> int:
         """
         Returns the file size of an S3 object located at `path`
