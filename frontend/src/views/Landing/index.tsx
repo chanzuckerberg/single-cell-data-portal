@@ -1,5 +1,4 @@
 import Head from "next/head";
-import { Banner } from "@czi-sds/components";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useRef } from "react";

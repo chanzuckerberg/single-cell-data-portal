@@ -67,7 +67,7 @@ const LandingHeader: FC<Props> = ({
     }
   };
 
-  const bannerContainerRef = useRef(null);
+  const bannerContainerRef = useRef<HTMLDivElement>(null);
   const [bannerHeight, setBannerHeight] = useState(0);
 
   const determineBannerHeight = () => {
