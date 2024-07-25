@@ -12,7 +12,7 @@
 
 ## Development
 
-The following steps will start a FE server that connects to `dev` API. (See [useful tips](#useful-tips) section to connect to a different API)
+The following steps will start a FE server that connects to `staging` API. (See [useful tips](#useful-tips) section to connect to a different API)
 
 1. Install [`nvm`](https://github.com/nvm-sh/nvm)
    - Example: `brew install nvm`
