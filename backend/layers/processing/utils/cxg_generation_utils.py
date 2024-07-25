@@ -203,7 +203,6 @@ def _sort_by_primary_obs_and_secondary_var(data_dict):
     return x, ys, ds
 
 
-# @profile  # uncomment for memory profiling tests
 def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, ctx):
     """
     Converts a numpy array matrix into a TileDB SparseArray of DenseArray based on whether `encode_as_sparse_array`

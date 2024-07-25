@@ -55,7 +55,6 @@ class H5ADDataFile:
 
         self.validate_anndata()
 
-    # @profile # uncomment for memory profiling tests
     def to_cxg(
         self, output_cxg_directory, sparse_threshold, dataset_version_id, convert_anndata_colors_to_cxg_colors=True
     ):
@@ -90,12 +89,11 @@ class H5ADDataFile:
         self.write_anndata_embeddings_to_cxg(output_cxg_directory, ctx)
         logging.info("\t...dataset embeddings saved")
 
-        self.write_anndata_x_matrices_to_cxg(output_cxg_directory, ctx, sparse_threshold)  # Big memory usage
+        self.write_anndata_x_matrices_to_cxg(output_cxg_directory, ctx, sparse_threshold)  # big memory usage
         logging.info("\t...dataset X matrix saved")
 
         logging.info("Completed writing to CXG.")
 
-    # @profile # uncomment for memory profiling tests
     def write_anndata_x_matrices_to_cxg(self, output_cxg_directory, ctx, sparse_threshold):
         matrix_container = f"{output_cxg_directory}/X"
 
