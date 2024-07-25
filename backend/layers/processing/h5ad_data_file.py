@@ -35,7 +35,6 @@ class H5ADDataFile:
         "py.deduplicate": True,  # May reduce memory requirements at cost of performance
     }
 
-    # @profile # uncomment for memory profiling tests
     def __init__(
         self,
         input_filename,
