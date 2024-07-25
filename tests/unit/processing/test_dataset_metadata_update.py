@@ -527,7 +527,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
             assert self.updater.s3_provider.uri_exists(testing_cxg_temp_directory)
             # check spatial zoom directory was not created for non-spatial dataset
             assert not self.updater.s3_provider.uri_exists(
-                f"s3://{self.updater.spatial_deep_zoom_dir}/{new_dataset_version_id.id}/"
+                f"s3://{self.updater.spatial_deep_zoom_dir}/{new_dataset_version_id.id}"
             )
 
             # check DB artifacts + status are updated
@@ -579,7 +579,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
             )
 
             self.updater.s3_provider.upload_directory(
-                tempdir, f"s3://{self.updater.spatial_deep_zoom_dir}/{current_dataset_version.version_id.id}/"
+                tempdir, f"s3://{self.updater.spatial_deep_zoom_dir}/{current_dataset_version.version_id.id}"
             )
 
             metadata_update = DatasetArtifactMetadataUpdate(
@@ -595,7 +595,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
 
             # check new spatial deepzoom directory exists
             assert self.updater.s3_provider.uri_exists(
-                f"s3://{self.updater.spatial_deep_zoom_dir}/{new_dataset_version_id.id}/"
+                f"s3://{self.updater.spatial_deep_zoom_dir}/{new_dataset_version_id.id}"
             )
 
     @patch("backend.layers.processing.dataset_metadata_update.os.remove")

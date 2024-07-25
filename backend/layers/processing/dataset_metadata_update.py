@@ -188,11 +188,11 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
     ):
         self.s3_provider.upload_directory(cxg_uri, new_cxg_dir)
 
-        current_spatial_deep_zoom_dir = f"s3://{self.spatial_deep_zoom_dir}/{current_dataset_version_id.id}/"
+        current_spatial_deep_zoom_dir = f"s3://{self.spatial_deep_zoom_dir}/{current_dataset_version_id.id}"
 
         # Copy spatial deep zoom directory if it exists (only exists for Visium datasets)
         if self.s3_provider.uri_exists(current_spatial_deep_zoom_dir):
-            new_spatial_deep_zoom_dir = f"s3://{self.spatial_deep_zoom_dir}/{new_dataset_version_id.id}/"
+            new_spatial_deep_zoom_dir = f"s3://{self.spatial_deep_zoom_dir}/{new_dataset_version_id.id}"
             self.s3_provider.upload_directory(current_spatial_deep_zoom_dir, new_spatial_deep_zoom_dir)
 
         ctx = tiledb.Ctx(H5ADDataFile.tile_db_ctx_config)
