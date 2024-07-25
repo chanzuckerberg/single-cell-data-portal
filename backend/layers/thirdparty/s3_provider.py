@@ -128,6 +128,14 @@ class S3Provider(S3ProviderInterface):
         if os.getenv("BOTO_ENDPOINT_URL"):
             command.append(f"--endpoint-url={os.getenv('BOTO_ENDPOINT_URL')}")
 
+        logger.info(
+            {
+                "message": "Copying directory",
+                "src_dir": src_dir,
+                "dst_dir": s3_uri,
+            }
+        )
+
         command.extend(
             [
                 "s3",
