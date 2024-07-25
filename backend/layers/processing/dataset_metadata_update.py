@@ -192,7 +192,7 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
 
         # Copy spatial deep zoom directory if it exists (only exists for Visium datasets)
         if self.s3_provider.uri_exists(current_spatial_deep_zoom_dir):
-            new_spatial_deep_zoom_dir = f"{self.spatial_deep_zoom_dir}/{new_dataset_version_id.id}"
+            new_spatial_deep_zoom_dir = f"s3://{self.spatial_deep_zoom_dir}/{new_dataset_version_id.id}"
             self.s3_provider.upload_directory(current_spatial_deep_zoom_dir, new_spatial_deep_zoom_dir)
 
         ctx = tiledb.Ctx(H5ADDataFile.tile_db_ctx_config)
@@ -437,7 +437,7 @@ if __name__ == "__main__":
     cellxgene_bucket = os.environ.get("CELLXGENE_BUCKET", "test-cellxgene-bucket")
     datasets_bucket = os.environ.get("DATASETS_BUCKET", "test-datasets-bucket")
     spatial_deep_zoom_bucket = os.environ.get("SPATIAL_DEEP_ZOOM_BUCKET", "test-spatial-deep-zoom-bucket")
-    spatial_deep_zoom_dir = f"{spatial_deep_zoom_bucket}/spatial-deep-zoom"
+    spatial_deep_zoom_dir = f"s3://{spatial_deep_zoom_bucket}/spatial-deep-zoom"
     current_dataset_version_id = DatasetVersionId(os.environ["CURRENT_DATASET_VERSION_ID"])
     new_dataset_version_id = DatasetVersionId(os.environ["NEW_DATASET_VERSION_ID"])
     metadata_update = DatasetArtifactMetadataUpdate(**json.loads(os.environ["METADATA_UPDATE_JSON"]))
