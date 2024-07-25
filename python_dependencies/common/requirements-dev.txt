@@ -7,3 +7,6 @@ parameterized
 pytest
 pytest-mock
 pytest-subtests
+memray
+memory-profiler
+
