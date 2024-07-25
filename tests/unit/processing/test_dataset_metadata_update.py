@@ -387,7 +387,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
     @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
     def setUp(self):
         super().setUp()
-        self.updater = DatasetMetadataUpdaterWorker("artifact_bucket", "datasets_bucket")
+        self.updater = DatasetMetadataUpdaterWorker("artifact_bucket", "datasets_bucket", "spatial_deep_zoom_dir")
         self.updater.business_logic = self.business_logic
 
         def mock_download(source_uri, local_path):
@@ -641,7 +641,7 @@ class TestValidArtifactStatuses(BaseProcessingTest):
     def setUp(self):
         super().setUp()
         self.updater = DatasetMetadataUpdater(
-            self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket"
+            self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket", "spatial_deep_zoom_dir"
         )
 
     @parameterized.expand([DatasetConversionStatus.CONVERTED, DatasetConversionStatus.SKIPPED])
