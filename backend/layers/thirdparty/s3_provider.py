@@ -28,9 +28,28 @@ class S3Provider(S3ProviderInterface):
     def uri_exists(self, s3_uri: str) -> bool:
         bucket, key = self.parse_s3_uri(s3_uri)
         try:
+            logger.info(
+                {
+                    "message": "Running HEAD request",
+                    "s3_uri": s3_uri,
+                    "bucket": bucket,
+                    "key": key,
+                }
+            )
             self.client.head_object(Bucket=bucket, Key=key)
+            logger.info(
+                {
+                    "message": "HEAD request succeeded!",
+                }
+            )
             return True
-        except Exception:
+        except Exception as e:
+            logger.info(
+                {
+                    "message": "HEAD request failed",
+                    "error": str(e),
+                }
+            )
             return False
 
     def get_file_size(self, path: str) -> int:
