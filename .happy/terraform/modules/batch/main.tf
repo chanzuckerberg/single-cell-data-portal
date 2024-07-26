@@ -79,6 +79,10 @@ resource aws_batch_job_definition dataset_metadata_update {
       "value": "${var.datasets_bucket}"
     },
     {
+      "name": "SPATIAL_DEEP_ZOOM_BUCKET",
+      "value": "${var.spatial_deep_zoom_bucket}"
+    },
+    {
       "name": "DEPLOYMENT_STAGE",
       "value": "${var.deployment_stage}"
     },

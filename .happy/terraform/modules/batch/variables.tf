@@ -13,6 +13,11 @@ variable datasets_bucket {
   description = "Datasets public-access bucket name"
 }
 
+variable spatial_deep_zoom_bucket {
+  type        = string
+  description = "Bucket for Visium Dataset spatial deep zoom images"
+}
+
 variable image {
   type        = string
   description = "Image name"
