@@ -579,7 +579,8 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
             )
 
             self.updater.s3_provider.upload_directory(
-                tempdir, f"s3://{self.updater.spatial_deep_zoom_dir}/{current_dataset_version.version_id.id}"
+                tempdir,
+                f"s3://{self.updater.spatial_deep_zoom_dir}/{current_dataset_version.version_id.id}/spatial.dzi",
             )
 
             metadata_update = DatasetArtifactMetadataUpdate(

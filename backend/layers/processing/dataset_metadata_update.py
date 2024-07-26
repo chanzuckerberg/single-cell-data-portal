@@ -189,9 +189,9 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
         self.s3_provider.upload_directory(cxg_uri, new_cxg_dir)
 
         current_spatial_deep_zoom_dir = f"s3://{self.spatial_deep_zoom_dir}/{current_dataset_version_id.id}"
-
+        spatial_dzi_uri = f"{current_spatial_deep_zoom_dir}/spatial.dzi"
         # Copy spatial deep zoom directory if it exists (only exists for Visium datasets)
-        if self.s3_provider.uri_exists(current_spatial_deep_zoom_dir):
+        if self.s3_provider.uri_exists(spatial_dzi_uri):
             new_spatial_deep_zoom_dir = f"s3://{self.spatial_deep_zoom_dir}/{new_dataset_version_id.id}"
             self.s3_provider.upload_directory(current_spatial_deep_zoom_dir, new_spatial_deep_zoom_dir)
 
