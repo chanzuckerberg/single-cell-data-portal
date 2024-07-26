@@ -1819,7 +1819,7 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
         # Confirm trigger was called.
         self.business_logic.trigger_dataset_artifact_update.assert_called_once()
         # Confirm new citation was generated
-        self.assertIsNotNone(self.update.citation)
+        self.assertIsNotNone(update.citation)
 
     def test_update_dataset_artifact_metadata_sanitized_ok(self):
         """
