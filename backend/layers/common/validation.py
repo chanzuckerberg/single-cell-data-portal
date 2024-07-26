@@ -24,6 +24,7 @@ valid_consortia = {
     "Human Tumor Atlas Network (HTAN)",
     "Kidney Precision Medicine Project (KPMP)",
     "LungMAP",
+    "Pediatric Center of Excellence in Nephrology (PCEN)",
     "SEA-AD",
     "Wellcome HCA Strategic Science Support",
 }
