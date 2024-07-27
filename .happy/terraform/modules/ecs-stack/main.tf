@@ -55,6 +55,7 @@ locals {
   lambda_upload_success_repo      = local.secret["ecrs"]["upload_success"]["url"]
   lambda_upload_repo              = local.secret["ecrs"]["upload_failures"]["url"]
   lambda_dataset_submissions_repo = local.secret["ecrs"]["dataset_submissions"]["url"]
+  lambda_dataset_version_cleanup_repo = local.secret["ecrs"]["dataset_version_cleanup"]["url"]
   wmg_upload_image_repo           = local.secret["ecrs"]["wmg_processing"]["url"]
   cg_upload_image_repo            = local.secret["ecrs"]["cellguide_pipeline"]["url"]
   batch_role_arn                  = local.secret["batch_queues"]["upload"]["role_arn"]
@@ -406,6 +407,22 @@ module dataset_submissions_lambda {
   source                     = "../lambda"
   image                      = "${local.lambda_dataset_submissions_repo}:${local.image_tag}"
   name                       = "dataset-submissions"
+  custom_stack_name          = local.custom_stack_name
+  remote_dev_prefix          = local.remote_dev_prefix
+  deployment_stage           = local.deployment_stage
+  artifact_bucket            = local.artifact_bucket
+  cellxgene_bucket           = local.cellxgene_bucket
+  datasets_bucket            = local.datasets_bucket
+  lambda_execution_role      = aws_iam_role.dataset_submissions_lambda_service_role.arn
+  step_function_arn          = module.upload_sfn.step_function_arn
+  subnets                    = local.subnets
+  security_groups            = local.security_groups
+}
+
+module dataset_version_cleanup_lambda {
+  source                     = "../lambda"
+  image                      = "${local.lambda_dataset_version_cleanup_repo}:${local.image_tag}"
+  name                       = "dataset-version-cleanup"
   custom_stack_name          = local.custom_stack_name
   remote_dev_prefix          = local.remote_dev_prefix
   deployment_stage           = local.deployment_stage
