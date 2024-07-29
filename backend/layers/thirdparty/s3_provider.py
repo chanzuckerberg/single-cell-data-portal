@@ -25,6 +25,33 @@ class S3Provider(S3ProviderInterface):
         parsed_url = urlparse(s3_uri)
         return parsed_url.netloc, parsed_url.path[1:]
 
+    def uri_exists(self, s3_uri: str) -> bool:
+        bucket, key = self.parse_s3_uri(s3_uri)
+        try:
+            logger.info(
+                {
+                    "message": "Running HEAD request",
+                    "s3_uri": s3_uri,
+                    "bucket": bucket,
+                    "key": key,
+                }
+            )
+            self.client.head_object(Bucket=bucket, Key=key)
+            logger.info(
+                {
+                    "message": "HEAD request succeeded!",
+                }
+            )
+            return True
+        except Exception as e:
+            logger.info(
+                {
+                    "message": "HEAD request failed",
+                    "error": str(e),
+                }
+            )
+            return False
+
     def get_file_size(self, path: str) -> int:
         """
         Returns the file size of an S3 object located at `path`
@@ -119,6 +146,14 @@ class S3Provider(S3ProviderInterface):
         command = ["aws"]
         if os.getenv("BOTO_ENDPOINT_URL"):
             command.append(f"--endpoint-url={os.getenv('BOTO_ENDPOINT_URL')}")
+
+        logger.info(
+            {
+                "message": "Copying directory",
+                "src_dir": src_dir,
+                "dst_dir": s3_uri,
+            }
+        )
 
         command.extend(
             [
