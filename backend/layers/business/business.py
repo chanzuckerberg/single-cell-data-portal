@@ -161,6 +161,11 @@ class BusinessLogic(BusinessLogicInterface):
             new_dataset_version_id = self.create_empty_dataset_version_for_current_dataset(
                 collection_version.version_id, current_dataset_version_id
             ).version_id
+            # Update citation for new dataset version
+            doi = next((link.uri for link in collection_version.metadata.links if link.type == "DOI"), None)
+            metadata_update.citation = self.generate_dataset_citation(
+                collection_version.collection_id, new_dataset_version_id, doi
+            )
 
         self.batch_job_provider.start_metadata_update_batch_job(
             current_dataset_version_id, new_dataset_version_id, metadata_update
@@ -943,6 +948,14 @@ class BusinessLogic(BusinessLogicInterface):
             )
         )
 
+    def delete_dataset_versions(self, dataset_versions: List[DatasetVersion]) -> None:
+        """
+        Deletes a list of dataset versions and associated dataset artifact rows from the database, as well
+        as kicking off deletion of their corresponding assets from S3
+        """
+        self.delete_dataset_version_assets(dataset_versions)
+        self.database_provider.delete_dataset_versions(dataset_versions)
+
     def delete_dataset_version_assets(self, dataset_versions: List[DatasetVersion]) -> None:
         self.delete_dataset_versions_from_public_bucket([dv.version_id.id for dv in dataset_versions])
         self.delete_artifacts(reduce(lambda artifacts, dv: artifacts + dv.artifacts, dataset_versions, []))
@@ -1065,8 +1078,7 @@ class BusinessLogic(BusinessLogicInterface):
             version.collection_id, from_date=date_of_last_publish
         )
         versions_to_delete = list(filter(lambda dv: dv.version_id.id not in versions_to_keep, dataset_versions))
-        self.delete_dataset_version_assets(versions_to_delete)
-        self.database_provider.delete_dataset_versions(versions_to_delete)
+        self.delete_dataset_versions(versions_to_delete)
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:
         """
