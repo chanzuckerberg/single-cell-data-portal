@@ -60,5 +60,5 @@ variable "api_url" {
 variable "census_user_agent" {
   type        = string
   description = "User agent for the census API"
-  default = "WMG pipeline"
+  default = "CZI-wmg"
 }
