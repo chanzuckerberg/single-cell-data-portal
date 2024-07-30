@@ -542,7 +542,7 @@ const LandingPage = (): JSX.Element => {
 
                 <div ref={observerSection2}>
                   <div
-                    className={`${styles.contentRow} ${styles.contentRowFirst}`}
+                    className={`${styles.contentRow}`}
                     id="expedite-collaboration"
                     ref={scrollSection2}
                   >
