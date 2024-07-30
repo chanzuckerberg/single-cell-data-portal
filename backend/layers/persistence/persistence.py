@@ -1106,3 +1106,13 @@ class DatabaseProvider(DatabaseProviderInterface):
             if version_id is None:
                 return None
             return DatasetVersionId(str(version_id.id))
+
+    def replace_collection_version(
+        self, collection_id: CollectionId, new_collection_version_id: CollectionVersionId
+    ) -> None:
+        """
+        Replaces the version_id of a canonical collection
+        """
+        with self._manage_session() as session:
+            collection = session.query(CollectionTable).filter_by(id=collection_id.id).one()
+            collection.version_id = new_collection_version_id.id

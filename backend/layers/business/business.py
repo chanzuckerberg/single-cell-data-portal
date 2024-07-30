@@ -40,6 +40,7 @@ from backend.layers.business.exceptions import (
     DatasetVersionNotFoundException,
     InvalidURIException,
     MaxFileSizeExceededException,
+    NoPreviousCollectionVersionException,
     NoPreviousDatasetVersionException,
 )
 from backend.layers.common import validation
@@ -267,6 +268,19 @@ class BusinessLogic(BusinessLogicInterface):
                 latest = collection.created_at
                 unpublished_collection = collection
         return unpublished_collection
+
+    def get_unpublished_collection_versions_from_canonical(
+        self, collection_id: CollectionId
+    ) -> List[CollectionVersionWithDatasets]:
+        """
+        Given a canonical collection_id, retrieves its latest unpublished versions (max of 2 with a migration_revision
+        and non-migration revision)
+        """
+        unpublished_collections = []
+        for collection in self.get_collection_versions_from_canonical(collection_id):
+            if collection.published_at is None:
+                unpublished_collections.append(collection)
+        return unpublished_collections
 
     def get_collection_url(self, collection_id: str) -> str:
         return f"{CorporaConfig().collections_base_url}/collections/{collection_id}"
@@ -1318,3 +1332,38 @@ class BusinessLogic(BusinessLogicInterface):
         self.database_provider.replace_dataset_in_collection_version(
             collection_version_id, current_version.version_id, previous_version_id
         )
+
+    def restore_previous_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
+        """
+        Restore the previously published collection version for a collection, if any exist.
+
+        Returns CollectionVersion that was replaced, and is no longer linked to canonical collection.
+
+        :param collection_id: The collection id to restore the previous version of.
+        """
+        version_to_replace = self.get_collection_version_from_canonical(collection_id)
+        all_published_versions = list(self.get_all_published_collection_versions_from_canonical(collection_id))
+        if len(all_published_versions) < 2:
+            raise NoPreviousCollectionVersionException(f"No previous collection version for collection {collection_id}")
+
+        # get most recent previously published version
+        previous_version = None
+        previous_published_at = datetime.fromtimestamp(0)
+
+        for version in all_published_versions:
+            if version.version_id == version_to_replace.version_id:
+                continue
+            if version.published_at > previous_published_at:
+                previous_version = version
+                previous_published_at = version.published_at
+
+        logger.info(
+            {
+                "message": "Restoring previous collection version",
+                "collection_id": collection_id.id,
+                "replace_version_id": version_to_replace.version_id.id,
+                "restored_version_id": previous_version.version_id.id,
+            }
+        )
+        self.database_provider.replace_collection_version(collection_id, previous_version.version_id)
+        return version_to_replace
