@@ -59,7 +59,7 @@ export default function Nav({ className, pathname }: Props): JSX.Element {
                 track(EVENTS.CELL_GUIDE_CLICK_NAV);
               }}
             >
-              <Link href={ROUTES.CELL_GUIDE}>CellGuide</Link>
+              <Link href={ROUTES.CELL_GUIDE}>Cell Guide</Link>
             </LinkWrapper>
             {/* Uncomment this when DE is ready for release */}
             <LinkWrapper

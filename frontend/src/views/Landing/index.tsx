@@ -433,7 +433,7 @@ const LandingPage = (): JSX.Element => {
                     track(EVENTS.HOMEPAGE_SEC_NAV_CELL_GUIDE);
                   }}
                 >
-                  CellGuide
+                  Cell Guide
                 </div>
               </div>
               <div className={styles.contentNavSubrow}>
@@ -563,10 +563,10 @@ const LandingPage = (): JSX.Element => {
                         <p>
                           Execute interactive analyses on a dataset to explore
                           how patterns of gene expression are determined by
-                          environmental and genetic factors using an interactive
-                          speed no-code UI. Understand published datasets or use
-                          them as a launchpad to identify new cell sub-types and
-                          states.
+                          spatial, environmental, and genetic factors using an
+                          interactive speed no-code UI. Understand published
+                          datasets or use them as a launchpad to identify new
+                          cell sub-types and states.
                         </p>
                         <div className={styles.linkContainer}>
                           <a
@@ -702,7 +702,7 @@ const LandingPage = (): JSX.Element => {
                         <span className={styles.figureSeparator}></span>
                       </div>
                       <div className={styles.contentInfoTextCol}>
-                        <h2>CellGuide</h2>
+                        <h2>Cell Guide</h2>
                         <p>
                           Explore an interactive encyclopedia of 700+ cell types
                           that provides detailed definitions, marker genes,
