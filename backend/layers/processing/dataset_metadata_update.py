@@ -44,7 +44,7 @@ FIELDS_IN_RAW_H5AD = ["title"]
 
 
 class DatasetMetadataUpdaterWorker(ProcessDownload):
-    def __init__(self, artifact_bucket: str, datasets_bucket: str) -> None:
+    def __init__(self, artifact_bucket: str, datasets_bucket: str, spatial_deep_zoom_dir: str = None) -> None:
         # init each worker with business logic backed by non-shared DB connection
         self.business_logic = BusinessLogic(
             DatabaseProvider(),
@@ -57,6 +57,7 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
         super().__init__(self.business_logic, self.business_logic.uri_provider, self.business_logic.s3_provider)
         self.artifact_bucket = artifact_bucket
         self.datasets_bucket = datasets_bucket
+        self.spatial_deep_zoom_dir = spatial_deep_zoom_dir
 
     def update_raw_h5ad(
         self,
@@ -181,10 +182,19 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
         self,
         cxg_uri: str,
         new_cxg_dir: str,
-        dataset_version_id: DatasetVersionId,
+        current_dataset_version_id: DatasetVersionId,
+        new_dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
         self.s3_provider.upload_directory(cxg_uri, new_cxg_dir)
+
+        current_spatial_deep_zoom_dir = f"s3://{self.spatial_deep_zoom_dir}/{current_dataset_version_id.id}"
+        spatial_dzi_uri = f"{current_spatial_deep_zoom_dir}/spatial.dzi"
+        # Copy spatial deep zoom directory if it exists (only exists for Visium datasets)
+        if self.s3_provider.uri_exists(spatial_dzi_uri):
+            new_spatial_deep_zoom_dir = f"s3://{self.spatial_deep_zoom_dir}/{new_dataset_version_id.id}"
+            self.s3_provider.upload_directory(current_spatial_deep_zoom_dir, new_spatial_deep_zoom_dir)
+
         ctx = tiledb.Ctx(H5ADDataFile.tile_db_ctx_config)
         array_name = f"{new_cxg_dir}/cxg_group_metadata"
         with tiledb.open(array_name, mode="r", ctx=ctx) as metadata_array:
@@ -194,18 +204,24 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
         with tiledb.open(array_name, mode="w", ctx=ctx) as metadata_array:
             metadata_array.meta["corpora"] = json.dumps(cxg_metadata_dict)
 
-        self.business_logic.add_dataset_artifact(dataset_version_id, DatasetArtifactType.CXG, new_cxg_dir)
-        self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.CONVERTED)
+        self.business_logic.add_dataset_artifact(new_dataset_version_id, DatasetArtifactType.CXG, new_cxg_dir)
+        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.CONVERTED)
 
 
 class DatasetMetadataUpdater(ProcessDownload):
     def __init__(
-        self, business_logic: BusinessLogic, artifact_bucket: str, cellxgene_bucket: str, datasets_bucket: str
+        self,
+        business_logic: BusinessLogic,
+        artifact_bucket: str,
+        cellxgene_bucket: str,
+        datasets_bucket: str,
+        spatial_deep_zoom_dir: str,
     ) -> None:
         super().__init__(business_logic, business_logic.uri_provider, business_logic.s3_provider)
         self.artifact_bucket = artifact_bucket
         self.cellxgene_bucket = cellxgene_bucket
         self.datasets_bucket = datasets_bucket
+        self.spatial_deep_zoom_dir = spatial_deep_zoom_dir
 
     @staticmethod
     def update_raw_h5ad(
@@ -258,13 +274,15 @@ class DatasetMetadataUpdater(ProcessDownload):
     def update_cxg(
         artifact_bucket: str,
         datasets_bucket: str,
+        spatial_deep_zoom_dir: str,
         cxg_uri: str,
         new_cxg_dir: str,
-        dataset_version_id: DatasetVersionId,
+        current_dataset_version_id: DatasetVersionId,
+        new_dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
-        DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket).update_cxg(
-            cxg_uri, new_cxg_dir, dataset_version_id, metadata_update
+        DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket, spatial_deep_zoom_dir).update_cxg(
+            cxg_uri, new_cxg_dir, current_dataset_version_id, new_dataset_version_id, metadata_update
         )
 
     def update_metadata(
@@ -365,8 +383,10 @@ class DatasetMetadataUpdater(ProcessDownload):
                 args=(
                     self.artifact_bucket,
                     self.datasets_bucket,
+                    self.spatial_deep_zoom_dir,
                     artifact_uris[DatasetArtifactType.CXG],
                     f"s3://{self.cellxgene_bucket}/{new_artifact_key_prefix}.cxg",
+                    current_dataset_version_id,
                     new_dataset_version_id,
                     metadata_update,
                 ),
@@ -416,9 +436,11 @@ if __name__ == "__main__":
     artifact_bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
     cellxgene_bucket = os.environ.get("CELLXGENE_BUCKET", "test-cellxgene-bucket")
     datasets_bucket = os.environ.get("DATASETS_BUCKET", "test-datasets-bucket")
+    spatial_deep_zoom_bucket = os.environ.get("SPATIAL_DEEP_ZOOM_BUCKET", "test-spatial-deep-zoom-bucket")
+    spatial_deep_zoom_dir = f"{spatial_deep_zoom_bucket}/spatial-deep-zoom"
     current_dataset_version_id = DatasetVersionId(os.environ["CURRENT_DATASET_VERSION_ID"])
     new_dataset_version_id = DatasetVersionId(os.environ["NEW_DATASET_VERSION_ID"])
     metadata_update = DatasetArtifactMetadataUpdate(**json.loads(os.environ["METADATA_UPDATE_JSON"]))
-    DatasetMetadataUpdater(business_logic, artifact_bucket, cellxgene_bucket, datasets_bucket).update_metadata(
-        current_dataset_version_id, new_dataset_version_id, metadata_update
-    )
+    DatasetMetadataUpdater(
+        business_logic, artifact_bucket, cellxgene_bucket, datasets_bucket, spatial_deep_zoom_dir
+    ).update_metadata(current_dataset_version_id, new_dataset_version_id, metadata_update)

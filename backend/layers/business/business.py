@@ -162,6 +162,11 @@ class BusinessLogic(BusinessLogicInterface):
             new_dataset_version_id = self.create_empty_dataset_version_for_current_dataset(
                 collection_version.version_id, current_dataset_version_id
             ).version_id
+            # Update citation for new dataset version
+            doi = next((link.uri for link in collection_version.metadata.links if link.type == "DOI"), None)
+            metadata_update.citation = self.generate_dataset_citation(
+                collection_version.collection_id, new_dataset_version_id, doi
+            )
 
         self.batch_job_provider.start_metadata_update_batch_job(
             current_dataset_version_id, new_dataset_version_id, metadata_update
