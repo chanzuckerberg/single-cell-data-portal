@@ -12,6 +12,7 @@
     "cellguide_pipeline",
     "processing",
     "dataset_submissions",
+    "dataset_version_cleanup",
     "upload_failures",
     "upload_success",
     "wmg_processing"
