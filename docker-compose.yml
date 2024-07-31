@@ -163,10 +163,7 @@ services:
         - HAPPY_TAG
     restart: "no"
     ports:
-      - "9002:8080"
-    volumes:
-      - ./backend/portal/pipeline/dataset_version_cleanup:/var/task
-      - ./backend/common:/var/task/backend/common
+      - "9003:8080"
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
