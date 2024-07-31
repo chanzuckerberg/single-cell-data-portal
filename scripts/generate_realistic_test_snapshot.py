@@ -31,8 +31,6 @@ from backend.wmg.pipeline.pipeline import run_pipeline
 from tests.test_utils.mocks import (
     MockCensusParameters,
     mock_bootstrap_rows_percentiles,
-    mock_get_datasets_from_curation_endpoint,
-    mock_return_dataset_dict_w_publications,
 )
 
 # Add the root directory to the Python module search path so you can reference backend
@@ -89,23 +87,15 @@ if __name__ == "__main__":
             new=MockCensusParameters,
         ),
         patch(
+            "backend.wmg.pipeline.dataset_metadata.CensusParameters",
+            new=MockCensusParameters,
+        ),
+        patch(
             "backend.common.marker_genes.computational_markers.bootstrap_rows_percentiles",
             new=mock_bootstrap_rows_percentiles,
         ),
-        patch(
-            "backend.wmg.pipeline.dataset_metadata.get_datasets_from_discover_api",
-            new=mock_get_datasets_from_curation_endpoint,
-        ),
         patch("backend.wmg.pipeline.expression_summary.tiledb.consolidate", new=Mock()),
         patch("backend.wmg.pipeline.expression_summary.tiledb.vacuum", new=Mock()),
-        patch(
-            "backend.wmg.pipeline.cell_counts.return_dataset_dict_w_publications",
-            new=mock_return_dataset_dict_w_publications,
-        ),
-        patch(
-            "backend.wmg.pipeline.expression_summary.return_dataset_dict_w_publications",
-            new=mock_return_dataset_dict_w_publications,
-        ),
     ):
         corpus_path = os.path.join(temp_dir, os.path.basename(os.path.normpath(new_snapshot)))
         run_pipeline(corpus_path=corpus_path, skip_validation=True)
