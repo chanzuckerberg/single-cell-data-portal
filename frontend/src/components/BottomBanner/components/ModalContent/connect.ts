@@ -9,12 +9,10 @@ import {
 
 export const useConnect = ({
   id,
-  isHubSpotReady,
   email,
   setError,
 }: {
   id?: string;
-  isHubSpotReady: boolean;
   email: string;
   setError: (error: string) => void;
 }) => {
@@ -85,8 +83,6 @@ export const useConnect = ({
    * handles the submission success flow and email validation failure flow
    */
   useEffect(() => {
-    if (!isHubSpotReady) return;
-
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         for (let i = 0; i < mutation.addedNodes.length; i++) {
@@ -106,14 +102,6 @@ export const useConnect = ({
       }
     });
 
-    hbspt.forms.create({
-      region: "na1",
-      portalId: "7272273",
-      formId: "eb65b811-0451-414d-8304-7b9b6f468ce5",
-      target: formContainerQueryId,
-      formInstanceId: id,
-    });
-
     const form = document.querySelector(formContainerQueryId);
 
     if (form) {
@@ -126,7 +114,7 @@ export const useConnect = ({
     return () => {
       observer.disconnect();
     };
-  }, [formContainerQueryId, id, setError, isHubSpotReady]);
+  }, [formContainerQueryId, id, setError]);
 
   return {
     isSubmitted,
