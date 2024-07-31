@@ -88,7 +88,7 @@ class H5ADDataFile:
         self.write_anndata_embeddings_to_cxg(output_cxg_directory, ctx)
         logging.info("\t...dataset embeddings saved")
 
-        self.write_anndata_x_matrices_to_cxg(output_cxg_directory, ctx, sparse_threshold)
+        self.write_anndata_x_matrices_to_cxg(output_cxg_directory, ctx, sparse_threshold)  # big memory usage
         logging.info("\t...dataset X matrix saved")
 
         logging.info("Completed writing to CXG.")
@@ -97,10 +97,10 @@ class H5ADDataFile:
         matrix_container = f"{output_cxg_directory}/X"
 
         x_matrix_data = self.anndata.X
-        is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)
+        is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)  # big memory usage
         logging.info(f"is_sparse: {is_sparse}")
 
-        convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, ctx)
+        convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, ctx)  # big memory usage
 
         suffixes = ["r", "c"] if is_sparse else [""]
         logging.info("start consolidating")
@@ -183,7 +183,7 @@ class H5ADDataFile:
 
     def extract_anndata_elements_from_file(self):
         logging.info(f"Reading in AnnData dataset: {path.basename(self.input_filename)}")
-        self.anndata = anndata.read_h5ad(self.input_filename)
+        self.anndata = anndata.read_h5ad(self.input_filename, backed="r")
         logging.info("Completed reading in AnnData dataset!")
 
         self.obs = self.transform_dataframe_index_into_column(self.anndata.obs, "obs", self.obs_index_column_name)

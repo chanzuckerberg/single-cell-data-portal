@@ -48,7 +48,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         super().setUp()
         self.business_logic.s3_provider = MockS3Provider()
         self.updater = DatasetMetadataUpdater(
-            self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket"
+            self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket", "spatial_deep_zoom_dir"
         )
 
         def mock_download(source_uri, local_path):
@@ -387,7 +387,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
     @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
     def setUp(self):
         super().setUp()
-        self.updater = DatasetMetadataUpdaterWorker("artifact_bucket", "datasets_bucket")
+        self.updater = DatasetMetadataUpdaterWorker("artifact_bucket", "datasets_bucket", "spatial_deep_zoom_dir")
         self.updater.business_logic = self.business_logic
 
         def mock_download(source_uri, local_path):
@@ -515,10 +515,20 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
             metadata_update = DatasetArtifactMetadataUpdate(
                 citation="Publication www.doi.org/567.8", title="New Dataset Title"
             )
-            self.updater.update_cxg(None, testing_cxg_temp_directory, new_dataset_version_id, metadata_update)
+            self.updater.update_cxg(
+                None,
+                testing_cxg_temp_directory,
+                current_dataset_version.version_id,
+                new_dataset_version_id,
+                metadata_update,
+            )
 
             # check new cxg directory exists
             assert self.updater.s3_provider.uri_exists(testing_cxg_temp_directory)
+            # check spatial zoom directory was not created for non-spatial dataset
+            assert not self.updater.s3_provider.uri_exists(
+                f"s3://{self.updater.spatial_deep_zoom_dir}/{new_dataset_version_id.id}"
+            )
 
             # check DB artifacts + status are updated
             new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
@@ -543,6 +553,51 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
             }
 
             assert expected_metadata == actual_stored_metadata
+
+    def test_update_cxg__with_spatial_deepzoom_assets(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            testing_cxg_temp_directory = tempdir
+
+            cxg_metadata = {
+                "cxg_version": "1.0.0",
+                "corpora": json.dumps(
+                    {"schema_version": "3.0.0", "citation": "Publication www.doi.org/123.4", "title": "Dataset Title 1"}
+                ),
+            }
+            convert_dictionary_to_cxg_group(
+                testing_cxg_temp_directory, cxg_metadata, group_metadata_name="cxg_group_metadata"
+            )
+
+            collection_version = self.generate_unpublished_collection(add_datasets=1)
+            current_dataset_version = collection_version.datasets[0]
+            new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+                collection_version_id=collection_version.version_id,
+                url=None,
+                file_size=0,
+                current_dataset_version_id=current_dataset_version.version_id,
+                start_step_function=False,
+            )
+
+            self.updater.s3_provider.upload_directory(
+                tempdir,
+                f"s3://{self.updater.spatial_deep_zoom_dir}/{current_dataset_version.version_id.id}/spatial.dzi",
+            )
+
+            metadata_update = DatasetArtifactMetadataUpdate(
+                citation="Publication www.doi.org/567.8", title="New Dataset Title"
+            )
+            self.updater.update_cxg(
+                None,
+                testing_cxg_temp_directory,
+                current_dataset_version.version_id,
+                new_dataset_version_id,
+                metadata_update,
+            )
+
+            # check new spatial deepzoom directory exists
+            assert self.updater.s3_provider.uri_exists(
+                f"s3://{self.updater.spatial_deep_zoom_dir}/{new_dataset_version_id.id}"
+            )
 
     @patch("backend.layers.processing.dataset_metadata_update.os.remove")
     def test_update_rds(self, *args):
@@ -587,7 +642,7 @@ class TestValidArtifactStatuses(BaseProcessingTest):
     def setUp(self):
         super().setUp()
         self.updater = DatasetMetadataUpdater(
-            self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket"
+            self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket", "spatial_deep_zoom_dir"
         )
 
     @parameterized.expand([DatasetConversionStatus.CONVERTED, DatasetConversionStatus.SKIPPED])

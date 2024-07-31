@@ -347,9 +347,14 @@ export function useDeleteCollection(): UseMutationResult<
         DEFAULT_BACKGROUND_REFETCH
       );
       if (collection.revision_of) {
+        // Invalidate the cached revision without re-fetching as:
+        // 1. the revision no longer exists (requesting the canceled revision returns
+        // an error status), and,
+        // 2. re-fetching causes the delete button - and the redirect-on-success
+        // function - to be unmounted.
         await queryClient.invalidateQueries(
           [USE_COLLECTION, collection.revision_of],
-          DEFAULT_BACKGROUND_REFETCH
+          { refetchActive: false }
         );
       }
     },
