@@ -5,6 +5,7 @@ from unittest.mock import patch
 from backend.common.census_cube.data.snapshot import DATASET_METADATA_FILENAME
 from backend.wmg.pipeline.constants import (
     DATASET_METADATA_CREATED_FLAG,
+    EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
 )
 from backend.wmg.pipeline.dataset_metadata import create_dataset_metadata
 from backend.wmg.pipeline.utils import load_pipeline_state, write_pipeline_state
@@ -19,6 +20,11 @@ class DatasetMetadataTests(unittest.TestCase):
         cls.temp_cube_dir = load_realistic_test_snapshot_tmpdir("realistic-test-snapshot")
         with open(f"{cls.temp_cube_dir.name}/{DATASET_METADATA_FILENAME}") as f:
             cls.expected_dataset_metadata = json.load(f)
+
+    def setUp(self):
+        pipeline_state = load_pipeline_state(self.temp_cube_dir.name)
+        pipeline_state[EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG] = True
+        write_pipeline_state(pipeline_state, self.temp_cube_dir.name)
 
     def tearDown(self):
         pipeline_state = load_pipeline_state(self.temp_cube_dir.name)
@@ -40,6 +46,5 @@ class DatasetMetadataTests(unittest.TestCase):
             dataset_metadata = json.load(f)
 
         pipeline_state = load_pipeline_state(self.temp_cube_dir.name)
-        return dataset_metadata, self.expected_dataset_metadata
         self.assertTrue(pipeline_state.get(DATASET_METADATA_CREATED_FLAG))
         self.assertTrue(compare_dicts(dataset_metadata, self.expected_dataset_metadata))
