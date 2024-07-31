@@ -229,7 +229,7 @@ local-uploadsuccess: .env.ecr ## Run the upload success lambda with a dataset id
 .PHONY: local-dataset-version-cleanup
 local-datasetversioncleanup: .env.ecr ## Run the dataset version cleanup lambda with a list of dataset ids
 	docker compose $(COMPOSE_OPTS) up -d dataset_version_cleanup
-	curl -v -XPOST "http://127.0.0.1:9002/2015-03-31/functions/function/invocations" -d '{"dataset_version_ids": "[$(DATASET_VERSION_IDS)]"}'
+	curl -v -XPOST "http://127.0.0.1:9003/2015-03-31/functions/function/invocations" -d '{"dataset_version_ids": "[$(DATASET_VERSION_IDS)]"}'
 
 .PHONY: local-cxguser-cookie
 local-cxguser-cookie: ## Get cxguser-cookie
