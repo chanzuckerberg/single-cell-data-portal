@@ -3077,7 +3077,10 @@ class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
         current_dataset_version_id = revision.datasets[0].version_id
         self.batch_job_provider.start_metadata_update_batch_job = Mock()
         self.business_logic.trigger_dataset_artifact_update(revision, metadata_update, current_dataset_version_id)
+
         self.batch_job_provider.start_metadata_update_batch_job.assert_called_once()
+        # Confirm citation is updated if new dataset version is generated as part of trigger_dataset_artifact_update
+        self.assertIsNotNone(metadata_update.citation)
 
     def test_trigger_dataset_artifact_update__with_new_dataset_version_id(self):
         metadata_update = DatasetArtifactMetadataUpdate(schema_version="4.0.0")
