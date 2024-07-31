@@ -40,5 +40,6 @@ class DatasetMetadataTests(unittest.TestCase):
             dataset_metadata = json.load(f)
 
         pipeline_state = load_pipeline_state(self.temp_cube_dir.name)
+        return dataset_metadata, self.expected_dataset_metadata
         self.assertTrue(pipeline_state.get(DATASET_METADATA_CREATED_FLAG))
         self.assertTrue(compare_dicts(dataset_metadata, self.expected_dataset_metadata))
