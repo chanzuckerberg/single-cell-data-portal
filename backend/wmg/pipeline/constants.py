@@ -130,6 +130,7 @@ ORGANISM_INFO = [
 class CensusParameters:
     census_version = "latest"
 
+    @staticmethod
     def value_filter(organism: str) -> str:
         organism_mapping = {
             "homo_sapiens": f"is_primary_data == True and nnz >= {GENE_EXPRESSION_COUNT_MIN_THRESHOLD} and cell_type_ontology_term_id != 'unknown'",

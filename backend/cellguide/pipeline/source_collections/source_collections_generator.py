@@ -56,12 +56,18 @@ def generate_source_collections_data(
         # Generate a mapping from collection id to SourceCollectionsData
         collections_to_source_data = {}
 
+        unique_dataset_ids = cell_counts_df["dataset_id"].unique()
         for i in range(len(datasets_metadata_df)):
             dataset_id = datasets_metadata_df.iloc[i]["dataset_id"]
+
+            # dataset_ids is coming from cell_counts_df and dataset_id is coming from census
+            # cell_counts_df also is derived from census, so this condition should never trigger
+            # but we add it here anyway to be safe in case WMG decides to filter out datasets
+            # from the census
             if dataset_id not in dataset_ids:
                 continue
 
-            assert dataset_id in cell_counts_df["dataset_id"].unique(), f"{dataset_id} not in cell_counts_df"
+            assert dataset_id in unique_dataset_ids, f"{dataset_id} not in cell_counts_df"
 
             collection_id = datasets_metadata_df.iloc[i]["collection_id"]
             if collection_id not in collections_to_source_data:

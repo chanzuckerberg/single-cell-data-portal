@@ -62,6 +62,7 @@ def mock_bootstrap_rows_percentiles(
 class MockCensusParameters:
     census_version = "latest"
 
+    @staticmethod
     def value_filter(organism: str) -> str:
         organism_mapping = {
             "homo_sapiens": "dataset_id in ['0041b9c3-6a49-4bf7-8514-9bc7190067a7']",
