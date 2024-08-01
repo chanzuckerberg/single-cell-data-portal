@@ -1,7 +1,7 @@
 import pytest
 
 from backend.layers.processing.rollback import RollbackEntity, RollbackType
-from tests.unit.backend.layers.business import BaseBusinessLogicTestCase
+from tests.unit.backend.layers.business.test_business import BaseBusinessLogicTestCase
 
 
 class TestRollback:
