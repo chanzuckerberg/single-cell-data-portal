@@ -588,6 +588,11 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         collection_version.datasets[idx] = new_dataset_version_id
         return copy.deepcopy(new_dataset_version)
 
+    def replace_collection_version(
+        self, collection_id: CollectionId, new_collection_version_id: CollectionVersionId
+    ) -> None:
+        self.collections[collection_id.id].version_id = new_collection_version_id
+
     def set_collection_version_datasets_order(
         self,
         collection_version_id: CollectionVersionId,
