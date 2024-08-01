@@ -1,10 +1,10 @@
 import pytest
 
-from backend.layers.business.rollback import RollbackEntity, RollbackType
+from backend.layers.processing.rollback import RollbackEntity, RollbackType
 from tests.unit.backend.layers.business import BaseBusinessLogicTestCase
 
 
-class TestRollback(BaseBusinessLogicTestCase):
+class TestPrivateDatasetRollback(BaseBusinessLogicTestCase):
     @pytest.mark.parametrize("pass_arg_collection_version_id", [True, False])
     def test_rollback_private_dataset(self, pass_arg_collection_version_id):
         collection_version = self.initialize_unpublished_collection(num_datasets=1)
@@ -25,3 +25,25 @@ class TestRollback(BaseBusinessLogicTestCase):
         # Assert DatasetVersion is rolled back
         restored_dataset_version = self.business_logic.get_collection_version(collection_version.version_id).datasets[0]
         assert restored_dataset_version.version_id.id == original_dataset_version.version_id.id
+
+    def test_rollback_private_dataset_list(self):
+        pass
+
+
+class TestPrivateCollectionRollback(BaseBusinessLogicTestCase):
+    def test_rollback_private_collection(self):
+        pass
+
+    def test_rollback_private_collection_list(self):
+        pass
+
+
+class TestPublishedCollectionRollback(BaseBusinessLogicTestCase):
+    def test_rollback_public_collection(self):
+        pass
+
+    def test_rollback_published_collections(self):
+        pass
+
+    def test_rollback_published_collection_list(self):
+        pass
