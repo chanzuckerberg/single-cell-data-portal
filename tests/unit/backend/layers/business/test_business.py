@@ -508,7 +508,7 @@ class TestGetCollectionVersion(BaseBusinessLogicTestCase):
             published_collection.collection_id, is_auto_version=True
         )
 
-        unpublished_versions = self.business_logic.get_all_unpublished_collection_versions_from_canonical(
+        unpublished_versions = self.business_logic.get_unpublished_collection_versions_from_canonical(
             published_collection.collection_id
         )
         unpublished_version_ids = [version.version_id.id for version in unpublished_versions]
@@ -2911,7 +2911,7 @@ class TestCollectionUtilities(BaseBusinessLogicTestCase):
         self.business_logic.restore_previous_collection_version(collection_id)
 
         # Fetch the collection
-        restored_collection = self.business_logic.get_published_collection(collection_id)
+        restored_collection = self.business_logic.get_canonical_collection(collection_id)
 
         # Ensure the collection is pointing back at the original collection version
         self.assertEqual(original_collection_version.version_id, restored_collection.version_id)
