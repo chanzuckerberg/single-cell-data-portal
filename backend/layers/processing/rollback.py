@@ -28,7 +28,7 @@ class RollbackEntity:
         self, business_logic: BusinessLogic, rollback_type: RollbackType, entity_id_list: List[str] = None
     ) -> None:
         self.business_logic = business_logic
-        self.rollback_type = str(rollback_type)
+        self.rollback_type = rollback_type
         self.entity_id_list = entity_id_list
 
     def rollback(self):
@@ -41,7 +41,7 @@ class RollbackEntity:
         elif self.rollback_type == RollbackType.PRIVATE_COLLECTION_LIST:
             self.rollback_private_collection_list()
         elif self.rollback_type == RollbackType.PRIVATE_DATASET_LIST:
-            self.rollback_dataset_list()
+            self.rollback_private_dataset_list()
         else:
             raise ValueError(f"Invalid rollback type: {self.rollback_type}")
 
@@ -122,7 +122,7 @@ class RollbackEntity:
                         break
         if cv_id is None:
             raise ValueError(f"An Associated CollectionVersion not found for DatasetVersion {dataset_version_id}")
-        self.business_logic.restore_previous_dataset_version(dataset_version_id, cv_id)
+        self.business_logic.restore_previous_dataset_version(cv_id, dataset_version.dataset_id)
         return dataset_version
 
     def rollback_public_collections(self) -> None:
@@ -187,18 +187,19 @@ if __name__ == "__main__":
         S3Provider(),
         UriProvider(),
     )
-    rollback_type = os.environ.get("ROLLBACK_TYPE", None)
-    if rollback_type is None:
+    rollback_type_str = os.environ.get("ROLLBACK_TYPE", None)
+    if rollback_type_str is None:
         raise ValueError("ROLLBACK_TYPE is required")
-    if rollback_type not in RollbackType.__members__:
+    if rollback_type_str not in RollbackType.__members__:
         raise ValueError(f"ROLLBACK_TYPE must be one of {', '.join(RollbackType.__members__)}")
 
+    rollback_type = RollbackType(rollback_type_str)
     if rollback_type in (
         RollbackType.PUBLIC_COLLECTION_LIST,
         RollbackType.PRIVATE_COLLECTION_LIST,
         RollbackType.PRIVATE_DATASET_LIST,
     ):
         entities_to_rollback = os.environ.get("ENTITY_LIST", None)
-        RollbackEntity(business_logic, RollbackType(rollback_type), entities_to_rollback).rollback()
+        RollbackEntity(business_logic, rollback_type, entities_to_rollback).rollback()
     else:
-        RollbackEntity(business_logic, RollbackType(rollback_type)).rollback()
+        RollbackEntity(business_logic, rollback_type).rollback()

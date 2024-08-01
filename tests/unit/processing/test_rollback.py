@@ -48,42 +48,53 @@ def rollback_entity_private_dataset_list(business_logic):
 
 
 def initialize_unpublished_collection(rollback_entity, num_datasets):
-    business_logic = rollback_entity.business_logic
-
-    version = business_logic.database_provider.create_canonical_collection(
+    version = rollback_entity.business_logic.database_provider.create_canonical_collection(
         "owner",
         "curator_name",
         None,
     )
     for _ in range(num_datasets):
-        dataset_version = business_logic.database_provider.create_canonical_dataset(
+        dataset_version = rollback_entity.business_logic.database_provider.create_canonical_dataset(
             version.version_id,
         )
-        business_logic.database_provider.add_dataset_to_collection_version_mapping(
+        rollback_entity.business_logic.database_provider.add_dataset_to_collection_version_mapping(
             version.version_id, dataset_version.version_id
         )
-    return business_logic.database_provider.get_collection_version_with_datasets(version.version_id)
+    return rollback_entity.business_logic.database_provider.get_collection_version_with_datasets(version.version_id)
 
 
 def initialize_published_collection(rollback_entity, num_datasets):
     version = initialize_unpublished_collection(rollback_entity, num_datasets=num_datasets)
-    business_logic = rollback_entity.business_logic
 
-    business_logic.database_provider.finalize_collection_version(
+    rollback_entity.business_logic.database_provider.finalize_collection_version(
         version.collection_id,
         version.version_id,
         "5.1.0",
         "1.0.0",
         published_at=datetime.utcnow(),
     )
-    return business_logic.database_provider.get_collection_version_with_datasets(version.version_id)
+    return rollback_entity.business_logic.database_provider.get_collection_version_with_datasets(version.version_id)
 
 
 # Tests
 
 
-def test_rollback():
-    pass
+@pytest.mark.parametrize(
+    "rollback_args",
+    [
+        ("rollback_entity_private_collections", "rollback_private_collections"),
+        ("rollback_entity_private_collection_list", "rollback_private_collection_list"),
+        ("rollback_entity_public_collections", "rollback_public_collections"),
+        ("rollback_entity_public_collection_list", "rollback_public_collection_list"),
+        ("rollback_entity_private_dataset_list", "rollback_private_dataset_list"),
+    ],
+)
+def test_rollback(request, rollback_args):
+    rollback_entity_name, rollback_function_name = rollback_args
+    rollback_entity = request.getfixturevalue(rollback_entity_name)
+    setattr(rollback_entity, rollback_function_name, Mock())
+    rollback_entity.rollback()
+    assert getattr(rollback_entity, rollback_function_name).call_count == 1
 
 
 def test_rollback__unsupported_rollback_type():
