@@ -2,10 +2,9 @@ import os
 from enum import Enum
 from typing import List
 
-from backend.layers.business.business import BusinessLogic
+from backend.layers.business.business import BusinessLogic, CollectionQueryFilter
 from backend.layers.common.entities import (
     CollectionId,
-    CollectionQueryFilter,
     CollectionVersion,
     CollectionVersionId,
     DatasetVersion,

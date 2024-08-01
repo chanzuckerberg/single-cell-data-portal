@@ -4,6 +4,14 @@ from backend.layers.processing.rollback import RollbackEntity, RollbackType
 from tests.unit.backend.layers.business import BaseBusinessLogicTestCase
 
 
+class TestRollback:
+    def test_rollback(self):
+        pass
+
+    def test_rollback__unsupported_rollback_type(self):
+        pass
+
+
 class TestPrivateDatasetRollback(BaseBusinessLogicTestCase):
     @pytest.mark.parametrize("pass_arg_collection_version_id", [True, False])
     def test_rollback_private_dataset(self, pass_arg_collection_version_id):
@@ -46,4 +54,12 @@ class TestPublishedCollectionRollback(BaseBusinessLogicTestCase):
         pass
 
     def test_rollback_published_collection_list(self):
+        pass
+
+
+class TestRollbackCleanup(BaseBusinessLogicTestCase):
+    def test_clean_up_rolled_back_datasets(self):
+        pass
+
+    def test_clean_up_published_collection_versions(self):
         pass
