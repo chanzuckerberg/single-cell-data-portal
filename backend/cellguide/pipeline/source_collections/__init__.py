@@ -17,4 +17,4 @@ def get_source_collections_data():
     # for convenient imports
     snapshot = sn.load_snapshot(snapshot_schema_version=CELLGUIDE_CENSUS_CUBE_DATA_SCHEMA_VERSION)
     all_cell_type_ids_in_corpus = get_all_cell_type_ids_in_corpus(snapshot)
-    return generate_source_collections_data(all_cell_type_ids_in_corpus)
+    return generate_source_collections_data(all_cell_type_ids_in_corpus, snapshot.cell_counts_df)

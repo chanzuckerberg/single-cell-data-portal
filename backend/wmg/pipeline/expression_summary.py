@@ -27,7 +27,6 @@ from backend.wmg.pipeline.utils import (
     load_pipeline_state,
     log_func_runtime,
     remove_accents,
-    return_dataset_dict_w_publications,
 )
 
 logger = logging.getLogger(__name__)
@@ -37,7 +36,9 @@ WRITE_CHUNK_SIZE = 50_000_000
 
 
 class ExpressionSummaryCubeBuilder:
-    def __init__(self, *, query: ExperimentAxisQuery, corpus_path: str, organismId: str):
+    def __init__(
+        self, *, dataset_metadata: pd.DataFrame, query: ExperimentAxisQuery, corpus_path: str, organismId: str
+    ):
         self.obs_df = query.obs().concat().to_pandas()
         self.obs_df = self.obs_df.rename(columns=DIMENSION_NAME_MAP_CENSUS_TO_WMG)
         self.obs_df["organism_ontology_term_id"] = organismId
@@ -51,6 +52,7 @@ class ExpressionSummaryCubeBuilder:
         self.corpus_path = corpus_path
 
         self.pipeline_state = load_pipeline_state(corpus_path)
+        self.dataset_metadata = dataset_metadata
 
     @log_func_runtime
     def create_expression_summary_cube(self):
@@ -289,7 +291,11 @@ class ExpressionSummaryCubeBuilder:
         idx = 0
 
         if "publication_citation" in other_cube_attrs:
-            dataset_dict = return_dataset_dict_w_publications()
+            dataset_dict = {
+                row["dataset_id"]: row["collection_doi_label"]
+                for _, row in self.dataset_metadata.iterrows()
+                if row["collection_doi_label"]
+            }
 
         for grp in cube_index.to_records():
             (
