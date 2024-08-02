@@ -1,3 +1,59 @@
+"""
+This batch job is meant for rollback of datasets or collections in response to migration failures--
+either pre- or post- publish. It can either:
+1) rollback all datasets to their previous dataset version in all private collections
+2) rollback all datasets in an input list of private collections
+3) rollback an input list of private datasets
+4) rollback all public collections to their previous collection version
+5) rollback an input list of public collections
+depending on the input "ROLLBACK_TYPE" and optional "ENTITY_LIST" environment variables.
+
+Example usages:
+
+1) Rollback all datasets in all private collections:
+$ aws batch submit-job --job-name rollback \
+  --job-queue <your_job_queue_ARN> \
+  --job-definition <your_job_definition_ARN> \
+  --container-overrides '{
+    "environment": [{"name": "ROLLBACK_TYPE", "value": "private_collections"}]
+  }'
+
+2) Rollback all datasets in an input list of private collections:
+$ aws batch submit-job --job-name rollback \
+  --job-queue <your_job_queue_ARN> \
+  --job-definition <your_job_definition_ARN> \
+  --container-overrides '{
+    "environment": [{"name": "ROLLBACK_TYPE", "value": "private_collection_list"},
+    {"name": "ENTITY_LIST", "value": "collection_version_id1,collection_version_id2"}]
+  }'
+
+3) Rollback an input list of private datasets:
+$ aws batch submit-job --job-name rollback \
+  --job-queue <your_job_queue_ARN> \
+  --job-definition <your_job_definition_ARN> \
+  --container-overrides '{
+    "environment": [{"name": "ROLLBACK_TYPE", "value": "private_dataset_list"},
+    {"name": "ENTITY_LIST", "value": "dataset_version_id1,dataset_version_id2"}]
+  }'
+
+4) Rollback all public collections to their previous collection version:
+$ aws batch submit-job --job-name rollback \
+  --job-queue <your_job_queue_ARN> \
+  --job-definition <your_job_definition_ARN> \
+  --container-overrides '{
+    "environment": [{"name": "ROLLBACK_TYPE", "value": "public_collections"}]
+  }'
+
+5) Rollback an input list of public collections:
+$ aws batch submit-job --job-name rollback \
+  --job-queue <your_job_queue_ARN> \
+  --job-definition <your_job_definition_ARN> \
+  --container-overrides '{
+    "environment": [{"name": "ROLLBACK_TYPE", "value": "public_collection_list"},
+    {"name": "ENTITY_LIST", "value": "canonical_collection_id1,canonical_collection_id2"}]
+  }'
+"""
+
 import os
 from enum import Enum
 from typing import List
