@@ -155,7 +155,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def get_all_mapped_collection_versions(
         self, get_tombstoned: bool = False
     ) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
-        for version_id, collection_version in self.collections_versions.items():
+        for version_id, collection_version in list(self.collections_versions.items()):
             if version_id in [c.version_id.id for c in self.collections.values()]:
                 collection_id = collection_version.collection_id.id
                 if not get_tombstoned and self.collections[collection_id].tombstoned:
@@ -591,7 +591,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def replace_collection_version(
         self, collection_id: CollectionId, new_collection_version_id: CollectionVersionId
     ) -> None:
+        old_version_id = self.collections[collection_id.id].version_id
         self.collections[collection_id.id].version_id = new_collection_version_id
+        del self.collections_versions[old_version_id.id]
 
     def set_collection_version_datasets_order(
         self,

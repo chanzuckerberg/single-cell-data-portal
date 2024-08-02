@@ -228,12 +228,20 @@ class RollbackEntity:
 
     def _clean_up_published_collection_versions(self, rolled_back_collection_versions: List[CollectionVersion]) -> None:
         """
-        Triggers deletion of the DB references and S3 assets for the rolled back CollectionVersions and their associated
-        DatasetVersions.
+        Triggers deletion of the DB references and S3 assets for the rolled back CollectionVersions' associated
+        DatasetVersions, if they are not associated with any still-existing CollectionVersions.
         """
-        # TODO: implement
-        # TODO: replace this sync call with an async lambda call once available
-        pass
+        datasets_to_rollback = []
+        for rolled_back_collection_version in rolled_back_collection_versions:
+            dataset_rollback_candidates = rolled_back_collection_version.datasets
+            collection_version_history = self.business_logic.get_collection_versions_from_canonical(
+                rolled_back_collection_version.collection_id
+            )
+            dataset_version_history = {dv.version_id.id: dv for cv in collection_version_history for dv in cv.datasets}
+            for dataset_rollback_candidate in dataset_rollback_candidates:
+                if dataset_rollback_candidate.version_id.id not in dataset_version_history:
+                    datasets_to_rollback.append(dataset_rollback_candidate)
+        self._clean_up_rolled_back_datasets(datasets_to_rollback)
 
 
 if __name__ == "__main__":

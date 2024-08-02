@@ -2916,6 +2916,9 @@ class TestCollectionUtilities(BaseBusinessLogicTestCase):
         # Ensure the collection is pointing back at the original collection version
         self.assertEqual(original_collection_version.version_id, restored_collection.version_id)
 
+        # Ensure replaced CollectionVersion is deleted from DB
+        self.assertIsNone(self.database_provider.get_collection_version(new_version.version_id))
+
     def test__restore_previous_collection_version__no_previous_versions(self):
         """
         Test restoring a previous version of a collection fails when there are no previous versions

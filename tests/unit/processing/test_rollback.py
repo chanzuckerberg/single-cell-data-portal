@@ -76,13 +76,15 @@ def initialize_published_collection(rollback_entity, num_datasets):
     return rollback_entity.business_logic.database_provider.get_collection_version_with_datasets(version.version_id)
 
 
-def create_and_publish_collection_revision(rollback_entity, collection_id):
+def create_and_publish_collection_revision(rollback_entity, collection_id, update_first_dataset_only=False):
     new_collection_version = rollback_entity.business_logic.create_collection_version(collection_id)
 
     for dataset in new_collection_version.datasets:
         rollback_entity.business_logic.create_empty_dataset_version_for_current_dataset(
             new_collection_version.version_id, dataset.version_id
         )
+        if update_first_dataset_only:
+            break
 
     rollback_entity.business_logic.database_provider.finalize_collection_version(
         collection_id,
@@ -371,3 +373,33 @@ def test_rollback_published_collection_list(rollback_entity_public_collection_li
         business_logic.get_canonical_collection(original_collection_versions[2].collection_id).version_id.id
         == new_collection_versions[2].version_id.id
     )
+
+
+# TestRollbackCleanUp
+
+
+def test__clean_up(rollback_entity_public_collections):
+    business_logic = rollback_entity_public_collections.business_logic
+
+    original_collection_version = initialize_published_collection(rollback_entity_public_collections, num_datasets=2)
+
+    # publish 2 new collection versions for total version history of 3
+    # only update 1 of 2 datasets
+    collection_revisions = [
+        create_and_publish_collection_revision(
+            rollback_entity_public_collections,
+            original_collection_version.collection_id,
+            update_first_dataset_only=True,
+        )
+        for _ in range(2)
+    ]
+
+    rollback_entity_public_collections.rollback_public_collections()
+
+    rolled_back_revision = collection_revisions[-1]
+    assert business_logic.get_collection_version(rolled_back_revision.version_id) is None
+
+    revised_dataset = rolled_back_revision.datasets[0]
+    unrevised_dataset = rolled_back_revision.datasets[1]
+    assert business_logic.get_dataset_version(revised_dataset.version_id) is None
+    assert business_logic.get_dataset_version(unrevised_dataset.version_id) is not None
