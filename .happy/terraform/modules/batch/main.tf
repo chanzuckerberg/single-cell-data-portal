@@ -123,6 +123,56 @@ resource aws_batch_job_definition dataset_metadata_update {
 })
 }
 
+resource aws_batch_job_definition rollback {
+  type = "container"
+  name = "dp-${var.deployment_stage}-${var.custom_stack_name}-rollback"
+  container_properties = jsonencode({
+  "command": ["python3", "-m", "backend.layers.processing.rollback"],
+  "jobRoleArn": "${var.batch_role_arn}",
+  "image": "${var.image}",
+  "memory": var.batch_container_memory_limit,
+  "environment": [
+    {
+      "name": "DEPLOYMENT_STAGE",
+      "value": "${var.deployment_stage}"
+    },
+    {
+      "name": "AWS_DEFAULT_REGION",
+      "value": "${data.aws_region.current.name}"
+    },
+    {
+      "name": "REMOTE_DEV_PREFIX",
+      "value": "${var.remote_dev_prefix}"
+    }
+  ],
+  "vcpus": 1,
+  "linuxParameters": {
+     "maxSwap": 0,
+     "swappiness": 0
+  },
+  "retryStrategy": {
+    "attempts": 3,
+    "evaluateOnExit": [
+      {
+          "action": "RETRY",
+          "onReason": "Task failed to start"
+      },
+      {
+          "action": "EXIT",
+          "onReason": "*"
+      }
+    ]
+  },
+  "logConfiguration": {
+    "logDriver": "awslogs",
+    "options": {
+      "awslogs-group": "${aws_cloudwatch_log_group.cloud_watch_logs_group.id}",
+      "awslogs-region": "${data.aws_region.current.name}"
+    }
+  }
+})
+}
+
 resource aws_cloudwatch_log_group cloud_watch_logs_group {
   retention_in_days = 365
   name              = "/dp/${var.deployment_stage}/${var.custom_stack_name}/upload"
