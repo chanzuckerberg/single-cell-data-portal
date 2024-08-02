@@ -55,9 +55,9 @@ class RollbackEntity:
         collections = self.business_logic.get_collections(filter)
         rolled_back_datasets = []
         for collection in collections:
-            collection_datasets = self.rollback_private_collection(collection.collection_id)
+            collection_datasets = self.rollback_private_collection(collection.version_id)
             rolled_back_datasets.extend(collection_datasets)
-        self.clean_up_rolled_back_datasets(rolled_back_datasets)
+        self._clean_up_rolled_back_datasets(rolled_back_datasets)
 
     def rollback_private_collection_list(self) -> None:
         """
@@ -69,7 +69,7 @@ class RollbackEntity:
         for collection_version_id in self.entity_id_list:
             collection_dataset_versions = self.rollback_private_collection(CollectionVersionId(collection_version_id))
             rolled_back_datasets.extend(collection_dataset_versions)
-        self.clean_up_rolled_back_datasets(rolled_back_datasets)
+        self._clean_up_rolled_back_datasets(rolled_back_datasets)
 
     def rollback_private_collection(self, collection_version_id: CollectionVersionId) -> List[DatasetVersion]:
         """
@@ -92,7 +92,7 @@ class RollbackEntity:
             dataset_version_id = DatasetVersionId(dataset_version_id)
             rolled_back_dataset = self.rollback_private_dataset(dataset_version_id)
             rolled_back_datasets.append(rolled_back_dataset)
-        self.clean_up_rolled_back_datasets(rolled_back_datasets)
+        self._clean_up_rolled_back_datasets(rolled_back_datasets)
 
     def rollback_private_dataset(
         self, dataset_version_id: DatasetVersionId, collection_version_id: CollectionVersionId = None
@@ -133,9 +133,11 @@ class RollbackEntity:
         """
         filter = CollectionQueryFilter(is_published=True)
         collections = self.business_logic.get_collections(filter)
+        rolled_back_collection_versions = []
         for collection in collections:
-            self.rollback_public_collection(collection.collection_id)
-        self.clean_up_rolled_back_collection_versions()
+            rolled_back_collection_version = self.rollback_public_collection(collection.collection_id)
+            rolled_back_collection_versions.append(rolled_back_collection_version)
+        self._clean_up_published_collection_versions(rolled_back_collection_versions)
 
     def rollback_public_collection_list(self) -> None:
         """
@@ -148,7 +150,7 @@ class RollbackEntity:
         for collection_id in self.entity_id_list:
             rolled_back_collection_version = self.rollback_public_collection(CollectionId(collection_id))
             rolled_back_collection_versions.append(rolled_back_collection_version)
-        self.clean_up_published_collection_versions(rolled_back_collection_versions)
+        self._clean_up_published_collection_versions(rolled_back_collection_versions)
 
     def rollback_public_collection(self, collection_id: CollectionId) -> CollectionVersion:
         """
@@ -161,14 +163,14 @@ class RollbackEntity:
         """
         return self.business_logic.restore_previous_collection_version(collection_id)
 
-    def clean_up_rolled_back_datasets(self, rolled_back_datasets: List[DatasetVersion]) -> None:
+    def _clean_up_rolled_back_datasets(self, rolled_back_datasets: List[DatasetVersion]) -> None:
         """
         Triggers deletion of the DB references and S3 assets for the rolled back DatasetVersions.
         """
         # TODO: replace this sync call with an async lambda call once available
         self.business_logic.delete_dataset_versions(rolled_back_datasets)
 
-    def clean_up_published_collection_versions(self, rolled_back_collection_versions: List[CollectionVersion]) -> None:
+    def _clean_up_published_collection_versions(self, rolled_back_collection_versions: List[CollectionVersion]) -> None:
         """
         Triggers deletion of the DB references and S3 assets for the rolled back CollectionVersions and their associated
         DatasetVersions.
