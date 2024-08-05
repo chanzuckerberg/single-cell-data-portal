@@ -68,11 +68,6 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
           key="og:url"
           content="https://cellxgene.cziscience.com/"
         />
-        <meta
-          property="og:image"
-          key="og:image"
-          content={"https://cellxgene.cziscience.com/open-graph.jpg"}
-        />
         <meta property="og:creator" key="og:creator" content="@cziscience" />
         <meta property="og:site" key="og:site" content="@cziscience" />
         <meta
@@ -89,12 +84,12 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
         <meta
           property="og:image"
           key="og:image"
-          content="https://cellxgene.cziscience.com/open-graph.jpg"
+          content="https://cellxgene.cziscience.com/cxg-og.jpg"
         />
         <meta
           property="twitter:image"
           key="twitter:image"
-          content="https://cellxgene.cziscience.com/open-graph.jpg"
+          content="https://cellxgene.cziscience.com/cxg-og.jpg"
         />
 
         <meta property="twitter:card" key="twitter:card" content="summary" />
