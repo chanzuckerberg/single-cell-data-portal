@@ -47,6 +47,9 @@
     },
     "upload_success": {
       "profile": "upload_success"
+    },
+    "dataset_version_cleanup": {
+      "profile": "dataset_version_cleanup"
     }
   },
   "environments": {
