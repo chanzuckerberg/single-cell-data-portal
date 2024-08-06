@@ -256,8 +256,6 @@ if __name__ == "__main__":
     rollback_type_str = os.environ.get("ROLLBACK_TYPE", None)
     if rollback_type_str is None:
         raise ValueError("ROLLBACK_TYPE is required")
-    if rollback_type_str not in RollbackType.__members__:
-        raise ValueError(f"ROLLBACK_TYPE must be one of {', '.join(RollbackType.__members__)}")
 
     rollback_type = RollbackType(rollback_type_str)
     if rollback_type in (
