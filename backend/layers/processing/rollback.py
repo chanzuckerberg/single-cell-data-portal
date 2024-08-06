@@ -266,6 +266,7 @@ if __name__ == "__main__":
         RollbackType.PRIVATE_DATASET_LIST,
     ):
         entities_to_rollback = os.environ.get("ENTITY_LIST", None)
-        RollbackEntity(business_logic, rollback_type, entities_to_rollback).rollback()
+        entities_to_rollback_list = entities_to_rollback.split(",") if entities_to_rollback else None
+        RollbackEntity(business_logic, rollback_type, entities_to_rollback_list).rollback()
     else:
         RollbackEntity(business_logic, rollback_type).rollback()
