@@ -133,6 +133,18 @@ resource aws_batch_job_definition rollback {
   "memory": var.batch_container_memory_limit,
   "environment": [
     {
+      "name": "ARTIFACT_BUCKET",
+      "value": "${var.artifact_bucket}"
+    },
+    {
+      "name": "CELLXGENE_BUCKET",
+      "value": "${var.cellxgene_bucket}"
+    },
+    {
+      "name": "DATASETS_BUCKET",
+      "value": "${var.datasets_bucket}"
+    },
+    {
       "name": "DEPLOYMENT_STAGE",
       "value": "${var.deployment_stage}"
     },
