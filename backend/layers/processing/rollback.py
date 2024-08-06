@@ -134,7 +134,7 @@ class RollbackEntity:
                     CollectionVersionId(collection_version_id)
                 )
             except Exception as e:
-                self.logger.info(f"Failed to rollback CollectionVersion {collection_version_id}, {e}")
+                logger.info(f"Failed to rollback CollectionVersion {collection_version_id}, {e}")
                 continue
             rolled_back_datasets.extend(collection_dataset_versions)
         self._clean_up_rolled_back_datasets(rolled_back_datasets)
@@ -151,7 +151,7 @@ class RollbackEntity:
             try:
                 self.rollback_private_dataset(dataset.version_id, collection_version_id)
             except Exception as e:
-                self.logger.info(f"Failed to rollback DatasetVersion {dataset.version_id}, {e}")
+                logger.info(f"Failed to rollback DatasetVersion {dataset.version_id}, {e}")
                 continue
         return collection_version.datasets
 
@@ -167,7 +167,7 @@ class RollbackEntity:
             try:
                 rolled_back_dataset = self.rollback_private_dataset(dataset_version_id)
             except Exception as e:
-                self.logger.info(f"Failed to rollback DatasetVersion {dataset_version_id}, {e}")
+                logger.info(f"Failed to rollback DatasetVersion {dataset_version_id}, {e}")
                 continue
             rolled_back_datasets.append(rolled_back_dataset)
         self._clean_up_rolled_back_datasets(rolled_back_datasets)
@@ -218,7 +218,7 @@ class RollbackEntity:
             try:
                 rolled_back_collection_version = self.rollback_public_collection(collection.collection_id)
             except Exception as e:
-                self.logger.info(f"Failed to rollback Collection {collection.collection_id}, {e}")
+                logger.info(f"Failed to rollback Collection {collection.collection_id}, {e}")
                 continue
             rolled_back_collection_versions.append(rolled_back_collection_version)
         self._clean_up_published_collection_versions(rolled_back_collection_versions)
@@ -235,7 +235,7 @@ class RollbackEntity:
             try:
                 rolled_back_collection_version = self.rollback_public_collection(CollectionId(collection_id))
             except Exception as e:
-                self.logger.info(f"Failed to rollback Collection {collection_id}, {e}")
+                logger.info(f"Failed to rollback Collection {collection_id}, {e}")
                 continue
             rolled_back_collection_versions.append(rolled_back_collection_version)
         self._clean_up_published_collection_versions(rolled_back_collection_versions)
@@ -255,7 +255,6 @@ class RollbackEntity:
         """
         Triggers deletion of the DB references and S3 assets for the rolled back DatasetVersions.
         """
-        # TODO: replace this sync call with an async lambda call once available
         self.business_logic.delete_dataset_versions(rolled_back_datasets)
 
     def _clean_up_published_collection_versions(self, rolled_back_collection_versions: List[CollectionVersion]) -> None:

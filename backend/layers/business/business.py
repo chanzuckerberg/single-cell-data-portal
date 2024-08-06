@@ -451,7 +451,7 @@ class BusinessLogic(BusinessLogicInterface):
         ):
             for dataset in current_collection_version.datasets:
                 if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
-                    self.logger.info(
+                    logger.info(
                         f"Dataset {dataset.version_id.id} is not successfully processed. Skipping metadata update."
                     )
                     continue
