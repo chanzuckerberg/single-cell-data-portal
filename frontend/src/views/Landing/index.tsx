@@ -311,11 +311,11 @@ const LandingPage = (): JSX.Element => {
         />
         <meta
           property="og:image"
-          content="https://cellxgene.cziscience.com/cxg-og.jpg"
+          content="https://cellxgene.cziscience.com/open-graph.jpg"
         />
         <meta
           property="twitter:image"
-          content="https://cellxgene.cziscience.com/cxg-og.jpg"
+          content="https://cellxgene.cziscience.com/open-graph.jpg"
         />
         <meta property="og:type" content="website" />
       </Head>

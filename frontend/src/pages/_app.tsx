@@ -84,12 +84,12 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
         <meta
           property="og:image"
           key="og:image"
-          content="https://cellxgene.cziscience.com/cxg-og.jpg"
+          content="https://cellxgene.cziscience.com/open-graph.jpg"
         />
         <meta
           property="twitter:image"
           key="twitter:image"
-          content="https://cellxgene.cziscience.com/cxg-og.jpg"
+          content="https://cellxgene.cziscience.com/open-graph.jpg"
         />
 
         <meta property="twitter:card" key="twitter:card" content="summary" />
