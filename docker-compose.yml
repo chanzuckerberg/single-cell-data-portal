@@ -147,7 +147,7 @@ services:
         aliases:
           - uploadsuccess.corporanet.local
   dataset_version_cleanup:
-    image: "${DOCKER_REPO}corpora-dataset-version-cleanup:latest"
+    image: "${DOCKER_REPO}corpora-dataset-version-cleanup"
     platform: linux/amd64
     profiles:
       - dataset_version_cleanup
