@@ -54,11 +54,15 @@ $ aws batch submit-job --job-name rollback \
   }'
 """
 
+import logging
 import os
 from enum import Enum
 from typing import List
 
 from backend.layers.business.business import BusinessLogic, CollectionQueryFilter
+from backend.layers.business.exceptions import (
+    CollectionNotFoundException,
+)
 from backend.layers.common.entities import (
     CollectionId,
     CollectionVersion,
@@ -69,6 +73,8 @@ from backend.layers.common.entities import (
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.uri_provider import UriProvider
+
+logger = logging.getLogger(__name__)
 
 
 class RollbackType(Enum):
@@ -123,7 +129,13 @@ class RollbackEntity:
         """
         rolled_back_datasets = []
         for collection_version_id in self.entity_id_list:
-            collection_dataset_versions = self.rollback_private_collection(CollectionVersionId(collection_version_id))
+            try:
+                collection_dataset_versions = self.rollback_private_collection(
+                    CollectionVersionId(collection_version_id)
+                )
+            except Exception as e:
+                self.logger.info(f"Failed to rollback CollectionVersion {collection_version_id}, {e}")
+                continue
             rolled_back_datasets.extend(collection_dataset_versions)
         self._clean_up_rolled_back_datasets(rolled_back_datasets)
 
@@ -133,8 +145,14 @@ class RollbackEntity:
         the private collection to its pre-migration state.
         """
         collection_version = self.business_logic.get_collection_version(collection_version_id)
+        if collection_version is None:
+            raise CollectionNotFoundException(f"CollectionVersion {collection_version_id} not found")
         for dataset in collection_version.datasets:
-            self.rollback_private_dataset(dataset.version_id, collection_version_id)
+            try:
+                self.rollback_private_dataset(dataset.version_id, collection_version_id)
+            except Exception as e:
+                self.logger.info(f"Failed to rollback DatasetVersion {dataset.version_id}, {e}")
+                continue
         return collection_version.datasets
 
     def rollback_private_dataset_list(self) -> None:
@@ -146,7 +164,11 @@ class RollbackEntity:
         rolled_back_datasets = []
         for dataset_version_id in self.entity_id_list:
             dataset_version_id = DatasetVersionId(dataset_version_id)
-            rolled_back_dataset = self.rollback_private_dataset(dataset_version_id)
+            try:
+                rolled_back_dataset = self.rollback_private_dataset(dataset_version_id)
+            except Exception as e:
+                self.logger.info(f"Failed to rollback DatasetVersion {dataset_version_id}, {e}")
+                continue
             rolled_back_datasets.append(rolled_back_dataset)
         self._clean_up_rolled_back_datasets(rolled_back_datasets)
 
@@ -177,7 +199,9 @@ class RollbackEntity:
                         cv_id = cv.version_id
                         break
         if cv_id is None:
-            raise ValueError(f"An Associated CollectionVersion not found for DatasetVersion {dataset_version_id}")
+            raise CollectionNotFoundException(
+                f"An Associated CollectionVersion not found for DatasetVersion {dataset_version_id}"
+            )
         self.business_logic.restore_previous_dataset_version(cv_id, dataset_version.dataset_id)
         return dataset_version
 
@@ -191,7 +215,11 @@ class RollbackEntity:
         collections = self.business_logic.get_collections(filter)
         rolled_back_collection_versions = []
         for collection in collections:
-            rolled_back_collection_version = self.rollback_public_collection(collection.collection_id)
+            try:
+                rolled_back_collection_version = self.rollback_public_collection(collection.collection_id)
+            except Exception as e:
+                self.logger.info(f"Failed to rollback Collection {collection.collection_id}, {e}")
+                continue
             rolled_back_collection_versions.append(rolled_back_collection_version)
         self._clean_up_published_collection_versions(rolled_back_collection_versions)
 
@@ -204,7 +232,11 @@ class RollbackEntity:
         """
         rolled_back_collection_versions = []
         for collection_id in self.entity_id_list:
-            rolled_back_collection_version = self.rollback_public_collection(CollectionId(collection_id))
+            try:
+                rolled_back_collection_version = self.rollback_public_collection(CollectionId(collection_id))
+            except Exception as e:
+                self.logger.info(f"Failed to rollback Collection {collection_id}, {e}")
+                continue
             rolled_back_collection_versions.append(rolled_back_collection_version)
         self._clean_up_published_collection_versions(rolled_back_collection_versions)
 
