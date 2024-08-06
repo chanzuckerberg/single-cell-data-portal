@@ -273,7 +273,9 @@ class SchemaMigrate(ProcessingLogic):
             # clean up artifacts for any now-orphaned, rolled back datasets
             if rolled_back_datasets:
                 lambda_provider = LambdaProvider()
-                lambda_provider.invoke_dataset_cleanup_handler([dataset.version_id for dataset in rolled_back_datasets])
+                lambda_provider.invoke_dataset_version_cleanup_handler(
+                    [dataset.version_id for dataset in rolled_back_datasets]
+                )
         return errors
 
     def _store_sfn_response(self, directory: str, file_name: str, response: Dict[str, str]):
