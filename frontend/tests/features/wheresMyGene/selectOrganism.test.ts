@@ -87,7 +87,7 @@ describe("Select organism", () => {
         page,
         url:
           `${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}?` +
-          "publications=Ahern+et+al.+Cell+2022&ver=2",
+          "publications=Ahern+et+al.+%282022%29+Cell&ver=2",
         testId: PUBLICATION_FILTER_TEST_ID,
         text: "Ahern et al.",
       });
