@@ -22,7 +22,6 @@ import {
 
 export default function BottomBannerModalContent({
   id = "newsletter-banner",
-  isHubSpotReady = false,
   setEmail,
   setError,
   emailValidationError,
@@ -34,7 +33,7 @@ export default function BottomBannerModalContent({
     submitButtonEnabledOnce,
     setSubmitButtonEnabledOnce,
     emailRef,
-  } = useConnect({ id, isHubSpotReady, setError, email });
+  } = useConnect({ id, setError, email });
 
   return (
     <StyledNewsletterSignupModal data-testid="newsletter-modal-content">

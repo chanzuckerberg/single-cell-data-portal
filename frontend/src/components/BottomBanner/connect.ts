@@ -7,27 +7,14 @@ import {
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 
-export const useConnect = ({
-  isHubSpotReadyProp,
-  asFooter,
-}: {
-  isHubSpotReadyProp: boolean;
-  asFooter?: boolean;
-}) => {
+export const useConnect = ({ asFooter }: { asFooter?: boolean }) => {
   const [bottomBannerLastClosedTime, setBottomBannerLastClosedTime] =
     useLocalStorage<number>(BOTTOM_BANNER_LAST_CLOSED_TIME_KEY, 0);
 
   const [newsletterModalIsOpen, setNewsletterModalIsOpen] = useState(false);
-  const [isHubSpotReady, setIsHubSpotReady] = useState(false);
   const [email, setEmail] = useState("");
   const [emailValidationError, setError] = useState("");
   const [isDirectLink, setIsDirectLink] = useState(false);
-
-  useEffect(() => {
-    if (!isHubSpotReadyProp) return;
-
-    setIsHubSpotReady(true);
-  }, [isHubSpotReady, isHubSpotReadyProp]);
 
   /**
    * useEffect
@@ -37,8 +24,6 @@ export const useConnect = ({
    * isDirectLink is tracked in setter function or else we get window not defined error
    */
   useEffect(() => {
-    if (!isHubSpotReady) return;
-
     if (!asFooter && window) {
       const openModalParam = new URLSearchParams(window.location.search).get(
         "newsletter_signup"
@@ -54,7 +39,7 @@ export const useConnect = ({
         });
       }
     }
-  }, [asFooter, isDirectLink, isHubSpotReady]);
+  }, [asFooter, isDirectLink]);
 
   /**
    * showBanner
@@ -78,6 +63,8 @@ export const useConnect = ({
   /**
    * toggleNewsletterSignupModal
    * Toggles the newsletter signup modal
+   * (smcanny) 07/24 - not in use currently
+   * leaving it here incase a new newsletter modal is established
    * */
   function toggleNewsletterSignupModal() {
     if (!newsletterModalIsOpen) {
@@ -91,11 +78,9 @@ export const useConnect = ({
   return {
     setBottomBannerLastClosedTime,
     newsletterModalIsOpen,
-    setIsHubSpotReady,
     isDirectLink,
     toggleNewsletterSignupModal,
     showBanner,
-    isHubSpotReady,
     email,
     setEmail,
     emailValidationError,
