@@ -104,11 +104,11 @@ def create_and_publish_collection_revision(rollback_entity, collection_id, updat
 @pytest.mark.parametrize(
     "rollback_args",
     [
-        ("rollback_entity_private_collections", "rollback_private_collections"),
-        ("rollback_entity_private_collection_list", "rollback_private_collection_list"),
-        ("rollback_entity_public_collections", "rollback_public_collections"),
-        ("rollback_entity_public_collection_list", "rollback_public_collection_list"),
-        ("rollback_entity_private_dataset_list", "rollback_private_dataset_list"),
+        ("rollback_entity_private_collections", "collections_private_rollback"),
+        ("rollback_entity_private_collection_list", "collection_list_private_rollback"),
+        ("rollback_entity_public_collections", "collections_public_rollback"),
+        ("rollback_entity_public_collection_list", "collection_list_public_rollback"),
+        ("rollback_entity_private_dataset_list", "dataset_list_private_rollback"),
     ],
 )
 def test_rollback(request, rollback_args):
@@ -142,7 +142,7 @@ def test_rollback_private_dataset(rollback_entity_private_collections, pass_arg_
 
     # Test with and without optional collection_version_id arg
     collection_version_id = collection_version.version_id if pass_arg_collection_version_id else None
-    rolled_back_version = rollback_entity_private_collections.rollback_private_dataset(
+    rolled_back_version = rollback_entity_private_collections.dataset_private_rollback(
         newest_dataset_version_id, collection_version_id
     )
 
@@ -168,7 +168,7 @@ def test_rollback_private_dataset_list(rollback_entity_private_dataset_list):
 
     # Rollback two of three new dataset versions
     rollback_entity_private_dataset_list.entity_id_list = [new_dataset_version_ids[0], new_dataset_version_ids[1]]
-    rollback_entity_private_dataset_list.rollback_private_dataset_list()
+    rollback_entity_private_dataset_list.dataset_list_private_rollback()
 
     post_rollback_dataset_version_ids = [
         dataset_version.version_id.id
@@ -203,7 +203,7 @@ def test_rollback_private_collection(rollback_entity_private_collections):
             collection_version.version_id, newer_dataset_version_id
         )
 
-    rollback_entity_private_collections.rollback_private_collection(collection_version.version_id)
+    rollback_entity_private_collections.collection_private_rollback(collection_version.version_id)
 
     post_rollback_dataset_version_ids = [
         dataset_version.version_id.id
@@ -235,7 +235,7 @@ def test_rollback_private_collections(rollback_entity_private_collections):
         rollback_entity_private_collections, original_published_collection_version.collection_id
     )
 
-    rollback_entity_private_collections.rollback_private_collections()
+    rollback_entity_private_collections.collections_private_rollback()
 
     # Assert unpublished collection versions datasets are all rolled back
     for original_collection_version in original_collection_versions:
@@ -272,7 +272,7 @@ def test_rollback_private_collection_list(rollback_entity_private_collection_lis
         original_collection_versions[1].version_id.id,
     ]
 
-    rollback_entity_private_collection_list.rollback_private_collection_list()
+    rollback_entity_private_collection_list.collection_list_private_rollback()
 
     # Assert collection versions are pointing to the original dataset version IDs for the rolled back collections
     for original_collection_version in original_collection_versions[:2]:
@@ -303,7 +303,7 @@ def test_rollback_public_collection(rollback_entity_public_collections):
         rollback_entity_public_collections, newer_collection_version.collection_id
     )
 
-    rollback_entity_public_collections.rollback_public_collection(newest_collection_version.collection_id)
+    rollback_entity_public_collections.collection_public_rollback(newest_collection_version.collection_id)
 
     rolled_back_collection_version = business_logic.get_canonical_collection(newest_collection_version.collection_id)
 
@@ -328,7 +328,7 @@ def test_rollback_published_collections(rollback_entity_public_collections):
         private_collection_version.version_id, private_collection_version.datasets[0].version_id
     )
 
-    rollback_entity_public_collections.rollback_public_collections()
+    rollback_entity_public_collections.collections_public_rollback()
 
     # Assert published collection versions are all rolled back
     for original_collection_version in original_collection_versions:
@@ -361,7 +361,7 @@ def test_rollback_published_collection_list(rollback_entity_public_collection_li
         original_collection_versions[1].collection_id.id,
     ]
 
-    rollback_entity_public_collection_list.rollback_public_collection_list()
+    rollback_entity_public_collection_list.collection_list_public_rollback()
 
     # Assert collection versions are pointing to the original dataset version IDs for the rolled back collections
     for original_collection_version in original_collection_versions[:2]:
@@ -394,7 +394,7 @@ def test__clean_up(rollback_entity_public_collections):
         for _ in range(2)
     ]
 
-    rollback_entity_public_collections.rollback_public_collections()
+    rollback_entity_public_collections.collections_public_rollback()
 
     rolled_back_revision = collection_revisions[-1]
     assert business_logic.get_collection_version(rolled_back_revision.version_id) is None
