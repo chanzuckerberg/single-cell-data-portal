@@ -25,10 +25,7 @@ const CELL_TYPE_TEST_ID = "cell-type-name";
 const SEX_FILTER_LABEL = "Sex";
 const SEX_FILTER_SELECTION = "female";
 const PUBLICATION_FILTER_LABEL = "Publication";
-const PUBLICATION_FILTER_SELECTION = [
-  "Ahern et al. (2022) Cell",
-  "Arutyunyan et al. (2023) Nature",
-];
+const PUBLICATION_FILTER_SELECTION = ["Ahern et al", "Arutyunyan et al"];
 
 const SELF_REPORTED_ETHNICITY_FILTER_LABEL = "Self-Reported Ethnicity";
 const SELF_REPORTED_ETHNICITY_FILTER_SELECTION = "British";
