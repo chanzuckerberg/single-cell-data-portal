@@ -130,7 +130,7 @@ resource aws_batch_job_definition rollback {
   "command": ["python3", "-m", "backend.layers.processing.rollback"],
   "jobRoleArn": "${var.batch_role_arn}",
   "image": "${var.image}",
-  "memory": var.batch_container_memory_limit,
+  "memory": 8000,
   "environment": [
     {
       "name": "ARTIFACT_BUCKET",
