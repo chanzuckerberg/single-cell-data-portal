@@ -30,7 +30,6 @@ import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 import { Dataset } from "@mui/icons-material";
-import { formatCitation } from "../utils/formatCitation";
 
 interface RawOntologyTerm {
   [id: string]: string;
@@ -1158,7 +1157,7 @@ function toEntity(item: RawOntologyTerm) {
 function toCitationEntity(citation: string) {
   return {
     id: citation,
-    name: formatCitation(citation),
+    name: citation,
   };
 }
 
