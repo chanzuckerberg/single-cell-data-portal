@@ -99,23 +99,25 @@ class RollbackEntity:
         elif self.rollback_type == RollbackType.PUBLIC_COLLECTIONS:
             self.collections_public_rollback()
         elif self.rollback_type == RollbackType.PUBLIC_COLLECTION_LIST:
-            self.collection_list_public_rollback()
+            collection_id_list = [CollectionId(entity_id) for entity_id in self.entity_id_list]
+            self.collection_list_public_rollback(collection_id_list)
         elif self.rollback_type == RollbackType.PRIVATE_COLLECTION_LIST:
-            self.collection_list_private_rollback()
+            collection_version_id_list = [CollectionVersionId(entity_id) for entity_id in self.entity_id_list]
+            self.collection_list_private_rollback(collection_version_id_list)
         elif self.rollback_type == RollbackType.PRIVATE_DATASET_LIST:
-            self.dataset_list_private_rollback()
+            dataset_version_id_list = [DatasetVersionId(entity_id) for entity_id in self.entity_id_list]
+            self.dataset_list_private_rollback(dataset_version_id_list)
         else:
             raise ValueError(f"Invalid rollback type: {self.rollback_type}")
 
-    def dataset_list_private_rollback(self) -> None:
+    def dataset_list_private_rollback(self, dataset_version_id_list: List[DatasetVersionId]) -> None:
         """
         Rolls back the Datasets in the CollectionVersions associated with each DatasetVersionId passed in, to their
         respective previous, most recently created DatasetVersion. Then, triggers deletion of the DB references and S3
         assets for the rolled back DatasetVersions.
         """
         rolled_back_datasets = []
-        for dataset_version_id in self.entity_id_list:
-            dataset_version_id = DatasetVersionId(dataset_version_id)
+        for dataset_version_id in dataset_version_id_list:
             try:
                 rolled_back_dataset = self.dataset_private_rollback(dataset_version_id)
             except Exception:
@@ -165,24 +167,18 @@ class RollbackEntity:
         """
         filter = CollectionQueryFilter(is_published=False)
         collections = self.business_logic.get_collections(filter)
-        rolled_back_datasets = []
-        for collection in collections:
-            collection_datasets = self.collection_private_rollback(collection.version_id)
-            rolled_back_datasets.extend(collection_datasets)
-        self._clean_up_rolled_back_datasets(rolled_back_datasets)
+        self.collection_list_private_rollback([collection.version_id for collection in collections])
 
-    def collection_list_private_rollback(self) -> None:
+    def collection_list_private_rollback(self, collection_version_id_list: List[CollectionVersionId]) -> None:
         """
         Rollback all the datasets from the input list of private collections. This will restore the
         state of the list of private collections to their pre-migration state. Then, triggers deletion of the DB
         references and S3 assets for the rolled back DatasetVersions.
         """
         rolled_back_datasets = []
-        for collection_version_id in self.entity_id_list:
+        for collection_version_id in collection_version_id_list:
             try:
-                collection_dataset_versions = self.collection_private_rollback(
-                    CollectionVersionId(collection_version_id)
-                )
+                collection_dataset_versions = self.collection_private_rollback(collection_version_id)
             except Exception:
                 logger.exception(f"Failed to rollback private CollectionVersion {collection_version_id}")
                 continue
@@ -213,17 +209,9 @@ class RollbackEntity:
         """
         filter = CollectionQueryFilter(is_published=True)
         collections = self.business_logic.get_collections(filter)
-        rolled_back_collection_versions = []
-        for collection in collections:
-            try:
-                rolled_back_collection_version = self.collection_public_rollback(collection.collection_id)
-            except Exception:
-                logger.exception(f"Failed to rollback public Collection {collection.collection_id}")
-                continue
-            rolled_back_collection_versions.append(rolled_back_collection_version)
-        self._clean_up_published_collection_versions(rolled_back_collection_versions)
+        self.collection_list_public_rollback([collection.collection_id for collection in collections])
 
-    def collection_list_public_rollback(self) -> None:
+    def collection_list_public_rollback(self, collection_id_list: List[CollectionId]) -> None:
         """
         Rollback each public collection in the input list to its previous, most recently published CollectionVersion (if
         one exists). This will restore the state of the list of public collections to their pre-migration state. Then,
@@ -231,9 +219,9 @@ class RollbackEntity:
         DatasetVersions.
         """
         rolled_back_collection_versions = []
-        for collection_id in self.entity_id_list:
+        for collection_id in collection_id_list:
             try:
-                rolled_back_collection_version = self.collection_public_rollback(CollectionId(collection_id))
+                rolled_back_collection_version = self.collection_public_rollback(collection_id)
             except Exception as e:
                 logger.info(f"Failed to rollback Collection {collection_id}, {e}")
                 continue

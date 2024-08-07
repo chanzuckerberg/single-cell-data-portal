@@ -29,7 +29,7 @@ def rollback_entity_private_collections(business_logic):
 
 @pytest.fixture
 def rollback_entity_private_collection_list(business_logic):
-    return RollbackEntity(business_logic, RollbackType.PRIVATE_COLLECTION_LIST)
+    return RollbackEntity(business_logic, RollbackType.PRIVATE_COLLECTION_LIST, list())
 
 
 @pytest.fixture
@@ -39,12 +39,12 @@ def rollback_entity_public_collections(business_logic):
 
 @pytest.fixture
 def rollback_entity_public_collection_list(business_logic):
-    return RollbackEntity(business_logic, RollbackType.PUBLIC_COLLECTION_LIST)
+    return RollbackEntity(business_logic, RollbackType.PUBLIC_COLLECTION_LIST, list())
 
 
 @pytest.fixture
 def rollback_entity_private_dataset_list(business_logic):
-    return RollbackEntity(business_logic, RollbackType.PRIVATE_DATASET_LIST)
+    return RollbackEntity(business_logic, RollbackType.PRIVATE_DATASET_LIST, list())
 
 
 def initialize_unpublished_collection(rollback_entity, num_datasets):
@@ -162,13 +162,14 @@ def test_rollback_private_dataset_list(rollback_entity_private_dataset_list):
     new_dataset_version_ids = [
         business_logic.create_empty_dataset_version_for_current_dataset(
             collection_version.version_id, original_dataset_version.version_id
-        ).version_id.id
+        ).version_id
         for original_dataset_version in original_dataset_versions
     ]
 
     # Rollback two of three new dataset versions
-    rollback_entity_private_dataset_list.entity_id_list = [new_dataset_version_ids[0], new_dataset_version_ids[1]]
-    rollback_entity_private_dataset_list.dataset_list_private_rollback()
+    rollback_entity_private_dataset_list.dataset_list_private_rollback(
+        [new_dataset_version_ids[0], new_dataset_version_ids[1]]
+    )
 
     post_rollback_dataset_version_ids = [
         dataset_version.version_id.id
@@ -180,7 +181,7 @@ def test_rollback_private_dataset_list(rollback_entity_private_dataset_list):
     assert original_dataset_versions[0].version_id.id in post_rollback_dataset_version_ids
     assert original_dataset_versions[1].version_id.id in post_rollback_dataset_version_ids
     # Assert collection version is still pointing to newest dataset version for the non-rolled back dataset
-    assert new_dataset_version_ids[2] in post_rollback_dataset_version_ids
+    assert new_dataset_version_ids[2].id in post_rollback_dataset_version_ids
 
 
 # TestPrivateCollectionRollback
@@ -267,12 +268,12 @@ def test_rollback_private_collection_list(rollback_entity_private_collection_lis
         for collection_version in original_collection_versions
     ]
 
-    rollback_entity_private_collection_list.entity_id_list = [
-        original_collection_versions[0].version_id.id,
-        original_collection_versions[1].version_id.id,
-    ]
-
-    rollback_entity_private_collection_list.collection_list_private_rollback()
+    rollback_entity_private_collection_list.collection_list_private_rollback(
+        [
+            original_collection_versions[0].version_id,
+            original_collection_versions[1].version_id,
+        ]
+    )
 
     # Assert collection versions are pointing to the original dataset version IDs for the rolled back collections
     for original_collection_version in original_collection_versions[:2]:
@@ -356,12 +357,12 @@ def test_rollback_published_collection_list(rollback_entity_public_collection_li
         for original_collection_version in original_collection_versions
     ]
 
-    rollback_entity_public_collection_list.entity_id_list = [
-        original_collection_versions[0].collection_id.id,
-        original_collection_versions[1].collection_id.id,
-    ]
-
-    rollback_entity_public_collection_list.collection_list_public_rollback()
+    rollback_entity_public_collection_list.collection_list_public_rollback(
+        [
+            original_collection_versions[0].collection_id,
+            original_collection_versions[1].collection_id,
+        ]
+    )
 
     # Assert collection versions are pointing to the original dataset version IDs for the rolled back collections
     for original_collection_version in original_collection_versions[:2]:
