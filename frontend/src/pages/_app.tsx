@@ -68,11 +68,6 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
           key="og:url"
           content="https://cellxgene.cziscience.com/"
         />
-        <meta
-          property="og:image"
-          key="og:image"
-          content={"https://cellxgene.cziscience.com/open-graph.jpg"}
-        />
         <meta property="og:creator" key="og:creator" content="@cziscience" />
         <meta property="og:site" key="og:site" content="@cziscience" />
         <meta
