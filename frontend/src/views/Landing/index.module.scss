@@ -437,6 +437,7 @@
 
     @media (max-width: 999px) {
       width: 100%;
+      display: flex;
     }
 
     & > div {
@@ -949,3 +950,10 @@
 .mt16 {
   margin-top: 16px;
 }
+
+// .landingPageBanner {
+//   position: fixed;
+//   width: 100%;
+//   top: 0;
+//   z-index: 100;
+// }
