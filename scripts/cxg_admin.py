@@ -301,18 +301,6 @@ def schema_migration_cli(ctx):
 
 @schema_migration_cli.command()
 @click.pass_context
-@click.argument("report_path", type=click.Path(exists=True))
-def rollback_datasets(ctx, report_path: str):
-    """
-    Used to rollback a datasets to a previous version.
-
-    ./scripts/cxg_admin.py schema-migration --deployment dev rollback-dataset report.json
-    """
-    schema_migration.rollback_dataset(ctx, report_path)
-
-
-@schema_migration_cli.command()
-@click.pass_context
 @click.argument("execution_id")
 @click.argument("output_path", type=click.Path(writable=True), default=".")
 def generate_report(ctx, execution_id: str, output_path: str):

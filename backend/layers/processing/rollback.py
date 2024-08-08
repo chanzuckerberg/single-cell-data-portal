@@ -52,6 +52,8 @@ $ aws batch submit-job --job-name rollback \
     "environment": [{"name": "ROLLBACK_TYPE", "value": "public_collection_list"},
     {"name": "ENTITY_LIST", "value": "canonical_collection_id1,canonical_collection_id2"}]
   }'
+
+cxg admin cli command to trigger the batch calls above are located in scripts/cxg_admin_scripts/rollback.py
 """
 
 import logging
