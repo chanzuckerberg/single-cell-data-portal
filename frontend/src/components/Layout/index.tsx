@@ -16,7 +16,22 @@ const Layout = ({ children }: Props) => {
   if (pathname === ROUTES.HOMEPAGE || pathname === ROUTES.SITEMAP) {
     return (
       <>
-        <LandingHeader data-testid="landing-footer" />
+        <LandingHeader
+          data-testid="landing-footer"
+          banner={true}
+          bannerOptions={{
+            content: (
+              <p>
+                New feature: Visualize and analyze spatial transcriptomics
+                datasets in Explorer!&nbsp;
+                <a href="https://cellxgene.cziscience.com/datasets?utm_campaign=spatial_jul_2024?utm_source=homepage_banner&utm_medium=product">
+                  Browse datasets
+                </a>
+                &nbsp;using the Visium or Slide-seqV2 assay filter.
+              </p>
+            ),
+          }}
+        />
         {children}
         <LandingFooter />
       </>
