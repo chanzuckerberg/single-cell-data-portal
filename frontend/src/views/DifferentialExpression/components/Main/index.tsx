@@ -33,6 +33,8 @@ import {
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { useConnect } from "./connect";
+import BottomBanner from "src/components/BottomBanner";
+import { BANNER_FEEDBACK_SURVEY_LINK } from "src/common/constants/airtableLinks";
 
 export default function DifferentialExpression(): JSX.Element {
   const {
@@ -50,120 +52,128 @@ export default function DifferentialExpression(): JSX.Element {
   } = useConnect();
 
   return (
-    <TwoPanelLayout>
-      <div className="leftPanel">
-        <Wrapper>
-          {isLoading && <Loader />}
+    <>
+      <TwoPanelLayout>
+        <div className="leftPanel">
+          <Wrapper>
+            {isLoading && <Loader />}
 
-          <QuerySelectorWrapper>
-            <StepHeader>
-              <WordPop>Differential</WordPop> Expression
-            </StepHeader>
-            <StepSubHeader
-              data-testid={DIFFERENTIAL_EXPRESSION_METHOD_INFO_TEXT}
-            >
-              <p>
-                Find differentially expressed genes between custom group of
-                cells across the CELLxGENE data corpus. For additional help and
-                information, read our documentation.
-              </p>
-              <StyledP>
-                This tool uses Welch&apos;s t-test to identify differentially
-                expressed genes between groups of cells in the CELLxGENE Census.
-                We recommend using this tool for preliminary investigations and
-                following up with more robust methods for formal analysis. Learn
-                more about data filtering and normalization{" "}
-                <a
-                  href="/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_3__Gene%20Expression%20Data%20Processing"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => track(EVENTS.DE_DOCUMENTATION_CLICKED)}
-                >
-                  here
-                </a>
-                .
-              </StyledP>
-            </StepSubHeader>
-            <FlexRow>
-              <Organism />
-              <Method />
-              <OverlapBehavior />
-            </FlexRow>
-            <QueryGroupAndButtonWrapper>
+            <QuerySelectorWrapper>
+              <StepHeader>
+                <WordPop>Differential</WordPop> Expression
+              </StepHeader>
+              <StepSubHeader
+                data-testid={DIFFERENTIAL_EXPRESSION_METHOD_INFO_TEXT}
+              >
+                <p>
+                  Find differentially expressed genes between custom group of
+                  cells across the CELLxGENE data corpus. For additional help
+                  and information, read our documentation.
+                </p>
+                <StyledP>
+                  This tool uses Welch&apos;s t-test to identify differentially
+                  expressed genes between groups of cells in the CELLxGENE
+                  Census. We recommend using this tool for preliminary
+                  investigations and following up with more robust methods for
+                  formal analysis. Learn more about data filtering and
+                  normalization{" "}
+                  <a
+                    href="/docs/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_3__Gene%20Expression%20Data%20Processing"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => track(EVENTS.DE_DOCUMENTATION_CLICKED)}
+                  >
+                    here
+                  </a>
+                  .
+                </StyledP>
+              </StepSubHeader>
               <FlexRow>
-                <div data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER}>
-                  <CellGroupTitle>
-                    Cell Group 1
-                    <CellCountTitle
-                      data-testid={DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT}
-                    >
-                      {isLoadingGroup1 && (
-                        <Spinner
-                          data-testid={
-                            DIFFERENTIAL_EXPRESSION_FILTERS_LOADING_SPINNER
-                          }
-                        />
-                      )}
-                      {nCellsGroup1.toLocaleString()} cells
-                    </CellCountTitle>
-                  </CellGroupTitle>
-                  <QueryGroupFilters
-                    key="query-group-1"
-                    queryGroup={queryGroup1}
-                    isQueryGroup1={true}
-                  />
-                </div>
-                <div data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER}>
-                  <CellGroupTitle>
-                    Cell Group 2
-                    <CellCountTitle
-                      data-testid={DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT}
-                    >
-                      {isLoadingGroup2 && (
-                        <Spinner
-                          data-testid={
-                            DIFFERENTIAL_EXPRESSION_FILTERS_LOADING_SPINNER
-                          }
-                        />
-                      )}
-                      {nCellsGroup2.toLocaleString()} cells
-                    </CellCountTitle>
-                  </CellGroupTitle>
-                  <QueryGroupFilters
-                    key="query-group-2"
-                    queryGroup={queryGroup2}
-                    isQueryGroup1={false}
-                  />
-                </div>
+                <Organism />
+                <Method />
+                <OverlapBehavior />
               </FlexRow>
-              <RunButtonWrapper>
-                <ClearAllButton
-                  color="inherit"
-                  size="large"
-                  variant="text"
-                  onClick={handleClearQueryGroups}
-                  data-testid={DIFFERENTIAL_EXPRESSION_CLEAR_ALL_BUTTON}
-                >
-                  Clear all
-                </ClearAllButton>
-                <RunButton
-                  color="primary"
-                  size="large"
-                  variant="contained"
-                  onClick={handleRunDifferentialExpression}
-                  disabled={!canRunDifferentialExpression}
-                  data-testid={DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON}
-                >
-                  Find genes
-                </RunButton>
-              </RunButtonWrapper>
-            </QueryGroupAndButtonWrapper>
-          </QuerySelectorWrapper>
-        </Wrapper>
-      </div>
-      <div className="rightPanel">
-        <DeResults setIsLoading={setIsLoading} />
-      </div>
-    </TwoPanelLayout>
+              <QueryGroupAndButtonWrapper>
+                <FlexRow>
+                  <div
+                    data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_FILTER}
+                  >
+                    <CellGroupTitle>
+                      Cell Group 1
+                      <CellCountTitle
+                        data-testid={DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT}
+                      >
+                        {isLoadingGroup1 && (
+                          <Spinner
+                            data-testid={
+                              DIFFERENTIAL_EXPRESSION_FILTERS_LOADING_SPINNER
+                            }
+                          />
+                        )}
+                        {nCellsGroup1.toLocaleString()} cells
+                      </CellCountTitle>
+                    </CellGroupTitle>
+                    <QueryGroupFilters
+                      key="query-group-1"
+                      queryGroup={queryGroup1}
+                      isQueryGroup1={true}
+                    />
+                  </div>
+                  <div
+                    data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_FILTER}
+                  >
+                    <CellGroupTitle>
+                      Cell Group 2
+                      <CellCountTitle
+                        data-testid={DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT}
+                      >
+                        {isLoadingGroup2 && (
+                          <Spinner
+                            data-testid={
+                              DIFFERENTIAL_EXPRESSION_FILTERS_LOADING_SPINNER
+                            }
+                          />
+                        )}
+                        {nCellsGroup2.toLocaleString()} cells
+                      </CellCountTitle>
+                    </CellGroupTitle>
+                    <QueryGroupFilters
+                      key="query-group-2"
+                      queryGroup={queryGroup2}
+                      isQueryGroup1={false}
+                    />
+                  </div>
+                </FlexRow>
+                <RunButtonWrapper>
+                  <ClearAllButton
+                    color="inherit"
+                    size="large"
+                    variant="text"
+                    onClick={handleClearQueryGroups}
+                    data-testid={DIFFERENTIAL_EXPRESSION_CLEAR_ALL_BUTTON}
+                  >
+                    Clear all
+                  </ClearAllButton>
+                  <RunButton
+                    color="primary"
+                    size="large"
+                    variant="contained"
+                    onClick={handleRunDifferentialExpression}
+                    disabled={!canRunDifferentialExpression}
+                    data-testid={DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON}
+                  >
+                    Find genes
+                  </RunButton>
+                </RunButtonWrapper>
+              </QueryGroupAndButtonWrapper>
+            </QuerySelectorWrapper>
+          </Wrapper>
+        </div>
+        <div className="rightPanel">
+          <DeResults setIsLoading={setIsLoading} />
+        </div>
+      </TwoPanelLayout>
+      <BottomBanner surveyLink={BANNER_FEEDBACK_SURVEY_LINK} />
+    </>
   );
 }
