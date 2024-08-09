@@ -43,6 +43,12 @@ class NoPreviousDatasetVersionException(BusinessException):
     """
 
 
+class NoPreviousCollectionVersionException(BusinessException):
+    """
+    Raised when a previous collection version is expected, but does not exist
+    """
+
+
 class InvalidLinkException(BusinessException):
     def __init__(self, errors: Optional[List[str]] = None) -> None:
         self.errors: Optional[List[str]] = errors
