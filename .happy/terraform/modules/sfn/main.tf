@@ -219,7 +219,8 @@ resource "aws_sfn_state_machine" "state_machine" {
                         "Name": "STEP_NAME",
                         "Value": "cxg"
                       }
-                    ]
+                    ],
+                    "Memory" : "16000",
                   }
                 },
                 "Retry": [ {

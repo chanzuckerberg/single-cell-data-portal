@@ -28,6 +28,8 @@ ARG INSTALL_DEV=false
 
 ARG CACHEBUST=1
 RUN python3.10 -m pip install -r requirements.txt
+RUN python3.10 -m pip install -U anndata
+
 
 RUN if [ "$INSTALL_DEV" = "true" ]; then python3 -m pip install -r requirements-dev.txt; fi
 

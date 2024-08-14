@@ -23,6 +23,9 @@ from backend.layers.processing.utils.cxg_generation_utils import (
 )
 from backend.layers.processing.utils.matrix_utils import is_matrix_sparse
 
+from anndata.experimental import read_elem, sparse_dataset
+import h5py
+
 
 class H5ADDataFile:
     """
@@ -53,6 +56,17 @@ class H5ADDataFile:
         self.extract_metadata_about_dataset()
 
         self.validate_anndata()
+
+
+    @staticmethod
+    def load_backed(path: str):
+        f = h5py.File(path)
+        full_keys = ["obs", "var", "obsm", "varm", "uns", "obsp", "varp"]
+        d = {}
+        d["X"] = sparse_dataset(f["X"])
+        d["layers"] = {k: sparse_dataset(f["layers"][k]) for k in f["layers"].keys()}
+        d.update({k: read_elem(f[k]) for k in full_keys})
+        return anndata.AnnData(**d)
 
     def to_cxg(
         self, output_cxg_directory, sparse_threshold, dataset_version_id, convert_anndata_colors_to_cxg_colors=True
@@ -183,7 +197,8 @@ class H5ADDataFile:
 
     def extract_anndata_elements_from_file(self):
         logging.info(f"Reading in AnnData dataset: {path.basename(self.input_filename)}")
-        self.anndata = anndata.read_h5ad(self.input_filename, backed="r")
+        # self.anndata = anndata.read_h5ad(self.input_filename, backed="r")
+        self.anndata = self.load_backed(self.input_filename)
         logging.info("Completed reading in AnnData dataset!")
 
         self.obs = self.transform_dataframe_index_into_column(self.anndata.obs, "obs", self.obs_index_column_name)
