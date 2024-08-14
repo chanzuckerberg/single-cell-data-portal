@@ -220,7 +220,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                         "Value": "cxg"
                       }
                     ],
-                    "Memory" : "16000"
+                    "Memory" : 16000
                   }
                 },
                 "Retry": [ {
