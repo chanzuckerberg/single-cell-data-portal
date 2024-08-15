@@ -172,7 +172,8 @@ resource "aws_sfn_state_machine" "state_machine" {
               {
                 "Name": "STEP_NAME",
                 "Value": "validate"
-              }
+              },
+              "Memory" : 16000
             ]
           }
         },
