@@ -174,7 +174,9 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Value": "validate"
               }
             ],
-            "Memory" : 16000
+            "
+            "Memory" : 16000,
+            "vcpus" : 4
           }
         },
         "ResultPath": null,
@@ -221,7 +223,8 @@ resource "aws_sfn_state_machine" "state_machine" {
                         "Value": "cxg"
                       }
                     ],
-                    "Memory" : 16000
+                    "Memory" : 16000,
+                    "vcpus" : 4
                   }
                 },
                 "Retry": [ {
