@@ -286,6 +286,13 @@ class DatabaseProviderInterface:
         Replaces an existing mapping between a collection version and a dataset version
         """
 
+    def replace_collection_version(
+        self, collection_id: CollectionId, new_collection_version_id: CollectionVersionId
+    ) -> None:
+        """
+        Replaces existing canonical Collection mapping with a new CollectionVersionId
+        """
+
     def get_dataset_mapped_version(self, dataset_id: DatasetId, get_tombstoned: bool) -> Optional[DatasetVersion]:
         """
         Returns the dataset version mapped to a canonical dataset_id, or None if not existing

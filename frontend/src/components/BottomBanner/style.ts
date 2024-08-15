@@ -6,10 +6,6 @@ import { SKINNY_MODE_BREAKPOINT_WIDTH } from "src/views/CellGuide/components/Cel
 
 export const BOTTOM_BANNER_ID = "bottom-banner";
 
-export const HiddenHubSpotForm = styled.div`
-  display: none;
-`;
-
 export const StyledBanner = styled(Banner)`
   ${fontBodyS}
 
