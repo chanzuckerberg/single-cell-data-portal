@@ -61,9 +61,7 @@ endif
 
 db/connect_internal:
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
-	$(MAKE) db/tunnel/up
 	PGOPTIONS='-csearch_path=persistence_schema' PGPASSWORD=${DB_PW} psql --dbname ${DB_NAME} --username ${DB_USER} --host 0.0.0.0 $(ARGS)
-	$(MAKE) db/tunnel/down
 
 db/console: db/connect # alias
 
@@ -123,15 +121,11 @@ endif
 # - add db/tunnel as a dependency for all targets so that a tunnel is automatically opened if not already
 db/tunnel/up:
 	$(eval endpoint=$(shell aws rds describe-db-cluster-endpoints --db-cluster-identifier ${CLUSTER_NAME} | jq -r '.DBClusterEndpoints[] | select(.EndpointType | contains("WRITER")) | .Endpoint'))
-	ssh -f -T -N -M -S $(SSH_SOCKET)\
-		-o ServerAliveInterval=${SSH_SERVER_ALIVE_INTERVAL_IN_SECONDS} -o ServerAliveCountMax=${SSH_SERVER_ALIVE_COUNT_MAX} \
-		-o ExitOnForwardFailure=yes \
-		-L 5432:${endpoint}:5432 $(SSH_BASTION_HOST)
+	$(eval instance_id=$(shell aws ec2 describe-instances --filters "Name=tag:Name,Values=dp-${DEPLOYMENT_STAGE}-happy" --query "Reservations[*].Instances[*].InstanceId" --output text))
+
+	aws ssm start-session --target ${instance_id} --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"portNumber":["5432"],"localPortNumber":["5432"],"host":["${endpoint}"]}'
 
 db/tunnel: db/tunnel/up # alias for backwards compatibility
-
-db/tunnel/down:
-	ssh -S $(SSH_SOCKET) -O exit $(SSH_BASTION_HOST) || true
 
 SRC_ENV := prod
 mirror_env_data:
