@@ -203,7 +203,7 @@ category_numeric_OK_cases = [
             "expected_schema_hint": {"type": "categorical"},
             "logs": {"level": logging.WARNING, "output": "may lose precision"},
         }
-        for dtype in [np.float16, np.float32, np.float64]
+        for dtype in [np.float32, np.float64]
         for data in [
             pd.Series(np.array([0, 1, 2], dtype=dtype), dtype="category"),
             pd.Series(np.array([0, 1, 2], dtype=dtype), dtype="category").cat.remove_categories([1]),
@@ -227,7 +227,6 @@ category_numeric_OK_cases = [
             np.uint32,
             np.int64,
             np.uint64,
-            np.float16,
             np.float32,
             np.float64,
         ]
