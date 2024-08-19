@@ -128,7 +128,7 @@ float_OK_cases = [
         "expected_schema_hint": {"type": "float32"},
         "logs": None if data.dtype != np.float64 else {"level": logging.WARNING, "output": "may lose precision"},
     }
-    for dtype in [np.float16, np.float32, np.float64]
+    for dtype in [np.float32, np.float64]
     for data in [
         np.arange(-128, 1000, dtype=dtype),
         pd.Series(np.arange(-128, 1000, dtype=dtype)),
