@@ -201,7 +201,7 @@ category_numeric_OK_cases = [
             "data": data,
             "expected_encoding_dtype": np.float32,
             "expected_schema_hint": {"type": "categorical"},
-            "logs": None if data.dtype != np.float64 else {"level": logging.WARNING, "output": "may lose precision"},
+            "logs": None if dtype == np.float32 else {"level": logging.WARNING, "output": "may lose precision"},
         }
         for dtype in [np.float32, np.float64]
         for data in [
@@ -216,7 +216,7 @@ category_numeric_OK_cases = [
             "data": data,
             "expected_encoding_dtype": np.float32,
             "expected_schema_hint": {"type": "categorical"},
-            "logs": None if data.dtype == np.float32 else {"level": logging.WARNING, "output": "may lose precision"},
+            "logs": None if dtype == np.float32 else {"level": logging.WARNING, "output": "may lose precision"},
         }
         for dtype in [
             np.int8,
