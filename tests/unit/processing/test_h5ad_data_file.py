@@ -14,8 +14,6 @@ from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.processing.h5ad_data_file import H5ADDataFile
 from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 
-logger = logging.getLogger(__name__)
-
 
 class TestH5ADDataFile(unittest.TestCase):
     def setUp(self):
@@ -278,8 +276,8 @@ class TestH5ADDataFile(unittest.TestCase):
                     actual_x_data[data["obs"], data["var"]] = data[""]
                 else:
                     actual_x_data = x_array[:, :]
-                logger.INFO(f"actual_x_data: {actual_x_data}")
-                logger.INFO(f"expected_x_data: {expected_x_data}")
+                logging.info(f"actual_x_data: {actual_x_data}")
+                logging.info(f"expected_x_data: {expected_x_data}")
                 self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
         elif not has_column_encoding:
             expected_x_data = anndata_object.X
@@ -287,16 +285,16 @@ class TestH5ADDataFile(unittest.TestCase):
                 actual_x_data = np.zeros_like(expected_x_data)
                 data = x_array[:]
                 actual_x_data[data["obs"], data["var"]] = data[""]
-                logger.INFO(f"actual_x_data: {actual_x_data}")
-                logger.INFO(f"expected_x_data: {expected_x_data}")
+                logging.info(f"actual_x_data: {actual_x_data}")
+                logging.info(f"expected_x_data: {expected_x_data}")
                 self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
 
             with tiledb.open(main_xc_array_location, mode="r") as x_array:
                 actual_x_data = np.zeros_like(expected_x_data)
                 data = x_array[:]
                 actual_x_data[data["obs"], data["var"]] = data[""]
-                logger.INFO(f"actual_x_data: {actual_x_data}")
-                logger.INFO(f"expected_x_data: {expected_x_data}")
+                logging.info(f"actual_x_data: {actual_x_data}")
+                logging.info(f"expected_x_data: {expected_x_data}")
                 self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
 
     def _validate_cxg_var_index_column_match(self, cxg_directory, expected_index_name):
