@@ -1,5 +1,4 @@
 import json
-import logging
 import unittest
 from os import path, remove
 from shutil import rmtree
@@ -276,8 +275,6 @@ class TestH5ADDataFile(unittest.TestCase):
                     actual_x_data[data["obs"], data["var"]] = data[""]
                 else:
                     actual_x_data = x_array[:, :]
-                logging.info(f"actual_x_data: {actual_x_data}")
-                logging.info(f"expected_x_data: {expected_x_data}")
                 self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
         elif not has_column_encoding:
             expected_x_data = anndata_object.X
@@ -285,16 +282,12 @@ class TestH5ADDataFile(unittest.TestCase):
                 actual_x_data = np.zeros_like(expected_x_data)
                 data = x_array[:]
                 actual_x_data[data["obs"], data["var"]] = data[""]
-                logging.info(f"actual_x_data: {actual_x_data}")
-                logging.info(f"expected_x_data: {expected_x_data}")
                 self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
 
             with tiledb.open(main_xc_array_location, mode="r") as x_array:
                 actual_x_data = np.zeros_like(expected_x_data)
                 data = x_array[:]
                 actual_x_data[data["obs"], data["var"]] = data[""]
-                logging.info(f"actual_x_data: {actual_x_data}")
-                logging.info(f"expected_x_data: {expected_x_data}")
                 self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
 
     def _validate_cxg_var_index_column_match(self, cxg_directory, expected_index_name):
