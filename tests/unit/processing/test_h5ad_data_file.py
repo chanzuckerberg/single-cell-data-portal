@@ -311,7 +311,7 @@ class TestH5ADDataFile(unittest.TestCase):
 
     def _create_sample_anndata_dataset(self):
         # Create X
-        X = np.random.rand(3, 4)
+        X = np.random.rand(3, 4).astype(np.float32)
 
         # Create obs
         random_string_category = Series(data=["a", "b", "b"], dtype="category")
