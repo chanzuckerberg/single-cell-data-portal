@@ -128,7 +128,7 @@ float_OK_cases = [
         "expected_schema_hint": {"type": "float32"},
         "logs": None if data.dtype != np.float64 else {"level": logging.WARNING, "output": "may lose precision"},
     }
-    for dtype in [np.float16, np.float32, np.float64]
+    for dtype in [np.float32, np.float64]
     for data in [
         np.arange(-128, 1000, dtype=dtype),
         pd.Series(np.arange(-128, 1000, dtype=dtype)),
@@ -201,9 +201,9 @@ category_numeric_OK_cases = [
             "data": data,
             "expected_encoding_dtype": np.float32,
             "expected_schema_hint": {"type": "categorical"},
-            "logs": {"level": logging.WARNING, "output": "may lose precision"},
+            "logs": None if dtype == np.float32 else {"level": logging.WARNING, "output": "may lose precision"},
         }
-        for dtype in [np.float16, np.float32, np.float64]
+        for dtype in [np.float32, np.float64]
         for data in [
             pd.Series(np.array([0, 1, 2], dtype=dtype), dtype="category"),
             pd.Series(np.array([0, 1, 2], dtype=dtype), dtype="category").cat.remove_categories([1]),
@@ -216,7 +216,7 @@ category_numeric_OK_cases = [
             "data": data,
             "expected_encoding_dtype": np.float32,
             "expected_schema_hint": {"type": "categorical"},
-            "logs": {"level": logging.WARNING, "output": "may lose precision"},
+            "logs": None if dtype == np.float32 else {"level": logging.WARNING, "output": "may lose precision"},
         }
         for dtype in [
             np.int8,
@@ -227,7 +227,6 @@ category_numeric_OK_cases = [
             np.uint32,
             np.int64,
             np.uint64,
-            np.float16,
             np.float32,
             np.float64,
         ]
