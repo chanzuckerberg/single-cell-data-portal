@@ -20,7 +20,6 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing import logger
 from backend.layers.processing.process_logic import ProcessingLogic
-from backend.layers.thirdparty.lambda_provider import LambdaProvider
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider, sfn_name_generator
 
@@ -272,8 +271,7 @@ class SchemaMigrate(ProcessingLogic):
             self._store_sfn_response("report/errors", collection_version_id, errors)
             # clean up artifacts for any now-orphaned, rolled back datasets
             if rolled_back_datasets:
-                lambda_provider = LambdaProvider()
-                lambda_provider.invoke_dataset_version_cleanup_handler(
+                self.business_logic.lambda_provider.invoke_dataset_version_cleanup_handler(
                     [dataset.version_id for dataset in rolled_back_datasets]
                 )
         return errors

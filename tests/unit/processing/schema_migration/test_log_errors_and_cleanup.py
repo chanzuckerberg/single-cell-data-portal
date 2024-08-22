@@ -44,6 +44,7 @@ class TestLogErrorsAndCleanup:
     def test_OK(self, mock_json, schema_migrate):
         schema_migrate.business_logic.s3_provider.download_file = factory_download_file()
         schema_migrate.business_logic.s3_provider.delete_files = Mock()
+        schema_migrate.business_logic.lambda_provider.invoke_dataset_version_cleanup_handler = Mock()
         datasets = [
             make_mock_dataset_version(
                 dataset_id="dataset_id_1",
@@ -62,6 +63,9 @@ class TestLogErrorsAndCleanup:
         schema_migrate.s3_provider.delete_files.assert_any_call(
             "artifact-bucket",
             ["prev_successful_dataset_version_id/migrated.h5ad"],
+        )
+        schema_migrate.lambda_provider.invoke_dataset_version_cleanup_handler.assert_any_call(
+            [dataset_version.version_id for dataset_version in datasets]
         )
 
     def test_with_errors(self, mock_json, schema_migrate):
