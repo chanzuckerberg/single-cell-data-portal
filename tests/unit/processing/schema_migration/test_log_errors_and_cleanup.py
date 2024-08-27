@@ -112,7 +112,7 @@ class TestLogErrorsAndCleanup:
         } in errors
         assert schema_migrate.business_logic.restore_previous_dataset_version.call_count == 1
         schema_migrate.business_logic.lambda_provider.invoke_dataset_version_cleanup_handler.assert_any_call(
-            [dataset_version.version_id for dataset_version in datasets]
+            [failed_dataset.version_id]
         )
         schema_migrate.s3_provider.delete_files.assert_any_call(
             "artifact-bucket", ["schema_migration/test-execution-arn/log_errors_and_cleanup/collection_id.json"]
