@@ -638,6 +638,6 @@ resource "aws_iam_role_policy_attachment" "lambda_db_s3_policy_attachment" {
 resource "aws_lambda_permission" "allow_dataset_version_cleanup_lambda_execution" {
   action        = "lambda:InvokeFunction"
   function_name = module.dataset_version_cleanup_lambda.arn
-  principal     = "sfn.amazonaws.com"
+  principal     = "batch.amazonaws.com"
   source_arn    = local.schema_migration_batch_role_arn
 }
