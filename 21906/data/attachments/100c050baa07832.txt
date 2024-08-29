@@ -1,0 +1,1 @@
+{"levelname": "INFO", "asctime": "2024-08-29T19:51:42.029Z", "name": "root", "message": "Matrix is not sparse. Percentage of non-zero elements (estimate): 100.00", "lineno": 48, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/matrix_utils.py"}
