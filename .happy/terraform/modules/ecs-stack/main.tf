@@ -639,5 +639,5 @@ resource "aws_lambda_permission" "allow_dataset_version_cleanup_lambda_execution
   action        = "lambda:InvokeFunction"
   function_name = module.dataset_version_cleanup_lambda.arn
   principal     = "sfn.amazonaws.com"
-  source_arn    = module.schema_migration.batch_role_arn
+  source_arn    = local.schema_migration_batch_role_arn
 }
