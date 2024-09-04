@@ -586,7 +586,23 @@ describe("Differential Expression", () => {
         ]);
 
         const newPageUrl2 = newPage2.url();
-        expect(newPageUrl2).toContain("SAA1");
+
+        const effectSizeSort = page.getByTestId(
+          DIFFERENTIAL_EXPRESSION_SORT_DIRECTION
+        );
+
+        //  Sort by top negative effect size
+        await effectSizeSort.click();
+
+        const topGene = await page
+          .getByTestId("differential-expression-results-table")
+          .locator("tr:first-child td:first-child")
+          .textContent();
+
+        // Reset to sort by top positive effect size
+        await effectSizeSort.click();
+
+        expect(newPageUrl2).toContain(topGene);
         expect(newPageUrl2).toContain("tissues=UBERON%3A0002048");
         expect(newPageUrl2).toContain("cellTypes=acinar+cell");
         expect(newPageUrl2).toContain("ver=2");
