@@ -7,7 +7,7 @@ cellxgene-ontology-guide~=1.0.0
 dataclasses-json==0.5.7
 ddtrace==2.1.4
 numba>=0.58.0
-numpy==1.23.5
+numpy>=1.24.0,<2.1.0
 openai==0.27.7
 pandas==2.2.1
 psutil==5.9.5
