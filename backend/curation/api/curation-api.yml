@@ -835,27 +835,8 @@ components:
       items:
         type: string
         description: |
-          The broader research groups which contributed to this collection of datasets. Allowed consortia are:
-
-          | Valid consortia |
-          | ---------- |
-          | Allen Institute for Brain Science   | 
-          | BRAIN Initiative  |
-          | CZ Biohub  |
-          | CZI Neurodegeneration Challenge Network  |
-          | CZI Single-Cell Biology  |
-          | European Union’s Horizon 2020  |
-          | GenitoUrinary Development Molecular Anatomy Project (GUDMAP)  |
-          | Gut Cell Atlas  |
-          | Human BioMolecular Atlas Program (HuBMAP)  |
-          | Human Cell Atlas (HCA)  |
-          | Human Pancreas Analysis Program (HPAP) |
-          | Human Tumor Atlas Network (HTAN)  |
-          | Kidney Precision Medicine Project (KPMP)  |
-          | LungMAP  |
-          | Pediatric Center of Excellence in Nephrology (PCEN)  |
-          | SEA-AD  |
-          | Wellcome HCA Strategic Science Support  |
+          The broader research groups which contributed to this collection of datasets. Allowed consortia are
+          listed [here](https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/backend/layers/common/validation.py#L12)
     contact_email:
       description: The email of contact person for the Collection. Example email john.smith@email.com
       type: string
