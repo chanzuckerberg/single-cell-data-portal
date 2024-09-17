@@ -109,7 +109,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             version_id=CollectionVersionId(str(row.id)),
             owner=row.owner,
             curator_name=row.curator_name,
-            metadata=CollectionMetadata.from_json(row.collection_metadata),
+            metadata=CollectionMetadata.from_dict(row.collection_metadata),
             publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
             datasets=[DatasetVersionId(str(id)) for id in row.datasets],
             published_at=row.published_at,
@@ -130,7 +130,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             version_id=CollectionVersionId(str(row.id)),
             owner=row.owner,
             curator_name=row.curator_name,
-            metadata=CollectionMetadata.from_json(row.collection_metadata),
+            metadata=CollectionMetadata.from_dict(row.collection_metadata),
             publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
             datasets=sorted_datasets,
             published_at=row.published_at,
@@ -161,11 +161,11 @@ class DatabaseProvider(DatabaseProviderInterface):
         if type(row.status) is DatasetStatus or row.status is None:
             status = row.status
         else:
-            status = DatasetStatus.from_json(row.status)
+            status = DatasetStatus.from_dict(row.status)
         if type(row.dataset_metadata) is DatasetMetadata or row.dataset_metadata is None:
             metadata = row.dataset_metadata
         else:
-            metadata = DatasetMetadata.from_json(row.dataset_metadata)
+            metadata = DatasetMetadata.from_dict(row.dataset_metadata)
         return DatasetVersion(
             DatasetId(str(row.dataset_id)),
             DatasetVersionId(str(row.id)),
@@ -939,7 +939,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             status = session.query(DatasetVersionTable.status).filter_by(id=version_id.id).one()
-        return DatasetStatus.from_json(status[0])
+        return DatasetStatus.from_dict(status[0])
 
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         """
