@@ -104,12 +104,17 @@ class DatabaseProvider(DatabaseProviderInterface):
             yield session
 
     def _row_to_collection_version(self, row: Any, canonical_collection: CanonicalCollection) -> CollectionVersion:
+        collection_metadata = (
+            row.collection_metadata
+            if isinstance(row.collection_metadata, CollectionMetadata)
+            else CollectionMetadata.from_json(row.collection_metadata)
+        )
         return CollectionVersion(
             collection_id=CollectionId(str(row.collection_id)),
             version_id=CollectionVersionId(str(row.id)),
             owner=row.owner,
             curator_name=row.curator_name,
-            metadata=CollectionMetadata.from_dict(row.collection_metadata),
+            metadata=collection_metadata,
             publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
             datasets=[DatasetVersionId(str(id)) for id in row.datasets],
             published_at=row.published_at,
@@ -125,12 +130,17 @@ class DatabaseProvider(DatabaseProviderInterface):
         self, row: Any, canonical_collection: CanonicalCollection, datasets: List[DatasetVersion]
     ) -> CollectionVersionWithDatasets:
         sorted_datasets = self._sort_datasets(row, datasets)
+        collection_metadata = (
+            row.collection_metadata
+            if isinstance(row.collection_metadata, CollectionMetadata)
+            else CollectionMetadata.from_json(row.collection_metadata)
+        )
         return CollectionVersionWithDatasets(
             collection_id=CollectionId(str(row.collection_id)),
             version_id=CollectionVersionId(str(row.id)),
             owner=row.owner,
             curator_name=row.curator_name,
-            metadata=CollectionMetadata.from_dict(row.collection_metadata),
+            metadata=collection_metadata,
             publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
             datasets=sorted_datasets,
             published_at=row.published_at,
@@ -158,14 +168,14 @@ class DatabaseProvider(DatabaseProviderInterface):
         )
 
     def _row_to_dataset_version(self, row: Any, canonical_dataset: CanonicalDataset, artifacts: List[DatasetArtifact]):
-        if type(row.status) is DatasetStatus or row.status is None:
+        if isinstance(row.status, DatasetStatus) or row.status is None:
             status = row.status
         else:
-            status = DatasetStatus.from_dict(row.status)
-        if type(row.dataset_metadata) is DatasetMetadata or row.dataset_metadata is None:
+            status = DatasetStatus.from_json(row.status)
+        if isinstance(row.dataset_metadata, DatasetMetadata) or row.dataset_metadata is None:
             metadata = row.dataset_metadata
         else:
-            metadata = DatasetMetadata.from_dict(row.dataset_metadata)
+            metadata = DatasetMetadata.from_json(row.dataset_metadata)
         return DatasetVersion(
             DatasetId(str(row.dataset_id)),
             DatasetVersionId(str(row.id)),
@@ -239,7 +249,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection_id=collection_id.id,
             owner=owner,
             curator_name=curator_name,
-            collection_metadata=collection_metadata.to_dict(),
+            collection_metadata=collection_metadata,
             publisher_metadata=None,
             published_at=None,
             created_at=now,
@@ -546,7 +556,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one()
-            version.collection_metadata = collection_metadata.to_dict()
+            version.collection_metadata = collection_metadata
 
     def save_collection_publisher_metadata(
         self, version_id: CollectionVersionId, publisher_metadata: Optional[dict]
@@ -845,7 +855,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection_id=collection_id,
             dataset_metadata=None,
             artifacts=list(),
-            status=DatasetStatus.empty().to_dict(),
+            status=DatasetStatus.empty(),
             created_at=datetime.utcnow(),
         )
 
@@ -939,7 +949,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             status = session.query(DatasetVersionTable.status).filter_by(id=version_id.id).one()
-        return DatasetStatus.from_dict(status[0])
+        return DatasetStatus.from_json(status[0])
 
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         """
@@ -947,7 +957,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version.dataset_metadata = metadata.to_dict()
+            dataset_version.dataset_metadata = metadata
 
     def add_dataset_to_collection_version_mapping(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
@@ -1007,7 +1017,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                     collection_id=collection_id,
                     dataset_metadata=None,
                     artifacts=list(),
-                    status=DatasetStatus.empty().to_dict(),
+                    status=DatasetStatus.empty(),
                     created_at=datetime.utcnow(),
                 )
                 session.add(new_dataset_version)
