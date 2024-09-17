@@ -901,7 +901,9 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version.status["processing_status"] = status.value
+            dataset_version_status = dataset_version.status
+            dataset_version_status["processing_status"] = status.value
+            dataset_version.status = dataset_version_status
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_validation_status(self, version_id: DatasetVersionId, status: DatasetValidationStatus) -> None:
@@ -910,7 +912,9 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version.status["validation_status"] = status.value
+            dataset_version_status = dataset_version.status
+            dataset_version_status["validation_status"] = status.value
+            dataset_version.status = dataset_version_status
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_upload_status(self, version_id: DatasetVersionId, status: DatasetUploadStatus) -> None:
@@ -919,7 +923,9 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version.status["upload_status"] = status.value
+            dataset_version_status = dataset_version.status
+            dataset_version_status["upload_status"] = status.value
+            dataset_version.status = dataset_version_status
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_conversion_status(
@@ -930,13 +936,17 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version.status[status_type] = status.value
+            dataset_version_status = dataset_version.status
+            dataset_version_status[status_type] = status.value
+            dataset_version.status = dataset_version_status
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version.status["validation_message"] = validation_message
+            dataset_version_status = dataset_version.status
+            dataset_version_status["validation_message"] = validation_message
+            dataset_version.status = dataset_version_status
 
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
         """
