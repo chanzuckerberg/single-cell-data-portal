@@ -116,7 +116,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             owner=row.owner,
             curator_name=row.curator_name,
             metadata=collection_metadata,
-            publisher_metadata=None if row.publisher_metadata is None else row.publisher_metadata,
+            publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
             datasets=[DatasetVersionId(str(id)) for id in row.datasets],
             published_at=row.published_at,
             created_at=row.created_at,
@@ -131,19 +131,18 @@ class DatabaseProvider(DatabaseProviderInterface):
         self, row: Any, canonical_collection: CanonicalCollection, datasets: List[DatasetVersion]
     ) -> CollectionVersionWithDatasets:
         sorted_datasets = self._sort_datasets(row, datasets)
-        if isinstance(row.collection_metadata, CollectionMetadata) or row.collection_metadata is None:
-            collection_metadata = row.collection_metadata
-        elif isinstance(row.collection_metadata, dict):
-            collection_metadata = CollectionMetadata.from_dict(row.collection_metadata)
-        else:
-            collection_metadata = CollectionMetadata.from_json(row.collection_metadata)
+        collection_metadata = (
+            row.collection_metadata
+            if isinstance(row.collection_metadata, CollectionMetadata)
+            else CollectionMetadata.from_json(row.collection_metadata)
+        )
         return CollectionVersionWithDatasets(
             collection_id=CollectionId(str(row.collection_id)),
             version_id=CollectionVersionId(str(row.id)),
             owner=row.owner,
             curator_name=row.curator_name,
             metadata=collection_metadata,
-            publisher_metadata=None if row.publisher_metadata is None else row.publisher_metadata,
+            publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
             datasets=sorted_datasets,
             published_at=row.published_at,
             created_at=row.created_at,
@@ -572,7 +571,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one()
-            version.publisher_metadata = publisher_metadata
+            version.publisher_metadata = json.dumps(publisher_metadata)
 
     def add_collection_version(self, collection_id: CollectionId, is_auto_version: bool) -> CollectionVersionId:
         """
@@ -902,7 +901,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version_status = dataset_version.status
+            dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["processing_status"] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
 
@@ -913,7 +912,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version_status = dataset_version.status
+            dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["validation_status"] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
 
@@ -924,7 +923,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version_status = dataset_version.status
+            dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["upload_status"] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
 
@@ -937,7 +936,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version_status = dataset_version.status
+            dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status[status_type] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
 
@@ -945,7 +944,7 @@ class DatabaseProvider(DatabaseProviderInterface):
     def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version_status = dataset_version.status
+            dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status["validation_message"] = validation_message
             dataset_version.status = json.dumps(dataset_version_status)
 
