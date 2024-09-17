@@ -944,7 +944,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             status = session.query(DatasetVersionTable.status).filter_by(id=version_id.id).one()
-        return DatasetStatus.from_dict(status)
+        return DatasetStatus.from_dict(status[0])
 
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         """
