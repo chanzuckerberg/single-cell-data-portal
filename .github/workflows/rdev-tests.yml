@@ -108,7 +108,7 @@ jobs:
 
       - name: Upload FE test results as an artifact
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
@@ -116,14 +116,14 @@ jobs:
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: all-blob-reports
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
           retention-days: 1
 
       # Upload Allure results as an artifact
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/allure-results
@@ -171,7 +171,7 @@ jobs:
         run: npx playwright merge-reports --reporter html ./blob-reports
 
       - name: Upload HTML report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: html-report--attempt-${{ github.run_attempt }}
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
