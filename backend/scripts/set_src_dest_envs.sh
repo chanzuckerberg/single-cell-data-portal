@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
+echo "Setting env vars for src/dest envs"
 export SRC_ENV=${1:-prod}
 export DEST_ENV=${2:-dev}
-
+export SRC_PORT=${3:-5432}
+export DEST_PORT=${4:-5433}
 
 # Forbid rdev as SRC_ENV
 if [[ "$SRC_ENV" == rdev ]]; then

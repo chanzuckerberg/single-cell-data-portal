@@ -2,6 +2,7 @@
 
 # Mirror S3 and RDS (postgres db) data from a source deployment environment (usually production)
 # to a specified destination deployment environment (dev or staging)
+# Must run 'make db/tunnel/up' once per SRC and DEST env before running this script, using different local ports for each.
 #
 # THIS IS DESTRUCTIVE for the destination env! The source env will
 # never be modified, but the dest env's data will be replaced.

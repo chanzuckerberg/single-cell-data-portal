@@ -3,7 +3,8 @@ annotated-types==0.5.0
 awscli==1.29.34
 boto3==1.28.25
 botocore==1.31.34
-cellxgene-ontology-guide==0.8.0
+cellxgene-census>=1.10.0
+cellxgene-ontology-guide~=1.0.0
 certifi==2023.7.22
 chardet==5.2.0
 charset-normalizer==3.2.0
@@ -30,6 +31,7 @@ s3transfer==0.6.1
 scipy==1.11.1
 six==1.16.0
 tiledb
+tiledbsoma>=1.7.0
 typing_extensions==4.11.0
 tzdata==2023.3
 urllib3==1.26.16
