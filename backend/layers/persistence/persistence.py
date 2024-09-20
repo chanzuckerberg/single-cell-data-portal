@@ -104,12 +104,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             yield session
 
     def _row_to_collection_version(self, row: Any, canonical_collection: CanonicalCollection) -> CollectionVersion:
-        if isinstance(row.collection_metadata, CollectionMetadata) or row.collection_metadata is None:
-            collection_metadata = row.collection_metadata
-        elif isinstance(row.collection_metadata, dict):
-            collection_metadata = CollectionMetadata.from_dict(row.collection_metadata)
-        else:
-            collection_metadata = CollectionMetadata.from_json(row.collection_metadata)
+        collection_metadata = self._json_field_to_business_entity(row.collection_metadata, CollectionMetadata)
         return CollectionVersion(
             collection_id=CollectionId(str(row.collection_id)),
             version_id=CollectionVersionId(str(row.id)),
@@ -131,12 +126,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         self, row: Any, canonical_collection: CanonicalCollection, datasets: List[DatasetVersion]
     ) -> CollectionVersionWithDatasets:
         sorted_datasets = self._sort_datasets(row, datasets)
-        if isinstance(row.collection_metadata, CollectionMetadata) or row.collection_metadata is None:
-            collection_metadata = row.collection_metadata
-        elif isinstance(row.collection_metadata, dict):
-            collection_metadata = CollectionMetadata.from_dict(row.collection_metadata)
-        else:
-            collection_metadata = CollectionMetadata.from_json(row.collection_metadata)
+        collection_metadata = self._json_field_to_business_entity(row.collection_metadata, CollectionMetadata)
         return CollectionVersionWithDatasets(
             collection_id=CollectionId(str(row.collection_id)),
             version_id=CollectionVersionId(str(row.id)),
@@ -170,18 +160,8 @@ class DatabaseProvider(DatabaseProviderInterface):
         )
 
     def _row_to_dataset_version(self, row: Any, canonical_dataset: CanonicalDataset, artifacts: List[DatasetArtifact]):
-        if isinstance(row.status, DatasetStatus) or row.status is None:
-            status = row.status
-        elif isinstance(row.status, dict):
-            status = DatasetStatus.from_dict(row.status)
-        else:
-            status = DatasetStatus.from_json(row.status)
-        if isinstance(row.dataset_metadata, DatasetMetadata) or row.dataset_metadata is None:
-            metadata = row.dataset_metadata
-        elif isinstance(row.dataset_metadata, dict):
-            metadata = DatasetMetadata.from_dict(row.dataset_metadata)
-        else:
-            metadata = DatasetMetadata.from_json(row.dataset_metadata)
+        status = self._json_field_to_business_entity(row.status, DatasetStatus)
+        metadata = self._json_field_to_business_entity(row.dataset_metadata, DatasetMetadata)
         return DatasetVersion(
             DatasetId(str(row.dataset_id)),
             DatasetVersionId(str(row.id)),
@@ -192,6 +172,14 @@ class DatabaseProvider(DatabaseProviderInterface):
             row.created_at,
             canonical_dataset,
         )
+
+    def _json_field_to_business_entity(self, db_object: Any, entity_type: Any) -> Any:
+        if isinstance(db_object, entity_type) or db_object is None:
+            return db_object
+        elif isinstance(db_object, dict):
+            return entity_type.from_dict(db_object)
+        else:
+            return entity_type.from_json(db_object)
 
     def _sort_datasets(self, row: Any, datasets: List[DatasetVersion]) -> List[DatasetVersion]:
         """
