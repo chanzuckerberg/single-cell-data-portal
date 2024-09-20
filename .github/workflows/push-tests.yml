@@ -108,6 +108,7 @@ jobs:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
+          include-hidden-files: true
 
       - name: Upload Allure results as an artifact
         uses: actions/upload-artifact@v3
@@ -168,6 +169,7 @@ jobs:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
+          include-hidden-files: true
 
       - name: Upload Allure results as an artifact
         uses: actions/upload-artifact@v3
@@ -228,6 +230,7 @@ jobs:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
+          include-hidden-files: true
 
       - name: Upload Allure results as an artifact
         uses: actions/upload-artifact@v3
@@ -288,6 +291,7 @@ jobs:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
+          include-hidden-files: true
 
       - name: Upload Allure results as an artifact
         uses: actions/upload-artifact@v3
@@ -295,6 +299,7 @@ jobs:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
+          include-hidden-files: true
 
       - uses: 8398a7/action-slack@v3.15.0
         with:
@@ -347,6 +352,7 @@ jobs:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
+          include-hidden-files: true
       - name: Upload Allure results as an artifact
         uses: actions/upload-artifact@v3
         with:
@@ -404,6 +410,7 @@ jobs:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
+          include-hidden-files: true
       - name: Upload Allure results as an artifact
         uses: actions/upload-artifact@v3
         with:
@@ -462,6 +469,7 @@ jobs:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
+          include-hidden-files: true
 
       - name: Upload Allure results as an artifact
         uses: actions/upload-artifact@v3
@@ -521,6 +529,7 @@ jobs:
           name: coverage
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
           retention-days: 3
+          include-hidden-files: true
 
       - name: Upload Allure results as an artifact
         uses: actions/upload-artifact@v3
