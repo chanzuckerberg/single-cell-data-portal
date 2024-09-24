@@ -1,0 +1,14 @@
+INFO     backend.layers.business.business:business.py:553 {'message': 'ingesting dataset', 'collection_version_id': efd185f8-8c49-466a-a828-365e589f385e, 'url': 'nothing', 'current_dataset_version_id': None}
+INFO     processing:process_seurat.py:80 enforce canonical format in X
+INFO     processing:process_seurat.py:83 enforce canonical format in raw.X
+INFO     processing:process_logic.py:113 Converting local.h5ad
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:119 Finished converting <MagicMock name='make_seurat' id='139701981110064'> in 0:00:00.000533
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:91 Uploaded [30c8e1dc-ee04-4439-a1e6-274997fe3c82/local.rds] to s3://fake_bucket_name/30c8e1dc-ee04-4439-a1e6-274997fe3c82/local.rds
+INFO     processing:process_logic.py:93 Updated database with rds.
+INFO     processing:process_logic.py:100 Uploaded 30c8e1dc-ee04-4439-a1e6-274997fe3c82.rds to s3://fake_datasets_bucket/30c8e1dc-ee04-4439-a1e6-274997fe3c82/30c8e1dc-ee04-4439-a1e6-274997fe3c82.rds
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
