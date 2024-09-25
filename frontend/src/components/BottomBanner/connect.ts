@@ -78,8 +78,6 @@ export const useConnect = ({
   /**
    * toggleNewsletterSignupModal
    * Toggles the newsletter signup modal
-   * (smcanny) 07/24 - not in use currently
-   * leaving it here incase a new newsletter modal is established
    * */
   function toggleNewsletterSignupModal() {
     if (!newsletterModalIsOpen) {

@@ -86,18 +86,33 @@ export const useConnect = ({
    */
   useEffect(() => {
     if (!isHubSpotReady) return;
+    /**
+     * Observer to observe changes in the Hubspot embedded form,
+     * which is hidden from the user in order to use our own form view
+     */
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
+        /**
+         * Loop through all added nodes that were detected
+         */
         for (let i = 0; i < mutation.addedNodes.length; i++) {
           const node = mutation.addedNodes.item(i);
-
+          /**
+           *  Submission success flow
+           */
           if (node?.textContent?.includes(HIDDEN_NEWSLETTER_SUCCESS_MESSAGE)) {
             setIsSubmitted(true);
             setError("");
             track(EVENTS.NEWSLETTER_SIGNUP_SUCCESS);
           } else if (
+            /**
+             * Hubspot email validation failure flow
+             */
             node?.textContent?.includes("Please enter a valid email address.")
           ) {
+            /**
+             * HTML email validation may pass, but may not pass validation for Hubspot
+             */
             setError(FAILED_EMAIL_VALIDATION_STRING);
             track(EVENTS.NEWSLETTER_SIGNUP_FAILURE);
           }
