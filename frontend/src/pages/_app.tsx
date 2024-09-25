@@ -109,6 +109,12 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
         </StyledEngineProvider>
       </QueryClientProvider>
       <Script data-domain={configs.PLAUSIBLE_DATA_DOMAIN} src="/js/script.js" />
+      <Script id="hsq-do-not-track" strategy="afterInteractive">
+        {`
+          var _hsq = (window._hsq = window._hsq || []);
+          _hsq.push(["doNotTrack"]);
+        `}
+      </Script>
     </>
   );
 }
