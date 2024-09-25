@@ -188,9 +188,7 @@ describe("filter", () => {
         );
         expect(parent).toBeTruthy();
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
-        expect(parent!.ontology_term_id).toEqual(
-          ONTOLOGY_ID_HUMAN_PRENATAL
-        );
+        expect(parent!.ontology_term_id).toEqual(ONTOLOGY_ID_HUMAN_PRENATAL);
       });
       test(`doesn't find parent of ${ONTOLOGY_ID_HUMAN_PRENATAL}`, () => {
         const ontologyId = ONTOLOGY_ID_HUMAN_PRENATAL;
