@@ -68,7 +68,6 @@ import {
 import {
   CategoryValueId,
   CATEGORY_FILTER_ID,
-  CuratedOntologyCategoryFilterConfig,
   DatasetRow,
   MultiPanelCategoryFilterUIState,
   MultiPanelOntologyCategoryView,

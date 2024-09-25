@@ -156,7 +156,7 @@ describe("filter", () => {
       ].forEach((ontologyId) => {
         test(`finds ontology node with ID ${ontologyId}`, () => {
           const ontologyKey = getOntologySpeciesKey(ontologyId);
-          const ontologyRootNodes = T[ontologyKey];
+          const ontologyRootNodes = TEST_ONTOLOGY_TERM_SET[ontologyKey];
           expect(ontologyRootNodes).toBeTruthy();
           const ontologyNode = findOntologyNodeById(
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
