@@ -123,9 +123,8 @@ describe("filter", () => {
   describe("Ontology", () => {
     const ONTOLOGY_ID_HUMAN_PRENATAL = "HsapDv:0000045";
     const ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN = "HsapDv:0000002";
-    const ONTOLOGY_ID_HUMAN_CARNEGIE_CS1 = "HsapDv:0000003";
     const ONTOLOGY_ID_HUMAN_FETAL = "HsapDv:0000037";
-    const ONTOLOGY_ID_HUMAN_HUMAN_ADULT = "HsapDv:0000087";
+    const ONTOLOGY_ID_HUMAN_LATE_ADULT = "HsapDv:0000227";
 
     const ONTOLOGY_ID_MOUSE_PRENATAL = "MmusDv:0000042";
     const ONTOLOGY_ID_OTHER_EMBRYO = "UBERON:0000068";
@@ -150,9 +149,8 @@ describe("filter", () => {
     describe("findOntologyNodeById", () => {
       [
         ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN,
-        ONTOLOGY_ID_HUMAN_CARNEGIE_CS1,
         ONTOLOGY_ID_HUMAN_FETAL,
-        ONTOLOGY_ID_HUMAN_HUMAN_ADULT,
+        ONTOLOGY_ID_HUMAN_LATE_ADULT,
       ].forEach((ontologyId) => {
         test(`finds ontology node with ID ${ontologyId}`, () => {
           const ontologyKey = getOntologySpeciesKey(ontologyId);
@@ -190,29 +188,8 @@ describe("filter", () => {
         );
         expect(parent).toBeTruthy();
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
-        expect(parent!.ontology_term_id).toEqual(ONTOLOGY_ID_HUMAN_PRENATAL);
-      });
-      test(`finds parent of ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}`, () => {
-        const ontologyId = ONTOLOGY_ID_HUMAN_CARNEGIE_CS1;
-        const ontologyKey = getOntologySpeciesKey(ontologyId);
-        const ontologyRootNodes =
-          DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET[ontologyKey];
-        expect(ontologyRootNodes).toBeTruthy();
-        const ontologyNode = findOntologyNodeById(
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
-          ontologyRootNodes!,
-          ontologyId
-        );
-        expect(ontologyNode).toBeTruthy();
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy checks above
-        const parent = findOntologyParentNode(
-          ontologyRootNodes!,
-          ontologyNode!
-        );
-        expect(parent).toBeTruthy();
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
         expect(parent!.ontology_term_id).toEqual(
-          ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN
+          ONTOLOGY_ID_HUMAN_PRENATAL
         );
       });
       test(`doesn't find parent of ${ONTOLOGY_ID_HUMAN_PRENATAL}`, () => {
