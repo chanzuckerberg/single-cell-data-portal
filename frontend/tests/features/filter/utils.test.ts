@@ -3,7 +3,6 @@
  */
 
 import test, { expect } from "@playwright/test";
-import { DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET } from "src/components/common/Filter/common/constants";
 import {
   findOntologyNodeById,
   findOntologyParentNode,
@@ -12,6 +11,7 @@ import {
   SYMBOL_MILLION,
   SYMBOL_THOUSAND,
 } from "src/components/common/Filter/common/utils";
+import { TEST_ONTOLOGY_TERM_SET } from "./constants";
 
 const { describe } = test;
 
@@ -156,8 +156,7 @@ describe("filter", () => {
       ].forEach((ontologyId) => {
         test(`finds ontology node with ID ${ontologyId}`, () => {
           const ontologyKey = getOntologySpeciesKey(ontologyId);
-          const ontologyRootNodes =
-            DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET[ontologyKey];
+          const ontologyRootNodes = TEST_ONTOLOGY_TERM_SET[ontologyKey];
           expect(ontologyRootNodes).toBeTruthy();
           const ontologyNode = findOntologyNodeById(
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
@@ -174,8 +173,7 @@ describe("filter", () => {
       test(`finds parent of ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}`, () => {
         const ontologyId = ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN;
         const ontologyKey = getOntologySpeciesKey(ontologyId);
-        const ontologyRootNodes =
-          DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET[ontologyKey];
+        const ontologyRootNodes = TEST_ONTOLOGY_TERM_SET[ontologyKey];
         expect(ontologyRootNodes).toBeTruthy();
         const ontologyNode = findOntologyNodeById(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
@@ -195,8 +193,7 @@ describe("filter", () => {
       test(`finds parent of ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}`, () => {
         const ontologyId = ONTOLOGY_ID_HUMAN_CARNEGIE_CS1;
         const ontologyKey = getOntologySpeciesKey(ontologyId);
-        const ontologyRootNodes =
-          DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET[ontologyKey];
+        const ontologyRootNodes = TEST_ONTOLOGY_TERM_SET[ontologyKey];
         expect(ontologyRootNodes).toBeTruthy();
         const ontologyNode = findOntologyNodeById(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
@@ -218,8 +215,7 @@ describe("filter", () => {
       test(`doesn't find parent of ${ONTOLOGY_ID_HUMAN_PRENATAL}`, () => {
         const ontologyId = ONTOLOGY_ID_HUMAN_PRENATAL;
         const ontologyKey = getOntologySpeciesKey(ontologyId);
-        const ontologyRootNodes =
-          DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET[ontologyKey];
+        const ontologyRootNodes = TEST_ONTOLOGY_TERM_SET[ontologyKey];
         expect(ontologyRootNodes).toBeTruthy();
         const ontologyNode = findOntologyNodeById(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
