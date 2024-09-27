@@ -96,17 +96,17 @@ def depluralize(x):
     return x[:-1] if x[-1] == "s" else x
 
 
-def setup_retry_session(retries=3, backoff_factor=2, status_forcelist=(500, 502, 503, 504), method_whitelist=None):
+def setup_retry_session(retries=3, backoff_factor=2, status_forcelist=(500, 502, 503, 504), allowed_methods=None):
     session = requests.Session()
 
-    if method_whitelist is None:
-        method_whitelist = {"GET"}
+    if allowed_methods is None:
+        allowed_methods = {"GET"}
 
     retry = Retry(
         total=retries,
         backoff_factor=backoff_factor,
         status_forcelist=status_forcelist,
-        allowed_methods=method_whitelist,
+        allowed_methods=allowed_methods,
     )
 
     adapter = HTTPAdapter(max_retries=retry)
