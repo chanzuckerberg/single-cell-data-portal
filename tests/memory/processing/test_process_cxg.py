@@ -10,7 +10,7 @@ from backend.layers.processing.process_cxg import ProcessCxg
 from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 
 if __name__ == "__main__":
-    file_name = "labeled_visium.h5ad"
+    file_name = "efbc53b2-559e-42cb-804d-f67443034cde.h5ad"
     dataset_version_id = DatasetVersionId("test_dataset_id")
     with tempfile.TemporaryDirectory() as tmpdirname:
         temp_file = "/".join([tmpdirname, file_name])
