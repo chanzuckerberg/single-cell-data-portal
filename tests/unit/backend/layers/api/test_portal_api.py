@@ -462,7 +462,7 @@ class TestCollection(BaseAPIPortalTest):
         # TODO: this endpoint should also return `version_id`
         collection = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
         doi = next(link.uri for link in collection.metadata.links if link.type == "DOI")  # TODO: careful
-        self.assertEqual(doi, "https://doi.org/10.1016/foo")
+        self.assertEquals(doi, "https://doi.org/10.1016/foo")
 
     # ✅
     def test__post_collection_rejects_two_dois(self):
