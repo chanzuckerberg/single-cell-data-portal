@@ -72,7 +72,7 @@ class ProcessSeurat(ProcessingLogic):
         self.download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
         # Convert the citation from h5ad to RDS
-        adata = anndata.read_h5ad(labeled_h5ad_filename)
+        adata = anndata.read_h5ad(labeled_h5ad_filename, backed="r")
         if "citation" in adata.uns:
             adata.uns["citation"] = rds_citation_from_h5ad(adata.uns["citation"])
 
