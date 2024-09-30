@@ -83,7 +83,7 @@ class ProcessSeurat(ProcessingLogic):
             logger.info("enforce canonical format in raw.X")
             enforce_canonical_format(adata.raw)
 
-        adata.write_h5ad(labeled_h5ad_filename)
+        adata.write_h5ad(labeled_h5ad_filename, compression="gzip")
 
         # Use Seurat to convert to RDS
         seurat_filename = self.convert_file(
