@@ -26,32 +26,6 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
         {
           label: "Embryonic human (0–56 days)",
           ontology_term_id: "HsapDv:0000002",
-          children: [
-            {
-              label: "Carnegie (CS1)",
-              ontology_term_id: "HsapDv:0000003",
-            },
-            {
-              label: "Cleavage (CS2)",
-              ontology_term_id: "HsapDv:0000004",
-            },
-            {
-              label: "Blastula (CS3–5)",
-              ontology_term_id: "HsapDv:0000006",
-            },
-            {
-              label: "Gastrula (CS6)",
-              ontology_term_id: "HsapDv:0000010",
-            },
-            {
-              label: "Neurula (CS7–8)",
-              ontology_term_id: "HsapDv:0000012",
-            },
-            {
-              label: "Organogenesis (CS9–23)",
-              ontology_term_id: "HsapDv:0000015",
-            },
-          ],
         },
         {
           label: "Fetal (>56 days–birth)",
@@ -60,44 +34,48 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
       ],
     },
     {
-      label: "Immature (0–12 years)",
-      ontology_term_id: "HsapDv:0000080",
+      label: "Postnatal human",
+      ontology_term_id: "HsapDv:0010000",
       children: [
         {
-          label: "Newborn human (0–1 month)",
-          ontology_term_id: "HsapDv:0000082",
-        },
-        {
-          label: "Infant (1–23 months)",
-          ontology_term_id: "HsapDv:0000083",
-        },
-        {
-          label: "Child (2–12 years)",
-          ontology_term_id: "HsapDv:0000081",
+          label: "Pediatric (0-15 years)",
+          ontology_term_id: "HsapDv:0000264",
+          children: [
+            {
+              label: "Newborn human (0-28 days)",
+              ontology_term_id: "HsapDv:0000262",
+            },
+            {
+              label: "Infant (28 days-1 year)",
+              ontology_term_id: "HsapDv:0000261",
+            },
+            {
+              label: "Child (1-5 years)",
+              ontology_term_id: "HsapDv:0000265",
+            },
+            {
+              label: "Juvenile (5-15 years)",
+              ontology_term_id: "HsapDv:0000271",
+            },
+          ],
         },
       ],
     },
     {
-      label: "Mature (13+ years)",
-      ontology_term_id: "HsapDv:0000204",
+      label: "Adult (15+ years)",
+      ontology_term_id: "HsapDv:0000258",
       children: [
         {
-          label: "Adolescent (13–19 years)",
-          ontology_term_id: "HsapDv:0000086",
+          label: "Young adult (15-40 years)",
+          ontology_term_id: "HsapDv:0000266",
         },
         {
-          label: "Human adult (19+ years)",
-          ontology_term_id: "HsapDv:0000087",
-          children: [
-            {
-              label: "Early adulthood (19–45 years)",
-              ontology_term_id: "HsapDv:0000088",
-            },
-            {
-              label: "Late adulthood (45+ years)",
-              ontology_term_id: "HsapDv:0000091",
-            },
-          ],
+          label: "Middle aged (40-60 years)",
+          ontology_term_id: "HsapDv:0000267",
+        },
+        {
+          label: "Late adult (60+ years)",
+          ontology_term_id: "HsapDv:0000227",
         },
       ],
     },
@@ -110,32 +88,6 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
         {
           label: "Embryonic mouse",
           ontology_term_id: "MmusDv:0000002",
-          children: [
-            {
-              label: "Thelier stage 1 (TS1)",
-              ontology_term_id: "MmusDv:0000003",
-            },
-            {
-              label: "Cleavage (TS2–3)",
-              ontology_term_id: "MmusDv:0000004",
-            },
-            {
-              label: "Blastula (TS4–8)",
-              ontology_term_id: "MmusDv:0000007",
-            },
-            {
-              label: "Gastrula (TS9–10)",
-              ontology_term_id: "MmusDv:0000013",
-            },
-            {
-              label: "Thelier stage 11 (TS11)",
-              ontology_term_id: "MmusDv:0000017",
-            },
-            {
-              label: "Organogenesis (TS11–22)",
-              ontology_term_id: "MmusDv:0000018",
-            },
-          ],
         },
         {
           label: "Fetal (TS23–26)",
@@ -144,34 +96,34 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
       ],
     },
     {
-      label: "Post-partum (Birth+)",
+      label: "Postnatal mouse",
       ontology_term_id: "MmusDv:0000092",
       children: [
         {
-          label: "Immature (0–6 weeks)",
+          label: "Immature (0-6 weeks)",
           ontology_term_id: "MmusDv:0000043",
-          children: [
-            {
-              label: "Thelier stage 27 (0–3 days)",
-              ontology_term_id: "MmusDv:0000036",
-            },
-            {
-              label: "Premature (3 days–6 weeks)",
-              ontology_term_id: "MmusDv:0000112",
-            },
-          ],
         },
         {
           label: "Mature (6+ weeks)",
           ontology_term_id: "MmusDv:0000110",
           children: [
             {
-              label: "Early adulthood (6 weeks–7 months)",
-              ontology_term_id: "MmusDv:0000061",
+              label: "Prime adult (6 weeks-18 months)",
+              ontology_term_id: "MmusDv:0000136",
+              children: [
+                {
+                  label: "Young adult (6 weeks-10 months)",
+                  ontology_term_id: "MmusDv:0000153",
+                },
+                {
+                  label: "Middle aged (10-18 months)",
+                  ontology_term_id: "MmusDv:0000135",
+                },
+              ],
             },
             {
-              label: "Late adulthood (7+ months)",
-              ontology_term_id: "MmusDv:0000097",
+              label: "Late adult (18+ months)",
+              ontology_term_id: "MmusDv:0000134",
             },
           ],
         },
