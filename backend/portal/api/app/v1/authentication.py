@@ -49,6 +49,7 @@ def get_oauth_client(config: CorporaAuthConfig) -> OAuth:
         authorize_url=config.api_authorize_url,
         client_kwargs={"scope": "openid profile email offline_access write:collections"},
         authorize_params={"audience": config.api_audience},
+        server_metadata_url=config.server_metadata_url,
     )
     return oauth_client
 

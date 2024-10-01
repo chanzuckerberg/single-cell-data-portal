@@ -88,6 +88,7 @@ class CorporaAuthConfig(SecretConfig):
             "internal_url": "{api_base_url}",
             "issuer": [],
             "retry_status_forcelist": [429, 500, 502, 503, 504],
+            "server_metadata_url": "{api_base_url}/.well-known/openid-configuration",
         }
         template["issuer"].append(self.api_base_url + "/" if not self.api_base_url.endswith("/") else self.api_base_url)
         template["issuer"].append("https://" + self.auth0_domain + "/")
