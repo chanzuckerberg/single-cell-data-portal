@@ -17,6 +17,7 @@ from backend.layers.common.entities import (
     DatasetArtifactType,
     DatasetConversionStatus,
     DatasetProcessingStatus,
+    DatasetStatusKey,
     DatasetUploadStatus,
     DatasetValidationStatus,
     DatasetVersionId,
@@ -241,13 +242,12 @@ class SchemaMigrate(ProcessingLogic):
                 ):
                     self.business_logic.update_dataset_version_status(
                         DatasetVersionId(dataset.version_id),
-                        "rds_status",
+                        DatasetStatusKey.RDS,
                         DatasetConversionStatus.SKIPPED,
-                        "RDS conversion skipped",
                     )
                     self.business_logic.update_dataset_version_status(
                         DatasetVersionId(dataset.version_id),
-                        "processing_status",
+                        DatasetStatusKey.PROCESSING,
                         DatasetProcessingStatus.SUCCESS,
                     )
                     continue
