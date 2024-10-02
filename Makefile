@@ -1,6 +1,7 @@
 SHELL:=/bin/bash
   # Force using BuildKit instead of normal Docker, required so that metadata
   # is written/read to allow us to use layers of previous builds as cache.
+  # little change
 export DOCKER_BUILDKIT:=1
 export COMPOSE_DOCKER_CLI_BUILD:=1
 export COMPOSE_OPTS:=--env-file .env.ecr
