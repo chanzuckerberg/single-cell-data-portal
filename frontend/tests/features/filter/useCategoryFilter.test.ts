@@ -68,7 +68,6 @@ import {
 import {
   CategoryValueId,
   CATEGORY_FILTER_ID,
-  CuratedOntologyCategoryFilterConfig,
   DatasetRow,
   MultiPanelCategoryFilterUIState,
   MultiPanelOntologyCategoryView,
@@ -80,6 +79,7 @@ import {
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
 import { test } from "tests/common/test";
+import { TEST_ONTOLOGY_TERM_SET } from "./constants";
 
 const { describe } = test;
 
@@ -2926,6 +2926,8 @@ describe("useCategoryFilter", () => {
     //   Newborn human - HsapDv:0000082
     //   Infant - HsapDv:0000083
     //   Child - HsapDv:0000081
+    //
+    // Note, this tree matches the test ontology term test and not the current pinned ontology.
     const CATEGORY_VALUE_KEYS = new Set([
       ONTOLOGY_ID_HUMAN_PRENATAL,
       ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN,
@@ -2960,11 +2962,7 @@ describe("useCategoryFilter", () => {
           idToDeselect,
           filters,
           CATEGORY_VALUE_KEYS,
-          (
-            CATEGORY_FILTER_CONFIGS_BY_ID[
-              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
-            ] as CuratedOntologyCategoryFilterConfig
-          ).source
+          TEST_ONTOLOGY_TERM_SET
         );
         expect(nextFilters.length).toEqual(0);
       });
@@ -2993,11 +2991,7 @@ describe("useCategoryFilter", () => {
           idToDeselect,
           filters,
           CATEGORY_VALUE_KEYS,
-          (
-            CATEGORY_FILTER_CONFIGS_BY_ID[
-              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
-            ] as CuratedOntologyCategoryFilterConfig
-          ).source
+          TEST_ONTOLOGY_TERM_SET
         );
         expect(nextFilters.length).toEqual(1);
         expect(
@@ -3031,11 +3025,7 @@ describe("useCategoryFilter", () => {
           idToDeselect,
           filters,
           CATEGORY_VALUE_KEYS,
-          (
-            CATEGORY_FILTER_CONFIGS_BY_ID[
-              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
-            ] as CuratedOntologyCategoryFilterConfig
-          ).source
+          TEST_ONTOLOGY_TERM_SET
         );
         expect(nextFilters.length).toEqual(0);
       });
@@ -3068,11 +3058,7 @@ describe("useCategoryFilter", () => {
           idToDeselect,
           filters,
           CATEGORY_VALUE_KEYS,
-          (
-            CATEGORY_FILTER_CONFIGS_BY_ID[
-              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
-            ] as CuratedOntologyCategoryFilterConfig
-          ).source
+          TEST_ONTOLOGY_TERM_SET
         );
         expect(nextFilters.length).toEqual(1);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_FETAL)).toBeTruthy();
@@ -3092,11 +3078,7 @@ describe("useCategoryFilter", () => {
           idToSelect,
           [], // No filters selected
           CATEGORY_VALUE_KEYS,
-          (
-            CATEGORY_FILTER_CONFIGS_BY_ID[
-              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
-            ] as CuratedOntologyCategoryFilterConfig
-          ).source
+          TEST_ONTOLOGY_TERM_SET
         );
         expect(nextFilters.length).toEqual(1);
         expect(nextFilters[0]).toEqual(idToSelect);
@@ -3122,11 +3104,7 @@ describe("useCategoryFilter", () => {
             },
           ],
           CATEGORY_VALUE_KEYS,
-          (
-            CATEGORY_FILTER_CONFIGS_BY_ID[
-              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
-            ] as CuratedOntologyCategoryFilterConfig
-          ).source
+          TEST_ONTOLOGY_TERM_SET
         );
         expect(nextFilters.length).toEqual(2);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_NEWBORN)).toBeTruthy();
@@ -3153,11 +3131,7 @@ describe("useCategoryFilter", () => {
             },
           ],
           CATEGORY_VALUE_KEYS,
-          (
-            CATEGORY_FILTER_CONFIGS_BY_ID[
-              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
-            ] as CuratedOntologyCategoryFilterConfig
-          ).source
+          TEST_ONTOLOGY_TERM_SET
         );
         expect(nextFilters.length).toEqual(4);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_NEWBORN)).toBeTruthy();
@@ -3186,11 +3160,7 @@ describe("useCategoryFilter", () => {
             },
           ],
           CATEGORY_VALUE_KEYS,
-          (
-            CATEGORY_FILTER_CONFIGS_BY_ID[
-              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
-            ] as CuratedOntologyCategoryFilterConfig
-          ).source
+          TEST_ONTOLOGY_TERM_SET
         );
         expect(nextFilters.length).toEqual(5);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_PRENATAL)).toBeTruthy();
@@ -3221,11 +3191,7 @@ describe("useCategoryFilter", () => {
           ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN,
           [], // No filters
           CATEGORY_VALUE_KEYS,
-          (
-            CATEGORY_FILTER_CONFIGS_BY_ID[
-              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
-            ] as CuratedOntologyCategoryFilterConfig
-          ).source
+          TEST_ONTOLOGY_TERM_SET
         );
         expect(nextFilters.length).toEqual(3);
         expect(
@@ -3259,11 +3225,7 @@ describe("useCategoryFilter", () => {
             },
           ],
           CATEGORY_VALUE_KEYS,
-          (
-            CATEGORY_FILTER_CONFIGS_BY_ID[
-              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
-            ] as CuratedOntologyCategoryFilterConfig
-          ).source
+          TEST_ONTOLOGY_TERM_SET
         );
         expect(nextFilters.length).toEqual(3);
         expect(
@@ -3299,11 +3261,7 @@ describe("useCategoryFilter", () => {
             },
           ],
           CATEGORY_VALUE_KEYS,
-          (
-            CATEGORY_FILTER_CONFIGS_BY_ID[
-              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
-            ] as CuratedOntologyCategoryFilterConfig
-          ).source
+          TEST_ONTOLOGY_TERM_SET
         );
         expect(nextFilters.length).toEqual(5);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_PRENATAL)).toBeTruthy();
@@ -3345,11 +3303,7 @@ describe("useCategoryFilter", () => {
             },
           ],
           CATEGORY_VALUE_KEYS,
-          (
-            CATEGORY_FILTER_CONFIGS_BY_ID[
-              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
-            ] as CuratedOntologyCategoryFilterConfig
-          ).source
+          TEST_ONTOLOGY_TERM_SET
         );
         expect(nextFilters.length).toEqual(2);
         expect(
