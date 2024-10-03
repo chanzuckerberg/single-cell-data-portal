@@ -14,6 +14,7 @@ import logging
 import os
 from typing import Dict, List
 
+from backend.common.providers.crossref_provider import CrossrefProvider
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.entities import CollectionQueryFilter
 from backend.layers.common.entities import (
@@ -23,7 +24,6 @@ from backend.layers.common.entities import (
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_logic import ProcessingLogic
-from backend.layers.thirdparty.crossref_provider import CrossrefProvider
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
 from backend.layers.thirdparty.uri_provider import UriProvider
