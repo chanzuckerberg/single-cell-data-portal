@@ -147,7 +147,7 @@ class ProcessValidate(ProcessingLogic):
             range(stride, layer_for_mean_genes_per_cell.shape[0] + stride, stride),
             strict=False,
         ):
-            chunk = layer_for_mean_genes_per_cell[bounds[0] : bounds[1], filter_gene_vars]
+            chunk = layer_for_mean_genes_per_cell[bounds[0] : bounds[1], :][:, filter_gene_vars]
             numerator += chunk.nnz if hasattr(chunk, "nnz") else numpy.count_nonzero(chunk)
             denominator += chunk.shape[0]
 
