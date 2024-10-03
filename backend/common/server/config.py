@@ -51,10 +51,9 @@ def configure_flask_app(flask_app):
         SESSION_COOKIE_SECURE=require_secure_cookies,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
+        JSON_SORT_KEYS=True,
     )
     flask_app.json_encoder = CustomJSONEncoder
-    flask_app.json.sort_keys = True
-
     return flask_app
 
 
@@ -142,8 +141,7 @@ def create_api_app(api_paths_and_spec_files, **server_args):
     based on the deployment stage.
 
     Args:
-        api_paths_and_spec_files (list of tuples): A list where each tuple contains a base path and a specification
-        file.
+        api_paths_and_spec_files (list of tuples): A list where each tuple contains a base path and a specification file.
         **server_args: Additional arguments to be passed to the FlaskApp.
 
     Returns:
