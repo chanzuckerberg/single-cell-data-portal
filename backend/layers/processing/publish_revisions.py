@@ -14,6 +14,7 @@ import logging
 import os
 from typing import Dict, List
 
+from backend.common.providers.crossref_provider import CrossrefProvider
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.entities import CollectionQueryFilter
 from backend.layers.common.entities import (
@@ -100,7 +101,7 @@ if __name__ == "__main__":
     business_logic = BusinessLogic(
         DatabaseProvider(),
         None,
-        None,
+        CrossrefProvider(),
         None,
         S3Provider(),
         UriProvider(),
