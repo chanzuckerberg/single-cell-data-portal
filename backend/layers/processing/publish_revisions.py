@@ -23,6 +23,7 @@ from backend.layers.common.entities import (
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_logic import ProcessingLogic
+from backend.layers.thirdparty.crossref_provider import CrossrefProvider
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
 from backend.layers.thirdparty.uri_provider import UriProvider
@@ -100,7 +101,7 @@ if __name__ == "__main__":
     business_logic = BusinessLogic(
         DatabaseProvider(),
         None,
-        None,
+        CrossrefProvider(),
         None,
         S3Provider(),
         UriProvider(),
