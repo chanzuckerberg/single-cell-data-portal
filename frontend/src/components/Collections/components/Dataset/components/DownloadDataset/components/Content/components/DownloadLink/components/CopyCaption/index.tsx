@@ -4,7 +4,7 @@ import { Link } from "@czi-sds/components";
 
 const DISCOVER_API_URL = "https://api.cellxgene.cziscience.com/curation/ui/#/";
 const SCHEMA_URL =
-  "https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md";
+  "https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html";
 const SEURAT_SCHEMA_URL =
   "https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/seurat_encoding.md";
 
