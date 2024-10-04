@@ -40,7 +40,7 @@ const DataFormat: FC<Props> = ({
       >
         <InputRadio
           disabled={isDisabled || !isH5AD}
-          label=".h5ad (AnnData v0.8)"
+          label=".h5ad (AnnData v0.10)"
           value={DATASET_ASSET_FORMAT.H5AD}
         />
         <Tooltip
