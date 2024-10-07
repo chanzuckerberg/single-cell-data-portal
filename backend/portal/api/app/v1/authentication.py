@@ -8,7 +8,6 @@ from urllib.parse import urlencode
 
 import requests
 from authlib.integrations.flask_client import OAuth
-from authlib.integrations.flask_client.remote_app import FlaskRemoteApp
 from flask import Response, after_this_request, current_app, g, jsonify, make_response, redirect, request, session
 
 from backend.common.authorizer import assert_authorized_token, get_userinfo_from_auth0
@@ -20,7 +19,7 @@ from backend.common.utils.http_exceptions import ExpiredCredentialsError, Unauth
 oauth_client = None
 
 
-def get_oauth_client(config: CorporaAuthConfig) -> FlaskRemoteApp:
+def get_oauth_client(config: CorporaAuthConfig) -> OAuth:
     """Create an oauth client on the first invocation, then return oauth client for subsequent calls.
 
     :param config:  An object containing the auth configuration.
@@ -50,6 +49,7 @@ def get_oauth_client(config: CorporaAuthConfig) -> FlaskRemoteApp:
         authorize_url=config.api_authorize_url,
         client_kwargs={"scope": "openid profile email offline_access write:collections"},
         authorize_params={"audience": config.api_audience},
+        server_metadata_url=config.server_metadata_url,
     )
     return oauth_client
 
