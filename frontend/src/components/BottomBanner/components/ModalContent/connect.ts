@@ -9,10 +9,12 @@ import {
 
 export const useConnect = ({
   id,
+  isHubSpotReady,
   email,
   setError,
 }: {
   id?: string;
+  isHubSpotReady: boolean;
   email: string;
   setError: (error: string) => void;
 }) => {
@@ -83,18 +85,34 @@ export const useConnect = ({
    * handles the submission success flow and email validation failure flow
    */
   useEffect(() => {
+    if (!isHubSpotReady) return;
+    /**
+     * Observer to observe changes in the Hubspot embedded form,
+     * which is hidden from the user in order to use our own form view
+     */
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
+        /**
+         * Loop through all added nodes that were detected
+         */
         for (let i = 0; i < mutation.addedNodes.length; i++) {
           const node = mutation.addedNodes.item(i);
-
+          /**
+           *  Submission success flow
+           */
           if (node?.textContent?.includes(HIDDEN_NEWSLETTER_SUCCESS_MESSAGE)) {
             setIsSubmitted(true);
             setError("");
             track(EVENTS.NEWSLETTER_SIGNUP_SUCCESS);
           } else if (
+            /**
+             * Hubspot email validation failure flow
+             */
             node?.textContent?.includes("Please enter a valid email address.")
           ) {
+            /**
+             * HTML email validation may pass, but may not pass validation for Hubspot
+             */
             setError(FAILED_EMAIL_VALIDATION_STRING);
             track(EVENTS.NEWSLETTER_SIGNUP_FAILURE);
           }
@@ -103,6 +121,14 @@ export const useConnect = ({
     });
 
     const form = document.querySelector(formContainerQueryId);
+
+    hbspt.forms.create({
+      region: "na1",
+      portalId: "7272273",
+      formId: "eb65b811-0451-414d-8304-7b9b6f468ce5",
+      target: formContainerQueryId,
+      formInstanceId: id,
+    });
 
     if (form) {
       observer.observe(form, {
@@ -114,7 +140,7 @@ export const useConnect = ({
     return () => {
       observer.disconnect();
     };
-  }, [formContainerQueryId, id, setError]);
+  }, [formContainerQueryId, id, setError, isHubSpotReady]);
 
   return {
     isSubmitted,
