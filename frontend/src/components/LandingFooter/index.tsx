@@ -4,6 +4,7 @@ import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import Wordmark from "src/common/images/cellxgene-discover-wordmark.svg";
 import CZILogo from "src/components/common/staticPages/czi-logo-white.png";
+
 import styles from "./index.module.scss";
 
 const LandingFooter = (): JSX.Element => {
