@@ -66,12 +66,11 @@ db/connect_internal:
 
 db/console: db/connect # alias
 
+PORT:=5432
 db/dump:
   # Dump the DEPLOYMENT_STAGE database to OUTFILE
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
-	$(MAKE) db/tunnel/up
-	PGPASSWORD=${DB_PW} pg_dump -Fc --dbname=corpora_${DEPLOYMENT_STAGE} --file=$(OUTFILE) --host 0.0.0.0 --username corpora_${DEPLOYMENT_STAGE}
-	$(MAKE) db/tunnel/down
+	PGPASSWORD=${DB_PW} pg_dump -Fc --dbname=corpora_${DEPLOYMENT_STAGE} --file=$(OUTFILE) --host 0.0.0.0 --port $(PORT) --username corpora_${DEPLOYMENT_STAGE}
 
 db/local/load-data:
 	# Loads corpora_dev.sqlc into the local Docker env corpora database
@@ -118,13 +117,15 @@ else
 	CLUSTER_NAME=corpora-${DEPLOYMENT_STAGE}-corpora-api
 
 endif
-# TODO:
-# - add db/tunnel as a dependency for all targets so that a tunnel is automatically opened if not already
+# If running for a data mirror, must run once per SRC and DEST envs BEFORE running mirror_env_data, with different
+# local PORT values.
+# Runs in interactive mode, so each run requires separate terminal tab.
+PORT:=5432
 db/tunnel/up:
 	$(eval endpoint=$(shell aws rds describe-db-cluster-endpoints --db-cluster-identifier ${CLUSTER_NAME} | jq -r '.DBClusterEndpoints[] | select(.EndpointType | contains("WRITER")) | .Endpoint'))
 	$(eval instance_id=$(shell aws ec2 describe-instances --filters "Name=tag:Name,Values=dp-${DEPLOYMENT_STAGE}-happy" --query "Reservations[*].Instances[*].InstanceId" --output text))
 
-	aws ssm start-session --target ${instance_id} --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"portNumber":["5432"],"localPortNumber":["5432"],"host":["${endpoint}"]}'
+	aws ssm start-session --target ${instance_id} --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"portNumber":["5432"],"localPortNumber":["$(PORT)"],"host":["${endpoint}"]}'
 
 db/tunnel: db/tunnel/up # alias for backwards compatibility
 
@@ -132,6 +133,8 @@ SRC_ENV := prod
 mirror_env_data:
 	# Mirrors the SRC_ENV env's AWS RDS database and S3 data to
 	# DEST_ENV. Defaults to prod->dev.
+	# Must also provide SRC_PORT and DEST_PORT where psql is running for each env.
+	# Must also run `make db/tunnel/up` before running this command, once for the SRC_ENV and once for the DEST_ENV.
 	#
 	# If WMG_CUBE is set to any non-null value, copy the WMG cube from SRC_ENV to DEST_ENV. Works for DEST_ENV=rdev.
 	#
@@ -146,5 +149,5 @@ mirror_env_data:
 	# THIS IS DESTRUCTIVE for the DEST_ENV env! The SRC_ENV env will
 	# never be modified, but the DEST_ENV env's data will be replaced.
 	#
-	# Usage: make mirror_env_data [SRC_ENV={prod|staging|dev}] [DEST_ENV={dev|staging|rdev}] [WMG_CUBE=1] [STACK=<rdev_stack_name> [CELLGUIDE=1] [COLLECTIONS=<uuid1,uuid2,...> [DATA=1]]]
-	scripts/mirror_env_data.sh $(SRC_ENV) $(DEST_ENV) $(WMG_CUBE) $(STACK) $(CELLGUIDE) $(COLLECTIONS) $(DATA)
+	# Usage: make mirror_env_data [SRC_ENV={prod|staging|dev}] [DEST_ENV={dev|staging|rdev}] [SRC_PORT={int}] [DEST_PORT={int}] [WMG_CUBE=1] [STACK=<rdev_stack_name> [CELLGUIDE=1] [COLLECTIONS=<uuid1,uuid2,...> [DATA=1]]]
+	scripts/mirror_env_data.sh $(SRC_ENV) $(DEST_ENV) $(SRC_PORT) $(DEST_PORT) $(WMG_CUBE) $(STACK) $(CELLGUIDE) $(COLLECTIONS) $(DATA)
