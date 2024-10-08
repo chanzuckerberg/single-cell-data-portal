@@ -1,4 +1,0 @@
-INFO     root:cxg_generation_utils.py:217 create /single-cell-data-portal/tests/unit/backend/fixtures/e728bae8-1c79-47f9-97c9-ab718d45dddf/awesome_zero_matrix_78158354-68e3-42fd-9f1a-75b631f9b898r
-INFO     root:cxg_generation_utils.py:217 create /single-cell-data-portal/tests/unit/backend/fixtures/e728bae8-1c79-47f9-97c9-ab718d45dddf/awesome_zero_matrix_78158354-68e3-42fd-9f1a-75b631f9b898c
-INFO     root:cxg_generation_utils.py:303 Store rows: 3
-INFO     root:cxg_generation_utils.py:317 Store columns: 2
