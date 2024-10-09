@@ -300,33 +300,40 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
         array_r = tiledb.open(matrix_name + "r", mode="w", ctx=ctx)
         array_c = tiledb.open(matrix_name + "c", mode="w", ctx=ctx)
 
-        logging.info(f"Store rows: {number_of_rows}")
         for start_row_index in range(0, number_of_rows, stride_rows):
             end_row_index = min(start_row_index + stride_rows, number_of_rows)
-            matrix_subset = matrix[start_row_index:end_row_index, :]
-            if not isinstance(matrix_subset, np.ndarray):
-                matrix_subset = matrix_subset.toarray()
 
-            indices = np.nonzero(matrix_subset)
-            trow = indices[0] + start_row_index
-            t_data = matrix_subset[indices[0], indices[1]]
-            data_dict = {"obs": trow, "var": indices[1], "": t_data}
-            obs, var, data = _sort_by_primary_obs_and_secondary_var(data_dict)
+            # Fetch row-based subset of the matrix
+            row_matrix_subset = matrix[start_row_index:end_row_index, :]
+            if not isinstance(row_matrix_subset, np.ndarray):
+                row_matrix_subset = row_matrix_subset.toarray()
+
+            row_indices = np.nonzero(row_matrix_subset)
+            trow = row_indices[0] + start_row_index
+            row_data = row_matrix_subset[row_indices[0], :][:, row_indices[1]]
+            row_data_dict = {"obs": trow, "var": row_indices[1], "": row_data}
+
+            # Sort and store row-based data
+            obs, var, data = _sort_by_primary_obs_and_secondary_var(row_data_dict)
             array_r[obs] = {"var": var, "": data}
 
-        logging.info(f"Store columns: {number_of_columns}")
-        for start_col_index in range(0, number_of_columns, stride_columns):
-            end_col_index = min(start_col_index + stride_columns, number_of_columns)
-            matrix_subset = matrix[:, start_col_index:end_col_index]
-            if not isinstance(matrix_subset, np.ndarray):
-                matrix_subset = matrix_subset.toarray()
+            # Now process the corresponding column-based subset
+            for start_col_index in range(0, number_of_columns, stride_columns):
+                end_col_index = min(start_col_index + stride_columns, number_of_columns)
 
-            indices = np.nonzero(matrix_subset)
-            tcol = indices[1] + start_col_index
-            t_data = matrix_subset[indices[0], indices[1]]
-            data_dict = {"obs": indices[0], "var": tcol, "": t_data}
-            obs, var, data = _sort_by_primary_var_and_secondary_obs(data_dict)
-            array_c[var] = {"obs": obs, "": data}
+                # Fetch the column-based subset (intersected with the current row chunk)
+                col_matrix_subset = matrix[start_row_index:end_row_index, :][:, start_col_index:end_col_index]
+                if not isinstance(col_matrix_subset, np.ndarray):
+                    col_matrix_subset = col_matrix_subset.toarray()
+
+                col_indices = np.nonzero(col_matrix_subset)
+                tcol = col_indices[1] + start_col_index
+                col_data = col_matrix_subset[col_indices[0], :][:, col_indices[1]]
+                col_data_dict = {"obs": col_indices[0] + start_row_index, "var": tcol, "": col_data}
+
+                # Sort and store column-based data
+                obs, var, data = _sort_by_primary_var_and_secondary_obs(col_data_dict)
+                array_c[var] = {"obs": obs, "": data}
 
         array_r.close()
         array_c.close()
