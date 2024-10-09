@@ -310,7 +310,7 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
 
             row_indices = np.nonzero(row_matrix_subset)
             trow = row_indices[0] + start_row_index
-            row_data = row_matrix_subset[row_indices[0], :][:, row_indices[1]]
+            row_data = row_matrix_subset[row_indices[0], row_indices[1]]
             row_data_dict = {"obs": trow, "var": row_indices[1], "": row_data}
 
             # Sort and store row-based data
