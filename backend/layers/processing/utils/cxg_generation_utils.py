@@ -328,7 +328,7 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
 
                 col_indices = np.nonzero(col_matrix_subset)
                 tcol = col_indices[1] + start_col_index
-                col_data = col_matrix_subset[col_indices[0], :][:, col_indices[1]]
+                col_data = col_matrix_subset[col_indices[0], col_indices[1]]
                 col_data_dict = {"obs": col_indices[0] + start_row_index, "var": tcol, "": col_data}
 
                 # Sort and store column-based data
