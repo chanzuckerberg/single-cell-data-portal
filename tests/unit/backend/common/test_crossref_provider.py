@@ -7,7 +7,6 @@ from requests import RequestException
 from requests.models import HTTPError, Response
 
 from backend.common.providers.crossref_provider import (
-    CrossrefDOINotFoundException,
     CrossrefException,
     CrossrefFetchException,
     CrossrefParseException,
@@ -305,9 +304,9 @@ class TestCrossrefProvider(unittest.TestCase):
 
     @patch("backend.common.providers.crossref_provider.requests.get")
     @patch("backend.common.providers.crossref_provider.CorporaConfig")
-    def test__provider_throws_exception_if_request_fails_with_404(self, mock_config, mock_get):
+    def test__provider_returns_none_on_404(self, mock_config, mock_get):
         """
-        Asserts a CrossrefFetchException if the GET request fails for any reason
+        Asserts that the function returns (None, None, None) if the GET request fails with a 404 status.
         """
         response_404 = Response()
         response_404.status_code = 404
@@ -315,8 +314,9 @@ class TestCrossrefProvider(unittest.TestCase):
 
         provider = CrossrefProvider()
 
-        with self.assertRaises(CrossrefDOINotFoundException):
-            provider.fetch_metadata("test_doi")
+        result = provider.fetch_metadata("test_doi")
+
+        self.assertEqual(result, (None, None, None), "Expected None for a 404 response")
 
     @patch("backend.common.providers.crossref_provider.requests.get")
     @patch("backend.common.providers.crossref_provider.CorporaConfig")

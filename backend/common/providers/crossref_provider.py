@@ -75,7 +75,8 @@ class CrossrefProvider(CrossrefProviderInterface):
             res.raise_for_status()
         except requests.RequestException as e:
             if e.response is not None and e.response.status_code == 404:
-                raise CrossrefDOINotFoundException from e
+                logging.warning(f"DOI {doi} not found, skipping.")
+                return None
             else:
                 raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
 
