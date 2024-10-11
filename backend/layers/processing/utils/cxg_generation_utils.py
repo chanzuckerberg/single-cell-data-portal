@@ -203,7 +203,7 @@ def _sort_by_primary_obs_and_secondary_var(data_dict):
     return x, ys, ds
 
 
-def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, ctx):
+def convert_matrices_to_cxg_arrays(matrix_name: str, matrix, encode_as_sparse_array: bool, ctx: tiledb.Ctx):
     """
     Converts a numpy array matrix into a TileDB SparseArray of DenseArray based on whether `encode_as_sparse_array`
     is true or not. Note that when the matrix is encoded as a SparseArray, it only writes the values that are
@@ -216,69 +216,48 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
     ):
         logging.info(f"create {matrix_name}")
         dim_filters = tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=compression)])
+        attrs = [tiledb.Attr(dtype=np.float32, filters=tiledb.FilterList([tiledb.ZstdFilter(level=compression)]))]
+        tiledb_obs_dim = tiledb.Dim(
+            name="obs",
+            domain=(0, number_of_rows - 1),
+            tile=min(number_of_rows, 256),
+            dtype=np.uint32,
+            filters=dim_filters,
+        )
+        tiledb_var_dim = tiledb.Dim(
+            name="var",
+            domain=(0, number_of_columns - 1),
+            tile=min(number_of_columns, 2048),
+            dtype=np.uint32,
+            filters=dim_filters,
+        )
         if not encode_as_sparse_array:
-            attrs = [tiledb.Attr(dtype=np.float32, filters=tiledb.FilterList([tiledb.ZstdFilter(level=compression)]))]
-            domain = tiledb.Domain(
-                tiledb.Dim(
-                    name="obs",
-                    domain=(0, number_of_rows - 1),
-                    tile=min(number_of_rows, 256),
-                    dtype=np.uint32,
-                    filters=dim_filters,
-                ),
-                tiledb.Dim(
-                    name="var",
-                    domain=(0, number_of_columns - 1),
-                    tile=min(number_of_columns, 2048),
-                    dtype=np.uint32,
-                    filters=dim_filters,
-                ),
-            )
-            schema = tiledb.ArraySchema(
-                domain=domain,
+            domain = tiledb.Domain(tiledb_obs_dim, tiledb_var_dim)
+            array_schema_params = dict(
                 sparse=False,
                 allows_duplicates=False,
-                attrs=attrs,
-                cell_order="row-major",
-                tile_order="col-major",
                 capacity=0,
             )
-            tiledb.Array.create(matrix_name, schema)
         else:
-            attrs = [tiledb.Attr(dtype=np.float32, filters=tiledb.FilterList([tiledb.ZstdFilter(level=compression)]))]
             if row:
-                domain = tiledb.Domain(
-                    tiledb.Dim(
-                        name="obs",
-                        domain=(0, number_of_rows - 1),
-                        tile=min(number_of_rows, 256),
-                        dtype=np.uint32,
-                        filters=dim_filters,
-                    )
-                )
+                domain = tiledb.Domain(tiledb_obs_dim)
                 attrs.append(tiledb.Attr(name="var", dtype=np.uint32, filters=dim_filters))
             else:
-                domain = tiledb.Domain(
-                    tiledb.Dim(
-                        name="var",
-                        domain=(0, number_of_columns - 1),
-                        tile=min(number_of_columns, 256),
-                        dtype=np.uint32,
-                        filters=dim_filters,
-                    ),
-                )
+                domain = tiledb.Domain(tiledb_var_dim)
                 attrs.append(tiledb.Attr(name="obs", dtype=np.uint32, filters=dim_filters))
-
-            schema = tiledb.ArraySchema(
-                domain=domain,
+            array_schema_params = dict(
                 sparse=True,
                 allows_duplicates=True,
-                attrs=attrs,
-                cell_order="row-major",
-                tile_order="row-major",
                 capacity=1024000,
             )
-            tiledb.Array.create(matrix_name, schema)
+        schema = tiledb.ArraySchema(
+            domain=domain,
+            attrs=attrs,
+            cell_order="row-major",
+            tile_order="col-major",
+            **array_schema_params,
+        )
+        tiledb.Array.create(matrix_name, schema)
 
     number_of_rows = matrix.shape[0]
     number_of_columns = matrix.shape[1]
