@@ -322,7 +322,7 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
                 end_col_index = min(start_col_index + stride_columns, number_of_columns)
 
                 # Fetch the column-based subset (intersected with the current row chunk)
-                col_matrix_subset = matrix[start_row_index:end_row_index, :][:, start_col_index:end_col_index]
+                col_matrix_subset = row_matrix_subset[:, start_col_index:end_col_index]
                 if not isinstance(col_matrix_subset, np.ndarray):
                     col_matrix_subset = col_matrix_subset.toarray()
 
