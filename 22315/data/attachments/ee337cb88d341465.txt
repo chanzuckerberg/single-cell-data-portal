@@ -1,0 +1,1 @@
+{"levelname": "WARNING", "asctime": "2024-10-15T16:40:23.015Z", "name": "root", "message": "DOI test_doi not found, skipping.", "lineno": 78, "pathname": "/single-cell-data-portal/backend/common/providers/crossref_provider.py", "request_id": ""}
