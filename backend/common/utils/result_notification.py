@@ -106,3 +106,48 @@ def gen_wmg_pipeline_success_message(snapshot_path: str, dataset_count: int, cel
             },
         ]
     }
+
+
+def gen_cg_pipeline_success_message(output_path: str, description_output_path: str) -> dict:
+    return {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "CellGuide Pipeline Run Succeeded:tada: ",
+                    "emoji": True,
+                },
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"\n* CellGuide snapshot stored in {output_path}"
+                    f"\n* GPT Descriptions can be found in {description_output_path}.",
+                },
+            },
+        ]
+    }
+
+
+def gen_cg_pipeline_failure_message(failure_info: str) -> dict:
+    return {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "CellGuide Pipeline Run FAILED:alert:",
+                    "emoji": True,
+                },
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"CellGuide Pipeline failure @sc-oncall-eng \n{failure_info}",
+                },
+            },
+        ]
+    }
