@@ -213,9 +213,7 @@ def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as
     number of elements in the matrix, only the number of nonzero elements.
     """
 
-    def create_matrix_array(
-        matrix_name, number_of_rows, number_of_columns, encode_as_sparse_array, compression=22, row=True
-    ):
+    def create_matrix_array(matrix_name, number_of_rows, number_of_columns, compression=22):
         logging.info(f"create {matrix_name}")
         dim_filters = tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=compression)])
         attrs = [tiledb.Attr(dtype=np.float32, filters=tiledb.FilterList([tiledb.ZstdFilter(level=compression)]))]
@@ -233,25 +231,12 @@ def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as
             dtype=np.uint32,
             filters=dim_filters,
         )
-        if not encode_as_sparse_array:
-            domain = tiledb.Domain(tiledb_obs_dim, tiledb_var_dim)
-            array_schema_params = dict(
-                sparse=False,
-                allows_duplicates=False,
-                capacity=0,
-            )
-        else:
-            if row:
-                domain = tiledb.Domain(tiledb_obs_dim)
-                attrs.append(tiledb.Attr(name="var", dtype=np.uint32, filters=dim_filters))
-            else:
-                domain = tiledb.Domain(tiledb_var_dim)
-                attrs.append(tiledb.Attr(name="obs", dtype=np.uint32, filters=dim_filters))
-            array_schema_params = dict(
-                sparse=True,
-                allows_duplicates=True,
-                capacity=1024000,
-            )
+        domain = tiledb.Domain(tiledb_obs_dim, tiledb_var_dim)
+        array_schema_params = dict(
+            sparse=False,
+            allows_duplicates=False,
+            capacity=0,
+        )
         schema = tiledb.ArraySchema(
             domain=domain,
             attrs=attrs,
@@ -264,17 +249,10 @@ def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as
     start_dask_cluster()
     number_of_rows = matrix.shape[0]
     number_of_columns = matrix.shape[1]
-    stride_rows = min(int(np.power(10, np.around(np.log10(1e9 / number_of_columns)))), 10_000)
 
     if not encode_as_sparse_array:
         create_matrix_array(matrix_name, number_of_rows, number_of_columns, False)
-        with tiledb.open(matrix_name, mode="w", ctx=ctx) as array:
-            for start_row_index in range(0, number_of_rows, stride_rows):
-                end_row_index = min(start_row_index + stride_rows, number_of_rows)
-                matrix_subset = matrix[start_row_index:end_row_index, :]
-                if not isinstance(matrix_subset, np.ndarray):
-                    matrix_subset = matrix_subset.toarray()
-                array[start_row_index:end_row_index, :] = matrix_subset
+        matrix.to_tiledb(matrix_name, storage_options={"ctx": ctx})
     else:
         write_dask_array_as_tiledb(
             matrix_name, matrix, filters=tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=22)])
