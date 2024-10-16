@@ -2,6 +2,8 @@ import logging
 
 import dask.array as da
 
+from backend.layers.processing.utils.dask_utils import start_dask_cluster
+
 logger: logging.Logger = logging.getLogger("matrix_utils")
 
 
@@ -10,7 +12,10 @@ def is_matrix_sparse(matrix: da.Array, sparse_threshold: float) -> bool:
     Returns whether `matrix` is sparse or not (i.e. dense). This is determined by figuring out whether the matrix has
     a sparsity percentage below the sparse_threshold, returning the number of non-zeros encountered and number of
     elements evaluated.
+
+    TODO move to dask_utils.py in a separate PR
     """
+    start_dask_cluster()
 
     if sparse_threshold == 100.0:
         return True
