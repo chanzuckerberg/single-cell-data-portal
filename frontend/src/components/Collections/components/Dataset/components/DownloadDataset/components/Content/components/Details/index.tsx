@@ -1,7 +1,13 @@
 import { FC, ReactNode } from "react";
 import { DialogLoader } from "src/components/Datasets/components/DownloadDataset/style";
 import { FormLabel } from "@mui/material";
-import { FormControl } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/Details/style";
+import {
+  FormControl,
+  SeuratNotice,
+  StyledIcon,
+  StyledLink,
+  TextWrapper,
+} from "./style";
 
 export const PROMPT_TEXT =
   "Select one of the data formats to view its download details.";
@@ -11,6 +17,7 @@ interface Props {
   selected: boolean;
   fileSize: number;
   isLoading: boolean;
+  selectedFormat: string;
 }
 
 const MEGA_BYTES = 2 ** 20;
@@ -20,6 +27,7 @@ const Details: FC<Props> = ({
   selected = false,
   fileSize = 0,
   isLoading = false,
+  selectedFormat,
 }) => {
   function renderContent() {
     if (isLoading) {
@@ -35,6 +43,23 @@ const Details: FC<Props> = ({
 
   return (
     <FormControl>
+      {/* TODO: Remove after Seurat has been deprecated */}
+      {selectedFormat == "RDS" && (
+        <>
+          <SeuratNotice>
+            <StyledIcon
+              sdsIcon="ExclamationMarkCircle"
+              sdsSize="l"
+              sdsType="static"
+            />
+            <TextWrapper>
+              Seurat support will be removed on [Month Day, Year]. You can
+              download and convert the .h5ad yourself by following these {""}
+              <StyledLink href="#">instructions</StyledLink>.
+            </TextWrapper>
+          </SeuratNotice>
+        </>
+      )}
       <FormLabel>Download Details</FormLabel>
       {renderContent()}
       {downloadPreview}
