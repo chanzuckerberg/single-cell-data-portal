@@ -8,7 +8,7 @@ import pandas as pd
 import tiledb
 
 from backend.common.constants import SPATIAL_KEYS_EXCLUDE, UNS_SPATIAL_KEY
-from backend.layers.processing.utils.dask_utils import start_dask_cluster, write_dask_array_as_tiledb
+from backend.layers.processing.utils.dask_utils import TileDBSparseArrayWriteWrapper, start_dask_cluster
 from backend.layers.processing.utils.spatial import SpatialDataProcessor
 from backend.layers.processing.utils.type_conversion_utils import get_dtype_and_schema_of_array
 
@@ -213,47 +213,54 @@ def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as
     number of elements in the matrix, only the number of nonzero elements.
     """
 
-    def create_matrix_array(matrix_name, number_of_rows, number_of_columns, compression=22):
-        logging.info(f"create {matrix_name}")
-        dim_filters = tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=compression)])
-        attrs = [tiledb.Attr(dtype=np.float32, filters=tiledb.FilterList([tiledb.ZstdFilter(level=compression)]))]
-        tiledb_obs_dim = tiledb.Dim(
-            name="obs",
-            domain=(0, number_of_rows - 1),
-            tile=min(number_of_rows, 256),
-            dtype=np.uint32,
-            filters=dim_filters,
+    start_dask_cluster()
+    number_of_rows = matrix.shape[0]
+    number_of_columns = matrix.shape[1]
+    compression = 22
+
+    logging.info(f"create {matrix_name}")
+    dim_filters = tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=compression)])
+    attrs = [tiledb.Attr(dtype=np.float32, filters=tiledb.FilterList([tiledb.ZstdFilter(level=compression)]))]
+
+    tiledb_obs_dim = tiledb.Dim(
+        name="obs",
+        domain=(0, number_of_rows - 1),
+        tile=min(number_of_rows, 256),
+        dtype=np.uint32,
+        filters=dim_filters,
+    )
+    tiledb_var_dim = tiledb.Dim(
+        name="var",
+        domain=(0, number_of_columns - 1),
+        tile=min(number_of_columns, 2048),
+        dtype=np.uint32,
+        filters=dim_filters,
+    )
+    domain = tiledb.Domain(tiledb_obs_dim, tiledb_var_dim)
+
+    if encode_as_sparse_array:
+        array_schema_params = dict(
+            sparse=True,
+            allows_duplicates=True,
+            capacity=1024000,
         )
-        tiledb_var_dim = tiledb.Dim(
-            name="var",
-            domain=(0, number_of_columns - 1),
-            tile=min(number_of_columns, 2048),
-            dtype=np.uint32,
-            filters=dim_filters,
-        )
-        domain = tiledb.Domain(tiledb_obs_dim, tiledb_var_dim)
+    else:
         array_schema_params = dict(
             sparse=False,
             allows_duplicates=False,
             capacity=0,
         )
-        schema = tiledb.ArraySchema(
-            domain=domain,
-            attrs=attrs,
-            cell_order="row-major",
-            tile_order="col-major",
-            **array_schema_params,
-        )
-        tiledb.Array.create(matrix_name, schema)
+    schema = tiledb.ArraySchema(
+        domain=domain,
+        attrs=attrs,
+        cell_order="row-major",
+        tile_order="col-major",
+        **array_schema_params,
+    )
+    tiledb.Array.create(matrix_name, schema)
 
-    start_dask_cluster()
-    number_of_rows = matrix.shape[0]
-    number_of_columns = matrix.shape[1]
-
-    if not encode_as_sparse_array:
-        create_matrix_array(matrix_name, number_of_rows, number_of_columns, False)
-        matrix.to_tiledb(matrix_name, storage_options={"ctx": ctx})
+    if encode_as_sparse_array:
+        matrix_write = TileDBSparseArrayWriteWrapper(matrix_name, ctx=ctx)
+        matrix.store(matrix_write, lock=False, compute=True)
     else:
-        write_dask_array_as_tiledb(
-            matrix_name, matrix, filters=tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=22)])
-        )
+        matrix.to_tiledb(matrix_name, storage_options={"ctx": ctx})
