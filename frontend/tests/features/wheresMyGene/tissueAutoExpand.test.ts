@@ -16,7 +16,7 @@ import {
   WMG_WITH_SEEDED_GENES_AND_TISSUES,
 } from "tests/utils/wmgUtils";
 
-const FILTERED_TISSUES = ["axilla", "blood", "brain"];
+const FILTERED_TISSUES = ["blood", "brain", "liver"];
 const TISSUE_NODE_TEST_ID = "tissue-name";
 const TISSUE_FILTER_LABEL = "Tissue";
 
@@ -34,8 +34,8 @@ const SELF_REPORTED_ETHNICITY_TISSUE = ["brain", "breast"];
 const DISEASE_FILTER_LABEL = "Disease";
 const DISEASE_FILTER_SELECTION = "influenza";
 
-const EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER = ["blood", "brain"];
-const EXPECTED_EXPANDED_TISSUES = ["blood"];
+const EXPECTED_FILTERED_TISSUES_WITH_SEX_FILTER = ["blood", "brain", "liver"];
+const EXPECTED_EXPANDED_TISSUES = ["blood", "liver"];
 const EXPECTED_VISIBLE_CELL = ["B Cell"];
 const EXPECTED_FILTERED_TISSUES_WITH_DISEASE_FILTER = ["blood", "brain"];
 const EXPECTED_FILTERED_TISSUES_WITH_B_CELL_FILTER = ["blood"];
@@ -169,19 +169,13 @@ describe("WMG tissue auto-expand", () => {
 
   /**
    * Tissue auto expansion - cross filter with Sex filter, check expansion
-   * Filter 3 Tissues. Collapse Abdomen. Select
-   * Female from the Sex filter. Tissue filter should now only have Abdomen and
-   * Blood selected. Only Abdomen and Blood should be visible. Abdomen should
-   * remain collapsed. Remove Sex filter. Tissue filter should now only have
-   * Abdomen and Blood selected. Only Abdomen and Blood should be visible.
-   * Abdomen should remain collapsed.
    */
   test("Tissue auto expansion - cross filter with Sex filter, check expansion", async ({
     page,
   }) => {
     await loadPageAndTissues(page);
     await filterTissues(page, FILTERED_TISSUES);
-    await collapseTissue(page, FILTERED_TISSUES[0]);
+    await collapseTissue(page, FILTERED_TISSUES[1]);
     await filterSelection({
       page,
       filterTestId: SEX_FILTER_TEST_ID,
