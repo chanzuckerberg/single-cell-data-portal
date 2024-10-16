@@ -103,17 +103,17 @@ class H5ADDataFile:
         matrix_container = f"{output_cxg_directory}/X"
         x_matrix_data = read_elem_as_dask(h5py.File(self.input_filename)["X"])
         if self.is_sparse_format():
-            x_matrix_data = x_matrix_data.map_blocks(
+            x_matrix_dense = x_matrix_data.map_blocks(
                 lambda x: x.toarray(), dtype=x_matrix_data.dtype, meta=np.array([])
             )
         else:
-            x_matrix_data = x_matrix_data
-        is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)
+            x_matrix_dense = x_matrix_data
+        is_sparse = is_matrix_sparse(x_matrix_dense, sparse_threshold)
         logging.info(f"is_sparse: {is_sparse}")
 
-        convert_matrices_to_cxg_arrays(matrix_container, self.anndata.X, is_sparse, ctx)  # big memory usage
+        convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, ctx)  # big memory usage
 
-        suffixes = ["r", "c"] if is_sparse else [""]
+        suffixes = [""]
         logging.info("start consolidating")
         for suffix in suffixes:
             tiledb.consolidate(matrix_container + suffix, ctx=ctx)

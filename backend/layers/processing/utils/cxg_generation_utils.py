@@ -2,12 +2,13 @@ import json
 import logging
 import pickle
 
+import dask.array as da
 import numpy as np
 import pandas as pd
 import tiledb
 
 from backend.common.constants import SPATIAL_KEYS_EXCLUDE, UNS_SPATIAL_KEY
-from backend.layers.processing.utils.dask_utils import start_dask_cluster
+from backend.layers.processing.utils.dask_utils import start_dask_cluster, write_dask_array_as_tiledb
 from backend.layers.processing.utils.spatial import SpatialDataProcessor
 from backend.layers.processing.utils.type_conversion_utils import get_dtype_and_schema_of_array
 
@@ -204,7 +205,7 @@ def _sort_by_primary_obs_and_secondary_var(data_dict):
     return x, ys, ds
 
 
-def convert_matrices_to_cxg_arrays(matrix_name: str, matrix, encode_as_sparse_array: bool, ctx: tiledb.Ctx):
+def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as_sparse_array: bool, ctx: tiledb.Ctx):
     """
     Converts a numpy array matrix into a TileDB SparseArray of DenseArray based on whether `encode_as_sparse_array`
     is true or not. Note that when the matrix is encoded as a SparseArray, it only writes the values that are
@@ -263,50 +264,18 @@ def convert_matrices_to_cxg_arrays(matrix_name: str, matrix, encode_as_sparse_ar
     start_dask_cluster()
     number_of_rows = matrix.shape[0]
     number_of_columns = matrix.shape[1]
+    stride_rows = min(int(np.power(10, np.around(np.log10(1e9 / number_of_columns)))), 10_000)
 
     if not encode_as_sparse_array:
         create_matrix_array(matrix_name, number_of_rows, number_of_columns, False)
         with tiledb.open(matrix_name, mode="w", ctx=ctx) as array:
-
-            def process_block(block, block_info=None):
-                start_row_index = block_info[0]["array-location"][0].start
-                end_row_index = block_info[0]["array-location"][0].stop
-                block = block.toarray() if not isinstance(block, np.ndarray) else block
-                array[start_row_index:end_row_index, :] = block
-
-            matrix.map_blocks(process_block, dtype=matrix.dtype).compute()
+            for start_row_index in range(0, number_of_rows, stride_rows):
+                end_row_index = min(start_row_index + stride_rows, number_of_rows)
+                matrix_subset = matrix[start_row_index:end_row_index, :]
+                if not isinstance(matrix_subset, np.ndarray):
+                    matrix_subset = matrix_subset.toarray()
+                array[start_row_index:end_row_index, :] = matrix_subset
     else:
-        create_matrix_array(matrix_name + "r", number_of_rows, number_of_columns, True, row=True)
-        create_matrix_array(matrix_name + "c", number_of_rows, number_of_columns, True, row=False)
-        array_r = tiledb.open(matrix_name + "r", mode="w", ctx=ctx)
-        array_c = tiledb.open(matrix_name + "c", mode="w", ctx=ctx)
-
-        logging.info(f"Store rows: {number_of_rows}")
-
-        def process_row_block(block, block_info=None):
-            start_row_index = block_info[0]["array-location"][0].start
-            indices = np.nonzero(block)
-            trow = indices[0] + start_row_index
-            t_data = block[indices[0], indices[1]]
-            data_dict = {"obs": trow, "var": indices[1], "": t_data}
-            obs, var, data = _sort_by_primary_obs_and_secondary_var(data_dict)
-            array_r[obs] = {"var": var, "": data}
-
-        matrix.map_blocks(process_row_block, dtype=matrix.dtype).compute()
-
-        logging.info(f"Store columns: {number_of_columns}")
-
-        def process_column_block(block, block_info=None):
-            start_col_index = block_info[0]["array-location"][1].start
-            block = block.toarray() if not isinstance(block, np.ndarray) else block
-            indices = np.nonzero(block)
-            tcol = indices[1] + start_col_index
-            t_data = block[indices[0], indices[1]]
-            data_dict = {"obs": indices[0], "var": tcol, "": t_data}
-            obs, var, data = _sort_by_primary_var_and_secondary_obs(data_dict)
-            array_c[var] = {"obs": obs, "": data}
-
-        matrix.map_blocks(process_column_block, dtype=matrix.dtype).compute()
-
-        array_r.close()
-        array_c.close()
+        write_dask_array_as_tiledb(
+            matrix_name, matrix, filters=tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=22)])
+        )

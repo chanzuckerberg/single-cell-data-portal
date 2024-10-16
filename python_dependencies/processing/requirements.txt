@@ -3,7 +3,7 @@ awscli
 boto3>=1.11.17
 botocore>=1.14.17
 cellxgene-schema
-dask[array,dataframe]
+dask[array,dataframe,distributed]
 dataclasses-json
 ddtrace==2.1.4
 numba==0.59.1
