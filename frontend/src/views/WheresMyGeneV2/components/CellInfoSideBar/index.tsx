@@ -61,6 +61,7 @@ import {
 import Description from "src/views/CellGuide/components/CellGuideCard/components/Description";
 import { StyledQuestionMarkIcon } from "src/common/style";
 import { DIFFERENTIAL_EXPRESSION_RELEASED_FLAG } from "src/views/DifferentialExpression/common/constants";
+import { useGptDescription } from "src/common/queries/cellGuide";
 
 function CellInfoSideBar({
   cellInfoCellType,
@@ -81,6 +82,10 @@ function CellInfoSideBar({
     cellInfoCellType,
   });
 
+  const { data: rawDescriptionGpt } = useGptDescription(
+    cellInfoCellType.cellType.id
+  );
+
   if (isLoading || !data) return null;
 
   if (!cellInfoCellType) return null;
@@ -100,19 +105,21 @@ function CellInfoSideBar({
         skinnyMode={true}
         inSideBar
       />
-      <StyledLink
-        href={`${ROUTES.CELL_GUIDE}/${cellInfoCellType.cellType.id}`}
-        onClick={() =>
-          track(EVENTS.WMG_OPEN_IN_CG_CLICKED, {
-            cell_type: cellInfoCellType.cellType.id,
-          })
-        }
-        target="_blank"
-        rel="noreferrer noopener"
-      >
-        {MARKER_SCORE_CELLGUIDE_LINK_TEXT}
-        <Icon sdsIcon="ChevronRight" sdsType="static" sdsSize="xs" />
-      </StyledLink>
+      {Boolean(rawDescriptionGpt) && (
+        <StyledLink
+          href={`${ROUTES.CELL_GUIDE}/${cellInfoCellType.cellType.id}`}
+          onClick={() =>
+            track(EVENTS.WMG_OPEN_IN_CG_CLICKED, {
+              cell_type: cellInfoCellType.cellType.id,
+            })
+          }
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          {MARKER_SCORE_CELLGUIDE_LINK_TEXT}
+          <Icon sdsIcon="ChevronRight" sdsType="static" sdsSize="xs" />
+        </StyledLink>
+      )}
       {DIFFERENTIAL_EXPRESSION_RELEASED_FLAG && (
         <StyledLink
           href={differentialExpressionUrl}
