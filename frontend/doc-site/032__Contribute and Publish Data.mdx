@@ -67,6 +67,18 @@ Each dataset needs the following information added to a single h5ad (AnnData 0.1
 - **Features in var & raw.var (if present)**:
   - index is Ensembl ID
   - preference is that gene have not been filtered in order to maximize future data integration efforts
+- **Additional standards for single-capture area Visium datasets (largely aligns with [scanpy’s model](https://scanpy.readthedocs.io/en/stable/generated/scanpy.read_visium.html), [this notebook](https://github.com/Lattice-Data/lattice-tools/blob/main/cellxgene_resources/curation_visium.ipynb) may be helpful to curate from Space Ranger outputs)**:
+  - Empty spots must be included (should be 4992 observations)
+  - obsm['spatial']
+  - obs['array_row']
+  - obs['array_col']
+  - obs['in_tissue']
+  - uns['spatial'][library_id]['images']['fullres'] fullres image (preferred)
+  - uns['spatial'][library_id]['images']['hires'] hires image
+  - uns['spatial'][library_id]['scalefactors']['spot_diameter_fullres']
+  - uns['spatial'][library_id]['scalefactors']['tissue_hires_scalef']
+- **Additional standards for single-puck Slide-seq datasets**:
+  - obsm['spatial']
 
 ## Data Submission Policy
 
