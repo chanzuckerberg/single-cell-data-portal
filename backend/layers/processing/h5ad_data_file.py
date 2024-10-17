@@ -111,14 +111,12 @@ class H5ADDataFile:
         is_sparse = is_matrix_sparse(x_matrix_dense, sparse_threshold)
         logging.info(f"is_sparse: {is_sparse}")
 
-        convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, ctx)  # big memory usage
+        convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, self.tile_db_ctx_config)
 
-        suffixes = [""]
         logging.info("start consolidating")
-        for suffix in suffixes:
-            tiledb.consolidate(matrix_container + suffix, ctx=ctx)
-            if hasattr(tiledb, "vacuum"):
-                tiledb.vacuum(matrix_container + suffix)
+        tiledb.consolidate(matrix_container, ctx=ctx)
+        if hasattr(tiledb, "vacuum"):
+            tiledb.vacuum(matrix_container)
 
     def write_anndata_embeddings_to_cxg(self, output_cxg_directory, ctx):
         def is_valid_embedding(adata, embedding_name, embedding_array):

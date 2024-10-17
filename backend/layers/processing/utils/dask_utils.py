@@ -10,15 +10,14 @@ logger = logging.getLogger(__name__)
 class TileDBSparseArrayWriteWrapper:
     def __init__(self, uri, *, ctx=None):
         self.uri = uri
-        self.ctx = ctx or {}
+        self.ctx = {
+            "sm.io_concurrency_level": 1,
+            "sm.compute_concurrency_level": 1,
+        }
+        self.ctx.update(**ctx or {})
 
     def __setitem__(self, k: tuple[slice, ...], v: sparse.spmatrix):
-        with tiledb.scope_ctx(
-            {
-                "sm.io_concurrency_level": 1,
-                "sm.compute_concurrency_level": 1,
-            }
-        ):
+        with tiledb.scope_ctx(self.ctx):
             row_slice, col_slice = k
             row_offset = row_slice.start if row_slice.start is not None else 0
             col_offset = col_slice.start if col_slice.start is not None else 0
@@ -27,7 +26,7 @@ class TileDBSparseArrayWriteWrapper:
             tiledb_array[v_coo.row + row_offset, v_coo.col + col_offset] = v.data
 
 
-DASK_CLIENT = True
+DASK_CLIENT = None
 
 
 def start_dask_cluster():
