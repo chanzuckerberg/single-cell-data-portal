@@ -33,6 +33,7 @@ jobs:
           - processing
           - wmg_processing
           - cellguide_pipeline
+          - dataset_version_cleanup
     runs-on: ubuntu-22.04
     outputs:
       image_tag: ${{ steps.push_images.outputs.image_tag }}
