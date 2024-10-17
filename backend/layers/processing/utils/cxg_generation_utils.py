@@ -157,54 +157,6 @@ def convert_ndarray_to_cxg_dense_array(ndarray_name, ndarray, ctx):
     tiledb.consolidate(ndarray_name, ctx=ctx)
 
 
-def _sort_by_primary_var_and_secondary_obs(data_dict):
-    ix = np.argsort(data_dict["var"])
-    x = data_dict["obs"][ix]
-    y = data_dict["var"][ix]
-    d = data_dict[""][ix]
-
-    df = pd.DataFrame()
-    df["x"] = x
-    df["y"] = y
-    df["d"] = d
-
-    gb = df.groupby("y")
-
-    xs = []
-    ds = []
-    for k in gb.groups:
-        ix = np.argsort(x[gb.groups[k]])
-        xs.extend(x[gb.groups[k]][ix])
-        ds.extend(d[gb.groups[k]][ix])
-    xs = np.array(xs)
-    ds = np.array(ds)
-    return xs, y, ds
-
-
-def _sort_by_primary_obs_and_secondary_var(data_dict):
-    ix = np.argsort(data_dict["obs"])
-    x = data_dict["obs"][ix]
-    y = data_dict["var"][ix]
-    d = data_dict[""][ix]
-
-    df = pd.DataFrame()
-    df["x"] = x
-    df["y"] = y
-    df["d"] = d
-
-    gb = df.groupby("x")
-
-    ys = []
-    ds = []
-    for k in gb.groups:
-        ix = np.argsort(y[gb.groups[k]])
-        ys.extend(y[gb.groups[k]][ix])
-        ds.extend(d[gb.groups[k]][ix])
-    ys = np.array(ys)
-    ds = np.array(ds)
-    return x, ys, ds
-
-
 def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as_sparse_array: bool, ctx: tiledb.Ctx):
     """
     Converts a numpy array matrix into a TileDB SparseArray of DenseArray based on whether `encode_as_sparse_array`
