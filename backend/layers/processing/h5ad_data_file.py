@@ -4,8 +4,11 @@ from os import path
 from typing import Dict, Optional
 
 import anndata
+import dask.distributed as dd
+import h5py
 import numpy as np
 import tiledb
+from anndata.experimental import read_elem_as_dask
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.common.utils.cxg_constants import CxgConstants
@@ -93,21 +96,30 @@ class H5ADDataFile:
 
         logging.info("Completed writing to CXG.")
 
+    def is_sparse_format(self):
+        sparse_formats = ["csr", "csc", "coo"]
+        return self.anndata.X.format in sparse_formats
+
     def write_anndata_x_matrices_to_cxg(self, output_cxg_directory, ctx, sparse_threshold):
         matrix_container = f"{output_cxg_directory}/X"
+        x_matrix_data = read_elem_as_dask(h5py.File(self.input_filename)["X"])
+        if self.is_sparse_format():
+            x_matrix_dense = x_matrix_data.map_blocks(
+                lambda x: x.toarray(), dtype=x_matrix_data.dtype, meta=np.array([])
+            )
+        else:
+            x_matrix_dense = x_matrix_data
 
-        x_matrix_data = self.anndata.X
-        is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)  # big memory usage
-        logging.info(f"is_sparse: {is_sparse}")
+        with dd.LocalCluster() as cluster, dd.Client(cluster):
+            is_sparse = is_matrix_sparse(x_matrix_dense, sparse_threshold)
+            logging.info(f"is_sparse: {is_sparse}")
 
-        convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, ctx)  # big memory usage
+            convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, self.tile_db_ctx_config)
 
-        suffixes = ["r", "c"] if is_sparse else [""]
         logging.info("start consolidating")
-        for suffix in suffixes:
-            tiledb.consolidate(matrix_container + suffix, ctx=ctx)
-            if hasattr(tiledb, "vacuum"):
-                tiledb.vacuum(matrix_container + suffix)
+        tiledb.consolidate(matrix_container, ctx=ctx)
+        if hasattr(tiledb, "vacuum"):
+            tiledb.vacuum(matrix_container)
 
     def write_anndata_embeddings_to_cxg(self, output_cxg_directory, ctx):
         def is_valid_embedding(adata, embedding_name, embedding_array):
