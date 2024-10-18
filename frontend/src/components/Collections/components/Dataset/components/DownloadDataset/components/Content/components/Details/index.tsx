@@ -22,6 +22,9 @@ interface Props {
 
 const MEGA_BYTES = 2 ** 20;
 
+const DOC_SITE_URL =
+  "/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_3__Preparing%20Data#seurat-deprecated";
+
 const Details: FC<Props> = ({
   downloadPreview,
   selected = false,
@@ -45,20 +48,18 @@ const Details: FC<Props> = ({
     <FormControl>
       {/* TODO: Remove after Seurat has been deprecated */}
       {selectedFormat == "RDS" && (
-        <>
-          <SeuratNotice>
-            <StyledIcon
-              sdsIcon="ExclamationMarkCircle"
-              sdsSize="l"
-              sdsType="static"
-            />
-            <TextWrapper>
-              Seurat support will be removed on [Month Day, Year]. You can
-              download and convert the .h5ad yourself by following these {""}
-              <StyledLink href="#">instructions</StyledLink>.
-            </TextWrapper>
-          </SeuratNotice>
-        </>
+        <SeuratNotice>
+          <StyledIcon
+            sdsIcon="ExclamationMarkCircle"
+            sdsSize="l"
+            sdsType="static"
+          />
+          <TextWrapper>
+            Seurat support will be removed between Nov 15 - Dec 31, 2024. You
+            can download and convert the .h5ad yourself by following these {""}
+            <StyledLink href={DOC_SITE_URL}>instructions</StyledLink>.
+          </TextWrapper>
+        </SeuratNotice>
       )}
       <FormLabel>Download Details</FormLabel>
       {renderContent()}

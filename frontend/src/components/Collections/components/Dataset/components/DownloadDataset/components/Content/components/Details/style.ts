@@ -12,7 +12,6 @@ export const SeuratNotice = styled.div`
   background-color: #ffefcf;
   border-radius: ${cornersM}px;
   display: flex;
-  margin-bottom: 8px;
   font-size: 13px;
   color: ${textPrimary};
   gap: ${spacesS}px;
