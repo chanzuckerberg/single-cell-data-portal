@@ -37,6 +37,7 @@ const DataFormat: FC<Props> = ({
         onChange={handleChange}
         row
         value={selectedFormat}
+        style={{ height: "15px" }}
       >
         <InputRadio
           disabled={isDisabled || !isH5AD}
