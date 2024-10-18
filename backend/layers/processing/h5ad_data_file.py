@@ -4,6 +4,7 @@ from os import path
 from typing import Dict, Optional
 
 import anndata
+import dask.distributed as dd
 import h5py
 import numpy as np
 import tiledb
@@ -108,10 +109,12 @@ class H5ADDataFile:
             )
         else:
             x_matrix_dense = x_matrix_data
-        is_sparse = is_matrix_sparse(x_matrix_dense, sparse_threshold)
-        logging.info(f"is_sparse: {is_sparse}")
 
-        convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, self.tile_db_ctx_config)
+        with dd.LocalCluster() as cluster, dd.Client(cluster):
+            is_sparse = is_matrix_sparse(x_matrix_dense, sparse_threshold)
+            logging.info(f"is_sparse: {is_sparse}")
+
+            convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, self.tile_db_ctx_config)
 
         logging.info("start consolidating")
         tiledb.consolidate(matrix_container, ctx=ctx)

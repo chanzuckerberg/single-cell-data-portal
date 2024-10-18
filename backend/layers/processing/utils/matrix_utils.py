@@ -2,8 +2,6 @@ import logging
 
 import dask.array as da
 
-from backend.layers.processing.utils.dask_utils import start_dask_cluster
-
 logger: logging.Logger = logging.getLogger("matrix_utils")
 
 
@@ -15,8 +13,6 @@ def is_matrix_sparse(matrix: da.Array, sparse_threshold: float) -> bool:
 
     TODO move to dask_utils.py in a separate PR
     """
-    start_dask_cluster()
-
     if sparse_threshold == 100.0:
         return True
     if sparse_threshold == 0.0:

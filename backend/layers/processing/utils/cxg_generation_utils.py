@@ -8,7 +8,7 @@ import pandas as pd
 import tiledb
 
 from backend.common.constants import SPATIAL_KEYS_EXCLUDE, UNS_SPATIAL_KEY
-from backend.layers.processing.utils.dask_utils import TileDBSparseArrayWriteWrapper, start_dask_cluster
+from backend.layers.processing.utils.dask_utils import TileDBSparseArrayWriteWrapper
 from backend.layers.processing.utils.spatial import SpatialDataProcessor
 from backend.layers.processing.utils.type_conversion_utils import get_dtype_and_schema_of_array
 
@@ -164,8 +164,6 @@ def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as
     nonzero. This means that if you count the number of elements in the SparseArray, it will not equal the total
     number of elements in the matrix, only the number of nonzero elements.
     """
-
-    start_dask_cluster()
     number_of_rows = matrix.shape[0]
     number_of_columns = matrix.shape[1]
     compression = 22
