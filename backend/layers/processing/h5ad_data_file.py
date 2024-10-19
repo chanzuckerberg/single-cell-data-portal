@@ -117,7 +117,7 @@ class H5ADDataFile:
             convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, self.tile_db_ctx_config)
 
         logging.info("start consolidating")
-        tiledb.consolidate(matrix_container, ctx=ctx)
+        tiledb.consolidate(matrix_container, ctx=ctx)  # big memory usage
         if hasattr(tiledb, "vacuum"):
             tiledb.vacuum(matrix_container)
 
