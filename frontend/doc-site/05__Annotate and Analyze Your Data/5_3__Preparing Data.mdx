@@ -112,3 +112,110 @@ _For the most up-to-date and comprehensive list of options, run `cellxgene prepa
 `--set-var-names` controls which field in `anndata.var` (gene metadata) is used as the index for genes. Default is `anndata.var.names`
 
 `--output` and `--overwrite` control where the processed data is saved.
+
+<a name="seurat-deprecated"></a>
+## Deprecation of Seurat Downloads on CELLxGENE Discover
+
+We are deprecating Seurat downloads on the CELLxGENE Discover platform, effective late 2024. While Seurat support has served many of our users, ongoing support has become unsustainable due to limitations in conversion tools and cross-ecosystem interoperability.This decision aligns with our shift towards a Python-based ecosystem, consistent with our Virtual Cell Platform (VCP) and Census strategies. As our platform increasingly supports new types of spatial and multimodal assays, focusing on Python will enable us to deliver a more consistent and scalable user experience.
+
+### Availability of Earlier Seurat Downloads
+
+Please note that earlier Seurat downloads will continue to be available. Previous versions of datasets will not be removed, and any Seurat RDS files that were previously downloaded will remain accessible. These can still be accessed via their URL (encoded as a citation in the dataset's @misc slot) or through the Discover API (`GET dataset versions`). This ensures that any ongoing research is not disrupted.
+
+### Recommended Alternatives
+
+For users seeking alternatives, we recommend leveraging the AnnData format, which integrates well with the Python-based scverse toolchain (including scanpy and squidpy). For R users, the preferred approach is to utilize the CELLxGENE Census R API or tools such as the cellxgenedp package, which can convert AnnData datasets into formats compatible with R toolchains like Bioconductor. This solution allows continued access to high-quality data and analytical capabilities without the challenges associated with Seurat conversions.
+
+If you need to convert h5ad files to Seurat, there are some community-supported tools that can assist with this task, though we caution that these tools may be less stable. Please reach out to the Seurat community for supported methods of conversion from AnnData to Seurat formats. We appreciate your understanding as we continue to refine our platform for reliability and future growth.
+
+### Converting `h5ad` Files to Seurat `RDS` Files
+
+To convert an `h5ad` file (used by Scanpy) to a Seurat `RDS` file (for use in R), you can follow a few key steps that involve using intermediate conversions and specific R packages.
+
+### Option 1 - Using `zellkonverter` and `SingleCellExperiment`
+
+**1. You will need `zellkonverter` and `SingleCellExperiment` installed. Run the following in R:**
+
+```R
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("zellkonverter")
+BiocManager::install("SingleCellExperiment")
+```
+
+**2. Load the .h5ad file and convert it**
+
+```R
+library(zellkonverter)
+library(SingleCellExperiment)
+
+# Specify the path to your .h5ad file
+h5ad_file <- "path/to/your/file.h5ad"
+
+# Read the .h5ad file into a SingleCellExperiment object
+sce <- readH5AD(h5ad_file)
+
+# Save the object as an .rds file
+saveRDS(sce, file = "output_file.rds")
+```
+
+**3. Verify and Load the RDS file**
+
+```R
+sce_loaded <- readRDS("output_file.rds")
+```
+
+### Option 2 - Using `SeuratDisk`
+
+**1. Convert the `h5ad` file into an `h5Seurat` file using the `Convert` function:**
+
+```R
+library(SeuratDisk)
+Convert("path_to_file.h5ad", dest = "h5seurat", overwrite = TRUE)
+```
+
+**2. Load the `h5Seurat` file into a Seurat object:**
+
+```R
+seurat_object <- LoadH5Seurat("path_to_file.h5seurat")
+```
+
+**3. Save the Seurat object as an `RDS` file:**
+
+```R
+saveRDS(seurat_object, file = "output_file.rds")
+```
+
+**4. Verify and Load the `RDS` file**
+
+```R
+seurat_loaded <- readRDS("output_file.rds")
+```
+
+### Option 3 - Using `reticulate` with Python's Scanpy
+
+If you encounter issues or need to customize the conversion, you can read the `h5ad` file in Python using the reticulate package and extract the necessary data into R:
+
+**1. Import the scanpy package and read the h5ad file:**
+
+```R
+library(reticulate)
+scanpy <- import("scanpy")
+adata <- scanpy$read_h5ad("path/to/your/file.h5ad")
+```
+
+**2. Extract the count data and convert it into a Seurat object:**
+
+```R
+counts <- t(adata$layers["counts"])
+colnames(counts) <- adata$obs_names$to_list()
+rownames(counts) <- adata$var_names$to_list()
+counts <- Matrix::Matrix(as.matrix(counts), sparse = TRUE)
+
+seurat_obj <- CreateSeuratObject(counts)
+saveRDS(seurat_obj, "output_file.rds")
+
+```
+
+These methods provide flexibility for handling different versions or data structures in your h5ad files. For more detailed guidance, you can refer to the documentation on [SeuratDisk's GitHub](https://mojaveazure.github.io/seurat-disk/articles/convert-anndata.html) and [discussions on GitHub](https://github.com/satijalab/seurat/issues).
