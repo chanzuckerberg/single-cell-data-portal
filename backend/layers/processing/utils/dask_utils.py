@@ -9,10 +9,7 @@ logger = logging.getLogger(__name__)
 class TileDBSparseArrayWriteWrapper:
     def __init__(self, uri, *, ctx=None):
         self.uri = uri
-        self.ctx = {
-            "sm.io_concurrency_level": 1,
-            "sm.compute_concurrency_level": 1,
-        }
+        self.ctx = {}
         self.ctx.update(**ctx or {})
 
     def __setitem__(self, k: tuple[slice, ...], v: sparse.spmatrix):
