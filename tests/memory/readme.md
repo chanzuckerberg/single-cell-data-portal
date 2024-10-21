@@ -28,6 +28,8 @@ mprof plot
 docker compose --project-directory ../../ run --rm -w /single-cell-data-portal processing python -m memory_profiler ./tests/memory/processing/test_process_cxg.py
 ```
 
+See [line-by-line memory usage](https://github.com/pythonprofilers/memory_profiler?tab=readme-ov-file#line-by-line-memory-usage) in the memory-profiler documentation for measuring memory in nested functions.
+
 ### Run memray and produce a flamegraph:
 
 Before running you will need to comment out @profile from some of the code. This is used by memory-profiler and is not supported by memray.
