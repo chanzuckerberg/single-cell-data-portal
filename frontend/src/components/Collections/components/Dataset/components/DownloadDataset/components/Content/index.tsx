@@ -148,6 +148,7 @@ const Content: FC<Props> = ({
               fileSize={fileSize}
               isLoading={isDownloadLinkLoading}
               selected={Boolean(fileSize)}
+              selectedFormat={selectedFormat}
             />
           </>
         )}
