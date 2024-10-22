@@ -176,6 +176,11 @@ class DatabaseProviderInterface:
         Returns a dataset version by id.
         """
 
+    def get_dataset_versions_by_id(self, ids: List[DatasetVersionId], get_tombstoned: bool) -> List[DatasetVersion]:
+        """
+        Returns a list of dataset versions for the given ids.
+        """
+
     def get_all_dataset_versions_for_collection(
         self, collection_id: CollectionId, from_date: datetime
     ) -> List[DatasetVersion]:

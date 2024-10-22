@@ -11,7 +11,7 @@ from cellxgene_ontology_guide.ontology_parser import OntologyParser
 
 from backend.layers.common.entities import DatasetVersion
 
-ONTOLOGY_PARSER = OntologyParser()
+ONTOLOGY_PARSER = OntologyParser(schema_version="v5.1.0")
 
 ACCEPTED_TISSUE_ANCESTORS = {
     term

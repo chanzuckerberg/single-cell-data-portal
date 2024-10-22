@@ -28,6 +28,7 @@ from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.processing.process_seurat import ProcessSeurat
 from backend.layers.processing.process_validate import ProcessValidate
 from backend.layers.processing.schema_migration import SchemaMigrate
+from backend.layers.thirdparty.lambda_provider import LambdaProvider
 from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
 from backend.layers.thirdparty.schema_validator_provider import (
     SchemaValidatorProvider,
@@ -182,6 +183,7 @@ if __name__ == "__main__":
     database_provider = DatabaseProvider()
     s3_provider = S3Provider()
     uri_provider = UriProvider()
+    lambda_provider = LambdaProvider()
 
     business_logic = BusinessLogic(
         database_provider,
@@ -190,6 +192,7 @@ if __name__ == "__main__":
         None,
         s3_provider,
         uri_provider,
+        lambda_provider=lambda_provider,
     )
 
     schema_validator = SchemaValidatorProvider()

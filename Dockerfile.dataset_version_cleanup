@@ -1,0 +1,22 @@
+FROM public.ecr.aws/lambda/python:3.10
+
+# Update AWS root Certificates
+ADD https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem
+
+COPY backend/layers/processing/dataset_version_cleanup/ ${LAMBDA_TASK_ROOT}
+COPY backend/layers ${LAMBDA_TASK_ROOT}/backend/layers
+
+COPY /python_dependencies/dataset_version_cleanup/ ${LAMBDA_TASK_ROOT}
+RUN pip3 install -r requirements.txt
+
+COPY backend/__init__.py ${LAMBDA_TASK_ROOT}/backend/__init__.py
+COPY backend/common ${LAMBDA_TASK_ROOT}/backend/common
+
+ARG HAPPY_BRANCH="unknown"
+ARG HAPPY_COMMIT=""
+LABEL branch=${HAPPY_BRANCH}
+LABEL commit=${HAPPY_COMMIT}
+ENV COMMIT_SHA=${HAPPY_COMMIT}
+ENV COMMIT_BRANCH=${HAPPY_BRANCH}
+
+CMD ["app.dataset_version_cleanup_handler"]
