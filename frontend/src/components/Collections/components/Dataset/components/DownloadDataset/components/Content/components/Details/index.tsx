@@ -22,8 +22,7 @@ interface Props {
 
 const MEGA_BYTES = 2 ** 20;
 
-const DOC_SITE_URL =
-  "/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_3__Preparing%20Data#seurat-deprecated";
+const DOC_SITE_URL = "/docs/03__Download%20Published%20Data#seurat-deprecated";
 
 const Details: FC<Props> = ({
   downloadPreview,
