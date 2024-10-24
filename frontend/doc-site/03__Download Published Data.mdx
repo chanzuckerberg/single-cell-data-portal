@@ -19,8 +19,6 @@ We are deprecating Seurat downloads on the CELLxGENE Discover platform, effectiv
 
 Please note that earlier Seurat downloads will continue to be available. Previous versions of datasets will not be removed, and any Seurat RDS files that were previously downloaded will remain accessible. These can still be accessed via their URL ([encoded](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.2.0/seurat_encoding.md) as a [citation](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.2.0/schema.md#citation) in the dataset's @misc slot) or through the [Discover API](https://api.cellxgene.cziscience.com/curation/ui/#/) (`GET dataset versions`). This ensures that any ongoing research is not disrupted.
 
-### Recommended Alternatives
-
-For users seeking alternatives, we recommend leveraging the AnnData format, which integrates well with the Python-based scverse toolchain (including scanpy and squidpy). For R users, the preferred approach is to utilize the CELLxGENE Census R API or tools such as the cellxgenedp package, which can convert AnnData datasets into formats compatible with R toolchains like Bioconductor. This solution allows continued access to high-quality data and analytical capabilities without the challenges associated with Seurat conversions.
+### Seurat Support
 
 If you need to convert h5ad files to Seurat, there are some community-supported tools that can assist with this task, though we caution that these tools may be less stable. Please reach out to the [Seurat community](https://github.com/satijalab/seurat) for supported methods of conversion from AnnData to Seurat formats. We appreciate your understanding as we continue to refine our platform for reliability and future growth.
