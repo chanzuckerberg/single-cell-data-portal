@@ -131,8 +131,13 @@ class CanonicalMarkerGenesCompiler:
             doi = clean_doi(ref.doi)
             if doi:
                 if doi not in doi_to_citation:
-                    title = self.crossref_provider.get_title_and_citation_from_doi(doi)
-                    doi_to_citation[doi] = title
+                    # Catch and log invalid DOIs.
+                    try:
+                        title = self.crossref_provider.get_title_and_citation_from_doi(doi)
+                        doi_to_citation[doi] = title
+                    except Exception:
+                        logger.error(f"Error fetching title and citation for DOI {doi}")
+                        return None  # None values are filtered out.
                 else:
                     title = doi_to_citation[doi]
                 return doi, title

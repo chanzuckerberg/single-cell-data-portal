@@ -55,7 +55,12 @@ def portal_get_normalized_doi_url(doi_node: dict, errors: list) -> Optional[str]
 
 def clean_doi(doi: str) -> str:
     """
-    Cleans the DOI string.
+    Cleans the DOI string. Formats handled:
+    - DOI 10.1182/ bloodadvances.2017015073
+    - DOI:10.1167/iovs.15-18117
+    - DOI: 10.1002/biot.201200199
+    - DOI: 10.1111/j.1440-1827.1995.tb03518.x.
+    - https://doi.org/10.1101/2021.01.02.425073
 
     Parameters
     ----------
@@ -71,9 +76,19 @@ def clean_doi(doi: str) -> str:
     if doi == "No DOI":
         return ""
 
+    # Remove trailing periiods from the DOI. This handles the
+    # "10.1111/j.1440-1827.1995.tb03518.x."-type cases.
     if doi != "" and doi[-1] == ".":
         doi = doi[:-1]
-    if " " in doi:
-        doi = doi.split(" ")[1]  # this handles cases where the DOI string is "DOI: {doi}"
-    doi = doi.strip()
+
+    # Remove any invalid tokens from the DOI. Invalid tokens include:
+    # "DOI", "DOI:", "DOI: ", and "https://doi.org/".
+    regex = re.compile(r"\bDOI[: ]?\s*|https://doi.org/", re.IGNORECASE)
+    doi = regex.sub("", doi)
+
+    # Remove all whitespace from the DOI. This handles the
+    # "10.1182/ bloodadvances.2017015073"-type cases, as well as any other
+    # leading or trailing whitespace.
+    doi = re.sub(r"\s+", "", doi.strip())
+
     return doi
