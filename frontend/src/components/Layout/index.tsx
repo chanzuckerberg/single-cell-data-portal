@@ -5,6 +5,8 @@ import Header from "../Header";
 import LandingFooter from "../LandingFooter";
 import LandingHeader from "../MobileFriendlyHeader";
 import { Wrapper } from "./style";
+import BottomBanner from "../BottomBanner";
+import { BANNER_FEEDBACK_SURVEY_LINK } from "src/common/constants/airtableLinks";
 
 interface Props {
   children: ReactNode;
@@ -34,6 +36,7 @@ const Layout = ({ children }: Props) => {
         />
         {children}
         <LandingFooter />
+        <BottomBanner surveyLink={BANNER_FEEDBACK_SURVEY_LINK} />
       </>
     );
   } else if (pathname === ROUTES.CELL_GUIDE) {
