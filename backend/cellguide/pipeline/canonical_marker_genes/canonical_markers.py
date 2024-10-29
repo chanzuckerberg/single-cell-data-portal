@@ -283,7 +283,8 @@ class CanonicalMarkerGenesCompiler:
 
             tissue_id = self._get_tissue_id([AnatomicalStructure(**entry) for entry in row["anatomical_structures"]])
             gene_symbols, gene_names = self._get_gene_info([GeneBiomarker(**entry) for entry in row["biomarkers_gene"]])
-            refs, titles = self._get_references([Reference(**entry) for entry in row["references"]], doi_to_citation)
+            references = [Reference(**entry) for entry in row["references"] if entry and "doi" in entry]
+            refs, titles = self._get_references(references, doi_to_citation)
 
             for cell_type in cell_types:
                 for index in range(len(gene_symbols)):
