@@ -283,6 +283,7 @@ class CanonicalMarkerGenesCompiler:
 
             tissue_id = self._get_tissue_id([AnatomicalStructure(**entry) for entry in row["anatomical_structures"]])
             gene_symbols, gene_names = self._get_gene_info([GeneBiomarker(**entry) for entry in row["biomarkers_gene"]])
+            # Protect against invalid references (i.e. references without a DOI).
             references = [Reference(**entry) for entry in row["references"] if entry and "doi" in entry]
             refs, titles = self._get_references(references, doi_to_citation)
 

@@ -76,7 +76,7 @@ def clean_doi(doi: str) -> str:
     if doi == "No DOI":
         return ""
 
-    # Remove trailing periiods from the DOI. This handles the
+    # Remove trailing periods from the DOI. This handles the
     # "10.1111/j.1440-1827.1995.tb03518.x."-type cases.
     if doi != "" and doi[-1] == ".":
         doi = doi[:-1]
