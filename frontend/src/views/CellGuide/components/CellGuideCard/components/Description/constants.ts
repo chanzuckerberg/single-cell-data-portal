@@ -12,3 +12,9 @@ export const CELL_GUIDE_CARD_SYNONYMS = "cell-guide-card-synonyms";
 
 export const CELL_GUIDE_CARD_VALIDATED_DESCRIPTION =
   "cell-guide-card-validated-description";
+
+export const CELL_GUIDE_CARD_DEFAULT_DESCRIPTION_CL =
+  "Description not available";
+
+export const getDefaultGptDescription = (cellTypeName: string) =>
+  `Description for ${cellTypeName} is not available at the moment, please check back at a later time, or click on the link below for more information.`;

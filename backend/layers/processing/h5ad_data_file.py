@@ -195,7 +195,7 @@ class H5ADDataFile:
 
     def extract_anndata_elements_from_file(self):
         logging.info(f"Reading in AnnData dataset: {path.basename(self.input_filename)}")
-        self.anndata = anndata.read_h5ad(self.input_filename, backed="r")
+        self.anndata = anndata.read_h5ad(self.input_filename)
         logging.info("Completed reading in AnnData dataset!")
 
         self.obs = self.transform_dataframe_index_into_column(self.anndata.obs, "obs", self.obs_index_column_name)
