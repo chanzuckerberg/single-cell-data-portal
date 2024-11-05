@@ -6,6 +6,8 @@ import Wordmark from "src/common/images/cellxgene-discover-wordmark.svg";
 import CZILogo from "src/components/common/staticPages/czi-logo-white.png";
 
 import styles from "./index.module.scss";
+import BottomBanner from "../BottomBanner";
+import { BANNER_FEEDBACK_SURVEY_LINK } from "src/common/constants/airtableLinks";
 
 const LandingFooter = (): JSX.Element => {
   return (
@@ -80,6 +82,7 @@ const LandingFooter = (): JSX.Element => {
           </div>
         </div>
       </footer>
+      <BottomBanner surveyLink={BANNER_FEEDBACK_SURVEY_LINK} />
     </>
   );
 };
