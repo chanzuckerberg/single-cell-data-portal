@@ -51,3 +51,25 @@ Run functional tests for WMG api against the `dev` environment.
 **NOTE**: `dev` environment is a remote environment. These functional tests run locally against a backend in a remote environment called `dev`.
 
 1. `AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev pytest -v tests/functional/backend/wmg/test_wmg_api.py`
+
+### Set up vips
+
+You may run into issues with finding `_libvips` if you're running a Jupyter notebook locally that calls `pyvips`, such as when running CXG conversion locally. The error may look like this:
+
+```
+ModuleNotFoundError                       Traceback (most recent call last)
+File ~/miniconda3/envs/py11/lib/python3.11/site-packages/pyvips/__init__.py:19
+     18 try:
+---> 19     import _libvips
+     21     logger.debug('Loaded binary module _libvips')
+
+ModuleNotFoundError: No module named '_libvips'
+```
+
+To resolve this, you'll need to install `vips` with `brew install vips`, because this is a dependency that `pyvips` has. If you're using conda, you'll have to also tell your conda environment where homebrew installed `vips`. You can do this with:
+
+```
+mkdir -p ~/miniconda3/envs/<CONDA_ENV_NAME>/etc/conda/activate.d
+touch ~/miniconda3/envs/<CONDA_ENV_NAME>/etc/conda/activate.d/env_vars.sh
+echo 'export DYLD_LIBRARY_PATH=/opt/homebrew/lib:$DYLD_LIBRARY_PATH' >> ~/miniconda3/envs/<CONDA_ENV_NAME>/etc/conda/activate.d/env_vars.sh
+```
