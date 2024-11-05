@@ -1,7 +1,5 @@
 import json
-import os
 import tempfile
-from shutil import copy2
 from unittest.mock import Mock, patch
 
 import pytest
@@ -27,12 +25,10 @@ from backend.layers.processing.dataset_metadata_update import DatasetMetadataUpd
 from backend.layers.processing.exceptions import ProcessingFailed
 from backend.layers.processing.utils.cxg_generation_utils import convert_dictionary_to_cxg_group
 from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
-from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 base = importr("base")
-seurat = importr("SeuratObject")
 
 
 def mock_process(target, args=()):
@@ -86,7 +82,6 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         # skip raw_h5ad update since no updated fields are expected fields in raw H5AD
         mock_worker.update_raw_h5ad.assert_not_called()
         mock_worker.update_h5ad.assert_called_once()
-        mock_worker.update_rds.assert_called_once()
         mock_worker.update_cxg.assert_called_once()
 
         # check that collection version maps to dataset version with updated metadata
@@ -98,6 +93,9 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
 
         assert new_dataset_version.status.upload_status == DatasetUploadStatus.UPLOADED
         assert new_dataset_version.status.processing_status == DatasetProcessingStatus.SUCCESS
+
+        # RDS should be skipped
+        assert new_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
 
         assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad")
 
@@ -135,7 +133,6 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
 
         mock_worker.update_raw_h5ad.assert_not_called()
         mock_worker.update_h5ad.assert_called_once()
-        mock_worker.update_rds.assert_not_called()
         mock_worker.update_cxg.assert_called_once()
 
         # check that collection version maps to dataset version with updated metadata
@@ -147,6 +144,9 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
 
         assert new_dataset_version.status.upload_status == DatasetUploadStatus.UPLOADED
         assert new_dataset_version.status.processing_status == DatasetProcessingStatus.SUCCESS
+
+        # RDS should be skipped
+        assert new_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
 
         assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad")
 
@@ -179,12 +179,14 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
 
         mock_worker.update_raw_h5ad.assert_called_once()
         mock_worker.update_h5ad.assert_called_once()
-        mock_worker.update_rds.assert_called_once()
         mock_worker.update_cxg.assert_called_once()
 
         # check that collection version maps to dataset version with updated metadata
         collection_version = self.business_logic.get_collection_version(collection_version_id)
         new_dataset_version = collection_version.datasets[0]
+
+        # RDS should be skipped
+        assert new_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
 
         assert new_dataset_version.status.processing_status == DatasetProcessingStatus.SUCCESS
 
@@ -284,40 +286,8 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         assert new_dataset_version.status.h5ad_status == DatasetConversionStatus.FAILED
         assert new_dataset_version.status.processing_status == DatasetProcessingStatus.FAILURE
 
-    @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("scanpy.read_h5ad")
-    @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
-    @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
-    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater")
-    def test_update_metadata__missing_rds(self, *args):
-        current_dataset_version = self.generate_dataset(
-            artifacts=[
-                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "s3://fake.bucket/raw.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "s3://fake.bucket/local.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.CXG, "s3://fake.bucket/local.cxg"),
-            ],
-            statuses=[
-                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
-                DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
-            ],
-        )
-        collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
-        current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
-        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            collection_version_id=collection_version_id,
-            url=None,
-            file_size=0,
-            current_dataset_version_id=current_dataset_version_id,
-            start_step_function=False,
-        )
-
-        with pytest.raises(ProcessingFailed):
-            self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
-
-        new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
-
-        assert new_dataset_version.status.rds_status == DatasetConversionStatus.FAILED
-        assert new_dataset_version.status.processing_status == DatasetProcessingStatus.FAILURE
+        # RDS should be skipped
+        assert new_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("scanpy.read_h5ad")
@@ -353,6 +323,9 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
 
         assert new_dataset_version.status.cxg_status == DatasetConversionStatus.FAILED
         assert new_dataset_version.status.processing_status == DatasetProcessingStatus.FAILURE
+
+        # RDS should be skipped
+        assert new_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("scanpy.read_h5ad")
@@ -598,44 +571,6 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
             assert self.updater.s3_provider.uri_exists(
                 f"s3://{self.updater.spatial_deep_zoom_dir}/{new_dataset_version_id.id}"
             )
-
-    @patch("backend.layers.processing.dataset_metadata_update.os.remove")
-    def test_update_rds(self, *args):
-        with tempfile.TemporaryDirectory() as tempdir:
-            temp_path = os.path.join(tempdir, "test.rds")
-            copy2(fixture_file_path("test.rds"), temp_path)
-            self.updater.download_from_source_uri = Mock(return_value=temp_path)
-
-            collection_version = self.generate_unpublished_collection(add_datasets=1)
-            current_dataset_version = collection_version.datasets[0]
-            new_dataset_version_id, _ = self.business_logic.ingest_dataset(
-                collection_version_id=collection_version.version_id,
-                url=None,
-                file_size=0,
-                current_dataset_version_id=current_dataset_version.version_id,
-                start_step_function=False,
-            )
-            key_prefix = new_dataset_version_id.id
-            metadata_update_dict = DatasetArtifactMetadataUpdate(title="New Dataset Title")
-
-            self.updater.update_rds(None, key_prefix, new_dataset_version_id, metadata_update_dict)
-
-            # check Seurat object metadata is updated
-            seurat_object = base.readRDS(temp_path)
-            assert seurat.Misc(object=seurat_object, slot="title")[0] == "New Dataset Title"
-            # schema_version should stay the same as base fixture after update of other metadata
-            assert seurat.Misc(object=seurat_object, slot="schema_version")[0] == "3.1.0"
-
-            # check new artifacts are uploaded in expected uris
-            assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id.id}/test.rds")
-            assert self.updater.s3_provider.uri_exists(f"s3://datasets_bucket/{new_dataset_version_id.id}.rds")
-
-            # check artifacts + status updated in DB
-            new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
-            artifacts = [(artifact.uri, artifact.type) for artifact in new_dataset_version.artifacts]
-            assert (f"s3://artifact_bucket/{new_dataset_version_id.id}/test.rds", DatasetArtifactType.RDS) in artifacts
-
-            assert new_dataset_version.status.rds_status == DatasetConversionStatus.CONVERTED
 
 
 class TestValidArtifactStatuses(BaseProcessingTest):
