@@ -9,7 +9,6 @@ from multiprocessing import Process
 
 import scanpy
 import tiledb
-from rpy2.robjects.packages import importr
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business import BusinessLogic
@@ -31,8 +30,6 @@ from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_download import ProcessDownload
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.uri_provider import UriProvider
-
-base = importr("base")
 
 configure_logging(level=logging.INFO)
 

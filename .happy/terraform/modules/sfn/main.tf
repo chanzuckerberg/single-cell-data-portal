@@ -1,4 +1,3 @@
-# Same file as https://github.com/chanzuckerberg/single-cell-infra/blob/main/.happy/terraform/modules/sfn/main.tf
 # This is used for environment (dev, staging, prod) deployments
 locals {
   timeout = 86400 # 24 hours
