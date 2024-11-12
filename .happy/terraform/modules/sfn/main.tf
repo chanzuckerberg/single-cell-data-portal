@@ -195,7 +195,7 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "Cxg": {
         "Type": "Task",
-        "End": true,
+        "Next": "HandleSuccess",
         "Resource": "arn:aws:states:::batch:submitJob.sync",
         "Parameters": {
           "JobDefinition.$": "$.batch.JobDefinitionName",
