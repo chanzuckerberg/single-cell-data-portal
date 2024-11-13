@@ -241,7 +241,9 @@ resource "aws_sfn_state_machine" "state_machine" {
         "InputPath": "$",
         "Resource": "${var.lambda_success_handler}",
         "Parameters": {
-          "execution_id.$": "$$.Execution.Id"
+          "execution_id.$": "$$.Execution.Id",
+          "dataset_version_id.$": "$.dataset_version_id",
+          "collection_version_id.$": "$.collection_version_id"
         },
         "Retry": [ {
             "ErrorEquals": ["Lambda.AWSLambdaException"],

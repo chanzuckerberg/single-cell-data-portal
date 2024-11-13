@@ -19,6 +19,7 @@ def success_handler(event: dict, context) -> None:
     :param context: Lambda's context object
     :return:
     """
+    logger.info(event)
     if event.get("error"):
         handle_failure(event, context)
     else:
