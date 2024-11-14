@@ -40,18 +40,18 @@ We need the following Collection metadata (i.e. details associated with your pub
   - Title
   - Description
   - Contact: a single name and email
-  - Publication/preprint DOI: *optional* can be added later
-  - URLs: *optional* can be added later. Any links to related data or resources, such as GEO or protocols.io
-  - Consortia: *optional* can be added later. Can be one or more of those listed [here](https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/backend/layers/common/validation.py#L12)
+  - Publication/preprint DOI: _optional_ can be added later
+  - URLs: _optional_ can be added later. Any links to related data or resources, such as GEO or protocols.io
+  - Consortia: _optional_ can be added later. Can be one or more of those listed [here](https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/backend/layers/common/validation.py#L12)
 
 The full schema is documented [here](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html) but is summarized below. Each dataset needs the following information added to a single h5ad (AnnData 0.10) format file:
 
 - **Dataset-level metadata in uns**:
   - **title**
     - title of the individual dataset
-  - **batch_condition** *optional*
+  - **batch_condition** _optional_
     - list of obs fields that define “batches” that a normalization or integration algorithm should be aware of
-  - **default_embedding** *optional*
+  - **default_embedding** _optional_
     - the obsm key associated with the embeddings you would like to be displayed in CELLxGENE by default
 - **Data in .X and raw.X**:
   - raw counts are required
@@ -93,7 +93,7 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
   - **obs['array_row']**
   - **obs['array_col']**
   - **obs['in_tissue']**
-  - **uns['spatial'][library_id]['images']['fullres']** *preferred* fullres image
+  - **uns['spatial'][library_id]['images']['fullres']** _preferred_ fullres image
   - **uns['spatial'][library_id]['images']['hires']** hires image
   - **uns['spatial'][library_id]['scalefactors']['spot_diameter_fullres']**
   - **uns['spatial'][library_id]['scalefactors']['tissue_hires_scalef']**
