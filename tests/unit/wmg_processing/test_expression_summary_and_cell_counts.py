@@ -12,7 +12,7 @@ from backend.wmg.pipeline.constants import (
 from backend.wmg.pipeline.expression_summary_and_cell_counts import create_expression_summary_and_cell_counts_cubes
 from backend.wmg.pipeline.utils import load_pipeline_state, write_pipeline_state
 from tests.test_utils import sort_dataframe
-from tests.test_utils.mocks import MockCensusParameters, mock_return_dataset_dict_w_publications
+from tests.test_utils.mocks import MockCensusParameters
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_realistic_test_snapshot_tmpdir
 
 
@@ -49,14 +49,6 @@ class ExpressionSummaryAndCellCountsTests(unittest.TestCase):
             ),
             patch("backend.wmg.pipeline.expression_summary.tiledb.consolidate", new=Mock()),
             patch("backend.wmg.pipeline.expression_summary.tiledb.vacuum", new=Mock()),
-            patch(
-                "backend.wmg.pipeline.cell_counts.return_dataset_dict_w_publications",
-                new=mock_return_dataset_dict_w_publications,
-            ),
-            patch(
-                "backend.wmg.pipeline.expression_summary.return_dataset_dict_w_publications",
-                new=mock_return_dataset_dict_w_publications,
-            ),
         ):
             create_expression_summary_and_cell_counts_cubes(self.temp_cube_dir.name)
 

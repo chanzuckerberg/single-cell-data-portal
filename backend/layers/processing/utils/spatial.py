@@ -174,7 +174,6 @@ class SpatialDataProcessor:
                     "width": width,
                     "height": height,
                 },
-                "images": {"hires": content["images"]["hires"], "fullres": []},
                 "scalefactors": {
                     "spot_diameter_fullres": content["scalefactors"]["spot_diameter_fullres"],
                     "tissue_hires_scalef": content["scalefactors"]["tissue_hires_scalef"],

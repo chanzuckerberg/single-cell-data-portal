@@ -2,7 +2,7 @@ version: 2
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
     schedule:
       interval: "weekly"
       day: "sunday"
@@ -10,14 +10,27 @@ updates:
       - "seve"
   - package-ecosystem: pip
     directory: "/python_dependencies/backend/"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
     schedule:
       interval: "daily"
     assignees:
       - "Bento007"
+    groups:
+      database:
+        patterns:
+          - "alembic"
+          - "sqlalchemy"
+          - "psycopg2"
+      server:
+        patterns:
+          - "flask"
+          - "gunicorn"
+          - "setproctitle"
+          - "connexion"
+
   - package-ecosystem: pip
     directory: "/python_dependencies/wmg/"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
     schedule:
       interval: "weekly"
       day: "sunday"
@@ -25,7 +38,7 @@ updates:
       - "prathapsridharan"
   - package-ecosystem: pip
     directory: "/python_dependencies/upload_handler/"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
     schedule:
       interval: "weekly"
       day: "sunday"
@@ -33,7 +46,7 @@ updates:
       - "ebezzi"
   - package-ecosystem: pip
     directory: "/python_dependencies/submissions/"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
     schedule:
       interval: "weekly"
       day: "sunday"
@@ -41,7 +54,7 @@ updates:
       - "nayib-jose-gloria"
   - package-ecosystem: pip
     directory: "/python_dependencies/cellguide_pipeline/"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
     schedule:
       interval: "weekly"
       day: "sunday"
@@ -49,7 +62,7 @@ updates:
       - "atarashansky"
   - package-ecosystem: pip
     directory: "/python_dependencies/processing/"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
     schedule:
       interval: "weekly"
       day: "sunday"
@@ -75,7 +88,7 @@ updates:
           - "s3fs"
   - package-ecosystem: pip
     directory: "/python_dependencies/common/"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
     schedule:
       interval: "weekly"
       day: "sunday"
@@ -93,7 +106,7 @@ updates:
           - "allure"
   - package-ecosystem: npm
     directory: "/frontend/"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
     schedule:
       interval: "weekly"
       day: "sunday"

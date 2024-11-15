@@ -21,12 +21,16 @@ export const DIFFERENTIAL_EXPRESSION_INSTRUCTIONS_SIDEBAR =
   "differential-expression-instructions-sidebar";
 export const DIFFERENTIAL_EXPRESSION_FIND_GENES_BUTTON =
   "differential-expression-find-genes-button";
+export const DIFFERENTIAL_EXPRESSION_CLEAR_ALL_BUTTON =
+  "differential-expression-clear-all-button";
 export const DIFFERENTIAL_EXPRESSION_COPY_FILTERS_BUTTON_PREFIX =
   "differential-expression-copy-filters-button-";
 export const DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT =
   "differential-expression-filter-cell-count";
 export const DIFFERENTIAL_EXPRESSION_FILTERS_LOADING_SPINNER =
   "differential-expression-filters-loading-spinner";
+export const DIFFERENTIAL_EXPRESSION_OVERLAP_BEHAVIOR =
+  "differential-expression-overlap-behavior";
 
 // RESULTS VIEW DATA-TESTID CONSTANTS
 export const DIFFERENTIAL_EXPRESSION_RESULTS_DOWNLOAD_BUTTON =
@@ -56,3 +60,7 @@ export const DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT =
 
 export const DIFFERENTIAL_EXPRESSION_SOURCE_DATA_SIDEBAR =
   "differential-expression-source-data-sidebar";
+
+// Set this to true when releasing DE or just delete all references to this flag.
+// Used to temporarily hide DE-adjacent features.
+export const DIFFERENTIAL_EXPRESSION_RELEASED_FLAG = false;

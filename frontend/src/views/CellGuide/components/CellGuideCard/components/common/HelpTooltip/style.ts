@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import Image from "next/image";
 import { Button } from "@czi-sds/components";
 import { spacesXxxs } from "src/common/theme";
 
@@ -19,12 +18,6 @@ export const TooltipButton = styled(Button)`
   min-width: 12px;
   margin-left: 2.5px;
   text-transform: none;
-`;
-
-export const StyledIconImage = styled(Image)`
-  :hover {
-    filter: brightness(0);
-  }
 `;
 
 export const ExtraContentWrapper = styled.span`

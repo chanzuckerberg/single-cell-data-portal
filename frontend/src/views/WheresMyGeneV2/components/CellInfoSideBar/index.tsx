@@ -10,7 +10,6 @@ import {
   NoMarkerGenesContainer,
   NoMarkerGenesDescription,
   NoMarkerGenesHeader,
-  StyledIconImage,
   StyledMarkerGeneHeader,
   StyledTooltip,
   TooltipContent,
@@ -20,9 +19,7 @@ import {
   TooltipLink,
   AddToDotplotButton,
 } from "./style";
-import { Link } from "src/components/GeneInfoSideBar/style";
-import questionMarkIcon from "src/common/images/question-mark-icon.svg";
-import { StyledImage } from "src/views/WheresMyGeneV2/components/HeatMap/components/YAxisChart/style";
+import { StyledLink } from "src/components/GeneInfoSideBar/style";
 import InfoSVG from "src/common/images/info-sign-icon.svg";
 import { InfoButtonWrapper } from "src/components/common/Filter/common/style";
 import { CellInfoBarProps } from "./types";
@@ -51,6 +48,7 @@ import {
   TABLE_HEADER_SPECIFICITY,
   SPECIFICITY_TOOLTIP_CONTENT_FIRST_HALF,
   SPECIFICITY_TOOLTIP_CONTENT_SECOND_HALF,
+  DIFFERENTIAL_EXPRESSION_LINK_TEXT,
 } from "./constants";
 import { useConnect } from "./connect";
 import {
@@ -61,6 +59,9 @@ import {
   DivTableRow,
 } from "../../common/styles";
 import Description from "src/views/CellGuide/components/CellGuideCard/components/Description";
+import { StyledQuestionMarkIcon } from "src/common/style";
+import { DIFFERENTIAL_EXPRESSION_RELEASED_FLAG } from "src/views/DifferentialExpression/common/constants";
+import { useGptDescription } from "src/common/queries/cellGuide";
 
 function CellInfoSideBar({
   cellInfoCellType,
@@ -76,9 +77,14 @@ function CellInfoSideBar({
     handleMarkerScoreHoverEnd,
     handleSpecificityHoverEnd,
     setHoverStartTime,
+    differentialExpressionUrl,
   } = useConnect({
     cellInfoCellType,
   });
+
+  const { data: rawDescriptionGpt } = useGptDescription(
+    cellInfoCellType.cellType.id
+  );
 
   if (isLoading || !data) return null;
 
@@ -99,19 +105,37 @@ function CellInfoSideBar({
         skinnyMode={true}
         inSideBar
       />
-      <Link
-        href={`${ROUTES.CELL_GUIDE}/${cellInfoCellType.cellType.id}`}
-        onClick={() =>
-          track(EVENTS.WMG_OPEN_IN_CG_CLICKED, {
-            cell_type: cellInfoCellType.cellType.id,
-          })
-        }
-        target="_blank"
-        rel="noreferrer noopener"
-      >
-        {MARKER_SCORE_CELLGUIDE_LINK_TEXT}
-      </Link>
-
+      {Boolean(rawDescriptionGpt) && (
+        <StyledLink
+          href={`${ROUTES.CELL_GUIDE}/${cellInfoCellType.cellType.id}`}
+          onClick={() =>
+            track(EVENTS.WMG_OPEN_IN_CG_CLICKED, {
+              cell_type: cellInfoCellType.cellType.id,
+            })
+          }
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          {MARKER_SCORE_CELLGUIDE_LINK_TEXT}
+          <Icon sdsIcon="ChevronRight" sdsType="static" sdsSize="xs" />
+        </StyledLink>
+      )}
+      {DIFFERENTIAL_EXPRESSION_RELEASED_FLAG && (
+        <StyledLink
+          href={differentialExpressionUrl}
+          onClick={() =>
+            track(EVENTS.WMG_OPEN_IN_DE_CLICKED, {
+              cell_type: cellInfoCellType.cellType.id,
+              tissue: cellInfoCellType.tissueID,
+            })
+          }
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          {DIFFERENTIAL_EXPRESSION_LINK_TEXT}
+          <Icon sdsIcon="ChevronRight" sdsType="static" sdsSize="xs" />
+        </StyledLink>
+      )}
       <ButtonContainer>
         <ButtonWrapper>
           <StyledMarkerGeneHeader>{MARKER_GENE_LABEL}</StyledMarkerGeneHeader>
@@ -149,7 +173,7 @@ function CellInfoSideBar({
               sdsType="secondary"
               isAllCaps={false}
             >
-              <StyledIconImage alt="question mark" src={questionMarkIcon} />
+              <StyledQuestionMarkIcon />
             </TooltipButton>
           </Tooltip>
           <BetaChip label="Beta" size="small" />
@@ -244,7 +268,7 @@ function CellInfoSideBar({
                   isAllCaps={false}
                   data-testid={MARKER_SCORE_TOOLTIP_TEST_ID}
                 >
-                  <StyledIconImage alt="question mark" src={questionMarkIcon} />
+                  <StyledQuestionMarkIcon />
                 </TooltipButton>
               </Tooltip>
             </DivTableCell>
@@ -288,7 +312,7 @@ function CellInfoSideBar({
                   isAllCaps={false}
                   data-testid={SPECIFICITY_TOOLTIP_TEST_ID}
                 >
-                  <StyledIconImage alt="question mark" src={questionMarkIcon} />
+                  <StyledQuestionMarkIcon />
                 </TooltipButton>
               </Tooltip>
             </DivTableCell>
@@ -307,13 +331,7 @@ function CellInfoSideBar({
                     });
                   }}
                 >
-                  <StyledImage
-                    id="gene-info-button-fmg"
-                    src={InfoSVG.src}
-                    width="10"
-                    height="10"
-                    alt={`display gene info for ${symbol}`}
-                  />
+                  <InfoSVG id="gene-info-button-fmg" />
                 </InfoButtonWrapper>
               </DivTableCell>
               <DivTableCellPadded data-testid="marker-scores-fmg" align>

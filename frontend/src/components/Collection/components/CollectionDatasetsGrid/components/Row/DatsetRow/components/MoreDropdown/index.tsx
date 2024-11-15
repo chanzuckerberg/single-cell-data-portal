@@ -1,57 +1,35 @@
-import { Position } from "@blueprintjs/core";
-import { useMemo } from "react";
-import RawMoreDropdown from "src/components/common/MoreDropdown";
-import { Props as ChooserProps } from "src/components/DropboxChooser";
-import Menu from "./components/Menu";
-import { Collection } from "src/common/entities";
+import { Fragment } from "react";
+import { Props } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/types";
+import {
+  DATASET_MORE_BUTTON,
+  MORE_ICON_BUTTON_PROPS,
+} from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/constants";
+import { StyledButton } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/style";
+import { useMenu } from "src/views/Collection/hooks/useMenu";
+import Menu from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown/components/Menu";
 
-interface Props {
-  collectionId: Collection["id"];
-  datasetId?: string;
-  isPublished: boolean;
-  revisionsEnabled: boolean;
-  onUploadFile: ChooserProps["onUploadFile"];
-  isLoading: boolean;
-  disabled: boolean;
-}
-
-const MoreDropdown = ({
+export default function MoreDropdown({
   collectionId,
-  datasetId = "",
-  isPublished,
-  revisionsEnabled,
-  onUploadFile,
-  isLoading,
+  dataset,
   disabled,
-}: Props): JSX.Element => {
-  const popoverProps = useMemo(() => {
-    return {
-      content: (
-        <Menu
-          collectionId={collectionId}
-          datasetId={datasetId}
-          isPublished={isPublished}
-          revisionsEnabled={revisionsEnabled}
-          onUploadFile={onUploadFile}
-          isLoading={isLoading}
-        />
-      ),
-      disabled,
-      position: Position.BOTTOM,
-    };
-  }, [
-    collectionId,
-    datasetId,
-    isPublished,
-    revisionsEnabled,
-    isLoading,
-    onUploadFile,
-    disabled,
-  ]);
-
+  menuItemProps,
+}: Props): JSX.Element {
+  const { anchorEl, onClose, onOpen, open } = useMenu();
   return (
-    <RawMoreDropdown popoverProps={popoverProps} buttonProps={{ disabled }} />
+    <Fragment>
+      <StyledButton
+        {...MORE_ICON_BUTTON_PROPS}
+        data-testid={DATASET_MORE_BUTTON}
+        disabled={disabled}
+        onClick={onOpen}
+        open={open}
+      />
+      <Menu
+        collectionId={collectionId}
+        dataset={dataset}
+        menuItemProps={menuItemProps}
+        menuProps={{ anchorEl, onClose, open }}
+      />
+    </Fragment>
   );
-};
-
-export default MoreDropdown;
+}

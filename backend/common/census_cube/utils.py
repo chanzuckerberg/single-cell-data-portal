@@ -1,4 +1,3 @@
-import os
 from functools import lru_cache
 from typing import Dict, Optional
 
@@ -10,12 +9,10 @@ from cellxgene_ontology_guide.ontology_parser import OntologyParser
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
-from backend.common.census_cube.data.constants import CENSUS_CUBE_PINNED_SCHEMA_VERSION
 from backend.common.census_cube.data.snapshot import CensusCubeSnapshot
-from backend.common.constants import DEPLOYMENT_STAGE_TO_API_URL
 
 # exported and used by all modules related to the census cube
-ontology_parser = OntologyParser(schema_version=f"v{CENSUS_CUBE_PINNED_SCHEMA_VERSION}")
+ontology_parser = OntologyParser()
 
 
 def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:
@@ -116,40 +113,6 @@ def setup_retry_session(retries=3, backoff_factor=2, status_forcelist=(500, 502,
     session.mount("https://", adapter)
 
     return session
-
-
-def get_datasets_from_discover_api():
-    # hardcode to staging backend if deployment is rdev or test
-    deployment_stage = os.environ.get("DEPLOYMENT_STAGE")
-    API_URL = DEPLOYMENT_STAGE_TO_API_URL.get(
-        deployment_stage, "https://api.cellxgene.staging.single-cell.czi.technology"
-    )
-
-    datasets = {}
-    if API_URL:
-        session = setup_retry_session()
-        dataset_metadata_url = f"{API_URL}/curation/v1/datasets?schema_version={CENSUS_CUBE_PINNED_SCHEMA_VERSION}"
-        response = session.get(dataset_metadata_url)
-        if response.status_code == 200:
-            datasets = response.json()
-    return datasets
-
-
-def get_collections_from_discover_api():
-    # hardcode to staging backend if deployment is rdev or test
-    deployment_stage = os.environ.get("DEPLOYMENT_STAGE")
-    API_URL = DEPLOYMENT_STAGE_TO_API_URL.get(
-        deployment_stage, "https://api.cellxgene.staging.single-cell.czi.technology"
-    )
-
-    collections = {}
-    if API_URL:
-        session = setup_retry_session()
-        dataset_metadata_url = f"{API_URL}/curation/v1/collections"
-        response = session.get(dataset_metadata_url)
-        if response.status_code == 200:
-            collections = response.json()
-    return collections
 
 
 def build_filter_relationships(cell_counts_df: pd.DataFrame):

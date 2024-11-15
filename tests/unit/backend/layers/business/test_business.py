@@ -28,9 +28,12 @@ from backend.layers.business.exceptions import (
     CollectionUpdateException,
     CollectionVersionException,
     DatasetIngestException,
+    DatasetInWrongStatusException,
     DatasetIsTombstonedException,
     DatasetNotFoundException,
+    InvalidMetadataException,
     InvalidURIException,
+    NoPreviousCollectionVersionException,
     NoPreviousDatasetVersionException,
 )
 from backend.layers.common.entities import (
@@ -492,6 +495,26 @@ class TestGetCollectionVersion(BaseBusinessLogicTestCase):
             )
             self.assertIsNotNone(past_version_tombstoned)
             self.assertEqual(True, past_version_tombstoned.canonical_collection.tombstoned)
+
+    def test_get_unpublished_collection_versions_from_canonical(self):
+        """
+        Unpublished Collection versions can be retrieved from a canonical Collection
+        """
+        published_collection = self.initialize_published_collection()
+        non_migration_revision = self.business_logic.create_collection_version(
+            published_collection.collection_id, is_auto_version=False
+        )
+        migration_revision = self.business_logic.create_collection_version(
+            published_collection.collection_id, is_auto_version=True
+        )
+
+        unpublished_versions = self.business_logic.get_unpublished_collection_versions_from_canonical(
+            published_collection.collection_id
+        )
+        unpublished_version_ids = [version.version_id.id for version in unpublished_versions]
+        self.assertCountEqual(
+            [non_migration_revision.version_id.id, migration_revision.version_id.id], unpublished_version_ids
+        )
 
 
 class TestGetAllCollections(BaseBusinessLogicTestCase):
@@ -1382,6 +1405,18 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         # Act + Assert
         self.assertRaises(CollectionDeleteException, delete_artifacts, artifacts)
 
+    def test_delete_dataset_versions(self):
+        collection = self.initialize_unpublished_collection()
+        dataset_to_delete = collection.datasets[0]
+        uris_to_delete = [a.uri for a in dataset_to_delete.artifacts]
+        dataset_artifact_ids = [a.id for a in dataset_to_delete.artifacts]
+
+        self.business_logic.delete_dataset_versions([dataset_to_delete])
+
+        self.assertIsNone(self.business_logic.get_dataset_version(dataset_to_delete.version_id))
+        self.assertEqual(self.database_provider.get_dataset_artifacts(dataset_artifact_ids), [])
+        [self.assertFalse(self.s3_provider.uri_exists(uri)) for uri in uris_to_delete]
+
 
 class TestGetDataset(BaseBusinessLogicTestCase):
     def test_get_all_datasets_ok(self):
@@ -1727,6 +1762,126 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
             self.business_logic.set_dataset_metadata(dataset.version_id, self.sample_dataset_metadata)
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             self.assertEqual(version_from_db.metadata, self.sample_dataset_metadata)
+
+    def test_update_dataset_artifact_metadata_missing_title_error(self):
+        """
+        Attempting to update a dataset without providing a title raises an exception.
+        """
+
+        # Create a private collection.
+        unpublished_collection = self.initialize_unpublished_collection()
+
+        # Create update.
+        update = DatasetArtifactMetadataUpdate()
+
+        # Confirm error is raised.
+        dataset = unpublished_collection.datasets[0]
+        with self.assertRaises(InvalidMetadataException):
+            self.business_logic.update_dataset_artifact_metadata(
+                unpublished_collection.version_id, dataset.version_id, update
+            )
+
+    def test_update_dataset_artifact_metadata_public_collection_error(self):
+        """
+        Attemping to update a dataset in a public collection raises an exception.
+        """
+
+        # Create public collection.
+        published_collection = self.initialize_published_collection()
+
+        # Create update.
+        update = DatasetArtifactMetadataUpdate(title="new title")
+
+        # Confirm error is raised.
+        dataset = published_collection.datasets[0]
+        with self.assertRaises(CollectionIsPublishedException):
+            self.business_logic.update_dataset_artifact_metadata(
+                published_collection.version_id, dataset.version_id, update
+            )
+
+    def test_update_dataset_artifact_metadata_invalid_status_error(self):
+        """
+        Attempting to update a dataset with a non-success processing status raises an exception.
+        """
+
+        # Create a private collection with a dataset that has not been fully ingested.
+        unpublished_collection = self.initialize_unpublished_collection(complete_dataset_ingestion=False)
+
+        # Create update.
+        update = DatasetArtifactMetadataUpdate(title="new title")
+
+        # Confirm error is raised.
+        dataset = unpublished_collection.datasets[0]
+        with self.assertRaises(DatasetInWrongStatusException):
+            self.business_logic.update_dataset_artifact_metadata(
+                unpublished_collection.version_id, dataset.version_id, update
+            )
+
+    def test_update_dataset_artifact_metadata_ok(self):
+        """
+        The dataset artifact metadata can be updated using `update_dataset_artifact_metadata`
+        """
+
+        # Create a private collection.
+        unpublished_collection = self.initialize_unpublished_collection()
+
+        # Create update.
+        update = DatasetArtifactMetadataUpdate(title="new title")
+
+        # Mock trigger artifact update.
+        self.business_logic.trigger_dataset_artifact_update = Mock()
+
+        # Attempt update.
+        dataset = unpublished_collection.datasets[0]
+        self.business_logic.update_dataset_artifact_metadata(
+            unpublished_collection.version_id, dataset.version_id, update
+        )
+
+        # Confirm trigger was called.
+        self.business_logic.trigger_dataset_artifact_update.assert_called_once()
+
+    def test_update_dataset_artifact_metadata_sanitized_ok(self):
+        """
+        The dataset artifact metadata can be updated with sanitized values.
+        """
+
+        # Create a private collection.
+        unpublished_collection = self.initialize_unpublished_collection()
+
+        # Create update.
+        title = "new title"
+        update = DatasetArtifactMetadataUpdate(title=f" {title} ")
+
+        # Mock trigger artifact update.
+        trigger_mock = self.business_logic.trigger_dataset_artifact_update = Mock()
+
+        # Attempt update.
+        dataset = unpublished_collection.datasets[0]
+        self.business_logic.update_dataset_artifact_metadata(
+            unpublished_collection.version_id, dataset.version_id, update
+        )
+
+        # Confirm update was sanitized.
+        args, _ = trigger_mock.call_args
+        assert args[1].title == title
+
+    def test_update_dataset_artifact_metadata_invalid_title_error(self):
+        """
+        Attempting to update a dataset with an invalid title raises an exception.
+        """
+
+        # Create a private collection.
+        unpublished_collection = self.initialize_unpublished_collection()
+
+        # Create update.
+        update = DatasetArtifactMetadataUpdate(title="new\x00title")
+
+        # Confirm error is raised.
+        dataset = unpublished_collection.datasets[0]
+        with self.assertRaises(InvalidMetadataException):
+            self.business_logic.update_dataset_artifact_metadata(
+                unpublished_collection.version_id, dataset.version_id, update
+            )
 
 
 class TestCollectionOperations(BaseBusinessLogicTestCase):
@@ -2743,6 +2898,37 @@ class TestCollectionUtilities(BaseBusinessLogicTestCase):
         )
         self.assertEqual(expected_delete_keys, actual_delete_keys)
 
+    def test__restore_previous_collection_version(self):
+        """
+        Test restoring a previous version of a collection
+        """
+        original_collection_version = self.initialize_published_collection()
+        collection_id = original_collection_version.collection_id
+        new_version = self.business_logic.create_collection_version(collection_id)
+        self.business_logic.publish_collection_version(new_version.version_id)
+
+        # Restore the previous version
+        self.business_logic.restore_previous_collection_version(collection_id)
+
+        # Fetch the collection
+        restored_collection = self.business_logic.get_canonical_collection(collection_id)
+
+        # Ensure the collection is pointing back at the original collection version
+        self.assertEqual(original_collection_version.version_id, restored_collection.version_id)
+
+        # Ensure replaced CollectionVersion is deleted from DB
+        self.assertIsNone(self.database_provider.get_collection_version(new_version.version_id))
+
+    def test__restore_previous_collection_version__no_previous_versions(self):
+        """
+        Test restoring a previous version of a collection fails when there are no previous versions
+        """
+        original_collection_version = self.initialize_published_collection()
+        collection_id = original_collection_version.collection_id
+
+        with self.assertRaises(NoPreviousCollectionVersionException):
+            self.business_logic.restore_previous_collection_version(collection_id)
+
 
 class TestGetEntitiesBySchema(BaseBusinessLogicTestCase):
     def test_get_latest_published_collection_versions_by_schema(self):
@@ -2943,7 +3129,10 @@ class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
         current_dataset_version_id = revision.datasets[0].version_id
         self.batch_job_provider.start_metadata_update_batch_job = Mock()
         self.business_logic.trigger_dataset_artifact_update(revision, metadata_update, current_dataset_version_id)
+
         self.batch_job_provider.start_metadata_update_batch_job.assert_called_once()
+        # Confirm citation is updated if new dataset version is generated as part of trigger_dataset_artifact_update
+        self.assertIsNotNone(metadata_update.citation)
 
     def test_trigger_dataset_artifact_update__with_new_dataset_version_id(self):
         metadata_update = DatasetArtifactMetadataUpdate(schema_version="4.0.0")

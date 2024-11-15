@@ -40,10 +40,11 @@ from backend.layers.business.exceptions import (
     DatasetVersionNotFoundException,
     InvalidURIException,
     MaxFileSizeExceededException,
+    NoPreviousCollectionVersionException,
     NoPreviousDatasetVersionException,
 )
 from backend.layers.common import validation
-from backend.layers.common.cleanup import sanitize
+from backend.layers.common.cleanup import sanitize, sanitize_dataset_artifact_metadata_update
 from backend.layers.common.entities import (
     CanonicalCollection,
     CollectionId,
@@ -161,6 +162,11 @@ class BusinessLogic(BusinessLogicInterface):
             new_dataset_version_id = self.create_empty_dataset_version_for_current_dataset(
                 collection_version.version_id, current_dataset_version_id
             ).version_id
+            # Update citation for new dataset version
+            doi = next((link.uri for link in collection_version.metadata.links if link.type == "DOI"), None)
+            metadata_update.citation = self.generate_dataset_citation(
+                collection_version.collection_id, new_dataset_version_id, doi
+            )
 
         self.batch_job_provider.start_metadata_update_batch_job(
             current_dataset_version_id, new_dataset_version_id, metadata_update
@@ -267,6 +273,19 @@ class BusinessLogic(BusinessLogicInterface):
                 latest = collection.created_at
                 unpublished_collection = collection
         return unpublished_collection
+
+    def get_unpublished_collection_versions_from_canonical(
+        self, collection_id: CollectionId
+    ) -> List[CollectionVersionWithDatasets]:
+        """
+        Given a canonical collection_id, retrieves its latest unpublished versions (max of 2 with a migration_revision
+        and non-migration revision)
+        """
+        unpublished_collections = []
+        for collection in self.get_collection_versions_from_canonical(collection_id):
+            if collection.published_at is None:
+                unpublished_collections.append(collection)
+        return unpublished_collections
 
     def get_collection_url(self, collection_id: str) -> str:
         return f"{CorporaConfig().collections_base_url}/collections/{collection_id}"
@@ -432,7 +451,7 @@ class BusinessLogic(BusinessLogicInterface):
         ):
             for dataset in current_collection_version.datasets:
                 if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
-                    self.logger.info(
+                    logger.info(
                         f"Dataset {dataset.version_id.id} is not successfully processed. Skipping metadata update."
                     )
                     continue
@@ -462,6 +481,23 @@ class BusinessLogic(BusinessLogicInterface):
         if collection_version.published_at is not None:
             raise CollectionIsPublishedException([f"Collection version {collection_version_id.id} is published"])
         return collection_version
+
+    def _assert_dataset_version_processing_status(
+        self, dataset_version_id: DatasetVersionId, expected_status: DatasetProcessingStatus
+    ) -> DatasetVersion:
+        """
+        Ensures a dataset version is in the expected processing status.
+
+        :param dataset_version_id: The dataset version to check the processing status of.
+        :param expected_status: The expected processing status of the dataset version.
+        :return: The dataset version if it is in the expected processing status.
+        """
+        dataset = self.database_provider.get_dataset_version(dataset_version_id)
+        if dataset.status.processing_status != expected_status:
+            raise DatasetInWrongStatusException(
+                f"Dataset {dataset_version_id.id} processing status must be {expected_status.name} but is {dataset.status.processing_status}."
+            )
+        return dataset
 
     def create_empty_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         """
@@ -624,6 +660,36 @@ class BusinessLogic(BusinessLogicInterface):
         Sets the metadata for a dataset version
         """
         self.database_provider.set_dataset_metadata(dataset_version_id, metadata)
+
+    def update_dataset_artifact_metadata(
+        self,
+        collection_version_id: CollectionVersionId,
+        dataset_version_id: DatasetVersionId,
+        metadata_update: DatasetArtifactMetadataUpdate,
+    ) -> None:
+        """
+        Validates dataset artifact metadata update and triggers corresponding updates. Currently only supports
+        updating dataset title.
+
+        :param collection_version_id: Collection of dataset to update.
+        :param dataset_version_id: Version ID of dataset to update.
+        :param metadata_update: Metadata update to apply.
+        """
+        # Format submitted update values.
+        sanitize_dataset_artifact_metadata_update(metadata_update)
+
+        # Confirm update values are valid.
+        validation.verify_dataset_artifact_metadata_update(metadata_update)
+
+        # Dataset can only be updated if corresponding collection is unpublished.
+        self._assert_collection_version_unpublished(collection_version_id)
+
+        # Dataset can only be updated if its processing status is SUCCESS.
+        self._assert_dataset_version_processing_status(dataset_version_id, DatasetProcessingStatus.SUCCESS)
+
+        # Trigger update of dataset artifact.
+        collection_version = self.get_collection_version(collection_version_id)
+        self.trigger_dataset_artifact_update(collection_version, metadata_update, dataset_version_id)
 
     def get_all_mapped_datasets(self) -> List[DatasetVersion]:
         """
@@ -896,6 +962,14 @@ class BusinessLogic(BusinessLogicInterface):
             )
         )
 
+    def delete_dataset_versions(self, dataset_versions: List[DatasetVersion]) -> None:
+        """
+        Deletes a list of dataset versions and associated dataset artifact rows from the database, as well
+        as kicking off deletion of their corresponding assets from S3
+        """
+        self.delete_dataset_version_assets(dataset_versions)
+        self.database_provider.delete_dataset_versions(dataset_versions)
+
     def delete_dataset_version_assets(self, dataset_versions: List[DatasetVersion]) -> None:
         self.delete_dataset_versions_from_public_bucket([dv.version_id.id for dv in dataset_versions])
         self.delete_artifacts(reduce(lambda artifacts, dv: artifacts + dv.artifacts, dataset_versions, []))
@@ -1018,8 +1092,7 @@ class BusinessLogic(BusinessLogicInterface):
             version.collection_id, from_date=date_of_last_publish
         )
         versions_to_delete = list(filter(lambda dv: dv.version_id.id not in versions_to_keep, dataset_versions))
-        self.delete_dataset_version_assets(versions_to_delete)
-        self.database_provider.delete_dataset_versions(versions_to_delete)
+        self.delete_dataset_versions(versions_to_delete)
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:
         """
@@ -1264,3 +1337,38 @@ class BusinessLogic(BusinessLogicInterface):
         self.database_provider.replace_dataset_in_collection_version(
             collection_version_id, current_version.version_id, previous_version_id
         )
+
+    def restore_previous_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
+        """
+        Restore the previously published collection version for a collection, if any exist.
+
+        Returns CollectionVersion that was replaced, and is no longer linked to canonical collection.
+
+        :param collection_id: The collection id to restore the previous version of.
+        """
+        version_to_replace = self.get_collection_version_from_canonical(collection_id)
+        all_published_versions = list(self.get_all_published_collection_versions_from_canonical(collection_id))
+        if len(all_published_versions) < 2:
+            raise NoPreviousCollectionVersionException(f"No previous collection version for collection {collection_id}")
+
+        # get most recent previously published version
+        previous_version = None
+        previous_published_at = datetime.fromtimestamp(0)
+
+        for version in all_published_versions:
+            if version.version_id == version_to_replace.version_id:
+                continue
+            if version.published_at > previous_published_at:
+                previous_version = version
+                previous_published_at = version.published_at
+
+        logger.info(
+            {
+                "message": "Restoring previous collection version",
+                "collection_id": collection_id.id,
+                "replace_version_id": version_to_replace.version_id.id,
+                "restored_version_id": previous_version.version_id.id,
+            }
+        )
+        self.database_provider.replace_collection_version(collection_id, previous_version.version_id)
+        return version_to_replace

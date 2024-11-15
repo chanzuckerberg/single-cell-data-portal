@@ -6,6 +6,8 @@ from collections import defaultdict
 from dataclasses import asdict
 from unittest.mock import Mock, patch
 
+from requests import HTTPError, Response
+
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException
 from backend.common.utils.api_key import generate
 from backend.curation.api.v1.curation.collections.common import EntityColumns
@@ -2301,6 +2303,157 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertEqual(400, response.status_code)
 
 
+class TestPatchDataset(BaseAPIPortalTest):
+    def test_patch_revision_dataset_owner_202(self):
+        # Generate revision of public collection.
+        dataset = self.generate_dataset(
+            statuses=[
+                DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED),
+            ],
+            publish=True,
+        )
+        revision = self.generate_revision(CollectionId(dataset.collection_id))
+
+        # Attempt to update dataset title.
+        response = self.app.patch(
+            f"/curation/v1/collections/{revision.version_id.id}/datasets/{dataset.dataset_id}",
+            data=json.dumps({"title": "new title"}),
+            headers=self.make_owner_header(),
+        )
+
+        # Confirm update was successful.
+        self.assertEqual(202, response.status_code)
+
+    def test_patch_private_collection_dataset_owner_202(self):
+        # Generate private collection and dataset.
+        dataset = self.generate_dataset(
+            statuses=[
+                DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED),
+            ],
+        )
+
+        # Attempt to update dataset title.
+        response = self.app.patch(
+            f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}",
+            data=json.dumps({"title": "new title"}),
+            headers=self.make_owner_header(),
+        )
+
+        # Confirm update was successful.
+        self.assertEqual(202, response.status_code)
+
+    def test_patch_private_collection_dataset_super_202(self):
+        # Generate private collection and dataset.
+        dataset = self.generate_dataset(
+            statuses=[
+                DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED),
+            ],
+        )
+
+        # Attempt to update dataset title as super curator.
+        response = self.app.patch(
+            f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}",
+            data=json.dumps({"title": "new title"}),
+            headers=self.make_super_curator_header(),
+        )
+
+        # Confirm update was successful.
+        self.assertEqual(202, response.status_code)
+
+    def test_patch_private_collection_dataset_no_auth_401(self):
+        # Generate private collection and dataset.
+        dataset = self.generate_dataset(
+            statuses=[
+                DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED),
+            ],
+        )
+
+        # Attempt to update dataset title without auth.
+        response = self.app.patch(
+            f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}",
+            data=json.dumps({"title": "new title"}),
+        )
+
+        # Confirm forbidden response.
+        self.assertEqual(401, response.status_code)
+
+    def test_patch_private_collection_dataset_not_authorized_403(self):
+        # Generate private collection and dataset.
+        dataset = self.generate_dataset(
+            statuses=[
+                DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED),
+            ],
+        )
+
+        # Attempt to update dataset title as a non-owner.
+        response = self.app.patch(
+            f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}",
+            data=json.dumps({"title": "new title"}),
+            headers=self.make_not_owner_header(),
+        )
+
+        # Confirm forbidden response.
+        self.assertEqual(403, response.status_code)
+
+    def test_patch_public_collection_dataset_not_authorized_403(self):
+        # Generate public collection and dataset.
+        dataset = self.generate_dataset(
+            statuses=[
+                DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED),
+            ],
+            publish=True,
+        )
+
+        # Attempt to update dataset title.
+        response = self.app.patch(
+            f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}",
+            data=json.dumps({"title": "new title"}),
+            headers=self.make_owner_header(),
+        )
+
+        # Confirm forbidden response.
+        self.assertEqual(403, response.status_code)
+
+    def test_patch_private_collection_dataset_invalid_collection_404(self):
+        # Generate private collection and dataset.
+        dataset = self.generate_dataset(
+            statuses=[
+                DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED),
+            ],
+        )
+
+        # Attempt to update dataset title with an invalid collection ID.
+        response = self.app.patch(
+            f"/curation/v1/collections/{str(uuid.uuid4())}/datasets/{dataset.dataset_id}",
+            data=json.dumps({"title": "new title"}),
+            headers=self.make_owner_header(),
+        )
+
+        # Confirm not found response.
+        self.assertEqual(404, response.status_code)
+
+    def test_patch_private_collection_dataset_invalid_status_405(self):
+        # Generate private collection and a dataset with a non-SUCCESS processing status.
+        dataset = self.generate_dataset()
+
+        # Attempt to update dataset title.
+        response = self.app.patch(
+            f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}",
+            data=json.dumps({"title": "new title"}),
+            headers=self.make_owner_header(),
+        )
+
+        # Confirm not allowed response.
+        self.assertEqual(405, response.status_code)
+
+
 class TestGetDatasetVersion(BaseAPIPortalTest):
     def test_get_dataset_version_ok(self):
         collection = self.generate_published_collection()
@@ -2814,3 +2967,20 @@ class TestAuthToken(BaseAPIPortalTest):
         user_api_key = generate(test_user_id, test_secret)
         response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key})
         self.assertEqual(404, response.status_code)
+
+    @patch("backend.curation.api.v1.curation.auth.token.CorporaAuthConfig")
+    @patch("backend.curation.api.v1.curation.auth.token.auth0_management_session")
+    def test__post_token__401_old_token(self, auth0_management_session, CorporaAuthConfig):
+        """The old token fails to authenticate"""
+        test_secret = "password1234"
+        test_email = "user@email.com"
+        test_user_id = "test_user_id"
+        test_response = Response()
+        test_response.status_code = 403
+        test_error = HTTPError(response=test_response)
+        CorporaAuthConfig().api_key_secret = test_secret
+        auth0_management_session.get_user_api_key_identity = Mock(return_value={"profileData": {"email": test_email}})
+        auth0_management_session.generate_access_token = Mock(side_effect=test_error)
+        user_api_key = generate(test_user_id, test_secret)
+        response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key})
+        self.assertEqual(401, response.status_code)

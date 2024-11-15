@@ -79,6 +79,10 @@ resource aws_batch_job_definition dataset_metadata_update {
       "value": "${var.datasets_bucket}"
     },
     {
+      "name": "SPATIAL_DEEP_ZOOM_BUCKET",
+      "value": "${var.spatial_deep_zoom_bucket}"
+    },
+    {
       "name": "DEPLOYMENT_STAGE",
       "value": "${var.deployment_stage}"
     },
@@ -95,6 +99,68 @@ resource aws_batch_job_definition dataset_metadata_update {
   "linuxParameters": {
      "maxSwap": 800000,
      "swappiness": 60
+  },
+  "retryStrategy": {
+    "attempts": 3,
+    "evaluateOnExit": [
+      {
+          "action": "RETRY",
+          "onReason": "Task failed to start"
+      },
+      {
+          "action": "EXIT",
+          "onReason": "*"
+      }
+    ]
+  },
+  "logConfiguration": {
+    "logDriver": "awslogs",
+    "options": {
+      "awslogs-group": "${aws_cloudwatch_log_group.cloud_watch_logs_group.id}",
+      "awslogs-region": "${data.aws_region.current.name}"
+    }
+  }
+})
+}
+
+resource aws_batch_job_definition rollback {
+  type = "container"
+  name = "dp-${var.deployment_stage}-${var.custom_stack_name}-rollback"
+  container_properties = jsonencode({
+  "command": ["python3", "-m", "backend.layers.processing.rollback"],
+  "jobRoleArn": "${var.batch_role_arn}",
+  "image": "${var.image}",
+  "memory": 8000,
+  "environment": [
+    {
+      "name": "ARTIFACT_BUCKET",
+      "value": "${var.artifact_bucket}"
+    },
+    {
+      "name": "CELLXGENE_BUCKET",
+      "value": "${var.cellxgene_bucket}"
+    },
+    {
+      "name": "DATASETS_BUCKET",
+      "value": "${var.datasets_bucket}"
+    },
+    {
+      "name": "DEPLOYMENT_STAGE",
+      "value": "${var.deployment_stage}"
+    },
+    {
+      "name": "AWS_DEFAULT_REGION",
+      "value": "${data.aws_region.current.name}"
+    },
+    {
+      "name": "REMOTE_DEV_PREFIX",
+      "value": "${var.remote_dev_prefix}"
+    }
+  ],
+  "vcpus": 1,
+  "linuxParameters": {
+     "maxSwap": 0,
+     "swappiness": 0
   },
   "retryStrategy": {
     "attempts": 3,

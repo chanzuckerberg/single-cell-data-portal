@@ -6,7 +6,7 @@ import { DifferentialExpressionRow, Props } from "./types";
 import { applyFilter } from "./utils";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { craftPayloadWithQueryGroups } from "../../utils";
+import { useCraftPayloadWithQueryGroups } from "../../utils";
 
 export const useConnect = ({ setIsLoading }: Props) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -16,7 +16,11 @@ export const useConnect = ({ setIsLoading }: Props) => {
 
   const [isSourceDatasetSidebarOpen, setIsSourceDatasetSidebarOpen] =
     useState(false);
-  const { data, isLoading: isLoadingRaw } = useDifferentialExpression();
+  const {
+    data,
+    isLoading: isLoadingRaw,
+    errorMessage: errorMessageRaw,
+  } = useDifferentialExpression();
   const {
     differentialExpressionResults: rawDifferentialExpressionResults,
     nOverlap,
@@ -45,6 +49,8 @@ export const useConnect = ({ setIsLoading }: Props) => {
     );
     setDifferentialExpressionResults(formattedResults);
   }, [rawDifferentialExpressionResults, isLoadingRaw, organismId]);
+
+  const errorMessage = isLoadingRaw ? null : errorMessageRaw || null;
 
   const showEmpty = !queryGroups;
 
@@ -81,6 +87,8 @@ export const useConnect = ({ setIsLoading }: Props) => {
     effectSizeFilter,
     sortDirection,
   ]);
+
+  const payload = useCraftPayloadWithQueryGroups();
 
   const downloadCSV = useCallback(() => {
     if (!queryGroupsWithNames || !queryGroups || isLoadingRaw) return;
@@ -130,12 +138,13 @@ export const useConnect = ({ setIsLoading }: Props) => {
     link.click();
     document.body.removeChild(link);
 
-    track(EVENTS.DE_DOWNLOAD_CLICKED, craftPayloadWithQueryGroups(queryGroups));
+    track(EVENTS.DE_DOWNLOAD_CLICKED, payload);
   }, [
     sortedAndFilteredResults,
     queryGroups,
     queryGroupsWithNames,
     isLoadingRaw,
+    payload,
   ]);
 
   return {
@@ -154,5 +163,6 @@ export const useConnect = ({ setIsLoading }: Props) => {
     downloadCSV,
     showEmpty,
     nOverlap,
+    errorMessage,
   };
 };

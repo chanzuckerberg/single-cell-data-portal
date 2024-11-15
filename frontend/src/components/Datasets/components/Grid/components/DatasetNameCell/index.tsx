@@ -8,6 +8,7 @@ interface Props {
   children?: ReactNode;
   collectionId?: string;
   collectionName?: string;
+  dataTestId?: string;
   name: string;
 }
 
@@ -15,12 +16,14 @@ export default function DatasetNameCell({
   children,
   collectionId = "",
   collectionName = "",
+  dataTestId,
   name,
 }: Props): JSX.Element {
   const url = ROUTES.COLLECTION.replace(":id", collectionId);
+  const titleProps = dataTestId ? { "data-testid": dataTestId } : {}; // data-testid required for collection view only.
   return (
     <>
-      <Title>{name}</Title>
+      <Title {...titleProps}>{name}</Title>
       {!!collectionName &&
         (collectionId ? (
           <SubTitle>

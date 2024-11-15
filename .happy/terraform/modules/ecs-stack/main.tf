@@ -31,7 +31,7 @@ locals {
   backend_wmg_workers           = var.backend_wmg_workers
   backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "${local.backend_workers}",
     "--bind", "0.0.0.0:5000", "backend.api_server.app:app", "--max-requests", "10000", "--timeout", "180",
-    "--keep-alive", "61", "--log-level", "info"]
+    "--keep-alive", "100", "--log-level", "info"]
   backend_de_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "${local.backend_de_workers}",
     "--bind", "0.0.0.0:5000", "backend.de.server.app:app", "--max-requests", "10000", "--timeout", "540",
     "--keep-alive", "61", "--log-level", "info"]
@@ -82,6 +82,7 @@ locals {
   artifact_bucket            = try(local.secret["s3_buckets"]["artifact"]["name"], "")
   cellxgene_bucket           = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
   datasets_bucket            = try(local.secret["s3_buckets"]["datasets"]["name"], "")
+  spatial_deep_zoom_bucket   = try(local.secret["s3_buckets"]["spatial_deep_zoom"]["name"], "")
   dataset_submissions_bucket = try(local.secret["s3_buckets"]["dataset_submissions"]["name"], "")
   wmg_bucket                 = try(local.secret["s3_buckets"]["wmg"]["name"], "")
 
@@ -316,6 +317,7 @@ module upload_batch {
   artifact_bucket   = local.artifact_bucket
   cellxgene_bucket  = local.cellxgene_bucket
   datasets_bucket   = local.datasets_bucket
+  spatial_deep_zoom_bucket = local.spatial_deep_zoom_bucket
   frontend_url      = local.frontend_url
   batch_container_memory_limit = local.batch_container_memory_limit
 }

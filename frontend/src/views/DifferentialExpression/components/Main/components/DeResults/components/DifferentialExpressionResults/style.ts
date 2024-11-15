@@ -2,16 +2,17 @@ import styled from "@emotion/styled";
 import { Callout, fontBodyS, fontBodyXxs } from "@czi-sds/components";
 import { gray100, primary400 } from "src/common/theme";
 import { TextField } from "@mui/material";
-import Image from "next/image";
 import { inputBaseClasses } from "@mui/material/InputBase";
 import { inputLabelClasses } from "@mui/material/InputLabel";
 import { alertClasses } from "@mui/material/Alert";
+import { RIGHT_PANEL_WIDTH } from "../../../../style";
 
-const TABLE_WIDTH = "386px";
+const TABLE_WIDTH = RIGHT_PANEL_WIDTH - 60;
+
 export const TableWrapper = styled.div`
-  width: ${TABLE_WIDTH};
+  width: ${TABLE_WIDTH}px;
   [class*="StyledCell"] {
-    max-width: ${parseFloat(TABLE_WIDTH.replace("px", "")) / 3}px;
+    max-width: ${TABLE_WIDTH / 3}px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -58,7 +59,7 @@ export const EffectSizeHeaderWrapper = styled.div`
 export const CellGroupWrapper = styled.div`
   min-height: 92px;
   height: fit-content;
-  width: ${TABLE_WIDTH};
+  width: ${TABLE_WIDTH}px;
   margin-bottom: 8px;
 
   padding: 12px;
@@ -77,7 +78,7 @@ export const CellGroupTitle = styled.span`
   font-weight: 600;
 `;
 
-export const EffectSizeIndicator = styled.span`
+export const CellGroupStatsIndicator = styled.span`
   ${fontBodyXxs}
   color: #959595;
 `;
@@ -91,21 +92,12 @@ export const FilterTagsWrapper = styled.div`
 `;
 
 export const StyledCallout = styled(Callout)`
-  width: ${TABLE_WIDTH};
+  width: ${TABLE_WIDTH}px;
 
   .${alertClasses.icon} {
     margin-top: auto;
     margin-bottom: auto;
   }
-`;
-
-export const StyledIconImage = styled(Image)`
-  width: 24px;
-  height: 24px;
-
-  /* CSS filter generated for #0073FF (primary400) using https://isotropic.co/tool/hex-color-to-css-filter/ */
-  filter: invert(37%) sepia(58%) saturate(7350%) hue-rotate(205deg)
-    brightness(105%) contrast(105%);
 `;
 
 export const StyledTooltipText = styled.div`

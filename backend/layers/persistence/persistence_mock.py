@@ -52,12 +52,16 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     # All the dataset versions
     datasets_versions: Dict[str, DatasetVersion]
 
+    # Dataset artifacts
+    dataset_artifacts: Dict[str, DatasetArtifact]
+
     def __init__(self) -> None:
         super().__init__()
         self.collections = {}  # rename to: active_collections
         self.collections_versions = {}
         self.datasets = {}  # rename to: active_datasets
         self.datasets_versions = {}
+        self.dataset_artifacts = {}
 
     # TODO: add publisher_metadata here?
     def create_canonical_collection(
@@ -151,7 +155,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def get_all_mapped_collection_versions(
         self, get_tombstoned: bool = False
     ) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
-        for version_id, collection_version in self.collections_versions.items():
+        for version_id, collection_version in list(self.collections_versions.items()):
             if version_id in [c.version_id.id for c in self.collections.values()]:
                 collection_id = collection_version.collection_id.id
                 if not get_tombstoned and self.collections[collection_id].tombstoned:
@@ -250,6 +254,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self, dataset_version_rows: List[DatasetVersion], session: Any
     ) -> None:
         for d_v_row in dataset_version_rows:
+            for artifact_id in [a.id.id for a in d_v_row.artifacts]:
+                del self.dataset_artifacts[artifact_id]
             del self.datasets_versions[d_v_row.version_id.id]  # Artifacts live on DatasetVersion; they get deleted
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
@@ -458,6 +464,13 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         dataset = self.datasets_versions[dataset_version_id.id]
         return copy.deepcopy(dataset.artifacts)
 
+    def get_dataset_artifacts(self, dataset_artifact_id_list: List[DatasetArtifactId]) -> List[DatasetArtifact]:
+        return [
+            self.dataset_artifacts[artifact_id.id]
+            for artifact_id in dataset_artifact_id_list
+            if artifact_id.id in self.dataset_artifacts
+        ]
+
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         # Creates a dataset and initializes it with one version
         dataset_id = DatasetId()
@@ -488,11 +501,14 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     ) -> DatasetArtifactId:
         version = self.datasets_versions[version_id.id]
         artifact_id = DatasetArtifactId()
-        version.artifacts.append(DatasetArtifact(artifact_id, artifact_type, artifact_uri))
+        dataset_artifact = DatasetArtifact(artifact_id, artifact_type, artifact_uri)
+        version.artifacts.append(dataset_artifact)
+        self.dataset_artifacts[artifact_id.id] = dataset_artifact
         return artifact_id
 
     def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
         found_artifact = False
+        self.dataset_artifacts[artifact_id.id].uri = artifact_uri
         for version in self.datasets_versions.values():
             if found_artifact:
                 break
@@ -571,6 +587,13 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         idx = next(i for i, e in enumerate(collection_version.datasets) if e == old_dataset_version_id)
         collection_version.datasets[idx] = new_dataset_version_id
         return copy.deepcopy(new_dataset_version)
+
+    def replace_collection_version(
+        self, collection_id: CollectionId, new_collection_version_id: CollectionVersionId
+    ) -> None:
+        old_version_id = self.collections[collection_id.id].version_id
+        self.collections[collection_id.id].version_id = new_collection_version_id
+        del self.collections_versions[old_version_id.id]
 
     def set_collection_version_datasets_order(
         self,

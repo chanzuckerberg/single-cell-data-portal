@@ -6,6 +6,8 @@ import CellGuideMobileHeader from "../CellGuideMobileHeader";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { throttle } from "lodash";
 import { MAX_WIDTH_BREAKPOINT_PX } from "src/components/MobileFriendlyHeader/style";
+import BottomBanner from "src/components/BottomBanner";
+import { BANNER_FEEDBACK_SURVEY_LINK } from "src/common/constants/airtableLinks";
 
 const TITLE = "CellGuide Cell Types and Cell Tissues - CZ CELLxGENE";
 
@@ -97,6 +99,7 @@ export default function LandingPage(): JSX.Element {
           )}
         </div>
       </Wrapper>
+      <BottomBanner surveyLink={BANNER_FEEDBACK_SURVEY_LINK} />
     </div>
   );
 }

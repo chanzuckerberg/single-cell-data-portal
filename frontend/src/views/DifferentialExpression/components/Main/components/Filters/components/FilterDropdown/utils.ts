@@ -1,11 +1,11 @@
-import { FilterOption } from "../../types";
+import { FilterOption } from "src/views/DifferentialExpression/common/store/reducer";
 import { FilterOptionsState } from "@mui/material";
 
 export function sortOptions(
   entityA: FilterOption,
   entityB: FilterOption,
   state: FilterOptionsState<FilterOption>,
-  selectedOptions: FilterOption[]
+  previousSelectedOptions: FilterOption[]
 ): number {
   const aRaw = entityA.name;
   const bRaw = entityB.name;
@@ -14,10 +14,10 @@ export function sortOptions(
   const searchTerm = state.inputValue.toLowerCase();
   if (searchTerm === "") {
     // move selectedValues to top
-    const includesA = selectedOptions
+    const includesA = previousSelectedOptions
       .map((option) => option.name)
       .includes(aRaw);
-    const includesB = selectedOptions
+    const includesB = previousSelectedOptions
       .map((option) => option.name)
       .includes(bRaw);
     if (includesA && includesB) {

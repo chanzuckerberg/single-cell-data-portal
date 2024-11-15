@@ -4,17 +4,16 @@ import {
   CellGroupTitleWrapper,
   CellGroupWrapper,
   EffectSizeHeaderWrapper,
-  EffectSizeIndicator,
+  CellGroupStatsIndicator,
   FilterTagsWrapper,
   StyledTextField,
   TableHeaderWrapper,
   TableWrapper,
   OpenInGE,
   StyledCallout,
-  StyledIconImage,
   StyledTooltipText,
 } from "./style";
-import cxgIcon from "./images/cxg.svg";
+import CxgIcon from "./images/cxg.svg";
 import { Pagination } from "@mui/material";
 import Table from "src/views/CellGuide/components/CellGuideCard/components/common/Table";
 import { Button, Tooltip } from "@czi-sds/components";
@@ -40,6 +39,8 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { useConnect } from "./connect";
 import { Props } from "./types";
+import HelpTooltip from "src/views/CellGuide/components/CellGuideCard/components/common/HelpTooltip";
+import { ROUTES } from "src/common/constants/routes";
 
 const DifferentialExpressionResults = ({
   queryGroups,
@@ -52,6 +53,7 @@ const DifferentialExpressionResults = ({
   setEffectSizeFilter,
   sortDirection,
   setSortDirection,
+  errorMessage,
 }: Props) => {
   const {
     page,
@@ -63,6 +65,11 @@ const DifferentialExpressionResults = ({
     pageCount,
     handlePageChange,
     overlapPercent,
+    numDatasetsText1,
+    numDatasetsText2,
+    showOverlappingCellsCallout,
+    submittedQueryGroups,
+    submittedQueryGroupsWithNames,
   } = useConnect({
     queryGroups,
     queryGroupsWithNames,
@@ -78,7 +85,7 @@ const DifferentialExpressionResults = ({
   > = useMemo(() => {
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery(event.target.value);
-      track(EVENTS.DE_SEARCH_GENE, { gene: event.target.value });
+      track(EVENTS.DE_SEARCH_GENE);
       setPage(1);
     };
     const handleLfcFilter = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,7 +134,25 @@ const DifferentialExpressionResults = ({
             data-testid={DIFFERENTIAL_EXPRESSION_SORT_DIRECTION}
             onClick={handleSortDirectionChange}
           >
-            Effect Size{" "}
+            Effect Size
+            <HelpTooltip
+              title="Effect Size"
+              dark
+              text={
+                <>
+                  The effect size is the log fold change of the gene expression
+                  between two cell groups normalized by the pooled standard
+                  deviation, otherwise known as Cohen&apos;s d.
+                  <br />
+                  <br />
+                  <div>
+                    <a href={ROUTES.FMG_DOCS} rel="noopener" target="_blank">
+                      Learn more about how Cohen&apos;s d is calculated.
+                    </a>
+                  </div>
+                </>
+              }
+            />
             <Button
               sdsStyle="icon"
               icon={sortDirection === "asc" ? "ChevronUp" : "ChevronDown"}
@@ -151,6 +176,10 @@ const DifferentialExpressionResults = ({
     setSortDirection,
     setPage,
   ]);
+
+  if (!submittedQueryGroups || !submittedQueryGroupsWithNames) {
+    return null;
+  }
 
   return (
     <>
@@ -179,19 +208,26 @@ const DifferentialExpressionResults = ({
               target="_blank"
               rel="noopener noreferrer"
               data-testid={DIFFERENTIAL_EXPRESSION_OPEN_IN_GE_1_BUTTON}
+              onClick={() => {
+                track(EVENTS.DE_OPEN_IN_GENE_PAGE_CLICKED);
+              }}
             >
-              <StyledIconImage alt="CxG icon" src={cxgIcon} />
+              <CxgIcon />
             </OpenInGE>
           </Tooltip>
         </CellGroupTitleWrapper>
         <CellCountTitle data-testid={DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT}>
-          {nCellsGroup1.toLocaleString()} cells |{" "}
-          <EffectSizeIndicator>{"(+) Effect Size"}</EffectSizeIndicator>
+          <CellGroupStatsIndicator>
+            {nCellsGroup1.toLocaleString()} cells | {numDatasetsText1} | (+)
+            Effect Size
+          </CellGroupStatsIndicator>
         </CellCountTitle>
         <FilterTagsWrapper>
           <QueryGroupTags
-            isQueryGroup1
-            queryGroupsWithNames={queryGroupsWithNames}
+            submittedQueryGroup={submittedQueryGroups.queryGroup1}
+            submittedQueryGroupWithNames={
+              submittedQueryGroupsWithNames.queryGroup1
+            }
           />
         </FilterTagsWrapper>
       </CellGroupWrapper>
@@ -220,20 +256,38 @@ const DifferentialExpressionResults = ({
               target="_blank"
               rel="noopener noreferrer"
               data-testid={DIFFERENTIAL_EXPRESSION_OPEN_IN_GE_2_BUTTON}
+              onClick={() => {
+                track(EVENTS.DE_OPEN_IN_GENE_PAGE_CLICKED);
+              }}
             >
-              <StyledIconImage alt="CxG icon" src={cxgIcon} />
+              <CxgIcon />
             </OpenInGE>
           </Tooltip>
         </CellGroupTitleWrapper>
         <CellCountTitle data-testid={DIFFERENTIAL_EXPRESSION_FILTER_CELL_COUNT}>
-          {nCellsGroup2.toLocaleString()} cells |{" "}
-          <EffectSizeIndicator>{"(-) Effect Size"}</EffectSizeIndicator>
+          <CellGroupStatsIndicator>
+            {nCellsGroup2.toLocaleString()} cells | {numDatasetsText2} | (-)
+            Effect Size
+          </CellGroupStatsIndicator>
         </CellCountTitle>
         <FilterTagsWrapper>
-          <QueryGroupTags queryGroupsWithNames={queryGroupsWithNames} />
+          <QueryGroupTags
+            submittedQueryGroup={submittedQueryGroups.queryGroup2}
+            submittedQueryGroupWithNames={
+              submittedQueryGroupsWithNames.queryGroup2
+            }
+          />
         </FilterTagsWrapper>
       </CellGroupWrapper>
-      {nCellsOverlap > 0 && (
+      {!!errorMessage && (
+        <StyledCallout
+          data-testid={DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT}
+          intent="negative"
+        >
+          {errorMessage}
+        </StyledCallout>
+      )}
+      {nCellsOverlap > 0 && !errorMessage && showOverlappingCellsCallout && (
         <StyledCallout
           data-testid={DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT}
           intent={parseFloat(overlapPercent) > 25 ? "notice" : "info"}
@@ -252,6 +306,9 @@ const DifferentialExpressionResults = ({
           )}
           hoverable={false}
           columnIdToName={columnIdToName}
+          columnIdToNumCharactersTruncateThreshold={{
+            name: 8,
+          }}
         />
 
         <Pagination count={pageCount} page={page} onChange={handlePageChange} />

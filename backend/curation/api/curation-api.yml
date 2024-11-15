@@ -472,6 +472,43 @@ paths:
           $ref: "#/components/responses/404"
         "413":
           $ref: "#/components/responses/413"
+    patch:
+      tags:
+        - Collection
+        - Dataset
+      summary: Update a Dataset's metadata.
+      security:
+        - curatorAccess: []
+      description: >-
+        Update a Dataset's title and title of corresponding dataset artifacts.
+      operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.actions.patch
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+        - $ref: "#/components/parameters/path_dataset_id"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: The title of the Dataset.
+      responses:
+        "202":
+          $ref: "#/components/responses/202"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "405":
+          $ref: "#/components/responses/405"
+        "410":
+          $ref: "#/components/responses/410"
 
   /v1/collections/{collection_id}/s3-upload-credentials:
     get:
@@ -725,7 +762,7 @@ components:
     batch_condition:
       description: |
         These keys define the batches that a normalization or integration algorithm should be aware of.
-        [batch condition schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#batch_condition)
+        [batch condition schema](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#batch_condition)
 
       type: array
       items:
@@ -737,7 +774,7 @@ components:
         Citation that includes downloadable permalink to h5ad artifact for this dataset, a permalink to collection it 
         belongs to in CZ CELLxGENE Discover, and--if applicable--the Publication DOI associated with the dataset.
         See details about the exact format in the 
-        [schema definition](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#citation)
+        [schema definition](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#citation)
       type: string
       nullable: true
     collection_list:
@@ -798,26 +835,8 @@ components:
       items:
         type: string
         description: |
-          The broader research groups which contributed to this collection of datasets. Allowed consortia are:
-
-          | Valid consortia |
-          | ---------- |
-          | Allen Institute for Brain Science   | 
-          | BRAIN Initiative  |
-          | CZ Biohub  |
-          | CZI Neurodegeneration Challenge Network  |
-          | CZI Single-Cell Biology  |
-          | European Union’s Horizon 2020  |
-          | GenitoUrinary Development Molecular Anatomy Project (GUDMAP)  |
-          | Gut Cell Atlas  |
-          | Human BioMolecular Atlas Program (HuBMAP)  |
-          | Human Cell Atlas (HCA)  |
-          | Human Pancreas Analysis Program (HPAP) |
-          | Human Tumor Atlas Network (HTAN)  |
-          | Kidney Precision Medicine Project (KPMP)  |
-          | LungMAP  |
-          | SEA-AD  |
-          | Wellcome HCA Strategic Science Support  |
+          The broader research groups which contributed to this collection of datasets. Allowed consortia are
+          listed [here](https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/backend/layers/common/validation.py#L12)
     contact_email:
       description: The email of contact person for the Collection. Example email john.smith@email.com
       type: string
@@ -1008,7 +1027,7 @@ components:
           type: integer
         cell_type:
           description: |
-            [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#cell_type)
+            [cell type label](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#cell_type)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
@@ -1023,7 +1042,7 @@ components:
           $ref: "#/components/schemas/default_embedding"
         development_stage:
           description: |
-            [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#development_stage)
+            [development stage label](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#development_stage)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
@@ -1050,7 +1069,7 @@ components:
           type: number
         title:
           description: |
-            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#title)
+            [title](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#title)
           nullable: true
           type: string
         organism:
@@ -1077,14 +1096,14 @@ components:
           type: string
         self_reported_ethnicity:
           description: |
-            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#self_reported_ethnicity)
+            [self reported ethnicity label](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#self_reported_ethnicity)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
         sex:
           description: |
-            [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#sex)
+            [sex label](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#sex)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
@@ -1116,7 +1135,7 @@ components:
           type: integer
         cell_type:
           description: |
-            [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#cell_type)
+            [cell type label](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#cell_type)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
@@ -1139,7 +1158,7 @@ components:
           $ref: "#/components/schemas/dataset_version_id"
         development_stage:
           description: |
-            [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#development_stage)
+            [development stage label](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#development_stage)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
@@ -1158,7 +1177,7 @@ components:
           type: number
         title:
           description: |
-            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#title)
+            [title](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#title)
           nullable: true
           type: string
         organism:
@@ -1186,18 +1205,20 @@ components:
           type: string
         self_reported_ethnicity:
           description: |
-            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#self_reported_ethnicity)
+            [self reported ethnicity label](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#self_reported_ethnicity)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
         sex:
           description: |
-            [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#sex)
+            [sex label](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#sex)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
+        spatial:
+          $ref: "#/components/schemas/spatial"
         suspension_type:
           $ref: "#/components/schemas/suspension_type"
         tissue:
@@ -1225,7 +1246,7 @@ components:
           type: integer
         cell_type:
           description: |
-            [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#cell_type)
+            [cell type label](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#cell_type)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
@@ -1247,7 +1268,7 @@ components:
           $ref: "#/components/schemas/default_embedding"
         development_stage:
           description: |
-            [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#development_stage)
+            [development stage label](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#development_stage)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
@@ -1272,7 +1293,7 @@ components:
           type: number
         title:
           description: |
-            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#title)
+            [title](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#title)
           nullable: true
           type: string
         organism:
@@ -1289,14 +1310,14 @@ components:
           type: string
         self_reported_ethnicity:
           description: |
-            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#self_reported_ethnicity)
+            [self reported ethnicity label](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#self_reported_ethnicity)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
         sex:
           description: |
-            [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#sex)
+            [sex label](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#sex)
           default: []
           items:
             $ref: "#/components/schemas/ontology_element"
@@ -1312,21 +1333,21 @@ components:
       type: object
     dataset_assay:
       description: |
-        [assay label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#assay)
+        [assay label](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#assay)
       default: []
       items:
         $ref: "#/components/schemas/ontology_element"
       type: array
     dataset_disease:
       description: |
-        [disease label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#disease)
+        [disease label](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#disease)
       default: []
       items:
         $ref: "#/components/schemas/ontology_element"
       type: array
     dataset_organism:
       description: |
-        [organism label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#organism)
+        [organism label](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#organism)
       default: []
       items:
         $ref: "#/components/schemas/ontology_element"
@@ -1339,7 +1360,7 @@ components:
       type: string
     dataset_tissue:
       description: |
-        [tissue label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#tissue)
+        [tissue label](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#tissue)
       default: []
       items:
         allOf:
@@ -1400,7 +1421,7 @@ components:
         CELLxGENE Discover runs a heuristic to detect the approximate distribution
         of the data in X so that it can accurately calculate statistical properties
         of the data. This field enables the curator to override this heuristic and
-        specify the data distribution explicitly. [x_approximate_distribution](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#x_approximate_distribution)
+        specify the data distribution explicitly. [x_approximate_distribution](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#x_approximate_distribution)
       enum:
         - COUNT
         - NORMAL
@@ -1461,7 +1482,7 @@ components:
       nullable: true
     is_primary_data:
       description: |
-        [is_primary_data](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#is_primary_data)
+        [is_primary_data](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#is_primary_data)
 
         Describes whether cellular observations for this Dataset are all
         canonical (True), all non-canonical (False), or contain a mixture (True, False).
@@ -1582,21 +1603,21 @@ components:
       properties:
         is_single:
           description: |
-            [is_single](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#is_single)
+            [is_single](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#is_single)
 
             Flag indicating if a spatial dataset represents one Space Ranger output for a single tissue section or the
             output for a single array on a puck.
           type: boolean
         has_fullres:
           description: |
-            [has_fullres](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#spatiallibrary_idimagesfullres)
+            [has_fullres](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#spatiallibrary_idimagesfullres)
 
             Flag indicating if a spatial dataset's metadata includes a numpy.ndarray representing the full resolution 
             image.
           type: boolean
     suspension_type:
       description: |
-        [suspension_type](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/5.1.0/schema.md#suspension_type)
+        [suspension_type](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#suspension_type)
 
         List of unique suspension types represented in the dataset, corresponding to dataset's assay(s).
         Possible item values are 'nucleus', 'cell', and/or 'na'.

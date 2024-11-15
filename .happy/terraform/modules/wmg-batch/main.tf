@@ -34,6 +34,10 @@ resource aws_batch_job_definition batch_job_def {
     {
       "name": "REMOTE_DEV_PREFIX",
       "value": "${var.remote_dev_prefix}"
+    },
+    {
+      "name": "CELLXGENE_CENSUS_USERAGENT",
+      "value": "${var.census_user_agent}"
     }
   ],
   "vcpus": ${var.desired_vcpus},

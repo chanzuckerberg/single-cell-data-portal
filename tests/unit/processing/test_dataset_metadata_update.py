@@ -48,7 +48,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         super().setUp()
         self.business_logic.s3_provider = MockS3Provider()
         self.updater = DatasetMetadataUpdater(
-            self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket"
+            self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket", "spatial_deep_zoom_dir"
         )
 
         def mock_download(source_uri, local_path):
@@ -79,8 +79,12 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         )
         mock_worker = mock_worker_factory.return_value
         self.updater.has_valid_artifact_statuses = Mock(return_value=True)
-        self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
+        self.updater.update_metadata(
+            current_dataset_version_id, new_dataset_version_id, DatasetArtifactMetadataUpdate(citation="New Citation")
+        )
 
+        # skip raw_h5ad update since no updated fields are expected fields in raw H5AD
+        mock_worker.update_raw_h5ad.assert_not_called()
         mock_worker.update_h5ad.assert_called_once()
         mock_worker.update_rds.assert_called_once()
         mock_worker.update_cxg.assert_called_once()
@@ -125,8 +129,11 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         )
         mock_worker = mock_worker_factory.return_value
         self.updater.has_valid_artifact_statuses = Mock(return_value=True)
-        self.updater.update_metadata(current_dataset_version_id, new_dataset_version_id, None)
+        self.updater.update_metadata(
+            current_dataset_version_id, new_dataset_version_id, DatasetArtifactMetadataUpdate(citation="New Citation")
+        )
 
+        mock_worker.update_raw_h5ad.assert_not_called()
         mock_worker.update_h5ad.assert_called_once()
         mock_worker.update_rds.assert_not_called()
         mock_worker.update_cxg.assert_called_once()
@@ -142,6 +149,44 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         assert new_dataset_version.status.processing_status == DatasetProcessingStatus.SUCCESS
 
         assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad")
+
+    @patch("backend.common.utils.dl_sources.uri.downloader")
+    @patch("scanpy.read_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
+    @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker")
+    def test_update_metadata__raw_h5ad_updated(self, mock_worker_factory, *args):
+        current_dataset_version = self.generate_dataset(
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+            ]
+        )
+        collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
+        current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url=None,
+            file_size=0,
+            current_dataset_version_id=current_dataset_version_id,
+            start_step_function=False,
+        )
+        mock_worker = mock_worker_factory.return_value
+        self.updater.has_valid_artifact_statuses = Mock(return_value=True)
+        self.updater.update_metadata(
+            current_dataset_version_id, new_dataset_version_id, DatasetArtifactMetadataUpdate(title="New Dataset Title")
+        )
+
+        mock_worker.update_raw_h5ad.assert_called_once()
+        mock_worker.update_h5ad.assert_called_once()
+        mock_worker.update_rds.assert_called_once()
+        mock_worker.update_cxg.assert_called_once()
+
+        # check that collection version maps to dataset version with updated metadata
+        collection_version = self.business_logic.get_collection_version(collection_version_id)
+        new_dataset_version = collection_version.datasets[0]
+
+        assert new_dataset_version.status.processing_status == DatasetProcessingStatus.SUCCESS
 
     def test_update_metadata__current_dataset_version_bad_processing_status(self, *args):
         current_dataset_version = self.generate_dataset(
@@ -342,13 +387,58 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
     @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
     def setUp(self):
         super().setUp()
-        self.updater = DatasetMetadataUpdaterWorker("artifact_bucket", "datasets_bucket")
+        self.updater = DatasetMetadataUpdaterWorker("artifact_bucket", "datasets_bucket", "spatial_deep_zoom_dir")
         self.updater.business_logic = self.business_logic
 
         def mock_download(source_uri, local_path):
             return local_path
 
         self.updater.download_from_source_uri = Mock(side_effect=mock_download)
+
+    @patch("backend.common.utils.dl_sources.uri.downloader")
+    @patch("backend.layers.processing.dataset_metadata_update.os.remove")
+    @patch("scanpy.read_h5ad")
+    def test_update_raw_h5ad(self, mock_read_h5ad, *args):
+        collection_version = self.generate_unpublished_collection(add_datasets=1)
+        current_dataset_version = collection_version.datasets[0]
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version.version_id,
+            url=None,
+            file_size=0,
+            current_dataset_version_id=current_dataset_version.version_id,
+            start_step_function=False,
+        )
+        key_prefix = new_dataset_version_id.id
+        metadata_update = DatasetArtifactMetadataUpdate(
+            citation="Publication DOI www.doi.org/567.8", title="New Dataset Title"
+        )
+
+        # Mock anndata object
+        mock_anndata = Mock(spec=scanpy.AnnData)
+        mock_anndata.uns = {"title": "Old Dataset Title", "other_metadata": "misc."}
+        mock_anndata.write = Mock()
+        mock_read_h5ad.return_value = mock_anndata
+
+        self.updater.update_raw_h5ad(None, key_prefix, new_dataset_version_id, metadata_update)
+
+        local_filename = CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME
+        # check mock_anndata object
+        mock_read_h5ad.assert_called_with(local_filename)
+        assert "citation" not in mock_anndata.uns
+        assert mock_anndata.uns["title"] == "New Dataset Title"
+        assert mock_anndata.uns["other_metadata"] == "misc."
+        # check s3 uris exist
+        assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id.id}/{local_filename}")
+        # check DB DatasetVersion
+        new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
+        artifacts = [(artifact.uri, artifact.type) for artifact in new_dataset_version.artifacts]
+        assert (
+            f"s3://artifact_bucket/{new_dataset_version_id.id}/{local_filename}",
+            DatasetArtifactType.RAW_H5AD,
+        ) in artifacts
+        # check processing status
+        assert new_dataset_version.status.upload_status == DatasetUploadStatus.UPLOADED
+        assert new_dataset_version.status.h5ad_status == DatasetConversionStatus.UPLOADED
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("backend.layers.processing.dataset_metadata_update.os.remove")
@@ -425,10 +515,20 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
             metadata_update = DatasetArtifactMetadataUpdate(
                 citation="Publication www.doi.org/567.8", title="New Dataset Title"
             )
-            self.updater.update_cxg(None, testing_cxg_temp_directory, new_dataset_version_id, metadata_update)
+            self.updater.update_cxg(
+                None,
+                testing_cxg_temp_directory,
+                current_dataset_version.version_id,
+                new_dataset_version_id,
+                metadata_update,
+            )
 
             # check new cxg directory exists
             assert self.updater.s3_provider.uri_exists(testing_cxg_temp_directory)
+            # check spatial zoom directory was not created for non-spatial dataset
+            assert not self.updater.s3_provider.uri_exists(
+                f"s3://{self.updater.spatial_deep_zoom_dir}/{new_dataset_version_id.id}"
+            )
 
             # check DB artifacts + status are updated
             new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version_id)
@@ -453,6 +553,51 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
             }
 
             assert expected_metadata == actual_stored_metadata
+
+    def test_update_cxg__with_spatial_deepzoom_assets(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            testing_cxg_temp_directory = tempdir
+
+            cxg_metadata = {
+                "cxg_version": "1.0.0",
+                "corpora": json.dumps(
+                    {"schema_version": "3.0.0", "citation": "Publication www.doi.org/123.4", "title": "Dataset Title 1"}
+                ),
+            }
+            convert_dictionary_to_cxg_group(
+                testing_cxg_temp_directory, cxg_metadata, group_metadata_name="cxg_group_metadata"
+            )
+
+            collection_version = self.generate_unpublished_collection(add_datasets=1)
+            current_dataset_version = collection_version.datasets[0]
+            new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+                collection_version_id=collection_version.version_id,
+                url=None,
+                file_size=0,
+                current_dataset_version_id=current_dataset_version.version_id,
+                start_step_function=False,
+            )
+
+            self.updater.s3_provider.upload_directory(
+                tempdir,
+                f"s3://{self.updater.spatial_deep_zoom_dir}/{current_dataset_version.version_id.id}/spatial.dzi",
+            )
+
+            metadata_update = DatasetArtifactMetadataUpdate(
+                citation="Publication www.doi.org/567.8", title="New Dataset Title"
+            )
+            self.updater.update_cxg(
+                None,
+                testing_cxg_temp_directory,
+                current_dataset_version.version_id,
+                new_dataset_version_id,
+                metadata_update,
+            )
+
+            # check new spatial deepzoom directory exists
+            assert self.updater.s3_provider.uri_exists(
+                f"s3://{self.updater.spatial_deep_zoom_dir}/{new_dataset_version_id.id}"
+            )
 
     @patch("backend.layers.processing.dataset_metadata_update.os.remove")
     def test_update_rds(self, *args):
@@ -497,7 +642,7 @@ class TestValidArtifactStatuses(BaseProcessingTest):
     def setUp(self):
         super().setUp()
         self.updater = DatasetMetadataUpdater(
-            self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket"
+            self.business_logic, "artifact_bucket", "cellxgene_bucket", "datasets_bucket", "spatial_deep_zoom_dir"
         )
 
     @parameterized.expand([DatasetConversionStatus.CONVERTED, DatasetConversionStatus.SKIPPED])

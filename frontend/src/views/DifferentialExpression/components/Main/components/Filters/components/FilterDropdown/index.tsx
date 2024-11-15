@@ -1,18 +1,19 @@
 import React from "react";
-
-import { FilterOption } from "../../types";
+import { Icon } from "@czi-sds/components";
 import {
   CloseIcon,
   PrimaryTag,
   GrayTag,
   StyledTextField,
   StyledAutocomplete,
+  StyledCallout,
 } from "./style";
 import {
   DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX,
   DIFFERENTIAL_EXPRESSION_FILTER_TAG_GRAY,
   DIFFERENTIAL_EXPRESSION_FILTER_TAG_PRIMARY,
 } from "src/views/DifferentialExpression/common/constants";
+import { FilterOption } from "src/views/DifferentialExpression/common/store/reducer";
 import { sortOptions } from "./utils";
 import { useConnect } from "./connect";
 import { Props } from "./types";
@@ -23,11 +24,19 @@ function FilterDropdown({
   allAvailableOptions,
   selectedOptionIds,
   handleChange,
+  isQueryGroup1,
+  queryGroupKey,
 }: Props): JSX.Element {
-  const { selectedOptions } = useConnect({
+  const {
+    selectedOptions,
+    previousSelectedOptions,
+    setPreviousSelectedOptions,
+  } = useConnect({
     options,
     allAvailableOptions,
     selectedOptionIds,
+    queryGroupKey,
+    isQueryGroup1,
   });
 
   return (
@@ -35,13 +44,32 @@ function FilterDropdown({
       <StyledAutocomplete
         data-testid={`${DIFFERENTIAL_EXPRESSION_FILTER_AUTOCOMPLETE_PREFIX}${label}`}
         options={options}
+        onClose={() => setPreviousSelectedOptions(selectedOptions)}
         multiple
         onChange={(_: React.SyntheticEvent, newValue: FilterOption[]) => {
           handleChange(newValue);
+          if (newValue.length === 0) {
+            setPreviousSelectedOptions(newValue);
+          }
         }}
         getOptionLabel={(option) => option.name}
         value={selectedOptions}
         disablePortal
+        noOptionsText={
+          <StyledCallout
+            icon={
+              <Icon
+                color="gray"
+                sdsIcon="InfoCircle"
+                sdsSize="l"
+                sdsType="static"
+              />
+            }
+            intent="info"
+          >
+            Results may be limited by other selections made in this cell group.
+          </StyledCallout>
+        }
         isOptionEqualToValue={(option, value) => option.id === value.id}
         popupIcon={null}
         renderInput={(params) => {
@@ -90,7 +118,7 @@ function FilterDropdown({
               );
             })
             .sort((entityA: FilterOption, entityB: FilterOption) =>
-              sortOptions(entityA, entityB, state, selectedOptions)
+              sortOptions(entityA, entityB, state, previousSelectedOptions)
             );
         }}
         disableCloseOnSelect
