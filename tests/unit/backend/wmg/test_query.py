@@ -158,7 +158,7 @@ class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
         with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
             q = CensusCubeQuery(snapshot, self.cube_query_params)
             result = q.list_primary_filter_dimension_term_ids("tissue_ontology_term_id")
-            self.assertEquals(
+            self.assertEqual(
                 ["tissue_ontology_term_id_0", "tissue_ontology_term_id_1", "tissue_ontology_term_id_2"], result
             )
 
@@ -177,7 +177,7 @@ class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
             result = q.list_grouped_primary_filter_dimensions_term_ids(
                 "tissue_ontology_term_id", "organism_ontology_term_id"
             )
-            self.assertEquals(
+            self.assertEqual(
                 {
                     "organism_ontology_term_id_0": ["tissue_ontology_term_id_1", "tissue_ontology_term_id_2"],
                     "organism_ontology_term_id_1": ["tissue_ontology_term_id_0", "tissue_ontology_term_id_2"],

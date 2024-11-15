@@ -10,7 +10,7 @@ from server_timing import Timing as ServerTiming
 
 from backend.common.census_cube.data.criteria import BaseQueryCriteria
 from backend.common.census_cube.data.ontology_labels import gene_term_label, ontology_term_label
-from backend.common.census_cube.data.query import CensusCubeQuery
+from backend.common.census_cube.data.query import CensusCubeQuery, should_use_simple_group_ids
 from backend.common.census_cube.data.schemas.cube_schema_diffexp import cell_counts_logical_dims_exclude_dataset_id
 from backend.common.census_cube.data.snapshot import CensusCubeSnapshot, load_snapshot
 from backend.common.census_cube.utils import ancestors, descendants
@@ -248,8 +248,19 @@ def run_differential_expression(
             set(sum([descendants(i) for i in criteria2.cell_type_ontology_term_ids], []))
         )
 
-    es1, cell_counts1 = q.expression_summary_and_cell_counts_diffexp(criteria1)
-    es2, cell_counts2 = q.expression_summary_and_cell_counts_diffexp(criteria2)
+    if exclude_overlapping_cells == "retainBoth":
+        # If we are not excluding overlapping cells (retainBoth), we can use the simple group IDs where applicable.
+        es1, cell_counts1 = q.expression_summary_and_cell_counts_diffexp(
+            criteria1, should_use_simple_group_ids(criteria1)
+        )
+        es2, cell_counts2 = q.expression_summary_and_cell_counts_diffexp(
+            criteria2, should_use_simple_group_ids(criteria2)
+        )
+    else:
+        # If we are excluding overlapping cells, we can only use the simple group IDs if both groups are eligible.
+        use_simple_group_ids = should_use_simple_group_ids(criteria1) and should_use_simple_group_ids(criteria2)
+        es1, cell_counts1 = q.expression_summary_and_cell_counts_diffexp(criteria1, use_simple_group_ids)
+        es2, cell_counts2 = q.expression_summary_and_cell_counts_diffexp(criteria2, use_simple_group_ids)
 
     n_cells1 = cell_counts1["n_total_cells"].sum()
     n_cells2 = cell_counts2["n_total_cells"].sum()

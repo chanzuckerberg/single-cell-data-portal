@@ -68,8 +68,8 @@ const DifferentialExpressionResults = ({
     numDatasetsText1,
     numDatasetsText2,
     showOverlappingCellsCallout,
-    selectedOptionsGroup1,
-    selectedOptionsGroup2,
+    submittedQueryGroups,
+    submittedQueryGroupsWithNames,
   } = useConnect({
     queryGroups,
     queryGroupsWithNames,
@@ -85,7 +85,7 @@ const DifferentialExpressionResults = ({
   > = useMemo(() => {
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery(event.target.value);
-      track(EVENTS.DE_SEARCH_GENE, { gene: event.target.value });
+      track(EVENTS.DE_SEARCH_GENE);
       setPage(1);
     };
     const handleLfcFilter = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -177,6 +177,10 @@ const DifferentialExpressionResults = ({
     setPage,
   ]);
 
+  if (!submittedQueryGroups || !submittedQueryGroupsWithNames) {
+    return null;
+  }
+
   return (
     <>
       <CellGroupWrapper data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_INFO}>
@@ -204,6 +208,9 @@ const DifferentialExpressionResults = ({
               target="_blank"
               rel="noopener noreferrer"
               data-testid={DIFFERENTIAL_EXPRESSION_OPEN_IN_GE_1_BUTTON}
+              onClick={() => {
+                track(EVENTS.DE_OPEN_IN_GENE_PAGE_CLICKED);
+              }}
             >
               <CxgIcon />
             </OpenInGE>
@@ -216,7 +223,12 @@ const DifferentialExpressionResults = ({
           </CellGroupStatsIndicator>
         </CellCountTitle>
         <FilterTagsWrapper>
-          <QueryGroupTags selectedOptions={selectedOptionsGroup1} />
+          <QueryGroupTags
+            submittedQueryGroup={submittedQueryGroups.queryGroup1}
+            submittedQueryGroupWithNames={
+              submittedQueryGroupsWithNames.queryGroup1
+            }
+          />
         </FilterTagsWrapper>
       </CellGroupWrapper>
       <CellGroupWrapper data-testid={DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_INFO}>
@@ -244,6 +256,9 @@ const DifferentialExpressionResults = ({
               target="_blank"
               rel="noopener noreferrer"
               data-testid={DIFFERENTIAL_EXPRESSION_OPEN_IN_GE_2_BUTTON}
+              onClick={() => {
+                track(EVENTS.DE_OPEN_IN_GENE_PAGE_CLICKED);
+              }}
             >
               <CxgIcon />
             </OpenInGE>
@@ -256,7 +271,12 @@ const DifferentialExpressionResults = ({
           </CellGroupStatsIndicator>
         </CellCountTitle>
         <FilterTagsWrapper>
-          <QueryGroupTags selectedOptions={selectedOptionsGroup2} />
+          <QueryGroupTags
+            submittedQueryGroup={submittedQueryGroups.queryGroup2}
+            submittedQueryGroupWithNames={
+              submittedQueryGroupsWithNames.queryGroup2
+            }
+          />
         </FilterTagsWrapper>
       </CellGroupWrapper>
       {!!errorMessage && (

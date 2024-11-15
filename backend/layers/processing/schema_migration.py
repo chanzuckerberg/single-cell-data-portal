@@ -15,7 +15,11 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     DatasetArtifactType,
+    DatasetConversionStatus,
     DatasetProcessingStatus,
+    DatasetStatusKey,
+    DatasetUploadStatus,
+    DatasetValidationStatus,
     DatasetVersionId,
 )
 from backend.layers.processing import logger
@@ -202,6 +206,7 @@ class SchemaMigrate(ProcessingLogic):
 
     def log_errors_and_cleanup(self, collection_version_id: str) -> list:
         errors = []
+        rolled_back_datasets = []
         collection_version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
         object_keys_to_delete = []
 
@@ -226,7 +231,43 @@ class SchemaMigrate(ProcessingLogic):
             self.logger.info("checking dataset", extra=_log_extras)
             key_prefix = self.get_key_prefix(previous_dataset_version_id)
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
-            if not self.check_dataset_is_latest_schema_version(dataset):
+            if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
+                # If only rds failure, set rds status to skipped + processing status to successful and do not rollback
+                if (
+                    dataset.status.rds_status == DatasetConversionStatus.FAILED
+                    and dataset.status.upload_status == DatasetUploadStatus.UPLOADED
+                    and dataset.status.validation_status == DatasetValidationStatus.VALID
+                    and dataset.status.cxg_status == DatasetConversionStatus.UPLOADED
+                    and dataset.status.h5ad_status == DatasetConversionStatus.UPLOADED
+                ):
+                    self.business_logic.update_dataset_version_status(
+                        dataset.version_id,
+                        DatasetStatusKey.RDS,
+                        DatasetConversionStatus.SKIPPED,
+                    )
+                    self.business_logic.update_dataset_version_status(
+                        dataset.version_id,
+                        DatasetStatusKey.PROCESSING,
+                        DatasetProcessingStatus.SUCCESS,
+                    )
+                    continue
+                error = {
+                    "message": dataset.status.validation_message,
+                    "dataset_status": dataset.status.to_dict(),
+                    "collection_id": collection_version.collection_id.id,
+                    "collection_version_id": collection_version_id,
+                    "dataset_version_id": dataset_version_id,
+                    "dataset_id": dataset_id,
+                    "rollback": True,
+                }
+                # If the dataset is not successfully processed, rollback to the version from before migration
+                self.business_logic.restore_previous_dataset_version(
+                    CollectionVersionId(collection_version_id), dataset.dataset_id
+                )
+                rolled_back_datasets.append(dataset)
+                self.logger.error(error)
+                errors.append(error)
+            elif not self.check_dataset_is_latest_schema_version(dataset):
                 error_message = "Did Not Migrate"
                 dataset_status = "n/a"
                 if dataset.status is not None:
@@ -243,18 +284,6 @@ class SchemaMigrate(ProcessingLogic):
                 }
                 self.logger.error(error)
                 errors.append(error)
-            elif dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
-                error = {
-                    "message": dataset.status.validation_message,
-                    "dataset_status": dataset.status.to_dict(),
-                    "collection_id": collection_version.collection_id.id,
-                    "collection_version_id": collection_version_id,
-                    "dataset_version_id": dataset_version_id,
-                    "dataset_id": dataset_id,
-                    "rollback": True,
-                }
-                self.logger.error(error)
-                errors.append(error)
             else:
                 self.logger.info("checked dataset")
         self.logger.info(
@@ -263,6 +292,10 @@ class SchemaMigrate(ProcessingLogic):
         self.s3_provider.delete_files(self.artifact_bucket, object_keys_to_delete)
         if errors:
             self._store_sfn_response("report/errors", collection_version_id, errors)
+            # clean up artifacts for any now-orphaned, rolled back datasets
+            if rolled_back_datasets:
+                # TODO: replace with async job to delete orphaned dataset version DB rows + artifacts
+                self.business_logic.delete_dataset_versions(rolled_back_datasets)
         return errors
 
     def _store_sfn_response(self, directory: str, file_name: str, response: Dict[str, str]):
@@ -315,7 +348,7 @@ class SchemaMigrate(ProcessingLogic):
 
         return wrapper
 
-    def report(self, artifact_bucket=None, execution_id=None, dry_run=True) -> dict:
+    def report(self, artifact_bucket=None, execution_id=None, dry_run=False) -> dict:
         """
         Generate a report of the schema migration process. This function will download all the error and migration
         :param artifact_bucket: The bucket where the schema migration artifacts are stored.

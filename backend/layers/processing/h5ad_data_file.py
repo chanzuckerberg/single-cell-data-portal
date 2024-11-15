@@ -7,14 +7,13 @@ import anndata
 import numpy as np
 import tiledb
 
-from backend.common.utils.color_conversion_utils import (
+from backend.common.utils.corpora_constants import CorporaConstants
+from backend.common.utils.cxg_constants import CxgConstants
+from backend.common.utils.tiledb import consolidation_buffer_size
+from backend.layers.processing.utils.color_conversion_utils import (
     ColorFormatException,
     convert_anndata_category_colors_to_cxg_category_colors,
 )
-from backend.common.utils.corpora_constants import CorporaConstants
-from backend.common.utils.cxg_constants import CxgConstants
-from backend.common.utils.matrix_utils import is_matrix_sparse
-from backend.common.utils.tiledb import consolidation_buffer_size
 from backend.layers.processing.utils.cxg_generation_utils import (
     convert_dataframe_to_cxg_array,
     convert_dictionary_to_cxg_group,
@@ -22,6 +21,7 @@ from backend.layers.processing.utils.cxg_generation_utils import (
     convert_ndarray_to_cxg_dense_array,
     convert_uns_to_cxg_group,
 )
+from backend.layers.processing.utils.matrix_utils import is_matrix_sparse
 
 
 class H5ADDataFile:
@@ -88,7 +88,7 @@ class H5ADDataFile:
         self.write_anndata_embeddings_to_cxg(output_cxg_directory, ctx)
         logging.info("\t...dataset embeddings saved")
 
-        self.write_anndata_x_matrices_to_cxg(output_cxg_directory, ctx, sparse_threshold)
+        self.write_anndata_x_matrices_to_cxg(output_cxg_directory, ctx, sparse_threshold)  # big memory usage
         logging.info("\t...dataset X matrix saved")
 
         logging.info("Completed writing to CXG.")
@@ -97,10 +97,10 @@ class H5ADDataFile:
         matrix_container = f"{output_cxg_directory}/X"
 
         x_matrix_data = self.anndata.X
-        is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)
+        is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)  # big memory usage
         logging.info(f"is_sparse: {is_sparse}")
 
-        convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, ctx)
+        convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, ctx)  # big memory usage
 
         suffixes = ["r", "c"] if is_sparse else [""]
         logging.info("start consolidating")

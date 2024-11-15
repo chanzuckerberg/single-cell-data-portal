@@ -47,6 +47,8 @@ import {
   CELL_GUIDE_CARD_GPT_TOOLTIP_LINK,
   DESCRIPTION_BREAKPOINT_HEIGHT_PX,
   CELL_GUIDE_CARD_SYNONYMS,
+  getDefaultGptDescription,
+  CELL_GUIDE_CARD_DEFAULT_DESCRIPTION_CL,
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 import { useIsComponentPastBreakpointHeight } from "../common/hooks/useIsComponentPastBreakpoint";
 import { StyledQuestionMarkIcon } from "src/common/style";
@@ -124,11 +126,14 @@ export default function Description({
     }
   }, [isPastBreakpoint]);
 
-  const { data: rawDescriptionGpt } = useGptDescription(cellTypeId);
+  const { data: rawDescriptionGpt = getDefaultGptDescription(cellTypeName) } =
+    useGptDescription(cellTypeId);
   const { data: rawDescriptionValidated, isLoading } =
     useValidatedDescription(cellTypeId);
   const { data: cellTypesById } = useCellTypeMetadata();
-  const rawDescriptionCl = cellTypesById?.[cellTypeId].clDescription;
+  const rawDescriptionCl =
+    cellTypesById?.[cellTypeId]?.clDescription ||
+    CELL_GUIDE_CARD_DEFAULT_DESCRIPTION_CL;
 
   useEffect(() => {
     if (rawDescriptionValidated) {

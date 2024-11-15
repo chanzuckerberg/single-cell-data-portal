@@ -226,7 +226,7 @@ jobs:
       - name: Run e2e Logged In tests
         run: |
           DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev-logged-in-ci
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: logged-in-test-results

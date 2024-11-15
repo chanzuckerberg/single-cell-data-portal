@@ -84,6 +84,8 @@ class TestLogErrorsAndCleanup:
         ]
         collection_version = make_mock_collection_version(datasets)
         schema_migrate.business_logic.get_collection_version.return_value = collection_version
+        schema_migrate.business_logic.restore_previous_dataset_version = Mock()
+        schema_migrate.business_logic.delete_dataset_versions = Mock()
 
         errors = schema_migrate.log_errors_and_cleanup(collection_version.version_id.id)
         assert len(errors) == 2
@@ -105,6 +107,8 @@ class TestLogErrorsAndCleanup:
             "dataset_id": non_migrated_dataset.dataset_id.id,
             "rollback": False,
         } in errors
+        assert schema_migrate.business_logic.restore_previous_dataset_version.call_count == 1
+        assert schema_migrate.business_logic.delete_dataset_versions.call_count == 1
         schema_migrate.s3_provider.delete_files.assert_any_call(
             "artifact-bucket", ["schema_migration/test-execution-arn/log_errors_and_cleanup/collection_id.json"]
         )

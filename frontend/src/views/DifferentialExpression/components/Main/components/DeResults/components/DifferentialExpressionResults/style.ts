@@ -5,12 +5,14 @@ import { TextField } from "@mui/material";
 import { inputBaseClasses } from "@mui/material/InputBase";
 import { inputLabelClasses } from "@mui/material/InputLabel";
 import { alertClasses } from "@mui/material/Alert";
-import { TABLE_WIDTH } from "../../style";
+import { RIGHT_PANEL_WIDTH } from "../../../../style";
+
+const TABLE_WIDTH = RIGHT_PANEL_WIDTH - 60;
 
 export const TableWrapper = styled.div`
-  width: ${TABLE_WIDTH};
+  width: ${TABLE_WIDTH}px;
   [class*="StyledCell"] {
-    max-width: ${parseFloat(TABLE_WIDTH.replace("px", "")) / 3}px;
+    max-width: ${TABLE_WIDTH / 3}px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -57,7 +59,7 @@ export const EffectSizeHeaderWrapper = styled.div`
 export const CellGroupWrapper = styled.div`
   min-height: 92px;
   height: fit-content;
-  width: ${TABLE_WIDTH};
+  width: ${TABLE_WIDTH}px;
   margin-bottom: 8px;
 
   padding: 12px;
@@ -90,7 +92,7 @@ export const FilterTagsWrapper = styled.div`
 `;
 
 export const StyledCallout = styled(Callout)`
-  width: ${TABLE_WIDTH};
+  width: ${TABLE_WIDTH}px;
 
   .${alertClasses.icon} {
     margin-top: auto;

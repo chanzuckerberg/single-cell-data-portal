@@ -13,8 +13,8 @@ valid_consortia = {
     "Allen Institute for Brain Science",
     "BRAIN Initiative",
     "CZ Biohub",
+    "CZI Cell Science",
     "CZI Neurodegeneration Challenge Network",
-    "CZI Single-Cell Biology",
     "European Union’s Horizon 2020",
     "GenitoUrinary Development Molecular Anatomy Project (GUDMAP)",
     "Gut Cell Atlas",
@@ -24,6 +24,7 @@ valid_consortia = {
     "Human Tumor Atlas Network (HTAN)",
     "Kidney Precision Medicine Project (KPMP)",
     "LungMAP",
+    "Pediatric Center of Excellence in Nephrology (PCEN)",
     "SEA-AD",
     "Wellcome HCA Strategic Science Support",
 }

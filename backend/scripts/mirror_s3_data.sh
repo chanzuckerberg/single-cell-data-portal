@@ -119,7 +119,7 @@ else  # i.e., if DEST_ENV != 'rdev'
   # that needs to be kept around (buckets are versioned, so we're not in
   # jeopardy of losing anything permanently). This would make the
   # operation more destructive, of course!
-
+  export AWS_PROFILE=single-cell-dev
   PARALLEL_CMD="parallel --ungroup --jobs 16"  # '--ungroup' permits stdout to stream continuously from all jobs
 
   hex_chars="0 1 2 3 4 5 6 7 8 9 a b c d e f"  # Permits running 16 concurrent aws processes -- each one syncs only uuids starting with its hex char

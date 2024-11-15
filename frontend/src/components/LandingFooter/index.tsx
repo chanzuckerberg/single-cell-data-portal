@@ -4,25 +4,14 @@ import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import Wordmark from "src/common/images/cellxgene-discover-wordmark.svg";
 import CZILogo from "src/components/common/staticPages/czi-logo-white.png";
-import BottomBanner from "../BottomBanner";
+
 import styles from "./index.module.scss";
-import { GENE_EXPRESSION_BANNER_SURVEY_LINK } from "src/common/constants/airtableLinks";
-import { useState } from "react";
+import BottomBanner from "../BottomBanner";
+import { BANNER_FEEDBACK_SURVEY_LINK } from "src/common/constants/airtableLinks";
 
 const LandingFooter = (): JSX.Element => {
-  const [, setIsHubSpotReady] = useState(false);
-
   return (
     <>
-      {/* This newsletter signup section should not be dismissible  */}
-      <BottomBanner
-        id="newsletter-footer"
-        asFooter
-        airtableLink={GENE_EXPRESSION_BANNER_SURVEY_LINK}
-        // (thuang): The first instance of BottomBanner in the UI needs to call onHubSpotReady()
-        onHubSpotReady={() => setIsHubSpotReady(true)}
-      />
-
       <footer className={styles.footer}>
         <div className={styles.footerTopContainer}>
           <div className={styles.footerLogo}>
@@ -93,6 +82,7 @@ const LandingFooter = (): JSX.Element => {
           </div>
         </div>
       </footer>
+      <BottomBanner surveyLink={BANNER_FEEDBACK_SURVEY_LINK} />
     </>
   );
 };

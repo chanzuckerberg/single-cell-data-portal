@@ -2,6 +2,7 @@ import logging
 import os
 
 import tiledb
+from pandas import DataFrame
 from tiledbsoma import ExperimentAxisQuery
 
 from backend.common.census_cube.data.schemas.cube_schema import (
@@ -18,14 +19,15 @@ from backend.wmg.pipeline.utils import (
     create_empty_cube_if_needed,
     log_func_runtime,
     remove_accents,
-    return_dataset_dict_w_publications,
 )
 
 logger = logging.getLogger(__name__)
 
 
 @log_func_runtime
-def create_cell_counts_cube(*, query: ExperimentAxisQuery, corpus_path: str, organismId: str):
+def create_cell_counts_cube(
+    *, dataset_metadata: DataFrame, query: ExperimentAxisQuery, corpus_path: str, organismId: str
+):
     """
     Create cell count cube and write to disk
     """
@@ -46,7 +48,11 @@ def create_cell_counts_cube(*, query: ExperimentAxisQuery, corpus_path: str, org
         ).size()
     ).rename(columns={"size": "n_cells"})
 
-    dataset_dict = return_dataset_dict_w_publications()
+    dataset_dict = {
+        row["dataset_id"]: row["collection_doi_label"]
+        for _, row in dataset_metadata.iterrows()
+        if row["collection_doi_label"]
+    }
     df["publication_citation"] = [
         remove_accents(dataset_dict.get(dataset_id, "No Publication")) for dataset_id in df["dataset_id"]
     ]

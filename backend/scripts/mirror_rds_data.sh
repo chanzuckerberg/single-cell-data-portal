@@ -25,7 +25,7 @@ else
    export AWS_PROFILE=single-cell-${SRC_ENV}
 fi
 cd $SCRIPTS_DIR/..
-make db/dump OUTFILE=$DB_DUMP_FILE
+make db/dump OUTFILE=$DB_DUMP_FILE PORT=${SRC_PORT}
 
 export DEPLOYMENT_STAGE=$DEST_ENV
 export AWS_PROFILE=single-cell-dev
@@ -34,7 +34,7 @@ if [[ $DEST_ENV != 'rdev' ]]; then
    #  For safety, dump the destination db to a local file, just in case. Not necessary if destination is rdev.
    DEST_DB_BACKUP_DUMP_FILE="${DEST_ENV}_"`date +%Y%m%d_%H%M%S`".sqlc"
    echo "Backing up the destination database to $DEST_DB_BACKUP_DUMP_FILE. Just in case!"
-   make db/dump OUTFILE=$DEST_DB_BACKUP_DUMP_FILE
+   make db/dump OUTFILE=$DEST_DB_BACKUP_DUMP_FILE PORT=${DEST_PORT}
 fi
 
 DB_PW=`aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'`
@@ -53,12 +53,10 @@ echo
 
 function load_src_dump_to_dest_db() {
   PGPASSWORD=${DB_PW} pg_restore --clean --if-exists --no-owner --no-privileges --no-comments --dbname=${DB_NAME} \
-  --host 0.0.0.0 --username ${DB_USER} --schema=persistence_schema ${DB_DUMP_FILE}
+  --host 0.0.0.0 --port ${DEST_PORT} --username ${DB_USER} --schema=persistence_schema ${DB_DUMP_FILE}
 }
 
-make db/tunnel/up
 load_src_dump_to_dest_db || load_src_dump_to_dest_db  # Hack for rdev, where it fails on first and succeeds on retry
-make db/tunnel/down
 
 if [[ $DEST_ENV != 'rdev' ]]; then
   DB_UPDATE_CMDS=$(cat <<EOF
@@ -72,6 +70,4 @@ else
 EOF
 )
 fi
-                 
-make db/connect ARGS="${DB_UPDATE_CMDS}"
 

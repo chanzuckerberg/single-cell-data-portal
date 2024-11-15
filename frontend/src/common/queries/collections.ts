@@ -347,9 +347,14 @@ export function useDeleteCollection(): UseMutationResult<
         DEFAULT_BACKGROUND_REFETCH
       );
       if (collection.revision_of) {
+        // Invalidate the cached revision without re-fetching as:
+        // 1. the revision no longer exists (requesting the canceled revision returns
+        // an error status), and,
+        // 2. re-fetching causes the delete button - and the redirect-on-success
+        // function - to be unmounted.
         await queryClient.invalidateQueries(
           [USE_COLLECTION, collection.revision_of],
-          DEFAULT_BACKGROUND_REFETCH
+          { refetchActive: false }
         );
       }
     },
@@ -412,6 +417,63 @@ export function usePublishCollection() {
           DEFAULT_BACKGROUND_REFETCH
         );
       }
+    },
+  });
+}
+
+/**
+ * Execute PATCH to edit the dataset for the given collection.
+ * @param param
+ * @param param.collectionId - Collection ID to edit dataset for.
+ * @param param.datasetId - Dataset ID to edit.
+ * @param param.payload - Payload containing the new dataset title.
+ * @returns Resolved promise.
+ */
+const editDataset = async function editDataset({
+  collectionId,
+  datasetId,
+  payload,
+}: {
+  collectionId: Collection["id"];
+  datasetId: string;
+  payload: string;
+}) {
+  idError(collectionId);
+  const url = apiTemplateToUrl(API_URL + API.COLLECTION_EDIT_DATASET, {
+    id: collectionId,
+    dataset_id: datasetId,
+  });
+
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    body: payload,
+    method: "PATCH",
+  });
+
+  if (!response.ok) {
+    throw await response.json();
+  }
+
+  // Endpoint response is empty on 202; return successful promise.
+  return Promise.resolve();
+};
+
+/**
+ * Edits dataset.
+ */
+export function useEditDataset() {
+  const queryClient = useQueryClient();
+  return useMutation(editDataset, {
+    onSuccess: async (_, variables): Promise<void> => {
+      await queryClient.invalidateQueries([
+        USE_COLLECTION,
+        variables.collectionId,
+      ]);
+      await queryClient.invalidateQueries(
+        [USE_DATASETS_INDEX],
+        DEFAULT_BACKGROUND_REFETCH
+      );
     },
   });
 }

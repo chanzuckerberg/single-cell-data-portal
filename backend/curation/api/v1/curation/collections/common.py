@@ -392,6 +392,7 @@ class EntityColumns:
         "schema_version",
         "donor_id",
         "citation",
+        "spatial",
     ]
 
     dataset_metadata_cols = [
@@ -402,7 +403,6 @@ class EntityColumns:
         "feature_count",
         "feature_reference",
         "raw_data_location",
-        "spatial",
     ]
 
     dataset_asset_cols = [

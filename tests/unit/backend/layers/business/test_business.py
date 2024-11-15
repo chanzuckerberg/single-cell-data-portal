@@ -33,6 +33,7 @@ from backend.layers.business.exceptions import (
     DatasetNotFoundException,
     InvalidMetadataException,
     InvalidURIException,
+    NoPreviousCollectionVersionException,
     NoPreviousDatasetVersionException,
 )
 from backend.layers.common.entities import (
@@ -494,6 +495,26 @@ class TestGetCollectionVersion(BaseBusinessLogicTestCase):
             )
             self.assertIsNotNone(past_version_tombstoned)
             self.assertEqual(True, past_version_tombstoned.canonical_collection.tombstoned)
+
+    def test_get_unpublished_collection_versions_from_canonical(self):
+        """
+        Unpublished Collection versions can be retrieved from a canonical Collection
+        """
+        published_collection = self.initialize_published_collection()
+        non_migration_revision = self.business_logic.create_collection_version(
+            published_collection.collection_id, is_auto_version=False
+        )
+        migration_revision = self.business_logic.create_collection_version(
+            published_collection.collection_id, is_auto_version=True
+        )
+
+        unpublished_versions = self.business_logic.get_unpublished_collection_versions_from_canonical(
+            published_collection.collection_id
+        )
+        unpublished_version_ids = [version.version_id.id for version in unpublished_versions]
+        self.assertCountEqual(
+            [non_migration_revision.version_id.id, migration_revision.version_id.id], unpublished_version_ids
+        )
 
 
 class TestGetAllCollections(BaseBusinessLogicTestCase):
@@ -1383,6 +1404,18 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
 
         # Act + Assert
         self.assertRaises(CollectionDeleteException, delete_artifacts, artifacts)
+
+    def test_delete_dataset_versions(self):
+        collection = self.initialize_unpublished_collection()
+        dataset_to_delete = collection.datasets[0]
+        uris_to_delete = [a.uri for a in dataset_to_delete.artifacts]
+        dataset_artifact_ids = [a.id for a in dataset_to_delete.artifacts]
+
+        self.business_logic.delete_dataset_versions([dataset_to_delete])
+
+        self.assertIsNone(self.business_logic.get_dataset_version(dataset_to_delete.version_id))
+        self.assertEqual(self.database_provider.get_dataset_artifacts(dataset_artifact_ids), [])
+        [self.assertFalse(self.s3_provider.uri_exists(uri)) for uri in uris_to_delete]
 
 
 class TestGetDataset(BaseBusinessLogicTestCase):
@@ -2865,6 +2898,37 @@ class TestCollectionUtilities(BaseBusinessLogicTestCase):
         )
         self.assertEqual(expected_delete_keys, actual_delete_keys)
 
+    def test__restore_previous_collection_version(self):
+        """
+        Test restoring a previous version of a collection
+        """
+        original_collection_version = self.initialize_published_collection()
+        collection_id = original_collection_version.collection_id
+        new_version = self.business_logic.create_collection_version(collection_id)
+        self.business_logic.publish_collection_version(new_version.version_id)
+
+        # Restore the previous version
+        self.business_logic.restore_previous_collection_version(collection_id)
+
+        # Fetch the collection
+        restored_collection = self.business_logic.get_canonical_collection(collection_id)
+
+        # Ensure the collection is pointing back at the original collection version
+        self.assertEqual(original_collection_version.version_id, restored_collection.version_id)
+
+        # Ensure replaced CollectionVersion is deleted from DB
+        self.assertIsNone(self.database_provider.get_collection_version(new_version.version_id))
+
+    def test__restore_previous_collection_version__no_previous_versions(self):
+        """
+        Test restoring a previous version of a collection fails when there are no previous versions
+        """
+        original_collection_version = self.initialize_published_collection()
+        collection_id = original_collection_version.collection_id
+
+        with self.assertRaises(NoPreviousCollectionVersionException):
+            self.business_logic.restore_previous_collection_version(collection_id)
+
 
 class TestGetEntitiesBySchema(BaseBusinessLogicTestCase):
     def test_get_latest_published_collection_versions_by_schema(self):
@@ -3065,7 +3129,10 @@ class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
         current_dataset_version_id = revision.datasets[0].version_id
         self.batch_job_provider.start_metadata_update_batch_job = Mock()
         self.business_logic.trigger_dataset_artifact_update(revision, metadata_update, current_dataset_version_id)
+
         self.batch_job_provider.start_metadata_update_batch_job.assert_called_once()
+        # Confirm citation is updated if new dataset version is generated as part of trigger_dataset_artifact_update
+        self.assertIsNotNone(metadata_update.citation)
 
     def test_trigger_dataset_artifact_update__with_new_dataset_version_id(self):
         metadata_update = DatasetArtifactMetadataUpdate(schema_version="4.0.0")

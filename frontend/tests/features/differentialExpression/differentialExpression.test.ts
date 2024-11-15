@@ -586,7 +586,23 @@ describe("Differential Expression", () => {
         ]);
 
         const newPageUrl2 = newPage2.url();
-        expect(newPageUrl2).toContain("SAA1");
+
+        const effectSizeSort = page.getByTestId(
+          DIFFERENTIAL_EXPRESSION_SORT_DIRECTION
+        );
+
+        //  Sort by top negative effect size
+        await effectSizeSort.click();
+
+        const topGene = await page
+          .getByTestId("differential-expression-results-table")
+          .locator("tr:first-child td:first-child")
+          .textContent();
+
+        // Reset to sort by top positive effect size
+        await effectSizeSort.click();
+
+        expect(newPageUrl2).toContain(topGene);
         expect(newPageUrl2).toContain("tissues=UBERON%3A0002048");
         expect(newPageUrl2).toContain("cellTypes=acinar+cell");
         expect(newPageUrl2).toContain("ver=2");
@@ -789,7 +805,7 @@ describe("Differential Expression", () => {
         // Ensure the callout is visible when overlapping cells are not filtered
         await page
           .getByTestId(DIFFERENTIAL_EXPRESSION_OVERLAP_BEHAVIOR)
-          .locator("button:nth-child(3)")
+          .locator("button:nth-child(1)")
           .click();
         await isElementVisible(page, DIFFERENTIAL_EXPRESSION_RESULTS_CALLOUT);
       });
@@ -893,6 +909,11 @@ const runDEQuery = async ({
       cellTypeFilterAutocompleteGroup2,
       "acinar cell"
     );
+  } else {
+    await page
+      .getByTestId(DIFFERENTIAL_EXPRESSION_OVERLAP_BEHAVIOR)
+      .locator("button:nth-child(2)")
+      .click();
   }
   if (mode === "test_exclude_unavailable_tags") {
     // Type "acinar cell" in cell type filter for group 1

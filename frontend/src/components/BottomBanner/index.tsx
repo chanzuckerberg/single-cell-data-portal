@@ -20,19 +20,20 @@ import { useConnect } from "./connect";
 import {
   FORM_CONTAINER_ID,
   HUBSPOT_URL,
+  BOTTOM_BANNER_SURVEY_LINK_TEXT,
+  BOTTOM_BANNER_SURVEY_TEXT,
   NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_BUTTON_TEXT,
   NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_TEXT,
-  NEWSLETTER_SIGNUP_BANNER_SURVEY_LINK_TEXT,
-  NEWSLETTER_SIGNUP_BANNER_SURVEY_TEXT,
 } from "./constants";
 import { Props } from "./types";
 
 export default memo(function BottomBanner({
-  includeSurveyLink = true,
+  hasSurveyLink = true,
+  hasNewsletterSignup = true,
   asFooter = false,
   customSurveyLinkPrefix,
   analyticsHandler,
-  airtableLink,
+  surveyLink,
   id = "newsletter-banner",
   isHubSpotReady: isHubSpotReadyProp = false,
   onHubSpotReady = noop,
@@ -60,7 +61,7 @@ export default memo(function BottomBanner({
           <meta
             id="newsletter-signup-meta"
             name="viewport"
-            content="width=device-width, initial-scale=1, maximum-scale=1"
+            content="width=device-width, initial-scale=1"
           />
         )}
       </Head>
@@ -86,7 +87,6 @@ export default memo(function BottomBanner({
         >
           {/* Hidden form for submitting the data to HubSpot */}
           <HiddenHubSpotForm id={FORM_CONTAINER_ID} />
-
           {asFooter ? (
             <FooterContentWrapper>
               <BottomBannerModalContent
@@ -100,25 +100,29 @@ export default memo(function BottomBanner({
           ) : (
             <>
               <>
-                <StyledLink
-                  onClick={toggleNewsletterSignupModal}
-                  data-testid="newsletter-modal-open-button"
-                >
-                  {NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_BUTTON_TEXT}
-                </StyledLink>
-                {NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_TEXT}
-                {includeSurveyLink && (
+                {hasNewsletterSignup && (
+                  <>
+                    <StyledLink
+                      onClick={toggleNewsletterSignupModal}
+                      data-testid="newsletter-modal-open-button"
+                    >
+                      {NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_BUTTON_TEXT}
+                    </StyledLink>
+                    {NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_TEXT}
+                  </>
+                )}
+                {hasSurveyLink && (
                   <>
                     {customSurveyLinkPrefix
                       ? customSurveyLinkPrefix
-                      : NEWSLETTER_SIGNUP_BANNER_SURVEY_TEXT}
+                      : BOTTOM_BANNER_SURVEY_TEXT}
                     <StyledLink
-                      href={airtableLink}
+                      href={surveyLink}
                       target="_blank"
                       rel="noopener"
                       onClick={analyticsHandler}
                     >
-                      {NEWSLETTER_SIGNUP_BANNER_SURVEY_LINK_TEXT}
+                      {BOTTOM_BANNER_SURVEY_LINK_TEXT}
                     </StyledLink>
                   </>
                 )}
