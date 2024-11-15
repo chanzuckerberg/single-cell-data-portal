@@ -197,4 +197,25 @@ describe("Tests for Citation, Share and Notifications", () => {
       { page }
     );
   });
+  test("newsletter signup modal opens and closes", async ({ page }) => {
+    await goToWMG(page);
+
+    await page.getByTestId("newsletter-modal-open-button").click();
+
+    await expect(page.getByTestId("newsletter-modal-content")).toBeVisible();
+
+    await page.getByTestId("newsletter-email-input").fill("test");
+
+    await page.getByTestId("newsletter-subscribe-button").click();
+
+    await expect(
+      page.getByText("Please provide a valid email address.")
+    ).toBeVisible();
+
+    await page.getByTestId("newsletter-modal-close-button").click();
+
+    await expect(
+      page.getByTestId("newsletter-modal-content")
+    ).not.toBeVisible();
+  });
 });
