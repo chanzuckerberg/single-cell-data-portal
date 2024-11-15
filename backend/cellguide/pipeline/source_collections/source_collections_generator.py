@@ -2,7 +2,7 @@ import cellxgene_census
 from pandas import DataFrame
 
 from backend.cellguide.pipeline.source_collections.types import SourceCollectionsData
-from backend.common.census_cube.utils import descendants
+from backend.common.census_cube.utils import descendants, ontology_parser
 
 
 def generate_source_collections_data(
@@ -33,7 +33,18 @@ def generate_source_collections_data(
         strict=False,
     ):
         df_agg = cell_counts_df.groupby("dataset_id").agg({column_name: lambda x: ",".join(set(x.values))})
-        df_dict = {df_agg.index[i]: df_agg.values[i][0].split(",") for i in range(len(df_agg))}
+
+        if column_name == "cell_type_ontology_term_id":
+            df_dict = {df_agg.index[i]: df_agg.values[i][0].split(",") for i in range(len(df_agg))}
+        else:
+            # We need tissue, disease, and organism labels AND ontology term ids for each cell type id
+            df_dict = {
+                df_agg.index[i]: [
+                    {"label": ontology_parser.get_term_label(cell_type_id), "ontology_term_id": cell_type_id}
+                    for cell_type_id in df_agg.values[i][0].split(",")
+                ]
+                for i in range(len(df_agg))
+            }
         map_dict.update(df_dict)
 
     with cellxgene_census.open_soma(census_version="latest") as census:
