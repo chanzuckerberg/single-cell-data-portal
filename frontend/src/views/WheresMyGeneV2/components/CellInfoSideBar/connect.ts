@@ -1,8 +1,8 @@
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useContext, useMemo, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
-import { DispatchContext, State } from "../../common/store";
+import { DispatchContext, State, StateContext } from "../../common/store";
 import { addSelectedGenes } from "../../common/store/actions";
 import { HOVER_START_TIME_MS } from "../../common/constants";
 import {
@@ -10,12 +10,14 @@ import {
   MARKER_SCORE_LABEL,
   SPECIFICITY_LABEL,
 } from "src/common/constants/markerGenes";
+import { generateDifferentialExpressionUrl } from "../GeneSearchBar/components/ShareButton/utils";
 
 export const useConnect = ({
   cellInfoCellType,
 }: {
   cellInfoCellType: Exclude<State["cellInfoCellType"], null>;
 }) => {
+  const { selectedFilters, selectedOrganismId } = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
   const [hoverStartTime, setHoverStartTime] = useState(0);
 
@@ -66,6 +68,22 @@ export const useConnect = ({
     { label: SPECIFICITY_LABEL }
   );
 
+  const differentialExpressionUrl = useMemo(
+    () =>
+      generateDifferentialExpressionUrl({
+        filters: selectedFilters,
+        organism: selectedOrganismId,
+        tissue: cellInfoCellType.tissueID,
+        cellType: cellInfoCellType.cellType.id,
+      }),
+    [
+      selectedFilters,
+      selectedOrganismId,
+      cellInfoCellType.tissueID,
+      cellInfoCellType.cellType.id,
+    ]
+  );
+
   return {
     handleCopyGenes,
     isLoading,
@@ -75,5 +93,6 @@ export const useConnect = ({
     handleMarkerScoreHoverEnd,
     handleSpecificityHoverEnd,
     setHoverStartTime,
+    differentialExpressionUrl,
   };
 };

@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
 import { Button, fontBodyS } from "@czi-sds/components";
-import Image from "next/image";
 import { fontBodyXxs, getColors } from "@czi-sds/components";
 import {
   fontWeightSemibold,
@@ -23,12 +22,6 @@ export const ButtonContainer = styled.div`
 
 export const ButtonWrapper = styled.div`
   margin: 0;
-`;
-
-export const StyledIconImage = styled(Image)`
-  :hover {
-    filter: brightness(0);
-  }
 `;
 
 export const GeneHeaderWrapper = styled("span")`

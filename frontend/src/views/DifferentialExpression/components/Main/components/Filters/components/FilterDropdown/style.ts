@@ -1,8 +1,14 @@
-import { fontBodyXs } from "@czi-sds/components";
+import { Callout, fontBodyS, fontBodyXs } from "@czi-sds/components";
 import styled from "@emotion/styled";
-import { Autocomplete, TextField } from "@mui/material";
-import { gray400, primary400 } from "src/common/theme";
-import { FilterOption } from "../../types";
+import { Autocomplete, TextField, alertClasses } from "@mui/material";
+import {
+  fontWeightRegular,
+  gray100,
+  gray400,
+  gray500,
+  primary400,
+} from "src/common/theme";
+import { FilterOption } from "src/views/DifferentialExpression/common/store/reducer";
 import { formControlClasses } from "@mui/material/FormControl";
 import { inputBaseClasses } from "@mui/material/InputBase";
 import { formLabelClasses } from "@mui/material/FormLabel";
@@ -86,5 +92,18 @@ export const StyledAutocomplete = styled(
   & .${inputBaseClasses.input} {
     width: 45px !important;
     order: -2;
+  }
+`;
+
+export const StyledCallout = styled(Callout)`
+  width: 100%;
+  background-color: ${gray100};
+  ${fontBodyS}
+  font-weight: ${fontWeightRegular};
+  color: ${gray500};
+
+  .${alertClasses.icon} {
+    margin-top: auto;
+    margin-bottom: auto;
   }
 `;

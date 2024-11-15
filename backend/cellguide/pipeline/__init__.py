@@ -17,6 +17,12 @@ from backend.cellguide.pipeline.metadata import run as run_metadata_pipeline
 from backend.cellguide.pipeline.ontology_tree import run as run_ontology_tree_pipeline
 from backend.cellguide.pipeline.source_collections import run as run_source_collections_pipeline
 from backend.common.utils.cloudfront import create_invalidation_for_cellguide_data
+from backend.common.utils.result_notification import (
+    format_failed_batch_issue_slack_alert,
+    gen_cg_pipeline_failure_message,
+    gen_cg_pipeline_success_message,
+    notify_slack,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -55,8 +61,8 @@ def run_cellguide_pipeline():
         gpt_seo_output_directory=GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME,
     )
 
-    upload_cellguide_pipeline_output_to_s3(output_directory=output_directory)
-    upload_gpt_descriptions_to_s3(
+    output_path = upload_cellguide_pipeline_output_to_s3(output_directory=output_directory)
+    description_output_path = upload_gpt_descriptions_to_s3(
         gpt_output_directory=GPT_OUTPUT_DIRECTORY_FOLDERNAME,
         gpt_seo_output_directory=GPT_SEO_OUTPUT_DIRECTORY_FOLDERNAME,
     )
@@ -66,6 +72,8 @@ def run_cellguide_pipeline():
 
     # cleanup
     cleanup(output_directory=output_directory)
+
+    return output_path, description_output_path
 
 
 def upload_cellguide_pipeline_output_to_s3(*, output_directory: str):
@@ -97,6 +105,10 @@ def upload_cellguide_pipeline_output_to_s3(*, output_directory: str):
     # this is used for custom cloudfront error handling
     s3_provider.upload_file("404", bucket, "404", {})
 
+    output_path = f"{bucket_path}{output_directory}"
+
+    return output_path
+
 
 def upload_gpt_descriptions_to_s3(*, gpt_output_directory: str, gpt_seo_output_directory: str) -> None:
     bucket_path = get_bucket_path()
@@ -112,6 +124,10 @@ def upload_gpt_descriptions_to_s3(*, gpt_output_directory: str, gpt_seo_output_d
 
         num_descriptions = len(glob(f"{src_directory}/*.json"))
         logger.info(f"Uploaded {num_descriptions} GPT descriptions to {bucket_path}{dst_directory}/")
+
+    description_output_path = f"{bucket_path}{dst_directory}/"
+
+    return description_output_path
 
 
 def cleanup(*, output_directory: str):
@@ -129,5 +145,14 @@ def cleanup(*, output_directory: str):
 
 
 if __name__ == "__main__":
-    run_cellguide_pipeline()
+    try:
+        output_path, description_output_path = run_cellguide_pipeline()
+        success_message = gen_cg_pipeline_success_message(output_path, description_output_path)
+        notify_slack(success_message)
+    except Exception as e:
+        logger.exception("Cell Guide Pipeline failed")
+        failure_message = format_failed_batch_issue_slack_alert(
+            gen_cg_pipeline_failure_message(f"Issue with Cell Guide pipeline run: {e}. See logs for more detail.")
+        )
+        notify_slack(failure_message)
     sys.exit()

@@ -15,7 +15,11 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     DatasetArtifactType,
+    DatasetConversionStatus,
     DatasetProcessingStatus,
+    DatasetStatusKey,
+    DatasetUploadStatus,
+    DatasetValidationStatus,
     DatasetVersionId,
 )
 from backend.layers.processing import logger
@@ -31,12 +35,18 @@ class SchemaMigrate(ProcessingLogic):
         self.schema_validator = schema_validator
         self.business_logic = business_logic
         self.s3_provider = business_logic.s3_provider  # For compatiblity with ProcessingLogic
-        self.artifact_bucket = os.environ.get("ARTIFACT_BUCKET", "test-bucket")
+        self.artifact_bucket = os.environ.get("ARTIFACT_BUCKET", "artifact-bucket")
         self.execution_id = os.environ.get("EXECUTION_ID", "test-execution-arn")
         self.logger = logging.getLogger("processing")
         self.local_path: str = "."  # Used for testing
         self.limit_migration = os.environ.get("LIMIT_MIGRATION", 0)  # Run a small migration for testing
-        self.schema_version = schema_validator.get_current_schema_version()
+        self._schema_version = None
+
+    @property
+    def schema_version(self):
+        if not self._schema_version:
+            self._schema_version = self.schema_validator.get_current_schema_version()
+        return self._schema_version
 
     def fetch_collections(self) -> Iterable[CollectionVersion]:
         published_collections = [*self.business_logic.get_collections(CollectionQueryFilter(is_published=True))]
@@ -196,6 +206,7 @@ class SchemaMigrate(ProcessingLogic):
 
     def log_errors_and_cleanup(self, collection_version_id: str) -> list:
         errors = []
+        rolled_back_datasets = []
         collection_version = self.business_logic.get_collection_version(CollectionVersionId(collection_version_id))
         object_keys_to_delete = []
 
@@ -220,7 +231,43 @@ class SchemaMigrate(ProcessingLogic):
             self.logger.info("checking dataset", extra=_log_extras)
             key_prefix = self.get_key_prefix(previous_dataset_version_id)
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
-            if not self.check_dataset_is_latest_schema_version(dataset):
+            if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
+                # If only rds failure, set rds status to skipped + processing status to successful and do not rollback
+                if (
+                    dataset.status.rds_status == DatasetConversionStatus.FAILED
+                    and dataset.status.upload_status == DatasetUploadStatus.UPLOADED
+                    and dataset.status.validation_status == DatasetValidationStatus.VALID
+                    and dataset.status.cxg_status == DatasetConversionStatus.UPLOADED
+                    and dataset.status.h5ad_status == DatasetConversionStatus.UPLOADED
+                ):
+                    self.business_logic.update_dataset_version_status(
+                        dataset.version_id,
+                        DatasetStatusKey.RDS,
+                        DatasetConversionStatus.SKIPPED,
+                    )
+                    self.business_logic.update_dataset_version_status(
+                        dataset.version_id,
+                        DatasetStatusKey.PROCESSING,
+                        DatasetProcessingStatus.SUCCESS,
+                    )
+                    continue
+                error = {
+                    "message": dataset.status.validation_message,
+                    "dataset_status": dataset.status.to_dict(),
+                    "collection_id": collection_version.collection_id.id,
+                    "collection_version_id": collection_version_id,
+                    "dataset_version_id": dataset_version_id,
+                    "dataset_id": dataset_id,
+                    "rollback": True,
+                }
+                # If the dataset is not successfully processed, rollback to the version from before migration
+                self.business_logic.restore_previous_dataset_version(
+                    CollectionVersionId(collection_version_id), dataset.dataset_id
+                )
+                rolled_back_datasets.append(dataset)
+                self.logger.error(error)
+                errors.append(error)
+            elif not self.check_dataset_is_latest_schema_version(dataset):
                 error_message = "Did Not Migrate"
                 dataset_status = "n/a"
                 if dataset.status is not None:
@@ -237,18 +284,6 @@ class SchemaMigrate(ProcessingLogic):
                 }
                 self.logger.error(error)
                 errors.append(error)
-            elif dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
-                error = {
-                    "message": dataset.status.validation_message,
-                    "dataset_status": dataset.status.to_dict(),
-                    "collection_id": collection_version.collection_id.id,
-                    "collection_version_id": collection_version_id,
-                    "dataset_version_id": dataset_version_id,
-                    "dataset_id": dataset_id,
-                    "rollback": True,
-                }
-                self.logger.error(error)
-                errors.append(error)
             else:
                 self.logger.info("checked dataset")
         self.logger.info(
@@ -257,6 +292,10 @@ class SchemaMigrate(ProcessingLogic):
         self.s3_provider.delete_files(self.artifact_bucket, object_keys_to_delete)
         if errors:
             self._store_sfn_response("report/errors", collection_version_id, errors)
+            # clean up artifacts for any now-orphaned, rolled back datasets
+            if rolled_back_datasets:
+                # TODO: replace with async job to delete orphaned dataset version DB rows + artifacts
+                self.business_logic.delete_dataset_versions(rolled_back_datasets)
         return errors
 
     def _store_sfn_response(self, directory: str, file_name: str, response: Dict[str, str]):
@@ -309,37 +348,45 @@ class SchemaMigrate(ProcessingLogic):
 
         return wrapper
 
-    def report(self) -> str:
+    def report(self, artifact_bucket=None, execution_id=None, dry_run=False) -> dict:
+        """
+        Generate a report of the schema migration process. This function will download all the error and migration
+        :param artifact_bucket: The bucket where the schema migration artifacts are stored.
+        :param execution_id: the execution id of the AWS SFN schema migration in progress.
+        :param dry_run: If dry_run is True, then a report will be returned without deleting any s3 assets or report to
+            slack.
+        :return: a json report of the schema migration process
+        """
+        artifact_bucket = artifact_bucket or self.artifact_bucket
+        execution_id = execution_id or self.execution_id
+
         try:
             report = dict(errors=[], migrate_changes=[])
 
             def retrieve_report_files_from_s3(message_type: str):
                 s3_keys = list(
                     self.s3_provider.list_directory(
-                        self.artifact_bucket,
-                        self.get_key_prefix(f"schema_migration/{self.execution_id}/report/{message_type}"),
+                        artifact_bucket,
+                        self.get_key_prefix(f"schema_migration/{execution_id}/report/{message_type}"),
                     )
                 )
                 self.logger.info("Subdirectory Count", extra={"message_type": message_type, "count": len(s3_keys)})
                 for s3_key in s3_keys:
                     local_file = os.path.join(self.local_path, "data.json")
-                    self.s3_provider.download_file(self.artifact_bucket, s3_key, local_file)
+                    self.s3_provider.download_file(artifact_bucket, s3_key, local_file)
                     with open(local_file, "r") as f:
                         jn = json.load(f)
                     report[message_type].append(jn)
-                # Cleanup S3 files
-                self.s3_provider.delete_files(self.artifact_bucket, s3_keys)
 
             retrieve_report_files_from_s3("errors")
             retrieve_report_files_from_s3("migrate_changes")
-            self.logger.info("Report", extra=report)
-            report_str = json.dumps(report, indent=4, sort_keys=True, cls=CustomJSONEncoder)
-            report_message = f"Schema migration results ({os.environ['DEPLOYMENT_STAGE']} env)"
-            self._upload_to_slack("schema_migration_report.json", report_str, report_message)
-            # Cleanup leftover schema migration files
-            self.s3_provider.delete_prefix(
-                self.artifact_bucket, self.get_key_prefix(f"schema_migration/{self.execution_id}")
-            )
+            if not dry_run:
+                self.logger.info("Report", extra=report)
+                report_str = json.dumps(report, indent=4, sort_keys=True, cls=CustomJSONEncoder)
+                report_message = f"Schema migration results ({os.environ['DEPLOYMENT_STAGE']} env)"
+                self._upload_to_slack("schema_migration_report.json", report_str, report_message)
+                # Cleanup leftover schema migration files
+                self.s3_provider.delete_prefix(artifact_bucket, self.get_key_prefix(f"schema_migration/{execution_id}"))
 
             return report
         except Exception as e:

@@ -1,6 +1,10 @@
 ARG BASE_TAG=branch-main
 
 FROM python:3.10
+
+# Update AWS root Certificates
+ADD https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem
+
 RUN /usr/local/bin/python -m pip install --upgrade pip && \
     apt update && apt -y install graphviz graphviz-dev && \
     rm -rf /var/lib/apt/lists/* && \

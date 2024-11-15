@@ -13,6 +13,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
+from backend.layers.processing.utils.matrix_utils import enforce_canonical_format
 from backend.layers.processing.utils.rds_citation_from_h5ad import rds_citation_from_h5ad
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
@@ -74,6 +75,14 @@ class ProcessSeurat(ProcessingLogic):
         adata = anndata.read_h5ad(labeled_h5ad_filename)
         if "citation" in adata.uns:
             adata.uns["citation"] = rds_citation_from_h5ad(adata.uns["citation"])
+
+        # enforce for canonical
+        logger.info("enforce canonical format in X")
+        enforce_canonical_format(adata)
+        if adata.raw:
+            logger.info("enforce canonical format in raw.X")
+            enforce_canonical_format(adata.raw)
+
         adata.write_h5ad(labeled_h5ad_filename)
 
         # Use Seurat to convert to RDS

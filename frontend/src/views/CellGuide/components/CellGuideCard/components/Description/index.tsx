@@ -1,5 +1,11 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { TooltipProps } from "@czi-sds/components";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { Icon, TooltipProps } from "@czi-sds/components";
 import {
   CellGuideCardDescription,
   ChatGptTooltipSubtext,
@@ -18,6 +24,7 @@ import {
   StyledTag,
   ReferencesWrapper,
   ValidatedInlineWrapper,
+  StyledLinkLabel,
 } from "./style";
 import { Label } from "src/components/Synonyms/style";
 
@@ -25,15 +32,14 @@ import {
   useGptDescription,
   useCellTypeMetadata,
   useValidatedDescription,
+  ORGANISM_NAME_TO_TAXON_ID_MAPPING,
 } from "src/common/queries/cellGuide";
-import validatedIcon from "src/common/images/validated.svg";
+import ValidatedIcon from "src/common/images/validated.svg";
 import Link from "../common/Link";
 import { StyledLink } from "../common/Link/style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { CELL_GUIDE_CORRECTION_SURVEY_LINK } from "src/common/constants/airtableLinks";
-import questionMarkIcon from "src/common/images/question-mark-icon.svg";
-import { StyledIconImage } from "../common/HelpTooltip/style";
 import {
   CELL_GUIDE_CARD_CL_DESCRIPTION,
   CELL_GUIDE_CARD_GPT_DESCRIPTION,
@@ -41,9 +47,15 @@ import {
   CELL_GUIDE_CARD_GPT_TOOLTIP_LINK,
   DESCRIPTION_BREAKPOINT_HEIGHT_PX,
   CELL_GUIDE_CARD_SYNONYMS,
+  getDefaultGptDescription,
+  CELL_GUIDE_CARD_DEFAULT_DESCRIPTION_CL,
 } from "src/views/CellGuide/components/CellGuideCard/components/Description/constants";
 import { useIsComponentPastBreakpointHeight } from "../common/hooks/useIsComponentPastBreakpoint";
-import Image from "next/image";
+import { StyledQuestionMarkIcon } from "src/common/style";
+import { ROUTES } from "src/common/constants/routes";
+import { DIFFERENTIAL_EXPRESSION_RELEASED_FLAG } from "src/views/DifferentialExpression/common/constants";
+
+// TODO(SVGR) ADD BACK HOVER BRIGHTNESS CHANGE
 
 const SLOT_PROPS: TooltipProps["slotProps"] = {
   tooltip: {
@@ -66,8 +78,12 @@ interface DescriptionProps {
   >;
   inSideBar?: boolean;
   synonyms?: string[];
+  selectedOrganism?: string;
+  selectedOrganId?: string;
 }
 export default function Description({
+  selectedOrganism,
+  selectedOrganId,
   cellTypeId,
   cellTypeName,
   skinnyMode,
@@ -90,6 +106,18 @@ export default function Description({
     DESCRIPTION_BREAKPOINT_HEIGHT_PX
   );
 
+  const shareUrlForDE = useMemo(() => {
+    if (!selectedOrganism) {
+      return "";
+    }
+    const organism = ORGANISM_NAME_TO_TAXON_ID_MAPPING[
+      selectedOrganism as keyof typeof ORGANISM_NAME_TO_TAXON_ID_MAPPING
+    ].replace("_", ":");
+    const tissueSuffix =
+      selectedOrganId == "" ? "" : `&tissues=${selectedOrganId}`;
+    return `${ROUTES.DE}?organism=${organism}&celltypes=${cellTypeId}${tissueSuffix}`;
+  }, [selectedOrganId, selectedOrganism, cellTypeId]);
+
   useEffect(() => {
     if (isPastBreakpoint) {
       setDescriptionMaxHeight(DESCRIPTION_BREAKPOINT_HEIGHT_PX);
@@ -98,11 +126,14 @@ export default function Description({
     }
   }, [isPastBreakpoint]);
 
-  const { data: rawDescriptionGpt } = useGptDescription(cellTypeId);
+  const { data: rawDescriptionGpt = getDefaultGptDescription(cellTypeName) } =
+    useGptDescription(cellTypeId);
   const { data: rawDescriptionValidated, isLoading } =
     useValidatedDescription(cellTypeId);
   const { data: cellTypesById } = useCellTypeMetadata();
-  const rawDescriptionCl = cellTypesById?.[cellTypeId].clDescription;
+  const rawDescriptionCl =
+    cellTypesById?.[cellTypeId]?.clDescription ||
+    CELL_GUIDE_CARD_DEFAULT_DESCRIPTION_CL;
 
   useEffect(() => {
     if (rawDescriptionValidated) {
@@ -224,7 +255,7 @@ export default function Description({
               });
           }}
         >
-          <StyledIconImage alt="question mark" src={questionMarkIcon} />
+          <StyledQuestionMarkIcon />
         </StyledLink>
       </StyledTooltip>
     </SourceLink>
@@ -322,6 +353,23 @@ export default function Description({
           })}
         </ReferencesWrapper>
       )}
+      {shareUrlForDE !== "" && DIFFERENTIAL_EXPRESSION_RELEASED_FLAG && (
+        <Link
+          url={shareUrlForDE}
+          label={
+            <StyledLinkLabel>
+              Open in Differential Expression
+              <Icon sdsIcon="ChevronRight" sdsType="static" sdsSize="xs" />
+            </StyledLinkLabel>
+          }
+          onClick={() => {
+            track(EVENTS.CG_OPEN_IN_DE_CLICKED, {
+              cell_type: cellTypeId,
+              tissue: selectedOrganId,
+            });
+          }}
+        />
+      )}
     </FlexContainer>
   );
   const validatedDescriptionComponent = (
@@ -349,14 +397,7 @@ export default function Description({
             sdsType="secondary"
             sdsStyle="square"
             color="positive"
-            icon={
-              <Image
-                src={validatedIcon}
-                alt="validated"
-                width={16}
-                height={16}
-              />
-            }
+            icon={<ValidatedIcon />}
             label="Validated"
           />{" "}
           This description has been validated by our Biocurator team.{" "}

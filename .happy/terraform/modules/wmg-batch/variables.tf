@@ -56,3 +56,9 @@ variable "api_url" {
   type        = string
   description = "URL for the backend api."
 }
+
+variable "census_user_agent" {
+  type        = string
+  description = "User agent for the census API"
+  default = "CZI-wmg"
+}

@@ -32,12 +32,15 @@ until $(curl --output /dev/null --silent --head ${LOCALSTACK_URL}); do
 done
 echo " done"
 
-echo "Creating secretsmanager secrets"
+
 local_aws="aws --endpoint-url=${LOCALSTACK_URL}"
 
+echo "Creating s3 buckets"
 ${local_aws} s3api create-bucket --bucket corpora-data-dev &>/dev/null || true
 ${local_aws} s3api create-bucket --bucket artifact-bucket &>/dev/null || true
 ${local_aws} s3api create-bucket --bucket cellxgene-bucket &>/dev/null || true
+${local_aws} s3api create-bucket --bucket spatial-deepzoom-dev &>/dev/null || true
+echo "Creating secretsmanager secrets"
 ${local_aws} secretsmanager create-secret --name corpora/backend/test/auth0-secret &>/dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/cicd/test/auth0-secret &>/dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/backend/test/database &>/dev/null || true

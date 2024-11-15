@@ -97,19 +97,17 @@ class CensusCubeQuery:
     @tracer.wrap(
         name="expression_summary_and_cell_counts_diffexp", service="de-api", resource="_query", span_type="de-api"
     )
-    def expression_summary_and_cell_counts_diffexp(self, criteria: BaseQueryCriteria) -> tuple[DataFrame, DataFrame]:
-        use_simple = not any(
-            depluralize(key) not in cell_counts_indexed_dims and values for key, values in dict(criteria).items()
-        )
-
+    def expression_summary_and_cell_counts_diffexp(
+        self, criteria: BaseQueryCriteria, use_simple: bool
+    ) -> tuple[DataFrame, DataFrame]:
         cell_counts_diffexp_df = self.cell_counts_diffexp_df(criteria)
-        key = "group_id_simple" if use_simple else "group_id"
+        cell_counts_group_id_key = "group_id_simple" if use_simple else "group_id"
         cube = (
             self._snapshot.expression_summary_diffexp_simple_cube
             if use_simple
             else self._snapshot.expression_summary_diffexp_cube
         )
-        group_ids = cell_counts_diffexp_df[key].unique().tolist()
+        group_ids = cell_counts_diffexp_df[cell_counts_group_id_key].unique().tolist()
         return (
             pd.concat(
                 cube.query(
@@ -207,6 +205,12 @@ class CensusCubeQuery:
             .agg(list)
             .to_dict()[primary_dim_name]
         )
+
+
+def should_use_simple_group_ids(criteria: BaseQueryCriteria):
+    return not any(
+        depluralize(key) not in cell_counts_indexed_dims and values for key, values in dict(criteria).items()
+    )
 
 
 def depluralize(attr_name):

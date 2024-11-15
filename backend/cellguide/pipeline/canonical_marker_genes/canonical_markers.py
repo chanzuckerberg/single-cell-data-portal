@@ -131,8 +131,13 @@ class CanonicalMarkerGenesCompiler:
             doi = clean_doi(ref.doi)
             if doi:
                 if doi not in doi_to_citation:
-                    title = self.crossref_provider.get_title_and_citation_from_doi(doi)
-                    doi_to_citation[doi] = title
+                    # Catch and log invalid DOIs.
+                    try:
+                        title = self.crossref_provider.get_title_and_citation_from_doi(doi)
+                        doi_to_citation[doi] = title
+                    except Exception:
+                        logger.error(f"Error fetching title and citation for DOI {doi}")
+                        return None  # None values are filtered out.
                 else:
                     title = doi_to_citation[doi]
                 return doi, title
@@ -278,7 +283,9 @@ class CanonicalMarkerGenesCompiler:
 
             tissue_id = self._get_tissue_id([AnatomicalStructure(**entry) for entry in row["anatomical_structures"]])
             gene_symbols, gene_names = self._get_gene_info([GeneBiomarker(**entry) for entry in row["biomarkers_gene"]])
-            refs, titles = self._get_references([Reference(**entry) for entry in row["references"]], doi_to_citation)
+            # Protect against invalid references (i.e. references without a DOI).
+            references = [Reference(**entry) for entry in row["references"] if entry and "doi" in entry]
+            refs, titles = self._get_references(references, doi_to_citation)
 
             for cell_type in cell_types:
                 for index in range(len(gene_symbols)):

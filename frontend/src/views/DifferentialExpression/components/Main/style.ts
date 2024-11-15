@@ -8,23 +8,25 @@ import {
   fontBodyXxs,
 } from "@czi-sds/components";
 import { gray500, primary400 } from "src/common/theme";
+import { SvgIcon } from "@mui/material";
 
-const LEFT_PANEL_WIDTH = "60vw";
-const RIGHT_PANEL_WIDTH = "40vw";
+export const RIGHT_PANEL_WIDTH = 480;
 
 export const TwoPanelLayout = styled.div`
   display: flex;
   flex-direction: row;
-
+  padding-left: 80px;
+  justify-content: space-between;
   .leftPanel {
     border-right: 1px solid #ccc;
-    width: ${LEFT_PANEL_WIDTH};
-    min-width: fit-content;
+    flex-grow: 1;
+    padding-right: 80px;
+    display: flex;
   }
 
   .rightPanel {
-    width: ${RIGHT_PANEL_WIDTH};
     min-width: fit-content;
+    width: ${RIGHT_PANEL_WIDTH}px;
   }
 `;
 
@@ -75,15 +77,25 @@ export const StepSubHeader = styled.div`
 
 export const RunButton = styled(Button)`
   ${fontBodyS}
-  margin-bottom: 50px;
-  margin-top: 59px;
-  width: 256px;
+  width: fit-content;
+  font-weight: 500;
+  padding: 6px 12px;
+`;
+
+export const ClearAllButton = styled(Button)`
+  ${fontBodyS}
+  width: fit-content;
+  font-weight: 500;
+  padding: 6px 12px;
+  color: ${gray500};
 `;
 
 export const RunButtonWrapper = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
+  margin-bottom: 50px;
+  margin-top: 24px;
 `;
 
 export const FlexRow = styled.div`
@@ -94,7 +106,13 @@ export const FlexRow = styled.div`
 `;
 
 export const QuerySelectorWrapper = styled.div`
-  width: 698px;
+  display: flex;
+  flex-direction: column;
+`;
+
+export const QueryGroupAndButtonWrapper = styled.div`
+  justify-content: flex-end;
+  max-width: 696px;
 `;
 
 const spin = keyframes`
@@ -113,4 +131,15 @@ export const Spinner = styled.div`
   border-radius: 50%;
   border-left-color: #000;
   animation: ${spin} 0.5s linear infinite;
+`;
+
+export const StyledSvgIcon = styled(SvgIcon)`
+  color: inherit;
+  &:active {
+    color: ${primary400};
+  }
+`;
+
+export const StyledP = styled.p`
+  margin-bottom: 0;
 `;

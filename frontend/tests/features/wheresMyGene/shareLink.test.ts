@@ -27,8 +27,8 @@ const GENES = ["DPM1", "TNMD", "TSPAN6"];
 const PUBLICATIONS = [
   // (thuang): This publication has blood and lung tissues
   {
-    id: "Ren et al. Cell 2021",
-    text: "Ren  et al. (2021)  Cell",
+    id: "Ren et al. (2021) Cell",
+    text: "Ren et al.",
   },
 ];
 

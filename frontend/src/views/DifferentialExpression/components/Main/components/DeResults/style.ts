@@ -7,8 +7,9 @@ import {
   fontHeaderXl,
 } from "@czi-sds/components";
 import { gray500, primary400 } from "src/common/theme";
+import { RIGHT_PANEL_WIDTH } from "../../style";
 
-const TABLE_WIDTH = "386px";
+export const TABLE_WIDTH = RIGHT_PANEL_WIDTH - 60;
 
 export const ButtonLabel = styled.span`
   ${fontBodyM}
@@ -23,7 +24,7 @@ export const ResultsHeaderWrapper = styled.div`
   flex-direction: row;
   margin-bottom: 16px;
   justify-content: space-between;
-  width: ${TABLE_WIDTH};
+  width: ${TABLE_WIDTH}px;
 `;
 
 interface ButtonsWrapperProps {
@@ -51,6 +52,7 @@ export const InstructionsWrapper = styled.div`
   max-width: 368px;
   margin-left: 16px;
   margin-top: 16px;
+  padding-right: 20px;
 `;
 export const InstructionsHeader = styled.div`
   ${fontHeaderL}

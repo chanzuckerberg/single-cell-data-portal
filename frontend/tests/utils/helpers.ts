@@ -321,24 +321,6 @@ export async function getFirstButtonAndClick(page: Page, testID: string) {
   );
 }
 
-export async function getCellTypeFmgButtonAndClick(
-  page: Page,
-  cellType: string
-) {
-  await waitForElement(page, CELL_TYPE_LABELS_ID);
-
-  await tryUntil(
-    async () => {
-      await page
-        .getByRole("img", {
-          name: "display marker genes for " + cellType,
-        })
-        .click();
-    },
-    { page }
-  );
-}
-
 export async function clickDropdownOptionByName({
   page,
   testId,

@@ -157,3 +157,9 @@ export const ReferencesWrapper = styled.div`
   height: 36px;
   align-items: center;
 `;
+
+export const StyledLinkLabel = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;

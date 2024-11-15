@@ -138,7 +138,7 @@ def get_failure_slack_notification_message(
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"Dataset processing job failed! @sc-oncall-eng please follow the [triage steps](https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y)\n"
+                    "text": f"Dataset processing job failed! Please follow the triage steps: https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y\n"
                     f"*Owner*: {collection_owner}\n"
                     f"*Collection URL*: {collection_url}\n"
                     f"*Collection Version URL*: {collection_version_url}\n"
