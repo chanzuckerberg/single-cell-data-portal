@@ -291,7 +291,7 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Type": "Task",
         "Next": "CheckForErrors",
         "Parameters": {
-          "JobDefinition.$": "$.JobDefinitionName"
+          "JobDefinition.$": "$.batch.JobDefinitionName"
         },
         "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition",
         "Retry": [ {
