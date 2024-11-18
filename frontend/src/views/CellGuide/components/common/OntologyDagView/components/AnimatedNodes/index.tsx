@@ -79,6 +79,12 @@ export default function AnimatedNodes({
     if (setCellInfoCellType) {
       setCellInfoCellType({ cellTypeId, cellTypeName });
     } else {
+      // Validate parameters before navigation
+      if (!isValidId(cellTypeId) || !isValidId(tissueId)) {
+        console.error("Invalid cell type or tissue ID");
+        return;
+      }
+
       const url = getCellTypeLink({
         tissueId,
         cellTypeId,
@@ -281,4 +287,10 @@ function findSVGParent(node: Node | null): SVGElement | undefined {
     node = node.parentNode;
   }
   return undefined;
+}
+
+function isValidId(id: string | undefined): boolean {
+  if (!id) return false;
+  // Must start with letters, followed by : or _, ending with numbers
+  return /^[a-zA-Z]+[:_][0-9]+$/.test(id);
 }
