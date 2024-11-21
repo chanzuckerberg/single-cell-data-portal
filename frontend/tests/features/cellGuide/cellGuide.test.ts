@@ -588,7 +588,7 @@ describe("Cell Guide", () => {
                     return await element.textContent();
                   })
                 );
-
+                // small change
                 expect(columnHeaders).toEqual([
                   "Collection",
                   "Publication",
