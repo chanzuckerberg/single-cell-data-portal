@@ -8,6 +8,8 @@ import {
   StyledLink,
   TextWrapper,
 } from "./style";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 export const PROMPT_TEXT =
   "Select one of the data formats to view its download details.";
@@ -56,7 +58,16 @@ const Details: FC<Props> = ({
           <TextWrapper>
             Seurat support will be removed between Nov 15 - Dec 31, 2024. You
             can download and convert the .h5ad yourself by following these {""}
-            <StyledLink href={DOC_SITE_URL}>instructions</StyledLink>.
+            <StyledLink
+              href={DOC_SITE_URL}
+              target="_blank"
+              onClick={() =>
+                track(EVENTS.DOWNLOAD_DATA_SEURAT_DEPRECATION_CLICKED)
+              }
+            >
+              instructions
+            </StyledLink>
+            .
           </TextWrapper>
         </SeuratNotice>
       )}
