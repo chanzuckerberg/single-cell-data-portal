@@ -44,6 +44,7 @@ class TestLogErrorsAndCleanup:
     def test_OK(self, mock_json, schema_migrate):
         schema_migrate.business_logic.s3_provider.download_file = factory_download_file()
         schema_migrate.business_logic.s3_provider.delete_files = Mock()
+        schema_migrate.business_logic.lambda_provider.invoke_dataset_version_cleanup_handler = Mock()
         datasets = [
             make_mock_dataset_version(
                 dataset_id="dataset_id_1",
@@ -56,6 +57,7 @@ class TestLogErrorsAndCleanup:
 
         errors = schema_migrate.log_errors_and_cleanup(collection_version.version_id.id)
         assert errors == []
+        schema_migrate.business_logic.lambda_provider.invoke_dataset_version_cleanup_handler.assert_not_called()
         schema_migrate.s3_provider.delete_files.assert_any_call(
             "artifact-bucket", ["schema_migration/test-execution-arn/log_errors_and_cleanup/collection_id.json"]
         )
@@ -67,6 +69,7 @@ class TestLogErrorsAndCleanup:
     def test_with_errors(self, mock_json, schema_migrate):
         schema_migrate.business_logic.s3_provider.download_file = factory_download_file()
         schema_migrate.business_logic.s3_provider.delete_files = Mock()
+        schema_migrate.business_logic.lambda_provider.invoke_dataset_version_cleanup_handler = Mock()
         failed_dataset = make_mock_dataset_version(
             dataset_id="dataset_id_2",
             version_id="new_failed_dataset_version_id",
@@ -108,7 +111,9 @@ class TestLogErrorsAndCleanup:
             "rollback": False,
         } in errors
         assert schema_migrate.business_logic.restore_previous_dataset_version.call_count == 1
-        assert schema_migrate.business_logic.delete_dataset_versions.call_count == 1
+        schema_migrate.business_logic.lambda_provider.invoke_dataset_version_cleanup_handler.assert_any_call(
+            [failed_dataset.version_id]
+        )
         schema_migrate.s3_provider.delete_files.assert_any_call(
             "artifact-bucket", ["schema_migration/test-execution-arn/log_errors_and_cleanup/collection_id.json"]
         )
