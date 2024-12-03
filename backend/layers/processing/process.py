@@ -25,7 +25,6 @@ from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_download import ProcessDownload
 from backend.layers.processing.process_logic import ProcessingLogic
-from backend.layers.processing.process_seurat import ProcessSeurat
 from backend.layers.processing.process_validate import ProcessValidate
 from backend.layers.processing.schema_migration import SchemaMigrate
 from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
@@ -44,7 +43,6 @@ class ProcessMain(ProcessingLogic):
     """
 
     process_validate: ProcessValidate
-    process_seurat: ProcessSeurat
     process_cxg: ProcessCxg
 
     def __init__(
@@ -63,7 +61,6 @@ class ProcessMain(ProcessingLogic):
         self.process_validate = ProcessValidate(
             self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
         )
-        self.process_seurat = ProcessSeurat(self.business_logic, self.uri_provider, self.s3_provider)
         self.process_cxg = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
         self.schema_migrate = SchemaMigrate(self.business_logic, self.schema_validator)
 
@@ -115,8 +112,6 @@ class ProcessMain(ProcessingLogic):
                 self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket)
             elif step_name == "cxg_remaster":
                 self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket, is_reprocess=True)
-            elif step_name == "seurat":
-                self.process_seurat.process(dataset_version_id, artifact_bucket, datasets_bucket)
             else:
                 self.logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
 
@@ -143,8 +138,6 @@ class ProcessMain(ProcessingLogic):
             self.logger.exception(f"An unexpected error occurred while processing the data set: {e}")
             if step_name in ["validate", "download"]:
                 self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.FAILED)
-            elif step_name == "seurat":
-                self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.FAILED)
             elif step_name == "cxg" or step_name == "cxg_remaster":
                 self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.FAILED)
             return False
