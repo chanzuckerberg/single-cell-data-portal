@@ -78,8 +78,8 @@ def query():
         )
         q = CensusCubeQuery(snapshot, cube_query_params)
         default = snapshot.expression_summary_default_cube is not None and compare is None
-        for dim in criteria.model_dump():
-            if len(criteria.model_dump()[dim]) > 0 and depluralize(dim) in expression_summary_non_indexed_dims:
+        for dim in criteria.dict():
+            if len(criteria.dict()[dim]) > 0 and depluralize(dim) in expression_summary_non_indexed_dims:
                 default = False
                 break
 
@@ -256,7 +256,7 @@ def find_dimension_id_from_compare(compare: str) -> str:
 
 
 def is_criteria_empty(criteria: BaseQueryCriteria) -> bool:
-    criteria = criteria.model_dump()
+    criteria = criteria.dict()
     for key in criteria:
         if key != "organism_ontology_term_id":
             if isinstance(criteria[key], list):
