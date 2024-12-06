@@ -108,7 +108,7 @@ jobs:
 
       - name: Upload FE test results as an artifact
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: playwright-report ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
@@ -116,18 +116,20 @@ jobs:
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: all-blob-reports
+          name: all-blob-reports-${{ matrix.project }}-${{ matrix.shardCurrent }}
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
           retention-days: 1
+          if-no-files-found: error
 
       # Upload Allure results as an artifact
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          name: allure-results
+          name: allure-results-${{ matrix.project }}-${{ matrix.shardCurrent }}
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/allure-results
           retention-days: 20
+          if-no-files-found: error
 
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
@@ -162,20 +164,22 @@ jobs:
         run: npm ci
 
       - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: all-blob-reports
+          pattern: all-blob-reports-*
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-reports
+          merge-multiple: true
 
       - name: Merge into HTML Report
         run: npx playwright merge-reports --reporter html ./blob-reports
 
       - name: Upload HTML report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: html-report--attempt-${{ github.run_attempt }}
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
           retention-days: 30
+          if-no-files-found: error
 
   # https://github.com/myieye/web-languageforge/blob/develop/.github/workflows/e2e-tests.yml
   e2e-test:
@@ -232,3 +236,4 @@ jobs:
           name: logged-in-test-results
           path: frontend/playwright-report/
           retention-days: 30
+          if-no-files-found: error
