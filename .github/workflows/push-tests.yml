@@ -571,7 +571,7 @@ jobs:
           fetch-depth: 2
       - uses: actions/download-artifact@v4
         with:
-          name: coverage-* # Download all coverage artifacts
+          pattern: coverage-* # Download all coverage artifacts
           merge-multiple: true
           path: .
       - name: coverage report
@@ -581,6 +581,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           env_vars: OS,PYTHON
           files: ./coverage.xml
           flags: unittests
@@ -601,7 +602,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: allure-results-* # Download all allure-results artifacts
+          pattern: allure-results-* # Download all allure-results artifacts
           path: allure-results
           merge-multiple: true
 
