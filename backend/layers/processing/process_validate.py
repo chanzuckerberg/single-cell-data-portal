@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
-import dask
+import h5py
 import numpy
 from cellxgene_schema.utils import read_h5ad
 
@@ -105,10 +105,8 @@ class ProcessValidate(ProcessingLogic):
         collection = self.business_logic.get_collection_version(collection_version_id, get_tombstoned=False)
         doi = next((link.uri for link in collection.metadata.links if link.type == "DOI"), None)
         citation = self.business_logic.generate_dataset_citation(collection.collection_id, dataset_version_id, doi)
-        adata = read_h5ad(adata_path)
-        adata.uns["citation"] = citation
-        with dask.config.set(scheduler="single-threaded"):
-            adata.write_h5ad(adata_path, compression="gzip")
+        with h5py.File(adata_path, "r+") as f:
+            f["uns"].create_dataset("citation", data=citation)
 
     def get_spatial_metadata(self, spatial_dict: Dict[str, Any]) -> Optional[SpatialMetadata]:
         """
