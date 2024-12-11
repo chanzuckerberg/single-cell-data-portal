@@ -108,7 +108,7 @@ class ProcessValidate(ProcessingLogic):
         adata = read_h5ad(adata_path)
         adata.uns["citation"] = citation
         with dask.config.set(scheduler="single-threaded"):
-            self.adata.write_h5ad(adata_path, compression="gzip")
+            adata.write_h5ad(adata_path, compression="gzip")
 
     def get_spatial_metadata(self, spatial_dict: Dict[str, Any]) -> Optional[SpatialMetadata]:
         """
