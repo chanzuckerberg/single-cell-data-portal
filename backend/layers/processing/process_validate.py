@@ -3,7 +3,6 @@ from typing import Any, Dict, List, Literal, Optional, Tuple
 import dask
 import numpy
 from cellxgene_schema.utils import read_h5ad
-from cellxgene_schema.validate import _count_matrix_nonzero
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business_interface import BusinessLogicInterface
@@ -139,7 +138,9 @@ class ProcessValidate(ProcessingLogic):
         # as opposed to `spike-in`
         filter_gene_vars = numpy.where(adata.var.feature_biotype == "gene")[0]
 
-        nnz_gene_exp = _count_matrix_nonzero("filter_gene_vars", layer_for_mean_genes_per_cell, filter_gene_vars)
+        nnz_gene_exp = self.schema_validator._count_matrix_nonzero(
+            "filter_gene_vars", layer_for_mean_genes_per_cell, filter_gene_vars
+        )
         total_cells = layer_for_mean_genes_per_cell.shape[0]
         mean_genes_per_cell = nnz_gene_exp / total_cells
 
