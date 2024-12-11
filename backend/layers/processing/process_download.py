@@ -132,8 +132,8 @@ class ProcessDownload(ProcessingLogic):
                 "vcpus": vcpus,
             }
         )
-
-        return {"Vcpus": vcpus, "Memory": memory, "MaxSwap": max_swap}
+        # TODO: remove all this + update infra if we achieve constant memory
+        return {"Vcpus": 1, "Memory": 8000, "MaxSwap": 0}
 
     def create_batch_job_definition_parameters(self, local_filename: str, dataset_version_id: str) -> Dict[str, Any]:
         adata = scanpy.read_h5ad(local_filename, backed="r")

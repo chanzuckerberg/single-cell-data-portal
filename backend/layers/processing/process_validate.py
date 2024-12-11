@@ -1,7 +1,9 @@
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
+import dask
 import numpy
-import scanpy
+from cellxgene_schema.utils import read_h5ad
+from cellxgene_schema.validate import _count_matrix_nonzero
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business_interface import BusinessLogicInterface
@@ -104,9 +106,10 @@ class ProcessValidate(ProcessingLogic):
         collection = self.business_logic.get_collection_version(collection_version_id, get_tombstoned=False)
         doi = next((link.uri for link in collection.metadata.links if link.type == "DOI"), None)
         citation = self.business_logic.generate_dataset_citation(collection.collection_id, dataset_version_id, doi)
-        adata = scanpy.read_h5ad(adata_path)
+        adata = read_h5ad(adata_path)
         adata.uns["citation"] = citation
-        adata.write(adata_path, compression="gzip")
+        with dask.config.set(scheduler="single-threaded"):
+            self.adata.write_h5ad(adata_path, compression="gzip")
 
     def get_spatial_metadata(self, spatial_dict: Dict[str, Any]) -> Optional[SpatialMetadata]:
         """
@@ -128,28 +131,17 @@ class ProcessValidate(ProcessingLogic):
     def extract_metadata(self, filename) -> DatasetMetadata:
         """Pull metadata out of the AnnData file to insert into the dataset table."""
 
-        adata = scanpy.read_h5ad(filename, backed="r")
+        adata = read_h5ad(filename)
 
-        # TODO: Concern with respect to previous use of raising error when there is no raw layer.
-        # This new way defaults to adata.X.
         layer_for_mean_genes_per_cell = adata.raw.X if adata.raw is not None and adata.raw.X is not None else adata.X
 
         # For mean_genes_per_cell, we only want the columns (genes) that have a feature_biotype of `gene`,
         # as opposed to `spike-in`
         filter_gene_vars = numpy.where(adata.var.feature_biotype == "gene")[0]
 
-        # Calling np.count_nonzero on and h5py.Dataset appears to read the entire thing
-        # into memory, so we need to chunk it to be safe.
-        stride = 50000
-        numerator, denominator = 0, 0
-        for bounds in zip(
-            range(0, layer_for_mean_genes_per_cell.shape[0], stride),
-            range(stride, layer_for_mean_genes_per_cell.shape[0] + stride, stride),
-            strict=False,
-        ):
-            chunk = layer_for_mean_genes_per_cell[bounds[0] : bounds[1], :][:, filter_gene_vars]
-            numerator += chunk.nnz if hasattr(chunk, "nnz") else numpy.count_nonzero(chunk)
-            denominator += chunk.shape[0]
+        nnz_gene_exp = _count_matrix_nonzero("filter_gene_vars", layer_for_mean_genes_per_cell, filter_gene_vars)
+        total_cells = layer_for_mean_genes_per_cell.shape[0]
+        mean_genes_per_cell = nnz_gene_exp / total_cells
 
         def _get_term_pairs(base_term) -> List[OntologyTermId]:
             base_term_id = base_term + "_ontology_term_id"
@@ -196,7 +188,7 @@ class ProcessValidate(ProcessingLogic):
             development_stage=_get_term_pairs("development_stage"),
             cell_count=adata.shape[0],
             primary_cell_count=int(adata.obs["is_primary_data"].astype("int").sum()),
-            mean_genes_per_cell=numerator / denominator,
+            mean_genes_per_cell=mean_genes_per_cell,
             is_primary_data=_get_is_primary_data(),
             cell_type=_get_term_pairs("cell_type"),
             x_approximate_distribution=_get_x_approximate_distribution(),
