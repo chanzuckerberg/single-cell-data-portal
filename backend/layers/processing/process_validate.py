@@ -136,7 +136,7 @@ class ProcessValidate(ProcessingLogic):
         # as opposed to `spike-in`
         filter_gene_vars = numpy.where(adata.var.feature_biotype == "gene")[0]
 
-        nnz_gene_exp = self.schema_validator._count_matrix_nonzero(
+        nnz_gene_exp = self.schema_validator.count_matrix_nonzero(
             "filter_gene_vars", layer_for_mean_genes_per_cell, filter_gene_vars
         )
         total_cells = layer_for_mean_genes_per_cell.shape[0]
