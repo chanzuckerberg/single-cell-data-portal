@@ -17,6 +17,11 @@ const { describe, skip } = test;
 const COLLECTIONS_LINK_ID = "collections-link";
 const SCROLL_Y_PX = 999999;
 
+// DEBUG
+// DEBUG
+// DEBUG
+console.log("hi");
+
 describe("Homepage", () => {
   test("Should verify the expected elements are rendered", async ({ page }) => {
     await goToPage(undefined, page);
