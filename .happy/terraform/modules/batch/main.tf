@@ -126,7 +126,7 @@ resource aws_batch_job_definition rollback {
   "command": ["python3", "-m", "backend.layers.processing.rollback"],
   "jobRoleArn": "${var.batch_role_arn}",
   "image": "${var.image}",
-  "memory": 8000,
+  "memory": 16000,
   "environment": [
     {
       "name": "ARTIFACT_BUCKET",
@@ -153,7 +153,7 @@ resource aws_batch_job_definition rollback {
       "value": "${var.remote_dev_prefix}"
     }
   ],
-  "vcpus": 1,
+  "vcpus": 2,
   "linuxParameters": {
      "maxSwap": 0,
      "swappiness": 0
