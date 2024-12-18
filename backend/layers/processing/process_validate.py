@@ -5,20 +5,23 @@ import numpy
 from cellxgene_schema.utils import read_h5ad
 
 from backend.common.utils.corpora_constants import CorporaConstants
+from backend.common.utils.dl_sources.uri import DownloadFailed
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
     CollectionVersionId,
     DatasetArtifactType,
     DatasetConversionStatus,
     DatasetMetadata,
+    DatasetProcessingStatus,
     DatasetStatusKey,
+    DatasetUploadStatus,
     DatasetValidationStatus,
     DatasetVersionId,
     OntologyTermId,
     SpatialMetadata,
     TissueOntologyTermId,
 )
-from backend.layers.processing.exceptions import ValidationFailed
+from backend.layers.processing.exceptions import UploadFailed, ValidationFailed
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
@@ -53,6 +56,54 @@ class ProcessValidate(ProcessingLogic):
         self.uri_provider = uri_provider
         self.s3_provider = s3_provider
         self.schema_validator = schema_validator
+
+    @logit
+    def download_from_source_uri(self, source_uri: str, local_path: str) -> str:
+        """Given a source URI, download it to local_path.
+        Handles fixing the url so it downloads directly.
+        """
+        file_url = self.uri_provider.parse(source_uri)
+        if not file_url:
+            raise ValueError(f"Malformed source URI: {source_uri}")
+        try:
+            file_url.download(local_path)
+        except DownloadFailed as e:
+            raise UploadFailed(f"Failed to download file from source URI: {source_uri}") from e
+        return local_path
+
+    def upload_raw_h5ad(
+        self, dataset_version_id: DatasetVersionId, dataset_uri: str, artifact_bucket: str, key_prefix: str
+    ) -> str:
+        """
+        Upload raw h5ad from dataset_uri to artifact bucket
+
+        :param dataset_version_id:
+        :param dataset_uri:
+        :param artifact_bucket:
+        :param key_prefix:
+        :return: local_filename: Local filepath to raw h5ad
+        """
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.PENDING)
+
+        # Download the original dataset from Dropbox
+        local_filename = self.download_from_source_uri(
+            source_uri=dataset_uri,
+            local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
+        )
+
+        # Upload the original dataset to the artifact bucket
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)
+        self.create_artifact(
+            local_filename,
+            DatasetArtifactType.RAW_H5AD,
+            key_prefix,
+            dataset_version_id,
+            artifact_bucket,
+            DatasetStatusKey.H5AD,
+        )
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
+
+        return local_filename
 
     @logit
     def validate_h5ad_file_and_add_labels(
@@ -207,6 +258,7 @@ class ProcessValidate(ProcessingLogic):
         self,
         collection_version_id: CollectionVersionId,
         dataset_version_id: DatasetVersionId,
+        dataset_uri: str,
         artifact_bucket: str,
         datasets_bucket: str,
     ):
@@ -216,20 +268,19 @@ class ProcessValidate(ProcessingLogic):
         3. Upload the labeled dataset to the artifact bucket
         4. Upload the labeled dataset to the datasets bucket
         :param collection_version_id
+        :param dataset_uri
         :param dataset_version_id:
         :param artifact_bucket:
         :param datasets_bucket:
         :return:
         """
-        # Download the original dataset from S3
+        # validate and upload file to s3
         key_prefix = self.get_key_prefix(dataset_version_id.id)
-        original_h5ad_artifact_file_name = CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME
-        object_key = f"{key_prefix}/{original_h5ad_artifact_file_name}"
-        self.download_from_s3(artifact_bucket, object_key, original_h5ad_artifact_file_name)
+        local_filename = self.upload_raw_h5ad(dataset_version_id, dataset_uri, artifact_bucket, key_prefix)
 
         # Validate and label the dataset
         file_with_labels, can_convert_to_seurat = self.validate_h5ad_file_and_add_labels(
-            collection_version_id, dataset_version_id, original_h5ad_artifact_file_name
+            collection_version_id, dataset_version_id, local_filename
         )
         # Process metadata
         metadata = self.extract_metadata(file_with_labels)
