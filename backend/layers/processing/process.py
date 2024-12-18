@@ -23,7 +23,6 @@ from backend.layers.processing.exceptions import (
 )
 from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_cxg import ProcessCxg
-from backend.layers.processing.process_download import ProcessDownload
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.processing.process_seurat import ProcessSeurat
 from backend.layers.processing.process_validate import ProcessValidate
@@ -59,7 +58,6 @@ class ProcessMain(ProcessingLogic):
         self.uri_provider = uri_provider
         self.s3_provider = s3_provider
         self.schema_validator = schema_validator
-        self.process_download = ProcessDownload(self.business_logic, self.uri_provider, self.s3_provider)
         self.process_validate = ProcessValidate(
             self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
         )
