@@ -43,3 +43,6 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
 
     def get_current_schema_version(self) -> str:
         return get_current_schema_version()
+
+    def count_matrix_nonzero(self, matrix):
+        return validate.Validator.count_matrix_nonzero(matrix)
