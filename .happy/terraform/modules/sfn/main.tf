@@ -42,6 +42,10 @@ resource "aws_sfn_state_machine" "state_machine" {
           "ContainerOverrides": {
             "Environment": [
               {
+                "Name": "DROPBOX_URL",
+                "Value.$": "$.url"
+              },
+              {
                 "Name": "DATASET_VERSION_ID",
                 "Value.$": "$.dataset_version_id"
               },
