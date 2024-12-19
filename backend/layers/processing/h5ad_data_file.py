@@ -99,7 +99,7 @@ class H5ADDataFile:
 
     def write_anndata_x_matrices_to_cxg(self, output_cxg_directory, ctx, sparse_threshold):
         matrix_container = f"{output_cxg_directory}/X"
-        x_matrix_data = self.adata.X
+        x_matrix_data = self.anndata.X
         with dd.LocalCluster() as cluster, dd.Client(cluster):
             is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)
             logging.info(f"is_sparse: {is_sparse}")
