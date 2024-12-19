@@ -238,19 +238,7 @@ def refresh_preprint_doi(ctx):
     updates.refresh_preprint_doi(ctx)
 
 
-# Commands to reprocess dataset artifacts (seurat or cxg)
-
-
-@cli.command()
-@click.argument("dataset_id")
-@click.pass_context
-def reprocess_seurat(ctx: click.Context, dataset_id: str) -> None:
-    """
-    Reconverts the specified dataset to Seurat format in place.
-    :param ctx: command context
-    :param dataset_id: ID of dataset to reconvert to Seurat format
-    """
-    reprocess_datafile.reprocess_seurat(ctx, dataset_id)
+# Commands to reprocess cxg dataset artifacts
 
 
 @cli.command()
