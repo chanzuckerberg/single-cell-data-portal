@@ -3,9 +3,11 @@ import logging
 from os import path
 from typing import Dict, Optional
 
-import anndata
+import dask
+import dask.distributed as dd
 import numpy as np
 import tiledb
+from cellxgene_schema.utils import read_h5ad
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.common.utils.cxg_constants import CxgConstants
@@ -22,6 +24,8 @@ from backend.layers.processing.utils.cxg_generation_utils import (
     convert_uns_to_cxg_group,
 )
 from backend.layers.processing.utils.matrix_utils import is_matrix_sparse
+
+dask.config.set(scheduler="single-threaded")
 
 
 class H5ADDataFile:
@@ -95,19 +99,16 @@ class H5ADDataFile:
 
     def write_anndata_x_matrices_to_cxg(self, output_cxg_directory, ctx, sparse_threshold):
         matrix_container = f"{output_cxg_directory}/X"
-
         x_matrix_data = self.anndata.X
-        is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)  # big memory usage
-        logging.info(f"is_sparse: {is_sparse}")
+        with dd.LocalCluster() as cluster, dd.Client(cluster):
+            is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)
+            logging.info(f"is_sparse: {is_sparse}")
+            convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, self.tile_db_ctx_config)
 
-        convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, ctx)  # big memory usage
-
-        suffixes = ["r", "c"] if is_sparse else [""]
         logging.info("start consolidating")
-        for suffix in suffixes:
-            tiledb.consolidate(matrix_container + suffix, ctx=ctx)
-            if hasattr(tiledb, "vacuum"):
-                tiledb.vacuum(matrix_container + suffix)
+        tiledb.consolidate(matrix_container, ctx=ctx)  # big memory usage
+        if hasattr(tiledb, "vacuum"):
+            tiledb.vacuum(matrix_container)
 
     def write_anndata_embeddings_to_cxg(self, output_cxg_directory, ctx):
         def is_valid_embedding(adata, embedding_name, embedding_array):
@@ -183,7 +184,7 @@ class H5ADDataFile:
 
     def extract_anndata_elements_from_file(self):
         logging.info(f"Reading in AnnData dataset: {path.basename(self.input_filename)}")
-        self.anndata = anndata.read_h5ad(self.input_filename)
+        self.anndata = read_h5ad(self.input_filename)
         logging.info("Completed reading in AnnData dataset!")
 
         self.obs = self.transform_dataframe_index_into_column(self.anndata.obs, "obs", self.obs_index_column_name)
