@@ -9,7 +9,7 @@ The process for submission to the portal is:
 - You confirm we can support your submission by reaching out to our curation team at [cellxgene@chanzuckerberg.com](mailto:cellxgene@chanzuckerberg.com) with a description of the data that you'd like to contribute.
 - We confirm that we will accept your data.
 - You prepare your data according to our submission [requirements](#dataset-requirements) and send us your files.
-- We upload to a private collection where you can review.
+- We upload to a private Collection where you can review.
 - You prepare revised data and send us your revised files, as needed.
 - We publish the data when you tell us to.
 
@@ -22,7 +22,11 @@ CELLxGENE is focused on supporting the global community attempting to create ref
 - drug screens
 - cell lines
 - organisms other than mouse or human
-- assays not on the [Census accepted assays list](https://github.com/chanzuckerberg/cellxgene-census/blob/main/docs/census_accepted_assays.csv)
+- assays not on the [CELLxGENE Census accepted assays list](https://github.com/chanzuckerberg/cellxgene-census/blob/main/docs/census_accepted_assays.csv)
+  - These additional assays are pending Census acceptance and will be accepted:
+    - Visium (non-HD)
+    - Slide-seq
+    - Expression measurements of multi-modal assays (e.g. 10x multiome, mCT-seq)
 
 ### Scale Constraints
 
@@ -30,38 +34,54 @@ CELLxGENE Discover sets the maximum dataset size for submissions to 50GB. Additi
 
 ### Formatting Requirements
 
-We need the following collection metadata (i.e. details associated with your publication or study)
+We need the following Collection metadata (i.e. details associated with your publication or study)
 
-- Collection information:
+- **Collection information**:
   - Title
   - Description
-  - Contact: name and email
-  - Publication/preprint DOI: can be added later
-  - URLs: any additional URLs for related data or resources, such as GEO or protocols.io - can be added later
-  - Consortia: optional, and can be added later. Can be one or more of those listed [here](https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/backend/layers/common/validation.py#L12).
+  - Contact: a single name and email
+  - Publication/preprint DOI: _optional_ can be added later
+  - URLs: _optional_ can be added later. Any links to related data or resources, such as GEO or protocols.io
+  - Consortia: _optional_ can be added later. Can be one or more of those listed [here](https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/backend/layers/common/validation.py#L12)
 
-Each dataset needs the following information added to a single h5ad (AnnData 0.10) format file:
+The full schema is documented [here](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html) but is summarized below. Each dataset needs the following information added to a single h5ad (AnnData 0.10) format file:
 
 - **Dataset-level metadata in uns**:
-  - title: title of the individual dataset
-  - optional: batch_condition: list of obs fields that define “batches” that a normalization or integration algorithm should be aware of
+  - **title**
+    - title of the individual dataset
+  - **batch_condition** _optional_
+    - list of obs fields that define “batches” that a normalization or integration algorithm should be aware of
+  - **default_embedding** _optional_
+    - the obsm key associated with the embeddings you would like to be displayed in CELLxGENE by default
 - **Data in .X and raw.X**:
   - raw counts are required
   - normalized counts are strongly recommended
   - raw counts should be in raw.X if normalized counts are in .X
   - if there is no normalized matrix, raw counts should be in .X
 - **Cell metadata in obs (for ontology term IDs, the values MUST be the most specific term available from the specified ontology)**:
-  - organism_ontology_term_id: [NCBITaxon](https://www.ncbi.nlm.nih.gov/taxonomy) (`NCBITaxon:9606` for human, `NCBITaxon:10090` for mouse)
-  - donor_id: free-text identifier that distinguishes the unique individual that data were derived from. It is encouraged to be something not likely to be used in other studies (e.g. donor_1 is likely to not be unique in the data corpus)
-  - development_stage_ontology_term_id: [HsapDv](https://www.ebi.ac.uk/ols/ontologies/hsapdv) if human, [MmusDv](https://www.ebi.ac.uk/ols/ontologies/mmusdv) if mouse, `unknown` if information unavailable
-  - sex_ontology_term_id: `PATO:0000384` for male, `PATO:0000383` for female, or `unknown` if unavailable
-  - self_reported_ethnicity_ontology_term_id: [HANCESTRO](https://www.ebi.ac.uk/ols/ontologies/hancestro) multiple comma-separated terms may be used if more than one ethnicity is reported. If human and information unavailable, use `unknown`. Use `na` if non-human.
-  - disease_ontology_term_id: [MONDO](https://www.ebi.ac.uk/ols/ontologies/mondo) or `PATO:0000461` for 'normal'
-  - tissue_type: `tissue`, `organoid`, or `cell culture`
-  - tissue_ontology_term_id: [UBERON](https://www.ebi.ac.uk/ols/ontologies/uberon)
-  - cell_type_ontology_term_id: [CL](https://www.ebi.ac.uk/ols/ontologies/cl)
-  - assay_ontology_term_id: [EFO](https://www.ebi.ac.uk/ols/ontologies/efo)
-  - suspension_type: `cell`, `nucleus`, or `na`, as corresponding to assay. Use [this table](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#suspension_type) defined in the data schema for guidance. If the assay does not appear in this table, the most appropriate value MUST be selected and the [curation team informed](mailto:cellxgene@chanzuckerberg.com) during submission so that the assay can be added to the table.
+  - **organism_ontology_term_id**
+    - [NCBITaxon](https://www.ncbi.nlm.nih.gov/taxonomy) (`NCBITaxon:9606` for human, `NCBITaxon:10090` for mouse)
+  - **donor_id**
+    - free-text identifier that distinguishes the unique individual that data were derived from. It is encouraged to be something not likely to be used in other studies (e.g. donor_1 is likely to not be unique in the data corpus)
+  - **development_stage_ontology_term_id**
+    - [HsapDv](https://www.ebi.ac.uk/ols/ontologies/hsapdv) if human, [MmusDv](https://www.ebi.ac.uk/ols/ontologies/mmusdv) if mouse, `unknown` if information unavailable
+  - **sex_ontology_term_id**
+    - `PATO:0000384` for male, `PATO:0000383` for female, or `unknown` if unavailable
+  - **self_reported_ethnicity_ontology_term_id**
+    - [HANCESTRO](https://www.ebi.ac.uk/ols/ontologies/hancestro) multiple comma-separated terms may be used if more than one ethnicity is reported. If human and information unavailable, use `unknown`. Use `na` if non-human
+  - **disease_ontology_term_id**
+    - [MONDO](https://www.ebi.ac.uk/ols/ontologies/mondo) or `PATO:0000461` for 'normal'
+    - Any known disease that is thought to, or is being tested to, have an impact on the measurement being taken in this experiment. Not necessarily any known disease of the donor
+  - **tissue_type**
+    - `tissue`, `organoid`, or `cell culture`
+  - **tissue_ontology_term_id**
+    - [UBERON](https://www.ebi.ac.uk/ols/ontologies/uberon)
+  - **cell_type_ontology_term_id**
+    - [CL](https://www.ebi.ac.uk/ols/ontologies/cl)
+  - **assay_ontology_term_id**
+    - [EFO](https://www.ebi.ac.uk/ols/ontologies/efo)
+  - **suspension_type**
+    - `cell`, `nucleus`, or `na`, as corresponding to assay. Use [this table](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#suspension_type) defined in the data schema for guidance. If the assay does not appear in this table, the most appropriate value MUST be selected and the [curation team informed](mailto:cellxgene@chanzuckerberg.com) during submission so that the assay can be added to the table
 - **Embeddings in obsm**:
   - One or more two-dimensional embeddings, prefixed with 'X\_'
 - **Features in var & raw.var (if present)**:
@@ -69,17 +89,17 @@ Each dataset needs the following information added to a single h5ad (AnnData 0.1
   - preference is that gene have not been filtered in order to maximize future data integration efforts
 - **Additional standards for single-capture area Visium datasets** (largely aligns with [scanpy’s model](https://scanpy.readthedocs.io/en/stable/generated/scanpy.read_visium.html), [this notebook](https://github.com/Lattice-Data/lattice-tools/blob/main/cellxgene_resources/curation_visium.ipynb) may be helpful to curate from Space Ranger outputs):
   - Empty spots must be included (should be 4992 observations)
-  - obsm['spatial']
-  - obs['array_row']
-  - obs['array_col']
-  - obs['in_tissue']
-  - uns['spatial'][library_id]['images']['fullres'] fullres image (preferred)
-  - uns['spatial'][library_id]['images']['hires'] hires image
-  - uns['spatial'][library_id]['scalefactors']['spot_diameter_fullres']
-  - uns['spatial'][library_id]['scalefactors']['tissue_hires_scalef']
+  - **obsm['spatial']**
+  - **obs['array_row']**
+  - **obs['array_col']**
+  - **obs['in_tissue']**
+  - **uns['spatial'][library_id]['images']['fullres']** _preferred_ fullres image
+  - **uns['spatial'][library_id]['images']['hires']** hires image
+  - **uns['spatial'][library_id]['scalefactors']['spot_diameter_fullres']**
+  - **uns['spatial'][library_id]['scalefactors']['tissue_hires_scalef']**
 - **Additional standards for single-puck Slide-seq datasets**:
-  - obsm['spatial']
+  - **obsm['spatial']**
 
 ## Data Submission Policy
 
-I give CZI permission to display, distribute, and create derivative works (e.g. visualizations) of this data for purposes of offering CELLxGENE Discover, and I have the authority to give this permission. It is my responsibility to ensure that this data is not identifiable. In particular, I commit that I will remove any [direct personal identifiers](https://docs.google.com/document/d/1sboOmbafvMh3VYjK1-3MAUt0I13UUJfkQseq8ANLPl8/edit) in the metadata portions of the data, and that CZI may further contact me if it believes more work is needed to de-identify it. If I choose to publish this data publicly on CELLxGENE Discover, I understand that (1) anyone will be able to access it subject to a CC-BY 4.0 license, meaning they can download, share, and use the data without restriction beyond providing attribution to the original data contributor(s) and (2) the Collection details (including collection name, description, my name, and the contact information for the datasets in this Collection) will be made public on CELLxGENE Discover as well. I understand that I have the ability to delete the data that I have published from CELLxGENE Discover if I later choose to. This however will not undo any prior downloads or shares of such data.
+I give CZI permission to display, distribute, and create derivative works (e.g. visualizations) of this data for purposes of offering CELLxGENE Discover, and I have the authority to give this permission. It is my responsibility to ensure that this data is not identifiable. In particular, I commit that I will remove any [direct personal identifiers](https://docs.google.com/document/d/1sboOmbafvMh3VYjK1-3MAUt0I13UUJfkQseq8ANLPl8/edit) in the metadata portions of the data, and that CZI may further contact me if it believes more work is needed to de-identify it. If I choose to publish this data publicly on CELLxGENE Discover, I understand that (1) anyone will be able to access it subject to a CC-BY 4.0 license, meaning they can download, share, and use the data without restriction beyond providing attribution to the original data contributor(s) and (2) the Collection details (including Collection name, description, my name, and the contact information for the datasets in this Collection) will be made public on CELLxGENE Discover as well. I understand that I have the ability to delete the data that I have published from CELLxGENE Discover if I later choose to. This however will not undo any prior downloads or shares of such data.
