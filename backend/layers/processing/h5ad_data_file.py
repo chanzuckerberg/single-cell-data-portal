@@ -3,12 +3,11 @@ import logging
 from os import path
 from typing import Dict, Optional
 
-import anndata
+import dask
 import dask.distributed as dd
-import h5py
 import numpy as np
 import tiledb
-from anndata.experimental import read_elem_as_dask
+from cellxgene_schema.utils import read_h5ad
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.common.utils.cxg_constants import CxgConstants
@@ -25,6 +24,8 @@ from backend.layers.processing.utils.cxg_generation_utils import (
     convert_uns_to_cxg_group,
 )
 from backend.layers.processing.utils.matrix_utils import is_matrix_sparse
+
+dask.config.set(scheduler="single-threaded")
 
 
 class H5ADDataFile:
@@ -96,24 +97,12 @@ class H5ADDataFile:
 
         logging.info("Completed writing to CXG.")
 
-    def is_sparse_format(self):
-        sparse_formats = ["csr", "csc", "coo"]
-        return self.anndata.X.format in sparse_formats
-
     def write_anndata_x_matrices_to_cxg(self, output_cxg_directory, ctx, sparse_threshold):
         matrix_container = f"{output_cxg_directory}/X"
-        x_matrix_data = read_elem_as_dask(h5py.File(self.input_filename)["X"])
-        if self.is_sparse_format():
-            x_matrix_dense = x_matrix_data.map_blocks(
-                lambda x: x.toarray(), dtype=x_matrix_data.dtype, meta=np.array([])
-            )
-        else:
-            x_matrix_dense = x_matrix_data
-
+        x_matrix_data = self.adata.X
         with dd.LocalCluster() as cluster, dd.Client(cluster):
-            is_sparse = is_matrix_sparse(x_matrix_dense, sparse_threshold)
+            is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)
             logging.info(f"is_sparse: {is_sparse}")
-
             convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, self.tile_db_ctx_config)
 
         logging.info("start consolidating")
@@ -195,7 +184,7 @@ class H5ADDataFile:
 
     def extract_anndata_elements_from_file(self):
         logging.info(f"Reading in AnnData dataset: {path.basename(self.input_filename)}")
-        self.anndata = anndata.read_h5ad(self.input_filename, backed="r")
+        self.anndata = read_h5ad(self.input_filename)
         logging.info("Completed reading in AnnData dataset!")
 
         self.obs = self.transform_dataframe_index_into_column(self.anndata.obs, "obs", self.obs_index_column_name)

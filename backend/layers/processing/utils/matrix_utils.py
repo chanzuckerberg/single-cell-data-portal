@@ -1,6 +1,7 @@
 import logging
 
 import dask.array as da
+from cellxgene_schema.validate import count_matrix_nonzero
 
 logger: logging.Logger = logging.getLogger("matrix_utils")
 
@@ -18,12 +19,9 @@ def is_matrix_sparse(matrix: da.Array, sparse_threshold: float) -> bool:
     if sparse_threshold == 0.0:
         return False
 
-    total_number_of_rows = matrix.shape[0]
-    total_number_of_columns = matrix.shape[1]
-    total_number_of_matrix_elements = total_number_of_rows * total_number_of_columns
-
-    number_of_non_zero_elements = da.count_nonzero(matrix).compute()
-    is_sparse = (100.0 * number_of_non_zero_elements / total_number_of_matrix_elements) < sparse_threshold
+    total_number_of_matrix_elements = matrix.shape[0] * matrix.shape[1]
+    number_of_non_zero_elements = count_matrix_nonzero(matrix)
+    is_sparse = (100.0 * (number_of_non_zero_elements / total_number_of_matrix_elements)) < sparse_threshold
     return is_sparse
 
 
