@@ -2,6 +2,7 @@ import json
 import logging
 import pickle
 
+import dask
 import dask.array as da
 import numpy as np
 import pandas as pd
@@ -11,6 +12,8 @@ from backend.common.constants import SPATIAL_KEYS_EXCLUDE, UNS_SPATIAL_KEY
 from backend.layers.processing.utils.dask_utils import TileDBSparseArrayWriteWrapper
 from backend.layers.processing.utils.spatial import SpatialDataProcessor
 from backend.layers.processing.utils.type_conversion_utils import get_dtype_and_schema_of_array
+
+dask.config.set(scheduler="single-threaded")
 
 
 def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="cxg_group_metadata", ctx=None):
@@ -213,4 +216,5 @@ def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as
         matrix_write = TileDBSparseArrayWriteWrapper(matrix_name, ctx=ctx)
         matrix.store(matrix_write, lock=False, compute=True)
     else:
-        matrix.to_tiledb(matrix_name, storage_options={"ctx": ctx})
+        with tiledb.open(matrix_name, "w") as A:
+            matrix.to_tiledb(A, storage_options={"ctx": ctx})
