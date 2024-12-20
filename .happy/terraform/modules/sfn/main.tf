@@ -94,6 +94,16 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "JobName": "cxg",
                   "JobQueue.$": "$.job_queue",
                   "ContainerOverrides": {
+                      "ResourceRequirements": [
+                        {
+                          "Type": "VCPU",
+                          "Value": "2"
+                        },
+                        {
+                          "Type": "MEMORY",
+                          "Value": "16000"
+                        }
+                    ],
                     "Environment": [
                       {
                         "Name": "DATASET_VERSION_ID",
