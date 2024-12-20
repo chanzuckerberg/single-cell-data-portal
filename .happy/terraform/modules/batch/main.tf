@@ -11,7 +11,7 @@ resource aws_batch_job_definition batch_job_def {
   container_properties = jsonencode({
   "jobRoleArn": "${var.batch_role_arn}",
   "image": "${var.image}",
-  "memory": 8000,
+  "memory": 16000,
   "environment": [
     {
       "name": "ARTIFACT_BUCKET",
@@ -42,7 +42,7 @@ resource aws_batch_job_definition batch_job_def {
       "value": "${var.frontend_url}"
     }
   ],
-  "vcpus": 1,
+  "vcpus": 2,
   "logConfiguration": {
     "logDriver": "awslogs",
     "options": {
