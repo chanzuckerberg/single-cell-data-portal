@@ -55,7 +55,7 @@ resource aws_batch_job_definition batch_job_def {
 
 resource aws_batch_job_definition cxg_job_def {
   type = "container"
-  name = "dp-${var.deployment_stage}-${var.custom_stack_name}-upload"
+  name = "dp-${var.deployment_stage}-${var.custom_stack_name}-convert"
   container_properties = jsonencode({
   "jobRoleArn": "${var.batch_role_arn}",
   "image": "${var.image}",
