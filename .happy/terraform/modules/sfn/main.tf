@@ -127,7 +127,7 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Resource": "${var.lambda_success_handler}",
         "Parameters": {
           "execution_id.$": "$$.Execution.Id",
-          "cxg_job.$": "$",
+          "cxg_job.$": "$"
         },
         "Retry": [ {
             "ErrorEquals": ["Lambda.AWSLambdaException"],
