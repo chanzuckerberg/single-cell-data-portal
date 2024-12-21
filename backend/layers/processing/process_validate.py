@@ -141,6 +141,8 @@ class ProcessValidate(ProcessingLogic):
             self.update_processing_status(
                 dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID
             )
+            # Skip seurat conversion
+            self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
             return output_filename, can_convert_to_seurat
 
     def populate_dataset_citation(
