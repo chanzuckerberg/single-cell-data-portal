@@ -127,8 +127,7 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Resource": "${var.lambda_success_handler}",
         "Parameters": {
           "execution_id.$": "$$.Execution.Id",
-          "cxg_job.$": "$[0]",
-          "seurat_job.$": "$[1]"
+          "cxg_job.$": "$",
         },
         "Retry": [ {
             "ErrorEquals": ["Lambda.AWSLambdaException"],
@@ -184,7 +183,7 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "ConversionError": {
         "Type": "Fail",
-        "Cause": "CXG and/or Seurat conversion failed."
+        "Cause": "CXG conversion failed."
       },
       "DownloadValidateError": {
         "Type": "Fail",
@@ -195,42 +194,6 @@ resource "aws_sfn_state_machine" "state_machine" {
         "End": true
       }
     }
-}
-EOF
-}
-
-resource "aws_sfn_state_machine" "state_machine_seurat" {
-  name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-seurat-sfn"
-  role_arn = var.role_arn
-
-  definition = <<EOF
-{
-  "StartAt": "Seurat",
-  "States": {
-    "Seurat": {
-      "Type": "Task",
-      "End": true,
-      "Resource": "arn:aws:states:::batch:submitJob.sync",
-      "Parameters": {
-        "JobDefinition": "${var.job_definition_arn}",
-        "JobName": "seurat",
-        "JobQueue": "${var.job_queue_arn}",
-        "ContainerOverrides": {
-          "Environment": [
-            {
-              "Name": "DATASET_VERSION_ID",
-              "Value.$": "$.dataset_version_id"
-            },
-            {
-              "Name": "STEP_NAME",
-              "Value": "seurat"
-            }
-          ]
-        }
-      },
-      "TimeoutSeconds": ${local.timeout}
-    }
-  }
 }
 EOF
 }
