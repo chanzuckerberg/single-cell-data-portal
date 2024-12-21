@@ -100,7 +100,15 @@ class H5ADDataFile:
     def write_anndata_x_matrices_to_cxg(self, output_cxg_directory, ctx, sparse_threshold):
         matrix_container = f"{output_cxg_directory}/X"
         x_matrix_data = self.anndata.X
-        with dd.LocalCluster() as cluster, dd.Client(cluster):
+        with (
+            dd.LocalCluster(
+                n_workers=2,  # One worker per vCPU
+                threads_per_worker=1,
+                memory_limit="5GB",  # Memory limit per worker (leave some buffer)
+                local_directory="/tmp/dask-worker-space",  # Spill-to-disk directory to avoid memory issues
+            ) as cluster,
+            dd.Client(cluster),
+        ):
             is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)
             logging.info(f"is_sparse: {is_sparse}")
             convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, self.tile_db_ctx_config)
