@@ -104,7 +104,7 @@ class H5ADDataFile:
             dd.LocalCluster(
                 n_workers=2,  # One worker per vCPU
                 threads_per_worker=1,
-                memory_limit="5GB",  # Memory limit per worker (leave some buffer)
+                memory_limit="6GB",  # Memory limit per worker (leave some buffer)
                 local_directory="/tmp/dask-worker-space",  # Spill-to-disk directory to avoid memory issues
             ) as cluster,
             dd.Client(cluster),
