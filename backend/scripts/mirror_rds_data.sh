@@ -30,13 +30,6 @@ make db/dump OUTFILE=$DB_DUMP_FILE PORT=${SRC_PORT}
 export DEPLOYMENT_STAGE=$DEST_ENV
 export AWS_PROFILE=single-cell-dev
 
-if [[ $DEST_ENV != 'rdev' ]]; then
-   #  For safety, dump the destination db to a local file, just in case. Not necessary if destination is rdev.
-   DEST_DB_BACKUP_DUMP_FILE="${DEST_ENV}_"`date +%Y%m%d_%H%M%S`".sqlc"
-   echo "Backing up the destination database to $DEST_DB_BACKUP_DUMP_FILE. Just in case!"
-   make db/dump OUTFILE=$DEST_DB_BACKUP_DUMP_FILE PORT=${DEST_PORT}
-fi
-
 DB_PW=`aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'`
 
 if [[ $DEST_ENV == 'rdev' ]]; then
@@ -71,3 +64,4 @@ EOF
 )
 fi
 
+make db/connect ARGS="${DB_UPDATE_CMDS}"
