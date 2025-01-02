@@ -4,7 +4,6 @@ from os import path
 from typing import Dict, Optional
 
 import dask
-import dask.distributed as dd
 import numpy as np
 import tiledb
 from cellxgene_schema.utils import read_h5ad
@@ -100,14 +99,13 @@ class H5ADDataFile:
     def write_anndata_x_matrices_to_cxg(self, output_cxg_directory, ctx, sparse_threshold):
         matrix_container = f"{output_cxg_directory}/X"
         x_matrix_data = self.anndata.X
-        with (
-            dd.LocalCluster(
-                n_workers=2,  # One worker per vCPU
-                threads_per_worker=1,
-                memory_limit="6GB",  # Memory limit per worker (leave some buffer)
-                local_directory="/tmp/dask-worker-space",  # Spill-to-disk directory to avoid memory issues
-            ) as cluster,
-            dd.Client(cluster),
+        with dask.config.set(
+            {
+                "num_workers": 1,  # match the number of workers to the number of vCPUs
+                "threads_per_worker": 1,
+                "distributed.worker.memory.limit": "6GB",
+                "scheduler": "threads",
+            }
         ):
             is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)
             logging.info(f"is_sparse: {is_sparse}")
@@ -192,7 +190,7 @@ class H5ADDataFile:
 
     def extract_anndata_elements_from_file(self):
         logging.info(f"Reading in AnnData dataset: {path.basename(self.input_filename)}")
-        self.anndata = read_h5ad(self.input_filename, chunk_size=5000)
+        self.anndata = read_h5ad(self.input_filename, chunk_size=7500)
         logging.info("Completed reading in AnnData dataset!")
 
         self.obs = self.transform_dataframe_index_into_column(self.anndata.obs, "obs", self.obs_index_column_name)
