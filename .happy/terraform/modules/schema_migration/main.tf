@@ -465,7 +465,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
           "Key.$": "$.key_name"
         }
       },
-      "MaxConcurrency": 60,
+      "MaxConcurrency": 30,
       "Next": "report",
       "Catch": [
         {
