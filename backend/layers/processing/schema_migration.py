@@ -150,6 +150,7 @@ class SchemaMigrate(ProcessingLogic):
 
         # Generate canonical collection url
         collection_url = self.business_logic.get_collection_url(version.collection_id.id)
+        private_collection_version_id = collection_version_id
 
         if not datasets:
             # Handles the case were the collection has no datasets or all datasets are already migrated.
@@ -171,8 +172,6 @@ class SchemaMigrate(ProcessingLogic):
                     CollectionId(collection_id),
                     is_auto_version=True,
                 ).version_id.id
-            else:
-                private_collection_version_id = collection_version_id
             response_for_dataset_migrate = [
                 {
                     "collection_id": collection_id,
@@ -196,11 +195,13 @@ class SchemaMigrate(ProcessingLogic):
         response_for_sfn["execution_id"] = self.execution_id
 
         self._store_sfn_response(
-            "log_errors_and_cleanup", version.collection_id.id, response_for_log_errors_and_cleanup
+            "log_errors_and_cleanup", private_collection_version_id, response_for_log_errors_and_cleanup
         )
 
         if response_for_dataset_migrate:
-            key_name = self._store_sfn_response("span_datasets", version.collection_id.id, response_for_dataset_migrate)
+            key_name = self._store_sfn_response(
+                "span_datasets", private_collection_version_id, response_for_dataset_migrate
+            )
             response_for_sfn["key_name"] = key_name
         return (response_for_sfn, response_for_log_errors_and_cleanup, response_for_dataset_migrate)
 
@@ -211,7 +212,7 @@ class SchemaMigrate(ProcessingLogic):
         object_keys_to_delete = []
 
         # Get the datasets that were processed
-        extra_info = self._retrieve_sfn_response("log_errors_and_cleanup", collection_version.collection_id.id)
+        extra_info = self._retrieve_sfn_response("log_errors_and_cleanup", collection_version_id)
         processed_datasets = {d["dataset_id"]: d["dataset_version_id"] for d in extra_info["datasets"]}
 
         # Process datasets errors
