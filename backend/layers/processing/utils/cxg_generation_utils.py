@@ -219,6 +219,10 @@ def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as
     else:
         # if matrix is a scipy sparse matrix but encode_as_sparse_array is False, convert to dense array
         if get_matrix_format(matrix) != "dense":
-            matrix = matrix.map_blocks(lambda x: x.toarray(), dtype=matrix.dtype, meta=np.array([]))
+            matrix = matrix.map_blocks(
+                lambda x: x.toarray().astype(np.float32), dtype=np.float32, meta=np.array([], dtype=np.float32)
+            )
+        elif matrix.dtype != np.float32:
+            matrix = matrix.map_blocks(lambda x: x.astype(np.float32), dtype=np.float32)
         with tiledb.open(matrix_name, "w") as A:
             matrix.to_tiledb(A, storage_options={"ctx": ctx})

@@ -24,8 +24,6 @@ from backend.layers.processing.utils.cxg_generation_utils import (
 )
 from backend.layers.processing.utils.matrix_utils import is_matrix_sparse
 
-dask.config.set(scheduler="single-threaded")
-
 
 class H5ADDataFile:
     """
@@ -101,7 +99,7 @@ class H5ADDataFile:
         x_matrix_data = self.anndata.X
         with dask.config.set(
             {
-                "num_workers": 1,  # match the number of workers to the number of vCPUs
+                "num_workers": 2,  # match the number of workers to the number of vCPUs
                 "threads_per_worker": 1,
                 "distributed.worker.memory.limit": "6GB",
                 "scheduler": "threads",
