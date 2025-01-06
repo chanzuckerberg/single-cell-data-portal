@@ -189,6 +189,12 @@ class H5ADDataFile:
     def extract_anndata_elements_from_file(self):
         logging.info(f"Reading in AnnData dataset: {path.basename(self.input_filename)}")
         self.anndata = read_h5ad(self.input_filename, chunk_size=7500)
+        if self.anndata.n_obs > 5_000_000:
+            logging.warning(
+                f"Large dataset detected with {self.anndata.n_obs} observations. "
+                f"Rechunking to avoid overfragmenting TileDB arrays."
+            )
+            self.anndata.X = self.anndata.X.rechunk((10_000, self.anndata.n_vars))
         logging.info("Completed reading in AnnData dataset!")
 
         self.obs = self.transform_dataframe_index_into_column(self.anndata.obs, "obs", self.obs_index_column_name)
