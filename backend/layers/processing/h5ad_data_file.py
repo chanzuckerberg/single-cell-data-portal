@@ -33,7 +33,8 @@ class H5ADDataFile:
 
     tile_db_ctx_config = {
         "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
-        "sm.consolidation.step_max_frags": 560,  # reduces memory requirements, max came from perf testing
+        "sm.consolidation.step_min_frags": 2,
+        "sm.consolidation.step_max_frags": 20,  # see https://docs.tiledb.com/main/how-to/performance/performance-tips/tuning-consolidation
         "py.deduplicate": True,  # May reduce memory requirements at cost of performance
     }
 
