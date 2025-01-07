@@ -16,8 +16,8 @@ AUDIENCE = {
 }
 
 DATASET_URI = (
-    "https://www.dropbox.com/scl/fi/j5rbgacm4jotjrjibgl7i/example_5_3.h5ad?rlkey"
-    "=4lcqkqx69h6n3njmq3dzoy3v5&st=zhtofqeq&dl=0"
+    "https://www.dropbox.com/scl/fi/8yizrdfcfl02dtk3ke4sg/example_5_3_valid.h5ad?rlkey"
+    "=i1qc5qai9w2o9l1fithyatxdf&st=uxgudiwz&dl=0"
 )
 
 VISIUM_DATASET_URI = (
