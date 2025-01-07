@@ -29,7 +29,7 @@ from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.processing.exceptions import ProcessingFailed
 from backend.layers.processing.h5ad_data_file import H5ADDataFile
 from backend.layers.processing.logger import configure_logging
-from backend.layers.processing.process_download import ProcessDownload
+from backend.layers.processing.process_validate import ProcessValidate
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.uri_provider import UriProvider
 
@@ -43,7 +43,7 @@ ARTIFACT_TO_DB_FIELD = {"title": "name"}
 FIELDS_IN_RAW_H5AD = ["title"]
 
 
-class DatasetMetadataUpdaterWorker(ProcessDownload):
+class DatasetMetadataUpdaterWorker(ProcessValidate):
     def __init__(self, artifact_bucket: str, datasets_bucket: str, spatial_deep_zoom_dir: str = None) -> None:
         # init each worker with business logic backed by non-shared DB connection
         self.business_logic = BusinessLogic(
@@ -54,7 +54,7 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
             S3Provider(),
             UriProvider(),
         )
-        super().__init__(self.business_logic, self.business_logic.uri_provider, self.business_logic.s3_provider)
+        super().__init__(self.business_logic, self.business_logic.uri_provider, self.business_logic.s3_provider, None)
         self.artifact_bucket = artifact_bucket
         self.datasets_bucket = datasets_bucket
         self.spatial_deep_zoom_dir = spatial_deep_zoom_dir
@@ -208,7 +208,7 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
         self.update_processing_status(new_dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.CONVERTED)
 
 
-class DatasetMetadataUpdater(ProcessDownload):
+class DatasetMetadataUpdater(ProcessValidate):
     def __init__(
         self,
         business_logic: BusinessLogic,
@@ -217,7 +217,7 @@ class DatasetMetadataUpdater(ProcessDownload):
         datasets_bucket: str,
         spatial_deep_zoom_dir: str,
     ) -> None:
-        super().__init__(business_logic, business_logic.uri_provider, business_logic.s3_provider)
+        super().__init__(business_logic, business_logic.uri_provider, business_logic.s3_provider, None)
         self.artifact_bucket = artifact_bucket
         self.cellxgene_bucket = cellxgene_bucket
         self.datasets_bucket = datasets_bucket
@@ -331,7 +331,8 @@ class DatasetMetadataUpdater(ProcessDownload):
             )
         else:
             self.logger.info("Main: No raw h5ad update required")
-            self.upload_raw_h5ad(new_dataset_version_id, raw_h5ad_uri, self.artifact_bucket)
+            key_prefix = self.get_key_prefix(new_dataset_version_id.id)
+            self.upload_raw_h5ad(new_dataset_version_id, raw_h5ad_uri, self.artifact_bucket, key_prefix)
 
         if DatasetArtifactType.H5AD in artifact_uris:
             self.logger.info("Main: Starting thread for h5ad update")
