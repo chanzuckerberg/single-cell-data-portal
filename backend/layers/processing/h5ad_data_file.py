@@ -33,6 +33,7 @@ class H5ADDataFile:
 
     tile_db_ctx_config = {
         "sm.consolidation.buffer_size": consolidation_buffer_size(0.1),
+        "sm.consolidation.step_max_frags": 560,  # reduces memory requirements, max came from perf testing
         "py.deduplicate": True,  # May reduce memory requirements at cost of performance
     }
 
@@ -110,7 +111,7 @@ class H5ADDataFile:
             convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, self.tile_db_ctx_config)
 
         logging.info("start consolidating")
-        tiledb.consolidate(matrix_container, ctx=ctx)  # big memory usage
+        tiledb.consolidate(matrix_container, ctx=ctx)
         if hasattr(tiledb, "vacuum"):
             tiledb.vacuum(matrix_container)
 
@@ -189,12 +190,6 @@ class H5ADDataFile:
     def extract_anndata_elements_from_file(self):
         logging.info(f"Reading in AnnData dataset: {path.basename(self.input_filename)}")
         self.anndata = read_h5ad(self.input_filename, chunk_size=7500)
-        if self.anndata.n_obs > 5_000_000:
-            logging.warning(
-                f"Large dataset detected with {self.anndata.n_obs} observations. "
-                f"Rechunking to avoid overfragmenting TileDB arrays."
-            )
-            self.anndata.X = self.anndata.X.rechunk((10_000, self.anndata.n_vars))
         logging.info("Completed reading in AnnData dataset!")
 
         self.obs = self.transform_dataframe_index_into_column(self.anndata.obs, "obs", self.obs_index_column_name)
