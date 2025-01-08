@@ -211,7 +211,7 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
       "End": true,
       "Resource": "arn:aws:states:::batch:submitJob.sync",
       "Parameters": {
-        "JobDefinition": "${var.job_definition_arn}",
+        "JobDefinition": "${var.cxg_definition_arn}",
         "JobName": "cxg_remaster",
         "JobQueue": "${var.job_queue_arn}",
         "ContainerOverrides": {
