@@ -56,7 +56,7 @@ class ProcessValidate(ProcessingLogic):
     @logit
     def validate_h5ad_file_and_add_labels(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, local_filename: str
-    ) -> Tuple[str, bool]:
+    ) -> Tuple[str]:
         """
         Validates and labels the specified dataset file and updates the processing status in the database
         :param dataset_version_id: version ID of the dataset to update
@@ -72,9 +72,7 @@ class ProcessValidate(ProcessingLogic):
 
         output_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
         try:
-            is_valid, errors, can_convert_to_seurat = self.schema_validator.validate_and_save_labels(
-                local_filename, output_filename
-            )
+            is_valid, errors = self.schema_validator.validate_and_save_labels(local_filename, output_filename)
         except Exception as e:
             self.logger.exception("validation failed")
             raise ValidationFailed([str(e)]) from None
@@ -89,7 +87,7 @@ class ProcessValidate(ProcessingLogic):
             self.update_processing_status(
                 dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID
             )
-            return output_filename, can_convert_to_seurat
+            return output_filename
 
     def populate_dataset_citation(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, adata_path: str
@@ -239,14 +237,14 @@ class ProcessValidate(ProcessingLogic):
         self.download_from_s3(artifact_bucket, object_key, original_h5ad_artifact_file_name)
 
         # Validate and label the dataset
-        file_with_labels, can_convert_to_seurat = self.validate_h5ad_file_and_add_labels(
+        file_with_labels = self.validate_h5ad_file_and_add_labels(
             collection_version_id, dataset_version_id, original_h5ad_artifact_file_name
         )
         # Process metadata
         metadata = self.extract_metadata(file_with_labels)
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
 
-        if not can_convert_to_seurat:
+        if not False:
             self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
             self.logger.info(f"Skipping Seurat conversion for dataset {dataset_version_id}")
 
