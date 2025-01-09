@@ -116,7 +116,7 @@ resource "aws_sfn_state_machine" "state_machine" {
           }
         ],
         "ResultPath": null,
-        "TimeoutSeconds": ${local.cxg_timeout},
+        "TimeoutSeconds": ${local.cxg_timeout}
       },
       "CatchCxgFailure": {
         "Type": "Pass",
