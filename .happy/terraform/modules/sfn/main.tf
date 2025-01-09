@@ -1,7 +1,8 @@
 # Same file as https://github.com/chanzuckerberg/single-cell-infra/blob/main/.happy/terraform/modules/sfn/main.tf
 # This is used for environment (dev, staging, prod) deployments
 locals {
-  timeout = 86400 # 24 hours
+  h5ad_timeout = 86400 # 24 hours
+  cxg_timeout = 172800 # 48 hours
 }
 
 data aws_region current {}
@@ -61,7 +62,7 @@ resource "aws_sfn_state_machine" "state_machine" {
           }
         },
         "ResultPath": null,
-        "TimeoutSeconds": ${local.timeout},
+        "TimeoutSeconds": ${local.h5ad_timeout},
         "Retry": [ {
             "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
             "IntervalSeconds": 2,
@@ -115,7 +116,7 @@ resource "aws_sfn_state_machine" "state_machine" {
           }
         ],
         "ResultPath": null,
-        "TimeoutSeconds": 360000
+        "TimeoutSeconds": ${local.cxg_timeout},
       },
       "CatchCxgFailure": {
         "Type": "Pass",
@@ -227,7 +228,7 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
           ]
         }
       },
-      "TimeoutSeconds": ${local.timeout}
+      "TimeoutSeconds": ${local.cxg_timeout}
     }
   }
 }
