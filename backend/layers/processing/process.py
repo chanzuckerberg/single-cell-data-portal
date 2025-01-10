@@ -23,7 +23,6 @@ from backend.layers.processing.exceptions import (
 )
 from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_cxg import ProcessCxg
-from backend.layers.processing.process_download import ProcessDownload
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.processing.process_validate import ProcessValidate
 from backend.layers.processing.schema_migration import SchemaMigrate
@@ -57,7 +56,6 @@ class ProcessMain(ProcessingLogic):
         self.uri_provider = uri_provider
         self.s3_provider = s3_provider
         self.schema_validator = schema_validator
-        self.process_download = ProcessDownload(self.business_logic, self.uri_provider, self.s3_provider)
         self.process_validate = ProcessValidate(
             self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
         )
@@ -78,7 +76,6 @@ class ProcessMain(ProcessingLogic):
             "MAX_ATTEMPTS",
             "MIGRATE",
             "REMOTE_DEV_PREFIX",
-            "TASK_TOKEN",
         ]
         env_vars = dict()
         for var in batch_environment_variables:
@@ -100,13 +97,9 @@ class ProcessMain(ProcessingLogic):
         """
         self.logger.info(f"Processing dataset version {dataset_version_id}", extra={"step_name": step_name})
         try:
-            if step_name == "download":
-                self.process_download.process(
-                    dataset_version_id, dropbox_uri, artifact_bucket, os.environ.get("TASK_TOKEN", "")
-                )
-            elif step_name == "validate":
+            if step_name == "validate":
                 self.process_validate.process(
-                    collection_version_id, dataset_version_id, artifact_bucket, datasets_bucket
+                    collection_version_id, dataset_version_id, dropbox_uri, artifact_bucket, datasets_bucket
                 )
             elif step_name == "cxg":
                 self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket)

@@ -23,143 +23,27 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "ApplyDefaults": {
         "Type": "Pass",
-        "Next": "Download",
+        "Next": "Validate",
         "Parameters": {
           "args.$": "States.JsonMerge($.inputDefaults, $$.Execution.Input, false)"
         },
         "ResultPath": "$.withDefaults",
         "OutputPath": "$.withDefaults.args"
       },
-      "Download": {
+      "Validate": {
         "Type": "Task",
         "Resource": "arn:aws:states:::batch:submitJob.sync",
-        "Next": "RegisterJobDefinition",
+        "Next": "CxgSeuratParallel",
         "Parameters": {
           "JobDefinition":"${var.job_definition_arn}",
-          "JobName": "download",
+          "JobName": "validate",
           "JobQueue.$": "$.job_queue",
-          "RetryStrategy": {
-            "Attempts": ${var.max_attempts},
-            "EvaluateOnExit": [
-              {
-                "Action": "EXIT",
-                "OnExitCode": "1"
-              },
-              {
-                "Action": "RETRY",
-                "OnExitCode": "*"
-              }
-            ]
-          },
           "ContainerOverrides": {
             "Environment": [
               {
                 "Name": "DROPBOX_URL",
                 "Value.$": "$.url"
               },
-              {
-                "Name": "DATASET_VERSION_ID",
-                "Value.$": "$.dataset_version_id"
-              },
-              {
-                "Name": "STEP_NAME",
-                "Value": "download"
-              },
-              {
-                "Name": "TASK_TOKEN",
-                "Value.$": "$$.Task.Token"
-              }
-            ]
-          }
-        },
-        "TimeoutSeconds": ${local.timeout},
-        "Catch": [
-          {
-            "ErrorEquals": [
-              "States.ALL"
-            ],
-            "Next": "HandleErrors",
-            "ResultPath": "$.error"
-          }
-        ],
-        "Retry": [ {
-            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-            "IntervalSeconds": 2,
-            "MaxAttempts": 7,
-            "BackoffRate": 5
-        } ],
-        "ResultPath": "$.batch"
-      },
-      "RegisterJobDefinition": {
-        "Type": "Task",
-        "Next": "Validate",
-        "Parameters": {
-          "JobDefinitionName.$": "$.batch.JobDefinitionName",
-          "Type": "container",
-          "ContainerProperties" :{
-            "Image" : "${var.image}",
-            "JobRoleArn": "${var.batch_role_arn}",
-            "Environment" : [
-              {
-                "Name" : "ARTIFACT_BUCKET",
-                "Value" : "${var.artifact_bucket}"
-              },
-              {
-                "Name" : "CELLXGENE_BUCKET",
-                "Value" : "${var.cellxgene_bucket}"
-              },
-              {
-                "Name" : "DATASETS_BUCKET",
-                "Value" : "${var.datasets_bucket}"
-              },
-              {
-                "Name" : "DEPLOYMENT_STAGE",
-                "Value" : "${var.deployment_stage}"
-              },
-              {
-                "Name" : "AWS_DEFAULT_REGION",
-                "Value" : "${data.aws_region.current.name}"
-              },
-              {
-                "Name" : "REMOTE_DEV_PREFIX",
-                "Value" : "${var.remote_dev_prefix}"
-              },
-              {
-                "Name" : "FRONTEND_URL",
-                "Value" : "${var.frontend_url}"
-              }
-            ],
-            "Vcpus.$" : "$.batch.Vcpus",
-            "Memory.$" : "$.batch.Memory",
-            "LinuxParameters.$" : "$.batch.LinuxParameters",
-            "LogConfiguration" : {
-              "LogDriver" : "awslogs",
-              "Options" : {
-                "awslogs-group" : "${var.batch_job_log_group}",
-                "awslogs-region" : "${data.aws_region.current.name}"
-              }
-            }
-          }
-        },
-        "Resource": "arn:aws:states:::aws-sdk:batch:registerJobDefinition",
-        "Retry": [ {
-            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-            "IntervalSeconds": 2,
-            "MaxAttempts": 7,
-            "BackoffRate": 5
-        } ],
-        "ResultPath": "$.batch"
-      },
-      "Validate": {
-        "Type": "Task",
-        "Resource": "arn:aws:states:::batch:submitJob.sync",
-        "Next": "Cxg",
-        "Parameters": {
-          "JobDefinition.$": "$.batch.JobDefinitionName",
-          "JobName": "validate",
-          "JobQueue.$": "$.job_queue",
-          "ContainerOverrides": {
-            "Environment": [
               {
                 "Name": "DATASET_VERSION_ID",
                 "Value.$": "$.dataset_version_id"
@@ -250,7 +134,7 @@ resource "aws_sfn_state_machine" "state_machine" {
             "MaxAttempts": 3,
             "BackoffRate": 2.0
         } ],
-        "Next": "DeregisterJobDefinition",
+        "Next": "CheckForErrors",
         "ResultPath": null
       },
       "HandleErrors": {
@@ -269,37 +153,7 @@ resource "aws_sfn_state_machine" "state_machine" {
             "MaxAttempts": 3,
             "BackoffRate": 2.0
         } ],
-        "Next": "DeregisterJobDefinitionAfterHandleErrors",
-        "ResultPath": null
-      },
-      "DeregisterJobDefinitionAfterHandleErrors": {
-        "Type": "Task",
         "Next": "CheckForErrors",
-        "Parameters": {
-          "JobDefinition.$": "$.batch.JobDefinitionName"
-        },
-        "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition",
-        "Retry": [ {
-            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-            "IntervalSeconds": 2,
-            "MaxAttempts": 7,
-            "BackoffRate": 5
-        } ],
-        "ResultPath": null
-      },
-      "DeregisterJobDefinition": {
-        "Type": "Task",
-        "Next": "CheckForErrors",
-        "Parameters": {
-          "JobDefinition.$": "$.batch.JobDefinitionName"
-        },
-        "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition",
-        "Retry": [ {
-            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-            "IntervalSeconds": 2,
-            "MaxAttempts": 7,
-            "BackoffRate": 5
-        } ],
         "ResultPath": null
       },
       "CheckForErrors": {

@@ -1,23 +1,27 @@
 from typing import Any, Dict, List, Literal, Optional
 
+import h5py
 import numpy
-import scanpy
+from cellxgene_schema.utils import read_h5ad
 
 from backend.common.utils.corpora_constants import CorporaConstants
+from backend.common.utils.dl_sources.uri import DownloadFailed
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
     CollectionVersionId,
     DatasetArtifactType,
     DatasetConversionStatus,
     DatasetMetadata,
+    DatasetProcessingStatus,
     DatasetStatusKey,
+    DatasetUploadStatus,
     DatasetValidationStatus,
     DatasetVersionId,
     OntologyTermId,
     SpatialMetadata,
     TissueOntologyTermId,
 )
-from backend.layers.processing.exceptions import ValidationFailed
+from backend.layers.processing.exceptions import UploadFailed, ValidationFailed
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
@@ -52,6 +56,54 @@ class ProcessValidate(ProcessingLogic):
         self.uri_provider = uri_provider
         self.s3_provider = s3_provider
         self.schema_validator = schema_validator
+
+    @logit
+    def download_from_source_uri(self, source_uri: str, local_path: str) -> str:
+        """Given a source URI, download it to local_path.
+        Handles fixing the url so it downloads directly.
+        """
+        file_url = self.uri_provider.parse(source_uri)
+        if not file_url:
+            raise ValueError(f"Malformed source URI: {source_uri}")
+        try:
+            file_url.download(local_path)
+        except DownloadFailed as e:
+            raise UploadFailed(f"Failed to download file from source URI: {source_uri}") from e
+        return local_path
+
+    def upload_raw_h5ad(
+        self, dataset_version_id: DatasetVersionId, dataset_uri: str, artifact_bucket: str, key_prefix: str
+    ) -> str:
+        """
+        Upload raw h5ad from dataset_uri to artifact bucket
+
+        :param dataset_version_id:
+        :param dataset_uri:
+        :param artifact_bucket:
+        :param key_prefix:
+        :return: local_filename: Local filepath to raw h5ad
+        """
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.PENDING)
+
+        # Download the original dataset from Dropbox
+        local_filename = self.download_from_source_uri(
+            source_uri=dataset_uri,
+            local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
+        )
+
+        # Upload the original dataset to the artifact bucket
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)
+        self.create_artifact(
+            local_filename,
+            DatasetArtifactType.RAW_H5AD,
+            key_prefix,
+            dataset_version_id,
+            artifact_bucket,
+            DatasetStatusKey.H5AD,
+        )
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
+
+        return local_filename
 
     @logit
     def validate_h5ad_file_and_add_labels(
@@ -102,9 +154,8 @@ class ProcessValidate(ProcessingLogic):
         collection = self.business_logic.get_collection_version(collection_version_id, get_tombstoned=False)
         doi = next((link.uri for link in collection.metadata.links if link.type == "DOI"), None)
         citation = self.business_logic.generate_dataset_citation(collection.collection_id, dataset_version_id, doi)
-        adata = scanpy.read_h5ad(adata_path)
-        adata.uns["citation"] = citation
-        adata.write(adata_path, compression="gzip")
+        with h5py.File(adata_path, "r+") as f:
+            f["uns"].create_dataset("citation", data=citation)
 
     def get_spatial_metadata(self, spatial_dict: Dict[str, Any]) -> Optional[SpatialMetadata]:
         """
@@ -126,28 +177,17 @@ class ProcessValidate(ProcessingLogic):
     def extract_metadata(self, filename) -> DatasetMetadata:
         """Pull metadata out of the AnnData file to insert into the dataset table."""
 
-        adata = scanpy.read_h5ad(filename, backed="r")
+        adata = read_h5ad(filename)
 
-        # TODO: Concern with respect to previous use of raising error when there is no raw layer.
-        # This new way defaults to adata.X.
         layer_for_mean_genes_per_cell = adata.raw.X if adata.raw is not None and adata.raw.X is not None else adata.X
 
         # For mean_genes_per_cell, we only want the columns (genes) that have a feature_biotype of `gene`,
         # as opposed to `spike-in`
         filter_gene_vars = numpy.where(adata.var.feature_biotype == "gene")[0]
-
-        # Calling np.count_nonzero on and h5py.Dataset appears to read the entire thing
-        # into memory, so we need to chunk it to be safe.
-        stride = 50000
-        numerator, denominator = 0, 0
-        for bounds in zip(
-            range(0, layer_for_mean_genes_per_cell.shape[0], stride),
-            range(stride, layer_for_mean_genes_per_cell.shape[0] + stride, stride),
-            strict=False,
-        ):
-            chunk = layer_for_mean_genes_per_cell[bounds[0] : bounds[1], :][:, filter_gene_vars]
-            numerator += chunk.nnz if hasattr(chunk, "nnz") else numpy.count_nonzero(chunk)
-            denominator += chunk.shape[0]
+        filtered_matrix = layer_for_mean_genes_per_cell[:, filter_gene_vars]
+        nnz_gene_exp = self.schema_validator.count_matrix_nonzero(filtered_matrix)
+        total_cells = layer_for_mean_genes_per_cell.shape[0]
+        mean_genes_per_cell = nnz_gene_exp / total_cells
 
         def _get_term_pairs(base_term) -> List[OntologyTermId]:
             base_term_id = base_term + "_ontology_term_id"
@@ -194,7 +234,7 @@ class ProcessValidate(ProcessingLogic):
             development_stage=_get_term_pairs("development_stage"),
             cell_count=adata.shape[0],
             primary_cell_count=int(adata.obs["is_primary_data"].astype("int").sum()),
-            mean_genes_per_cell=numerator / denominator,
+            mean_genes_per_cell=mean_genes_per_cell,
             is_primary_data=_get_is_primary_data(),
             cell_type=_get_term_pairs("cell_type"),
             x_approximate_distribution=_get_x_approximate_distribution(),
@@ -216,6 +256,7 @@ class ProcessValidate(ProcessingLogic):
         self,
         collection_version_id: CollectionVersionId,
         dataset_version_id: DatasetVersionId,
+        dataset_uri: str,
         artifact_bucket: str,
         datasets_bucket: str,
     ):
@@ -225,16 +266,15 @@ class ProcessValidate(ProcessingLogic):
         3. Upload the labeled dataset to the artifact bucket
         4. Upload the labeled dataset to the datasets bucket
         :param collection_version_id
+        :param dataset_uri
         :param dataset_version_id:
         :param artifact_bucket:
         :param datasets_bucket:
         :return:
         """
-        # Download the original dataset from S3
+        # validate and upload file to s3
         key_prefix = self.get_key_prefix(dataset_version_id.id)
-        original_h5ad_artifact_file_name = CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME
-        object_key = f"{key_prefix}/{original_h5ad_artifact_file_name}"
-        self.download_from_s3(artifact_bucket, object_key, original_h5ad_artifact_file_name)
+        local_filename = self.upload_raw_h5ad(dataset_version_id, dataset_uri, artifact_bucket, key_prefix)
 
         # Validate and label the dataset
         file_with_labels = self.validate_h5ad_file_and_add_labels(

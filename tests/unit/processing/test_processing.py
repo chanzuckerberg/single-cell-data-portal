@@ -64,18 +64,12 @@ class ProcessingTest(BaseProcessingTest):
             cxg_artifact = [artifact for artifact in artifacts if artifact.type == "cxg"][0]
             self.assertTrue(cxg_artifact, f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/")
 
-    @patch("backend.layers.processing.process_download.StepFunctionProvider")
-    @patch("scanpy.read_h5ad")
     @patch("anndata.read_h5ad")
+    @patch("backend.layers.processing.process_validate.ProcessValidate.populate_dataset_citation")
     @patch("backend.layers.processing.process_validate.ProcessValidate.extract_metadata")
     @patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg")
-    def test_process_all(self, mock_cxg, mock_h5ad, mock_anndata_read_h5ad, mock_scanpy_read_h5ad, mock_sfn_provider):
+    def test_process_all(self, mock_cxg, mock_extract_h5ad, mock_dataset_citation, mock_read_h5ad):
         mock_cxg.return_value = "local.cxg"
-
-        # Mock anndata object
-        mock_anndata = MagicMock(uns=dict(), n_obs=1000, n_vars=1000)
-        mock_scanpy_read_h5ad.return_value = mock_anndata
-        mock_anndata_read_h5ad.return_value = mock_anndata
 
         dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         collection = self.generate_unpublished_collection()
@@ -84,7 +78,7 @@ class ProcessingTest(BaseProcessingTest):
         )
 
         pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
-        for step_name in ["download", "validate", "cxg"]:
+        for step_name in ["validate", "cxg"]:
             assert pm.process(
                 collection.version_id,
                 dataset_version_id,
