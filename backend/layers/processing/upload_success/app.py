@@ -19,13 +19,11 @@ def success_handler(events: dict, context) -> None:
     :param context: Lambda's context object
     :return:
     """
-    cxg_job, seurat_job = events["cxg_job"], events["seurat_job"]
-    cxg_job["execution_id"], seurat_job["execution_id"] = events["execution_id"], events["execution_id"]
+    cxg_job = events["cxg_job"]
+    cxg_job["execution_id"] = events["execution_id"]
 
     if cxg_job.get("error"):
         handle_failure(cxg_job, context)
-    elif seurat_job.get("error"):
-        handle_failure(seurat_job, context, delete_artifacts=False)
     else:
         business_logic.update_dataset_version_status(
             DatasetVersionId(cxg_job["dataset_version_id"]),
