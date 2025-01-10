@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Literal, Optional, Tuple
+from typing import Any, Dict, List, Literal, Optional
 
 import h5py
 import numpy
@@ -38,7 +38,7 @@ class ProcessValidate(ProcessingLogic):
     3. Save and upload a labeled copy of the original artifact (local.h5ad)
     5. Persist the dataset metadata on the database
     6. Determine if a Seurat conversion is possible (it is not if the X matrix has more than 2**32-1 nonzero values)
-    If this step completes successfully, ProcessCxg and ProcessSeurat will start in parallel.
+    If this step completes successfully, ProcessCxg will start in parallel.
     If this step fails, the handle_failures lambda will be invoked.
     """
 
@@ -108,13 +108,13 @@ class ProcessValidate(ProcessingLogic):
     @logit
     def validate_h5ad_file_and_add_labels(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, local_filename: str
-    ) -> Tuple[str, bool]:
+    ) -> str:
         """
         Validates and labels the specified dataset file and updates the processing status in the database
         :param dataset_version_id: version ID of the dataset to update
         :param collection_version_id: version ID of the collection dataset is being uploaded to
         :param local_filename: file name of the dataset to validate and label
-        :return: file name of labeled dataset, boolean indicating if seurat conversion is possible
+        :return: file name of labeled dataset
         """
         # TODO: use a provider here
 
@@ -124,7 +124,7 @@ class ProcessValidate(ProcessingLogic):
 
         output_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
         try:
-            is_valid, errors, can_convert_to_seurat = self.schema_validator.validate_and_save_labels(
+            is_valid, errors, _ = self.schema_validator.validate_and_save_labels(
                 local_filename, output_filename, n_workers=1
             )  # match the number of workers to the number of vCPUs
         except Exception as e:
@@ -143,7 +143,7 @@ class ProcessValidate(ProcessingLogic):
             )
             # Skip seurat conversion
             self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
-            return output_filename, can_convert_to_seurat
+            return output_filename
 
     def populate_dataset_citation(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, adata_path: str
@@ -281,16 +281,15 @@ class ProcessValidate(ProcessingLogic):
         local_filename = self.upload_raw_h5ad(dataset_version_id, dataset_uri, artifact_bucket, key_prefix)
 
         # Validate and label the dataset
-        file_with_labels, can_convert_to_seurat = self.validate_h5ad_file_and_add_labels(
+        file_with_labels = self.validate_h5ad_file_and_add_labels(
             collection_version_id, dataset_version_id, local_filename
         )
         # Process metadata
         metadata = self.extract_metadata(file_with_labels)
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
 
-        if not can_convert_to_seurat:
-            self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
-            self.logger.info(f"Skipping Seurat conversion for dataset {dataset_version_id}")
+        # Skip seurat conversion
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
 
         # Upload the labeled dataset to the artifact bucket
         self.create_artifact(

@@ -15,11 +15,7 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     DatasetArtifactType,
-    DatasetConversionStatus,
     DatasetProcessingStatus,
-    DatasetStatusKey,
-    DatasetUploadStatus,
-    DatasetValidationStatus,
     DatasetVersionId,
 )
 from backend.layers.processing import logger
@@ -233,25 +229,6 @@ class SchemaMigrate(ProcessingLogic):
             key_prefix = self.get_key_prefix(previous_dataset_version_id)
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
             if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
-                # If only rds failure, set rds status to skipped + processing status to successful and do not rollback
-                if (
-                    dataset.status.rds_status == DatasetConversionStatus.FAILED
-                    and dataset.status.upload_status == DatasetUploadStatus.UPLOADED
-                    and dataset.status.validation_status == DatasetValidationStatus.VALID
-                    and dataset.status.cxg_status == DatasetConversionStatus.UPLOADED
-                    and dataset.status.h5ad_status == DatasetConversionStatus.UPLOADED
-                ):
-                    self.business_logic.update_dataset_version_status(
-                        dataset.version_id,
-                        DatasetStatusKey.RDS,
-                        DatasetConversionStatus.SKIPPED,
-                    )
-                    self.business_logic.update_dataset_version_status(
-                        dataset.version_id,
-                        DatasetStatusKey.PROCESSING,
-                        DatasetProcessingStatus.SUCCESS,
-                    )
-                    continue
                 error = {
                     "message": dataset.status.validation_message,
                     "dataset_status": dataset.status.to_dict(),
