@@ -95,10 +95,8 @@ class ProcessingTest(BaseProcessingTest):
     @patch("anndata.read_h5ad")
     @patch("backend.layers.processing.process_validate.ProcessValidate.populate_dataset_citation")
     @patch("backend.layers.processing.process_validate.ProcessValidate.extract_metadata")
-    @patch("backend.layers.processing.process_seurat.ProcessSeurat.make_seurat")
     @patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg")
-    def test_process_all(self, mock_cxg, mock_seurat, mock_extract_h5ad, mock_dataset_citation, mock_read_h5ad):
-        mock_seurat.return_value = "local.rds"
+    def test_process_all(self, mock_cxg, mock_extract_h5ad, mock_dataset_citation, mock_read_h5ad):
         mock_cxg.return_value = "local.cxg"
 
         dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
@@ -108,7 +106,7 @@ class ProcessingTest(BaseProcessingTest):
         )
 
         pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
-        for step_name in ["validate", "cxg", "seurat"]:
+        for step_name in ["validate", "cxg"]:
             assert pm.process(
                 collection.version_id,
                 dataset_version_id,
@@ -122,13 +120,11 @@ class ProcessingTest(BaseProcessingTest):
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad"))
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"))
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.h5ad"))
-        self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.rds"))
-        self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.rds"))
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/"))
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
         self.assertEqual(status.cxg_status, DatasetConversionStatus.UPLOADED)
-        self.assertEqual(status.rds_status, DatasetConversionStatus.UPLOADED)
+        self.assertEqual(status.rds_status, DatasetConversionStatus.SKIPPED)
         self.assertEqual(status.h5ad_status, DatasetConversionStatus.UPLOADED)
         self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
         self.assertEqual(status.upload_status, DatasetUploadStatus.UPLOADED)
@@ -136,4 +132,4 @@ class ProcessingTest(BaseProcessingTest):
         # TODO: DatasetProcessingStatus.SUCCESS is set by a lambda that also needs to be modified. It should belong here
 
         artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
-        self.assertEqual(4, len(artifacts))
+        self.assertEqual(3, len(artifacts))
