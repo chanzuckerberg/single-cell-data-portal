@@ -19,7 +19,7 @@ class ProcessCxg(ProcessingLogic):
     1. Download the labeled h5ad artifact from S3 (uploaded by DownloadAndValidate)
     2. Convert to cxg
     3. Upload the cxg artifact (a directory) to S3
-    If this step completes successfully, and ProcessSeurat is completed, the handle_success lambda will be invoked
+    If this step completes successfully, the handle_success lambda will be invoked
     If this step fails, the handle_failures lambda will be invoked
     """
 
