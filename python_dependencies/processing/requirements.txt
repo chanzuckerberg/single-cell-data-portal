@@ -2,7 +2,7 @@ anndata
 awscli
 boto3>=1.11.17
 botocore>=1.14.17
-cellxgene-schema @ git+https://github.com/chanzuckerberg/single-cell-curation.git@release-version-5.2.3#egg=cellxgene_schema_cli&subdirectory=cellxgene_schema_cli
+cellxgene-schema
 dataclasses-json
 ddtrace==2.1.4
 numba==0.59.1
