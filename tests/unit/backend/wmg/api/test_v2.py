@@ -1,12 +1,14 @@
 import json
 import unittest
+from collections import defaultdict
 from typing import Dict, List
 from unittest.mock import patch
 
+import pandas as pd
 from pytest import approx
 
 from backend.common.census_cube.data.query import MarkerGeneQueryCriteria
-from backend.wmg.api.v2 import find_dimension_id_from_compare
+from backend.wmg.api.v2 import fill_out_structured_cell_type_agg, find_dimension_id_from_compare
 from backend.wmg.server.app import app
 from tests.test_utils import compare_dicts
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
@@ -1424,6 +1426,36 @@ class WmgApiV2Tests(unittest.TestCase):
             expected = {"marker_genes": [], "snapshot_id": "realistic-test-snapshot"}
             self.assertDictEqual(received, expected)
             self.assertEqual(200, response.status_code)
+
+    @patch("backend.wmg.api.v2.ontology_term_label")
+    def test_fill_out_structured_cell_type_agg(self, ontology_term_label):
+        cell_type_agg = pd.DataFrame(
+            {
+                "tissue_ontology_term_id": ["t1", "t2"],
+                "cell_type_ontology_term_id": ["c1", "c2"],
+                "n_cells_cell_type": [10, 20],
+            }
+        )
+
+        structured_result = defaultdict(lambda: defaultdict(dict))
+
+        ordering = {("t1", "c1"): 1, ("t2", "c2"): 2}
+
+        fill_out_structured_cell_type_agg(cell_type_agg, structured_result, ordering)
+
+        assert structured_result["t1"]["c1"]["aggregated"] == {
+            "cell_type_ontology_term_id": "c1",
+            "name": ontology_term_label("label_c1"),
+            "total_count": 10,
+            "order": 1,
+        }
+
+        assert structured_result["t2"]["c2"]["aggregated"] == {
+            "cell_type_ontology_term_id": "c2",
+            "name": ontology_term_label("label_c2"),
+            "total_count": 20,
+            "order": 2,
+        }
 
 
 # mock the dataset and collection entity data that would otherwise be fetched from the db; in this test
