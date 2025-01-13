@@ -6,7 +6,7 @@ from cellxgene_schema.schema import get_current_schema_version
 
 
 class SchemaValidatorProviderInterface(Protocol):
-    def validate_and_save_labels(self, input_file: str, output_file: str) -> Tuple[bool, list, bool]:
+    def validate_and_save_labels(self, input_file: str, output_file: str, **kwargs) -> Tuple[bool, list, bool]:
         pass
 
     def migrate(self, input_file: str, output_file: str, collection_id: str, dataset_id: str) -> List[str]:
@@ -23,7 +23,7 @@ class SchemaValidatorProviderInterface(Protocol):
 
 
 class SchemaValidatorProvider(SchemaValidatorProviderInterface):
-    def validate_and_save_labels(self, input_file: str, output_file: str, n_workers: int) -> Tuple[bool, list, bool]:
+    def validate_and_save_labels(self, input_file: str, output_file: str, **kwargs) -> Tuple[bool, list, bool]:
         """
         Runs `cellxgene-schema validate` on the provided `input_file`. This also saves a labeled copy
         of the artifact to `output_file`. The `n_workers` parameter is used to specify the number of workers for
@@ -34,7 +34,7 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
         3. A boolean that indicates whether the artifact is Seurat convertible
         """
 
-        return validate.validate(input_file, output_file, n_workers=n_workers)
+        return validate.validate(input_file, output_file, **kwargs)
 
     def migrate(self, input_file, output_file, collection_id, dataset_id) -> List[str]:
         """
