@@ -1439,7 +1439,7 @@ class WmgApiV2Tests(unittest.TestCase):
 
         structured_result = defaultdict(lambda: defaultdict(dict))
 
-        ordering = {("t1", "c1"): 1, ("t2", "c2"): 2}
+        ordering = {("t1", "c1"): 1}
 
         fill_out_structured_cell_type_agg(cell_type_agg, structured_result, ordering)
 
@@ -1450,13 +1450,8 @@ class WmgApiV2Tests(unittest.TestCase):
             "order": 1,
         }
 
-        assert structured_result["t2"]["c2"]["aggregated"] == {
-            "cell_type_ontology_term_id": "c2",
-            "name": ontology_term_label("label_c2"),
-            "total_count": 20,
-            "order": 2,
-        }
-
+        assert "aggregated" not in structured_result["t2"]["c2"]
+        assert structured_result["t2"] == {} 
 
 # mock the dataset and collection entity data that would otherwise be fetched from the db; in this test
 # we only care that we're building the response correctly from the cube; WMG API integration tests verify
