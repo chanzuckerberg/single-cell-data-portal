@@ -1450,8 +1450,9 @@ class WmgApiV2Tests(unittest.TestCase):
             "order": 1,
         }
 
-        assert "aggregated" not in structured_result["t2"]["c2"]
-        assert structured_result["t2"] == {} 
+        assert "aggregated" not in structured_result["t2"]["c2"]  # No "aggregated" key
+        assert structured_result["t2"]["c2"] == {}
+
 
 # mock the dataset and collection entity data that would otherwise be fetched from the db; in this test
 # we only care that we're building the response correctly from the cube; WMG API integration tests verify
