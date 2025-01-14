@@ -1,6 +1,7 @@
 # This is used for environment (dev, staging, prod) deployments
 locals {
-  timeout = 86400 # 24 hours
+  h5ad_timeout = 86400 # 24 hours
+  cxg_timeout = 172800 # 48 hours
 }
 
 data aws_region current {}
@@ -33,7 +34,7 @@ resource "aws_sfn_state_machine" "state_machine" {
       "Validate": {
         "Type": "Task",
         "Resource": "arn:aws:states:::batch:submitJob.sync",
-        "Next": "CxgSeuratParallel",
+        "Next": "Cxg",
         "Parameters": {
           "JobDefinition":"${var.job_definition_arn}",
           "JobName": "validate",
@@ -60,7 +61,7 @@ resource "aws_sfn_state_machine" "state_machine" {
           }
         },
         "ResultPath": null,
-        "TimeoutSeconds": ${local.timeout},
+        "TimeoutSeconds": ${local.h5ad_timeout},
         "Retry": [ {
             "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
             "IntervalSeconds": 2,
@@ -82,7 +83,7 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Next": "HandleSuccess",
         "Resource": "arn:aws:states:::batch:submitJob.sync",
         "Parameters": {
-          "JobDefinition.$": "$.batch.JobDefinitionName",
+          "JobDefinition":"${var.cxg_definition_arn}",
           "JobName": "cxg",
           "JobQueue.$": "$.job_queue",
           "ContainerOverrides": {
@@ -114,7 +115,7 @@ resource "aws_sfn_state_machine" "state_machine" {
           }
         ],
         "ResultPath": null,
-        "TimeoutSeconds": 360000
+        "TimeoutSeconds": ${local.cxg_timeout}
       },
       "CatchCxgFailure": {
         "Type": "Pass",
@@ -182,7 +183,7 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "ConversionError": {
         "Type": "Fail",
-        "Cause": "CXG and/or Seurat conversion failed."
+        "Cause": "CXG conversion failed."
       },
       "DownloadValidateError": {
         "Type": "Fail",
@@ -210,7 +211,7 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
       "End": true,
       "Resource": "arn:aws:states:::batch:submitJob.sync",
       "Parameters": {
-        "JobDefinition": "${var.job_definition_arn}",
+        "JobDefinition": "${var.cxg_definition_arn}",
         "JobName": "cxg_remaster",
         "JobQueue": "${var.job_queue_arn}",
         "ContainerOverrides": {
@@ -226,7 +227,7 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
           ]
         }
       },
-      "TimeoutSeconds": ${local.timeout}
+      "TimeoutSeconds": ${local.cxg_timeout}
     }
   }
 }

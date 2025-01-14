@@ -68,9 +68,7 @@ def create_explorer_url(dataset_id: str, deployment_stage: str) -> str:
     return f"https://cellxgene.{deployment_stage}.single-cell.czi.technology/e/{dataset_id}.cxg/"
 
 
-def upload_and_wait(
-    session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id=None, skip_rds_status=False
-):
+def upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id=None):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     body = {"url": dropbox_url}
     errors = []
@@ -113,8 +111,7 @@ def upload_and_wait(
                 errors.append(f"RDS CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
             if any(
                 [
-                    cxg_status == rds_status == h5ad_status == "UPLOADED",
-                    skip_rds_status and cxg_status == h5ad_status == "UPLOADED" and rds_status == "SKIPPED",
+                    cxg_status == h5ad_status == "UPLOADED" and rds_status == "SKIPPED",
                     errors,
                 ]
             ):

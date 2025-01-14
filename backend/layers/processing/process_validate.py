@@ -124,7 +124,9 @@ class ProcessValidate(ProcessingLogic):
 
         output_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
         try:
-            is_valid, errors, _ = self.schema_validator.validate_and_save_labels(local_filename, output_filename)
+            is_valid, errors, _ = self.schema_validator.validate_and_save_labels(
+                local_filename, output_filename, n_workers=1
+            )  # match the number of workers to the number of vCPUs
         except Exception as e:
             self.logger.exception("validation failed")
             raise ValidationFailed([str(e)]) from None
@@ -139,6 +141,8 @@ class ProcessValidate(ProcessingLogic):
             self.update_processing_status(
                 dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID
             )
+            # Skip seurat conversion
+            self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
             return output_filename
 
     def populate_dataset_citation(
@@ -278,7 +282,7 @@ class ProcessValidate(ProcessingLogic):
 
         # Validate and label the dataset
         file_with_labels = self.validate_h5ad_file_and_add_labels(
-            collection_version_id, dataset_version_id, original_h5ad_artifact_file_name
+            collection_version_id, dataset_version_id, local_filename
         )
         # Process metadata
         metadata = self.extract_metadata(file_with_labels)
