@@ -443,16 +443,23 @@ def fill_out_structured_cell_type_agg(cell_type_agg, structured_result, ordering
     n = cell_type_agg["n_cells_cell_type"].values
 
     for i in range(len(tissues)):
-        order = ordering.get((tissues[i], cell_types[i]))
-        if order is None:  # Skip if not found in ordering
-            continue
         structured_result[tissues[i]][cell_types[i]]["aggregated"] = {
             "cell_type_ontology_term_id": cell_types[i],
             "name": ontology_term_label(cell_types[i]),
             "total_count": int(n[i]),
-            "order": order,
+            "order": ordering.get((tissues[i], cell_types[i]), -1),
         }
 
+    # for i in range(len(tissues)):
+    #     order = ordering.get((tissues[i], cell_types[i]))
+    #     if order is None:  # Skip if not found in ordering
+    #         continue
+    #     structured_result[tissues[i]][cell_types[i]]["aggregated"] = {
+    #         "cell_type_ontology_term_id": cell_types[i],
+    #         "name": ontology_term_label(cell_types[i]),
+    #         "total_count": int(n[i]),
+    #         "order": order,
+    #     }
 
 def fill_out_structured_cell_type_compare(cell_type_agg_compare, structured_result, ordering, compare):
     tissues = cell_type_agg_compare["tissue_ontology_term_id"].values
