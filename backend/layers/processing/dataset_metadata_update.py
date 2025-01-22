@@ -7,8 +7,8 @@ import logging
 import os
 from multiprocessing import Process
 
-import scanpy
 import tiledb
+from cellxgene_schema.utils import read_h5ad
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business import BusinessLogic
@@ -66,7 +66,7 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
             local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
         )
         try:
-            adata = scanpy.read_h5ad(raw_h5ad_filename)
+            adata = read_h5ad(raw_h5ad_filename)
             for key, val in metadata_update.as_dict_without_none_values().items():
                 if key in adata.uns:
                     adata.uns[key] = val
@@ -101,7 +101,7 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
             local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
         )
         try:
-            adata = scanpy.read_h5ad(h5ad_filename)
+            adata = read_h5ad(h5ad_filename)
             metadata = current_dataset_version.metadata
             # maps artifact name for metadata field to DB field name, if different
             for key, val in metadata_update.as_dict_without_none_values().items():

@@ -1,7 +1,7 @@
 anndata==0.11.2
 awscli
 boto3>=1.11.17
-git+https://github.com/chanzuckerberg/single-cell-curation/@nayib/test-anndata-0-11-migration#subdirectory=cellxgene_schema_cli
+git+https://github.com/chanzuckerberg/single-cell-curation/@main#subdirectory=cellxgene_schema_cli
 dask==2024.12.0
 dataclasses-json
 ddtrace==2.1.4
@@ -15,7 +15,6 @@ pydantic>=1.9.0
 python-json-logger
 pyvips==2.2.2
 requests>=2.22.0
-rpy2==3.5.16
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
 s3fs==0.4.2
 scanpy==1.9.8
