@@ -2,6 +2,7 @@ import json
 import tempfile
 from unittest.mock import Mock, patch
 
+import anndata
 import pytest
 import scanpy
 import tiledb
@@ -50,7 +51,6 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         self.updater.download_from_source_uri = Mock(side_effect=mock_download)
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("backend.layers.processing.dataset_metadata_update.read_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
     @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker")
@@ -97,7 +97,6 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad")
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("backend.layers.processing.dataset_metadata_update.read_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
     @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker")
@@ -148,7 +147,6 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad")
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("backend.layers.processing.dataset_metadata_update.read_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
     @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker")
@@ -251,7 +249,6 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             )
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("backend.layers.processing.dataset_metadata_update.read_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater")
     def test_update_metadata__missing_labeled_h5ad(self, *args):
         current_dataset_version = self.generate_dataset(
@@ -287,7 +284,6 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         assert new_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("backend.layers.processing.dataset_metadata_update.read_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
     @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater")
@@ -325,7 +321,6 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         assert new_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("backend.layers.processing.dataset_metadata_update.read_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater")
     def test_update_metadata__invalid_artifact_status(self, *args):
         current_dataset_version = self.generate_dataset(
@@ -359,16 +354,18 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
         super().setUp()
         self.updater = DatasetMetadataUpdaterWorker("artifact_bucket", "datasets_bucket", "spatial_deep_zoom_dir")
         self.updater.business_logic = self.business_logic
+        mock_uns = {"title": "old title", "citation": "old citation", "schema_version": "3.0.0"}
+        mock_adata = anndata.AnnData(X=None, obs=None, obsm=None, uns=mock_uns, var=None)
 
         def mock_download(source_uri, local_path):
+            mock_adata.write_h5ad(local_path)
             return local_path
 
         self.updater.download_from_source_uri = Mock(side_effect=mock_download)
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("backend.layers.processing.dataset_metadata_update.os.remove")
-    @patch("backend.layers.processing.dataset_metadata_update.read_h5ad")
-    def test_update_raw_h5ad(self, mock_read_h5ad, *args):
+    def test_update_raw_h5ad(self, *args):
         collection_version = self.generate_unpublished_collection(add_datasets=1)
         current_dataset_version = collection_version.datasets[0]
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
@@ -383,20 +380,14 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
             citation="Publication DOI www.doi.org/567.8", title="New Dataset Title"
         )
 
-        # Mock anndata object
-        mock_anndata = Mock(spec=scanpy.AnnData)
-        mock_anndata.uns = {"title": "Old Dataset Title", "other_metadata": "misc."}
-        mock_anndata.write = Mock()
-        mock_read_h5ad.return_value = mock_anndata
-
         self.updater.update_raw_h5ad(None, key_prefix, new_dataset_version_id, metadata_update)
 
         local_filename = CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME
         # check mock_anndata object
-        mock_read_h5ad.assert_called_with(local_filename)
-        assert "citation" not in mock_anndata.uns
+        mock_anndata = scanpy.read_h5ad(local_filename)
+        assert mock_anndata.uns["citation"] == "Publication DOI www.doi.org/567.8"
         assert mock_anndata.uns["title"] == "New Dataset Title"
-        assert mock_anndata.uns["other_metadata"] == "misc."
+        assert mock_anndata.uns["schema_version"] == "3.0.0"  # not changed from set-up
         # check s3 uris exist
         assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id.id}/{local_filename}")
         # check DB DatasetVersion
@@ -412,8 +403,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("backend.layers.processing.dataset_metadata_update.os.remove")
-    @patch("backend.layers.processing.dataset_metadata_update.read_h5ad")
-    def test_update_h5ad(self, mock_read_h5ad, *args):
+    def test_update_h5ad(self, *args):
         collection_version = self.generate_unpublished_collection(add_datasets=1)
         current_dataset_version = collection_version.datasets[0]
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
@@ -425,23 +415,19 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
         )
         key_prefix = new_dataset_version_id.id
         metadata_update = DatasetArtifactMetadataUpdate(
-            citation="Publication DOI www.doi.org/567.8", title="New Dataset Title"
+            citation="Publication DOI www.doi.org/567.8", title="New Dataset Title", schema_reference="new field"
         )
 
         # Mock anndata object
-        mock_anndata = Mock(spec=scanpy.AnnData)
-        mock_anndata.uns = {"citation": "Publication www.doi.org/123.4", "schema_version": "3.0.0"}
-        mock_anndata.write = Mock()
-        mock_read_h5ad.return_value = mock_anndata
-
         self.updater.update_h5ad(None, current_dataset_version, key_prefix, new_dataset_version_id, metadata_update)
 
         local_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
+        mock_anndata = scanpy.read_h5ad(local_filename)
         # check mock_anndata object
-        mock_read_h5ad.assert_called_with(local_filename)
         assert mock_anndata.uns["citation"] == "Publication DOI www.doi.org/567.8"
         assert mock_anndata.uns["title"] == "New Dataset Title"
         assert mock_anndata.uns["schema_version"] == "3.0.0"
+        assert mock_anndata.uns["schema_reference"] == "new field"
         # check s3 uris exist
         assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id.id}/{local_filename}")
         assert self.updater.s3_provider.uri_exists(f"s3://datasets_bucket/{new_dataset_version_id.id}.h5ad")

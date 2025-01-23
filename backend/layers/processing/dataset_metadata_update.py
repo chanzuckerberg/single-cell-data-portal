@@ -7,8 +7,8 @@ import logging
 import os
 from multiprocessing import Process
 
+import h5py
 import tiledb
-from cellxgene_schema.utils import read_h5ad
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business import BusinessLogic
@@ -66,12 +66,11 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
             local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
         )
         try:
-            adata = read_h5ad(raw_h5ad_filename)
-            for key, val in metadata_update.as_dict_without_none_values().items():
-                if key in adata.uns:
-                    adata.uns[key] = val
-
-            adata.write(raw_h5ad_filename, compression="gzip")
+            with h5py.File(raw_h5ad_filename, "r+") as f:
+                for key, val in metadata_update.as_dict_without_none_values().items():
+                    if key in f["uns"]:
+                        del f["uns"][key]
+                    f["uns"].create_dataset(key, data=val)
 
             self.update_processing_status(
                 new_dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING
@@ -101,16 +100,17 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
             local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
         )
         try:
-            adata = read_h5ad(h5ad_filename)
             metadata = current_dataset_version.metadata
             # maps artifact name for metadata field to DB field name, if different
-            for key, val in metadata_update.as_dict_without_none_values().items():
-                adata.uns[key] = val
+            with h5py.File(h5ad_filename, "r+") as f:
+                for key, val in metadata_update.as_dict_without_none_values().items():
+                    if key in f["uns"]:
+                        del f["uns"][key]
+                    f["uns"].create_dataset(key, data=val)
 
-                db_field = ARTIFACT_TO_DB_FIELD.get(key) if key in ARTIFACT_TO_DB_FIELD else key
-                setattr(metadata, db_field, val)
+                    db_field = ARTIFACT_TO_DB_FIELD.get(key) if key in ARTIFACT_TO_DB_FIELD else key
+                    setattr(metadata, db_field, val)
 
-            adata.write(h5ad_filename, compression="gzip")
             self.business_logic.set_dataset_metadata(new_dataset_version_id, metadata)
 
             self.create_artifact(
