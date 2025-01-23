@@ -94,8 +94,8 @@ def upload_dataset(session, api_url, curator_cookie, request):
 
 @pytest.fixture(scope="session")
 def upload_dataset_metadata(session, api_url, curator_cookie, request):
-    def _upload_dataset_metadata(collection_id):
-        collection_errors = update_metadata_and_wait
+    def _upload_dataset_metadata(collection_id, metadata):
+        collection_errors = update_metadata_and_wait(session, api_url, curator_cookie, collection_id, metadata)
         if collection_errors:
             raise pytest.fail(str(collection_errors))
         return collection_id
