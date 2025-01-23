@@ -68,6 +68,29 @@ def create_explorer_url(dataset_id: str, deployment_stage: str) -> str:
     return f"https://cellxgene.{deployment_stage}.single-cell.czi.technology/e/{dataset_id}.cxg/"
 
 
+def update_metadata_and_wait(session, api_url, curator_cookie, collection_id, metadata):
+    headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
+    res = session.put(f"{api_url}/dp/v1/collections/{collection_id}", data=json.dumps(metadata), headers=headers)
+    res.raise_for_status()
+    # ensure metadata update is queued for each dataset
+    collection = json.loads(res.content)
+    dataset_ids = [dataset.id for dataset in collection["datasets"]]
+    for dataset_id in dataset_ids:
+        res = session.get(f"{api_url}/dp/v1/datasets/{dataset_id}/status", headers=headers)
+        res.raise_for_status()
+        data = json.loads(res.content)
+        assert data["processing_status"] == "INITIALIZED"
+
+    collection_errors = {}
+    for dataset_id in dataset_ids:
+        dataset_errors = []
+        await_processing_status(session, api_url, headers, dataset_id, dataset_errors)
+        if dataset_errors:
+            collection_errors[dataset_id] = dataset_errors
+
+    return collection_errors
+
+
 def upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id=None):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     body = {"url": dropbox_url}
@@ -86,6 +109,12 @@ def upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url
     dataset_id = json.loads(res.content)["dataset_id"]
     assert res.status_code == requests.codes.accepted
 
+    await_processing_status(session, api_url, headers, dataset_id, errors)
+
+    return {"dataset_id": dataset_id, "errors": errors}
+
+
+def await_processing_status(session, api_url, headers, dataset_id, errors):
     keep_trying = True
     expected_upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
     expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADING", "UPLOADED", "NA", None]
@@ -121,7 +150,6 @@ def upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url
                 f"Dataset upload or conversion timed out after 10 min. Check logs for dataset: {dataset_id}"
             )
         time.sleep(10)
-    return {"dataset_id": dataset_id, "errors": errors}
 
 
 def make_session(proxy_auth_token):
