@@ -82,7 +82,14 @@ def test_collection_flow(session, api_url, curator_cookie, upload_dataset, uploa
 
     # update collection DOI and await dataset update
     updated_data = {
-        "links": [{"link_name": "doi", "link_type": "DOI", "link_url": "https://doi.org/10.1093/nar/gkae1142"}],
+        "contact_email": "person@random.com",
+        "contact_name": "Doctor Who",
+        "description": "These are different words",
+        "links": [
+            {"link_name": "The Source", "link_type": "DATA_SOURCE", "link_url": "https://datasource.com"},
+            {"link_name": "", "link_type": "DOI", "link_url": "10.1093/nar/gkae1142"},
+        ],
+        "name": "lots of cells",
     }
     upload_dataset_metadata(collection_id, updated_data)
 
