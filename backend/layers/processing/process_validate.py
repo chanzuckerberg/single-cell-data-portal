@@ -124,9 +124,7 @@ class ProcessValidate(ProcessingLogic):
 
         output_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
         try:
-            is_valid, errors, _ = self.schema_validator.validate_and_save_labels(
-                local_filename, output_filename, n_workers=1
-            )  # match the number of workers to the number of vCPUs
+            is_valid, errors, _ = self.schema_validator.validate_and_save_labels(local_filename, output_filename)
         except Exception as e:
             self.logger.exception("validation failed")
             raise ValidationFailed([str(e)]) from None
