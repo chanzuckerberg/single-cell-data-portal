@@ -50,7 +50,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         self.updater.download_from_source_uri = Mock(side_effect=mock_download)
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("cellxgene_schema.utils.read_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.read_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
     @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker")
@@ -97,7 +97,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad")
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("cellxgene_schema.utils.read_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.read_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
     @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker")
@@ -148,7 +148,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad")
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("cellxgene_schema.utils.read_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.read_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
     @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker")
@@ -251,7 +251,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             )
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("cellxgene_schema.utils.read_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.read_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater")
     def test_update_metadata__missing_labeled_h5ad(self, *args):
         current_dataset_version = self.generate_dataset(
@@ -287,7 +287,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         assert new_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("cellxgene_schema.utils.read_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.read_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
     @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater")
@@ -325,7 +325,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         assert new_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
-    @patch("cellxgene_schema.utils.read_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.read_h5ad")
     @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdater")
     def test_update_metadata__invalid_artifact_status(self, *args):
         current_dataset_version = self.generate_dataset(
@@ -367,7 +367,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("backend.layers.processing.dataset_metadata_update.os.remove")
-    @patch("cellxgene_schema.utils.read_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.read_h5ad")
     def test_update_raw_h5ad(self, mock_read_h5ad, *args):
         collection_version = self.generate_unpublished_collection(add_datasets=1)
         current_dataset_version = collection_version.datasets[0]
@@ -412,7 +412,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("backend.layers.processing.dataset_metadata_update.os.remove")
-    @patch("cellxgene_schema.utils.read_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.read_h5ad")
     def test_update_h5ad(self, mock_read_h5ad, *args):
         collection_version = self.generate_unpublished_collection(add_datasets=1)
         current_dataset_version = collection_version.datasets[0]
