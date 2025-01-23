@@ -74,7 +74,7 @@ def update_metadata_and_wait(session, api_url, curator_cookie, collection_id, me
     res.raise_for_status()
     # ensure metadata update is queued for each dataset
     collection = json.loads(res.content)
-    dataset_ids = [dataset.id for dataset in collection["datasets"]]
+    dataset_ids = [dataset["id"] for dataset in collection["datasets"]]
     for dataset_id in dataset_ids:
         res = session.get(f"{api_url}/dp/v1/datasets/{dataset_id}/status", headers=headers)
         res.raise_for_status()
