@@ -139,19 +139,9 @@ resource aws_batch_job_definition dataset_metadata_update {
       "value": "${var.remote_dev_prefix}"
     }
   ],
-  "vcpus": 1,
+  "vcpus": 2,
   "retryStrategy": {
-    "attempts": 3,
-    "evaluateOnExit": [
-      {
-          "action": "RETRY",
-          "onReason": "Task failed to start"
-      },
-      {
-          "action": "EXIT",
-          "onReason": "*"
-      }
-    ]
+    "attempts": 3
   },
   "logConfiguration": {
     "logDriver": "awslogs",
