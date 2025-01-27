@@ -12,7 +12,7 @@ from urllib3.util import Retry
 from backend.common.census_cube.data.snapshot import CensusCubeSnapshot
 
 # exported and used by all modules related to the census cube
-ontology_parser = OntologyParser()
+ontology_parser = OntologyParser(schema_version="v5.2.0")
 
 
 def find_all_dim_option_values(snapshot, organism: str, dimension: str) -> list:
