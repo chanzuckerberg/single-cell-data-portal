@@ -5,6 +5,7 @@ git+https://github.com/chanzuckerberg/single-cell-curation/@main#subdirectory=ce
 dask==2024.12.0
 dataclasses-json
 ddtrace==2.1.4
+fsspec==2024.12.0
 numba==0.59.1
 numpy<2
 pandas>2,<3
@@ -16,7 +17,6 @@ python-json-logger
 pyvips==2.2.2
 requests>=2.22.0
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
-s3fs==0.4.2
 scanpy==1.9.8
 SQLAlchemy==2.*
 tenacity

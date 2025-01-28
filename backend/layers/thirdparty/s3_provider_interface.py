@@ -17,6 +17,9 @@ class S3ProviderInterface:
     def delete_files(self, bucket_name: str, object_keys: List[str]):
         pass
 
+    def copy_file(self, src_key: str, src_bucket: str, dst_key: str, dst_bucket: str):
+        pass
+
     def delete_prefix(self, bucket_name: str, prefix: str) -> None:
         pass
 

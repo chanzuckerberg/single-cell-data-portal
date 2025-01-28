@@ -7,6 +7,7 @@ import logging
 import os
 from multiprocessing import Process
 
+import fsspec
 import h5py
 import tiledb
 
@@ -53,6 +54,22 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         self.artifact_bucket = artifact_bucket
         self.datasets_bucket = datasets_bucket
         self.spatial_deep_zoom_dir = spatial_deep_zoom_dir
+        self.fs = fsspec.filesystem("s3")
+
+    def persist_artifact(
+        self,
+        src_uri: str,
+        new_key_prefix: str,
+        new_dataset_version_id: DatasetVersionId,
+        filename: str,
+        new_bucket: str,
+        artifact_type: DatasetArtifactType,
+    ):
+        src_bucket, src_key = self.s3_provider.parse_s3_uri(src_uri)
+        new_key = f"{new_key_prefix}/{filename}"
+        self.s3_provider.copy_file(src_key=src_key, src_bucket=src_bucket, dst_key=new_key, dst_bucket=new_bucket)
+        s3_uri = self.make_s3_uri(new_bucket, new_key_prefix, filename)
+        self.business_logic.add_dataset_artifact(new_dataset_version_id, artifact_type, s3_uri)
 
     def update_raw_h5ad(
         self,
@@ -61,31 +78,26 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         new_dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
-        raw_h5ad_filename = self.download_from_source_uri(
-            source_uri=raw_h5ad_uri,
-            local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
+        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)
+        new_key = f"{new_key_prefix}/{CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME}"
+        new_bucket = self.artifact_bucket
+        self.persist_artifact(
+            raw_h5ad_uri,
+            new_key_prefix,
+            new_dataset_version_id,
+            CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
+            new_bucket,
+            DatasetArtifactType.RAW_H5AD,
         )
-        try:
-            with h5py.File(raw_h5ad_filename, "r+") as f:
-                for key, val in metadata_update.as_dict_without_none_values().items():
-                    if key in f["uns"]:
-                        del f["uns"][key]
-                    f["uns"].create_dataset(key, data=val)
+        s3file = self.fs.open(f"{new_bucket}/{new_key}")
 
-            self.update_processing_status(
-                new_dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING
-            )
-            self.create_artifact(
-                raw_h5ad_filename,
-                DatasetArtifactType.RAW_H5AD,
-                new_key_prefix,
-                new_dataset_version_id,
-                self.artifact_bucket,
-                DatasetStatusKey.H5AD,
-            )
-            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
-        finally:
-            os.remove(raw_h5ad_filename)
+        with h5py.File(s3file, "r+") as f:
+            for key, val in metadata_update.as_dict_without_none_values().items():
+                if key in f["uns"]:
+                    del f["uns"][key]
+                f["uns"].create_dataset(key, data=val)
+
+        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
 
     def update_h5ad(
         self,
@@ -95,41 +107,44 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         new_dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
-        h5ad_filename = self.download_from_source_uri(
-            source_uri=h5ad_uri,
-            local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
+        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTING)
+        new_key = f"{new_key_prefix}/{CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME}"
+        new_bucket = self.artifact_bucket
+        self.persist_artifact(
+            h5ad_uri,
+            new_key_prefix,
+            new_dataset_version_id,
+            CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
+            new_bucket,
+            DatasetArtifactType.H5AD,
         )
-        try:
-            metadata = current_dataset_version.metadata
-            # maps artifact name for metadata field to DB field name, if different
-            with h5py.File(h5ad_filename, "r+") as f:
-                for key, val in metadata_update.as_dict_without_none_values().items():
-                    if key in f["uns"]:
-                        del f["uns"][key]
-                    f["uns"].create_dataset(key, data=val)
+        s3file = self.fs.open(f"{self.artifact_bucket}/{new_key}")
 
-                    db_field = ARTIFACT_TO_DB_FIELD.get(key) if key in ARTIFACT_TO_DB_FIELD else key
-                    setattr(metadata, db_field, val)
+        metadata = current_dataset_version.metadata
+        # maps artifact name for metadata field to DB field name, if different
+        with h5py.File(s3file, "r+") as f:
+            for key, val in metadata_update.as_dict_without_none_values().items():
+                if key in f["uns"]:
+                    del f["uns"][key]
+                f["uns"].create_dataset(key, data=val)
 
-            self.business_logic.set_dataset_metadata(new_dataset_version_id, metadata)
+                db_field = ARTIFACT_TO_DB_FIELD.get(key) if key in ARTIFACT_TO_DB_FIELD else key
+                setattr(metadata, db_field, val)
 
-            self.create_artifact(
-                h5ad_filename,
-                DatasetArtifactType.H5AD,
-                new_key_prefix,
-                new_dataset_version_id,
-                self.artifact_bucket,
-                DatasetStatusKey.H5AD,
-                datasets_bucket=self.datasets_bucket,
-            )
-            self.update_processing_status(
-                new_dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID
-            )
-            self.update_processing_status(
-                new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED
-            )
-        finally:
-            os.remove(h5ad_filename)
+        self.business_logic.set_dataset_metadata(new_dataset_version_id, metadata)
+
+        public_dataset_key = f"{new_dataset_version_id}.h5ad"
+        self.s3_provider.copy_file(
+            src_key=new_key,
+            src_bucket=self.artifact_bucket,
+            dst_key=public_dataset_key,
+            dst_bucket=self.datasets_bucket,
+        )
+
+        self.update_processing_status(
+            new_dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID
+        )
+        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
 
     def update_cxg(
         self,
@@ -271,8 +286,15 @@ class DatasetMetadataUpdater(ProcessValidate):
             )
         else:
             self.logger.info("Main: No raw h5ad update required")
-            key_prefix = self.get_key_prefix(new_dataset_version_id.id)
-            self.upload_raw_h5ad(new_dataset_version_id, raw_h5ad_uri, self.artifact_bucket, key_prefix)
+            DatasetMetadataUpdaterWorker(self.artifact_bucket, self.datasets_bucket).persist_artifact(
+                raw_h5ad_uri,
+                new_artifact_key_prefix,
+                new_dataset_version_id,
+                CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
+                self.artifact_bucket,
+                DatasetArtifactType.RAW_H5AD,
+            )
+            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
 
         if DatasetArtifactType.H5AD in artifact_uris:
             self.logger.info("Main: Starting thread for h5ad update")

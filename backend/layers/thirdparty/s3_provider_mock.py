@@ -36,6 +36,10 @@ class MockS3Provider(S3ProviderInterface):
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         pass
 
+    def copy_file(self, src_key: str, src_bucket: str, dst_key: str, dst_bucket: str):
+        url = f"s3://{dst_bucket}/{dst_key}"
+        self.mock_s3_fs.add(url)
+
     def restore_object(self, bucket_name: str, object_key: str) -> None:
         url = f"s3://{bucket_name}/{object_key}"
         self.mock_s3_fs.add(url)
