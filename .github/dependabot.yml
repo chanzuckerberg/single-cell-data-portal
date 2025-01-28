@@ -85,6 +85,7 @@ updates:
           - "anndata"
           - "tiledb"
           - "numba"
+          - "s3fs"
   - package-ecosystem: pip
     directory: "/python_dependencies/common/"
     open-pull-requests-limit: 0
