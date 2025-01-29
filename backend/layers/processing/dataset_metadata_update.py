@@ -89,7 +89,7 @@ class DatasetMetadataUpdater(ProcessValidate):
         s3_path = new_s3_uri.split("s3://")[-1]
         s3file = self.fs.open(s3_path)
 
-        with h5py.File(s3file, "r+") as f:
+        with h5py.File(s3file, "rb+") as f:
             for key, val in metadata_update.as_dict_without_none_values().items():
                 if key in f["uns"]:
                     del f["uns"][key]
