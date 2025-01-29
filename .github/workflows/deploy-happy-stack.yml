@@ -184,7 +184,6 @@ jobs:
           name: logged-in-test-results
           path: frontend/playwright-report/
           retention-days: 30
-          if-no-files-found: error
       ### Need to write success failure way because Github API doesn't allow doing
       ### "if: always(), state: ${{ success() }}:
       - name: Set deployment status to success if no errors
