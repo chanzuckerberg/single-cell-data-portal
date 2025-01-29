@@ -33,7 +33,7 @@ from backend.layers.processing.process_validate import ProcessValidate
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.uri_provider import UriProvider
 
-configure_logging(level=logging.INFO)
+configure_logging(level=logging.DEBUG)
 
 # maps artifact name for metadata field to DB field name, if different
 ARTIFACT_TO_DB_FIELD = {"title": "name"}
@@ -55,7 +55,11 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         self.artifact_bucket = artifact_bucket
         self.datasets_bucket = datasets_bucket
         self.spatial_deep_zoom_dir = spatial_deep_zoom_dir
-        self.fs = fsspec.filesystem("s3", session=botocore.session.Session())
+        self.fs = fsspec.filesystem(
+            "s3",
+            session=botocore.session.Session(),
+            client_kwargs={"endpoint_url": "https://s3.us-west-2.amazonaws.com"},
+        )
 
     def persist_artifact(
         self,
