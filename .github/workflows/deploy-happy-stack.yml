@@ -261,7 +261,6 @@ jobs:
           name: playwright-report ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
           retention-days: 14
-          if-no-files-found: error
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: always()
