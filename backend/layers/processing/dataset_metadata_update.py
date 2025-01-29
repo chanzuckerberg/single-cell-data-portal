@@ -55,6 +55,8 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         self.datasets_bucket = datasets_bucket
         self.spatial_deep_zoom_dir = spatial_deep_zoom_dir
         self.fs = fsspec.filesystem("s3", asynchronous=False, config_kwargs={"retries": 3})
+        self.logger.info("Boto3 S3 endpoint:", self.s3_provider.client.meta.endpoint_url)
+        self.logger.info("fsspec S3 endpoint:", self.fs.client_kwargs.get("endpoint_url", "default"))
 
     def persist_artifact(
         self,
@@ -117,7 +119,9 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
             DatasetArtifactType.H5AD,
         )
         s3_path = new_s3_uri.split("s3://")[-1]
-        s3file = self.fs.open(s3_path)
+        self.logger.info(f"Test: {self.fs.ls(s3_path.rsplit('/', 1)[0])}")  # TODO: temp
+        s3file = self.fs.open(s3_path, block_size=0)
+        self.logger.info("block size 0 works")
 
         metadata = current_dataset_version.metadata
         # maps artifact name for metadata field to DB field name, if different
