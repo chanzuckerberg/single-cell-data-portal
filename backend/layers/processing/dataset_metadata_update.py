@@ -69,9 +69,7 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         new_key = f"{new_key_prefix}/{filename}"
         self.s3_provider.copy_file(src_key=src_key, src_bucket=src_bucket, dst_key=new_key, dst_bucket=new_bucket)
         s3_uri = self.make_s3_uri(new_bucket, new_key_prefix, filename)
-        self.logger.info(f"Adding dataset artifact {artifact_type}")
         self.business_logic.add_dataset_artifact(new_dataset_version_id, artifact_type, s3_uri)
-        self.logger.info(f"Stored at {s3_uri}")
         return s3_uri
 
     def update_raw_h5ad(
@@ -90,7 +88,8 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
             self.artifact_bucket,
             DatasetArtifactType.RAW_H5AD,
         )
-        s3file = self.fs.open(new_s3_uri)
+        s3_path = new_s3_uri.split("s3://")[-1]
+        s3file = self.fs.open(s3_path)
 
         with h5py.File(s3file, "r+") as f:
             for key, val in metadata_update.as_dict_without_none_values().items():
@@ -109,7 +108,6 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
         self.update_processing_status(new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTING)
-        self.logger.info("Persisting labeled H5AD artifact")
         new_s3_uri = self.persist_artifact(
             h5ad_uri,
             new_key_prefix,
@@ -118,9 +116,8 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
             self.artifact_bucket,
             DatasetArtifactType.H5AD,
         )
-        self.logger.info("Persisted labeled H5AD artifact")
-        s3file = self.fs.open(new_s3_uri)
-        self.logger.info("Opened labeled H5AD artifact via s3")
+        s3_path = new_s3_uri.split("s3://")[-1]
+        s3file = self.fs.open(s3_path)
 
         metadata = current_dataset_version.metadata
         # maps artifact name for metadata field to DB field name, if different
@@ -128,21 +125,16 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
             for key, val in metadata_update.as_dict_without_none_values().items():
                 self.logger.info("Updating metadata")
                 if key in f["uns"]:
-                    self.logger.info("Deleting existing metadata")
                     del f["uns"][key]
                 f["uns"].create_dataset(key, data=val)
-                self.logger.info("Created new metadata")
 
-                self.logger.info("Updating metadata in DB")
                 db_field = ARTIFACT_TO_DB_FIELD.get(key) if key in ARTIFACT_TO_DB_FIELD else key
                 setattr(metadata, db_field, val)
 
-        self.logger.info("Updated metadata in labeled H5AD artifact")
         self.business_logic.set_dataset_metadata(new_dataset_version_id, metadata)
 
         new_key = f"{new_key_prefix}/{CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME}"
         public_bucket_key = f"{new_dataset_version_id}.h5ad"
-        self.logger.info("copying labeled H5AD artifact to public bucket")
         self.s3_provider.copy_file(
             src_key=new_key,
             src_bucket=self.artifact_bucket,
