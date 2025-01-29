@@ -5,12 +5,10 @@ Creates a new DatasetVersion to update metadata across dataset artifacts
 import json
 import logging
 import os
-from multiprocessing import Process
 
 import fsspec
 import h5py
 import tiledb
-from s3fs import S3FileSystem
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business import BusinessLogic
@@ -40,24 +38,21 @@ ARTIFACT_TO_DB_FIELD = {"title": "name"}
 FIELDS_IN_RAW_H5AD = ["title"]
 
 
-class DatasetMetadataUpdaterWorker(ProcessValidate):
+class DatasetMetadataUpdater(ProcessValidate):
     def __init__(
-        self, artifact_bucket: str, datasets_bucket: str, spatial_deep_zoom_dir: str = None, s3fs: S3FileSystem = None
+        self,
+        business_logic: BusinessLogic,
+        artifact_bucket: str,
+        cellxgene_bucket: str,
+        datasets_bucket: str,
+        spatial_deep_zoom_dir: str,
     ) -> None:
-        # init each worker with business logic backed by non-shared DB connection
-        self.business_logic = BusinessLogic(
-            DatabaseProvider(),
-            None,
-            None,
-            None,
-            S3Provider(),
-            UriProvider(),
-        )
-        super().__init__(self.business_logic, self.business_logic.uri_provider, self.business_logic.s3_provider, None)
+        super().__init__(business_logic, business_logic.uri_provider, business_logic.s3_provider, None)
         self.artifact_bucket = artifact_bucket
+        self.cellxgene_bucket = cellxgene_bucket
         self.datasets_bucket = datasets_bucket
         self.spatial_deep_zoom_dir = spatial_deep_zoom_dir
-        self.fs = s3fs
+        self.fs = fsspec.filesystem("s3")
 
     def persist_artifact(
         self,
@@ -179,74 +174,6 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         self.business_logic.add_dataset_artifact(new_dataset_version_id, DatasetArtifactType.CXG, new_cxg_dir)
         self.update_processing_status(new_dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.CONVERTED)
 
-
-class DatasetMetadataUpdater(ProcessValidate):
-    def __init__(
-        self,
-        business_logic: BusinessLogic,
-        artifact_bucket: str,
-        cellxgene_bucket: str,
-        datasets_bucket: str,
-        spatial_deep_zoom_dir: str,
-    ) -> None:
-        super().__init__(business_logic, business_logic.uri_provider, business_logic.s3_provider, None)
-        self.artifact_bucket = artifact_bucket
-        self.cellxgene_bucket = cellxgene_bucket
-        self.datasets_bucket = datasets_bucket
-        self.spatial_deep_zoom_dir = spatial_deep_zoom_dir
-        self.fs = fsspec.filesystem("s3")
-
-    @staticmethod
-    def update_raw_h5ad(
-        artifact_bucket: str,
-        datasets_bucket: str,
-        s3fs: S3FileSystem,
-        raw_h5ad_uri: str,
-        new_key_prefix: str,
-        new_dataset_version_id: DatasetVersionId,
-        metadata_update: DatasetArtifactMetadataUpdate,
-    ):
-        DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket, s3fs=s3fs).update_raw_h5ad(
-            raw_h5ad_uri,
-            new_key_prefix,
-            new_dataset_version_id,
-            metadata_update,
-        )
-
-    @staticmethod
-    def update_h5ad(
-        artifact_bucket: str,
-        datasets_bucket: str,
-        s3fs: S3FileSystem,
-        h5ad_uri: str,
-        current_dataset_version: DatasetVersion,
-        new_key_prefix: str,
-        new_dataset_version_id: DatasetVersionId,
-        metadata_update: DatasetArtifactMetadataUpdate,
-    ):
-        DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket, s3fs=s3fs).update_h5ad(
-            h5ad_uri,
-            current_dataset_version,
-            new_key_prefix,
-            new_dataset_version_id,
-            metadata_update,
-        )
-
-    @staticmethod
-    def update_cxg(
-        artifact_bucket: str,
-        datasets_bucket: str,
-        spatial_deep_zoom_dir: str,
-        cxg_uri: str,
-        new_cxg_dir: str,
-        current_dataset_version_id: DatasetVersionId,
-        new_dataset_version_id: DatasetVersionId,
-        metadata_update: DatasetArtifactMetadataUpdate,
-    ):
-        DatasetMetadataUpdaterWorker(
-            artifact_bucket, datasets_bucket, spatial_deep_zoom_dir=spatial_deep_zoom_dir
-        ).update_cxg(cxg_uri, new_cxg_dir, current_dataset_version_id, new_dataset_version_id, metadata_update)
-
     def update_metadata(
         self,
         current_dataset_version_id: DatasetVersionId,
@@ -271,7 +198,6 @@ class DatasetMetadataUpdater(ProcessValidate):
             )
             return
 
-        artifact_jobs = []
         new_artifact_key_prefix = self.get_key_prefix(new_dataset_version_id.id)
         if DatasetArtifactType.RAW_H5AD in artifact_uris:
             raw_h5ad_uri = artifact_uris[DatasetArtifactType.RAW_H5AD]
@@ -281,20 +207,16 @@ class DatasetMetadataUpdater(ProcessValidate):
 
         # Only trigger raw H5AD update if any updated metadata is part of the raw H5AD artifact
         if any(getattr(metadata_update, field, None) for field in FIELDS_IN_RAW_H5AD):
-            self.logger.info("Main: Raw h5ad update required")
-            # Done in main process because it's meant to be blocking to updating other artifacts
-            DatasetMetadataUpdater.update_raw_h5ad(
-                self.artifact_bucket,
-                self.datasets_bucket,
-                self.fs,
+            self.logger.info("Raw h5ad update required")
+            self.update_raw_h5ad(
                 raw_h5ad_uri,
                 new_artifact_key_prefix,
                 new_dataset_version_id,
                 metadata_update,
             )
         else:
-            self.logger.info("Main: No raw h5ad update required")
-            DatasetMetadataUpdaterWorker(self.artifact_bucket, self.datasets_bucket).persist_artifact(
+            self.logger.info("No raw h5ad update required")
+            self.persist_artifact(
                 raw_h5ad_uri,
                 new_artifact_key_prefix,
                 new_dataset_version_id,
@@ -305,22 +227,14 @@ class DatasetMetadataUpdater(ProcessValidate):
             self.update_processing_status(new_dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
 
         if DatasetArtifactType.H5AD in artifact_uris:
-            self.logger.info("Main: Starting thread for h5ad update")
-            h5ad_job = Process(
-                target=DatasetMetadataUpdater.update_h5ad,
-                args=(
-                    self.artifact_bucket,
-                    self.datasets_bucket,
-                    self.fs,
-                    artifact_uris[DatasetArtifactType.H5AD],
-                    current_dataset_version,
-                    new_artifact_key_prefix,
-                    new_dataset_version_id,
-                    metadata_update,
-                ),
+            self.logger.info("Starting labeled h5ad update")
+            self.update_h5ad(
+                artifact_uris[DatasetArtifactType.H5AD],
+                current_dataset_version,
+                new_artifact_key_prefix,
+                new_dataset_version_id,
+                metadata_update,
             )
-            artifact_jobs.append(h5ad_job)
-            h5ad_job.start()
         else:
             self.logger.error(f"Cannot find labeled H5AD artifact uri for {current_dataset_version_id}.")
             self.update_processing_status(new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.FAILED)
@@ -329,28 +243,17 @@ class DatasetMetadataUpdater(ProcessValidate):
         self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
 
         if DatasetArtifactType.CXG in artifact_uris:
-            self.logger.info("Main: Starting thread for cxg update")
-            cxg_job = Process(
-                target=DatasetMetadataUpdater.update_cxg,
-                args=(
-                    self.artifact_bucket,
-                    self.datasets_bucket,
-                    self.spatial_deep_zoom_dir,
-                    artifact_uris[DatasetArtifactType.CXG],
-                    f"s3://{self.cellxgene_bucket}/{new_artifact_key_prefix}.cxg",
-                    current_dataset_version_id,
-                    new_dataset_version_id,
-                    metadata_update,
-                ),
+            self.logger.info("Starting cxg update")
+            self.update_cxg(
+                artifact_uris[DatasetArtifactType.CXG],
+                f"s3://{self.cellxgene_bucket}/{new_artifact_key_prefix}.cxg",
+                current_dataset_version_id,
+                new_dataset_version_id,
+                metadata_update,
             )
-            artifact_jobs.append(cxg_job)
-            cxg_job.start()
         else:
             self.logger.error(f"Cannot find cxg artifact uri for {current_dataset_version_id}.")
             self.update_processing_status(new_dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.FAILED)
-
-        # blocking call on async functions before checking for valid artifact statuses
-        [j.join() for j in artifact_jobs]
 
         if self.has_valid_artifact_statuses(new_dataset_version_id):
             self.update_processing_status(
