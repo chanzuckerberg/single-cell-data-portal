@@ -7,10 +7,10 @@ import logging
 import os
 from multiprocessing import Process
 
-import botocore
 import fsspec
 import h5py
 import tiledb
+from s3fs import S3FileSystem
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business import BusinessLogic
@@ -41,7 +41,9 @@ FIELDS_IN_RAW_H5AD = ["title"]
 
 
 class DatasetMetadataUpdaterWorker(ProcessValidate):
-    def __init__(self, artifact_bucket: str, datasets_bucket: str, spatial_deep_zoom_dir: str = None) -> None:
+    def __init__(
+        self, artifact_bucket: str, datasets_bucket: str, spatial_deep_zoom_dir: str = None, s3fs: S3FileSystem = None
+    ) -> None:
         # init each worker with business logic backed by non-shared DB connection
         self.business_logic = BusinessLogic(
             DatabaseProvider(),
@@ -55,11 +57,7 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         self.artifact_bucket = artifact_bucket
         self.datasets_bucket = datasets_bucket
         self.spatial_deep_zoom_dir = spatial_deep_zoom_dir
-        self.fs = fsspec.filesystem(
-            "s3",
-            session=botocore.session.Session(),
-            client_kwargs={"endpoint_url": "https://s3.us-west-2.amazonaws.com"},
-        )
+        self.fs = s3fs
 
     def persist_artifact(
         self,
@@ -196,17 +194,19 @@ class DatasetMetadataUpdater(ProcessValidate):
         self.cellxgene_bucket = cellxgene_bucket
         self.datasets_bucket = datasets_bucket
         self.spatial_deep_zoom_dir = spatial_deep_zoom_dir
+        self.fs = fsspec.filesystem("s3")
 
     @staticmethod
     def update_raw_h5ad(
         artifact_bucket: str,
         datasets_bucket: str,
+        s3fs: S3FileSystem,
         raw_h5ad_uri: str,
         new_key_prefix: str,
         new_dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
-        DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket).update_raw_h5ad(
+        DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket, s3fs=s3fs).update_raw_h5ad(
             raw_h5ad_uri,
             new_key_prefix,
             new_dataset_version_id,
@@ -217,13 +217,14 @@ class DatasetMetadataUpdater(ProcessValidate):
     def update_h5ad(
         artifact_bucket: str,
         datasets_bucket: str,
+        s3fs: S3FileSystem,
         h5ad_uri: str,
         current_dataset_version: DatasetVersion,
         new_key_prefix: str,
         new_dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
-        DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket).update_h5ad(
+        DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket, s3fs=s3fs).update_h5ad(
             h5ad_uri,
             current_dataset_version,
             new_key_prefix,
@@ -242,9 +243,9 @@ class DatasetMetadataUpdater(ProcessValidate):
         new_dataset_version_id: DatasetVersionId,
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
-        DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket, spatial_deep_zoom_dir).update_cxg(
-            cxg_uri, new_cxg_dir, current_dataset_version_id, new_dataset_version_id, metadata_update
-        )
+        DatasetMetadataUpdaterWorker(
+            artifact_bucket, datasets_bucket, spatial_deep_zoom_dir=spatial_deep_zoom_dir
+        ).update_cxg(cxg_uri, new_cxg_dir, current_dataset_version_id, new_dataset_version_id, metadata_update)
 
     def update_metadata(
         self,
@@ -285,6 +286,7 @@ class DatasetMetadataUpdater(ProcessValidate):
             DatasetMetadataUpdater.update_raw_h5ad(
                 self.artifact_bucket,
                 self.datasets_bucket,
+                self.fs,
                 raw_h5ad_uri,
                 new_artifact_key_prefix,
                 new_dataset_version_id,
@@ -309,6 +311,7 @@ class DatasetMetadataUpdater(ProcessValidate):
                 args=(
                     self.artifact_bucket,
                     self.datasets_bucket,
+                    self.fs,
                     artifact_uris[DatasetArtifactType.H5AD],
                     current_dataset_version,
                     new_artifact_key_prefix,

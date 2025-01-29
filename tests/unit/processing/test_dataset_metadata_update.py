@@ -366,7 +366,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
             self.temp_files.append(key)
             return key
 
-        self.updater.fs.open = Mock(side_effect=mock_fs_open)
+        self.updater.fs = Mock(open=Mock(side_effect=mock_fs_open))
 
     def takeDown(self):
         super().takeDown()
