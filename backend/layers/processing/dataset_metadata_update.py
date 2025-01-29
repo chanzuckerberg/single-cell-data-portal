@@ -64,12 +64,13 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         filename: str,
         new_bucket: str,
         artifact_type: DatasetArtifactType,
-    ):
+    ) -> str:
         src_bucket, src_key = self.s3_provider.parse_s3_uri(src_uri)
         new_key = f"{new_key_prefix}/{filename}"
         self.s3_provider.copy_file(src_key=src_key, src_bucket=src_bucket, dst_key=new_key, dst_bucket=new_bucket)
         s3_uri = self.make_s3_uri(new_bucket, new_key_prefix, filename)
         self.business_logic.add_dataset_artifact(new_dataset_version_id, artifact_type, s3_uri)
+        return s3_uri
 
     def update_raw_h5ad(
         self,
@@ -79,17 +80,15 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
         self.update_processing_status(new_dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)
-        new_key = f"{new_key_prefix}/{CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME}"
-        new_bucket = self.artifact_bucket
-        self.persist_artifact(
+        new_s3_uri = self.persist_artifact(
             raw_h5ad_uri,
             new_key_prefix,
             new_dataset_version_id,
             CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
-            new_bucket,
+            self.artifact_bucket,
             DatasetArtifactType.RAW_H5AD,
         )
-        s3file = self.fs.open(f"{new_bucket}/{new_key}")
+        s3file = self.fs.open(new_s3_uri)
 
         with h5py.File(s3file, "r+") as f:
             for key, val in metadata_update.as_dict_without_none_values().items():
@@ -108,17 +107,15 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
         self.update_processing_status(new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTING)
-        new_key = f"{new_key_prefix}/{CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME}"
-        new_bucket = self.artifact_bucket
-        self.persist_artifact(
+        new_s3_uri = self.persist_artifact(
             h5ad_uri,
             new_key_prefix,
             new_dataset_version_id,
             CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
-            new_bucket,
+            self.artifact_bucket,
             DatasetArtifactType.H5AD,
         )
-        s3file = self.fs.open(f"{self.artifact_bucket}/{new_key}")
+        s3file = self.fs.open(new_s3_uri)
 
         metadata = current_dataset_version.metadata
         # maps artifact name for metadata field to DB field name, if different
@@ -133,11 +130,12 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
 
         self.business_logic.set_dataset_metadata(new_dataset_version_id, metadata)
 
-        public_dataset_key = f"{new_dataset_version_id}.h5ad"
+        new_key = f"{new_key_prefix}/{CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME}"
+        public_bucket_key = f"{new_dataset_version_id}.h5ad"
         self.s3_provider.copy_file(
             src_key=new_key,
             src_bucket=self.artifact_bucket,
-            dst_key=public_dataset_key,
+            dst_key=public_bucket_key,
             dst_bucket=self.datasets_bucket,
         )
 
