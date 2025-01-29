@@ -7,7 +7,7 @@ import logging
 import os
 from multiprocessing import Process
 
-import boto3
+import botocore
 import fsspec
 import h5py
 import tiledb
@@ -55,7 +55,7 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         self.artifact_bucket = artifact_bucket
         self.datasets_bucket = datasets_bucket
         self.spatial_deep_zoom_dir = spatial_deep_zoom_dir
-        self.fs = fsspec.filesystem("s3", session=boto3.Session())
+        self.fs = fsspec.filesystem("s3", session=botocore.session.Session())
 
     def persist_artifact(
         self,
