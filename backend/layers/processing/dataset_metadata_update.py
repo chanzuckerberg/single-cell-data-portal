@@ -54,7 +54,7 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         self.artifact_bucket = artifact_bucket
         self.datasets_bucket = datasets_bucket
         self.spatial_deep_zoom_dir = spatial_deep_zoom_dir
-        self.fs = fsspec.filesystem("s3")
+        self.fs = fsspec.filesystem("s3", asynchronous=False, config_kwargs={"retries": 3})
 
     def persist_artifact(
         self,
