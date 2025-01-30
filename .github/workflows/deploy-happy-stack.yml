@@ -1,6 +1,13 @@
 name: Deploy Happy
 
-on: deployment
+# TODO: Reinstate. This is for temporarily testing mirroring job
+#on: deployment
+
+# TODO: Remove. This is for temporarily testing mirroring job
+on:
+  push:
+    branches:
+      - atol/5480-mirror-data-to-staging-on-deploy
 
 env:
   DOCKER_BUILDKIT: 1
@@ -13,8 +20,54 @@ permissions:
   deployments: write
 
 jobs:
+  mirror-prod-rds-data-to-staging:
+    runs-on: ubuntu-22.04
+    # TODO: Reinstate. This is for temporarily testing mirroring job
+    # if: github.event.deployment.environment == 'staging'
+    steps:
+      - name: install requirements
+        run: |
+          pip install awscli==1.29.1
+
+      - name:
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Install aws cli
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: "2"
+      - name: Dump from prod # TODO: Add actual mirroring command as ECS task execution
+        run: echo TODO
+      - name: Load to staging # TODO: Add actual mirroring command as ECS task execution
+        run: echo TODO
+
+  mirror-prod-s3-data-to-staging:
+    runs-on: ubuntu-22.04
+    # TODO: Reinstate. This is for temporarily testing mirroring job
+    # if: github.event.deployment.environment == 'staging'
+    steps:
+      - name: install requirements
+        run: |
+          pip install awscli==1.29.1
+      - name:
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Install aws cli
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: "2"
+      - name: Run S3 mirroring # TODO: Add actual mirroring command as ECS task execution
+        run: echo TODO
+
   upgrade:
     runs-on: ubuntu-22.04
+    if: false # TODO: Remove. This is for temporarily testing mirroring job, above, avoiding the deploy
     steps:
       - uses: actions/setup-node@v4
         with:
@@ -136,6 +189,8 @@ jobs:
     runs-on: ubuntu-22.04
     needs:
       - upgrade
+      - mirror-prod-s3-data-to-staging
+      - mirror-prod-rds-data-to-staging
     steps:
       - uses: actions/setup-node@v4
         with:
@@ -206,6 +261,8 @@ jobs:
     runs-on: ubuntu-22.04
     needs:
       - upgrade
+      - mirror-prod-s3-data-to-staging
+      - mirror-prod-rds-data-to-staging
     strategy:
       fail-fast: false
       matrix:
@@ -308,6 +365,8 @@ jobs:
     timeout-minutes: 30
     needs:
       - upgrade
+      - mirror-prod-s3-data-to-staging
+      - mirror-prod-rds-data-to-staging
     steps:
       - name: Configure AWS Prod Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -363,6 +422,8 @@ jobs:
     timeout-minutes: 30
     needs:
       - upgrade
+      - mirror-prod-s3-data-to-staging
+      - mirror-prod-rds-data-to-staging
     steps:
       - name: Configure AWS Prod Credentials
         uses: aws-actions/configure-aws-credentials@v4
