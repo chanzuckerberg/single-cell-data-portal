@@ -40,6 +40,11 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         self.updater.update_h5ad = Mock()
         self.updater.update_cxg = Mock()
 
+        def mock_download(source_uri, local_path):
+            return local_path
+
+        self.updater.download_from_source_uri = Mock(side_effect=mock_download)
+
     @patch("backend.common.utils.dl_sources.uri.downloader")
     def test_update_metadata(self, *args):
         current_dataset_version = self.generate_dataset(
@@ -326,20 +331,20 @@ class TestArtifactUpdates(BaseProcessingTest):
         mock_adata = anndata.AnnData(X=None, obs=None, obsm=None, uns=mock_uns, var=None)
         self.temp_files = []
 
-        def mock_fs_open(filepath):
-            key = filepath.split("/")[-1]
-            mock_adata.write_h5ad(key)
-            self.temp_files.append(key)
-            return key
+        def mock_download(source_uri, local_path):
+            mock_adata.write_h5ad(local_path)
+            self.temp_files.append(local_path)
+            return local_path
 
-        self.updater.fs = Mock(open=Mock(side_effect=mock_fs_open))
+        self.updater.download_from_source_uri = Mock(side_effect=mock_download)
 
     def takeDown(self):
         super().takeDown()
         for file in self.temp_files:
             os.remove(file)
 
-    def test_update_raw_h5ad(self):
+    @patch("backend.layers.processing.dataset_metadata_update.os.remove")
+    def test_update_raw_h5ad(self, *args):
         collection_version = self.generate_unpublished_collection(add_datasets=1)
         current_dataset_version = collection_version.datasets[0]
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
@@ -374,7 +379,8 @@ class TestArtifactUpdates(BaseProcessingTest):
         # check processing status
         assert new_dataset_version.status.upload_status == DatasetUploadStatus.UPLOADED
 
-    def test_update_h5ad(self):
+    @patch("backend.layers.processing.dataset_metadata_update.os.remove")
+    def test_update_h5ad(self, *args):
         collection_version = self.generate_unpublished_collection(add_datasets=1)
         current_dataset_version = collection_version.datasets[0]
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
