@@ -23,11 +23,11 @@ class ProcessValidateH5AD(ProcessingLogic):
     Base class for handling the `Validate` step of the step function.
     This will:
         1. Download the h5ad artifact
-        2. Set DatasetStatusKey.H5AD DatasetValidationStatus.VALIDATING
-        3. Validate the h5ad
-        4. Set DatasetStatusKey.H5AD DatasetValidationStatus.VALID
-        5. Set the DatasetStatusKey.RDS DatasetConversionStatus.SKIPPED accordingly
-        6. upload the original file to S3
+        2. upload the original file to S3
+        3. Set DatasetStatusKey.H5AD DatasetValidationStatus.VALIDATING
+        4. Validate the h5ad
+        5. Set DatasetStatusKey.H5AD DatasetValidationStatus.VALID
+        6. Set the DatasetStatusKey.RDS DatasetConversionStatus.SKIPPED
     """
 
     schema_validator: SchemaValidatorProviderInterface
@@ -87,8 +87,6 @@ class ProcessValidateH5AD(ProcessingLogic):
         :param local_filename: file name of the dataset to validate and label
         :return: boolean indicating if seurat conversion is possible
         """
-        # TODO: use a provider here
-
         self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetValidationStatus.VALIDATING)
 
         try:
