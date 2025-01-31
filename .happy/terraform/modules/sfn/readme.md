@@ -53,31 +53,22 @@ stateDiagram-v2
     DownloadValidateError: DownloadValidateError
     EndPass: EndPass
     Cxg: Cxg
-    Seurat: Seurat
     CatchCxgFailure: CatchCxgFailure
-    CatchSeuratFailure: CatchSeuratFailure
 
-    [*] --> Validate
+    [*] --> Validate: manifest
     state Validate {
-        [*] --> ValidateAnndata
+        [*] --> ValidateAnndata: manifest
         ValidateAnndata --> [*]
         state hasFragment <<choice>>
-        [*] --> hasFragment
+        [*] --> hasFragment: manifest
         hasFragment --> ValidateFragment: yes
         hasFragment --> [*]: no
         ValidateFragment --> [*]
     }
     Validate --> AddLabels
-    AddLabels --> CxgSeuratParallel
-    state CxgSeuratParallel {
-        [*] --> Cxg
-        Cxg --> CatchCxgFailure
-        Cxg --> [*]
-        [*] --> Seurat
-        Seurat --> CatchSeuratFailure
-        Seurat --> [*]
-    }
-    CxgSeuratParallel --> HandleSuccess
+    AddLabels --> Cxg
+    Cxg --> CatchCxgFailure
+    Cxg --> HandleSuccess
     HandleSuccess --> CheckForErrors
     CheckForErrors --> DownloadValidateError: $.error
     CheckForErrors --> ConversionError: $[0].error or $[1].error
