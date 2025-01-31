@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Literal, Optional, Tuple
+from typing import Any, Dict, List, Literal, Optional
 
 import numpy
 import scanpy
@@ -28,12 +28,12 @@ class ProcessAddLabels(ProcessingLogic):
     Base class for handling the `add label` step of the step function.
     This will:
         1. Download the h5ad artifact
+        2. set DatasetStatusKey.H5AD status to DatasetUploadStatus.CONVERTING
         2. Add labels to h5ad using cellxgene-schema
         3. Persist the dataset metadata on the database
         3. set DatasetStatusKey.H5AD status to DatasetUploadStatus.UPLOADING
         4. upload the labeled file to S3
         5. set DatasetStatusKey.H5AD status to DatasetUploadStatus.UPLOADED
-        6. Set DatasetStatusKey.UPLOAD status to DatasetUploadStatus.UPLOADED
 
 
     If this step completes successfully, ProcessCxg and ProcessSeurat will start in parallel.
@@ -58,7 +58,7 @@ class ProcessAddLabels(ProcessingLogic):
     @logit
     def add_labels(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, local_filename: str
-    ) -> Tuple[str, bool]:
+    ) -> str:
         """
         labels the specified dataset file and updates the processing status in the database
         :param dataset_version_id: version ID of the dataset to update
@@ -66,13 +66,10 @@ class ProcessAddLabels(ProcessingLogic):
         :param local_filename: file name of the dataset to validate and label
         :return: file name of labeled dataset, boolean indicating if seurat conversion is possible
         """
-        # TODO: use a provider here
-
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTING)
         output_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
         self.schema_validator.add_labels(local_filename, output_filename)
         self.populate_dataset_citation(collection_version_id, dataset_version_id, output_filename)
-        # TODO: update the UNS with the multiome information if it exists.
-        #  This information can be retreived from the database by looking at the artifacts
         self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
         return output_filename
 
@@ -224,16 +221,10 @@ class ProcessAddLabels(ProcessingLogic):
         self.download_from_s3(artifact_bucket, object_key, original_h5ad_artifact_file_name)
 
         # Validate and label the dataset
-        file_with_labels, can_convert_to_seurat = self.add_labels(
-            collection_version_id, dataset_version_id, original_h5ad_artifact_file_name
-        )
+        file_with_labels = self.add_labels(collection_version_id, dataset_version_id, original_h5ad_artifact_file_name)
         # Process metadata
         metadata = self.extract_metadata(file_with_labels)
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
-
-        if not can_convert_to_seurat:
-            self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
-            self.logger.info(f"Skipping Seurat conversion for dataset {dataset_version_id}")
 
         # Upload the labeled dataset to the artifact bucket
         self.create_artifact(

@@ -3,14 +3,13 @@ from unittest.mock import MagicMock, Mock, patch
 from backend.layers.common.entities import (
     DatasetArtifactType,
     DatasetConversionStatus,
-    DatasetProcessingStatus,
     DatasetUploadStatus,
     DatasetValidationStatus,
     DatasetVersionId,
     Link,
 )
 from backend.layers.processing.process import ProcessMain
-from backend.layers.processing.process_validate import ProcessValidateH5AD
+from backend.layers.processing.process_add_labels import ProcessAddLabels
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 
@@ -37,44 +36,43 @@ class ProcessingTest(BaseProcessingTest):
         # This is where we're at when we start the SFN
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
-        # self.assertEqual(status.validation_status, DatasetValidationStatus.NA)
         self.assertIsNone(status.validation_status)
-        self.assertEqual(status.processing_status, DatasetProcessingStatus.INITIALIZED)
-        self.assertEqual(status.upload_status, DatasetUploadStatus.WAITING)
+        self.assertEqual(status.h5ad_status, DatasetUploadStatus.WAITING)
 
         mock_read_h5ad.return_value = MagicMock(uns=dict())
 
-        # TODO: ideally use a real h5ad so that
-        with patch("backend.layers.processing.process_validate.ProcessValidateH5AD.extract_metadata"):
-            pdv = ProcessValidateH5AD(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
-            pdv.process(collection.version_id, dataset_version_id, "fake_bucket_name", "fake_datasets_bucket")
-            citation_str = (
-                f"Publication: https://doi.org/12.2345 "
-                f"Dataset Version: http://domain/{dataset_version_id}.h5ad curated and distributed by "
-                f"CZ CELLxGENE Discover in Collection: https://domain/collections/{collection.collection_id.id}"
-            )
-            self.assertEqual(mock_read_h5ad.return_value.uns["citation"], citation_str)
-            status = self.business_logic.get_dataset_status(dataset_version_id)
-            self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
-            self.assertEqual(status.h5ad_status, DatasetConversionStatus.UPLOADED)
+        # TODO: ideally use a real h5ad
+        processor = ProcessAddLabels(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+        processor.extract_metadata = Mock()
+        processor.populate_dataset_citation = Mock()
+        processor.process(collection.version_id, dataset_version_id, "fake_bucket_name", "fake_datasets_bucket")
+        citation_str = (
+            f"Publication: https://doi.org/12.2345 "
+            f"Dataset Version: http://domain/{dataset_version_id}.h5ad curated and distributed by "
+            f"CZ CELLxGENE Discover in Collection: https://domain/collections/{collection.collection_id.id}"
+        )
+        self.assertEqual(mock_read_h5ad.return_value.uns["citation"], citation_str)
+        status = self.business_logic.get_dataset_status(dataset_version_id)
+        self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
+        self.assertEqual(status.h5ad_status, DatasetConversionStatus.UPLOADED)
 
-            # Verify that both the original (raw.h5ad) and the labeled (local.h5ad) files are there
-            self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"))
-            # Verify that the labeled file is uploaded to the datasets bucket
-            self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.h5ad"))
+        # Verify that the labeled (local.h5ad) file is there
+        self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"))
+        # Verify that the labeled file is uploaded to the datasets bucket
+        self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.h5ad"))
 
-            artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
-            self.assertEqual(1, len(artifacts))
-            artifact = artifacts[0]
-            artifact.type = DatasetArtifactType.H5AD
-            artifact.uri = f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"
+        artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
+        self.assertEqual(1, len(artifacts))
+        artifact = artifacts[0]
+        artifact.type = DatasetArtifactType.H5AD
+        artifact.uri = f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"
 
     @patch("scanpy.read_h5ad")
     def test_populate_dataset_citation__no_publication_doi(self, mock_read_h5ad):
         mock_read_h5ad.return_value = MagicMock(uns=dict())
         collection = self.generate_unpublished_collection()
 
-        pdv = ProcessValidateH5AD(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+        pdv = ProcessAddLabels(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
         dataset_version_id = DatasetVersionId()
         pdv.populate_dataset_citation(collection.version_id, dataset_version_id, "")
         citation_str = (
@@ -107,7 +105,7 @@ class ProcessingTest(BaseProcessingTest):
 
         pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
 
-        for step_name in ["validate"]:
+        for step_name in ["validate_anndata"]:
             pm.process(
                 collection.version_id,
                 dataset_version_id,

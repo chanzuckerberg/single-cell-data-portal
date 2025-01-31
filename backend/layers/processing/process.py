@@ -114,10 +114,8 @@ class ProcessMain(ProcessingLogic):
         """
         self.logger.info(f"Processing dataset version {dataset_version_id}", extra={"step_name": step_name})
         try:
-            if step_name == "validate":
-                self.process_validate.process(
-                    collection_version_id, dataset_version_id, dropbox_uri, artifact_bucket, datasets_bucket
-                )
+            if step_name == "validate_anndata":
+                self.process_validate.process(collection_version_id, dataset_version_id, dropbox_uri, artifact_bucket)
             elif step_name == "add_labels":
                 self.process_add_labels.process(
                     collection_version_id, dataset_version_id, artifact_bucket, datasets_bucket
