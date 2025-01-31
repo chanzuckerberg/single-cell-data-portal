@@ -104,22 +104,26 @@ class ProcessValidateH5AD(ProcessingLogic):
         """
         # TODO: use a provider here
 
-        self.update_processing_status(
-            dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALIDATING
-        )
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetValidationStatus.VALIDATING)
 
         try:
             is_valid, errors, can_convert_to_seurat = self.schema_validator.validate_anndata(local_filename)
         except Exception as e:
             self.logger.exception("validation failed")
+            self.update_processing_status(
+                dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID
+            )
             raise ValidationFailed([str(e)]) from None
 
         if not is_valid:
+            self.update_processing_status(
+                dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID
+            )
             raise ValidationFailed(errors)
         else:
-            self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetValidationStatus.VALID)
             # Skip seurat conversion
             self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
+            self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetValidationStatus.VALID)
 
     def process(
         self,
@@ -136,15 +140,11 @@ class ProcessValidateH5AD(ProcessingLogic):
         :param dataset_uri
         :param dataset_version_id:
         :param artifact_bucket:
-        :param datasets_bucket:
         :return:
         """
-        # validate and upload file to s3
+        # validate and upload raw h5ad file to s3
         key_prefix = self.get_key_prefix(dataset_version_id.id)
         local_filename = self.upload_raw_h5ad(dataset_version_id, dataset_uri, artifact_bucket, key_prefix)
 
         # Validate and label the dataset
         self.validate_h5ad_file(collection_version_id, dataset_version_id, local_filename)
-
-        # Skip seurat conversion
-        self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
