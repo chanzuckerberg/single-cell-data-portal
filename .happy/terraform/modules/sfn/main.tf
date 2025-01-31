@@ -24,20 +24,20 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "ApplyDefaults": {
         "Type": "Pass",
-        "Next": "Validate",
+        "Next": "ValidateAnndata",
         "Parameters": {
           "args.$": "States.JsonMerge($.inputDefaults, $$.Execution.Input, false)"
         },
         "ResultPath": "$.withDefaults",
         "OutputPath": "$.withDefaults.args"
       },
-      "Validate": {
+      "ValidateAnndata": {
         "Type": "Task",
         "Resource": "arn:aws:states:::batch:submitJob.sync",
         "Next": "AddLabels",
         "Parameters": {
           "JobDefinition":"${var.job_definition_arn}",
-          "JobName": "validate",
+          "JobName": "validate_anndata",
           "JobQueue.$": "$.job_queue",
           "ContainerOverrides": {
             "Environment": [
@@ -51,7 +51,7 @@ resource "aws_sfn_state_machine" "state_machine" {
               },
               {
                 "Name": "STEP_NAME",
-                "Value": "download"
+                "Value": "validate_anndata"
               },
               {
                 "Name": "TASK_TOKEN",
@@ -83,7 +83,7 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Resource": "arn:aws:states:::batch:submitJob.sync",
         "Next": "Cxg",
         "Parameters": {
-          "JobDefinition.$": "$.batch.JobDefinitionName",
+          "JobDefinition.$": "${var.job_definition_arn}",
           "JobName": "add_labels",
           "JobQueue.$": "$.job_queue",
           "ContainerOverrides": {
@@ -98,7 +98,7 @@ resource "aws_sfn_state_machine" "state_machine" {
               },
               {
                 "Name": "STEP_NAME",
-                "Value": "validate"
+                "Value": "validate_anndata"
               }
             ]
           }
