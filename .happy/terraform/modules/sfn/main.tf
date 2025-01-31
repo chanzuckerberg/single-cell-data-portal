@@ -34,7 +34,7 @@ resource "aws_sfn_state_machine" "state_machine" {
       "Validate": {
         "Type": "Task",
         "Resource": "arn:aws:states:::batch:submitJob.sync",
-        "Next": "Cxg",
+        "Next": "AddLabels",
         "Parameters": {
           "JobDefinition":"${var.job_definition_arn}",
           "JobName": "validate",
@@ -45,6 +45,49 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Name": "DROPBOX_URL",
                 "Value.$": "$.url"
               },
+              {
+                "Name": "DATASET_VERSION_ID",
+                "Value.$": "$.dataset_version_id"
+              },
+              {
+                "Name": "STEP_NAME",
+                "Value": "download"
+              },
+              {
+                "Name": "TASK_TOKEN",
+                "Value.$": "$$.Task.Token"
+              }
+            ]
+          }
+        },
+        "TimeoutSeconds": ${local.timeout},
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "HandleErrors",
+            "ResultPath": "$.error"
+          }
+        ],
+        "Retry": [ {
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 7,
+            "BackoffRate": 5
+        } ],
+        "ResultPath": "$.batch"
+      },
+      "AddLabels": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::batch:submitJob.sync",
+        "Next": "Cxg",
+        "Parameters": {
+          "JobDefinition.$": "$.batch.JobDefinitionName",
+          "JobName": "add_labels",
+          "JobQueue.$": "$.job_queue",
+          "ContainerOverrides": {
+            "Environment": [
               {
                 "Name": "DATASET_VERSION_ID",
                 "Value.$": "$.dataset_version_id"

@@ -14,7 +14,7 @@ from backend.layers.common.entities import (
     Link,
 )
 from backend.layers.processing.process import ProcessMain
-from backend.layers.processing.process_validate import ProcessValidate
+from backend.layers.processing.process_validate_h5ad import ProcessValidateH5AD
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 
@@ -27,7 +27,7 @@ class TestProcessDownload(BaseProcessingTest):
         """
 
         s3_uri = "s3://fake_bucket_name/fake_key/fake_file.h5ad"
-        pdv = ProcessValidate(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+        pdv = ProcessValidateH5AD(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
         pdv.download_from_s3 = Mock()
 
         assert pdv.download_from_source_uri(s3_uri, "fake_local_path") == "fake_local_path"
@@ -40,7 +40,7 @@ class TestProcessDownload(BaseProcessingTest):
         """
 
         dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=1"
-        pdv = ProcessValidate(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+        pdv = ProcessValidateH5AD(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
         pdv.download = Mock()
 
         assert pdv.download_from_source_uri(dropbox_uri, "fake_local_path") == "fake_local_path"
@@ -51,7 +51,7 @@ class TestProcessDownload(BaseProcessingTest):
         """
 
         uri = "fake://fake_bucket_name/fake_key/fake_file.h5ad"
-        pdv = ProcessValidate(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+        pdv = ProcessValidateH5AD(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
         pdv.download_from_s3 = Mock()
         with pytest.raises(ValueError, match=f"Malformed source URI: {uri}"):
             pdv.download_from_source_uri(uri, "fake_local_path")
@@ -62,11 +62,13 @@ class ProcessingTest(BaseProcessingTest):
         """
         ProcessDownloadValidate should:
         1. Download the h5ad artifact
-        2. set validation status to VALID
-        3. Set upload status to UPLOADED
-        4. set h5ad status to UPLOADED
-        5. upload the original file to S3
-        6. upload the labeled file to S3
+        2. Set DatasetStatusKey.H5AD DatasetValidationStatus.VALIDATING
+        3. Validate the h5ad
+        4. Set DatasetStatusKey.H5AD DatasetValidationStatus.VALID
+        5. Determine if a Seurat conversion is possible (it is not if the X matrix has more than 2**32-1 nonzero values).
+        Set the DatasetStatusKey.RDS DatasetConversionStatus.SKIPPED accordingly
+        6. upload the original file to S3
+
         """
         dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=0"
 
@@ -83,7 +85,7 @@ class ProcessingTest(BaseProcessingTest):
         self.assertEqual(status.upload_status, DatasetUploadStatus.WAITING)
 
         with patch("backend.layers.processing.process_validate.ProcessValidate.extract_metadata"):
-            pdv = ProcessValidate(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+            pdv = ProcessValidateH5AD(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
             pdv.download_from_source_uri = Mock(return_value=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME)
             pdv.populate_dataset_citation = Mock()
             pdv.process(
@@ -113,7 +115,7 @@ class ProcessingTest(BaseProcessingTest):
         )
         with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
             mock_adata.write_h5ad(f.name)
-            pdv = ProcessValidate(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+            pdv = ProcessValidateH5AD(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
             dataset_version_id = DatasetVersionId()
             pdv.populate_dataset_citation(collection.version_id, dataset_version_id, f.name)
             citation_str = (
@@ -129,7 +131,7 @@ class ProcessingTest(BaseProcessingTest):
         collection = self.generate_unpublished_collection()
         with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
             mock_adata.write_h5ad(f.name)
-            pdv = ProcessValidate(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+            pdv = ProcessValidateH5AD(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
             dataset_version_id = DatasetVersionId()
             pdv.populate_dataset_citation(collection.version_id, dataset_version_id, f.name)
             citation_str = (
@@ -152,7 +154,7 @@ class ProcessingTest(BaseProcessingTest):
         )
 
         # Set a mock failure for the schema validator
-        self.schema_validator.validate_and_save_labels = Mock(
+        self.schema_validator.validate_anndata = Mock(
             return_value=(False, ["Validation error 1", "Validation error 2"], True)
         )
 

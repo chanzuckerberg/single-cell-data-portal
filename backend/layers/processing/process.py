@@ -22,9 +22,10 @@ from backend.layers.processing.exceptions import (
     ValidationFailed,
 )
 from backend.layers.processing.logger import configure_logging
+from backend.layers.processing.process_add_labels import ProcessAddLabels
 from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_logic import ProcessingLogic
-from backend.layers.processing.process_validate import ProcessValidate
+from backend.layers.processing.process_validate import ProcessValidateH5AD
 from backend.layers.processing.schema_migration import SchemaMigrate
 from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
 from backend.layers.thirdparty.schema_validator_provider import (
@@ -41,7 +42,7 @@ class ProcessMain(ProcessingLogic):
     Main class for the dataset pipeline processing
     """
 
-    process_validate: ProcessValidate
+    process_validate: ProcessValidateH5AD
     process_cxg: ProcessCxg
 
     def __init__(
@@ -56,9 +57,10 @@ class ProcessMain(ProcessingLogic):
         self.uri_provider = uri_provider
         self.s3_provider = s3_provider
         self.schema_validator = schema_validator
-        self.process_validate = ProcessValidate(
+        self.process_validate = ProcessValidateH5AD(
             self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
         )
+        self.process_add_labels = ProcessAddLabels(self.business_logic, self.uri_provider, self.s3_provider)
         self.process_cxg = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
         self.schema_migrate = SchemaMigrate(self.business_logic, self.schema_validator)
 
@@ -100,6 +102,10 @@ class ProcessMain(ProcessingLogic):
             if step_name == "validate":
                 self.process_validate.process(
                     collection_version_id, dataset_version_id, dropbox_uri, artifact_bucket, datasets_bucket
+                )
+            elif step_name == "add_labels":
+                self.process_add_labels.process(
+                    collection_version_id, dataset_version_id, artifact_bucket, datasets_bucket
                 )
             elif step_name == "cxg":
                 self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket)
