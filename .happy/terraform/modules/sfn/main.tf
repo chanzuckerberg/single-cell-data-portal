@@ -50,17 +50,24 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "Value.$": "$.dataset_version_id"
               },
               {
-                "Name": "STEP_NAME",
-                "Value": "validate_anndata"
+                "Name": "COLLECTION_VERSION_ID",
+                "Value.$": "$.collection_version_id"
               },
               {
-                "Name": "TASK_TOKEN",
-                "Value.$": "$$.Task.Token"
+                "Name": "STEP_NAME",
+                "Value": "validate_anndata"
               }
             ]
           }
         },
-        "TimeoutSeconds": ${local.timeout},
+        "ResultPath": null,
+        "TimeoutSeconds": ${local.h5ad_timeout},
+        "Retry": [ {
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 7,
+            "BackoffRate": 5
+        } ],
         "Catch": [
           {
             "ErrorEquals": [
@@ -69,14 +76,7 @@ resource "aws_sfn_state_machine" "state_machine" {
             "Next": "HandleErrors",
             "ResultPath": "$.error"
           }
-        ],
-        "Retry": [ {
-            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-            "IntervalSeconds": 2,
-            "MaxAttempts": 7,
-            "BackoffRate": 5
-        } ],
-        "ResultPath": "$.batch"
+        ]
       },
       "AddLabels": {
         "Type": "Task",
