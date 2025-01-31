@@ -27,7 +27,7 @@ class TestProcessDownload(BaseProcessingTest):
         """
 
         s3_uri = "s3://fake_bucket_name/fake_key/fake_file.h5ad"
-        pdv = ProcessValidateH5AD(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+        pdv = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
         pdv.download_from_s3 = Mock()
 
         assert pdv.download_from_source_uri(s3_uri, "fake_local_path") == "fake_local_path"
@@ -40,7 +40,7 @@ class TestProcessDownload(BaseProcessingTest):
         """
 
         dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=1"
-        pdv = ProcessValidateH5AD(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+        pdv = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
         pdv.download = Mock()
 
         assert pdv.download_from_source_uri(dropbox_uri, "fake_local_path") == "fake_local_path"
@@ -51,7 +51,7 @@ class TestProcessDownload(BaseProcessingTest):
         """
 
         uri = "fake://fake_bucket_name/fake_key/fake_file.h5ad"
-        pdv = ProcessValidateH5AD(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+        pdv = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
         pdv.download_from_s3 = Mock()
         with pytest.raises(ValueError, match=f"Malformed source URI: {uri}"):
             pdv.download_from_source_uri(uri, "fake_local_path")
@@ -65,8 +65,7 @@ class ProcessingTest(BaseProcessingTest):
         2. Set DatasetStatusKey.H5AD DatasetValidationStatus.VALIDATING
         3. Validate the h5ad
         4. Set DatasetStatusKey.H5AD DatasetValidationStatus.VALID
-        5. Determine if a Seurat conversion is possible (it is not if the X matrix has more than 2**32-1 nonzero values).
-        Set the DatasetStatusKey.RDS DatasetConversionStatus.SKIPPED accordingly
+        5. Set the DatasetStatusKey.RDS DatasetConversionStatus.SKIPPED accordingly
         6. upload the original file to S3
 
         """
@@ -93,7 +92,7 @@ class ProcessingTest(BaseProcessingTest):
             )
             status = self.business_logic.get_dataset_status(dataset_version_id)
             self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
-            self.assertEqual(status.h5ad_status, DatasetConversionStatus.UPLOADED)
+            self.assertEqual(status.upload_status, DatasetConversionStatus.UPLOADED)
             pdv.populate_dataset_citation.assert_called_once_with(
                 collection.version_id, dataset_version_id, CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
             )

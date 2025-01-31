@@ -1,5 +1,4 @@
 from backend.common.utils.corpora_constants import CorporaConstants
-from backend.common.utils.dl_sources.uri import DownloadFailed
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
     CollectionVersionId,
@@ -11,7 +10,7 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersionId,
 )
-from backend.layers.processing.exceptions import UploadFailed, ValidationFailed
+from backend.layers.processing.exceptions import ValidationFailed
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
@@ -45,20 +44,6 @@ class ProcessValidateH5AD(ProcessingLogic):
         self.uri_provider = uri_provider
         self.s3_provider = s3_provider
         self.schema_validator = schema_validator
-
-    @logit
-    def download_from_source_uri(self, source_uri: str, local_path: str) -> str:
-        """Given a source URI, download it to local_path.
-        Handles fixing the url so it downloads directly.
-        """
-        file_url = self.uri_provider.parse(source_uri)
-        if not file_url:
-            raise ValueError(f"Malformed source URI: {source_uri}")
-        try:
-            file_url.download(local_path)
-        except DownloadFailed as e:
-            raise UploadFailed(f"Failed to download file from source URI: {source_uri}") from e
-        return local_path
 
     def upload_raw_h5ad(
         self, dataset_version_id: DatasetVersionId, dataset_uri: str, artifact_bucket: str, key_prefix: str
