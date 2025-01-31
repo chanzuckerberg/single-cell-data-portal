@@ -83,7 +83,7 @@ resource "aws_sfn_state_machine" "state_machine" {
         "Resource": "arn:aws:states:::batch:submitJob.sync",
         "Next": "Cxg",
         "Parameters": {
-          "JobDefinition.$": "${var.job_definition_arn}",
+          "JobDefinition": "${var.job_definition_arn}",
           "JobName": "add_labels",
           "JobQueue.$": "$.job_queue",
           "ContainerOverrides": {
