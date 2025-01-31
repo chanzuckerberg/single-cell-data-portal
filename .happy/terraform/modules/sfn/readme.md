@@ -59,15 +59,15 @@ stateDiagram-v2
 
     [*] --> Validate
     state Validate {
-        [*] --> ValidateAnndata: has anndata
+        [*] --> ValidateAnndata
         ValidateAnndata --> [*]
         state hasFragment <<choice>>
-        [*] --> hasFragment: has fragment
+        [*] --> hasFragment
         hasFragment --> ValidateFragment: yes
         hasFragment --> [*]: no
         ValidateFragment --> [*]
     }
-    Validate --> AddLabels:
+    Validate --> AddLabels
     AddLabels --> CxgSeuratParallel
     state CxgSeuratParallel {
         [*] --> Cxg
