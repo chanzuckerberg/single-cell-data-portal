@@ -24,7 +24,7 @@ jobs:
     strategy:
       matrix:
         branch: [main, staging, prod]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -37,7 +37,7 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - name: Checkout ${{ matrix.branch }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ matrix.branch }}
           fetch-depth: 1
