@@ -16,7 +16,7 @@ def sfn_name_generator(dataset_version_id: DatasetVersionId, prefix=None) -> str
 
 class StepFunctionProviderInterface:
     def start_step_function(
-        self, version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, url: str
+        self, version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, manifest: dict
     ) -> None:
         pass
 
@@ -26,7 +26,7 @@ class StepFunctionProvider(StepFunctionProviderInterface):
         self.client = boto3.client("stepfunctions")
 
     def start_step_function(
-        self, version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, url: str
+        self, version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, manifest: str
     ) -> None:
         """
         Starts a step function that will ingest the dataset `dataset_version_id` using the artifact
@@ -34,7 +34,7 @@ class StepFunctionProvider(StepFunctionProviderInterface):
         """
         input_parameters = {
             "collection_version_id": version_id.id,
-            "url": url,
+            "manifest": manifest,
             "dataset_version_id": dataset_version_id.id,
         }
         sfn_name = sfn_name_generator(dataset_version_id)

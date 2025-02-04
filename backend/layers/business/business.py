@@ -77,6 +77,8 @@ from backend.layers.common.entities import (
 from backend.layers.common.helpers import (
     get_published_at_and_collection_version_id_else_not_found,
 )
+from backend.layers.common.ingest_manifest import to_manifest
+from backend.layers.common.ingest_manifest import validator as ingest_manifest_validator
 from backend.layers.common.regex import S3_URI_REGEX
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
@@ -541,7 +543,7 @@ class BusinessLogic(BusinessLogicInterface):
     def ingest_dataset(
         self,
         collection_version_id: CollectionVersionId,
-        url: str,
+        url: str,  # TODO: change to manifest
         file_size: Optional[int],
         current_dataset_version_id: Optional[DatasetVersionId],
         start_step_function: bool = True,
@@ -550,14 +552,18 @@ class BusinessLogic(BusinessLogicInterface):
         Creates a canonical dataset and starts its ingestion by invoking the step function
         If `size` is not provided, it will be inferred automatically
         """
+        manifest = to_manifest(url)  # TODO: remove if already in manifest format
         logger.info(
             {
                 "message": "ingesting dataset",
                 "collection_version_id": collection_version_id,
-                "url": url,
+                "manifest": manifest,
                 "current_dataset_version_id": current_dataset_version_id,
             }
         )
+        ingest_manifest_validator(manifest)
+        # TODO: validate all uris in the manifest
+        # TODO: replace the uris with the actual uri if a uri to an existing h5ad or fragments file is provided
         if not self.uri_provider.validate(url):
             raise InvalidURIException(f"Trying to upload invalid URI: {url}")
 
@@ -625,7 +631,9 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Starts the step function process
         if start_step_function:
-            self.step_function_provider.start_step_function(collection_version_id, new_dataset_version.version_id, url)
+            self.step_function_provider.start_step_function(
+                collection_version_id, new_dataset_version.version_id, manifest
+            )
 
         return (new_dataset_version.version_id, new_dataset_version.dataset_id)
 
