@@ -36,9 +36,8 @@ def test_anndata_validation_failure(manifest):
 @pytest.mark.parametrize(
     "anndata,atac_seq_fragments",
     [
-        ("https://example.com/dataset.h5ad", None)(
-            "https://example.com/dataset.h5ad", "https://example.com/fragments.tsv.gz"
-        ),
+        ("https://example.com/dataset.h5ad", None),
+        ("https://example.com/dataset.h5ad", "https://example.com/fragments.tsv.gz"),
     ],
 )
 def test_to_manifest(anndata, atac_seq_fragments):
