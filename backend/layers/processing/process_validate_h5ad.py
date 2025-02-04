@@ -112,7 +112,7 @@ class ProcessValidateH5AD(ProcessingLogic):
         self,
         collection_version_id: CollectionVersionId,
         dataset_version_id: DatasetVersionId,
-        dataset_uri: str,
+        manifest: dict,
         artifact_bucket: str,
     ):
         """
@@ -120,14 +120,34 @@ class ProcessValidateH5AD(ProcessingLogic):
         2. Validate
 
         :param collection_version_id
-        :param dataset_uri
+        :param manifest:
         :param dataset_version_id:
         :param artifact_bucket:
         :return:
         """
+        dataset_uri = manifest.get("anndata")
         # validate and upload raw h5ad file to s3
         key_prefix = self.get_key_prefix(dataset_version_id.id)
         local_filename = self.upload_raw_h5ad(dataset_version_id, dataset_uri, artifact_bucket, key_prefix)
 
         # Validate and label the dataset
         self.validate_h5ad_file(collection_version_id, dataset_version_id, local_filename)
+
+
+class ProcessValidateATACSEQ(ProcessingLogic):
+    def process(
+        self,
+        collection_version_id: CollectionVersionId,
+        dataset_version_id: DatasetVersionId,
+        manifest: dict,
+        datasets_bucket: str,
+    ):
+        """
+
+        :param collection_version_id:
+        :param dataset_version_id:
+        :param manifest:
+        :param datasets_bucket:
+        :return:
+        """
+        pass
