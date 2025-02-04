@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "anndata"
+  ],
+  "properties": {
+    "anndata": {
+      "type": "string",
+      "format": "uri"
+    },
+    "atac_seq_fragment": {
+      "type": "string",
+      "fromat": "uri"
+    }
+  }
+}
