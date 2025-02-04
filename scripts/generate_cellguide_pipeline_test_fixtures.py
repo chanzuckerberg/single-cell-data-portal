@@ -53,7 +53,7 @@ sys.path.append(root_dir)
 
 TEST_SNAPSHOT = "realistic-test-snapshot"
 
-CANONICAL_MARKER_GENE_TEST_TISSUES = ["heart", "blood"]
+CANONICAL_MARKER_GENE_TEST_TISSUES = ["heart", "lung"]
 
 """ ################################# DANGER #######################################
 

@@ -311,9 +311,12 @@ class Validation:
             CD68_human_lung = cube.df[CD68_ont_id, lung_ont_id, human_ont_id]
             self.validate_CD68(CD68_human_lung)
 
-            AQP5_ont_id = fixtures.validation_gene_ontologies["AQP5"]
-            AQP5_human_lung = cube.df[AQP5_ont_id, lung_ont_id, human_ont_id]
-            self.validate_AQP5(AQP5_human_lung)
+            # This test should be replaced or updated
+            # https://github.com/chanzuckerberg/single-cell-data-portal/issues/7421
+
+            # AQP5_ont_id = fixtures.validation_gene_ontologies["AQP5"]
+            # AQP5_human_lung = cube.df[AQP5_ont_id, lung_ont_id, human_ont_id]
+            # self.validate_AQP5(AQP5_human_lung)
 
     def validate_FCN1(self, FCN1_human_lung_cube):
         intermediate_monocyte_ontology_id = fixtures.validation_cell_types["intermediate monocytes"]
