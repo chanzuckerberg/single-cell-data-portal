@@ -77,8 +77,8 @@ from backend.layers.common.entities import (
 from backend.layers.common.helpers import (
     get_published_at_and_collection_version_id_else_not_found,
 )
-from backend.layers.common.ingest_manifest import to_manifest
-from backend.layers.common.ingest_manifest import validator as ingest_manifest_validator
+from backend.layers.common.ingestion_manifest import to_manifest
+from backend.layers.common.ingestion_manifest import validator as ingest_manifest_validator
 from backend.layers.common.regex import S3_URI_REGEX
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface

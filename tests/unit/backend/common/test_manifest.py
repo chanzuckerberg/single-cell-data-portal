@@ -1,11 +1,11 @@
 import jsonschema
 import pytest
 
-from backend.layers.common.ingest_manifest import schema, to_manifest, validator
+from backend.layers.common.ingestion_manifest import schema, to_manifest, validator
 
 
 def test_validate_schema():
-    jsonschema.Draft7Validator.check_schema(schema)
+    jsonschema.Draft202012Validator.check_schema(schema)
 
 
 @pytest.mark.parametrize(
@@ -23,10 +23,7 @@ def test_anndata_validation_success(manifest):
 
 @pytest.mark.parametrize(
     "manifest",
-    [
-        {"atac_seq_fragments": "https://example.com/fragments.tsv.gz"},
-        {"anndata": 1234},
-    ],
+    [{"atac_seq_fragments": "https://example.com/fragments.tsv.gz"}, {"anndata": 1234}],
 )
 def test_anndata_validation_failure(manifest):
     with pytest.raises(jsonschema.ValidationError):
