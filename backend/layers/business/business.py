@@ -561,7 +561,7 @@ class BusinessLogic(BusinessLogicInterface):
                 "current_dataset_version_id": current_dataset_version_id,
             }
         )
-        ingest_manifest_validator(manifest)
+        ingest_manifest_validator.validate(manifest)
         # TODO: validate all uris in the manifest
         # TODO: replace the uris with the actual uri if a uri to an existing h5ad or fragments file is provided
         if not self.uri_provider.validate(url):

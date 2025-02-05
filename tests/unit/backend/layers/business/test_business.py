@@ -3141,7 +3141,7 @@ class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
         current_dataset_version_id = revision.datasets[0].version_id
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             revision.version_id,
-            None,
+            "http://fake.url",
             None,
             current_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
