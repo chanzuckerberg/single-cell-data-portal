@@ -27,3 +27,4 @@ SQLAlchemy==2.*
 tenacity
 tiledb
 Werkzeug==2.2.3
+jsonschema~=4.23.0
