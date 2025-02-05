@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 from typing import Optional
@@ -107,10 +108,10 @@ class ProcessMain(ProcessingLogic):
         collection_version_id: Optional[CollectionVersionId],
         dataset_version_id: DatasetVersionId,
         step_name: str,
+        manifest: Optional[dict],
         artifact_bucket: Optional[str],
         datasets_bucket: Optional[str],
         cxg_bucket: Optional[str],
-        manifest: Optional[dict] = None,
     ):
         """
         Gets called by the step function at every different step, as defined by `step_name`
@@ -175,7 +176,7 @@ class ProcessMain(ProcessingLogic):
         else:
             dataset_version_id = os.environ["DATASET_VERSION_ID"]
             collection_version_id = os.environ.get("COLLECTION_VERSION_ID")
-            dropbox_uri = os.environ.get("DROPBOX_URL")
+            manifest = json.loads(os.environ.get("MANIFEST"))
             artifact_bucket = os.environ.get("ARTIFACT_BUCKET")
             datasets_bucket = os.environ.get("DATASETS_BUCKET")
             cxg_bucket = os.environ.get("CELLXGENE_BUCKET")
@@ -186,11 +187,10 @@ class ProcessMain(ProcessingLogic):
                 ),
                 dataset_version_id=DatasetVersionId(dataset_version_id),
                 step_name=step_name,
-                dropbox_uri=dropbox_uri,
+                manifest=manifest,
                 artifact_bucket=artifact_bucket,
                 datasets_bucket=datasets_bucket,
                 cxg_bucket=cxg_bucket,
-                manifest=None,
             )
         return 0 if rv else 1
 
