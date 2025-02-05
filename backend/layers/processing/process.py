@@ -3,7 +3,6 @@ import os
 import sys
 from typing import Optional
 
-from backend.common.utils.dl_sources.uri import DownloadFailed
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
@@ -23,7 +22,7 @@ from backend.layers.processing.exceptions import (
     UploadFailed,
     ValidationFailed,
 )
-from backend.layers.processing.logger import configure_logging, logit
+from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_add_labels import ProcessAddLabels
 from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_logic import ProcessingLogic
@@ -91,20 +90,6 @@ class ProcessMain(ProcessingLogic):
             env_vars[var] = os.getenv(var)
         self.logger.info(f"Batch Job Info: {env_vars}")
 
-    @logit
-    def download_from_source_uri(self, source_uri: str, local_path: str) -> str:
-        """Given a source URI, download it to local_path.
-        Handles fixing the url so it downloads directly.
-        """
-        file_url = self.uri_provider.parse(source_uri)
-        if not file_url:
-            raise ValueError(f"Malformed source URI: {source_uri}")
-        try:
-            file_url.download(local_path)
-        except DownloadFailed as e:
-            raise UploadFailed(f"Failed to download file from source URI: {source_uri}") from e
-        return local_path
-
     def process(
         self,
         collection_version_id: Optional[CollectionVersionId],
@@ -121,7 +106,7 @@ class ProcessMain(ProcessingLogic):
         self.logger.info(f"Processing dataset version {dataset_version_id}", extra={"step_name": step_name})
         try:
             if step_name == "validate_anndata":
-                self.process_validate_h5ad.process(collection_version_id, dataset_version_id, manifest, artifact_bucket)
+                self.process_validate_h5ad.process(dataset_version_id, manifest, artifact_bucket)
             elif step_name == "validate_atac_seq":
                 self.process_validate_atac_seq.process(
                     collection_version_id,
