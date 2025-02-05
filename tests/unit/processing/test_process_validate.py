@@ -9,7 +9,7 @@ from backend.layers.common.entities import (
     DatasetUploadStatus,
     DatasetValidationStatus,
 )
-from backend.layers.common.ingest_manifest import to_manifest
+from backend.layers.common.ingestion_manifest import to_manifest
 from backend.layers.processing.process import ProcessMain
 from backend.layers.processing.process_validate_h5ad import ProcessValidateH5AD
 from tests.unit.processing.base_processing_test import BaseProcessingTest
