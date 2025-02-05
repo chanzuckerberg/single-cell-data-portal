@@ -1,4 +1,4 @@
-ARG BASE_TAG=20250204@sha256:9db765e1207dc46dd49748e6660edb9f43a309e11cf9a83eaf6eae6cc40a894f
+ARG BASE_TAG=branch-main
 
 FROM ghcr.io/chanzuckerberg/corpora-upload-base:$BASE_TAG
 
