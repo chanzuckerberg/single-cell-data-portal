@@ -3,10 +3,16 @@ import os
 
 import jsonschema
 
-local_path = os.path.dirname(os.path.realpath(__file__))
-with open(local_path + "/schema.json") as fp:
-    schema = json.load(fp)
-validator = jsonschema.Draft202012Validator(schema)
+
+def get_schema() -> dict:
+    local_path = os.path.dirname(os.path.realpath(__file__))
+    with open(local_path + "/schema.json") as fp:
+        return json.load(fp)
+
+
+def get_validator() -> jsonschema.Draft202012Validator:
+    schema = get_schema()
+    return jsonschema.Draft202012Validator(schema)
 
 
 def to_manifest(anndata: str, atac_seq_fragment: str = None) -> dict:

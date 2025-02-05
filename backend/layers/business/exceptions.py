@@ -85,6 +85,17 @@ class InvalidURIException(DatasetIngestException):
     """
 
 
+class InvalidIngestionManifestException(DatasetIngestException):
+    """
+    Raised when trying to ingest a dataset with an invalid ingestion manifest
+    """
+
+    def __init__(self, message: str, errors: Optional[List[str]] = None) -> None:
+        self.errors: Optional[List[str]] = errors
+        self.message = message
+        super().__init__()
+
+
 class MaxFileSizeExceededException(DatasetIngestException):
     """
     Raised when trying to ingest a dataset that is too big

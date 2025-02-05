@@ -38,6 +38,7 @@ from backend.layers.business.exceptions import (
     DatasetNotFoundException,
     DatasetUpdateException,
     DatasetVersionNotFoundException,
+    InvalidIngestionManifestException,
     InvalidURIException,
     MaxFileSizeExceededException,
     NoPreviousCollectionVersionException,
@@ -77,8 +78,8 @@ from backend.layers.common.entities import (
 from backend.layers.common.helpers import (
     get_published_at_and_collection_version_id_else_not_found,
 )
+from backend.layers.common.ingestion_manifest import get_validator as get_ingestion_manifest_validator
 from backend.layers.common.ingestion_manifest import to_manifest
-from backend.layers.common.ingestion_manifest import validator as ingest_manifest_validator
 from backend.layers.common.regex import S3_URI_REGEX
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
@@ -113,7 +114,14 @@ class BusinessLogic(BusinessLogicInterface):
         self.step_function_provider = step_function_provider
         self.s3_provider = s3_provider
         self.uri_provider = uri_provider
+        self._ingestion_manifest_validator = None
         super().__init__()
+
+    @property
+    def ingestion_manifest_validator(self):
+        if self._ingestion_manifest_validator is None:
+            self._ingestion_manifest_validator = get_ingestion_manifest_validator()
+        return self._ingestion_manifest_validator
 
     @staticmethod
     def generate_permanent_url(dataset_version_id: DatasetVersionId, asset_type: DatasetArtifactType):
@@ -561,7 +569,9 @@ class BusinessLogic(BusinessLogicInterface):
                 "current_dataset_version_id": current_dataset_version_id,
             }
         )
-        ingest_manifest_validator.validate(manifest)
+        errors = [e.message for e in self.ingestion_manifest_validator.iter_errors(manifest)]
+        if errors:
+            raise InvalidIngestionManifestException("Ingestion manifest is invalid.", errors=errors)
         # TODO: validate all uris in the manifest
         # TODO: replace the uris with the actual uri if a uri to an existing h5ad or fragments file is provided
         if not self.uri_provider.validate(url):
