@@ -63,9 +63,11 @@ class ProcessMain(ProcessingLogic):
             self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
         )
         self.process_validate_atac_seq = ProcessValidateATACSEQ(
-            self.business_logic, self.uri_provider, self.s3_provider
+            self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
         )
-        self.process_add_labels = ProcessAddLabels(self.business_logic, self.uri_provider, self.s3_provider)
+        self.process_add_labels = ProcessAddLabels(
+            self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
+        )
         self.process_cxg = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
         self.schema_migrate = SchemaMigrate(self.business_logic, self.schema_validator)
 

@@ -135,6 +135,19 @@ class ProcessValidateH5AD(ProcessingLogic):
 
 
 class ProcessValidateATACSEQ(ProcessingLogic):
+    def __init__(
+        self,
+        business_logic: BusinessLogicInterface,
+        uri_provider: UriProviderInterface,
+        s3_provider: S3ProviderInterface,
+        schema_validator: SchemaValidatorProviderInterface,
+    ) -> None:
+        super().__init__()
+        self.business_logic = business_logic
+        self.uri_provider = uri_provider
+        self.s3_provider = s3_provider
+        self.schema_validator = schema_validator
+
     def process(
         self,
         collection_version_id: CollectionVersionId,
