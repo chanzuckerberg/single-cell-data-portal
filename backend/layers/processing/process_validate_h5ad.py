@@ -110,7 +110,6 @@ class ProcessValidateH5AD(ProcessingLogic):
 
     def process(
         self,
-        collection_version_id: CollectionVersionId,
         dataset_version_id: DatasetVersionId,
         manifest: dict,
         artifact_bucket: str,
@@ -119,7 +118,6 @@ class ProcessValidateH5AD(ProcessingLogic):
         1. Download the original dataset from URI
         2. Validate
 
-        :param collection_version_id
         :param manifest:
         :param dataset_version_id:
         :param artifact_bucket:
@@ -131,7 +129,7 @@ class ProcessValidateH5AD(ProcessingLogic):
         local_filename = self.upload_raw_h5ad(dataset_version_id, dataset_uri, artifact_bucket, key_prefix)
 
         # Validate and label the dataset
-        self.validate_h5ad_file(collection_version_id, dataset_version_id, local_filename)
+        self.validate_h5ad_file(dataset_version_id, local_filename)
 
 
 class ProcessValidateATACSEQ(ProcessingLogic):
