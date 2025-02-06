@@ -1520,7 +1520,7 @@ class TestDeleteDataset(BaseAPIPortalTest):
         for auth, auth_description, _ in self.auth_credentials:
             with self.subTest(f"{auth_description}"):
                 dataset = self.generate_dataset(
-                    statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.CONVERTING)],
+                    statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.WAITING)],
                     publish=False,
                 )
                 response = self._delete(auth, dataset.collection_version_id, dataset.dataset_version_id)
