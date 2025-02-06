@@ -59,7 +59,6 @@ class DatasetConversionStatus(DatasetStatusGeneric, Enum):
     NA = "NA"
     CONVERTING = "CONVERTING"
     CONVERTED = "CONVERTED"
-    UPLOADING = "UPLOADING"
     UPLOADED = "UPLOADED"
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"

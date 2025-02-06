@@ -1811,7 +1811,7 @@ class TestDataset(BaseAPIPortalTest):
             "dataset_id": dataset.dataset_version_id,
             "id": "NA",  # TODO: I am deprecating this, I don't think it has any use.
             "upload_progress": 1,
-            "upload_status": "UPLOADING",
+            "upload_status": "WAITING",
             "validation_status": "NA",
         }
         self.assertEqual(expected_body, actual_body)
