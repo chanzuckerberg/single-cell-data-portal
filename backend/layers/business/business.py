@@ -634,7 +634,9 @@ class BusinessLogic(BusinessLogicInterface):
             )
 
         # Sets an initial processing status for the new dataset version
-        self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.WAITING)
+        self.database_provider.update_dataset_upload_status(
+            new_dataset_version.version_id, DatasetUploadStatus.WAITING
+        )  # TODO: Is upload status helpful?
         self.database_provider.update_dataset_processing_status(
             new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
         )

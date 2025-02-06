@@ -87,7 +87,9 @@ class ProcessValidateH5AD(ProcessingLogic):
         :param local_filename: file name of the dataset to validate and label
         :return: boolean indicating if seurat conversion is possible
         """
-        self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetValidationStatus.VALIDATING)
+        self.update_processing_status(
+            dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALIDATING
+        )
 
         try:
             is_valid, errors, can_convert_to_seurat = self.schema_validator.validate_anndata(local_filename)
@@ -106,7 +108,7 @@ class ProcessValidateH5AD(ProcessingLogic):
         else:
             # Skip seurat conversion
             self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
-            self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetValidationStatus.VALID)
+            self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetValidationStatus.CONVERTING)
 
     def process(
         self,

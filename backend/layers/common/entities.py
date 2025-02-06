@@ -12,7 +12,7 @@ from dataclasses_json import dataclass_json
 
 class DatasetStatusKey(str, Enum):
     UPLOAD = "upload"
-    VALIDATION = "validation"
+    VALIDATION = "validation"  # TODO: Remove. This value could be calculated from the other values
     CXG = "cxg"
     RDS = "rds"
     H5AD = "h5ad"
@@ -35,34 +35,34 @@ class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
     """
 
     INITIALIZED = "INITIALIZED"
-    PENDING = "PENDING"
+    PENDING = "PENDING"  # TODO: remove. Intialized is the same thing as pending
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"
 
 
 class DatasetUploadStatus(DatasetStatusGeneric, Enum):
-    NA = "NA"
-    WAITING = "WAITING"
+    NA = "NA"  # TODO: remove
+    WAITING = "WAITING"  # TODO: remove
     UPLOADING = "UPLOADING"
-    UPLOADED = "UPLOADED"
+    UPLOADED = "UPLOADED"  # TODO: remove
     FAILED = "FAILED"
-    CANCEL_PENDING = "CANCEL PENDING"
+    CANCEL_PENDING = "CANCEL PENDING"  # TODO: remove
     CANCELED = "CANCELED"
 
 
 class DatasetValidationStatus(DatasetStatusGeneric, Enum):
-    NA = "NA"
+    NA = "NA"  # TODO change to Initialized
     VALIDATING = "VALIDATING"
-    VALID = "VALID"
+    VALID = "VALID"  # TOSO
     INVALID = "INVALID"
 
 
 class DatasetConversionStatus(DatasetStatusGeneric, Enum):
     NA = "NA"
     CONVERTING = "CONVERTING"
-    CONVERTED = "CONVERTED"
+    CONVERTED = "CONVERTED"  # TODO: remove
     UPLOADING = "UPLOADING"
-    UPLOADED = "UPLOADED"
+    UPLOADED = "UPLOADED"  # TODO: remove
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 

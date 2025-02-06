@@ -1,5 +1,10 @@
 NEW
 
+The initial strate of the state machine is as follows:
+
+- DatasetUploadStatus.WAITING
+- DatasetProcessingStatus.INITIALIZED
+
 ```mermaid
 ---
 title: Cellxgene Ingestion State Machine
@@ -80,3 +85,11 @@ stateDiagram-v2
     DownloadValidateError --> [*]
     EndPass --> [*]
 ```
+
+Useful States:
+
+- ingestion Initialized
+- ingest
+- Validating
+- Invalid
+-
