@@ -1794,7 +1794,7 @@ class TestDataset(BaseAPIPortalTest):
         dataset = self.generate_dataset(
             statuses=[
                 DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.PENDING),
-                DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING),
+                DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.WAITING),
             ]
         )
         # TODO: why do we need processing_status_id? we can probably remove
@@ -2030,7 +2030,7 @@ class TestDataset(BaseAPIPortalTest):
 
         # Test while uploading
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)]
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.WAITING)]
         )
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}"
 
@@ -2049,7 +2049,7 @@ class TestDataset(BaseAPIPortalTest):
     # ✅
     def test__delete_uploaded_dataset__ok(self):
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)]
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.WAITING)]
         )
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
 
@@ -2078,7 +2078,7 @@ class TestDataset(BaseAPIPortalTest):
     # ✅
     def test__call_delete_dataset__twice(self):
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)]
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.WAITING)]
         )
         # TODO: set upload progress to 10.0
 

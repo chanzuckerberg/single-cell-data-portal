@@ -85,7 +85,6 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         processing_status_key: DatasetStatusKey,
         datasets_bucket: Optional[str] = None,  # If provided, dataset will be uploaded to this bucket for public access
     ):
-        self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADING)
         try:
             s3_uri = self.upload_artifact(file_name, key_prefix, artifact_bucket)
             self.logger.info(f"Uploaded [{dataset_version_id}/{file_name}] to {s3_uri}")
