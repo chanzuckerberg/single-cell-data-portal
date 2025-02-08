@@ -9,7 +9,7 @@ numpy>=1.24.0,<2.1.0
 openai==0.27.7
 pandas==2.2.1
 psutil==5.9.5
-ppydantic==2.6.4
+pydantic==2.6.4
 requests==2.31.0
 scipy==1.11.1
 tiledb
