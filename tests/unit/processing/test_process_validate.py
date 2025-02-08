@@ -13,7 +13,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
 )
-from backend.layers.common.ingestion_manifest import to_manifest
+from backend.layers.common.ingestion_manifest import IngestionManifest
 from backend.layers.processing.process import ProcessMain
 from backend.layers.processing.process_validate import ProcessValidate
 from tests.unit.processing.base_processing_test import BaseProcessingTest
@@ -147,7 +147,7 @@ class ProcessingTest(BaseProcessingTest):
         2. Set a validation message accordingly
         """
         dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
-        manifest = to_manifest(dropbox_uri)
+        manifest = IngestionManifest(anndata=dropbox_uri)
         collection = self.generate_unpublished_collection()
         _, _ = self.business_logic.ingest_dataset(collection.version_id, dropbox_uri, None, None)
 

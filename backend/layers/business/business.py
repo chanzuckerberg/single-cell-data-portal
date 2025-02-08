@@ -6,6 +6,8 @@ from datetime import datetime
 from functools import reduce
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
+from pydantic import ValidationError
+
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.corpora_config import CorporaConfig
 from backend.common.doi import doi_curie_from_link
@@ -78,8 +80,7 @@ from backend.layers.common.entities import (
 from backend.layers.common.helpers import (
     get_published_at_and_collection_version_id_else_not_found,
 )
-from backend.layers.common.ingestion_manifest import get_validator as get_ingestion_manifest_validator
-from backend.layers.common.ingestion_manifest import to_manifest
+from backend.layers.common.ingestion_manifest import IngestionManifest
 from backend.layers.common.regex import S3_URI_REGEX
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
@@ -114,14 +115,7 @@ class BusinessLogic(BusinessLogicInterface):
         self.step_function_provider = step_function_provider
         self.s3_provider = s3_provider
         self.uri_provider = uri_provider
-        self._ingestion_manifest_validator = None
         super().__init__()
-
-    @property
-    def ingestion_manifest_validator(self):
-        if self._ingestion_manifest_validator is None:
-            self._ingestion_manifest_validator = get_ingestion_manifest_validator()
-        return self._ingestion_manifest_validator
 
     @staticmethod
     def generate_permanent_url(dataset_version_id: DatasetVersionId, asset_type: DatasetArtifactType):
@@ -505,7 +499,8 @@ class BusinessLogic(BusinessLogicInterface):
         dataset = self.database_provider.get_dataset_version(dataset_version_id)
         if dataset.status.processing_status != expected_status:
             raise DatasetInWrongStatusException(
-                f"Dataset {dataset_version_id.id} processing status must be {expected_status.name} but is {dataset.status.processing_status}."
+                f"Dataset {dataset_version_id.id} processing status must be {expected_status.name} but is "
+                f"{dataset.status.processing_status}."
             )
         return dataset
 
@@ -560,7 +555,11 @@ class BusinessLogic(BusinessLogicInterface):
         Creates a canonical dataset and starts its ingestion by invoking the step function
         If `size` is not provided, it will be inferred automatically
         """
-        manifest = to_manifest(url)  # TODO: remove if already in manifest format
+        try:
+            manifest = IngestionManifest(anndata=url)  # TODO: remove if already in manifest format
+        except ValidationError as e:
+            raise InvalidIngestionManifestException("Ingestion manifest is invalid.", errors=e.errors()) from e
+
         logger.info(
             {
                 "message": "ingesting dataset",
@@ -569,9 +568,6 @@ class BusinessLogic(BusinessLogicInterface):
                 "current_dataset_version_id": current_dataset_version_id,
             }
         )
-        errors = [e.message for e in self.ingestion_manifest_validator.iter_errors(manifest)]
-        if errors:
-            raise InvalidIngestionManifestException("Ingestion manifest is invalid.", errors=errors)
         # TODO: validate all uris in the manifest
         # TODO: replace the uris with the actual uri if a uri to an existing h5ad or fragments file is provided
         if not self.uri_provider.validate(url):
@@ -642,7 +638,7 @@ class BusinessLogic(BusinessLogicInterface):
         # Starts the step function process
         if start_step_function:
             self.step_function_provider.start_step_function(
-                collection_version_id, new_dataset_version.version_id, manifest
+                collection_version_id, new_dataset_version.version_id, manifest.model_dump_json()
             )
 
         return (new_dataset_version.version_id, new_dataset_version.dataset_id)
@@ -730,7 +726,8 @@ class BusinessLogic(BusinessLogicInterface):
         self, owner: str = None
     ) -> List[CollectionVersionWithPrivateDatasets]:
         """
-        Returns collection versions with their datasets for private collections. Only private collections with datasets, or
+        Returns collection versions with their datasets for private collections. Only private collections with
+        datasets, or
         unpublished revisions with new or updated datasets are returned; unpublished revisions with no new datasets, and
         no changed datasets are not returned.
 
@@ -1075,15 +1072,18 @@ class BusinessLogic(BusinessLogicInterface):
             if canonical_datasets != version_datasets:
                 has_dataset_revisions = True
 
-        # Check Crossref for updates in publisher metadata since last publish of revision, or since private collection was created.
-        # Raise exception if DOI has moved from pre-print to published, forcing curators to re-publish the collection once corresponding
+        # Check Crossref for updates in publisher metadata since last publish of revision, or since private
+        # collection was created.
+        # Raise exception if DOI has moved from pre-print to published, forcing curators to re-publish the collection
+        # once corresponding
         # artifacts update is complete.
         last_action_at = date_of_last_publish if is_revision else version.created_at
         doi_update = self._update_crossref_metadata(version, last_action_at)
         if doi_update:
             raise CollectionPublishException(
                 [
-                    f"DOI was updated from {doi_update[0]} to {doi_update[1]} requiring updates to corresponding artifacts. "
+                    f"DOI was updated from {doi_update[0]} to {doi_update[1]} requiring updates to corresponding "
+                    f"artifacts. "
                     "Retry publish once artifact updates are complete."
                 ]
             )
@@ -1213,11 +1213,14 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Call Crossref for the latest publisher metadata and:
         - if a DOI has moved from pre-print to published, trigger update to collection (and artifacts), otherwise,
-        - if Crossref has been updated since last publish of revision or since private collection was created, update collection
+        - if Crossref has been updated since last publish of revision or since private collection was created,
+        update collection
           version publisher metadata.
 
-        :param collection_version_id: The collection version (either a revision or a private collection) to check publisher updates for.
-        :param last_action_at: The originally published at or revised at date of revision, or the created at date of a private collection.
+        :param collection_version_id: The collection version (either a revision or a private collection) to check
+        publisher updates for.
+        :param last_action_at: The originally published at or revised at date of revision, or the created at date of
+        a private collection.
         :return: Tuple of current DOI and DOI returned from Crossref if DOI has changed, otherwise None.
         """
         # Get the DOI from the collection version metadata; exit if no DOI.
@@ -1234,7 +1237,6 @@ class BusinessLogic(BusinessLogicInterface):
         # Handle change in publisher metadata from pre-print to published.
         crossref_doi = f"https://doi.org/{crossref_doi_curie}"
         if crossref_doi != link_doi.uri:
-
             # Set the DOI in the collection version metadata links to be the returned DOI and update collection
             # version (subsequently triggering update of artifacts).
             updated_links = [Link(link.name, link.type, crossref_doi) if link.type == "DOI" else link for link in links]

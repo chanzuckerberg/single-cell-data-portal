@@ -14,8 +14,3 @@ class IngestionManifest(BaseModel):
 
     anndata: HttpUrl
     atac_seq_fragment: Optional[HttpUrl] = None  # Optional field
-
-
-def to_manifest(anndata: str, atac_seq_fragment: str = None) -> IngestionManifest:
-    manifest = IngestionManifest(anndata=anndata, atac_seq_fragment=atac_seq_fragment)
-    return manifest

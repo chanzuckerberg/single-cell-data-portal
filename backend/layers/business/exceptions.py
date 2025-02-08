@@ -91,7 +91,7 @@ class InvalidIngestionManifestException(DatasetIngestException):
     """
 
     def __init__(self, message: str, errors: Optional[List[str]] = None) -> None:
-        self.errors: Optional[List[str]] = errors
+        self.errors: Optional[List[dict]] = errors
         self.message = message
         super().__init__()
 
