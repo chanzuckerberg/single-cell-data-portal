@@ -7,15 +7,14 @@ import pandas
 from dask.array import from_array
 
 from backend.layers.common.entities import OntologyTermId, SpatialMetadata, TissueOntologyTermId
-from backend.layers.processing.process_validate import ProcessValidate
-from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
+from backend.layers.processing.process_add_labels import ProcessAddLabels
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 
 class TestProcessingValidate(BaseProcessingTest):
     def setUp(self):
         super().setUp()
-        self.pdv = ProcessValidate(self.business_logic, self.uri_provider, self.s3_provider, SchemaValidatorProvider())
+        self.pdv = ProcessAddLabels(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
 
     def test_extract_metadata(self):
         df = pandas.DataFrame(

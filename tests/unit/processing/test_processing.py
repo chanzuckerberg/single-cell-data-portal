@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from backend.layers.common.entities import (
     DatasetConversionStatus,
@@ -6,6 +6,7 @@ from backend.layers.common.entities import (
     DatasetUploadStatus,
     DatasetValidationStatus,
 )
+from backend.layers.common.ingestion_manifest import to_manifest
 from backend.layers.processing.process import ProcessMain
 from backend.layers.processing.process_cxg import ProcessCxg
 from tests.unit.processing.base_processing_test import BaseProcessingTest
@@ -65,25 +66,26 @@ class ProcessingTest(BaseProcessingTest):
             self.assertTrue(cxg_artifact, f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/")
 
     @patch("anndata.read_h5ad")
-    @patch("backend.layers.processing.process_validate.ProcessValidate.populate_dataset_citation")
-    @patch("backend.layers.processing.process_validate.ProcessValidate.extract_metadata")
+    @patch("backend.layers.processing.process_add_labels.ProcessAddLabels.populate_dataset_citation")
+    @patch("backend.layers.processing.process_add_labels.ProcessAddLabels.extract_metadata")
     @patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg")
     def test_process_all(self, mock_cxg, mock_extract_h5ad, mock_dataset_citation, mock_read_h5ad):
         mock_cxg.return_value = "local.cxg"
 
         dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        manifest = to_manifest(dropbox_uri)
         collection = self.generate_unpublished_collection()
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
             collection.version_id, dropbox_uri, None, None
         )
 
         pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
-        for step_name in ["validate", "cxg"]:
+        for step_name in ["validate_anndata", "add_labels", "cxg"]:
             assert pm.process(
                 collection.version_id,
                 dataset_version_id,
                 step_name,
-                dropbox_uri,
+                manifest,
                 "fake_bucket_name",
                 "fake_datasets_bucket",
                 "fake_cxg_bucket",
