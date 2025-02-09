@@ -26,11 +26,11 @@ class StepFunctionProvider(StepFunctionProviderInterface):
         self.client = boto3.client("stepfunctions")
 
     def start_step_function(
-        self, version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, manifest: str
+        self, version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, manifest: dict
     ) -> None:
         """
-        Starts a step function that will ingest the dataset `dataset_version_id` using the artifact
-        located at `url`
+        Starts a step function that will ingest the dataset `dataset_version_id` and all artifact specified in the
+        manifest.
         """
         input_parameters = {
             "collection_version_id": version_id.id,
