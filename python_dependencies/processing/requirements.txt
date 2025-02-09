@@ -1,8 +1,8 @@
-anndata==0.10.8
+anndata==0.11.2
 awscli
 boto3>=1.11.17
-botocore>=1.14.17
-cellxgene-schema
+git+https://github.com/chanzuckerberg/single-cell-curation/@nayib/test-anndata-0-11-migration#subdirectory=cellxgene_schema_cli
+dask==2024.12.0
 dataclasses-json
 ddtrace==2.1.4
 numba==0.59.1
@@ -11,7 +11,7 @@ pandas>2,<3
 psutil>=5.9.0
 psycopg2-binary==2.*
 pyarrow>=1.0
-pydantic>=2.5,<3
+pydantic<3
 python-json-logger
 pyvips==2.2.2
 requests>=2.22.0
