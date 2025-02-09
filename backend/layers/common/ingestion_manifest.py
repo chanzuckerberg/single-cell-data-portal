@@ -1,18 +1,18 @@
 import re
 from typing import Optional, Union
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import AnyUrl, BaseModel, HttpUrl
 
 
-class S3Path(BaseModel):
+class S3Path(AnyUrl):
     """Pydantic Model for S3 URLs
 
     Copied from https://gist.github.com/rajivnarayan/c38f01b89de852b3e7d459cfde067f3f
     # TODO consolidate with backend/common/utils/dl_sources/uri.py
     """
 
-    # https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
-    _s3_pattern = re.compile(
+    allowed_schemes = {"s3"}
+    pattern = re.compile(
         r"^s3://"
         r"(?=[a-z0-9])"  # Bucket name must start with a letter or digit
         r"(?!(^xn--|sthree-|sthree-configurator|.+-s3alias$))"  # Bucket name must not start with xn--, sthree-, sthree-configurator or end with -s3alias
@@ -23,7 +23,6 @@ class S3Path(BaseModel):
         r"(?<!-$)"  # Bucket name must not end with a hyphen
         r"(/([a-zA-Z0-9._-]+/?)*)?$"  # key naming constraints
     )
-    url: str = Field(..., strip_whitespace=True, pattern=_s3_pattern, min_length=8, max_length=1023)
 
 
 class IngestionManifest(BaseModel):

@@ -16,7 +16,7 @@ gunicorn[gevent]==22.0.0
 matplotlib>=3.6.3, <3.7 # 3.7.0 isn't compatible with scanpy: https://github.com/scverse/scanpy/issues/2411
 psutil>=5.9.5, <6
 psycopg2-binary==2.*
-pydantic<3
+pydantic>=2.5,<3
 python-jose[cryptography]>=3.1.0
 python-json-logger
 requests>=2.22.0
