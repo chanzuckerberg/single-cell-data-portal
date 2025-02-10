@@ -934,7 +934,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = deepcopy(dataset_version.status)
-            dataset_version_status["validation_message"] = validation_message
+            dataset_version_status["validation_message"] = validation_message  # TODO append message.
             dataset_version.status = dataset_version_status
 
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:

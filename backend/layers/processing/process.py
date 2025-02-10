@@ -23,9 +23,10 @@ from backend.layers.processing.exceptions import (
     ValidationFailed,
 )
 from backend.layers.processing.logger import configure_logging
+from backend.layers.processing.process_add_labels import ProcessAddLabels
 from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_logic import ProcessingLogic
-from backend.layers.processing.process_validate import ProcessValidate
+from backend.layers.processing.process_validate_h5ad import ProcessValidateATACSEQ, ProcessValidateH5AD
 from backend.layers.processing.schema_migration import SchemaMigrate
 from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
 from backend.layers.thirdparty.schema_validator_provider import (
@@ -42,7 +43,7 @@ class ProcessMain(ProcessingLogic):
     Main class for the dataset pipeline processing
     """
 
-    process_validate: ProcessValidate
+    process_validate_h5ad: ProcessValidateH5AD
     process_cxg: ProcessCxg
 
     def __init__(
@@ -57,7 +58,13 @@ class ProcessMain(ProcessingLogic):
         self.uri_provider = uri_provider
         self.s3_provider = s3_provider
         self.schema_validator = schema_validator
-        self.process_validate = ProcessValidate(
+        self.process_validate_h5ad = ProcessValidateH5AD(
+            self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
+        )
+        self.process_validate_atac_seq = ProcessValidateATACSEQ(
+            self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
+        )
+        self.process_add_labels = ProcessAddLabels(
             self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
         )
         self.process_cxg = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
@@ -98,9 +105,18 @@ class ProcessMain(ProcessingLogic):
         """
         self.logger.info(f"Processing dataset version {dataset_version_id}", extra={"step_name": step_name})
         try:
-            if step_name == "validate":
-                self.process_validate.process(
-                    collection_version_id, dataset_version_id, manifest.anndata, artifact_bucket, datasets_bucket
+            if step_name == "validate_anndata":
+                self.process_validate_h5ad.process(dataset_version_id, manifest, artifact_bucket)
+            elif step_name == "validate_atac_seq":
+                self.process_validate_atac_seq.process(
+                    collection_version_id,
+                    dataset_version_id,
+                    manifest,
+                    datasets_bucket,
+                )
+            elif step_name == "add_labels":
+                self.process_add_labels.process(
+                    collection_version_id, dataset_version_id, artifact_bucket, datasets_bucket
                 )
             elif step_name == "cxg":
                 self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket)

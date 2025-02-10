@@ -24,20 +24,20 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "ApplyDefaults": {
         "Type": "Pass",
-        "Next": "Validate",
+        "Next": "ValidateAnndata",
         "Parameters": {
           "args.$": "States.JsonMerge($.inputDefaults, $$.Execution.Input, false)"
         },
         "ResultPath": "$.withDefaults",
         "OutputPath": "$.withDefaults.args"
       },
-      "Validate": {
+      "ValidateAnndata": {
         "Type": "Task",
         "Resource": "arn:aws:states:::batch:submitJob.sync",
-        "Next": "Cxg",
+        "Next": "AddLabels",
         "Parameters": {
           "JobDefinition":"${var.job_definition_arn}",
-          "JobName": "validate",
+          "JobName": "validate_anndata",
           "JobQueue.$": "$.job_queue",
           "ContainerOverrides": {
             "Environment": [
@@ -55,7 +55,50 @@ resource "aws_sfn_state_machine" "state_machine" {
               },
               {
                 "Name": "STEP_NAME",
-                "Value": "validate"
+                "Value": "validate_anndata"
+              }
+            ]
+          }
+        },
+        "ResultPath": null,
+        "TimeoutSeconds": ${local.h5ad_timeout},
+        "Retry": [ {
+            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 7,
+            "BackoffRate": 5
+        } ],
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "HandleErrors",
+            "ResultPath": "$.error"
+          }
+        ]
+      },
+      "AddLabels": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::batch:submitJob.sync",
+        "Next": "Cxg",
+        "Parameters": {
+          "JobDefinition": "${var.job_definition_arn}",
+          "JobName": "add_labels",
+          "JobQueue.$": "$.job_queue",
+          "ContainerOverrides": {
+            "Environment": [
+              {
+                "Name": "DATASET_VERSION_ID",
+                "Value.$": "$.dataset_version_id"
+              },
+              {
+                "Name": "COLLECTION_VERSION_ID",
+                "Value.$": "$.collection_version_id"
+              },
+              {
+                "Name": "STEP_NAME",
+                "Value": "validate_anndata"
               }
             ]
           }

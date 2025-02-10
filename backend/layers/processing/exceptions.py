@@ -17,6 +17,10 @@ class ValidationFailed(ProcessingException):
     errors: List[str]
 
 
+class AddLabelsFailed(ProcessingException):
+    errors: List[str]
+
+
 class ProcessingFailed(ProcessingException):
     pass
 

@@ -67,6 +67,7 @@ class TestProcessValidateH5AD(BaseProcessingTest):
 
         """
         dropbox_uri = "https://www.dropbox.com/s/fake_location/test.h5ad?dl=0"
+
         collection = self.generate_unpublished_collection()
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
             collection.version_id, dropbox_uri, None, None
@@ -81,7 +82,7 @@ class TestProcessValidateH5AD(BaseProcessingTest):
 
         pdv = ProcessValidateH5AD(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
         pdv.download_from_source_uri = Mock(return_value=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME)
-        pdv.process(dataset_version_id, IngestionManifest(anndata="fake_uri"), "fake_bucket_name")
+        pdv.process(collection.version_id, dataset_version_id, "fake_uri", "fake_bucket_name")
         status = self.business_logic.get_dataset_status(dataset_version_id)
         self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
         self.assertEqual(status.upload_status, DatasetConversionStatus.UPLOADED)
