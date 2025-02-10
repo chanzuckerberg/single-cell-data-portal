@@ -34,5 +34,5 @@ class IngestionManifest(BaseModel):
     json_output = data_obj.model_dump_json(indent=2)
     """
 
-    anndata: Union[HttpUrl, S3Path]
-    atac_seq_fragment: Optional[Union[HttpUrl, S3Path]] = None  # Optional field
+    anndata: Union[HttpUrl, S3Url]
+    atac_seq_fragment: Optional[Union[HttpUrl, S3Url]] = None  # Optional field
