@@ -1,1 +1,0 @@
-WARNING  matrix_utils:matrix_utils.py:71 noncanonical data found in X; converting to canonical format using sum_duplicates.
