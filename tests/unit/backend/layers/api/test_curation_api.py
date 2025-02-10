@@ -2853,20 +2853,15 @@ class TestPutLink(BaseAPIPortalTest):
         for auth_type, header in headers:
             with self.subTest(f"{auth_type}, unpublished collection"):
                 dataset = self.generate_dataset(
-                    statuses=[
-                        DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)
-                    ],
+                    statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
                 )
                 _test_create(dataset.collection_id, dataset.dataset_id, header)
-
 
             with self.subTest(f"{auth_type}, revision"):
                 collection_id = self.generate_published_collection().collection_id
                 revision = self.generate_revision(collection_id)
                 dataset = self.generate_dataset(
-                    statuses=[
-                        DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)
-                    ],
+                    statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
                     collection_version=revision,
                 )
                 _test_create(revision.version_id, dataset.dataset_id, header)
@@ -2885,7 +2880,6 @@ class TestPutLink(BaseAPIPortalTest):
                 headers=headers,
             )
             self.assertEqual(202, response.status_code)
-
 
         headers = [("owner", self.make_owner_header()), ("super curator", self.make_super_curator_header())]
         for auth_type, header in headers:
