@@ -4,7 +4,7 @@ from typing import Optional, Union
 from pydantic import AnyUrl, BaseModel, HttpUrl
 
 
-class S3Path(AnyUrl):
+class S3Url(AnyUrl):
     """Pydantic Model for S3 URLs
 
     Copied from https://gist.github.com/rajivnarayan/c38f01b89de852b3e7d459cfde067f3f
