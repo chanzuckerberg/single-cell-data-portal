@@ -16,7 +16,7 @@ class ProcessingTest(BaseProcessingTest):
     def test_process_cxg_success(self):
         collection = self.generate_unpublished_collection()
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
-            collection.version_id, "nothing", None, None
+            collection.version_id, "http://fake.url", None, None
         )
 
         with patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg") as mock:
@@ -38,7 +38,7 @@ class ProcessingTest(BaseProcessingTest):
     def test_reprocess_cxg_success(self):
         collection = self.generate_unpublished_collection()
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
-            collection.version_id, "nothing", None, None
+            collection.version_id, "http://fake.url", None, None
         )
 
         with patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg") as mock:

@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 from typing import Optional
@@ -14,6 +13,7 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersionId,
 )
+from backend.layers.common.ingestion_manifest import IngestionManifest
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.processing.exceptions import (
     ConversionFailed,
@@ -88,7 +88,7 @@ class ProcessMain(ProcessingLogic):
         collection_version_id: Optional[CollectionVersionId],
         dataset_version_id: DatasetVersionId,
         step_name: str,
-        manifest: Optional[dict],
+        manifest: Optional[IngestionManifest],
         artifact_bucket: Optional[str],
         datasets_bucket: Optional[str],
         cxg_bucket: Optional[str],
@@ -100,7 +100,7 @@ class ProcessMain(ProcessingLogic):
         try:
             if step_name == "validate":
                 self.process_validate.process(
-                    collection_version_id, dataset_version_id, manifest["anndata"], artifact_bucket, datasets_bucket
+                    collection_version_id, dataset_version_id, manifest.anndata, artifact_bucket, datasets_bucket
                 )
             elif step_name == "cxg":
                 self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket)
@@ -147,7 +147,8 @@ class ProcessMain(ProcessingLogic):
         else:
             dataset_version_id = os.environ["DATASET_VERSION_ID"]
             collection_version_id = os.environ.get("COLLECTION_VERSION_ID")
-            manifest = json.loads(os.environ.get("MANIFEST"))
+            if manifest := os.environ.get("MANIFEST"):
+                manifest = IngestionManifest.model_validate_json(manifest)
             artifact_bucket = os.environ.get("ARTIFACT_BUCKET")
             datasets_bucket = os.environ.get("DATASETS_BUCKET")
             cxg_bucket = os.environ.get("CELLXGENE_BUCKET")

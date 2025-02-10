@@ -87,7 +87,7 @@ class ProcessValidate(ProcessingLogic):
 
         # Download the original dataset from Dropbox
         local_filename = self.download_from_source_uri(
-            source_uri=dataset_uri,
+            source_uri=str(dataset_uri),
             local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
         )
 
