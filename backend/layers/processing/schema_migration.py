@@ -294,8 +294,9 @@ class SchemaMigrate(ProcessingLogic):
             self._store_sfn_response("report/errors", collection_version_id, errors)
             # clean up artifacts for any now-orphaned, rolled back datasets
             if rolled_back_datasets:
-                # TODO: replace with async job to delete orphaned dataset version DB rows + artifacts
-                self.business_logic.delete_dataset_versions(rolled_back_datasets)
+                self.business_logic.lambda_provider.invoke_dataset_version_cleanup_handler(
+                    [dataset.version_id for dataset in rolled_back_datasets]
+                )
         return errors
 
     def _store_sfn_response(self, directory: str, file_name: str, response: Dict[str, str]):
