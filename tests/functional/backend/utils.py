@@ -87,8 +87,8 @@ def upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url
     assert res.status_code == requests.codes.accepted
 
     keep_trying = True
-    expected_upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
-    expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADING", "UPLOADED", "NA", None]
+    expected_upload_statuses = ["WAITING", "UPLOADED"]
+    expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADED", "NA", None]
     timer = time.time()
     while keep_trying:
         res = session.get(f"{api_url}/dp/v1/datasets/{dataset_id}/status", headers=headers)

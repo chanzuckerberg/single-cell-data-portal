@@ -92,7 +92,6 @@ class ProcessValidate(ProcessingLogic):
         )
 
         # Upload the original dataset to the artifact bucket
-        self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)
         self.create_artifact(
             local_filename,
             DatasetArtifactType.RAW_H5AD,
