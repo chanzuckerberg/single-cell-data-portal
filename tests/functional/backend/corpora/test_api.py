@@ -44,7 +44,7 @@ def test_get_collections(session, api_url):
 
 
 @skip_creation_on_prod
-def test_collection_flow(session, api_url, curator_cookie, upload_dataset, collection_data):
+def test_collection_flow(session, api_url, curator_cookie, upload_dataset, upload_dataset_metadata, collection_data):
     # create collection
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     res = session.post(f"{api_url}/dp/v1/collections", data=json.dumps(collection_data), headers=headers)
@@ -79,6 +79,19 @@ def test_collection_flow(session, api_url, curator_cookie, upload_dataset, colle
         assert updated_data[key] == data[key]
 
     upload_dataset(collection_id, DATASET_URI)
+
+    # update collection DOI and await dataset update
+    updated_data = {
+        "contact_email": "person@random.com",
+        "contact_name": "Doctor Who",
+        "description": "These are different words",
+        "links": [
+            {"link_name": "The Source", "link_type": "DATA_SOURCE", "link_url": "https://datasource.com"},
+            {"link_name": "", "link_type": "DOI", "link_url": "10.1093/nar/gkae1142"},
+        ],
+        "name": "lots of cells",
+    }
+    upload_dataset_metadata(collection_id, updated_data)
 
     # make collection public
     body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}

@@ -92,6 +92,10 @@ class S3Provider(S3ProviderInterface):
             ExtraArgs=extra_args,
         )
 
+    def copy_file(self, src_key: str, src_bucket: str, dst_key: str, dst_bucket: str):
+        copy_source = {"Bucket": src_bucket, "Key": src_key}
+        self.client.copy_object(CopySource=copy_source, Bucket=dst_bucket, Key=dst_key)
+
     def delete_files(self, bucket_name: str, object_keys: List[str]) -> None:
         """
         Deletes the objects `object_keys` from bucket `bucket_name`
