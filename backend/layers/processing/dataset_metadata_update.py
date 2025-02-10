@@ -62,7 +62,7 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
         raw_h5ad_filename = self.download_from_source_uri(
-            source_uri=raw_h5ad_uri,
+            source_uri=str(raw_h5ad_uri),
             local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
         )
         try:
@@ -97,7 +97,7 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         metadata_update: DatasetArtifactMetadataUpdate,
     ):
         h5ad_filename = self.download_from_source_uri(
-            source_uri=h5ad_uri,
+            source_uri=str(h5ad_uri),
             local_path=CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME,
         )
         try:
