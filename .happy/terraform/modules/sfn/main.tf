@@ -42,8 +42,8 @@ resource "aws_sfn_state_machine" "state_machine" {
           "ContainerOverrides": {
             "Environment": [
               {
-                "Name": "DROPBOX_URL",
-                "Value.$": "$.url"
+                "Name": "MANIFEST",
+                "Value.$": "$.manifest"
               },
               {
                 "Name": "DATASET_VERSION_ID",

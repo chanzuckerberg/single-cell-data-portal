@@ -13,6 +13,7 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersionId,
 )
+from backend.layers.common.ingestion_manifest import IngestionManifest
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.processing.exceptions import (
     ConversionFailed,
@@ -87,7 +88,7 @@ class ProcessMain(ProcessingLogic):
         collection_version_id: Optional[CollectionVersionId],
         dataset_version_id: DatasetVersionId,
         step_name: str,
-        dropbox_uri: Optional[str],
+        manifest: Optional[IngestionManifest],
         artifact_bucket: Optional[str],
         datasets_bucket: Optional[str],
         cxg_bucket: Optional[str],
@@ -99,7 +100,7 @@ class ProcessMain(ProcessingLogic):
         try:
             if step_name == "validate":
                 self.process_validate.process(
-                    collection_version_id, dataset_version_id, dropbox_uri, artifact_bucket, datasets_bucket
+                    collection_version_id, dataset_version_id, manifest.anndata, artifact_bucket, datasets_bucket
                 )
             elif step_name == "cxg":
                 self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket)
@@ -146,7 +147,8 @@ class ProcessMain(ProcessingLogic):
         else:
             dataset_version_id = os.environ["DATASET_VERSION_ID"]
             collection_version_id = os.environ.get("COLLECTION_VERSION_ID")
-            dropbox_uri = os.environ.get("DROPBOX_URL")
+            if manifest := os.environ.get("MANIFEST"):
+                manifest = IngestionManifest.model_validate_json(manifest)
             artifact_bucket = os.environ.get("ARTIFACT_BUCKET")
             datasets_bucket = os.environ.get("DATASETS_BUCKET")
             cxg_bucket = os.environ.get("CELLXGENE_BUCKET")
@@ -156,7 +158,7 @@ class ProcessMain(ProcessingLogic):
                 ),
                 dataset_version_id=DatasetVersionId(dataset_version_id),
                 step_name=step_name,
-                dropbox_uri=dropbox_uri,
+                manifest=manifest,
                 artifact_bucket=artifact_bucket,
                 datasets_bucket=datasets_bucket,
                 cxg_bucket=cxg_bucket,

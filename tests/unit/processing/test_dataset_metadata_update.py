@@ -68,7 +68,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id=collection_version_id,
-            url=None,
+            url="http://fake.url",
             file_size=0,
             current_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
@@ -120,7 +120,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id=collection_version_id,
-            url=None,
+            url="http://fake.url",
             file_size=0,
             current_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
@@ -166,7 +166,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id=collection_version_id,
-            url=None,
+            url="http://fake.url",
             file_size=0,
             current_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
@@ -240,7 +240,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id=collection_version_id,
-            url=None,
+            url="http://fake.url",
             file_size=0,
             current_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
@@ -272,7 +272,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id=collection_version_id,
-            url=None,
+            url="http://fake.url",
             file_size=0,
             current_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
@@ -310,7 +310,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id=collection_version_id,
-            url=None,
+            url="http://fake.url",
             file_size=0,
             current_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
@@ -341,7 +341,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id=collection_version_id,
-            url=None,
+            url="http://fake.url",
             file_size=0,
             current_dataset_version_id=current_dataset_version_id,
             start_step_function=False,
@@ -376,7 +376,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
         current_dataset_version = collection_version.datasets[0]
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id=collection_version.version_id,
-            url=None,
+            url="http://fake.url",
             file_size=0,
             current_dataset_version_id=current_dataset_version.version_id,
             start_step_function=False,
@@ -421,7 +421,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
         current_dataset_version = collection_version.datasets[0]
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             collection_version_id=collection_version.version_id,
-            url=None,
+            url="http://fake.url",
             file_size=0,
             current_dataset_version_id=current_dataset_version.version_id,
             start_step_function=False,
@@ -480,7 +480,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
             current_dataset_version = collection_version.datasets[0]
             new_dataset_version_id, _ = self.business_logic.ingest_dataset(
                 collection_version_id=collection_version.version_id,
-                url=None,
+                url="http://fake.url",
                 file_size=0,
                 current_dataset_version_id=current_dataset_version.version_id,
                 start_step_function=False,
@@ -545,7 +545,7 @@ class TestDatasetMetadataUpdaterWorker(BaseProcessingTest):
             current_dataset_version = collection_version.datasets[0]
             new_dataset_version_id, _ = self.business_logic.ingest_dataset(
                 collection_version_id=collection_version.version_id,
-                url=None,
+                url="http://fake.url",
                 file_size=0,
                 current_dataset_version_id=current_dataset_version.version_id,
                 start_step_function=False,
