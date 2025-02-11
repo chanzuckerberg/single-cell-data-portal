@@ -194,6 +194,11 @@ resource "aws_sfn_state_machine" "state_machine" {
             "BackoffRate": 2.0
         } ],
         "ResultPath": null,
+        "Next": "RaiseError"
+      },
+      "RaiseError": {
+        "Type": "Fail",
+        "Cause": "Failed to ingest dataset.",
         "End": true
       }
     }
