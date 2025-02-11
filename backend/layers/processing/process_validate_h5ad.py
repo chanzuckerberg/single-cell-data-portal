@@ -1,7 +1,6 @@
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
-    CollectionVersionId,
     DatasetArtifactType,
     DatasetConversionStatus,
     DatasetProcessingStatus,
@@ -133,35 +132,3 @@ class ProcessValidateH5AD(ProcessingLogic):
 
         # Validate and label the dataset
         self.validate_h5ad_file(dataset_version_id, local_filename)
-
-
-class ProcessValidateATACSEQ(ProcessingLogic):
-    def __init__(
-        self,
-        business_logic: BusinessLogicInterface,
-        uri_provider: UriProviderInterface,
-        s3_provider: S3ProviderInterface,
-        schema_validator: SchemaValidatorProviderInterface,
-    ) -> None:
-        super().__init__()
-        self.business_logic = business_logic
-        self.uri_provider = uri_provider
-        self.s3_provider = s3_provider
-        self.schema_validator = schema_validator
-
-    def process(
-        self,
-        collection_version_id: CollectionVersionId,
-        dataset_version_id: DatasetVersionId,
-        manifest: IngestionManifest,
-        datasets_bucket: str,
-    ):
-        """
-
-        :param collection_version_id:
-        :param dataset_version_id:
-        :param manifest:
-        :param datasets_bucket:
-        :return:
-        """
-        pass

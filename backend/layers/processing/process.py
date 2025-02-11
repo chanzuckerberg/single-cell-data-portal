@@ -26,7 +26,7 @@ from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_add_labels import ProcessAddLabels
 from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_logic import ProcessingLogic
-from backend.layers.processing.process_validate_h5ad import ProcessValidateATACSEQ, ProcessValidateH5AD
+from backend.layers.processing.process_validate_h5ad import ProcessValidateH5AD
 from backend.layers.processing.schema_migration import SchemaMigrate
 from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
 from backend.layers.thirdparty.schema_validator_provider import (
@@ -59,9 +59,6 @@ class ProcessMain(ProcessingLogic):
         self.s3_provider = s3_provider
         self.schema_validator = schema_validator
         self.process_validate_h5ad = ProcessValidateH5AD(
-            self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
-        )
-        self.process_validate_atac_seq = ProcessValidateATACSEQ(
             self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
         )
         self.process_add_labels = ProcessAddLabels(
