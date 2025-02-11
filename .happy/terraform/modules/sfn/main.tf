@@ -174,7 +174,7 @@ resource "aws_sfn_state_machine" "state_machine" {
             "MaxAttempts": 3,
             "BackoffRate": 2.0
         } ],
-        "Next": "CheckForErrors",
+        "End": true,
         "ResultPath": null
       },
       "HandleErrors": {
