@@ -198,8 +198,7 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "RaiseError": {
         "Type": "Fail",
-        "Cause": "Failed to ingest dataset.",
-        "End": true
+        "Cause": "Failed to ingest dataset."
       }
     }
 }
