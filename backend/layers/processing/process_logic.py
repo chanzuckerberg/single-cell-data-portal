@@ -99,7 +99,8 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
                 datasets_s3_uri = self.make_s3_uri(datasets_bucket, key_prefix, key)
                 self.logger.info(f"Uploaded {dataset_version_id}.{artifact_type} to {datasets_s3_uri}")
             self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADED)
-        except Exception:
+        except Exception as e:
+            self.logger.error(e)
             raise ConversionFailed(processing_status_key) from None
 
     def convert_file(

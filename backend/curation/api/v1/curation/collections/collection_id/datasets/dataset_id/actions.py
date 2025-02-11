@@ -1,20 +1,16 @@
-from typing import Tuple
-
 from flask import Response, jsonify, make_response
 
 from backend.common.utils.exceptions import MaxFileSizeExceededException
 from backend.common.utils.http_exceptions import (
     ForbiddenHTTPException,
-    GoneHTTPException,
     InvalidParametersHTTPException,
     MethodNotAllowedException,
     NotFoundHTTPException,
     TooLargeHTTPException,
 )
 from backend.curation.api.v1.curation.collections.common import (
-    get_inferred_collection_version,
+    _get_collection_and_dataset,
     reshape_dataset_for_curation_api,
-    validate_uuid_else_forbidden,
 )
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.exceptions import (
@@ -23,16 +19,12 @@ from backend.layers.business.exceptions import (
     CollectionUpdateException,
     DatasetInWrongStatusException,
     DatasetIsPrivateException,
-    DatasetIsTombstonedException,
     DatasetNotFoundException,
     InvalidMetadataException,
     InvalidURIException,
 )
 from backend.layers.common.entities import (
-    CollectionVersionWithDatasets,
     DatasetArtifactMetadataUpdate,
-    DatasetId,
-    DatasetVersion,
 )
 from backend.portal.api.providers import get_business_logic
 
@@ -47,35 +39,6 @@ def get(collection_id: str, dataset_id: str = None):
 
     response_body = reshape_dataset_for_curation_api(dataset_version, use_canonical_url)
     return make_response(jsonify(response_body), 200)
-
-
-def _get_collection_and_dataset(
-    collection_id: str, dataset_id: str
-) -> Tuple[CollectionVersionWithDatasets, DatasetVersion]:
-    """
-    Get collection and dataset by their ids. Will look up collection by version and canonical id, and dataset by
-    canonical only
-    """
-    validate_uuid_else_forbidden(collection_id)
-    validate_uuid_else_forbidden(dataset_id)
-    collection_version = get_inferred_collection_version(collection_id)
-
-    # Extract the dataset from the dataset list.
-    dataset_version = None
-    for dataset in collection_version.datasets:
-        if dataset.dataset_id.id == dataset_id:
-            dataset_version = dataset
-            break
-        if dataset.version_id.id == dataset_id:
-            raise ForbiddenHTTPException from None
-    if dataset_version is None:
-        try:
-            get_business_logic().get_dataset_version_from_canonical(DatasetId(dataset_id), get_tombstoned=True)
-        except DatasetIsTombstonedException:
-            raise GoneHTTPException() from None
-        raise NotFoundHTTPException() from None
-
-    return collection_version, dataset_version
 
 
 def delete(token_info: dict, collection_id: str, dataset_id: str, delete_published: bool = False):

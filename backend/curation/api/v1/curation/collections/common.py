@@ -12,6 +12,7 @@ from backend.common.utils.http_exceptions import (
 )
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business import BusinessLogic
+from backend.layers.business.exceptions import DatasetIsTombstonedException
 from backend.layers.common.entities import (
     CollectionId,
     CollectionVersion,
@@ -38,6 +39,35 @@ allowed_dataset_asset_types = (DatasetArtifactType.H5AD, DatasetArtifactType.RDS
 
 def get_collections_base_url():
     return CorporaConfig().collections_base_url
+
+
+def _get_collection_and_dataset(
+    collection_id: str, dataset_id: str
+) -> Tuple[CollectionVersionWithDatasets, DatasetVersion]:
+    """
+    Get collection and dataset by their ids. Will look up collection by version and canonical id, and dataset by
+    canonical only
+    """
+    validate_uuid_else_forbidden(collection_id)
+    validate_uuid_else_forbidden(dataset_id)
+    collection_version = get_inferred_collection_version(collection_id)
+
+    # Extract the dataset from the dataset list.
+    dataset_version = None
+    for dataset in collection_version.datasets:
+        if dataset.dataset_id.id == dataset_id:
+            dataset_version = dataset
+            break
+        if dataset.version_id.id == dataset_id:
+            raise ForbiddenHTTPException from None
+    if dataset_version is None:
+        try:
+            get_business_logic().get_dataset_version_from_canonical(DatasetId(dataset_id), get_tombstoned=True)
+        except DatasetIsTombstonedException:
+            raise GoneHTTPException() from None
+        raise NotFoundHTTPException() from None
+
+    return collection_version, dataset_version
 
 
 def extract_dataset_assets(dataset_version: DatasetVersion):

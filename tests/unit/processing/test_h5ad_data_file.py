@@ -8,6 +8,7 @@ import anndata
 import numpy as np
 import tiledb
 from pandas import Categorical, DataFrame, Series
+from scipy import sparse
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.processing.h5ad_data_file import H5ADDataFile
@@ -17,7 +18,10 @@ from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 class TestH5ADDataFile(unittest.TestCase):
     def setUp(self):
         self.sample_anndata = self._create_sample_anndata_dataset()
+        self.sample_anndata_sparse = self.sample_anndata.copy()
+        self.sample_anndata_sparse.X = sparse.csr_matrix((np.random.rand(3, 4).astype(np.float32)), dtype=np.float32)
         self.sample_h5ad_filename = self._write_anndata_to_file(self.sample_anndata)
+        self.sample_sparse_h5ad_filename = self._write_anndata_to_file(self.sample_anndata_sparse)
 
         self.sample_output_directory = path.splitext(self.sample_h5ad_filename)[0] + ".cxg"
         self.dataset_version_id = "test_dataset_version_id"
@@ -40,7 +44,7 @@ class TestH5ADDataFile(unittest.TestCase):
     def test__create_h5ad_data_file__reads_anndata_successfully(self):
         h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
 
-        self.assertTrue((h5ad_file.anndata.X == self.sample_anndata.X).all())
+        self.assertTrue((h5ad_file.anndata.X.compute() == self.sample_anndata.X).all())
         self.assertEqual(
             h5ad_file.anndata.obs.sort_index(inplace=True), self.sample_anndata.obs.sort_index(inplace=True)
         )
@@ -108,16 +112,16 @@ class TestH5ADDataFile(unittest.TestCase):
         self.assertIn("does not exist", str(exception_context.exception))
 
     def test__to_cxg__simple_anndata_no_corpora_and_sparse(self):
-        h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
+        h5ad_file = H5ADDataFile(self.sample_sparse_h5ad_filename)
         h5ad_file.to_cxg(self.sample_output_directory, 100, self.dataset_version_id)
 
-        self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, True)
+        self._validate_cxg_and_h5ad_content_match(self.sample_sparse_h5ad_filename, self.sample_output_directory, True)
 
     def test__to_cxg__simple_anndata_with_corpora_and_sparse(self):
-        h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
+        h5ad_file = H5ADDataFile(self.sample_sparse_h5ad_filename)
         h5ad_file.to_cxg(self.sample_output_directory, 100, self.dataset_version_id)
 
-        self._validate_cxg_and_h5ad_content_match(self.sample_h5ad_filename, self.sample_output_directory, True)
+        self._validate_cxg_and_h5ad_content_match(self.sample_sparse_h5ad_filename, self.sample_output_directory, True)
 
     def test__to_cxg__simple_anndata_no_corpora_and_dense(self):
         h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
@@ -193,8 +197,6 @@ class TestH5ADDataFile(unittest.TestCase):
         # Array locations
         metadata_array_location = f"{cxg_directory}/cxg_group_metadata"
         main_x_array_location = f"{cxg_directory}/X"
-        main_xr_array_location = f"{cxg_directory}/Xr"
-        main_xc_array_location = f"{cxg_directory}/Xc"
         embedding_array_location = f"{cxg_directory}/emb"
         specific_embedding_array_location = f"{self.sample_output_directory}/emb/awesome_embedding"
         obs_array_location = f"{cxg_directory}/obs"
@@ -204,11 +206,7 @@ class TestH5ADDataFile(unittest.TestCase):
         self.assertEqual(tiledb.object_type(cxg_directory), "group")
         self.assertEqual(tiledb.object_type(obs_array_location), "array")
         self.assertEqual(tiledb.object_type(var_array_location), "array")
-        if is_sparse:
-            self.assertEqual(tiledb.object_type(main_xr_array_location), "array")
-            self.assertEqual(tiledb.object_type(main_xc_array_location), "array")
-        else:
-            self.assertEqual(tiledb.object_type(main_x_array_location), "array")
+        self.assertEqual(tiledb.object_type(main_x_array_location), "array")
         self.assertEqual(tiledb.object_type(embedding_array_location), "group")
         self.assertEqual(tiledb.object_type(specific_embedding_array_location), "array")
 
@@ -266,28 +264,16 @@ class TestH5ADDataFile(unittest.TestCase):
             self.assertTrue(np.array_equal(expected_embedding_data, actual_embedding_data))
 
         # Validate X matrix if not column shifted
-        if not has_column_encoding and not is_sparse:
+        if not has_column_encoding:
             expected_x_data = anndata_object.X
             with tiledb.open(main_x_array_location, mode="r") as x_array:
                 if is_sparse:
+                    expected_x_data = expected_x_data.toarray()
                     actual_x_data = np.zeros_like(expected_x_data)
-                    data = x_array[:]
+                    data = x_array[:, :]
                     actual_x_data[data["obs"], data["var"]] = data[""]
                 else:
                     actual_x_data = x_array[:, :]
-                self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
-        elif not has_column_encoding:
-            expected_x_data = anndata_object.X
-            with tiledb.open(main_xr_array_location, mode="r") as x_array:
-                actual_x_data = np.zeros_like(expected_x_data)
-                data = x_array[:]
-                actual_x_data[data["obs"], data["var"]] = data[""]
-                self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
-
-            with tiledb.open(main_xc_array_location, mode="r") as x_array:
-                actual_x_data = np.zeros_like(expected_x_data)
-                data = x_array[:]
-                actual_x_data[data["obs"], data["var"]] = data[""]
                 self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
 
     def _validate_cxg_var_index_column_match(self, cxg_directory, expected_index_name):
