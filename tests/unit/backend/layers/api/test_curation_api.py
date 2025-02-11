@@ -2769,75 +2769,7 @@ class TestPostRevision(BaseAPIPortalTest):
     return_value={"size": 1, "name": "file.h5ad"},
 )
 @patch("backend.layers.thirdparty.step_function_provider.StepFunctionProvider")
-class TestPutManifest(BaseAPIPortalTest):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.good_h5ad_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
-        cls.dummy_h5ad_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
-
-    def test__from_manifest__no_auth(self, *mocks):
-        """
-        Calling PUT /datasets/:dataset_id should fail with 401 Unauthorized if the user is not authenticated
-        """
-        dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)]
-        )
-        body = {"anndata": self.good_h5ad_link}
-        headers = None
-        for id in [dataset.dataset_version_id, dataset.dataset_id]:
-            response = self.app.put(
-                f"/curation/v1/collections/{dataset.collection_id}/datasets/{id}/manifest",
-                json=body,
-                headers=headers,
-            )
-
-            self.assertEqual(401, response.status_code)
-
-    def test__new_from_manifest__OK(self, *mocks):
-        """
-        Calling PUT /datasets/:dataset_id should succeed if a valid link is uploaded by the owner of the collection or
-        a super curator
-        """
-
-        def _test_create(collection_id, dataset_id, headers):
-            body = {"anndata": self.good_h5ad_link}
-            response = self.app.put(
-                f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",
-                json=body,
-                headers=headers,
-            )
-            self.assertEqual(202, response.status_code)
-
-        headers = [("owner", self.make_owner_header()), ("super curator", self.make_super_curator_header())]
-        for auth_type, header in headers:
-            with self.subTest(f"{auth_type}, unpublished collection"):
-                dataset = self.generate_dataset(
-                    statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
-                )
-                _test_create(dataset.collection_id, dataset.dataset_id, header)
-
-            with self.subTest(f"{auth_type}, revision"):
-                collection_id = self.generate_published_collection().collection_id
-                revision = self.generate_revision(collection_id)
-                dataset = self.generate_dataset(
-                    statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
-                    collection_version=revision,
-                )
-                _test_create(revision.version_id, dataset.dataset_id, header)
-
-
-@patch(
-    "backend.common.utils.dl_sources.uri.DropBoxURL.file_info",
-    return_value={"size": 1, "name": "file.h5ad"},
-)
-@patch("backend.layers.thirdparty.step_function_provider.StepFunctionProvider")
-class TestPutLink(BaseAPIPortalTest):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
-        cls.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
+class BasePutTest:
 
     def test__from_link__no_auth(self, *mocks):
         """
@@ -2846,11 +2778,11 @@ class TestPutLink(BaseAPIPortalTest):
         dataset = self.generate_dataset(
             statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)]
         )
-        body = {"link": self.good_link}
+        body = self.good_request_body
         headers = None
-        for id in [dataset.dataset_version_id, dataset.dataset_id]:
+        for dataset_id in [dataset.dataset_version_id, dataset.dataset_id]:
             response = self.app.put(
-                f"/curation/v1/collections/{dataset.collection_id}/datasets/{id}",
+                self.endpoint.format(collection_version_id=dataset.collection_id, dataset_version_id=dataset_id),
                 json=body,
                 headers=headers,
             )
@@ -2866,11 +2798,11 @@ class TestPutLink(BaseAPIPortalTest):
             statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
             publish=True,
         )
-        body = {"link": self.good_link}
+        body = self.good_request_body
         headers = self.make_owner_header()
-        for id in [dataset.dataset_version_id, dataset.dataset_id]:
+        for dataset_id in [dataset.dataset_version_id, dataset.dataset_id]:
             response = self.app.put(
-                f"/curation/v1/collections/{dataset.collection_id}/datasets/{id}",
+                self.endpoint.format(collection_version_id=dataset.collection_id, dataset_version_id=dataset_id),
                 json=body,
                 headers=headers,
             )
@@ -2886,11 +2818,11 @@ class TestPutLink(BaseAPIPortalTest):
         dataset = self.generate_dataset(
             statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
         )
-        body = {"link": self.dummy_link}
+        body = self.dummy_request_body
         headers = self.make_not_owner_header()
-        for id in [dataset.dataset_version_id, dataset.dataset_id]:
+        for dataset_id in [dataset.dataset_version_id, dataset.dataset_id]:
             response = self.app.put(
-                f"/curation/v1/collections/{dataset.collection_id}/datasets/{id}",
+                self.endpoint.format(collection_version_id=dataset.collection_id, dataset_version_id=dataset_id),
                 json=body,
                 headers=headers,
             )
@@ -2904,9 +2836,9 @@ class TestPutLink(BaseAPIPortalTest):
         """
 
         def _test_create(collection_id, dataset_id, headers):
-            body = {"link": self.good_link}
+            body = self.good_request_body
             response = self.app.put(
-                f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}",
+                self.endpoint.format(collection_version_id=collection_id, dataset_version_id=dataset_id),
                 json=body,
                 headers=headers,
             )
@@ -2936,9 +2868,9 @@ class TestPutLink(BaseAPIPortalTest):
         """
 
         def _test_create(collection_id, dataset_id, headers):
-            body = {"link": self.good_link}
+            body = self.good_request_body
             response = self.app.put(
-                f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}",
+                self.endpoint.format(collection_version_id=collection_id, dataset_version_id=dataset_id),
                 json=body,
                 headers=headers,
             )
@@ -2968,10 +2900,12 @@ class TestPutLink(BaseAPIPortalTest):
         """
 
         def _test_create(collection_version_id, dataset_version_id):
-            body = {"link": self.good_link}
+            body = self.good_request_body
             headers = self.make_owner_header()
             response = self.app.put(
-                f"/curation/v1/collections/{collection_version_id}/datasets/{dataset_version_id}",
+                self.endpoint.format(
+                    collection_version_id=collection_version_id, dataset_version_id=dataset_version_id
+                ),
                 json=body,
                 headers=headers,
             )
@@ -2990,6 +2924,34 @@ class TestPutLink(BaseAPIPortalTest):
                 statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
             )
             _test_create(dataset.collection_id, dataset.dataset_version_id)
+
+
+class TestPutLink(BasePutTest, BaseAPIPortalTest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.good_request_body = {"link": "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"}
+        cls.dummy_request_body = {"link": "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"}
+        cls.endpoint = "/curation/v1/collections/{collection_version_id}/datasets/{dataset_version_id}"
+
+
+class TestPutManifest(BasePutTest, BaseAPIPortalTest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.good_request_body = {"anndata": "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"}
+        cls.dummy_request_body = {"anndata": "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"}
+        cls.endpoint = "/curation/v1/collections/{collection_version_id}/datasets/{dataset_version_id}/manifest"
+
+
+class TestPutManifestATAC(TestPutManifest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.good_request_body = {
+            "anndata": "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0",
+            "atat_seq_fragment": "https://www.dropbox.com/scl/fo/kfk8ahs6e109i5puqbdhs/AIe45xJ361JqwH89fwanGwE?dl=0",
+        }
 
 
 class TestAuthToken(BaseAPIPortalTest):
