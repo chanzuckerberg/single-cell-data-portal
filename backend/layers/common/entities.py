@@ -16,7 +16,7 @@ class DatasetStatusKey(str, Enum):
     CXG = "cxg"
     RDS = "rds"
     H5AD = "h5ad"
-    ATAC_SEQ_FRAGMENT = "atac_seq_fragment"
+    ATAC_FRAGMENT = "atac_fragment"
     PROCESSING = "processing"
 
 
@@ -81,8 +81,8 @@ class DatasetArtifactType(str, Enum):
     H5AD = "h5ad"
     RDS = "rds"
     CXG = "cxg"
-    ATAC_FRAGMENT = "atac_seq_fragment"
-    ATAC_FRAGMENT_INDEX = "atac_seq_fragment_index"
+    ATAC_FRAGMENT = "atac_fragment"
+    ATAC_FRAGMENT_INDEX = "atac_fragment_index"
 
 
 class Visibility(Enum):
