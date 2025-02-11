@@ -2776,7 +2776,7 @@ class TestPutManifest(BaseAPIPortalTest):
         cls.good_h5ad_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         cls.dummy_h5ad_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
 
-    def test__from_link__no_auth(self, *mocks):
+    def test__from_manifest__no_auth(self, *mocks):
         """
         Calling PUT /datasets/:dataset_id should fail with 401 Unauthorized if the user is not authenticated
         """
@@ -2793,6 +2793,38 @@ class TestPutManifest(BaseAPIPortalTest):
             )
 
             self.assertEqual(401, response.status_code)
+
+    def test__new_from_manifest__OK(self, *mocks):
+        """
+        Calling PUT /datasets/:dataset_id should succeed if a valid link is uploaded by the owner of the collection or
+        a super curator
+        """
+
+        def _test_create(collection_id, dataset_id, headers):
+            body = {"anndata": self.good_h5ad_link}
+            response = self.app.put(
+                f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",
+                json=body,
+                headers=headers,
+            )
+            self.assertEqual(202, response.status_code)
+
+        headers = [("owner", self.make_owner_header()), ("super curator", self.make_super_curator_header())]
+        for auth_type, header in headers:
+            with self.subTest(f"{auth_type}, unpublished collection"):
+                dataset = self.generate_dataset(
+                    statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
+                )
+                _test_create(dataset.collection_id, dataset.dataset_id, header)
+
+            with self.subTest(f"{auth_type}, revision"):
+                collection_id = self.generate_published_collection().collection_id
+                revision = self.generate_revision(collection_id)
+                dataset = self.generate_dataset(
+                    statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
+                    collection_version=revision,
+                )
+                _test_create(revision.version_id, dataset.dataset_id, header)
 
 
 @patch(
