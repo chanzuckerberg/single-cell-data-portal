@@ -566,7 +566,7 @@ class BusinessLogic(BusinessLogicInterface):
             {
                 "message": "ingesting dataset",
                 "collection_version_id": collection_version_id,
-                "url": manifest,  # TODO: what should the behavior here be for manifest vs url?
+                "manifest": manifest,
                 "current_dataset_version_id": current_dataset_version_id,
             }
         )
