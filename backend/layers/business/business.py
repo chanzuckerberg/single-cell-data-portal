@@ -546,7 +546,7 @@ class BusinessLogic(BusinessLogicInterface):
     def ingest_dataset(
         self,
         collection_version_id: CollectionVersionId,
-        manifest: dict | str,  # TODO: change to manifest
+        url: dict | str,  # TODO: change to manifest
         file_size: Optional[int],
         current_dataset_version_id: Optional[DatasetVersionId],
         start_step_function: bool = True,
@@ -557,13 +557,10 @@ class BusinessLogic(BusinessLogicInterface):
         """
         # Convert old style input to new style
         try:
-            if isinstance(manifest, str):
-                manifest = IngestionManifest(anndata=manifest)
-            else:
-                manifest = IngestionManifest(**manifest)
+            manifest = IngestionManifest(anndata=url) if isinstance(url, str) else IngestionManifest(**url)
         except ValidationError as e:
             raise InvalidIngestionManifestException("Ingestion manifest is invalid.", errors=e.errors()) from e
-        urls = [str(url) for url in manifest.dict(exclude_unset=True).values()]
+        urls = [str(_url) for _url in manifest.dict(exclude_unset=True).values()]
 
         logger.info(
             {
@@ -576,9 +573,9 @@ class BusinessLogic(BusinessLogicInterface):
 
         # TODO: validate all uris in the manifest
         # TODO: replace the uris with the actual uri if a uri to an existing h5ad or fragments file is provided
-        for url in urls:
-            if not self.uri_provider.validate(url):
-                raise InvalidURIException(f"Trying to upload invalid URI: {url}")
+        for _url in urls:
+            if not self.uri_provider.validate(_url):
+                raise InvalidURIException(f"Trying to upload invalid URI: {_url}")
 
         if file_size is None:
             file_info = self.uri_provider.get_file_info(str(manifest.anndata))
