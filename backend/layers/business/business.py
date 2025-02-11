@@ -563,7 +563,7 @@ class BusinessLogic(BusinessLogicInterface):
                 manifest = IngestionManifest(**manifest)
         except ValidationError as e:
             raise InvalidIngestionManifestException("Ingestion manifest is invalid.", errors=e.errors()) from e
-        urls = [str(manifest.anndata)]
+        urls = [str(url) for url in manifest.dict(exclude_unset=True).values()]
 
         logger.info(
             {
