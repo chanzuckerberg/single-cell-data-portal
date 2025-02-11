@@ -153,16 +153,12 @@ resource "aws_sfn_state_machine" "state_machine" {
             "ErrorEquals": [
               "States.ALL"
             ],
-            "Next": "CatchCxgFailure",
+            "Next": "HandleErrors",
             "ResultPath": "$.error"
           }
         ],
         "ResultPath": null,
         "TimeoutSeconds": ${local.cxg_timeout}
-      },
-      "CatchCxgFailure": {
-        "Type": "Pass",
-        "End": true
       },
       "HandleSuccess": {
         "Type": "Task",
@@ -197,43 +193,7 @@ resource "aws_sfn_state_machine" "state_machine" {
             "MaxAttempts": 3,
             "BackoffRate": 2.0
         } ],
-        "Next": "CheckForErrors",
         "ResultPath": null
-      },
-      "CheckForErrors": {
-        "Type": "Choice",
-        "Choices": [
-          {
-            "Variable": "$.error",
-            "IsPresent": true,
-            "Next": "DownloadValidateError"
-          },
-          {
-            "Or": [
-              {
-                "Variable": "$[0].error",
-                "IsPresent": true
-              },
-              {
-                "Variable": "$[1].error",
-                "IsPresent": true
-              }
-            ],
-            "Next": "ConversionError"
-          }
-        ],
-        "Default": "EndPass"
-      },
-      "ConversionError": {
-        "Type": "Fail",
-        "Cause": "CXG conversion failed."
-      },
-      "DownloadValidateError": {
-        "Type": "Fail",
-        "Cause": "An error occurred during Download/Validate."
-      },
-      "EndPass": {
-        "Type": "Pass",
         "End": true
       }
     }
