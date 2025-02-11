@@ -541,18 +541,14 @@ paths:
                   title: Anndata
                 atac_seq_fragment:
                   type: string
-                  nullable: true
-                  # TODO: Use the more specific schema if possible
-                  # anyOf:
-                  #   - format: uri
-                  #     maxLength: 2083
-                  #     minLength: 1
-                  #     type: string
-                  #   - format: uri
-                  #     minLength: 1
-                  #     type: string
-                  #   - type: 'null'
-                  default: null
+                  anyOf:
+                    - format: uri
+                      maxLength: 2083
+                      minLength: 1
+                      type: string
+                    - format: uri
+                      minLength: 1
+                      type: string
                   title: Atac Seq Fragment
               required:
                 - anndata
