@@ -510,6 +510,70 @@ paths:
         "410":
           $ref: "#/components/responses/410"
 
+  /v1/collections/{collection_id}/datasets/{dataset_id}/manifest:
+    put:
+      summary: Upload dataset via a manifest
+      description: |
+        Submit a manifest containing a list of files to be validated as a single dataset submission.
+        The request body must conform to the manifest schema and all files must be reachable.
+      operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.manifest.actions.put
+      tags:
+        - Collection
+      security:
+        - curatorAccess: []
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+        - $ref: "#/components/parameters/path_dataset_id"
+      requestBody:
+        content:
+          application/json:
+            schema: # Schema generated from yaml.dump(IngestionManifest.model_json_schema())
+              properties:
+                anndata:
+                  anyOf:
+                    - format: uri
+                      maxLength: 2083
+                      minLength: 1
+                      type: string
+                    - format: uri
+                      minLength: 1
+                      type: string
+                  title: Anndata
+                atac_seq_fragment:
+                  type: string
+                  nullable: true
+                  # TODO: Use the more specific schema if possible
+                  # anyOf:
+                  #   - format: uri
+                  #     maxLength: 2083
+                  #     minLength: 1
+                  #     type: string
+                  #   - format: uri
+                  #     minLength: 1
+                  #     type: string
+                  #   - type: 'null'
+                  default: null
+                  title: Atac Seq Fragment
+              required:
+                - anndata
+              title: IngestionManifest
+              type: object
+      responses:
+        "202":
+          $ref: "#/components/responses/202"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "405":
+          $ref: "#/components/responses/405"
+        "404":
+          $ref: "#/components/responses/404"
+        "413":
+          $ref: "#/components/responses/413"
+
   /v1/collections/{collection_id}/s3-upload-credentials:
     get:
       summary: Get credentials for uploading local files

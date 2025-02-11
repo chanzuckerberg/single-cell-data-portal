@@ -2769,6 +2769,37 @@ class TestPostRevision(BaseAPIPortalTest):
     return_value={"size": 1, "name": "file.h5ad"},
 )
 @patch("backend.layers.thirdparty.step_function_provider.StepFunctionProvider")
+class TestPutManifest(BaseAPIPortalTest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.good_h5ad_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        cls.dummy_h5ad_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
+
+    def test__from_link__no_auth(self, *mocks):
+        """
+        Calling PUT /datasets/:dataset_id should fail with 401 Unauthorized if the user is not authenticated
+        """
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)]
+        )
+        body = {"anndata": self.good_h5ad_link}
+        headers = None
+        for id in [dataset.dataset_version_id, dataset.dataset_id]:
+            response = self.app.put(
+                f"/curation/v1/collections/{dataset.collection_id}/datasets/{id}/manifest",
+                json=body,
+                headers=headers,
+            )
+
+            self.assertEqual(401, response.status_code)
+
+
+@patch(
+    "backend.common.utils.dl_sources.uri.DropBoxURL.file_info",
+    return_value={"size": 1, "name": "file.h5ad"},
+)
+@patch("backend.layers.thirdparty.step_function_provider.StepFunctionProvider")
 class TestPutLink(BaseAPIPortalTest):
     @classmethod
     def setUpClass(cls):
