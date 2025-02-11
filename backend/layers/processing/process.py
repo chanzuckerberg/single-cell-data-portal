@@ -150,6 +150,8 @@ class ProcessMain(ProcessingLogic):
                 self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.FAILED)
             elif step_name == "cxg" or step_name == "cxg_remaster":
                 self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.FAILED)
+            elif step_name == "add_labels":
+                self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.FAILED)
             return False
 
         return True

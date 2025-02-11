@@ -75,17 +75,16 @@ class TestProcessValidateH5AD(BaseProcessingTest):
         # This is where we're at when we start the SFN
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
-        # self.assertEqual(status.validation_status, DatasetValidationStatus.NA)
         self.assertIsNone(status.validation_status)
         self.assertEqual(status.processing_status, DatasetProcessingStatus.INITIALIZED)
         self.assertEqual(status.upload_status, DatasetUploadStatus.WAITING)
 
         pdv = ProcessValidateH5AD(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
         pdv.download_from_source_uri = Mock(return_value=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME)
-        pdv.process(collection.version_id, dataset_version_id, "fake_uri", "fake_bucket_name")
+        pdv.process(dataset_version_id, IngestionManifest(anndata=dropbox_uri), "fake_bucket_name")
         status = self.business_logic.get_dataset_status(dataset_version_id)
-        self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
-        self.assertEqual(status.upload_status, DatasetConversionStatus.UPLOADED)
+        self.assertEqual(status.rds_status, DatasetConversionStatus.SKIPPED)
+        self.assertEqual(status.h5ad_status, DatasetConversionStatus.CONVERTING)
 
         # Verify that the original (raw.h5ad) file is there
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad"))
@@ -101,21 +100,18 @@ class TestProcessValidateH5AD(BaseProcessingTest):
         dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         manifest = IngestionManifest(anndata=dropbox_uri)
         collection = self.generate_unpublished_collection()
-        _, _ = self.business_logic.ingest_dataset(collection.version_id, dropbox_uri, None, None)
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
+            collection.version_id, dropbox_uri, None, None
+        )
 
         # Set a mock failure for the schema validator
         self.schema_validator.validate_anndata = Mock(
             return_value=(False, ["Validation error 1", "Validation error 2"], True)
         )
 
-        collection = self.generate_unpublished_collection()
-        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
-            collection.version_id, dropbox_uri, None, None
-        )
-
         pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
 
-        for step_name in ["validate"]:
+        for step_name in ["validate_anndata"]:
             pm.process(
                 collection.version_id,
                 dataset_version_id,

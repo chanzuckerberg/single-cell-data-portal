@@ -109,7 +109,7 @@ class ProcessValidateH5AD(ProcessingLogic):
         else:
             # Skip seurat conversion
             self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
-            self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetValidationStatus.CONVERTING)
+            self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTING)
 
     def process(
         self,

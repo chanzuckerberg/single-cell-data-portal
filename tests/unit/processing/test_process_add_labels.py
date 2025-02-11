@@ -1,9 +1,11 @@
+import tempfile
 from unittest.mock import MagicMock, Mock, patch
+
+import anndata
 
 from backend.layers.common.entities import (
     DatasetArtifactType,
     DatasetConversionStatus,
-    DatasetUploadStatus,
     DatasetValidationStatus,
     DatasetVersionId,
     Link,
@@ -36,10 +38,6 @@ class ProcessingTest(BaseProcessingTest):
         )
         # This is where we're at when we start the SFN
 
-        status = self.business_logic.get_dataset_status(dataset_version_id)
-        self.assertIsNone(status.validation_status)
-        self.assertEqual(status.upload_status, DatasetUploadStatus.WAITING)
-
         mock_read_h5ad.return_value = MagicMock(uns=dict())
 
         # TODO: ideally use a real h5ad
@@ -47,12 +45,7 @@ class ProcessingTest(BaseProcessingTest):
         processor.extract_metadata = Mock()
         processor.populate_dataset_citation = Mock()
         processor.process(collection.version_id, dataset_version_id, "fake_bucket_name", "fake_datasets_bucket")
-        citation_str = (
-            f"Publication: https://doi.org/12.2345 "
-            f"Dataset Version: http://domain/{dataset_version_id}.h5ad curated and distributed by "
-            f"CZ CELLxGENE Discover in Collection: https://domain/collections/{collection.collection_id.id}"
-        )
-        self.assertEqual(mock_read_h5ad.return_value.uns["citation"], citation_str)
+
         status = self.business_logic.get_dataset_status(dataset_version_id)
         self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
         self.assertEqual(status.h5ad_status, DatasetConversionStatus.UPLOADED)
@@ -68,19 +61,39 @@ class ProcessingTest(BaseProcessingTest):
         artifact.type = DatasetArtifactType.H5AD
         artifact.uri = f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"
 
-    @patch("scanpy.read_h5ad")
-    def test_populate_dataset_citation__no_publication_doi(self, mock_read_h5ad):
-        mock_read_h5ad.return_value = MagicMock(uns=dict())
-        collection = self.generate_unpublished_collection()
-
-        pdv = ProcessAddLabels(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
-        dataset_version_id = DatasetVersionId()
-        pdv.populate_dataset_citation(collection.version_id, dataset_version_id, "")
-        citation_str = (
-            f"Dataset Version: http://domain/{dataset_version_id}.h5ad curated and distributed by "
-            f"CZ CELLxGENE Discover in Collection: https://domain/collections/{collection.collection_id.id}"
+    def test_populate_dataset_citation__with_publication_doi(self):
+        mock_adata = anndata.AnnData(X=None, obs=None, obsm=None, uns={}, var=None)
+        self.crossref_provider.fetch_metadata = Mock(return_value=({}, "12.2345", 17169328.664))
+        collection = self.generate_unpublished_collection(
+            links=[Link(name=None, type="DOI", uri="https://doi.org/12.2345")]
         )
-        self.assertEqual(mock_read_h5ad.return_value.uns["citation"], citation_str)
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            mock_adata.write_h5ad(f.name)
+            pal = ProcessAddLabels(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+            dataset_version_id = DatasetVersionId()
+            pal.populate_dataset_citation(collection.version_id, dataset_version_id, f.name)
+            citation_str = (
+                f"Publication: https://doi.org/12.2345 "
+                f"Dataset Version: http://domain/{dataset_version_id}.h5ad curated and distributed by "
+                f"CZ CELLxGENE Discover in Collection: https://domain/collections/{collection.collection_id}"
+            )
+            adata = anndata.read_h5ad(f.name)
+            self.assertEqual(adata.uns["citation"], citation_str)
+
+    def test_populate_dataset_citation__no_publication_doi(self):
+        mock_adata = anndata.AnnData(X=None, obs=None, obsm=None, uns={}, var=None)
+        collection = self.generate_unpublished_collection()
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            mock_adata.write_h5ad(f.name)
+            pal = ProcessAddLabels(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+            dataset_version_id = DatasetVersionId()
+            pal.populate_dataset_citation(collection.version_id, dataset_version_id, f.name)
+            citation_str = (
+                f"Dataset Version: http://domain/{dataset_version_id}.h5ad curated and distributed by "
+                f"CZ CELLxGENE Discover in Collection: https://domain/collections/{collection.collection_id}"
+            )
+            adata = anndata.read_h5ad(f.name)
+            self.assertEqual(adata.uns["citation"], citation_str)
 
     def test_process_add_labels_fail(self):
         """
@@ -90,27 +103,22 @@ class ProcessingTest(BaseProcessingTest):
         """
         dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         manifest = IngestionManifest(anndata=dropbox_uri)
-        collection = self.generate_unpublished_collection()
-        _, _ = self.business_logic.ingest_dataset(collection.version_id, dropbox_uri, None, None)
 
         collection = self.generate_unpublished_collection()
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
             collection.version_id, dropbox_uri, None, None
         )
-
+        self.schema_validator.add_labels = Mock(side_effect=ValueError("Add labels error"))
         pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
-
-        for step_name in ["validate_add_labels"]:
-            pm.process(
-                collection.version_id,
-                dataset_version_id,
-                step_name,
-                manifest,
-                "fake_bucket_name",
-                "fake_datasets_bucket",
-                "fake_cxg_bucket",
-            )
+        pm.process(
+            collection.version_id,
+            dataset_version_id,
+            "add_labels",
+            manifest,
+            "fake_bucket_name",
+            "fake_datasets_bucket",
+            "fake_cxg_bucket",
+        )
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
-        self.assertEqual(status.validation_status, DatasetValidationStatus.INVALID)
-        self.assertEqual(status.validation_message, "Validation error 1\nValidation error 2")
+        self.assertEqual(status.h5ad_status, DatasetConversionStatus.FAILED)

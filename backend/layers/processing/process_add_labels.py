@@ -12,11 +12,13 @@ from backend.layers.common.entities import (
     DatasetConversionStatus,
     DatasetMetadata,
     DatasetStatusKey,
+    DatasetValidationStatus,
     DatasetVersionId,
     OntologyTermId,
     SpatialMetadata,
     TissueOntologyTermId,
 )
+from backend.layers.processing.exceptions import ConversionFailed
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
@@ -29,10 +31,8 @@ class ProcessAddLabels(ProcessingLogic):
     Base class for handling the `add label` step of the step function.
     This will:
         1. Download the h5ad artifact
-        2. set DatasetStatusKey.H5AD status to DatasetUploadStatus.CONVERTING
         2. Add labels to h5ad using cellxgene-schema
         3. Persist the dataset metadata on the database
-        3. set DatasetStatusKey.H5AD status to DatasetUploadStatus.UPLOADING
         4. upload the labeled file to S3
         5. set DatasetStatusKey.H5AD status to DatasetUploadStatus.UPLOADED
 
@@ -202,6 +202,7 @@ class ProcessAddLabels(ProcessingLogic):
         :param datasets_bucket:
         :return:
         """
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID)
         # Download the original dataset from S3
         key_prefix = self.get_key_prefix(dataset_version_id.id)
         original_h5ad_artifact_file_name = CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME
@@ -209,11 +210,17 @@ class ProcessAddLabels(ProcessingLogic):
         self.download_from_s3(artifact_bucket, object_key, original_h5ad_artifact_file_name)
 
         # label the dataset
-        file_with_labels = self.add_labels(collection_version_id, dataset_version_id, original_h5ad_artifact_file_name)
+        try:
+            file_with_labels = self.add_labels(
+                collection_version_id, dataset_version_id, original_h5ad_artifact_file_name
+            )
+        except Exception as e:
+            self.logger.exception(f"An unexpected error occurred while adding labels to the data set: {e}")
+            raise ConversionFailed(failed_status=DatasetStatusKey.H5AD) from e
         # Process metadata
         metadata = self.extract_metadata(file_with_labels)
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
-
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
         # Upload the labeled dataset to the artifact bucket
         self.create_artifact(
             file_with_labels,

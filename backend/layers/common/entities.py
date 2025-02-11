@@ -81,8 +81,8 @@ class DatasetArtifactType(str, Enum):
     H5AD = "h5ad"
     RDS = "rds"
     CXG = "cxg"
-    ATAC_SEQ_FRAGMENT = "atac_seq_fragment"
-    ATAC_SEQ_FRAGMENT_INDEX = "atac_seq_fragment_index"
+    ATAC_FRAGMENT = "atac_seq_fragment"
+    ATAC_FRAGMENT_INDEX = "atac_seq_fragment_index"
 
 
 class Visibility(Enum):
