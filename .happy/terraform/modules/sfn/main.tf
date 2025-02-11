@@ -98,7 +98,7 @@ resource "aws_sfn_state_machine" "state_machine" {
               },
               {
                 "Name": "STEP_NAME",
-                "Value": "validate_anndata"
+                "Value": "add_labels"
               }
             ]
           }
