@@ -108,7 +108,7 @@ resource aws_batch_job_definition dataset_metadata_update {
   "command": ["python3", "-m", "backend.layers.processing.dataset_metadata_update"],
   "jobRoleArn": "${var.batch_role_arn}",
   "image": "${var.image}",
-  "memory": var.batch_container_memory_limit,
+  "memory": 8000,
   "environment": [
     {
       "name": "ARTIFACT_BUCKET",
@@ -139,11 +139,7 @@ resource aws_batch_job_definition dataset_metadata_update {
       "value": "${var.remote_dev_prefix}"
     }
   ],
-  "vcpus": 8,
-  "linuxParameters": {
-     "maxSwap": 800000,
-     "swappiness": 60
-  },
+  "vcpus": 1,
   "retryStrategy": {
     "attempts": 3,
     "evaluateOnExit": [
@@ -202,10 +198,6 @@ resource aws_batch_job_definition rollback {
     }
   ],
   "vcpus": 1,
-  "linuxParameters": {
-     "maxSwap": 0,
-     "swappiness": 0
-  },
   "retryStrategy": {
     "attempts": 3,
     "evaluateOnExit": [
