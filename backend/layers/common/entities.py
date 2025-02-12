@@ -42,7 +42,6 @@ class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
 class DatasetUploadStatus(DatasetStatusGeneric, Enum):
     NA = "NA"
     WAITING = "WAITING"
-    UPLOADING = "UPLOADING"
     UPLOADED = "UPLOADED"
     FAILED = "FAILED"
     CANCEL_PENDING = "CANCEL PENDING"
@@ -60,7 +59,6 @@ class DatasetConversionStatus(DatasetStatusGeneric, Enum):
     NA = "NA"
     CONVERTING = "CONVERTING"
     CONVERTED = "CONVERTED"
-    UPLOADING = "UPLOADING"
     UPLOADED = "UPLOADED"
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"

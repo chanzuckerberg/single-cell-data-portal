@@ -104,7 +104,6 @@ class ProcessCxg(ProcessingLogic):
             key_prefix = self.get_key_prefix(dataset_version_id.id)
             s3_uri = f"s3://{cellxgene_bucket}/{key_prefix}.cxg/"
 
-        self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.UPLOADING)
         self.copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri)
         self.logger.info(f"Updating database with cxg artifact for dataset {dataset_version_id}. s3_uri is {s3_uri}")
 

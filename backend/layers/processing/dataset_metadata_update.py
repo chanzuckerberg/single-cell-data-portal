@@ -73,9 +73,6 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
 
             adata.write(raw_h5ad_filename, compression="gzip")
 
-            self.update_processing_status(
-                new_dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING
-            )
             self.create_artifact(
                 raw_h5ad_filename,
                 DatasetArtifactType.RAW_H5AD,
