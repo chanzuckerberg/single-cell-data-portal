@@ -5,23 +5,20 @@ import numpy
 from cellxgene_schema.utils import read_h5ad
 
 from backend.common.utils.corpora_constants import CorporaConstants
-from backend.common.utils.dl_sources.uri import DownloadFailed
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
     CollectionVersionId,
     DatasetArtifactType,
     DatasetConversionStatus,
     DatasetMetadata,
-    DatasetProcessingStatus,
     DatasetStatusKey,
-    DatasetUploadStatus,
     DatasetValidationStatus,
     DatasetVersionId,
     OntologyTermId,
     SpatialMetadata,
     TissueOntologyTermId,
 )
-from backend.layers.processing.exceptions import UploadFailed, ValidationFailed
+from backend.layers.processing.exceptions import AddLabelsFailed
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
@@ -29,16 +26,18 @@ from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorP
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
 
-class ProcessValidate(ProcessingLogic):
+class ProcessAddLabels(ProcessingLogic):
     """
-    Base class for handling the `Validate` step of the step function.
+    Base class for handling the `add label` step of the step function.
     This will:
-    1. Download the original artifact from the provided URI
-    2. Run the cellxgene-schema validator
-    3. Save and upload a labeled copy of the original artifact (local.h5ad)
-    5. Persist the dataset metadata on the database
-    6. Determine if a Seurat conversion is possible (it is not if the X matrix has more than 2**32-1 nonzero values)
-    If this step completes successfully, ProcessCxg will start in parallel.
+        1. Download the h5ad artifact
+        2. Add labels to h5ad using cellxgene-schema
+        3. Persist the dataset metadata on the database
+        4. upload the labeled file to S3
+        5. set DatasetStatusKey.H5AD status to DatasetUploadStatus.UPLOADED
+
+
+    If this step completes successfully, ProcessCxg and ProcessSeurat will start in parallel.
     If this step fails, the handle_failures lambda will be invoked.
     """
 
@@ -58,92 +57,21 @@ class ProcessValidate(ProcessingLogic):
         self.schema_validator = schema_validator
 
     @logit
-    def download_from_source_uri(self, source_uri: str, local_path: str) -> str:
-        """Given a source URI, download it to local_path.
-        Handles fixing the url so it downloads directly.
-        """
-        file_url = self.uri_provider.parse(source_uri)
-        if not file_url:
-            raise ValueError(f"Malformed source URI: {source_uri}")
-        try:
-            file_url.download(local_path)
-        except DownloadFailed as e:
-            raise UploadFailed(f"Failed to download file from source URI: {source_uri}") from e
-        return local_path
-
-    def upload_raw_h5ad(
-        self, dataset_version_id: DatasetVersionId, dataset_uri: str, artifact_bucket: str, key_prefix: str
-    ) -> str:
-        """
-        Upload raw h5ad from dataset_uri to artifact bucket
-
-        :param dataset_version_id:
-        :param dataset_uri:
-        :param artifact_bucket:
-        :param key_prefix:
-        :return: local_filename: Local filepath to raw h5ad
-        """
-        self.update_processing_status(dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.PENDING)
-
-        # Download the original dataset from Dropbox
-        local_filename = self.download_from_source_uri(
-            source_uri=str(dataset_uri),
-            local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
-        )
-
-        # Upload the original dataset to the artifact bucket
-        self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)
-        self.create_artifact(
-            local_filename,
-            DatasetArtifactType.RAW_H5AD,
-            key_prefix,
-            dataset_version_id,
-            artifact_bucket,
-            DatasetStatusKey.H5AD,
-        )
-        self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
-
-        return local_filename
-
-    @logit
-    def validate_h5ad_file_and_add_labels(
+    def add_labels(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, local_filename: str
     ) -> str:
         """
-        Validates and labels the specified dataset file and updates the processing status in the database
+        labels the specified dataset file and updates the processing status in the database
         :param dataset_version_id: version ID of the dataset to update
         :param collection_version_id: version ID of the collection dataset is being uploaded to
         :param local_filename: file name of the dataset to validate and label
-        :return: file name of labeled dataset
+        :return: file name of labeled dataset, boolean indicating if seurat conversion is possible
         """
-        # TODO: use a provider here
-
-        self.update_processing_status(
-            dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALIDATING
-        )
-
         output_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
-        try:
-            is_valid, errors, _ = self.schema_validator.validate_and_save_labels(
-                local_filename, output_filename, n_workers=1
-            )  # match the number of workers to the number of vCPUs
-        except Exception as e:
-            self.logger.exception("validation failed")
-            raise ValidationFailed([str(e)]) from None
-
-        if not is_valid:
-            raise ValidationFailed(errors)
-        else:
-            self.populate_dataset_citation(collection_version_id, dataset_version_id, output_filename)
-
-            # TODO: optionally, these could be batched into one
-            self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
-            self.update_processing_status(
-                dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID
-            )
-            # Skip seurat conversion
-            self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
-            return output_filename
+        self.schema_validator.add_labels(local_filename, output_filename)
+        self.populate_dataset_citation(collection_version_id, dataset_version_id, output_filename)
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
+        return output_filename
 
     def populate_dataset_citation(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, adata_path: str
@@ -260,7 +188,6 @@ class ProcessValidate(ProcessingLogic):
         self,
         collection_version_id: CollectionVersionId,
         dataset_version_id: DatasetVersionId,
-        dataset_uri: str,
         artifact_bucket: str,
         datasets_bucket: str,
     ):
@@ -270,27 +197,29 @@ class ProcessValidate(ProcessingLogic):
         3. Upload the labeled dataset to the artifact bucket
         4. Upload the labeled dataset to the datasets bucket
         :param collection_version_id
-        :param dataset_uri
         :param dataset_version_id:
         :param artifact_bucket:
         :param datasets_bucket:
         :return:
         """
-        # validate and upload file to s3
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID)
+        # Download the original dataset from S3
         key_prefix = self.get_key_prefix(dataset_version_id.id)
-        local_filename = self.upload_raw_h5ad(dataset_version_id, dataset_uri, artifact_bucket, key_prefix)
+        original_h5ad_artifact_file_name = CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME
+        object_key = f"{key_prefix}/{original_h5ad_artifact_file_name}"
+        self.download_from_s3(artifact_bucket, object_key, original_h5ad_artifact_file_name)
 
-        # Validate and label the dataset
-        file_with_labels = self.validate_h5ad_file_and_add_labels(
-            collection_version_id, dataset_version_id, local_filename
-        )
+        # label the dataset
+        try:
+            file_with_labels = self.add_labels(
+                collection_version_id, dataset_version_id, original_h5ad_artifact_file_name
+            )
+        except Exception as e:
+            self.logger.exception(f"An unexpected error occurred while adding labels to the data set: {e}")
+            raise AddLabelsFailed() from e
         # Process metadata
         metadata = self.extract_metadata(file_with_labels)
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
-
-        # Skip seurat conversion
-        self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
-
         # Upload the labeled dataset to the artifact bucket
         self.create_artifact(
             file_with_labels,

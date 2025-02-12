@@ -539,7 +539,7 @@ paths:
                       minLength: 1
                       type: string
                   title: Anndata
-                atac_seq_fragment:
+                atac_fragment:
                   type: string
                   anyOf:
                     - format: uri

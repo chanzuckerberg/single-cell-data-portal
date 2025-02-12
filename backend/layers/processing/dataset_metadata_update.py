@@ -27,7 +27,7 @@ from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.processing.exceptions import ProcessingFailed
 from backend.layers.processing.h5ad_data_file import H5ADDataFile
 from backend.layers.processing.logger import configure_logging
-from backend.layers.processing.process_validate import ProcessValidate
+from backend.layers.processing.process_validate_h5ad import ProcessValidateH5AD
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.uri_provider import UriProvider
 
@@ -38,7 +38,7 @@ ARTIFACT_TO_DB_FIELD = {"title": "name"}
 FIELDS_IN_RAW_H5AD = ["title"]
 
 
-class DatasetMetadataUpdaterWorker(ProcessValidate):
+class DatasetMetadataUpdaterWorker(ProcessValidateH5AD):
     def __init__(self, artifact_bucket: str, datasets_bucket: str, spatial_deep_zoom_dir: str = None) -> None:
         # init each worker with business logic backed by non-shared DB connection
         self.business_logic = BusinessLogic(
@@ -161,7 +161,7 @@ class DatasetMetadataUpdaterWorker(ProcessValidate):
         self.update_processing_status(new_dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.CONVERTED)
 
 
-class DatasetMetadataUpdater(ProcessValidate):
+class DatasetMetadataUpdater(ProcessValidateH5AD):
     def __init__(
         self,
         business_logic: BusinessLogic,
