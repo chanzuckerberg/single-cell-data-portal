@@ -1,4 +1,4 @@
-from flask import Response
+from flask import Response, jsonify, make_response
 
 from backend.common.utils.exceptions import MaxFileSizeExceededException
 from backend.common.utils.http_exceptions import (
@@ -20,6 +20,17 @@ from backend.layers.business.exceptions import (
     InvalidURIException,
 )
 from backend.portal.api.providers import get_business_logic
+
+
+def get(collection_id: str, dataset_id: str = None):
+    # TODO: implement
+    collection_version, dataset_version = _get_collection_and_dataset(collection_id, dataset_id)
+    # assert False, dataset_version.artifacts
+    response_body = {
+        "anndata": "http://mock.uri/asset.h5ad",
+        "atac_seq_fragment": "http://mock.uri/atac_frags.csv",
+    }
+    return make_response(jsonify(response_body), 200)
 
 
 def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):
