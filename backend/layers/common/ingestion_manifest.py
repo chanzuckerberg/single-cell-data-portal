@@ -35,4 +35,4 @@ class IngestionManifest(BaseModel):
     """
 
     anndata: Union[HttpUrl, S3Url]
-    atac_seq_fragment: Optional[Union[HttpUrl, S3Url]] = None  # Optional field
+    atac_fragment: Optional[Union[HttpUrl, S3Url]] = None  # Optional field
