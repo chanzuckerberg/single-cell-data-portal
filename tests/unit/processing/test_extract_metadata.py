@@ -7,15 +7,15 @@ import pandas
 from dask.array import from_array
 
 from backend.layers.common.entities import OntologyTermId, SpatialMetadata, TissueOntologyTermId
-from backend.layers.processing.process_validate import ProcessValidate
+from backend.layers.processing.process_add_labels import ProcessAddLabels
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 
-class TestProcessingValidate(BaseProcessingTest):
+class TestAddLabels(BaseProcessingTest):
     def setUp(self):
         super().setUp()
-        self.pdv = ProcessValidate(self.business_logic, self.uri_provider, self.s3_provider, SchemaValidatorProvider())
+        self.pal = ProcessAddLabels(self.business_logic, self.uri_provider, self.s3_provider, SchemaValidatorProvider())
 
     def test_extract_metadata(self):
         df = pandas.DataFrame(
@@ -106,7 +106,7 @@ class TestProcessingValidate(BaseProcessingTest):
 
         with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
             adata.write_h5ad(f.name)
-            extracted_metadata = self.pdv.extract_metadata(f.name)
+            extracted_metadata = self.pal.extract_metadata(f.name)
 
         self.assertEqual(extracted_metadata.organism, [OntologyTermId("Homo sapiens", "NCBITaxon:8505")])
 
@@ -277,7 +277,7 @@ class TestProcessingValidate(BaseProcessingTest):
 
         with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
             adata.write_h5ad(f.name)
-            extracted_metadata = self.pdv.extract_metadata(f.name)
+            extracted_metadata = self.pal.extract_metadata(f.name)
 
         # Verify that the "my_awesome_wonky_layer" was read and not the default X layer. The layer contains only zeros
         # which should result in a mean_genes_per_cell value of 0 compared to 3 if the X layer was read.
@@ -290,7 +290,7 @@ class TestProcessingValidate(BaseProcessingTest):
             "is_single": np.bool_(True),
             "dummy_library_id": {"images": {"fullres": "dummy_fullres"}},
         }
-        self.assertEqual(self.pdv.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=True))
+        self.assertEqual(self.pal.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=True))
 
     def test_get_spatial_metadata__is_single_true_and_fullres_false(self):
         spatial_dict = {
@@ -298,17 +298,17 @@ class TestProcessingValidate(BaseProcessingTest):
             "dummy_library_id": {"images": {}},
         }
         self.assertEqual(
-            self.pdv.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=False)
+            self.pal.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=False)
         )
 
     def test_get_spatial_metadata__is_single_true_and_no_library_id(self):
         spatial_dict = {"is_single": np.bool_(True)}
         self.assertEqual(
-            self.pdv.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=False)
+            self.pal.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=False)
         )
 
     def test_get_spatial_metadata__is_single_false(self):
         spatial_dict = {"is_single": np.bool_(False)}
         self.assertEqual(
-            self.pdv.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=False, has_fullres=False)
+            self.pal.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=False, has_fullres=False)
         )

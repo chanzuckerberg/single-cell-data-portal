@@ -66,8 +66,8 @@ class ProcessingTest(BaseProcessingTest):
             self.assertTrue(cxg_artifact, f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/")
 
     @patch("anndata.read_h5ad")
-    @patch("backend.layers.processing.process_validate.ProcessValidate.populate_dataset_citation")
-    @patch("backend.layers.processing.process_validate.ProcessValidate.extract_metadata")
+    @patch("backend.layers.processing.process_add_labels.ProcessAddLabels.populate_dataset_citation")
+    @patch("backend.layers.processing.process_add_labels.ProcessAddLabels.extract_metadata")
     @patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg")
     def test_process_all(self, mock_cxg, mock_extract_h5ad, mock_dataset_citation, mock_read_h5ad):
         mock_cxg.return_value = "local.cxg"
@@ -80,7 +80,7 @@ class ProcessingTest(BaseProcessingTest):
         )
 
         pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
-        for step_name in ["validate", "cxg"]:
+        for step_name in ["validate_anndata", "add_labels", "cxg"]:
             assert pm.process(
                 collection.version_id,
                 dataset_version_id,
