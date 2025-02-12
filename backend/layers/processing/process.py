@@ -16,6 +16,7 @@ from backend.layers.common.entities import (
 from backend.layers.common.ingestion_manifest import IngestionManifest
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.processing.exceptions import (
+    AddLabelsFailed,
     ConversionFailed,
     ProcessingCanceled,
     ProcessingFailed,
@@ -104,13 +105,6 @@ class ProcessMain(ProcessingLogic):
         try:
             if step_name == "validate_anndata":
                 self.process_validate_h5ad.process(dataset_version_id, manifest, artifact_bucket)
-            elif step_name == "validate_atac_seq":
-                self.process_validate_atac_seq.process(
-                    collection_version_id,
-                    dataset_version_id,
-                    manifest,
-                    datasets_bucket,
-                )
             elif step_name == "add_labels":
                 self.process_add_labels.process(
                     collection_version_id, dataset_version_id, artifact_bucket, datasets_bucket
@@ -135,6 +129,9 @@ class ProcessMain(ProcessingLogic):
                 dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
             )
             return False
+        except AddLabelsFailed as e:
+            self.update_processing_status(dataset_version_id, e.failed_status, DatasetConversionStatus.FAILED, e.errors)
+            return False
         except UploadFailed:
             self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.FAILED)
             return False
@@ -143,9 +140,9 @@ class ProcessMain(ProcessingLogic):
             return False
         except Exception as e:
             self.logger.exception(f"An unexpected error occurred while processing the data set: {e}")
-            if step_name in ["validate", "download"]:
+            if step_name in ["validate_anndata"]:
                 self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.FAILED)
-            elif step_name == "cxg" or step_name == "cxg_remaster":
+            elif step_name in ["cxg", "cxg_remaster"]:
                 self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.FAILED)
             elif step_name == "add_labels":
                 self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.FAILED)
