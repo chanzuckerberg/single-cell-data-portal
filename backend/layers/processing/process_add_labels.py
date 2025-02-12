@@ -70,6 +70,7 @@ class ProcessAddLabels(ProcessingLogic):
         output_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
         self.schema_validator.add_labels(local_filename, output_filename)
         self.populate_dataset_citation(collection_version_id, dataset_version_id, output_filename)
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
         return output_filename
 
     def populate_dataset_citation(
@@ -219,7 +220,6 @@ class ProcessAddLabels(ProcessingLogic):
         # Process metadata
         metadata = self.extract_metadata(file_with_labels)
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
-        self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
         # Upload the labeled dataset to the artifact bucket
         self.create_artifact(
             file_with_labels,

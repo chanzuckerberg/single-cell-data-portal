@@ -130,7 +130,7 @@ class ProcessMain(ProcessingLogic):
             )
             return False
         except AddLabelsFailed as e:
-            self.update_processing_status(dataset_version_id, e.failed_status, DatasetConversionStatus.FAILED, e.errors)
+            self.update_processing_status(dataset_version_id, e.failed_status, DatasetConversionStatus.FAILED)
             return False
         except UploadFailed:
             self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.FAILED)
