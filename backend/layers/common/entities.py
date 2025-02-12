@@ -80,6 +80,7 @@ class DatasetArtifactType(str, Enum):
     H5AD = "h5ad"
     RDS = "rds"
     CXG = "cxg"
+    ATAC_FRAGMENT = "atac_fragment"
 
 
 class Visibility(Enum):

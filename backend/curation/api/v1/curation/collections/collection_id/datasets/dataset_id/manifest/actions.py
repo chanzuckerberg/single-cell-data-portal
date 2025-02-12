@@ -1,4 +1,4 @@
-from flask import Response
+from flask import Response, jsonify, make_response
 
 from backend.common.utils.exceptions import MaxFileSizeExceededException
 from backend.common.utils.http_exceptions import (
@@ -19,7 +19,36 @@ from backend.layers.business.exceptions import (
     DatasetNotFoundException,
     InvalidURIException,
 )
+from backend.layers.common.entities import DatasetArtifactType
 from backend.portal.api.providers import get_business_logic
+
+
+def get_single_artifact(artifacts, artifact_type, required=False):
+    """Return exactly one artifact of the given type.
+
+    If `required` is True and no artifact is found, raises ValueError.
+    If more than one is found, always raises ValueError.
+    """
+    matches = [a for a in artifacts if a.type == artifact_type]
+
+    if len(matches) > 1:
+        raise ValueError(f"Multiple '{artifact_type}' artifacts found.")
+
+    if not matches and required:
+        raise ValueError(f"No '{artifact_type}' artifact found.")
+
+    return matches[0] if matches else None
+
+
+def get(collection_id: str, dataset_id: str = None):
+    _, dataset_version = _get_collection_and_dataset(collection_id, dataset_id)
+    artifacts = dataset_version.artifacts
+
+    response_body = {"anndata": get_single_artifact(artifacts, DatasetArtifactType.H5AD, required=True).uri}
+    if atac_fragment_artifact := get_single_artifact(artifacts, DatasetArtifactType.ATAC_FRAGMENT, required=False):
+        response_body["atac_seq_fragment"] = atac_fragment_artifact.uri
+
+    return make_response(jsonify(response_body), 200)
 
 
 def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):
