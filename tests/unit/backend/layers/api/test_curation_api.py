@@ -2729,12 +2729,19 @@ class TestGetDatasetManifest(BaseAPIPortalTest):
         # TODO: I think this should be a 404 but this is also the behaviour of GET /collections/{colleciton_id}/datasets/{dataset_version_id}
         self.assertEqual(403, response.status_code)
 
-    def test__get_manifest_by_missing_id_fails(self):
+    def test__get_manifest_by_missing_dataset_id_fails(self):
         import uuid
 
         collection = self.generate_unpublished_collection(add_datasets=0)
 
         test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{uuid.uuid4()}/manifest"
+        response = self.app.get(test_url)
+        self.assertEqual(404, response.status_code)
+
+    def test__get_manifest_by_missing_collection_id_fails(self):
+        import uuid
+
+        test_url = f"/curation/v1/collections/{uuid.uuid4()}/datasets/{uuid.uuid4()}/manifest"
         response = self.app.get(test_url)
         self.assertEqual(404, response.status_code)
 
