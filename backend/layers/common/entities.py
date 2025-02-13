@@ -80,7 +80,7 @@ class DatasetArtifactType(str, Enum):
     H5AD = "h5ad"
     RDS = "rds"
     CXG = "cxg"
-    ATAC_FRAGMENT = "atac_fragment"
+    ATAC_FRAGMENT = "bgz"  # TODO: This is not great, extension doesn't exactly map to "artifact type"
 
 
 class Visibility(Enum):

@@ -2645,35 +2645,31 @@ class TestGetDatasetManifest(BaseAPIPortalTest):
     def test_get_manifest_ok(self):
         collection = self.generate_published_collection()
         collection_id = collection.collection_id
-        # dataset_id = collection.datasets[0].dataset_id
-        dataset_version_id = collection.datasets[0].version_id
         published_revision = self.generate_revision(collection_id)
         # Add delay here to ensure published_at timestamps are different (as millis are
         # no longer returned in API response).
+
         time.sleep(1)
+
         published_dataset_revision = self.generate_dataset(
             collection_version=published_revision,
-            replace_dataset_version_id=dataset_version_id,
             publish=True,
             artifacts=[
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.csv"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.bgz"),
             ],
         )
         time.sleep(0.5)
         test_url = f"/curation/v1/collections/{published_dataset_revision.collection_id}/datasets/{published_dataset_revision.dataset_id}/manifest"
         headers = self.make_owner_header()
         response = self.app.get(test_url, headers=headers)
+
         self.assertEqual(200, response.status_code)
+
         assert response.json == {
-            "anndata": "http://mock.uri/asset.h5ad",
-            "atac_seq_fragment": "http://mock.uri/atac_frags.csv",
+            "anndata": f"http://domain/{published_dataset_revision.dataset_version_id}.h5ad",
+            "atac_seq_fragment": f"http://domain/{published_dataset_revision.dataset_version_id}.bgz",
         }
-        # unpublished_revision = self.generate_revision(collection_id)
-        # self.generate_dataset(
-        #     collection_version=unpublished_revision,
-        #     replace_dataset_version_id=DatasetVersionId(published_dataset_revision.dataset_version_id),
-        # )
 
 
 class TestPostDataset(BaseAPIPortalTest):
