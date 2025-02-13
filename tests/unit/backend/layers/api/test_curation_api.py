@@ -2646,10 +2646,6 @@ class TestGetDatasetManifest(BaseAPIPortalTest):
         collection = self.generate_published_collection()
         collection_id = collection.collection_id
         published_revision = self.generate_revision(collection_id)
-        # Add delay here to ensure published_at timestamps are different (as millis are
-        # no longer returned in API response).
-
-        time.sleep(1)
 
         published_dataset_revision = self.generate_dataset(
             collection_version=published_revision,
@@ -2659,7 +2655,7 @@ class TestGetDatasetManifest(BaseAPIPortalTest):
                 DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.bgz"),
             ],
         )
-        time.sleep(0.5)
+
         test_url = f"/curation/v1/collections/{published_dataset_revision.collection_id}/datasets/{published_dataset_revision.dataset_id}/manifest"
         response = self.app.get(test_url)
 
