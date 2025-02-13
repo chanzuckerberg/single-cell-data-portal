@@ -16,6 +16,7 @@ from backend.layers.common.entities import (
 from backend.layers.common.ingestion_manifest import IngestionManifest
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.processing.exceptions import (
+    AddLabelsFailed,
     ConversionFailed,
     ProcessingCanceled,
     ProcessingFailed,
@@ -138,6 +139,9 @@ class ProcessMain(ProcessingLogic):
                 dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
             )
             return False
+        except AddLabelsFailed as e:
+            self.update_processing_status(dataset_version_id, e.failed_status, DatasetConversionStatus.FAILED)
+            return False
         except UploadFailed:
             self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.FAILED)
             return False
@@ -146,9 +150,9 @@ class ProcessMain(ProcessingLogic):
             return False
         except Exception as e:
             self.logger.exception(f"An unexpected error occurred while processing the data set: {e}")
-            if step_name in ["validate", "download"]:
+            if step_name in ["validate_anndata"]:
                 self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.FAILED)
-            elif step_name == "cxg" or step_name == "cxg_remaster":
+            elif step_name in ["cxg", "cxg_remaster"]:
                 self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.FAILED)
             elif step_name == "add_labels":
                 self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.FAILED)

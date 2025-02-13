@@ -18,7 +18,7 @@ from backend.layers.common.entities import (
     SpatialMetadata,
     TissueOntologyTermId,
 )
-from backend.layers.processing.exceptions import ConversionFailed
+from backend.layers.processing.exceptions import AddLabelsFailed
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
@@ -216,11 +216,10 @@ class ProcessAddLabels(ProcessingLogic):
             )
         except Exception as e:
             self.logger.exception(f"An unexpected error occurred while adding labels to the data set: {e}")
-            raise ConversionFailed(failed_status=DatasetStatusKey.H5AD) from e
+            raise AddLabelsFailed() from e
         # Process metadata
         metadata = self.extract_metadata(file_with_labels)
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
-        self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
         # Upload the labeled dataset to the artifact bucket
         self.create_artifact(
             file_with_labels,

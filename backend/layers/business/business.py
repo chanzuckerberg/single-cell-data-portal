@@ -546,7 +546,7 @@ class BusinessLogic(BusinessLogicInterface):
     def ingest_dataset(
         self,
         collection_version_id: CollectionVersionId,
-        url: str,  # TODO: change to manifest
+        url: dict | str,  # TODO: change to manifest
         file_size: Optional[int],
         current_dataset_version_id: Optional[DatasetVersionId],
         start_step_function: bool = True,
@@ -555,32 +555,38 @@ class BusinessLogic(BusinessLogicInterface):
         Creates a canonical dataset and starts its ingestion by invoking the step function
         If `size` is not provided, it will be inferred automatically
         """
+        # Convert old style input to new style
+        try:
+            manifest = IngestionManifest(anndata=url) if isinstance(url, str) else IngestionManifest(**url)
+        except ValidationError as e:
+            raise InvalidIngestionManifestException("Ingestion manifest is invalid.", errors=e.errors()) from e
+        urls = [str(_url) for _url in manifest.dict(exclude_unset=True).values()]
+
         logger.info(
             {
                 "message": "ingesting dataset",
                 "collection_version_id": collection_version_id,
-                "url": url,  # TODO: change to manifest
+                "manifest": manifest,
                 "current_dataset_version_id": current_dataset_version_id,
             }
         )
-        try:
-            manifest = IngestionManifest(anndata=url)  # TODO: validate the json if already in manifest shape.
-        except ValidationError as e:
-            raise InvalidIngestionManifestException("Ingestion manifest is invalid.", errors=e.errors()) from e
 
         # TODO: validate all uris in the manifest
         # TODO: replace the uris with the actual uri if a uri to an existing h5ad or fragments file is provided
-        if not self.uri_provider.validate(url):
-            raise InvalidURIException(f"Trying to upload invalid URI: {url}")
+        for _url in urls:
+            if not self.uri_provider.validate(_url):
+                raise InvalidURIException(f"Trying to upload invalid URI: {_url}")
 
         if file_size is None:
-            file_info = self.uri_provider.get_file_info(url)
+            file_info = self.uri_provider.get_file_info(str(manifest.anndata))
             file_size = file_info.size
 
         max_file_size_gb = CorporaConfig().upload_max_file_size_gb * 2**30
 
         if file_size is not None and file_size > max_file_size_gb:
-            raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
+            raise MaxFileSizeExceededException(
+                f"{manifest.anndata} exceeds the maximum allowed file size of {max_file_size_gb} Gb"
+            )
 
         # Ensure that the collection exists and is not published
         collection = self._assert_collection_version_unpublished(collection_version_id)
