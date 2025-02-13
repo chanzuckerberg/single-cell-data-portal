@@ -519,8 +519,6 @@ paths:
       operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.manifest.actions.get
       tags:
         - Collection
-      security:
-        - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
         - $ref: "#/components/parameters/path_dataset_id"

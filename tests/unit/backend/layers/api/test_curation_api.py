@@ -2661,8 +2661,7 @@ class TestGetDatasetManifest(BaseAPIPortalTest):
         )
         time.sleep(0.5)
         test_url = f"/curation/v1/collections/{published_dataset_revision.collection_id}/datasets/{published_dataset_revision.dataset_id}/manifest"
-        headers = self.make_owner_header()
-        response = self.app.get(test_url, headers=headers)
+        response = self.app.get(test_url)
 
         self.assertEqual(200, response.status_code)
 
