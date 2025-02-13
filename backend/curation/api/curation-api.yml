@@ -553,6 +553,8 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/ingestion_manifest"
+              required:
+                - anndata
       responses:
         "202":
           $ref: "#/components/responses/202"
@@ -1723,8 +1725,6 @@ components:
               minLength: 1
               type: string
           title: Atac Seq Fragment
-      required:
-        - anndata
       title: IngestionManifest
       type: object
   parameters:
