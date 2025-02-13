@@ -2663,14 +2663,14 @@ class TestGetDatasetManifest(BaseAPIPortalTest):
 
         assert response.json == {
             "anndata": f"http://domain/{published_dataset_revision.dataset_version_id}.h5ad",
-            "atac_seq_fragment": f"http://domain/{published_dataset_revision.dataset_version_id}.bgz",
+            "atac_fragment": f"http://domain/{published_dataset_revision.dataset_version_id}.bgz",
         }
 
     def test_get_manifest_cases_ok(self):
         cases = [
             {
                 "artifacts": {
-                    "atac_seq_fragment": DatasetArtifactUpdate(
+                    "atac_fragment": DatasetArtifactUpdate(
                         DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.bgz"
                     )
                 },
@@ -2683,7 +2683,7 @@ class TestGetDatasetManifest(BaseAPIPortalTest):
             {
                 "artifacts": {
                     "anndata": DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
-                    "atac_seq_fragment": DatasetArtifactUpdate(
+                    "atac_fragment": DatasetArtifactUpdate(
                         DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.bgz"
                     ),
                 },

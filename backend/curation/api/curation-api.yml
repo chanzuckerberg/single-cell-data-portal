@@ -1714,7 +1714,7 @@ components:
               minLength: 1
               type: string
           title: Anndata
-        atac_seq_fragment:
+        atac_fragment:
           type: string
           anyOf:
             - format: uri
@@ -1724,7 +1724,7 @@ components:
             - format: uri
               minLength: 1
               type: string
-          title: Atac Seq Fragment
+          title: ATAC Seq Fragment
       title: IngestionManifest
       type: object
   parameters:

@@ -48,7 +48,7 @@ def get(collection_id: str, dataset_id: str = None):
     response_body = {}
     for key, artifact_type in [
         ("anndata", DatasetArtifactType.H5AD),
-        ("atac_seq_fragment", DatasetArtifactType.ATAC_FRAGMENT),
+        ("atac_fragment", DatasetArtifactType.ATAC_FRAGMENT),
     ]:
         if uri := get_single_artifact_permanent_url(dataset_version, artifact_type):
             response_body[key] = uri
