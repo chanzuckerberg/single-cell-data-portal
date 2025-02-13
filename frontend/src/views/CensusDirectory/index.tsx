@@ -18,15 +18,20 @@ import Project from "./components/Project";
 import { clobberAndDifferentiateProjectMetadata } from "./utils";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import projects from "../../../contributions.json";
+import newProjects from "../../../contributions.json";
 
 // DEBUG
 // DEBUG
 // DEBUG
-console.log("--------projects", projects);
+console.log("--------newProjects", newProjects);
 
 function CensusDirectory() {
   const { data: projects } = useProjects();
+
+  // DEBUG
+  // DEBUG
+  // DEBUG
+  console.log("OLD PROJECTS", projects);
 
   const hostedProjects = clobberAndDifferentiateProjectMetadata(
     Object.values(projects ?? ({} as ProjectType[])).filter(

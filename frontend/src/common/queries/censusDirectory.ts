@@ -4,6 +4,7 @@ import { apiTemplateToUrl } from "../utils/apiTemplateToUrl";
 import { CENSUS_MODELS_DATA_URL } from "src/configs/configs";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { API } from "../API";
+import newProjects from "../../../contributions.json";
 
 export interface Project {
   id: string;
@@ -41,17 +42,18 @@ export interface ProjectResponse {
 }
 
 async function fetchProjects(): Promise<ProjectResponse | undefined> {
-  const response = await fetch(
-    CENSUS_MODELS_DATA_URL + API.CENSUS_MODELS_MANIFEST,
-    {
-      ...DEFAULT_FETCH_OPTIONS,
-      ...JSON_BODY_FETCH_OPTIONS,
-    }
-  );
+  // const response = await fetch(
+  //   CENSUS_MODELS_DATA_URL + API.CENSUS_MODELS_MANIFEST,
+  //   {
+  //     ...DEFAULT_FETCH_OPTIONS,
+  //     ...JSON_BODY_FETCH_OPTIONS,
+  //   }
+  // );
 
   try {
-    const result = await response.json();
-    if (!response.ok) throw result;
+    const result = newProjects as ProjectResponse;
+
+    // if (!response.ok) throw result;
 
     const data = result as ProjectResponse;
 

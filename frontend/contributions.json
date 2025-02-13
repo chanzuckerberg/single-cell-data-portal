@@ -441,7 +441,6 @@
       }
     ],
     "DOI": "10.1038/s41592-018-0229-2",
-    "additional_information": "scVI was trained on primary cells from Census with at least 300 expressed genes, and on the top 8000 highly variable genes with the Census method highly_variable_genes, which implements ScanPy's Seurat flavor to be used on count data while accounting for batch effects. The scVI parameters are: n_layers=2, n_hidden=500 and dropout_rate=0.1, and the training was run for a total of 100 epochs. An embedding with n_latent=50 was obtained by performing a forward pass on the model to get the latent representation across all Census cells, without additional retraining.\\nModel is available for scArches workflow and census data can be loaded as minified data to test for organ-level differential abundance and similar.\\nFor full details and a reproducible workflow please see: https://github.com/chanzuckerberg/cellxgene-census/blob/main/tools/models/scvi/README.md",
     "model_link": "s3://cellxgene-contrib-public/models/scvi/2025-01-30/mus_musculus/model.pt",
     "data_type": "obs_embedding",
     "census_version": "2025-01-30",
@@ -486,7 +485,6 @@
       }
     ],
     "DOI": "10.1038/s41592-018-0229-2",
-    "additional_information": "scVI was trained on primary cells from Census with at least 300 expressed genes, and on the top 8000 highly variable genes with the Census method highly_variable_genes, which implements ScanPy's Seurat flavor to be used on count data while accounting for batch effects. The scVI parameters are: n_layers=2, n_hidden=500 and dropout_rate=0.1, and the training was run for a total of 100 epochs. An embedding with n_latent=50 was obtained by performing a forward pass on the model to get the latent representation across all Census cells, without additional retraining.\\nModel is available for scArches workflow and census data can be loaded as minified data to test for organ-level differential abundance and similar.\\nFor full details and a reproducible workflow please see: https://github.com/chanzuckerberg/cellxgene-census/blob/main/tools/models/scvi/README.md",
     "model_link": "s3://cellxgene-contrib-public/models/scvi/2025-01-30/homo_sapiens/model.pt",
     "data_type": "obs_embedding",
     "census_version": "2025-01-30",
@@ -508,14 +506,13 @@
     "embedding_name": "geneformer",
     "title": "Geneformer embeddings fine-tuned on CELLxGENE Census for multi-task learning",
     "description": "Geneformer is a foundation deep learning model pretrained on a large-scale corpus of human single-cell transcriptomes to gain a fundamental understanding of gene network dynamics. This foundation knowledge can now be democratized to a vast array of downstream tasks through transfer learning to accelerate discovery of key network regulators and candidate therapeutic targets. Geneformer was previously demonstrated to enable predictions with limited data in a diverse range of downstream applications relevant to gene regulation, chromatin dynamics, and disease modeling. Furthermore, Geneformer drove new biological insights that were experimentally verified with functional assays in cells, including discovering a novel transcription factor in cardiomyocytes with zero-shot learning and identifying candidate therapeutic targets for cardiomyopathy that improved contractility in an iPS cell model of the disease. Here, using the 12 layer Geneformer model pretrained with ~95 million single-cell transcriptomes with an expanded input size of 4096, we provide embeddings from the model fine-tuned using a multi-task learning strategy to distinguish context-specific cell states across cell types, tissues, developmental stages, and diseases.",
-      "primary_contact": {
+    "primary_contact": {
       "name": "CELLxGENE Discover Team",
       "email": "soma@chanzuckerberg.com",
       "affiliation": "CZI"
     },
     "additional_contacts": [],
     "DOI": "10.1038/s41586-023-06139-9",
-    "additional_information": "We used the fine-tuned multi-task model by Theodoris et al. (huggingface.co/ctheodoris/Geneformer), with CLS tokens. Embeddings were then generated using Geneformer's EmbExtractor module with emb_layer=0.\\nFor full details and a reproducible workflow please see: https://github.com/chanzuckerberg/cellxgene-census/blob/main/tools/models/geneformer/README.md",
     "model_link": "https://huggingface.co/ctheodoris/Geneformer/tree/main/fine_tuned_models/gf-12L-95M-i4096_MTLCellClassifier_CELLxGENE_240522",
     "data_type": "obs_embedding",
     "census_version": "2025-01-30",
@@ -531,5 +528,5 @@
         "type": "IVFFlat"
       }
     ]
-  }  
+  }
 }
