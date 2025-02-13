@@ -18,6 +18,12 @@ import Project from "./components/Project";
 import { clobberAndDifferentiateProjectMetadata } from "./utils";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import projects from "../../../contributions.json";
+
+// DEBUG
+// DEBUG
+// DEBUG
+console.log("--------projects", projects);
 
 function CensusDirectory() {
   const { data: projects } = useProjects();
