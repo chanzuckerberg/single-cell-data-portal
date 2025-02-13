@@ -2666,6 +2666,59 @@ class TestGetDatasetManifest(BaseAPIPortalTest):
             "atac_seq_fragment": f"http://domain/{published_dataset_revision.dataset_version_id}.bgz",
         }
 
+    def test_get_manifest_cases_ok(self):
+        cases = [
+            {
+                "artifacts": {
+                    "atac_seq_fragment": DatasetArtifactUpdate(
+                        DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.bgz"
+                    )
+                },
+                # "response_keys": ["atac_seq_fragment"],
+                "name": "fragments_only",
+            },
+            {
+                "artifacts": {"anndata": DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad")},
+                "name": "anndata_only",
+            },
+            {
+                "artifacts": {
+                    "anndata": DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
+                    "atac_seq_fragment": DatasetArtifactUpdate(
+                        DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.bgz"
+                    ),
+                },
+                # "response_keys": ["anndata", "atac_seq_fragment"],
+                "name": "anndata_and_fragments",
+            },
+        ]
+        for case in cases:
+            with self.subTest(f"Get manifest case: {case['name']}"):
+
+                collection = self.generate_unpublished_collection(add_datasets=0)
+                #     collection_id = collection.collection_id
+                # published_revision = self.generate_revision(collection_id)
+
+                published_dataset = self.generate_dataset(
+                    collection_version=collection,
+                    artifacts=list(case["artifacts"].values()),
+                )
+
+                test_url = f"/curation/v1/collections/{published_dataset.collection_id}/datasets/{published_dataset.dataset_id}/manifest"
+                response = self.app.get(test_url)
+                self.assertEqual(200, response.status_code)
+
+                expected = {
+                    k: f"http://domain/{published_dataset.dataset_version_id}.{v.type}"
+                    for k, v in case["artifacts"].items()
+                }
+                assert expected == response.json
+
+                # assert response.json == {
+                #     "anndata": f"http://domain/{published_dataset_revision.dataset_version_id}.h5ad",
+                #     "atac_seq_fragment": f"http://domain/{published_dataset_revision.dataset_version_id}.bgz",
+                # }
+
     def test__get_manifest_tombstoned__410(self):
         published_collection = self.generate_published_collection()
         dataset = published_collection.datasets[0]

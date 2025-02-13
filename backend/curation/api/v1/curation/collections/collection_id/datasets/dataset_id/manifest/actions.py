@@ -45,13 +45,13 @@ def get_single_artifact_permanent_url(dataset_version, artifact_type, required=F
 def get(collection_id: str, dataset_id: str = None):
     _, dataset_version = _get_collection_and_dataset(collection_id, dataset_id)
 
-    response_body = {
-        "anndata": get_single_artifact_permanent_url(dataset_version, DatasetArtifactType.H5AD, required=True)
-    }
-    if atac_fragment_artifact := get_single_artifact_permanent_url(
-        dataset_version, DatasetArtifactType.ATAC_FRAGMENT, required=False
-    ):
-        response_body["atac_seq_fragment"] = atac_fragment_artifact
+    response_body = {}
+    for key, artifact_type in [
+        ("anndata", DatasetArtifactType.H5AD),
+        ("atac_seq_fragment", DatasetArtifactType.ATAC_FRAGMENT),
+    ]:
+        if uri := get_single_artifact_permanent_url(dataset_version, artifact_type):
+            response_body[key] = uri
 
     return make_response(jsonify(response_body), 200)
 
