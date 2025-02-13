@@ -16,6 +16,7 @@ from backend.layers.common.entities import (
     CollectionLinkType,
     CollectionMetadata,
     CollectionVersion,
+    DatasetArtifactType,
     DatasetProcessingStatus,
     DatasetStatusKey,
     DatasetUploadStatus,
@@ -2638,6 +2639,46 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
             test_url = f"/curation/v1/datasets/{dataset.dataset_id}/versions"
             response = self.app.get(test_url, headers=self.make_owner_header())
             self.assertEqual(410, response.status_code)
+
+
+class TestGetDatasetManifest(BaseAPIPortalTest):
+    def test_get_manifest_ok(self):
+        collection = self.generate_published_collection()
+        collection_id = collection.collection_id
+        published_revision = self.generate_revision(collection_id)
+        # Add delay here to ensure published_at timestamps are different (as millis are
+        # no longer returned in API response).
+
+        time.sleep(1)
+
+        published_dataset_revision = self.generate_dataset(
+            collection_version=published_revision,
+            publish=True,
+            artifacts=[
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.bgz"),
+            ],
+        )
+        time.sleep(0.5)
+        test_url = f"/curation/v1/collections/{published_dataset_revision.collection_id}/datasets/{published_dataset_revision.dataset_id}/manifest"
+        response = self.app.get(test_url)
+
+        self.assertEqual(200, response.status_code)
+
+        assert response.json == {
+            "anndata": f"http://domain/{published_dataset_revision.dataset_version_id}.h5ad",
+            "atac_seq_fragment": f"http://domain/{published_dataset_revision.dataset_version_id}.bgz",
+        }
+
+    def test__get_manifest_tombstoned__410(self):
+        published_collection = self.generate_published_collection()
+        dataset = published_collection.datasets[0]
+        self.business_logic.tombstone_collection(published_collection.collection_id)
+        with self.subTest("Returns 410 when a tombstoned canonical id is requested"):
+            resp = self.app.get(
+                f"/curation/v1/collections/{published_collection.collection_id}/datasets/{dataset.dataset_id}/manifest"
+            )
+            self.assertEqual(410, resp.status_code)
 
 
 class TestPostDataset(BaseAPIPortalTest):
