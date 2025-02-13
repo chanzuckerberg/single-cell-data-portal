@@ -2670,6 +2670,16 @@ class TestGetDatasetManifest(BaseAPIPortalTest):
             "atac_seq_fragment": f"http://domain/{published_dataset_revision.dataset_version_id}.bgz",
         }
 
+    def test__get_manifest_tombstoned__410(self):
+        published_collection = self.generate_published_collection()
+        dataset = published_collection.datasets[0]
+        self.business_logic.tombstone_collection(published_collection.collection_id)
+        with self.subTest("Returns 410 when a tombstoned canonical id is requested"):
+            resp = self.app.get(
+                f"/curation/v1/collections/{published_collection.collection_id}/datasets/{dataset.dataset_id}/manifest"
+            )
+            self.assertEqual(410, resp.status_code)
+
 
 class TestPostDataset(BaseAPIPortalTest):
     """
