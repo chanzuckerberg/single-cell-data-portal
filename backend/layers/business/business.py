@@ -80,6 +80,7 @@ from backend.layers.common.helpers import (
 from backend.layers.common.regex import S3_URI_REGEX
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
+from backend.layers.thirdparty.lambda_provider import LambdaProviderInterface
 from backend.layers.thirdparty.s3_exceptions import S3DeleteException
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
@@ -104,6 +105,7 @@ class BusinessLogic(BusinessLogicInterface):
         step_function_provider: StepFunctionProviderInterface,
         s3_provider: S3ProviderInterface,
         uri_provider: UriProviderInterface,
+        lambda_provider: Optional[LambdaProviderInterface] = None,
     ) -> None:
         self.batch_job_provider = batch_job_provider
         self.crossref_provider = crossref_provider
@@ -111,6 +113,7 @@ class BusinessLogic(BusinessLogicInterface):
         self.step_function_provider = step_function_provider
         self.s3_provider = s3_provider
         self.uri_provider = uri_provider
+        self.lambda_provider = lambda_provider
         super().__init__()
 
     @staticmethod
