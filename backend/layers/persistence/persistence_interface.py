@@ -224,18 +224,20 @@ class DatabaseProviderInterface:
         Updates the processing status for a dataset version.
         """
 
-    def update_dataset_validation_atac_message(
-        self, version_id: DatasetVersionId, status: DatasetValidationStatus
-    ) -> None:
+    def update_dataset_validation_status(self, version_id: DatasetVersionId, status: DatasetValidationStatus) -> None:
         """
         Updates the validation status for a dataset version.
+        """
+        pass
+
+    def update_dataset_validation_atac_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
+        """
+        Updates the validation atac message for a dataset version.
         """
 
-    def update_dataset_validation_anndata_message(
-        self, version_id: DatasetVersionId, status: DatasetValidationStatus
-    ) -> None:
+    def update_dataset_validation_anndata_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
         """
-        Updates the validation status for a dataset version.
+        Updates the validation anndata message for a dataset version.
         """
 
     def update_dataset_upload_status(self, version_id: DatasetVersionId, status: DatasetUploadStatus) -> None:

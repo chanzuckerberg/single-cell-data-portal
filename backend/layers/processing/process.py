@@ -132,12 +132,18 @@ class ProcessMain(ProcessingLogic):
             pass  # TODO: what's the effect of canceling a dataset now?
         except ValidationAnndataFailed as e:
             self.update_processing_status(
-                dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID, e.errors
+                dataset_version_id,
+                DatasetStatusKey.VALIDATION,
+                DatasetValidationStatus.INVALID,
+                validation_anndata_errors=e.errors,
             )
             return False
         except ValidationAtacFailed as e:
             self.update_processing_status(
-                dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID, e.errors
+                dataset_version_id,
+                DatasetStatusKey.VALIDATION,
+                DatasetValidationStatus.INVALID,
+                validation_atac_errors=e.errors,
             )
             return False
         except ProcessingFailed:

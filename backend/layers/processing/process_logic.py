@@ -37,16 +37,21 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         dataset_version_id: DatasetVersionId,
         status_key: DatasetStatusKey,
         status_value: DatasetStatusGeneric,
-        validation_errors: Optional[List[str]] = None,
+        validation_anndata_errors: Optional[List[str]] = None,
+        validation_atac_errors: Optional[List[str]] = None,
     ):
-        validation_message = "\n".join(validation_errors) if validation_errors is not None else None
+        validation_anndata_errors = (
+            "\n".join(validation_anndata_errors) if validation_anndata_errors is not None else None
+        )
+        validation_atac_errors = "\n".join(validation_atac_errors) if validation_atac_errors is not None else None
         self.business_logic.update_dataset_version_status(
-            dataset_version_id, status_key, status_value, validation_message
+            dataset_version_id, status_key, status_value, validation_anndata_errors, validation_atac_errors
         )
         self.logger.info(
             "Updating processing status",
             extra=dict(
-                validation_message=validation_message,
+                validation_anndata_errors=validation_anndata_errors,
+                validation_atac_errors=validation_atac_errors,
                 status_key=status_key,
                 status_value=status_value,
                 dataset_version_id=dataset_version_id.id,
