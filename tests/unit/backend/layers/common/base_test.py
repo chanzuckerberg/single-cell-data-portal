@@ -10,6 +10,7 @@ from backend.common.corpora_config import CorporaConfig
 from backend.common.providers.crossref_provider import CrossrefProviderInterface
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import (
+    ARTIFACT_TO_EXTENSION,
     CollectionId,
     CollectionMetadata,
     CollectionVersion,
@@ -42,6 +43,10 @@ class DatasetStatusUpdate:
 class DatasetArtifactUpdate:
     type: str
     uri: str
+
+    @property
+    def extension(self):
+        return ARTIFACT_TO_EXTENSION[self.type]
 
 
 @dataclass

@@ -49,6 +49,7 @@ from backend.layers.business.exceptions import (
 from backend.layers.common import validation
 from backend.layers.common.cleanup import sanitize, sanitize_dataset_artifact_metadata_update
 from backend.layers.common.entities import (
+    ARTIFACT_TO_EXTENSION,
     CanonicalCollection,
     CollectionId,
     CollectionLinkType,
@@ -123,7 +124,7 @@ class BusinessLogic(BusinessLogicInterface):
         Return the permanent URL for the given asset.
         """
         base_url = CorporaConfig().dataset_assets_base_url
-        return f"{base_url}/{dataset_version_id.id}.{asset_type}"
+        return f"{base_url}/{dataset_version_id.id}.{ARTIFACT_TO_EXTENSION[asset_type]}"
 
     @staticmethod
     def generate_dataset_citation(
@@ -1037,7 +1038,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Restore s3 public assets
         for dv_id in dataset_versions_to_restore:
-            for ext in (DatasetArtifactType.H5AD, DatasetArtifactType.RDS):
+            for ext in [ARTIFACT_TO_EXTENSION[x] for x in (DatasetArtifactType.H5AD, DatasetArtifactType.RDS)]:
                 object_key = f"{dv_id}.{ext}"
                 self.s3_provider.restore_object(os.getenv("DATASETS_BUCKET"), object_key)
 

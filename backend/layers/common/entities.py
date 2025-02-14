@@ -80,7 +80,16 @@ class DatasetArtifactType(str, Enum):
     H5AD = "h5ad"
     RDS = "rds"
     CXG = "cxg"
-    ATAC_FRAGMENT = "tsv.bgz"  # TODO: This is not great, extension doesn't exactly map to "artifact type"
+    ATAC_FRAGMENT = "fragment_tsv"
+
+
+ARTIFACT_TO_EXTENSION = {
+    DatasetArtifactType.RAW_H5AD: "raw_h5ad",
+    DatasetArtifactType.H5AD: "h5ad",
+    DatasetArtifactType.RDS: "rds",
+    DatasetArtifactType.CXG: "cxg",
+    DatasetArtifactType.ATAC_FRAGMENT: "tsv.bgz",
+}
 
 
 class Visibility(Enum):
@@ -152,6 +161,10 @@ class DatasetArtifact:
 
     def get_file_name(self):
         return urlparse(self.uri).path.split("/")[-1]
+
+    @property
+    def extension(self):
+        return ARTIFACT_TO_EXTENSION[self.type]
 
 
 @dataclass

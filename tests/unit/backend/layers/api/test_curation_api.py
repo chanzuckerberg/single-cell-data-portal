@@ -2706,7 +2706,7 @@ class TestGetDatasetManifest(BaseAPIPortalTest):
                 self.assertEqual(200, response.status_code)
 
                 expected = {
-                    k: f"http://domain/{dataset.dataset_version_id}.{v.type}" for k, v in case["artifacts"].items()
+                    k: f"http://domain/{dataset.dataset_version_id}.{v.extension}" for k, v in case["artifacts"].items()
                 }
                 assert expected == response.json
 
