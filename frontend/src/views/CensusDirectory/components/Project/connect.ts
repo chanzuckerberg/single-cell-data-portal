@@ -13,7 +13,7 @@ export const useConnect = ({ clobberedProjects }: ProjectProps) => {
       DEFAULT_EPOCH_TIME
   );
 
-  if (date.getDate() === DEFAULT_EPOCH_TIME) {
+  if (date.getTime() === DEFAULT_EPOCH_TIME) {
     clobberedProjects[1].forEach((project) => {
       const projectDate = new Date(
         project.last_updated || project.submission_date || DEFAULT_EPOCH_TIME
