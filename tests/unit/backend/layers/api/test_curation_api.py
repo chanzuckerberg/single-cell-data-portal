@@ -890,7 +890,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
             self.assertNotIn("processing_status", resp_collection.keys())
 
-    def test__get_collection_with_dataset_failing_validation(self):
+    def test__get_collection_with_anndata_dataset_failing_validation(self):
         collection_version = self.generate_collection(
             visibility=Visibility.PRIVATE.name,
         )
@@ -900,7 +900,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.VALIDATION, status=DatasetValidationStatus.INVALID),
             ],
-            validation_message="test message",
+            validation_anndata_message="test message",
         )
         res_json = self._test_response(collection_version)
         self.assertEqual("FAILURE", res_json["processing_status"])
@@ -908,6 +908,45 @@ class TestGetCollectionID(BaseAPIPortalTest):
         self.assertEqual(dataset.dataset_id, actual_dataset["dataset_id"])
         self.assertEqual("VALIDATION_FAILURE", actual_dataset["processing_status"])
         self.assertEqual("test message", actual_dataset["processing_status_detail"])
+
+    def test__get_collection_with_atac_dataset_failing_validation(self):
+        collection_version = self.generate_collection(
+            visibility=Visibility.PRIVATE.name,
+        )
+        dataset = self.generate_dataset(
+            collection_version=collection_version,
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.VALIDATION, status=DatasetValidationStatus.INVALID),
+            ],
+            validation_atac_message="test message",
+        )
+        res_json = self._test_response(collection_version)
+        self.assertEqual("FAILURE", res_json["processing_status"])
+        actual_dataset = res_json["datasets"][0]
+        self.assertEqual(dataset.dataset_id, actual_dataset["dataset_id"])
+        self.assertEqual("VALIDATION_FAILURE", actual_dataset["processing_status"])
+        self.assertEqual("test message", actual_dataset["processing_status_detail"])
+
+    def test__get_collection_with_atac_and_anndata_dataset_failing_validation(self):
+        collection_version = self.generate_collection(
+            visibility=Visibility.PRIVATE.name,
+        )
+        dataset = self.generate_dataset(
+            collection_version=collection_version,
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.VALIDATION, status=DatasetValidationStatus.INVALID),
+            ],
+            validation_anndata_message="anndata failed",
+            validation_atac_message="atac failed",
+        )
+        res_json = self._test_response(collection_version)
+        self.assertEqual("FAILURE", res_json["processing_status"])
+        actual_dataset = res_json["datasets"][0]
+        self.assertEqual(dataset.dataset_id, actual_dataset["dataset_id"])
+        self.assertEqual("VALIDATION_FAILURE", actual_dataset["processing_status"])
+        self.assertEqual("anndata failed\natac failed", actual_dataset["processing_status_detail"])
 
     def test__get_collection_with_dataset_failing_pipeline(self):
         collection = self.generate_collection(

@@ -254,10 +254,11 @@ class BaseTest(unittest.TestCase):
         metadata: Optional[DatasetMetadata] = None,
         name: Optional[str] = None,
         statuses: List[DatasetStatusUpdate] = None,
-        validation_message: str = None,
+        validation_anndata_message: str = None,
         artifacts: List[DatasetArtifactUpdate] = None,
         publish: bool = False,
         replace_dataset_version_id: Optional[DatasetVersionId] = None,
+        validation_atac_message: Optional[str] = None,
     ) -> DatasetData:
         """
         Convenience method for generating a dataset. Also generates an unpublished collection if needed.
@@ -276,12 +277,13 @@ class BaseTest(unittest.TestCase):
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
         for status in statuses:
             self.business_logic.update_dataset_version_status(dataset_version_id, status.status_key, status.status)
-        if validation_message:
+        if validation_anndata_message:
             self.business_logic.update_dataset_version_status(
                 dataset_version_id,
                 DatasetStatusKey.VALIDATION,
                 DatasetValidationStatus.INVALID,
-                validation_message=validation_message,
+                validation_anndata_message=validation_anndata_message,
+                validation_atac_message=validation_atac_message,
             )
         if artifacts is None:
             artifacts = [
