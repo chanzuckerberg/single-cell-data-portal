@@ -1706,7 +1706,7 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
             )
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             self.assertEqual(version_from_db.status.validation_status, DatasetValidationStatus.INVALID)
-            self.assertEqual(version_from_db.status.validation_message, "Validation error!")
+            self.assertEqual(version_from_db.status.validation_anndata_message, "Validation error!")
 
     def test_add_dataset_artifact_ok(self):
         """

@@ -11,7 +11,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.common.ingestion_manifest import IngestionManifest
-from backend.layers.processing.exceptions import ValidationFailed
+from backend.layers.processing.exceptions import ValidationAnndataFailed
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
@@ -73,8 +73,8 @@ class ProcessValidateH5AD(ProcessingLogic):
             DatasetArtifactType.RAW_H5AD,
             key_prefix,
             dataset_version_id,
-            artifact_bucket,
             DatasetStatusKey.H5AD,
+            artifact_bucket,
         )
         self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
 
@@ -99,13 +99,13 @@ class ProcessValidateH5AD(ProcessingLogic):
             self.update_processing_status(
                 dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID
             )
-            raise ValidationFailed([str(e)]) from None
+            raise ValidationAnndataFailed([str(e)]) from None
 
         if not is_valid:
             self.update_processing_status(
                 dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID
             )
-            raise ValidationFailed(errors)
+            raise ValidationAnndataFailed(errors)
         else:
             # Skip seurat conversion
             self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
@@ -135,7 +135,7 @@ class ProcessValidateH5AD(ProcessingLogic):
         self.validate_h5ad_file(dataset_version_id, local_filename)
 
 
-class ProcessValidateATACSEQ(ProcessingLogic):
+class ProcessValidateATAC(ProcessingLogic):
     def __init__(
         self,
         business_logic: BusinessLogicInterface,
@@ -164,3 +164,47 @@ class ProcessValidateATACSEQ(ProcessingLogic):
         :param datasets_bucket:
         :return:
         """
+        # Download the original dataset files from URI
+        local_anndata_filename = self.download_from_source_uri(
+            source_uri=str(manifest.anndata),
+            local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
+        )
+
+        local_fragment_filename = self.download_from_source_uri(
+            source_uri=str(manifest.atac_fragment), local_path=CorporaConstants.ORIGINAL_ATAC_FRAGMENT_FILENAME
+        )
+
+        try:
+            is_valid, errors = self.schema_validator.validate_atac(local_fragment_filename, local_anndata_filename)
+        except Exception as e:
+            self.logger.exception("validation failed")
+            self.update_processing_status(
+                dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID
+            )
+            raise ValidationAnndataFailed([str(e)]) from None
+
+        if not is_valid:
+            self.update_processing_status(
+                dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID
+            )
+            raise ValidationAnndataFailed(errors)
+        else:
+            key_prefix = self.get_key_prefix(dataset_version_id.id)
+            self.create_artifact(
+                local_fragment_filename,
+                DatasetArtifactType.ATAC_FRAGMENT,
+                key_prefix,
+                dataset_version_id,
+                DatasetStatusKey.ATAC_FRAGMENT,
+                datasets_bucket,
+            )
+            self.create_artifact(
+                local_fragment_filename + ".tbi",
+                DatasetArtifactType.ATAC_FRAGMENT_INDEX,
+                key_prefix,
+                dataset_version_id,
+                DatasetStatusKey.ATAC_FRAGMENT,
+                datasets_bucket,
+            )
+            self.logger.info("Processing completed successfully")
+            return

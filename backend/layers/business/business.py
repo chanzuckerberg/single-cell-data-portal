@@ -832,10 +832,10 @@ class BusinessLogic(BusinessLogicInterface):
         dataset_version_id: DatasetVersionId,
         status_key: DatasetStatusKey,
         new_dataset_status: DatasetStatusGeneric,
-        validation_message: Optional[str] = None,
+        validation_anndata_message: Optional[str] = None,
+        validation_atac_message: Optional[str] = None,
     ) -> None:
         """
-        TODO: split into two method, one for updating validation_message, and the other statuses.
         Updates the status of a dataset version.
         status_key can be one of: [upload, validation, cxg, rds, h5ad, processing]
         """
@@ -863,8 +863,13 @@ class BusinessLogic(BusinessLogicInterface):
                 f"{new_dataset_status}"
             )
 
-        if validation_message is not None:
-            self.database_provider.update_dataset_validation_message(dataset_version_id, validation_message)
+        if validation_anndata_message is not None:
+            self.database_provider.update_dataset_validation_anndata_message(
+                dataset_version_id, validation_anndata_message
+            )
+
+        if validation_atac_message is not None:
+            self.database_provider.update_dataset_validation_atac_message(dataset_version_id, validation_atac_message)
 
     def add_dataset_artifact(
         self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
@@ -944,6 +949,8 @@ class BusinessLogic(BusinessLogicInterface):
     def delete_dataset_versions_from_public_bucket(self, dataset_version_ids: List[str]) -> List[str]:
         rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
         object_keys = set()
+        # TODO, modify to delete fragment and index file as well. The fragment file and index used the artifact ID to
+        #  identify it.
         for d_v_id in dataset_version_ids:
             for file_type in ("h5ad", "rds"):
                 dataset_version_s3_object_key = f"{d_v_id}.{file_type}"

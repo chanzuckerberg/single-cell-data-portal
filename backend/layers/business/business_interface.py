@@ -152,7 +152,8 @@ class BusinessLogicInterface:
         dataset_version_id: DatasetVersionId,
         status_key: DatasetStatusKey,
         new_dataset_status: DatasetStatusGeneric,
-        validation_message: Optional[str] = None,
+        validation_anndata_message: Optional[str] = None,
+        validation_atac_message: Optional[str] = None,
     ) -> None:
         pass
 

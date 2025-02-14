@@ -90,7 +90,7 @@ class TestLogErrorsAndCleanup:
         errors = schema_migrate.log_errors_and_cleanup(collection_version.version_id.id)
         assert len(errors) == 2
         assert {
-            "message": failed_dataset.status.validation_message,
+            "message": failed_dataset.status.validation_anndata_message,
             "dataset_status": failed_dataset.status.to_dict(),
             "collection_id": collection_version.collection_id.id,
             "collection_version_id": collection_version.version_id.id,
@@ -99,7 +99,7 @@ class TestLogErrorsAndCleanup:
             "rollback": True,
         } in errors
         assert {
-            "message": non_migrated_dataset.status.validation_message,
+            "message": non_migrated_dataset.status.validation_anndata_message,
             "dataset_status": non_migrated_dataset.status.to_dict(),
             "collection_id": collection_version.collection_id.id,
             "collection_version_id": collection_version.version_id.id,

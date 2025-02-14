@@ -249,7 +249,9 @@ class SchemaMigrate(ProcessingLogic):
                 error_message = "Did Not Migrate"
                 dataset_status = "n/a"
                 if dataset.status is not None:
-                    error_message = dataset.status.validation_message
+                    error_message = "\n".join(
+                        [dataset.status.validation_anndata_message, dataset.status.validation_atac_message]
+                    )
                     dataset_status = dataset.status.to_dict()
                 error = {
                     "message": error_message,

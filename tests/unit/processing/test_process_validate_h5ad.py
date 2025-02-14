@@ -124,4 +124,4 @@ class TestProcessValidateH5AD(BaseProcessingTest):
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
         self.assertEqual(status.validation_status, DatasetValidationStatus.INVALID)
-        self.assertEqual(status.validation_message, "Validation error 1\nValidation error 2")
+        self.assertEqual(status.validation_anndata_message, "Validation error 1\nValidation error 2")

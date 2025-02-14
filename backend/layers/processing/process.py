@@ -21,13 +21,14 @@ from backend.layers.processing.exceptions import (
     ProcessingCanceled,
     ProcessingFailed,
     UploadFailed,
-    ValidationFailed,
+    ValidationAnndataFailed,
+    ValidationAtacFailed,
 )
 from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_add_labels import ProcessAddLabels
 from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_logic import ProcessingLogic
-from backend.layers.processing.process_validate_h5ad import ProcessValidateATACSEQ, ProcessValidateH5AD
+from backend.layers.processing.process_validate_h5ad import ProcessValidateATAC, ProcessValidateH5AD
 from backend.layers.processing.schema_migration import SchemaMigrate
 from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
 from backend.layers.thirdparty.schema_validator_provider import (
@@ -62,7 +63,7 @@ class ProcessMain(ProcessingLogic):
         self.process_validate_h5ad = ProcessValidateH5AD(
             self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
         )
-        self.process_validate_atac_seq = ProcessValidateATACSEQ(
+        self.process_validate_atac_seq = ProcessValidateATAC(
             self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
         )
         self.process_add_labels = ProcessAddLabels(
@@ -129,7 +130,12 @@ class ProcessMain(ProcessingLogic):
         # TODO: this could be better - maybe collapse all these exceptions and pass in the status key and value
         except ProcessingCanceled:
             pass  # TODO: what's the effect of canceling a dataset now?
-        except ValidationFailed as e:
+        except ValidationAnndataFailed as e:
+            self.update_processing_status(
+                dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID, e.errors
+            )
+            return False
+        except ValidationAtacFailed as e:
             self.update_processing_status(
                 dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID, e.errors
             )

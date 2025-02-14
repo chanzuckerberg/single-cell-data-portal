@@ -289,7 +289,9 @@ def reshape_dataset_for_curation_api(
         if not is_published and (status := dataset_version.status):
             if status.processing_status == DatasetProcessingStatus.FAILURE:
                 if status.validation_status == DatasetValidationStatus.INVALID:
-                    ds["processing_status_detail"] = status.validation_message
+                    ds["processing_status_detail"] = "\n".join(
+                        [status.validation_anndata_message, status.validation_atac_message]
+                    )
                     ds["processing_status"] = "VALIDATION_FAILURE"
                 else:
                     ds["processing_status"] = "PIPELINE_FAILURE"
@@ -440,7 +442,7 @@ class EntityColumns:
         "filename",
     ]
 
-    dataset_processing_status_cols = ["processing_status", "validation_message", "validation_status"]
+    dataset_processing_status_cols = ["processing_status", "validation_anndata_message", "validation_status"]
 
 
 def get_visibility(collection_version: CollectionVersion) -> str:

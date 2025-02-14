@@ -108,11 +108,12 @@ class DatasetStatus:
     rds_status: Optional[DatasetConversionStatus]
     h5ad_status: Optional[DatasetConversionStatus]
     processing_status: Optional[DatasetProcessingStatus]
-    validation_message: Optional[str] = None
+    validation_anndata_message: Optional[str] = None
+    validation_atac_message: Optional[str] = None
 
     @staticmethod
     def empty():
-        return DatasetStatus(None, None, None, None, None, None)
+        return DatasetStatus(None, None, None, None, None, None, None)
 
 
 @dataclass

@@ -58,7 +58,9 @@ class PublishRevisions(ProcessingLogic):
             elif dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
                 errors.append(
                     {
-                        "message": dataset.status.validation_message,
+                        "message": "\n".join(
+                            [dataset.status.validation_anndata_message, dataset.status.validation_atac_message]
+                        ),
                         "dataset_status": dataset.status.to_dict(),
                         "dataset_version_id": dataset_version_id,
                         "dataset_id": dataset_id,

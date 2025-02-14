@@ -52,7 +52,7 @@ def sample_slack_status_block():
             '  "processing_status": null,\n'
             '  "rds_status": null,\n'
             '  "upload_status": null,\n'
-            '  "validation_message": null,\n'
+            '  "validation_anndata_message": null,\n'
             '  "validation_status": null\n'
             "}```",
         },
