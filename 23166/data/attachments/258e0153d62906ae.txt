@@ -1,0 +1,17 @@
+INFO     backend.layers.business.business:business.py:566 {'message': 'ingesting dataset', 'collection_version_id': a3cdea7f-9565-4a5b-88b5-e3cc9670e1f3, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:566 {'message': 'ingesting dataset', 'collection_version_id': a3cdea7f-9565-4a5b-88b5-e3cc9670e1f3, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': afe857d8-7f8e-4f48-b31a-53e4acbe9067}
+INFO     processing:dataset_metadata_update.py:273 Main: No raw h5ad update required
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_logic.py:107 Uploaded [64366cd4-b2a8-4538-999f-33af8963dc18/raw.h5ad] to s3://artifact_bucket/64366cd4-b2a8-4538-999f-33af8963dc18/raw.h5ad
+INFO     processing:process_logic.py:109 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:47 Updating processing status
+ERROR    processing:dataset_metadata_update.py:294 Cannot find labeled H5AD artifact uri for afe857d8-7f8e-4f48-b31a-53e4acbe9067.
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:dataset_metadata_update.py:301 Main: Starting thread for cxg update
+INFO     processing:process_logic.py:47 Updating processing status
