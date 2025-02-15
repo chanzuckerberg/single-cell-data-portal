@@ -80,7 +80,7 @@ class ProcessingTest(BaseProcessingTest):
         )
 
         pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
-        for step_name in ["validate_anndata", "add_labels", "cxg"]:
+        for step_name in ["validate_anndata", "validate_atac", "add_labels", "cxg"]:
             assert pm.process(
                 collection.version_id,
                 dataset_version_id,

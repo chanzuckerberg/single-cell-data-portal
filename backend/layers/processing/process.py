@@ -109,7 +109,7 @@ class ProcessMain(ProcessingLogic):
         try:
             if step_name == "validate_anndata":
                 self.process_validate_h5ad.process(dataset_version_id, manifest, artifact_bucket)
-            elif step_name == "validate_atac_seq":
+            elif step_name == "validate_atac":
                 self.process_validate_atac_seq.process(
                     collection_version_id,
                     dataset_version_id,

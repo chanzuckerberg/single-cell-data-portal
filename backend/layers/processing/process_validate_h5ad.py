@@ -1,3 +1,5 @@
+import hashlib
+
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
@@ -173,7 +175,8 @@ class ProcessValidateATAC(ProcessingLogic):
         local_fragment_filename = self.download_from_source_uri(
             source_uri=str(manifest.atac_fragment), local_path=CorporaConstants.ORIGINAL_ATAC_FRAGMENT_FILENAME
         )
-
+        with open(local_fragment_filename, "rb") as f:
+            original_fragment_hash = hashlib.sha256(f.read()).hexdigest()
         try:
             is_valid, errors = self.schema_validator.validate_atac(local_fragment_filename, local_anndata_filename)
         except Exception as e:
@@ -188,8 +191,13 @@ class ProcessValidateATAC(ProcessingLogic):
                 dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID
             )
             raise ValidationAnndataFailed(errors)
-        else:
+        # check to see if the new fragments is the same as the old fragment
+        # if it is the same, skip the upload and use link the old fragment to the new dataset
+        with open(local_fragment_filename, "rb") as f:
+            new_fragment_hash = hashlib.sha256(f.read()).hexdigest()
+        if original_fragment_hash != new_fragment_hash:
             key_prefix = self.get_key_prefix(dataset_version_id.id)
+            # TODO need to upload using the artifact id
             self.create_artifact(
                 local_fragment_filename,
                 DatasetArtifactType.ATAC_FRAGMENT,
@@ -207,4 +215,4 @@ class ProcessValidateATAC(ProcessingLogic):
                 datasets_bucket,
             )
             self.logger.info("Processing completed successfully")
-            return
+        return
