@@ -2700,14 +2700,21 @@ class TestGetDatasetManifest(BaseAPIPortalTest):
                     collection_version=collection,
                     artifacts=list(case["artifacts"].values()),
                 )
+                artifacts = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset.dataset_version_id))
+
+                assert len(artifacts) == len(case["artifacts"])
+
+                expected = {}
+                for artifact in artifacts:
+                    if artifact.type == DatasetArtifactType.ATAC_FRAGMENT:
+                        expected["atac_fragment"] = f"http://domain/{artifact.id}.{artifact.extension}"
+                    elif artifact.type == DatasetArtifactType.H5AD:
+                        expected["anndata"] = f"http://domain/{dataset.dataset_version_id}.{artifact.extension}"
 
                 test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}/manifest"
                 response = self.app.get(test_url)
                 self.assertEqual(200, response.status_code)
 
-                expected = {
-                    k: f"http://domain/{dataset.dataset_version_id}.{v.extension}" for k, v in case["artifacts"].items()
-                }
                 assert expected == response.json
 
     def test__get_manifest_tombstoned__410(self):
