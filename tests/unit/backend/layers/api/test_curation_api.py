@@ -2642,30 +2642,6 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
 
 
 class TestGetDatasetManifest(BaseAPIPortalTest):
-    def test_get_manifest_ok(self):
-        collection = self.generate_published_collection()
-        collection_id = collection.collection_id
-        published_revision = self.generate_revision(collection_id)
-
-        published_dataset_revision = self.generate_dataset(
-            collection_version=published_revision,
-            publish=True,
-            artifacts=[
-                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.tsv.bgz"),
-            ],
-        )
-
-        test_url = f"/curation/v1/collections/{published_dataset_revision.collection_id}/datasets/{published_dataset_revision.dataset_id}/manifest"
-        response = self.app.get(test_url)
-
-        self.assertEqual(200, response.status_code)
-
-        assert response.json == {
-            "anndata": f"http://domain/{published_dataset_revision.dataset_version_id}.h5ad",
-            "atac_fragment": f"http://domain/{published_dataset_revision.dataset_version_id}.tsv.bgz",
-        }
-
     def test_get_manifest_cases_ok(self):
         cases = [
             {

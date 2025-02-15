@@ -20,11 +20,16 @@ from backend.layers.business.exceptions import (
     DatasetNotFoundException,
     InvalidURIException,
 )
-from backend.layers.common.entities import DatasetArtifactType
+from backend.layers.common.entities import (
+    DatasetArtifactType,
+    DatasetVersion,
+)
 from backend.portal.api.providers import get_business_logic
 
 
-def get_single_artifact_permanent_url(dataset_version, artifact_type, required=False) -> str:
+def get_single_artifact_permanent_url(
+    dataset_version: DatasetVersion, artifact_type: DatasetArtifactType, required: bool = False
+) -> str | None:
     """Find exactly one artifact of the given type, then return it's canonical URI.
 
     If `required` is True and no artifact is found, raises ValueError.
@@ -39,7 +44,10 @@ def get_single_artifact_permanent_url(dataset_version, artifact_type, required=F
     if not matches and required:
         raise ValueError(f"No '{artifact_type}' artifact found.")
 
-    return BusinessLogic.generate_permanent_url(dataset_version.version_id, artifact_type) if matches else None
+    if matches:
+        id_for_url = matches[0].id if artifact_type == DatasetArtifactType.ATAC_FRAGMENT else dataset_version.version_id
+
+        return BusinessLogic.generate_permanent_url(id_for_url, artifact_type)
 
 
 def get(collection_id: str, dataset_id: str = None):

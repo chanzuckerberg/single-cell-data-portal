@@ -119,12 +119,12 @@ class BusinessLogic(BusinessLogicInterface):
         super().__init__()
 
     @staticmethod
-    def generate_permanent_url(dataset_version_id: DatasetVersionId, asset_type: DatasetArtifactType):
+    def generate_permanent_url(entity_id: DatasetVersionId | DatasetArtifactId, asset_type: DatasetArtifactType):
         """
         Return the permanent URL for the given asset.
         """
         base_url = CorporaConfig().dataset_assets_base_url
-        return f"{base_url}/{dataset_version_id.id}.{ARTIFACT_TO_EXTENSION[asset_type]}"
+        return f"{base_url}/{entity_id.id}.{ARTIFACT_TO_EXTENSION[asset_type]}"
 
     @staticmethod
     def generate_dataset_citation(
