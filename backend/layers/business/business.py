@@ -120,12 +120,17 @@ class BusinessLogic(BusinessLogicInterface):
 
     @staticmethod
     def generate_permanent_url(
-        dataset_id: DatasetVersionId, artifact_id: DatasetArtifactId, asset_type: DatasetArtifactType
-    ):
+        dataset_version: DatasetVersion, artifact_id: DatasetArtifactId, asset_type: DatasetArtifactType
+    ) -> str:
         """
         Return the permanent URL for the given asset.
         """
-        entity_id = artifact_id if asset_type == DatasetArtifactType.ATAC_FRAGMENT else dataset_id
+        if asset_type == DatasetArtifactType.ATAC_INDEX:
+            entity_id = [a for a in dataset_version.artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0].id
+        elif asset_type == DatasetArtifactType.ATAC_FRAGMENT:
+            entity_id = artifact_id
+        else:
+            entity_id = dataset_version.version_id
 
         base_url = CorporaConfig().dataset_assets_base_url
         return f"{base_url}/{entity_id.id}.{ARTIFACT_TO_EXTENSION[asset_type]}"
@@ -815,14 +820,15 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Returns data required for download: file size and permanent URL.
         """
-        artifacts = self.get_dataset_artifacts(dataset_version_id)
+        dataset_version = self.database_provider.get_dataset_version(dataset_version_id)
+        artifacts = dataset_version.artifacts
         artifact = next((a for a in artifacts if a.id == artifact_id), None)
 
         if not artifact:
             raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")
 
         file_size = self.s3_provider.get_file_size(artifact.uri)
-        url = self.generate_permanent_url(dataset_version_id, artifact.id, artifact.type)
+        url = self.generate_permanent_url(dataset_version, artifact.id, artifact.type)
 
         return DatasetArtifactDownloadData(file_size, url)
 

@@ -819,6 +819,7 @@ components:
         - H5AD
         - RDS
         - FRAGMENT_TSV
+        - FRAGMENT_INDEX
       type: string
       description: the file type of the asset.
     batch_condition:
