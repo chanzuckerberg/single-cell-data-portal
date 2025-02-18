@@ -1807,6 +1807,30 @@ class TestGetDatasets(BaseAPIPortalTest):
         body = response.json
         self.assertEqual([], body["assets"])
 
+    def test_get_dataset_atac_assets(self):
+        dataset = self.generate_dataset(
+            artifacts=[
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.tsv.bgz"),
+            ]
+        )
+        artifacts = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset.dataset_version_id))
+        atac_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0]
+
+        test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}"
+        response = self.app.get(test_url)
+        body = response.json
+
+        assert len(artifacts) == 2
+
+        self.assertEqual(
+            [
+                {"filesize": -1, "filetype": "H5AD", "url": f"http://domain/{dataset.dataset_version_id}.h5ad"},
+                {"filesize": -1, "filetype": "FRAGMENT_TSV", "url": f"http://domain/{atac_artifact.id}.tsv.bgz"},
+            ],
+            body["assets"],
+        )
+
     def test_get_all_datasets_200(self):
         crossref_return_value_1 = (generate_mock_publisher_metadata(), "12.3456/j.celrep", 17169328.664)
         self.crossref_provider.fetch_metadata = Mock(return_value=crossref_return_value_1)

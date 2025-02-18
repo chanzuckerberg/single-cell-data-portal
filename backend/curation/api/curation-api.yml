@@ -818,6 +818,7 @@ components:
       enum:
         - H5AD
         - RDS
+        - FRAGMENT_TSV
       type: string
       description: the file type of the asset.
     batch_condition:

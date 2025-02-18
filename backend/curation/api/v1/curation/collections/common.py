@@ -34,7 +34,7 @@ from backend.layers.common.entities import (
 from backend.portal.api.explorer_url import generate as generate_explorer_url
 from backend.portal.api.providers import get_business_logic
 
-allowed_dataset_asset_types = (DatasetArtifactType.H5AD, DatasetArtifactType.RDS)
+allowed_dataset_asset_types = (DatasetArtifactType.H5AD, DatasetArtifactType.RDS, DatasetArtifactType.ATAC_FRAGMENT)
 
 
 def get_collections_base_url():
