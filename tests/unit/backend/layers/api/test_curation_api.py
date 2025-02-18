@@ -16,6 +16,7 @@ from backend.layers.common.entities import (
     CollectionLinkType,
     CollectionMetadata,
     CollectionVersion,
+    DatasetArtifactType,
     DatasetProcessingStatus,
     DatasetStatusKey,
     DatasetUploadStatus,
@@ -2638,6 +2639,94 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
             test_url = f"/curation/v1/datasets/{dataset.dataset_id}/versions"
             response = self.app.get(test_url, headers=self.make_owner_header())
             self.assertEqual(410, response.status_code)
+
+
+class TestGetDatasetManifest(BaseAPIPortalTest):
+    def test_get_manifest_cases_ok(self):
+        cases = [
+            {
+                "artifacts": {
+                    "atac_fragment": DatasetArtifactUpdate(
+                        DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.tsv.bgz"
+                    )
+                },
+                "name": "fragments_only",
+            },
+            {
+                "artifacts": {"anndata": DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad")},
+                "name": "anndata_only",
+            },
+            {
+                "artifacts": {
+                    "anndata": DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
+                    "atac_fragment": DatasetArtifactUpdate(
+                        DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.tsv.bgz"
+                    ),
+                },
+                "name": "anndata_and_fragments",
+            },
+            {"artifacts": {}, "name": "no_artifacts"},
+        ]
+        for case in cases:
+            with self.subTest(f"Get manifest case: {case['name']}"):
+
+                collection = self.generate_unpublished_collection()
+
+                dataset = self.generate_dataset(
+                    collection_version=collection,
+                    artifacts=list(case["artifacts"].values()),
+                )
+                artifacts = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset.dataset_version_id))
+
+                assert len(artifacts) == len(case["artifacts"])
+
+                expected = {}
+                for artifact in artifacts:
+                    if artifact.type == DatasetArtifactType.ATAC_FRAGMENT:
+                        expected["atac_fragment"] = f"http://domain/{artifact.id}.{artifact.extension}"
+                    elif artifact.type == DatasetArtifactType.H5AD:
+                        expected["anndata"] = f"http://domain/{dataset.dataset_version_id}.{artifact.extension}"
+
+                test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}/manifest"
+                response = self.app.get(test_url)
+                self.assertEqual(200, response.status_code)
+
+                assert expected == response.json
+
+    def test__get_manifest_tombstoned__410(self):
+        published_collection = self.generate_published_collection()
+        dataset = published_collection.datasets[0]
+        self.business_logic.tombstone_collection(published_collection.collection_id)
+        with self.subTest("Returns 410 when a tombstoned canonical id is requested"):
+            resp = self.app.get(
+                f"/curation/v1/collections/{published_collection.collection_id}/datasets/{dataset.dataset_id}/manifest"
+            )
+            self.assertEqual(410, resp.status_code)
+
+    def test__get_manifest_by_dataset_version_id_fails(self):
+        collection = self.generate_unpublished_collection(add_datasets=1)
+        dataset = collection.datasets[0]
+
+        test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.version_id}/manifest"
+        response = self.app.get(test_url)
+        # TODO: I think this should be a 404 but this is also the behaviour of GET /collections/{colleciton_id}/datasets/{dataset_version_id}
+        self.assertEqual(403, response.status_code)
+
+    def test__get_manifest_by_missing_dataset_id_fails(self):
+        import uuid
+
+        collection = self.generate_unpublished_collection(add_datasets=0)
+
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{uuid.uuid4()}/manifest"
+        response = self.app.get(test_url)
+        self.assertEqual(404, response.status_code)
+
+    def test__get_manifest_by_missing_collection_id_fails(self):
+        import uuid
+
+        test_url = f"/curation/v1/collections/{uuid.uuid4()}/datasets/{uuid.uuid4()}/manifest"
+        response = self.app.get(test_url)
+        self.assertEqual(404, response.status_code)
 
 
 class TestPostDataset(BaseAPIPortalTest):
