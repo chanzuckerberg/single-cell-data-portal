@@ -104,11 +104,10 @@ class DatasetStatus:
     cxg_status: Optional[DatasetConversionStatus]
     rds_status: Optional[DatasetConversionStatus]
     h5ad_status: Optional[DatasetConversionStatus]
+    atac_status: Optional[DatasetConversionStatus]
     processing_status: Optional[DatasetProcessingStatus]
     validation_anndata_message: Optional[str] = None
     validation_atac_message: Optional[str] = None
-    # errors: Dict[str,List[str]] = field(default_factory=dict)
-    # # TODO group all error message into an error field
 
     @staticmethod
     def empty():

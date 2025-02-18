@@ -97,6 +97,7 @@ def _dataset_processing_status_to_response(status: DatasetStatus, dataset_id: st
         "cxg_status": status.cxg_status or "NA",
         "dataset_id": dataset_id,
         "h5ad_status": status.h5ad_status or "NA",
+        "atac_status": status.atac_status or "NA",
         "id": "NA",  # TODO can we purge?
         "processing_status": status.processing_status or "NA",
         "rds_status": status.rds_status or "NA",
@@ -803,6 +804,7 @@ def get_status(dataset_id: str, token_info: dict):
         "cxg_status": version.status.cxg_status or "NA",
         "rds_status": version.status.rds_status or "NA",
         "h5ad_status": version.status.h5ad_status or "NA",
+        "atac_status": version.status.atac_status or "NA",
         "processing_status": version.status.processing_status or "NA",
         "dataset_id": dataset_id,
         "id": "NA",
