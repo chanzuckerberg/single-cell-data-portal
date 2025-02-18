@@ -119,10 +119,14 @@ class BusinessLogic(BusinessLogicInterface):
         super().__init__()
 
     @staticmethod
-    def generate_permanent_url(entity_id: DatasetVersionId | DatasetArtifactId, asset_type: DatasetArtifactType):
+    def generate_permanent_url(
+        dataset_id: DatasetVersionId, artifact_id: DatasetArtifactId, asset_type: DatasetArtifactType
+    ):
         """
         Return the permanent URL for the given asset.
         """
+        entity_id = artifact_id if asset_type == DatasetArtifactType.ATAC_FRAGMENT else dataset_id
+
         base_url = CorporaConfig().dataset_assets_base_url
         return f"{base_url}/{entity_id.id}.{ARTIFACT_TO_EXTENSION[asset_type]}"
 
@@ -818,7 +822,7 @@ class BusinessLogic(BusinessLogicInterface):
             raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")
 
         file_size = self.s3_provider.get_file_size(artifact.uri)
-        url = self.generate_permanent_url(dataset_version_id, artifact.type)
+        url = self.generate_permanent_url(dataset_version_id, artifact.id, artifact.type)
 
         return DatasetArtifactDownloadData(file_size, url)
 

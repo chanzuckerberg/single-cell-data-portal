@@ -45,9 +45,7 @@ def get_single_artifact_permanent_url(
         raise ValueError(f"No '{artifact_type}' artifact found.")
 
     if matches:
-        id_for_url = matches[0].id if artifact_type == DatasetArtifactType.ATAC_FRAGMENT else dataset_version.version_id
-
-        return BusinessLogic.generate_permanent_url(id_for_url, artifact_type)
+        return BusinessLogic.generate_permanent_url(dataset_version.version_id, matches[0].id, artifact_type)
 
 
 def get(collection_id: str, dataset_id: str = None):
