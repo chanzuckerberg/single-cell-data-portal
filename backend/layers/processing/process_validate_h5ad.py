@@ -13,7 +13,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.common.ingestion_manifest import IngestionManifest
-from backend.layers.processing.exceptions import ValidationAnndataFailed
+from backend.layers.processing.exceptions import ValidationAnndataFailed, ValidationAtacFailed
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
@@ -172,6 +172,36 @@ class ProcessValidateATAC(ProcessingLogic):
             local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
         )
 
+        # check if the anndata should have a fragment file
+        try:
+            result = self.schema_validator.check_anndata_requires_fragment(local_anndata_filename)
+        except ValueError as e:  # fragment file forbidden
+            self.logger.warning(f"Anndata does not support atac fragment files for the follow reason: {e}")
+            self.logger.warning("Skipping fragment validation")
+            self.update_processing_status(
+                dataset_version_id,
+                DatasetStatusKey.ATAC_FRAGMENT,
+                DatasetConversionStatus.SKIPPED,
+                validation_atac_errors=[str(e)],
+            )
+            return
+
+        if manifest.atac_fragment is None:
+            if result:  # fragment file required
+                self.update_processing_status(
+                    dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID
+                )
+                raise ValidationAtacFailed(["Anndata requires fragment file"])
+            else:  # fragment file optional
+                self.logger.info("Fragment is optional and not present. Skipping fragment validation.")
+                self.update_processing_status(
+                    dataset_version_id,
+                    DatasetStatusKey.ATAC_FRAGMENT,
+                    DatasetConversionStatus.SKIPPED,
+                    validation_atac_errors=["Fragment is optional and not present."],
+                )
+                return
+
         local_fragment_filename = self.download_from_source_uri(
             source_uri=str(manifest.atac_fragment), local_path=CorporaConstants.ORIGINAL_ATAC_FRAGMENT_FILENAME
         )
@@ -182,22 +212,22 @@ class ProcessValidateATAC(ProcessingLogic):
         except Exception as e:
             self.logger.exception("validation failed")
             self.update_processing_status(
-                dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID
+                dataset_version_id, DatasetStatusKey.ATAC_FRAGMENT, DatasetConversionStatus.FAILED
             )
-            raise ValidationAnndataFailed([str(e)]) from None
+            raise ValidationAtacFailed([str(e)]) from None
 
         if not is_valid:
             self.update_processing_status(
-                dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID
+                dataset_version_id, DatasetStatusKey.ATAC_FRAGMENT, DatasetConversionStatus.FAILED
             )
-            raise ValidationAnndataFailed(errors)
+            raise ValidationAtacFailed(errors)
         # check to see if the new fragments is the same as the old fragment
         # if it is the same, skip the upload and use link the old fragment to the new dataset
+        # This case is for when the dataset is reprocessed, or updated
         with open(local_fragment_filename, "rb") as f:
             new_fragment_hash = hashlib.sha256(f.read()).hexdigest()
         if original_fragment_hash != new_fragment_hash:
             key_prefix = self.get_key_prefix(dataset_version_id.id)
-            # TODO need to upload using the artifact id
             self.create_artifact(
                 local_fragment_filename,
                 DatasetArtifactType.ATAC_FRAGMENT,
