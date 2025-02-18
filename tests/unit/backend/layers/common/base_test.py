@@ -277,7 +277,7 @@ class BaseTest(unittest.TestCase):
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
         for status in statuses:
             self.business_logic.update_dataset_version_status(dataset_version_id, status.status_key, status.status)
-        if validation_anndata_message:
+        if validation_anndata_message or validation_atac_message:
             self.business_logic.update_dataset_version_status(
                 dataset_version_id,
                 DatasetStatusKey.VALIDATION,
