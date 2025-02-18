@@ -1817,26 +1817,22 @@ class TestGetDatasets(BaseAPIPortalTest):
         )
         artifacts = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset.dataset_version_id))
         atac_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0]
-        # atac_index_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_INDEX][0]
 
         test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}"
         response = self.app.get(test_url)
         body = response.json
 
-        # assert len(artifacts) == 3
+        expected_assets = [
+            {"filesize": -1, "filetype": "H5AD", "url": f"http://domain/{dataset.dataset_version_id}.h5ad"},
+            {"filesize": -1, "filetype": "FRAGMENT_TSV", "url": f"http://domain/{atac_artifact.id}.tsv.bgz"},
+            {
+                "filesize": -1,
+                "filetype": "FRAGMENT_INDEX",
+                "url": f"http://domain/{atac_artifact.id}.tsv.bgz.tbi",
+            },
+        ]
 
-        self.assertEqual(
-            [
-                {"filesize": -1, "filetype": "H5AD", "url": f"http://domain/{dataset.dataset_version_id}.h5ad"},
-                {"filesize": -1, "filetype": "FRAGMENT_TSV", "url": f"http://domain/{atac_artifact.id}.tsv.bgz"},
-                {
-                    "filesize": -1,
-                    "filetype": "FRAGMENT_INDEX",
-                    "url": f"http://domain/{atac_artifact.id}.tsv.bgz.tbi",
-                },
-            ],
-            body["assets"],
-        )
+        assert expected_assets == body["assets"]
 
     def test_get_all_datasets_200(self):
         crossref_return_value_1 = (generate_mock_publisher_metadata(), "12.3456/j.celrep", 17169328.664)
