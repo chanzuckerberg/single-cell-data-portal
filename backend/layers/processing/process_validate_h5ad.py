@@ -1,9 +1,6 @@
-import hashlib
-
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
-    CollectionVersionId,
     DatasetArtifactType,
     DatasetConversionStatus,
     DatasetProcessingStatus,
@@ -13,7 +10,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.common.ingestion_manifest import IngestionManifest
-from backend.layers.processing.exceptions import ValidationAnndataFailed, ValidationAtacFailed
+from backend.layers.processing.exceptions import ValidationAnndataFailed
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
@@ -135,114 +132,3 @@ class ProcessValidateH5AD(ProcessingLogic):
 
         # Validate and label the dataset
         self.validate_h5ad_file(dataset_version_id, local_filename)
-
-
-class ProcessValidateATAC(ProcessingLogic):
-    def __init__(
-        self,
-        business_logic: BusinessLogicInterface,
-        uri_provider: UriProviderInterface,
-        s3_provider: S3ProviderInterface,
-        schema_validator: SchemaValidatorProviderInterface,
-    ) -> None:
-        super().__init__()
-        self.business_logic = business_logic
-        self.uri_provider = uri_provider
-        self.s3_provider = s3_provider
-        self.schema_validator = schema_validator
-
-    def process(
-        self,
-        collection_version_id: CollectionVersionId,
-        dataset_version_id: DatasetVersionId,
-        manifest: IngestionManifest,
-        datasets_bucket: str,
-    ):
-        """
-
-        :param collection_version_id:
-        :param dataset_version_id:
-        :param manifest:
-        :param datasets_bucket:
-        :return:
-        """
-        # Download the original dataset files from URI
-        local_anndata_filename = self.download_from_source_uri(
-            source_uri=str(manifest.anndata),
-            local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
-        )
-
-        # check if the anndata should have a fragment file
-        try:
-            result = self.schema_validator.check_anndata_requires_fragment(local_anndata_filename)
-        except ValueError as e:  # fragment file forbidden
-            self.logger.warning(f"Anndata does not support atac fragment files for the follow reason: {e}")
-            self.logger.warning("Skipping fragment validation")
-            self.update_processing_status(
-                dataset_version_id,
-                DatasetStatusKey.ATAC_FRAGMENT,
-                DatasetConversionStatus.SKIPPED,
-                validation_atac_errors=[str(e)],
-            )
-            return
-
-        if manifest.atac_fragment is None:
-            if result:  # fragment file required
-                self.update_processing_status(
-                    dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID
-                )
-                raise ValidationAtacFailed(["Anndata requires fragment file"])
-            else:  # fragment file optional
-                self.logger.info("Fragment is optional and not present. Skipping fragment validation.")
-                self.update_processing_status(
-                    dataset_version_id,
-                    DatasetStatusKey.ATAC_FRAGMENT,
-                    DatasetConversionStatus.SKIPPED,
-                    validation_atac_errors=["Fragment is optional and not present."],
-                )
-                return
-
-        local_fragment_filename = self.download_from_source_uri(
-            source_uri=str(manifest.atac_fragment), local_path=CorporaConstants.ORIGINAL_ATAC_FRAGMENT_FILENAME
-        )
-        with open(local_fragment_filename, "rb") as f:
-            original_fragment_hash = hashlib.sha256(f.read()).hexdigest()
-        try:
-            is_valid, errors = self.schema_validator.validate_atac(local_fragment_filename, local_anndata_filename)
-        except Exception as e:
-            self.logger.exception("validation failed")
-            self.update_processing_status(
-                dataset_version_id, DatasetStatusKey.ATAC_FRAGMENT, DatasetConversionStatus.FAILED
-            )
-            raise ValidationAtacFailed([str(e)]) from None
-
-        if not is_valid:
-            self.update_processing_status(
-                dataset_version_id, DatasetStatusKey.ATAC_FRAGMENT, DatasetConversionStatus.FAILED
-            )
-            raise ValidationAtacFailed(errors)
-        # check to see if the new fragments is the same as the old fragment
-        # if it is the same, skip the upload and use link the old fragment to the new dataset
-        # This case is for when the dataset is reprocessed, or updated
-        with open(local_fragment_filename, "rb") as f:
-            new_fragment_hash = hashlib.sha256(f.read()).hexdigest()
-        if original_fragment_hash != new_fragment_hash:
-            key_prefix = self.get_key_prefix(dataset_version_id.id)
-            self.create_artifact(
-                local_fragment_filename,
-                DatasetArtifactType.ATAC_FRAGMENT,
-                key_prefix,
-                dataset_version_id,
-                DatasetStatusKey.ATAC_FRAGMENT,
-                datasets_bucket,
-            )
-            self.create_artifact(
-                local_fragment_filename + ".tbi",
-                DatasetArtifactType.ATAC_FRAGMENT_INDEX,
-                key_prefix,
-                dataset_version_id,
-                DatasetStatusKey.ATAC_FRAGMENT,
-                datasets_bucket,
-            )
-            self.logger.info("Processing completed successfully")
-        return
