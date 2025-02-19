@@ -1,0 +1,15 @@
+INFO     backend.layers.business.business:business.py:575 {'message': 'ingesting dataset', 'collection_version_id': d9e1f998-8218-4bb4-b6e9-871319ca2396, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     processing:process_logic.py:132 Converting local.h5ad
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_logic.py:138 Finished converting <MagicMock name='make_cxg' id='140029335700480'> in 0:00:00.000519
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_cxg.py:109 Updating database with cxg artifact for dataset 7aa8de2b-9e63-42e5-948e-6a40ccd70679. s3_uri is s3://fake_cxg_bucket/7aa8de2b-9e63-42e5-948e-6a40ccd70679.cxg/
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_logic.py:132 Converting local.h5ad
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_logic.py:138 Finished converting <MagicMock name='make_cxg' id='140029335700480'> in 0:00:00.000278
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_cxg.py:109 Updating database with cxg artifact for dataset 7aa8de2b-9e63-42e5-948e-6a40ccd70679. s3_uri is s3://fake_cxg_bucket/7aa8de2b-9e63-42e5-948e-6a40ccd70679.cxg/
+INFO     processing:process_logic.py:47 Updating processing status
