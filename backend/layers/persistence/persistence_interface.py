@@ -193,6 +193,11 @@ class DatabaseProviderInterface:
         Returns all dataset versions for a canonical dataset_id
         """
 
+    def check_artifact_is_part_of_dataset(self, dataset_id: DatasetId, DatasetArtifactId: DatasetArtifactId) -> bool:
+        """
+        Check if the artifact is part of any of the dataset versions associated with the dataset_id
+        """
+
     def get_all_mapped_datasets_and_collections(
         self,
     ) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:  # TODO: add filters if needed
@@ -204,6 +209,11 @@ class DatabaseProviderInterface:
     def get_dataset_artifacts_by_version_id(self, dataset_version_id: DatasetVersionId) -> List[DatasetArtifact]:
         """
         Returns all the artifacts for a specific dataset version
+        """
+
+    def get_dataset_artifacts(self, artifact: List[DatasetArtifactId]) -> List[DatasetArtifact]:
+        """
+        Returns a list of dataset artifacts by id
         """
 
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
