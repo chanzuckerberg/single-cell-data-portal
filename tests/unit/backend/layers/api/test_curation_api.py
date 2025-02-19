@@ -2188,6 +2188,42 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertIsNone(response_dataset["published_at"])
             self.assertIsNone(response_dataset["revised_at"])
 
+    def test_get_datasets_atac_seq(self):
+        collection = self.generate_unpublished_collection()
+        dataset = self.generate_dataset(
+            collection_version=collection,
+            artifacts=[
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.tsv.bgz"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_INDEX, "http://mock.uri/atac_frags.tsv.bgz"),
+            ],
+        )
+        self.business_logic.publish_collection_version(collection.version_id)
+        artifacts = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset.dataset_version_id))
+        atac_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0]
+
+        response = self.app.get("/curation/v1/datasets")
+        body = response.json
+        expected_assets = [
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{dataset.dataset_version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "FRAGMENT_TSV",
+                "url": f"http://domain/{atac_artifact.id}.tsv.bgz",
+            },
+            {
+                "filesize": -1,
+                "filetype": "FRAGMENT_INDEX",
+                "url": f"http://domain/{atac_artifact.id}.tsv.bgz.tbi",
+            },
+        ]
+        assert len(body) == 1, body
+        assert expected_assets == body[0]["assets"]
+
     def test_get_private_datasets_400(self):
         # 400 if PRIVATE and schema version.
         self._fetch_datasets(
