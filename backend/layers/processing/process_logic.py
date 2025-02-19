@@ -102,9 +102,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         key_prefix: str,
         dataset_version_id: DatasetVersionId,
         processing_status_key: DatasetStatusKey,
-        artifact_bucket: Optional[
-            str
-        ] = None,  # If provided, dataset will be uploaded to this bucket for future migrations
+        artifact_bucket: str,  # If provided, dataset will be uploaded to this bucket for future migrations
         datasets_bucket: Optional[str] = None,  # If provided, dataset will be uploaded to this bucket for public access
     ):
         self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADING)
