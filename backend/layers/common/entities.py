@@ -121,7 +121,7 @@ class DatasetStatus:
 
     @staticmethod
     def empty():
-        return DatasetStatus(None, None, None, None, None, None, None, None)
+        return DatasetStatus(*[None] * 9)
 
     def asdict(self):
         return asdict(self)
