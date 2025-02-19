@@ -34,7 +34,12 @@ from backend.layers.common.entities import (
 from backend.portal.api.explorer_url import generate as generate_explorer_url
 from backend.portal.api.providers import get_business_logic
 
-allowed_dataset_asset_types = (DatasetArtifactType.H5AD, DatasetArtifactType.RDS)
+allowed_dataset_asset_types = (
+    DatasetArtifactType.H5AD,
+    DatasetArtifactType.RDS,
+    DatasetArtifactType.ATAC_FRAGMENT,
+    DatasetArtifactType.ATAC_INDEX,
+)
 
 
 def get_collections_base_url():
@@ -78,7 +83,7 @@ def extract_dataset_assets(dataset_version: DatasetVersion):
         filesize = get_business_logic().s3_provider.get_file_size(asset.uri)
         if filesize is None:
             filesize = -1
-        url = BusinessLogic.generate_permanent_url(dataset_version.version_id, asset.id, asset.type)
+        url = BusinessLogic.generate_permanent_url(dataset_version, asset.id, asset.type)
         result = {
             "filesize": filesize,
             "filetype": asset.type.upper(),
