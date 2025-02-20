@@ -34,6 +34,11 @@ def unpublished_collection(setup) -> CollectionVersion:
 
 
 @pytest.fixture
+def collection_revision(setup) -> CollectionVersion:
+    return setup.generate_collection_revision()
+
+
+@pytest.fixture
 def dataset(unpublished_collection, setup) -> Tuple[DatasetVersionId, DatasetId]:
     new_dataset_version = setup.database_provider.create_canonical_dataset(unpublished_collection.version_id)
     setup.database_provider.add_dataset_to_collection_version_mapping(
@@ -65,22 +70,17 @@ def dataset_with_fragment(
 
 
 @pytest.fixture
-def new_anndata_uri() -> str:
-    return "https://www.dropbox.com/s/fake_location/test.h5ad?dl=0"
-
-
-@pytest.fixture
 def new_fragment_uri() -> str:
     return "https://www.dropbox.com/s/fake_location/test.tsv.bgz?dl=0"
 
 
 @pytest.fixture
-def existing_anndata_uri() -> str:
+def anndata_uri() -> str:
     return "s3://fake_bucket_name/fake_key.h5ad"
 
 
 def existing_fragment_uri() -> str:
-    return "https://datasets.cellxgene.cziscience.com/deadbeef-36da-4643-b3d5-ee20853084ba.tsv.bgz"
+    return "https://dataset_base_uri/deadbeef-36da-4643-b3d5-ee20853084ba.tsv.bgz"
 
 
 @pytest.fixture
@@ -121,3 +121,52 @@ def test_new_fragment(new_fragment_uri, anndata_uri, unpublished_collection, dat
     atac_frag_index_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_INDEX][0]
     assert setup.s3_provider.file_exists("fake_bucket_name", atac_frag_index_artifact.uri.split("/")[-1])
     assert str(atac_fragment_artifact.id) in atac_frag_index_artifact.uri
+
+
+def test_old_fragment():
+    """A published fragment is used in the manifest, this will pass validation, the artifac will be copied to the new dataset version."""
+    pass
+
+
+def test_no_fragment_and_required():
+    """A manifest is provided without a fragment, and the annotation requires one. This will fail validation."""
+    dataset_version_id, _ = dataset
+    process_validate_atac.process(
+        unpublished_collection.version_id,
+        dataset_version_id,
+        IngestionManifest(anndata=anndata_uri, atac_fragment=new_fragment_uri),
+        "fake_bucket_name",
+    )
+    status = setup.business_logic.get_dataset_status(dataset_version_id)
+    assert status.atac_status == DatasetConversionStatus.UPLOADED
+
+    artifacts = list(setup.business_logic.get_dataset_artifacts(dataset_version_id))
+    assert len(artifacts) == 2
+
+    atac_fragment_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0]
+    assert setup.s3_provider.file_exists("fake_bucket_name", atac_fragment_artifact.uri.split("/")[-1])
+    assert str(atac_fragment_artifact.id) in atac_fragment_artifact.uri
+
+    atac_frag_index_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_INDEX][0]
+    assert setup.s3_provider.file_exists("fake_bucket_name", atac_frag_index_artifact.uri.split("/")[-1])
+    assert str(atac_fragment_artifact.id) in atac_frag_index_artifact.uri
+
+
+def test_no_fragment_and_not_required():
+    """A manifest is provided without a fragment, and the annotation does not require one. This will pass validation."""
+    pass
+
+
+def test_no_fragment_and_optional():
+    """A manifest is provided without a fragment, and the annotation has an optional fragment. This will pass validation."""
+    pass
+
+
+def test_existing_dataset_with_fragment_removed():
+    """Updating a dataset to remove the optional fragment."""
+    pass
+
+
+def test_existing_dataset_with_fragment_addeed():
+    """Updating a dataset to add the optional fragment."""
+    pass
