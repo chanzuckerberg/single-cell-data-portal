@@ -243,7 +243,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection_id=collection_id.id,
             owner=owner,
             curator_name=curator_name,
-            collection_metadata=collection_metadata.asdict(),
+            collection_metadata=collection_metadata.to_dict(),
             publisher_metadata=None,
             published_at=None,
             created_at=now,
@@ -550,7 +550,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             version = session.query(CollectionVersionTable).filter_by(id=version_id.id).one()
-            version.collection_metadata = collection_metadata.asdict()
+            version.collection_metadata = collection_metadata.to_dict()
 
     def save_collection_publisher_metadata(
         self, version_id: CollectionVersionId, publisher_metadata: Optional[dict]
@@ -867,7 +867,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection_id=collection_id,
             dataset_metadata=None,
             artifacts=list(),
-            status=DatasetStatus.empty().asdict(),
+            status=DatasetStatus.empty().to_dict(),
             created_at=datetime.utcnow(),
         )
 
@@ -969,7 +969,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version.dataset_metadata = metadata.asdict()
+            dataset_version.dataset_metadata = metadata.to_dict()
 
     def add_dataset_to_collection_version_mapping(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
@@ -1029,7 +1029,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                     collection_id=collection_id,
                     dataset_metadata=None,
                     artifacts=list(),
-                    status=DatasetStatus.empty().asdict(),
+                    status=DatasetStatus.empty().to_dict(),
                     created_at=datetime.utcnow(),
                 )
                 session.add(new_dataset_version)
