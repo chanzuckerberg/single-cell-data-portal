@@ -56,7 +56,7 @@ def dataset_with_fragment(
     )
     setup.database_provider.update_dataset_artifact(artifact_id, fragment_uri_fmt.format(artifact_id=artifact_id.id))
     artifact_id = setup.database_provider.add_dataset_artifact(
-        new_dataset_version.version_id, DatasetArtifactType.ATAC_FRAGMENT_INDEX, "dummy"
+        new_dataset_version.version_id, DatasetArtifactType.ATAC_INDEX, "dummy"
     )
     setup.database_provider.update_dataset_artifact(
         artifact_id, fragment_uri_fmt.format(artifact_id=artifact_id.id) + ".tbi"
@@ -118,6 +118,6 @@ def test_new_fragment(new_fragment_uri, anndata_uri, unpublished_collection, dat
     assert setup.s3_provider.file_exists("fake_bucket_name", atac_fragment_artifact.uri.split("/")[-1])
     assert str(atac_fragment_artifact.id) in atac_fragment_artifact.uri
 
-    atac_frag_index_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT_INDEX][0]
+    atac_frag_index_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_INDEX][0]
     assert setup.s3_provider.file_exists("fake_bucket_name", atac_frag_index_artifact.uri.split("/")[-1])
     assert str(atac_fragment_artifact.id) in atac_frag_index_artifact.uri

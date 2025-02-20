@@ -201,7 +201,7 @@ class ProcessValidateATAC(ProcessingLogic):
             )
             self.create_atac_artifact(
                 local_fragment_filename + ".tbi",
-                DatasetArtifactType.ATAC_FRAGMENT_INDEX,
+                DatasetArtifactType.ATAC_INDEX,
                 dataset_version_id,
                 DatasetStatusKey.ATAC_FRAGMENT,
                 datasets_bucket,
