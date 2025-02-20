@@ -1807,6 +1807,33 @@ class TestGetDatasets(BaseAPIPortalTest):
         body = response.json
         self.assertEqual([], body["assets"])
 
+    def test_get_dataset_atac_assets(self):
+        dataset = self.generate_dataset(
+            artifacts=[
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.tsv.bgz"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_INDEX, "http://mock.uri/atac_frags.tsv.bgz.tbi"),
+            ]
+        )
+        artifacts = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset.dataset_version_id))
+        atac_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0]
+
+        test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}"
+        response = self.app.get(test_url)
+        body = response.json
+
+        expected_assets = [
+            {"filesize": -1, "filetype": "H5AD", "url": f"http://domain/{dataset.dataset_version_id}.h5ad"},
+            {"filesize": -1, "filetype": "ATAC_FRAGMENT", "url": f"http://domain/{atac_artifact.id}.tsv.bgz"},
+            {
+                "filesize": -1,
+                "filetype": "ATAC_INDEX",
+                "url": f"http://domain/{atac_artifact.id}.tsv.bgz.tbi",
+            },
+        ]
+
+        assert expected_assets == body["assets"]
+
     def test_get_all_datasets_200(self):
         crossref_return_value_1 = (generate_mock_publisher_metadata(), "12.3456/j.celrep", 17169328.664)
         self.crossref_provider.fetch_metadata = Mock(return_value=crossref_return_value_1)
@@ -2160,6 +2187,42 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertIn(revision_1_dataset_updated.dataset_version_id, response_dataset["explorer_url"])
             self.assertIsNone(response_dataset["published_at"])
             self.assertIsNone(response_dataset["revised_at"])
+
+    def test_get_datasets_atac_seq(self):
+        collection = self.generate_unpublished_collection()
+        dataset = self.generate_dataset(
+            collection_version=collection,
+            artifacts=[
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.tsv.bgz"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_INDEX, "http://mock.uri/atac_frags.tsv.bgz.tbi"),
+            ],
+        )
+        self.business_logic.publish_collection_version(collection.version_id)
+        artifacts = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset.dataset_version_id))
+        atac_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0]
+
+        response = self.app.get("/curation/v1/datasets")
+        body = response.json
+        expected_assets = [
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{dataset.dataset_version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "ATAC_FRAGMENT",
+                "url": f"http://domain/{atac_artifact.id}.tsv.bgz",
+            },
+            {
+                "filesize": -1,
+                "filetype": "ATAC_INDEX",
+                "url": f"http://domain/{atac_artifact.id}.tsv.bgz.tbi",
+            },
+        ]
+        assert len(body) == 1, body
+        assert expected_assets == body[0]["assets"]
 
     def test_get_private_datasets_400(self):
         # 400 if PRIVATE and schema version.

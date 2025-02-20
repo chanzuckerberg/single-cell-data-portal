@@ -818,6 +818,8 @@ components:
       enum:
         - H5AD
         - RDS
+        - ATAC_FRAGMENT
+        - ATAC_INDEX
       type: string
       description: the file type of the asset.
     batch_condition:

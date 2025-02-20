@@ -80,7 +80,8 @@ class DatasetArtifactType(str, Enum):
     H5AD = "h5ad"
     RDS = "rds"
     CXG = "cxg"
-    ATAC_FRAGMENT = "fragment_tsv"
+    ATAC_FRAGMENT = "atac_fragment"
+    ATAC_INDEX = "atac_index"
 
 
 ARTIFACT_TO_EXTENSION = {
@@ -89,6 +90,7 @@ ARTIFACT_TO_EXTENSION = {
     DatasetArtifactType.RDS: "rds",
     DatasetArtifactType.CXG: "cxg",
     DatasetArtifactType.ATAC_FRAGMENT: "tsv.bgz",
+    DatasetArtifactType.ATAC_INDEX: "tsv.bgz.tbi",
 }
 
 
