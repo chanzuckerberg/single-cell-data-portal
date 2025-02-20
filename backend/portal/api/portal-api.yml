@@ -700,6 +700,18 @@ paths:
                     enum: [VALIDATING, VALID, INVALID, NA]
                   validation_message:
                     type: string
+                  atac_status:
+                    type: string
+                    enum:
+                      [
+                        CONVERTING,
+                        CONVERTED,
+                        UPLOADING,
+                        UPLOADED,
+                        SKIPPED,
+                        FAILED,
+                        NA,
+                      ]
                   h5ad_status:
                     type: string
                     enum:

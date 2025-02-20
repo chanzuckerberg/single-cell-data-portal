@@ -511,30 +511,6 @@ paths:
           $ref: "#/components/responses/410"
 
   /v1/collections/{collection_id}/datasets/{dataset_id}/manifest:
-    get:
-      summary: Get manifest for a dataset
-      description: |
-        Retrieve the manifest that represents the files in the dataset. This can be used to reprocess a dataset.
-        The public URLs will be used to represent the original raw assets.
-      operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.manifest.actions.get
-      tags:
-        - Collection
-      parameters:
-        - $ref: "#/components/parameters/path_collection_id"
-        - $ref: "#/components/parameters/path_dataset_id"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ingestion_manifest"
-        "400":
-          $ref: "#/components/responses/400"
-        "404":
-          $ref: "#/components/responses/404"
-        "410":
-          $ref: "#/components/responses/410"
     put:
       summary: Upload dataset via a manifest
       description: |
@@ -551,10 +527,33 @@ paths:
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: "#/components/schemas/ingestion_manifest"
+            schema: # Schema generated from yaml.dump(IngestionManifest.model_json_schema())
+              properties:
+                anndata:
+                  anyOf:
+                    - format: uri
+                      maxLength: 2083
+                      minLength: 1
+                      type: string
+                    - format: uri
+                      minLength: 1
+                      type: string
+                  title: Anndata
+                atac_fragment:
+                  type: string
+                  anyOf:
+                    - format: uri
+                      maxLength: 2083
+                      minLength: 1
+                      type: string
+                    - format: uri
+                      minLength: 1
+                      type: string
+                  title: Atac Seq Fragment
               required:
                 - anndata
+              title: IngestionManifest
+              type: object
       responses:
         "202":
           $ref: "#/components/responses/202"
@@ -1700,33 +1699,6 @@ components:
         - PUBLIC
         - PRIVATE
       type: string
-    ingestion_manifest: # Schema lightly modified from yaml.dump(IngestionManifest.model_json_schema())
-      description: |
-        Manifest of files defining a dataset.
-      properties:
-        anndata:
-          anyOf:
-            - format: uri
-              maxLength: 2083
-              minLength: 1
-              type: string
-            - format: uri
-              minLength: 1
-              type: string
-          title: Anndata
-        atac_fragment:
-          type: string
-          anyOf:
-            - format: uri
-              maxLength: 2083
-              minLength: 1
-              type: string
-            - format: uri
-              minLength: 1
-              type: string
-          title: ATAC Seq Fragment
-      title: IngestionManifest
-      type: object
   parameters:
     dataset_visibility:
       description: |

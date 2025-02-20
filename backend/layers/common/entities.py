@@ -5,8 +5,6 @@ from enum import Enum
 from typing import List, Optional
 from urllib.parse import urlparse
 
-from dataclasses_json import dataclass_json
-
 # TODO: copy and paste the docs for these
 
 
@@ -16,6 +14,7 @@ class DatasetStatusKey(str, Enum):
     CXG = "cxg"
     RDS = "rds"
     H5AD = "h5ad"
+    ATAC_FRAGMENT = "atac_fragment"
     PROCESSING = "processing"
 
 
@@ -81,6 +80,7 @@ class DatasetArtifactType(str, Enum):
     RDS = "rds"
     CXG = "cxg"
     ATAC_FRAGMENT = "fragment_tsv"
+    ATAC_FRAGMENT_INDEX = "atac_fragment_index"
 
 
 ARTIFACT_TO_EXTENSION = {
@@ -89,6 +89,7 @@ ARTIFACT_TO_EXTENSION = {
     DatasetArtifactType.RDS: "rds",
     DatasetArtifactType.CXG: "cxg",
     DatasetArtifactType.ATAC_FRAGMENT: "tsv.bgz",
+    DatasetArtifactType.ATAC_FRAGMENT_INDEX: "tsv.bgz.tbi",
 }
 
 
@@ -106,7 +107,6 @@ class Visibility(Enum):
     PRIVATE = "Private"
 
 
-@dataclass_json
 @dataclass
 class DatasetStatus:
     upload_status: Optional[DatasetUploadStatus]
@@ -114,12 +114,23 @@ class DatasetStatus:
     cxg_status: Optional[DatasetConversionStatus]
     rds_status: Optional[DatasetConversionStatus]
     h5ad_status: Optional[DatasetConversionStatus]
+    atac_status: Optional[DatasetConversionStatus]
     processing_status: Optional[DatasetProcessingStatus]
-    validation_message: Optional[str] = None
+    validation_anndata_message: Optional[str] = None
+    validation_atac_message: Optional[str] = None
 
     @staticmethod
     def empty():
-        return DatasetStatus(None, None, None, None, None, None)
+        return DatasetStatus(*[None] * 9)
+
+    def asdict(self):
+        return asdict(self)
+
+
+def get_validation_message(status: DatasetStatus):
+    return "\n".join(
+        filter(lambda x: isinstance(x, str), [status.validation_anndata_message, status.validation_atac_message])
+    )
 
 
 @dataclass
@@ -178,14 +189,15 @@ class TissueOntologyTermId(OntologyTermId):
     tissue_type: Optional[str] = None
 
 
-@dataclass_json
 @dataclass
 class SpatialMetadata:
     is_single: bool
     has_fullres: bool
 
+    def asdict(self):
+        return asdict(self)
 
-@dataclass_json
+
 @dataclass
 class DatasetMetadata:
     name: str
@@ -214,6 +226,9 @@ class DatasetMetadata:
     raw_data_location: Optional[str] = None
     primary_cell_count: Optional[int] = None
     spatial: Optional[SpatialMetadata] = None
+
+    def asdict(self):
+        return asdict(self)
 
 
 @dataclass
@@ -278,7 +293,6 @@ class Link:
         self.uri = self.uri.strip()
 
 
-@dataclass_json
 @dataclass
 class CollectionMetadata:
     name: str
@@ -287,6 +301,9 @@ class CollectionMetadata:
     contact_email: str
     links: List[Link]
     consortia: List[str] = field(default_factory=list)
+
+    def asdict(self):
+        return asdict(self)
 
 
 @dataclass

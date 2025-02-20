@@ -81,8 +81,8 @@ class DatasetMetadataUpdaterWorker(ProcessValidateH5AD):
                 DatasetArtifactType.RAW_H5AD,
                 new_key_prefix,
                 new_dataset_version_id,
-                self.artifact_bucket,
                 DatasetStatusKey.H5AD,
+                self.artifact_bucket,
             )
             self.update_processing_status(new_dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
         finally:
@@ -118,8 +118,8 @@ class DatasetMetadataUpdaterWorker(ProcessValidateH5AD):
                 DatasetArtifactType.H5AD,
                 new_key_prefix,
                 new_dataset_version_id,
-                self.artifact_bucket,
                 DatasetStatusKey.H5AD,
+                self.artifact_bucket,
                 datasets_bucket=self.datasets_bucket,
             )
             self.update_processing_status(
@@ -330,7 +330,7 @@ class DatasetMetadataUpdater(ProcessValidateH5AD):
                 new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
             )
             status = self.business_logic.get_dataset_version(new_dataset_version_id).status
-            raise ProcessingFailed(f"Artifact reprocessing failed, with statuses: {status.to_dict()}")
+            raise ProcessingFailed(f"Artifact reprocessing failed, with statuses: {status.asdict()}")
 
     def has_valid_artifact_statuses(self, dataset_version_id: DatasetVersionId) -> bool:
         dataset_version = self.business_logic.get_dataset_version(dataset_version_id)
@@ -340,6 +340,10 @@ class DatasetMetadataUpdater(ProcessValidateH5AD):
             and (
                 dataset_version.status.rds_status == DatasetConversionStatus.CONVERTED
                 or dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
+            )
+            and (
+                dataset_version.status.atac_status == DatasetConversionStatus.CONVERTED
+                or dataset_version.status.atac_status == DatasetConversionStatus.SKIPPED
             )
         )
 
