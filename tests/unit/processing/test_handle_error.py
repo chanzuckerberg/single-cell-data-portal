@@ -206,7 +206,7 @@ def test_parse_event_with_invalid_error_cause():
 def mock_get_dataset_version(collection_id):
     MockDatasetVersionId = Mock()
     MockDatasetVersionId.collection_id = collection_id
-    MockDatasetVersionId.status = DatasetStatus(None, None, None, None, None, None)
+    MockDatasetVersionId.status = DatasetStatus(*[None] * 9)
     return MockDatasetVersionId
 
 
