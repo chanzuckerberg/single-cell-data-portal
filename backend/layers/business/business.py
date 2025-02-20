@@ -119,12 +119,16 @@ class BusinessLogic(BusinessLogicInterface):
         super().__init__()
 
     @staticmethod
-    def generate_permanent_url(dataset_version_id: DatasetVersionId, asset_type: DatasetArtifactType):
+    def generate_permanent_url(
+        dataset_id: DatasetVersionId, artifact_id: DatasetArtifactId, asset_type: DatasetArtifactType
+    ):
         """
         Return the permanent URL for the given asset.
         """
+        entity_id = artifact_id if asset_type == DatasetArtifactType.ATAC_FRAGMENT else dataset_id
+
         base_url = CorporaConfig().dataset_assets_base_url
-        return f"{base_url}/{dataset_version_id.id}.{asset_type}"
+        return f"{base_url}/{entity_id.id}.{ARTIFACT_TO_EXTENSION[asset_type]}"
 
     @staticmethod
     def generate_dataset_citation(
@@ -586,14 +590,14 @@ class BusinessLogic(BusinessLogicInterface):
                     "Cannot ingest public datasets without a current dataset version"
                 )
             if key == "anndata":
-                dataset_id, extension = url.split("/")[-1].split(".")
+                dataset_version_id, extension = url.split("/")[-1].split(".")
                 if extension != ARTIFACT_TO_EXTENSION[DatasetArtifactType.H5AD]:
                     raise InvalidIngestionManifestException(f"{_url} is not an h5ad file")
-                previous_dv = self.database_provider.get_dataset_version(dataset_id)
+                previous_dv = self.database_provider.get_dataset_version(DatasetVersionId(dataset_version_id))
                 if previous_dv is None:
                     raise InvalidIngestionManifestException(f"{_url} anndata file not found")
                 all_dvs = self.database_provider.get_all_versions_for_dataset(previous_dv.dataset_id)
-                if not current_dataset_version_id not in [dv.version_id for dv in all_dvs]:
+                if current_dataset_version_id not in [dv.version_id for dv in all_dvs]:
                     raise InvalidIngestionManifestException(f"{_url} is not apart of the canonical dataset")
                 manifest.anndata = [a for a in previous_dv.artifacts if a.type == DatasetArtifactType.RAW_H5AD][0].uri
 
@@ -609,7 +613,6 @@ class BusinessLogic(BusinessLogicInterface):
                     raise InvalidIngestionManifestException(
                         f"{_url} atac_fragments is not apart of the canonical dataset"
                     )
-
         if file_size is None:
             file_info = self.uri_provider.get_file_info(str(manifest.anndata))
             file_size = file_info.size
@@ -850,7 +853,7 @@ class BusinessLogic(BusinessLogicInterface):
             raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")
 
         file_size = self.s3_provider.get_file_size(artifact.uri)
-        url = self.generate_permanent_url(dataset_version_id, artifact.type)
+        url = self.generate_permanent_url(dataset_version_id, artifact.id, artifact.type)
 
         return DatasetArtifactDownloadData(file_size, url)
 
