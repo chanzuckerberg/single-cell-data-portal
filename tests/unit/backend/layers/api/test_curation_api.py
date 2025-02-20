@@ -1812,7 +1812,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             artifacts=[
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
                 DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.tsv.bgz"),
-                DatasetArtifactUpdate(DatasetArtifactType.ATAC_INDEX, "http://mock.uri/atac_frags.tsv.bgz"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_INDEX, "http://mock.uri/atac_frags.tsv.bgz.tbi"),
             ]
         )
         artifacts = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset.dataset_version_id))
@@ -2195,7 +2195,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             artifacts=[
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
                 DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.tsv.bgz"),
-                DatasetArtifactUpdate(DatasetArtifactType.ATAC_INDEX, "http://mock.uri/atac_frags.tsv.bgz"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_INDEX, "http://mock.uri/atac_frags.tsv.bgz.tbi"),
             ],
         )
         self.business_logic.publish_collection_version(collection.version_id)
