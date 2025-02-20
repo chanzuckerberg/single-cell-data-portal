@@ -115,7 +115,7 @@ def get_failure_slack_notification_message(
             collection_owner = ""
         else:
             collection_owner = collection.owner
-        processing_status = dataset.status.asdict(indent=2, sort_keys=True)
+        processing_status = dataset.status.to_json(indent=2, sort_keys=True)
     batch_url = aws_batch_job_url_fmt_str.format(aws_region=aws_region, job_id=job_id)
     step_function_url = aws_sfn_url_fmt_str.format(aws_region=aws_region, execution_arn=execution_arn)
     collection_version_url = f"https://cellxgene.cziscience.com/collections/{collection_version_id}"
