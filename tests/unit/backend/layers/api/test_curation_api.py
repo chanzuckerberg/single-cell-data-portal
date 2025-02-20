@@ -1824,10 +1824,10 @@ class TestGetDatasets(BaseAPIPortalTest):
 
         expected_assets = [
             {"filesize": -1, "filetype": "H5AD", "url": f"http://domain/{dataset.dataset_version_id}.h5ad"},
-            {"filesize": -1, "filetype": "FRAGMENT_TSV", "url": f"http://domain/{atac_artifact.id}.tsv.bgz"},
+            {"filesize": -1, "filetype": "ATAC_FRAGMENT", "url": f"http://domain/{atac_artifact.id}.tsv.bgz"},
             {
                 "filesize": -1,
-                "filetype": "FRAGMENT_INDEX",
+                "filetype": "ATAC_INDEX",
                 "url": f"http://domain/{atac_artifact.id}.tsv.bgz.tbi",
             },
         ]
@@ -2212,12 +2212,12 @@ class TestGetDatasets(BaseAPIPortalTest):
             },
             {
                 "filesize": -1,
-                "filetype": "FRAGMENT_TSV",
+                "filetype": "ATAC_FRAGMENT",
                 "url": f"http://domain/{atac_artifact.id}.tsv.bgz",
             },
             {
                 "filesize": -1,
-                "filetype": "FRAGMENT_INDEX",
+                "filetype": "ATAC_INDEX",
                 "url": f"http://domain/{atac_artifact.id}.tsv.bgz.tbi",
             },
         ]
