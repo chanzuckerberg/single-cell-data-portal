@@ -609,6 +609,18 @@ class BusinessLogic(BusinessLogicInterface):
                     raise InvalidIngestionManifestException(message=f"{_url} is not a part of the canonical dataset")
                 manifest.anndata = [a for a in previous_dv.artifacts if a.type == DatasetArtifactType.RAW_H5AD][0].uri
 
+            if key == "atac_fragments":
+                artifact_id, extension = url.split("/")[-1].split(".", 1)
+                if extension != ARTIFACT_TO_EXTENSION[DatasetArtifactType.ATAC_FRAGMENT]:
+                    raise InvalidIngestionManifestException(f"{_url} is not an atac_fragments file")
+                artifact = self.database_provider.get_dataset_artifacts([artifact_id])
+                if not len(artifact):
+                    raise InvalidIngestionManifestException(f"{_url} atac_fragments not found")
+                dataset_id = self.get_dataset_version(current_dataset_version_id).id
+                if not self.database_provider.check_artifact_is_part_of_dataset(artifact[0], dataset_id):
+                    raise InvalidIngestionManifestException(
+                        f"{_url} atac_fragments is not apart of the canonical dataset"
+                    )
         if file_size is None:
             file_info = self.uri_provider.get_file_info(str(manifest.anndata))
             file_size = file_info.size

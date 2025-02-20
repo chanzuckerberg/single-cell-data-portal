@@ -330,7 +330,7 @@ class DatasetMetadataUpdater(ProcessValidateH5AD):
                 new_dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE
             )
             status = self.business_logic.get_dataset_version(new_dataset_version_id).status
-            raise ProcessingFailed(f"Artifact reprocessing failed, with statuses: {status.to_dict()}")
+            raise ProcessingFailed(f"Artifact reprocessing failed, with statuses: {status.asdict()}")
 
     def has_valid_artifact_statuses(self, dataset_version_id: DatasetVersionId) -> bool:
         dataset_version = self.business_logic.get_dataset_version(dataset_version_id)
