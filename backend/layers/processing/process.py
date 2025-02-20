@@ -28,7 +28,8 @@ from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_add_labels import ProcessAddLabels
 from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_logic import ProcessingLogic
-from backend.layers.processing.process_validate_h5ad import ProcessValidateATAC, ProcessValidateH5AD
+from backend.layers.processing.process_validate_atac import ProcessValidateATAC
+from backend.layers.processing.process_validate_h5ad import ProcessValidateH5AD
 from backend.layers.processing.schema_migration import SchemaMigrate
 from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
 from backend.layers.thirdparty.schema_validator_provider import (

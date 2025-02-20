@@ -544,7 +544,7 @@ class BusinessLogic(BusinessLogicInterface):
         return new_dataset_version
 
     def is_public_uri(self, uri):
-        return uri.startswith(CorporaConfig().public_bucket)
+        return str(uri).startswith(CorporaConfig().dataset_assets_base_url)
 
     # TODO: Alternatives: 1) return DatasetVersion 2) Return a new class
     def ingest_dataset(
