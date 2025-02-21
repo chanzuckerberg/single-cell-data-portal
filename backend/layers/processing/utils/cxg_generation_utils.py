@@ -7,7 +7,6 @@ import pandas as pd
 import tiledb
 from cellxgene_schema.utils import get_matrix_format
 
-from backend.common.constants import UNS_SPATIAL_KEY
 from backend.layers.processing.utils.dask_utils import TileDBSparseArrayWriteWrapper
 from backend.common.constants import IS_SINGLE, UNS_SPATIAL_KEY
 from backend.layers.processing.utils.spatial import SpatialDataProcessor
