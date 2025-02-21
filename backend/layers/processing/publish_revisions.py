@@ -20,6 +20,7 @@ from backend.layers.business.entities import CollectionQueryFilter
 from backend.layers.common.entities import (
     CollectionVersionWithDatasets,
     DatasetProcessingStatus,
+    get_validation_message,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.processing.logger import configure_logging
@@ -58,7 +59,7 @@ class PublishRevisions(ProcessingLogic):
             elif dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
                 errors.append(
                     {
-                        "message": dataset.status.validation_message,
+                        "message": get_validation_message(dataset.status),
                         "dataset_status": dataset.status.to_dict(),
                         "dataset_version_id": dataset_version_id,
                         "dataset_id": dataset_id,
