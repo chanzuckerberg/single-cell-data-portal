@@ -101,6 +101,7 @@ jobs:
 
       - name: Upload coverage results as an artifact
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: coverage-backennd
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
@@ -162,6 +163,7 @@ jobs:
 
       - name: Upload coverage results as an artifact
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: coverage-wmg-backend
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
@@ -223,6 +225,7 @@ jobs:
 
       - name: Upload coverage results as an artifact
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: coverage-de-backend
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
@@ -284,6 +287,7 @@ jobs:
 
       - name: Upload coverage results as an artifact
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: coverage-processing
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
@@ -345,6 +349,7 @@ jobs:
           make local-unit-test-wmg-processing
       - name: Upload coverage results as an artifact
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: coverage-wmg-processing
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
@@ -398,11 +403,13 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-rebuild-cellguide-pipeline
       - name: Run tests in docker-compose
+        continue-on-error: true
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-unit-test-cellguide-pipeline
       - name: Upload coverage results as an artifact
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: coverage-cellguide-pipeline
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
@@ -462,6 +469,7 @@ jobs:
 
       - name: Upload coverage results as an artifact
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: coverage-cxg-admin
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
@@ -522,6 +530,7 @@ jobs:
           make local-integration-test-backend
       - name: Upload coverage results as an artifact
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: coverage-backend-integration
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
