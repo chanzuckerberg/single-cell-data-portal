@@ -1,3 +1,4 @@
+import { FOOTER_COMPONENT_MAP } from "src/components/common/Filter/components/FilterFooter/utils";
 import { CellValue, FilterValue, Row } from "react-table";
 import { EVENTS } from "src/common/analytics/events";
 import {
@@ -153,6 +154,7 @@ export interface BaseCategoryFilterConfig {
   pinnedCategoryValues?: CATEGORY_VALUE_KEY[];
   pinnedPosition?: PINNED_POSITION;
   tooltip?: string;
+  footerComponentId?: keyof typeof FOOTER_COMPONENT_MAP;
 }
 
 /**
@@ -570,6 +572,7 @@ export interface OntologyCategoryView {
   label: string;
   views: OntologyCategoryTreeView[];
   tooltip?: string;
+  footerComponentId?: keyof typeof FOOTER_COMPONENT_MAP;
 }
 
 /**
@@ -582,6 +585,7 @@ export interface MultiPanelOntologyCategoryView {
   panels: OntologyPanelCategoryView[];
   selectedViews: SelectCategoryValueView[];
   tooltip?: string;
+  footerComponentId?: keyof typeof FOOTER_COMPONENT_MAP;
 }
 
 /**
@@ -669,6 +673,7 @@ export interface RangeCategoryView {
   selectedMax?: number;
   selectedMin?: number;
   tooltip?: string;
+  footerComponentId?: keyof typeof FOOTER_COMPONENT_MAP;
 }
 
 /**
@@ -746,6 +751,7 @@ export interface SelectCategoryView {
   tooltip?: string;
   unpinnedValues: SelectCategoryValueView[];
   values: SelectCategoryValueView[]; // both pinned and unpinned values
+  footerComponentId?: keyof typeof FOOTER_COMPONENT_MAP;
 }
 
 /**

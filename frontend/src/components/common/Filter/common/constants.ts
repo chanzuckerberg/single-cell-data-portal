@@ -13,7 +13,6 @@ import {
 } from "src/components/common/Filter/common/entities";
 import cell_type_descendants_json from "src/components/common/Filter/descendant_mappings/cell_type_descendants.json";
 import tissue_descendants_json from "src/components/common/Filter/descendant_mappings/tissue_descendants.json";
-
 /**
  * Homo sapiens, Mus musculus and other organisms development stage ontology tree.
  */
@@ -900,6 +899,7 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     ],
     valueSourceKind: "NONE",
     viewKind: "MULTI_PANEL",
+    footerComponentId: "cellTypeFooter",
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_CONSORTIA,
@@ -940,6 +940,7 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     source: DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET,
     valueSourceKind: "CURATED",
     viewKind: "CURATED_ONTOLOGY",
+    footerComponentId: "developmentStageFooter",
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_DISEASE,
@@ -1087,6 +1088,7 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     ],
     valueSourceKind: "NONE",
     viewKind: "MULTI_PANEL",
+    footerComponentId: "tissueFooter",
   },
 ];
 

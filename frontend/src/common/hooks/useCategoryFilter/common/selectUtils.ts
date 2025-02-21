@@ -44,7 +44,7 @@ export function buildSelectCategoryView(
   const { categoryFilterId } = config;
 
   // Grab the config for this category.
-  const { pinnedCategoryValues, pinnedPosition, tooltip } =
+  const { pinnedCategoryValues, pinnedPosition, tooltip, footerComponentId } =
     CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId];
 
   const allCategoryValueViews = buildSelectCategoryValueViews(
@@ -67,6 +67,7 @@ export function buildSelectCategoryView(
     pinnedValues,
     unpinnedValues,
     values: allCategoryValueViews,
+    footerComponentId,
   };
 
   // Handle special cases where select category may be disabled.

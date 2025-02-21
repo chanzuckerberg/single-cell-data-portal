@@ -110,7 +110,7 @@ export function buildMultiPanelCategoryView(
   multiPanelUIState: MultiPanelUIState,
   ontologyTermLabelsById: Map<string, string>
 ): MultiPanelOntologyCategoryView {
-  const { categoryFilterId } = config;
+  const { categoryFilterId, footerComponentId } = config;
   const categoryFilterUIState = multiPanelUIState.get(categoryFilterId);
   if (!categoryFilterUIState) {
     console.log(
@@ -121,6 +121,7 @@ export function buildMultiPanelCategoryView(
       label: config.label,
       panels: EMPTY_ARRAY,
       selectedViews: EMPTY_ARRAY,
+      footerComponentId,
     };
   }
 
@@ -150,6 +151,7 @@ export function buildMultiPanelCategoryView(
     label: config.label,
     panels: ontologyPanelCategoryViews,
     selectedViews: selectedViews,
+    footerComponentId: config.footerComponentId,
   };
 }
 
