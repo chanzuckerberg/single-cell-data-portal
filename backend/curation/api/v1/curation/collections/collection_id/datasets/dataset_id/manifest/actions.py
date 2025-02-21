@@ -18,6 +18,7 @@ from backend.layers.business.exceptions import (
     CollectionNotFoundException,
     DatasetInWrongStatusException,
     DatasetNotFoundException,
+    InvalidIngestionManifestException,
     InvalidURIException,
 )
 from backend.layers.common.entities import (
@@ -87,6 +88,8 @@ def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):
         raise NotFoundHTTPException() from None
     except InvalidURIException:
         raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.") from None
+    except InvalidIngestionManifestException as e:
+        raise InvalidParametersHTTPException(detail=e.message) from None
     except MaxFileSizeExceededException:
         raise TooLargeHTTPException() from None
     except DatasetInWrongStatusException:
