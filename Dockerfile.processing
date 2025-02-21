@@ -27,7 +27,7 @@ COPY /python_dependencies/common/ .
 ARG INSTALL_DEV=false
 
 ARG CACHEBUST=1
-RUN python 3.10 --no-deps git+https://github.com/chanzuckerberg/single-cell-curation/@joyce/test-deps#subdirectory=cellxgene_schema_cli
+RUN python3.10 --no-deps git+https://github.com/chanzuckerberg/single-cell-curation/@joyce/test-deps#subdirectory=cellxgene_schema_cli
 RUN python3.10 -m pip install -r requirements.txt
 
 RUN if [ "$INSTALL_DEV" = "true" ]; then python3 -m pip install -r requirements-dev.txt; fi
