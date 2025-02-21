@@ -3053,7 +3053,7 @@ class TestPutManifest(BasePutTest, BaseAPIPortalTest):
         super().setUpClass()
         cls.good_request_body = {"anndata": "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"}
         cls.dummy_request_body = {"anndata": "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"}
-        cls.ingested_dataset_request_body = {"anndata": "http://domain/1234.h5ad"}
+        cls.ingested_dataset_request_body = {"anndata": "http://domain/1234.txt"}
         cls.endpoint = "/curation/v1/collections/{collection_version_id}/datasets/{dataset_version_id}/manifest"
 
 
