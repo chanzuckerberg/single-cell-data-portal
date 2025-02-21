@@ -26,7 +26,7 @@ def compare_dicts(dict1, dict2):
             if all(isinstance(v, dict) for v in value1) and all(isinstance(v, dict) for v in value2):
                 sorted_value1 = sorted(value1, key=lambda d: json.dumps(d, sort_keys=True))
                 sorted_value2 = sorted(value2, key=lambda d: json.dumps(d, sort_keys=True))
-                if not all(compare_dicts(d1, d2) for d1, d2 in zip(sorted_value1, sorted_value2, strict=False)):
+                if not all(compare_dicts(d1, d2) for d1, d2 in zip(sorted_value1, sorted_value2, strict=True)):
                     return False
 
             # Handle lists with mixed data (sort elements before comparing)
