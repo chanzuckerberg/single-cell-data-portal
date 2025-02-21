@@ -1605,7 +1605,7 @@ class TestGetDatasets(BaseAPIPortalTest):
         self.business_logic.publish_collection_version(collection_original.version_id)
 
         response_original = self.app.get(
-            f"/curation/v1/collections/{collection_original.version_id}/datasets/{dataset_original.dataset_id}",
+            f"/curation/v1/collections/{collection_original.collection_id}/datasets/{dataset_original.dataset_id}",
             # f"/curation/v1/collections/{collection_original.collection_id}/datasets/{dataset_original.dataset_version_id}",
             # f"/curation/v1/collections/{collection_original.collection_id}/datasets/{dataset_original.dataset_id}",
         )
@@ -1616,18 +1616,16 @@ class TestGetDatasets(BaseAPIPortalTest):
         assert len(collection_revised.datasets) == 2
 
         response_delete = self.app.delete(
-            f"/curation/v1/collections/{collection_revised.version_id}/datasets/{dataset_original.dataset_id}",
-            headers=self.make_owner_header(),
+            f"/curation/v1/collections/{collection_revised.version_id}/datasets/{dataset_original.dataset_id}?delete_published=true",
+            headers=self.make_cxg_admin_header(),
         )
         assert response_delete.status_code == 202, response_delete
-        self.business_logic.publish_collection_version(collection_revised.version_id)
 
         response = self.app.get(
-            f"/curation/v1/collections/{collection_original.version_id}/datasets/{dataset_original.dataset_id}",
+            f"/curation/v1/collections/{collection_original.collection_id}/datasets/{dataset_original.dataset_id}",
         )
         assert response.status_code == 200
         body = response.json
-        assert False, body
         assert body_original["assets"] == body["assets"]
 
     def test_get_dataset_in_a_collection(self):
