@@ -403,7 +403,6 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-rebuild-cellguide-pipeline
       - name: Run tests in docker-compose
-        continue-on-error: true
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-unit-test-cellguide-pipeline
