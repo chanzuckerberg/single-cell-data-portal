@@ -452,9 +452,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 versions.append(self._update_dataset_version_with_canonical(dataset_version))
         return versions
 
-    def check_artifact_is_part_of_dataset(self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId):
-        dataset_version = self.datasets_versions[dataset_version_id.id]
-        return any(artifact.id == artifact_id for artifact in dataset_version.artifacts)
+    def check_artifact_is_part_of_dataset(self, dataset_id: DatasetId, artifact_id: DatasetArtifactId):
+        versions = [v for v in self.datasets_versions.values() if v.dataset_id == dataset_id]
+        artifacts = [a for v in versions for a in v.artifacts]
+        return any(a.id == artifact_id for a in artifacts)
 
     def get_artifact_by_uri_suffix(self, uri_suffix: str) -> Optional[DatasetArtifact]:
         for artifact in self.dataset_artifacts.values():
@@ -590,7 +591,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             new_dataset_version = self.get_dataset_version(new_dataset_version_id)
             if collection_version.collection_id != new_dataset_version.collection_id:
                 raise ValueError(
-                    f"Dataset version {new_dataset_version_id} does not belong to collection {collection_version.collection_id}"
+                    f"Dataset version {new_dataset_version_id} does not belong to collection "
+                    f"{collection_version.collection_id}"
                 )
 
         idx = next(i for i, e in enumerate(collection_version.datasets) if e == old_dataset_version_id)
