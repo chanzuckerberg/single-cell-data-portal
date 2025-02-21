@@ -226,7 +226,7 @@ class ProcessAddLabels(ProcessingLogic):
             DatasetArtifactType.H5AD,
             key_prefix,
             dataset_version_id,
-            artifact_bucket,
             DatasetStatusKey.H5AD,
+            artifact_bucket,
             datasets_bucket=datasets_bucket,
         )

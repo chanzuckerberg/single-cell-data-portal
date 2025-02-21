@@ -229,6 +229,20 @@ class DatabaseProviderInterface:
         Adds a dataset artifact to an existing dataset version.
         """
 
+    def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
+        """
+        Updates a dataset artifact uri
+        """
+        pass
+
+    def add_artifact_to_dataset_version(
+        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
+    ) -> None:
+        """
+        Adds an artifact to a dataset version
+        """
+        pass
+
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         """
         Updates the processing status for a dataset version.
@@ -237,6 +251,17 @@ class DatabaseProviderInterface:
     def update_dataset_validation_status(self, version_id: DatasetVersionId, status: DatasetValidationStatus) -> None:
         """
         Updates the validation status for a dataset version.
+        """
+        pass
+
+    def update_dataset_validation_atac_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
+        """
+        Updates the validation atac message for a dataset version.
+        """
+
+    def update_dataset_validation_anndata_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
+        """
+        Updates the validation anndata message for a dataset version.
         """
 
     def update_dataset_upload_status(self, version_id: DatasetVersionId, status: DatasetUploadStatus) -> None:

@@ -444,7 +444,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         """
-        Returns all dataset versions for a canonical dataset_id. ***AT PRESENT THIS FUNCTION IS NOT USED***
+        Returns all dataset versions for a canonical dataset_id.
         """
         versions = []
         for dataset_version in self.datasets_versions.values():
@@ -527,6 +527,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                     found_artifact = True
                     break
 
+    def add_artifact_to_dataset_version(self, version_id: DatasetVersionId, artifact_id: DatasetArtifactId) -> None:
+        self.datasets_versions[version_id.id].artifacts.append(artifact_id)
+
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         version = self.datasets_versions[version_id.id]
         version.metadata = copy.deepcopy(metadata)
@@ -550,9 +553,15 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         existing_status = dataset_version.status
         setattr(existing_status, status_type, copy.deepcopy(status))
 
-    def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
+    def update_dataset_validation_anndata_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
+        # TODO update where this is used. We need a version for atac
         dataset_version = self.datasets_versions[version_id.id]
-        dataset_version.status.validation_message = validation_message
+        dataset_version.status.validation_anndata_message = validation_message
+
+    def update_dataset_validation_atac_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
+        # TODO update where this is used. We need a version for atac
+        dataset_version = self.datasets_versions[version_id.id]
+        dataset_version.status.validation_atac_message = validation_message
 
     def add_dataset_to_collection_version(self, version_id: CollectionVersionId, dataset_id: DatasetId) -> None:
         # Not needed for now - create_dataset does this

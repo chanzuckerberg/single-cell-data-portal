@@ -901,6 +901,18 @@ class DatabaseProvider(DatabaseProviderInterface):
             artifact = session.query(DatasetArtifactTable).filter_by(id=artifact_id.id).one()
             artifact.uri = artifact_uri
 
+    def add_artifact_to_dataset_version(
+        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
+    ) -> None:
+        """
+        Adds an artifact to a dataset version
+        """
+        with self._manage_session() as session:
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=dataset_version_id.id).one()
+            artifacts = list(dataset_version.artifacts)
+            artifacts.append(uuid.UUID(artifact_id.id))
+            dataset_version.artifacts = artifacts
+
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         """
@@ -948,12 +960,20 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version.status = dataset_version_status
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
-    def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
+    def _update_dataset_validation_message(
+        self, version_id: DatasetVersionId, status_key: str, validation_message: str
+    ) -> None:
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = deepcopy(dataset_version.status)
-            dataset_version_status["validation_message"] = validation_message
+            dataset_version_status[status_key] = validation_message
             dataset_version.status = dataset_version_status
+
+    def update_dataset_validation_anndata_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
+        self._update_dataset_validation_message(version_id, "validation_anndata_message", validation_message)
+
+    def update_dataset_validation_atac_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
+        self._update_dataset_validation_message(version_id, "validation_atac_message", validation_message)
 
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
         """
@@ -1066,14 +1086,16 @@ class DatabaseProvider(DatabaseProviderInterface):
             # Confirm collection version datasets length matches given dataset version IDs length.
             if len(collection_version.datasets) != len(dataset_version_ids):
                 raise ValueError(
-                    f"Dataset Version IDs length does not match Collection Version {collection_version_id} Datasets length"
+                    f"Dataset Version IDs length does not match Collection Version {collection_version_id} Datasets "
+                    f"length"
                 )
 
             # Confirm all given dataset version IDs belong to collection version.
             if {dv_id.id for dv_id in dataset_version_ids} != {str(d) for d in collection_version.datasets}:
                 raise ValueError("Dataset Version IDs do not match saved Collection Version Dataset IDs")
 
-            # Replace collection version datasets with given, ordered dataset version IDs and update custom ordered flag.
+            # Replace collection version datasets with given, ordered dataset version IDs and update custom ordered
+            # flag.
             updated_datasets = [uuid.UUID(dv_id.id) for dv_id in dataset_version_ids]
             collection_version.datasets = updated_datasets
             collection_version.has_custom_dataset_order = True
