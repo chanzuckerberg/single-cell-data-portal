@@ -1590,6 +1590,46 @@ class TestDeleteDataset(BaseAPIPortalTest):
 
 
 class TestGetDatasets(BaseAPIPortalTest):
+    def test_atac_artifacts_ok(self):
+        """Test that deleting a revision doesn't remove artifacts referred to by another dataset version."""
+        collection_original = self.generate_unpublished_collection()
+        dataset_original = self.generate_dataset(
+            collection_version=collection_original,
+            artifacts=[
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "s3://fake.bucket/asset.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "s3://fake.bucket/atac_frags.tsv.bgz"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_INDEX, "s3://fake.bucket/atac_frags.tsv.bgz"),
+            ],
+        )
+        self.generate_dataset(collection_version=collection_original)
+        self.business_logic.publish_collection_version(collection_original.version_id)
+
+        response_original = self.app.get(
+            f"/curation/v1/collections/{collection_original.version_id}/datasets/{dataset_original.dataset_id}",
+            # f"/curation/v1/collections/{collection_original.collection_id}/datasets/{dataset_original.dataset_version_id}",
+            # f"/curation/v1/collections/{collection_original.collection_id}/datasets/{dataset_original.dataset_id}",
+        )
+        assert response_original.status_code == 200
+        body_original = response_original.json
+
+        collection_revised = self.generate_revision(collection_original.collection_id)
+        assert len(collection_revised.datasets) == 2
+
+        response_delete = self.app.delete(
+            f"/curation/v1/collections/{collection_revised.version_id}/datasets/{dataset_original.dataset_id}",
+            headers=self.make_owner_header(),
+        )
+        assert response_delete.status_code == 202, response_delete
+        self.business_logic.publish_collection_version(collection_revised.version_id)
+
+        response = self.app.get(
+            f"/curation/v1/collections/{collection_original.version_id}/datasets/{dataset_original.dataset_id}",
+        )
+        assert response.status_code == 200
+        body = response.json
+        assert False, body
+        assert body_original["assets"] == body["assets"]
+
     def test_get_dataset_in_a_collection(self):
         dataset = self.generate_dataset(name="test")
 
