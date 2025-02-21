@@ -610,7 +610,7 @@ class BusinessLogic(BusinessLogicInterface):
                 manifest.anndata = [a for a in previous_dv.artifacts if a.type == DatasetArtifactType.RAW_H5AD][0].uri
 
             if key == "atac_fragment":
-                artifact_id, extension = str(_url).split("/")[-1].split(".", 1)
+                artifact_id, extension = _url.split("/")[-1].split(".", 1)
                 if extension != ARTIFACT_TO_EXTENSION[DatasetArtifactType.ATAC_FRAGMENT]:
                     raise InvalidIngestionManifestException(message=f"{_url} is not an atac_fragments file")
                 artifact = self.database_provider.get_dataset_artifacts([DatasetArtifactId(artifact_id)])
