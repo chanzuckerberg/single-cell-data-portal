@@ -596,7 +596,7 @@ class BusinessLogic(BusinessLogicInterface):
                     message="Cannot ingest public datasets without a current dataset version"
                 )
             if key == "anndata":
-                dataset_version_id, extension = str(_url).split("/")[-1].split(".", maxsplit=1)
+                dataset_version_id, extension = _url.split("/")[-1].split(".", maxsplit=1)
                 if extension != ARTIFACT_TO_EXTENSION[DatasetArtifactType.H5AD]:
                     raise InvalidIngestionManifestException(message=f"{_url} is not an h5ad file")
                 previous_dv = self.database_provider.get_dataset_version(DatasetVersionId(dataset_version_id))
