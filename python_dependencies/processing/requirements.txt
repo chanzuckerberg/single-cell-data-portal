@@ -22,3 +22,4 @@ scanpy==1.9.8
 SQLAlchemy==2.*
 tenacity
 tiledb==0.25.0  # Portal's tiledb version should always be the same or older than Explorer's
+git+https://github.com/chanzuckerberg/single-cell-curation/@main#subdirectory=cellxgene_schema_cli
