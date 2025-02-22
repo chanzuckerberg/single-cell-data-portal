@@ -82,6 +82,7 @@ class DatasetMetadataUpdaterWorker(ProcessValidateH5AD):
                 new_key_prefix,
                 new_dataset_version_id,
                 self.artifact_bucket,
+                DatasetStatusKey.H5AD,
             )
             self.update_processing_status(new_dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
         finally:
@@ -117,8 +118,8 @@ class DatasetMetadataUpdaterWorker(ProcessValidateH5AD):
                 DatasetArtifactType.H5AD,
                 new_key_prefix,
                 new_dataset_version_id,
-                DatasetStatusKey.H5AD,
                 self.artifact_bucket,
+                DatasetStatusKey.H5AD,
                 datasets_bucket=self.datasets_bucket,
             )
             self.update_processing_status(
