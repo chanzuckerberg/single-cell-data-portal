@@ -805,7 +805,8 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             dataset_versions = session.query(DatasetVersionTable).filter_by(dataset_id=datset_id.id).all()
-            return any(dv for dv in dataset_versions if artifact_id.id in dv.artifacts)
+            artifact_ids = [str(artifact_id) for dv in dataset_versions for artifact_id in dv.artifacts]
+            return artifact_id.id in artifact_ids
 
     def get_all_mapped_datasets_and_collections(self) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:
         """
