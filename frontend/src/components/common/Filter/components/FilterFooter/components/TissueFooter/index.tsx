@@ -6,7 +6,7 @@ import {
   FooterContent,
   TooltipTrigger,
   LinkButton,
-} from "../style";
+} from "../../style";
 import { LINKS } from "src/common/constants/links";
 
 export function TissueFooter() {

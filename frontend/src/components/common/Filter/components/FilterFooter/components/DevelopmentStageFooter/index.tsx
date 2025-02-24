@@ -6,18 +6,19 @@ import {
   FooterContent,
   TooltipTrigger,
   LinkButton,
-} from "../style";
+} from "../../style";
 import { LINKS } from "src/common/constants/links";
 
-export function CellTypeFooter() {
+export function DevelopmentStageFooter() {
   const openOrganismFilter = () => {
     // TODO: Implement openOrganismFilter function
   };
   return (
     <FooterContent>
       <p>
-        This filter includes cell types from multiple organisms which may
-        reference{" "}
+        By default, this filter shows Homo sapiens and Mus musculus.{" "}
+        <LinkButton onClick={openOrganismFilter}>Filter by organism</LinkButton>{" "}
+        to show other{" "}
         <Tooltip
           sdsStyle="dark"
           placement="top"
@@ -38,11 +39,13 @@ export function CellTypeFooter() {
                   rel="noopener"
                   target="_blank"
                 >
-                  CL ontology
+                  UBERON ontology
                 </TooltipLink>{" "}
-                to annotate cell types. Contributors may use organism-specific
-                ontologies for:
+                to annotate developmental stage. Contributors may use
+                organism-specific ontologies for:
                 <ul>
+                  <li>Homo sapiens</li>
+                  <li>Mus musculus</li>
                   <li>Caenorhabditis elegans</li>
                   <li>Danio rerio</li>
                   <li>Drosophila melanogaster</li>
@@ -51,10 +54,10 @@ export function CellTypeFooter() {
             </StyledTooltip>
           }
         >
-          <TooltipTrigger>organism-specific ontologies</TooltipTrigger>
+          <TooltipTrigger>
+            organism-specific developmental stages.
+          </TooltipTrigger>
         </Tooltip>
-        . Values may be filtered with the{" "}
-        <LinkButton onClick={openOrganismFilter}>organism filter</LinkButton>.
       </p>
     </FooterContent>
   );

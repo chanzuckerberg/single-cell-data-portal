@@ -1,6 +1,6 @@
-import { CellTypeFooter } from "./CellTypeFooter";
-import { TissueFooter } from "./TissueFooter";
-import { DevelopmentStageFooter } from "./DevelopmentStageFooter";
+import { CellTypeFooter } from "./components/CellTypeFooter";
+import { TissueFooter } from "./components/TissueFooter";
+import { DevelopmentStageFooter } from "./components/DevelopmentStageFooter";
 
 export const FOOTER_COMPONENT_MAP: Record<string, React.FC<any>> = {
   tissueFooter: TissueFooter,
