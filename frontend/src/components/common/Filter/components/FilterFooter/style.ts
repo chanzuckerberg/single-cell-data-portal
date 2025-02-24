@@ -56,9 +56,6 @@ export const FooterContent = styled("div")`
   padding: ${spacesS}px;
   ${fontBodyXs}
   color: ${gray500};
-  p {
-    margin: 0;
-  }
 `;
 
 export const LinkButton = styled("button")`
