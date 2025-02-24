@@ -891,7 +891,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
             self.assertNotIn("processing_status", resp_collection.keys())
 
-    def test__get_collection_with_dataset_failing_validation(self):
+    def test__get_collection_with_anndata_dataset_failing_validation(self):
         collection_version = self.generate_collection(
             visibility=Visibility.PRIVATE.name,
         )
@@ -901,7 +901,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.VALIDATION, status=DatasetValidationStatus.INVALID),
             ],
-            validation_message="test message",
+            validation_anndata_message="test message",
         )
         res_json = self._test_response(collection_version)
         self.assertEqual("FAILURE", res_json["processing_status"])
@@ -909,6 +909,45 @@ class TestGetCollectionID(BaseAPIPortalTest):
         self.assertEqual(dataset.dataset_id, actual_dataset["dataset_id"])
         self.assertEqual("VALIDATION_FAILURE", actual_dataset["processing_status"])
         self.assertEqual("test message", actual_dataset["processing_status_detail"])
+
+    def test__get_collection_with_atac_dataset_failing_validation(self):
+        collection_version = self.generate_collection(
+            visibility=Visibility.PRIVATE.name,
+        )
+        dataset = self.generate_dataset(
+            collection_version=collection_version,
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.VALIDATION, status=DatasetValidationStatus.INVALID),
+            ],
+            validation_atac_message="test message",
+        )
+        res_json = self._test_response(collection_version)
+        self.assertEqual("FAILURE", res_json["processing_status"])
+        actual_dataset = res_json["datasets"][0]
+        self.assertEqual(dataset.dataset_id, actual_dataset["dataset_id"])
+        self.assertEqual("VALIDATION_FAILURE", actual_dataset["processing_status"])
+        self.assertEqual("test message", actual_dataset["processing_status_detail"])
+
+    def test__get_collection_with_atac_and_anndata_dataset_failing_validation(self):
+        collection_version = self.generate_collection(
+            visibility=Visibility.PRIVATE.name,
+        )
+        dataset = self.generate_dataset(
+            collection_version=collection_version,
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.VALIDATION, status=DatasetValidationStatus.INVALID),
+            ],
+            validation_anndata_message="anndata failed",
+            validation_atac_message="atac failed",
+        )
+        res_json = self._test_response(collection_version)
+        self.assertEqual("FAILURE", res_json["processing_status"])
+        actual_dataset = res_json["datasets"][0]
+        self.assertEqual(dataset.dataset_id, actual_dataset["dataset_id"])
+        self.assertEqual("VALIDATION_FAILURE", actual_dataset["processing_status"])
+        self.assertEqual("anndata failed\natac failed", actual_dataset["processing_status_detail"])
 
     def test__get_collection_with_dataset_failing_pipeline(self):
         collection = self.generate_collection(
@@ -1810,6 +1849,33 @@ class TestGetDatasets(BaseAPIPortalTest):
         body = response.json
         self.assertEqual([], body["assets"])
 
+    def test_get_dataset_atac_assets(self):
+        dataset = self.generate_dataset(
+            artifacts=[
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.tsv.bgz"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_INDEX, "http://mock.uri/atac_frags.tsv.bgz.tbi"),
+            ]
+        )
+        artifacts = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset.dataset_version_id))
+        atac_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0]
+
+        test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}"
+        response = self.app.get(test_url)
+        body = response.json
+
+        expected_assets = [
+            {"filesize": -1, "filetype": "H5AD", "url": f"http://domain/{dataset.dataset_version_id}.h5ad"},
+            {"filesize": -1, "filetype": "ATAC_FRAGMENT", "url": f"http://domain/{atac_artifact.id}.tsv.bgz"},
+            {
+                "filesize": -1,
+                "filetype": "ATAC_INDEX",
+                "url": f"http://domain/{atac_artifact.id}.tsv.bgz.tbi",
+            },
+        ]
+
+        assert expected_assets == body["assets"]
+
     def test_get_all_datasets_200(self):
         crossref_return_value_1 = (generate_mock_publisher_metadata(), "12.3456/j.celrep", 17169328.664)
         self.crossref_provider.fetch_metadata = Mock(return_value=crossref_return_value_1)
@@ -2164,6 +2230,42 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertIn(revision_1_dataset_updated.dataset_version_id, response_dataset["explorer_url"])
             self.assertIsNone(response_dataset["published_at"])
             self.assertIsNone(response_dataset["revised_at"])
+
+    def test_get_datasets_atac_seq(self):
+        collection = self.generate_unpublished_collection()
+        dataset = self.generate_dataset(
+            collection_version=collection,
+            artifacts=[
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.tsv.bgz"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_INDEX, "http://mock.uri/atac_frags.tsv.bgz.tbi"),
+            ],
+        )
+        self.business_logic.publish_collection_version(collection.version_id)
+        artifacts = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset.dataset_version_id))
+        atac_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0]
+
+        response = self.app.get("/curation/v1/datasets")
+        body = response.json
+        expected_assets = [
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{dataset.dataset_version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "ATAC_FRAGMENT",
+                "url": f"http://domain/{atac_artifact.id}.tsv.bgz",
+            },
+            {
+                "filesize": -1,
+                "filetype": "ATAC_INDEX",
+                "url": f"http://domain/{atac_artifact.id}.tsv.bgz.tbi",
+            },
+        ]
+        assert len(body) == 1, body
+        assert expected_assets == body[0]["assets"]
 
     def test_get_private_datasets_400(self):
         # 400 if PRIVATE and schema version.

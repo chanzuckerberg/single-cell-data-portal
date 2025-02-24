@@ -120,12 +120,17 @@ class BusinessLogic(BusinessLogicInterface):
 
     @staticmethod
     def generate_permanent_url(
-        dataset_id: DatasetVersionId, artifact_id: DatasetArtifactId, asset_type: DatasetArtifactType
-    ):
+        dataset_version: DatasetVersion, artifact_id: DatasetArtifactId, asset_type: DatasetArtifactType
+    ) -> str:
         """
         Return the permanent URL for the given asset.
         """
-        entity_id = artifact_id if asset_type == DatasetArtifactType.ATAC_FRAGMENT else dataset_id
+        if asset_type == DatasetArtifactType.ATAC_INDEX:
+            entity_id = [a for a in dataset_version.artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0].id
+        elif asset_type == DatasetArtifactType.ATAC_FRAGMENT:
+            entity_id = artifact_id
+        else:
+            entity_id = dataset_version.version_id
 
         base_url = CorporaConfig().dataset_assets_base_url
         return f"{base_url}/{entity_id.id}.{ARTIFACT_TO_EXTENSION[asset_type]}"
@@ -604,6 +609,18 @@ class BusinessLogic(BusinessLogicInterface):
                     raise InvalidIngestionManifestException(message=f"{_url} is not a part of the canonical dataset")
                 manifest.anndata = [a for a in previous_dv.artifacts if a.type == DatasetArtifactType.RAW_H5AD][0].uri
 
+            if key == "atac_fragments":
+                artifact_id, extension = str(_url).split("/")[-1].split(".", 1)
+                if extension != ARTIFACT_TO_EXTENSION[DatasetArtifactType.ATAC_FRAGMENT]:
+                    raise InvalidIngestionManifestException(message=f"{_url} is not an atac_fragments file")
+                artifact = self.database_provider.get_dataset_artifacts([artifact_id])
+                if not len(artifact):
+                    raise InvalidIngestionManifestException(message=f"{_url} atac_fragments not found")
+                dataset_id = self.get_dataset_version(current_dataset_version_id).id
+                if not self.database_provider.check_artifact_is_part_of_dataset(dataset_id, artifact[0]):
+                    raise InvalidIngestionManifestException(
+                        message=f"{_url} atac_fragments is not apart of the canonical dataset"
+                    )
         if file_size is None:
             file_info = self.uri_provider.get_file_info(str(manifest.anndata))
             file_size = file_info.size
@@ -837,14 +854,15 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Returns data required for download: file size and permanent URL.
         """
-        artifacts = self.get_dataset_artifacts(dataset_version_id)
+        dataset_version = self.database_provider.get_dataset_version(dataset_version_id)
+        artifacts = dataset_version.artifacts
         artifact = next((a for a in artifacts if a.id == artifact_id), None)
 
         if not artifact:
             raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")
 
         file_size = self.s3_provider.get_file_size(artifact.uri)
-        url = self.generate_permanent_url(dataset_version_id, artifact.id, artifact.type)
+        url = self.generate_permanent_url(dataset_version, artifact.id, artifact.type)
 
         return DatasetArtifactDownloadData(file_size, url)
 
@@ -859,10 +877,10 @@ class BusinessLogic(BusinessLogicInterface):
         dataset_version_id: DatasetVersionId,
         status_key: DatasetStatusKey,
         new_dataset_status: DatasetStatusGeneric,
-        validation_message: Optional[str] = None,
+        validation_anndata_message: Optional[str] = None,
+        validation_atac_message: Optional[str] = None,
     ) -> None:
         """
-        TODO: split into two method, one for updating validation_message, and the other statuses.
         Updates the status of a dataset version.
         status_key can be one of: [upload, validation, cxg, rds, h5ad, processing]
         """
@@ -884,14 +902,23 @@ class BusinessLogic(BusinessLogicInterface):
             self.database_provider.update_dataset_conversion_status(
                 dataset_version_id, "h5ad_status", new_dataset_status
             )
+        elif status_key == DatasetStatusKey.ATAC_FRAGMENT and isinstance(new_dataset_status, DatasetConversionStatus):
+            self.database_provider.update_dataset_conversion_status(
+                dataset_version_id, "atac_status", new_dataset_status
+            )
         else:
             raise DatasetUpdateException(
                 f"Invalid status update for dataset {dataset_version_id}: cannot set {status_key} to "
                 f"{new_dataset_status}"
             )
 
-        if validation_message is not None:
-            self.database_provider.update_dataset_validation_message(dataset_version_id, validation_message)
+        if validation_anndata_message is not None:
+            self.database_provider.update_dataset_validation_anndata_message(
+                dataset_version_id, validation_anndata_message
+            )
+
+        if validation_atac_message is not None:
+            self.database_provider.update_dataset_validation_atac_message(dataset_version_id, validation_atac_message)
 
     def add_dataset_artifact(
         self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
@@ -899,8 +926,6 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Registers an artifact to a dataset version.
         """
-
-        # TODO: we should probably validate that artifact_uri is a valid S3 URI
 
         if artifact_type not in [artifact.value for artifact in DatasetArtifactType]:
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
@@ -912,6 +937,14 @@ class BusinessLogic(BusinessLogicInterface):
         Updates uri for an existing artifact_id
         """
         self.database_provider.update_dataset_artifact(artifact_id, artifact_uri)
+
+    def add_artifact_to_dataset_version(
+        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
+    ) -> None:
+        """
+        Adds an artifact to a dataset version
+        """
+        self.database_provider.add_artifact_to_dataset_version(dataset_version_id, artifact_id)
 
     def create_collection_version(
         self, collection_id: CollectionId, is_auto_version: bool = False
@@ -971,6 +1004,8 @@ class BusinessLogic(BusinessLogicInterface):
     def delete_dataset_versions_from_public_bucket(self, dataset_version_ids: List[str]) -> List[str]:
         rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
         object_keys = set()
+        # TODO, modify to delete fragment and index file as well. The fragment file and index used the artifact ID to
+        #  identify it.
         for d_v_id in dataset_version_ids:
             for file_type in ("h5ad", "rds"):
                 dataset_version_s3_object_key = f"{d_v_id}.{file_type}"

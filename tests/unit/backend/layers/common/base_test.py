@@ -10,7 +10,6 @@ from backend.common.corpora_config import CorporaConfig
 from backend.common.providers.crossref_provider import CrossrefProviderInterface
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import (
-    ARTIFACT_TO_EXTENSION,
     CollectionId,
     CollectionMetadata,
     CollectionVersion,
@@ -43,10 +42,6 @@ class DatasetStatusUpdate:
 class DatasetArtifactUpdate:
     type: str
     uri: str
-
-    @property
-    def extension(self):
-        return ARTIFACT_TO_EXTENSION[self.type]
 
 
 @dataclass
@@ -259,10 +254,11 @@ class BaseTest(unittest.TestCase):
         metadata: Optional[DatasetMetadata] = None,
         name: Optional[str] = None,
         statuses: List[DatasetStatusUpdate] = None,
-        validation_message: str = None,
+        validation_anndata_message: str = None,
         artifacts: List[DatasetArtifactUpdate] = None,
         publish: bool = False,
         replace_dataset_version_id: Optional[DatasetVersionId] = None,
+        validation_atac_message: Optional[str] = None,
     ) -> DatasetData:
         """
         Convenience method for generating a dataset. Also generates an unpublished collection if needed.
@@ -281,12 +277,13 @@ class BaseTest(unittest.TestCase):
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
         for status in statuses:
             self.business_logic.update_dataset_version_status(dataset_version_id, status.status_key, status.status)
-        if validation_message:
+        if validation_anndata_message or validation_atac_message:
             self.business_logic.update_dataset_version_status(
                 dataset_version_id,
                 DatasetStatusKey.VALIDATION,
                 DatasetValidationStatus.INVALID,
-                validation_message=validation_message,
+                validation_anndata_message=validation_anndata_message,
+                validation_atac_message=validation_atac_message,
             )
         if artifacts is None:
             artifacts = [
@@ -294,6 +291,12 @@ class BaseTest(unittest.TestCase):
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, f"s3://fake.bucket/{dataset_version_id}/local.h5ad"),
                 DatasetArtifactUpdate(DatasetArtifactType.CXG, f"s3://fake.bucket/{dataset_version_id}/local.cxg"),
                 DatasetArtifactUpdate(DatasetArtifactType.RDS, f"s3://fake.bucket/{dataset_version_id}/local.rds"),
+                DatasetArtifactUpdate(
+                    DatasetArtifactType.ATAC_FRAGMENT, f"s3://fake.bucket/{dataset_version_id}.tsv.bgz"
+                ),
+                DatasetArtifactUpdate(
+                    DatasetArtifactType.ATAC_INDEX, f"s3://fake.bucket/{dataset_version_id}.tsv.bgz.tbi"
+                ),
             ]
         artifact_ids = []
         for artifact in artifacts:

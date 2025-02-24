@@ -2,7 +2,7 @@ import json
 import os
 from unittest.mock import Mock, patch
 
-from backend.layers.common.entities import DatasetProcessingStatus
+from backend.layers.common.entities import DatasetProcessingStatus, get_validation_message
 from tests.unit.processing.schema_migration.conftest import make_mock_collection_version, make_mock_dataset_version
 
 
@@ -70,7 +70,9 @@ class TestLogErrorsAndCleanup:
         failed_dataset = make_mock_dataset_version(
             dataset_id="dataset_id_2",
             version_id="new_failed_dataset_version_id",
-            status=dict(processing_status=DatasetProcessingStatus.FAILURE, validation_message="rds conversion failed"),
+            status=dict(
+                processing_status=DatasetProcessingStatus.FAILURE, validation_anndata_message="validation failed"
+            ),
             metadata=dict(schema_version="1.0.0"),
         )
         non_migrated_dataset = make_mock_dataset_version(
@@ -90,7 +92,7 @@ class TestLogErrorsAndCleanup:
         errors = schema_migrate.log_errors_and_cleanup(collection_version.version_id.id)
         assert len(errors) == 2
         assert {
-            "message": failed_dataset.status.validation_message,
+            "message": get_validation_message(failed_dataset.status),
             "dataset_status": failed_dataset.status.to_dict(),
             "collection_id": collection_version.collection_id.id,
             "collection_version_id": collection_version.version_id.id,
@@ -99,7 +101,7 @@ class TestLogErrorsAndCleanup:
             "rollback": True,
         } in errors
         assert {
-            "message": non_migrated_dataset.status.validation_message,
+            "message": get_validation_message(non_migrated_dataset.status),
             "dataset_status": non_migrated_dataset.status.to_dict(),
             "collection_id": collection_version.collection_id.id,
             "collection_version_id": collection_version.version_id.id,

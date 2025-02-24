@@ -47,12 +47,14 @@ def sample_slack_status_block():
         "text": {
             "type": "mrkdwn",
             "text": "```{\n"
+            '  "atac_status": null,\n'
             '  "cxg_status": null,\n'
             '  "h5ad_status": null,\n'
             '  "processing_status": null,\n'
             '  "rds_status": null,\n'
             '  "upload_status": null,\n'
-            '  "validation_message": null,\n'
+            '  "validation_anndata_message": null,\n'
+            '  "validation_atac_message": null,\n'
             '  "validation_status": null\n'
             "}```",
         },
@@ -206,7 +208,7 @@ def test_parse_event_with_invalid_error_cause():
 def mock_get_dataset_version(collection_id):
     MockDatasetVersionId = Mock()
     MockDatasetVersionId.collection_id = collection_id
-    MockDatasetVersionId.status = DatasetStatus(*[None] * 7)
+    MockDatasetVersionId.status = DatasetStatus(*[None] * 9)
     return MockDatasetVersionId
 
 

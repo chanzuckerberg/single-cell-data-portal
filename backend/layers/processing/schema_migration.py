@@ -17,6 +17,7 @@ from backend.layers.common.entities import (
     DatasetArtifactType,
     DatasetProcessingStatus,
     DatasetVersionId,
+    get_validation_message,
 )
 from backend.layers.processing import logger
 from backend.layers.processing.process_logic import ProcessingLogic
@@ -230,7 +231,7 @@ class SchemaMigrate(ProcessingLogic):
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
             if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
                 error = {
-                    "message": dataset.status.validation_message,
+                    "message": get_validation_message(dataset.status),
                     "dataset_status": dataset.status.to_dict(),
                     "collection_id": collection_version.collection_id.id,
                     "collection_version_id": collection_version_id,
@@ -249,7 +250,7 @@ class SchemaMigrate(ProcessingLogic):
                 error_message = "Did Not Migrate"
                 dataset_status = "n/a"
                 if dataset.status is not None:
-                    error_message = dataset.status.validation_message
+                    error_message = get_validation_message(dataset.status)
                     dataset_status = dataset.status.to_dict()
                 error = {
                     "message": error_message,

@@ -13,7 +13,11 @@ class ProcessingCanceled(ProcessingException):
 
 
 @dataclass
-class ValidationFailed(ProcessingException):
+class ValidationAnndataFailed(ProcessingException):
+    errors: List[str]
+
+
+class ValidationAtacFailed(ProcessingException):
     errors: List[str]
 
 
