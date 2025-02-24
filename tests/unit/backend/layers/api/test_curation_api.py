@@ -891,7 +891,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
             self.assertNotIn("processing_status", resp_collection["datasets"][0].keys())
             self.assertNotIn("processing_status", resp_collection.keys())
 
-    def test__get_collection_with_dataset_failing_validation(self):
+    def test__get_collection_with_anndata_dataset_failing_validation(self):
         collection_version = self.generate_collection(
             visibility=Visibility.PRIVATE.name,
         )
@@ -901,7 +901,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.VALIDATION, status=DatasetValidationStatus.INVALID),
             ],
-            validation_message="test message",
+            validation_anndata_message="test message",
         )
         res_json = self._test_response(collection_version)
         self.assertEqual("FAILURE", res_json["processing_status"])
@@ -909,6 +909,45 @@ class TestGetCollectionID(BaseAPIPortalTest):
         self.assertEqual(dataset.dataset_id, actual_dataset["dataset_id"])
         self.assertEqual("VALIDATION_FAILURE", actual_dataset["processing_status"])
         self.assertEqual("test message", actual_dataset["processing_status_detail"])
+
+    def test__get_collection_with_atac_dataset_failing_validation(self):
+        collection_version = self.generate_collection(
+            visibility=Visibility.PRIVATE.name,
+        )
+        dataset = self.generate_dataset(
+            collection_version=collection_version,
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.VALIDATION, status=DatasetValidationStatus.INVALID),
+            ],
+            validation_atac_message="test message",
+        )
+        res_json = self._test_response(collection_version)
+        self.assertEqual("FAILURE", res_json["processing_status"])
+        actual_dataset = res_json["datasets"][0]
+        self.assertEqual(dataset.dataset_id, actual_dataset["dataset_id"])
+        self.assertEqual("VALIDATION_FAILURE", actual_dataset["processing_status"])
+        self.assertEqual("test message", actual_dataset["processing_status_detail"])
+
+    def test__get_collection_with_atac_and_anndata_dataset_failing_validation(self):
+        collection_version = self.generate_collection(
+            visibility=Visibility.PRIVATE.name,
+        )
+        dataset = self.generate_dataset(
+            collection_version=collection_version,
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.VALIDATION, status=DatasetValidationStatus.INVALID),
+            ],
+            validation_anndata_message="anndata failed",
+            validation_atac_message="atac failed",
+        )
+        res_json = self._test_response(collection_version)
+        self.assertEqual("FAILURE", res_json["processing_status"])
+        actual_dataset = res_json["datasets"][0]
+        self.assertEqual(dataset.dataset_id, actual_dataset["dataset_id"])
+        self.assertEqual("VALIDATION_FAILURE", actual_dataset["processing_status"])
+        self.assertEqual("anndata failed\natac failed", actual_dataset["processing_status_detail"])
 
     def test__get_collection_with_dataset_failing_pipeline(self):
         collection = self.generate_collection(
@@ -1509,7 +1548,10 @@ class TestDeleteDataset(BaseAPIPortalTest):
         """
         Helper method to call the delete endpoint
         """
-        test_url = f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}{'?' + query_param_str if query_param_str else ''}"
+        test_url = (
+            f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}"
+            f"{'?' + query_param_str if query_param_str else ''}"
+        )
         headers = auth() if callable(auth) else auth
         return self.app.delete(test_url, headers=headers)
 
@@ -1882,7 +1924,8 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertEqual(3, len(response.json))
 
         with self.subTest(
-            "Contains collection_id, collection_version_id, collection_name, collection_doi, and collection_doi_label"
+            "Contains collection_id, collection_version_id, collection_name, collection_doi, "
+            "and collection_doi_label"
         ):
             collection_ids = {published_collection_1.collection_id.id, published_collection_2.collection_id.id}
             collection__version_ids = {
@@ -2772,7 +2815,8 @@ class TestGetDatasetManifest(BaseAPIPortalTest):
 
         test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.version_id}/manifest"
         response = self.app.get(test_url)
-        # TODO: I think this should be a 404 but this is also the behaviour of GET /collections/{colleciton_id}/datasets/{dataset_version_id}
+        # TODO: I think this should be a 404 but this is also the behaviour of GET /collections/{
+        #  colleciton_id}/datasets/{dataset_version_id}
         self.assertEqual(403, response.status_code)
 
     def test__get_manifest_by_missing_dataset_id_fails(self):
@@ -3077,6 +3121,23 @@ class BasePutTest:
             )
             _test_create(dataset.collection_id, dataset.dataset_version_id)
 
+    def test_with_bad_already_ingested_anndata__400(self, *mocks):
+        """
+        Calling Put /datasets/:dataset_id with a bad published anndata link should fail with 400
+        """
+        header = self.make_super_curator_header()
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
+        )
+        body = self.ingested_dataset_request_body
+        response = self.app.put(
+            self.endpoint.format(collection_version_id=dataset.collection_id, dataset_version_id=dataset.dataset_id),
+            json=body,
+            headers=header,
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertIn("detail", response.json.keys())
+
 
 class TestPutLink(BasePutTest, BaseAPIPortalTest):
     @classmethod
@@ -3084,6 +3145,7 @@ class TestPutLink(BasePutTest, BaseAPIPortalTest):
         super().setUpClass()
         cls.good_request_body = {"link": "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"}
         cls.dummy_request_body = {"link": "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"}
+        cls.ingested_dataset_request_body = {"link": "http://domain/1234.txt"}
         cls.endpoint = "/curation/v1/collections/{collection_version_id}/datasets/{dataset_version_id}"
 
 
@@ -3093,6 +3155,7 @@ class TestPutManifest(BasePutTest, BaseAPIPortalTest):
         super().setUpClass()
         cls.good_request_body = {"anndata": "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"}
         cls.dummy_request_body = {"anndata": "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"}
+        cls.ingested_dataset_request_body = {"anndata": "http://domain/1234.txt"}
         cls.endpoint = "/curation/v1/collections/{collection_version_id}/datasets/{dataset_version_id}/manifest"
 
 

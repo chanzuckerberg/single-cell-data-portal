@@ -30,16 +30,12 @@ from backend.layers.common.entities import (
     OntologyTermId,
     PublishedDatasetVersion,
     Visibility,
+    get_validation_message,
 )
 from backend.portal.api.explorer_url import generate as generate_explorer_url
 from backend.portal.api.providers import get_business_logic
 
-allowed_dataset_asset_types = (
-    DatasetArtifactType.H5AD,
-    DatasetArtifactType.RDS,
-    DatasetArtifactType.ATAC_FRAGMENT,
-    DatasetArtifactType.ATAC_INDEX,
-)
+allowed_dataset_asset_types = (DatasetArtifactType.H5AD, DatasetArtifactType.RDS)
 
 
 def get_collections_base_url():
@@ -83,7 +79,7 @@ def extract_dataset_assets(dataset_version: DatasetVersion):
         filesize = get_business_logic().s3_provider.get_file_size(asset.uri)
         if filesize is None:
             filesize = -1
-        url = BusinessLogic.generate_permanent_url(dataset_version, asset.id, asset.type)
+        url = BusinessLogic.generate_permanent_url(dataset_version.version_id, asset.type)
         result = {
             "filesize": filesize,
             "filetype": asset.type.upper(),
@@ -294,7 +290,7 @@ def reshape_dataset_for_curation_api(
         if not is_published and (status := dataset_version.status):
             if status.processing_status == DatasetProcessingStatus.FAILURE:
                 if status.validation_status == DatasetValidationStatus.INVALID:
-                    ds["processing_status_detail"] = status.validation_message
+                    ds["processing_status_detail"] = get_validation_message(status)
                     ds["processing_status"] = "VALIDATION_FAILURE"
                 else:
                     ds["processing_status"] = "PIPELINE_FAILURE"
@@ -445,7 +441,7 @@ class EntityColumns:
         "filename",
     ]
 
-    dataset_processing_status_cols = ["processing_status", "validation_message", "validation_status"]
+    dataset_processing_status_cols = ["processing_status", "validation_anndata_message", "validation_status"]
 
 
 def get_visibility(collection_version: CollectionVersion) -> str:

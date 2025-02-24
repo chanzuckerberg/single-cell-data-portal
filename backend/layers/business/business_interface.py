@@ -152,13 +152,22 @@ class BusinessLogicInterface:
         dataset_version_id: DatasetVersionId,
         status_key: DatasetStatusKey,
         new_dataset_status: DatasetStatusGeneric,
-        validation_message: Optional[str] = None,
+        validation_anndata_message: Optional[str] = None,
+        validation_atac_message: Optional[str] = None,
     ) -> None:
         pass
 
     def add_dataset_artifact(
         self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
     ) -> DatasetArtifactId:
+        pass
+
+    def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
+        pass
+
+    def add_artifact_to_dataset_version(
+        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
+    ) -> None:
         pass
 
     def get_dataset_status(self, dataset_version_id: DatasetVersionId) -> DatasetStatus:

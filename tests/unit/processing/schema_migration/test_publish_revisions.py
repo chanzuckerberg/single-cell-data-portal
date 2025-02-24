@@ -82,7 +82,7 @@ class TestPublishRevisions:
         published, revision = collections["revision"][0], collections["revision"][1]
         revision.datasets[0].status.processing_status = DatasetProcessingStatus.FAILURE
         error_message = "Error Message"
-        revision.datasets[0].status.validation_message = error_message
+        revision.datasets[0].status.validation_anndata_message = error_message
         publish_revisions.business_logic.get_published_collection_version.return_value = published
 
         # Call

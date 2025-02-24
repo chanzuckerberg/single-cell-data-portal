@@ -29,7 +29,7 @@ def make_mock_dataset_version(
         dataset_version.metadata.configure_mock(**metadata)
 
     # set status
-    _status = DatasetStatus.empty().to_dict()
+    _status = DatasetStatus.empty().asdict()
     _status.update({"processing_status": DatasetProcessingStatus.SUCCESS} if status is None else status)
     dataset_version.status = DatasetStatus(**_status)
 

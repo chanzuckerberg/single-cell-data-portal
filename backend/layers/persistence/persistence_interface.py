@@ -193,6 +193,11 @@ class DatabaseProviderInterface:
         Returns all dataset versions for a canonical dataset_id
         """
 
+    def check_artifact_is_part_of_dataset(self, dataset_id: DatasetId, DatasetArtifactId: DatasetArtifactId) -> bool:
+        """
+        Check if the artifact is part of any of the dataset versions associated with the dataset_id
+        """
+
     def get_all_mapped_datasets_and_collections(
         self,
     ) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:  # TODO: add filters if needed
@@ -204,6 +209,11 @@ class DatabaseProviderInterface:
     def get_dataset_artifacts_by_version_id(self, dataset_version_id: DatasetVersionId) -> List[DatasetArtifact]:
         """
         Returns all the artifacts for a specific dataset version
+        """
+
+    def get_dataset_artifacts(self, artifact: List[DatasetArtifactId]) -> List[DatasetArtifact]:
+        """
+        Returns a list of dataset artifacts by id
         """
 
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
@@ -219,6 +229,20 @@ class DatabaseProviderInterface:
         Adds a dataset artifact to an existing dataset version.
         """
 
+    def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
+        """
+        Updates a dataset artifact uri
+        """
+        pass
+
+    def add_artifact_to_dataset_version(
+        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
+    ) -> None:
+        """
+        Adds an artifact to a dataset version
+        """
+        pass
+
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         """
         Updates the processing status for a dataset version.
@@ -227,6 +251,17 @@ class DatabaseProviderInterface:
     def update_dataset_validation_status(self, version_id: DatasetVersionId, status: DatasetValidationStatus) -> None:
         """
         Updates the validation status for a dataset version.
+        """
+        pass
+
+    def update_dataset_validation_atac_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
+        """
+        Updates the validation atac message for a dataset version.
+        """
+
+    def update_dataset_validation_anndata_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
+        """
+        Updates the validation anndata message for a dataset version.
         """
 
     def update_dataset_upload_status(self, version_id: DatasetVersionId, status: DatasetUploadStatus) -> None:

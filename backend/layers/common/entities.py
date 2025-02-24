@@ -16,6 +16,7 @@ class DatasetStatusKey(str, Enum):
     CXG = "cxg"
     RDS = "rds"
     H5AD = "h5ad"
+    ATAC_FRAGMENT = "atac_fragment"
     PROCESSING = "processing"
 
 
@@ -85,7 +86,7 @@ class DatasetArtifactType(str, Enum):
 
 
 ARTIFACT_TO_EXTENSION = {
-    DatasetArtifactType.RAW_H5AD: "raw_h5ad",
+    DatasetArtifactType.RAW_H5AD: "h5ad",
     DatasetArtifactType.H5AD: "h5ad",
     DatasetArtifactType.RDS: "rds",
     DatasetArtifactType.CXG: "cxg",
@@ -116,12 +117,20 @@ class DatasetStatus:
     cxg_status: Optional[DatasetConversionStatus]
     rds_status: Optional[DatasetConversionStatus]
     h5ad_status: Optional[DatasetConversionStatus]
+    atac_status: Optional[DatasetConversionStatus]
     processing_status: Optional[DatasetProcessingStatus]
-    validation_message: Optional[str] = None
+    validation_anndata_message: Optional[str] = None
+    validation_atac_message: Optional[str] = None
 
     @staticmethod
     def empty():
-        return DatasetStatus(None, None, None, None, None, None)
+        return DatasetStatus(*[None] * 7)
+
+
+def get_validation_message(status: DatasetStatus):
+    return "\n".join(
+        filter(lambda x: isinstance(x, str), [status.validation_anndata_message, status.validation_atac_message])
+    )
 
 
 @dataclass

@@ -108,9 +108,8 @@ class TestProcessValidateH5AD(BaseProcessingTest):
         self.schema_validator.validate_anndata = Mock(
             return_value=(False, ["Validation error 1", "Validation error 2"], True)
         )
-
         pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
-
+        pm.download_from_source_uri = Mock(return_value=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME)
         for step_name in ["validate_anndata"]:
             pm.process(
                 collection.version_id,
@@ -124,4 +123,4 @@ class TestProcessValidateH5AD(BaseProcessingTest):
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
         self.assertEqual(status.validation_status, DatasetValidationStatus.INVALID)
-        self.assertEqual(status.validation_message, "Validation error 1\nValidation error 2")
+        self.assertEqual(status.validation_anndata_message, "Validation error 1\nValidation error 2")
