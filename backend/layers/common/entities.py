@@ -16,6 +16,7 @@ class DatasetStatusKey(str, Enum):
     CXG = "cxg"
     RDS = "rds"
     H5AD = "h5ad"
+    ATAC_FRAGMENT = "atac_fragment"
     PROCESSING = "processing"
 
 
@@ -116,12 +117,13 @@ class DatasetStatus:
     cxg_status: Optional[DatasetConversionStatus]
     rds_status: Optional[DatasetConversionStatus]
     h5ad_status: Optional[DatasetConversionStatus]
+    atac_status: Optional[DatasetConversionStatus]
     processing_status: Optional[DatasetProcessingStatus]
     validation_message: Optional[str] = None
 
     @staticmethod
     def empty():
-        return DatasetStatus(None, None, None, None, None, None)
+        return DatasetStatus(*[None] * 7)
 
 
 @dataclass

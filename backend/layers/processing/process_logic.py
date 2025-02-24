@@ -6,7 +6,6 @@ from typing import Callable, List, Optional
 from backend.common.utils.dl_sources.uri import DownloadFailed
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
-    ARTIFACT_TO_EXTENSION,
     DatasetConversionStatus,
     DatasetStatusGeneric,
     DatasetStatusKey,
@@ -97,8 +96,8 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         artifact_type: str,
         key_prefix: str,
         dataset_version_id: DatasetVersionId,
-        artifact_bucket: str,
         processing_status_key: DatasetStatusKey,
+        artifact_bucket: str,  # If provided, dataset will be uploaded to this bucket for future migrations
         datasets_bucket: Optional[str] = None,  # If provided, dataset will be uploaded to this bucket for public access
     ):
         self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADING)
@@ -108,14 +107,12 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
             self.business_logic.add_dataset_artifact(dataset_version_id, artifact_type, s3_uri)
             self.logger.info(f"Updated database with {artifact_type}.")
             if datasets_bucket:
-                key = ".".join((key_prefix, ARTIFACT_TO_EXTENSION[artifact_type]))
+                key = ".".join((key_prefix, artifact_type))
                 self.s3_provider.upload_file(
                     file_name, datasets_bucket, key, extra_args={"ACL": "bucket-owner-full-control"}
                 )
                 datasets_s3_uri = self.make_s3_uri(datasets_bucket, key_prefix, key)
-                self.logger.info(
-                    f"Uploaded {dataset_version_id}.{ARTIFACT_TO_EXTENSION[artifact_type]} to {datasets_s3_uri}"
-                )
+                self.logger.info(f"Uploaded {dataset_version_id}.{artifact_type} to {datasets_s3_uri}")
             self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADED)
         except Exception as e:
             self.logger.error(e)

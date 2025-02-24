@@ -444,7 +444,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         """
-        Returns all dataset versions for a canonical dataset_id. ***AT PRESENT THIS FUNCTION IS NOT USED***
+        Returns all dataset versions for a canonical dataset_id.
         """
         versions = []
         for dataset_version in self.datasets_versions.values():
@@ -517,6 +517,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                     artifact.uri = artifact_uri
                     found_artifact = True
                     break
+
+    def add_artifact_to_dataset_version(self, version_id: DatasetVersionId, artifact_id: DatasetArtifactId) -> None:
+        self.datasets_versions[version_id.id].artifacts.append(artifact_id)
 
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         version = self.datasets_versions[version_id.id]

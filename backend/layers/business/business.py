@@ -552,6 +552,9 @@ class BusinessLogic(BusinessLogicInterface):
 
         return new_dataset_version
 
+    def is_already_ingested(self, uri):
+        return str(uri).startswith(CorporaConfig().dataset_assets_base_url)
+
     # TODO: Alternatives: 1) return DatasetVersion 2) Return a new class
     def ingest_dataset(
         self,
@@ -846,7 +849,6 @@ class BusinessLogic(BusinessLogicInterface):
         validation_message: Optional[str] = None,
     ) -> None:
         """
-        TODO: split into two method, one for updating validation_message, and the other statuses.
         Updates the status of a dataset version.
         status_key can be one of: [upload, validation, cxg, rds, h5ad, processing]
         """
@@ -868,6 +870,10 @@ class BusinessLogic(BusinessLogicInterface):
             self.database_provider.update_dataset_conversion_status(
                 dataset_version_id, "h5ad_status", new_dataset_status
             )
+        elif status_key == DatasetStatusKey.ATAC_FRAGMENT and isinstance(new_dataset_status, DatasetConversionStatus):
+            self.database_provider.update_dataset_conversion_status(
+                dataset_version_id, "atac_status", new_dataset_status
+            )
         else:
             raise DatasetUpdateException(
                 f"Invalid status update for dataset {dataset_version_id}: cannot set {status_key} to "
@@ -884,8 +890,6 @@ class BusinessLogic(BusinessLogicInterface):
         Registers an artifact to a dataset version.
         """
 
-        # TODO: we should probably validate that artifact_uri is a valid S3 URI
-
         if artifact_type not in [artifact.value for artifact in DatasetArtifactType]:
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
 
@@ -896,6 +900,14 @@ class BusinessLogic(BusinessLogicInterface):
         Updates uri for an existing artifact_id
         """
         self.database_provider.update_dataset_artifact(artifact_id, artifact_uri)
+
+    def add_artifact_to_dataset_version(
+        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
+    ) -> None:
+        """
+        Adds an artifact to a dataset version
+        """
+        self.database_provider.add_artifact_to_dataset_version(dataset_version_id, artifact_id)
 
     def create_collection_version(
         self, collection_id: CollectionId, is_auto_version: bool = False
@@ -955,6 +967,8 @@ class BusinessLogic(BusinessLogicInterface):
     def delete_dataset_versions_from_public_bucket(self, dataset_version_ids: List[str]) -> List[str]:
         rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
         object_keys = set()
+        # TODO, modify to delete fragment and index file as well. The fragment file and index used the artifact ID to
+        #  identify it.
         for d_v_id in dataset_version_ids:
             for file_type in ("h5ad", "rds"):
                 dataset_version_s3_object_key = f"{d_v_id}.{file_type}"

@@ -37,6 +37,7 @@ from backend.layers.business.exceptions import (
     NoPreviousDatasetVersionException,
 )
 from backend.layers.common.entities import (
+    ARTIFACT_TO_EXTENSION,
     CollectionId,
     CollectionMetadata,
     CollectionVersion,
@@ -304,18 +305,19 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         Test method that "completes" a dataset processing. This is necessary since dataset ingestion
         is a complex process which happens asynchronously, and cannot be easily mocked.
         """
-        for ext in ("h5ad", "rds"):
-            key = f"{dataset_version_id}.{ext}"
-            self.database_provider.add_dataset_artifact(
-                dataset_version_id, DatasetArtifactType.H5AD.value, f"s3://artifacts/{key}"
-            )
-            self.s3_provider.upload_file(None, "artifacts", key, None)
-            # At present, not keeping public dataset assets as rows in DatasetArtifact table
-            self.s3_provider.upload_file(None, "datasets", key, None)
-        self.database_provider.add_dataset_artifact(
-            dataset_version_id, DatasetArtifactType.CXG.value, f"s3://cellxgene/{dataset_version_id}.cxg/"
-        )
-        self.s3_provider.upload_file(None, "cellxgene", f"{dataset_version_id}.cxg/", None)
+
+        def _add_artifact(bucket, key, key_type):
+            ext = ARTIFACT_TO_EXTENSION[key_type]
+            key_name = f"{key}.{ext}/" if key_type == DatasetArtifactType.CXG else f"{key}.{ext}"
+            self.database_provider.add_dataset_artifact(dataset_version_id, key_type.value, f"s3://{bucket}/{key_name}")
+            self.s3_provider.upload_file(None, bucket, key_name, None)
+
+        _add_artifact("artifacts", f"{dataset_version_id}/raw", DatasetArtifactType.RAW_H5AD)
+        # At present, not keeping public dataset assets as rows in DatasetArtifact table
+        _add_artifact("datasets", f"{dataset_version_id}", DatasetArtifactType.H5AD)
+        _add_artifact("datasets", f"{dataset_version_id}", DatasetArtifactType.RDS)
+        _add_artifact("cellxgene", f"{dataset_version_id}", DatasetArtifactType.CXG)
+
         self.database_provider.update_dataset_upload_status(dataset_version_id, DatasetUploadStatus.UPLOADED)
         self.database_provider.update_dataset_validation_status(dataset_version_id, DatasetValidationStatus.VALID)
         self.database_provider.update_dataset_processing_status(dataset_version_id, DatasetProcessingStatus.SUCCESS)
@@ -1562,12 +1564,13 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         dataset_version_id = published_version.datasets[0].version_id
 
         artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
-        self.assertEqual(3, len(artifacts))
         expected = [
-            f"s3://artifacts/{dataset_version_id}.h5ad",
-            f"s3://artifacts/{dataset_version_id}.rds",
+            f"s3://artifacts/{dataset_version_id}/raw.h5ad",
+            f"s3://datasets/{dataset_version_id}.rds",
             f"s3://cellxgene/{dataset_version_id}.cxg/",
+            f"s3://datasets/{dataset_version_id}.h5ad",
         ]
+        self.assertEqual(len(expected), len(artifacts))
         self.assertEqual(set(expected), {a.uri for a in artifacts})
 
     def test_get_dataset_artifact_download_data_ok(self):
@@ -1605,7 +1608,8 @@ class TestGetDataset(BaseBusinessLogicTestCase):
 class TestGetAllDatasets(BaseBusinessLogicTestCase):
     def test_get_all_private_datasets_ok(self):
         """
-        Private datasets the user is authorized to view can be retrieved with `get_all_private_collection_versions_with_datasets`.
+        Private datasets the user is authorized to view can be retrieved with
+        `get_all_private_collection_versions_with_datasets`.
         """
         # test_user_1:
         # - private collection (2 datasets)
@@ -1660,7 +1664,8 @@ class TestGetAllDatasets(BaseBusinessLogicTestCase):
                     [d.version_id for d in datasets],
                 )
 
-        # Create the expected shape of revision_1_updated: datasets should only include the replacement dataset as well as the new dataset.
+        # Create the expected shape of revision_1_updated: datasets should only include the replacement dataset as
+        # well as the new dataset.
         revision_1_updated_expected = deepcopy(revision_1_updated)
         revision_1_updated_expected.datasets = [
             self.database_provider.get_dataset_version(updated_dataset_version_id),
@@ -3075,7 +3080,7 @@ class TestConcurrentUpdates(BaseBusinessLogicTestCase):
         def add_artifact():
             self.database_provider.add_dataset_artifact(dataset.version_id, DatasetArtifactType.H5AD, "fake_uri")
 
-        self.assertEqual(len(dataset.artifacts), 3)
+        self.assertEqual(len(dataset.artifacts), 4)
 
         from concurrent.futures import ThreadPoolExecutor
 
@@ -3086,7 +3091,7 @@ class TestConcurrentUpdates(BaseBusinessLogicTestCase):
         dv = self.business_logic.get_dataset_version(dataset.version_id)
         self.assertIsNotNone(dv)
         if dv is not None:
-            self.assertEqual(len(dv.artifacts), 13)
+            self.assertEqual(len(dv.artifacts), 14)
 
 
 class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):

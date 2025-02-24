@@ -793,7 +793,7 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         """
-        Returns all dataset versions for a canonical dataset_id. ***AT PRESENT THIS FUNCTION IS NOT USED***
+        Returns all dataset versions for a canonical dataset_id.
         """
         with self._manage_session() as session:
             dataset_versions = session.query(DatasetVersionTable).filter_by(dataset_id=dataset_id.id).all()
@@ -882,6 +882,18 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             artifact = session.query(DatasetArtifactTable).filter_by(id=artifact_id.id).one()
             artifact.uri = artifact_uri
+
+    def add_artifact_to_dataset_version(
+        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
+    ) -> None:
+        """
+        Adds an artifact to a dataset version
+        """
+        with self._manage_session() as session:
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=dataset_version_id.id).one()
+            artifacts = list(dataset_version.artifacts)
+            artifacts.append(uuid.UUID(artifact_id.id))
+            dataset_version.artifacts = artifacts
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
