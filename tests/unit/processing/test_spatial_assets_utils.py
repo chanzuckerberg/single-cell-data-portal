@@ -1,5 +1,5 @@
+import json
 import os
-import pickle
 import tempfile
 
 import numpy as np
@@ -24,6 +24,24 @@ def valid_uns():
                 "images": {"hires": np.random.rand(10, 10, 3), "fullres": np.random.rand(20, 20, 3)},
                 "scalefactors": {"spot_diameter_fullres": 1.0, "tissue_hires_scalef": 0.5},
             }
+        }
+    }
+
+
+@pytest.fixture
+def expected_output(valid_spatial_data):
+    return {
+        "library_id_1": {
+            "image_properties": {
+                "resolution": "fullres",
+                "crop_coords": (0, 0, 20, 20),
+                "width": 20,
+                "height": 20,
+            },
+            "scalefactors": {
+                "spot_diameter_fullres": valid_spatial_data["scalefactors"]["spot_diameter_fullres"],
+                "tissue_hires_scalef": valid_spatial_data["scalefactors"]["tissue_hires_scalef"],
+            },
         }
     }
 
@@ -64,9 +82,9 @@ def group_metadata_name():
 
 
 @pytest.fixture
-def mock_spatial_processor(mocker, valid_uns):
+def mock_spatial_processor(mocker, expected_output):
     processor = mocker.MagicMock(spec=SpatialDataProcessor)
-    processor.filter_spatial_data.return_value = valid_uns["spatial"]
+    processor.filter_spatial_data.return_value = expected_output
     return processor
 
 
@@ -318,7 +336,7 @@ def test__convert_uns_to_cxg_group(
 
     # check if spatial metadata is processed and written correctly
     assert "spatial" in mock_metadata_array.meta
-    spatial_data = pickle.loads(mock_metadata_array.meta["spatial"])
+    spatial_data = json.loads(mock_metadata_array.meta["spatial"])
     assert "library_id_1" in spatial_data
     assert (
         spatial_data["library_id_1"]["scalefactors"]["spot_diameter_fullres"]

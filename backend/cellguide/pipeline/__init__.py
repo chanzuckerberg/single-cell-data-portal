@@ -17,12 +17,6 @@ from backend.cellguide.pipeline.metadata import run as run_metadata_pipeline
 from backend.cellguide.pipeline.ontology_tree import run as run_ontology_tree_pipeline
 from backend.cellguide.pipeline.source_collections import run as run_source_collections_pipeline
 from backend.common.utils.cloudfront import create_invalidation_for_cellguide_data
-from backend.common.utils.result_notification import (
-    format_failed_batch_issue_slack_alert,
-    gen_cg_pipeline_failure_message,
-    gen_cg_pipeline_success_message,
-    notify_slack,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -145,14 +139,5 @@ def cleanup(*, output_directory: str):
 
 
 if __name__ == "__main__":
-    try:
-        output_path, description_output_path = run_cellguide_pipeline()
-        success_message = gen_cg_pipeline_success_message(output_path, description_output_path)
-        notify_slack(success_message)
-    except Exception as e:
-        logger.exception("Cell Guide Pipeline failed")
-        failure_message = format_failed_batch_issue_slack_alert(
-            gen_cg_pipeline_failure_message(f"Issue with Cell Guide pipeline run: {e}. See logs for more detail.")
-        )
-        notify_slack(failure_message)
+    run_cellguide_pipeline()
     sys.exit()
