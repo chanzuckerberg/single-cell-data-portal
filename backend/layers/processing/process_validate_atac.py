@@ -90,12 +90,19 @@ class ProcessValidateATAC(ProcessingLogic):
             result = self.schema_validator.check_anndata_requires_fragment(local_anndata_filename)
         except ValueError as e:  # fragment file forbidden
             self.logger.warning(f"Anndata does not support atac fragment files for the follow reason: {e}")
+            if manifest.atac_fragment:
+                self.update_processing_status(
+                    dataset_version_id,
+                    DatasetStatusKey.VALIDATION,
+                    DatasetValidationStatus.INVALID,
+                )
+                raise ValidationAtacFailed(errors=[str(e), "Fragment file not allowed for non atac anndata."]) from None
             self.logger.warning("Skipping fragment validation")
             self.update_processing_status(
                 dataset_version_id,
                 DatasetStatusKey.ATAC_FRAGMENT,
                 DatasetConversionStatus.SKIPPED,
-                validation_atac_errors=[str(e)],
+                validation_errors=[str(e)],
             )
             return True
 
@@ -104,14 +111,14 @@ class ProcessValidateATAC(ProcessingLogic):
                 self.update_processing_status(
                     dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID
                 )
-                raise ValidationAtacFailed(["Anndata requires fragment file"])
+                raise ValidationAtacFailed(errors=["Anndata requires fragment file"])
             else:  # fragment file optional
                 self.logger.info("Fragment is optional and not present. Skipping fragment validation.")
                 self.update_processing_status(
                     dataset_version_id,
                     DatasetStatusKey.ATAC_FRAGMENT,
                     DatasetConversionStatus.SKIPPED,
-                    validation_atac_errors=["Fragment is optional and not present."],
+                    validation_errors=["Fragment is optional and not present."],
                 )
                 return True
         return False
@@ -171,14 +178,14 @@ class ProcessValidateATAC(ProcessingLogic):
             self.update_processing_status(
                 dataset_version_id, DatasetStatusKey.ATAC_FRAGMENT, DatasetConversionStatus.FAILED
             )
-            raise ValidationAtacFailed([str(e)]) from None
+            raise ValidationAtacFailed(errors=[str(e)]) from None
 
         if errors:
             # if the validation fails, update the processing status and raise a ValidationAtacFailed exception
             self.update_processing_status(
                 dataset_version_id, DatasetStatusKey.ATAC_FRAGMENT, DatasetConversionStatus.FAILED
             )
-            raise ValidationAtacFailed(errors)
+            raise ValidationAtacFailed(errors=errors)
 
         # check to see if the new fragments is the same as the old fragment
         # if it is the same, skip the upload and use link the old fragment to the new dataset

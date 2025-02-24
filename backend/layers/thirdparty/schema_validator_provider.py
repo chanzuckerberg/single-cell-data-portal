@@ -35,6 +35,12 @@ class SchemaValidatorProviderInterface(Protocol):
         """
         pass
 
+    def check_anndata_requires_fragment(self, anndata_file) -> bool:
+        """
+        Check if an anndata file requires a fragment file
+        """
+        pass
+
 
 class SchemaValidatorProvider(SchemaValidatorProviderInterface):
     def validate_anndata(self, input_file: str) -> Tuple[bool, list, bool]:

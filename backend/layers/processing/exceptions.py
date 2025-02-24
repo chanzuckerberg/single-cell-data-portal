@@ -14,11 +14,13 @@ class ProcessingCanceled(ProcessingException):
 
 @dataclass
 class ValidationAnndataFailed(ProcessingException):
-    errors: List[str]
+    def __init__(self, errors: List[str]):
+        self.errors = errors
 
 
 class ValidationAtacFailed(ProcessingException):
-    errors: List[str]
+    def __init__(self, errors: List[str]):
+        self.errors = errors
 
 
 class AddLabelsFailed(ProcessingException):
