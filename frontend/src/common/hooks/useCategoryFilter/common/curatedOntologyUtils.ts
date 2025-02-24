@@ -80,6 +80,7 @@ export function buildCuratedOntologyCategoryView(
     isLabelVisible,
     isSearchable,
     isZerosVisible,
+    footerComponentId,
     label,
     source,
   } = config;
@@ -147,6 +148,7 @@ export function buildCuratedOntologyCategoryView(
     isSearchable,
     isZerosVisible,
     label,
+    footerComponentId,
     views: treeViews,
   };
 

@@ -19,6 +19,7 @@ import {
   useFilterSearch,
 } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
 import { FilterContent as Content } from "./style";
+import { FilterFooter } from "../FilterFooter";
 
 interface Props {
   categoryView: CategoryView;
@@ -41,9 +42,12 @@ export default function FilterContent({
   }, []);
 
   return (
-    <Content minHeight={minHeight} ref={filterRef}>
-      {buildBasicFilterContent(categoryView, onFilter, filterSearchState)}
-    </Content>
+    <div>
+      <Content minHeight={minHeight} ref={filterRef}>
+        {buildBasicFilterContent(categoryView, onFilter, filterSearchState)}
+      </Content>
+      <FilterFooter componentId={categoryView.footerComponentId} />
+    </div>
   );
 }
 
