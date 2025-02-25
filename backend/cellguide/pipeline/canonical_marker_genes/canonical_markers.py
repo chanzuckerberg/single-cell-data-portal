@@ -22,11 +22,31 @@ from backend.common.providers.crossref_provider import CrossrefProvider
 logger = logging.getLogger(__name__)
 
 
-def get_asctb_master_sheet():
+# def get_asctb_master_sheet():
+#     session = setup_retry_session()
+#     asctb_data_response = session.get(ASCTB_MASTER_SHEET_URL)
+#     asctb_data_response.raise_for_status()
+#     return asctb_data_response.json()
+
+
+def is_asctb_table(purl):
+    return (
+        purl.startswith("https://purl.humanatlas.io/asct-b/")
+        and "crosswalk" not in purl
+    )
+
+def get_latest_asctb_data():
     session = setup_retry_session()
-    asctb_data_response = session.get(ASCTB_MASTER_SHEET_URL)
-    asctb_data_response.raise_for_status()
-    return asctb_data_response.json()
+    hra_collection = session.get("https://purl.humanatlas.io/collection/hra")
+    digital_objects = hra_collection["metadata"]["had_member"]
+    tables = {}
+    for purl in sorted(filter(is_asctb_table, digital_objects)):
+        table_name = purl.split("/")[-2].replace('-', '_')
+        table_data =  session.get(purl)
+        table_rows = table_data["data"]["asctb_record"]
+        tables[table_name] = table_rows   
+    print(tables.keys()) 
+    return tables
 
 
 class CanonicalMarkerGenesCompiler:
@@ -41,7 +61,7 @@ class CanonicalMarkerGenesCompiler:
         """
 
         logger.info("Fetching ASCTB data...")
-        self.asctb_data = get_asctb_master_sheet()
+        self.asctb_data = get_latest_asctb_data()
 
         # WMG tissues have some terms that start with "CL" because they're cell cultures.
         # We filter these out as they are specific to our platform and don't exist in ASCTB.
