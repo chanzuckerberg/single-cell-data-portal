@@ -5,6 +5,7 @@ from typing import Tuple
 import pandas as pd
 from dask import compute, delayed
 from dask.diagnostics import ProgressBar
+import requests
 
 from backend.cellguide.pipeline.canonical_marker_genes.types import (
     AnatomicalStructure,
@@ -27,7 +28,10 @@ logger = logging.getLogger(__name__)
 #     asctb_data_response = session.get(ASCTB_MASTER_SHEET_URL)
 #     asctb_data_response.raise_for_status()
 #     return asctb_data_response.json()
-
+def fetch_json(purl):
+    response = requests.get(purl, headers={"Accept": "application/json"})
+    response.raise_for_status()
+    return response.json()
 
 def is_asctb_table(purl):
     return (
@@ -37,12 +41,12 @@ def is_asctb_table(purl):
 
 def get_latest_asctb_data():
     session = setup_retry_session()
-    hra_collection = session.get("https://purl.humanatlas.io/collection/hra")
+    hra_collection = fetch_json("https://purl.humanatlas.io/collection/hra")
     digital_objects = hra_collection["metadata"]["had_member"]
     tables = {}
     for purl in sorted(filter(is_asctb_table, digital_objects)):
         table_name = purl.split("/")[-2].replace('-', '_')
-        table_data =  session.get(purl)
+        table_data =  fetch_json(purl)
         table_rows = table_data["data"]["asctb_record"]
         tables[table_name] = table_rows   
     print(tables.keys()) 
