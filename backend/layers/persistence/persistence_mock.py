@@ -457,11 +457,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         artifacts = [a for v in versions for a in v.artifacts]
         return any(a.id == artifact_id for a in artifacts)
 
-    def get_artifact_by_uri_suffix(self, uri_suffix: str) -> Optional[DatasetArtifact]:
-        for artifact in self.dataset_artifacts.values():
-            if artifact.uri.endswith(uri_suffix):
-                return artifact
-
     def _get_all_datasets(self) -> Iterable[DatasetVersion]:
         """
         Returns all the mapped datasets. Currently unused
