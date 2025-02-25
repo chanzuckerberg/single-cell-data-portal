@@ -296,12 +296,6 @@ class BaseTest(unittest.TestCase):
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, f"s3://fake.bucket/{dataset_version_id}/local.h5ad"),
                 DatasetArtifactUpdate(DatasetArtifactType.CXG, f"s3://fake.bucket/{dataset_version_id}/local.cxg"),
                 DatasetArtifactUpdate(DatasetArtifactType.RDS, f"s3://fake.bucket/{dataset_version_id}/local.rds"),
-                DatasetArtifactUpdate(
-                    DatasetArtifactType.ATAC_FRAGMENT, f"s3://fake.bucket/{dataset_version_id}.tsv.bgz"
-                ),
-                DatasetArtifactUpdate(
-                    DatasetArtifactType.ATAC_INDEX, f"s3://fake.bucket/{dataset_version_id}.tsv.bgz.tbi"
-                ),
             ]
         artifact_ids = []
         for artifact in artifacts:

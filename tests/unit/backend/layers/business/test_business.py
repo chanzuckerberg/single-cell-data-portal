@@ -3205,7 +3205,7 @@ class TestConcurrentUpdates(BaseBusinessLogicTestCase):
         def add_artifact():
             self.database_provider.add_dataset_artifact(dataset.version_id, DatasetArtifactType.H5AD, "fake_uri")
 
-        self.assertEqual(len(dataset.artifacts), 4)
+        self.assertEqual(len(dataset.artifacts), 5)
 
         from concurrent.futures import ThreadPoolExecutor
 
@@ -3216,7 +3216,7 @@ class TestConcurrentUpdates(BaseBusinessLogicTestCase):
         dv = self.business_logic.get_dataset_version(dataset.version_id)
         self.assertIsNotNone(dv)
         if dv is not None:
-            self.assertEqual(len(dv.artifacts), 14)
+            self.assertEqual(len(dv.artifacts), 15)
 
 
 class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
