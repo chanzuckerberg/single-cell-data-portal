@@ -799,6 +799,15 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_versions = session.query(DatasetVersionTable).filter_by(dataset_id=dataset_id.id).all()
             return [self._hydrate_dataset_version(dv) for dv in dataset_versions]
 
+    def check_artifact_is_part_of_dataset(self, datset_id: DatasetId, artifact_id: DatasetArtifactId) -> bool:
+        """
+        Check if the artifact is part of any of the dataset versions associated with the dataset_id
+        """
+        with self._manage_session() as session:
+            dataset_versions = session.query(DatasetVersionTable).filter_by(dataset_id=datset_id.id).all()
+            artifact_ids = [str(artifact_id) for dv in dataset_versions for artifact_id in dv.artifacts]
+            return artifact_id.id in artifact_ids
+
     def get_all_mapped_datasets_and_collections(self) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:
         """
         Returns all mapped datasets and mapped collection versions.

@@ -86,7 +86,7 @@ class DatasetArtifactType(str, Enum):
 
 
 ARTIFACT_TO_EXTENSION = {
-    DatasetArtifactType.RAW_H5AD: "raw_h5ad",
+    DatasetArtifactType.RAW_H5AD: "h5ad",
     DatasetArtifactType.H5AD: "h5ad",
     DatasetArtifactType.RDS: "rds",
     DatasetArtifactType.CXG: "cxg",
