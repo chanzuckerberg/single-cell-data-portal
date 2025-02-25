@@ -5,7 +5,7 @@ from unittest.mock import patch
 from backend.cellguide.pipeline.canonical_marker_genes.canonical_markers import CanonicalMarkerGenesCompiler
 from backend.cellguide.pipeline.utils import convert_dataclass_to_dict_and_strip_nones
 from tests.test_utils import compare_dicts
-from tests.test_utils.mocks import mock_get_asctb_master_sheet, mock_get_title_and_citation_from_doi
+from tests.test_utils.mocks import mock_get_latest_asctb_data, mock_get_title_and_citation_from_doi
 from tests.unit.backend.cellguide.pipeline.constants import (
     CANONICAL_MARKER_GENES_FIXTURE_FILENAME,
     CELLGUIDE_PIPELINE_FIXTURES_BASEPATH,
@@ -31,8 +31,8 @@ class CanonicalMarkerGeneCompilerTests(unittest.TestCase):
 
             with (
                 patch(
-                    "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_asctb_master_sheet",
-                    new=mock_get_asctb_master_sheet,
+                    "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_latest_asctb_data",
+                    new=mock_get_latest_asctb_data,
                 ),
                 patch(
                     "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.CrossrefProvider",
