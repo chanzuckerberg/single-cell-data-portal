@@ -614,7 +614,7 @@ class BusinessLogic(BusinessLogicInterface):
                 dataset_id = self.get_dataset_version(current_dataset_version_id).dataset_id
                 if not self.database_provider.check_artifact_is_part_of_dataset(dataset_id, artifact[0].id):
                     raise InvalidIngestionManifestException(
-                        message=f"{_url} atac_fragments is not apart of the canonical dataset"
+                        message=f"{_url} atac_fragments is not a part of the canonical dataset"
                     )
         if file_size is None:
             file_info = self.uri_provider.get_file_info(str(manifest.anndata))
