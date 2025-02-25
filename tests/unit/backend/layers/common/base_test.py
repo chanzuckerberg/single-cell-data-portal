@@ -15,11 +15,13 @@ from backend.layers.common.entities import (
     CollectionMetadata,
     CollectionVersion,
     CollectionVersionWithDatasets,
+    DatasetArtifact,
     DatasetArtifactType,
     DatasetMetadata,
     DatasetStatusGeneric,
     DatasetStatusKey,
     DatasetValidationStatus,
+    DatasetVersion,
     DatasetVersionId,
     Link,
     OntologyTermId,
@@ -337,6 +339,11 @@ class BaseTest(unittest.TestCase):
     def generate_collection_revision(self, owner="test_user_id") -> CollectionVersionWithDatasets:
         published_collection = self.generate_published_collection(owner)
         return self.business_logic.create_collection_version(published_collection.collection_id)
+
+    def get_artifact_type_from_dataset(
+        self, dataset_version: DatasetVersion, artifact_type: DatasetArtifactType
+    ) -> DatasetArtifact:
+        return next(artifact for artifact in dataset_version.artifacts if artifact.type == artifact_type)
 
 
 def link_class_to_api_link_dict(link: Link) -> dict:

@@ -160,11 +160,11 @@ class ProcessValidateATAC(ProcessingLogic):
 
         # Hash the original fragment file. This is used to check if the new fragment file is the same as the old
         # fragment file to avoid uploading the same file multiple times
-        if not self.business_logic.is_already_ingested(manifest.atac_fragment):
+        if self.business_logic.is_already_ingested(manifest.atac_fragment):
+            original_fragment_hash = self.hash_file(local_fragment_filename)
+        else:
             # new fragment file is from a private source, so we must upload it
             original_fragment_hash = None
-        else:
-            original_fragment_hash = self.hash_file(local_fragment_filename)
 
         # Validate the fragment with anndata file
         try:
