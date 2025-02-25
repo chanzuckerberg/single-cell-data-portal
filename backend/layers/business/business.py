@@ -552,6 +552,9 @@ class BusinessLogic(BusinessLogicInterface):
 
         return new_dataset_version
 
+    def is_already_ingested(self, uri):
+        return str(uri).startswith(CorporaConfig().dataset_assets_base_url)
+
     # TODO: Alternatives: 1) return DatasetVersion 2) Return a new class
     def ingest_dataset(
         self,
@@ -570,7 +573,6 @@ class BusinessLogic(BusinessLogicInterface):
             manifest = IngestionManifest(anndata=url) if isinstance(url, str) else IngestionManifest(**url)
         except ValidationError as e:
             raise InvalidIngestionManifestException("Ingestion manifest is invalid.", errors=e.errors()) from e
-        urls = [str(_url) for _url in manifest.dict(exclude_unset=True).values()]
 
         logger.info(
             {
@@ -581,11 +583,31 @@ class BusinessLogic(BusinessLogicInterface):
             }
         )
 
-        # TODO: validate all uris in the manifest
-        # TODO: replace the uris with the actual uri if a uri to an existing h5ad or fragments file is provided
-        for _url in urls:
+        # Validate the URIs
+        # TODO: This should be done in the IngestionManifest class
+        for key, _url in manifest.model_dump(exclude_unset=True).items():
+            _url = str(_url)
             if not self.uri_provider.validate(_url):
                 raise InvalidURIException(f"Trying to upload invalid URI: {_url}")
+            if not self.is_already_ingested(_url):
+                continue
+            if not current_dataset_version_id:
+                raise InvalidIngestionManifestException(
+                    message="Cannot ingest public datasets without a current dataset version"
+                )
+            if key == "anndata":
+                dataset_version_id, extension = _url.split("/")[-1].split(".", maxsplit=1)
+                if extension != ARTIFACT_TO_EXTENSION[DatasetArtifactType.H5AD]:
+                    raise InvalidIngestionManifestException(message=f"{_url} is not an h5ad file")
+                previous_dv = self.database_provider.get_dataset_version(DatasetVersionId(dataset_version_id))
+                if previous_dv is None:
+                    raise InvalidIngestionManifestException(
+                        message=f"{_url} refers to existing dataset, but that dataset could not be found."
+                    )
+                all_dvs = self.database_provider.get_all_versions_for_dataset(previous_dv.dataset_id)
+                if current_dataset_version_id not in [dv.version_id for dv in all_dvs]:
+                    raise InvalidIngestionManifestException(message=f"{_url} is not a part of the canonical dataset")
+                manifest.anndata = [a for a in previous_dv.artifacts if a.type == DatasetArtifactType.RAW_H5AD][0].uri
 
         if file_size is None:
             file_info = self.uri_provider.get_file_info(str(manifest.anndata))

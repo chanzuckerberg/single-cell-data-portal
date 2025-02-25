@@ -20,6 +20,7 @@ from backend.layers.business.exceptions import (
     DatasetInWrongStatusException,
     DatasetIsPrivateException,
     DatasetNotFoundException,
+    InvalidIngestionManifestException,
     InvalidMetadataException,
     InvalidURIException,
 )
@@ -99,6 +100,8 @@ def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):
         raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.") from None
     except MaxFileSizeExceededException:
         raise TooLargeHTTPException() from None
+    except InvalidIngestionManifestException as e:
+        raise InvalidParametersHTTPException(detail=e.message) from None
     except DatasetInWrongStatusException:
         raise MethodNotAllowedException(
             detail="Submission failed. A dataset cannot be updated while a previous update for the same dataset "
