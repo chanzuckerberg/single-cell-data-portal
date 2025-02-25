@@ -1,11 +1,12 @@
 import logging
 from datetime import datetime
-from os.path import basename, join
+from os.path import basename
 from typing import Callable, List, Optional
 
 from backend.common.utils.dl_sources.uri import DownloadFailed
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
+    ARTIFACT_TO_EXTENSION,
     DatasetConversionStatus,
     DatasetStatusGeneric,
     DatasetStatusKey,
@@ -70,24 +71,14 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
     def download_from_s3(self, bucket_name: str, object_key: str, local_filename: str):
         self.s3_provider.download_file(bucket_name, object_key, local_filename)
 
-    @staticmethod
-    def make_s3_uri(artifact_bucket, key_prefix, file_name):
-        return join("s3://", artifact_bucket, key_prefix, file_name)
-
-    def upload_artifact(
-        self,
-        file_name: str,
-        key_prefix: str,
-        artifact_bucket: str,
-    ) -> str:
-        file_base = basename(file_name)
+    def upload_artifact(self, file_name: str, key: str, bucket_name: str) -> str:
         self.s3_provider.upload_file(
             file_name,
-            artifact_bucket,
-            join(key_prefix, file_base),
+            bucket_name,
+            key,
             extra_args={"ACL": "bucket-owner-full-control"},
         )
-        return self.make_s3_uri(artifact_bucket, key_prefix, file_base)
+        return "/".join(["s3:/", bucket_name, key])
 
     @logit
     def create_artifact(
@@ -102,17 +93,15 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
     ):
         self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADING)
         try:
-            s3_uri = self.upload_artifact(file_name, key_prefix, artifact_bucket)
+            key = "/".join([key_prefix, basename(file_name)])
+            s3_uri = self.upload_artifact(file_name, key, artifact_bucket)
             self.logger.info(f"Uploaded [{dataset_version_id}/{file_name}] to {s3_uri}")
             self.business_logic.add_dataset_artifact(dataset_version_id, artifact_type, s3_uri)
             self.logger.info(f"Updated database with {artifact_type}.")
             if datasets_bucket:
-                key = ".".join((key_prefix, artifact_type))
-                self.s3_provider.upload_file(
-                    file_name, datasets_bucket, key, extra_args={"ACL": "bucket-owner-full-control"}
-                )
-                datasets_s3_uri = self.make_s3_uri(datasets_bucket, key_prefix, key)
-                self.logger.info(f"Uploaded {dataset_version_id}.{artifact_type} to {datasets_s3_uri}")
+                key = ".".join([key_prefix, ARTIFACT_TO_EXTENSION[artifact_type]])
+                s3_uri = self.upload_artifact(file_name, key, datasets_bucket)
+                self.logger.info(f"Uploaded {dataset_version_id}.{artifact_type} to {s3_uri}")
             self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADED)
         except Exception as e:
             self.logger.error(e)
@@ -142,7 +131,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
 
         remote_dev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "")
         if remote_dev_prefix:
-            return join(remote_dev_prefix, identifier).strip("/")
+            return "/".join([remote_dev_prefix, identifier]).strip("/")
         else:
             return identifier
 

@@ -7,6 +7,7 @@ from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionWithDatasets,
+    DatasetArtifactId,
     DatasetArtifactType,
     DatasetConversionStatus,
     DatasetId,
@@ -15,7 +16,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.common.ingestion_manifest import IngestionManifest
-from backend.layers.processing.exceptions import ValidationAtacFailed
+from backend.layers.processing.exceptions import ConversionFailed, ValidationAtacFailed
 from backend.layers.processing.process_validate_atac import ProcessValidateATAC
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
@@ -298,3 +299,69 @@ class TestHashFile:
 
         # Act
         assert isinstance(process_validate_atac.hash_file(file_path), str)
+
+
+class TestCreateAtacArtifact:
+    def test_fragment(self, process_validate_atac, unpublished_dataset, setup):
+        """Test that the create_atac_artifact method creates an artifact for the fragment."""
+        # Arrange
+        dataset_version_id, _ = unpublished_dataset
+        artifact_id = process_validate_atac.create_atac_artifact(
+            "anything",
+            DatasetArtifactType.ATAC_FRAGMENT,
+            dataset_version_id,
+            DatasetStatusKey.ATAC_FRAGMENT,
+            "datasets",
+        )
+
+        # Assert
+        dataset = setup.business_logic.get_dataset_version(dataset_version_id)
+        assert dataset.status.atac_status == DatasetConversionStatus.UPLOADED
+
+        artifacts = dataset.artifacts
+        assert len(artifacts) == 1
+        assert str(artifact_id.id) == str(artifacts[0].id)
+        assert artifacts[0].type == DatasetArtifactType.ATAC_FRAGMENT
+        assert artifacts[0].uri == f"s3://datasets/{artifacts[0].id}.tsv.bgz"
+
+    def test_fragment_index(self, process_validate_atac, unpublished_dataset, setup):
+        """Test that the create_atac_artifact method creates an artifact for the fragment index."""
+        # Arrange
+        dataset_version_id, _ = unpublished_dataset
+        fragment_artifact_id = DatasetArtifactId("deadbeef-36da-4643-b3d5-ee20853084ba")
+        artifact_id = process_validate_atac.create_atac_artifact(
+            "anything",
+            DatasetArtifactType.ATAC_INDEX,
+            dataset_version_id,
+            DatasetStatusKey.ATAC_FRAGMENT,
+            "datasets",
+            fragment_artifact_id=fragment_artifact_id,
+        )
+
+        # Assert
+        dataset = setup.business_logic.get_dataset_version(dataset_version_id)
+        assert dataset.status.atac_status == DatasetConversionStatus.UPLOADED
+
+        artifacts = dataset.artifacts
+        assert len(artifacts) == 1
+        assert str(artifact_id.id) == str(artifacts[0].id)
+        assert artifacts[0].type == DatasetArtifactType.ATAC_INDEX
+        assert artifacts[0].uri == f"s3://datasets/{fragment_artifact_id.id}.tsv.bgz.tbi"
+
+    def test_exception(self, process_validate_atac, unpublished_dataset, setup):
+        """Test that the create_atac_artifact method raises an exception when the artifact cannot be created."""
+        # Arrange
+        dataset_version_id, _ = unpublished_dataset
+        process_validate_atac.business_logic.add_dataset_artifact = Mock(side_effect=ValueError("test"))
+
+        # Act
+        with pytest.raises(ConversionFailed) as e:
+            process_validate_atac.create_atac_artifact(
+                "anything",
+                DatasetArtifactType.ATAC_FRAGMENT,
+                dataset_version_id,
+                DatasetStatusKey.ATAC_FRAGMENT,
+                "datasets",
+            )
+
+        assert e.value.failed_status == DatasetStatusKey.ATAC_FRAGMENT

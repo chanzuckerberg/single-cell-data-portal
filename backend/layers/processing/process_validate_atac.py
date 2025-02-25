@@ -61,11 +61,8 @@ class ProcessValidateATAC(ProcessingLogic):
                 key_prefix = self.get_key_prefix(fragment_artifact_id.id)
             else:
                 key_prefix = self.get_key_prefix(artifact_id.id)
-            key = ".".join((key_prefix, ARTIFACT_TO_EXTENSION[artifact_type]))
-            self.s3_provider.upload_file(
-                file_name, datasets_bucket, key, extra_args={"ACL": "bucket-owner-full-control"}
-            )
-            datasets_s3_uri = self.make_s3_uri(datasets_bucket, key_prefix, key)
+            key = key_prefix + "." + ARTIFACT_TO_EXTENSION[artifact_type]
+            datasets_s3_uri = self.upload_artifact(file_name, key, datasets_bucket)
             self.logger.info(f"Uploaded {dataset_version_id}.{artifact_type} to {datasets_s3_uri}")
             self.business_logic.update_dataset_artifact(artifact_id, datasets_s3_uri)
             self.logger.info(f"Updated database with {artifact_type}.")
