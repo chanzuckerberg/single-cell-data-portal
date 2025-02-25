@@ -831,6 +831,16 @@ class DatabaseProvider(DatabaseProviderInterface):
             )
         return self.get_dataset_artifacts(artifact_ids[0])
 
+    def get_artifact_by_uri_suffix(self, uri_suffix: str) -> Optional[DatasetArtifact]:
+        """
+        Returns the artifact with the given uri suffix
+        """
+        with self._manage_session() as session:
+            artifact = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.uri.endswith(uri_suffix)).first()
+            if artifact:
+                return self._row_to_dataset_artifact(artifact)
+            return None
+
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         """
         Initializes a canonical dataset, generating a dataset_id and a dataset_version_id.

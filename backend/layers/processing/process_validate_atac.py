@@ -193,11 +193,15 @@ class ProcessValidateATAC(ProcessingLogic):
         if original_fragment_hash is not None and original_fragment_hash == self.hash_file(local_fragment_filename):
             # get the artifact id of the old fragment, and add it to the new dataset
             artifact_name = str(manifest.atac_fragment).split("/")[-1]
-            artifact = self.persistence.get_artifact_by_uri_suffix(artifact_name)
+            artifact = self.business_logic.database_provider.get_artifact_by_uri_suffix(artifact_name)
             self.business_logic.add_artifact_to_dataset_version(dataset_version_id, artifact.id)
             # get the artifact id of the old fragment index, and add it to the new dataset
-            artifact = self.persistence.get_artifact_by_uri_suffix(artifact_name + ".tbi")
+            artifact = self.business_logic.database_provider.get_artifact_by_uri_suffix(artifact_name + ".tbi")
             self.business_logic.add_artifact_to_dataset_version(dataset_version_id, artifact.id)
+            self.update_processing_status(
+                dataset_version_id, DatasetStatusKey.ATAC_FRAGMENT, DatasetConversionStatus.UPLOADED
+            )
+            # TODO Copied would be a better status than uploaded
         else:
             fragment_artifact_id = self.create_atac_artifact(
                 local_fragment_filename,

@@ -452,6 +452,11 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 versions.append(self._update_dataset_version_with_canonical(dataset_version))
         return versions
 
+    def get_artifact_by_uri_suffix(self, uri_suffix: str) -> Optional[DatasetArtifact]:
+        for artifact in self.dataset_artifacts.values():
+            if artifact.uri.endswith(uri_suffix):
+                return artifact
+
     def _get_all_datasets(self) -> Iterable[DatasetVersion]:
         """
         Returns all the mapped datasets. Currently unused
@@ -519,7 +524,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                     break
 
     def add_artifact_to_dataset_version(self, version_id: DatasetVersionId, artifact_id: DatasetArtifactId) -> None:
-        self.datasets_versions[version_id.id].artifacts.append(artifact_id)
+        self.datasets_versions[version_id.id].artifacts.append(self.dataset_artifacts[artifact_id.id])
 
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         version = self.datasets_versions[version_id.id]
