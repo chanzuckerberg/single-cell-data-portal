@@ -342,7 +342,7 @@ class DatasetMetadataUpdater(ProcessValidateH5AD):
                 or dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
             )
             and (
-                dataset_version.status.atac_status == DatasetConversionStatus.CONVERTED
+                dataset_version.status.atac_status == DatasetConversionStatus.UPLOADED
                 or dataset_version.status.atac_status == DatasetConversionStatus.SKIPPED
             )
         )
