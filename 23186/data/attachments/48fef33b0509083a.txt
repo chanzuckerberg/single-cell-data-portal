@@ -1,3 +1,0 @@
-INFO     backend.layers.business.business:business.py:575 {'message': 'ingesting dataset', 'collection_version_id': 502cd8d3-9adb-4276-8dec-d3bbe85d9151, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
-INFO     backend.layers.business.business:business.py:575 {'message': 'ingesting dataset', 'collection_version_id': 2c5d7896-7ce6-46fe-83af-ba97e328396e, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
-INFO     processing:dataset_metadata_update.py:245 Dataset 3388dd43-c25c-4def-b4a4-75cb07dfde57 has processing status DatasetProcessingStatus.SUCCESS rather than expected INITIALIZED.Skipping metadata update.
