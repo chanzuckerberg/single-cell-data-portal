@@ -666,7 +666,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         data_submission_policy_version: str,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
-    ) -> List[str]:
+    ) -> List[DatasetVersion]:
         """
         Finalizes a collection version. Returns a list of ids for all Dataset Versions for any/all tombstoned Datasets.
         """
@@ -708,18 +708,20 @@ class DatabaseProvider(DatabaseProviderInterface):
                         dataset_ids_to_tombstone.append(previous_d_id)
 
             # get all dataset versions for the datasets that are being tombstoned
-            dataset_version_ids_to_delete_from_s3 = []
+            dataset_versions_to_delete_from_s3 = []
             if dataset_ids_to_tombstone:
                 tombstone_dataset_statement = (
                     update(DatasetTable).where(DatasetTable.id.in_(dataset_ids_to_tombstone)).values(tombstone=True)
                 )
                 session.execute(tombstone_dataset_statement)
-                dataset_all_version_ids = (
-                    session.query(DatasetVersionTable.id)
+                dataset_all_versions = (
+                    session.query(DatasetVersionTable)
                     .filter(DatasetVersionTable.dataset_id.in_(dataset_ids_to_tombstone))
                     .all()
                 )
-                dataset_version_ids_to_delete_from_s3.extend(str(dv_id) for dv_id in dataset_all_version_ids)
+                dataset_versions_to_delete_from_s3.extend(
+                    self._hydrate_dataset_version(dv) for dv in dataset_all_versions
+                )
 
             # update dataset versions for datasets that are not being tombstoned
             dataset_version_ids = session.query(CollectionVersionTable.datasets).filter_by(id=version_id.id).one()[0]
@@ -733,7 +735,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 if dataset.published_at is None:
                     dataset.published_at = published_at
 
-            return dataset_version_ids_to_delete_from_s3
+            return dataset_versions_to_delete_from_s3
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId, get_tombstoned: bool = False) -> DatasetVersion:
         """
