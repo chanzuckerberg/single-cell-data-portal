@@ -126,8 +126,11 @@ class ProcessValidateATAC(ProcessingLogic):
         :param file_name: the file to hash
         :return: the hash
         """
+        hashobj = hashlib.md5()
         with open(file_name, "rb") as f:
-            return hashlib.sha256(f.read()).hexdigest()
+            while chunk := f.read(2**18):
+                hashobj.update(chunk)
+        return hashobj.hexdigest()
 
     def process(
         self,
@@ -191,10 +194,10 @@ class ProcessValidateATAC(ProcessingLogic):
             # get the artifact id of the old fragment, and add it to the new dataset
             artifact_name = str(manifest.atac_fragment).split("/")[-1]
             artifact = self.business_logic.database_provider.get_artifact_by_uri_suffix(artifact_name)
-            self.business_logic.add_artifact_to_dataset_version(dataset_version_id, artifact.id)
+            self.business_logic.database_provider.add_artifact_to_dataset_version(dataset_version_id, artifact.id)
             # get the artifact id of the old fragment index, and add it to the new dataset
             artifact = self.business_logic.database_provider.get_artifact_by_uri_suffix(artifact_name + ".tbi")
-            self.business_logic.add_artifact_to_dataset_version(dataset_version_id, artifact.id)
+            self.business_logic.database_provider.add_artifact_to_dataset_version(dataset_version_id, artifact.id)
             self.update_processing_status(
                 dataset_version_id, DatasetStatusKey.ATAC_FRAGMENT, DatasetConversionStatus.UPLOADED
             )
