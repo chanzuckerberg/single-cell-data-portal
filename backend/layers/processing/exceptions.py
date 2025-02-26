@@ -17,6 +17,10 @@ class ValidationFailed(ProcessingException):
     errors: List[str]
 
 
+class AddLabelsFailed(ProcessingException):
+    failed_status: DatasetStatusKey = DatasetStatusKey.H5AD
+
+
 class ProcessingFailed(ProcessingException):
     pass
 

@@ -3,15 +3,17 @@ from datetime import datetime
 from os.path import basename, join
 from typing import Callable, List, Optional
 
+from backend.common.utils.dl_sources.uri import DownloadFailed
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
+    ARTIFACT_TO_EXTENSION,
     DatasetConversionStatus,
     DatasetStatusGeneric,
     DatasetStatusKey,
     DatasetVersion,
     DatasetVersionId,
 )
-from backend.layers.processing.exceptions import ConversionFailed
+from backend.layers.processing.exceptions import ConversionFailed, UploadFailed
 from backend.layers.processing.logger import logit
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
@@ -51,6 +53,20 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
                 dataset_version_id=dataset_version_id.id,
             ),
         )
+
+    @logit
+    def download_from_source_uri(self, source_uri: str, local_path: str) -> str:
+        """Given a source URI, download it to local_path.
+        Handles fixing the url so it downloads directly.
+        """
+        file_url = self.uri_provider.parse(source_uri)
+        if not file_url:
+            raise ValueError(f"Malformed source URI: {source_uri}")
+        try:
+            file_url.download(local_path)
+        except DownloadFailed as e:
+            raise UploadFailed(f"Failed to download file from source URI: {source_uri}") from e
+        return local_path
 
     def download_from_s3(self, bucket_name: str, object_key: str, local_filename: str):
         self.s3_provider.download_file(bucket_name, object_key, local_filename)
@@ -92,14 +108,17 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
             self.business_logic.add_dataset_artifact(dataset_version_id, artifact_type, s3_uri)
             self.logger.info(f"Updated database with {artifact_type}.")
             if datasets_bucket:
-                key = ".".join((key_prefix, artifact_type))
+                key = ".".join((key_prefix, ARTIFACT_TO_EXTENSION[artifact_type]))
                 self.s3_provider.upload_file(
                     file_name, datasets_bucket, key, extra_args={"ACL": "bucket-owner-full-control"}
                 )
                 datasets_s3_uri = self.make_s3_uri(datasets_bucket, key_prefix, key)
-                self.logger.info(f"Uploaded {dataset_version_id}.{artifact_type} to {datasets_s3_uri}")
+                self.logger.info(
+                    f"Uploaded {dataset_version_id}.{ARTIFACT_TO_EXTENSION[artifact_type]} to {datasets_s3_uri}"
+                )
             self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADED)
-        except Exception:
+        except Exception as e:
+            self.logger.error(e)
             raise ConversionFailed(processing_status_key) from None
 
     def convert_file(

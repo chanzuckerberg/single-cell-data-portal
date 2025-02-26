@@ -234,6 +234,6 @@ jobs:
         if: always()
         with:
           name: logged-in-test-results
-          path: frontend/playwright-report/
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
           retention-days: 30
           if-no-files-found: error
