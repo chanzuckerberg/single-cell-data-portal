@@ -130,15 +130,6 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "BackoffRate": 5
                 }
               ],
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "HandleErrors",
-                  "ResultPath": "$.error"
-                }
-              ],
               "End": true
             }
           }
