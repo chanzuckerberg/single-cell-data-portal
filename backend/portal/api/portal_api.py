@@ -93,6 +93,7 @@ def _dataset_processing_status_to_response(status: DatasetStatus, dataset_id: st
     Converts a DatasetStatus object to an object compliant to the API specifications
     """
     return {
+        "atac_status": status.atac_status or "NA",
         "created_at": 0,  # NA
         "cxg_status": status.cxg_status or "NA",
         "dataset_id": dataset_id,

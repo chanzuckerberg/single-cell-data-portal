@@ -123,7 +123,7 @@ def upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url
                 keep_trying = False
         if time.time() >= timer + 1200:
             raise TimeoutError(
-                f"Dataset upload or conversion timed out after 10 min. Check logs for dataset: {dataset_id}"
+                f"Dataset upload or conversion timed out after 20 min. Check logs for dataset: {dataset_id}"
             )
         time.sleep(10)
     return {"dataset_id": dataset_id, "errors": errors}
