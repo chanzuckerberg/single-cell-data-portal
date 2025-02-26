@@ -965,7 +965,20 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = deepcopy(dataset_version.status)
-            dataset_version_status["validation_message"] = validation_message
+            message = dataset_version_status("validation_message")
+            if message == "":
+                message = "\n".join([message, validation_message])
+            else:
+                dataset_version_status["validation_message"] = validation_message
+            dataset_version_status["validation_message"] = message
+            dataset_version.status = dataset_version_status
+
+    @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
+    def clear_dataset_validation_message(self, version_id: DatasetVersionId):
+        with self._get_serializable_session() as session:
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
+            dataset_version_status = deepcopy(dataset_version.status)
+            dataset_version_status["validation_message"] = ""
             dataset_version.status = dataset_version_status
 
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:

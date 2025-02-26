@@ -270,6 +270,11 @@ class DatabaseProviderInterface:
         Updates the validation message for a dataset version
         """
 
+    def clear_dataset_validation_message(self, version_id: DatasetVersionId) -> None:
+        """
+        Clears the validation message for a dataset version
+        """
+
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
         """
         Returns the status for a dataset version
