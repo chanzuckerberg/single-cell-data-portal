@@ -31,35 +31,136 @@ resource "aws_sfn_state_machine" "state_machine" {
         "ResultPath": "$.withDefaults",
         "OutputPath": "$.withDefaults.args"
       },
-      "ValidateAnndata": {
-        "Type": "Task",
-        "Resource": "arn:aws:states:::batch:submitJob.sync",
-        "Next": "AddLabels",
-        "Parameters": {
-          "JobDefinition":"${var.job_definition_arn}",
-          "JobName": "validate_anndata",
-          "JobQueue.$": "$.job_queue",
-          "ContainerOverrides": {
-            "Environment": [
-              {
-                "Name": "MANIFEST",
-                "Value.$": "$.manifest"
+    "Parallel": {
+      "Type": "Parallel",
+      "Next": "AddLabels",
+      "Branches": [
+        {
+          "StartAt": "ValidateAnndata",
+          "States": {
+            "ValidateAnndata": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::batch:submitJob.sync",
+              "Parameters": {
+                "JobDefinition": "${var.job_definition_arn}",
+                "JobName": "validate_anndata",
+                "JobQueue.$": "$.job_queue",
+                "ContainerOverrides": {
+                  "Environment": [
+                    {
+                      "Name": "MANIFEST",
+                      "Value.$": "$.manifest"
+                    },
+                    {
+                      "Name": "DATASET_VERSION_ID",
+                      "Value.$": "$.dataset_version_id"
+                    },
+                    {
+                      "Name": "COLLECTION_VERSION_ID",
+                      "Value.$": "$.collection_version_id"
+                    },
+                    {
+                      "Name": "STEP_NAME",
+                      "Value": "validate_anndata"
+                    }
+                  ]
+                }
               },
-              {
-                "Name": "DATASET_VERSION_ID",
-                "Value.$": "$.dataset_version_id"
-              },
-              {
-                "Name": "COLLECTION_VERSION_ID",
-                "Value.$": "$.collection_version_id"
-              },
-              {
-                "Name": "STEP_NAME",
-                "Value": "validate_anndata"
-              }
-            ]
+              "ResultPath": null,
+              "TimeoutSeconds": 86400,
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "AWS.Batch.TooManyRequestsException",
+                    "Batch.BatchException",
+                    "Batch.AWSBatchException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 7,
+                  "BackoffRate": 5
+                }
+              ],
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "HandleErrors",
+                  "ResultPath": "$.error"
+                }
+              ],
+              "End": true
+            }
           }
         },
+        {
+          "StartAt": "ValidateAtac",
+          "States": {
+            "ValidateAtac": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::batch:submitJob.sync",
+              "Parameters": {
+                "JobDefinition": "${var.job_definition_arn}",
+                "JobName": "validate_atac",
+                "JobQueue.$": "$.job_queue",
+                "ContainerOverrides": {
+                  "Environment": [
+                    {
+                      "Name": "MANIFEST",
+                      "Value.$": "$.manifest"
+                    },
+                    {
+                      "Name": "DATASET_VERSION_ID",
+                      "Value.$": "$.dataset_version_id"
+                    },
+                    {
+                      "Name": "COLLECTION_VERSION_ID",
+                      "Value.$": "$.collection_version_id"
+                    },
+                    {
+                      "Name": "STEP_NAME",
+                      "Value": "validate_atac"
+                    }
+                  ]
+                }
+              },
+              "ResultPath": null,
+              "TimeoutSeconds": 86400,
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "AWS.Batch.TooManyRequestsException",
+                    "Batch.BatchException",
+                    "Batch.AWSBatchException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 7,
+                  "BackoffRate": 5
+                }
+              ],
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "HandleErrors",
+                  "ResultPath": "$.error"
+                }
+              ],
+              "End": true
+            }
+          }
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleErrors"
+        }
+      ]
+    },
         "ResultPath": null,
         "TimeoutSeconds": ${local.h5ad_timeout},
         "Retry": [ {
