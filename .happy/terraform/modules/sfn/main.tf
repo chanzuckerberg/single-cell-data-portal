@@ -1,6 +1,7 @@
 # This is used for environment (dev, staging, prod) deployments
 locals {
   h5ad_timeout = 86400 # 24 hours
+  atac_timeout = 86400 # 24 hours
   cxg_timeout = 172800 # 48 hours
 }
 
@@ -31,151 +32,133 @@ resource "aws_sfn_state_machine" "state_machine" {
         "ResultPath": "$.withDefaults",
         "OutputPath": "$.withDefaults.args"
       },
-    "Parallel": {
-      "Type": "Parallel",
-      "Next": "AddLabels",
-      "Branches": [
-        {
-          "StartAt": "ValidateAnndata",
-          "States": {
-            "ValidateAnndata": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::batch:submitJob.sync",
-              "Parameters": {
-                "JobDefinition": "${var.job_definition_arn}",
-                "JobName": "validate_anndata",
-                "JobQueue.$": "$.job_queue",
-                "ContainerOverrides": {
-                  "Environment": [
-                    {
-                      "Name": "MANIFEST",
-                      "Value.$": "$.manifest"
-                    },
-                    {
-                      "Name": "DATASET_VERSION_ID",
-                      "Value.$": "$.dataset_version_id"
-                    },
-                    {
-                      "Name": "COLLECTION_VERSION_ID",
-                      "Value.$": "$.collection_version_id"
-                    },
-                    {
-                      "Name": "STEP_NAME",
-                      "Value": "validate_anndata"
-                    }
-                  ]
-                }
-              },
-              "ResultPath": null,
-              "TimeoutSeconds": 86400,
-              "Retry": [
-                {
-                  "ErrorEquals": [
-                    "AWS.Batch.TooManyRequestsException",
-                    "Batch.BatchException",
-                    "Batch.AWSBatchException"
-                  ],
-                  "IntervalSeconds": 2,
-                  "MaxAttempts": 7,
-                  "BackoffRate": 5
-                }
-              ],
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "HandleErrors",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "End": true
+      "Parallel": {
+        "Type": "Parallel",
+        "Next": "AddLabels",
+        "Branches": [
+          {
+            "StartAt": "ValidateAnndata",
+            "States": {
+              "ValidateAnndata": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::batch:submitJob.sync",
+                "Parameters": {
+                  "JobDefinition": "${var.job_definition_arn}",
+                  "JobName": "validate_anndata",
+                  "JobQueue.$": "$.job_queue",
+                  "ContainerOverrides": {
+                    "Environment": [
+                      {
+                        "Name": "MANIFEST",
+                        "Value.$": "$.manifest"
+                      },
+                      {
+                        "Name": "DATASET_VERSION_ID",
+                        "Value.$": "$.dataset_version_id"
+                      },
+                      {
+                        "Name": "COLLECTION_VERSION_ID",
+                        "Value.$": "$.collection_version_id"
+                      },
+                      {
+                        "Name": "STEP_NAME",
+                        "Value": "validate_anndata"
+                      }
+                    ]
+                  }
+                },
+                "ResultPath": null,
+                "TimeoutSeconds": ${local.h5ad_timeout},
+                "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "AWS.Batch.TooManyRequestsException",
+                      "Batch.BatchException",
+                      "Batch.AWSBatchException"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 7,
+                    "BackoffRate": 5
+                  }
+                ],
+                "Catch": [
+                  {
+                    "ErrorEquals": [
+                      "States.ALL"
+                    ],
+                    "Next": "HandleErrors",
+                    "ResultPath": "$.error"
+                  }
+                ],
+                "End": true
+              }
+            }
+          },
+          {
+            "StartAt": "ValidateAtac",
+            "States": {
+              "ValidateAtac": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::batch:submitJob.sync",
+                "Parameters": {
+                  "JobDefinition": "${var.job_definition_arn}",
+                  "JobName": "validate_atac",
+                  "JobQueue.$": "$.job_queue",
+                  "ContainerOverrides": {
+                    "Environment": [
+                      {
+                        "Name": "MANIFEST",
+                        "Value.$": "$.manifest"
+                      },
+                      {
+                        "Name": "DATASET_VERSION_ID",
+                        "Value.$": "$.dataset_version_id"
+                      },
+                      {
+                        "Name": "COLLECTION_VERSION_ID",
+                        "Value.$": "$.collection_version_id"
+                      },
+                      {
+                        "Name": "STEP_NAME",
+                        "Value": "validate_atac"
+                      }
+                    ]
+                  }
+                },
+                "ResultPath": null,
+                "TimeoutSeconds": ${local.atac_timeout},
+                "Retry": [
+                  {
+                    "ErrorEquals": [
+                      "AWS.Batch.TooManyRequestsException",
+                      "Batch.BatchException",
+                      "Batch.AWSBatchException"
+                    ],
+                    "IntervalSeconds": 2,
+                    "MaxAttempts": 7,
+                    "BackoffRate": 5
+                  }
+                ],
+                "Catch": [
+                  {
+                    "ErrorEquals": [
+                      "States.ALL"
+                    ],
+                    "Next": "HandleErrors",
+                    "ResultPath": "$.error"
+                  }
+                ],
+                "End": true
+              }
             }
           }
-        },
-        {
-          "StartAt": "ValidateAtac",
-          "States": {
-            "ValidateAtac": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::batch:submitJob.sync",
-              "Parameters": {
-                "JobDefinition": "${var.job_definition_arn}",
-                "JobName": "validate_atac",
-                "JobQueue.$": "$.job_queue",
-                "ContainerOverrides": {
-                  "Environment": [
-                    {
-                      "Name": "MANIFEST",
-                      "Value.$": "$.manifest"
-                    },
-                    {
-                      "Name": "DATASET_VERSION_ID",
-                      "Value.$": "$.dataset_version_id"
-                    },
-                    {
-                      "Name": "COLLECTION_VERSION_ID",
-                      "Value.$": "$.collection_version_id"
-                    },
-                    {
-                      "Name": "STEP_NAME",
-                      "Value": "validate_atac"
-                    }
-                  ]
-                }
-              },
-              "ResultPath": null,
-              "TimeoutSeconds": 86400,
-              "Retry": [
-                {
-                  "ErrorEquals": [
-                    "AWS.Batch.TooManyRequestsException",
-                    "Batch.BatchException",
-                    "Batch.AWSBatchException"
-                  ],
-                  "IntervalSeconds": 2,
-                  "MaxAttempts": 7,
-                  "BackoffRate": 5
-                }
-              ],
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "HandleErrors",
-                  "ResultPath": "$.error"
-                }
-              ],
-              "End": true
-            }
-          }
-        }
-      ],
-      "Catch": [
-        {
-          "ErrorEquals": [
-            "States.ALL"
-          ],
-          "Next": "HandleErrors"
-        }
-      ]
-    },
-        "ResultPath": null,
-        "TimeoutSeconds": ${local.h5ad_timeout},
-        "Retry": [ {
-            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-            "IntervalSeconds": 2,
-            "MaxAttempts": 7,
-            "BackoffRate": 5
-        } ],
+        ],
         "Catch": [
           {
             "ErrorEquals": [
               "States.ALL"
             ],
-            "Next": "HandleErrors",
-            "ResultPath": "$.error"
+            "Next": "HandleErrors"
           }
         ]
       },
