@@ -68,10 +68,10 @@ def create_explorer_url(dataset_id: str, deployment_stage: str) -> str:
     return f"https://cellxgene.{deployment_stage}.single-cell.czi.technology/e/{dataset_id}.cxg/"
 
 
-def upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id=None):
+def upload_url_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id=None):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     body = {"url": dropbox_url}
-    errors = []
+
     if existing_dataset_id is None:
         res = session.post(
             f"{api_url}/dp/v1/collections/{collection_id}/upload-links", data=json.dumps(body), headers=headers
@@ -86,6 +86,35 @@ def upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url
     dataset_id = json.loads(res.content)["dataset_id"]
     assert res.status_code == requests.codes.accepted
 
+    return _wait_for_dataset_status(session, api_url, dataset_id, headers)
+
+
+def upload_manifest_and_wait(session, api_url, curator_cookie, collection_id, manifest, existing_dataset_id=None):
+    headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
+
+    if not existing_dataset_id:
+        # Create dataset id
+        res = session.post(f"{api_url}/curation/v1/collections/{collection_id}/datasets", headers=headers)
+        res.raise_for_status()
+        dataset_id = json.loads(res.content)["dataset_id"]
+        assert res.status_code == 201
+    else:
+        dataset_id = existing_dataset_id
+
+    # Upload manifest
+    res = session.post(
+        f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",
+        data=json.dumps(manifest),
+        headers=headers,
+    )
+    assert res.status_code == 202
+
+    # Wait for dataset status
+    return _wait_for_dataset_status(session, api_url, dataset_id, headers)
+
+
+def _wait_for_dataset_status(session, api_url, dataset_id, headers):
+    errors = []
     keep_trying = True
     expected_upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
     expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADING", "UPLOADED", "NA", None]
