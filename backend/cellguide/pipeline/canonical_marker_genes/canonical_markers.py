@@ -40,7 +40,7 @@ def is_asctb_table(purl):
     )
 
 def get_latest_asctb_data():
-    session = setup_retry_session()
+    # session = setup_retry_session()
     hra_collection = fetch_json("https://purl.humanatlas.io/collection/hra")
     digital_objects = hra_collection["metadata"]["had_member"]
     tables = {}
@@ -297,16 +297,16 @@ class CanonicalMarkerGenesCompiler:
 
         doi_to_citation = {}
 
-        data = self.asctb_data[tissue]["data"]
+        data = self.asctb_data[tissue]
 
         parsed_table_entries = []
         for row in data:
-            cell_types = [celltype["id"] for celltype in row["cell_types"] if celltype["id"].startswith("CL:")]
-            if not cell_types or not row["biomarkers_gene"]:
+            cell_types = [celltype["id"] for celltype in row["cell_type_list"] if celltype["id"].startswith("CL:")]
+            if not cell_types or not row["gene_marker_list"]:
                 continue
 
-            tissue_id = self._get_tissue_id([AnatomicalStructure(**entry) for entry in row["anatomical_structures"]])
-            gene_symbols, gene_names = self._get_gene_info([GeneBiomarker(**entry) for entry in row["biomarkers_gene"]])
+            tissue_id = self._get_tissue_id([AnatomicalStructure(**entry) for entry in row["anatomical_structure_list"]])
+            gene_symbols, gene_names = self._get_gene_info([GeneBiomarker(**entry) for entry in row["gene_marker_list"]])
             # Protect against invalid references (i.e. references without a DOI).
             references = [Reference(**entry) for entry in row["references"] if entry and "doi" in entry]
             refs, titles = self._get_references(references, doi_to_citation)
