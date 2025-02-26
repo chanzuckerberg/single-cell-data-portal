@@ -1,0 +1,15 @@
+INFO     backend.layers.business.business:business.py:577 {'message': 'ingesting dataset', 'collection_version_id': 554a8184-621d-4f76-9a1d-092eb93e1233, 'manifest': IngestionManifest(anndata=HttpUrl('https://www.dropbox.com/s/fake_location/test.h5ad?dl=0'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_logic.py:98 Uploaded [f190e534-acd1-474e-b7bf-d38e981e13f1/raw.h5ad] to s3://fake_bucket_name/f190e534-acd1-474e-b7bf-d38e981e13f1/raw.h5ad
+INFO     processing:process_logic.py:100 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:logger.py:26 Start validate_h5ad_file
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:logger.py:28 Complete validate_h5ad_file
