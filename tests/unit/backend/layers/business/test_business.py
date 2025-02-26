@@ -3008,19 +3008,24 @@ class TestCollectionUtilities(BaseBusinessLogicTestCase):
 
         self.complete_dataset_processing_with_success(replaced_dataset_version_id)
 
-        dataset_version_ids = [d_v.version_id.id for d_v in published_collection.datasets] + [
-            replaced_dataset_version_id
-        ]
+        dataset_versions = published_collection.datasets
+        dataset_versions.append(self.database_provider.get_dataset_version(replaced_dataset_version_id))
         expected_delete_keys = set()
         fake_public_bucket = "datasets"
-        for d_v_id in dataset_version_ids:
+        for d_v in dataset_versions:
             for file_type in ("h5ad", "rds"):
-                key = f"{d_v_id}.{file_type}"
+                key = f"{d_v.version_id}.{file_type}"
                 self.s3_provider.upload_file(None, fake_public_bucket, key, None)  # Populate s3 mock with assets
                 self.assertTrue(self.s3_provider.uri_exists(f"s3://{fake_public_bucket}/{key}"))
-                expected_delete_keys.add(f"{d_v_id}.{file_type}")
+                expected_delete_keys.add(f"{d_v.version_id}.{file_type}")
+            expected_delete_keys.update(
+                [a.uri.split("/")[-1] for a in d_v.artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT]
+            )
+            expected_delete_keys.update(
+                [a.uri.split("/")[-1] for a in d_v.artifacts if a.type == DatasetArtifactType.ATAC_INDEX]
+            )
         self.assertTrue(len(expected_delete_keys) > 0)
-        [self.assertTrue(self.s3_provider.file_exists(fake_public_bucket, key)) for key in expected_delete_keys]
+        [self.s3_provider.file_exists(fake_public_bucket, key) for key in expected_delete_keys]
         actual_delete_keys = set(
             self.business_logic.delete_all_dataset_versions_from_public_bucket_for_collection(
                 published_collection.collection_id

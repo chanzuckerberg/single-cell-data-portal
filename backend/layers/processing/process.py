@@ -21,12 +21,14 @@ from backend.layers.processing.exceptions import (
     ProcessingCanceled,
     ProcessingFailed,
     UploadFailed,
-    ValidationFailed,
+    ValidationAnndataFailed,
+    ValidationAtacFailed,
 )
 from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_add_labels import ProcessAddLabels
 from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_logic import ProcessingLogic
+from backend.layers.processing.process_validate_atac import ProcessValidateATAC
 from backend.layers.processing.process_validate_h5ad import ProcessValidateH5AD
 from backend.layers.processing.schema_migration import SchemaMigrate
 from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
@@ -60,6 +62,9 @@ class ProcessMain(ProcessingLogic):
         self.s3_provider = s3_provider
         self.schema_validator = schema_validator
         self.process_validate_h5ad = ProcessValidateH5AD(
+            self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
+        )
+        self.process_validate_atac_seq = ProcessValidateATAC(
             self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator
         )
         self.process_add_labels = ProcessAddLabels(
@@ -105,6 +110,13 @@ class ProcessMain(ProcessingLogic):
         try:
             if step_name == "validate_anndata":
                 self.process_validate_h5ad.process(dataset_version_id, manifest, artifact_bucket)
+            elif step_name == "validate_atac":
+                self.process_validate_atac_seq.process(
+                    collection_version_id,
+                    dataset_version_id,
+                    manifest,
+                    datasets_bucket,
+                )
             elif step_name == "add_labels":
                 self.process_add_labels.process(
                     collection_version_id, dataset_version_id, artifact_bucket, datasets_bucket
@@ -119,9 +131,20 @@ class ProcessMain(ProcessingLogic):
         # TODO: this could be better - maybe collapse all these exceptions and pass in the status key and value
         except ProcessingCanceled:
             pass  # TODO: what's the effect of canceling a dataset now?
-        except ValidationFailed as e:
+        except ValidationAnndataFailed as e:
             self.update_processing_status(
-                dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID, e.errors
+                dataset_version_id,
+                DatasetStatusKey.VALIDATION,
+                DatasetValidationStatus.INVALID,
+                validation_errors=e.errors,
+            )
+            return False
+        except ValidationAtacFailed as e:
+            self.update_processing_status(
+                dataset_version_id,
+                DatasetStatusKey.VALIDATION,
+                DatasetValidationStatus.INVALID,
+                validation_errors=e.errors,
             )
             return False
         except ProcessingFailed:

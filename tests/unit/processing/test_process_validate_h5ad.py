@@ -108,9 +108,8 @@ class TestProcessValidateH5AD(BaseProcessingTest):
         self.schema_validator.validate_anndata = Mock(
             return_value=(False, ["Validation error 1", "Validation error 2"], True)
         )
-
         pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
-
+        pm.download_from_source_uri = Mock(return_value=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME)
         for step_name in ["validate_anndata"]:
             pm.process(
                 collection.version_id,

@@ -1,4 +1,4 @@
-from typing import List, Protocol, Tuple
+from typing import List, Optional, Protocol, Tuple
 
 from cellxgene_schema import validate
 from cellxgene_schema.migrate import migrate
@@ -26,6 +26,18 @@ class SchemaValidatorProviderInterface(Protocol):
     def add_labels(self, input_file: str, output_file: str) -> None:
         """
         Adds labels to the provided `input_file` and writes the result to `output_file`.
+        """
+        pass
+
+    def validate_atac(self, fragment_file, anndata_file) -> Optional[List[str]]:
+        """
+        Validates an ATAC fragment file against an anndata file.
+        """
+        pass
+
+    def check_anndata_requires_fragment(self, anndata_file) -> bool:
+        """
+        Check if an anndata file requires a fragment file
         """
         pass
 
@@ -65,3 +77,16 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
 
     def count_matrix_nonzero(self, matrix):
         return validate.Validator.count_matrix_nonzero(matrix)
+
+    def validate_atac(self, fragment_file, anndata_file) -> Optional[List[str]]:
+        """
+        Validates an ATAC fragment file against an anndata file.
+        """
+        import cellxgene_schema.atac_seq as atac_seq
+
+        return atac_seq.process_fragment(fragment_file, anndata_file)
+
+    def check_anndata_requires_fragment(self, anndata_file) -> bool:
+        import cellxgene_schema.atac_seq as atac_seq
+
+        return atac_seq.check_anndata_requires_fragment(anndata_file)
