@@ -130,6 +130,15 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "BackoffRate": 5
                 }
               ],
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "HandleErrors",
+                  "ResultPath": "$.error"
+                }
+              ],
               "End": true
             }
           }
@@ -143,6 +152,7 @@ resource "aws_sfn_state_machine" "state_machine" {
           "Next": "HandleErrors"
         }
       ]
+      "ResultPath": null
     },
     "AddLabels": {
       "Type": "Task",
@@ -151,16 +161,16 @@ resource "aws_sfn_state_machine" "state_machine" {
       "Parameters": {
         "JobDefinition": "${var.job_definition_arn}",
         "JobName": "add_labels",
-        "JobQueue.$": "$[0].job_queue",
+        "JobQueue.$": "$.job_queue",
         "ContainerOverrides": {
           "Environment": [
             {
               "Name": "DATASET_VERSION_ID",
-              "Value.$": "$[0].dataset_version_id"
+              "Value.$": "$.dataset_version_id"
             },
             {
               "Name": "COLLECTION_VERSION_ID",
-              "Value.$": "$[0].collection_version_id"
+              "Value.$": "$.collection_version_id"
             },
             {
               "Name": "STEP_NAME",
