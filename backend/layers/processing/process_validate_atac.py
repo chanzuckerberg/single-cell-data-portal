@@ -127,9 +127,11 @@ class ProcessValidateATAC(ProcessingLogic):
         :return: the hash
         """
         hashobj = hashlib.md5()
+        buffer = bytearray(2**18)
+        view = memoryview(buffer)
         with open(file_name, "rb") as f:
-            while chunk := f.read(2**18):
-                hashobj.update(chunk)
+            while chunk := f.readinto(buffer):
+                hashobj.update(view[:chunk])
         return hashobj.hexdigest()
 
     def process(
