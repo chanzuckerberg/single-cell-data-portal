@@ -847,10 +847,8 @@ class DatabaseProvider(DatabaseProviderInterface):
         Returns the artifact with the given uri suffix
         """
         with self._manage_session() as session:
-            artifact = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.uri.endswith(uri_suffix)).first()
-            if artifact:
-                return self._row_to_dataset_artifact(artifact)
-            return None
+            artifact = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.uri.endswith(uri_suffix)).one()
+            return self._row_to_dataset_artifact(artifact) if artifact else artifact
 
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         """
