@@ -685,9 +685,9 @@ class BusinessLogic(BusinessLogicInterface):
             new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
         )
         self.database_provider.clear_dataset_validation_message(new_dataset_version.version_id)
-        self.database_provider.update_dataset_conversion_status(
+        self.update_dataset_version_status(
             new_dataset_version.version_id,
-            "atac_status",
+            DatasetStatusKey.ATAC_FRAGMENT,
             DatasetConversionStatus.SKIPPED,
             # TODO: remove when atac is supported
         )

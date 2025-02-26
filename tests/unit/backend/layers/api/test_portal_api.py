@@ -1806,6 +1806,7 @@ class TestDataset(BaseAPIPortalTest):
         self.assertEqual(200, response.status_code)
         actual_body = json.loads(response.data)
         expected_body = {
+            "atac_status": "NA",
             "cxg_status": "NA",
             "rds_status": "NA",
             "h5ad_status": "NA",
