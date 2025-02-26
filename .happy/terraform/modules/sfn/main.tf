@@ -25,7 +25,7 @@ resource "aws_sfn_state_machine" "state_machine" {
     },
     "ApplyDefaults": {
       "Type": "Pass",
-      "Next": "ValidateAnndata",
+      "Next": "Parallel",
       "Parameters": {
         "args.$": "States.JsonMerge($.inputDefaults, $$.Execution.Input, false)"
       },
@@ -81,15 +81,6 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "BackoffRate": 5
                 }
               ],
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "HandleErrors",
-                  "ResultPath": "$.error"
-                }
-              ],
               "End": true
             }
           }
@@ -137,15 +128,6 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "IntervalSeconds": 2,
                   "MaxAttempts": 7,
                   "BackoffRate": 5
-                }
-              ],
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "HandleErrors",
-                  "ResultPath": "$.error"
                 }
               ],
               "End": true
