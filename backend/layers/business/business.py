@@ -938,14 +938,6 @@ class BusinessLogic(BusinessLogicInterface):
         """
         self.database_provider.update_dataset_artifact(artifact_id, artifact_uri)
 
-    def add_artifact_to_dataset_version(
-        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
-    ) -> None:
-        """
-        Adds an artifact to a dataset version
-        """
-        self.database_provider.add_artifact_to_dataset_version(dataset_version_id, artifact_id)
-
     def create_collection_version(
         self, collection_id: CollectionId, is_auto_version: bool = False
     ) -> CollectionVersionWithDatasets:
