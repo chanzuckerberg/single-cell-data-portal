@@ -97,8 +97,12 @@ class ProcessingTest(BaseProcessingTest):
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"))
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.h5ad"))
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/"))
-        self.assertFalse(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.tsv.bgz"))
-        self.assertFalse(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.tsv.bgz.tbi"))
+        self.assertFalse(
+            self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}-fragment.tsv.bgz")
+        )
+        self.assertFalse(
+            self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}-fragment.tsv.bgz.tbi")
+        )
         self.assertFalse(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.rds"))
         self.assertFalse(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.rds"))
 
