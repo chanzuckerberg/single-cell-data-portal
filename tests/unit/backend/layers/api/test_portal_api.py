@@ -101,6 +101,7 @@ class TestCollection(BaseAPIPortalTest):
                     "name": "test_dataset_name",
                     "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
                     "processing_status": {
+                        "atac_status": "NA",
                         "created_at": 0,
                         "cxg_status": "NA",
                         "dataset_id": mock.ANY,
@@ -156,6 +157,7 @@ class TestCollection(BaseAPIPortalTest):
                     "name": "test_dataset_name",
                     "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
                     "processing_status": {
+                        "atac_status": "NA",
                         "created_at": 0,
                         "cxg_status": "NA",
                         "dataset_id": mock.ANY,
