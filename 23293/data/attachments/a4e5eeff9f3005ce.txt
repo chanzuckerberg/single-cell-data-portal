@@ -1,2 +1,0 @@
-WARNING  processing:process_validate_atac.py:89 Anndata does not support atac fragment files for the follow reason: test
-INFO     processing:process_logic.py:47 Updating processing status
