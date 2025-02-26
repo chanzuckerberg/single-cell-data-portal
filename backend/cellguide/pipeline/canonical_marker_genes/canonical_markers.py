@@ -5,6 +5,7 @@ from typing import Tuple
 import pandas as pd
 from dask import compute, delayed
 from dask.diagnostics import ProgressBar
+import requests
 
 from backend.cellguide.pipeline.canonical_marker_genes.types import (
     AnatomicalStructure,
@@ -22,11 +23,34 @@ from backend.common.providers.crossref_provider import CrossrefProvider
 logger = logging.getLogger(__name__)
 
 
-def get_asctb_master_sheet():
-    session = setup_retry_session()
-    asctb_data_response = session.get(ASCTB_MASTER_SHEET_URL)
-    asctb_data_response.raise_for_status()
-    return asctb_data_response.json()
+# def get_asctb_master_sheet():
+#     session = setup_retry_session()
+#     asctb_data_response = session.get(ASCTB_MASTER_SHEET_URL)
+#     asctb_data_response.raise_for_status()
+#     return asctb_data_response.json()
+def fetch_json(purl):
+    response = requests.get(purl, headers={"Accept": "application/json"})
+    response.raise_for_status()
+    return response.json()
+
+def is_asctb_table(purl):
+    return (
+        purl.startswith("https://purl.humanatlas.io/asct-b/")
+        and "crosswalk" not in purl
+    )
+
+def get_latest_asctb_data():
+    # session = setup_retry_session()
+    hra_collection = fetch_json("https://purl.humanatlas.io/collection/hra")
+    digital_objects = hra_collection["metadata"]["had_member"]
+    tables = {}
+    for purl in sorted(filter(is_asctb_table, digital_objects)):
+        table_name = purl.split("/")[-2].replace('-', '_')
+        table_data =  fetch_json(purl)
+        table_rows = table_data["data"]["asctb_record"]
+        tables[table_name] = table_rows   
+    print(tables.keys()) 
+    return tables
 
 
 class CanonicalMarkerGenesCompiler:
@@ -41,7 +65,7 @@ class CanonicalMarkerGenesCompiler:
         """
 
         logger.info("Fetching ASCTB data...")
-        self.asctb_data = get_asctb_master_sheet()
+        self.asctb_data = get_latest_asctb_data()
 
         # WMG tissues have some terms that start with "CL" because they're cell cultures.
         # We filter these out as they are specific to our platform and don't exist in ASCTB.
@@ -273,16 +297,16 @@ class CanonicalMarkerGenesCompiler:
 
         doi_to_citation = {}
 
-        data = self.asctb_data[tissue]["data"]
+        data = self.asctb_data[tissue]
 
         parsed_table_entries = []
         for row in data:
-            cell_types = [celltype["id"] for celltype in row["cell_types"] if celltype["id"].startswith("CL:")]
-            if not cell_types or not row["biomarkers_gene"]:
+            cell_types = [celltype["id"] for celltype in row.get("cell_type_list", []) if celltype["id"].startswith("CL:")]
+            if not cell_types or not row.get("gene_marker_list"):
                 continue
 
-            tissue_id = self._get_tissue_id([AnatomicalStructure(**entry) for entry in row["anatomical_structures"]])
-            gene_symbols, gene_names = self._get_gene_info([GeneBiomarker(**entry) for entry in row["biomarkers_gene"]])
+            tissue_id = self._get_tissue_id([AnatomicalStructure(**entry) for entry in row["anatomical_structure_list"]])
+            gene_symbols, gene_names = self._get_gene_info([GeneBiomarker(**entry) for entry in row["gene_marker_list"]])
             # Protect against invalid references (i.e. references without a DOI).
             references = [Reference(**entry) for entry in row["references"] if entry and "doi" in entry]
             refs, titles = self._get_references(references, doi_to_citation)
