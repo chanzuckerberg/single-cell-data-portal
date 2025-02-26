@@ -125,6 +125,11 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Return the permanent URL for the given asset.
         """
+        if asset_type in [DatasetArtifactType.ATAC_INDEX, DatasetArtifactType.ATAC_FRAGMENT]:
+            fmt_str = "{}/{}-fragment.{}"
+        else:
+            fmt_str = "{}/{}.{}"
+
         if asset_type == DatasetArtifactType.ATAC_INDEX:
             entity_id = [a for a in dataset_version.artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0].id
         elif asset_type == DatasetArtifactType.ATAC_FRAGMENT:
@@ -133,7 +138,7 @@ class BusinessLogic(BusinessLogicInterface):
             entity_id = dataset_version.version_id
 
         base_url = CorporaConfig().dataset_assets_base_url
-        return f"{base_url}/{entity_id.id}.{ARTIFACT_TO_EXTENSION[asset_type]}"
+        return fmt_str.format(base_url, entity_id.id, ARTIFACT_TO_EXTENSION[asset_type])
 
     @staticmethod
     def generate_dataset_citation(
@@ -610,7 +615,8 @@ class BusinessLogic(BusinessLogicInterface):
                 manifest.anndata = [a for a in previous_dv.artifacts if a.type == DatasetArtifactType.RAW_H5AD][0].uri
 
             if key == "atac_fragment":
-                artifact_id, extension = _url.split("/")[-1].split(".", 1)
+                file_name, extension = _url.split("/")[-1].split(".", 1)
+                artifact_id = file_name.rsplit("-", 1)[0]
                 if extension != ARTIFACT_TO_EXTENSION[DatasetArtifactType.ATAC_FRAGMENT]:
                     raise InvalidIngestionManifestException(message=f"{_url} is not an atac_fragments file")
                 artifact = self.database_provider.get_dataset_artifacts([DatasetArtifactId(artifact_id)])

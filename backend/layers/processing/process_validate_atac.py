@@ -60,7 +60,7 @@ class ProcessValidateATAC(ProcessingLogic):
                 key_prefix = self.get_key_prefix(fragment_artifact_id.id)
             else:
                 key_prefix = self.get_key_prefix(artifact_id.id)
-            key = key_prefix + "." + ARTIFACT_TO_EXTENSION[artifact_type]
+            key = f"{key_prefix}-fragment.{ARTIFACT_TO_EXTENSION[artifact_type]}"
             datasets_s3_uri = self.upload_artifact(file_name, key, datasets_bucket)
             self.logger.info(f"Uploaded [{dataset_version_id}/{artifact_type}] to {datasets_s3_uri}")
             self.business_logic.add_dataset_artifact(dataset_version_id, artifact_type, datasets_s3_uri, artifact_id)
