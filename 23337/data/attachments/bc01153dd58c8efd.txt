@@ -1,0 +1,2 @@
+INFO     processing:process_logic.py:47 Updating processing status
+ERROR    processing:process_validate_atac.py:72 test
