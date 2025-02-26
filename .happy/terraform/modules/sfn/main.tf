@@ -151,7 +151,7 @@ resource "aws_sfn_state_machine" "state_machine" {
           ],
           "Next": "HandleErrors"
         }
-      ]
+      ],
       "ResultPath": null
     },
     "AddLabels": {
