@@ -301,8 +301,8 @@ class CanonicalMarkerGenesCompiler:
 
         parsed_table_entries = []
         for row in data:
-            cell_types = [celltype["id"] for celltype in row["cell_type_list"] if celltype["id"].startswith("CL:")]
-            if not cell_types or not row["gene_marker_list"]:
+            cell_types = [celltype["id"] for celltype in row.get("cell_type_list", []) if celltype["id"].startswith("CL:")]
+            if not cell_types or not row.get("gene_marker_list"):
                 continue
 
             tissue_id = self._get_tissue_id([AnatomicalStructure(**entry) for entry in row["anatomical_structure_list"]])
