@@ -84,7 +84,7 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
         """
         import cellxgene_schema.atac_seq as atac_seq
 
-        return atac_seq.validate_fragment(fragment_file, anndata_file)
+        return atac_seq.process_fragment(fragment_file, anndata_file)
 
     def check_anndata_requires_fragment(self, anndata_file) -> bool:
         import cellxgene_schema.atac_seq as atac_seq
