@@ -167,6 +167,7 @@ def test_dataset_upload_flow_with_visium_dataset(
     _verify_upload_and_delete_succeeded(collection_id, headers, VISIUM_DATASET_URI, session, api_url, upload_dataset)
 
 
+@skip_creation_on_prod
 def test_dataset_upload_flow_with_atac_seq_dataset(
     session, curator_cookie, api_url, upload_manifest, request, collection_data
 ):
