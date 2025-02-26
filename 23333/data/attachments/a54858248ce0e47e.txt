@@ -1,0 +1,16 @@
+INFO     backend.layers.business.business:business.py:553 {'message': 'ingesting dataset', 'collection_version_id': 803f28db-dc78-4b9e-bd3d-d11e90b94774, 'url': 'http://fake.url', 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:553 {'message': 'ingesting dataset', 'collection_version_id': 803f28db-dc78-4b9e-bd3d-d11e90b94774, 'url': None, 'current_dataset_version_id': d9ba4c31-9d4e-4761-a44f-55afa45bec9b}
+INFO     processing:dataset_metadata_update.py:333 Main: No raw h5ad update required
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:91 Uploaded [79ffef51-64f0-464c-9239-c9956e4caf67/raw.h5ad] to s3://artifact_bucket/79ffef51-64f0-464c-9239-c9956e4caf67/raw.h5ad
+INFO     processing:process_logic.py:93 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:dataset_metadata_update.py:337 Main: Starting thread for h5ad update
+INFO     processing:dataset_metadata_update.py:357 Main: Starting thread for rds update
+INFO     processing:dataset_metadata_update.py:380 Main: Starting thread for cxg update
+INFO     processing:process_logic.py:45 Updating processing status
