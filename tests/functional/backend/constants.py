@@ -16,11 +16,8 @@ AUDIENCE = {
 }
 
 DATASET_URI = (
-    "https://www.dropbox.com/scl/fi/y50umqlcrbz21a6jgu99z/5_0_0_example_valid.h5ad?rlkey"
-    "=s7p6ybyx082hswix26hbl11pm&dl=0"
+    "https://www.dropbox.com/scl/fi/8yizrdfcfl02dtk3ke4sg/example_5_3_valid.h5ad?rlkey"
+    "=i1qc5qai9w2o9l1fithyatxdf&st=uxgudiwz&dl=0"
 )
 
-VISIUM_DATASET_URI = (
-    "https://www.dropbox.com/scl/fi/lmhue0va6ihk50ivp26da/visium_small.h5ad?rlkey"
-    "=n0fo4dyi1ah7ckg9kgzwlhm8s&st=p7jzej8j&dl=0"
-)
+VISIUM_DATASET_URI = "https://www.dropbox.com/scl/fi/zv7xqd3qkz8xgneomjep7/visium_small.h5ad?rlkey=ucco5gxed6zvf6iowudfbf98l&st=f8t2xzh7&dl=0"

@@ -184,7 +184,6 @@ services:
           - dataset_submissions.corporanet.local
   processing:
     image: "${DOCKER_REPO}corpora-upload"
-    platform: linux/amd64
     profiles:
       - processing
     build:

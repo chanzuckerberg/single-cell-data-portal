@@ -9,6 +9,8 @@ import requests
 from backend.common.utils import downloader
 from backend.layers.thirdparty.s3_provider import S3Provider
 
+# todo: convert to pydantic models
+
 
 class DownloadFailed(Exception):
     pass
