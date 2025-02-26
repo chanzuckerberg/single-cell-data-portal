@@ -1,0 +1,10 @@
+INFO     backend.layers.business.business:business.py:577 {'message': 'ingesting dataset', 'collection_version_id': 12e6ca35-3f84-4fee-ab63-4e00cb56c134, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:577 {'message': 'ingesting dataset', 'collection_version_id': 12e6ca35-3f84-4fee-ab63-4e00cb56c134, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': d8221374-3f4b-43a3-b59f-1152932e507b}
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_logic.py:107 Uploaded [5ed87e29-f2e1-4444-ac38-2a2feed5900e/raw.h5ad] to s3://artifact_bucket/5ed87e29-f2e1-4444-ac38-2a2feed5900e/raw.h5ad
+INFO     processing:process_logic.py:109 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:47 Updating processing status
