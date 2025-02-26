@@ -151,16 +151,16 @@ resource "aws_sfn_state_machine" "state_machine" {
       "Parameters": {
         "JobDefinition": "${var.job_definition_arn}",
         "JobName": "add_labels",
-        "JobQueue.$": "$.job_queue",
+        "JobQueue.$": "$[0].job_queue",
         "ContainerOverrides": {
           "Environment": [
             {
               "Name": "DATASET_VERSION_ID",
-              "Value.$": "$.dataset_version_id"
+              "Value.$": "$[0].dataset_version_id"
             },
             {
               "Name": "COLLECTION_VERSION_ID",
-              "Value.$": "$.collection_version_id"
+              "Value.$": "$[0].collection_version_id"
             },
             {
               "Name": "STEP_NAME",
