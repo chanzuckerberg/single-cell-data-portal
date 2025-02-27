@@ -16,6 +16,7 @@ class DatasetStatusKey(str, Enum):
     CXG = "cxg"
     RDS = "rds"
     H5AD = "h5ad"
+    ATAC = "atac"
     PROCESSING = "processing"
 
 
@@ -116,7 +117,8 @@ class DatasetStatus:
     cxg_status: Optional[DatasetConversionStatus]
     rds_status: Optional[DatasetConversionStatus]
     h5ad_status: Optional[DatasetConversionStatus]
-    processing_status: Optional[DatasetProcessingStatus]
+    atac_status: Optional[DatasetConversionStatus] = None
+    processing_status: Optional[DatasetProcessingStatus] = None
     validation_message: Optional[str] = None
 
     @staticmethod

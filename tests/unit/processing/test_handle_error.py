@@ -47,6 +47,7 @@ def sample_slack_status_block():
         "text": {
             "type": "mrkdwn",
             "text": "```{\n"
+            '  "atac_status": null,\n'
             '  "cxg_status": null,\n'
             '  "h5ad_status": null,\n'
             '  "processing_status": null,\n'
