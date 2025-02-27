@@ -588,7 +588,7 @@ class TestValidArtifactStatuses(BaseProcessingTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.H5AD, status=DatasetConversionStatus.CONVERTED),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=rds_status),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.CXG, status=DatasetConversionStatus.CONVERTED),
-                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC_FRAGMENT, status=DatasetConversionStatus.SKIPPED),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.SKIPPED),
             ]
         )
 
@@ -603,7 +603,7 @@ class TestValidArtifactStatuses(BaseProcessingTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.H5AD, status=DatasetConversionStatus.CONVERTED),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=rds_status),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.CXG, status=DatasetConversionStatus.CONVERTED),
-                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC_FRAGMENT, status=DatasetConversionStatus.SKIPPED),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.SKIPPED),
             ]
         )
 
@@ -618,7 +618,7 @@ class TestValidArtifactStatuses(BaseProcessingTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.H5AD, status=h5ad_status),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.CXG, status=DatasetConversionStatus.CONVERTED),
-                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC_FRAGMENT, status=DatasetConversionStatus.SKIPPED),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.SKIPPED),
             ]
         )
 
@@ -633,7 +633,7 @@ class TestValidArtifactStatuses(BaseProcessingTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.H5AD, status=DatasetConversionStatus.CONVERTED),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.CXG, status=cxg_status),
-                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC_FRAGMENT, status=DatasetConversionStatus.SKIPPED),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.SKIPPED),
             ]
         )
 
@@ -648,7 +648,7 @@ class TestValidArtifactStatuses(BaseProcessingTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.H5AD, status=DatasetConversionStatus.CONVERTED),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.CXG, status=DatasetConversionStatus.CONVERTED),
-                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC_FRAGMENT, status=atac_status),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=atac_status),
             ]
         )
 

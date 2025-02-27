@@ -686,7 +686,7 @@ class BusinessLogic(BusinessLogicInterface):
         )
         self.update_dataset_version_status(
             new_dataset_version.version_id,
-            DatasetStatusKey.ATAC_FRAGMENT,
+            DatasetStatusKey.ATAC,
             DatasetConversionStatus.SKIPPED,
             # TODO: remove when atac is supported
         )
@@ -907,7 +907,7 @@ class BusinessLogic(BusinessLogicInterface):
             self.database_provider.update_dataset_conversion_status(
                 dataset_version_id, "h5ad_status", new_dataset_status
             )
-        elif status_key == DatasetStatusKey.ATAC_FRAGMENT and isinstance(new_dataset_status, DatasetConversionStatus):
+        elif status_key == DatasetStatusKey.ATAC and isinstance(new_dataset_status, DatasetConversionStatus):
             self.database_provider.update_dataset_conversion_status(
                 dataset_version_id, "atac_status", new_dataset_status
             )
