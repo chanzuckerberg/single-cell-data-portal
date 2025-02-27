@@ -88,7 +88,7 @@ if __name__ == "__main__":
     collection_count = smoke_test_init.get_collection_count()
     if collection_count >= NUM_TEST_COLLECTIONS:
         sys.exit(0)
-    num_to_create = NUM_TEST_COLLECTIONS - collection_count
+    num_to_create = NUM_TEST_COLLECTIONS
     threads = []
     for _ in range(num_to_create):
         thread = threading.Thread(target=smoke_test_init.create_and_publish_collection, args=(DATASET_URI,))
