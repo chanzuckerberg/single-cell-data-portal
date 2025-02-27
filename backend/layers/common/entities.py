@@ -117,8 +117,8 @@ class DatasetStatus:
     cxg_status: Optional[DatasetConversionStatus]
     rds_status: Optional[DatasetConversionStatus]
     h5ad_status: Optional[DatasetConversionStatus]
-    atac_status: Optional[DatasetConversionStatus]
-    processing_status: Optional[DatasetProcessingStatus]
+    atac_status: Optional[DatasetConversionStatus] = None
+    processing_status: Optional[DatasetProcessingStatus] = None
     validation_message: Optional[str] = None
 
     @staticmethod
