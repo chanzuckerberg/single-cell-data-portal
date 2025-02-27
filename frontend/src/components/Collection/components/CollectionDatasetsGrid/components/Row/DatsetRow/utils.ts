@@ -116,12 +116,13 @@ export function useCheckCollectionPopulated({
   });
 }
 
-type FORMAT_KEYS = "h5ad_status" | "cxg_status" | "rds_status";
+type FORMAT_KEYS = "h5ad_status" | "cxg_status" | "rds_status" | "atac_status";
 
 const CONVERSION_STATUS_FORMAT_KEYS = [
   "h5ad_status",
   "cxg_status",
   "rds_status",
+  "atac_status",
 ] as FORMAT_KEYS[];
 
 export function useCheckCollectionFormatsPopulated({
@@ -217,9 +218,9 @@ export function getConversionStatus(
 ): CONVERSION_STATUS {
   if (!datasetStatus) return CONVERSION_STATUS.NA;
 
-  const { h5ad_status, cxg_status, rds_status } = datasetStatus;
+  const { h5ad_status, cxg_status, rds_status, atac_status } = datasetStatus;
 
-  const statuses = [h5ad_status, cxg_status, rds_status];
+  const statuses = [h5ad_status, cxg_status, rds_status, atac_status];
 
   if (statuses.some((status) => status === CONVERSION_STATUS.CONVERTING)) {
     return CONVERSION_STATUS.CONVERTING;
