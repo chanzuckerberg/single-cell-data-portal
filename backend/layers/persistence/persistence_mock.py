@@ -556,7 +556,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
         dataset_version = self.datasets_versions[version_id.id]
-        if dataset_version.status.validation_message == "":
+        if dataset_version.status.validation_message is not None:
             dataset_version.status.validation_message = (
                 dataset_version.status.validation_message + "\n" + validation_message
             )
